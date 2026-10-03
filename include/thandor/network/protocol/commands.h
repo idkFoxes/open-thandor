@@ -144,10 +144,12 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
 bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 
-/* Rebuild helper: the recovered handler for a received command code (codeBase + code is the original
-   handler address), or NULL when the original skips it (at or past originalRegionEnd) or the code does not
-   hit an original function start. */
+/* Rebuild helper: the handler for a received command code from the explicit command table of codeBase, or
+   NULL when the original skips it (at or past originalRegionEnd) or the code is no handler. */
 CommandQueueHandlerProc *
 CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint32_t code);
+
+/* Rebuild helper: the command code of handler in the table of codeBase, or 0xFFFFFFFF. */
+uint32_t CommandDispatch_CodeOfHandler(uint32_t codeBase,const void *handler);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_COMMANDS_H */

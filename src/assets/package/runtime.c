@@ -799,7 +799,7 @@ bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFi
    many code units as the path has (SUB EDI,ESI then REP MOVSW), running past the terminator and, for paths
    over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
 */
-void Package_SetLastErrorPath(uint16_t *path)
+THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
 
 {
   uint16_t codeUnit;

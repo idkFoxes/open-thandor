@@ -13,15 +13,39 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-ImageData_00401000 g_ImageData_00401000 = {
+__declspec(align(16)) ImageObject_00401000 g_ImageObject_00401000 = {
     {0}, /* 00401000 DAT_00401000 */
+};
+
+__declspec(align(16)) ImageObject_00402000 g_ImageObject_00402000 = {
     {0}, /* 00402000 g_MemoryApi */
+};
+
+__declspec(align(8)) ImageObject_00402018 g_ImageObject_00402018 = {
     0, /* 00402018 g_TimerRegisterPeriodic */
+};
+
+__declspec(align(4)) ImageObject_0040201C g_ImageObject_0040201C = {
     0, /* 0040201C g_TimerUnregisterPeriodic */
+};
+
+__declspec(align(16)) ImageObject_00402020 g_ImageObject_00402020 = {
     0, /* 00402020 g_Win32PumpMessages */
+};
+
+__declspec(align(4)) ImageObject_00402024 g_ImageObject_00402024 = {
     0, /* 00402024 g_CommandLineFindOption */
+};
+
+__declspec(align(8)) ImageObject_00402028 g_ImageObject_00402028 = {
     {0}, /* 00402028 g_CommandLineWideArguments */
+};
+
+__declspec(align(8)) ImageObject_00402628 g_ImageObject_00402628 = {
     (void *)WideNumber_FormatUtf16, /* 00402628 g_WideNumberFormatUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0040262C g_ImageObject_0040262C = {
     /* 0040262C g_WideNumberFormatState */
     {
         .decimalSeparatorLength = 1,
@@ -37,27 +61,81 @@ ImageData_00401000 g_ImageData_00401000 = {
         .spacePadding = {32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32},
         .zeroPadding = {48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48},
         .digitAlphabet = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70}},
+};
+
+__declspec(align(4)) ImageObject_00402784 g_ImageObject_00402784 = {
     (void *)SpinLock_Acquire, /* 00402784 g_SpinLockAcquire */
+};
+
+__declspec(align(8)) ImageObject_00402788 g_ImageObject_00402788 = {
     (void *)SpinLock_TryAcquireFlags, /* 00402788 g_SpinLockTryAcquire */
+};
+
+__declspec(align(4)) ImageObject_0040278C g_ImageObject_0040278C = {
     (void *)SpinLock_Release, /* 0040278C g_SpinLockRelease */
+};
+
+__declspec(align(16)) ImageObject_00402790 g_ImageObject_00402790 = {
     (void *)SpinLock_ReleaseAndInvoke, /* 00402790 g_SpinLockReleaseAndInvoke */
+};
+
+__declspec(align(4)) ImageObject_00402794 g_ImageObject_00402794 = {
     0, /* 00402794 g_LocaleFormatDateFieldsUtf16 */
+};
+
+__declspec(align(8)) ImageObject_00402798 g_ImageObject_00402798 = {
     0, /* 00402798 g_LocaleFormatCurrentDateUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0040279C g_ImageObject_0040279C = {
     0, /* 0040279C g_LocaleGetPackedCurrentDate */
+};
+
+__declspec(align(16)) ImageObject_004027A0 g_ImageObject_004027A0 = {
     0, /* 004027A0 g_LocaleFormatTimeFieldsUtf16 */
+};
+
+__declspec(align(4)) ImageObject_004027A4 g_ImageObject_004027A4 = {
     0, /* 004027A4 g_LocaleFormatCurrentTimeUtf16 */
+};
+
+__declspec(align(8)) ImageObject_004027A8 g_ImageObject_004027A8 = {
     0, /* 004027A8 g_LocaleGetPackedCurrentTime */
+};
+
+__declspec(align(4)) ImageObject_004027AC g_ImageObject_004027AC = {
     0, /* 004027AC g_LocaleGetDefaultTelephoneCountryCode */
+};
+
+__declspec(align(16)) ImageObject_004027B0 g_ImageObject_004027B0 = {
     /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
     {
         (uint32_t)Locale_MapTelephoneCountryCodeToRegionTagPacked},
+};
+
+__declspec(align(4)) ImageObject_004027B4 g_ImageObject_004027B4 = {
     0, /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
+};
+
+__declspec(align(8)) ImageObject_004027B8 g_ImageObject_004027B8 = {
     0, /* 004027B8 g_CPUDetectFeatures */
+};
+
+__declspec(align(4)) ImageObject_004027BC g_ImageObject_004027BC = {
     (void *)Utf16String_CompareAsciiCaseInsensitiveFlags, /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
+};
+
+__declspec(align(16)) ImageObject_004027C0 g_ImageObject_004027C0 = {
     0, /* 004027C0 g_LocaleCountryCodeOverride */
+};
+
+__declspec(align(4)) ImageObject_004027C4 g_ImageObject_004027C4 = {
     0, /* 004027C4 g_CpuFeatureFlags */
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_004027D0 g_ImageObject_004027D0 = {
     /* 004027D0 g_FileSystemConfigCharacterNormalizationMap: uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
     {
         /*   0 */ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -76,21 +154,30 @@ ImageData_00401000 g_ImageData_00401000 = {
         /* 208 */ 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
         /* 224 */ 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
         /* 240 */ 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255},
+};
+
+__declspec(align(16)) ImageObject_004028D0 g_ImageObject_004028D0 = {
     {.path = L"thandor.dat"}, /* 004028D0 g_PersistentSettings */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90900000, 0x90909090, 0x90909090,
         0x90909090},
 };
 
-ImageData_00403080 g_ImageData_00403080 = {
+__declspec(align(16)) ImageObject_00403080 g_ImageObject_00403080 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403080 gap */
+};
+
+__declspec(align(16)) ImageObject_004030A0 g_ImageObject_004030A0 = {
     {.next = (void *)Random_NextPrimary, .primarySeed = 0x198F}, /* 004030A0 g_RandomGeneratorState */
     {
         0x90909090},
 };
 
-ImageData_00403158 g_ImageData_00403158 = {
+__declspec(align(8)) ImageObject_00403158 g_ImageObject_00403158 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403158 gap */
+};
+
+__declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
     /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
     {
         {13, 10, 0, 1, 15, 11, 5, 12, 4, 6, 14, 2, 8, 3, 9, 7},
@@ -235,6 +322,9 @@ ImageData_00403158 g_ImageData_00403158 = {
         {12, 13, 10, 11, 2, 4, 0, 3, 5, 9, 15, 8, 7, 1, 14, 6},
         {3, 4, 15, 0, 6, 7, 5, 8, 13, 14, 2, 1, 9, 12, 11, 10},
         {1, 0, 11, 13, 4, 8, 15, 5, 3, 10, 6, 2, 14, 9, 12, 7}},
+};
+
+__declspec(align(16)) ImageObject_00405160 g_ImageObject_00405160 = {
     /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
     {
         {
@@ -375,9 +465,15 @@ ImageData_00403158 g_ImageData_00403158 = {
             {1, 0, 11, 8, 4, 7, 10, 15, 5, 13, 9, 2, 14, 3, 12, 6}}},
 };
 
-ImageData_00407510 g_ImageData_00407510 = {
+__declspec(align(16)) ImageObject_00407510 g_ImageObject_00407510 = {
     {0x00, 0x90, 0x90, 0x90}, /* 00407510 gap */
+};
+
+__declspec(align(4)) ImageObject_00407514 g_ImageObject_00407514 = {
     {0}, /* 00407514 g_PackageLastErrorPath */
+};
+
+__declspec(align(4)) ImageObject_00407714 g_ImageObject_00407714 = {
     {0}, /* 00407714 g_FatalErrorDetail1Utf16 */
     0, /* 00407914 g_FatalErrorDetail2Utf16 */
     {0},
@@ -385,19 +481,49 @@ ImageData_00407510 g_ImageData_00407510 = {
     0, /* 00407B14 g_FatalErrorDetail3Utf16 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00407D14 g_ImageObject_00407D14 = {
     0, /* 00407D14 g_FatalErrorExitHandler */
+};
+
+__declspec(align(8)) ImageObject_00407D18 g_ImageObject_00407D18 = {
     0, /* 00407D18 g_FatalErrorReportHandler */
+};
+
+__declspec(align(4)) ImageObject_00407D1C g_ImageObject_00407D1C = {
     0, /* 00407D1C g_FatalErrorFallbackHandler */
+};
+
+__declspec(align(16)) ImageObject_00407D20 g_ImageObject_00407D20 = {
     L"texte\\error.str", /* 00407D20 u_texte_error_str_00407d20 */
+};
+
+__declspec(align(16)) ImageObject_00407D40 g_ImageObject_00407D40 = {
     L"error: IO: initialization failed!", /* 00407D40 g_ErrorTextIoInitializationFailed */
+};
+
+__declspec(align(4)) ImageObject_00407D84 g_ImageObject_00407D84 = {
     L"error: HEAP: cannot allocate heap memory! Please check your swap-file.", /* 00407D84 g_ErrorTextHeapAllocationFailed */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_00407E20 g_ImageObject_00407E20 = {
     0, /* 00407E20 g_FatalErrorUiRootTemplate */
+};
+
+__declspec(align(4)) ImageObject_00407E24 g_ImageObject_00407E24 = {
     0, /* 00407E24 g_FatalErrorDialogDismissed */
+};
+
+__declspec(align(8)) ImageObject_00407E28 g_ImageObject_00407E28 = {
     /* 00407E28 g_UiRootCallbacks_00407E28 */
     {
         .method08 = (void *)FatalErrorDialog_BlockMissedPointerPress,
         .pointerMissPolicy = (void *)FatalErrorDialog_BlockMissedPointerMotion},
+};
+
+__declspec(align(4)) ImageObject_00407E3C g_ImageObject_00407E3C = {
     /* 00407E3C g_FatalErrorUiRootTemplateImage */
     {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
@@ -429,113 +555,356 @@ ImageData_00407510 g_ImageData_00407510 = {
     {0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_004080B4 g_ImageData_004080B4 = {
+__declspec(align(4)) ImageObject_004080B4 g_ImageObject_004080B4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004080B4 gap */
+};
+
+__declspec(align(16)) ImageObject_004080C0 g_ImageObject_004080C0 = {
     {0}, /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
+};
+
+__declspec(align(16)) ImageObject_004084C0 g_ImageObject_004084C0 = {
     {0}, /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
     {0}, /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
 };
 
-ImageData_0040ABBC g_ImageData_0040ABBC = {
+__declspec(align(4)) ImageObject_0040ABBC g_ImageObject_0040ABBC = {
     {0x00, 0x90, 0x90, 0x90}, /* 0040ABBC gap */
+};
+
+__declspec(align(16)) ImageObject_0040ABC0 g_ImageObject_0040ABC0 = {
     {0}, /* 0040ABC0 g_InitialWorkingDirectory */
+};
+
+__declspec(align(16)) ImageObject_0040ADC0 g_ImageObject_0040ADC0 = {
     {0}, /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
+};
+
+__declspec(align(16)) ImageObject_0040AFC0 g_ImageObject_0040AFC0 = {
     {0}, /* 0040AFC0 g_ExecutableDirectoryUtf16 */
+};
+
+__declspec(align(16)) ImageObject_0040B1C0 g_ImageObject_0040B1C0 = {
     0, /* 0040B1C0 g_FileSystemOpen */
+};
+
+__declspec(align(4)) ImageObject_0040B1C4 g_ImageObject_0040B1C4 = {
     0, /* 0040B1C4 g_FileSystemClose */
+};
+
+__declspec(align(8)) ImageObject_0040B1C8 g_ImageObject_0040B1C8 = {
     0, /* 0040B1C8 g_FileSystemReadExact */
+};
+
+__declspec(align(4)) ImageObject_0040B1CC g_ImageObject_0040B1CC = {
     0, /* 0040B1CC g_FileSystemWriteExactOrFlush */
+};
+
+__declspec(align(16)) ImageObject_0040B1D0 g_ImageObject_0040B1D0 = {
     0, /* 0040B1D0 g_FileSystemGetSize */
+};
+
+__declspec(align(4)) ImageObject_0040B1D4 g_ImageObject_0040B1D4 = {
     0, /* 0040B1D4 g_FileSystemGetPosition */
+};
+
+__declspec(align(8)) ImageObject_0040B1D8 g_ImageObject_0040B1D8 = {
     0, /* 0040B1D8 g_FileSystemSeek */
+};
+
+__declspec(align(4)) ImageObject_0040B1DC g_ImageObject_0040B1DC = {
     0, /* 0040B1DC g_FileSystemDelete */
+};
+
+__declspec(align(16)) ImageObject_0040B1E0 g_ImageObject_0040B1E0 = {
     0, /* 0040B1E0 g_FileSystemGetCurrentDirectory */
+};
+
+__declspec(align(4)) ImageObject_0040B1E4 g_ImageObject_0040B1E4 = {
     0, /* 0040B1E4 g_FileSystemSetCurrentDirectory */
+};
+
+__declspec(align(8)) ImageObject_0040B1E8 g_ImageObject_0040B1E8 = {
     0, /* 0040B1E8 g_FileSystemCreateDirectoryRecursive */
+};
+
+__declspec(align(4)) ImageObject_0040B1EC g_ImageObject_0040B1EC = {
     0, /* 0040B1EC g_FileSystemRemoveDirectory */
+};
+
+__declspec(align(16)) ImageObject_0040B1F0 g_ImageObject_0040B1F0 = {
     0, /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
+};
+
+__declspec(align(4)) ImageObject_0040B1F4 g_ImageObject_0040B1F4 = {
     0, /* 0040B1F4 g_FileSystemGetDriveTypeCode */
+};
+
+__declspec(align(8)) ImageObject_0040B1F8 g_ImageObject_0040B1F8 = {
     0, /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
+};
+
+__declspec(align(4)) ImageObject_0040B1FC g_ImageObject_0040B1FC = {
     0, /* 0040B1FC g_FileSystemGetFreeAndTotalBytes */
+};
+
+__declspec(align(16)) ImageObject_0040B200 g_ImageObject_0040B200 = {
     0, /* 0040B200 g_FileSystemGetLastWriteDosDate */
+};
+
+__declspec(align(4)) ImageObject_0040B204 g_ImageObject_0040B204 = {
     0, /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
+};
+
+__declspec(align(8)) ImageObject_0040B208 g_ImageObject_0040B208 = {
     0, /* 0040B208 g_FileSystemGetVolumeSerialNumber */
+};
+
+__declspec(align(4)) ImageObject_0040B20C g_ImageObject_0040B20C = {
     0, /* 0040B20C g_FileSystemMove */
+};
+
+__declspec(align(16)) ImageObject_0040B210 g_ImageObject_0040B210 = {
     0, /* 0040B210 g_FileSystemCopy */
+};
+
+__declspec(align(4)) ImageObject_0040B214 g_ImageObject_0040B214 = {
     0, /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
+};
+
+__declspec(align(8)) ImageObject_0040B218 g_ImageObject_0040B218 = {
     0, /* 0040B218 g_FileSystemValidateDos83Path */
+};
+
+__declspec(align(4)) ImageObject_0040B21C g_ImageObject_0040B21C = {
     0, /* 0040B21C g_PackageScratchBuffer */
+};
+
+__declspec(align(16)) ImageObject_0040B220 g_ImageObject_0040B220 = {
     0, /* 0040B220 g_EnginePackageLowPriorityMountHandle */
+};
+
+__declspec(align(4)) ImageObject_0040B224 g_ImageObject_0040B224 = {
     {0}, /* 0040B224 g_PackageMountSlots */
+};
+
+__declspec(align(4)) ImageObject_0040E224 g_ImageObject_0040E224 = {
     {(void *)PckCodec_EncodeHuffmanRle, (void *)PckCodec_EncodeStored, (void *)PckCodec_EncodeFieldGrid}, /* 0040E224 g_PckEncoderTable */
+};
+
+__declspec(align(16)) ImageObject_0040E230 g_ImageObject_0040E230 = {
     {(void *)PckCodec_DecodeHuffmanRle, (void *)PckCodec_DecodeStored, (void *)PckCodec_DecodeFieldGrid}, /* 0040E230 g_PckDecoderTable */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0040E23D g_ImageObject_0040E23D = {
     L"THANDOR.cfg", /* 0040E23D u_THANDOR_cfg_0040e23d */
+};
+
+__declspec(align(4)) ImageObject_0040E255 g_ImageObject_0040E255 = {
     L"engine.pck", /* 0040E255 u_engine_pck_0040e255 */
     {0x90, 0x90, 0x90, 0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_0040E270 g_ImageObject_0040E270 = {
     L"Computer", /* 0040E270 g_DefaultComputerLabelUtf16 */
 };
 
-ImageData_0040F524 g_ImageData_0040F524 = {
+__declspec(align(4)) ImageObject_0040F524 g_ImageObject_0040F524 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0040F524 gap */
+};
+
+__declspec(align(16)) ImageObject_0040F530 g_ImageObject_0040F530 = {
     {0}, /* 0040F530 g_UiTimedListDriveLetters */
+};
+
+__declspec(align(16)) ImageObject_0040F550 g_ImageObject_0040F550 = {
     {0}, /* 0040F550 g_UiTimedListRecordPathScratch */
+};
+
+__declspec(align(16)) ImageObject_0040F750 g_ImageObject_0040F750 = {
     {0}, /* 0040F750 g_UiTimedListCombinedPathScratch */
+};
+
+__declspec(align(16)) ImageObject_0040F950 g_ImageObject_0040F950 = {
     {0}, /* 0040F950 g_UiTimedListSecondaryPathScratch */
+};
+
+__declspec(align(16)) ImageObject_0040FB50 g_ImageObject_0040FB50 = {
     {0}, /* 0040FB50 g_UiTimedListHierarchyPathScratch */
+};
+
+__declspec(align(16)) ImageObject_0040FD50 g_ImageObject_0040FD50 = {
     {0}, /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
+};
+
+__declspec(align(16)) ImageObject_0040FF50 g_ImageObject_0040FF50 = {
     L"*.*", /* 0040FF50 g_WildcardAllFilesUtf16 */
+};
+
+__declspec(align(8)) ImageObject_0040FF58 g_ImageObject_0040FF58 = {
     L"?:\\*.*", /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_004107E8 g_ImageData_004107E8 = {
+__declspec(align(8)) ImageObject_004107E8 g_ImageObject_004107E8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004107E8 gap */
+};
+
+__declspec(align(16)) ImageObject_004107F0 g_ImageObject_004107F0 = {
     {0}, /* 004107F0 g_CursorInputEvents */
     {0},
+};
+
+__declspec(align(16)) ImageObject_004167F0 g_ImageObject_004167F0 = {
     0, /* 004167F0 g_CursorInputWriteIndex */
+};
+
+__declspec(align(4)) ImageObject_004167F4 g_ImageObject_004167F4 = {
     0, /* 004167F4 g_CursorInputReadIndex */
+};
+
+__declspec(align(8)) ImageObject_004167F8 g_ImageObject_004167F8 = {
     0, /* 004167F8 g_CursorInputClockValue */
+};
+
+__declspec(align(4)) ImageObject_004167FC g_ImageObject_004167FC = {
     2, /* 004167FC g_GraphicsCursorAnimationCountdown: uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
+};
+
+__declspec(align(16)) ImageObject_00416800 g_ImageObject_00416800 = {
     {0}, /* 00416800 g_CursorButtonReleaseClock */
+};
+
+__declspec(align(4)) ImageObject_0041680C g_ImageObject_0041680C = {
     0, /* 0041680C g_CursorSourceAsset */
+};
+
+__declspec(align(16)) ImageObject_00416810 g_ImageObject_00416810 = {
     0, /* 00416810 g_CursorFrameRecords */
+};
+
+__declspec(align(4)) ImageObject_00416814 g_ImageObject_00416814 = {
     0, /* 00416814 g_CursorFrameIndex */
+};
+
+__declspec(align(8)) ImageObject_00416818 g_ImageObject_00416818 = {
     0, /* 00416818 g_CursorUseOverridePosition */
+};
+
+__declspec(align(4)) ImageObject_0041681C g_ImageObject_0041681C = {
     0, /* 0041681C g_CursorFrameCount */
+};
+
+__declspec(align(16)) ImageObject_00416820 g_ImageObject_00416820 = {
     0, /* 00416820 g_CursorMaxWidth */
+};
+
+__declspec(align(4)) ImageObject_00416824 g_ImageObject_00416824 = {
     0, /* 00416824 g_CursorMaxHeight */
+};
+
+__declspec(align(8)) ImageObject_00416828 g_ImageObject_00416828 = {
     0, /* 00416828 g_CursorOverrideX */
     0, /* 0041682C g_CursorOverrideY */
+};
+
+__declspec(align(16)) ImageObject_00416830 g_ImageObject_00416830 = {
     0, /* 00416830 g_CursorWheelDelta */
+};
+
+__declspec(align(4)) ImageObject_00416834 g_ImageObject_00416834 = {
     -1, /* 00416834 g_CursorVisibilityToken */
+};
+
+__declspec(align(8)) ImageObject_00416838 g_ImageObject_00416838 = {
     0, /* 00416838 g_CursorButtonState */
+};
+
+__declspec(align(4)) ImageObject_0041683C g_ImageObject_0041683C = {
     0, /* 0041683C g_CursorLastClickX */
     0, /* 00416840 g_CursorLastClickY */
+};
+
+__declspec(align(4)) ImageObject_00416844 g_ImageObject_00416844 = {
     0, /* 00416844 g_PointerFlushEvents */
+};
+
+__declspec(align(8)) ImageObject_00416848 g_ImageObject_00416848 = {
     (void *)GraphicsCursor_SetFrameIndex, /* 00416848 g_GraphicsCursorSetFrame */
+};
+
+__declspec(align(4)) ImageObject_0041684C g_ImageObject_0041684C = {
     0, /* 0041684C g_PointerSetPosition */
+};
+
+__declspec(align(16)) ImageObject_00416850 g_ImageObject_00416850 = {
     (void *)GraphicsCursor_ConsumeNextInputEvent, /* 00416850 g_GraphicsCursorConsumeEvent */
+};
+
+__declspec(align(4)) ImageObject_00416854 g_ImageObject_00416854 = {
     0, /* 00416854 g_CursorOverflowLeft */
+};
+
+__declspec(align(8)) ImageObject_00416858 g_ImageObject_00416858 = {
     0, /* 00416858 g_CursorOverflowRight */
+};
+
+__declspec(align(4)) ImageObject_0041685C g_ImageObject_0041685C = {
     0, /* 0041685C g_CursorOverflowTop */
+};
+
+__declspec(align(16)) ImageObject_00416860 g_ImageObject_00416860 = {
     0, /* 00416860 g_CursorOverflowBottom */
+};
+
+__declspec(align(4)) ImageObject_00416864 g_ImageObject_00416864 = {
     L"engine\\mouse.gfx", /* 00416864 u_engine_mouse_gfx_00416864 */
+};
+
+__declspec(align(4)) ImageObject_00416886 g_ImageObject_00416886 = {
     L"engine\\mouse.dat", /* 00416886 u_engine_mouse_dat_00416886 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_004169DC g_ImageData_004169DC = {
+__declspec(align(4)) ImageObject_004169DC g_ImageObject_004169DC = {
     {0x00, 0x90, 0x90, 0x90}, /* 004169DC gap */
+};
+
+__declspec(align(16)) ImageObject_004169E0 g_ImageObject_004169E0 = {
     {0}, /* 004169E0 g_KeyboardEvents */
     {0},
+};
+
+__declspec(align(16)) ImageObject_004171E0 g_ImageObject_004171E0 = {
     0, /* 004171E0 g_KeyboardWriteIndex */
+};
+
+__declspec(align(4)) ImageObject_004171E4 g_ImageObject_004171E4 = {
     0, /* 004171E4 g_KeyboardReadIndex */
+};
+
+__declspec(align(8)) ImageObject_004171E8 g_ImageObject_004171E8 = {
     0, /* 004171E8 g_KeyboardStateMask */
+};
+
+__declspec(align(4)) ImageObject_004171EC g_ImageObject_004171EC = {
     0, /* 004171EC g_KeyboardToggleLatchMask */
+};
+
+__declspec(align(16)) ImageObject_004171F0 g_ImageObject_004171F0 = {
     {0}, /* 004171F0 g_KeyboardSpecialKeyDown */
+};
+
+__declspec(align(16)) ImageObject_00417210 g_ImageObject_00417210 = {
     (void *)Keyboard_FlushEvents, /* 00417210 g_KeyboardFlushEvents */
+};
+
+__declspec(align(4)) ImageObject_00417214 g_ImageObject_00417214 = {
     (void *)Keyboard_ReadNextEvent, /* 00417214 g_KeyboardReadEvent */
+};
+
+__declspec(align(8)) ImageObject_00417218 g_ImageObject_00417218 = {
     /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
     {
         .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
@@ -545,37 +914,94 @@ ImageData_004169DC g_ImageData_004169DC = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_004172E8 g_ImageData_004172E8 = {
+__declspec(align(8)) ImageObject_004172E8 g_ImageObject_004172E8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004172E8 gap */
+};
+
+__declspec(align(16)) ImageObject_00417300 g_ImageObject_00417300 = {
     0xFFFFull, /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
     0xFFFF0000ull, /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
     0xFFFF00000000ull, /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
     0xFFFF000000000000ull, /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
     {
         0x00000000, 0x00000001, 0x00000003, 0x00000005},
+};
+
+__declspec(align(16)) ImageObject_00417330 g_ImageObject_00417330 = {
     0, /* 00417330 g_CosineDerivedLookupAllocation */
+};
+
+__declspec(align(4)) ImageObject_00417334 g_ImageObject_00417334 = {
     0, /* 00417334 g_CosineDerivedLookupSecondTable */
+};
+
+__declspec(align(8)) ImageObject_00417338 g_ImageObject_00417338 = {
     (void *)SoundBackendDisabled_CreateSampleVoiceSet, /* 00417338 g_SoundCreateSampleVoiceSet */
+};
+
+__declspec(align(4)) ImageObject_0041733C g_ImageObject_0041733C = {
     (void *)SoundBackendDisabled_ReleaseSampleVoiceSet, /* 0041733C g_SoundReleaseSampleVoiceSet */
+};
+
+__declspec(align(16)) ImageObject_00417340 g_ImageObject_00417340 = {
     (void *)SoundBackendDisabled_CreatePcmVoiceSet, /* 00417340 g_SoundCreatePcmVoiceSet */
+};
+
+__declspec(align(4)) ImageObject_00417344 g_ImageObject_00417344 = {
     (void *)SoundBackendDisabled_ReleasePcmVoiceSet, /* 00417344 g_SoundReleasePcmVoiceSet */
+};
+
+__declspec(align(8)) ImageObject_00417348 g_ImageObject_00417348 = {
     (void *)SoundBackendDisabled_PlayOneShot, /* 00417348 g_SoundPlayOneShot */
+};
+
+__declspec(align(4)) ImageObject_0041734C g_ImageObject_0041734C = {
     (void *)SoundBackendDisabled_PlayLooping, /* 0041734C g_SoundPlayLooping */
+};
+
+__declspec(align(16)) ImageObject_00417350 g_ImageObject_00417350 = {
     (void *)SoundBackendDisabled_StopVoice, /* 00417350 g_SoundStopVoice */
+};
+
+__declspec(align(4)) ImageObject_00417354 g_ImageObject_00417354 = {
     (void *)SoundBackendDisabled_StopAllVoices, /* 00417354 g_SoundStopAllVoices */
+};
+
+__declspec(align(8)) ImageObject_00417358 g_ImageObject_00417358 = {
     (void *)SoundBackendDisabled_IsVoicePlaying, /* 00417358 g_SoundIsVoicePlaying */
+};
+
+__declspec(align(4)) ImageObject_0041735C g_ImageObject_0041735C = {
     (void *)SoundBackendDisabled_QueryVoice, /* 0041735C g_SoundQueryVoice */
+};
+
+__declspec(align(16)) ImageObject_00417360 g_ImageObject_00417360 = {
     (void *)SoundBackendDisabled_SetVoiceGains, /* 00417360 g_SoundSetVoiceGains */
+};
+
+__declspec(align(4)) ImageObject_00417364 g_ImageObject_00417364 = {
     {0}, /* 00417364 g_SoundSampleCoefficientBlock */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0041A53C g_ImageData_0041A53C = {
+__declspec(align(4)) ImageObject_0041A53C g_ImageObject_0041A53C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0041A53C gap */
+};
+
+__declspec(align(16)) ImageObject_0041A540 g_ImageObject_0041A540 = {
     0, /* 0041A540 g_NetworkBackendInstanceTable */
+};
+
+__declspec(align(4)) ImageObject_0041A544 g_ImageObject_0041A544 = {
     0, /* 0041A544 g_NetworkBackendInstanceCount */
+};
+
+__declspec(align(8)) ImageObject_0041A548 g_ImageObject_0041A548 = {
     0, /* 0041A548 g_NetworkBackendSessionContext */
+};
+
+__declspec(align(4)) ImageObject_0041A54C g_ImageObject_0041A54C = {
     (void *)NetworkBackendFallback_SetSessionContext, /* 0041A54C g_NetworkBackendSlot0 */
     (void *)NetworkBackendFallback_Cleanup, /* 0041A550 g_NetworkBackendSlot1 */
     (void *)NetworkBackendFallback_OpenAndBindUdpSocket, /* 0041A554 g_NetworkBackendSlot2 */
@@ -584,76 +1010,148 @@ ImageData_0041A53C g_ImageData_0041A53C = {
     (void *)NetworkBackendFallback_SendDatagram, /* 0041A560 g_NetworkBackendSlot5 */
     (void *)NetworkBackendFallback_ParsePeerEndpoint, /* 0041A564 g_NetworkBackendSlot6 */
     (void *)NetworkBackendFallback_FormatPeerAddress, /* 0041A568 g_NetworkBackendSlot7 */
+};
+
+__declspec(align(4)) ImageObject_0041A56C g_ImageObject_0041A56C = {
     {0}, /* 0041A56C g_NetworkLocalEndpoint */
     {
         0x90909090},
 };
 
-ImageData_0041A740 g_ImageData_0041A740 = {
+__declspec(align(16)) ImageObject_0041A740 g_ImageObject_0041A740 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041A740 gap */
+};
+
+__declspec(align(16)) ImageObject_0041A750 g_ImageObject_0041A750 = {
     0xFFB0B0B0, /* 0041A750 g_RichTextColorPalette0Argb: PackedArgb32 rich-text colour palette entry 0 (0xFFB0B0B0 grey); the palette is indexed by the 3-bit palette field of the packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0; also the normal cost colour of the technology panel. */
     0xFFE0E0E0, /* 0041A754 g_RichTextColorPalette1Argb: PackedArgb32 rich-text colour palette entry 1 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_1. */
     0xFF707070, /* 0041A758 g_RichTextColorPalette2Argb: PackedArgb32 rich-text colour palette entry 2 (0xFF707070 dark grey), RICHTEXT_OP_COLOR_PALETTE_2. */
     0xFFE0E0E0, /* 0041A75C g_RichTextColorPalette3Argb: PackedArgb32 rich-text colour palette entry 3 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_3. */
     0xFF209020, /* 0041A760 g_RichTextColorPalette4Argb: PackedArgb32 rich-text colour palette entry 4 (0xFF209020 green); only reachable through the packed text style's palette index, no direct code reference. */
     0xFFF02020, /* 0041A764 g_RichTextInsufficientResourceColorArgb: PackedArgb32 red (0xFFF02020) for technology costs the player cannot afford (ui/ingame/technology.c); also rich-text palette entry 5 by position. */
+};
+
+__declspec(align(8)) ImageObject_0041A768 g_ImageObject_0041A768 = {
     2, /* 0041A768 g_RichTextShadowOffsetPalette0: uint32_t text shadow offset in pixels for colour palette entry 0 (2); indexed like the colour palette. */
     2, /* 0041A76C g_RichTextShadowOffsetPalette1: uint32_t text shadow offset in pixels for colour palette entry 1 (2). */
     1, /* 0041A770 g_RichTextShadowOffsetPalette2: uint32_t text shadow offset in pixels for colour palette entry 2 (1). */
     2, /* 0041A774 g_RichTextShadowOffsetPalette3: uint32_t text shadow offset in pixels for colour palette entry 3 (2). */
     {0},
+};
+
+__declspec(align(16)) ImageObject_0041A780 g_ImageObject_0041A780 = {
     0, /* 0041A780 g_ActiveFontIndex */
+};
+
+__declspec(align(4)) ImageObject_0041A784 g_ImageObject_0041A784 = {
     0, /* 0041A784 g_RichTextCurrentColorArgb */
+};
+
+__declspec(align(8)) ImageObject_0041A788 g_ImageObject_0041A788 = {
     0, /* 0041A788 g_RichTextCurrentShadowOffset */
+};
+
+__declspec(align(4)) ImageObject_0041A78C g_ImageObject_0041A78C = {
     0, /* 0041A78C g_RichTextSavedColorArgb */
+};
+
+__declspec(align(16)) ImageObject_0041A790 g_ImageObject_0041A790 = {
     0, /* 0041A790 g_RichTextSavedShadowOffset */
+};
+
+__declspec(align(4)) ImageObject_0041A794 g_ImageObject_0041A794 = {
     {0}, /* 0041A794 g_TextResourcePageBindings */
+};
+
+__declspec(align(4)) ImageObject_0041AF94 g_ImageObject_0041AF94 = {
     0, /* 0041AF94 g_TextResourceOverrides */
+};
+
+__declspec(align(8)) ImageObject_0041AF98 g_ImageObject_0041AF98 = {
     0, /* 0041AF98 g_FontRuntimeBuffer */
+};
+
+__declspec(align(4)) ImageObject_0041AF9C g_ImageObject_0041AF9C = {
     0, /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0041AFA4 g_ImageObject_0041AFA4 = {
     {0}, /* 0041AFA4 g_EmptyTextResourceUtf16 */
+};
+
+__declspec(align(8)) ImageObject_0041AFA8 g_ImageObject_0041AFA8 = {
     45, /* 0041AFA8 g_MissingTextResourceFallbackStream */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0041AFAC g_ImageObject_0041AFAC = {
     L"error: TXT2STR: unknown character at:                        ", /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
+};
+
+__declspec(align(8)) ImageObject_0041B028 g_ImageObject_0041B028 = {
     {0}, /* 0041B028 g_FontTextureSources */
+};
+
+__declspec(align(16)) ImageObject_0041B030 g_ImageObject_0041B030 = {
     L"engine\\font.gfx", /* 0041B030 u_engine_font_gfx_0041b030 */
     L"engine\\fontk.gfx", /* 0041B050 str_0041B050 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_0041B128 g_ImageData_0041B128 = {
+__declspec(align(8)) ImageObject_0041B128 g_ImageObject_0041B128 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B128 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B130 g_ImageObject_0041B130 = {
     /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
     {
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B1C0, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
+};
+
+__declspec(align(16)) ImageObject_0041B180 g_ImageObject_0041B180 = {
     /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
     {
         0x0041B1B0, 0x0041B1B0, 0x0041B1B0, 0x0041B110},
+};
+
+__declspec(align(16)) ImageObject_0041B190 g_ImageObject_0041B190 = {
     /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
     {
         0x0041B1E0, 0x0041B1E0, 0x0041B1D0, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
 };
 
-ImageData_0041B228 g_ImageData_0041B228 = {
+__declspec(align(8)) ImageObject_0041B228 g_ImageObject_0041B228 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B228 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B230 g_ImageObject_0041B230 = {
     /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
     {
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B2D0, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
+};
+
+__declspec(align(16)) ImageObject_0041B280 g_ImageObject_0041B280 = {
     /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
     {
         0x0041B2B0, 0x0041B2B0, 0x0041B2B0, 0x0041B210},
+};
+
+__declspec(align(16)) ImageObject_0041B290 g_ImageObject_0041B290 = {
     /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
     {
         0x0041B2C0, 0x0041B2C0, 0x0041B2E0, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
 };
 
-ImageData_0041B338 g_ImageData_0041B338 = {
+__declspec(align(8)) ImageObject_0041B338 g_ImageObject_0041B338 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B338 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B340 g_ImageObject_0041B340 = {
     /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
     {
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B3E0, 0x0041B320,
@@ -663,8 +1161,11 @@ ImageData_0041B338 g_ImageData_0041B338 = {
         0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
-ImageData_0041B448 g_ImageData_0041B448 = {
+__declspec(align(8)) ImageObject_0041B448 g_ImageObject_0041B448 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B448 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B450 g_ImageObject_0041B450 = {
     /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
     {
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B4E0, 0x0041B430,
@@ -673,8 +1174,11 @@ ImageData_0041B448 g_ImageData_0041B448 = {
         0x0041B500, 0x0041B500, 0x0041B4F0, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430},
 };
 
-ImageData_0041B548 g_ImageData_0041B548 = {
+__declspec(align(8)) ImageObject_0041B548 g_ImageObject_0041B548 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B548 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B550 g_ImageObject_0041B550 = {
     /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
     {
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B5F0, 0x0041B530,
@@ -683,8 +1187,11 @@ ImageData_0041B548 g_ImageData_0041B548 = {
         0x0041B5E0, 0x0041B5E0, 0x0041B600, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530},
 };
 
-ImageData_0041B648 g_ImageData_0041B648 = {
+__declspec(align(8)) ImageObject_0041B648 g_ImageObject_0041B648 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B648 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B650 g_ImageObject_0041B650 = {
     /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
     {
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B6F0, 0x0041B630,
@@ -694,8 +1201,11 @@ ImageData_0041B648 g_ImageData_0041B648 = {
         0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
-ImageData_0041B758 g_ImageData_0041B758 = {
+__declspec(align(8)) ImageObject_0041B758 g_ImageObject_0041B758 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B758 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B760 g_ImageObject_0041B760 = {
     /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
     {
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B800, 0x0041B740,
@@ -705,8 +1215,11 @@ ImageData_0041B758 g_ImageData_0041B758 = {
         0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
-ImageData_0041B868 g_ImageData_0041B868 = {
+__declspec(align(8)) ImageObject_0041B868 g_ImageObject_0041B868 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B868 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B870 g_ImageObject_0041B870 = {
     /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
     {
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B910, 0x0041B850,
@@ -716,38 +1229,59 @@ ImageData_0041B868 g_ImageData_0041B868 = {
         0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
-ImageData_0041B9C8 g_ImageData_0041B9C8 = {
+__declspec(align(8)) ImageObject_0041B9C8 g_ImageObject_0041B9C8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B9C8 gap */
+};
+
+__declspec(align(16)) ImageObject_0041B9D0 g_ImageObject_0041B9D0 = {
     /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
     {
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041BA50, 0x0041B970,
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970,
         0x0041BA90, 0x0041B970, 0x0041BA7A, 0x0041B970},
+};
+
+__declspec(align(16)) ImageObject_0041BA20 g_ImageObject_0041BA20 = {
     /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
     {
         0x0041BA58, 0x0041BA58, 0x0041BA58, 0x0041B970},
+};
+
+__declspec(align(16)) ImageObject_0041BA30 g_ImageObject_0041BA30 = {
     /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
     {
         0x0041BA68, 0x0041BA73, 0x0041BA60, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970},
 };
 
-ImageData_0041BB78 g_ImageData_0041BB78 = {
+__declspec(align(8)) ImageObject_0041BB78 g_ImageObject_0041BB78 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041BB78 gap */
+};
+
+__declspec(align(16)) ImageObject_0041BB80 g_ImageObject_0041BB80 = {
     /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
     {
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BC00, 0x0041BB20,
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20,
         0x0041BC40, 0x0041BB20, 0x0041BC2A, 0x0041BB20},
+};
+
+__declspec(align(16)) ImageObject_0041BBD0 g_ImageObject_0041BBD0 = {
     /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
     {
         0x0041BC08, 0x0041BC08, 0x0041BC08, 0x0041BB20},
+};
+
+__declspec(align(16)) ImageObject_0041BBE0 g_ImageObject_0041BBE0 = {
     /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
     {
         0x0041BC18, 0x0041BC23, 0x0041BC10, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20},
 };
 
-ImageData_0041BCEC g_ImageData_0041BCEC = {
+__declspec(align(4)) ImageObject_0041BCEC g_ImageObject_0041BCEC = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041BCEC gap */
+};
+
+__declspec(align(16)) ImageObject_0041BCF0 g_ImageObject_0041BCF0 = {
     /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
@@ -784,8 +1318,11 @@ ImageData_0041BCEC g_ImageData_0041BCEC = {
         0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120},
 };
 
-ImageData_0041C15C g_ImageData_0041C15C = {
+__declspec(align(4)) ImageObject_0041C15C g_ImageObject_0041C15C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041C15C gap */
+};
+
+__declspec(align(16)) ImageObject_0041C160 g_ImageObject_0041C160 = {
     /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
@@ -794,10 +1331,16 @@ ImageData_0041C15C g_ImageData_0041C15C = {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C600, 0x0041C593, 0x0041C120, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C560, 0x0041C6E0, 0x0041C593},
+};
+
+__declspec(align(16)) ImageObject_0041C220 g_ImageObject_0041C220 = {
     /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
     {
         0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620,
         0x0041C620, 0x0041C620, 0x0041C593, 0x0041C593, 0x0041C670, 0x0041C593, 0x0041C690, 0x0041C593},
+};
+
+__declspec(align(16)) ImageObject_0041C260 g_ImageObject_0041C260 = {
     /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
     {
         0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610,
@@ -826,8 +1369,11 @@ ImageData_0041C15C g_ImageData_0041C15C = {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593},
 };
 
-ImageData_0041C94C g_ImageData_0041C94C = {
+__declspec(align(4)) ImageObject_0041C94C g_ImageObject_0041C94C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041C94C gap */
+};
+
+__declspec(align(16)) ImageObject_0041C950 g_ImageObject_0041C950 = {
     /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
     {
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9E9, 0x0041C9D0,
@@ -836,51 +1382,78 @@ ImageData_0041C94C g_ImageData_0041C94C = {
         0x0041CA3D, 0x0041CA48, 0x0041CA21, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0},
 };
 
-ImageData_0041CAFC g_ImageData_0041CAFC = {
+__declspec(align(4)) ImageObject_0041CAFC g_ImageObject_0041CAFC = {
     {0xB8, 0x34}, /* 0041CAFC gap */
 };
 
-ImageData_0041CB68 g_ImageData_0041CB68 = {
+__declspec(align(8)) ImageObject_0041CB68 g_ImageObject_0041CB68 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041CB68 gap */
+};
+
+__declspec(align(16)) ImageObject_0041CB70 g_ImageObject_0041CB70 = {
     /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
     {
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CC00, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
+};
+
+__declspec(align(16)) ImageObject_0041CBC0 g_ImageObject_0041CBC0 = {
     /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
     {
         0x0041CBF0, 0x0041CBF0, 0x0041CBF0, 0x0041CB50},
+};
+
+__declspec(align(16)) ImageObject_0041CBD0 g_ImageObject_0041CBD0 = {
     /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
     {
         0x0041CC50, 0x0041CC50, 0x0041CC10, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
 };
 
-ImageData_0041CF7C g_ImageData_0041CF7C = {
+__declspec(align(4)) ImageObject_0041CF7C g_ImageObject_0041CF7C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041CF7C gap */
+};
+
+__declspec(align(16)) ImageObject_0041CF80 g_ImageObject_0041CF80 = {
     /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
     {
         0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041D010, 0x0041CF60},
+};
+
+__declspec(align(16)) ImageObject_0041CFA0 g_ImageObject_0041CFA0 = {
     /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
     {
         0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050,
         0x0041D020, 0x0041CF60, 0x0041D0A0, 0x0041CF60},
+};
+
+__declspec(align(16)) ImageObject_0041CFD0 g_ImageObject_0041CFD0 = {
     /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
     {
         0x0041D000, 0x0041D000, 0x0041D000, 0x0041CF60},
+};
+
+__declspec(align(16)) ImageObject_0041CFE0 g_ImageObject_0041CFE0 = {
     /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
     {
         0x0041D090, 0x0041D080, 0x0041D060, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60},
 };
 
-ImageData_0041D07C g_ImageData_0041D07C = {
+__declspec(align(4)) ImageObject_0041D07C g_ImageObject_0041D07C = {
     {0x00, 0x00, 0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D07C gap */
 };
 
-ImageData_0041D144 g_ImageData_0041D144 = {
+__declspec(align(4)) ImageObject_0041D144 g_ImageObject_0041D144 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D144 gap */
+};
+
+__declspec(align(16)) ImageObject_0041D150 g_ImageObject_0041D150 = {
     /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
     {
         0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D1D0, 0x0041D120},
+};
+
+__declspec(align(16)) ImageObject_0041D170 g_ImageObject_0041D170 = {
     /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
     {
         0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210,
@@ -888,32 +1461,50 @@ ImageData_0041D144 g_ImageData_0041D144 = {
         0x0041D120, 0x0041D120, 0x0041D220, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120},
 };
 
-ImageData_0041D53C g_ImageData_0041D53C = {
+__declspec(align(4)) ImageObject_0041D53C g_ImageObject_0041D53C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041D53C gap */
+};
+
+__declspec(align(16)) ImageObject_0041D540 g_ImageObject_0041D540 = {
     /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
     {
         0x0041D5D0, 0x0041D5F0, 0x0041D610, 0x0041D630, 0x0041D650, 0x0041D670, 0x0041D690, 0x0041D520},
+};
+
+__declspec(align(16)) ImageObject_0041D560 g_ImageObject_0041D560 = {
     /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
     {
         0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0,
         0x0041D6F0, 0x0041D520, 0x0041D780, 0x0041D520},
+};
+
+__declspec(align(16)) ImageObject_0041D590 g_ImageObject_0041D590 = {
     /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
     {
         0x0041D5C0, 0x0041D5C0, 0x0041D5C0, 0x0041D520},
+};
+
+__declspec(align(16)) ImageObject_0041D5A0 g_ImageObject_0041D5A0 = {
     /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
     {
         0x0041D770, 0x0041D760, 0x0041D720, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520},
 };
 
-ImageData_0041D75C g_ImageData_0041D75C = {
+__declspec(align(4)) ImageObject_0041D75C g_ImageObject_0041D75C = {
     {0x00, 0x00, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D75C gap */
 };
 
-ImageData_0041D880 g_ImageData_0041D880 = {
+__declspec(align(16)) ImageObject_0041D880 g_ImageObject_0041D880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D880 gap */
+};
+
+__declspec(align(16)) ImageObject_0041D890 g_ImageObject_0041D890 = {
     /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D910, 0x0041D860},
+};
+
+__declspec(align(16)) ImageObject_0041D8B0 g_ImageObject_0041D8B0 = {
     /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950,
@@ -921,8 +1512,11 @@ ImageData_0041D880 g_ImageData_0041D880 = {
         0x0041D9A0, 0x0041D9B0, 0x0041D970, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860},
 };
 
-ImageData_0041DA44 g_ImageData_0041DA44 = {
+__declspec(align(4)) ImageObject_0041DA44 g_ImageObject_0041DA44 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DA44 gap */
+};
+
+__declspec(align(16)) ImageObject_0041DA50 g_ImageObject_0041DA50 = {
     /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
     {
         0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DAD0, 0x0041DA20,
@@ -931,8 +1525,11 @@ ImageData_0041DA44 g_ImageData_0041DA44 = {
         0x0041DA20, 0x0041DA20, 0x0041DB20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20},
 };
 
-ImageData_0041DBD4 g_ImageData_0041DBD4 = {
+__declspec(align(4)) ImageObject_0041DBD4 g_ImageObject_0041DBD4 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DBD4 gap */
+};
+
+__declspec(align(16)) ImageObject_0041DBE0 g_ImageObject_0041DBE0 = {
     /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
     {
         0x0041DC60, 0x0041DC80, 0x0041DCA0, 0x0041DCC0, 0x0041DCE0, 0x0041DD00, 0x0041DD20, 0x0041DBB0,
@@ -941,13 +1538,19 @@ ImageData_0041DBD4 g_ImageData_0041DBD4 = {
         0x0041DBB0, 0x0041DBB0, 0x0041DDC0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0},
 };
 
-ImageData_0041DDFC g_ImageData_0041DDFC = {
+__declspec(align(4)) ImageObject_0041DDFC g_ImageObject_0041DDFC = {
     {0x00, 0x00, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DDFC gap */
 };
 
-ImageData_0041DE7C g_ImageData_0041DE7C = {
+__declspec(align(4)) ImageObject_0041DE7C g_ImageObject_0041DE7C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041DE7C gap */
+};
+
+__declspec(align(16)) ImageObject_0041DE80 g_ImageObject_0041DE80 = {
     {0}, /* 0041DE80 g_PackedLightingLookupTable: filled at startup by GraphicsLighting_BuildPackedLookupTable */
+};
+
+__declspec(align(16)) ImageObject_0041EE80 g_ImageObject_0041EE80 = {
     /* 0041EE80 g_ShadingIntensityScaleMmx */
     {
         /*   0 */ {0},
@@ -1206,23 +1809,65 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.alpha = 4063},
         /* 254 */ {.alpha = 4079},
         /* 255 */ {.alpha = 4095}},
+};
+
+__declspec(align(16)) ImageObject_0041F680 g_ImageObject_0041F680 = {
     0x1ull, /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
+};
+
+__declspec(align(8)) ImageObject_0041F688 g_ImageObject_0041F688 = {
     0xFFFFFFFFull, /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
+};
+
+__declspec(align(16)) ImageObject_0041F690 g_ImageObject_0041F690 = {
     0x8080808080808080ull, /* 0041F690 g_TerrainOccupancyMmxSignBiasBytes */
+};
+
+__declspec(align(8)) ImageObject_0041F698 g_ImageObject_0041F698 = {
     0xF9F9F9F9F9F9F9F9ull, /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
+};
+
+__declspec(align(16)) ImageObject_0041F6A0 g_ImageObject_0041F6A0 = {
     0xFFFFFFFFFFFFFFFFull, /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
+};
+
+__declspec(align(8)) ImageObject_0041F6A8 g_ImageObject_0041F6A8 = {
     0x280028002800280ull, /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
+};
+
+__declspec(align(16)) ImageObject_0041F6B0 g_ImageObject_0041F6B0 = {
     0x20000200200002ull, /* 0041F6B0 g_TerrainOccupancyMmxPersistentWeights */
+};
+
+__declspec(align(8)) ImageObject_0041F6B8 g_ImageObject_0041F6B8 = {
     0x40000400400004ull, /* 0041F6B8 g_TerrainOccupancyMmxCurrentWeights */
+};
+
+__declspec(align(16)) ImageObject_0041F6C0 g_ImageObject_0041F6C0 = {
     0x8080808080808080ull, /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
+};
+
+__declspec(align(8)) ImageObject_0041F6C8 g_ImageObject_0041F6C8 = {
     0x707070707070707ull, /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_0041F6E0 g_ImageObject_0041F6E0 = {
     {0}, /* 0041F6E0 g_SoftwarePixelMmxConstants */
+};
+
+__declspec(align(16)) ImageObject_0041F700 g_ImageObject_0041F700 = {
     0xFF000000ull, /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
+};
+
+__declspec(align(8)) ImageObject_0041F708 g_ImageObject_0041F708 = {
     0xFEFEFEull, /* 0041F708 g_VertexColorRgbHalveMaskMMX */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_0041F720 g_ImageObject_0041F720 = {
     /* 0041F720 g_UiScalerSecondPixelWeights */
     {
         /*   0 */ {0},
@@ -1481,6 +2126,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384},
         /* 254 */ {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384},
         /* 255 */ {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384}},
+};
+
+__declspec(align(16)) ImageObject_0041FF20 g_ImageObject_0041FF20 = {
     /* 0041FF20 g_SoftwareBilinearForwardFactors */
     {
         /*   0 */ {0},
@@ -1739,6 +2387,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.blue = 16255, .green = 16255, .red = 16255, .alpha = 16255},
         /* 254 */ {.blue = 16319, .green = 16319, .red = 16319, .alpha = 16319},
         /* 255 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16383}},
+};
+
+__declspec(align(16)) ImageObject_00420720 g_ImageObject_00420720 = {
     /* 00420720 g_UiScalerFirstPixelWeights */
     {
         /*   0 */ {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384},
@@ -1933,6 +2584,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 189 */ {.blue = 385, .green = 385, .red = 385, .alpha = 385},
         /* 190 */ {.blue = 257, .green = 257, .red = 257, .alpha = 257},
         /* 191 */ {.blue = 128, .green = 128, .red = 128, .alpha = 128}},
+};
+
+__declspec(align(16)) ImageObject_00420F20 g_ImageObject_00420F20 = {
     /* 00420F20 g_SoftwareBilinearInverseFactors */
     {
         /*   0 */ {.blue = 16448, .green = 16448, .red = 16448, .alpha = 16448},
@@ -2191,6 +2845,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.blue = 192, .green = 192, .red = 192, .alpha = 192},
         /* 254 */ {.blue = 128, .green = 128, .red = 128, .alpha = 128},
         /* 255 */ {.blue = 64, .green = 64, .red = 64, .alpha = 64}},
+};
+
+__declspec(align(16)) ImageObject_00421720 g_ImageObject_00421720 = {
     /* 00421720 g_SoftwareBlendAlphaFactors */
     {
         /*   0 */ {0},
@@ -2449,6 +3106,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.blue = 16255, .green = 16255, .red = 16255},
         /* 254 */ {.blue = 16319, .green = 16319, .red = 16319},
         /* 255 */ {.blue = 16383, .green = 16383, .red = 16383}},
+};
+
+__declspec(align(16)) ImageObject_00421F20 g_ImageObject_00421F20 = {
     /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
     {
         /*   0 */ {.blue = 16448, .green = 16448, .red = 16448},
@@ -2707,6 +3367,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         /* 253 */ {.blue = 192, .green = 192, .red = 192},
         /* 254 */ {.blue = 128, .green = 128, .red = 128},
         /* 255 */ {.blue = 64, .green = 64, .red = 64}},
+};
+
+__declspec(align(16)) ImageObject_00422720 g_ImageObject_00422720 = {
     /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
     {
         .relocate = (void *)UiTextButtonControl_Relocate,
@@ -2727,6 +3390,9 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+};
+
+__declspec(align(8)) ImageObject_00422768 g_ImageObject_00422768 = {
     0, /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
     {0},
     {0},
@@ -2737,14 +3403,20 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
     {0x90, 0x90, 0x90},
 };
 
-ImageData_00422978 g_ImageData_00422978 = {
+__declspec(align(8)) ImageObject_00422978 g_ImageObject_00422978 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00422978 gap */
+};
+
+__declspec(align(16)) ImageObject_004229A0 g_ImageObject_004229A0 = {
     /* 004229A0 g_UiDisplaySettingsRootCallbacks */
     {
         .vetoClose = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
         .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
         .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion},
+};
+
+__declspec(align(4)) ImageObject_004229B4 g_ImageObject_004229B4 = {
     /* 004229B4 g_UiDisplaySettingsRootTemplate */
     {
         { /* +0000 displaySettingsWindow g_UiResizableWindowControlVtable */
@@ -2971,6 +3643,9 @@ ImageData_00422978 g_ImageData_00422978 = {
         {
             0x00000011},
     },
+};
+
+__declspec(align(8)) ImageObject_00423588 g_ImageObject_00423588 = {
     /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
     {
         .handlers = {
@@ -2995,6 +3670,9 @@ ImageData_00422978 g_ImageData_00422978 = {
             /* 18 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
             /* 19 */ (void *)UiDisplayModeAction_UpdateAdapterSelection
         }},
+};
+
+__declspec(align(8)) ImageObject_004235D8 g_ImageObject_004235D8 = {
     0, /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     0, /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
     0, /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
@@ -3007,13 +3685,16 @@ ImageData_00422978 g_ImageData_00422978 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00424324 g_ImageData_00424324 = {
+__declspec(align(4)) ImageObject_00424324 g_ImageObject_00424324 = {
     /* 00424324 g_UiFourValueDialogRootCallbacks */
     {
         .vetoClose = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
         .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
         .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion},
+};
+
+__declspec(align(8)) ImageObject_00424338 g_ImageObject_00424338 = {
     /* 00424338 g_UiFourValueDialogTemplateImage */
     {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
@@ -3052,169 +3733,538 @@ ImageData_00424324 g_ImageData_00424324 = {
     {0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_00424684 g_ImageData_00424684 = {
+__declspec(align(4)) ImageObject_00424684 g_ImageObject_00424684 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00424684 gap */
+};
+
+__declspec(align(16)) ImageObject_004246A0 g_ImageObject_004246A0 = {
     {0}, /* 004246A0 g_FixedSinBeforeZeroQ28: filled at startup by FixedMath_BuildSinCosTables */
+};
+
+__declspec(align(16)) ImageObject_004346A0 g_ImageObject_004346A0 = {
     {0}, /* 004346A0 g_FixedSinQ28: filled at startup by FixedMath_BuildSinCosTables */
     {0}, /* 004446A0 g_FixedCosQ28: filled at startup by FixedMath_BuildSinCosTables */
 };
 
-ImageData_00485808 g_ImageData_00485808 = {
+__declspec(align(8)) ImageObject_00485808 g_ImageObject_00485808 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xFF, 0xFF, 0xFF, 0xFF}, /* 00485808 gap */
+};
+
+__declspec(align(4)) ImageObject_00485814 g_ImageObject_00485814 = {
     0, /* 00485814 g_TextureDownsampleShift */
+};
+
+__declspec(align(8)) ImageObject_00485818 g_ImageObject_00485818 = {
     (void *)SoftwareRenderer_ClearViewport, /* 00485818 g_GraphicsSetViewportAndClearDepth */
+};
+
+__declspec(align(4)) ImageObject_0048581C g_ImageObject_0048581C = {
     (void *)SoftwareRenderer_DrawPrimitiveQueueBridge, /* 0048581C g_GraphicsDrawPrimitiveQueue */
+};
+
+__declspec(align(16)) ImageObject_00485820 g_ImageObject_00485820 = {
     (void *)SoftwareGraphicsDispatch_SuccessNoOp, /* 00485820 g_GraphicsBeginScene */
+};
+
+__declspec(align(4)) ImageObject_00485824 g_ImageObject_00485824 = {
     (void *)SoftwareGraphicsDispatch_NoOp, /* 00485824 g_GraphicsEndScene */
+};
+
+__declspec(align(8)) ImageObject_00485828 g_ImageObject_00485828 = {
     (void *)GraphicsTexture_RebuildNoOp, /* 00485828 g_GraphicsRebuildAllStagingTextures */
+};
+
+__declspec(align(4)) ImageObject_0048582C g_ImageObject_0048582C = {
     (void *)GraphicsTextureSet_LoadPackage, /* 0048582C g_GraphicsTextureSetLoadPackage */
+};
+
+__declspec(align(16)) ImageObject_00485830 g_ImageObject_00485830 = {
     (void *)GraphicsTextureSet_ReleasePackage, /* 00485830 g_GraphicsTextureSetReleasePackage */
+};
+
+__declspec(align(4)) ImageObject_00485834 g_ImageObject_00485834 = {
     (void *)GraphicsTextureSet_AllocateMetadata, /* 00485834 g_GraphicsCreateTextureSet */
+};
+
+__declspec(align(8)) ImageObject_00485838 g_ImageObject_00485838 = {
     (void *)GraphicsTextureSet_FreeMetadata, /* 00485838 g_GraphicsDestroyTextureSet */
+};
+
+__declspec(align(4)) ImageObject_0048583C g_ImageObject_0048583C = {
     (void *)GraphicsTextureSet_RefreshNoOp, /* 0048583C g_GraphicsRefreshTextureColor */
+};
+
+__declspec(align(16)) ImageObject_00485840 g_ImageObject_00485840 = {
     (void *)GraphicsTextureSet_RefreshNoOp, /* 00485840 g_GraphicsRefreshTextureAlpha */
+};
+
+__declspec(align(4)) ImageObject_00485844 g_ImageObject_00485844 = {
     (void *)GraphicsPrimitiveQueue_RadixSortForRendering, /* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
+};
+
+__declspec(align(8)) ImageObject_00485848 g_ImageObject_00485848 = {
     (void *)GraphicsOffscreen_RenderModelListToTextureSource, /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSource */
+};
+
+__declspec(align(4)) ImageObject_0048584C g_ImageObject_0048584C = {
     0, /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
+};
+
+__declspec(align(16)) ImageObject_00485850 g_ImageObject_00485850 = {
     0, /* 00485850 g_PrimitiveDrawCallCount */
+};
+
+__declspec(align(4)) ImageObject_00485854 g_ImageObject_00485854 = {
     0, /* 00485854 g_TextureBindStateChangeCount */
+};
+
+__declspec(align(8)) ImageObject_00485858 g_ImageObject_00485858 = {
     0, /* 00485858 g_TextureDeviceReloadCount */
+};
+
+__declspec(align(4)) ImageObject_0048585C g_ImageObject_0048585C = {
     {0}, /* 0048585C g_ViewOriginFixed */
+};
+
+__declspec(align(8)) ImageObject_00485868 g_ImageObject_00485868 = {
     0, /* 00485868 g_ProjectionScaleFixed */
+};
+
+__declspec(align(4)) ImageObject_0048586C g_ImageObject_0048586C = {
     0, /* 0048586C g_ViewAngle0 */
     0, /* 00485870 g_ViewAngle1 */
+};
+
+__declspec(align(4)) ImageObject_00485874 g_ImageObject_00485874 = {
     0, /* 00485874 g_ProjectionShift */
+};
+
+__declspec(align(8)) ImageObject_00485878 g_ImageObject_00485878 = {
     0, /* 00485878 g_ProjectionScaleProduct */
+};
+
+__declspec(align(4)) ImageObject_0048587C g_ImageObject_0048587C = {
     {0}, /* 0048587C g_ProjectionNumerator */
+};
+
+__declspec(align(4)) ImageObject_00485884 g_ImageObject_00485884 = {
     {0}, /* 00485884 g_ProjectionCenterFixed */
+};
+
+__declspec(align(4)) ImageObject_0048588C g_ImageObject_0048588C = {
     0, /* 0048588C g_ActivePrimitiveQueue */
+};
+
+__declspec(align(16)) ImageObject_00485890 g_ImageObject_00485890 = {
     {0}, /* 00485890 g_ProjectionClipRect */
+};
+
+__declspec(align(16)) ImageObject_004858A0 g_ImageObject_004858A0 = {
     {0}, /* 004858A0 g_ViewProjectionMatrixFixed */
+};
+
+__declspec(align(16)) ImageObject_004858D0 g_ImageObject_004858D0 = {
     {0}, /* 004858D0 g_ViewRotationMatrixFixed */
+};
+
+__declspec(align(16)) ImageObject_00485900 g_ImageObject_00485900 = {
     {0}, /* 00485900 g_CameraTransformMatrixFixed */
+};
+
+__declspec(align(16)) ImageObject_00485930 g_ImageObject_00485930 = {
     {0}, /* 00485930 g_ProjectionAngleFactors */
+};
+
+__declspec(align(16)) ImageObject_00485940 g_ImageObject_00485940 = {
     {0}, /* 00485940 g_AuxiliaryOrientation */
+};
+
+__declspec(align(8)) ImageObject_00485948 g_ImageObject_00485948 = {
     {0}, /* 00485948 g_AuxiliaryForwardDirectionFixed */
+};
+
+__declspec(align(4)) ImageObject_00485954 g_ImageObject_00485954 = {
     {0}, /* 00485954 g_AuxiliaryRotationMatrixFixed */
+};
+
+__declspec(align(4)) ImageObject_00485984 g_ImageObject_00485984 = {
     {0}, /* 00485984 g_FrustumPlaneNormalFixed_0 */
+};
+
+__declspec(align(4)) ImageObject_004859B4 g_ImageObject_004859B4 = {
     {0}, /* 004859B4 g_FrustumCornerRayFixed_0 */
+};
+
+__declspec(align(4)) ImageObject_004859E4 g_ImageObject_004859E4 = {
     {0}, /* 004859E4 g_SceneBoundsFixed */
+};
+
+__declspec(align(4)) ImageObject_00485A04 g_ImageObject_00485A04 = {
     65536, /* 00485A04 g_ModelLodDepthThresholdQ8 */
+};
+
+__declspec(align(8)) ImageObject_00485A08 g_ImageObject_00485A08 = {
     0, /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
     0, /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
     0, /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
+};
+
+__declspec(align(4)) ImageObject_00485A14 g_ImageObject_00485A14 = {
     0, /* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
+};
+
+__declspec(align(8)) ImageObject_00485A18 g_ImageObject_00485A18 = {
     0, /* 00485A18 g_ArmyPreviewViewAngle0 */
     0, /* 00485A1C g_ArmyPreviewViewAngle1 */
+};
+
+__declspec(align(16)) ImageObject_00485A20 g_ImageObject_00485A20 = {
     0, /* 00485A20 g_ArmyPreviewProjectionShift */
+};
+
+__declspec(align(4)) ImageObject_00485A24 g_ImageObject_00485A24 = {
     0, /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
     0, /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
+};
+
+__declspec(align(4)) ImageObject_00485A2C g_ImageObject_00485A2C = {
     0, /* 00485A2C g_ArmyPreviewPrimaryColorArgb */
+};
+
+__declspec(align(16)) ImageObject_00485A30 g_ImageObject_00485A30 = {
     0, /* 00485A30 g_ArmyPreviewSecondaryColorArgb */
+};
+
+__declspec(align(4)) ImageObject_00485A34 g_ImageObject_00485A34 = {
     0, /* 00485A34 g_ArmyPreviewModelNodePointer */
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00485A40 g_ImageObject_00485A40 = {
     {0}, /* 00485A40 g_PrimitiveRadixBucketWords */
 };
 
-ImageData_00486D8C g_ImageData_00486D8C = {
+__declspec(align(4)) ImageObject_00486D8C g_ImageObject_00486D8C = {
     {0x00, 0x00, 0x90, 0x90}, /* 00486D8C gap */
+};
+
+__declspec(align(16)) ImageObject_00486D90 g_ImageObject_00486D90 = {
     {0}, /* 00486D90 g_MovieChromaLumaToArgb: filled at startup by Movie_BuildChromaLumaTable */
+};
+
+__declspec(align(16)) ImageObject_004A6D90 g_ImageObject_004A6D90 = {
     0xF0F0F000F0F0F0ull, /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
+};
+
+__declspec(align(8)) ImageObject_004A6D98 g_ImageObject_004A6D98 = {
     0, /* 004A6D98 g_ActiveMovie */
+};
+
+__declspec(align(4)) ImageObject_004A6D9C g_ImageObject_004A6D9C = {
     32768, /* 004A6D9C g_MovieDefaultAudioGainQ15 */
+};
+
+__declspec(align(16)) ImageObject_004A6DA0 g_ImageObject_004A6DA0 = {
     32768, /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
+};
+
+__declspec(align(4)) ImageObject_004A6DA4 g_ImageObject_004A6DA4 = {
     {0}, /* 004A6DA4 g_LooseMoviePathPrefix */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_004A8E60 g_ImageData_004A8E60 = {
+__declspec(align(16)) ImageObject_004A8E60 g_ImageObject_004A8E60 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004A8E60 gap */
+};
+
+__declspec(align(16)) ImageObject_004A8E70 g_ImageObject_004A8E70 = {
     0, /* 004A8E70 g_FramebufferAccess */
+};
+
+__declspec(align(4)) ImageObject_004A8E74 g_ImageObject_004A8E74 = {
     0, /* 004A8E74 g_CursorSavedBackground */
+};
+
+__declspec(align(8)) ImageObject_004A8E78 g_ImageObject_004A8E78 = {
     0, /* 004A8E78 g_CursorCompositeBuffer */
+};
+
+__declspec(align(4)) ImageObject_004A8E7C g_ImageObject_004A8E7C = {
     0, /* 004A8E7C g_CursorAlternateSavedBackground */
+};
+
+__declspec(align(16)) ImageObject_004A8E80 g_ImageObject_004A8E80 = {
     0, /* 004A8E80 g_SoftwarePixelPackTables */
+};
+
+__declspec(align(4)) ImageObject_004A8E84 g_ImageObject_004A8E84 = {
     0, /* 004A8E84 g_FramebufferRowStrideBytes */
+};
+
+__declspec(align(8)) ImageObject_004A8E88 g_ImageObject_004A8E88 = {
     0, /* 004A8E88 g_FramebufferWidth */
+};
+
+__declspec(align(4)) ImageObject_004A8E8C g_ImageObject_004A8E8C = {
     0, /* 004A8E8C g_FramebufferHeight */
+};
+
+__declspec(align(16)) ImageObject_004A8E90 g_ImageObject_004A8E90 = {
     4294967295u, /* 004A8E90 g_ActiveGraphicsAdapterIndex: uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
+};
+
+__declspec(align(4)) ImageObject_004A8E94 g_ImageObject_004A8E94 = {
     0x10000, /* 004A8E94 g_SoftwareColorScaleQ16 */
+};
+
+__declspec(align(8)) ImageObject_004A8E98 g_ImageObject_004A8E98 = {
     0, /* 004A8E98 g_SoftwareColorBiasQ16 */
+};
+
+__declspec(align(4)) ImageObject_004A8E9C g_ImageObject_004A8E9C = {
     0, /* 004A8E9C g_GraphicsDisplayModes */
+};
+
+__declspec(align(16)) ImageObject_004A8EA0 g_ImageObject_004A8EA0 = {
     0, /* 004A8EA0 g_GraphicsDisplayModeCount */
+};
+
+__declspec(align(4)) ImageObject_004A8EA4 g_ImageObject_004A8EA4 = {
     0, /* 004A8EA4 g_GraphicsAdapters */
+};
+
+__declspec(align(8)) ImageObject_004A8EA8 g_ImageObject_004A8EA8 = {
     0, /* 004A8EA8 g_GraphicsAdapterCount */
+};
+
+__declspec(align(4)) ImageObject_004A8EAC g_ImageObject_004A8EAC = {
     {0}, /* 004A8EAC g_SoftwarePixelFormatConfig */
+};
+
+__declspec(align(16)) ImageObject_004A8ED0 g_ImageObject_004A8ED0 = {
     (void *)SoftwarePixelFormat_BaseDisplayModeHook, /* 004A8ED0 g_GraphicsSetDisplayMode */
+};
+
+__declspec(align(4)) ImageObject_004A8ED4 g_ImageObject_004A8ED4 = {
     (void *)GraphicsBackend_RefreshActiveAdapterNoOp, /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
+};
+
+__declspec(align(8)) ImageObject_004A8ED8 g_ImageObject_004A8ED8 = {
     (void *)SoftwareFramebuffer_Create, /* 004A8ED8 g_SoftwareFramebufferCreate */
+};
+
+__declspec(align(4)) ImageObject_004A8EDC g_ImageObject_004A8EDC = {
     (void *)SoftwareFramebuffer_Destroy, /* 004A8EDC g_SoftwareFramebufferDestroy: SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
+};
+
+__declspec(align(16)) ImageObject_004A8EE0 g_ImageObject_004A8EE0 = {
     0, /* 004A8EE0 g_GraphicsFramebufferPresent */
+};
+
+__declspec(align(4)) ImageObject_004A8EE4 g_ImageObject_004A8EE4 = {
     0, /* 004A8EE4 g_GraphicsFramebufferCaptureRegion */
+};
+
+__declspec(align(8)) ImageObject_004A8EE8 g_ImageObject_004A8EE8 = {
     (void *)SoftwarePixelFormat_BuildChannelPackTables, /* 004A8EE8 g_SoftwareBuildPixelPackTables */
+};
+
+__declspec(align(4)) ImageObject_004A8EEC g_ImageObject_004A8EEC = {
     (void *)GraphicsFramebuffer_BeginAccessStub, /* 004A8EEC g_GraphicsFramebufferBeginAccess */
+};
+
+__declspec(align(16)) ImageObject_004A8EF0 g_ImageObject_004A8EF0 = {
     (void *)GraphicsFramebuffer_EndAccessStub, /* 004A8EF0 g_GraphicsFramebufferEndAccess */
+};
+
+__declspec(align(4)) ImageObject_004A8EF4 g_ImageObject_004A8EF4 = {
     (void *)GraphicsTextureSource_GetLogicalSize, /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
+};
+
+__declspec(align(8)) ImageObject_004A8EF8 g_ImageObject_004A8EF8 = {
     (void *)GraphicsTextureSource_TestOpaquePixel, /* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
+};
+
+__declspec(align(4)) ImageObject_004A8EFC g_ImageObject_004A8EFC = {
     0, /* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
+};
+
+__declspec(align(16)) ImageObject_004A8F00 g_ImageObject_004A8F00 = {
     (void *)GraphicsTextureSource_BlitTiledSourceAlpha, /* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
+};
+
+__declspec(align(4)) ImageObject_004A8F04 g_ImageObject_004A8F04 = {
     0, /* 004A8F04 g_GraphicsTextureSourceBlitHalfSourceRgb */
+};
+
+__declspec(align(8)) ImageObject_004A8F08 g_ImageObject_004A8F08 = {
     (void *)GraphicsTextureSource_BlitTiledHalfSourceRgb, /* 004A8F08 g_GraphicsTextureSourceBlitTiledHalfSourceRgb */
+};
+
+__declspec(align(4)) ImageObject_004A8F0C g_ImageObject_004A8F0C = {
     0, /* 004A8F0C g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha */
+};
+
+__declspec(align(16)) ImageObject_004A8F10 g_ImageObject_004A8F10 = {
     0, /* 004A8F10 g_GraphicsTextureSourceStretchDirectColorBilinear */
+};
+
+__declspec(align(4)) ImageObject_004A8F14 g_ImageObject_004A8F14 = {
     0, /* 004A8F14 g_GraphicsTextureSourceBlitSourceAlphaPaletteBank */
+};
+
+__declspec(align(8)) ImageObject_004A8F18 g_ImageObject_004A8F18 = {
     0, /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
+};
+
+__declspec(align(4)) ImageObject_004A8F1C g_ImageObject_004A8F1C = {
     0, /* 004A8F1C g_GraphicsTextureSourceBlitSaturatedAddRgb */
+};
+
+__declspec(align(16)) ImageObject_004A8F20 g_ImageObject_004A8F20 = {
     (void *)GraphicsTextureSource_BlitTiledSaturatedAddRgb, /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb: GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledSaturatedAddRgb (texture.c). */
+};
+
+__declspec(align(4)) ImageObject_004A8F24 g_ImageObject_004A8F24 = {
     0, /* 004A8F24 g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd */
+};
+
+__declspec(align(8)) ImageObject_004A8F28 g_ImageObject_004A8F28 = {
     (void *)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd, /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd: GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd (texture.c). */
+};
+
+__declspec(align(4)) ImageObject_004A8F2C g_ImageObject_004A8F2C = {
     (void *)GraphicsTextureSource_DecomposeSubresourceRegions, /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf: GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions (texture.c). */
+};
+
+__declspec(align(16)) ImageObject_004A8F30 g_ImageObject_004A8F30 = {
     0, /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+};
+
+__declspec(align(4)) ImageObject_004A8F34 g_ImageObject_004A8F34 = {
     (void *)SoftwareFramebuffer_CopyRegionToOrigin, /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin: GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
+};
+
+__declspec(align(8)) ImageObject_004A8F38 g_ImageObject_004A8F38 = {
     (void *)SoftwareFramebuffer_CopyOriginToRegion, /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion: GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
+};
+
+__declspec(align(4)) ImageObject_004A8F3C g_ImageObject_004A8F3C = {
     (void *)GraphicsTextureSource_LoadPackageAsset, /* 004A8F3C g_GraphicsTextureSourceLoadPackageAsset */
+};
+
+__declspec(align(16)) ImageObject_004A8F40 g_ImageObject_004A8F40 = {
     /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
     {
         .releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset,
         .clone = (void *)GraphicsTextureSource_CloneAsset,
         .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset},
+};
+
+__declspec(align(4)) ImageObject_004A8F4C g_ImageObject_004A8F4C = {
     (void *)GraphicsTextureSource_ConvertPaletteEntries, /* 004A8F4C g_GraphicsTextureSourceConvertPaletteEntries */
+};
+
+__declspec(align(16)) ImageObject_004A8F50 g_ImageObject_004A8F50 = {
     (void *)GraphicsTextureSource_ResolveAllocationBase, /* 004A8F50 g_GraphicsTextureSourceResolveAllocationBase */
+};
+
+__declspec(align(4)) ImageObject_004A8F54 g_ImageObject_004A8F54 = {
     (void *)GraphicsPaletteAsset_LoadPackage, /* 004A8F54 g_GraphicsPaletteAssetLoadPackage */
+};
+
+__declspec(align(8)) ImageObject_004A8F58 g_ImageObject_004A8F58 = {
     /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
     {
         .releasePackage = (void *)GraphicsPaletteAsset_ReleasePackage,
         .clone = (void *)GraphicsPaletteAsset_Clone,
         .releaseClone = (void *)GraphicsPaletteAsset_ReleaseClone},
+};
+
+__declspec(align(4)) ImageObject_004A8F64 g_ImageObject_004A8F64 = {
     (void *)GraphicsPaletteAsset_Validate, /* 004A8F64 g_GraphicsPaletteAssetValidate */
+};
+
+__declspec(align(8)) ImageObject_004A8F68 g_ImageObject_004A8F68 = {
     (void *)GraphicsPaletteAsset_ResolveAllocationBase, /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
+};
+
+__declspec(align(4)) ImageObject_004A8F6C g_ImageObject_004A8F6C = {
     L"Software", /* 004A8F6C g_UnreferencedSoftwareTextUtf16: uint16_t[9] L"Software" after the graphics hook table, followed by two NOP padding bytes; no code or data reference found. */
     {0x90, 0x90},
 };
 
-ImageData_004AD92C g_ImageData_004AD92C = {
+__declspec(align(4)) ImageObject_004AD92C g_ImageObject_004AD92C = {
     {0x90, 0x90, 0x90, 0x90}, /* 004AD92C gap */
+};
+
+__declspec(align(16)) ImageObject_004AD930 g_ImageObject_004AD930 = {
     {0}, /* 004AD930 g_GraphicsPaletteBankSlots */
+};
+
+__declspec(align(16)) ImageObject_004AE130 g_ImageObject_004AE130 = {
     {0}, /* 004AE130 g_GraphicsPaletteRemapBytes */
 };
 
-ImageData_004AE95C g_ImageData_004AE95C = {
+__declspec(align(4)) ImageObject_004AE95C g_ImageObject_004AE95C = {
     {0x00, 0x90, 0x90, 0x90}, /* 004AE95C gap */
+};
+
+__declspec(align(16)) ImageObject_004AE960 g_ImageObject_004AE960 = {
     0, /* 004AE960 g_UiRuntimeRecordRing */
+};
+
+__declspec(align(4)) ImageObject_004AE964 g_ImageObject_004AE964 = {
     0, /* 004AE964 g_UiRuntimeRecordEndpointSlots */
+};
+
+__declspec(align(8)) ImageObject_004AE968 g_ImageObject_004AE968 = {
     0, /* 004AE968 g_UiTransferDataBuffer */
+};
+
+__declspec(align(4)) ImageObject_004AE96C g_ImageObject_004AE96C = {
     0, /* 004AE96C g_UiTransferEndpointBuffer */
+};
+
+__declspec(align(16)) ImageObject_004AE970 g_ImageObject_004AE970 = {
     0, /* 004AE970 g_UiRuntimeRecordReadIndex */
+};
+
+__declspec(align(4)) ImageObject_004AE974 g_ImageObject_004AE974 = {
     0, /* 004AE974 g_UiRuntimeRecordWriteIndex */
+};
+
+__declspec(align(8)) ImageObject_004AE978 g_ImageObject_004AE978 = {
     0, /* 004AE978 g_UiTransferUnitCursor */
+};
+
+__declspec(align(4)) ImageObject_004AE97C g_ImageObject_004AE97C = {
     0x12340000, /* 004AE97C g_UiTransferSequenceToken: uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+};
+
+__declspec(align(16)) ImageObject_004AE980 g_ImageObject_004AE980 = {
     0, /* 004AE980 g_UiTransferSenderContext */
+};
+
+__declspec(align(4)) ImageObject_004AE984 g_ImageObject_004AE984 = {
     0, /* 004AE984 g_UiRuntimeFrameLock */
+};
+
+__declspec(align(8)) ImageObject_004AE988 g_ImageObject_004AE988 = {
     0, /* 004AE988 g_UiRuntimePostUnlockCallback */
+};
+
+__declspec(align(4)) ImageObject_004AE98C g_ImageObject_004AE98C = {
     0, /* 004AE98C g_UiRuntimeRecordRingLock */
+};
+
+__declspec(align(16)) ImageObject_004AE990 g_ImageObject_004AE990 = {
     {0}, /* 004AE990 g_UiTransferMailbox */
+};
+
+__declspec(align(8)) ImageObject_004AE9A8 g_ImageObject_004AE9A8 = {
     /* 004AE9A8 g_UiTransferRoundKeys16: uint32_t[12] packet cipher round keys 0..11 (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 are g_UiTransferRoundKeys16Tail). */
     {
         /*  0 */ 0x1234567, 0x13579BDF, 0x76543210, 0xFDB97531, 0x2468ACE, 0x2357BD23, 0xECA86420, 0x32DB7532,
@@ -3226,90 +4276,234 @@ ImageData_004AE95C g_ImageData_004AE95C = {
     0, /* 004AE9F8 g_UiTransferMailboxChunkOffset */
     0, /* 004AE9FC g_UiTransferMailboxTransferByteCount */
     {0}, /* 004AEA00 g_UiTransferChunkPayload */
+};
+
+__declspec(align(8)) ImageObject_004AEAE8 g_ImageObject_004AEAE8 = {
     0, /* 004AEAE8 g_UiTransferPingEchoPacket */
     0, /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
     {0},
     0, /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
     {0},
+};
+
+__declspec(align(8)) ImageObject_004AEB08 g_ImageObject_004AEB08 = {
     0, /* 004AEB08 g_UiTransferMailboxTickCounter */
     {
         0x90909090},
 };
 
-ImageData_004AF198 g_ImageData_004AF198 = {
+__declspec(align(8)) ImageObject_004AF198 g_ImageObject_004AF198 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004AF198 gap */
 };
 
-ImageData_004AF1D4 g_ImageData_004AF1D4 = {
+__declspec(align(4)) ImageObject_004AF1D4 g_ImageObject_004AF1D4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004AF1D4 gap */
+};
+
+__declspec(align(16)) ImageObject_004AF1E0 g_ImageObject_004AF1E0 = {
     {.countdownFrames = 8}, /* 004AF1E0 g_UiTooltipState */
+};
+
+__declspec(align(16)) ImageObject_004AF1F0 g_ImageObject_004AF1F0 = {
     0, /* 004AF1F0 g_UiPendingFrameTicks */
+};
+
+__declspec(align(4)) ImageObject_004AF1F4 g_ImageObject_004AF1F4 = {
     0, /* 004AF1F4 g_UiDirtyRectCount */
+};
+
+__declspec(align(8)) ImageObject_004AF1F8 g_ImageObject_004AF1F8 = {
     0, /* 004AF1F8 g_UiDirtyRectEntries */
+};
+
+__declspec(align(4)) ImageObject_004AF1FC g_ImageObject_004AF1FC = {
     0, /* 004AF1FC g_UiActionQueueUsedBytes */
+};
+
+__declspec(align(16)) ImageObject_004AF200 g_ImageObject_004AF200 = {
     0, /* 004AF200 g_UiActionQueueEntries */
+};
+
+__declspec(align(4)) ImageObject_004AF204 g_ImageObject_004AF204 = {
     0, /* 004AF204 g_UiRuntimeInitializationCount */
+};
+
+__declspec(align(8)) ImageObject_004AF208 g_ImageObject_004AF208 = {
     0, /* 004AF208 g_UiInvalidationSuppressed */
     {
         0x90909090},
 };
 
-ImageData_004AF39C g_ImageData_004AF39C = {
+__declspec(align(4)) ImageObject_004AF39C g_ImageObject_004AF39C = {
     {0x00, 0x00, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004AF39C gap */
 };
 
-ImageData_004B0A20 g_ImageData_004B0A20 = {
+__declspec(align(16)) ImageObject_004B0A20 g_ImageObject_004B0A20 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B0A20 gap */
+};
+
+__declspec(align(16)) ImageObject_004B0A30 g_ImageObject_004B0A30 = {
     {0}, /* 004B0A30 g_UiActionHandlerPages */
+};
+
+__declspec(align(16)) ImageObject_004B0E30 g_ImageObject_004B0E30 = {
     (void *)0xFFFFFFFF, /* 004B0E30 g_UiRootNode */
+};
+
+__declspec(align(4)) ImageObject_004B0E34 g_ImageObject_004B0E34 = {
     (void *)0xFFFFFFFF, /* 004B0E34 g_UiWindowTextureSource */
+};
+
+__declspec(align(8)) ImageObject_004B0E38 g_ImageObject_004B0E38 = {
     0, /* 004B0E38 g_UiWindowClassTextureSource */
+};
+
+__declspec(align(4)) ImageObject_004B0E3C g_ImageObject_004B0E3C = {
     (void *)0xFFFFFFFF, /* 004B0E3C g_UiPointerCaptureTarget */
+};
+
+__declspec(align(16)) ImageObject_004B0E40 g_ImageObject_004B0E40 = {
     (void *)0xFFFFFFFF, /* 004B0E40 g_UiKeyboardFocusNode */
+};
+
+__declspec(align(4)) ImageObject_004B0E44 g_ImageObject_004B0E44 = {
     32768, /* 004B0E44 g_UiSoundGainQ15 */
+};
+
+__declspec(align(8)) ImageObject_004B0E48 g_ImageObject_004B0E48 = {
     12, /* 004B0E48 g_UiTooltipDelayFrames */
+};
+
+__declspec(align(4)) ImageObject_004B0E4C g_ImageObject_004B0E4C = {
     0, /* 004B0E4C g_UiTooltipTextStyle */
+};
+
+__declspec(align(16)) ImageObject_004B0E50 g_ImageObject_004B0E50 = {
     14, /* 004B0E50 g_UiScrollWheelDefaultStep: int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
+};
+
+__declspec(align(4)) ImageObject_004B0E54 g_ImageObject_004B0E54 = {
     15, /* 004B0E54 g_UiScrollWheelListStep: int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
+};
+
+__declspec(align(8)) ImageObject_004B0E58 g_ImageObject_004B0E58 = {
     1, /* 004B0E58 g_UiRangeSliderDragScale: int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+};
+
+__declspec(align(4)) ImageObject_004B0E5C g_ImageObject_004B0E5C = {
     8, /* 004B0E5C g_UiTimedListActionDelayFrames */
+};
+
+__declspec(align(16)) ImageObject_004B0E60 g_ImageObject_004B0E60 = {
     8, /* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+};
+
+__declspec(align(4)) ImageObject_004B0E64 g_ImageObject_004B0E64 = {
     5, /* 004B0E64 g_UiResizableWindowTitleTextTopOffset: int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+};
+
+__declspec(align(8)) ImageObject_004B0E68 g_ImageObject_004B0E68 = {
     2, /* 004B0E68 g_UiResizableWindowTitleTextStyle: UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+};
+
+__declspec(align(4)) ImageObject_004B0E6C g_ImageObject_004B0E6C = {
     19, /* 004B0E6C g_UiWindowMoveHandleWidth: int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+};
+
+__declspec(align(16)) ImageObject_004B0E70 g_ImageObject_004B0E70 = {
     19, /* 004B0E70 g_UiWindowResizeBorderThickness */
+};
+
+__declspec(align(4)) ImageObject_004B0E74 g_ImageObject_004B0E74 = {
     0x10000, /* 004B0E74 g_UiTextStyleSelected: UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
+};
+
+__declspec(align(8)) ImageObject_004B0E78 g_ImageObject_004B0E78 = {
     0, /* 004B0E78 g_UiTextStyleNormal */
+};
+
+__declspec(align(4)) ImageObject_004B0E7C g_ImageObject_004B0E7C = {
     0x20000, /* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
+};
+
+__declspec(align(16)) ImageObject_004B0E80 g_ImageObject_004B0E80 = {
     0, /* 004B0E80 g_UiTextStyleAlternate */
     {0},
+};
+
+__declspec(align(8)) ImageObject_004B0E88 g_ImageObject_004B0E88 = {
     0, /* 004B0E88 g_UiWindowTitleTextStyle */
+};
+
+__declspec(align(4)) ImageObject_004B0E8C g_ImageObject_004B0E8C = {
     2, /* 004B0E8C g_UiWindowFrameInset */
+};
+
+__declspec(align(16)) ImageObject_004B0E90 g_ImageObject_004B0E90 = {
     0, /* 004B0E90 g_UiListTextStyle */
     {0},
+};
+
+__declspec(align(8)) ImageObject_004B0E98 g_ImageObject_004B0E98 = {
     0, /* 004B0E98 g_UiTextEditActiveTextStyle */
+};
+
+__declspec(align(4)) ImageObject_004B0E9C g_ImageObject_004B0E9C = {
     0, /* 004B0E9C g_UiTextEditInactiveTextStyle */
+};
+
+__declspec(align(16)) ImageObject_004B0EA0 g_ImageObject_004B0EA0 = {
     0, /* 004B0EA0 g_UiTextEditDisabledTextStyle */
+};
+
+__declspec(align(4)) ImageObject_004B0EA4 g_ImageObject_004B0EA4 = {
     8, /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep: UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags (src/ui/controls/text.c). */
+};
+
+__declspec(align(8)) ImageObject_004B0EA8 g_ImageObject_004B0EA8 = {
     4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset: int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+};
+
+__declspec(align(4)) ImageObject_004B0EAC g_ImageObject_004B0EAC = {
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
+};
+
+__declspec(align(16)) ImageObject_004B0EB0 g_ImageObject_004B0EB0 = {
     {.handlers = {(void *)UiRootStack_Pop, (void *)FatalErrorDialog_DismissAndPopRoot}}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
+};
+
+__declspec(align(8)) ImageObject_004B0EB8 g_ImageObject_004B0EB8 = {
     L"engine\\winclass.gfx", /* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
+};
+
+__declspec(align(16)) ImageObject_004B0EE0 g_ImageObject_004B0EE0 = {
     L"texte\\winclass.str", /* 004B0EE0 g_UiWindowClassTextPathUtf16 */
+};
+
+__declspec(align(4)) ImageObject_004B0F06 g_ImageObject_004B0F06 = {
     L"engine\\win.gfx", /* 004B0F06 g_UiWindowTexturePathUtf16 */
+};
+
+__declspec(align(4)) ImageObject_004B0F24 g_ImageObject_004B0F24 = {
     255, /* 004B0F24 g_UiPointerCaptureButton */
     {0x90, 0x90, 0x90},
+};
+
+__declspec(align(8)) ImageObject_004B0F28 g_ImageObject_004B0F28 = {
     0, /* 004B0F28 g_UiImageControlHoverTarget */
     {
         0x90909090},
 };
 
-ImageData_004B1500 g_ImageData_004B1500 = {
+__declspec(align(16)) ImageObject_004B1500 g_ImageObject_004B1500 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B1500 gap */
 };
 
-ImageData_004B15C8 g_ImageData_004B15C8 = {
+__declspec(align(8)) ImageObject_004B15C8 g_ImageObject_004B15C8 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B15C8 gap */
+};
+
+__declspec(align(16)) ImageObject_004B15D0 g_ImageObject_004B15D0 = {
     /* 004B15D0 g_UiSpriteButtonControlVtable */
     {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
@@ -3334,8 +4528,11 @@ ImageData_004B15C8 g_ImageData_004B15C8 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B1D74 g_ImageData_004B1D74 = {
+__declspec(align(4)) ImageObject_004B1D74 g_ImageObject_004B1D74 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B1D74 gap */
+};
+
+__declspec(align(16)) ImageObject_004B1D80 g_ImageObject_004B1D80 = {
     /* 004B1D80 g_UiNodeVtable_004B1D80 */
     {
         .relocate = (void *)UiFramedTextButtonControl_Relocate,
@@ -3360,8 +4557,11 @@ ImageData_004B1D74 g_ImageData_004B1D74 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B2734 g_ImageData_004B2734 = {
+__declspec(align(4)) ImageObject_004B2734 g_ImageObject_004B2734 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B2734 gap */
+};
+
+__declspec(align(16)) ImageObject_004B2740 g_ImageObject_004B2740 = {
     /* 004B2740 g_UiWindowControlVtable */
     {
         .relocate = (void *)UiWindowControl_RelocateWithFrameInset,
@@ -3386,8 +4586,11 @@ ImageData_004B2734 g_ImageData_004B2734 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B2CD8 g_ImageData_004B2CD8 = {
+__declspec(align(8)) ImageObject_004B2CD8 g_ImageObject_004B2CD8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B2CD8 gap */
+};
+
+__declspec(align(16)) ImageObject_004B2CE0 g_ImageObject_004B2CE0 = {
     /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
     {
         .relocate = (void *)UiTextButtonControl_Relocate,
@@ -3412,7 +4615,7 @@ ImageData_004B2CD8 g_ImageData_004B2CD8 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B33D0 g_ImageData_004B33D0 = {
+__declspec(align(16)) ImageObject_004B33D0 g_ImageObject_004B33D0 = {
     /* 004B33D0 g_UiTitledWindowControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3437,8 +4640,11 @@ ImageData_004B33D0 g_ImageData_004B33D0 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B3760 g_ImageData_004B3760 = {
+__declspec(align(16)) ImageObject_004B3760 g_ImageObject_004B3760 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B3760 gap */
+};
+
+__declspec(align(16)) ImageObject_004B3770 g_ImageObject_004B3770 = {
     /* 004B3770 g_UiImagePanelControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3463,8 +4669,11 @@ ImageData_004B3760 g_ImageData_004B3760 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B3A48 g_ImageData_004B3A48 = {
+__declspec(align(8)) ImageObject_004B3A48 g_ImageObject_004B3A48 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B3A48 gap */
+};
+
+__declspec(align(16)) ImageObject_004B3A50 g_ImageObject_004B3A50 = {
     /* 004B3A50 g_UiFillPanelControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3489,8 +4698,11 @@ ImageData_004B3A48 g_ImageData_004B3A48 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B3C1C g_ImageData_004B3C1C = {
+__declspec(align(4)) ImageObject_004B3C1C g_ImageObject_004B3C1C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004B3C1C gap */
+};
+
+__declspec(align(16)) ImageObject_004B3C20 g_ImageObject_004B3C20 = {
     /* 004B3C20 g_UiHorizontalGaugeControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3511,14 +4723,20 @@ ImageData_004B3C1C g_ImageData_004B3C1C = {
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+};
+
+__declspec(align(8)) ImageObject_004B3C68 g_ImageObject_004B3C68 = {
     {0}, /* 004B3C68 g_UiWindowPercentTextUtf16 */
     {
         0x90909090, 0x90909090, 0x90909090},
     {0x90, 0x90},
 };
 
-ImageData_004B3EEC g_ImageData_004B3EEC = {
+__declspec(align(4)) ImageObject_004B3EEC g_ImageObject_004B3EEC = {
     {0x00, 0x00, 0x90, 0x90}, /* 004B3EEC gap */
+};
+
+__declspec(align(16)) ImageObject_004B3EF0 g_ImageObject_004B3EF0 = {
     /* 004B3EF0 g_UiRangeSliderControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3543,8 +4761,11 @@ ImageData_004B3EEC g_ImageData_004B3EEC = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B4648 g_ImageData_004B4648 = {
+__declspec(align(8)) ImageObject_004B4648 g_ImageObject_004B4648 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B4648 gap */
+};
+
+__declspec(align(16)) ImageObject_004B4650 g_ImageObject_004B4650 = {
     /* 004B4650 g_UiLayoutContainerControlVtable */
     {
         .relocate = (void *)UiLayoutContainerControl_RelocateChildren,
@@ -3569,8 +4790,11 @@ ImageData_004B4648 g_ImageData_004B4648 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B494C g_ImageData_004B494C = {
+__declspec(align(4)) ImageObject_004B494C g_ImageObject_004B494C = {
     {0x90, 0x90, 0x90, 0x90}, /* 004B494C gap */
+};
+
+__declspec(align(16)) ImageObject_004B4950 g_ImageObject_004B4950 = {
     /* 004B4950 g_UiPanelControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3595,8 +4819,11 @@ ImageData_004B494C g_ImageData_004B494C = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B4CB8 g_ImageData_004B4CB8 = {
+__declspec(align(8)) ImageObject_004B4CB8 g_ImageObject_004B4CB8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B4CB8 gap */
+};
+
+__declspec(align(16)) ImageObject_004B4CC0 g_ImageObject_004B4CC0 = {
     /* 004B4CC0 g_UiResizableWindowControlVtable */
     {
         .relocate = (void *)UiResizableWindowControl_RelocateAndRefreshInteractionState,
@@ -3621,8 +4848,11 @@ ImageData_004B4CB8 g_ImageData_004B4CB8 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B5890 g_ImageData_004B5890 = {
+__declspec(align(16)) ImageObject_004B5890 g_ImageObject_004B5890 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B5890 gap */
+};
+
+__declspec(align(16)) ImageObject_004B58A0 g_ImageObject_004B58A0 = {
     /* 004B58A0 g_UiNumericTextEditControlVtable */
     {
         .relocate = (void *)UiNumericTextEditControl_RelocateAndRebuildText,
@@ -3647,8 +4877,11 @@ ImageData_004B5890 g_ImageData_004B5890 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B67F4 g_ImageData_004B67F4 = {
+__declspec(align(4)) ImageObject_004B67F4 g_ImageObject_004B67F4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B67F4 gap */
+};
+
+__declspec(align(16)) ImageObject_004B6800 g_ImageObject_004B6800 = {
     /* 004B6800 g_UiPathTextEditControlVtable */
     {
         .relocate = (void *)UiPathTextEditControl_RelocateAndValidateDos83,
@@ -3673,8 +4906,11 @@ ImageData_004B67F4 g_ImageData_004B67F4 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B7048 g_ImageData_004B7048 = {
+__declspec(align(8)) ImageObject_004B7048 g_ImageObject_004B7048 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B7048 gap */
+};
+
+__declspec(align(16)) ImageObject_004B7050 g_ImageObject_004B7050 = {
     /* 004B7050 g_UiRequiredTextEditControlVtable */
     {
         .relocate = (void *)UiRequiredTextEditControl_RelocateAndValidateNonEmpty,
@@ -3699,8 +4935,11 @@ ImageData_004B7048 g_ImageData_004B7048 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B7914 g_ImageData_004B7914 = {
+__declspec(align(4)) ImageObject_004B7914 g_ImageObject_004B7914 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B7914 gap */
+};
+
+__declspec(align(16)) ImageObject_004B7920 g_ImageObject_004B7920 = {
     /* 004B7920 g_UiScrollableControlVtable */
     {
         .relocate = (void *)UiScrollableControl_RelocateChildren,
@@ -3725,7 +4964,7 @@ ImageData_004B7914 g_ImageData_004B7914 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B9530 g_ImageData_004B9530 = {
+__declspec(align(16)) ImageObject_004B9530 g_ImageObject_004B9530 = {
     /* 004B9530 g_UiFocusProxyControlVtable */
     {
         .relocate = (void *)UiSingleLineTextControl_RelocateChild,
@@ -3750,8 +4989,11 @@ ImageData_004B9530 g_ImageData_004B9530 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004B9E38 g_ImageData_004B9E38 = {
+__declspec(align(8)) ImageObject_004B9E38 g_ImageObject_004B9E38 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B9E38 gap */
+};
+
+__declspec(align(16)) ImageObject_004B9E40 g_ImageObject_004B9E40 = {
     /* 004B9E40 g_UiTextListControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3776,8 +5018,11 @@ ImageData_004B9E38 g_ImageData_004B9E38 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BA58C g_ImageData_004BA58C = {
+__declspec(align(4)) ImageObject_004BA58C g_ImageObject_004BA58C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BA58C gap */
+};
+
+__declspec(align(16)) ImageObject_004BA590 g_ImageObject_004BA590 = {
     /* 004BA590 g_UiListControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3798,9 +5043,15 @@ ImageData_004BA58C g_ImageData_004BA58C = {
         .unsuppressActionId = (void *)UiListControl_UnsuppressIfActionId,
         .tick = (void *)UiListControl_TickActivationPulse,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+};
+
+__declspec(align(8)) ImageObject_004BA5D8 g_ImageObject_004BA5D8 = {
     0, /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_004BA9D8 g_ImageObject_004BA9D8 = {
     0, /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16 */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -3839,8 +5090,11 @@ ImageData_004BA58C g_ImageData_004BA58C = {
     {0x90, 0x90, 0x90},
 };
 
-ImageData_004BB988 g_ImageData_004BB988 = {
+__declspec(align(8)) ImageObject_004BB988 g_ImageObject_004BB988 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BB988 gap */
+};
+
+__declspec(align(16)) ImageObject_004BB990 g_ImageObject_004BB990 = {
     /* 004BB990 g_UiTimedListControlVtable */
     {
         .relocate = (void *)UiTimedListControl_RelocateChildren,
@@ -3865,8 +5119,11 @@ ImageData_004BB988 g_ImageData_004BB988 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BC404 g_ImageData_004BC404 = {
+__declspec(align(4)) ImageObject_004BC404 g_ImageObject_004BC404 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC404 gap */
+};
+
+__declspec(align(16)) ImageObject_004BC410 g_ImageObject_004BC410 = {
     /* 004BC410 g_UiListOffsetControlVtable */
     {
         .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
@@ -3891,8 +5148,11 @@ ImageData_004BC404 g_ImageData_004BC404 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BC564 g_ImageData_004BC564 = {
+__declspec(align(4)) ImageObject_004BC564 g_ImageObject_004BC564 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC564 gap */
+};
+
+__declspec(align(16)) ImageObject_004BC570 g_ImageObject_004BC570 = {
     /* 004BC570 g_UiNodeVtable_004BC570 */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3917,8 +5177,11 @@ ImageData_004BC564 g_ImageData_004BC564 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BCC20 g_ImageData_004BCC20 = {
+__declspec(align(16)) ImageObject_004BCC20 g_ImageObject_004BCC20 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BCC20 gap */
+};
+
+__declspec(align(16)) ImageObject_004BCC30 g_ImageObject_004BCC30 = {
     /* 004BCC30 g_UiNineSlicePanelControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -3943,24 +5206,57 @@ ImageData_004BCC20 g_ImageData_004BCC20 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BCF14 g_ImageData_004BCF14 = {
+__declspec(align(4)) ImageObject_004BCF14 g_ImageObject_004BCF14 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BCF14 gap */
+};
+
+__declspec(align(16)) ImageObject_004BCF20 g_ImageObject_004BCF20 = {
     {0}, /* 004BCF20 g_GraphicsDirectionInverseTransform */
+};
+
+__declspec(align(16)) ImageObject_004BCF50 g_ImageObject_004BCF50 = {
     {0}, /* 004BCF50 g_GraphicsDirectionWorld */
+};
+
+__declspec(align(4)) ImageObject_004BCF5C g_ImageObject_004BCF5C = {
     {0}, /* 004BCF5C g_GraphicsDirectionLocal */
+};
+
+__declspec(align(8)) ImageObject_004BCF68 g_ImageObject_004BCF68 = {
     0, /* 004BCF68 g_GraphicsIntensityClampTableBase */
     {
         0x90909090},
 };
 
-ImageData_004BD2C4 g_ImageData_004BD2C4 = {
+__declspec(align(4)) ImageObject_004BD2C4 g_ImageObject_004BD2C4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD2C4 gap */
+};
+
+__declspec(align(16)) ImageObject_004BD2E0 g_ImageObject_004BD2E0 = {
     0, /* 004BD2E0 g_ModelBoundsMinimumX */
+};
+
+__declspec(align(4)) ImageObject_004BD2E4 g_ImageObject_004BD2E4 = {
     0, /* 004BD2E4 g_ModelBoundsMaximumX */
+};
+
+__declspec(align(8)) ImageObject_004BD2E8 g_ImageObject_004BD2E8 = {
     0, /* 004BD2E8 g_ModelBoundsMinimumY */
+};
+
+__declspec(align(4)) ImageObject_004BD2EC g_ImageObject_004BD2EC = {
     0, /* 004BD2EC g_ModelBoundsMaximumY */
+};
+
+__declspec(align(16)) ImageObject_004BD2F0 g_ImageObject_004BD2F0 = {
     0, /* 004BD2F0 g_ModelBoundsMinimumZ */
+};
+
+__declspec(align(4)) ImageObject_004BD2F4 g_ImageObject_004BD2F4 = {
     0, /* 004BD2F4 g_ModelBoundsMaximumZ */
+};
+
+__declspec(align(8)) ImageObject_004BD2F8 g_ImageObject_004BD2F8 = {
     0, /* 004BD2F8 g_ModelBoundsTransformedPointX */
     0, /* 004BD2FC g_ModelBoundsTransformedPointY */
     0, /* 004BD300 g_ModelBoundsTransformedPointZ */
@@ -3968,25 +5264,40 @@ ImageData_004BD2C4 g_ImageData_004BD2C4 = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_004BD440 g_ImageData_004BD440 = {
+__declspec(align(16)) ImageObject_004BD440 g_ImageObject_004BD440 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD440 gap */
+};
+
+__declspec(align(16)) ImageObject_004BD450 g_ImageObject_004BD450 = {
     0, /* 004BD450 g_ModelViewCompositeTransform */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_004BD480 g_ImageObject_004BD480 = {
     0, /* 004BD480 g_ModelViewDirectionLocal */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_004BD48C g_ImageObject_004BD48C = {
     0, /* 004BD48C g_ModelViewDirectionWorld */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_004BD498 g_ImageObject_004BD498 = {
     0, /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
     {
         0x00000000, 0x00000000, 0x90000000, 0x90909090, 0x90909090},
     {0x90, 0x90, 0x90},
 };
 
-ImageData_004BD880 g_ImageData_004BD880 = {
+__declspec(align(16)) ImageObject_004BD880 g_ImageObject_004BD880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD880 gap */
+};
+
+__declspec(align(16)) ImageObject_004BD890 g_ImageObject_004BD890 = {
     /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
     {
         .callbacks = {
@@ -3998,23 +5309,44 @@ ImageData_004BD880 g_ImageData_004BD880 = {
         }},
     {
         0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_004BD8B0 g_ImageObject_004BD8B0 = {
     0, /* 004BD8B0 g_ModelCullViewRelativeX */
     0, /* 004BD8B4 g_ModelCullViewRelativeY */
     0, /* 004BD8B8 g_ModelCullViewRelativeZ */
     {0},
+};
+
+__declspec(align(8)) ImageObject_004BD8C8 g_ImageObject_004BD8C8 = {
     0, /* 004BD8C8 g_SpriteAssetRegistryHead */
     {
         0x90909090},
 };
 
-ImageData_004BEA6C g_ImageData_004BEA6C = {
+__declspec(align(4)) ImageObject_004BEA6C g_ImageObject_004BEA6C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BEA6C gap */
+};
+
+__declspec(align(16)) ImageObject_004BEA70 g_ImageObject_004BEA70 = {
     {0}, /* 004BEA70 g_ModelTransformScratchMatrix */
+};
+
+__declspec(align(16)) ImageObject_004BEAA0 g_ImageObject_004BEAA0 = {
     {0}, /* 004BEAA0 g_FixedTransformInputRotationScratch */
+};
+
+__declspec(align(16)) ImageObject_004BEAD0 g_ImageObject_004BEAD0 = {
     {0}, /* 004BEAD0 g_FixedTransformComposedRotationScratch */
+};
+
+__declspec(align(16)) ImageObject_004BEB00 g_ImageObject_004BEB00 = {
     0, /* 004BEB00 g_ModelTransformInputX */
     0, /* 004BEB04 g_ModelTransformInputY */
     0, /* 004BEB08 g_ModelTransformInputZ */
+};
+
+__declspec(align(4)) ImageObject_004BEB0C g_ImageObject_004BEB0C = {
     0, /* 004BEB0C g_ModelTransformOutputX */
     0, /* 004BEB10 g_ModelTransformOutputY */
     0, /* 004BEB14 g_ModelTransformOutputZ */
@@ -4022,16 +5354,37 @@ ImageData_004BEA6C g_ImageData_004BEA6C = {
         0x90909090, 0x90909090},
 };
 
-ImageData_004BED4C g_ImageData_004BED4C = {
+__declspec(align(4)) ImageObject_004BED4C g_ImageObject_004BED4C = {
     {0x90, 0x90, 0x90}, /* 004BED4C gap */
+};
+
+__declspec(align(4)) ImageObject_004BED4F g_ImageObject_004BED4F = {
     {0x90}, /* 004BED4F DAT_004bed4f */
+};
+
+__declspec(align(16)) ImageObject_004BED50 g_ImageObject_004BED50 = {
     {0}, /* 004BED50 g_GraphicsShadingRuntimeRecords */
+};
+
+__declspec(align(16)) ImageObject_004C2D50 g_ImageObject_004C2D50 = {
     {0}, /* 004C2D50 g_GraphicsShadingCompactRecords */
+};
+
+__declspec(align(16)) ImageObject_004C6D50 g_ImageObject_004C6D50 = {
     0, /* 004C6D50 g_GraphicsShadingCompactRecordCount */
+};
+
+__declspec(align(4)) ImageObject_004C6D54 g_ImageObject_004C6D54 = {
     {0}, /* 004C6D54 g_GraphicsShadingNearbyRecords */
+};
+
+__declspec(align(4)) ImageObject_004CAD54 g_ImageObject_004CAD54 = {
     0, /* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelDistanceAttenuationMmxNegativeRows. */
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_004CAD60 g_ImageObject_004CAD60 = {
     /* 004CAD60 g_ModelDistanceAttenuationMmxNegativeRows: SoftwareBgraWordLanes[136]: rows -136..-1 of g_ModelDistanceAttenuationMmx, which ModelRender_ComputeVertexIntensityDefaultPath indexes with the signed light-facing dot >> 21; B/G/R lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF, alpha lane 0x4000; PMULHW multipliers. */
     {
         /*   0 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
@@ -4170,6 +5523,9 @@ ImageData_004BED4C g_ImageData_004BED4C = {
         /* 133 */ {.blue = 383, .green = 383, .red = 383, .alpha = 16384},
         /* 134 */ {.blue = 255, .green = 255, .red = 255, .alpha = 16384},
         /* 135 */ {.blue = 127, .green = 127, .red = 127, .alpha = 16384}},
+};
+
+__declspec(align(16)) ImageObject_004CB1A0 g_ImageObject_004CB1A0 = {
     /* 004CB1A0 g_ModelDistanceAttenuationMmx */
     {
         /*   0 */ {.alpha = 16384},
@@ -4718,6 +6074,9 @@ ImageData_004BED4C g_ImageData_004BED4C = {
         /* 543 */ {.blue = 8575, .green = 8575, .red = 8575, .alpha = 16384},
         /* 544 */ {.blue = 8447, .green = 8447, .red = 8447, .alpha = 16384},
         /* 545 */ {.blue = 8319, .green = 8319, .red = 8319, .alpha = 16384}},
+};
+
+__declspec(align(16)) ImageObject_004CC2B0 g_ImageObject_004CC2B0 = {
     /* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable: SoftwareBgraWordLanes[137]: PMULHW multipliers for ModelRender_ComputeVertexIntensityScaledPath, indexed by (dot / lightingScaleQ12) >> 9 (signed; negative rows fall into g_ModelDistanceAttenuationMmx before it); B/G/R lanes 0x1FFF at row 0 falling by 0x80 to 0x007F, then 0, alpha lane 0x4000. */
     {
         /*   0 */ {.blue = 8191, .green = 8191, .red = 8191, .alpha = 16384},
@@ -4857,56 +6216,143 @@ ImageData_004BED4C g_ImageData_004BED4C = {
         /* 134 */ {.alpha = 16384},
         /* 135 */ {.alpha = 16384},
         /* 136 */ {.alpha = 16384}},
+};
+
+__declspec(align(8)) ImageObject_004CC6F8 g_ImageObject_004CC6F8 = {
     {0}, /* 004CC6F8 g_ModelLightingVertexToLightVectorScratch */
+};
+
+__declspec(align(4)) ImageObject_004CC704 g_ImageObject_004CC704 = {
     {0}, /* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
 };
 
-ImageData_004CCDE8 g_ImageData_004CCDE8 = {
+__declspec(align(8)) ImageObject_004CCDE8 g_ImageObject_004CCDE8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004CCDE8 gap */
+};
+
+__declspec(align(16)) ImageObject_004CCE00 g_ImageObject_004CCE00 = {
     0, /* 004CCE00 g_GraphicsShadingTextureDimension */
+};
+
+__declspec(align(4)) ImageObject_004CCE04 g_ImageObject_004CCE04 = {
     0, /* 004CCE04 g_GraphicsShadingGridHalfSize */
+};
+
+__declspec(align(8)) ImageObject_004CCE08 g_ImageObject_004CCE08 = {
     0, /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
+};
+
+__declspec(align(4)) ImageObject_004CCE0C g_ImageObject_004CCE0C = {
     0, /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
     0, /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
+};
+
+__declspec(align(4)) ImageObject_004CCE14 g_ImageObject_004CCE14 = {
     0, /* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
+};
+
+__declspec(align(8)) ImageObject_004CCE18 g_ImageObject_004CCE18 = {
     0, /* 004CCE18 g_GraphicsShadingSubresourceCount */
+};
+
+__declspec(align(4)) ImageObject_004CCE1C g_ImageObject_004CCE1C = {
     0, /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
     0, /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
+};
+
+__declspec(align(4)) ImageObject_004CCE24 g_ImageObject_004CCE24 = {
     0, /* 004CCE24 g_GraphicsShadingGridStepQ20 */
+};
+
+__declspec(align(8)) ImageObject_004CCE28 g_ImageObject_004CCE28 = {
     0, /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
+};
+
+__declspec(align(4)) ImageObject_004CCE2C g_ImageObject_004CCE2C = {
     0, /* 004CCE2C g_GraphicsShadingGeneratedAsset */
+};
+
+__declspec(align(16)) ImageObject_004CCE30 g_ImageObject_004CCE30 = {
     0, /* 004CCE30 g_GraphicsShadingGridScratch */
+};
+
+__declspec(align(4)) ImageObject_004CCE34 g_ImageObject_004CCE34 = {
     0, /* 004CCE34 g_GraphicsShadingGridScratchInterior */
+};
+
+__declspec(align(8)) ImageObject_004CCE38 g_ImageObject_004CCE38 = {
     0, /* 004CCE38 g_GraphicsShadingTextureSet */
+};
+
+__declspec(align(4)) ImageObject_004CCE3C g_ImageObject_004CCE3C = {
     0, /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
+};
+
+__declspec(align(16)) ImageObject_004CCE40 g_ImageObject_004CCE40 = {
     0, /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
+};
+
+__declspec(align(4)) ImageObject_004CCE44 g_ImageObject_004CCE44 = {
     0, /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
+};
+
+__declspec(align(8)) ImageObject_004CCE48 g_ImageObject_004CCE48 = {
     {.reserved14 = 0x90909090, .reserved1A4 = 0x90909090}, /* 004CCE48 g_GeneratedTextureScratchRuntime */
 };
 
-ImageData_004CD3C0 g_ImageData_004CD3C0 = {
+__declspec(align(16)) ImageObject_004CD3C0 g_ImageObject_004CD3C0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004CD3C0 gap */
 };
 
-ImageData_004D09F4 g_ImageData_004D09F4 = {
+__declspec(align(4)) ImageObject_004D09F4 g_ImageObject_004D09F4 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004D09F4 gap */
+};
+
+__declspec(align(16)) ImageObject_004D0A00 g_ImageObject_004D0A00 = {
     0, /* 004D0A00 g_PrimitiveQueueStorage */
+};
+
+__declspec(align(4)) ImageObject_004D0A04 g_ImageObject_004D0A04 = {
     0, /* 004D0A04 g_PrimitiveQueuePoolCapacity */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_004D11B8 g_ImageData_004D11B8 = {
+__declspec(align(8)) ImageObject_004D11B8 g_ImageObject_004D11B8 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004D11B8 gap */
+};
+
+__declspec(align(16)) ImageObject_004D11C0 g_ImageObject_004D11C0 = {
     {0}, /* 004D11C0 g_SoftwareRasterScanState */
+};
+
+__declspec(align(4)) ImageObject_004D1234 g_ImageObject_004D1234 = {
     0, /* 004D1234 g_SoftwareDepthRowStrideBytes */
+};
+
+__declspec(align(8)) ImageObject_004D1238 g_ImageObject_004D1238 = {
     0, /* 004D1238 g_SoftwareDepthBuffer */
+};
+
+__declspec(align(4)) ImageObject_004D123C g_ImageObject_004D123C = {
     0, /* 004D123C g_SoftwareAuxiliaryTargetBase */
+};
+
+__declspec(align(16)) ImageObject_004D1240 g_ImageObject_004D1240 = {
     0, /* 004D1240 g_SoftwareDepthEpoch */
+};
+
+__declspec(align(4)) ImageObject_004D1244 g_ImageObject_004D1244 = {
     0, /* 004D1244 g_SoftwareChainedSetDisplayMode */
+};
+
+__declspec(align(8)) ImageObject_004D1248 g_ImageObject_004D1248 = {
     0, /* 004D1248 g_SoftwareDrawQueue */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_004D1260 g_ImageObject_004D1260 = {
     /* 004D1260 g_SoftwareRasterHandlers16Bit */
     {
         /*  0 */ (void *)SoftwareRaster16_Mode00,
@@ -4972,6 +6418,9 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
         /* 60 */ (void *)SoftwareRaster16_Mode25,
         /* 61 */ 0,
         /* 62 */ (void *)SoftwareRaster16_Mode25},
+};
+
+__declspec(align(16)) ImageObject_004D1360 g_ImageObject_004D1360 = {
     /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
     {
         /*  0 */ (void *)SoftwareRasterNon16_Mode00,
@@ -5037,6 +6486,9 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
         /* 60 */ (void *)SoftwareRasterNon16_Mode25,
         /* 61 */ 0,
         /* 62 */ (void *)SoftwareRasterNon16_Mode25},
+};
+
+__declspec(align(16)) ImageObject_004D1460 g_ImageObject_004D1460 = {
     /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
     {
         /*  0 */ (void *)SoftwareRasterAux_Mode00,
@@ -5104,8 +6556,11 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
         /* 62 */ (void *)SoftwareRasterAux_Mode25},
 };
 
-ImageData_004FEA24 g_ImageData_004FEA24 = {
+__declspec(align(4)) ImageObject_004FEA24 g_ImageObject_004FEA24 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004FEA24 gap */
+};
+
+__declspec(align(16)) ImageObject_004FEA30 g_ImageObject_004FEA30 = {
     /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
     {
         .callbacks = {
@@ -5119,8 +6574,11 @@ ImageData_004FEA24 g_ImageData_004FEA24 = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_004FFC78 g_ImageData_004FFC78 = {
+__declspec(align(8)) ImageObject_004FFC78 g_ImageObject_004FFC78 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004FFC78 gap */
+};
+
+__declspec(align(16)) ImageObject_004FFC80 g_ImageObject_004FFC80 = {
     /* 004FFC80 g_TerrainProjectedRowSpans */
     {
         /*   0 */ {0},
@@ -5385,26 +6843,71 @@ ImageData_004FFC78 g_ImageData_004FFC78 = {
         /* 259 */ {.firstColumn = -1869574000, .endColumnExclusive = -1869574000}},
 };
 
-ImageData_00501184 g_ImageData_00501184 = {
+__declspec(align(4)) ImageObject_00501184 g_ImageObject_00501184 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00501184 gap */
+};
+
+__declspec(align(16)) ImageObject_00501190 g_ImageObject_00501190 = {
     {0}, /* 00501190 g_TerrainLightingColorRampArgb256 */
+};
+
+__declspec(align(16)) ImageObject_00501590 g_ImageObject_00501590 = {
     {0}, /* 00501590 g_TerrainDirectionalLightColorLut */
+};
+
+__declspec(align(4)) ImageObject_00501994 g_ImageObject_00501994 = {
     0, /* 00501994 g_TerrainDirectionalLightSecondaryColor */
+};
+
+__declspec(align(8)) ImageObject_00501998 g_ImageObject_00501998 = {
     0, /* 00501998 g_TerrainLightDirectionX */
     0, /* 0050199C g_TerrainLightDirectionY */
     0, /* 005019A0 g_TerrainLightDirectionZ */
+};
+
+__declspec(align(4)) ImageObject_005019A4 g_ImageObject_005019A4 = {
     0, /* 005019A4 g_TerrainByteClampLookup */
+};
+
+__declspec(align(8)) ImageObject_005019A8 g_ImageObject_005019A8 = {
     {0}, /* 005019A8 g_TerrainDirectionRecordTable256 */
     {0},
+};
+
+__declspec(align(4)) ImageObject_005039DC g_ImageObject_005039DC = {
     {0}, /* 005039DC g_TerrainMaterialTextureSets */
     {0},
+};
+
+__declspec(align(4)) ImageObject_00503A74 g_ImageObject_00503A74 = {
     0, /* 00503A74 g_TerrainPrimaryTextureSet */
+};
+
+__declspec(align(8)) ImageObject_00503A78 g_ImageObject_00503A78 = {
     0, /* 00503A78 g_TerrainSoilPacketTablePayload */
+};
+
+__declspec(align(4)) ImageObject_00503A7C g_ImageObject_00503A7C = {
     0, /* 00503A7C g_TerrainSurfacePacketTablePayload */
+};
+
+__declspec(align(16)) ImageObject_00503A80 g_ImageObject_00503A80 = {
     0, /* 00503A80 g_TerrainSecondaryPalette */
+};
+
+__declspec(align(4)) ImageObject_00503A84 g_ImageObject_00503A84 = {
     0, /* 00503A84 g_TerrainPrimaryPalette */
+};
+
+__declspec(align(8)) ImageObject_00503A88 g_ImageObject_00503A88 = {
     0x10000, /* 00503A88 g_UiCommandModeGColorVariantFlags: uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+};
+
+__declspec(align(4)) ImageObject_00503A8C g_ImageObject_00503A8C = {
     16777215, /* 00503A8C g_UiCommandModeGColorVariantLimit: uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
+};
+
+__declspec(align(16)) ImageObject_00503A90 g_ImageObject_00503A90 = {
     /* 00503A90 g_TerrainMaterialTextureSuffixLettersUtf16AtoZ */
     {
         /*  0 */ {.lowercaseLetterUtf16 = 97},
@@ -5433,16 +6936,31 @@ ImageData_00501184 g_ImageData_00501184 = {
         /* 23 */ {.lowercaseLetterUtf16 = 120},
         /* 24 */ {.lowercaseLetterUtf16 = 121},
         /* 25 */ {.lowercaseLetterUtf16 = 122}},
+};
+
+__declspec(align(8)) ImageObject_00503AF8 g_ImageObject_00503AF8 = {
     1024, /* 00503AF8 g_TerrainHeightBandMaximumDelta */
+};
+
+__declspec(align(4)) ImageObject_00503AFC g_ImageObject_00503AFC = {
     -1024, /* 00503AFC g_TerrainHeightBandMinimumDelta */
+};
+
+__declspec(align(16)) ImageObject_00503B00 g_ImageObject_00503B00 = {
     12288, /* 00503B00 g_TerrainAuxHeightMinimum: int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
+};
+
+__declspec(align(4)) ImageObject_00503B04 g_ImageObject_00503B04 = {
     8192, /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_00505F98 g_ImageData_00505F98 = {
+__declspec(align(8)) ImageObject_00505F98 g_ImageObject_00505F98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00505F98 gap */
+};
+
+__declspec(align(16)) ImageObject_00505FA0 g_ImageObject_00505FA0 = {
     /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
     {
         /*   0 */ 4096, 3277, 2731, 2341, 2048, 1820, 1638, 1489, 1365, 1260, 1170, 1092, 1024, 964, 910, 862,
@@ -5461,36 +6979,78 @@ ImageData_00505F98 g_ImageData_00505F98 = {
         /* 208 */ 77, 77, 77, 76, 76, 76, 75, 75, 74, 74, 74, 73, 73, 73, 72, 72,
         /* 224 */ 72, 72, 71, 71, 71, 70, 70, 70, 69, 69, 69, 69, 68, 68, 68, 67,
         /* 240 */ 67, 67, 67, 66, 66, 66, 66, 65, 65, 65, 65, 64, 64, 64, 64, 63},
+};
+
+__declspec(align(16)) ImageObject_005063A0 g_ImageObject_005063A0 = {
     0, /* 005063A0 g_TerrainScanRowStrideBytes */
+};
+
+__declspec(align(4)) ImageObject_005063A4 g_ImageObject_005063A4 = {
     0, /* 005063A4 g_TerrainScanStepLimit */
+};
+
+__declspec(align(8)) ImageObject_005063A8 g_ImageObject_005063A8 = {
     {0}, /* 005063A8 g_TerrainScanSharedSelectorValue */
+};
+
+__declspec(align(4)) ImageObject_005063AC g_ImageObject_005063AC = {
     0, /* 005063AC g_TerrainScanReferenceHeight */
 };
 
-ImageData_0050A340 g_ImageData_0050A340 = {
+__declspec(align(16)) ImageObject_0050A340 g_ImageObject_0050A340 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050A340 gap */
+};
+
+__declspec(align(16)) ImageObject_0050A350 g_ImageObject_0050A350 = {
     {0}, /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
+};
+
+__declspec(align(16)) ImageObject_0050A380 g_ImageObject_0050A380 = {
     {0}, /* 0050A380 g_GraphicsTransformInputScratchVec3 */
     {0},
+};
+
+__declspec(align(16)) ImageObject_0050A3B0 g_ImageObject_0050A3B0 = {
     {0}, /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
     {0},
+};
+
+__declspec(align(16)) ImageObject_0050A3E0 g_ImageObject_0050A3E0 = {
     {0}, /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
     {0},
+};
+
+__declspec(align(16)) ImageObject_0050A3F0 g_ImageObject_0050A3F0 = {
     {0}, /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
 };
 
-ImageData_0050AE54 g_ImageData_0050AE54 = {
+__declspec(align(4)) ImageObject_0050AE54 g_ImageObject_0050AE54 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050AE54 gap */
+};
+
+__declspec(align(16)) ImageObject_0050AE60 g_ImageObject_0050AE60 = {
     0, /* 0050AE60 g_ModelRaycastMaximumDistance */
+};
+
+__declspec(align(4)) ImageObject_0050AE64 g_ImageObject_0050AE64 = {
     0, /* 0050AE64 g_ModelRaycastOriginX */
     0, /* 0050AE68 g_ModelRaycastOriginY */
     0, /* 0050AE6C g_ModelRaycastOriginZ */
+};
+
+__declspec(align(16)) ImageObject_0050AE70 g_ImageObject_0050AE70 = {
     0, /* 0050AE70 g_ModelRaycastLocalOriginX */
     0, /* 0050AE74 g_ModelRaycastLocalOriginY */
     0, /* 0050AE78 g_ModelRaycastLocalOriginZ */
+};
+
+__declspec(align(4)) ImageObject_0050AE7C g_ImageObject_0050AE7C = {
     0, /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
     0, /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
     0, /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
+};
+
+__declspec(align(8)) ImageObject_0050AE88 g_ImageObject_0050AE88 = {
     0, /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
     0, /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
     0, /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
@@ -5498,44 +7058,101 @@ ImageData_0050AE54 g_ImageData_0050AE54 = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0050B510 g_ImageData_0050B510 = {
+__declspec(align(16)) ImageObject_0050B510 g_ImageObject_0050B510 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050B510 gap */
+};
+
+__declspec(align(16)) ImageObject_0050B520 g_ImageObject_0050B520 = {
     0, /* 0050B520 g_SpatialSoundListenerTransform */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_0050B550 g_ImageObject_0050B550 = {
     {0}, /* 0050B550 g_SpatialSoundListenerRotation */
+};
+
+__declspec(align(16)) ImageObject_0050B580 g_ImageObject_0050B580 = {
     {0}, /* 0050B580 g_SpatialSoundListenerWorldToLocal */
+};
+
+__declspec(align(16)) ImageObject_0050B5B0 g_ImageObject_0050B5B0 = {
     0, /* 0050B5B0 g_SpatialSoundRelativeX */
     0, /* 0050B5B4 g_SpatialSoundRelativeY */
     0, /* 0050B5B8 g_SpatialSoundRelativeZ */
+};
+
+__declspec(align(4)) ImageObject_0050B5BC g_ImageObject_0050B5BC = {
     32768, /* 0050B5BC g_SoundEffectsGainQ15 */
+};
+
+__declspec(align(16)) ImageObject_0050B5C0 g_ImageObject_0050B5C0 = {
     0, /* 0050B5C0 g_ReverseStereoMask */
+};
+
+__declspec(align(4)) ImageObject_0050B5C4 g_ImageObject_0050B5C4 = {
     0, /* 0050B5C4 g_SpatialSoundSlots */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_0050BADC g_ImageData_0050BADC = {
+__declspec(align(4)) ImageObject_0050BADC g_ImageObject_0050BADC = {
     {0}, /* 0050BADC gap */
+};
+
+__declspec(align(4)) ImageObject_0050BADE g_ImageObject_0050BADE = {
     512, /* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050BAE2 g_ImageObject_0050BAE2 = {
     16 /* 0.003906 */, /* 0050BAE2 g_WorldMotionPositionMagnitudeInputScaleQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050BAE6 g_ImageObject_0050BAE6 = {
     32, /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0050BAEA g_ImageObject_0050BAEA = {
     64 /* 0.015625 */, /* 0050BAEA g_WorldMotionDistanceInputScaleQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050BAEE g_ImageObject_0050BAEE = {
     16, /* 0050BAEE g_WorldMotionHeadingInputScale */
+};
+
+__declspec(align(4)) ImageObject_0050BAF2 g_ImageObject_0050BAF2 = {
     16, /* 0050BAF2 g_WorldMotionPitchInputScale */
+};
+
+__declspec(align(4)) ImageObject_0050BAF6 g_ImageObject_0050BAF6 = {
     -64, /* 0050BAF6 g_WorldMotionPointerWheelInputScale */
+};
+
+__declspec(align(4)) ImageObject_0050BAFA g_ImageObject_0050BAFA = {
     0xFFFFC400, /* 0050BAFA g_WorldMotionAlternateMinimumPitchAngle */
+};
+
+__declspec(align(4)) ImageObject_0050BAFE g_ImageObject_0050BAFE = {
     0xFFFFF600, /* 0050BAFE g_WorldMotionAlternateMaximumPitchAngle */
+};
+
+__declspec(align(4)) ImageObject_0050BB02 g_ImageObject_0050BB02 = {
     32768, /* 0050BB02 g_WorldMotionAlternateMinimumDistanceQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050BB06 g_ImageObject_0050BB06 = {
     131072, /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
     {
         0x90909090},
     {0x90, 0x90},
 };
 
-ImageData_0050BB34 g_ImageData_0050BB34 = {
+__declspec(align(4)) ImageObject_0050BB34 g_ImageObject_0050BB34 = {
     {0}, /* 0050BB34 gap */
+};
+
+__declspec(align(4)) ImageObject_0050BB37 g_ImageObject_0050BB37 = {
     /* 0050BB37 g_FrontendModelPointerContextVtable */
     {
         .relocate = (void *)FrontendModelPointerContext_Relocate,
@@ -5559,181 +7176,457 @@ ImageData_0050BB34 g_ImageData_0050BB34 = {
     {0x90},
 };
 
-ImageData_0050D928 g_ImageData_0050D928 = {
+__declspec(align(8)) ImageObject_0050D928 g_ImageObject_0050D928 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050D928 gap */
+};
+
+__declspec(align(16)) ImageObject_0050D930 g_ImageObject_0050D930 = {
     0, /* 0050D930 g_TechnologyAsset */
+};
+
+__declspec(align(4)) ImageObject_0050D934 g_ImageObject_0050D934 = {
     0, /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
     0, /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
     0, /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
+};
+
+__declspec(align(16)) ImageObject_0050D940 g_ImageObject_0050D940 = {
     0, /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D944 g_ImageObject_0050D944 = {
     0, /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(8)) ImageObject_0050D948 g_ImageObject_0050D948 = {
     0, /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
     0, /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
     0, /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D954 g_ImageObject_0050D954 = {
     0, /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
+};
+
+__declspec(align(8)) ImageObject_0050D958 g_ImageObject_0050D958 = {
     0, /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(4)) ImageObject_0050D95C g_ImageObject_0050D95C = {
     0, /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
     0, /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
     0, /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
+};
+
+__declspec(align(8)) ImageObject_0050D968 g_ImageObject_0050D968 = {
     0, /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D96C g_ImageObject_0050D96C = {
     0, /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(16)) ImageObject_0050D970 g_ImageObject_0050D970 = {
     0, /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
     0, /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
     0, /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D97C g_ImageObject_0050D97C = {
     0, /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
+};
+
+__declspec(align(16)) ImageObject_0050D980 g_ImageObject_0050D980 = {
     0, /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(4)) ImageObject_0050D984 g_ImageObject_0050D984 = {
     0, /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
     0, /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
     0, /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
+};
+
+__declspec(align(16)) ImageObject_0050D990 g_ImageObject_0050D990 = {
     0, /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D994 g_ImageObject_0050D994 = {
     0, /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(8)) ImageObject_0050D998 g_ImageObject_0050D998 = {
     0, /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
     0, /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
     0, /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D9A4 g_ImageObject_0050D9A4 = {
     0, /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
+};
+
+__declspec(align(8)) ImageObject_0050D9A8 g_ImageObject_0050D9A8 = {
     0, /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(4)) ImageObject_0050D9AC g_ImageObject_0050D9AC = {
     0, /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
     0, /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
     0, /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
+};
+
+__declspec(align(8)) ImageObject_0050D9B8 g_ImageObject_0050D9B8 = {
     0, /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
+};
+
+__declspec(align(4)) ImageObject_0050D9BC g_ImageObject_0050D9BC = {
     0, /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
+};
+
+__declspec(align(16)) ImageObject_0050D9C0 g_ImageObject_0050D9C0 = {
     0, /* 0050D9C0 g_ScenarioCatalog */
+};
+
+__declspec(align(4)) ImageObject_0050D9C4 g_ImageObject_0050D9C4 = {
     0, /* 0050D9C4 g_ScenarioCatalogUsedBytes */
+};
+
+__declspec(align(8)) ImageObject_0050D9C8 g_ImageObject_0050D9C8 = {
     L"save\\*.sve", /* 0050D9C8 u_save___sve_0050d9c8 */
+};
+
+__declspec(align(4)) ImageObject_0050D9DE g_ImageObject_0050D9DE = {
     L"level\\*.lev", /* 0050D9DE g_UnreferencedLevelPatternUtf16: UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
+};
+
+__declspec(align(4)) ImageObject_0050D9F6 g_ImageObject_0050D9F6 = {
     L"level\\*.cgn", /* 0050D9F6 g_UnreferencedCampaignPatternUtf16: UTF-16 L"level\\*.cgn"; no code reference found */
+};
+
+__declspec(align(4)) ImageObject_0050DA0E g_ImageObject_0050DA0E = {
     L"level\\level.dat", /* 0050DA0E u_level_level_dat_0050da0e */
+};
+
+__declspec(align(4)) ImageObject_0050DA2E g_ImageObject_0050DA2E = {
     /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
     {
         .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x6C, 0x65, 0x76, 0x65, 0x6C},
         .decimalDigits = {.codeUnits = {0x30, 0x30}},
         .suffixCodeUnits = L".dat"},
+};
+
+__declspec(align(4)) ImageObject_0050DA52 g_ImageObject_0050DA52 = {
     L"level\\campagne.dat", /* 0050DA52 u_level_campagne_dat_0050da52 */
+};
+
+__declspec(align(8)) ImageObject_0050DA78 g_ImageObject_0050DA78 = {
     /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
     {
         .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x63, 0x61, 0x6D, 0x70, 0x61, 0x67, 0x6E, 0x65},
         .decimalDigits = {.codeUnits = {0x30, 0x30}},
         .suffixCodeUnits = L".dat"},
+};
+
+__declspec(align(4)) ImageObject_0050DAA2 g_ImageObject_0050DAA2 = {
     L"save", /* 0050DAA2 u_save_0050daa2 */
+};
+
+__declspec(align(4)) ImageObject_0050DAAC g_ImageObject_0050DAAC = {
     L"level", /* 0050DAAC u_level_0050daac */
+};
+
+__declspec(align(8)) ImageObject_0050DAB8 g_ImageObject_0050DAB8 = {
     L"level", /* 0050DAB8 u_level_0050dab8 */
+};
+
+__declspec(align(4)) ImageObject_0050DAC4 g_ImageObject_0050DAC4 = {
     0, /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_0050DCC4 g_ImageObject_0050DCC4 = {
     {0}, /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0050DEC4 g_ImageObject_0050DEC4 = {
     L"texte\\techno.str", /* 0050DEC4 u_texte_techno_str_0050dec4 */
+};
+
+__declspec(align(4)) ImageObject_0050DEE6 g_ImageObject_0050DEE6 = {
     L"engine\\tech.tec", /* 0050DEE6 str_0050DEE6 */
+};
+
+__declspec(align(4)) ImageObject_0050DF06 g_ImageObject_0050DF06 = {
     L"flm\\ende0000.flm", /* 0050DF06 u_flm_ende0000_flm_0050df06 */
+};
+
+__declspec(align(8)) ImageObject_0050DF28 g_ImageObject_0050DF28 = {
     L"flm\\ende0001.flm", /* 0050DF28 u_flm_ende0001_flm_0050df28 */
+};
+
+__declspec(align(4)) ImageObject_0050DF4A g_ImageObject_0050DF4A = {
     L"flm\\ende0000.flm", /* 0050DF4A u_flm_ende0000_flm_0050df4a */
+};
+
+__declspec(align(4)) ImageObject_0050DF6C g_ImageObject_0050DF6C = {
     L"sound\\level00.sam", /* 0050DF6C u_sound_level00_sam_0050df6c */
+};
+
+__declspec(align(16)) ImageObject_0050DF90 g_ImageObject_0050DF90 = {
     L"sound\\music00.sam", /* 0050DF90 u_sound_music00_sam_0050df90 */
+};
+
+__declspec(align(4)) ImageObject_0050DFB4 g_ImageObject_0050DFB4 = {
     L"army.hex", /* 0050DFB4 u_army_hex_0050dfb4 */
+};
+
+__declspec(align(4)) ImageObject_0050DFC6 g_ImageObject_0050DFC6 = {
     L"effect.hex", /* 0050DFC6 u_effect_hex_0050dfc6 */
+};
+
+__declspec(align(4)) ImageObject_0050DFDC g_ImageObject_0050DFDC = {
     L"shot.hex", /* 0050DFDC u_shot_hex_0050dfdc */
+};
+
+__declspec(align(4)) ImageObject_0050DFEE g_ImageObject_0050DFEE = {
     L"modul.hex", /* 0050DFEE u_modul_hex_0050dfee */
+};
+
+__declspec(align(4)) ImageObject_0050E002 g_ImageObject_0050E002 = {
     L"field.hex", /* 0050E002 u_field_hex_0050e002 */
+};
+
+__declspec(align(4)) ImageObject_0050E016 g_ImageObject_0050E016 = {
     L"light.hex", /* 0050E016 u_light_hex_0050e016 */
+};
+
+__declspec(align(4)) ImageObject_0050E02A g_ImageObject_0050E02A = {
     L"widget.hex", /* 0050E02A u_widget_hex_0050e02a */
+};
+
+__declspec(align(16)) ImageObject_0050E040 g_ImageObject_0050E040 = {
     L"level.hex", /* 0050E040 u_level_hex_0050e040 */
+};
+
+__declspec(align(4)) ImageObject_0050E054 g_ImageObject_0050E054 = {
     L"daten.hex", /* 0050E054 u_daten_hex_0050e054 */
+};
+
+__declspec(align(8)) ImageObject_0050E068 g_ImageObject_0050E068 = {
     L"campagne.hex", /* 0050E068 u_campagne_hex_0050e068 */
+};
+
+__declspec(align(4)) ImageObject_0050E082 g_ImageObject_0050E082 = {
     L"stat.hex", /* 0050E082 u_stat_hex_0050e082 */
+};
+
+__declspec(align(4)) ImageObject_0050E094 g_ImageObject_0050E094 = {
     L"oldunit.hex", /* 0050E094 u_oldunit_hex_0050e094 */
+};
+
+__declspec(align(4)) ImageObject_0050E0AC g_ImageObject_0050E0AC = {
     0, /* 0050E0AC g_InGameResourceRegistrationBusyCount */
     {0x90, 0x90, 0x90},
 };
 
-ImageData_0050E164 g_ImageData_0050E164 = {
+__declspec(align(4)) ImageObject_0050E164 g_ImageObject_0050E164 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050E164 gap */
+};
+
+__declspec(align(16)) ImageObject_0050E170 g_ImageObject_0050E170 = {
     /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
     {
         0x0050E610, 0x0050E3F0, 0x0050E450, 0x0050E530, 0x0050E390, 0x0050E260, 0x0050E290, 0x0050E2C0,
         0x0050E590, 0x0050E320, 0x0050E1B0, 0x0050E2F0, 0x0050E4C0, 0x0050E1E0, 0x90909090, 0x90909090},
 };
 
-ImageData_0050E21C g_ImageData_0050E21C = {
+__declspec(align(4)) ImageObject_0050E21C g_ImageObject_0050E21C = {
     {0x00, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050E21C gap */
 };
 
-ImageData_0050E95C g_ImageData_0050E95C = {
+__declspec(align(4)) ImageObject_0050E95C g_ImageObject_0050E95C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050E95C gap */
+};
+
+__declspec(align(16)) ImageObject_0050E960 g_ImageObject_0050E960 = {
     /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
     {
         0x0050E970, 0x0050E9A0, 0x0050E9C0, 0x90909090},
 };
 
-ImageData_0050EB5C g_ImageData_0050EB5C = {
+__declspec(align(4)) ImageObject_0050EB5C g_ImageObject_0050EB5C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050EB5C gap */
+};
+
+__declspec(align(16)) ImageObject_0050EB60 g_ImageObject_0050EB60 = {
     /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
     {
         0x0050EB70, 0x0050EBA0, 0x0050EBC0, 0x90909090},
 };
 
-ImageData_0050F044 g_ImageData_0050F044 = {
+__declspec(align(4)) ImageObject_0050F044 g_ImageObject_0050F044 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050F044 gap */
+};
+
+__declspec(align(16)) ImageObject_0050F050 g_ImageObject_0050F050 = {
     0, /* 0050F050 g_FrontendPlayerRuntimeCount */
+};
+
+__declspec(align(4)) ImageObject_0050F054 g_ImageObject_0050F054 = {
     {0}, /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0050F07C g_ImageObject_0050F07C = {
     L"1.5.45", /* 0050F07C g_GameVersionUtf16 */
     {
         0x90909090},
     {0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_0050F090 g_ImageObject_0050F090 = {
     {0}, /* 0050F090 g_FrontendSelectedNetworkEndpoint */
+};
+
+__declspec(align(16)) ImageObject_0050F0A0 g_ImageObject_0050F0A0 = {
     0, /* 0050F0A0 g_FrontendSessionToken */
+};
+
+__declspec(align(4)) ImageObject_0050F0A4 g_ImageObject_0050F0A4 = {
     0, /* 0050F0A4 g_SessionTransferTimeoutTicks */
+};
+
+__declspec(align(8)) ImageObject_0050F0A8 g_ImageObject_0050F0A8 = {
     0, /* 0050F0A8 g_FrontendTransferResponsePending */
+};
+
+__declspec(align(4)) ImageObject_0050F0AC g_ImageObject_0050F0AC = {
     0, /* 0050F0AC g_LocalPlayerRuntimeId */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_0050F0C0 g_ImageObject_0050F0C0 = {
     0, /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
+};
+
+__declspec(align(4)) ImageObject_0050F0C4 g_ImageObject_0050F0C4 = {
     0, /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
+};
+
+__declspec(align(8)) ImageObject_0050F0C8 g_ImageObject_0050F0C8 = {
     0, /* 0050F0C8 g_SessionNetworkRoleFlags */
+};
+
+__declspec(align(4)) ImageObject_0050F0CC g_ImageObject_0050F0CC = {
     1, /* 0050F0CC g_FrontendSelectedPlayerToken: uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
+};
+
+__declspec(align(16)) ImageObject_0050F0D0 g_ImageObject_0050F0D0 = {
     1, /* 0050F0D0 g_RecentTextSerialCounter */
+};
+
+__declspec(align(4)) ImageObject_0050F0D4 g_ImageObject_0050F0D4 = {
     2, /* 0050F0D4 g_SessionNetworkTickInterval: uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
+};
+
+__declspec(align(8)) ImageObject_0050F0D8 g_ImageObject_0050F0D8 = {
     0, /* 0050F0D8 g_SessionNetworkTickCounter */
+};
+
+__declspec(align(4)) ImageObject_0050F0DC g_ImageObject_0050F0DC = {
     0, /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
+};
+
+__declspec(align(16)) ImageObject_0050F0E0 g_ImageObject_0050F0E0 = {
     0, /* 0050F0E0 g_RecentTextSlotStorage */
+};
+
+__declspec(align(4)) ImageObject_0050F0E4 g_ImageObject_0050F0E4 = {
     {0}, /* 0050F0E4 g_RecentTextEntrySerials */
+};
+
+__declspec(align(4)) ImageObject_0050F104 g_ImageObject_0050F104 = {
     L"texte\\neterror.str", /* 0050F104 u_texte_neterror_str_0050f104 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_0050F328 g_ImageData_0050F328 = {
+__declspec(align(8)) ImageObject_0050F328 g_ImageObject_0050F328 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050F328 gap */
+};
+
+__declspec(align(16)) ImageObject_0050F340 g_ImageObject_0050F340 = {
     {.tail = {.factionLifecycleStates = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}}}, /* 0050F340 g_GameFactionRuntimeImage */
+};
+
+__declspec(align(16)) ImageObject_00512D60 g_ImageObject_00512D60 = {
     0, /* 00512D60 g_TerrainRegionCollectionStoredCount */
+};
+
+__declspec(align(4)) ImageObject_00512D64 g_ImageObject_00512D64 = {
     0, /* 00512D64 g_TerrainRegionCollectionVisitedCount */
+};
+
+__declspec(align(8)) ImageObject_00512D68 g_ImageObject_00512D68 = {
     0, /* 00512D68 g_TerrainRegionCollectionEntries */
+};
+
+__declspec(align(4)) ImageObject_00512D6C g_ImageObject_00512D6C = {
     0, /* 00512D6C g_GameStatTableImage */
+};
+
+__declspec(align(16)) ImageObject_00512D70 g_ImageObject_00512D70 = {
     {0}, /* 00512D70 g_GameDataAuxState */
 };
 
-ImageData_00513DA4 g_ImageData_00513DA4 = {
+__declspec(align(4)) ImageObject_00513DA4 g_ImageObject_00513DA4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00513DA4 gap */
+};
+
+__declspec(align(16)) ImageObject_00513DB0 g_ImageObject_00513DB0 = {
     /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
     {
         0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0,
         0x00513DF0, 0x00513DF0, 0x00513DF0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0},
 };
 
-ImageData_0051494C g_ImageData_0051494C = {
+__declspec(align(4)) ImageObject_0051494C g_ImageObject_0051494C = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051494C gap */
+};
+
+__declspec(align(16)) ImageObject_00514960 g_ImageObject_00514960 = {
     {0}, /* 00514960 g_SelectionPlayerRuntimeBlockPointers */
     {0},
+};
+
+__declspec(align(16)) ImageObject_00514D60 g_ImageObject_00514D60 = {
     0, /* 00514D60 g_SelectionPlayerBlocks */
+};
+
+__declspec(align(4)) ImageObject_00514D64 g_ImageObject_00514D64 = {
     {0}, /* 00514D64 g_InGameFactionScratchBufferSetA8 */
+};
+
+__declspec(align(4)) ImageObject_00514D84 g_ImageObject_00514D84 = {
     {0}, /* 00514D84 g_InGameFactionScratchBufferSetB8 */
+};
+
+__declspec(align(4)) ImageObject_00514DA4 g_ImageObject_00514DA4 = {
     0, /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00514E04 g_ImageObject_00514E04 = {
     {0}, /* 00514E04 g_UiSevenSlotCommandPayloadText */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_00514FB4 g_ImageData_00514FB4 = {
+__declspec(align(4)) ImageObject_00514FB4 g_ImageObject_00514FB4 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00514FB4 gap */
+};
+
+__declspec(align(16)) ImageObject_00514FC0 g_ImageObject_00514FC0 = {
     /* 00514FC0 g_UiImageActionControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -5758,8 +7651,11 @@ ImageData_00514FB4 g_ImageData_00514FB4 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_0051528C g_ImageData_0051528C = {
+__declspec(align(4)) ImageObject_0051528C g_ImageObject_0051528C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0051528C gap */
+};
+
+__declspec(align(16)) ImageObject_00515290 g_ImageObject_00515290 = {
     /* 00515290 g_UiConditionalActionControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -5784,8 +7680,11 @@ ImageData_0051528C g_ImageData_0051528C = {
         0x90909090, 0x90909090},
 };
 
-ImageData_0051560C g_ImageData_0051560C = {
+__declspec(align(4)) ImageObject_0051560C g_ImageObject_0051560C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0051560C gap */
+};
+
+__declspec(align(16)) ImageObject_00515610 g_ImageObject_00515610 = {
     /* 00515610 g_UiNumericPairTextButtonVtable */
     {
         .relocate = (void *)UiTextButtonControl_Relocate,
@@ -5806,9 +7705,15 @@ ImageData_0051560C g_ImageData_0051560C = {
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+};
+
+__declspec(align(8)) ImageObject_00515658 g_ImageObject_00515658 = {
     0, /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00515678 g_ImageObject_00515678 = {
     0, /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90000000,
@@ -5816,8 +7721,11 @@ ImageData_0051560C g_ImageData_0051560C = {
     {0x90, 0x90, 0x90},
 };
 
-ImageData_00515720 g_ImageData_00515720 = {
+__declspec(align(16)) ImageObject_00515720 g_ImageObject_00515720 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00515720 gap */
+};
+
+__declspec(align(16)) ImageObject_00515730 g_ImageObject_00515730 = {
     /* 00515730 g_UiPayloadPairTextButtonVtable */
     {
         .relocate = (void *)UiTextButtonControl_Relocate,
@@ -5842,8 +7750,11 @@ ImageData_00515720 g_ImageData_00515720 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_005157D0 g_ImageData_005157D0 = {
+__declspec(align(16)) ImageObject_005157D0 g_ImageObject_005157D0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005157D0 gap */
+};
+
+__declspec(align(16)) ImageObject_005157E0 g_ImageObject_005157E0 = {
     /* 005157E0 g_UiFormattedContainerVtable */
     {
         .relocate = (void *)UiFormattedContainer_RelocateWithPatchedTextPayloads,
@@ -5868,8 +7779,11 @@ ImageData_005157D0 g_ImageData_005157D0 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00515C60 g_ImageData_00515C60 = {
+__declspec(align(16)) ImageObject_00515C60 g_ImageObject_00515C60 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00515C60 gap */
+};
+
+__declspec(align(16)) ImageObject_00515C70 g_ImageObject_00515C70 = {
     /* 00515C70 g_UiSelectionGeometryControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -5894,8 +7808,11 @@ ImageData_00515C60 g_ImageData_00515C60 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_005162BC g_ImageData_005162BC = {
+__declspec(align(4)) ImageObject_005162BC g_ImageObject_005162BC = {
     {0x90, 0x90, 0x90, 0x90}, /* 005162BC gap */
+};
+
+__declspec(align(16)) ImageObject_005162C0 g_ImageObject_005162C0 = {
     /* 005162C0 g_UiNodeVtable_005162C0 */
     {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
@@ -5918,6 +7835,9 @@ ImageData_005162BC g_ImageData_005162BC = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00516310 g_ImageObject_00516310 = {
     /* 00516310 g_UiNodeVtable_00516310 */
     {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
@@ -5942,9 +7862,15 @@ ImageData_005162BC g_ImageData_005162BC = {
         0x90909090, 0x90909090},
 };
 
-ImageData_0051650C g_ImageData_0051650C = {
+__declspec(align(4)) ImageObject_0051650C g_ImageObject_0051650C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051650C gap */
+};
+
+__declspec(align(16)) ImageObject_00516510 g_ImageObject_00516510 = {
     {0}, /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
+};
+
+__declspec(align(16)) ImageObject_00516530 g_ImageObject_00516530 = {
     /* 00516530 g_UiNodeVtable_00516530 */
     {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
@@ -5969,8 +7895,11 @@ ImageData_0051650C g_ImageData_0051650C = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00516CBC g_ImageData_00516CBC = {
+__declspec(align(4)) ImageObject_00516CBC g_ImageObject_00516CBC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00516CBC gap */
+};
+
+__declspec(align(16)) ImageObject_00516CC0 g_ImageObject_00516CC0 = {
     /* 00516CC0 g_UiArmyMetricsPanelVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -5995,14 +7924,23 @@ ImageData_00516CBC g_ImageData_00516CBC = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00516E90 g_ImageData_00516E90 = {
+__declspec(align(16)) ImageObject_00516E90 g_ImageObject_00516E90 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00516E90 gap */
+};
+
+__declspec(align(16)) ImageObject_00516EA0 g_ImageObject_00516EA0 = {
     0, /* 00516EA0 g_FrontendResultsValueTextUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_00516EE0 g_ImageObject_00516EE0 = {
     0, /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_00516F60 g_ImageObject_00516F60 = {
     /* 00516F60 g_UiNodeVtable_00516F60 */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -6023,33 +7961,99 @@ ImageData_00516E90 g_ImageData_00516E90 = {
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+};
+
+__declspec(align(8)) ImageObject_00516FA8 g_ImageObject_00516FA8 = {
     0, /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FAC g_ImageObject_00516FAC = {
     0, /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
+};
+
+__declspec(align(16)) ImageObject_00516FB0 g_ImageObject_00516FB0 = {
     26, /* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
+};
+
+__declspec(align(4)) ImageObject_00516FB4 g_ImageObject_00516FB4 = {
     26, /* 00516FB4 g_FrontendResultsColumnAdvanceEconomyPixels */
+};
+
+__declspec(align(8)) ImageObject_00516FB8 g_ImageObject_00516FB8 = {
     26, /* 00516FB8 g_FrontendResultsColumnAdvanceMilitaryPixels */
+};
+
+__declspec(align(4)) ImageObject_00516FBC g_ImageObject_00516FBC = {
     26, /* 00516FBC g_FrontendResultsColumnAdvancePointsPixels */
+};
+
+__declspec(align(16)) ImageObject_00516FC0 g_ImageObject_00516FC0 = {
     78, /* 00516FC0 g_FrontendResultsColumnAdvancePlayerPixels */
+};
+
+__declspec(align(4)) ImageObject_00516FC4 g_ImageObject_00516FC4 = {
     26, /* 00516FC4 g_FrontendResultsColumnAdvanceFactionPixels */
+};
+
+__declspec(align(8)) ImageObject_00516FC8 g_ImageObject_00516FC8 = {
     26, /* 00516FC8 g_FrontendResultsColumnAdvanceFactionField98Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FCC g_ImageObject_00516FCC = {
     26, /* 00516FCC g_FrontendResultsColumnAdvanceFactionField9CPixels */
+};
+
+__declspec(align(16)) ImageObject_00516FD0 g_ImageObject_00516FD0 = {
     26, /* 00516FD0 g_FrontendResultsColumnAdvanceFactionFieldA0Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FD4 g_ImageObject_00516FD4 = {
     26, /* 00516FD4 g_FrontendResultsColumnAdvanceFactionFieldA4Pixels */
+};
+
+__declspec(align(8)) ImageObject_00516FD8 g_ImageObject_00516FD8 = {
     26, /* 00516FD8 g_FrontendResultsColumnAdvanceFactionFieldA8Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FDC g_ImageObject_00516FDC = {
     26, /* 00516FDC g_FrontendResultsColumnAdvanceFactionFieldACPixels */
+};
+
+__declspec(align(16)) ImageObject_00516FE0 g_ImageObject_00516FE0 = {
     26, /* 00516FE0 g_FrontendResultsColumnAdvanceFactionFieldB0Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FE4 g_ImageObject_00516FE4 = {
     26, /* 00516FE4 g_FrontendResultsColumnAdvanceFactionFieldB4Pixels */
+};
+
+__declspec(align(8)) ImageObject_00516FE8 g_ImageObject_00516FE8 = {
     26, /* 00516FE8 g_FrontendResultsColumnAdvanceFactionFieldB8Pixels */
+};
+
+__declspec(align(4)) ImageObject_00516FEC g_ImageObject_00516FEC = {
     26, /* 00516FEC g_FrontendResultsColumnAdvanceFactionFieldBCPixels */
+};
+
+__declspec(align(16)) ImageObject_00516FF0 g_ImageObject_00516FF0 = {
     0, /* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
+};
+
+__declspec(align(4)) ImageObject_00516FF4 g_ImageObject_00516FF4 = {
     0, /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
+};
+
+__declspec(align(8)) ImageObject_00516FF8 g_ImageObject_00516FF8 = {
     {0}, /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_00517068 g_ImageData_00517068 = {
+__declspec(align(8)) ImageObject_00517068 g_ImageObject_00517068 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517068 gap */
+};
+
+__declspec(align(16)) ImageObject_00517070 g_ImageObject_00517070 = {
     /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
     {
         0x005170C0, 0x005170D0, 0x005170E0, 0x00517100, 0x00517120, 0x00517140, 0x00517160, 0x00517180,
@@ -6057,8 +8061,11 @@ ImageData_00517068 g_ImageData_00517068 = {
         0x00517320, 0x00517350, 0x90909090, 0x90909090},
 };
 
-ImageData_00517DD4 g_ImageData_00517DD4 = {
+__declspec(align(4)) ImageObject_00517DD4 g_ImageObject_00517DD4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517DD4 gap */
+};
+
+__declspec(align(16)) ImageObject_00517DE0 g_ImageObject_00517DE0 = {
     /* 00517DE0 g_UiNodeVtable_00517DE0 */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -6083,8 +8090,11 @@ ImageData_00517DD4 g_ImageData_00517DD4 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00517F00 g_ImageData_00517F00 = {
+__declspec(align(16)) ImageObject_00517F00 g_ImageObject_00517F00 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517F00 gap */
+};
+
+__declspec(align(16)) ImageObject_00517F10 g_ImageObject_00517F10 = {
     /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
     {
         .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
@@ -6109,8 +8119,11 @@ ImageData_00517F00 g_ImageData_00517F00 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00517FBC g_ImageData_00517FBC = {
+__declspec(align(4)) ImageObject_00517FBC g_ImageObject_00517FBC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00517FBC gap */
+};
+
+__declspec(align(16)) ImageObject_00517FC0 g_ImageObject_00517FC0 = {
     /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
     {
         .relocate = (void *)UiSingleLineTextControl_RelocateChild,
@@ -6135,8 +8148,11 @@ ImageData_00517FBC g_ImageData_00517FBC = {
         0x90909090, 0x90909090},
 };
 
-ImageData_00518074 g_ImageData_00518074 = {
+__declspec(align(4)) ImageObject_00518074 g_ImageObject_00518074 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00518074 gap */
+};
+
+__declspec(align(16)) ImageObject_00518080 g_ImageObject_00518080 = {
     /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256: int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
     {
         {16448, 0, 0, 0},
@@ -6395,10 +8411,19 @@ ImageData_00518074 g_ImageData_00518074 = {
         {192, 16255, 0, 0},
         {128, 16319, 0, 0},
         {64, 16383, 0, 0}},
+};
+
+__declspec(align(16)) ImageObject_00518880 g_ImageObject_00518880 = {
     {0}, /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
+};
+
+__declspec(align(16)) ImageObject_00518C80 g_ImageObject_00518C80 = {
     0x4000400040004000ull, /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00518C90 g_ImageObject_00518C90 = {
     /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
     {
         .relocate = (void *)UiContainer_RelocateChildren,
@@ -6423,26 +8448,44 @@ ImageData_00518074 g_ImageData_00518074 = {
         0x90909090, 0x90909090},
 };
 
-ImageData_005191F0 g_ImageData_005191F0 = {
+__declspec(align(16)) ImageObject_005191F0 g_ImageObject_005191F0 = {
     {0x00, 0xF9, 0x89, 0xEC, 0x5D, 0x5B, 0xC2, 0x0C}, /* 005191F0 gap */
 };
 
-ImageData_0051936C g_ImageData_0051936C = {
+__declspec(align(4)) ImageObject_0051936C g_ImageObject_0051936C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051936C gap */
+};
+
+__declspec(align(4)) ImageObject_00519374 g_ImageObject_00519374 = {
     /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
     {
         0x005193B0, 0x00519460, 0x00519450, 0x005194A0, 0x00519490, 0x005193D0, 0x00519450, 0x005193F0,
         0x005194A0, 0x00519410, 0x00519430, 0x00519480, 0x00519410, 0x90909090, 0x90909090},
 };
 
-ImageData_0051972C g_ImageData_0051972C = {
+__declspec(align(4)) ImageObject_0051972C g_ImageObject_0051972C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051972C gap */
+};
+
+__declspec(align(16)) ImageObject_00519730 g_ImageObject_00519730 = {
     0, /* 00519730 g_ArmyRuntimeSlots */
+};
+
+__declspec(align(4)) ImageObject_00519734 g_ImageObject_00519734 = {
     0, /* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
+};
+
+__declspec(align(8)) ImageObject_00519738 g_ImageObject_00519738 = {
     {0}, /* 00519738 g_ArmyGraphicsBindings */
+};
+
+__declspec(align(8)) ImageObject_00519778 g_ImageObject_00519778 = {
     {0}, /* 00519778 g_ArmyAssetRecordRegistry */
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_0051A380 g_ImageObject_0051A380 = {
     /* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256: uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
     {
         /*   0 */ 0, 0x1000100010ull, 0x2000200020ull, 0x3000300030ull, 0x4000400040ull, 0x5000500050ull, 0x6000600060ull, 0x7000700070ull,
@@ -6477,6 +8520,9 @@ ImageData_0051972C g_ImageData_0051972C = {
         /* 232 */ 0xE8E0E8E0E8Eull, 0xE9E0E9E0E9Eull, 0xEAE0EAE0EAEull, 0xEBE0EBE0EBEull, 0xECE0ECE0ECEull, 0xEDE0EDE0EDEull, 0xEEE0EEE0EEEull, 0xEFE0EFE0EFEull,
         /* 240 */ 0xF0F0F0F0F0Full, 0xF1F0F1F0F1Full, 0xF2F0F2F0F2Full, 0xF3F0F3F0F3Full, 0xF4F0F4F0F4Full, 0xF5F0F5F0F5Full, 0xF6F0F6F0F6Full, 0xF7F0F7F0F7Full,
         /* 248 */ 0xF8F0F8F0F8Full, 0xF9F0F9F0F9Full, 0xFAF0FAF0FAFull, 0xFBF0FBF0FBFull, 0xFCF0FCF0FCFull, 0xFDF0FDF0FDFull, 0xFEF0FEF0FEFull, 0xFFF0FFF0FFFull},
+};
+
+__declspec(align(16)) ImageObject_0051AB80 g_ImageObject_0051AB80 = {
     /* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256: uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
     {
         /*   0 */ 0, 0x13FF03FF03FF0ull, 0x21FF81FF81FF8ull, 0x3155015501550ull, 0x40FFC0FFC0FFCull, 0x50CC90CC90CC9ull, 0x60AA80AA80AA8ull, 0x7092209220922ull,
@@ -6511,36 +8557,78 @@ ImageData_0051972C g_ImageData_0051972C = {
         /* 232 */ 0xE8004600460046ull, 0xE9004600460046ull, 0xEA004500450045ull, 0xEB004500450045ull, 0xEC004500450045ull, 0xED004500450045ull, 0xEE004400440044ull, 0xEF004400440044ull,
         /* 240 */ 0xF0004400440044ull, 0xF1004300430043ull, 0xF2004300430043ull, 0xF3004300430043ull, 0xF4004300430043ull, 0xF5004200420042ull, 0xF6004200420042ull, 0xF7004200420042ull,
         /* 248 */ 0xF8004200420042ull, 0xF9004100410041ull, 0xFA004100410041ull, 0xFB004100410041ull, 0xFC004000400040ull, 0xFD004000400040ull, 0xFE004000400040ull, 0xFF004000400040ull},
+};
+
+__declspec(align(16)) ImageObject_0051B380 g_ImageObject_0051B380 = {
     0x100000000000000ull, /* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
+};
+
+__declspec(align(8)) ImageObject_0051B388 g_ImageObject_0051B388 = {
     1024, /* 0051B388 g_ArmyCommandGenerationStandard */
+};
+
+__declspec(align(4)) ImageObject_0051B38C g_ImageObject_0051B38C = {
     32, /* 0051B38C g_AiCommandGenerationCandidateBase */
+};
+
+__declspec(align(16)) ImageObject_0051B390 g_ImageObject_0051B390 = {
     512, /* 0051B390 g_AiCommandGenerationRetainedTarget: ArmyCommandGeneration (uint32_t) 0x200 assigned to an army's commandGeneration by the AI combat code (gameplay/ai/combat.c) */
+};
+
+__declspec(align(4)) ImageObject_0051B394 g_ImageObject_0051B394 = {
     L"army0000.gfx", /* 0051B394 g_UnreferencedArmyTexturePathUtf16: UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
+};
+
+__declspec(align(4)) ImageObject_0051B3AE g_ImageObject_0051B3AE = {
     "ARMY", /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
     {
         0x90909090, 0x90909090, 0x90909090},
     {0x90},
 };
 
-ImageData_0051DBB4 g_ImageData_0051DBB4 = {
+__declspec(align(4)) ImageObject_0051DBB4 g_ImageObject_0051DBB4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051DBB4 gap */
+};
+
+__declspec(align(16)) ImageObject_0051DBC0 g_ImageObject_0051DBC0 = {
     0, /* 0051DBC0 g_EffectTextureSet */
+};
+
+__declspec(align(4)) ImageObject_0051DBC4 g_ImageObject_0051DBC4 = {
     0, /* 0051DBC4 g_EffectPalette */
+};
+
+__declspec(align(8)) ImageObject_0051DBC8 g_ImageObject_0051DBC8 = {
     0, /* 0051DBC8 g_EffectRuntimeSlots */
+};
+
+__declspec(align(4)) ImageObject_0051DBCC g_ImageObject_0051DBCC = {
     0, /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
+};
+
+__declspec(align(16)) ImageObject_0051DBD0 g_ImageObject_0051DBD0 = {
     {0}, /* 0051DBD0 g_EffectDefinitionRegistry */
 };
 
-ImageData_0051EAA0 g_ImageData_0051EAA0 = {
+__declspec(align(16)) ImageObject_0051EAA0 g_ImageObject_0051EAA0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051EAA0 gap */
+};
+
+__declspec(align(16)) ImageObject_0051EAB0 g_ImageObject_0051EAB0 = {
     /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
     {
         0x0051EAD0, 0x0051ED00, 0x0051EE60, 0x0051EED0, 0x0051EB20, 0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0051EEE4 g_ImageData_0051EEE4 = {
+__declspec(align(4)) ImageObject_0051EEE4 g_ImageObject_0051EEE4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051EEE4 gap */
+};
+
+__declspec(align(16)) ImageObject_0051EEF0 g_ImageObject_0051EEF0 = {
     {0}, /* 0051EEF0 g_ModelDefinitionRegistry */
+};
+
+__declspec(align(16)) ImageObject_0051FAF0 g_ImageObject_0051FAF0 = {
     /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
     {
         .placementTests = {
@@ -6557,14 +8645,23 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 3 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
             /* 4 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
         }},
+};
+
+__declspec(align(8)) ImageObject_0051FB18 g_ImageObject_0051FB18 = {
     /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass: uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
     {
         /*  0 */ 0, 0, 0, 0, 256, 768, 1024, 1280, 1536, 1792, 512, 4608, 0, 2048, 4096, 0,
         /* 16 */ 0, 0, 0, 0, 0, 0, 2048, 256},
+};
+
+__declspec(align(8)) ImageObject_0051FB78 g_ImageObject_0051FB78 = {
     /* 0051FB78 g_AiCombatTargetClassBaseScores: uint32_t[24] AI combat target base score per target runtime class (gameplay/ai/combat.c) */
     {
         /*  0 */ 0, 2048, 4096, 4096, 512, 0, 0, 0, 0, 0, 384, 256, 0, 128, 1024, 896,
         /* 16 */ 768, 4096, 6144, 4096, 256, 4096, 192, 64},
+};
+
+__declspec(align(8)) ImageObject_0051FBD8 g_ImageObject_0051FBD8 = {
     /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
     {
         .modelClass01Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
@@ -6582,10 +8679,16 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         .modelClass19Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
         .modelClass22Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
         .modelClass23Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM},
+};
+
+__declspec(align(8)) ImageObject_0051FC38 g_ImageObject_0051FC38 = {
     /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass: uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
     {
         /*  0 */ 136, 192, 192, 192, 144, 136, 136, 136, 136, 136, 136, 144, 136, 144, 144, 144,
         /* 16 */ 144, 192, 160, 192, 144, 192, 144, 144},
+};
+
+__declspec(align(8)) ImageObject_0051FC98 g_ImageObject_0051FC98 = {
     /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
     {
         .runtimeUpdate = {
@@ -6874,24 +8977,57 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 22 */ (void *)GridInfluence_RemoveLowDistanceBands,
             /* 23 */ (void *)GridInfluence_RemoveHighDistanceBands
         }},
+};
+
+__declspec(align(8)) ImageObject_005200B8 g_ImageObject_005200B8 = {
     0, /* 005200B8 g_ModelRuntimeSlots */
+};
+
+__declspec(align(4)) ImageObject_005200BC g_ImageObject_005200BC = {
     0, /* 005200BC g_ModelRuntimeRebaseDelta */
 };
 
-ImageData_00520EA0 g_ImageData_00520EA0 = {
+__declspec(align(16)) ImageObject_00520EA0 g_ImageObject_00520EA0 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00520EA0 gap */
+};
+
+__declspec(align(16)) ImageObject_00520EB0 g_ImageObject_00520EB0 = {
     0, /* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
+};
+
+__declspec(align(4)) ImageObject_00520EB4 g_ImageObject_00520EB4 = {
     0, /* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
+};
+
+__declspec(align(8)) ImageObject_00520EB8 g_ImageObject_00520EB8 = {
     0, /* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
+};
+
+__declspec(align(4)) ImageObject_00520EBC g_ImageObject_00520EBC = {
     0, /* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
+};
+
+__declspec(align(16)) ImageObject_00520EC0 g_ImageObject_00520EC0 = {
     0, /* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
+};
+
+__declspec(align(4)) ImageObject_00520EC4 g_ImageObject_00520EC4 = {
     0, /* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
+};
+
+__declspec(align(8)) ImageObject_00520EC8 g_ImageObject_00520EC8 = {
     0, /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00520EF8 g_ImageObject_00520EF8 = {
     0, /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00520F28 g_ImageObject_00520F28 = {
     0, /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -6899,189 +9035,399 @@ ImageData_00520EA0 g_ImageData_00520EA0 = {
     {0x90, 0x90, 0x90},
 };
 
-ImageData_00524110 g_ImageData_00524110 = {
+__declspec(align(16)) ImageObject_00524110 g_ImageObject_00524110 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00524110 gap */
+};
+
+__declspec(align(16)) ImageObject_00524120 g_ImageObject_00524120 = {
     /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
     {
         0x00524130, 0x00524280, 0x90909090, 0x90909090},
 };
 
-ImageData_005247C0 g_ImageData_005247C0 = {
+__declspec(align(16)) ImageObject_005247C0 g_ImageObject_005247C0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005247C0 gap */
+};
+
+__declspec(align(16)) ImageObject_005247D0 g_ImageObject_005247D0 = {
     /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
     {
         0x00524B80, 0x005248C0, 0x005247F0, 0x00524AA0, 0x00524870, 0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_00525A8C g_ImageData_00525A8C = {
+__declspec(align(4)) ImageObject_00525A8C g_ImageObject_00525A8C = {
     {0x00, 0x00, 0x90, 0x90}, /* 00525A8C gap */
+};
+
+__declspec(align(16)) ImageObject_00525A90 g_ImageObject_00525A90 = {
     /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
     {
         0x00526270, 0x00525AB0, 0x00526150, 0x00525B90, 0x00525C80, 0x00525D90, 0x00526080, 0x90909090},
 };
 
-ImageData_005266B0 g_ImageData_005266B0 = {
+__declspec(align(16)) ImageObject_005266B0 g_ImageObject_005266B0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005266B0 gap */
+};
+
+__declspec(align(16)) ImageObject_005266C0 g_ImageObject_005266C0 = {
     /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
     {
         0x005266D0, 0x00526830, 0x90909090, 0x90909090},
 };
 
-ImageData_00526988 g_ImageData_00526988 = {
+__declspec(align(8)) ImageObject_00526988 g_ImageObject_00526988 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00526988 gap */
+};
+
+__declspec(align(16)) ImageObject_00526990 g_ImageObject_00526990 = {
     /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
     {
         0x005269C0, 0x00526C00, 0x00526CA0, 0x00526DE0, 0x00526CF0, 0x00526DB0, 0x005269B0, 0x90909090},
 };
 
-ImageData_00527AA4 g_ImageData_00527AA4 = {
+__declspec(align(4)) ImageObject_00527AA4 g_ImageObject_00527AA4 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00527AA4 gap */
 };
 
-ImageData_00528674 g_ImageData_00528674 = {
+__declspec(align(4)) ImageObject_00528674 g_ImageObject_00528674 = {
     {0x83, 0xC4, 0x0C}, /* 00528674 gap */
 };
 
-ImageData_00528A6C g_ImageData_00528A6C = {
+__declspec(align(4)) ImageObject_00528A6C g_ImageObject_00528A6C = {
     {0x00, 0x00, 0x00, 0x90}, /* 00528A6C gap */
 };
 
-ImageData_0052AF30 g_ImageData_0052AF30 = {
+__declspec(align(16)) ImageObject_0052AF30 g_ImageObject_0052AF30 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0052AF30 gap */
+};
+
+__declspec(align(16)) ImageObject_0052AF40 g_ImageObject_0052AF40 = {
     0, /* 0052AF40 g_ShotTextureSet */
+};
+
+__declspec(align(4)) ImageObject_0052AF44 g_ImageObject_0052AF44 = {
     0, /* 0052AF44 g_ShotPalette */
+};
+
+__declspec(align(8)) ImageObject_0052AF48 g_ImageObject_0052AF48 = {
     0, /* 0052AF48 g_ShotRuntimeSlots */
+};
+
+__declspec(align(4)) ImageObject_0052AF4C g_ImageObject_0052AF4C = {
     0, /* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
+};
+
+__declspec(align(16)) ImageObject_0052AF50 g_ImageObject_0052AF50 = {
     {0}, /* 0052AF50 g_ShotDefinitionRegistry */
 };
 
-ImageData_0052CDE8 g_ImageData_0052CDE8 = {
+__declspec(align(8)) ImageObject_0052CDE8 g_ImageObject_0052CDE8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0052CDE8 gap */
+};
+
+__declspec(align(16)) ImageObject_0052CDF0 g_ImageObject_0052CDF0 = {
     0, /* 0052CDF0 g_SelectionPanelTextureSource */
+};
+
+__declspec(align(4)) ImageObject_0052CDF4 g_ImageObject_0052CDF4 = {
     0, /* 0052CDF4 g_InfoPanelTextureSource */
+};
+
+__declspec(align(8)) ImageObject_0052CDF8 g_ImageObject_0052CDF8 = {
     0, /* 0052CDF8 g_SelectionPanelData */
+};
+
+__declspec(align(4)) ImageObject_0052CDFC g_ImageObject_0052CDFC = {
     0, /* 0052CDFC g_InfoPanelData */
+};
+
+__declspec(align(16)) ImageObject_0052CE00 g_ImageObject_0052CE00 = {
     16777216, /* 0052CE00 g_SelectionPanelNumberTextStyle: UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel (gameplay/selection/runtime.c) */
+};
+
+__declspec(align(4)) ImageObject_0052CE04 g_ImageObject_0052CE04 = {
     {0}, /* 0052CE04 g_ModelProjectedBoundsPixels */
+};
+
+__declspec(align(4)) ImageObject_0052CE14 g_ImageObject_0052CE14 = {
     0, /* 0052CE14 g_SelectionInfoEntitySlots */
+};
+
+__declspec(align(8)) ImageObject_0052CE18 g_ImageObject_0052CE18 = {
     L"gfx\\panel\\select.gfx", /* 0052CE18 u_gfx_panel_select_gfx_0052ce18 */
+};
+
+__declspec(align(4)) ImageObject_0052CE42 g_ImageObject_0052CE42 = {
     L"gfx\\panel\\info.gfx", /* 0052CE42 u_gfx_panel_info_gfx_0052ce42 */
+};
+
+__declspec(align(8)) ImageObject_0052CE68 g_ImageObject_0052CE68 = {
     L"gfx\\panel\\select.dat", /* 0052CE68 u_gfx_panel_select_dat_0052ce68 */
+};
+
+__declspec(align(4)) ImageObject_0052CE92 g_ImageObject_0052CE92 = {
     L"gfx\\panel\\info.dat", /* 0052CE92 u_gfx_panel_info_dat_0052ce92 */
+};
+
+__declspec(align(8)) ImageObject_0052CEB8 g_ImageObject_0052CEB8 = {
     0, /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_0052CED8 g_ImageObject_0052CED8 = {
     0, /* 0052CED8 g_SelectionPanelBlitOpaque */
+};
+
+__declspec(align(4)) ImageObject_0052CEDC g_ImageObject_0052CEDC = {
     0, /* 0052CEDC g_SelectionPanelBlitClipped */
 };
 
-ImageData_0052FF14 g_ImageData_0052FF14 = {
+__declspec(align(4)) ImageObject_0052FF14 g_ImageObject_0052FF14 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0052FF14 gap */
 };
 
-ImageData_00530080 g_ImageData_00530080 = {
+__declspec(align(16)) ImageObject_00530080 g_ImageObject_00530080 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00530080 gap */
 };
 
-ImageData_005300C8 g_ImageData_005300C8 = {
+__declspec(align(8)) ImageObject_005300C8 g_ImageObject_005300C8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005300C8 gap */
 };
 
-ImageData_00530818 g_ImageData_00530818 = {
+__declspec(align(8)) ImageObject_00530818 g_ImageObject_00530818 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00530818 gap */
+};
+
+__declspec(align(16)) ImageObject_00530820 g_ImageObject_00530820 = {
     0, /* 00530820 g_InGameLoadedResourcePointers */
+};
+
+__declspec(align(4)) ImageObject_00530824 g_ImageObject_00530824 = {
     0, /* 00530824 g_InGameLoadedResourcePointerCount */
+};
+
+__declspec(align(8)) ImageObject_00530828 g_ImageObject_00530828 = {
     0, /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00530A28 g_ImageObject_00530A28 = {
     0, /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00530C28 g_ImageObject_00530C28 = {
     0, /* 00530C28 g_LevelResourcePathScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00530E28 g_ImageObject_00530E28 = {
     {0}, /* 00530E28 g_LevelEndingMovieSourcePath */
+};
+
+__declspec(align(8)) ImageObject_00531028 g_ImageObject_00531028 = {
     0, /* 00531028 g_InGameLevelTitleTextResourceIndex */
+};
+
+__declspec(align(4)) ImageObject_0053102C g_ImageObject_0053102C = {
     0, /* 0053102C g_InGameLevelCampaignAssociationIndex */
+};
+
+__declspec(align(16)) ImageObject_00531030 g_ImageObject_00531030 = {
     0, /* 00531030 g_InGameLevelEffectVoiceSet0 */
     0, /* 00531034 g_InGameLevelEffectVoiceSet1 */
     0, /* 00531038 g_InGameLevelEffectVoiceSet2 */
     0, /* 0053103C g_InGameLevelEffectVoiceSet3 */
+};
+
+__declspec(align(16)) ImageObject_00531040 g_ImageObject_00531040 = {
     0, /* 00531040 g_InGameActiveEffectVoice */
+};
+
+__declspec(align(4)) ImageObject_00531044 g_ImageObject_00531044 = {
     0, /* 00531044 g_InGameEffectsEnabled */
+};
+
+__declspec(align(8)) ImageObject_00531048 g_ImageObject_00531048 = {
     0, /* 00531048 g_InGameLevelMusicVoiceSet0 */
     0, /* 0053104C g_InGameLevelMusicVoiceSet1 */
     0, /* 00531050 g_InGameLevelMusicVoiceSet2 */
     0, /* 00531054 g_InGameLevelMusicVoiceSet3 */
+};
+
+__declspec(align(8)) ImageObject_00531058 g_ImageObject_00531058 = {
     0, /* 00531058 g_InGameActiveMusicVoice */
+};
+
+__declspec(align(4)) ImageObject_0053105C g_ImageObject_0053105C = {
     0, /* 0053105C g_InGameMusicNextTrackCountdown */
+};
+
+__declspec(align(16)) ImageObject_00531060 g_ImageObject_00531060 = {
     {.playerSlotByteOffsets = {0, 32, 64, 96, 128, 160, 192}}, /* 00531060 g_InGameLevelRuntimeGlobalBlock */
 };
 
-ImageData_00531FF4 g_ImageData_00531FF4 = {
+__declspec(align(4)) ImageObject_00531FF4 g_ImageObject_00531FF4 = {
     {0x00, 0x00, 0x50, 0x53, 0xE8, 0xD3, 0xD1, 0xED, 0xFF, 0x58}, /* 00531FF4 gap */
 };
 
-ImageData_00532998 g_ImageData_00532998 = {
+__declspec(align(8)) ImageObject_00532998 g_ImageObject_00532998 = {
     {0x00, 0x00, 0x00, 0x50, 0x53, 0xE8, 0x2E, 0xC8, 0xED, 0xFF, 0x58}, /* 00532998 gap */
 };
 
-ImageData_0053329C g_ImageData_0053329C = {
+__declspec(align(4)) ImageObject_0053329C g_ImageObject_0053329C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0053329C gap */
+};
+
+__declspec(align(16)) ImageObject_005332A0 g_ImageObject_005332A0 = {
     0, /* 005332A0 g_GridScratchPrimary */
+};
+
+__declspec(align(4)) ImageObject_005332A4 g_ImageObject_005332A4 = {
     0, /* 005332A4 g_GridScratchSecondary */
+};
+
+__declspec(align(8)) ImageObject_005332A8 g_ImageObject_005332A8 = {
     0, /* 005332A8 g_GridPathCostQueueBegin */
+};
+
+__declspec(align(4)) ImageObject_005332AC g_ImageObject_005332AC = {
     0, /* 005332AC g_GridPathCostQueueEnd */
+};
+
+__declspec(align(16)) ImageObject_005332B0 g_ImageObject_005332B0 = {
     0, /* 005332B0 g_GridPathCostQueuePassBoundary */
+};
+
+__declspec(align(4)) ImageObject_005332B4 g_ImageObject_005332B4 = {
     0, /* 005332B4 g_GridScratchWidth */
+};
+
+__declspec(align(8)) ImageObject_005332B8 g_ImageObject_005332B8 = {
     0, /* 005332B8 g_GridScratchHeight */
     {
         0x90909090},
 };
 
-ImageData_00533D4C g_ImageData_00533D4C = {
+__declspec(align(4)) ImageObject_00533D4C g_ImageObject_00533D4C = {
     {0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00533D4C gap */
 };
 
-ImageData_00533ED0 g_ImageData_00533ED0 = {
+__declspec(align(16)) ImageObject_00533ED0 g_ImageObject_00533ED0 = {
     0, /* 00533ED0 g_GridPathEntityClassMask */
+};
+
+__declspec(align(4)) ImageObject_00533ED4 g_ImageObject_00533ED4 = {
     0, /* 00533ED4 g_GridPathBlockingMask */
+};
+
+__declspec(align(8)) ImageObject_00533ED8 g_ImageObject_00533ED8 = {
     0, /* 00533ED8 g_GridPathHighCostMask */
+};
+
+__declspec(align(4)) ImageObject_00533EDC g_ImageObject_00533EDC = {
     0, /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
+};
+
+__declspec(align(16)) ImageObject_00533EE0 g_ImageObject_00533EE0 = {
     0, /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_005367CC g_ImageData_005367CC = {
+__declspec(align(4)) ImageObject_005367CC g_ImageObject_005367CC = {
     {0x00, 0x90, 0x90, 0x90}, /* 005367CC gap */
+};
+
+__declspec(align(16)) ImageObject_005367D0 g_ImageObject_005367D0 = {
     (void *)&g_EntityPathingPriorityPairStorage, /* 005367D0 g_EntityPathingPriorityPairs */
+};
+
+__declspec(align(4)) ImageObject_005367D4 g_ImageObject_005367D4 = {
     {0}, /* 005367D4 g_EntityPathingPriorityPairStorage */
+};
+
+__declspec(align(8)) ImageObject_005367D8 g_ImageObject_005367D8 = {
     {0}, /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
+};
+
+__declspec(align(4)) ImageObject_005367DC g_ImageObject_005367DC = {
     {0}, /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
+};
+
+__declspec(align(16)) ImageObject_005367E0 g_ImageObject_005367E0 = {
     {0}, /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
+};
+
+__declspec(align(4)) ImageObject_005368D4 g_ImageObject_005368D4 = {
     0, /* 005368D4 g_EntityPathingPriorityPairCount */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_00536F08 g_ImageData_00536F08 = {
+__declspec(align(8)) ImageObject_00536F08 g_ImageObject_00536F08 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00536F08 gap */
+};
+
+__declspec(align(16)) ImageObject_00536F10 g_ImageObject_00536F10 = {
     0, /* 00536F10 g_GridTerrainClassBit24MaxWaterSurfaceDelta */
+};
+
+__declspec(align(4)) ImageObject_00536F14 g_ImageObject_00536F14 = {
     11500, /* 00536F14 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 */
+};
+
+__declspec(align(8)) ImageObject_00536F18 g_ImageObject_00536F18 = {
     10500, /* 00536F18 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 */
+};
+
+__declspec(align(4)) ImageObject_00536F1C g_ImageObject_00536F1C = {
     10500, /* 00536F1C g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 */
+};
+
+__declspec(align(16)) ImageObject_00536F20 g_ImageObject_00536F20 = {
     10500, /* 00536F20 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 */
+};
+
+__declspec(align(4)) ImageObject_00536F24 g_ImageObject_00536F24 = {
     {14000, 15000, 15500}, /* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 14000/15000/15500 for model definitions with placement contact kind 4, indexed by terrainTraversalClass - 1 (ModelDefinition resolve in assets/model/definitions.c) */
+};
+
+__declspec(align(16)) ImageObject_00536F30 g_ImageObject_00536F30 = {
     500 /* 0.12207 */, /* 00536F30 g_GridTerrainClassBit28MinWaterSurfaceDelta */
+};
+
+__declspec(align(4)) ImageObject_00536F34 g_ImageObject_00536F34 = {
     500 /* 0.12207 */, /* 00536F34 g_GridTerrainClassBit29MinWaterSurfaceDelta */
+};
+
+__declspec(align(8)) ImageObject_00536F38 g_ImageObject_00536F38 = {
     500 /* 0.12207 */, /* 00536F38 g_GridTerrainClassBit30MinWaterSurfaceDelta */
+};
+
+__declspec(align(4)) ImageObject_00536F3C g_ImageObject_00536F3C = {
     10500, /* 00536F3C g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 */
+};
+
+__declspec(align(16)) ImageObject_00536F40 g_ImageObject_00536F40 = {
     10500, /* 00536F40 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 */
+};
+
+__declspec(align(4)) ImageObject_00536F44 g_ImageObject_00536F44 = {
     10500, /* 00536F44 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 */
+};
+
+__declspec(align(8)) ImageObject_00536F48 g_ImageObject_00536F48 = {
     {12500, 13500, 14500}, /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 12500/13500/14500 for the other contact kinds, indexed by terrainTraversalClass - 4 (assets/model/definitions.c); followed by 12 bytes of 0x90 padding */
     {
         0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00536F60 g_ImageObject_00536F60 = {
     1000, /* 00536F60 g_GridInfluenceRadiusOffset0 */
     1250, /* 00536F64 g_GridInfluenceRadiusOffset1 */
     1500, /* 00536F68 g_GridInfluenceRadiusOffset2 */
@@ -7090,6 +9436,9 @@ ImageData_00536F08 g_ImageData_00536F08 = {
     2240, /* 00536F74 g_GridInfluenceRadiusOffset5 */
     2600, /* 00536F78 g_GridInfluenceRadiusOffset6 */
     4100, /* 00536F7C g_GridInfluenceRadiusOffset7 */
+};
+
+__declspec(align(16)) ImageObject_00536F80 g_ImageObject_00536F80 = {
     0, /* 00536F80 g_GridInfluenceSquaredThreshold0 */
     0, /* 00536F84 g_GridInfluenceSquaredThreshold1 */
     0, /* 00536F88 g_GridInfluenceSquaredThreshold2 */
@@ -7098,72 +9447,192 @@ ImageData_00536F08 g_ImageData_00536F08 = {
     0, /* 00536F94 g_GridInfluenceSquaredThreshold5 */
     0, /* 00536F98 g_GridInfluenceSquaredThreshold6 */
     0, /* 00536F9C g_GridInfluenceSquaredThreshold7 */
+};
+
+__declspec(align(16)) ImageObject_00536FA0 g_ImageObject_00536FA0 = {
     1536, /* 00536FA0 g_AiCombatTargetRadialClearanceWeight: int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
+};
+
+__declspec(align(4)) ImageObject_00536FA4 g_ImageObject_00536FA4 = {
     73728, /* 00536FA4 g_AiCombatTargetCandidateCounterCountWeight: int32_t weight 0x12000 for the candidate class counter term of the AI combat target score, divided by the Q12 hierarchy scale unity (gameplay/ai/combat.c) */
+};
+
+__declspec(align(8)) ImageObject_00536FA8 g_ImageObject_00536FA8 = {
     131072, /* 00536FA8 g_AiCombatTargetSourceCounterCountWeight: int32_t weight 0x20000 for the source class counter term of the AI combat target score (gameplay/ai/combat.c) */
+};
+
+__declspec(align(4)) ImageObject_00536FAC g_ImageObject_00536FAC = {
     4352, /* 00536FAC g_AiCombatTargetScaleDeficitWeight: int32_t weight 0x1100 for the hierarchy scale deficit (1.0 - condition ratio) term of the AI combat target score (gameplay/ai/combat.c) */
+};
+
+__declspec(align(16)) ImageObject_00536FB0 g_ImageObject_00536FB0 = {
     2048, /* 00536FB0 g_AiCombatTargetClassBaseScoreMultiplier: int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score (gameplay/ai/combat.c) */
+};
+
+__declspec(align(4)) ImageObject_00536FB4 g_ImageObject_00536FB4 = {
     0, /* 00536FB4 g_AiCombatTargetSelectedCommandGenerationRightShiftBits */
+};
+
+__declspec(align(8)) ImageObject_00536FB8 g_ImageObject_00536FB8 = {
     0, /* 00536FB8 g_AiCombatTargetCurrentCommandGenerationRightShiftBits */
     {
         0x90909090},
 };
 
-ImageData_00537410 g_ImageData_00537410 = {
+__declspec(align(16)) ImageObject_00537410 g_ImageObject_00537410 = {
     0, /* 00537410 g_AiWorkspace13Candidates */
+};
+
+__declspec(align(4)) ImageObject_00537414 g_ImageObject_00537414 = {
     0, /* 00537414 g_AiCandidateWorkspaceEntryCount */
+};
+
+__declspec(align(8)) ImageObject_00537418 g_ImageObject_00537418 = {
     0, /* 00537418 g_AiPurchaseAppliedArmyClassMask */
     {
         0x90909090},
 };
 
-ImageData_0053795C g_ImageData_0053795C = {
+__declspec(align(4)) ImageObject_0053795C g_ImageObject_0053795C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0053795C gap */
+};
+
+__declspec(align(16)) ImageObject_00537960 g_ImageObject_00537960 = {
     0, /* 00537960 g_AiWorkspace00Structures */
+};
+
+__declspec(align(4)) ImageObject_00537964 g_ImageObject_00537964 = {
     0, /* 00537964 g_AiWorkspace00Count */
+};
+
+__declspec(align(8)) ImageObject_00537968 g_ImageObject_00537968 = {
     0, /* 00537968 g_AiWorkspace01Units */
+};
+
+__declspec(align(4)) ImageObject_0053796C g_ImageObject_0053796C = {
     0, /* 0053796C g_AiWorkspace01Count */
+};
+
+__declspec(align(16)) ImageObject_00537970 g_ImageObject_00537970 = {
     0, /* 00537970 g_AiWorkspace02VisibleHostiles */
+};
+
+__declspec(align(4)) ImageObject_00537974 g_ImageObject_00537974 = {
     0, /* 00537974 g_AiWorkspace02Count */
+};
+
+__declspec(align(8)) ImageObject_00537978 g_ImageObject_00537978 = {
     0, /* 00537978 g_AiWorkspace03UnseenHostiles */
+};
+
+__declspec(align(4)) ImageObject_0053797C g_ImageObject_0053797C = {
     0, /* 0053797C g_AiWorkspace03Count */
+};
+
+__declspec(align(16)) ImageObject_00537980 g_ImageObject_00537980 = {
     0, /* 00537980 g_AiWorkspace04RequestedAssets */
+};
+
+__declspec(align(4)) ImageObject_00537984 g_ImageObject_00537984 = {
     0, /* 00537984 g_AiWorkspace04Count */
+};
+
+__declspec(align(8)) ImageObject_00537988 g_ImageObject_00537988 = {
     0, /* 00537988 g_AiWorkspace05GeneralSites */
+};
+
+__declspec(align(4)) ImageObject_0053798C g_ImageObject_0053798C = {
     0, /* 0053798C g_AiWorkspace05Count */
+};
+
+__declspec(align(16)) ImageObject_00537990 g_ImageObject_00537990 = {
     0, /* 00537990 g_AiWorkspace06FlaggedSites */
+};
+
+__declspec(align(4)) ImageObject_00537994 g_ImageObject_00537994 = {
     0, /* 00537994 g_AiWorkspace06Count */
+};
+
+__declspec(align(8)) ImageObject_00537998 g_ImageObject_00537998 = {
     0, /* 00537998 g_AiWorkspace07Targets */
+};
+
+__declspec(align(4)) ImageObject_0053799C g_ImageObject_0053799C = {
     0, /* 0053799C g_AiWorkspace07Count */
+};
+
+__declspec(align(16)) ImageObject_005379A0 g_ImageObject_005379A0 = {
     0, /* 005379A0 g_AiWorkspace08TerrainFeatureSites */
+};
+
+__declspec(align(4)) ImageObject_005379A4 g_ImageObject_005379A4 = {
     0, /* 005379A4 g_AiWorkspace08Count */
+};
+
+__declspec(align(8)) ImageObject_005379A8 g_ImageObject_005379A8 = {
     0, /* 005379A8 g_AiWorkspace09Cells */
+};
+
+__declspec(align(4)) ImageObject_005379AC g_ImageObject_005379AC = {
     0, /* 005379AC g_AiWorkspace09Count */
+};
+
+__declspec(align(16)) ImageObject_005379B0 g_ImageObject_005379B0 = {
     0, /* 005379B0 g_AiWorkspace10Cells */
+};
+
+__declspec(align(4)) ImageObject_005379B4 g_ImageObject_005379B4 = {
     0, /* 005379B4 g_AiWorkspace10Count */
+};
+
+__declspec(align(8)) ImageObject_005379B8 g_ImageObject_005379B8 = {
     0, /* 005379B8 g_AiWorkspace11ProducibleAssets */
+};
+
+__declspec(align(4)) ImageObject_005379BC g_ImageObject_005379BC = {
     0, /* 005379BC g_AiWorkspace11Count */
+};
+
+__declspec(align(16)) ImageObject_005379C0 g_ImageObject_005379C0 = {
     0, /* 005379C0 g_AiWorkspace12TechnologyCandidates */
+};
+
+__declspec(align(4)) ImageObject_005379C4 g_ImageObject_005379C4 = {
     0, /* 005379C4 g_AiWorkspace12Count */
+};
+
+__declspec(align(8)) ImageObject_005379C8 g_ImageObject_005379C8 = {
     0, /* 005379C8 g_AiActiveGridMaskClass0 */
     0, /* 005379CC g_AiActiveGridMaskClass1 */
     0, /* 005379D0 g_AiActiveGridMaskClass2 */
     0, /* 005379D4 g_AiActiveGridMaskClass3 */
+};
+
+__declspec(align(8)) ImageObject_005379D8 g_ImageObject_005379D8 = {
     0, /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
     {
         0x90909090},
 };
 
-ImageData_00539050 g_ImageData_00539050 = {
+__declspec(align(16)) ImageObject_00539050 g_ImageObject_00539050 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00539050 gap */
+};
+
+__declspec(align(16)) ImageObject_00539060 g_ImageObject_00539060 = {
     0, /* 00539060 g_AiConstructionPendingAssetConsumedCount */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_00539974 g_ImageData_00539974 = {
+__declspec(align(4)) ImageObject_00539974 g_ImageObject_00539974 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00539974 gap */
+};
+
+__declspec(align(16)) ImageObject_00539980 g_ImageObject_00539980 = {
     {0}, /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
+};
+
+__declspec(align(16)) ImageObject_005399A0 g_ImageObject_005399A0 = {
     0, /* 005399A0 g_TechnologyCategoryMaximum0 */
     0, /* 005399A4 g_TechnologyCategoryMaximum1 */
     0, /* 005399A8 g_TechnologyCategoryMaximum2 */
@@ -7172,7 +9641,13 @@ ImageData_00539974 g_ImageData_00539974 = {
     0, /* 005399B4 g_TechnologyCategoryMaximum5 */
     0, /* 005399B8 g_TechnologyCategoryMaximum6 */
     0, /* 005399BC g_TechnologyCategoryMaximum7 */
+};
+
+__declspec(align(16)) ImageObject_005399C0 g_ImageObject_005399C0 = {
     0, /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
+};
+
+__declspec(align(4)) ImageObject_005399C4 g_ImageObject_005399C4 = {
     /* 005399C4 g_AiStrategicClassTerrainWeights */
     {
         {256, 0, 0},
@@ -7180,19 +9655,31 @@ ImageData_00539974 g_ImageData_00539974 = {
         {0, 176, 80},
         {0, 0, 256},
         {0, 0, 0}},
+};
+
+__declspec(align(16)) ImageObject_00539A00 g_ImageObject_00539A00 = {
     {0}, /* 00539A00 g_TechnologyCategoryMasks */
 };
 
-ImageData_0053B0CC g_ImageData_0053B0CC = {
+__declspec(align(4)) ImageObject_0053B0CC g_ImageObject_0053B0CC = {
     {0x00, 0x90, 0x90, 0x90}, /* 0053B0CC gap */
+};
+
+__declspec(align(16)) ImageObject_0053B0D0 g_ImageObject_0053B0D0 = {
     0, /* 0053B0D0 g_AiWorkspace14CollectedArmies */
+};
+
+__declspec(align(4)) ImageObject_0053B0D4 g_ImageObject_0053B0D4 = {
     0, /* 0053B0D4 g_AiCollectedEntityCount */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_0053B9CC g_ImageData_0053B9CC = {
+__declspec(align(4)) ImageObject_0053B9CC g_ImageObject_0053B9CC = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053B9CC gap */
+};
+
+__declspec(align(16)) ImageObject_0053B9E0 g_ImageObject_0053B9E0 = {
     /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
     {
         /* 0 */ (void *)AiTechnologyScore_AlwaysZero,
@@ -7205,22 +9692,34 @@ ImageData_0053B9CC g_ImageData_0053B9CC = {
         0x90909090, 0x90909090},
 };
 
-ImageData_0053C154 g_ImageData_0053C154 = {
+__declspec(align(4)) ImageObject_0053C154 g_ImageObject_0053C154 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053C154 gap */
+};
+
+__declspec(align(16)) ImageObject_0053C160 g_ImageObject_0053C160 = {
     /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
     {
         0x0053C310, 0x0053C270, 0x0053C290, 0x0053C2D0, 0x0053C260, 0x0053C310, 0x0053C310, 0x0053C310,
         0x0053C2F0, 0x0053C250, 0x0053C1A0, 0x0053C240, 0x0053C2B0, 0x0053C1C0, 0x90909090, 0x90909090},
 };
 
-ImageData_0053C1FC g_ImageData_0053C1FC = {
+__declspec(align(4)) ImageObject_0053C1FC g_ImageObject_0053C1FC = {
     {0x00, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053C1FC gap */
 };
 
-ImageData_0053C5DC g_ImageData_0053C5DC = {
+__declspec(align(4)) ImageObject_0053C5DC g_ImageObject_0053C5DC = {
     {0x90, 0x90, 0x90, 0x90}, /* 0053C5DC gap */
+};
+
+__declspec(align(16)) ImageObject_0053C5E0 g_ImageObject_0053C5E0 = {
     0, /* 0053C5E0 g_AiKnowledgeData */
+};
+
+__declspec(align(4)) ImageObject_0053C5E4 g_ImageObject_0053C5E4 = {
     L"engine\\ki.dat", /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
+};
+
+__declspec(align(16)) ImageObject_0053C600 g_ImageObject_0053C600 = {
     /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
     {
         .pressureCategoryWeights = {0, 128, 128, 128, 128, 128, 128, 128},
@@ -7229,6 +9728,9 @@ ImageData_0053C5DC g_ImageData_0053C5DC = {
         .armyRecord70Weight = 512,
         .nonzeroDefinition18Bonus = 4096,
         .baseScore = -4096},
+};
+
+__declspec(align(4)) ImageObject_0053C63C g_ImageObject_0053C63C = {
     /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
     {
         .pressureCategoryWeights = {0, 512, 512, 512, 512, 640, 512},
@@ -7237,6 +9739,9 @@ ImageData_0053C5DC g_ImageData_0053C5DC = {
         .armyRecord74Weight = 512,
         .armyRecord78Weight = 256,
         .nonzeroDefinition18Bonus = -256},
+};
+
+__declspec(align(8)) ImageObject_0053C678 g_ImageObject_0053C678 = {
     /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
     {
         .pressureCategoryWeights = {0, 384, 384, 384, 384, 448, 384, 512},
@@ -7250,36 +9755,66 @@ ImageData_0053C5DC g_ImageData_0053C5DC = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0053C808 g_ImageData_0053C808 = {
+__declspec(align(8)) ImageObject_0053C808 g_ImageObject_0053C808 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053C808 gap */
 };
 
-ImageData_0053C99C g_ImageData_0053C99C = {
+__declspec(align(4)) ImageObject_0053C99C g_ImageObject_0053C99C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0053C99C gap */
+};
+
+__declspec(align(16)) ImageObject_0053C9A0 g_ImageObject_0053C9A0 = {
     {0}, /* 0053C9A0 g_WorldMotionSplineMatrixWorkspaces */
+};
+
+__declspec(align(8)) ImageObject_0053C9B8 g_ImageObject_0053C9B8 = {
     {0}, /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
+};
+
+__declspec(align(16)) ImageObject_0053C9D0 g_ImageObject_0053C9D0 = {
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
+};
+
+__declspec(align(8)) ImageObject_0053C9E8 g_ImageObject_0053C9E8 = {
     {0}, /* 0053C9E8 g_WorldMotionSplineEquationCounts */
+};
+
+__declspec(align(16)) ImageObject_0053CA00 g_ImageObject_0053CA00 = {
     4096.0f, /* 0053CA00 g_Q12FloatScale4096 */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0053D358 g_ImageData_0053D358 = {
+__declspec(align(8)) ImageObject_0053D358 g_ImageObject_0053D358 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053D358 gap */
+};
+
+__declspec(align(16)) ImageObject_0053D360 g_ImageObject_0053D360 = {
     0, /* 0053D360 g_TerrainCompositeTexture */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0053DA68 g_ImageData_0053DA68 = {
+__declspec(align(8)) ImageObject_0053DA68 g_ImageObject_0053DA68 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053DA68 gap */
+};
+
+__declspec(align(16)) ImageObject_0053DA70 g_ImageObject_0053DA70 = {
     /* 0053DA70 g_UiRootCallbacks_0053DA70 */
     {
         .frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState,
         .keyboardFallback = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlags},
+};
+
+__declspec(align(4)) ImageObject_0053DA84 g_ImageObject_0053DA84 = {
     0, /* 0053DA84 g_FrontendSessionListRows */
+};
+
+__declspec(align(8)) ImageObject_0053DA88 g_ImageObject_0053DA88 = {
     0, /* 0053DA88 g_FrontendSessionDiscoveryRecords */
+};
+
+__declspec(align(4)) ImageObject_0053DA8C g_ImageObject_0053DA8C = {
     /* 0053DA8C g_FrontendRootInitializationTemplate */
     {
         { /* +0000 frontendRoot g_UiPanelControlVtable */
@@ -9298,7 +11833,13 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
         {
             0x00000008, 0x00000000, 0x00002117},
     },
+};
+
+__declspec(align(16)) ImageObject_005433E0 g_ImageObject_005433E0 = {
     {0}, /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
+};
+
+__declspec(align(16)) ImageObject_00543460 g_ImageObject_00543460 = {
     /* 00543460 g_FrontendTaskAssignmentControlOffsets */
     {
         .assignmentControls = {.offsets = {3264, 3356, 3448, 3540, 3632, 3724, 3816}},
@@ -9307,37 +11848,97 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
         .selectionRows = {.offsets = {5252, 5348, 5444, 5540, 5636, 5732, 5828}},
         .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}},
     {0},
+};
+
+__declspec(align(4)) ImageObject_005438EC g_ImageObject_005438EC = {
     {0}, /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     {
         0x90909090},
 };
 
-ImageData_00543E34 g_ImageData_00543E34 = {
+__declspec(align(4)) ImageObject_00543E34 g_ImageObject_00543E34 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00543E34 gap */
+};
+
+__declspec(align(16)) ImageObject_00543E40 g_ImageObject_00543E40 = {
     {0}, /* 00543E40 g_FrontendCommandQueueRecords */
+};
+
+__declspec(align(16)) ImageObject_00543F40 g_ImageObject_00543F40 = {
     (void *)&g_FrontendCommandQueueRecords, /* 00543F40 g_FrontendCommandQueueEnd */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_005456F0 g_ImageData_005456F0 = {
+__declspec(align(16)) ImageObject_005456F0 g_ImageObject_005456F0 = {
     0, /* 005456F0 g_FrontendRootNode */
+};
+
+__declspec(align(4)) ImageObject_005456F4 g_ImageObject_005456F4 = {
     0, /* 005456F4 g_FrontendPendingPageAction */
+};
+
+__declspec(align(8)) ImageObject_005456F8 g_ImageObject_005456F8 = {
     0, /* 005456F8 g_FrontendRomTransitionPageAction */
+};
+
+__declspec(align(4)) ImageObject_005456FC g_ImageObject_005456FC = {
     0, /* 005456FC g_FrontendActiveRomRecord */
+};
+
+__declspec(align(16)) ImageObject_00545700 g_ImageObject_00545700 = {
     0, /* 00545700 g_FrontendRuntimeFlags */
+};
+
+__declspec(align(4)) ImageObject_00545704 g_ImageObject_00545704 = {
     0, /* 00545704 g_FrontendCentralTextureSet */
+};
+
+__declspec(align(8)) ImageObject_00545708 g_ImageObject_00545708 = {
     0, /* 00545708 g_FrontendCentralPaletteAsset */
+};
+
+__declspec(align(4)) ImageObject_0054570C g_ImageObject_0054570C = {
     0, /* 0054570C g_FrontendMenuTextureSource */
+};
+
+__declspec(align(16)) ImageObject_00545710 g_ImageObject_00545710 = {
     0, /* 00545710 g_FrontendNetworkTickCounter */
+};
+
+__declspec(align(4)) ImageObject_00545714 g_ImageObject_00545714 = {
     0, /* 00545714 g_FrontendNetworkState */
+};
+
+__declspec(align(8)) ImageObject_00545718 g_ImageObject_00545718 = {
     0, /* 00545718 g_FrontendFactionAssignmentReadyStateGeneration */
+};
+
+__declspec(align(4)) ImageObject_0054571C g_ImageObject_0054571C = {
     0, /* 0054571C g_FrontendRomTransitionElapsedTicks */
+};
+
+__declspec(align(16)) ImageObject_00545720 g_ImageObject_00545720 = {
     0, /* 00545720 g_FrontendRomTransitionSplineKeyframes */
+};
+
+__declspec(align(4)) ImageObject_00545724 g_ImageObject_00545724 = {
     0, /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
+};
+
+__declspec(align(8)) ImageObject_00545728 g_ImageObject_00545728 = {
     0, /* 00545728 g_FrontendRomTransitionTargetRecordId */
+};
+
+__declspec(align(4)) ImageObject_0054572C g_ImageObject_0054572C = {
     0, /* 0054572C g_FrontendStateTickSpinLock */
+};
+
+__declspec(align(16)) ImageObject_00545730 g_ImageObject_00545730 = {
     0, /* 00545730 g_FrontendTimerCountdownTicks */
+};
+
+__declspec(align(4)) ImageObject_00545734 g_ImageObject_00545734 = {
     0, /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
     0, /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
     0, /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
@@ -9354,22 +11955,70 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     0, /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
     0, /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
     {0},
+};
+
+__declspec(align(4)) ImageObject_00545774 g_ImageObject_00545774 = {
     0, /* 00545774 g_FrontendCentralRomAsset */
+};
+
+__declspec(align(8)) ImageObject_00545778 g_ImageObject_00545778 = {
     0, /* 00545778 g_RomRegistrySlots */
+};
+
+__declspec(align(4)) ImageObject_0054577C g_ImageObject_0054577C = {
     0, /* 0054577C g_FrontendWorldObjectRecords */
+};
+
+__declspec(align(16)) ImageObject_00545780 g_ImageObject_00545780 = {
     0, /* 00545780 g_FrontendLoadedLevelAsset */
+};
+
+__declspec(align(4)) ImageObject_00545784 g_ImageObject_00545784 = {
     0, /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
+};
+
+__declspec(align(8)) ImageObject_00545788 g_ImageObject_00545788 = {
     0, /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
     {0},
+};
+
+__declspec(align(4)) ImageObject_00545914 g_ImageObject_00545914 = {
     0, /* 00545914 g_FrontendLoadedCampaignAsset */
+};
+
+__declspec(align(8)) ImageObject_00545918 g_ImageObject_00545918 = {
     0, /* 00545918 g_FrontendScenarioTransferState */
+};
+
+__declspec(align(4)) ImageObject_0054591C g_ImageObject_0054591C = {
     0, /* 0054591C g_FrontendPlayerMessageBuffers */
+};
+
+__declspec(align(16)) ImageObject_00545920 g_ImageObject_00545920 = {
     0, /* 00545920 g_FrontendLocalPlayerPcxPreview */
+};
+
+__declspec(align(4)) ImageObject_00545924 g_ImageObject_00545924 = {
     0, /* 00545924 g_FrontendHostSnapshotTransferCountdown */
+};
+
+__declspec(align(8)) ImageObject_00545928 g_ImageObject_00545928 = {
     0, /* 00545928 g_FrontendScenarioInitializationCount */
+};
+
+__declspec(align(4)) ImageObject_0054592C g_ImageObject_0054592C = {
     0, /* 0054592C g_FrontendMusicVoiceSet */
+};
+
+__declspec(align(16)) ImageObject_00545930 g_ImageObject_00545930 = {
     0, /* 00545930 g_FrontendMusicActiveBuffer */
+};
+
+__declspec(align(4)) ImageObject_00545934 g_ImageObject_00545934 = {
     0, /* 00545934 g_FrontendPendingPageActionDepth */
+};
+
+__declspec(align(8)) ImageObject_00545938 g_ImageObject_00545938 = {
     /* 00545938 g_FrontendUiActionHandlersPage20 */
     {
         .handlers00_54 = {
@@ -9464,91 +12113,220 @@ ImageData_005456F0 g_ImageData_005456F0 = {
             /* 1 */ (void *)ScenarioCatalog_RebuildLevelRecordListPage,
             /* 2 */ (void *)ScenarioCatalog_RebuildCampaignRecordListPage
         }},
+};
+
+__declspec(align(8)) ImageObject_00545A98 g_ImageObject_00545A98 = {
     /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
     {
         /* 0 */ (void *)ScenarioCatalog_SelectSavedGameAndShowDescription,
         /* 1 */ (void *)ScenarioCatalog_SelectLevelAndShowDescription,
         /* 2 */ (void *)ScenarioCatalog_SelectCampaignAndShowDescription},
+};
+
+__declspec(align(4)) ImageObject_00545AA4 g_ImageObject_00545AA4 = {
     L"engine\\zentrale.rom", /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
+};
+
+__declspec(align(4)) ImageObject_00545ACC g_ImageObject_00545ACC = {
     L"gfx\\texturen\\zentrale.gfx", /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
+};
+
+__declspec(align(16)) ImageObject_00545B00 g_ImageObject_00545B00 = {
     L"gfx\\texturen\\zentrale.pal", /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
+};
+
+__declspec(align(4)) ImageObject_00545B34 g_ImageObject_00545B34 = {
     L"texte\\hilfe.str", /* 00545B34 u_texte_hilfe_str_00545b34 */
+};
+
+__declspec(align(4)) ImageObject_00545B54 g_ImageObject_00545B54 = {
     L"sound\\menue01.sam", /* 00545B54 u_sound_menue01_sam_00545b54 */
+};
+
+__declspec(align(8)) ImageObject_00545B78 g_ImageObject_00545B78 = {
     L"gfx\\panel\\menue.gfx", /* 00545B78 u_gfx_panel_menue_gfx_00545b78 */
+};
+
+__declspec(align(16)) ImageObject_00545BA0 g_ImageObject_00545BA0 = {
     L"texte\\menue.str", /* 00545BA0 u_texte_menue_str_00545ba0 */
+};
+
+__declspec(align(16)) ImageObject_00545BC0 g_ImageObject_00545BC0 = {
     L"texte\\level.str", /* 00545BC0 u_texte_level_str_00545bc0 */
+};
+
+__declspec(align(16)) ImageObject_00545BE0 g_ImageObject_00545BE0 = {
     L"texte\\inhalt.str", /* 00545BE0 u_texte_inhalt_str_00545be0 */
+};
+
+__declspec(align(4)) ImageObject_00545C02 g_ImageObject_00545C02 = {
     {102, 108, 109, 92, 108, 101, 118}, /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: uint16_t[7] L"flm\\lev" without terminator: first half of the mission briefing movie path flm\lev0000.flm, continued by g_FrontendMissionBriefingLevelDigitsUtf16; opened with Movie_Open (ui/frontend/scenario.c) */
     L"0000.flm", /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16: uint16_t[9] L"0000.flm" plus terminator: tail of the briefing movie path; the four digits are overwritten with the level number (ui/frontend/scenario.c) */
+};
+
+__declspec(align(4)) ImageObject_00545C22 g_ImageObject_00545C22 = {
     L"gfx\\panel\\credits.gfx", /* 00545C22 g_CreditsTexturePathUtf16 */
+};
+
+__declspec(align(4)) ImageObject_00545C4E g_ImageObject_00545C4E = {
     L"sound\\music00.sam", /* 00545C4E u_sound_music00_sam_00545c4e */
+};
+
+__declspec(align(4)) ImageObject_00545C72 g_ImageObject_00545C72 = {
     0, /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00545E72 g_ImageObject_00545E72 = {
     "SPIELER=\"SPIEL=\"NETZWERK=\"HOST", /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
+};
+
+__declspec(align(4)) ImageObject_00545E91 g_ImageObject_00545E91 = {
     "NAME=\"CLIENT=\"KARTE=\"", /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
+};
+
+__declspec(align(4)) ImageObject_005460A6 g_ImageObject_005460A6 = {
     L"level\\*.lev", /* 005460A6 u_level___lev_005460a6 */
+};
+
+__declspec(align(4)) ImageObject_005460BE g_ImageObject_005460BE = {
     L"level\\*.str", /* 005460BE u_level___str_005460be */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_00546BB4 g_ImageData_00546BB4 = {
+__declspec(align(4)) ImageObject_00546BB4 g_ImageObject_00546BB4 = {
     {0x00, 0x00, 0x50, 0x52, 0xE8, 0x13, 0x86, 0xEC, 0xFF, 0x58}, /* 00546BB4 gap */
 };
 
-ImageData_00547660 g_ImageData_00547660 = {
+__declspec(align(16)) ImageObject_00547660 g_ImageObject_00547660 = {
     /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
     {
         0x00547680, 0x005476B0, 0x00547700, 0x00547750, 0x005477A0, 0x005477F0, 0x90909090, 0x90909090},
 };
 
-ImageData_00547D88 g_ImageData_00547D88 = {
+__declspec(align(8)) ImageObject_00547D88 g_ImageObject_00547D88 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00547D88 gap */
+};
+
+__declspec(align(16)) ImageObject_00547D90 g_ImageObject_00547D90 = {
     /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
     {
         0x00547DF5, 0x00547DB0, 0x00547DC0, 0x00547DD0, 0x00547DE0, 0x00547DF0, 0x90909090, 0x90909090},
 };
 
-ImageData_00547DD8 g_ImageData_00547DD8 = {
+__declspec(align(8)) ImageObject_00547DD8 g_ImageObject_00547DD8 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00547DD8 gap */
 };
 
-ImageData_005480FC g_ImageData_005480FC = {
+__declspec(align(4)) ImageObject_005480FC g_ImageObject_005480FC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005480FC gap */
+};
+
+__declspec(align(16)) ImageObject_00548100 g_ImageObject_00548100 = {
     /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 */
     {
         /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
         /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
         /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x548140}},
+};
+
+__declspec(align(4)) ImageObject_00548124 g_ImageObject_00548124 = {
     /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
     {
         0x00000000, 0x90909090, 0x90909090},
 };
 
-ImageData_0054D780 g_ImageData_0054D780 = {
+__declspec(align(16)) ImageObject_0054D780 g_ImageObject_0054D780 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0054D780 gap */
+};
+
+__declspec(align(16)) ImageObject_0054D7A0 g_ImageObject_0054D7A0 = {
     {0}, /* 0054D7A0 g_FrontendPacket10000Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D7C0 g_ImageObject_0054D7C0 = {
     {0}, /* 0054D7C0 g_FrontendPacket50001Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D860 g_ImageObject_0054D860 = {
     {0}, /* 0054D860 g_FrontendPacket20002Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D8A0 g_ImageObject_0054D8A0 = {
     {0}, /* 0054D8A0 g_FrontendPacket10003Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D8C0 g_ImageObject_0054D8C0 = {
     {0}, /* 0054D8C0 g_FrontendPacket10004Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D8E0 g_ImageObject_0054D8E0 = {
     {0}, /* 0054D8E0 g_FrontendPacket30005Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D940 g_ImageObject_0054D940 = {
     {0}, /* 0054D940 g_FrontendPacket10006Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D960 g_ImageObject_0054D960 = {
     {0}, /* 0054D960 g_FrontendPacket40008Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054D9E0 g_ImageObject_0054D9E0 = {
     {0}, /* 0054D9E0 g_FrontendPacket10009Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054DA00 g_ImageObject_0054DA00 = {
     {0}, /* 0054DA00 g_FrontendPacket8000ABuffer */
+};
+
+__declspec(align(16)) ImageObject_0054DB00 g_ImageObject_0054DB00 = {
     {0}, /* 0054DB00 g_FrontendPlayerRemovalPacket10007 */
+};
+
+__declspec(align(16)) ImageObject_0054DB20 g_ImageObject_0054DB20 = {
     {0}, /* 0054DB20 g_FrontendPlayerCommandRecords */
+};
+
+__declspec(align(16)) ImageObject_0054DC20 g_ImageObject_0054DC20 = {
     {0}, /* 0054DC20 g_FrontendCommandBatchPacketBuffer */
+};
+
+__declspec(align(16)) ImageObject_0054DD20 g_ImageObject_0054DD20 = {
     {0}, /* 0054DD20 g_FrontendPacket10011Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054DD40 g_ImageObject_0054DD40 = {
     {0}, /* 0054DD40 g_FrontendPacket10012Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054DD60 g_ImageObject_0054DD60 = {
     {0}, /* 0054DD60 g_FrontendPacket10013Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054DD80 g_ImageObject_0054DD80 = {
     {0}, /* 0054DD80 g_FrontendPacket10032Buffer */
+};
+
+__declspec(align(16)) ImageObject_0054DDA0 g_ImageObject_0054DDA0 = {
     0, /* 0054DDA0 g_FrontendPendingSessionPlayerCount */
     {0},
+};
+
+__declspec(align(8)) ImageObject_0054DDA8 g_ImageObject_0054DDA8 = {
     0, /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
+};
+
+__declspec(align(4)) ImageObject_0054DDAC g_ImageObject_0054DDAC = {
     0, /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
+};
+
+__declspec(align(16)) ImageObject_0054DDB0 g_ImageObject_0054DDB0 = {
     0, /* 0054DDB0 g_FrontendPlayerListRows */
+};
+
+__declspec(align(4)) ImageObject_0054DDB4 g_ImageObject_0054DDB4 = {
     0, /* 0054DDB4 g_FrontendPlayerListRow1 */
     0, /* 0054DDB8 g_FrontendPlayerListRow2 */
     0, /* 0054DDBC g_FrontendPlayerListRow3 */
@@ -9556,52 +12334,139 @@ ImageData_0054D780 g_ImageData_0054D780 = {
     0, /* 0054DDC4 g_FrontendPlayerListRow5 */
     0, /* 0054DDC8 g_FrontendPlayerListRow6 */
     0, /* 0054DDCC g_FrontendPlayerListRow7 */
+};
+
+__declspec(align(16)) ImageObject_0054DDD0 g_ImageObject_0054DDD0 = {
     {0}, /* 0054DDD0 g_FrontendNetworkEndpointScratch */
+};
+
+__declspec(align(16)) ImageObject_0054DDE0 g_ImageObject_0054DDE0 = {
     0, /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(8)) ImageObject_0054DDE8 g_ImageObject_0054DDE8 = {
     0, /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_0054DDF0 g_ImageObject_0054DDF0 = {
     0, /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_0054DE30 g_ImageObject_0054DE30 = {
     0, /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
     {0},
     {0},
 };
 
-ImageData_0054FBB0 g_ImageData_0054FBB0 = {
+__declspec(align(16)) ImageObject_0054FBB0 g_ImageObject_0054FBB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0054FBB0 gap */
+};
+
+__declspec(align(16)) ImageObject_0054FBC0 g_ImageObject_0054FBC0 = {
     /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
     {
         .frameUpdate = (void *)InGameUiRoot_UpdateFrame,
         .keyboardFallback = (void *)InGameHotkeys_DispatchCommandByFlags},
+};
+
+__declspec(align(4)) ImageObject_0054FBD4 g_ImageObject_0054FBD4 = {
     0, /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
+};
+
+__declspec(align(8)) ImageObject_0054FBD8 g_ImageObject_0054FBD8 = {
     0, /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0054FBDC g_ImageObject_0054FBDC = {
     {0}, /* 0054FBDC g_InGamePlayerStatusTextSlots */
+};
+
+__declspec(align(4)) ImageObject_0054FFDC g_ImageObject_0054FFDC = {
     {0}, /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055005C g_ImageObject_0055005C = {
     {0}, /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_005500DC g_ImageObject_005500DC = {
     {0}, /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055015C g_ImageObject_0055015C = {
     {0}, /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_005501DC g_ImageObject_005501DC = {
     {0}, /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055025C g_ImageObject_0055025C = {
     {0}, /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
+};
+
+__declspec(align(4)) ImageObject_005502DC g_ImageObject_005502DC = {
     {0}, /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055035C g_ImageObject_0055035C = {
     {0}, /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_005503DC g_ImageObject_005503DC = {
     {0}, /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055045C g_ImageObject_0055045C = {
     {0}, /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
+};
+
+__declspec(align(4)) ImageObject_005504DC g_ImageObject_005504DC = {
     0, /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_005504FC g_ImageObject_005504FC = {
     32774, /* 005504FC g_InGameTechnologyCostRichTextScratch: uint16_t rich-text command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR) that heads the technology cost stream; its 8 payload units are g_InGameTechnologyCostColorWords8, then the xenite cost text follows; patched in as payload 0 of the technology label (ui/ingame/technology.c) */
+};
+
+__declspec(align(4)) ImageObject_005504FE g_ImageObject_005504FE = {
     {0}, /* 005504FE g_InGameTechnologyCostColorWords8 */
+};
+
+__declspec(align(4)) ImageObject_0055050E g_ImageObject_0055050E = {
     {0}, /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055052E g_ImageObject_0055052E = {
     {0}, /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055054E g_ImageObject_0055054E = {
     {0}, /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055056E g_ImageObject_0055056E = {
     {0}, /* 0055056E g_InGameHudNumberTextUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0055058E g_ImageObject_0055058E = {
     0, /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
     {0},
+};
+
+__declspec(align(16)) ImageObject_00550590 g_ImageObject_00550590 = {
     {0}, /* 00550590 g_InGameCountdownTextUtf16 */
+};
+
+__declspec(align(16)) ImageObject_005505A0 g_ImageObject_005505A0 = {
     /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
     {
         { /* +0000 inGameRootPanel g_UiPanelControlVtable */
@@ -13427,52 +16292,91 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_0055EFB0 g_ImageData_0055EFB0 = {
+__declspec(align(16)) ImageObject_0055EFB0 g_ImageObject_0055EFB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055EFB0 gap */
+};
+
+__declspec(align(16)) ImageObject_0055EFC0 g_ImageObject_0055EFC0 = {
     {0}, /* 0055EFC0 g_InGameCommandQueueRecords */
+};
+
+__declspec(align(16)) ImageObject_0055F0C0 g_ImageObject_0055F0C0 = {
     (void *)&g_InGameCommandQueueRecords, /* 0055F0C0 g_InGameCommandQueueEnd */
+};
+
+__declspec(align(4)) ImageObject_0055F0C4 g_ImageObject_0055F0C4 = {
     0, /* 0055F0C4 g_InGameSelectionInsertTripletDwords */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_0055F0F4 g_ImageObject_0055F0F4 = {
     0, /* 0055F0F4 g_InGameSelectionRemoveTripletDwords */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_0055F124 g_ImageObject_0055F124 = {
     0, /* 0055F124 g_InGameSelectionInsertTripletDwordCount */
+};
+
+__declspec(align(8)) ImageObject_0055F128 g_ImageObject_0055F128 = {
     0, /* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
     {
         0x90909090},
 };
 
-ImageData_0055F7B4 g_ImageData_0055F7B4 = {
+__declspec(align(4)) ImageObject_0055F7B4 g_ImageObject_0055F7B4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F7B4 gap */
+};
+
+__declspec(align(16)) ImageObject_0055F7C0 g_ImageObject_0055F7C0 = {
     /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
     {
         0x0055F820, 0x0055F820},
+};
+
+__declspec(align(8)) ImageObject_0055F7C8 g_ImageObject_0055F7C8 = {
     /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
     {
         0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903, 0x0055F8C0, 0x0055F8D0,
         0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903},
 };
 
-ImageData_0055F934 g_ImageData_0055F934 = {
+__declspec(align(4)) ImageObject_0055F934 g_ImageObject_0055F934 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F934 gap */
+};
+
+__declspec(align(16)) ImageObject_0055F940 g_ImageObject_0055F940 = {
     /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
     {
         0x0055FA13},
+};
+
+__declspec(align(4)) ImageObject_0055F944 g_ImageObject_0055F944 = {
     /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
     {
         0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13},
+};
+
+__declspec(align(16)) ImageObject_0055F960 g_ImageObject_0055F960 = {
     /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
     {
         0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13},
 };
 
-ImageData_00562498 g_ImageData_00562498 = {
+__declspec(align(8)) ImageObject_00562498 g_ImageObject_00562498 = {
     {0}, /* 00562498 gap */
+};
+
+__declspec(align(4)) ImageObject_00562499 g_ImageObject_00562499 = {
     0x90, /* 00562499 InGameCommandHandlerCodeRegionEnd */
     {
         0x90909090},
     {0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_005624A0 g_ImageObject_005624A0 = {
     /* 005624A0 g_InGameUiActionHandlersPage10 */
     {
         .handlers = {
@@ -13583,10 +16487,25 @@ ImageData_00562498 g_ImageData_00562498 = {
             /* 26 */ (void *)InGameAudioSettings_SetMovieAlternateGain,
             /* 27 */ (void *)InGameGameplaySettings_SetHidePanel
         }},
+};
+
+__declspec(align(8)) ImageObject_00562628 g_ImageObject_00562628 = {
     {45584, 45712, 45840, 45968, 46096, 46224, 46352, 46480}, /* 00562628 g_UiAction100AControlOffsets */
+};
+
+__declspec(align(8)) ImageObject_00562648 g_ImageObject_00562648 = {
     0, /* 00562648 g_UiCatalogGroup48ColumnCount */
+};
+
+__declspec(align(4)) ImageObject_0056264C g_ImageObject_0056264C = {
     0, /* 0056264C g_UiCatalogGroup42ColumnCount */
+};
+
+__declspec(align(16)) ImageObject_00562650 g_ImageObject_00562650 = {
     0, /* 00562650 g_UiCommandSpriteVariantAColumnCount */
+};
+
+__declspec(align(4)) ImageObject_00562654 g_ImageObject_00562654 = {
     /* 00562654 g_UiCatalogGroup48OffsetTables */
     {
         /* 0 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
@@ -13598,6 +16517,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 6 */ (void *)&g_UiCatalogGroup48Offsets6Columns,
         /* 7 */ (void *)&g_UiCatalogGroup48Offsets7Columns,
         /* 8 */ (void *)&g_UiCatalogGroup48Offsets8Columns},
+};
+
+__declspec(align(8)) ImageObject_00562678 g_ImageObject_00562678 = {
     /* 00562678 g_UiCatalogGroup42OffsetTables */
     {
         /* 0 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
@@ -13607,6 +16529,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 4 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
         /* 5 */ (void *)&g_UiCatalogGroup42Offsets5Columns,
         /* 6 */ (void *)&g_UiCatalogGroup42Offsets6Columns},
+};
+
+__declspec(align(4)) ImageObject_00562694 g_ImageObject_00562694 = {
     /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
     {
         /* 0 */ (void *)&g_UiCommandSpriteVariantAOffsets,
@@ -13614,6 +16539,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 2 */ (void *)&g_UiCommandSpriteVariantAOffsets,
         /* 3 */ (void *)&g_UiCommandSpriteVariantAOffsets,
         /* 4 */ (void *)&g_UiCommandSpriteVariantAOffsets},
+};
+
+__declspec(align(8)) ImageObject_005626A8 g_ImageObject_005626A8 = {
     /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
     {
         /*  0 */ 24188, 24316, 24444, 24572, 24700, 24828, 24956, 25084,
@@ -13622,6 +16550,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 27260, 27388, 27516, 27644, 27772, 27900, 28028, 28156,
         /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
         /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204},
+};
+
+__declspec(align(8)) ImageObject_00562768 g_ImageObject_00562768 = {
     /* 00562768 g_UiCatalogGroup48Offsets5Columns */
     {
         /*  0 */ 24188, 24316, 24444, 24572, 27260, 24700, 24828, 24956,
@@ -13630,6 +16561,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 27772, 26748, 26876, 27004, 27132, 27900, 28028, 28156,
         /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
         /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204},
+};
+
+__declspec(align(8)) ImageObject_00562828 g_ImageObject_00562828 = {
     /* 00562828 g_UiCatalogGroup48Offsets6Columns */
     {
         /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 24700, 24828,
@@ -13638,6 +16572,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 26236, 26364, 26492, 26620, 27772, 28540, 26748, 26876,
         /* 32 */ 27004, 27132, 27900, 28668, 28796, 28924, 29052, 29180,
         /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204},
+};
+
+__declspec(align(8)) ImageObject_005628E8 g_ImageObject_005628E8 = {
     /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
     {
         /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 24700,
@@ -13646,6 +16583,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 26108, 27644, 28412, 29180, 26236, 26364, 26492, 26620,
         /* 32 */ 27772, 28540, 29308, 26748, 26876, 27004, 27132, 27900,
         /* 40 */ 28668, 29436, 29564, 29692, 29820, 29948, 30076, 30204},
+};
+
+__declspec(align(8)) ImageObject_005629A8 g_ImageObject_005629A8 = {
     /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
     {
         /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 29564,
@@ -13654,6 +16594,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 25724, 25852, 25980, 26108, 27644, 28412, 29180, 29948,
         /* 32 */ 26236, 26364, 26492, 26620, 27772, 28540, 29308, 30076,
         /* 40 */ 26748, 26876, 27004, 27132, 27900, 28668, 29436, 30204},
+};
+
+__declspec(align(8)) ImageObject_00562A68 g_ImageObject_00562A68 = {
     /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
     {
         /*  0 */ 30536, 30664, 30792, 30920, 31048, 31176, 31304, 31432,
@@ -13662,6 +16605,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 33608, 33736, 33864, 33992, 34120, 34248, 34376, 34504,
         /* 32 */ 34632, 34760, 34888, 35016, 35144, 35272, 35400, 35528,
         /* 40 */ 35656, 35784},
+};
+
+__declspec(align(16)) ImageObject_00562B10 g_ImageObject_00562B10 = {
     /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
     {
         /*  0 */ 30536, 30664, 30792, 30920, 34120, 31048, 31176, 31304,
@@ -13670,6 +16616,9 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 34632, 33096, 33224, 33352, 33480, 34760, 33608, 33736,
         /* 32 */ 33864, 33992, 34888, 35016, 35144, 35272, 35400, 35528,
         /* 40 */ 35656, 35784},
+};
+
+__declspec(align(8)) ImageObject_00562BB8 g_ImageObject_00562BB8 = {
     /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
     {
         /*  0 */ 30536, 30664, 30792, 30920, 34120, 35016, 31048, 31176,
@@ -13678,90 +16627,309 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 24 */ 32584, 32712, 32840, 32968, 34632, 35528, 33096, 33224,
         /* 32 */ 33352, 33480, 34760, 35656, 33608, 33736, 33864, 33992,
         /* 40 */ 34888, 35784},
+};
+
+__declspec(align(16)) ImageObject_00562C60 g_ImageObject_00562C60 = {
     /* 00562C60 g_UiCommandSpriteVariantAOffsets */
     {
         /*  0 */ 36116, 36240, 36364, 36488, 36612, 36736, 36860, 36984,
         /*  8 */ 37108, 37232, 37356, 37480, 37604, 37728, 37852, 37976,
         /* 16 */ 38100, 38224, 38348, 38472, 38596, 38720, 38844, 38968},
+};
+
+__declspec(align(16)) ImageObject_00562CC0 g_ImageObject_00562CC0 = {
     {20540, 20632, 20724, 20816, 20908, 21000, 21092}, /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
+};
+
+__declspec(align(4)) ImageObject_00562CDC g_ImageObject_00562CDC = {
     {21184, 21276, 21368, 21460, 21552, 21644, 21736}, /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
+};
+
+__declspec(align(8)) ImageObject_00562CF8 g_ImageObject_00562CF8 = {
     {22472, 22564, 22656, 22748, 22840, 22932, 23024}, /* 00562CF8 g_UiAction1012IconImageOffsets */
+};
+
+__declspec(align(4)) ImageObject_00562D14 g_ImageObject_00562D14 = {
     {0x5544, 0x55A0, 0x55FC, 0x5658, 0x56B4, 0x5710, 0x576C}, /* 00562D14 g_UiAction1012StateTextOffsets */
+};
+
+__declspec(align(16)) ImageObject_00562D30 g_ImageObject_00562D30 = {
     {23116, 23240, 23364, 23488, 23612, 23736, 23860}, /* 00562D30 g_UiAction1012ControlOffsets */
+};
+
+__declspec(align(4)) ImageObject_00562D4C g_ImageObject_00562D4C = {
     {19924, 20012, 20100, 20188, 20276, 20364, 20452}, /* 00562D4C g_UiAction1012SlotPageOffsets */
+};
+
+__declspec(align(8)) ImageObject_00562D68 g_ImageObject_00562D68 = {
     {5444, 5548, 5652, 5756, 5860, 5964, 6068}, /* 00562D68 g_TechnologyPanelRowFlagOffsets */
+};
+
+__declspec(align(4)) ImageObject_00562D84 g_ImageObject_00562D84 = {
     {6164, 6256, 6348, 6440, 6532, 6624, 6716}, /* 00562D84 g_TechnologyPanelRowValueOffsets */
+};
+
+__declspec(align(16)) ImageObject_00562DA0 g_ImageObject_00562DA0 = {
     {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520}, /* 00562DA0 g_InGameSelectionDetailGridCellOffsets */
+};
+
+__declspec(align(16)) ImageObject_00562DD0 g_ImageObject_00562DD0 = {
     {8420, 8516, 8612, 8708, 8804, 8900, 8996}, /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
+};
+
+__declspec(align(4)) ImageObject_00562DEC g_ImageObject_00562DEC = {
     /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
     {
         .primaryUpdate = {.army = (void *)ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, .shot = (void *)ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects, .effect = (void *)EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions},
         .terrainStateRefresh = {.army = (void *)ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint, .shot = (void *)ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint, .effect = (void *)EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint},
         .occupancyRebuild = {.army = (void *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback, .shot = (void *)ShotRuntimeMaintenance_OccupancyRebuildNoOp, .effect = (void *)EffectRuntimeMaintenance_OccupancyRebuildNoOp},
         .audioRefresh = {.army = (void *)ArmyRuntimeMaintenance_DispatchClassMethodDRecursive, .shot = (void *)ShotRuntimeMaintenance_UpdateHierarchyProjectedSound, .effect = (void *)EffectRuntimeMaintenance_AudioRefreshNoOp}},
+};
+
+__declspec(align(4)) ImageObject_00562E1C g_ImageObject_00562E1C = {
     {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB}, /* 00562E1C g_UiAction1012SubresourceByState: uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
+};
+
+__declspec(align(8)) ImageObject_00562E48 g_ImageObject_00562E48 = {
     {0}, /* 00562E48 g_InGameOwnedEntityTransientEffectMarkers */
+};
+
+__declspec(align(8)) ImageObject_00562EC8 g_ImageObject_00562EC8 = {
     0, /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
+};
+
+__declspec(align(4)) ImageObject_00562ECC g_ImageObject_00562ECC = {
     {0}, /* 00562ECC g_InGameCommandTargetTransientEffectMarkers */
+};
+
+__declspec(align(4)) ImageObject_005630CC g_ImageObject_005630CC = {
     0, /* 005630CC g_InGameCommandTargetTransientEffectMarkerCount */
+};
+
+__declspec(align(16)) ImageObject_005630D0 g_ImageObject_005630D0 = {
     L"gfx\\panel\\panel0.gfx", /* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
+};
+
+__declspec(align(4)) ImageObject_005630FA g_ImageObject_005630FA = {
     L"gfx\\panel\\tech.gfx", /* 005630FA u_gfx_panel_tech_gfx_005630fa */
+};
+
+__declspec(align(16)) ImageObject_00563120 g_ImageObject_00563120 = {
     L"gfx\\panel\\diagram0.gfx", /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
+};
+
+__declspec(align(4)) ImageObject_0056314E g_ImageObject_0056314E = {
     L"flm\\movie000.flm", /* 0056314E u_flm_movie000_flm_0056314e */
+};
+
+__declspec(align(16)) ImageObject_00563170 g_ImageObject_00563170 = {
     L"texte\\help.str", /* 00563170 u_texte_help_str_00563170 */
+};
+
+__declspec(align(4)) ImageObject_0056318E g_ImageObject_0056318E = {
     L"gfx\\panel\\window.gfx", /* 0056318E u_gfx_panel_window_gfx_0056318e */
+};
+
+__declspec(align(8)) ImageObject_005631B8 g_ImageObject_005631B8 = {
     L"texte\\tastatur.str", /* 005631B8 u_texte_tastatur_str_005631b8 */
+};
+
+__declspec(align(4)) ImageObject_005631DE g_ImageObject_005631DE = {
     L"Oh grosser Thomas, erl\366se mich!", /* 005631DE g_DeveloperChatPhraseUtf16 */
+};
+
+__declspec(align(4)) ImageObject_0056321E g_ImageObject_0056321E = {
     L"Hmmm, na gut... ;-)", /* 0056321E u_Hmmm__na_gut________0056321e */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_00563260 g_ImageObject_00563260 = {
     0, /* 00563260 g_UiCommandRuntimeFlags */
+};
+
+__declspec(align(4)) ImageObject_00563264 g_ImageObject_00563264 = {
     0, /* 00563264 g_InGameSimulationStepTicks */
+};
+
+__declspec(align(8)) ImageObject_00563268 g_ImageObject_00563268 = {
     0, /* 00563268 g_InGamePendingSimulationTicks */
+};
+
+__declspec(align(4)) ImageObject_0056326C g_ImageObject_0056326C = {
     0, /* 0056326C g_InGameSessionNotificationTimeoutTicks */
+};
+
+__declspec(align(16)) ImageObject_00563270 g_ImageObject_00563270 = {
     0, /* 00563270 g_EndGameResultsCurrentMusicTrackId */
+};
+
+__declspec(align(4)) ImageObject_00563274 g_ImageObject_00563274 = {
     0, /* 00563274 g_InGameNetworkTickCountdown */
+};
+
+__declspec(align(8)) ImageObject_00563278 g_ImageObject_00563278 = {
     0, /* 00563278 g_InGameStateTickSpinLock */
+};
+
+__declspec(align(4)) ImageObject_0056327C g_ImageObject_0056327C = {
     0, /* 0056327C g_InGameRuntimeRoot */
+};
+
+__declspec(align(16)) ImageObject_00563280 g_ImageObject_00563280 = {
     0, /* 00563280 g_InGamePanelTextureSource */
+};
+
+__declspec(align(4)) ImageObject_00563284 g_ImageObject_00563284 = {
     0, /* 00563284 g_InGameDiagramTextureSource */
+};
+
+__declspec(align(8)) ImageObject_00563288 g_ImageObject_00563288 = {
     0, /* 00563288 g_InGameTechnologyTextureSource */
+};
+
+__declspec(align(4)) ImageObject_0056328C g_ImageObject_0056328C = {
     0, /* 0056328C g_InGameWindowTextureSource */
+};
+
+__declspec(align(16)) ImageObject_00563290 g_ImageObject_00563290 = {
     0, /* 00563290 g_InGamePanelTextureSubresource00Width */
+};
+
+__declspec(align(4)) ImageObject_00563294 g_ImageObject_00563294 = {
     0, /* 00563294 g_InGamePanelTextureSubresource01Width */
+};
+
+__declspec(align(8)) ImageObject_00563298 g_ImageObject_00563298 = {
     0, /* 00563298 g_InGamePanelTextureSubresource02Width */
+};
+
+__declspec(align(4)) ImageObject_0056329C g_ImageObject_0056329C = {
     0, /* 0056329C g_InGamePanelTextureSubresource06Width */
+};
+
+__declspec(align(16)) ImageObject_005632A0 g_ImageObject_005632A0 = {
     0, /* 005632A0 g_InGamePanelTextureSubresource07Width */
+};
+
+__declspec(align(4)) ImageObject_005632A4 g_ImageObject_005632A4 = {
     0, /* 005632A4 g_InGamePanelTextureSubresource27Width */
+};
+
+__declspec(align(8)) ImageObject_005632A8 g_ImageObject_005632A8 = {
     0, /* 005632A8 g_InGamePanelTextureSubresource28Width */
+};
+
+__declspec(align(4)) ImageObject_005632AC g_ImageObject_005632AC = {
     0, /* 005632AC g_InGamePanelTextureSubresource19Width */
+};
+
+__declspec(align(16)) ImageObject_005632B0 g_ImageObject_005632B0 = {
     0, /* 005632B0 g_InGamePanelTextureSubresource20Width */
+};
+
+__declspec(align(4)) ImageObject_005632B4 g_ImageObject_005632B4 = {
     0, /* 005632B4 g_InGamePanelTextureSubresource34Width */
+};
+
+__declspec(align(8)) ImageObject_005632B8 g_ImageObject_005632B8 = {
     0, /* 005632B8 g_InGamePanelTextureSubresource32Width */
+};
+
+__declspec(align(4)) ImageObject_005632BC g_ImageObject_005632BC = {
     0, /* 005632BC g_InGamePanelTextureSubresource33Width */
+};
+
+__declspec(align(16)) ImageObject_005632C0 g_ImageObject_005632C0 = {
     0, /* 005632C0 g_InGamePanelTextureSubresource02Height */
+};
+
+__declspec(align(4)) ImageObject_005632C4 g_ImageObject_005632C4 = {
     0, /* 005632C4 g_InGamePanelTextureSubresource03Height */
+};
+
+__declspec(align(8)) ImageObject_005632C8 g_ImageObject_005632C8 = {
     0, /* 005632C8 g_InGamePanelTextureSubresource04Height */
+};
+
+__declspec(align(4)) ImageObject_005632CC g_ImageObject_005632CC = {
     0, /* 005632CC g_InGamePanelTextureSubresource05Height */
+};
+
+__declspec(align(16)) ImageObject_005632D0 g_ImageObject_005632D0 = {
     0, /* 005632D0 g_InGamePanelTextureSubresource36Height */
+};
+
+__declspec(align(4)) ImageObject_005632D4 g_ImageObject_005632D4 = {
     0, /* 005632D4 g_InGamePanelTextureSubresource37Height */
+};
+
+__declspec(align(8)) ImageObject_005632D8 g_ImageObject_005632D8 = {
     0, /* 005632D8 g_InGamePanelTextureSubresource06Height */
+};
+
+__declspec(align(4)) ImageObject_005632DC g_ImageObject_005632DC = {
     0, /* 005632DC g_InGamePanelTextureSubresource00Height */
+};
+
+__declspec(align(16)) ImageObject_005632E0 g_ImageObject_005632E0 = {
     0, /* 005632E0 g_InGamePanelTextureSubresource07Height */
+};
+
+__declspec(align(4)) ImageObject_005632E4 g_ImageObject_005632E4 = {
     0, /* 005632E4 g_InGamePanelTextureSubresource26Height */
+};
+
+__declspec(align(8)) ImageObject_005632E8 g_ImageObject_005632E8 = {
     0, /* 005632E8 g_InGamePanelTextureSubresource31Height */
+};
+
+__declspec(align(4)) ImageObject_005632EC g_ImageObject_005632EC = {
     0, /* 005632EC g_InGamePanelTextureSubresource18Height */
+};
+
+__declspec(align(16)) ImageObject_005632F0 g_ImageObject_005632F0 = {
     0, /* 005632F0 g_InGamePanelTextureSubresource23Height */
+};
+
+__declspec(align(4)) ImageObject_005632F4 g_ImageObject_005632F4 = {
     0, /* 005632F4 g_InGamePanelTextureSubresource34Height */
+};
+
+__declspec(align(8)) ImageObject_005632F8 g_ImageObject_005632F8 = {
     0, /* 005632F8 g_InGamePanelTextureSubresource32Height */
+};
+
+__declspec(align(4)) ImageObject_005632FC g_ImageObject_005632FC = {
     0, /* 005632FC g_UiHoverSelectionRecord */
+};
+
+__declspec(align(16)) ImageObject_00563300 g_ImageObject_00563300 = {
     0, /* 00563300 g_InGameSelectedTechnologyId */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00563320 g_ImageObject_00563320 = {
     0, /* 00563320 g_MoviePlaybackBaseFrameGroup */
+};
+
+__declspec(align(4)) ImageObject_00563324 g_ImageObject_00563324 = {
     0, /* 00563324 g_MoviePlaybackScheduleCounter */
+};
+
+__declspec(align(8)) ImageObject_00563328 g_ImageObject_00563328 = {
     0, /* 00563328 g_MoviePlaybackScheduleSpan */
+};
+
+__declspec(align(4)) ImageObject_0056332C g_ImageObject_0056332C = {
     0, /* 0056332C g_MoviePlaybackCurrentFrame */
+};
+
+__declspec(align(16)) ImageObject_00563330 g_ImageObject_00563330 = {
     20, /* 00563330 g_DebugOverlayCounterRefreshCountdown: uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
+};
+
+__declspec(align(4)) ImageObject_00563334 g_ImageObject_00563334 = {
     {0}, /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
     {0}, /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
     {0}, /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
@@ -13777,30 +16945,93 @@ ImageData_00562498 g_ImageData_00562498 = {
     {0}, /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
     {0}, /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
     {0},
+};
+
+__declspec(align(4)) ImageObject_00563514 g_ImageObject_00563514 = {
     0, /* 00563514 g_InGameReadyStateToggleFlags */
+};
+
+__declspec(align(8)) ImageObject_00563518 g_ImageObject_00563518 = {
     {0}, /* 00563518 g_UiCatalogGroup48Records */
+};
+
+__declspec(align(8)) ImageObject_005635D8 g_ImageObject_005635D8 = {
     {0}, /* 005635D8 g_UiCatalogGroup42Records */
+};
+
+__declspec(align(16)) ImageObject_00563680 g_ImageObject_00563680 = {
     {0}, /* 00563680 g_UiCommandSpriteVariantARecords */
+};
+
+__declspec(align(16)) ImageObject_005636E0 g_ImageObject_005636E0 = {
     {0}, /* 005636E0 g_UiAction1012TargetPlayerIndices */
+};
+
+__declspec(align(4)) ImageObject_005636FC g_ImageObject_005636FC = {
     0, /* 005636FC g_InGameWorldObjectRecords */
+};
+
+__declspec(align(16)) ImageObject_00563700 g_ImageObject_00563700 = {
     0, /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
+};
+
+__declspec(align(4)) ImageObject_00563704 g_ImageObject_00563704 = {
     0, /* 00563704 g_InGamePlacementHeading16 */
+};
+
+__declspec(align(8)) ImageObject_00563708 g_ImageObject_00563708 = {
     0, /* 00563708 g_InGamePlacementPointerCaptureX */
     0, /* 0056370C g_InGamePlacementPointerCaptureY */
+};
+
+__declspec(align(16)) ImageObject_00563710 g_ImageObject_00563710 = {
     0, /* 00563710 g_InGamePendingPlacementArmyAsset */
+};
+
+__declspec(align(4)) ImageObject_00563714 g_ImageObject_00563714 = {
     0, /* 00563714 g_InGamePlacementPreviewArmyRuntime */
+};
+
+__declspec(align(8)) ImageObject_00563718 g_ImageObject_00563718 = {
     0, /* 00563718 g_InGamePlacementWorldYQ12 */
     0, /* 0056371C g_InGamePlacementWorldXQ12 */
+};
+
+__declspec(align(16)) ImageObject_00563720 g_ImageObject_00563720 = {
     0, /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
+};
+
+__declspec(align(4)) ImageObject_00563724 g_ImageObject_00563724 = {
     0, /* 00563724 g_InGameCommandPreviewArmyRuntime */
+};
+
+__declspec(align(8)) ImageObject_00563728 g_ImageObject_00563728 = {
     0, /* 00563728 g_InGameCommandPreviewHeading16 */
+};
+
+__declspec(align(4)) ImageObject_0056372C g_ImageObject_0056372C = {
     0, /* 0056372C g_InGameCommandPreviewWorldYQ12 */
     0, /* 00563730 g_InGameCommandPreviewWorldXQ12 */
+};
+
+__declspec(align(4)) ImageObject_00563734 g_ImageObject_00563734 = {
     0, /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
+};
+
+__declspec(align(8)) ImageObject_00563738 g_ImageObject_00563738 = {
     0, /* 00563738 g_InGameCommandPointerCaptureX */
     0, /* 0056373C g_InGameCommandPointerCaptureY */
+};
+
+__declspec(align(16)) ImageObject_00563740 g_ImageObject_00563740 = {
     0, /* 00563740 g_InGameCommandPreviewArmyAssetId */
+};
+
+__declspec(align(4)) ImageObject_00563744 g_ImageObject_00563744 = {
     0, /* 00563744 g_InGamePointerInteractionStateFlags */
+};
+
+__declspec(align(8)) ImageObject_00563748 g_ImageObject_00563748 = {
     /* 00563748 g_InGamePointerModeHandlers */
     {
         /* 0 */ 0,
@@ -13811,47 +17042,92 @@ ImageData_00562498 g_ImageData_00562498 = {
         /* 5 */ (void *)SelectionMarkerCoordinates_ApplyType5,
         /* 6 */ (void *)SelectionMarkerCoordinates_ApplyType6,
         /* 7 */ (void *)SelectionMarkerCoordinates_ApplyType7},
+};
+
+__declspec(align(8)) ImageObject_00563768 g_ImageObject_00563768 = {
     {26, 38, 39, 40, 41, 42, 43, 44}, /* 00563768 g_InGamePointerModeCommandIds: uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
+};
+
+__declspec(align(8)) ImageObject_00563788 g_ImageObject_00563788 = {
     {0, 240, 242, 240, 244, 240, 242, 240}, /* 00563788 g_InGamePointerModePreviewArmyIds: uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+};
+
+__declspec(align(8)) ImageObject_005637A8 g_ImageObject_005637A8 = {
     0, /* 005637A8 g_ArmyPlacementLateRejectionCount */
+};
+
+__declspec(align(4)) ImageObject_005637AC g_ImageObject_005637AC = {
     0, /* 005637AC g_InGameWorldRuntimeDwordArray256 */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00563BAC g_ImageObject_00563BAC = {
     0, /* 00563BAC g_EndMovieSelectionIndex */
+};
+
+__declspec(align(16)) ImageObject_00563BB0 g_ImageObject_00563BB0 = {
     0, /* 00563BB0 g_EndMovieVariantIndex */
+};
+
+__declspec(align(4)) ImageObject_00563BB4 g_ImageObject_00563BB4 = {
     0, /* 00563BB4 g_EndMoviePath */
+};
+
+__declspec(align(8)) ImageObject_00563BB8 g_ImageObject_00563BB8 = {
     0, /* 00563BB8 g_EndMoviePendingTicks */
+};
+
+__declspec(align(4)) ImageObject_00563BBC g_ImageObject_00563BBC = {
     0, /* 00563BBC g_OldUnitSecondaryTable */
+};
+
+__declspec(align(16)) ImageObject_00563BC0 g_ImageObject_00563BC0 = {
     0, /* 00563BC0 g_OldUnitPrimaryTable */
+};
+
+__declspec(align(4)) ImageObject_00563BC4 g_ImageObject_00563BC4 = {
     0, /* 00563BC4 g_OldUnitRecordCount */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_005658BC g_ImageData_005658BC = {
+__declspec(align(4)) ImageObject_005658BC g_ImageObject_005658BC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005658BC gap */
+};
+
+__declspec(align(16)) ImageObject_005658C0 g_ImageObject_005658C0 = {
     /* 005658C0 g_EndMovieCommandDispatchRecords */
     {
         /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990},
         /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0}},
+};
+
+__declspec(align(8)) ImageObject_005658D8 g_ImageObject_005658D8 = {
     /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
     {
         0x00000000, 0x90909090},
 };
 
-ImageData_00565E2C g_ImageData_00565E2C = {
+__declspec(align(4)) ImageObject_00565E2C g_ImageObject_00565E2C = {
     {0x00, 0x00, 0x00, 0x90}, /* 00565E2C gap */
 };
 
-ImageData_00566034 g_ImageData_00566034 = {
+__declspec(align(4)) ImageObject_00566034 g_ImageObject_00566034 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00566034 gap */
+};
+
+__declspec(align(16)) ImageObject_00566040 g_ImageObject_00566040 = {
     /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
     {
         0x00566060, 0x00566080, 0x00566090, 0x005660A0, 0x005660F0, 0x00566100, 0x00566110, 0x00566120},
 };
 
-ImageData_0056710C g_ImageData_0056710C = {
+__declspec(align(4)) ImageObject_0056710C g_ImageObject_0056710C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0056710C gap */
+};
+
+__declspec(align(16)) ImageObject_00567110 g_ImageObject_00567110 = {
     /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 */
     {
         /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567870},
@@ -13869,13 +17145,19 @@ ImageData_0056710C g_ImageData_0056710C = {
         /* 12 */ {.commandCode = 0x30078, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567200},
         /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567230},
         /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5671E0}},
+};
+
+__declspec(align(4)) ImageObject_005671C4 g_ImageObject_005671C4 = {
     /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
     {
         0x00000000, 0x90909090, 0x90909090},
 };
 
-ImageData_005679AC g_ImageData_005679AC = {
+__declspec(align(4)) ImageObject_005679AC g_ImageObject_005679AC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005679AC gap */
+};
+
+__declspec(align(16)) ImageObject_005679B0 g_ImageObject_005679B0 = {
     /* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
     {
         /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
@@ -13941,49 +17223,115 @@ ImageData_005679AC g_ImageData_005679AC = {
         /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190},
         /* 61 */ {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0},
         /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130}},
+};
+
+__declspec(align(4)) ImageObject_00567CA4 g_ImageObject_00567CA4 = {
     /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
     {
         0x00000000, 0x90909090, 0x90909090},
 };
 
-ImageData_0056A604 g_ImageData_0056A604 = {
+__declspec(align(4)) ImageObject_0056A604 g_ImageObject_0056A604 = {
     0, /* 0056A604 g_InGameSessionStartedNetworked */
     {
         0x90909090, 0x90909090},
     {0x90, 0x90, 0x90},
 };
 
-ImageData_0056D33C g_ImageData_0056D33C = {
+__declspec(align(4)) ImageObject_0056D33C g_ImageObject_0056D33C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0056D33C gap */
+};
+
+__declspec(align(16)) ImageObject_0056D340 g_ImageObject_0056D340 = {
     /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
     {
         0x0056D4A0, 0x0056D3A0, 0x0056D3F0, 0x0056D380, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0,
         0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0},
 };
 
-ImageData_0056D71C g_ImageData_0056D71C = {
+__declspec(align(4)) ImageObject_0056D71C g_ImageObject_0056D71C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0056D71C gap */
+};
+
+__declspec(align(16)) ImageObject_0056D720 g_ImageObject_0056D720 = {
     0, /* 0056D720 g_UiCommandModeG */
+};
+
+__declspec(align(4)) ImageObject_0056D724 g_ImageObject_0056D724 = {
     0, /* 0056D724 g_UiCommandModeC */
+};
+
+__declspec(align(8)) ImageObject_0056D728 g_ImageObject_0056D728 = {
     0, /* 0056D728 g_UiCommandModeD */
+};
+
+__declspec(align(4)) ImageObject_0056D72C g_ImageObject_0056D72C = {
     0, /* 0056D72C g_UiCommandModeE */
+};
+
+__declspec(align(16)) ImageObject_0056D730 g_ImageObject_0056D730 = {
     0, /* 0056D730 g_UiCommandModeA */
+};
+
+__declspec(align(4)) ImageObject_0056D734 g_ImageObject_0056D734 = {
     0, /* 0056D734 g_UiCommandModeB */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0056D73C g_ImageObject_0056D73C = {
     0, /* 0056D73C g_UiCommandModeF */
+};
+
+__declspec(align(16)) ImageObject_0056D740 g_ImageObject_0056D740 = {
     0, /* 0056D740 g_UiCommandAbsoluteSelectionIndex */
+};
+
+__declspec(align(4)) ImageObject_0056D744 g_ImageObject_0056D744 = {
     0, /* 0056D744 g_UiCommandSelectionPageBaseIndex */
+};
+
+__declspec(align(8)) ImageObject_0056D748 g_ImageObject_0056D748 = {
     0, /* 0056D748 g_UiCommandTerrainMaskToggleValue */
+};
+
+__declspec(align(4)) ImageObject_0056D74C g_ImageObject_0056D74C = {
     1, /* 0056D74C g_UiCommandModeGOwnerFactionIndex */
+};
+
+__declspec(align(16)) ImageObject_0056D750 g_ImageObject_0056D750 = {
     0, /* 0056D750 g_UiCommandModeGArmyAssetId */
+};
+
+__declspec(align(4)) ImageObject_0056D754 g_ImageObject_0056D754 = {
     0, /* 0056D754 g_UiCommandDragReferenceX */
     0, /* 0056D758 g_UiCommandDragReferenceY */
+};
+
+__declspec(align(4)) ImageObject_0056D75C g_ImageObject_0056D75C = {
     ARM_0500_LBAUM_MDL0500, /* 0056D75C g_UiCommandMode4ArmyAssetId */
+};
+
+__declspec(align(16)) ImageObject_0056D760 g_ImageObject_0056D760 = {
     0, /* 0056D760 g_UiCommandCallerMaskHighBit */
+};
+
+__declspec(align(4)) ImageObject_0056D764 g_ImageObject_0056D764 = {
     {1, 2, 3, 4, 5, 7}, /* 0056D764 g_UiCommandModeGPrimaryPageIndices: uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
+};
+
+__declspec(align(4)) ImageObject_0056D77C g_ImageObject_0056D77C = {
     {1, 2, 3, 4, 5, 7}, /* 0056D77C g_UiCommandModeGSecondaryPageIndices: uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
+};
+
+__declspec(align(4)) ImageObject_0056D794 g_ImageObject_0056D794 = {
     {1, 2, 3, 4, 5, 7}, /* 0056D794 g_UiCommandModeGTertiaryPageIndices: uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
+};
+
+__declspec(align(4)) ImageObject_0056D7AC g_ImageObject_0056D7AC = {
     {19364, 19484, 19604, 39216, 39336, 39096}, /* 0056D7AC g_UiCommandModeGControlOffsets */
+};
+
+__declspec(align(4)) ImageObject_0056D7C4 g_ImageObject_0056D7C4 = {
     /* 0056D7C4 g_UiCommandModeGHandlers */
     {
         /* 0 */ (void *)InGameCommandModeG_Select0,
@@ -13992,25 +17340,55 @@ ImageData_0056D71C g_ImageData_0056D71C = {
         /* 3 */ (void *)InGameCommandModeG_Select3,
         /* 4 */ (void *)InGameCommandModeG_Select4,
         /* 5 */ (void *)InGameCommandModeG_Select5},
+};
+
+__declspec(align(4)) ImageObject_0056D7DC g_ImageObject_0056D7DC = {
     {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916}, /* 0056D7DC g_UiMappedCommandControlOffsets */
+};
+
+__declspec(align(4)) ImageObject_0056D80C g_ImageObject_0056D80C = {
     0, /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
     0, /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
+};
+
+__declspec(align(4)) ImageObject_0056D814 g_ImageObject_0056D814 = {
     0, /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
     0, /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
+};
+
+__declspec(align(4)) ImageObject_0056D81C g_ImageObject_0056D81C = {
     0, /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
     0, /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
+};
+
+__declspec(align(4)) ImageObject_0056D824 g_ImageObject_0056D824 = {
     0, /* 0056D824 g_UiCommandDragStartScreenX */
     0, /* 0056D828 g_UiCommandDragStartScreenY */
+};
+
+__declspec(align(4)) ImageObject_0056D82C g_ImageObject_0056D82C = {
     0, /* 0056D82C g_TerrainMaterialEditFieldGrid */
+};
+
+__declspec(align(16)) ImageObject_0056D830 g_ImageObject_0056D830 = {
     0, /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
+};
+
+__declspec(align(4)) ImageObject_0056D834 g_ImageObject_0056D834 = {
     0, /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
+};
+
+__declspec(align(8)) ImageObject_0056D838 g_ImageObject_0056D838 = {
     0, /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
     {
         0x90909090},
 };
 
-ImageData_0056E408 g_ImageData_0056E408 = {
+__declspec(align(8)) ImageObject_0056E408 g_ImageObject_0056E408 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056E408 gap */
+};
+
+__declspec(align(16)) ImageObject_0056E410 g_ImageObject_0056E410 = {
     /* 0056E410 g_InGameKeyboardDispatchRecords */
     {
         /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
@@ -14049,13 +17427,19 @@ ImageData_0056E408 g_ImageData_0056E408 = {
         /* 33 */ {.commandCode = 0x30071, .continuationEntryAddress = 0x56EF30},
         /* 34 */ {.commandCode = 0x30079, .continuationEntryAddress = 0x56EF50},
         /* 35 */ {.commandCode = 0x30072, .continuationEntryAddress = 0x56F140}},
+};
+
+__declspec(align(16)) ImageObject_0056E5C0 g_ImageObject_0056E5C0 = {
     0, /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
     {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0056F278 g_ImageData_0056F278 = {
+__declspec(align(8)) ImageObject_0056F278 g_ImageObject_0056F278 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056F278 gap */
+};
+
+__declspec(align(16)) ImageObject_0056F280 g_ImageObject_0056F280 = {
     /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
     {
         .records = {
@@ -14079,761 +17463,2030 @@ ImageData_0056F278 g_ImageData_0056F278 = {
         .alignmentPadding = {144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144}},
 };
 
-ImageData_0056F81C g_ImageData_0056F81C = {
+__declspec(align(4)) ImageObject_0056F81C g_ImageObject_0056F81C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0056F81C gap */
+};
+
+__declspec(align(16)) ImageObject_0056F820 g_ImageObject_0056F820 = {
     /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x0056F840, 0x0056F8A0, 0x0056F8F0, 0x0056F930, 0x0056FA20, 0x0056FA50, 0x90909090, 0x90909090},
 };
 
-ImageData_0056FA98 g_ImageData_0056FA98 = {
+__declspec(align(8)) ImageObject_0056FA98 g_ImageObject_0056FA98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056FA98 gap */
+};
+
+__declspec(align(16)) ImageObject_0056FAA0 g_ImageObject_0056FAA0 = {
     /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x0056FAC0, 0x0056FD50, 0x0056FED0, 0x00570100, 0x005701B0, 0x00570310, 0x90909090, 0x90909090},
 };
 
-ImageData_00570408 g_ImageData_00570408 = {
+__declspec(align(8)) ImageObject_00570408 g_ImageObject_00570408 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570408 gap */
+};
+
+__declspec(align(16)) ImageObject_00570410 g_ImageObject_00570410 = {
     /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570430, 0x00570770, 0x00570840, 0x00570A10, 0x00570B20, 0x00570CC0, 0x90909090, 0x90909090},
 };
 
-ImageData_00570D90 g_ImageData_00570D90 = {
+__declspec(align(16)) ImageObject_00570D90 g_ImageObject_00570D90 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570D90 gap */
+};
+
+__declspec(align(16)) ImageObject_00570DA0 g_ImageObject_00570DA0 = {
     /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570DC0, 0x00570E40, 0x00570F10, 0x00570EA0, 0x00570EF0, 0x00570F10, 0x90909090, 0x90909090},
 };
 
-ImageData_00570F48 g_ImageData_00570F48 = {
+__declspec(align(8)) ImageObject_00570F48 g_ImageObject_00570F48 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570F48 gap */
+};
+
+__declspec(align(16)) ImageObject_00570F50 g_ImageObject_00570F50 = {
     /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570F70, 0x00570FB0, 0x00571010, 0x00570FE0, 0x00570FE0, 0x00571010, 0x90909090, 0x90909090},
 };
 
-ImageData_00571AE4 g_ImageData_00571AE4 = {
+__declspec(align(4)) ImageObject_00571AE4 g_ImageObject_00571AE4 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571AE4 gap */
 };
 
-ImageData_00571B30 g_ImageData_00571B30 = {
+__declspec(align(16)) ImageObject_00571B30 g_ImageObject_00571B30 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571B30 gap */
 };
 
-ImageData_00571D24 g_ImageData_00571D24 = {
+__declspec(align(4)) ImageObject_00571D24 g_ImageObject_00571D24 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571D24 gap */
 };
 
-ImageData_00571D70 g_ImageData_00571D70 = {
+__declspec(align(16)) ImageObject_00571D70 g_ImageObject_00571D70 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571D70 gap */
 };
 
-ImageData_00572030 g_ImageData_00572030 = {
+__declspec(align(16)) ImageObject_00572030 g_ImageObject_00572030 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00572030 gap */
+};
+
+__declspec(align(16)) ImageObject_00572040 g_ImageObject_00572040 = {
     {0}, /* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
+};
+
+__declspec(align(16)) ImageObject_00572060 g_ImageObject_00572060 = {
     {0}, /* 00572060 g_FrontendClientPlayerCommandRecords */
+};
+
+__declspec(align(16)) ImageObject_00572160 g_ImageObject_00572160 = {
     {0}, /* 00572160 g_FrontendClientCommandBatchPacketBuffer */
+};
+
+__declspec(align(16)) ImageObject_00572260 g_ImageObject_00572260 = {
     {0}, /* 00572260 g_FrontendPacket10021Buffer */
+};
+
+__declspec(align(16)) ImageObject_00572280 g_ImageObject_00572280 = {
     {0}, /* 00572280 g_FrontendPacket10022Buffer */
+};
+
+__declspec(align(16)) ImageObject_005722A0 g_ImageObject_005722A0 = {
     {0}, /* 005722A0 g_FrontendPacket10023Buffer */
 };
 
-ImageData_00572AB0 g_ImageData_00572AB0 = {
+__declspec(align(16)) ImageObject_00572AB0 g_ImageObject_00572AB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00572AB0 gap */
+};
+
+__declspec(align(16)) ImageObject_00572AC0 g_ImageObject_00572AC0 = {
     0, /* 00572AC0 g_DataPackageHandle */
+};
+
+__declspec(align(4)) ImageObject_00572AC4 g_ImageObject_00572AC4 = {
     0, /* 00572AC4 g_ModelPackageHandle */
+};
+
+__declspec(align(8)) ImageObject_00572AC8 g_ImageObject_00572AC8 = {
     0, /* 00572AC8 g_GraphicsPackageHandle */
+};
+
+__declspec(align(4)) ImageObject_00572ACC g_ImageObject_00572ACC = {
     0, /* 00572ACC g_SoundPackageHandle */
+};
+
+__declspec(align(16)) ImageObject_00572AD0 g_ImageObject_00572AD0 = {
     0, /* 00572AD0 g_MoviePackageHandle */
+};
+
+__declspec(align(4)) ImageObject_00572AD4 g_ImageObject_00572AD4 = {
     0, /* 00572AD4 g_LevelPackageHandle */
+};
+
+__declspec(align(8)) ImageObject_00572AD8 g_ImageObject_00572AD8 = {
     {0}, /* 00572AD8 g_UiButtonSoundVoiceSets7 */
+};
+
+__declspec(align(4)) ImageObject_00572AF4 g_ImageObject_00572AF4 = {
     0, /* 00572AF4 g_PcxFunctionModule */
+};
+
+__declspec(align(8)) ImageObject_00572AF8 g_ImageObject_00572AF8 = {
     0, /* 00572AF8 g_PcxFunctionExport3 */
     0, /* 00572AFC g_PcxFunctionExport2 */
+};
+
+__declspec(align(16)) ImageObject_00572B00 g_ImageObject_00572B00 = {
     0, /* 00572B00 g_IntroMoviePendingTicks */
+};
+
+__declspec(align(4)) ImageObject_00572B04 g_ImageObject_00572B04 = {
     0, /* 00572B04 g_InstallRegistryKeyHandle */
+};
+
+__declspec(align(8)) ImageObject_00572B08 g_ImageObject_00572B08 = {
     256, /* 00572B08 g_InstallRegistryValueDataCapacityBytes: uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
+};
+
+__declspec(align(4)) ImageObject_00572B0C g_ImageObject_00572B0C = {
     0, /* 00572B0C g_InstallRegistryValueType */
+};
+
+__declspec(align(16)) ImageObject_00572B10 g_ImageObject_00572B10 = {
     0, /* 00572B10 g_InstallRegistryValueDataA */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_00572C10 g_ImageObject_00572C10 = {
     {0}, /* 00572C10 g_InstallDirectoryScratchUtf16 */
+};
+
+__declspec(align(16)) ImageObject_00572E10 g_ImageObject_00572E10 = {
     L"Thandor", /* 00572E10 u_Thandor_00572e10 */
+};
+
+__declspec(align(16)) ImageObject_00572E20 g_ImageObject_00572E20 = {
     "Software\\Planet4\\Thandor", /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
+};
+
+__declspec(align(4)) ImageObject_00572E39 g_ImageObject_00572E39 = {
     67, /* 00572E39 s_InstallRegistryValueNameCD */
     {68}, /* 00572E3A u_Dscreen00_pcx_00572e3a */
     L"screen00.pcx", /* 00572E3C g_ScreenshotFileNameUtf16 */
+};
+
+__declspec(align(4)) ImageObject_00572E56 g_ImageObject_00572E56 = {
     L"daten.pck", /* 00572E56 u_daten_pck_00572e56 */
+};
+
+__declspec(align(4)) ImageObject_00572E6A g_ImageObject_00572E6A = {
     L"modelle.pck", /* 00572E6A u_modelle_pck_00572e6a */
+};
+
+__declspec(align(4)) ImageObject_00572E82 g_ImageObject_00572E82 = {
     L"graphik.pck", /* 00572E82 u_graphik_pck_00572e82 */
+};
+
+__declspec(align(4)) ImageObject_00572E9A g_ImageObject_00572E9A = {
     L"sound.pck", /* 00572E9A u_sound_pck_00572e9a */
+};
+
+__declspec(align(4)) ImageObject_00572EAE g_ImageObject_00572EAE = {
     L"filme.pck", /* 00572EAE u_filme_pck_00572eae */
+};
+
+__declspec(align(4)) ImageObject_00572EC2 g_ImageObject_00572EC2 = {
     L"level.pck", /* 00572EC2 u_level_pck_00572ec2 */
+};
+
+__declspec(align(4)) ImageObject_00572ED6 g_ImageObject_00572ED6 = {
     /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
     {
         .prefixCodeUnits = {0x70, 0x61, 0x74, 0x63, 0x68},
         .decimalDigits = {.codeUnits = {0x30, 0x30}},
         .suffixCodeUnits = L".pck"},
+};
+
+__declspec(align(4)) ImageObject_00572EEE g_ImageObject_00572EEE = {
     /* 00572EEE g_LevelArchivePathTemplateUtf16 */
     {
         .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C},
         .decimalDigits = {.codeUnits = {0x30, 0x30}},
         .suffixCodeUnits = L".pck"},
+};
+
+__declspec(align(4)) ImageObject_00572F06 g_ImageObject_00572F06 = {
     L"sound\\button0.sam", /* 00572F06 u_sound_button0_sam_00572f06 */
+};
+
+__declspec(align(4)) ImageObject_00572F2A g_ImageObject_00572F2A = {
     L"sound\\button1.sam", /* 00572F2A u_sound_button1_sam_00572f2a */
+};
+
+__declspec(align(4)) ImageObject_00572F4E g_ImageObject_00572F4E = {
     L"sound\\button2.sam", /* 00572F4E u_sound_button2_sam_00572f4e */
+};
+
+__declspec(align(4)) ImageObject_00572F72 g_ImageObject_00572F72 = {
     L"sound\\button3.sam", /* 00572F72 u_sound_button3_sam_00572f72 */
+};
+
+__declspec(align(4)) ImageObject_00572F96 g_ImageObject_00572F96 = {
     L"sound\\button4.sam", /* 00572F96 u_sound_button4_sam_00572f96 */
+};
+
+__declspec(align(4)) ImageObject_00572FBA g_ImageObject_00572FBA = {
     L"sound\\button5.sam", /* 00572FBA u_sound_button5_sam_00572fba */
+};
+
+__declspec(align(4)) ImageObject_00572FDE g_ImageObject_00572FDE = {
     L"sound\\button6.sam", /* 00572FDE u_sound_button6_sam_00572fde */
+};
+
+__declspec(align(4)) ImageObject_00573002 g_ImageObject_00573002 = {
     L"gfx\\panel\\stat.gfx", /* 00573002 u_gfx_panel_stat_gfx_00573002 */
+};
+
+__declspec(align(8)) ImageObject_00573028 g_ImageObject_00573028 = {
     L"engine\\pcx.fnc", /* 00573028 u_engine_pcx_fnc_00573028 */
+};
+
+__declspec(align(4)) ImageObject_00573046 g_ImageObject_00573046 = {
     L"flm\\intro0.flm", /* 00573046 u_flm_intro0_flm_00573046 */
+};
+
+__declspec(align(4)) ImageObject_00573064 g_ImageObject_00573064 = {
     "NOINTRO", /* 00573064 g_CommandLineOptionNoIntro */
     {0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_00573EE8 g_ImageData_00573EE8 = {
+__declspec(align(8)) ImageObject_00573EE8 g_ImageObject_00573EE8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00573EE8 gap */
+};
+
+__declspec(align(16)) ImageObject_00573EF0 g_ImageObject_00573EF0 = {
     {0}, /* 00573EF0 g_DynamicModules */
+};
+
+__declspec(align(16)) ImageObject_00573F70 g_ImageObject_00573F70 = {
     0, /* 00573F70 g_DynamicModuleCount */
+};
+
+__declspec(align(4)) ImageObject_00573F74 g_ImageObject_00573F74 = {
     /* 00573F74 g_BootstrapApiBindings */
     {
-        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32},
+        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageObject_005744A4.at_sz_KERNEL32},
         /* 1 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_10,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32},
+        .destination = (void *)&g_ImageObject_005744FA.at_dynapi_10,
+        .moduleName = (void *)&g_ImageObject_005744A4.at_sz_KERNEL32},
         /* 2 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_14,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        .destination = (void *)&g_ImageObject_00574532.at_dynapi_14,
+        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
         /* 3 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_15,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        .destination = (void *)&g_ImageObject_00574540.at_dynapi_15,
+        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
         /* 4 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_16,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        .destination = (void *)&g_ImageObject_0057454E.at_dynapi_16,
+        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
         /* 5 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_11,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32},
+        .destination = (void *)&g_ImageObject_00574506.at_dynapi_11,
+        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32},
         /* 6 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_12,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32},
+        .destination = (void *)&g_ImageObject_00574514.at_dynapi_12,
+        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32},
         /* 7 */ {
-        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_13,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}},
+        .destination = (void *)&g_ImageObject_00574526.at_dynapi_13,
+        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32}},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00573FBC g_ImageObject_00573FBC = {
     0, /* 00573FBC pDirectDrawCreate */
+};
+
+__declspec(align(16)) ImageObject_00573FC0 g_ImageObject_00573FC0 = {
     0, /* 00573FC0 pDirectDrawEnumerateA */
+};
+
+__declspec(align(4)) ImageObject_00573FC4 g_ImageObject_00573FC4 = {
     0, /* 00573FC4 pDirectInputCreateA */
+};
+
+__declspec(align(8)) ImageObject_00573FC8 g_ImageObject_00573FC8 = {
     0, /* 00573FC8 pDirectSoundCreate */
+};
+
+__declspec(align(4)) ImageObject_00573FCC g_ImageObject_00573FCC = {
     0, /* 00573FCC pDirectSoundEnumerateA */
+};
+
+__declspec(align(16)) ImageObject_00573FD0 g_ImageObject_00573FD0 = {
     0, /* 00573FD0 pDirectSoundCaptureCreate */
+};
+
+__declspec(align(4)) ImageObject_00573FD4 g_ImageObject_00573FD4 = {
     0, /* 00573FD4 pDirectSoundCaptureEnumerateA */
+};
+
+__declspec(align(8)) ImageObject_00573FD8 g_ImageObject_00573FD8 = {
     /* 00573FD8 g_GlideImportBindings */
     {
-        /*  0 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_24},
-        /*  1 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_25},
-        /*  2 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_26},
-        /*  3 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_27},
-        /*  4 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_28},
-        /*  5 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_29},
-        /*  6 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_30},
-        /*  7 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_31},
-        /*  8 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_32},
-        /*  9 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_33},
-        /* 10 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_36},
-        /* 11 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_37},
-        /* 12 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_38},
-        /* 13 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_39},
-        /* 14 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_40},
-        /* 15 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_41},
-        /* 16 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_42},
-        /* 17 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_43},
-        /* 18 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_44},
-        /* 19 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_45},
-        /* 20 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_46},
-        /* 21 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_47},
-        /* 22 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_48},
-        /* 23 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_49},
-        /* 24 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_50},
-        /* 25 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_51},
-        /* 26 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_52},
-        /* 27 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_53},
-        /* 28 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_54},
-        /* 29 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_55},
-        /* 30 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_56},
-        /* 31 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_57},
-        /* 32 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_58},
-        /* 33 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_59},
-        /* 34 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_60},
-        /* 35 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_61},
-        /* 36 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_62},
-        /* 37 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_63},
-        /* 38 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_64},
-        /* 39 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_65},
-        /* 40 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_66},
-        /* 41 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_67},
-        /* 42 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_68},
-        /* 43 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_69},
-        /* 44 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_70},
-        /* 45 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_71},
-        /* 46 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_72},
-        /* 47 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_73},
-        /* 48 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_74},
-        /* 49 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_75},
-        /* 50 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_76},
-        /* 51 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_77},
-        /* 52 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_78},
-        /* 53 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_79},
-        /* 54 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_80},
-        /* 55 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_81},
-        /* 56 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_82},
-        /* 57 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_83},
-        /* 58 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_84},
-        /* 59 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_85},
-        /* 60 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_86},
-        /* 61 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_89},
-        /* 62 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_90},
-        /* 63 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_91},
-        /* 64 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_92},
-        /* 65 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_93},
-        /* 66 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_94},
-        /* 67 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_95},
-        /* 68 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_96},
-        /* 69 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_97},
-        /* 70 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_98},
-        /* 71 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_99},
-        /* 72 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_100},
-        /* 73 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_101},
-        /* 74 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_102},
-        /* 75 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_103},
-        /* 76 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_104},
-        /* 77 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_105},
-        /* 78 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_106},
-        /* 79 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_107},
-        /* 80 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_108},
-        /* 81 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_109},
-        /* 82 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_110},
-        /* 83 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_111},
-        /* 84 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_112},
-        /* 85 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_113},
-        /* 86 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_114},
-        /* 87 */ {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_115}},
+        /*  0 */ {.importName = (void *)&g_ImageObject_005745FA.at_dynapi_24},
+        /*  1 */ {.importName = (void *)&g_ImageObject_00574610.at_dynapi_25},
+        /*  2 */ {.importName = (void *)&g_ImageObject_0057462A.at_dynapi_26},
+        /*  3 */ {.importName = (void *)&g_ImageObject_0057463E.at_dynapi_27},
+        /*  4 */ {.importName = (void *)&g_ImageObject_0057465E.at_dynapi_28},
+        /*  5 */ {.importName = (void *)&g_ImageObject_00574676.at_dynapi_29},
+        /*  6 */ {.importName = (void *)&g_ImageObject_00574694.at_dynapi_30},
+        /*  7 */ {.importName = (void *)&g_ImageObject_005746A6.at_dynapi_31},
+        /*  8 */ {.importName = (void *)&g_ImageObject_005746B6.at_dynapi_32},
+        /*  9 */ {.importName = (void *)&g_ImageObject_005746CA.at_dynapi_33},
+        /* 10 */ {.importName = (void *)&g_ImageObject_00574706.at_dynapi_36},
+        /* 11 */ {.importName = (void *)&g_ImageObject_00574718.at_dynapi_37},
+        /* 12 */ {.importName = (void *)&g_ImageObject_0057472C.at_dynapi_38},
+        /* 13 */ {.importName = (void *)&g_ImageObject_0057473C.at_dynapi_39},
+        /* 14 */ {.importName = (void *)&g_ImageObject_00574754.at_dynapi_40},
+        /* 15 */ {.importName = (void *)&g_ImageObject_0057476A.at_dynapi_41},
+        /* 16 */ {.importName = (void *)&g_ImageObject_00574778.at_dynapi_42},
+        /* 17 */ {.importName = (void *)&g_ImageObject_0057478C.at_dynapi_43},
+        /* 18 */ {.importName = (void *)&g_ImageObject_005747A6.at_dynapi_44},
+        /* 19 */ {.importName = (void *)&g_ImageObject_005747BC.at_dynapi_45},
+        /* 20 */ {.importName = (void *)&g_ImageObject_005747CC.at_dynapi_46},
+        /* 21 */ {.importName = (void *)&g_ImageObject_005747DC.at_dynapi_47},
+        /* 22 */ {.importName = (void *)&g_ImageObject_005747EA.at_dynapi_48},
+        /* 23 */ {.importName = (void *)&g_ImageObject_00574802.at_dynapi_49},
+        /* 24 */ {.importName = (void *)&g_ImageObject_00574812.at_dynapi_50},
+        /* 25 */ {.importName = (void *)&g_ImageObject_00574820.at_dynapi_51},
+        /* 26 */ {.importName = (void *)&g_ImageObject_00574830.at_dynapi_52},
+        /* 27 */ {.importName = (void *)&g_ImageObject_00574844.at_dynapi_53},
+        /* 28 */ {.importName = (void *)&g_ImageObject_0057485A.at_dynapi_54},
+        /* 29 */ {.importName = (void *)&g_ImageObject_0057487A.at_dynapi_55},
+        /* 30 */ {.importName = (void *)&g_ImageObject_00574886.at_dynapi_56},
+        /* 31 */ {.importName = (void *)&g_ImageObject_0057489C.at_dynapi_57},
+        /* 32 */ {.importName = (void *)&g_ImageObject_005748A8.at_dynapi_58},
+        /* 33 */ {.importName = (void *)&g_ImageObject_005748B4.at_dynapi_59},
+        /* 34 */ {.importName = (void *)&g_ImageObject_005748C8.at_dynapi_60},
+        /* 35 */ {.importName = (void *)&g_ImageObject_005748D6.at_dynapi_61},
+        /* 36 */ {.importName = (void *)&g_ImageObject_005748E4.at_dynapi_62},
+        /* 37 */ {.importName = (void *)&g_ImageObject_005748EE.at_dynapi_63},
+        /* 38 */ {.importName = (void *)&g_ImageObject_00574902.at_dynapi_64},
+        /* 39 */ {.importName = (void *)&g_ImageObject_00574912.at_dynapi_65},
+        /* 40 */ {.importName = (void *)&g_ImageObject_00574926.at_dynapi_66},
+        /* 41 */ {.importName = (void *)&g_ImageObject_00574940.at_dynapi_67},
+        /* 42 */ {.importName = (void *)&g_ImageObject_00574950.at_dynapi_68},
+        /* 43 */ {.importName = (void *)&g_ImageObject_00574964.at_dynapi_69},
+        /* 44 */ {.importName = (void *)&g_ImageObject_0057497E.at_dynapi_70},
+        /* 45 */ {.importName = (void *)&g_ImageObject_00574992.at_dynapi_71},
+        /* 46 */ {.importName = (void *)&g_ImageObject_005749A8.at_dynapi_72},
+        /* 47 */ {.importName = (void *)&g_ImageObject_005749BE.at_dynapi_73},
+        /* 48 */ {.importName = (void *)&g_ImageObject_005749CC.at_dynapi_74},
+        /* 49 */ {.importName = (void *)&g_ImageObject_005749E0.at_dynapi_75},
+        /* 50 */ {.importName = (void *)&g_ImageObject_005749F0.at_dynapi_76},
+        /* 51 */ {.importName = (void *)&g_ImageObject_00574A06.at_dynapi_77},
+        /* 52 */ {.importName = (void *)&g_ImageObject_00574A1C.at_dynapi_78},
+        /* 53 */ {.importName = (void *)&g_ImageObject_00574A32.at_dynapi_79},
+        /* 54 */ {.importName = (void *)&g_ImageObject_00574A44.at_dynapi_80},
+        /* 55 */ {.importName = (void *)&g_ImageObject_00574A50.at_dynapi_81},
+        /* 56 */ {.importName = (void *)&g_ImageObject_00574A64.at_dynapi_82},
+        /* 57 */ {.importName = (void *)&g_ImageObject_00574A74.at_dynapi_83},
+        /* 58 */ {.importName = (void *)&g_ImageObject_00574A84.at_dynapi_84},
+        /* 59 */ {.importName = (void *)&g_ImageObject_00574A96.at_dynapi_85},
+        /* 60 */ {.importName = (void *)&g_ImageObject_00574AA8.at_dynapi_86},
+        /* 61 */ {.importName = (void *)&g_ImageObject_00574AF0.at_dynapi_89},
+        /* 62 */ {.importName = (void *)&g_ImageObject_00574B04.at_dynapi_90},
+        /* 63 */ {.importName = (void *)&g_ImageObject_00574B16.at_dynapi_91},
+        /* 64 */ {.importName = (void *)&g_ImageObject_00574B2E.at_dynapi_92},
+        /* 65 */ {.importName = (void *)&g_ImageObject_00574B46.at_dynapi_93},
+        /* 66 */ {.importName = (void *)&g_ImageObject_00574B64.at_dynapi_94},
+        /* 67 */ {.importName = (void *)&g_ImageObject_00574B88.at_dynapi_95},
+        /* 68 */ {.importName = (void *)&g_ImageObject_00574B9E.at_dynapi_96},
+        /* 69 */ {.importName = (void *)&g_ImageObject_00574BBC.at_dynapi_97},
+        /* 70 */ {.importName = (void *)&g_ImageObject_00574BD0.at_dynapi_98},
+        /* 71 */ {.importName = (void *)&g_ImageObject_00574BE6.at_dynapi_99},
+        /* 72 */ {.importName = (void *)&g_ImageObject_00574BFA.at_dynapi_100},
+        /* 73 */ {.importName = (void *)&g_ImageObject_00574C0E.at_dynapi_101},
+        /* 74 */ {.importName = (void *)&g_ImageObject_00574C22.at_dynapi_102},
+        /* 75 */ {.importName = (void *)&g_ImageObject_00574C34.at_dynapi_103},
+        /* 76 */ {.importName = (void *)&g_ImageObject_00574C4E.at_dynapi_104},
+        /* 77 */ {.importName = (void *)&g_ImageObject_00574C60.at_dynapi_105},
+        /* 78 */ {.importName = (void *)&g_ImageObject_00574C70.at_dynapi_106},
+        /* 79 */ {.importName = (void *)&g_ImageObject_00574C8C.at_dynapi_107},
+        /* 80 */ {.importName = (void *)&g_ImageObject_00574CA0.at_dynapi_108},
+        /* 81 */ {.importName = (void *)&g_ImageObject_00574CB0.at_dynapi_109},
+        /* 82 */ {.importName = (void *)&g_ImageObject_00574CC0.at_dynapi_110},
+        /* 83 */ {.importName = (void *)&g_ImageObject_00574CCE.at_dynapi_111},
+        /* 84 */ {.importName = (void *)&g_ImageObject_00574CE2.at_dynapi_112},
+        /* 85 */ {.importName = (void *)&g_ImageObject_00574CF8.at_dynapi_113},
+        /* 86 */ {.importName = (void *)&g_ImageObject_00574D10.at_dynapi_114},
+        /* 87 */ {.importName = (void *)&g_ImageObject_00574D26.at_dynapi_115}},
+};
+
+__declspec(align(16)) ImageObject_005742A0 g_ImageObject_005742A0 = {
     0, /* 005742A0 g_WinSock_accept */
+};
+
+__declspec(align(4)) ImageObject_005742A4 g_ImageObject_005742A4 = {
     0, /* 005742A4 g_WinSock_bind */
+};
+
+__declspec(align(8)) ImageObject_005742A8 g_ImageObject_005742A8 = {
     0, /* 005742A8 g_WinSock_closesocket */
+};
+
+__declspec(align(4)) ImageObject_005742AC g_ImageObject_005742AC = {
     0, /* 005742AC g_WinSock_connect */
+};
+
+__declspec(align(16)) ImageObject_005742B0 g_ImageObject_005742B0 = {
     0, /* 005742B0 g_WinSock_getpeername */
+};
+
+__declspec(align(4)) ImageObject_005742B4 g_ImageObject_005742B4 = {
     0, /* 005742B4 g_WinSock_getsockname */
+};
+
+__declspec(align(8)) ImageObject_005742B8 g_ImageObject_005742B8 = {
     0, /* 005742B8 g_WinSock_getsockopt */
+};
+
+__declspec(align(4)) ImageObject_005742BC g_ImageObject_005742BC = {
     0, /* 005742BC g_WinSock_htonl */
+};
+
+__declspec(align(16)) ImageObject_005742C0 g_ImageObject_005742C0 = {
     0, /* 005742C0 g_WinSock_htons */
+};
+
+__declspec(align(4)) ImageObject_005742C4 g_ImageObject_005742C4 = {
     0, /* 005742C4 g_WinSock_inet_addr */
+};
+
+__declspec(align(8)) ImageObject_005742C8 g_ImageObject_005742C8 = {
     0, /* 005742C8 g_WinSock_inet_ntoa */
+};
+
+__declspec(align(4)) ImageObject_005742CC g_ImageObject_005742CC = {
     0, /* 005742CC g_WinSock_ioctlsocket */
+};
+
+__declspec(align(16)) ImageObject_005742D0 g_ImageObject_005742D0 = {
     0, /* 005742D0 g_WinSock_listen */
+};
+
+__declspec(align(4)) ImageObject_005742D4 g_ImageObject_005742D4 = {
     0, /* 005742D4 g_WinSock_ntohl */
+};
+
+__declspec(align(8)) ImageObject_005742D8 g_ImageObject_005742D8 = {
     0, /* 005742D8 g_WinSock_ntohs */
+};
+
+__declspec(align(4)) ImageObject_005742DC g_ImageObject_005742DC = {
     0, /* 005742DC g_WinSock_recv */
+};
+
+__declspec(align(16)) ImageObject_005742E0 g_ImageObject_005742E0 = {
     0, /* 005742E0 g_WinSock_recvfrom */
+};
+
+__declspec(align(4)) ImageObject_005742E4 g_ImageObject_005742E4 = {
     0, /* 005742E4 g_WinSock_select */
+};
+
+__declspec(align(8)) ImageObject_005742E8 g_ImageObject_005742E8 = {
     0, /* 005742E8 g_WinSock_send */
+};
+
+__declspec(align(4)) ImageObject_005742EC g_ImageObject_005742EC = {
     0, /* 005742EC g_WinSock_sendto */
+};
+
+__declspec(align(16)) ImageObject_005742F0 g_ImageObject_005742F0 = {
     0, /* 005742F0 g_WinSock_setsockopt */
+};
+
+__declspec(align(4)) ImageObject_005742F4 g_ImageObject_005742F4 = {
     0, /* 005742F4 g_WinSock_shutdown */
+};
+
+__declspec(align(8)) ImageObject_005742F8 g_ImageObject_005742F8 = {
     0, /* 005742F8 g_WinSock_socket */
+};
+
+__declspec(align(4)) ImageObject_005742FC g_ImageObject_005742FC = {
     0, /* 005742FC g_WinSock_gethostbyaddr */
+};
+
+__declspec(align(16)) ImageObject_00574300 g_ImageObject_00574300 = {
     0, /* 00574300 g_WinSock_gethostbyname */
+};
+
+__declspec(align(4)) ImageObject_00574304 g_ImageObject_00574304 = {
     0, /* 00574304 g_WinSock_gethostname */
+};
+
+__declspec(align(8)) ImageObject_00574308 g_ImageObject_00574308 = {
     0, /* 00574308 g_WinSock_getprotobyname */
+};
+
+__declspec(align(4)) ImageObject_0057430C g_ImageObject_0057430C = {
     0, /* 0057430C g_WinSock_getprotobynumber */
+};
+
+__declspec(align(16)) ImageObject_00574310 g_ImageObject_00574310 = {
     0, /* 00574310 g_WinSock_getservbyname */
+};
+
+__declspec(align(4)) ImageObject_00574314 g_ImageObject_00574314 = {
     0, /* 00574314 g_WinSock_getservbyport */
+};
+
+__declspec(align(8)) ImageObject_00574318 g_ImageObject_00574318 = {
     0, /* 00574318 g_WinSock_WSAAsyncGetHostByAddr */
+};
+
+__declspec(align(4)) ImageObject_0057431C g_ImageObject_0057431C = {
     0, /* 0057431C g_WinSock_WSAAsyncGetHostByName */
+};
+
+__declspec(align(16)) ImageObject_00574320 g_ImageObject_00574320 = {
     0, /* 00574320 g_WinSock_WSAAsyncGetProtoByName */
+};
+
+__declspec(align(4)) ImageObject_00574324 g_ImageObject_00574324 = {
     0, /* 00574324 g_WinSock_WSAAsyncGetProtoByNumber */
+};
+
+__declspec(align(8)) ImageObject_00574328 g_ImageObject_00574328 = {
     0, /* 00574328 g_WinSock_WSAAsyncGetServByName */
+};
+
+__declspec(align(4)) ImageObject_0057432C g_ImageObject_0057432C = {
     0, /* 0057432C g_WinSock_WSAAsyncGetServByPort */
+};
+
+__declspec(align(16)) ImageObject_00574330 g_ImageObject_00574330 = {
     0, /* 00574330 g_WinSock_WSAAsyncSelect */
+};
+
+__declspec(align(4)) ImageObject_00574334 g_ImageObject_00574334 = {
     0, /* 00574334 g_WinSock_WSACancelAsyncRequest */
+};
+
+__declspec(align(8)) ImageObject_00574338 g_ImageObject_00574338 = {
     0, /* 00574338 g_WinSock_WSACancelBlockingCall */
+};
+
+__declspec(align(4)) ImageObject_0057433C g_ImageObject_0057433C = {
     0, /* 0057433C g_WinSock_WSACleanup */
+};
+
+__declspec(align(16)) ImageObject_00574340 g_ImageObject_00574340 = {
     0, /* 00574340 g_WinSock_WSAGetLastError */
+};
+
+__declspec(align(4)) ImageObject_00574344 g_ImageObject_00574344 = {
     0, /* 00574344 g_WinSock_WSAIsBlocking */
+};
+
+__declspec(align(8)) ImageObject_00574348 g_ImageObject_00574348 = {
     0, /* 00574348 g_WinSock_WSASetBlockingHook */
+};
+
+__declspec(align(4)) ImageObject_0057434C g_ImageObject_0057434C = {
     {0}, /* 0057434C g_WinSock_UnboundApiSlot34C */
+};
+
+__declspec(align(16)) ImageObject_00574350 g_ImageObject_00574350 = {
     0, /* 00574350 g_WinSock_WSAStartup */
+};
+
+__declspec(align(4)) ImageObject_00574354 g_ImageObject_00574354 = {
     0, /* 00574354 g_WinSock_WSAUnhookBlockingHook */
+};
+
+__declspec(align(8)) ImageObject_00574358 g_ImageObject_00574358 = {
     {0}, /* 00574358 g_Ws2_32_accept */
+};
+
+__declspec(align(4)) ImageObject_0057435C g_ImageObject_0057435C = {
     0, /* 0057435C g_Ws2_32_bind */
+};
+
+__declspec(align(16)) ImageObject_00574360 g_ImageObject_00574360 = {
     0, /* 00574360 g_Ws2_32_closesocket */
+};
+
+__declspec(align(4)) ImageObject_00574364 g_ImageObject_00574364 = {
     {0}, /* 00574364 g_Ws2_32_connect */
+};
+
+__declspec(align(8)) ImageObject_00574368 g_ImageObject_00574368 = {
     {0}, /* 00574368 g_Ws2_32_getpeername */
+};
+
+__declspec(align(4)) ImageObject_0057436C g_ImageObject_0057436C = {
     {0}, /* 0057436C g_Ws2_32_getsockname */
+};
+
+__declspec(align(16)) ImageObject_00574370 g_ImageObject_00574370 = {
     {0}, /* 00574370 g_Ws2_32_getsockopt */
+};
+
+__declspec(align(4)) ImageObject_00574374 g_ImageObject_00574374 = {
     {0}, /* 00574374 g_Ws2_32_htonl */
+};
+
+__declspec(align(8)) ImageObject_00574378 g_ImageObject_00574378 = {
     0, /* 00574378 g_Ws2_32_htons */
+};
+
+__declspec(align(4)) ImageObject_0057437C g_ImageObject_0057437C = {
     {0}, /* 0057437C g_Ws2_32_ioctlsocket */
+};
+
+__declspec(align(16)) ImageObject_00574380 g_ImageObject_00574380 = {
     {0}, /* 00574380 g_Ws2_32_listen */
+};
+
+__declspec(align(4)) ImageObject_00574384 g_ImageObject_00574384 = {
     {0}, /* 00574384 g_Ws2_32_ntohl */
+};
+
+__declspec(align(8)) ImageObject_00574388 g_ImageObject_00574388 = {
     {0}, /* 00574388 g_Ws2_32_ntohs */
+};
+
+__declspec(align(4)) ImageObject_0057438C g_ImageObject_0057438C = {
     {0}, /* 0057438C g_Ws2_32_recv */
+};
+
+__declspec(align(16)) ImageObject_00574390 g_ImageObject_00574390 = {
     0, /* 00574390 g_Ws2_32_recvfrom */
+};
+
+__declspec(align(4)) ImageObject_00574394 g_ImageObject_00574394 = {
     {0}, /* 00574394 g_Ws2_32_select */
+};
+
+__declspec(align(8)) ImageObject_00574398 g_ImageObject_00574398 = {
     {0}, /* 00574398 g_Ws2_32_send */
+};
+
+__declspec(align(4)) ImageObject_0057439C g_ImageObject_0057439C = {
     0, /* 0057439C g_Ws2_32_sendto */
+};
+
+__declspec(align(16)) ImageObject_005743A0 g_ImageObject_005743A0 = {
     0, /* 005743A0 g_Ws2_32_setsockopt */
+};
+
+__declspec(align(4)) ImageObject_005743A4 g_ImageObject_005743A4 = {
     {0}, /* 005743A4 g_Ws2_32_shutdown */
+};
+
+__declspec(align(8)) ImageObject_005743A8 g_ImageObject_005743A8 = {
     0, /* 005743A8 g_Ws2_32_socket */
     {0},
+};
+
+__declspec(align(16)) ImageObject_005743B0 g_ImageObject_005743B0 = {
     {0}, /* 005743B0 g_Ws2_32_WSAAsyncSelect */
+};
+
+__declspec(align(4)) ImageObject_005743B4 g_ImageObject_005743B4 = {
     {0}, /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
+};
+
+__declspec(align(8)) ImageObject_005743B8 g_ImageObject_005743B8 = {
     0, /* 005743B8 g_Ws2_32_WSACleanup */
     {0},
+};
+
+__declspec(align(8)) ImageObject_005743D8 g_ImageObject_005743D8 = {
     0, /* 005743D8 g_Ws2_32_WSAGetLastError */
     {0},
+};
+
+__declspec(align(4)) ImageObject_005743EC g_ImageObject_005743EC = {
     0, /* 005743EC g_Ws2_32_WSAIoctl */
+};
+
+__declspec(align(16)) ImageObject_005743F0 g_ImageObject_005743F0 = {
     {0}, /* 005743F0 g_Ws2_32_WSAIsBlocking */
+};
+
+__declspec(align(4)) ImageObject_0057441C g_ImageObject_0057441C = {
     {0}, /* 0057441C g_Ws2_32_WSASetBlockingHook */
+};
+
+__declspec(align(4)) ImageObject_0057442C g_ImageObject_0057442C = {
     {0}, /* 0057442C g_Ws2_32_WSAStartup */
+};
+
+__declspec(align(16)) ImageObject_00574430 g_ImageObject_00574430 = {
     {0}, /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
+};
+
+__declspec(align(8)) ImageObject_00574438 g_ImageObject_00574438 = {
     {0}, /* 00574438 g_Ws2_32_inet_addr */
+};
+
+__declspec(align(4)) ImageObject_0057443C g_ImageObject_0057443C = {
     {0}, /* 0057443C g_Ws2_32_inet_ntoa */
+};
+
+__declspec(align(16)) ImageObject_00574440 g_ImageObject_00574440 = {
     {0}, /* 00574440 g_Ws2_32_gethostbyaddr */
+};
+
+__declspec(align(4)) ImageObject_00574444 g_ImageObject_00574444 = {
     0, /* 00574444 g_Ws2_32_gethostbyname */
+};
+
+__declspec(align(8)) ImageObject_00574448 g_ImageObject_00574448 = {
     {0}, /* 00574448 g_Ws2_32_gethostname */
+};
+
+__declspec(align(4)) ImageObject_0057444C g_ImageObject_0057444C = {
     {0}, /* 0057444C g_Ws2_32_getprotobyname */
+};
+
+__declspec(align(16)) ImageObject_00574450 g_ImageObject_00574450 = {
     {0}, /* 00574450 g_Ws2_32_getprotobynumber */
+};
+
+__declspec(align(4)) ImageObject_00574454 g_ImageObject_00574454 = {
     {0}, /* 00574454 g_Ws2_32_getservbyname */
+};
+
+__declspec(align(8)) ImageObject_00574458 g_ImageObject_00574458 = {
     {0}, /* 00574458 g_Ws2_32_getservbyport */
+};
+
+__declspec(align(4)) ImageObject_0057445C g_ImageObject_0057445C = {
     {0}, /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
+};
+
+__declspec(align(16)) ImageObject_00574460 g_ImageObject_00574460 = {
     {0}, /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
+};
+
+__declspec(align(4)) ImageObject_00574464 g_ImageObject_00574464 = {
     {0}, /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
+};
+
+__declspec(align(8)) ImageObject_00574468 g_ImageObject_00574468 = {
     {0}, /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
+};
+
+__declspec(align(4)) ImageObject_0057446C g_ImageObject_0057446C = {
     {0}, /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
+};
+
+__declspec(align(16)) ImageObject_00574470 g_ImageObject_00574470 = {
     {0}, /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
+};
+
+__declspec(align(4)) ImageObject_00574474 g_ImageObject_00574474 = {
     {0}, /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
+};
+
+__declspec(align(8)) ImageObject_00574478 g_ImageObject_00574478 = {
     0, /* 00574478 g_Ws2_32_WSAAddressToStringA */
     {0},
+};
+
+__declspec(align(16)) ImageObject_005744A0 g_ImageObject_005744A0 = {
     0, /* 005744A0 g_Ws2_32_WSAStringToAddressA */
+};
+
+__declspec(align(4)) ImageObject_005744A4 g_ImageObject_005744A4 = {
     "KERNEL32", /* 005744A4 sz_KERNEL32 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744AE g_ImageObject_005744AE = {
     "WINMM", /* 005744AE sz_WINMM */
+};
+
+__declspec(align(4)) ImageObject_005744B4 g_ImageObject_005744B4 = {
     "DDRAW", /* 005744B4 sz_DDRAW */
+};
+
+__declspec(align(4)) ImageObject_005744BA g_ImageObject_005744BA = {
     "DINPUT", /* 005744BA dynapi_3 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744C2 g_ImageObject_005744C2 = {
     "DSOUND", /* 005744C2 dynapi_4 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744CA g_ImageObject_005744CA = {
     "GLIDE3X", /* 005744CA sz_GLIDE3X */
+};
+
+__declspec(align(4)) ImageObject_005744D2 g_ImageObject_005744D2 = {
     "ADVAPI32", /* 005744D2 sz_ADVAPI32 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744DC g_ImageObject_005744DC = {
     "WSOCK32", /* 005744DC s_Wsock32ModuleName */
+};
+
+__declspec(align(4)) ImageObject_005744E4 g_ImageObject_005744E4 = {
     "WS2_32", /* 005744E4 sz_WS2_32 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744EC g_ImageObject_005744EC = {
     "LoadLibraryA", /* 005744EC dynapi_9 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005744FA g_ImageObject_005744FA = {
     "FreeLibrary", /* 005744FA dynapi_10 */
+};
+
+__declspec(align(4)) ImageObject_00574506 g_ImageObject_00574506 = {
     "RegOpenKeyExA", /* 00574506 dynapi_11 */
+};
+
+__declspec(align(4)) ImageObject_00574514 g_ImageObject_00574514 = {
     "RegQueryValueExA", /* 00574514 dynapi_12 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574526 g_ImageObject_00574526 = {
     "RegCloseKey", /* 00574526 dynapi_13 */
+};
+
+__declspec(align(4)) ImageObject_00574532 g_ImageObject_00574532 = {
     "timeSetEvent", /* 00574532 dynapi_14 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574540 g_ImageObject_00574540 = {
     "timeKillEvent", /* 00574540 dynapi_15 */
+};
+
+__declspec(align(4)) ImageObject_0057454E g_ImageObject_0057454E = {
     "mciSendCommandA", /* 0057454E dynapi_16 */
+};
+
+__declspec(align(4)) ImageObject_0057455E g_ImageObject_0057455E = {
     "DirectDrawCreate", /* 0057455E sz_DirectDrawCreate */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574570 g_ImageObject_00574570 = {
     "DirectDrawEnumerateA", /* 00574570 sz_DirectDrawEnumerateA */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574586 g_ImageObject_00574586 = {
     "DirectInputCreateA", /* 00574586 dynapi_19 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057459A g_ImageObject_0057459A = {
     "DirectSoundCreate", /* 0057459A dynapi_20 */
+};
+
+__declspec(align(4)) ImageObject_005745AC g_ImageObject_005745AC = {
     "DirectSoundEnumerateA", /* 005745AC dynapi_21 */
+};
+
+__declspec(align(4)) ImageObject_005745C2 g_ImageObject_005745C2 = {
     "DirectSoundCaptureCreate", /* 005745C2 dynapi_22 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005745DC g_ImageObject_005745DC = {
     "DirectSoundCaptureEnumerateA", /* 005745DC dynapi_23 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005745FA g_ImageObject_005745FA = {
     "_grAADrawTriangle@24", /* 005745FA dynapi_24 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574610 g_ImageObject_00574610 = {
     "_grAlphaBlendFunction@16", /* 00574610 dynapi_25 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057462A g_ImageObject_0057462A = {
     "_grAlphaCombine@20", /* 0057462A dynapi_26 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057463E g_ImageObject_0057463E = {
     "_grAlphaControlsITRGBLighting@4", /* 0057463E dynapi_27 */
+};
+
+__declspec(align(4)) ImageObject_0057465E g_ImageObject_0057465E = {
     "_grAlphaTestFunction@4", /* 0057465E dynapi_28 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574676 g_ImageObject_00574676 = {
     "_grAlphaTestReferenceValue@4", /* 00574676 dynapi_29 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574694 g_ImageObject_00574694 = {
     "_grBufferClear@12", /* 00574694 dynapi_30 */
+};
+
+__declspec(align(4)) ImageObject_005746A6 g_ImageObject_005746A6 = {
     "_grBufferSwap@4", /* 005746A6 dynapi_31 */
+};
+
+__declspec(align(4)) ImageObject_005746B6 g_ImageObject_005746B6 = {
     "_grChromakeyMode@4", /* 005746B6 dynapi_32 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005746CA g_ImageObject_005746CA = {
     "_grChromakeyValue@4", /* 005746CA dynapi_33 */
+};
+
+__declspec(align(4)) ImageObject_005746DE g_ImageObject_005746DE = {
     "grChromaRangeExt", /* 005746DE dynapi_34 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_005746F0 g_ImageObject_005746F0 = {
     "grChromaRangeModeExt", /* 005746F0 dynapi_35 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574706 g_ImageObject_00574706 = {
     "_grClipWindow@16", /* 00574706 dynapi_36 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00574718 g_ImageObject_00574718 = {
     "_grColorCombine@20", /* 00574718 dynapi_37 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057472C g_ImageObject_0057472C = {
     "_grColorMask@8", /* 0057472C dynapi_38 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057473C g_ImageObject_0057473C = {
     "_grConstantColorValue@4", /* 0057473C dynapi_39 */
+};
+
+__declspec(align(4)) ImageObject_00574754 g_ImageObject_00574754 = {
     "_grCoordinateSpace@4", /* 00574754 dynapi_40 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057476A g_ImageObject_0057476A = {
     "_grCullMode@4", /* 0057476A dynapi_41 */
+};
+
+__declspec(align(8)) ImageObject_00574778 g_ImageObject_00574778 = {
     "_grDepthBiasLevel@4", /* 00574778 dynapi_42 */
+};
+
+__declspec(align(4)) ImageObject_0057478C g_ImageObject_0057478C = {
     "_grDepthBufferFunction@4", /* 0057478C dynapi_43 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005747A6 g_ImageObject_005747A6 = {
     "_grDepthBufferMode@4", /* 005747A6 dynapi_44 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005747BC g_ImageObject_005747BC = {
     "_grDepthMask@4", /* 005747BC dynapi_45 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005747CC g_ImageObject_005747CC = {
     "_grDepthRange@8", /* 005747CC dynapi_46 */
+};
+
+__declspec(align(4)) ImageObject_005747DC g_ImageObject_005747DC = {
     "_grDisable@4", /* 005747DC dynapi_47 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005747EA g_ImageObject_005747EA = {
     "_grDisableAllEffects@0", /* 005747EA dynapi_48 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574802 g_ImageObject_00574802 = {
     "_grDitherMode@4", /* 00574802 dynapi_49 */
+};
+
+__declspec(align(4)) ImageObject_00574812 g_ImageObject_00574812 = {
     "_grDrawLine@8", /* 00574812 dynapi_50 */
+};
+
+__declspec(align(16)) ImageObject_00574820 g_ImageObject_00574820 = {
     "_grDrawPoint@4", /* 00574820 dynapi_51 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574830 g_ImageObject_00574830 = {
     "_grDrawTriangle@12", /* 00574830 dynapi_52 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574844 g_ImageObject_00574844 = {
     "_grDrawVertexArray@12", /* 00574844 dynapi_53 */
+};
+
+__declspec(align(4)) ImageObject_0057485A g_ImageObject_0057485A = {
     "_grDrawVertexArrayContiguous@16", /* 0057485A dynapi_54 */
+};
+
+__declspec(align(4)) ImageObject_0057487A g_ImageObject_0057487A = {
     "_grEnable@4", /* 0057487A dynapi_55 */
+};
+
+__declspec(align(4)) ImageObject_00574886 g_ImageObject_00574886 = {
     "_grErrorSetCallback@4", /* 00574886 dynapi_56 */
+};
+
+__declspec(align(4)) ImageObject_0057489C g_ImageObject_0057489C = {
     "_grFinish@0", /* 0057489C dynapi_57 */
+};
+
+__declspec(align(8)) ImageObject_005748A8 g_ImageObject_005748A8 = {
     "_grFlush@0", /* 005748A8 dynapi_58 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005748B4 g_ImageObject_005748B4 = {
     "_grFogColorValue@4", /* 005748B4 dynapi_59 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_005748C8 g_ImageObject_005748C8 = {
     "_grFogMode@4", /* 005748C8 dynapi_60 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005748D6 g_ImageObject_005748D6 = {
     "_grFogTable@4", /* 005748D6 dynapi_61 */
+};
+
+__declspec(align(4)) ImageObject_005748E4 g_ImageObject_005748E4 = {
     "_grGet@12", /* 005748E4 dynapi_62 */
+};
+
+__declspec(align(4)) ImageObject_005748EE g_ImageObject_005748EE = {
     "_grGetProcAddress@4", /* 005748EE dynapi_63 */
+};
+
+__declspec(align(4)) ImageObject_00574902 g_ImageObject_00574902 = {
     "_grGetString@4", /* 00574902 dynapi_64 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574912 g_ImageObject_00574912 = {
     "_grGlideGetState@4", /* 00574912 dynapi_65 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574926 g_ImageObject_00574926 = {
     "_grGlideGetVertexLayout@4", /* 00574926 dynapi_66 */
+};
+
+__declspec(align(16)) ImageObject_00574940 g_ImageObject_00574940 = {
     "_grGlideInit@0", /* 00574940 dynapi_67 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574950 g_ImageObject_00574950 = {
     "_grGlideSetState@4", /* 00574950 dynapi_68 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574964 g_ImageObject_00574964 = {
     "_grGlideSetVertexLayout@4", /* 00574964 dynapi_69 */
+};
+
+__declspec(align(4)) ImageObject_0057497E g_ImageObject_0057497E = {
     "_grGlideShutdown@0", /* 0057497E dynapi_70 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574992 g_ImageObject_00574992 = {
     "_grLfbConstantAlpha@4", /* 00574992 dynapi_71 */
+};
+
+__declspec(align(8)) ImageObject_005749A8 g_ImageObject_005749A8 = {
     "_grLfbConstantDepth@4", /* 005749A8 dynapi_72 */
+};
+
+__declspec(align(4)) ImageObject_005749BE g_ImageObject_005749BE = {
     "_grLfbLock@24", /* 005749BE dynapi_73 */
+};
+
+__declspec(align(4)) ImageObject_005749CC g_ImageObject_005749CC = {
     "_grLfbReadRegion@28", /* 005749CC dynapi_74 */
+};
+
+__declspec(align(16)) ImageObject_005749E0 g_ImageObject_005749E0 = {
     "_grLfbUnlock@8", /* 005749E0 dynapi_75 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_005749F0 g_ImageObject_005749F0 = {
     "_grLfbWriteRegion@36", /* 005749F0 dynapi_76 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A06 g_ImageObject_00574A06 = {
     "_grLoadGammaTable@16", /* 00574A06 dynapi_77 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A1C g_ImageObject_00574A1C = {
     "_grQueryResolutions@8", /* 00574A1C dynapi_78 */
+};
+
+__declspec(align(4)) ImageObject_00574A32 g_ImageObject_00574A32 = {
     "_grRenderBuffer@4", /* 00574A32 dynapi_79 */
+};
+
+__declspec(align(4)) ImageObject_00574A44 g_ImageObject_00574A44 = {
     "_grReset@4", /* 00574A44 dynapi_80 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574A50 g_ImageObject_00574A50 = {
     "_grSelectContext@4", /* 00574A50 dynapi_81 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A64 g_ImageObject_00574A64 = {
     "_grSstOrigin@4", /* 00574A64 dynapi_82 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A74 g_ImageObject_00574A74 = {
     "_grSstSelect@4", /* 00574A74 dynapi_83 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A84 g_ImageObject_00574A84 = {
     "_grSstWinClose@4", /* 00574A84 dynapi_84 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574A96 g_ImageObject_00574A96 = {
     "_grSstWinOpen@28", /* 00574A96 dynapi_85 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00574AA8 g_ImageObject_00574AA8 = {
     "_grTexCalcMemRequired@16", /* 00574AA8 dynapi_86 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574AC2 g_ImageObject_00574AC2 = {
     "_grTexChromaModeExt@8", /* 00574AC2 dynapi_87 */
+};
+
+__declspec(align(8)) ImageObject_00574AD8 g_ImageObject_00574AD8 = {
     "_grTexChromaRangeExt@16", /* 00574AD8 dynapi_88 */
+};
+
+__declspec(align(16)) ImageObject_00574AF0 g_ImageObject_00574AF0 = {
     "_grTexClampMode@12", /* 00574AF0 dynapi_89 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574B04 g_ImageObject_00574B04 = {
     "_grTexCombine@28", /* 00574B04 dynapi_90 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574B16 g_ImageObject_00574B16 = {
     "_grTexDetailControl@16", /* 00574B16 dynapi_91 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574B2E g_ImageObject_00574B2E = {
     "_grTexDownloadMipMap@16", /* 00574B2E dynapi_92 */
+};
+
+__declspec(align(4)) ImageObject_00574B46 g_ImageObject_00574B46 = {
     "_grTexDownloadMipMapLevel@32", /* 00574B46 dynapi_93 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574B64 g_ImageObject_00574B64 = {
     "_grTexDownloadMipMapLevelPartial@40", /* 00574B64 dynapi_94 */
+};
+
+__declspec(align(8)) ImageObject_00574B88 g_ImageObject_00574B88 = {
     "_grTexDownloadTable@8", /* 00574B88 dynapi_95 */
+};
+
+__declspec(align(4)) ImageObject_00574B9E g_ImageObject_00574B9E = {
     "_grTexDownloadTablePartial@16", /* 00574B9E dynapi_96 */
+};
+
+__declspec(align(4)) ImageObject_00574BBC g_ImageObject_00574BBC = {
     "_grTexFilterMode@12", /* 00574BBC dynapi_97 */
+};
+
+__declspec(align(16)) ImageObject_00574BD0 g_ImageObject_00574BD0 = {
     "_grTexLodBiasValue@8", /* 00574BD0 dynapi_98 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574BE6 g_ImageObject_00574BE6 = {
     "_grTexMaxAddress@4", /* 00574BE6 dynapi_99 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574BFA g_ImageObject_00574BFA = {
     "_grTexMinAddress@4", /* 00574BFA dynapi_100 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574C0E g_ImageObject_00574C0E = {
     "_grTexMipMapMode@12", /* 00574C0E dynapi_101 */
+};
+
+__declspec(align(4)) ImageObject_00574C22 g_ImageObject_00574C22 = {
     "_grTexMultibase@8", /* 00574C22 dynapi_102 */
+};
+
+__declspec(align(4)) ImageObject_00574C34 g_ImageObject_00574C34 = {
     "_grTexMultibaseAddress@20", /* 00574C34 dynapi_103 */
+};
+
+__declspec(align(4)) ImageObject_00574C4E g_ImageObject_00574C4E = {
     "_grTexNCCTable@4", /* 00574C4E dynapi_104 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574C60 g_ImageObject_00574C60 = {
     "_grTexSource@16", /* 00574C60 dynapi_105 */
+};
+
+__declspec(align(16)) ImageObject_00574C70 g_ImageObject_00574C70 = {
     "_grTexTextureMemRequired@8", /* 00574C70 dynapi_106 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574C8C g_ImageObject_00574C8C = {
     "_grVertexLayout@12", /* 00574C8C dynapi_107 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574CA0 g_ImageObject_00574CA0 = {
     "_grViewport@16", /* 00574CA0 dynapi_108 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574CB0 g_ImageObject_00574CB0 = {
     "_gu3dfGetInfo@8", /* 00574CB0 dynapi_109 */
+};
+
+__declspec(align(16)) ImageObject_00574CC0 g_ImageObject_00574CC0 = {
     "_gu3dfLoad@8", /* 00574CC0 dynapi_110 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574CCE g_ImageObject_00574CCE = {
     "_guFogGenerateExp@8", /* 00574CCE dynapi_111 */
+};
+
+__declspec(align(4)) ImageObject_00574CE2 g_ImageObject_00574CE2 = {
     "_guFogGenerateExp2@8", /* 00574CE2 dynapi_112 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00574CF8 g_ImageObject_00574CF8 = {
     "_guFogGenerateLinear@12", /* 00574CF8 dynapi_113 */
+};
+
+__declspec(align(16)) ImageObject_00574D10 g_ImageObject_00574D10 = {
     "_guFogTableIndexToW@4", /* 00574D10 dynapi_114 */
+};
+
+__declspec(align(4)) ImageObject_00574D26 g_ImageObject_00574D26 = {
     "_guGammaCorrectionRGB@12", /* 00574D26 dynapi_115 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574D40 g_ImageObject_00574D40 = {
     "accept", /* 00574D40 s_Wsock32Export_accept */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00574D48 g_ImageObject_00574D48 = {
     "bind", /* 00574D48 s_Wsock32Export_bind */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574D4E g_ImageObject_00574D4E = {
     "closesocket", /* 00574D4E s_Wsock32Export_closesocket */
+};
+
+__declspec(align(4)) ImageObject_00574D5A g_ImageObject_00574D5A = {
     "connect", /* 00574D5A s_Wsock32Export_connect */
+};
+
+__declspec(align(4)) ImageObject_00574D62 g_ImageObject_00574D62 = {
     "getpeername", /* 00574D62 s_Wsock32Export_getpeername */
+};
+
+__declspec(align(4)) ImageObject_00574D6E g_ImageObject_00574D6E = {
     "getsockname", /* 00574D6E s_Wsock32Export_getsockname */
+};
+
+__declspec(align(4)) ImageObject_00574D7A g_ImageObject_00574D7A = {
     "getsockopt", /* 00574D7A s_Wsock32Export_getsockopt */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574D86 g_ImageObject_00574D86 = {
     "htonl", /* 00574D86 s_Wsock32Export_htonl */
+};
+
+__declspec(align(4)) ImageObject_00574D8C g_ImageObject_00574D8C = {
     "htons", /* 00574D8C s_Wsock32Export_htons */
+};
+
+__declspec(align(4)) ImageObject_00574D92 g_ImageObject_00574D92 = {
     "inet_addr", /* 00574D92 s_Wsock32Export_inet_addr */
+};
+
+__declspec(align(4)) ImageObject_00574D9C g_ImageObject_00574D9C = {
     "inet_ntoa", /* 00574D9C s_Wsock32Export_inet_ntoa */
+};
+
+__declspec(align(4)) ImageObject_00574DA6 g_ImageObject_00574DA6 = {
     "ioctlsocket", /* 00574DA6 s_Wsock32Export_ioctlsocket */
+};
+
+__declspec(align(4)) ImageObject_00574DB2 g_ImageObject_00574DB2 = {
     "listen", /* 00574DB2 s_Wsock32Export_listen */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DBA g_ImageObject_00574DBA = {
     "ntohl", /* 00574DBA s_Wsock32Export_ntohl */
+};
+
+__declspec(align(16)) ImageObject_00574DC0 g_ImageObject_00574DC0 = {
     "ntohs", /* 00574DC0 s_Wsock32Export_ntohs */
+};
+
+__declspec(align(4)) ImageObject_00574DC6 g_ImageObject_00574DC6 = {
     "recv", /* 00574DC6 s_Wsock32Export_recv */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DCC g_ImageObject_00574DCC = {
     "recvfrom", /* 00574DCC s_Wsock32Export_recvfrom */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DD6 g_ImageObject_00574DD6 = {
     "select", /* 00574DD6 s_Wsock32Export_select */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DDE g_ImageObject_00574DDE = {
     "send", /* 00574DDE s_Wsock32Export_send */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DE4 g_ImageObject_00574DE4 = {
     "sendto", /* 00574DE4 s_Wsock32Export_sendto */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574DEC g_ImageObject_00574DEC = {
     "setsockopt", /* 00574DEC s_Wsock32Export_setsockopt */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00574DF8 g_ImageObject_00574DF8 = {
     "shutdown", /* 00574DF8 s_Wsock32Export_shutdown */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574E02 g_ImageObject_00574E02 = {
     "socket", /* 00574E02 s_Wsock32Export_socket */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574E0A g_ImageObject_00574E0A = {
     "gethostbyaddr", /* 00574E0A s_Wsock32Export_gethostbyaddr */
+};
+
+__declspec(align(8)) ImageObject_00574E18 g_ImageObject_00574E18 = {
     "gethostbyname", /* 00574E18 s_Wsock32Export_gethostbyname */
+};
+
+__declspec(align(4)) ImageObject_00574E26 g_ImageObject_00574E26 = {
     "gethostname", /* 00574E26 s_Wsock32Export_gethostname */
+};
+
+__declspec(align(4)) ImageObject_00574E32 g_ImageObject_00574E32 = {
     "getprotobyname", /* 00574E32 s_Wsock32Export_getprotobyname */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574E42 g_ImageObject_00574E42 = {
     "getprotobynumber", /* 00574E42 s_Wsock32Export_getprotobynumber */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574E54 g_ImageObject_00574E54 = {
     "getservbyname", /* 00574E54 s_Wsock32Export_getservbyname */
+};
+
+__declspec(align(4)) ImageObject_00574E62 g_ImageObject_00574E62 = {
     "getservbyport", /* 00574E62 s_Wsock32Export_getservbyport */
+};
+
+__declspec(align(16)) ImageObject_00574E70 g_ImageObject_00574E70 = {
     "WSAAsyncGetHostByAddr", /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
+};
+
+__declspec(align(4)) ImageObject_00574E86 g_ImageObject_00574E86 = {
     "WSAAsyncGetHostByName", /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
+};
+
+__declspec(align(4)) ImageObject_00574E9C g_ImageObject_00574E9C = {
     "WSAAsyncGetProtoByName", /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574EB4 g_ImageObject_00574EB4 = {
     "WSAAsyncGetProtoByNumber", /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574ECE g_ImageObject_00574ECE = {
     "WSAAsyncGetServByName", /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
+};
+
+__declspec(align(4)) ImageObject_00574EE4 g_ImageObject_00574EE4 = {
     "WSAAsyncGetServByPort", /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
+};
+
+__declspec(align(4)) ImageObject_00574EFA g_ImageObject_00574EFA = {
     "WSAAsyncSelect", /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574F0A g_ImageObject_00574F0A = {
     "WSACancelAsyncRequest", /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
+};
+
+__declspec(align(16)) ImageObject_00574F20 g_ImageObject_00574F20 = {
     "WSACancelBlockingCall", /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
+};
+
+__declspec(align(4)) ImageObject_00574F36 g_ImageObject_00574F36 = {
     "WSACleanup", /* 00574F36 s_Wsock32Export_WSACleanup */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574F42 g_ImageObject_00574F42 = {
     "WSAGetLastError", /* 00574F42 s_Wsock32Export_WSAGetLastError */
+};
+
+__declspec(align(4)) ImageObject_00574F52 g_ImageObject_00574F52 = {
     "WSAIsBlocking", /* 00574F52 s_Wsock32Export_WSAIsBlocking */
+};
+
+__declspec(align(16)) ImageObject_00574F60 g_ImageObject_00574F60 = {
     "WSASetBlockingHook", /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574F74 g_ImageObject_00574F74 = {
     "WSASetLastError", /* 00574F74 dynapi_159 */
+};
+
+__declspec(align(4)) ImageObject_00574F84 g_ImageObject_00574F84 = {
     "WSAStartup", /* 00574F84 s_Wsock32Export_WSAStartup */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00574F90 g_ImageObject_00574F90 = {
     "WSAUnhookBlockingHook", /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
+};
+
+__declspec(align(4)) ImageObject_00574FA6 g_ImageObject_00574FA6 = {
     "accept", /* 00574FA6 dynapi_162 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574FAE g_ImageObject_00574FAE = {
     "bind", /* 00574FAE dynapi_163 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574FB4 g_ImageObject_00574FB4 = {
     "closesocket", /* 00574FB4 dynapi_164 */
+};
+
+__declspec(align(16)) ImageObject_00574FC0 g_ImageObject_00574FC0 = {
     "connect", /* 00574FC0 dynapi_165 */
+};
+
+__declspec(align(8)) ImageObject_00574FC8 g_ImageObject_00574FC8 = {
     "getpeername", /* 00574FC8 dynapi_166 */
+};
+
+__declspec(align(4)) ImageObject_00574FD4 g_ImageObject_00574FD4 = {
     "getsockname", /* 00574FD4 dynapi_167 */
+};
+
+__declspec(align(16)) ImageObject_00574FE0 g_ImageObject_00574FE0 = {
     "getsockopt", /* 00574FE0 dynapi_168 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00574FEC g_ImageObject_00574FEC = {
     "htonl", /* 00574FEC dynapi_169 */
+};
+
+__declspec(align(4)) ImageObject_00574FF2 g_ImageObject_00574FF2 = {
     "htons", /* 00574FF2 dynapi_170 */
+};
+
+__declspec(align(8)) ImageObject_00574FF8 g_ImageObject_00574FF8 = {
     "ioctlsocket", /* 00574FF8 dynapi_171 */
+};
+
+__declspec(align(4)) ImageObject_00575004 g_ImageObject_00575004 = {
     "listen", /* 00575004 dynapi_172 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057500C g_ImageObject_0057500C = {
     "ntohl", /* 0057500C dynapi_173 */
+};
+
+__declspec(align(4)) ImageObject_00575012 g_ImageObject_00575012 = {
     "ntohs", /* 00575012 dynapi_174 */
+};
+
+__declspec(align(8)) ImageObject_00575018 g_ImageObject_00575018 = {
     "recv", /* 00575018 dynapi_175 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057501E g_ImageObject_0057501E = {
     "recvfrom", /* 0057501E dynapi_176 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00575028 g_ImageObject_00575028 = {
     "select", /* 00575028 dynapi_177 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00575030 g_ImageObject_00575030 = {
     "send", /* 00575030 dynapi_178 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575036 g_ImageObject_00575036 = {
     "sendto", /* 00575036 dynapi_179 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057503E g_ImageObject_0057503E = {
     "setsockopt", /* 0057503E dynapi_180 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057504A g_ImageObject_0057504A = {
     "shutdown", /* 0057504A dynapi_181 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575054 g_ImageObject_00575054 = {
     "socket", /* 00575054 dynapi_182 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057505C g_ImageObject_0057505C = {
     "WSAAccept", /* 0057505C dynapi_183 */
+};
+
+__declspec(align(4)) ImageObject_00575066 g_ImageObject_00575066 = {
     "WSAAsyncSelect", /* 00575066 dynapi_184 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575076 g_ImageObject_00575076 = {
     "WSACancelBlockingCall", /* 00575076 dynapi_185 */
+};
+
+__declspec(align(4)) ImageObject_0057508C g_ImageObject_0057508C = {
     "WSACleanup", /* 0057508C dynapi_186 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00575098 g_ImageObject_00575098 = {
     "WSACloseEvent", /* 00575098 dynapi_187 */
+};
+
+__declspec(align(4)) ImageObject_005750A6 g_ImageObject_005750A6 = {
     "WSAConnect", /* 005750A6 dynapi_188 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005750B2 g_ImageObject_005750B2 = {
     "WSACreateEvent", /* 005750B2 dynapi_189 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005750C2 g_ImageObject_005750C2 = {
     "WSADuplicateSocketA", /* 005750C2 dynapi_190 */
+};
+
+__declspec(align(4)) ImageObject_005750D6 g_ImageObject_005750D6 = {
     "WSAEnumNetworkEvents", /* 005750D6 dynapi_191 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005750EC g_ImageObject_005750EC = {
     "WSAEnumProtocolsA", /* 005750EC dynapi_192 */
+};
+
+__declspec(align(4)) ImageObject_005750FE g_ImageObject_005750FE = {
     "WSAEventSelect", /* 005750FE dynapi_193 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057510E g_ImageObject_0057510E = {
     "WSAGetLastError", /* 0057510E dynapi_194 */
+};
+
+__declspec(align(4)) ImageObject_0057511E g_ImageObject_0057511E = {
     "WSAGetOverlappedResult", /* 0057511E dynapi_195 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575136 g_ImageObject_00575136 = {
     "WSAGetQOSByName", /* 00575136 dynapi_196 */
+};
+
+__declspec(align(4)) ImageObject_00575146 g_ImageObject_00575146 = {
     "WSAHtonl", /* 00575146 dynapi_197 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00575150 g_ImageObject_00575150 = {
     "WSAHtons", /* 00575150 dynapi_198 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057515A g_ImageObject_0057515A = {
     "WSAIoctl", /* 0057515A dynapi_199 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575164 g_ImageObject_00575164 = {
     "WSAIsBlocking", /* 00575164 dynapi_200 */
+};
+
+__declspec(align(4)) ImageObject_00575172 g_ImageObject_00575172 = {
     "WSAJoinLeaf", /* 00575172 dynapi_201 */
+};
+
+__declspec(align(4)) ImageObject_0057517E g_ImageObject_0057517E = {
     "WSANtohl", /* 0057517E dynapi_202 */
     {0x90},
+};
+
+__declspec(align(8)) ImageObject_00575188 g_ImageObject_00575188 = {
     "WSANtohs", /* 00575188 dynapi_203 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575192 g_ImageObject_00575192 = {
     "WSARecv", /* 00575192 dynapi_204 */
+};
+
+__declspec(align(4)) ImageObject_0057519A g_ImageObject_0057519A = {
     "WSARecvDisconnect", /* 0057519A dynapi_205 */
+};
+
+__declspec(align(4)) ImageObject_005751AC g_ImageObject_005751AC = {
     "WSARecvFrom", /* 005751AC dynapi_206 */
+};
+
+__declspec(align(8)) ImageObject_005751B8 g_ImageObject_005751B8 = {
     "WSAResetEvent", /* 005751B8 dynapi_207 */
+};
+
+__declspec(align(4)) ImageObject_005751C6 g_ImageObject_005751C6 = {
     "WSASend", /* 005751C6 dynapi_208 */
+};
+
+__declspec(align(4)) ImageObject_005751CE g_ImageObject_005751CE = {
     "WSASendDisconnect", /* 005751CE dynapi_209 */
+};
+
+__declspec(align(16)) ImageObject_005751E0 g_ImageObject_005751E0 = {
     "WSASendTo", /* 005751E0 dynapi_210 */
+};
+
+__declspec(align(4)) ImageObject_005751EA g_ImageObject_005751EA = {
     "WSASetBlockingHook", /* 005751EA dynapi_211 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005751FE g_ImageObject_005751FE = {
     "WSASetEvent", /* 005751FE dynapi_212 */
+};
+
+__declspec(align(4)) ImageObject_0057520A g_ImageObject_0057520A = {
     "WSASetLastError", /* 0057520A dynapi_213 */
+};
+
+__declspec(align(4)) ImageObject_0057521A g_ImageObject_0057521A = {
     "WSASocketA", /* 0057521A dynapi_214 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575226 g_ImageObject_00575226 = {
     "WSAStartup", /* 00575226 dynapi_215 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575232 g_ImageObject_00575232 = {
     "WSAUnhookBlockingHook", /* 00575232 dynapi_216 */
+};
+
+__declspec(align(8)) ImageObject_00575248 g_ImageObject_00575248 = {
     "WSAWaitForMultipleEvents", /* 00575248 dynapi_217 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575262 g_ImageObject_00575262 = {
     "inet_addr", /* 00575262 dynapi_218 */
+};
+
+__declspec(align(4)) ImageObject_0057526C g_ImageObject_0057526C = {
     "inet_ntoa", /* 0057526C dynapi_219 */
+};
+
+__declspec(align(4)) ImageObject_00575276 g_ImageObject_00575276 = {
     "gethostbyaddr", /* 00575276 dynapi_220 */
+};
+
+__declspec(align(4)) ImageObject_00575284 g_ImageObject_00575284 = {
     "gethostbyname", /* 00575284 dynapi_221 */
+};
+
+__declspec(align(4)) ImageObject_00575292 g_ImageObject_00575292 = {
     "gethostname", /* 00575292 dynapi_222 */
+};
+
+__declspec(align(4)) ImageObject_0057529E g_ImageObject_0057529E = {
     "getprotobyname", /* 0057529E dynapi_223 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005752AE g_ImageObject_005752AE = {
     "getprotobynumber", /* 005752AE dynapi_224 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_005752C0 g_ImageObject_005752C0 = {
     "getservbyname", /* 005752C0 dynapi_225 */
+};
+
+__declspec(align(4)) ImageObject_005752CE g_ImageObject_005752CE = {
     "getservbyport", /* 005752CE dynapi_226 */
+};
+
+__declspec(align(4)) ImageObject_005752DC g_ImageObject_005752DC = {
     "WSAAsyncGetHostByAddr", /* 005752DC dynapi_227 */
+};
+
+__declspec(align(4)) ImageObject_005752F2 g_ImageObject_005752F2 = {
     "WSAAsyncGetHostByName", /* 005752F2 dynapi_228 */
+};
+
+__declspec(align(8)) ImageObject_00575308 g_ImageObject_00575308 = {
     "WSAAsyncGetProtoByName", /* 00575308 dynapi_229 */
     {0x90},
+};
+
+__declspec(align(16)) ImageObject_00575320 g_ImageObject_00575320 = {
     "WSAAsyncGetProtoByNumber", /* 00575320 dynapi_230 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_0057533A g_ImageObject_0057533A = {
     "WSAAsyncGetServByName", /* 0057533A dynapi_231 */
+};
+
+__declspec(align(16)) ImageObject_00575350 g_ImageObject_00575350 = {
     "WSAAsyncGetServByPort", /* 00575350 dynapi_232 */
+};
+
+__declspec(align(4)) ImageObject_00575366 g_ImageObject_00575366 = {
     "WSACancelAsyncRequest", /* 00575366 dynapi_233 */
+};
+
+__declspec(align(4)) ImageObject_0057537C g_ImageObject_0057537C = {
     "WSAAddressToStringA", /* 0057537C dynapi_234 */
+};
+
+__declspec(align(16)) ImageObject_00575390 g_ImageObject_00575390 = {
     "WSAEnumNameSpaceProvidersA", /* 00575390 dynapi_235 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005753AC g_ImageObject_005753AC = {
     "WSAGetServiceClassInfoA", /* 005753AC dynapi_236 */
+};
+
+__declspec(align(4)) ImageObject_005753C4 g_ImageObject_005753C4 = {
     "WSAGetServiceClassNameByClassIdA", /* 005753C4 dynapi_237 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_005753E6 g_ImageObject_005753E6 = {
     "WSAInstallServiceClassA", /* 005753E6 dynapi_238 */
+};
+
+__declspec(align(4)) ImageObject_005753FE g_ImageObject_005753FE = {
     "WSALookupServiceBeginA", /* 005753FE dynapi_239 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575416 g_ImageObject_00575416 = {
     "WSALookupServiceEnd", /* 00575416 dynapi_240 */
+};
+
+__declspec(align(4)) ImageObject_0057542A g_ImageObject_0057542A = {
     "WSALookupServiceNextA", /* 0057542A dynapi_241 */
+};
+
+__declspec(align(16)) ImageObject_00575440 g_ImageObject_00575440 = {
     "WSARemoveServiceClass", /* 00575440 dynapi_242 */
+};
+
+__declspec(align(4)) ImageObject_00575456 g_ImageObject_00575456 = {
     "WSASetServiceA", /* 00575456 dynapi_243 */
     {0x90},
+};
+
+__declspec(align(4)) ImageObject_00575466 g_ImageObject_00575466 = {
     "WSAStringToAddressA", /* 00575466 dynapi_244 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_00575480 g_ImageObject_00575480 = {
     {0}, /* 00575480 g_FatalErrorNarrowBuffer */
     {
         0x00000000, 0x90909090, 0x90909090, 0x90909090},
 };
 
-ImageData_0057594C g_ImageData_0057594C = {
+__declspec(align(4)) ImageObject_0057594C g_ImageObject_0057594C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0057594C gap */
+};
+
+__declspec(align(16)) ImageObject_00575950 g_ImageObject_00575950 = {
     0, /* 00575950 g_Win32FileBytesTransferred */
+};
+
+__declspec(align(4)) ImageObject_00575954 g_ImageObject_00575954 = {
     0, /* 00575954 g_Win32FileCreationTimeOrDosDateScratch */
     {0},
+};
+
+__declspec(align(4)) ImageObject_0057595C g_ImageObject_0057595C = {
     0, /* 0057595C g_Win32FileLastAccessTimeScratch */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00575964 g_ImageObject_00575964 = {
     0, /* 00575964 g_Win32FileLastWriteTimeScratch */
     {0},
+};
+
+__declspec(align(8)) ImageObject_00575968 g_ImageObject_00575968 = {
     0, /* 00575968 g_Win32FileLastWriteTimeHighScratch */
+};
+
+__declspec(align(4)) ImageObject_0057596C g_ImageObject_0057596C = {
     0, /* 0057596C g_Win32DiskSectorsPerClusterScratch */
+};
+
+__declspec(align(16)) ImageObject_00575970 g_ImageObject_00575970 = {
     0, /* 00575970 g_Win32DiskBytesPerSectorScratch */
+};
+
+__declspec(align(4)) ImageObject_00575974 g_ImageObject_00575974 = {
     0, /* 00575974 g_Win32DiskFreeClustersScratch */
+};
+
+__declspec(align(8)) ImageObject_00575978 g_ImageObject_00575978 = {
     0, /* 00575978 g_Win32DiskTotalClustersScratch */
     {0},
+};
+
+__declspec(align(16)) ImageObject_00575980 g_ImageObject_00575980 = {
     0, /* 00575980 g_Win32FindDataFileNameA */
+};
+
+__declspec(align(4)) ImageObject_00575981 g_ImageObject_00575981 = {
     0, /* 00575981 g_Win32FindDataFileNameSecondCharA */
+};
+
+__declspec(align(4)) ImageObject_00575982 g_ImageObject_00575982 = {
     0, /* 00575982 g_Win32FindDataFileNameThirdCharA */
     {0},
     {0},
+};
+
+__declspec(align(4)) ImageObject_00575A94 g_ImageObject_00575A94 = {
     0, /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
+};
+
+__declspec(align(8)) ImageObject_00575A98 g_ImageObject_00575A98 = {
     0, /* 00575A98 g_FileSystemConfigRemainingBytes */
+};
+
+__declspec(align(4)) ImageObject_00575A9C g_ImageObject_00575A9C = {
     {0}, /* 00575A9C g_Win32PathScratchA */
     {0}, /* 00575B9C g_Win32PathScratchB */
+};
+
+__declspec(align(4)) ImageObject_00575C9C g_ImageObject_00575C9C = {
     "x:\\", /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
+};
+
+__declspec(align(16)) ImageObject_00575CA0 g_ImageObject_00575CA0 = {
     "\\\\.\\x:", /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
     {
         0x90909090, 0x90909090},
     {0x90},
 };
 
-ImageData_00576720 g_ImageData_00576720 = {
+__declspec(align(16)) ImageObject_00576720 g_ImageObject_00576720 = {
     {0x8B, 0x45, 0x20, 0x6A, 0x00, 0x68, 0x80, 0x00, 0x00, 0x80, 0x6A, 0x03, 0x6A, 0x00, 0x6A, 0x03, 0x68, 0x00, 0x00, 0x00, 0xC0, 0x68, 0xA0, 0x5C, 0x57, 0x00, 0xA2, 0xA4, 0x5C, 0x57, 0x00, 0xFF, 0x15, 0xF0, 0xC1, 0x58, 0x00, 0x83, 0xF8, 0xFF, 0x74, 0x39, 0x50, 0x6A, 0x00, 0x68, 0x50, 0x59, 0x57, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x68, 0x00, 0x48, 0x2D, 0x00, 0x50, 0xFF, 0x15, 0x34, 0xC2, 0x58, 0x00, 0x85, 0xC0, 0x74, 0x13, 0xFF, 0x15, 0xF4, 0xC1, 0x58, 0x00, 0xF8, 0x89, 0xEC, 0x5D, 0x5E, 0x5F, 0x5A, 0x59, 0x5B, 0x58, 0xC2, 0x04, 0x00, 0xFF, 0x15, 0xF4, 0xC1, 0x58}, /* 00576720 gap */
 };
 
-ImageData_00576B04 g_ImageData_00576B04 = {
+__declspec(align(4)) ImageObject_00576B04 g_ImageObject_00576B04 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00576B04 gap */
+};
+
+__declspec(align(16)) ImageObject_00576B10 g_ImageObject_00576B10 = {
     0, /* 00576B10 g_DirectInput */
+};
+
+__declspec(align(4)) ImageObject_00576B14 g_ImageObject_00576B14 = {
     0, /* 00576B14 g_MouseDevice */
+};
+
+__declspec(align(8)) ImageObject_00576B18 g_ImageObject_00576B18 = {
     {.Data1 = 0x6F1D2B60, .Data2 = 54688, .Data3 = 4559, .Data4 = "\277\307DEST"}, /* 00576B18 GUID_SysMouse_Local */
+};
+
+__declspec(align(8)) ImageObject_00576B28 g_ImageObject_00576B28 = {
     {.Data1 = 0xA36D02E0, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"}, /* 00576B28 GUID_XAxis_Local */
+};
+
+__declspec(align(8)) ImageObject_00576B38 g_ImageObject_00576B38 = {
     {.Data1 = 0xA36D02E1, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"}, /* 00576B38 GUID_YAxis_Local */
+};
+
+__declspec(align(8)) ImageObject_00576B48 g_ImageObject_00576B48 = {
     {.Data1 = 0xA36D02E2, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"}, /* 00576B48 GUID_ZAxis_Local */
+};
+
+__declspec(align(8)) ImageObject_00576B58 g_ImageObject_00576B58 = {
     /* 00576B58 MouseDataFormat */
     {
         .dwSize = 24,
@@ -14842,6 +19495,9 @@ ImageData_00576B04 g_ImageData_00576B04 = {
         .dwDataSize = 16,
         .dwNumObjs = 7,
         .rgodf = (void *)&MouseObjectFormats},
+};
+
+__declspec(align(16)) ImageObject_00576B70 g_ImageObject_00576B70 = {
     /* 00576B70 MouseObjectFormats */
     {
         /* 0 */ {.pguid = (void *)&GUID_XAxis_Local, .dwType = 0xFFFF03},
@@ -14851,44 +19507,128 @@ ImageData_00576B04 g_ImageData_00576B04 = {
         /* 4 */ {.dwOfs = 13, .dwType = 0xFFFF0C},
         /* 5 */ {.dwOfs = 14, .dwType = 0x80FFFF0C},
         /* 6 */ {.dwOfs = 15, .dwType = 0x80FFFF0C}},
+};
+
+__declspec(align(16)) ImageObject_00576BE0 g_ImageObject_00576BE0 = {
     {.diph = {.dwSize = 20, .dwHeaderSize = 16}, .dwData = 256}, /* 00576BE0 MouseBufferProperty */
+};
+
+__declspec(align(4)) ImageObject_00576BF4 g_ImageObject_00576BF4 = {
     0, /* 00576BF4 g_MouseDeviceDataCount */
+};
+
+__declspec(align(8)) ImageObject_00576BF8 g_ImageObject_00576BF8 = {
     0, /* 00576BF8 g_MousePollBusy */
+};
+
+__declspec(align(4)) ImageObject_00576BFC g_ImageObject_00576BFC = {
     {0}, /* 00576BFC g_MouseDeviceEvent */
+};
+
+__declspec(align(4)) ImageObject_00576C0C g_ImageObject_00576C0C = {
     0, /* 00576C0C g_MouseX */
     0, /* 00576C10 g_MouseY */
+};
+
+__declspec(align(4)) ImageObject_00576C14 g_ImageObject_00576C14 = {
     0, /* 00576C14 g_MouseWheelDelta */
+};
+
+__declspec(align(8)) ImageObject_00576C18 g_ImageObject_00576C18 = {
     0, /* 00576C18 g_MouseButtonMask */
+};
+
+__declspec(align(4)) ImageObject_00576C1C g_ImageObject_00576C1C = {
     0, /* 00576C1C g_MouseEventsProcessed */
+};
+
+__declspec(align(16)) ImageObject_00576C20 g_ImageObject_00576C20 = {
     0, /* 00576C20 g_DirectInputMouseChainedSetDisplayMode */
+};
+
+__declspec(align(4)) ImageObject_00576C24 g_ImageObject_00576C24 = {
     16, /* 00576C24 g_DirectInputMouseRefreshCountdown */
     {
         0x90909090, 0x90909090},
 };
 
-ImageData_00577BFC g_ImageData_00577BFC = {
+__declspec(align(4)) ImageObject_00577BFC g_ImageObject_00577BFC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00577BFC gap */
+};
+
+__declspec(align(16)) ImageObject_00577C00 g_ImageObject_00577C00 = {
     {.Data1 = 0xB3A6F3E0, .Data2 = 11075, .Data3 = 4559, .Data4 = {162, 222, 0, 170, 0, 185, 51, 86}}, /* 00577C00 IID_IDirectDraw2_Local */
+};
+
+__declspec(align(16)) ImageObject_00577C10 g_ImageObject_00577C10 = {
     {.Data1 = 0xDA044E00, .Data2 = 27058, .Data3 = 4560, .Data4 = {161, 213, 0, 170, 0, 184, 223, 187}}, /* 00577C10 IID_IDirectDrawSurface3_Local */
+};
+
+__declspec(align(16)) ImageObject_00577C20 g_ImageObject_00577C20 = {
     {.Data1 = 0x6AAE1EC1, .Data2 = 26154, .Data3 = 4560, .Data4 = {136, 157, 0, 170, 0, 187, 183, 106}}, /* 00577C20 IID_IDirect3D2_Local */
+};
+
+__declspec(align(16)) ImageObject_00577C30 g_ImageObject_00577C30 = {
     {.Data1 = 0x93281502, .Data2 = 36088, .Data3 = 4560, .Data4 = {137, 171, 0, 160, 201, 5, 65, 41}}, /* 00577C30 IID_IDirect3DTexture2_Local */
+};
+
+__declspec(align(16)) ImageObject_00577C40 g_ImageObject_00577C40 = {
     0, /* 00577C40 g_DirectDraw */
+};
+
+__declspec(align(4)) ImageObject_00577C44 g_ImageObject_00577C44 = {
     0, /* 00577C44 g_DirectDraw2 */
+};
+
+__declspec(align(8)) ImageObject_00577C48 g_ImageObject_00577C48 = {
     0, /* 00577C48 g_PrimarySurfaceBase */
+};
+
+__declspec(align(4)) ImageObject_00577C4C g_ImageObject_00577C4C = {
     0, /* 00577C4C g_PrimarySurface3 */
+};
+
+__declspec(align(16)) ImageObject_00577C50 g_ImageObject_00577C50 = {
     0, /* 00577C50 g_BackSurfaceBase */
+};
+
+__declspec(align(4)) ImageObject_00577C54 g_ImageObject_00577C54 = {
     0, /* 00577C54 g_BackSurface3 */
+};
+
+__declspec(align(8)) ImageObject_00577C58 g_ImageObject_00577C58 = {
     0, /* 00577C58 g_Direct3D2 */
+};
+
+__declspec(align(4)) ImageObject_00577C5C g_ImageObject_00577C5C = {
     0, /* 00577C5C g_Direct3DDevice2 */
+};
+
+__declspec(align(16)) ImageObject_00577C60 g_ImageObject_00577C60 = {
     0, /* 00577C60 g_ZSurfaceBase */
+};
+
+__declspec(align(4)) ImageObject_00577C64 g_ImageObject_00577C64 = {
     0, /* 00577C64 g_ZSurface3 */
+};
+
+__declspec(align(8)) ImageObject_00577C68 g_ImageObject_00577C68 = {
     0, /* 00577C68 g_Direct3DViewport2 */
     {
         0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00577C70 g_ImageObject_00577C70 = {
     {0}, /* 00577C70 g_CurrentClearRect */
+};
+
+__declspec(align(16)) ImageObject_00577C80 g_ImageObject_00577C80 = {
     {0}, /* 00577C80 g_SurfaceDesc */
     {
         0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00577CF0 g_ImageObject_00577CF0 = {
     0, /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
     {0},
     0, /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
@@ -14898,6 +19638,9 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00577D60 g_ImageObject_00577D60 = {
     /* 00577D60 g_Direct3DViewportState */
     {
         .dvClipX = 0.0f,
@@ -14908,27 +19651,75 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         .dvMaxZ = 0.0f},
     {
         0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00577D90 g_ImageObject_00577D90 = {
     {0}, /* 00577D90 g_Direct3DOpaqueTextureFormat */
+};
+
+__declspec(align(16)) ImageObject_00577DB0 g_ImageObject_00577DB0 = {
     {0}, /* 00577DB0 g_Direct3DAlphaTextureFormat */
+};
+
+__declspec(align(16)) ImageObject_00577DD0 g_ImageObject_00577DD0 = {
     {0}, /* 00577DD0 g_Direct3DSelectedOpaqueTextureFormat */
+};
+
+__declspec(align(16)) ImageObject_00577DF0 g_ImageObject_00577DF0 = {
     {0}, /* 00577DF0 g_Direct3DSelectedAlphaTextureFormat */
+};
+
+__declspec(align(16)) ImageObject_00577E10 g_ImageObject_00577E10 = {
     2, /* 00577E10 g_Direct3DTextureFilterMode: uint32_t: D3DRENDERSTATE_TEXTUREMAG/MIN filter (2 = D3DFILTER_LINEAR) reapplied by the device setup; graphics/backend direct3d/directdraw */
+};
+
+__declspec(align(4)) ImageObject_00577E14 g_ImageObject_00577E14 = {
     1, /* 00577E14 g_Direct3DTexturePerspectiveEnabled: uint32_t: D3DRENDERSTATE_TEXTUREPERSPECTIVE value (1) reapplied by the device setup; graphics/backend direct3d/directdraw */
+};
+
+__declspec(align(8)) ImageObject_00577E18 g_ImageObject_00577E18 = {
     0, /* 00577E18 g_Direct3DAntialiasMode */
+};
+
+__declspec(align(4)) ImageObject_00577E1C g_ImageObject_00577E1C = {
     /* 00577E1C g_PrimitiveRenderStateCache */
     {
         .zWriteEnable = GRAPHICS_STATE_ENABLED,
         .sourceBlend = D3DBLEND_ONE,
         .destinationBlend = D3DBLEND_ZERO},
+};
+
+__declspec(align(4)) ImageObject_00577E2C g_ImageObject_00577E2C = {
     0, /* 00577E2C g_BoundTextureHandle */
+};
+
+__declspec(align(16)) ImageObject_00577E30 g_ImageObject_00577E30 = {
     0, /* 00577E30 g_GraphicsDisplayModeFinalize */
+};
+
+__declspec(align(4)) ImageObject_00577E34 g_ImageObject_00577E34 = {
     0, /* 00577E34 g_CursorCurrentVisibilityToken */
+};
+
+__declspec(align(8)) ImageObject_00577E38 g_ImageObject_00577E38 = {
     0, /* 00577E38 g_CursorAlternateVisibilityToken */
+};
+
+__declspec(align(4)) ImageObject_00577E3C g_ImageObject_00577E3C = {
     0, /* 00577E3C g_CursorCurrentDrawX */
     0, /* 00577E40 g_CursorCurrentDrawY */
+};
+
+__declspec(align(4)) ImageObject_00577E44 g_ImageObject_00577E44 = {
     0, /* 00577E44 g_CursorAlternateDrawX */
     0, /* 00577E48 g_CursorAlternateDrawY */
+};
+
+__declspec(align(4)) ImageObject_00577E4C g_ImageObject_00577E4C = {
     -0x1, /* 00577E4C g_GraphicsBackendAccessState */
+};
+
+__declspec(align(16)) ImageObject_00577E50 g_ImageObject_00577E50 = {
     /* 00577E50 g_PrimitiveRenderStatePresets */
     {
         /* 0 */ {
@@ -14953,6 +19744,9 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         .sourceBlend = D3DBLEND_ONE,
         .destinationBlend = D3DBLEND_ONE,
         .alphaBlendEnable = GRAPHICS_STATE_ENABLED}},
+};
+
+__declspec(align(16)) ImageObject_00577EA0 g_ImageObject_00577EA0 = {
     /* 00577EA0 g_GraphicsDispatchTable */
     {
         .colorUpload = {
@@ -15032,91 +19826,271 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         }},
     {
         0x90909090, 0x90909090},
+};
+
+__declspec(align(16)) ImageObject_00577FC0 g_ImageObject_00577FC0 = {
     /* 00577FC0 g_ImmediateTLVertices */
     {
         /* 0 */ {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f},
         /* 1 */ {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f},
         /* 2 */ {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f},
         /* 3 */ {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f}},
+};
+
+__declspec(align(16)) ImageObject_00578040 g_ImageObject_00578040 = {
     {0}, /* 00578040 g_LastViewportRect */
+};
+
+__declspec(align(16)) ImageObject_00578050 g_ImageObject_00578050 = {
     0, /* 00578050 g_ImmediateVertexCount */
+};
+
+__declspec(align(4)) ImageObject_00578054 g_ImageObject_00578054 = {
     0, /* 00578054 g_TextureUseSerial */
+};
+
+__declspec(align(8)) ImageObject_00578058 g_ImageObject_00578058 = {
     0, /* 00578058 g_TexturePaletteEntries */
+};
+
+__declspec(align(4)) ImageObject_0057805C g_ImageObject_0057805C = {
     0, /* 0057805C g_GraphicsTextureSlots */
+};
+
+__declspec(align(16)) ImageObject_00578060 g_ImageObject_00578060 = {
     {0}, /* 00578060 g_DisplayFramebufferAccess */
+};
+
+__declspec(align(16)) ImageObject_00578070 g_ImageObject_00578070 = {
     0, /* 00578070 g_ActiveTextureUploads */
+};
+
+__declspec(align(4)) ImageObject_00578074 g_ImageObject_00578074 = {
     0, /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
+};
+
+__declspec(align(8)) ImageObject_00578078 g_ImageObject_00578078 = {
     "D3DALL", /* 00578078 g_CommandLineOptionD3dAll */
     {0x90},
 };
 
-ImageData_0057ECC8 g_ImageData_0057ECC8 = {
+__declspec(align(8)) ImageObject_0057ECC8 g_ImageObject_0057ECC8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0057ECC8 gap */
+};
+
+__declspec(align(16)) ImageObject_0057ECD0 g_ImageObject_0057ECD0 = {
     {.resolution = -1, .refresh = 0xFFFFFFFF, .numColorBuffers = 2, .numAuxBuffers = 1}, /* 0057ECD0 g_GlideEnumerationResolutionQuery: GrResolution: grQueryResolutions template {GR_QUERY_ANY, GR_QUERY_ANY, 2 colour buffers, 1 aux buffer} for enumerating modes; Glide3_InitAndEnumerate */
+};
+
+__declspec(align(16)) ImageObject_0057ECE0 g_ImageObject_0057ECE0 = {
     {.refresh = 0xFFFFFFFF, .numColorBuffers = 2, .numAuxBuffers = 1}, /* 0057ECE0 g_GlideSelectedResolutionQuery: GrResolution: grQueryResolutions template {resolution set at run time, GR_QUERY_ANY refresh, 2, 1} to pick the best refresh rate; GraphicsGlide3_ApplyDisplayModeAndInitializeResources */
+};
+
+__declspec(align(16)) ImageObject_0057ECF0 g_ImageObject_0057ECF0 = {
     {60, 70, 72, 75, 80, 90, 100, 85, 120}, /* 0057ECF0 g_GlideRefreshRatesHz: uint32_t[9]: Hz per GR_REFRESH_* code (60,70,72,75,80,90,100,85,120); graphics/backend/glide.c */
+};
+
+__declspec(align(4)) ImageObject_0057ED14 g_ImageObject_0057ED14 = {
     0, /* 0057ED14 g_GlideWindowContextHandle */
+};
+
+__declspec(align(8)) ImageObject_0057ED18 g_ImageObject_0057ED18 = {
     0, /* 0057ED18 g_GlideRuntimeActiveCount */
     {
         0x90909090},
+};
+
+__declspec(align(16)) ImageObject_0057ED20 g_ImageObject_0057ED20 = {
     {.size = 20}, /* 0057ED20 g_GlidePrimaryLfbInfo */
+};
+
+__declspec(align(4)) ImageObject_0057ED34 g_ImageObject_0057ED34 = {
     {.size = 20}, /* 0057ED34 g_GlideSecondaryLfbInfo */
+};
+
+__declspec(align(8)) ImageObject_0057ED48 g_ImageObject_0057ED48 = {
     {(void *)&g_GlideVertex0ScreenX, (void *)&g_GlideVertex1ScreenX, (void *)&g_GlideVertex2ScreenX}, /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertex0/1/2; no code reads it (name is historical) */
+};
+
+__declspec(align(4)) ImageObject_0057ED54 g_ImageObject_0057ED54 = {
     0, /* 0057ED54 g_GlideVertex0ScreenX */
     0, /* 0057ED58 g_GlideVertex0ScreenY */
+};
+
+__declspec(align(4)) ImageObject_0057ED5C g_ImageObject_0057ED5C = {
     0, /* 0057ED5C g_GlideVertex0ReciprocalDepth */
+};
+
+__declspec(align(16)) ImageObject_0057ED60 g_ImageObject_0057ED60 = {
     0, /* 0057ED60 g_GlideVertex0PerspectiveScale */
     {0},
+};
+
+__declspec(align(8)) ImageObject_0057ED68 g_ImageObject_0057ED68 = {
     0, /* 0057ED68 g_GlideVertex0ProjectedTextureU */
+};
+
+__declspec(align(4)) ImageObject_0057ED6C g_ImageObject_0057ED6C = {
     0, /* 0057ED6C g_GlideVertex0ProjectedTextureV */
+};
+
+__declspec(align(16)) ImageObject_0057ED70 g_ImageObject_0057ED70 = {
     0, /* 0057ED70 g_GlideVertex0DiffuseColor */
+};
+
+__declspec(align(4)) ImageObject_0057ED74 g_ImageObject_0057ED74 = {
     0, /* 0057ED74 g_GlideVertex1ScreenX */
     0, /* 0057ED78 g_GlideVertex1ScreenY */
+};
+
+__declspec(align(4)) ImageObject_0057ED7C g_ImageObject_0057ED7C = {
     0, /* 0057ED7C g_GlideVertex1ReciprocalDepth */
+};
+
+__declspec(align(16)) ImageObject_0057ED80 g_ImageObject_0057ED80 = {
     0, /* 0057ED80 g_GlideVertex1PerspectiveScale */
     {0},
+};
+
+__declspec(align(8)) ImageObject_0057ED88 g_ImageObject_0057ED88 = {
     0, /* 0057ED88 g_GlideVertex1ProjectedTextureU */
+};
+
+__declspec(align(4)) ImageObject_0057ED8C g_ImageObject_0057ED8C = {
     0, /* 0057ED8C g_GlideVertex1ProjectedTextureV */
+};
+
+__declspec(align(16)) ImageObject_0057ED90 g_ImageObject_0057ED90 = {
     0, /* 0057ED90 g_GlideVertex1DiffuseColor */
+};
+
+__declspec(align(4)) ImageObject_0057ED94 g_ImageObject_0057ED94 = {
     0, /* 0057ED94 g_GlideVertex2ScreenX */
     0, /* 0057ED98 g_GlideVertex2ScreenY */
+};
+
+__declspec(align(4)) ImageObject_0057ED9C g_ImageObject_0057ED9C = {
     0, /* 0057ED9C g_GlideVertex2ReciprocalDepth */
+};
+
+__declspec(align(16)) ImageObject_0057EDA0 g_ImageObject_0057EDA0 = {
     0, /* 0057EDA0 g_GlideVertex2PerspectiveScale */
     {0},
+};
+
+__declspec(align(8)) ImageObject_0057EDA8 g_ImageObject_0057EDA8 = {
     0, /* 0057EDA8 g_GlideVertex2ProjectedTextureU */
+};
+
+__declspec(align(4)) ImageObject_0057EDAC g_ImageObject_0057EDAC = {
     0, /* 0057EDAC g_GlideVertex2ProjectedTextureV */
+};
+
+__declspec(align(16)) ImageObject_0057EDB0 g_ImageObject_0057EDB0 = {
     0, /* 0057EDB0 g_GlideVertex2DiffuseColor */
+};
+
+__declspec(align(4)) ImageObject_0057EDB4 g_ImageObject_0057EDB4 = {
     {.smallLod = 8, .largeLod = 8, .format = 12}, /* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
+};
+
+__declspec(align(8)) ImageObject_0057EDC8 g_ImageObject_0057EDC8 = {
     0, /* 0057EDC8 g_GlideTmuCount */
+};
+
+__declspec(align(4)) ImageObject_0057EDCC g_ImageObject_0057EDCC = {
     {(void *)Glide3_TextureUpload_1x, (void *)Glide3_TextureUpload_2x, (void *)Glide3_TextureUpload_4x}, /* 0057EDCC g_GlideTextureColorUpload */
+};
+
+__declspec(align(8)) ImageObject_0057EDD8 g_ImageObject_0057EDD8 = {
     {(void *)Glide3_TextureUpload_1x, (void *)Glide3_TextureUpload_2x, (void *)Glide3_TextureUpload_4x}, /* 0057EDD8 g_GlideTextureAlphaUpload */
+};
+
+__declspec(align(4)) ImageObject_0057EDE4 g_ImageObject_0057EDE4 = {
     0, /* 0057EDE4 g_GlideTexturingDisabledState */
+};
+
+__declspec(align(8)) ImageObject_0057EDE8 g_ImageObject_0057EDE8 = {
     0, /* 0057EDE8 g_GlideBlendModeState */
+};
+
+__declspec(align(4)) ImageObject_0057EDEC g_ImageObject_0057EDEC = {
     0, /* 0057EDEC g_GlideDepthWriteEnabledState */
+};
+
+__declspec(align(16)) ImageObject_0057EDF0 g_ImageObject_0057EDF0 = {
     0, /* 0057EDF0 g_GlideBoundTexture */
+};
+
+__declspec(align(4)) ImageObject_0057EDF4 g_ImageObject_0057EDF4 = {
     {0}, /* 0057EDF4 g_GlideTmuMinAddress */
+};
+
+__declspec(align(4)) ImageObject_0057EE34 g_ImageObject_0057EE34 = {
     {0}, /* 0057EE34 g_GlideTmuMaxAddress */
+};
+
+__declspec(align(4)) ImageObject_0057EE74 g_ImageObject_0057EE74 = {
     0, /* 0057EE74 g_GlideResidentTextureTail */
+};
+
+__declspec(align(8)) ImageObject_0057EE78 g_ImageObject_0057EE78 = {
     0, /* 0057EE78 g_GlideResidentTextureHead */
+};
+
+__declspec(align(4)) ImageObject_0057EE7C g_ImageObject_0057EE7C = {
     0, /* 0057EE7C g_GlideSecondBufferOffset */
+};
+
+__declspec(align(16)) ImageObject_0057EE80 g_ImageObject_0057EE80 = {
     0, /* 0057EE80 g_GlideSecondBufferBase */
+};
+
+__declspec(align(4)) ImageObject_0057EE84 g_ImageObject_0057EE84 = {
     "GLIDE", /* 0057EE84 g_CommandLineOptionGlide */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_00582ED8 g_ImageData_00582ED8 = {
+__declspec(align(8)) ImageObject_00582ED8 g_ImageObject_00582ED8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00582ED8 gap */
+};
+
+__declspec(align(16)) ImageObject_00582EE0 g_ImageObject_00582EE0 = {
     0, /* 00582EE0 g_DirectSound */
+};
+
+__declspec(align(4)) ImageObject_00582EE4 g_ImageObject_00582EE4 = {
     0, /* 00582EE4 g_PrimarySoundBuffer */
+};
+
+__declspec(align(8)) ImageObject_00582EE8 g_ImageObject_00582EE8 = {
     0, /* 00582EE8 g_PrimaryVolume */
+};
+
+__declspec(align(4)) ImageObject_00582EEC g_ImageObject_00582EEC = {
     0, /* 00582EEC g_PrimaryPan */
+};
+
+__declspec(align(16)) ImageObject_00582EF0 g_ImageObject_00582EF0 = {
     {0}, /* 00582EF0 WaveFormat_PCM_22050_Stereo16 */
     {
         0x90900000, 0x90909090, 0x90909090},
     {0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_00582F10 g_ImageObject_00582F10 = {
     {0}, /* 00582F10 PrimarySoundBufferDesc */
+};
+
+__declspec(align(4)) ImageObject_00582F24 g_ImageObject_00582F24 = {
     0, /* 00582F24 g_DirectSoundVoiceSetRegistry */
+};
+
+__declspec(align(8)) ImageObject_00582F28 g_ImageObject_00582F28 = {
     "SOUND", /* 00582F28 g_CommandLineOptionSound */
+};
+
+__declspec(align(4)) ImageObject_00582F2E g_ImageObject_00582F2E = {
     /* 00582F2E g_DirectSoundGainAttenuation */
     {
         /*   0 */ -10000, -7000, -6000, -5415, -5000, -4678, -4415, -4193,
@@ -15140,270 +20114,2040 @@ ImageData_00582ED8 g_ImageData_00582ED8 = {
     {0x90, 0x90},
 };
 
-ImageData_00583D28 g_ImageData_00583D28 = {
+__declspec(align(8)) ImageObject_00583D28 g_ImageObject_00583D28 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00583D28 gap */
+};
+
+__declspec(align(16)) ImageObject_00583D60 g_ImageObject_00583D60 = {
     0, /* 00583D60 g_NetworkBackendMode */
+};
+
+__declspec(align(4)) ImageObject_00583D64 g_ImageObject_00583D64 = {
     {0}, /* 00583D64 g_WinSockStartupData */
+};
+
+__declspec(align(4)) ImageObject_00583EF2 g_ImageObject_00583EF2 = {
     0xFFFFFFFF, /* 00583EF2 g_NetworkFallbackSocket */
+};
+
+__declspec(align(4)) ImageObject_00583EF6 g_ImageObject_00583EF6 = {
     4294967295u, /* 00583EF6 g_NetworkFallbackSocketOptionOn: uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO); network/backend/fallback_udp.c */
+};
+
+__declspec(align(4)) ImageObject_00583EFA g_ImageObject_00583EFA = {
     0, /* 00583EFA g_NetworkFallbackAddressLength */
+};
+
+__declspec(align(4)) ImageObject_00583EFE g_ImageObject_00583EFE = {
     {0}, /* 00583EFE g_NetworkFallbackBindEndpoint */
+};
+
+__declspec(align(4)) ImageObject_00583F0E g_ImageObject_00583F0E = {
     0, /* 00583F0E g_NetworkBackendActiveAddressFamily */
+};
+
+__declspec(align(4)) ImageObject_00583F12 g_ImageObject_00583F12 = {
     0, /* 00583F12 g_NetworkBackendActiveSocketAddressLength */
+};
+
+__declspec(align(4)) ImageObject_00583F16 g_ImageObject_00583F16 = {
     0, /* 00583F16 g_NetworkBackendActiveSocketType */
+};
+
+__declspec(align(4)) ImageObject_00583F1A g_ImageObject_00583F1A = {
     0, /* 00583F1A g_NetworkBackendActiveProtocol */
+};
+
+__declspec(align(4)) ImageObject_00583F1E g_ImageObject_00583F1E = {
     0, /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
+};
+
+__declspec(align(4)) ImageObject_00583F22 g_ImageObject_00583F22 = {
     {0}, /* 00583F22 g_NetworkBackendBindAddress */
     {
         0x90909090, 0x90909090, 0x90909090},
     {0x90, 0x90},
+};
+
+__declspec(align(16)) ImageObject_00583F40 g_ImageObject_00583F40 = {
     0, /* 00583F40 g_NetworkEndpointTextScratchA */
     {0},
     {0},
+};
+
+__declspec(align(16)) ImageObject_00584040 g_ImageObject_00584040 = {
     {.displayNameUtf16 = L"WinSock32 1.1 - UDP"}, /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
+};
+
+__declspec(align(8)) ImageObject_00584078 g_ImageObject_00584078 = {
     {'I', 'P', '=', -112}, /* 00584078 s_CommandLineOptionIp */
     {
         0x90909090},
 };
 
-ImageData_00584E44 g_ImageData_00584E44 = {
+__declspec(align(4)) ImageObject_00584E44 g_ImageObject_00584E44 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00584E44 gap */
 };
 
-ImageData_005856A0 g_ImageData_005856A0 = {
+__declspec(align(16)) ImageObject_005856A0 g_ImageObject_005856A0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005856A0 gap */
+};
+
+__declspec(align(16)) ImageObject_005856B0 g_ImageObject_005856B0 = {
     0, /* 005856B0 g_hInstance */
+};
+
+__declspec(align(4)) ImageObject_005856B4 g_ImageObject_005856B4 = {
     0, /* 005856B4 g_MainWindow */
+};
+
+__declspec(align(8)) ImageObject_005856B8 g_ImageObject_005856B8 = {
     0, /* 005856B8 g_WindowDestroyDepth */
+};
+
+__declspec(align(4)) ImageObject_005856BC g_ImageObject_005856BC = {
     1, /* 005856BC g_AppActive: uint32_t: WM_ACTIVATEAPP wParam (application active flag), initially 1; platform/bootstrap/runtime.c */
+};
+
+__declspec(align(16)) ImageObject_005856C0 g_ImageObject_005856C0 = {
     /* 005856C0 g_MainMessageStorage */
     {
         .overlay = {.windowClass = {.style = 3, .windowProc = (void *)MainWindowProc, .className = (void *)&sz_MainWindowClass}}},
     {0},
+};
+
+__declspec(align(8)) ImageObject_00585708 g_ImageObject_00585708 = {
     {.linearCursor = (void *)&g_Arena_3, .linearLimit = (void *)&g_Arena_4}, /* 00585708 g_Arena */
+};
+
+__declspec(align(4)) ImageObject_0058571C g_ImageObject_0058571C = {
     {0}, /* 0058571C g_TimerSystemState */
+};
+
+__declspec(align(4)) ImageObject_0058581C g_ImageObject_0058581C = {
     {0}, /* 0058581C g_CommandLine */
+};
+
+__declspec(align(4)) ImageObject_00585D1C g_ImageObject_00585D1C = {
     " thandor  (TG)", /* 00585D1C sz_MainWindowTitle */
+};
+
+__declspec(align(4)) ImageObject_00585D2B g_ImageObject_00585D2B = {
     "thandorCLASS(TG)", /* 00585D2B sz_MainWindowClass */
     {0x90, 0x90, 0x90, 0x90},
 };
 
-ImageData_00586950 g_ImageData_00586950 = {
+__declspec(align(16)) ImageObject_00586950 g_ImageObject_00586950 = {
     {0}, /* 00586950 g_LocaleInfoScratch */
     {0},
+};
+
+__declspec(align(16)) ImageObject_00586A70 g_ImageObject_00586A70 = {
     {0}, /* 00586A70 g_LocaleSystemState */
 };
 
-ImageData_005873BC g_ImageData_005873BC = {
+__declspec(align(4)) ImageObject_005873BC g_ImageObject_005873BC = {
     {0}, /* 005873BC gap */
+};
+
+__declspec(align(16)) ImageObject_00587400 g_ImageObject_00587400 = {
     {0}, /* 00587400 g_Arena_3 */
+};
+
+__declspec(align(16)) ImageObject_0058B400 g_ImageObject_0058B400 = {
     {0}, /* 0058B400 g_Arena_4 */
 };
 
-const ThandorImageBlock g_ThandorImageBlocks[203] = {
-    {0x00401000, 0x00402B00, (const uint8_t *)&g_ImageData_00401000},
-    {0x00403080, 0x004030B0, (const uint8_t *)&g_ImageData_00403080},
-    {0x00403158, 0x00407160, (const uint8_t *)&g_ImageData_00403158},
-    {0x00407510, 0x00407F50, (const uint8_t *)&g_ImageData_00407510},
-    {0x004080B4, 0x0040A4C0, (const uint8_t *)&g_ImageData_004080B4},
-    {0x0040ABBC, 0x0040E2B0, (const uint8_t *)&g_ImageData_0040ABBC},
-    {0x0040F524, 0x0040FF70, (const uint8_t *)&g_ImageData_0040F524},
-    {0x004107E8, 0x004168B0, (const uint8_t *)&g_ImageData_004107E8},
-    {0x004169DC, 0x00417230, (const uint8_t *)&g_ImageData_004169DC},
-    {0x004172E8, 0x00417570, (const uint8_t *)&g_ImageData_004172E8},
-    {0x0041A53C, 0x0041A580, (const uint8_t *)&g_ImageData_0041A53C},
-    {0x0041A740, 0x0041B080, (const uint8_t *)&g_ImageData_0041A740},
-    {0x0041B128, 0x0041B1B0, (const uint8_t *)&g_ImageData_0041B128},
-    {0x0041B228, 0x0041B2B0, (const uint8_t *)&g_ImageData_0041B228},
-    {0x0041B338, 0x0041B3D0, (const uint8_t *)&g_ImageData_0041B338},
-    {0x0041B448, 0x0041B4D0, (const uint8_t *)&g_ImageData_0041B448},
-    {0x0041B548, 0x0041B5D0, (const uint8_t *)&g_ImageData_0041B548},
-    {0x0041B648, 0x0041B6E0, (const uint8_t *)&g_ImageData_0041B648},
-    {0x0041B758, 0x0041B7F0, (const uint8_t *)&g_ImageData_0041B758},
-    {0x0041B868, 0x0041B900, (const uint8_t *)&g_ImageData_0041B868},
-    {0x0041B9C8, 0x0041BA50, (const uint8_t *)&g_ImageData_0041B9C8},
-    {0x0041BB78, 0x0041BC00, (const uint8_t *)&g_ImageData_0041BB78},
-    {0x0041BCEC, 0x0041C0F0, (const uint8_t *)&g_ImageData_0041BCEC},
-    {0x0041C15C, 0x0041C560, (const uint8_t *)&g_ImageData_0041C15C},
-    {0x0041C94C, 0x0041C9D0, (const uint8_t *)&g_ImageData_0041C94C},
-    {0x0041CAFC, 0x0041CB04, (const uint8_t *)&g_ImageData_0041CAFC},
-    {0x0041CB68, 0x0041CBF0, (const uint8_t *)&g_ImageData_0041CB68},
-    {0x0041CF7C, 0x0041D000, (const uint8_t *)&g_ImageData_0041CF7C},
-    {0x0041D07C, 0x0041D090, (const uint8_t *)&g_ImageData_0041D07C},
-    {0x0041D144, 0x0041D1D0, (const uint8_t *)&g_ImageData_0041D144},
-    {0x0041D53C, 0x0041D5C0, (const uint8_t *)&g_ImageData_0041D53C},
-    {0x0041D75C, 0x0041D770, (const uint8_t *)&g_ImageData_0041D75C},
-    {0x0041D880, 0x0041D910, (const uint8_t *)&g_ImageData_0041D880},
-    {0x0041DA44, 0x0041DAD0, (const uint8_t *)&g_ImageData_0041DA44},
-    {0x0041DBD4, 0x0041DC60, (const uint8_t *)&g_ImageData_0041DBD4},
-    {0x0041DDFC, 0x0041DE10, (const uint8_t *)&g_ImageData_0041DDFC},
-    {0x0041DE7C, 0x004227B0, (const uint8_t *)&g_ImageData_0041DE7C},
-    {0x00422978, 0x00423600, (const uint8_t *)&g_ImageData_00422978},
-    {0x00424324, 0x004244E0, (const uint8_t *)&g_ImageData_00424324},
-    {0x00424684, 0x004846A0, (const uint8_t *)&g_ImageData_00424684},
-    {0x00485808, 0x00485E40, (const uint8_t *)&g_ImageData_00485808},
-    {0x00486D8C, 0x004A6FB0, (const uint8_t *)&g_ImageData_00486D8C},
-    {0x004A8E60, 0x004A8F80, (const uint8_t *)&g_ImageData_004A8E60},
-    {0x004AD92C, 0x004AE230, (const uint8_t *)&g_ImageData_004AD92C},
-    {0x004AE95C, 0x004AEB10, (const uint8_t *)&g_ImageData_004AE95C},
-    {0x004AF198, 0x004AF1A0, (const uint8_t *)&g_ImageData_004AF198},
-    {0x004AF1D4, 0x004AF210, (const uint8_t *)&g_ImageData_004AF1D4},
-    {0x004AF39C, 0x004AF3B0, (const uint8_t *)&g_ImageData_004AF39C},
-    {0x004B0A20, 0x004B0F30, (const uint8_t *)&g_ImageData_004B0A20},
-    {0x004B1500, 0x004B1510, (const uint8_t *)&g_ImageData_004B1500},
-    {0x004B15C8, 0x004B1620, (const uint8_t *)&g_ImageData_004B15C8},
-    {0x004B1D74, 0x004B1DD0, (const uint8_t *)&g_ImageData_004B1D74},
-    {0x004B2734, 0x004B2790, (const uint8_t *)&g_ImageData_004B2734},
-    {0x004B2CD8, 0x004B2D30, (const uint8_t *)&g_ImageData_004B2CD8},
-    {0x004B33D0, 0x004B3420, (const uint8_t *)&g_ImageData_004B33D0},
-    {0x004B3760, 0x004B37C0, (const uint8_t *)&g_ImageData_004B3760},
-    {0x004B3A48, 0x004B3AA0, (const uint8_t *)&g_ImageData_004B3A48},
-    {0x004B3C1C, 0x004B3C80, (const uint8_t *)&g_ImageData_004B3C1C},
-    {0x004B3EEC, 0x004B3F40, (const uint8_t *)&g_ImageData_004B3EEC},
-    {0x004B4648, 0x004B46A0, (const uint8_t *)&g_ImageData_004B4648},
-    {0x004B494C, 0x004B49A0, (const uint8_t *)&g_ImageData_004B494C},
-    {0x004B4CB8, 0x004B4D10, (const uint8_t *)&g_ImageData_004B4CB8},
-    {0x004B5890, 0x004B58F0, (const uint8_t *)&g_ImageData_004B5890},
-    {0x004B67F4, 0x004B6850, (const uint8_t *)&g_ImageData_004B67F4},
-    {0x004B7048, 0x004B70A0, (const uint8_t *)&g_ImageData_004B7048},
-    {0x004B7914, 0x004B7970, (const uint8_t *)&g_ImageData_004B7914},
-    {0x004B9530, 0x004B9580, (const uint8_t *)&g_ImageData_004B9530},
-    {0x004B9E38, 0x004B9E90, (const uint8_t *)&g_ImageData_004B9E38},
-    {0x004BA58C, 0x004BADE0, (const uint8_t *)&g_ImageData_004BA58C},
-    {0x004BB988, 0x004BB9E0, (const uint8_t *)&g_ImageData_004BB988},
-    {0x004BC404, 0x004BC460, (const uint8_t *)&g_ImageData_004BC404},
-    {0x004BC564, 0x004BC5C0, (const uint8_t *)&g_ImageData_004BC564},
-    {0x004BCC20, 0x004BCC80, (const uint8_t *)&g_ImageData_004BCC20},
-    {0x004BCF14, 0x004BCF70, (const uint8_t *)&g_ImageData_004BCF14},
-    {0x004BD2C4, 0x004BD310, (const uint8_t *)&g_ImageData_004BD2C4},
-    {0x004BD440, 0x004BD4B0, (const uint8_t *)&g_ImageData_004BD440},
-    {0x004BD880, 0x004BD8D0, (const uint8_t *)&g_ImageData_004BD880},
-    {0x004BEA6C, 0x004BEB20, (const uint8_t *)&g_ImageData_004BEA6C},
-    {0x004BED4C, 0x004CC710, (const uint8_t *)&g_ImageData_004BED4C},
-    {0x004CCDE8, 0x004CCFF0, (const uint8_t *)&g_ImageData_004CCDE8},
-    {0x004CD3C0, 0x004CD3D0, (const uint8_t *)&g_ImageData_004CD3C0},
-    {0x004D09F4, 0x004D0A10, (const uint8_t *)&g_ImageData_004D09F4},
-    {0x004D11B8, 0x004D1560, (const uint8_t *)&g_ImageData_004D11B8},
-    {0x004FEA24, 0x004FEA50, (const uint8_t *)&g_ImageData_004FEA24},
-    {0x004FFC78, 0x005004A0, (const uint8_t *)&g_ImageData_004FFC78},
-    {0x00501184, 0x00503B10, (const uint8_t *)&g_ImageData_00501184},
-    {0x00505F98, 0x005063B0, (const uint8_t *)&g_ImageData_00505F98},
-    {0x0050A340, 0x0050A430, (const uint8_t *)&g_ImageData_0050A340},
-    {0x0050AE54, 0x0050AEA0, (const uint8_t *)&g_ImageData_0050AE54},
-    {0x0050B510, 0x0050B5D0, (const uint8_t *)&g_ImageData_0050B510},
-    {0x0050BADC, 0x0050BB10, (const uint8_t *)&g_ImageData_0050BADC},
-    {0x0050BB34, 0x0050BB80, (const uint8_t *)&g_ImageData_0050BB34},
-    {0x0050D928, 0x0050E0B0, (const uint8_t *)&g_ImageData_0050D928},
-    {0x0050E164, 0x0050E1B0, (const uint8_t *)&g_ImageData_0050E164},
-    {0x0050E21C, 0x0050E230, (const uint8_t *)&g_ImageData_0050E21C},
-    {0x0050E95C, 0x0050E970, (const uint8_t *)&g_ImageData_0050E95C},
-    {0x0050EB5C, 0x0050EB70, (const uint8_t *)&g_ImageData_0050EB5C},
-    {0x0050F044, 0x0050F130, (const uint8_t *)&g_ImageData_0050F044},
-    {0x0050F328, 0x00512E70, (const uint8_t *)&g_ImageData_0050F328},
-    {0x00513DA4, 0x00513DF0, (const uint8_t *)&g_ImageData_00513DA4},
-    {0x0051494C, 0x00514E40, (const uint8_t *)&g_ImageData_0051494C},
-    {0x00514FB4, 0x00515010, (const uint8_t *)&g_ImageData_00514FB4},
-    {0x0051528C, 0x005152E0, (const uint8_t *)&g_ImageData_0051528C},
-    {0x0051560C, 0x005156A0, (const uint8_t *)&g_ImageData_0051560C},
-    {0x00515720, 0x00515780, (const uint8_t *)&g_ImageData_00515720},
-    {0x005157D0, 0x00515830, (const uint8_t *)&g_ImageData_005157D0},
-    {0x00515C60, 0x00515CC0, (const uint8_t *)&g_ImageData_00515C60},
-    {0x005162BC, 0x00516360, (const uint8_t *)&g_ImageData_005162BC},
-    {0x0051650C, 0x00516580, (const uint8_t *)&g_ImageData_0051650C},
-    {0x00516CBC, 0x00516D10, (const uint8_t *)&g_ImageData_00516CBC},
-    {0x00516E90, 0x00517020, (const uint8_t *)&g_ImageData_00516E90},
-    {0x00517068, 0x005170C0, (const uint8_t *)&g_ImageData_00517068},
-    {0x00517DD4, 0x00517E30, (const uint8_t *)&g_ImageData_00517DD4},
-    {0x00517F00, 0x00517F60, (const uint8_t *)&g_ImageData_00517F00},
-    {0x00517FBC, 0x00518010, (const uint8_t *)&g_ImageData_00517FBC},
-    {0x00518074, 0x00518CE0, (const uint8_t *)&g_ImageData_00518074},
-    {0x005191F0, 0x005191FC, (const uint8_t *)&g_ImageData_005191F0},
-    {0x0051936C, 0x005193B0, (const uint8_t *)&g_ImageData_0051936C},
-    {0x0051972C, 0x0051B3C0, (const uint8_t *)&g_ImageData_0051972C},
-    {0x0051DBB4, 0x0051DFD0, (const uint8_t *)&g_ImageData_0051DBB4},
-    {0x0051EAA0, 0x0051EAD0, (const uint8_t *)&g_ImageData_0051EAA0},
-    {0x0051EEE4, 0x005200C0, (const uint8_t *)&g_ImageData_0051EEE4},
-    {0x00520EA0, 0x00520F60, (const uint8_t *)&g_ImageData_00520EA0},
-    {0x00524110, 0x00524130, (const uint8_t *)&g_ImageData_00524110},
-    {0x005247C0, 0x005247F0, (const uint8_t *)&g_ImageData_005247C0},
-    {0x00525A8C, 0x00525AB0, (const uint8_t *)&g_ImageData_00525A8C},
-    {0x005266B0, 0x005266D0, (const uint8_t *)&g_ImageData_005266B0},
-    {0x00526988, 0x005269B0, (const uint8_t *)&g_ImageData_00526988},
-    {0x00527AA4, 0x00527AC0, (const uint8_t *)&g_ImageData_00527AA4},
-    {0x00528674, 0x00528678, (const uint8_t *)&g_ImageData_00528674},
-    {0x00528A6C, 0x00528A70, (const uint8_t *)&g_ImageData_00528A6C},
-    {0x0052AF30, 0x0052B350, (const uint8_t *)&g_ImageData_0052AF30},
-    {0x0052CDE8, 0x0052CEE0, (const uint8_t *)&g_ImageData_0052CDE8},
-    {0x0052FF14, 0x0052FF30, (const uint8_t *)&g_ImageData_0052FF14},
-    {0x00530080, 0x005300A0, (const uint8_t *)&g_ImageData_00530080},
-    {0x005300C8, 0x005300E0, (const uint8_t *)&g_ImageData_005300C8},
-    {0x00530818, 0x00531080, (const uint8_t *)&g_ImageData_00530818},
-    {0x00531FF4, 0x00532000, (const uint8_t *)&g_ImageData_00531FF4},
-    {0x00532998, 0x005329A4, (const uint8_t *)&g_ImageData_00532998},
-    {0x0053329C, 0x005332C0, (const uint8_t *)&g_ImageData_0053329C},
-    {0x00533D4C, 0x00533D60, (const uint8_t *)&g_ImageData_00533D4C},
-    {0x00533ED0, 0x00533EF0, (const uint8_t *)&g_ImageData_00533ED0},
-    {0x005367CC, 0x005368E0, (const uint8_t *)&g_ImageData_005367CC},
-    {0x00536F08, 0x00536FC0, (const uint8_t *)&g_ImageData_00536F08},
-    {0x00537410, 0x00537420, (const uint8_t *)&g_ImageData_00537410},
-    {0x0053795C, 0x005379E0, (const uint8_t *)&g_ImageData_0053795C},
-    {0x00539050, 0x00539070, (const uint8_t *)&g_ImageData_00539050},
-    {0x00539974, 0x00539A40, (const uint8_t *)&g_ImageData_00539974},
-    {0x0053B0CC, 0x0053B0E0, (const uint8_t *)&g_ImageData_0053B0CC},
-    {0x0053B9CC, 0x0053BA00, (const uint8_t *)&g_ImageData_0053B9CC},
-    {0x0053C154, 0x0053C1A0, (const uint8_t *)&g_ImageData_0053C154},
-    {0x0053C1FC, 0x0053C210, (const uint8_t *)&g_ImageData_0053C1FC},
-    {0x0053C5DC, 0x0053C6C0, (const uint8_t *)&g_ImageData_0053C5DC},
-    {0x0053C808, 0x0053C810, (const uint8_t *)&g_ImageData_0053C808},
-    {0x0053C99C, 0x0053CA10, (const uint8_t *)&g_ImageData_0053C99C},
-    {0x0053D358, 0x0053D370, (const uint8_t *)&g_ImageData_0053D358},
-    {0x0053DA68, 0x00543B70, (const uint8_t *)&g_ImageData_0053DA68},
-    {0x00543E34, 0x00543F50, (const uint8_t *)&g_ImageData_00543E34},
-    {0x005456F0, 0x005460E0, (const uint8_t *)&g_ImageData_005456F0},
-    {0x00546BB4, 0x00546BC0, (const uint8_t *)&g_ImageData_00546BB4},
-    {0x00547660, 0x00547680, (const uint8_t *)&g_ImageData_00547660},
-    {0x00547D88, 0x00547DB0, (const uint8_t *)&g_ImageData_00547D88},
-    {0x00547DD8, 0x00547DF0, (const uint8_t *)&g_ImageData_00547DD8},
-    {0x005480FC, 0x00548130, (const uint8_t *)&g_ImageData_005480FC},
-    {0x0054D780, 0x0054E230, (const uint8_t *)&g_ImageData_0054D780},
-    {0x0054FBB0, 0x0055C990, (const uint8_t *)&g_ImageData_0054FBB0},
-    {0x0055EFB0, 0x0055F130, (const uint8_t *)&g_ImageData_0055EFB0},
-    {0x0055F7B4, 0x0055F800, (const uint8_t *)&g_ImageData_0055F7B4},
-    {0x0055F934, 0x0055F980, (const uint8_t *)&g_ImageData_0055F934},
-    {0x00562498, 0x00563BD0, (const uint8_t *)&g_ImageData_00562498},
-    {0x005658BC, 0x005658E0, (const uint8_t *)&g_ImageData_005658BC},
-    {0x00565E2C, 0x00565E30, (const uint8_t *)&g_ImageData_00565E2C},
-    {0x00566034, 0x00566060, (const uint8_t *)&g_ImageData_00566034},
-    {0x0056710C, 0x005671D0, (const uint8_t *)&g_ImageData_0056710C},
-    {0x005679AC, 0x00567CB0, (const uint8_t *)&g_ImageData_005679AC},
-    {0x0056A604, 0x0056A610, (const uint8_t *)&g_ImageData_0056A604},
-    {0x0056D33C, 0x0056D380, (const uint8_t *)&g_ImageData_0056D33C},
-    {0x0056D71C, 0x0056D840, (const uint8_t *)&g_ImageData_0056D71C},
-    {0x0056E408, 0x0056E5D0, (const uint8_t *)&g_ImageData_0056E408},
-    {0x0056F278, 0x0056F350, (const uint8_t *)&g_ImageData_0056F278},
-    {0x0056F81C, 0x0056F840, (const uint8_t *)&g_ImageData_0056F81C},
-    {0x0056FA98, 0x0056FAC0, (const uint8_t *)&g_ImageData_0056FA98},
-    {0x00570408, 0x00570430, (const uint8_t *)&g_ImageData_00570408},
-    {0x00570D90, 0x00570DC0, (const uint8_t *)&g_ImageData_00570D90},
-    {0x00570F48, 0x00570F70, (const uint8_t *)&g_ImageData_00570F48},
-    {0x00571AE4, 0x00571B00, (const uint8_t *)&g_ImageData_00571AE4},
-    {0x00571B30, 0x00571B50, (const uint8_t *)&g_ImageData_00571B30},
-    {0x00571D24, 0x00571D40, (const uint8_t *)&g_ImageData_00571D24},
-    {0x00571D70, 0x00571D90, (const uint8_t *)&g_ImageData_00571D70},
-    {0x00572030, 0x005722C0, (const uint8_t *)&g_ImageData_00572030},
-    {0x00572AB0, 0x00573070, (const uint8_t *)&g_ImageData_00572AB0},
-    {0x00573EE8, 0x00575890, (const uint8_t *)&g_ImageData_00573EE8},
-    {0x0057594C, 0x00575CB0, (const uint8_t *)&g_ImageData_0057594C},
-    {0x00576720, 0x00576784, (const uint8_t *)&g_ImageData_00576720},
-    {0x00576B04, 0x00576C30, (const uint8_t *)&g_ImageData_00576B04},
-    {0x00577BFC, 0x00578080, (const uint8_t *)&g_ImageData_00577BFC},
-    {0x0057ECC8, 0x0057EE90, (const uint8_t *)&g_ImageData_0057ECC8},
-    {0x00582ED8, 0x00583140, (const uint8_t *)&g_ImageData_00582ED8},
-    {0x00583D28, 0x00584080, (const uint8_t *)&g_ImageData_00583D28},
-    {0x00584E44, 0x00584E50, (const uint8_t *)&g_ImageData_00584E44},
-    {0x005856A0, 0x00585D40, (const uint8_t *)&g_ImageData_005856A0},
-    {0x00586950, 0x00586B70, (const uint8_t *)&g_ImageData_00586950},
-    {0x005873BC, 0x0058C000, (const uint8_t *)&g_ImageData_005873BC},
+const ThandorImageBlock g_ThandorImageBlocks[1889] = {
+    {0x00401000, 0x00402000, (const uint8_t *)&g_ImageObject_00401000},
+    {0x00402000, 0x00402018, (const uint8_t *)&g_ImageObject_00402000},
+    {0x00402018, 0x0040201C, (const uint8_t *)&g_ImageObject_00402018},
+    {0x0040201C, 0x00402020, (const uint8_t *)&g_ImageObject_0040201C},
+    {0x00402020, 0x00402024, (const uint8_t *)&g_ImageObject_00402020},
+    {0x00402024, 0x00402028, (const uint8_t *)&g_ImageObject_00402024},
+    {0x00402028, 0x00402628, (const uint8_t *)&g_ImageObject_00402028},
+    {0x00402628, 0x0040262C, (const uint8_t *)&g_ImageObject_00402628},
+    {0x0040262C, 0x00402784, (const uint8_t *)&g_ImageObject_0040262C},
+    {0x00402784, 0x00402788, (const uint8_t *)&g_ImageObject_00402784},
+    {0x00402788, 0x0040278C, (const uint8_t *)&g_ImageObject_00402788},
+    {0x0040278C, 0x00402790, (const uint8_t *)&g_ImageObject_0040278C},
+    {0x00402790, 0x00402794, (const uint8_t *)&g_ImageObject_00402790},
+    {0x00402794, 0x00402798, (const uint8_t *)&g_ImageObject_00402794},
+    {0x00402798, 0x0040279C, (const uint8_t *)&g_ImageObject_00402798},
+    {0x0040279C, 0x004027A0, (const uint8_t *)&g_ImageObject_0040279C},
+    {0x004027A0, 0x004027A4, (const uint8_t *)&g_ImageObject_004027A0},
+    {0x004027A4, 0x004027A8, (const uint8_t *)&g_ImageObject_004027A4},
+    {0x004027A8, 0x004027AC, (const uint8_t *)&g_ImageObject_004027A8},
+    {0x004027AC, 0x004027B0, (const uint8_t *)&g_ImageObject_004027AC},
+    {0x004027B0, 0x004027B4, (const uint8_t *)&g_ImageObject_004027B0},
+    {0x004027B4, 0x004027B8, (const uint8_t *)&g_ImageObject_004027B4},
+    {0x004027B8, 0x004027BC, (const uint8_t *)&g_ImageObject_004027B8},
+    {0x004027BC, 0x004027C0, (const uint8_t *)&g_ImageObject_004027BC},
+    {0x004027C0, 0x004027C4, (const uint8_t *)&g_ImageObject_004027C0},
+    {0x004027C4, 0x004027D0, (const uint8_t *)&g_ImageObject_004027C4},
+    {0x004027D0, 0x004028D0, (const uint8_t *)&g_ImageObject_004027D0},
+    {0x004028D0, 0x00402B00, (const uint8_t *)&g_ImageObject_004028D0},
+    {0x00403080, 0x004030A0, (const uint8_t *)&g_ImageObject_00403080},
+    {0x004030A0, 0x004030B0, (const uint8_t *)&g_ImageObject_004030A0},
+    {0x00403158, 0x00403160, (const uint8_t *)&g_ImageObject_00403158},
+    {0x00403160, 0x00405160, (const uint8_t *)&g_ImageObject_00403160},
+    {0x00405160, 0x00407160, (const uint8_t *)&g_ImageObject_00405160},
+    {0x00407510, 0x00407514, (const uint8_t *)&g_ImageObject_00407510},
+    {0x00407514, 0x00407714, (const uint8_t *)&g_ImageObject_00407514},
+    {0x00407714, 0x00407D14, (const uint8_t *)&g_ImageObject_00407714},
+    {0x00407D14, 0x00407D18, (const uint8_t *)&g_ImageObject_00407D14},
+    {0x00407D18, 0x00407D1C, (const uint8_t *)&g_ImageObject_00407D18},
+    {0x00407D1C, 0x00407D20, (const uint8_t *)&g_ImageObject_00407D1C},
+    {0x00407D20, 0x00407D40, (const uint8_t *)&g_ImageObject_00407D20},
+    {0x00407D40, 0x00407D84, (const uint8_t *)&g_ImageObject_00407D40},
+    {0x00407D84, 0x00407E20, (const uint8_t *)&g_ImageObject_00407D84},
+    {0x00407E20, 0x00407E24, (const uint8_t *)&g_ImageObject_00407E20},
+    {0x00407E24, 0x00407E28, (const uint8_t *)&g_ImageObject_00407E24},
+    {0x00407E28, 0x00407E3C, (const uint8_t *)&g_ImageObject_00407E28},
+    {0x00407E3C, 0x00407F50, (const uint8_t *)&g_ImageObject_00407E3C},
+    {0x004080B4, 0x004080C0, (const uint8_t *)&g_ImageObject_004080B4},
+    {0x004080C0, 0x004084C0, (const uint8_t *)&g_ImageObject_004080C0},
+    {0x004084C0, 0x0040A4C0, (const uint8_t *)&g_ImageObject_004084C0},
+    {0x0040ABBC, 0x0040ABC0, (const uint8_t *)&g_ImageObject_0040ABBC},
+    {0x0040ABC0, 0x0040ADC0, (const uint8_t *)&g_ImageObject_0040ABC0},
+    {0x0040ADC0, 0x0040AFC0, (const uint8_t *)&g_ImageObject_0040ADC0},
+    {0x0040AFC0, 0x0040B1C0, (const uint8_t *)&g_ImageObject_0040AFC0},
+    {0x0040B1C0, 0x0040B1C4, (const uint8_t *)&g_ImageObject_0040B1C0},
+    {0x0040B1C4, 0x0040B1C8, (const uint8_t *)&g_ImageObject_0040B1C4},
+    {0x0040B1C8, 0x0040B1CC, (const uint8_t *)&g_ImageObject_0040B1C8},
+    {0x0040B1CC, 0x0040B1D0, (const uint8_t *)&g_ImageObject_0040B1CC},
+    {0x0040B1D0, 0x0040B1D4, (const uint8_t *)&g_ImageObject_0040B1D0},
+    {0x0040B1D4, 0x0040B1D8, (const uint8_t *)&g_ImageObject_0040B1D4},
+    {0x0040B1D8, 0x0040B1DC, (const uint8_t *)&g_ImageObject_0040B1D8},
+    {0x0040B1DC, 0x0040B1E0, (const uint8_t *)&g_ImageObject_0040B1DC},
+    {0x0040B1E0, 0x0040B1E4, (const uint8_t *)&g_ImageObject_0040B1E0},
+    {0x0040B1E4, 0x0040B1E8, (const uint8_t *)&g_ImageObject_0040B1E4},
+    {0x0040B1E8, 0x0040B1EC, (const uint8_t *)&g_ImageObject_0040B1E8},
+    {0x0040B1EC, 0x0040B1F0, (const uint8_t *)&g_ImageObject_0040B1EC},
+    {0x0040B1F0, 0x0040B1F4, (const uint8_t *)&g_ImageObject_0040B1F0},
+    {0x0040B1F4, 0x0040B1F8, (const uint8_t *)&g_ImageObject_0040B1F4},
+    {0x0040B1F8, 0x0040B1FC, (const uint8_t *)&g_ImageObject_0040B1F8},
+    {0x0040B1FC, 0x0040B200, (const uint8_t *)&g_ImageObject_0040B1FC},
+    {0x0040B200, 0x0040B204, (const uint8_t *)&g_ImageObject_0040B200},
+    {0x0040B204, 0x0040B208, (const uint8_t *)&g_ImageObject_0040B204},
+    {0x0040B208, 0x0040B20C, (const uint8_t *)&g_ImageObject_0040B208},
+    {0x0040B20C, 0x0040B210, (const uint8_t *)&g_ImageObject_0040B20C},
+    {0x0040B210, 0x0040B214, (const uint8_t *)&g_ImageObject_0040B210},
+    {0x0040B214, 0x0040B218, (const uint8_t *)&g_ImageObject_0040B214},
+    {0x0040B218, 0x0040B21C, (const uint8_t *)&g_ImageObject_0040B218},
+    {0x0040B21C, 0x0040B220, (const uint8_t *)&g_ImageObject_0040B21C},
+    {0x0040B220, 0x0040B224, (const uint8_t *)&g_ImageObject_0040B220},
+    {0x0040B224, 0x0040E224, (const uint8_t *)&g_ImageObject_0040B224},
+    {0x0040E224, 0x0040E230, (const uint8_t *)&g_ImageObject_0040E224},
+    {0x0040E230, 0x0040E23D, (const uint8_t *)&g_ImageObject_0040E230},
+    {0x0040E23D, 0x0040E255, (const uint8_t *)&g_ImageObject_0040E23D},
+    {0x0040E255, 0x0040E270, (const uint8_t *)&g_ImageObject_0040E255},
+    {0x0040E270, 0x0040E2B0, (const uint8_t *)&g_ImageObject_0040E270},
+    {0x0040F524, 0x0040F530, (const uint8_t *)&g_ImageObject_0040F524},
+    {0x0040F530, 0x0040F550, (const uint8_t *)&g_ImageObject_0040F530},
+    {0x0040F550, 0x0040F750, (const uint8_t *)&g_ImageObject_0040F550},
+    {0x0040F750, 0x0040F950, (const uint8_t *)&g_ImageObject_0040F750},
+    {0x0040F950, 0x0040FB50, (const uint8_t *)&g_ImageObject_0040F950},
+    {0x0040FB50, 0x0040FD50, (const uint8_t *)&g_ImageObject_0040FB50},
+    {0x0040FD50, 0x0040FF50, (const uint8_t *)&g_ImageObject_0040FD50},
+    {0x0040FF50, 0x0040FF58, (const uint8_t *)&g_ImageObject_0040FF50},
+    {0x0040FF58, 0x0040FF70, (const uint8_t *)&g_ImageObject_0040FF58},
+    {0x004107E8, 0x004107F0, (const uint8_t *)&g_ImageObject_004107E8},
+    {0x004107F0, 0x004167F0, (const uint8_t *)&g_ImageObject_004107F0},
+    {0x004167F0, 0x004167F4, (const uint8_t *)&g_ImageObject_004167F0},
+    {0x004167F4, 0x004167F8, (const uint8_t *)&g_ImageObject_004167F4},
+    {0x004167F8, 0x004167FC, (const uint8_t *)&g_ImageObject_004167F8},
+    {0x004167FC, 0x00416800, (const uint8_t *)&g_ImageObject_004167FC},
+    {0x00416800, 0x0041680C, (const uint8_t *)&g_ImageObject_00416800},
+    {0x0041680C, 0x00416810, (const uint8_t *)&g_ImageObject_0041680C},
+    {0x00416810, 0x00416814, (const uint8_t *)&g_ImageObject_00416810},
+    {0x00416814, 0x00416818, (const uint8_t *)&g_ImageObject_00416814},
+    {0x00416818, 0x0041681C, (const uint8_t *)&g_ImageObject_00416818},
+    {0x0041681C, 0x00416820, (const uint8_t *)&g_ImageObject_0041681C},
+    {0x00416820, 0x00416824, (const uint8_t *)&g_ImageObject_00416820},
+    {0x00416824, 0x00416828, (const uint8_t *)&g_ImageObject_00416824},
+    {0x00416828, 0x00416830, (const uint8_t *)&g_ImageObject_00416828},
+    {0x00416830, 0x00416834, (const uint8_t *)&g_ImageObject_00416830},
+    {0x00416834, 0x00416838, (const uint8_t *)&g_ImageObject_00416834},
+    {0x00416838, 0x0041683C, (const uint8_t *)&g_ImageObject_00416838},
+    {0x0041683C, 0x00416844, (const uint8_t *)&g_ImageObject_0041683C},
+    {0x00416844, 0x00416848, (const uint8_t *)&g_ImageObject_00416844},
+    {0x00416848, 0x0041684C, (const uint8_t *)&g_ImageObject_00416848},
+    {0x0041684C, 0x00416850, (const uint8_t *)&g_ImageObject_0041684C},
+    {0x00416850, 0x00416854, (const uint8_t *)&g_ImageObject_00416850},
+    {0x00416854, 0x00416858, (const uint8_t *)&g_ImageObject_00416854},
+    {0x00416858, 0x0041685C, (const uint8_t *)&g_ImageObject_00416858},
+    {0x0041685C, 0x00416860, (const uint8_t *)&g_ImageObject_0041685C},
+    {0x00416860, 0x00416864, (const uint8_t *)&g_ImageObject_00416860},
+    {0x00416864, 0x00416886, (const uint8_t *)&g_ImageObject_00416864},
+    {0x00416886, 0x004168B0, (const uint8_t *)&g_ImageObject_00416886},
+    {0x004169DC, 0x004169E0, (const uint8_t *)&g_ImageObject_004169DC},
+    {0x004169E0, 0x004171E0, (const uint8_t *)&g_ImageObject_004169E0},
+    {0x004171E0, 0x004171E4, (const uint8_t *)&g_ImageObject_004171E0},
+    {0x004171E4, 0x004171E8, (const uint8_t *)&g_ImageObject_004171E4},
+    {0x004171E8, 0x004171EC, (const uint8_t *)&g_ImageObject_004171E8},
+    {0x004171EC, 0x004171F0, (const uint8_t *)&g_ImageObject_004171EC},
+    {0x004171F0, 0x00417210, (const uint8_t *)&g_ImageObject_004171F0},
+    {0x00417210, 0x00417214, (const uint8_t *)&g_ImageObject_00417210},
+    {0x00417214, 0x00417218, (const uint8_t *)&g_ImageObject_00417214},
+    {0x00417218, 0x00417230, (const uint8_t *)&g_ImageObject_00417218},
+    {0x004172E8, 0x00417300, (const uint8_t *)&g_ImageObject_004172E8},
+    {0x00417300, 0x00417330, (const uint8_t *)&g_ImageObject_00417300},
+    {0x00417330, 0x00417334, (const uint8_t *)&g_ImageObject_00417330},
+    {0x00417334, 0x00417338, (const uint8_t *)&g_ImageObject_00417334},
+    {0x00417338, 0x0041733C, (const uint8_t *)&g_ImageObject_00417338},
+    {0x0041733C, 0x00417340, (const uint8_t *)&g_ImageObject_0041733C},
+    {0x00417340, 0x00417344, (const uint8_t *)&g_ImageObject_00417340},
+    {0x00417344, 0x00417348, (const uint8_t *)&g_ImageObject_00417344},
+    {0x00417348, 0x0041734C, (const uint8_t *)&g_ImageObject_00417348},
+    {0x0041734C, 0x00417350, (const uint8_t *)&g_ImageObject_0041734C},
+    {0x00417350, 0x00417354, (const uint8_t *)&g_ImageObject_00417350},
+    {0x00417354, 0x00417358, (const uint8_t *)&g_ImageObject_00417354},
+    {0x00417358, 0x0041735C, (const uint8_t *)&g_ImageObject_00417358},
+    {0x0041735C, 0x00417360, (const uint8_t *)&g_ImageObject_0041735C},
+    {0x00417360, 0x00417364, (const uint8_t *)&g_ImageObject_00417360},
+    {0x00417364, 0x00417570, (const uint8_t *)&g_ImageObject_00417364},
+    {0x0041A53C, 0x0041A540, (const uint8_t *)&g_ImageObject_0041A53C},
+    {0x0041A540, 0x0041A544, (const uint8_t *)&g_ImageObject_0041A540},
+    {0x0041A544, 0x0041A548, (const uint8_t *)&g_ImageObject_0041A544},
+    {0x0041A548, 0x0041A54C, (const uint8_t *)&g_ImageObject_0041A548},
+    {0x0041A54C, 0x0041A56C, (const uint8_t *)&g_ImageObject_0041A54C},
+    {0x0041A56C, 0x0041A580, (const uint8_t *)&g_ImageObject_0041A56C},
+    {0x0041A740, 0x0041A750, (const uint8_t *)&g_ImageObject_0041A740},
+    {0x0041A750, 0x0041A768, (const uint8_t *)&g_ImageObject_0041A750},
+    {0x0041A768, 0x0041A780, (const uint8_t *)&g_ImageObject_0041A768},
+    {0x0041A780, 0x0041A784, (const uint8_t *)&g_ImageObject_0041A780},
+    {0x0041A784, 0x0041A788, (const uint8_t *)&g_ImageObject_0041A784},
+    {0x0041A788, 0x0041A78C, (const uint8_t *)&g_ImageObject_0041A788},
+    {0x0041A78C, 0x0041A790, (const uint8_t *)&g_ImageObject_0041A78C},
+    {0x0041A790, 0x0041A794, (const uint8_t *)&g_ImageObject_0041A790},
+    {0x0041A794, 0x0041AF94, (const uint8_t *)&g_ImageObject_0041A794},
+    {0x0041AF94, 0x0041AF98, (const uint8_t *)&g_ImageObject_0041AF94},
+    {0x0041AF98, 0x0041AF9C, (const uint8_t *)&g_ImageObject_0041AF98},
+    {0x0041AF9C, 0x0041AFA4, (const uint8_t *)&g_ImageObject_0041AF9C},
+    {0x0041AFA4, 0x0041AFA8, (const uint8_t *)&g_ImageObject_0041AFA4},
+    {0x0041AFA8, 0x0041AFAC, (const uint8_t *)&g_ImageObject_0041AFA8},
+    {0x0041AFAC, 0x0041B028, (const uint8_t *)&g_ImageObject_0041AFAC},
+    {0x0041B028, 0x0041B030, (const uint8_t *)&g_ImageObject_0041B028},
+    {0x0041B030, 0x0041B080, (const uint8_t *)&g_ImageObject_0041B030},
+    {0x0041B128, 0x0041B130, (const uint8_t *)&g_ImageObject_0041B128},
+    {0x0041B130, 0x0041B180, (const uint8_t *)&g_ImageObject_0041B130},
+    {0x0041B180, 0x0041B190, (const uint8_t *)&g_ImageObject_0041B180},
+    {0x0041B190, 0x0041B1B0, (const uint8_t *)&g_ImageObject_0041B190},
+    {0x0041B228, 0x0041B230, (const uint8_t *)&g_ImageObject_0041B228},
+    {0x0041B230, 0x0041B280, (const uint8_t *)&g_ImageObject_0041B230},
+    {0x0041B280, 0x0041B290, (const uint8_t *)&g_ImageObject_0041B280},
+    {0x0041B290, 0x0041B2B0, (const uint8_t *)&g_ImageObject_0041B290},
+    {0x0041B338, 0x0041B340, (const uint8_t *)&g_ImageObject_0041B338},
+    {0x0041B340, 0x0041B3D0, (const uint8_t *)&g_ImageObject_0041B340},
+    {0x0041B448, 0x0041B450, (const uint8_t *)&g_ImageObject_0041B448},
+    {0x0041B450, 0x0041B4D0, (const uint8_t *)&g_ImageObject_0041B450},
+    {0x0041B548, 0x0041B550, (const uint8_t *)&g_ImageObject_0041B548},
+    {0x0041B550, 0x0041B5D0, (const uint8_t *)&g_ImageObject_0041B550},
+    {0x0041B648, 0x0041B650, (const uint8_t *)&g_ImageObject_0041B648},
+    {0x0041B650, 0x0041B6E0, (const uint8_t *)&g_ImageObject_0041B650},
+    {0x0041B758, 0x0041B760, (const uint8_t *)&g_ImageObject_0041B758},
+    {0x0041B760, 0x0041B7F0, (const uint8_t *)&g_ImageObject_0041B760},
+    {0x0041B868, 0x0041B870, (const uint8_t *)&g_ImageObject_0041B868},
+    {0x0041B870, 0x0041B900, (const uint8_t *)&g_ImageObject_0041B870},
+    {0x0041B9C8, 0x0041B9D0, (const uint8_t *)&g_ImageObject_0041B9C8},
+    {0x0041B9D0, 0x0041BA20, (const uint8_t *)&g_ImageObject_0041B9D0},
+    {0x0041BA20, 0x0041BA30, (const uint8_t *)&g_ImageObject_0041BA20},
+    {0x0041BA30, 0x0041BA50, (const uint8_t *)&g_ImageObject_0041BA30},
+    {0x0041BB78, 0x0041BB80, (const uint8_t *)&g_ImageObject_0041BB78},
+    {0x0041BB80, 0x0041BBD0, (const uint8_t *)&g_ImageObject_0041BB80},
+    {0x0041BBD0, 0x0041BBE0, (const uint8_t *)&g_ImageObject_0041BBD0},
+    {0x0041BBE0, 0x0041BC00, (const uint8_t *)&g_ImageObject_0041BBE0},
+    {0x0041BCEC, 0x0041BCF0, (const uint8_t *)&g_ImageObject_0041BCEC},
+    {0x0041BCF0, 0x0041C0F0, (const uint8_t *)&g_ImageObject_0041BCF0},
+    {0x0041C15C, 0x0041C160, (const uint8_t *)&g_ImageObject_0041C15C},
+    {0x0041C160, 0x0041C220, (const uint8_t *)&g_ImageObject_0041C160},
+    {0x0041C220, 0x0041C260, (const uint8_t *)&g_ImageObject_0041C220},
+    {0x0041C260, 0x0041C560, (const uint8_t *)&g_ImageObject_0041C260},
+    {0x0041C94C, 0x0041C950, (const uint8_t *)&g_ImageObject_0041C94C},
+    {0x0041C950, 0x0041C9D0, (const uint8_t *)&g_ImageObject_0041C950},
+    {0x0041CAFC, 0x0041CB04, (const uint8_t *)&g_ImageObject_0041CAFC},
+    {0x0041CB68, 0x0041CB70, (const uint8_t *)&g_ImageObject_0041CB68},
+    {0x0041CB70, 0x0041CBC0, (const uint8_t *)&g_ImageObject_0041CB70},
+    {0x0041CBC0, 0x0041CBD0, (const uint8_t *)&g_ImageObject_0041CBC0},
+    {0x0041CBD0, 0x0041CBF0, (const uint8_t *)&g_ImageObject_0041CBD0},
+    {0x0041CF7C, 0x0041CF80, (const uint8_t *)&g_ImageObject_0041CF7C},
+    {0x0041CF80, 0x0041CFA0, (const uint8_t *)&g_ImageObject_0041CF80},
+    {0x0041CFA0, 0x0041CFD0, (const uint8_t *)&g_ImageObject_0041CFA0},
+    {0x0041CFD0, 0x0041CFE0, (const uint8_t *)&g_ImageObject_0041CFD0},
+    {0x0041CFE0, 0x0041D000, (const uint8_t *)&g_ImageObject_0041CFE0},
+    {0x0041D07C, 0x0041D090, (const uint8_t *)&g_ImageObject_0041D07C},
+    {0x0041D144, 0x0041D150, (const uint8_t *)&g_ImageObject_0041D144},
+    {0x0041D150, 0x0041D170, (const uint8_t *)&g_ImageObject_0041D150},
+    {0x0041D170, 0x0041D1D0, (const uint8_t *)&g_ImageObject_0041D170},
+    {0x0041D53C, 0x0041D540, (const uint8_t *)&g_ImageObject_0041D53C},
+    {0x0041D540, 0x0041D560, (const uint8_t *)&g_ImageObject_0041D540},
+    {0x0041D560, 0x0041D590, (const uint8_t *)&g_ImageObject_0041D560},
+    {0x0041D590, 0x0041D5A0, (const uint8_t *)&g_ImageObject_0041D590},
+    {0x0041D5A0, 0x0041D5C0, (const uint8_t *)&g_ImageObject_0041D5A0},
+    {0x0041D75C, 0x0041D770, (const uint8_t *)&g_ImageObject_0041D75C},
+    {0x0041D880, 0x0041D890, (const uint8_t *)&g_ImageObject_0041D880},
+    {0x0041D890, 0x0041D8B0, (const uint8_t *)&g_ImageObject_0041D890},
+    {0x0041D8B0, 0x0041D910, (const uint8_t *)&g_ImageObject_0041D8B0},
+    {0x0041DA44, 0x0041DA50, (const uint8_t *)&g_ImageObject_0041DA44},
+    {0x0041DA50, 0x0041DAD0, (const uint8_t *)&g_ImageObject_0041DA50},
+    {0x0041DBD4, 0x0041DBE0, (const uint8_t *)&g_ImageObject_0041DBD4},
+    {0x0041DBE0, 0x0041DC60, (const uint8_t *)&g_ImageObject_0041DBE0},
+    {0x0041DDFC, 0x0041DE10, (const uint8_t *)&g_ImageObject_0041DDFC},
+    {0x0041DE7C, 0x0041DE80, (const uint8_t *)&g_ImageObject_0041DE7C},
+    {0x0041DE80, 0x0041EE80, (const uint8_t *)&g_ImageObject_0041DE80},
+    {0x0041EE80, 0x0041F680, (const uint8_t *)&g_ImageObject_0041EE80},
+    {0x0041F680, 0x0041F688, (const uint8_t *)&g_ImageObject_0041F680},
+    {0x0041F688, 0x0041F690, (const uint8_t *)&g_ImageObject_0041F688},
+    {0x0041F690, 0x0041F698, (const uint8_t *)&g_ImageObject_0041F690},
+    {0x0041F698, 0x0041F6A0, (const uint8_t *)&g_ImageObject_0041F698},
+    {0x0041F6A0, 0x0041F6A8, (const uint8_t *)&g_ImageObject_0041F6A0},
+    {0x0041F6A8, 0x0041F6B0, (const uint8_t *)&g_ImageObject_0041F6A8},
+    {0x0041F6B0, 0x0041F6B8, (const uint8_t *)&g_ImageObject_0041F6B0},
+    {0x0041F6B8, 0x0041F6C0, (const uint8_t *)&g_ImageObject_0041F6B8},
+    {0x0041F6C0, 0x0041F6C8, (const uint8_t *)&g_ImageObject_0041F6C0},
+    {0x0041F6C8, 0x0041F6E0, (const uint8_t *)&g_ImageObject_0041F6C8},
+    {0x0041F6E0, 0x0041F700, (const uint8_t *)&g_ImageObject_0041F6E0},
+    {0x0041F700, 0x0041F708, (const uint8_t *)&g_ImageObject_0041F700},
+    {0x0041F708, 0x0041F720, (const uint8_t *)&g_ImageObject_0041F708},
+    {0x0041F720, 0x0041FF20, (const uint8_t *)&g_ImageObject_0041F720},
+    {0x0041FF20, 0x00420720, (const uint8_t *)&g_ImageObject_0041FF20},
+    {0x00420720, 0x00420F20, (const uint8_t *)&g_ImageObject_00420720},
+    {0x00420F20, 0x00421720, (const uint8_t *)&g_ImageObject_00420F20},
+    {0x00421720, 0x00421F20, (const uint8_t *)&g_ImageObject_00421720},
+    {0x00421F20, 0x00422720, (const uint8_t *)&g_ImageObject_00421F20},
+    {0x00422720, 0x00422768, (const uint8_t *)&g_ImageObject_00422720},
+    {0x00422768, 0x004227B0, (const uint8_t *)&g_ImageObject_00422768},
+    {0x00422978, 0x004229A0, (const uint8_t *)&g_ImageObject_00422978},
+    {0x004229A0, 0x004229B4, (const uint8_t *)&g_ImageObject_004229A0},
+    {0x004229B4, 0x00423588, (const uint8_t *)&g_ImageObject_004229B4},
+    {0x00423588, 0x004235D8, (const uint8_t *)&g_ImageObject_00423588},
+    {0x004235D8, 0x00423600, (const uint8_t *)&g_ImageObject_004235D8},
+    {0x00424324, 0x00424338, (const uint8_t *)&g_ImageObject_00424324},
+    {0x00424338, 0x004244E0, (const uint8_t *)&g_ImageObject_00424338},
+    {0x00424684, 0x004246A0, (const uint8_t *)&g_ImageObject_00424684},
+    {0x004246A0, 0x004346A0, (const uint8_t *)&g_ImageObject_004246A0},
+    {0x004346A0, 0x004846A0, (const uint8_t *)&g_ImageObject_004346A0},
+    {0x00485808, 0x00485814, (const uint8_t *)&g_ImageObject_00485808},
+    {0x00485814, 0x00485818, (const uint8_t *)&g_ImageObject_00485814},
+    {0x00485818, 0x0048581C, (const uint8_t *)&g_ImageObject_00485818},
+    {0x0048581C, 0x00485820, (const uint8_t *)&g_ImageObject_0048581C},
+    {0x00485820, 0x00485824, (const uint8_t *)&g_ImageObject_00485820},
+    {0x00485824, 0x00485828, (const uint8_t *)&g_ImageObject_00485824},
+    {0x00485828, 0x0048582C, (const uint8_t *)&g_ImageObject_00485828},
+    {0x0048582C, 0x00485830, (const uint8_t *)&g_ImageObject_0048582C},
+    {0x00485830, 0x00485834, (const uint8_t *)&g_ImageObject_00485830},
+    {0x00485834, 0x00485838, (const uint8_t *)&g_ImageObject_00485834},
+    {0x00485838, 0x0048583C, (const uint8_t *)&g_ImageObject_00485838},
+    {0x0048583C, 0x00485840, (const uint8_t *)&g_ImageObject_0048583C},
+    {0x00485840, 0x00485844, (const uint8_t *)&g_ImageObject_00485840},
+    {0x00485844, 0x00485848, (const uint8_t *)&g_ImageObject_00485844},
+    {0x00485848, 0x0048584C, (const uint8_t *)&g_ImageObject_00485848},
+    {0x0048584C, 0x00485850, (const uint8_t *)&g_ImageObject_0048584C},
+    {0x00485850, 0x00485854, (const uint8_t *)&g_ImageObject_00485850},
+    {0x00485854, 0x00485858, (const uint8_t *)&g_ImageObject_00485854},
+    {0x00485858, 0x0048585C, (const uint8_t *)&g_ImageObject_00485858},
+    {0x0048585C, 0x00485868, (const uint8_t *)&g_ImageObject_0048585C},
+    {0x00485868, 0x0048586C, (const uint8_t *)&g_ImageObject_00485868},
+    {0x0048586C, 0x00485874, (const uint8_t *)&g_ImageObject_0048586C},
+    {0x00485874, 0x00485878, (const uint8_t *)&g_ImageObject_00485874},
+    {0x00485878, 0x0048587C, (const uint8_t *)&g_ImageObject_00485878},
+    {0x0048587C, 0x00485884, (const uint8_t *)&g_ImageObject_0048587C},
+    {0x00485884, 0x0048588C, (const uint8_t *)&g_ImageObject_00485884},
+    {0x0048588C, 0x00485890, (const uint8_t *)&g_ImageObject_0048588C},
+    {0x00485890, 0x004858A0, (const uint8_t *)&g_ImageObject_00485890},
+    {0x004858A0, 0x004858D0, (const uint8_t *)&g_ImageObject_004858A0},
+    {0x004858D0, 0x00485900, (const uint8_t *)&g_ImageObject_004858D0},
+    {0x00485900, 0x00485930, (const uint8_t *)&g_ImageObject_00485900},
+    {0x00485930, 0x00485940, (const uint8_t *)&g_ImageObject_00485930},
+    {0x00485940, 0x00485948, (const uint8_t *)&g_ImageObject_00485940},
+    {0x00485948, 0x00485954, (const uint8_t *)&g_ImageObject_00485948},
+    {0x00485954, 0x00485984, (const uint8_t *)&g_ImageObject_00485954},
+    {0x00485984, 0x004859B4, (const uint8_t *)&g_ImageObject_00485984},
+    {0x004859B4, 0x004859E4, (const uint8_t *)&g_ImageObject_004859B4},
+    {0x004859E4, 0x00485A04, (const uint8_t *)&g_ImageObject_004859E4},
+    {0x00485A04, 0x00485A08, (const uint8_t *)&g_ImageObject_00485A04},
+    {0x00485A08, 0x00485A14, (const uint8_t *)&g_ImageObject_00485A08},
+    {0x00485A14, 0x00485A18, (const uint8_t *)&g_ImageObject_00485A14},
+    {0x00485A18, 0x00485A20, (const uint8_t *)&g_ImageObject_00485A18},
+    {0x00485A20, 0x00485A24, (const uint8_t *)&g_ImageObject_00485A20},
+    {0x00485A24, 0x00485A2C, (const uint8_t *)&g_ImageObject_00485A24},
+    {0x00485A2C, 0x00485A30, (const uint8_t *)&g_ImageObject_00485A2C},
+    {0x00485A30, 0x00485A34, (const uint8_t *)&g_ImageObject_00485A30},
+    {0x00485A34, 0x00485A40, (const uint8_t *)&g_ImageObject_00485A34},
+    {0x00485A40, 0x00485E40, (const uint8_t *)&g_ImageObject_00485A40},
+    {0x00486D8C, 0x00486D90, (const uint8_t *)&g_ImageObject_00486D8C},
+    {0x00486D90, 0x004A6D90, (const uint8_t *)&g_ImageObject_00486D90},
+    {0x004A6D90, 0x004A6D98, (const uint8_t *)&g_ImageObject_004A6D90},
+    {0x004A6D98, 0x004A6D9C, (const uint8_t *)&g_ImageObject_004A6D98},
+    {0x004A6D9C, 0x004A6DA0, (const uint8_t *)&g_ImageObject_004A6D9C},
+    {0x004A6DA0, 0x004A6DA4, (const uint8_t *)&g_ImageObject_004A6DA0},
+    {0x004A6DA4, 0x004A6FB0, (const uint8_t *)&g_ImageObject_004A6DA4},
+    {0x004A8E60, 0x004A8E70, (const uint8_t *)&g_ImageObject_004A8E60},
+    {0x004A8E70, 0x004A8E74, (const uint8_t *)&g_ImageObject_004A8E70},
+    {0x004A8E74, 0x004A8E78, (const uint8_t *)&g_ImageObject_004A8E74},
+    {0x004A8E78, 0x004A8E7C, (const uint8_t *)&g_ImageObject_004A8E78},
+    {0x004A8E7C, 0x004A8E80, (const uint8_t *)&g_ImageObject_004A8E7C},
+    {0x004A8E80, 0x004A8E84, (const uint8_t *)&g_ImageObject_004A8E80},
+    {0x004A8E84, 0x004A8E88, (const uint8_t *)&g_ImageObject_004A8E84},
+    {0x004A8E88, 0x004A8E8C, (const uint8_t *)&g_ImageObject_004A8E88},
+    {0x004A8E8C, 0x004A8E90, (const uint8_t *)&g_ImageObject_004A8E8C},
+    {0x004A8E90, 0x004A8E94, (const uint8_t *)&g_ImageObject_004A8E90},
+    {0x004A8E94, 0x004A8E98, (const uint8_t *)&g_ImageObject_004A8E94},
+    {0x004A8E98, 0x004A8E9C, (const uint8_t *)&g_ImageObject_004A8E98},
+    {0x004A8E9C, 0x004A8EA0, (const uint8_t *)&g_ImageObject_004A8E9C},
+    {0x004A8EA0, 0x004A8EA4, (const uint8_t *)&g_ImageObject_004A8EA0},
+    {0x004A8EA4, 0x004A8EA8, (const uint8_t *)&g_ImageObject_004A8EA4},
+    {0x004A8EA8, 0x004A8EAC, (const uint8_t *)&g_ImageObject_004A8EA8},
+    {0x004A8EAC, 0x004A8ED0, (const uint8_t *)&g_ImageObject_004A8EAC},
+    {0x004A8ED0, 0x004A8ED4, (const uint8_t *)&g_ImageObject_004A8ED0},
+    {0x004A8ED4, 0x004A8ED8, (const uint8_t *)&g_ImageObject_004A8ED4},
+    {0x004A8ED8, 0x004A8EDC, (const uint8_t *)&g_ImageObject_004A8ED8},
+    {0x004A8EDC, 0x004A8EE0, (const uint8_t *)&g_ImageObject_004A8EDC},
+    {0x004A8EE0, 0x004A8EE4, (const uint8_t *)&g_ImageObject_004A8EE0},
+    {0x004A8EE4, 0x004A8EE8, (const uint8_t *)&g_ImageObject_004A8EE4},
+    {0x004A8EE8, 0x004A8EEC, (const uint8_t *)&g_ImageObject_004A8EE8},
+    {0x004A8EEC, 0x004A8EF0, (const uint8_t *)&g_ImageObject_004A8EEC},
+    {0x004A8EF0, 0x004A8EF4, (const uint8_t *)&g_ImageObject_004A8EF0},
+    {0x004A8EF4, 0x004A8EF8, (const uint8_t *)&g_ImageObject_004A8EF4},
+    {0x004A8EF8, 0x004A8EFC, (const uint8_t *)&g_ImageObject_004A8EF8},
+    {0x004A8EFC, 0x004A8F00, (const uint8_t *)&g_ImageObject_004A8EFC},
+    {0x004A8F00, 0x004A8F04, (const uint8_t *)&g_ImageObject_004A8F00},
+    {0x004A8F04, 0x004A8F08, (const uint8_t *)&g_ImageObject_004A8F04},
+    {0x004A8F08, 0x004A8F0C, (const uint8_t *)&g_ImageObject_004A8F08},
+    {0x004A8F0C, 0x004A8F10, (const uint8_t *)&g_ImageObject_004A8F0C},
+    {0x004A8F10, 0x004A8F14, (const uint8_t *)&g_ImageObject_004A8F10},
+    {0x004A8F14, 0x004A8F18, (const uint8_t *)&g_ImageObject_004A8F14},
+    {0x004A8F18, 0x004A8F1C, (const uint8_t *)&g_ImageObject_004A8F18},
+    {0x004A8F1C, 0x004A8F20, (const uint8_t *)&g_ImageObject_004A8F1C},
+    {0x004A8F20, 0x004A8F24, (const uint8_t *)&g_ImageObject_004A8F20},
+    {0x004A8F24, 0x004A8F28, (const uint8_t *)&g_ImageObject_004A8F24},
+    {0x004A8F28, 0x004A8F2C, (const uint8_t *)&g_ImageObject_004A8F28},
+    {0x004A8F2C, 0x004A8F30, (const uint8_t *)&g_ImageObject_004A8F2C},
+    {0x004A8F30, 0x004A8F34, (const uint8_t *)&g_ImageObject_004A8F30},
+    {0x004A8F34, 0x004A8F38, (const uint8_t *)&g_ImageObject_004A8F34},
+    {0x004A8F38, 0x004A8F3C, (const uint8_t *)&g_ImageObject_004A8F38},
+    {0x004A8F3C, 0x004A8F40, (const uint8_t *)&g_ImageObject_004A8F3C},
+    {0x004A8F40, 0x004A8F4C, (const uint8_t *)&g_ImageObject_004A8F40},
+    {0x004A8F4C, 0x004A8F50, (const uint8_t *)&g_ImageObject_004A8F4C},
+    {0x004A8F50, 0x004A8F54, (const uint8_t *)&g_ImageObject_004A8F50},
+    {0x004A8F54, 0x004A8F58, (const uint8_t *)&g_ImageObject_004A8F54},
+    {0x004A8F58, 0x004A8F64, (const uint8_t *)&g_ImageObject_004A8F58},
+    {0x004A8F64, 0x004A8F68, (const uint8_t *)&g_ImageObject_004A8F64},
+    {0x004A8F68, 0x004A8F6C, (const uint8_t *)&g_ImageObject_004A8F68},
+    {0x004A8F6C, 0x004A8F80, (const uint8_t *)&g_ImageObject_004A8F6C},
+    {0x004AD92C, 0x004AD930, (const uint8_t *)&g_ImageObject_004AD92C},
+    {0x004AD930, 0x004AE130, (const uint8_t *)&g_ImageObject_004AD930},
+    {0x004AE130, 0x004AE230, (const uint8_t *)&g_ImageObject_004AE130},
+    {0x004AE95C, 0x004AE960, (const uint8_t *)&g_ImageObject_004AE95C},
+    {0x004AE960, 0x004AE964, (const uint8_t *)&g_ImageObject_004AE960},
+    {0x004AE964, 0x004AE968, (const uint8_t *)&g_ImageObject_004AE964},
+    {0x004AE968, 0x004AE96C, (const uint8_t *)&g_ImageObject_004AE968},
+    {0x004AE96C, 0x004AE970, (const uint8_t *)&g_ImageObject_004AE96C},
+    {0x004AE970, 0x004AE974, (const uint8_t *)&g_ImageObject_004AE970},
+    {0x004AE974, 0x004AE978, (const uint8_t *)&g_ImageObject_004AE974},
+    {0x004AE978, 0x004AE97C, (const uint8_t *)&g_ImageObject_004AE978},
+    {0x004AE97C, 0x004AE980, (const uint8_t *)&g_ImageObject_004AE97C},
+    {0x004AE980, 0x004AE984, (const uint8_t *)&g_ImageObject_004AE980},
+    {0x004AE984, 0x004AE988, (const uint8_t *)&g_ImageObject_004AE984},
+    {0x004AE988, 0x004AE98C, (const uint8_t *)&g_ImageObject_004AE988},
+    {0x004AE98C, 0x004AE990, (const uint8_t *)&g_ImageObject_004AE98C},
+    {0x004AE990, 0x004AE9A8, (const uint8_t *)&g_ImageObject_004AE990},
+    {0x004AE9A8, 0x004AEAE8, (const uint8_t *)&g_ImageObject_004AE9A8},
+    {0x004AEAE8, 0x004AEB08, (const uint8_t *)&g_ImageObject_004AEAE8},
+    {0x004AEB08, 0x004AEB10, (const uint8_t *)&g_ImageObject_004AEB08},
+    {0x004AF198, 0x004AF1A0, (const uint8_t *)&g_ImageObject_004AF198},
+    {0x004AF1D4, 0x004AF1E0, (const uint8_t *)&g_ImageObject_004AF1D4},
+    {0x004AF1E0, 0x004AF1F0, (const uint8_t *)&g_ImageObject_004AF1E0},
+    {0x004AF1F0, 0x004AF1F4, (const uint8_t *)&g_ImageObject_004AF1F0},
+    {0x004AF1F4, 0x004AF1F8, (const uint8_t *)&g_ImageObject_004AF1F4},
+    {0x004AF1F8, 0x004AF1FC, (const uint8_t *)&g_ImageObject_004AF1F8},
+    {0x004AF1FC, 0x004AF200, (const uint8_t *)&g_ImageObject_004AF1FC},
+    {0x004AF200, 0x004AF204, (const uint8_t *)&g_ImageObject_004AF200},
+    {0x004AF204, 0x004AF208, (const uint8_t *)&g_ImageObject_004AF204},
+    {0x004AF208, 0x004AF210, (const uint8_t *)&g_ImageObject_004AF208},
+    {0x004AF39C, 0x004AF3B0, (const uint8_t *)&g_ImageObject_004AF39C},
+    {0x004B0A20, 0x004B0A30, (const uint8_t *)&g_ImageObject_004B0A20},
+    {0x004B0A30, 0x004B0E30, (const uint8_t *)&g_ImageObject_004B0A30},
+    {0x004B0E30, 0x004B0E34, (const uint8_t *)&g_ImageObject_004B0E30},
+    {0x004B0E34, 0x004B0E38, (const uint8_t *)&g_ImageObject_004B0E34},
+    {0x004B0E38, 0x004B0E3C, (const uint8_t *)&g_ImageObject_004B0E38},
+    {0x004B0E3C, 0x004B0E40, (const uint8_t *)&g_ImageObject_004B0E3C},
+    {0x004B0E40, 0x004B0E44, (const uint8_t *)&g_ImageObject_004B0E40},
+    {0x004B0E44, 0x004B0E48, (const uint8_t *)&g_ImageObject_004B0E44},
+    {0x004B0E48, 0x004B0E4C, (const uint8_t *)&g_ImageObject_004B0E48},
+    {0x004B0E4C, 0x004B0E50, (const uint8_t *)&g_ImageObject_004B0E4C},
+    {0x004B0E50, 0x004B0E54, (const uint8_t *)&g_ImageObject_004B0E50},
+    {0x004B0E54, 0x004B0E58, (const uint8_t *)&g_ImageObject_004B0E54},
+    {0x004B0E58, 0x004B0E5C, (const uint8_t *)&g_ImageObject_004B0E58},
+    {0x004B0E5C, 0x004B0E60, (const uint8_t *)&g_ImageObject_004B0E5C},
+    {0x004B0E60, 0x004B0E64, (const uint8_t *)&g_ImageObject_004B0E60},
+    {0x004B0E64, 0x004B0E68, (const uint8_t *)&g_ImageObject_004B0E64},
+    {0x004B0E68, 0x004B0E6C, (const uint8_t *)&g_ImageObject_004B0E68},
+    {0x004B0E6C, 0x004B0E70, (const uint8_t *)&g_ImageObject_004B0E6C},
+    {0x004B0E70, 0x004B0E74, (const uint8_t *)&g_ImageObject_004B0E70},
+    {0x004B0E74, 0x004B0E78, (const uint8_t *)&g_ImageObject_004B0E74},
+    {0x004B0E78, 0x004B0E7C, (const uint8_t *)&g_ImageObject_004B0E78},
+    {0x004B0E7C, 0x004B0E80, (const uint8_t *)&g_ImageObject_004B0E7C},
+    {0x004B0E80, 0x004B0E88, (const uint8_t *)&g_ImageObject_004B0E80},
+    {0x004B0E88, 0x004B0E8C, (const uint8_t *)&g_ImageObject_004B0E88},
+    {0x004B0E8C, 0x004B0E90, (const uint8_t *)&g_ImageObject_004B0E8C},
+    {0x004B0E90, 0x004B0E98, (const uint8_t *)&g_ImageObject_004B0E90},
+    {0x004B0E98, 0x004B0E9C, (const uint8_t *)&g_ImageObject_004B0E98},
+    {0x004B0E9C, 0x004B0EA0, (const uint8_t *)&g_ImageObject_004B0E9C},
+    {0x004B0EA0, 0x004B0EA4, (const uint8_t *)&g_ImageObject_004B0EA0},
+    {0x004B0EA4, 0x004B0EA8, (const uint8_t *)&g_ImageObject_004B0EA4},
+    {0x004B0EA8, 0x004B0EAC, (const uint8_t *)&g_ImageObject_004B0EA8},
+    {0x004B0EAC, 0x004B0EB0, (const uint8_t *)&g_ImageObject_004B0EAC},
+    {0x004B0EB0, 0x004B0EB8, (const uint8_t *)&g_ImageObject_004B0EB0},
+    {0x004B0EB8, 0x004B0EE0, (const uint8_t *)&g_ImageObject_004B0EB8},
+    {0x004B0EE0, 0x004B0F06, (const uint8_t *)&g_ImageObject_004B0EE0},
+    {0x004B0F06, 0x004B0F24, (const uint8_t *)&g_ImageObject_004B0F06},
+    {0x004B0F24, 0x004B0F28, (const uint8_t *)&g_ImageObject_004B0F24},
+    {0x004B0F28, 0x004B0F30, (const uint8_t *)&g_ImageObject_004B0F28},
+    {0x004B1500, 0x004B1510, (const uint8_t *)&g_ImageObject_004B1500},
+    {0x004B15C8, 0x004B15D0, (const uint8_t *)&g_ImageObject_004B15C8},
+    {0x004B15D0, 0x004B1620, (const uint8_t *)&g_ImageObject_004B15D0},
+    {0x004B1D74, 0x004B1D80, (const uint8_t *)&g_ImageObject_004B1D74},
+    {0x004B1D80, 0x004B1DD0, (const uint8_t *)&g_ImageObject_004B1D80},
+    {0x004B2734, 0x004B2740, (const uint8_t *)&g_ImageObject_004B2734},
+    {0x004B2740, 0x004B2790, (const uint8_t *)&g_ImageObject_004B2740},
+    {0x004B2CD8, 0x004B2CE0, (const uint8_t *)&g_ImageObject_004B2CD8},
+    {0x004B2CE0, 0x004B2D30, (const uint8_t *)&g_ImageObject_004B2CE0},
+    {0x004B33D0, 0x004B3420, (const uint8_t *)&g_ImageObject_004B33D0},
+    {0x004B3760, 0x004B3770, (const uint8_t *)&g_ImageObject_004B3760},
+    {0x004B3770, 0x004B37C0, (const uint8_t *)&g_ImageObject_004B3770},
+    {0x004B3A48, 0x004B3A50, (const uint8_t *)&g_ImageObject_004B3A48},
+    {0x004B3A50, 0x004B3AA0, (const uint8_t *)&g_ImageObject_004B3A50},
+    {0x004B3C1C, 0x004B3C20, (const uint8_t *)&g_ImageObject_004B3C1C},
+    {0x004B3C20, 0x004B3C68, (const uint8_t *)&g_ImageObject_004B3C20},
+    {0x004B3C68, 0x004B3C80, (const uint8_t *)&g_ImageObject_004B3C68},
+    {0x004B3EEC, 0x004B3EF0, (const uint8_t *)&g_ImageObject_004B3EEC},
+    {0x004B3EF0, 0x004B3F40, (const uint8_t *)&g_ImageObject_004B3EF0},
+    {0x004B4648, 0x004B4650, (const uint8_t *)&g_ImageObject_004B4648},
+    {0x004B4650, 0x004B46A0, (const uint8_t *)&g_ImageObject_004B4650},
+    {0x004B494C, 0x004B4950, (const uint8_t *)&g_ImageObject_004B494C},
+    {0x004B4950, 0x004B49A0, (const uint8_t *)&g_ImageObject_004B4950},
+    {0x004B4CB8, 0x004B4CC0, (const uint8_t *)&g_ImageObject_004B4CB8},
+    {0x004B4CC0, 0x004B4D10, (const uint8_t *)&g_ImageObject_004B4CC0},
+    {0x004B5890, 0x004B58A0, (const uint8_t *)&g_ImageObject_004B5890},
+    {0x004B58A0, 0x004B58F0, (const uint8_t *)&g_ImageObject_004B58A0},
+    {0x004B67F4, 0x004B6800, (const uint8_t *)&g_ImageObject_004B67F4},
+    {0x004B6800, 0x004B6850, (const uint8_t *)&g_ImageObject_004B6800},
+    {0x004B7048, 0x004B7050, (const uint8_t *)&g_ImageObject_004B7048},
+    {0x004B7050, 0x004B70A0, (const uint8_t *)&g_ImageObject_004B7050},
+    {0x004B7914, 0x004B7920, (const uint8_t *)&g_ImageObject_004B7914},
+    {0x004B7920, 0x004B7970, (const uint8_t *)&g_ImageObject_004B7920},
+    {0x004B9530, 0x004B9580, (const uint8_t *)&g_ImageObject_004B9530},
+    {0x004B9E38, 0x004B9E40, (const uint8_t *)&g_ImageObject_004B9E38},
+    {0x004B9E40, 0x004B9E90, (const uint8_t *)&g_ImageObject_004B9E40},
+    {0x004BA58C, 0x004BA590, (const uint8_t *)&g_ImageObject_004BA58C},
+    {0x004BA590, 0x004BA5D8, (const uint8_t *)&g_ImageObject_004BA590},
+    {0x004BA5D8, 0x004BA9D8, (const uint8_t *)&g_ImageObject_004BA5D8},
+    {0x004BA9D8, 0x004BADE0, (const uint8_t *)&g_ImageObject_004BA9D8},
+    {0x004BB988, 0x004BB990, (const uint8_t *)&g_ImageObject_004BB988},
+    {0x004BB990, 0x004BB9E0, (const uint8_t *)&g_ImageObject_004BB990},
+    {0x004BC404, 0x004BC410, (const uint8_t *)&g_ImageObject_004BC404},
+    {0x004BC410, 0x004BC460, (const uint8_t *)&g_ImageObject_004BC410},
+    {0x004BC564, 0x004BC570, (const uint8_t *)&g_ImageObject_004BC564},
+    {0x004BC570, 0x004BC5C0, (const uint8_t *)&g_ImageObject_004BC570},
+    {0x004BCC20, 0x004BCC30, (const uint8_t *)&g_ImageObject_004BCC20},
+    {0x004BCC30, 0x004BCC80, (const uint8_t *)&g_ImageObject_004BCC30},
+    {0x004BCF14, 0x004BCF20, (const uint8_t *)&g_ImageObject_004BCF14},
+    {0x004BCF20, 0x004BCF50, (const uint8_t *)&g_ImageObject_004BCF20},
+    {0x004BCF50, 0x004BCF5C, (const uint8_t *)&g_ImageObject_004BCF50},
+    {0x004BCF5C, 0x004BCF68, (const uint8_t *)&g_ImageObject_004BCF5C},
+    {0x004BCF68, 0x004BCF70, (const uint8_t *)&g_ImageObject_004BCF68},
+    {0x004BD2C4, 0x004BD2E0, (const uint8_t *)&g_ImageObject_004BD2C4},
+    {0x004BD2E0, 0x004BD2E4, (const uint8_t *)&g_ImageObject_004BD2E0},
+    {0x004BD2E4, 0x004BD2E8, (const uint8_t *)&g_ImageObject_004BD2E4},
+    {0x004BD2E8, 0x004BD2EC, (const uint8_t *)&g_ImageObject_004BD2E8},
+    {0x004BD2EC, 0x004BD2F0, (const uint8_t *)&g_ImageObject_004BD2EC},
+    {0x004BD2F0, 0x004BD2F4, (const uint8_t *)&g_ImageObject_004BD2F0},
+    {0x004BD2F4, 0x004BD2F8, (const uint8_t *)&g_ImageObject_004BD2F4},
+    {0x004BD2F8, 0x004BD310, (const uint8_t *)&g_ImageObject_004BD2F8},
+    {0x004BD440, 0x004BD450, (const uint8_t *)&g_ImageObject_004BD440},
+    {0x004BD450, 0x004BD480, (const uint8_t *)&g_ImageObject_004BD450},
+    {0x004BD480, 0x004BD48C, (const uint8_t *)&g_ImageObject_004BD480},
+    {0x004BD48C, 0x004BD498, (const uint8_t *)&g_ImageObject_004BD48C},
+    {0x004BD498, 0x004BD4B0, (const uint8_t *)&g_ImageObject_004BD498},
+    {0x004BD880, 0x004BD890, (const uint8_t *)&g_ImageObject_004BD880},
+    {0x004BD890, 0x004BD8B0, (const uint8_t *)&g_ImageObject_004BD890},
+    {0x004BD8B0, 0x004BD8C8, (const uint8_t *)&g_ImageObject_004BD8B0},
+    {0x004BD8C8, 0x004BD8D0, (const uint8_t *)&g_ImageObject_004BD8C8},
+    {0x004BEA6C, 0x004BEA70, (const uint8_t *)&g_ImageObject_004BEA6C},
+    {0x004BEA70, 0x004BEAA0, (const uint8_t *)&g_ImageObject_004BEA70},
+    {0x004BEAA0, 0x004BEAD0, (const uint8_t *)&g_ImageObject_004BEAA0},
+    {0x004BEAD0, 0x004BEB00, (const uint8_t *)&g_ImageObject_004BEAD0},
+    {0x004BEB00, 0x004BEB0C, (const uint8_t *)&g_ImageObject_004BEB00},
+    {0x004BEB0C, 0x004BEB20, (const uint8_t *)&g_ImageObject_004BEB0C},
+    {0x004BED4C, 0x004BED4F, (const uint8_t *)&g_ImageObject_004BED4C},
+    {0x004BED4F, 0x004BED50, (const uint8_t *)&g_ImageObject_004BED4F},
+    {0x004BED50, 0x004C2D50, (const uint8_t *)&g_ImageObject_004BED50},
+    {0x004C2D50, 0x004C6D50, (const uint8_t *)&g_ImageObject_004C2D50},
+    {0x004C6D50, 0x004C6D54, (const uint8_t *)&g_ImageObject_004C6D50},
+    {0x004C6D54, 0x004CAD54, (const uint8_t *)&g_ImageObject_004C6D54},
+    {0x004CAD54, 0x004CAD60, (const uint8_t *)&g_ImageObject_004CAD54},
+    {0x004CAD60, 0x004CB1A0, (const uint8_t *)&g_ImageObject_004CAD60},
+    {0x004CB1A0, 0x004CC2B0, (const uint8_t *)&g_ImageObject_004CB1A0},
+    {0x004CC2B0, 0x004CC6F8, (const uint8_t *)&g_ImageObject_004CC2B0},
+    {0x004CC6F8, 0x004CC704, (const uint8_t *)&g_ImageObject_004CC6F8},
+    {0x004CC704, 0x004CC710, (const uint8_t *)&g_ImageObject_004CC704},
+    {0x004CCDE8, 0x004CCE00, (const uint8_t *)&g_ImageObject_004CCDE8},
+    {0x004CCE00, 0x004CCE04, (const uint8_t *)&g_ImageObject_004CCE00},
+    {0x004CCE04, 0x004CCE08, (const uint8_t *)&g_ImageObject_004CCE04},
+    {0x004CCE08, 0x004CCE0C, (const uint8_t *)&g_ImageObject_004CCE08},
+    {0x004CCE0C, 0x004CCE14, (const uint8_t *)&g_ImageObject_004CCE0C},
+    {0x004CCE14, 0x004CCE18, (const uint8_t *)&g_ImageObject_004CCE14},
+    {0x004CCE18, 0x004CCE1C, (const uint8_t *)&g_ImageObject_004CCE18},
+    {0x004CCE1C, 0x004CCE24, (const uint8_t *)&g_ImageObject_004CCE1C},
+    {0x004CCE24, 0x004CCE28, (const uint8_t *)&g_ImageObject_004CCE24},
+    {0x004CCE28, 0x004CCE2C, (const uint8_t *)&g_ImageObject_004CCE28},
+    {0x004CCE2C, 0x004CCE30, (const uint8_t *)&g_ImageObject_004CCE2C},
+    {0x004CCE30, 0x004CCE34, (const uint8_t *)&g_ImageObject_004CCE30},
+    {0x004CCE34, 0x004CCE38, (const uint8_t *)&g_ImageObject_004CCE34},
+    {0x004CCE38, 0x004CCE3C, (const uint8_t *)&g_ImageObject_004CCE38},
+    {0x004CCE3C, 0x004CCE40, (const uint8_t *)&g_ImageObject_004CCE3C},
+    {0x004CCE40, 0x004CCE44, (const uint8_t *)&g_ImageObject_004CCE40},
+    {0x004CCE44, 0x004CCE48, (const uint8_t *)&g_ImageObject_004CCE44},
+    {0x004CCE48, 0x004CCFF0, (const uint8_t *)&g_ImageObject_004CCE48},
+    {0x004CD3C0, 0x004CD3D0, (const uint8_t *)&g_ImageObject_004CD3C0},
+    {0x004D09F4, 0x004D0A00, (const uint8_t *)&g_ImageObject_004D09F4},
+    {0x004D0A00, 0x004D0A04, (const uint8_t *)&g_ImageObject_004D0A00},
+    {0x004D0A04, 0x004D0A10, (const uint8_t *)&g_ImageObject_004D0A04},
+    {0x004D11B8, 0x004D11C0, (const uint8_t *)&g_ImageObject_004D11B8},
+    {0x004D11C0, 0x004D1234, (const uint8_t *)&g_ImageObject_004D11C0},
+    {0x004D1234, 0x004D1238, (const uint8_t *)&g_ImageObject_004D1234},
+    {0x004D1238, 0x004D123C, (const uint8_t *)&g_ImageObject_004D1238},
+    {0x004D123C, 0x004D1240, (const uint8_t *)&g_ImageObject_004D123C},
+    {0x004D1240, 0x004D1244, (const uint8_t *)&g_ImageObject_004D1240},
+    {0x004D1244, 0x004D1248, (const uint8_t *)&g_ImageObject_004D1244},
+    {0x004D1248, 0x004D1260, (const uint8_t *)&g_ImageObject_004D1248},
+    {0x004D1260, 0x004D1360, (const uint8_t *)&g_ImageObject_004D1260},
+    {0x004D1360, 0x004D1460, (const uint8_t *)&g_ImageObject_004D1360},
+    {0x004D1460, 0x004D1560, (const uint8_t *)&g_ImageObject_004D1460},
+    {0x004FEA24, 0x004FEA30, (const uint8_t *)&g_ImageObject_004FEA24},
+    {0x004FEA30, 0x004FEA50, (const uint8_t *)&g_ImageObject_004FEA30},
+    {0x004FFC78, 0x004FFC80, (const uint8_t *)&g_ImageObject_004FFC78},
+    {0x004FFC80, 0x005004A0, (const uint8_t *)&g_ImageObject_004FFC80},
+    {0x00501184, 0x00501190, (const uint8_t *)&g_ImageObject_00501184},
+    {0x00501190, 0x00501590, (const uint8_t *)&g_ImageObject_00501190},
+    {0x00501590, 0x00501994, (const uint8_t *)&g_ImageObject_00501590},
+    {0x00501994, 0x00501998, (const uint8_t *)&g_ImageObject_00501994},
+    {0x00501998, 0x005019A4, (const uint8_t *)&g_ImageObject_00501998},
+    {0x005019A4, 0x005019A8, (const uint8_t *)&g_ImageObject_005019A4},
+    {0x005019A8, 0x005039DC, (const uint8_t *)&g_ImageObject_005019A8},
+    {0x005039DC, 0x00503A74, (const uint8_t *)&g_ImageObject_005039DC},
+    {0x00503A74, 0x00503A78, (const uint8_t *)&g_ImageObject_00503A74},
+    {0x00503A78, 0x00503A7C, (const uint8_t *)&g_ImageObject_00503A78},
+    {0x00503A7C, 0x00503A80, (const uint8_t *)&g_ImageObject_00503A7C},
+    {0x00503A80, 0x00503A84, (const uint8_t *)&g_ImageObject_00503A80},
+    {0x00503A84, 0x00503A88, (const uint8_t *)&g_ImageObject_00503A84},
+    {0x00503A88, 0x00503A8C, (const uint8_t *)&g_ImageObject_00503A88},
+    {0x00503A8C, 0x00503A90, (const uint8_t *)&g_ImageObject_00503A8C},
+    {0x00503A90, 0x00503AF8, (const uint8_t *)&g_ImageObject_00503A90},
+    {0x00503AF8, 0x00503AFC, (const uint8_t *)&g_ImageObject_00503AF8},
+    {0x00503AFC, 0x00503B00, (const uint8_t *)&g_ImageObject_00503AFC},
+    {0x00503B00, 0x00503B04, (const uint8_t *)&g_ImageObject_00503B00},
+    {0x00503B04, 0x00503B10, (const uint8_t *)&g_ImageObject_00503B04},
+    {0x00505F98, 0x00505FA0, (const uint8_t *)&g_ImageObject_00505F98},
+    {0x00505FA0, 0x005063A0, (const uint8_t *)&g_ImageObject_00505FA0},
+    {0x005063A0, 0x005063A4, (const uint8_t *)&g_ImageObject_005063A0},
+    {0x005063A4, 0x005063A8, (const uint8_t *)&g_ImageObject_005063A4},
+    {0x005063A8, 0x005063AC, (const uint8_t *)&g_ImageObject_005063A8},
+    {0x005063AC, 0x005063B0, (const uint8_t *)&g_ImageObject_005063AC},
+    {0x0050A340, 0x0050A350, (const uint8_t *)&g_ImageObject_0050A340},
+    {0x0050A350, 0x0050A380, (const uint8_t *)&g_ImageObject_0050A350},
+    {0x0050A380, 0x0050A3B0, (const uint8_t *)&g_ImageObject_0050A380},
+    {0x0050A3B0, 0x0050A3E0, (const uint8_t *)&g_ImageObject_0050A3B0},
+    {0x0050A3E0, 0x0050A3F0, (const uint8_t *)&g_ImageObject_0050A3E0},
+    {0x0050A3F0, 0x0050A430, (const uint8_t *)&g_ImageObject_0050A3F0},
+    {0x0050AE54, 0x0050AE60, (const uint8_t *)&g_ImageObject_0050AE54},
+    {0x0050AE60, 0x0050AE64, (const uint8_t *)&g_ImageObject_0050AE60},
+    {0x0050AE64, 0x0050AE70, (const uint8_t *)&g_ImageObject_0050AE64},
+    {0x0050AE70, 0x0050AE7C, (const uint8_t *)&g_ImageObject_0050AE70},
+    {0x0050AE7C, 0x0050AE88, (const uint8_t *)&g_ImageObject_0050AE7C},
+    {0x0050AE88, 0x0050AEA0, (const uint8_t *)&g_ImageObject_0050AE88},
+    {0x0050B510, 0x0050B520, (const uint8_t *)&g_ImageObject_0050B510},
+    {0x0050B520, 0x0050B550, (const uint8_t *)&g_ImageObject_0050B520},
+    {0x0050B550, 0x0050B580, (const uint8_t *)&g_ImageObject_0050B550},
+    {0x0050B580, 0x0050B5B0, (const uint8_t *)&g_ImageObject_0050B580},
+    {0x0050B5B0, 0x0050B5BC, (const uint8_t *)&g_ImageObject_0050B5B0},
+    {0x0050B5BC, 0x0050B5C0, (const uint8_t *)&g_ImageObject_0050B5BC},
+    {0x0050B5C0, 0x0050B5C4, (const uint8_t *)&g_ImageObject_0050B5C0},
+    {0x0050B5C4, 0x0050B5D0, (const uint8_t *)&g_ImageObject_0050B5C4},
+    {0x0050BADC, 0x0050BADE, (const uint8_t *)&g_ImageObject_0050BADC},
+    {0x0050BADE, 0x0050BAE2, (const uint8_t *)&g_ImageObject_0050BADE},
+    {0x0050BAE2, 0x0050BAE6, (const uint8_t *)&g_ImageObject_0050BAE2},
+    {0x0050BAE6, 0x0050BAEA, (const uint8_t *)&g_ImageObject_0050BAE6},
+    {0x0050BAEA, 0x0050BAEE, (const uint8_t *)&g_ImageObject_0050BAEA},
+    {0x0050BAEE, 0x0050BAF2, (const uint8_t *)&g_ImageObject_0050BAEE},
+    {0x0050BAF2, 0x0050BAF6, (const uint8_t *)&g_ImageObject_0050BAF2},
+    {0x0050BAF6, 0x0050BAFA, (const uint8_t *)&g_ImageObject_0050BAF6},
+    {0x0050BAFA, 0x0050BAFE, (const uint8_t *)&g_ImageObject_0050BAFA},
+    {0x0050BAFE, 0x0050BB02, (const uint8_t *)&g_ImageObject_0050BAFE},
+    {0x0050BB02, 0x0050BB06, (const uint8_t *)&g_ImageObject_0050BB02},
+    {0x0050BB06, 0x0050BB10, (const uint8_t *)&g_ImageObject_0050BB06},
+    {0x0050BB34, 0x0050BB37, (const uint8_t *)&g_ImageObject_0050BB34},
+    {0x0050BB37, 0x0050BB80, (const uint8_t *)&g_ImageObject_0050BB37},
+    {0x0050D928, 0x0050D930, (const uint8_t *)&g_ImageObject_0050D928},
+    {0x0050D930, 0x0050D934, (const uint8_t *)&g_ImageObject_0050D930},
+    {0x0050D934, 0x0050D940, (const uint8_t *)&g_ImageObject_0050D934},
+    {0x0050D940, 0x0050D944, (const uint8_t *)&g_ImageObject_0050D940},
+    {0x0050D944, 0x0050D948, (const uint8_t *)&g_ImageObject_0050D944},
+    {0x0050D948, 0x0050D954, (const uint8_t *)&g_ImageObject_0050D948},
+    {0x0050D954, 0x0050D958, (const uint8_t *)&g_ImageObject_0050D954},
+    {0x0050D958, 0x0050D95C, (const uint8_t *)&g_ImageObject_0050D958},
+    {0x0050D95C, 0x0050D968, (const uint8_t *)&g_ImageObject_0050D95C},
+    {0x0050D968, 0x0050D96C, (const uint8_t *)&g_ImageObject_0050D968},
+    {0x0050D96C, 0x0050D970, (const uint8_t *)&g_ImageObject_0050D96C},
+    {0x0050D970, 0x0050D97C, (const uint8_t *)&g_ImageObject_0050D970},
+    {0x0050D97C, 0x0050D980, (const uint8_t *)&g_ImageObject_0050D97C},
+    {0x0050D980, 0x0050D984, (const uint8_t *)&g_ImageObject_0050D980},
+    {0x0050D984, 0x0050D990, (const uint8_t *)&g_ImageObject_0050D984},
+    {0x0050D990, 0x0050D994, (const uint8_t *)&g_ImageObject_0050D990},
+    {0x0050D994, 0x0050D998, (const uint8_t *)&g_ImageObject_0050D994},
+    {0x0050D998, 0x0050D9A4, (const uint8_t *)&g_ImageObject_0050D998},
+    {0x0050D9A4, 0x0050D9A8, (const uint8_t *)&g_ImageObject_0050D9A4},
+    {0x0050D9A8, 0x0050D9AC, (const uint8_t *)&g_ImageObject_0050D9A8},
+    {0x0050D9AC, 0x0050D9B8, (const uint8_t *)&g_ImageObject_0050D9AC},
+    {0x0050D9B8, 0x0050D9BC, (const uint8_t *)&g_ImageObject_0050D9B8},
+    {0x0050D9BC, 0x0050D9C0, (const uint8_t *)&g_ImageObject_0050D9BC},
+    {0x0050D9C0, 0x0050D9C4, (const uint8_t *)&g_ImageObject_0050D9C0},
+    {0x0050D9C4, 0x0050D9C8, (const uint8_t *)&g_ImageObject_0050D9C4},
+    {0x0050D9C8, 0x0050D9DE, (const uint8_t *)&g_ImageObject_0050D9C8},
+    {0x0050D9DE, 0x0050D9F6, (const uint8_t *)&g_ImageObject_0050D9DE},
+    {0x0050D9F6, 0x0050DA0E, (const uint8_t *)&g_ImageObject_0050D9F6},
+    {0x0050DA0E, 0x0050DA2E, (const uint8_t *)&g_ImageObject_0050DA0E},
+    {0x0050DA2E, 0x0050DA52, (const uint8_t *)&g_ImageObject_0050DA2E},
+    {0x0050DA52, 0x0050DA78, (const uint8_t *)&g_ImageObject_0050DA52},
+    {0x0050DA78, 0x0050DAA2, (const uint8_t *)&g_ImageObject_0050DA78},
+    {0x0050DAA2, 0x0050DAAC, (const uint8_t *)&g_ImageObject_0050DAA2},
+    {0x0050DAAC, 0x0050DAB8, (const uint8_t *)&g_ImageObject_0050DAAC},
+    {0x0050DAB8, 0x0050DAC4, (const uint8_t *)&g_ImageObject_0050DAB8},
+    {0x0050DAC4, 0x0050DCC4, (const uint8_t *)&g_ImageObject_0050DAC4},
+    {0x0050DCC4, 0x0050DEC4, (const uint8_t *)&g_ImageObject_0050DCC4},
+    {0x0050DEC4, 0x0050DEE6, (const uint8_t *)&g_ImageObject_0050DEC4},
+    {0x0050DEE6, 0x0050DF06, (const uint8_t *)&g_ImageObject_0050DEE6},
+    {0x0050DF06, 0x0050DF28, (const uint8_t *)&g_ImageObject_0050DF06},
+    {0x0050DF28, 0x0050DF4A, (const uint8_t *)&g_ImageObject_0050DF28},
+    {0x0050DF4A, 0x0050DF6C, (const uint8_t *)&g_ImageObject_0050DF4A},
+    {0x0050DF6C, 0x0050DF90, (const uint8_t *)&g_ImageObject_0050DF6C},
+    {0x0050DF90, 0x0050DFB4, (const uint8_t *)&g_ImageObject_0050DF90},
+    {0x0050DFB4, 0x0050DFC6, (const uint8_t *)&g_ImageObject_0050DFB4},
+    {0x0050DFC6, 0x0050DFDC, (const uint8_t *)&g_ImageObject_0050DFC6},
+    {0x0050DFDC, 0x0050DFEE, (const uint8_t *)&g_ImageObject_0050DFDC},
+    {0x0050DFEE, 0x0050E002, (const uint8_t *)&g_ImageObject_0050DFEE},
+    {0x0050E002, 0x0050E016, (const uint8_t *)&g_ImageObject_0050E002},
+    {0x0050E016, 0x0050E02A, (const uint8_t *)&g_ImageObject_0050E016},
+    {0x0050E02A, 0x0050E040, (const uint8_t *)&g_ImageObject_0050E02A},
+    {0x0050E040, 0x0050E054, (const uint8_t *)&g_ImageObject_0050E040},
+    {0x0050E054, 0x0050E068, (const uint8_t *)&g_ImageObject_0050E054},
+    {0x0050E068, 0x0050E082, (const uint8_t *)&g_ImageObject_0050E068},
+    {0x0050E082, 0x0050E094, (const uint8_t *)&g_ImageObject_0050E082},
+    {0x0050E094, 0x0050E0AC, (const uint8_t *)&g_ImageObject_0050E094},
+    {0x0050E0AC, 0x0050E0B0, (const uint8_t *)&g_ImageObject_0050E0AC},
+    {0x0050E164, 0x0050E170, (const uint8_t *)&g_ImageObject_0050E164},
+    {0x0050E170, 0x0050E1B0, (const uint8_t *)&g_ImageObject_0050E170},
+    {0x0050E21C, 0x0050E230, (const uint8_t *)&g_ImageObject_0050E21C},
+    {0x0050E95C, 0x0050E960, (const uint8_t *)&g_ImageObject_0050E95C},
+    {0x0050E960, 0x0050E970, (const uint8_t *)&g_ImageObject_0050E960},
+    {0x0050EB5C, 0x0050EB60, (const uint8_t *)&g_ImageObject_0050EB5C},
+    {0x0050EB60, 0x0050EB70, (const uint8_t *)&g_ImageObject_0050EB60},
+    {0x0050F044, 0x0050F050, (const uint8_t *)&g_ImageObject_0050F044},
+    {0x0050F050, 0x0050F054, (const uint8_t *)&g_ImageObject_0050F050},
+    {0x0050F054, 0x0050F07C, (const uint8_t *)&g_ImageObject_0050F054},
+    {0x0050F07C, 0x0050F090, (const uint8_t *)&g_ImageObject_0050F07C},
+    {0x0050F090, 0x0050F0A0, (const uint8_t *)&g_ImageObject_0050F090},
+    {0x0050F0A0, 0x0050F0A4, (const uint8_t *)&g_ImageObject_0050F0A0},
+    {0x0050F0A4, 0x0050F0A8, (const uint8_t *)&g_ImageObject_0050F0A4},
+    {0x0050F0A8, 0x0050F0AC, (const uint8_t *)&g_ImageObject_0050F0A8},
+    {0x0050F0AC, 0x0050F0C0, (const uint8_t *)&g_ImageObject_0050F0AC},
+    {0x0050F0C0, 0x0050F0C4, (const uint8_t *)&g_ImageObject_0050F0C0},
+    {0x0050F0C4, 0x0050F0C8, (const uint8_t *)&g_ImageObject_0050F0C4},
+    {0x0050F0C8, 0x0050F0CC, (const uint8_t *)&g_ImageObject_0050F0C8},
+    {0x0050F0CC, 0x0050F0D0, (const uint8_t *)&g_ImageObject_0050F0CC},
+    {0x0050F0D0, 0x0050F0D4, (const uint8_t *)&g_ImageObject_0050F0D0},
+    {0x0050F0D4, 0x0050F0D8, (const uint8_t *)&g_ImageObject_0050F0D4},
+    {0x0050F0D8, 0x0050F0DC, (const uint8_t *)&g_ImageObject_0050F0D8},
+    {0x0050F0DC, 0x0050F0E0, (const uint8_t *)&g_ImageObject_0050F0DC},
+    {0x0050F0E0, 0x0050F0E4, (const uint8_t *)&g_ImageObject_0050F0E0},
+    {0x0050F0E4, 0x0050F104, (const uint8_t *)&g_ImageObject_0050F0E4},
+    {0x0050F104, 0x0050F130, (const uint8_t *)&g_ImageObject_0050F104},
+    {0x0050F328, 0x0050F340, (const uint8_t *)&g_ImageObject_0050F328},
+    {0x0050F340, 0x00512D60, (const uint8_t *)&g_ImageObject_0050F340},
+    {0x00512D60, 0x00512D64, (const uint8_t *)&g_ImageObject_00512D60},
+    {0x00512D64, 0x00512D68, (const uint8_t *)&g_ImageObject_00512D64},
+    {0x00512D68, 0x00512D6C, (const uint8_t *)&g_ImageObject_00512D68},
+    {0x00512D6C, 0x00512D70, (const uint8_t *)&g_ImageObject_00512D6C},
+    {0x00512D70, 0x00512E70, (const uint8_t *)&g_ImageObject_00512D70},
+    {0x00513DA4, 0x00513DB0, (const uint8_t *)&g_ImageObject_00513DA4},
+    {0x00513DB0, 0x00513DF0, (const uint8_t *)&g_ImageObject_00513DB0},
+    {0x0051494C, 0x00514960, (const uint8_t *)&g_ImageObject_0051494C},
+    {0x00514960, 0x00514D60, (const uint8_t *)&g_ImageObject_00514960},
+    {0x00514D60, 0x00514D64, (const uint8_t *)&g_ImageObject_00514D60},
+    {0x00514D64, 0x00514D84, (const uint8_t *)&g_ImageObject_00514D64},
+    {0x00514D84, 0x00514DA4, (const uint8_t *)&g_ImageObject_00514D84},
+    {0x00514DA4, 0x00514E04, (const uint8_t *)&g_ImageObject_00514DA4},
+    {0x00514E04, 0x00514E40, (const uint8_t *)&g_ImageObject_00514E04},
+    {0x00514FB4, 0x00514FC0, (const uint8_t *)&g_ImageObject_00514FB4},
+    {0x00514FC0, 0x00515010, (const uint8_t *)&g_ImageObject_00514FC0},
+    {0x0051528C, 0x00515290, (const uint8_t *)&g_ImageObject_0051528C},
+    {0x00515290, 0x005152E0, (const uint8_t *)&g_ImageObject_00515290},
+    {0x0051560C, 0x00515610, (const uint8_t *)&g_ImageObject_0051560C},
+    {0x00515610, 0x00515658, (const uint8_t *)&g_ImageObject_00515610},
+    {0x00515658, 0x00515678, (const uint8_t *)&g_ImageObject_00515658},
+    {0x00515678, 0x005156A0, (const uint8_t *)&g_ImageObject_00515678},
+    {0x00515720, 0x00515730, (const uint8_t *)&g_ImageObject_00515720},
+    {0x00515730, 0x00515780, (const uint8_t *)&g_ImageObject_00515730},
+    {0x005157D0, 0x005157E0, (const uint8_t *)&g_ImageObject_005157D0},
+    {0x005157E0, 0x00515830, (const uint8_t *)&g_ImageObject_005157E0},
+    {0x00515C60, 0x00515C70, (const uint8_t *)&g_ImageObject_00515C60},
+    {0x00515C70, 0x00515CC0, (const uint8_t *)&g_ImageObject_00515C70},
+    {0x005162BC, 0x005162C0, (const uint8_t *)&g_ImageObject_005162BC},
+    {0x005162C0, 0x00516310, (const uint8_t *)&g_ImageObject_005162C0},
+    {0x00516310, 0x00516360, (const uint8_t *)&g_ImageObject_00516310},
+    {0x0051650C, 0x00516510, (const uint8_t *)&g_ImageObject_0051650C},
+    {0x00516510, 0x00516530, (const uint8_t *)&g_ImageObject_00516510},
+    {0x00516530, 0x00516580, (const uint8_t *)&g_ImageObject_00516530},
+    {0x00516CBC, 0x00516CC0, (const uint8_t *)&g_ImageObject_00516CBC},
+    {0x00516CC0, 0x00516D10, (const uint8_t *)&g_ImageObject_00516CC0},
+    {0x00516E90, 0x00516EA0, (const uint8_t *)&g_ImageObject_00516E90},
+    {0x00516EA0, 0x00516EE0, (const uint8_t *)&g_ImageObject_00516EA0},
+    {0x00516EE0, 0x00516F60, (const uint8_t *)&g_ImageObject_00516EE0},
+    {0x00516F60, 0x00516FA8, (const uint8_t *)&g_ImageObject_00516F60},
+    {0x00516FA8, 0x00516FAC, (const uint8_t *)&g_ImageObject_00516FA8},
+    {0x00516FAC, 0x00516FB0, (const uint8_t *)&g_ImageObject_00516FAC},
+    {0x00516FB0, 0x00516FB4, (const uint8_t *)&g_ImageObject_00516FB0},
+    {0x00516FB4, 0x00516FB8, (const uint8_t *)&g_ImageObject_00516FB4},
+    {0x00516FB8, 0x00516FBC, (const uint8_t *)&g_ImageObject_00516FB8},
+    {0x00516FBC, 0x00516FC0, (const uint8_t *)&g_ImageObject_00516FBC},
+    {0x00516FC0, 0x00516FC4, (const uint8_t *)&g_ImageObject_00516FC0},
+    {0x00516FC4, 0x00516FC8, (const uint8_t *)&g_ImageObject_00516FC4},
+    {0x00516FC8, 0x00516FCC, (const uint8_t *)&g_ImageObject_00516FC8},
+    {0x00516FCC, 0x00516FD0, (const uint8_t *)&g_ImageObject_00516FCC},
+    {0x00516FD0, 0x00516FD4, (const uint8_t *)&g_ImageObject_00516FD0},
+    {0x00516FD4, 0x00516FD8, (const uint8_t *)&g_ImageObject_00516FD4},
+    {0x00516FD8, 0x00516FDC, (const uint8_t *)&g_ImageObject_00516FD8},
+    {0x00516FDC, 0x00516FE0, (const uint8_t *)&g_ImageObject_00516FDC},
+    {0x00516FE0, 0x00516FE4, (const uint8_t *)&g_ImageObject_00516FE0},
+    {0x00516FE4, 0x00516FE8, (const uint8_t *)&g_ImageObject_00516FE4},
+    {0x00516FE8, 0x00516FEC, (const uint8_t *)&g_ImageObject_00516FE8},
+    {0x00516FEC, 0x00516FF0, (const uint8_t *)&g_ImageObject_00516FEC},
+    {0x00516FF0, 0x00516FF4, (const uint8_t *)&g_ImageObject_00516FF0},
+    {0x00516FF4, 0x00516FF8, (const uint8_t *)&g_ImageObject_00516FF4},
+    {0x00516FF8, 0x00517020, (const uint8_t *)&g_ImageObject_00516FF8},
+    {0x00517068, 0x00517070, (const uint8_t *)&g_ImageObject_00517068},
+    {0x00517070, 0x005170C0, (const uint8_t *)&g_ImageObject_00517070},
+    {0x00517DD4, 0x00517DE0, (const uint8_t *)&g_ImageObject_00517DD4},
+    {0x00517DE0, 0x00517E30, (const uint8_t *)&g_ImageObject_00517DE0},
+    {0x00517F00, 0x00517F10, (const uint8_t *)&g_ImageObject_00517F00},
+    {0x00517F10, 0x00517F60, (const uint8_t *)&g_ImageObject_00517F10},
+    {0x00517FBC, 0x00517FC0, (const uint8_t *)&g_ImageObject_00517FBC},
+    {0x00517FC0, 0x00518010, (const uint8_t *)&g_ImageObject_00517FC0},
+    {0x00518074, 0x00518080, (const uint8_t *)&g_ImageObject_00518074},
+    {0x00518080, 0x00518880, (const uint8_t *)&g_ImageObject_00518080},
+    {0x00518880, 0x00518C80, (const uint8_t *)&g_ImageObject_00518880},
+    {0x00518C80, 0x00518C90, (const uint8_t *)&g_ImageObject_00518C80},
+    {0x00518C90, 0x00518CE0, (const uint8_t *)&g_ImageObject_00518C90},
+    {0x005191F0, 0x005191FC, (const uint8_t *)&g_ImageObject_005191F0},
+    {0x0051936C, 0x00519374, (const uint8_t *)&g_ImageObject_0051936C},
+    {0x00519374, 0x005193B0, (const uint8_t *)&g_ImageObject_00519374},
+    {0x0051972C, 0x00519730, (const uint8_t *)&g_ImageObject_0051972C},
+    {0x00519730, 0x00519734, (const uint8_t *)&g_ImageObject_00519730},
+    {0x00519734, 0x00519738, (const uint8_t *)&g_ImageObject_00519734},
+    {0x00519738, 0x00519778, (const uint8_t *)&g_ImageObject_00519738},
+    {0x00519778, 0x0051A380, (const uint8_t *)&g_ImageObject_00519778},
+    {0x0051A380, 0x0051AB80, (const uint8_t *)&g_ImageObject_0051A380},
+    {0x0051AB80, 0x0051B380, (const uint8_t *)&g_ImageObject_0051AB80},
+    {0x0051B380, 0x0051B388, (const uint8_t *)&g_ImageObject_0051B380},
+    {0x0051B388, 0x0051B38C, (const uint8_t *)&g_ImageObject_0051B388},
+    {0x0051B38C, 0x0051B390, (const uint8_t *)&g_ImageObject_0051B38C},
+    {0x0051B390, 0x0051B394, (const uint8_t *)&g_ImageObject_0051B390},
+    {0x0051B394, 0x0051B3AE, (const uint8_t *)&g_ImageObject_0051B394},
+    {0x0051B3AE, 0x0051B3C0, (const uint8_t *)&g_ImageObject_0051B3AE},
+    {0x0051DBB4, 0x0051DBC0, (const uint8_t *)&g_ImageObject_0051DBB4},
+    {0x0051DBC0, 0x0051DBC4, (const uint8_t *)&g_ImageObject_0051DBC0},
+    {0x0051DBC4, 0x0051DBC8, (const uint8_t *)&g_ImageObject_0051DBC4},
+    {0x0051DBC8, 0x0051DBCC, (const uint8_t *)&g_ImageObject_0051DBC8},
+    {0x0051DBCC, 0x0051DBD0, (const uint8_t *)&g_ImageObject_0051DBCC},
+    {0x0051DBD0, 0x0051DFD0, (const uint8_t *)&g_ImageObject_0051DBD0},
+    {0x0051EAA0, 0x0051EAB0, (const uint8_t *)&g_ImageObject_0051EAA0},
+    {0x0051EAB0, 0x0051EAD0, (const uint8_t *)&g_ImageObject_0051EAB0},
+    {0x0051EEE4, 0x0051EEF0, (const uint8_t *)&g_ImageObject_0051EEE4},
+    {0x0051EEF0, 0x0051FAF0, (const uint8_t *)&g_ImageObject_0051EEF0},
+    {0x0051FAF0, 0x0051FB18, (const uint8_t *)&g_ImageObject_0051FAF0},
+    {0x0051FB18, 0x0051FB78, (const uint8_t *)&g_ImageObject_0051FB18},
+    {0x0051FB78, 0x0051FBD8, (const uint8_t *)&g_ImageObject_0051FB78},
+    {0x0051FBD8, 0x0051FC38, (const uint8_t *)&g_ImageObject_0051FBD8},
+    {0x0051FC38, 0x0051FC98, (const uint8_t *)&g_ImageObject_0051FC38},
+    {0x0051FC98, 0x005200B8, (const uint8_t *)&g_ImageObject_0051FC98},
+    {0x005200B8, 0x005200BC, (const uint8_t *)&g_ImageObject_005200B8},
+    {0x005200BC, 0x005200C0, (const uint8_t *)&g_ImageObject_005200BC},
+    {0x00520EA0, 0x00520EB0, (const uint8_t *)&g_ImageObject_00520EA0},
+    {0x00520EB0, 0x00520EB4, (const uint8_t *)&g_ImageObject_00520EB0},
+    {0x00520EB4, 0x00520EB8, (const uint8_t *)&g_ImageObject_00520EB4},
+    {0x00520EB8, 0x00520EBC, (const uint8_t *)&g_ImageObject_00520EB8},
+    {0x00520EBC, 0x00520EC0, (const uint8_t *)&g_ImageObject_00520EBC},
+    {0x00520EC0, 0x00520EC4, (const uint8_t *)&g_ImageObject_00520EC0},
+    {0x00520EC4, 0x00520EC8, (const uint8_t *)&g_ImageObject_00520EC4},
+    {0x00520EC8, 0x00520EF8, (const uint8_t *)&g_ImageObject_00520EC8},
+    {0x00520EF8, 0x00520F28, (const uint8_t *)&g_ImageObject_00520EF8},
+    {0x00520F28, 0x00520F60, (const uint8_t *)&g_ImageObject_00520F28},
+    {0x00524110, 0x00524120, (const uint8_t *)&g_ImageObject_00524110},
+    {0x00524120, 0x00524130, (const uint8_t *)&g_ImageObject_00524120},
+    {0x005247C0, 0x005247D0, (const uint8_t *)&g_ImageObject_005247C0},
+    {0x005247D0, 0x005247F0, (const uint8_t *)&g_ImageObject_005247D0},
+    {0x00525A8C, 0x00525A90, (const uint8_t *)&g_ImageObject_00525A8C},
+    {0x00525A90, 0x00525AB0, (const uint8_t *)&g_ImageObject_00525A90},
+    {0x005266B0, 0x005266C0, (const uint8_t *)&g_ImageObject_005266B0},
+    {0x005266C0, 0x005266D0, (const uint8_t *)&g_ImageObject_005266C0},
+    {0x00526988, 0x00526990, (const uint8_t *)&g_ImageObject_00526988},
+    {0x00526990, 0x005269B0, (const uint8_t *)&g_ImageObject_00526990},
+    {0x00527AA4, 0x00527AC0, (const uint8_t *)&g_ImageObject_00527AA4},
+    {0x00528674, 0x00528678, (const uint8_t *)&g_ImageObject_00528674},
+    {0x00528A6C, 0x00528A70, (const uint8_t *)&g_ImageObject_00528A6C},
+    {0x0052AF30, 0x0052AF40, (const uint8_t *)&g_ImageObject_0052AF30},
+    {0x0052AF40, 0x0052AF44, (const uint8_t *)&g_ImageObject_0052AF40},
+    {0x0052AF44, 0x0052AF48, (const uint8_t *)&g_ImageObject_0052AF44},
+    {0x0052AF48, 0x0052AF4C, (const uint8_t *)&g_ImageObject_0052AF48},
+    {0x0052AF4C, 0x0052AF50, (const uint8_t *)&g_ImageObject_0052AF4C},
+    {0x0052AF50, 0x0052B350, (const uint8_t *)&g_ImageObject_0052AF50},
+    {0x0052CDE8, 0x0052CDF0, (const uint8_t *)&g_ImageObject_0052CDE8},
+    {0x0052CDF0, 0x0052CDF4, (const uint8_t *)&g_ImageObject_0052CDF0},
+    {0x0052CDF4, 0x0052CDF8, (const uint8_t *)&g_ImageObject_0052CDF4},
+    {0x0052CDF8, 0x0052CDFC, (const uint8_t *)&g_ImageObject_0052CDF8},
+    {0x0052CDFC, 0x0052CE00, (const uint8_t *)&g_ImageObject_0052CDFC},
+    {0x0052CE00, 0x0052CE04, (const uint8_t *)&g_ImageObject_0052CE00},
+    {0x0052CE04, 0x0052CE14, (const uint8_t *)&g_ImageObject_0052CE04},
+    {0x0052CE14, 0x0052CE18, (const uint8_t *)&g_ImageObject_0052CE14},
+    {0x0052CE18, 0x0052CE42, (const uint8_t *)&g_ImageObject_0052CE18},
+    {0x0052CE42, 0x0052CE68, (const uint8_t *)&g_ImageObject_0052CE42},
+    {0x0052CE68, 0x0052CE92, (const uint8_t *)&g_ImageObject_0052CE68},
+    {0x0052CE92, 0x0052CEB8, (const uint8_t *)&g_ImageObject_0052CE92},
+    {0x0052CEB8, 0x0052CED8, (const uint8_t *)&g_ImageObject_0052CEB8},
+    {0x0052CED8, 0x0052CEDC, (const uint8_t *)&g_ImageObject_0052CED8},
+    {0x0052CEDC, 0x0052CEE0, (const uint8_t *)&g_ImageObject_0052CEDC},
+    {0x0052FF14, 0x0052FF30, (const uint8_t *)&g_ImageObject_0052FF14},
+    {0x00530080, 0x005300A0, (const uint8_t *)&g_ImageObject_00530080},
+    {0x005300C8, 0x005300E0, (const uint8_t *)&g_ImageObject_005300C8},
+    {0x00530818, 0x00530820, (const uint8_t *)&g_ImageObject_00530818},
+    {0x00530820, 0x00530824, (const uint8_t *)&g_ImageObject_00530820},
+    {0x00530824, 0x00530828, (const uint8_t *)&g_ImageObject_00530824},
+    {0x00530828, 0x00530A28, (const uint8_t *)&g_ImageObject_00530828},
+    {0x00530A28, 0x00530C28, (const uint8_t *)&g_ImageObject_00530A28},
+    {0x00530C28, 0x00530E28, (const uint8_t *)&g_ImageObject_00530C28},
+    {0x00530E28, 0x00531028, (const uint8_t *)&g_ImageObject_00530E28},
+    {0x00531028, 0x0053102C, (const uint8_t *)&g_ImageObject_00531028},
+    {0x0053102C, 0x00531030, (const uint8_t *)&g_ImageObject_0053102C},
+    {0x00531030, 0x00531040, (const uint8_t *)&g_ImageObject_00531030},
+    {0x00531040, 0x00531044, (const uint8_t *)&g_ImageObject_00531040},
+    {0x00531044, 0x00531048, (const uint8_t *)&g_ImageObject_00531044},
+    {0x00531048, 0x00531058, (const uint8_t *)&g_ImageObject_00531048},
+    {0x00531058, 0x0053105C, (const uint8_t *)&g_ImageObject_00531058},
+    {0x0053105C, 0x00531060, (const uint8_t *)&g_ImageObject_0053105C},
+    {0x00531060, 0x00531080, (const uint8_t *)&g_ImageObject_00531060},
+    {0x00531FF4, 0x00532000, (const uint8_t *)&g_ImageObject_00531FF4},
+    {0x00532998, 0x005329A4, (const uint8_t *)&g_ImageObject_00532998},
+    {0x0053329C, 0x005332A0, (const uint8_t *)&g_ImageObject_0053329C},
+    {0x005332A0, 0x005332A4, (const uint8_t *)&g_ImageObject_005332A0},
+    {0x005332A4, 0x005332A8, (const uint8_t *)&g_ImageObject_005332A4},
+    {0x005332A8, 0x005332AC, (const uint8_t *)&g_ImageObject_005332A8},
+    {0x005332AC, 0x005332B0, (const uint8_t *)&g_ImageObject_005332AC},
+    {0x005332B0, 0x005332B4, (const uint8_t *)&g_ImageObject_005332B0},
+    {0x005332B4, 0x005332B8, (const uint8_t *)&g_ImageObject_005332B4},
+    {0x005332B8, 0x005332C0, (const uint8_t *)&g_ImageObject_005332B8},
+    {0x00533D4C, 0x00533D60, (const uint8_t *)&g_ImageObject_00533D4C},
+    {0x00533ED0, 0x00533ED4, (const uint8_t *)&g_ImageObject_00533ED0},
+    {0x00533ED4, 0x00533ED8, (const uint8_t *)&g_ImageObject_00533ED4},
+    {0x00533ED8, 0x00533EDC, (const uint8_t *)&g_ImageObject_00533ED8},
+    {0x00533EDC, 0x00533EE0, (const uint8_t *)&g_ImageObject_00533EDC},
+    {0x00533EE0, 0x00533EF0, (const uint8_t *)&g_ImageObject_00533EE0},
+    {0x005367CC, 0x005367D0, (const uint8_t *)&g_ImageObject_005367CC},
+    {0x005367D0, 0x005367D4, (const uint8_t *)&g_ImageObject_005367D0},
+    {0x005367D4, 0x005367D8, (const uint8_t *)&g_ImageObject_005367D4},
+    {0x005367D8, 0x005367DC, (const uint8_t *)&g_ImageObject_005367D8},
+    {0x005367DC, 0x005367E0, (const uint8_t *)&g_ImageObject_005367DC},
+    {0x005367E0, 0x005368D4, (const uint8_t *)&g_ImageObject_005367E0},
+    {0x005368D4, 0x005368E0, (const uint8_t *)&g_ImageObject_005368D4},
+    {0x00536F08, 0x00536F10, (const uint8_t *)&g_ImageObject_00536F08},
+    {0x00536F10, 0x00536F14, (const uint8_t *)&g_ImageObject_00536F10},
+    {0x00536F14, 0x00536F18, (const uint8_t *)&g_ImageObject_00536F14},
+    {0x00536F18, 0x00536F1C, (const uint8_t *)&g_ImageObject_00536F18},
+    {0x00536F1C, 0x00536F20, (const uint8_t *)&g_ImageObject_00536F1C},
+    {0x00536F20, 0x00536F24, (const uint8_t *)&g_ImageObject_00536F20},
+    {0x00536F24, 0x00536F30, (const uint8_t *)&g_ImageObject_00536F24},
+    {0x00536F30, 0x00536F34, (const uint8_t *)&g_ImageObject_00536F30},
+    {0x00536F34, 0x00536F38, (const uint8_t *)&g_ImageObject_00536F34},
+    {0x00536F38, 0x00536F3C, (const uint8_t *)&g_ImageObject_00536F38},
+    {0x00536F3C, 0x00536F40, (const uint8_t *)&g_ImageObject_00536F3C},
+    {0x00536F40, 0x00536F44, (const uint8_t *)&g_ImageObject_00536F40},
+    {0x00536F44, 0x00536F48, (const uint8_t *)&g_ImageObject_00536F44},
+    {0x00536F48, 0x00536F60, (const uint8_t *)&g_ImageObject_00536F48},
+    {0x00536F60, 0x00536F80, (const uint8_t *)&g_ImageObject_00536F60},
+    {0x00536F80, 0x00536FA0, (const uint8_t *)&g_ImageObject_00536F80},
+    {0x00536FA0, 0x00536FA4, (const uint8_t *)&g_ImageObject_00536FA0},
+    {0x00536FA4, 0x00536FA8, (const uint8_t *)&g_ImageObject_00536FA4},
+    {0x00536FA8, 0x00536FAC, (const uint8_t *)&g_ImageObject_00536FA8},
+    {0x00536FAC, 0x00536FB0, (const uint8_t *)&g_ImageObject_00536FAC},
+    {0x00536FB0, 0x00536FB4, (const uint8_t *)&g_ImageObject_00536FB0},
+    {0x00536FB4, 0x00536FB8, (const uint8_t *)&g_ImageObject_00536FB4},
+    {0x00536FB8, 0x00536FC0, (const uint8_t *)&g_ImageObject_00536FB8},
+    {0x00537410, 0x00537414, (const uint8_t *)&g_ImageObject_00537410},
+    {0x00537414, 0x00537418, (const uint8_t *)&g_ImageObject_00537414},
+    {0x00537418, 0x00537420, (const uint8_t *)&g_ImageObject_00537418},
+    {0x0053795C, 0x00537960, (const uint8_t *)&g_ImageObject_0053795C},
+    {0x00537960, 0x00537964, (const uint8_t *)&g_ImageObject_00537960},
+    {0x00537964, 0x00537968, (const uint8_t *)&g_ImageObject_00537964},
+    {0x00537968, 0x0053796C, (const uint8_t *)&g_ImageObject_00537968},
+    {0x0053796C, 0x00537970, (const uint8_t *)&g_ImageObject_0053796C},
+    {0x00537970, 0x00537974, (const uint8_t *)&g_ImageObject_00537970},
+    {0x00537974, 0x00537978, (const uint8_t *)&g_ImageObject_00537974},
+    {0x00537978, 0x0053797C, (const uint8_t *)&g_ImageObject_00537978},
+    {0x0053797C, 0x00537980, (const uint8_t *)&g_ImageObject_0053797C},
+    {0x00537980, 0x00537984, (const uint8_t *)&g_ImageObject_00537980},
+    {0x00537984, 0x00537988, (const uint8_t *)&g_ImageObject_00537984},
+    {0x00537988, 0x0053798C, (const uint8_t *)&g_ImageObject_00537988},
+    {0x0053798C, 0x00537990, (const uint8_t *)&g_ImageObject_0053798C},
+    {0x00537990, 0x00537994, (const uint8_t *)&g_ImageObject_00537990},
+    {0x00537994, 0x00537998, (const uint8_t *)&g_ImageObject_00537994},
+    {0x00537998, 0x0053799C, (const uint8_t *)&g_ImageObject_00537998},
+    {0x0053799C, 0x005379A0, (const uint8_t *)&g_ImageObject_0053799C},
+    {0x005379A0, 0x005379A4, (const uint8_t *)&g_ImageObject_005379A0},
+    {0x005379A4, 0x005379A8, (const uint8_t *)&g_ImageObject_005379A4},
+    {0x005379A8, 0x005379AC, (const uint8_t *)&g_ImageObject_005379A8},
+    {0x005379AC, 0x005379B0, (const uint8_t *)&g_ImageObject_005379AC},
+    {0x005379B0, 0x005379B4, (const uint8_t *)&g_ImageObject_005379B0},
+    {0x005379B4, 0x005379B8, (const uint8_t *)&g_ImageObject_005379B4},
+    {0x005379B8, 0x005379BC, (const uint8_t *)&g_ImageObject_005379B8},
+    {0x005379BC, 0x005379C0, (const uint8_t *)&g_ImageObject_005379BC},
+    {0x005379C0, 0x005379C4, (const uint8_t *)&g_ImageObject_005379C0},
+    {0x005379C4, 0x005379C8, (const uint8_t *)&g_ImageObject_005379C4},
+    {0x005379C8, 0x005379D8, (const uint8_t *)&g_ImageObject_005379C8},
+    {0x005379D8, 0x005379E0, (const uint8_t *)&g_ImageObject_005379D8},
+    {0x00539050, 0x00539060, (const uint8_t *)&g_ImageObject_00539050},
+    {0x00539060, 0x00539070, (const uint8_t *)&g_ImageObject_00539060},
+    {0x00539974, 0x00539980, (const uint8_t *)&g_ImageObject_00539974},
+    {0x00539980, 0x005399A0, (const uint8_t *)&g_ImageObject_00539980},
+    {0x005399A0, 0x005399C0, (const uint8_t *)&g_ImageObject_005399A0},
+    {0x005399C0, 0x005399C4, (const uint8_t *)&g_ImageObject_005399C0},
+    {0x005399C4, 0x00539A00, (const uint8_t *)&g_ImageObject_005399C4},
+    {0x00539A00, 0x00539A40, (const uint8_t *)&g_ImageObject_00539A00},
+    {0x0053B0CC, 0x0053B0D0, (const uint8_t *)&g_ImageObject_0053B0CC},
+    {0x0053B0D0, 0x0053B0D4, (const uint8_t *)&g_ImageObject_0053B0D0},
+    {0x0053B0D4, 0x0053B0E0, (const uint8_t *)&g_ImageObject_0053B0D4},
+    {0x0053B9CC, 0x0053B9E0, (const uint8_t *)&g_ImageObject_0053B9CC},
+    {0x0053B9E0, 0x0053BA00, (const uint8_t *)&g_ImageObject_0053B9E0},
+    {0x0053C154, 0x0053C160, (const uint8_t *)&g_ImageObject_0053C154},
+    {0x0053C160, 0x0053C1A0, (const uint8_t *)&g_ImageObject_0053C160},
+    {0x0053C1FC, 0x0053C210, (const uint8_t *)&g_ImageObject_0053C1FC},
+    {0x0053C5DC, 0x0053C5E0, (const uint8_t *)&g_ImageObject_0053C5DC},
+    {0x0053C5E0, 0x0053C5E4, (const uint8_t *)&g_ImageObject_0053C5E0},
+    {0x0053C5E4, 0x0053C600, (const uint8_t *)&g_ImageObject_0053C5E4},
+    {0x0053C600, 0x0053C63C, (const uint8_t *)&g_ImageObject_0053C600},
+    {0x0053C63C, 0x0053C678, (const uint8_t *)&g_ImageObject_0053C63C},
+    {0x0053C678, 0x0053C6C0, (const uint8_t *)&g_ImageObject_0053C678},
+    {0x0053C808, 0x0053C810, (const uint8_t *)&g_ImageObject_0053C808},
+    {0x0053C99C, 0x0053C9A0, (const uint8_t *)&g_ImageObject_0053C99C},
+    {0x0053C9A0, 0x0053C9B8, (const uint8_t *)&g_ImageObject_0053C9A0},
+    {0x0053C9B8, 0x0053C9D0, (const uint8_t *)&g_ImageObject_0053C9B8},
+    {0x0053C9D0, 0x0053C9E8, (const uint8_t *)&g_ImageObject_0053C9D0},
+    {0x0053C9E8, 0x0053CA00, (const uint8_t *)&g_ImageObject_0053C9E8},
+    {0x0053CA00, 0x0053CA10, (const uint8_t *)&g_ImageObject_0053CA00},
+    {0x0053D358, 0x0053D360, (const uint8_t *)&g_ImageObject_0053D358},
+    {0x0053D360, 0x0053D370, (const uint8_t *)&g_ImageObject_0053D360},
+    {0x0053DA68, 0x0053DA70, (const uint8_t *)&g_ImageObject_0053DA68},
+    {0x0053DA70, 0x0053DA84, (const uint8_t *)&g_ImageObject_0053DA70},
+    {0x0053DA84, 0x0053DA88, (const uint8_t *)&g_ImageObject_0053DA84},
+    {0x0053DA88, 0x0053DA8C, (const uint8_t *)&g_ImageObject_0053DA88},
+    {0x0053DA8C, 0x005433E0, (const uint8_t *)&g_ImageObject_0053DA8C},
+    {0x005433E0, 0x00543460, (const uint8_t *)&g_ImageObject_005433E0},
+    {0x00543460, 0x005438EC, (const uint8_t *)&g_ImageObject_00543460},
+    {0x005438EC, 0x00543B70, (const uint8_t *)&g_ImageObject_005438EC},
+    {0x00543E34, 0x00543E40, (const uint8_t *)&g_ImageObject_00543E34},
+    {0x00543E40, 0x00543F40, (const uint8_t *)&g_ImageObject_00543E40},
+    {0x00543F40, 0x00543F50, (const uint8_t *)&g_ImageObject_00543F40},
+    {0x005456F0, 0x005456F4, (const uint8_t *)&g_ImageObject_005456F0},
+    {0x005456F4, 0x005456F8, (const uint8_t *)&g_ImageObject_005456F4},
+    {0x005456F8, 0x005456FC, (const uint8_t *)&g_ImageObject_005456F8},
+    {0x005456FC, 0x00545700, (const uint8_t *)&g_ImageObject_005456FC},
+    {0x00545700, 0x00545704, (const uint8_t *)&g_ImageObject_00545700},
+    {0x00545704, 0x00545708, (const uint8_t *)&g_ImageObject_00545704},
+    {0x00545708, 0x0054570C, (const uint8_t *)&g_ImageObject_00545708},
+    {0x0054570C, 0x00545710, (const uint8_t *)&g_ImageObject_0054570C},
+    {0x00545710, 0x00545714, (const uint8_t *)&g_ImageObject_00545710},
+    {0x00545714, 0x00545718, (const uint8_t *)&g_ImageObject_00545714},
+    {0x00545718, 0x0054571C, (const uint8_t *)&g_ImageObject_00545718},
+    {0x0054571C, 0x00545720, (const uint8_t *)&g_ImageObject_0054571C},
+    {0x00545720, 0x00545724, (const uint8_t *)&g_ImageObject_00545720},
+    {0x00545724, 0x00545728, (const uint8_t *)&g_ImageObject_00545724},
+    {0x00545728, 0x0054572C, (const uint8_t *)&g_ImageObject_00545728},
+    {0x0054572C, 0x00545730, (const uint8_t *)&g_ImageObject_0054572C},
+    {0x00545730, 0x00545734, (const uint8_t *)&g_ImageObject_00545730},
+    {0x00545734, 0x00545774, (const uint8_t *)&g_ImageObject_00545734},
+    {0x00545774, 0x00545778, (const uint8_t *)&g_ImageObject_00545774},
+    {0x00545778, 0x0054577C, (const uint8_t *)&g_ImageObject_00545778},
+    {0x0054577C, 0x00545780, (const uint8_t *)&g_ImageObject_0054577C},
+    {0x00545780, 0x00545784, (const uint8_t *)&g_ImageObject_00545780},
+    {0x00545784, 0x00545788, (const uint8_t *)&g_ImageObject_00545784},
+    {0x00545788, 0x00545914, (const uint8_t *)&g_ImageObject_00545788},
+    {0x00545914, 0x00545918, (const uint8_t *)&g_ImageObject_00545914},
+    {0x00545918, 0x0054591C, (const uint8_t *)&g_ImageObject_00545918},
+    {0x0054591C, 0x00545920, (const uint8_t *)&g_ImageObject_0054591C},
+    {0x00545920, 0x00545924, (const uint8_t *)&g_ImageObject_00545920},
+    {0x00545924, 0x00545928, (const uint8_t *)&g_ImageObject_00545924},
+    {0x00545928, 0x0054592C, (const uint8_t *)&g_ImageObject_00545928},
+    {0x0054592C, 0x00545930, (const uint8_t *)&g_ImageObject_0054592C},
+    {0x00545930, 0x00545934, (const uint8_t *)&g_ImageObject_00545930},
+    {0x00545934, 0x00545938, (const uint8_t *)&g_ImageObject_00545934},
+    {0x00545938, 0x00545A98, (const uint8_t *)&g_ImageObject_00545938},
+    {0x00545A98, 0x00545AA4, (const uint8_t *)&g_ImageObject_00545A98},
+    {0x00545AA4, 0x00545ACC, (const uint8_t *)&g_ImageObject_00545AA4},
+    {0x00545ACC, 0x00545B00, (const uint8_t *)&g_ImageObject_00545ACC},
+    {0x00545B00, 0x00545B34, (const uint8_t *)&g_ImageObject_00545B00},
+    {0x00545B34, 0x00545B54, (const uint8_t *)&g_ImageObject_00545B34},
+    {0x00545B54, 0x00545B78, (const uint8_t *)&g_ImageObject_00545B54},
+    {0x00545B78, 0x00545BA0, (const uint8_t *)&g_ImageObject_00545B78},
+    {0x00545BA0, 0x00545BC0, (const uint8_t *)&g_ImageObject_00545BA0},
+    {0x00545BC0, 0x00545BE0, (const uint8_t *)&g_ImageObject_00545BC0},
+    {0x00545BE0, 0x00545C02, (const uint8_t *)&g_ImageObject_00545BE0},
+    {0x00545C02, 0x00545C22, (const uint8_t *)&g_ImageObject_00545C02},
+    {0x00545C22, 0x00545C4E, (const uint8_t *)&g_ImageObject_00545C22},
+    {0x00545C4E, 0x00545C72, (const uint8_t *)&g_ImageObject_00545C4E},
+    {0x00545C72, 0x00545E72, (const uint8_t *)&g_ImageObject_00545C72},
+    {0x00545E72, 0x00545E91, (const uint8_t *)&g_ImageObject_00545E72},
+    {0x00545E91, 0x005460A6, (const uint8_t *)&g_ImageObject_00545E91},
+    {0x005460A6, 0x005460BE, (const uint8_t *)&g_ImageObject_005460A6},
+    {0x005460BE, 0x005460E0, (const uint8_t *)&g_ImageObject_005460BE},
+    {0x00546BB4, 0x00546BC0, (const uint8_t *)&g_ImageObject_00546BB4},
+    {0x00547660, 0x00547680, (const uint8_t *)&g_ImageObject_00547660},
+    {0x00547D88, 0x00547D90, (const uint8_t *)&g_ImageObject_00547D88},
+    {0x00547D90, 0x00547DB0, (const uint8_t *)&g_ImageObject_00547D90},
+    {0x00547DD8, 0x00547DF0, (const uint8_t *)&g_ImageObject_00547DD8},
+    {0x005480FC, 0x00548100, (const uint8_t *)&g_ImageObject_005480FC},
+    {0x00548100, 0x00548124, (const uint8_t *)&g_ImageObject_00548100},
+    {0x00548124, 0x00548130, (const uint8_t *)&g_ImageObject_00548124},
+    {0x0054D780, 0x0054D7A0, (const uint8_t *)&g_ImageObject_0054D780},
+    {0x0054D7A0, 0x0054D7C0, (const uint8_t *)&g_ImageObject_0054D7A0},
+    {0x0054D7C0, 0x0054D860, (const uint8_t *)&g_ImageObject_0054D7C0},
+    {0x0054D860, 0x0054D8A0, (const uint8_t *)&g_ImageObject_0054D860},
+    {0x0054D8A0, 0x0054D8C0, (const uint8_t *)&g_ImageObject_0054D8A0},
+    {0x0054D8C0, 0x0054D8E0, (const uint8_t *)&g_ImageObject_0054D8C0},
+    {0x0054D8E0, 0x0054D940, (const uint8_t *)&g_ImageObject_0054D8E0},
+    {0x0054D940, 0x0054D960, (const uint8_t *)&g_ImageObject_0054D940},
+    {0x0054D960, 0x0054D9E0, (const uint8_t *)&g_ImageObject_0054D960},
+    {0x0054D9E0, 0x0054DA00, (const uint8_t *)&g_ImageObject_0054D9E0},
+    {0x0054DA00, 0x0054DB00, (const uint8_t *)&g_ImageObject_0054DA00},
+    {0x0054DB00, 0x0054DB20, (const uint8_t *)&g_ImageObject_0054DB00},
+    {0x0054DB20, 0x0054DC20, (const uint8_t *)&g_ImageObject_0054DB20},
+    {0x0054DC20, 0x0054DD20, (const uint8_t *)&g_ImageObject_0054DC20},
+    {0x0054DD20, 0x0054DD40, (const uint8_t *)&g_ImageObject_0054DD20},
+    {0x0054DD40, 0x0054DD60, (const uint8_t *)&g_ImageObject_0054DD40},
+    {0x0054DD60, 0x0054DD80, (const uint8_t *)&g_ImageObject_0054DD60},
+    {0x0054DD80, 0x0054DDA0, (const uint8_t *)&g_ImageObject_0054DD80},
+    {0x0054DDA0, 0x0054DDA8, (const uint8_t *)&g_ImageObject_0054DDA0},
+    {0x0054DDA8, 0x0054DDAC, (const uint8_t *)&g_ImageObject_0054DDA8},
+    {0x0054DDAC, 0x0054DDB0, (const uint8_t *)&g_ImageObject_0054DDAC},
+    {0x0054DDB0, 0x0054DDB4, (const uint8_t *)&g_ImageObject_0054DDB0},
+    {0x0054DDB4, 0x0054DDD0, (const uint8_t *)&g_ImageObject_0054DDB4},
+    {0x0054DDD0, 0x0054DDE0, (const uint8_t *)&g_ImageObject_0054DDD0},
+    {0x0054DDE0, 0x0054DDE8, (const uint8_t *)&g_ImageObject_0054DDE0},
+    {0x0054DDE8, 0x0054DDF0, (const uint8_t *)&g_ImageObject_0054DDE8},
+    {0x0054DDF0, 0x0054DE30, (const uint8_t *)&g_ImageObject_0054DDF0},
+    {0x0054DE30, 0x0054E230, (const uint8_t *)&g_ImageObject_0054DE30},
+    {0x0054FBB0, 0x0054FBC0, (const uint8_t *)&g_ImageObject_0054FBB0},
+    {0x0054FBC0, 0x0054FBD4, (const uint8_t *)&g_ImageObject_0054FBC0},
+    {0x0054FBD4, 0x0054FBD8, (const uint8_t *)&g_ImageObject_0054FBD4},
+    {0x0054FBD8, 0x0054FBDC, (const uint8_t *)&g_ImageObject_0054FBD8},
+    {0x0054FBDC, 0x0054FFDC, (const uint8_t *)&g_ImageObject_0054FBDC},
+    {0x0054FFDC, 0x0055005C, (const uint8_t *)&g_ImageObject_0054FFDC},
+    {0x0055005C, 0x005500DC, (const uint8_t *)&g_ImageObject_0055005C},
+    {0x005500DC, 0x0055015C, (const uint8_t *)&g_ImageObject_005500DC},
+    {0x0055015C, 0x005501DC, (const uint8_t *)&g_ImageObject_0055015C},
+    {0x005501DC, 0x0055025C, (const uint8_t *)&g_ImageObject_005501DC},
+    {0x0055025C, 0x005502DC, (const uint8_t *)&g_ImageObject_0055025C},
+    {0x005502DC, 0x0055035C, (const uint8_t *)&g_ImageObject_005502DC},
+    {0x0055035C, 0x005503DC, (const uint8_t *)&g_ImageObject_0055035C},
+    {0x005503DC, 0x0055045C, (const uint8_t *)&g_ImageObject_005503DC},
+    {0x0055045C, 0x005504DC, (const uint8_t *)&g_ImageObject_0055045C},
+    {0x005504DC, 0x005504FC, (const uint8_t *)&g_ImageObject_005504DC},
+    {0x005504FC, 0x005504FE, (const uint8_t *)&g_ImageObject_005504FC},
+    {0x005504FE, 0x0055050E, (const uint8_t *)&g_ImageObject_005504FE},
+    {0x0055050E, 0x0055052E, (const uint8_t *)&g_ImageObject_0055050E},
+    {0x0055052E, 0x0055054E, (const uint8_t *)&g_ImageObject_0055052E},
+    {0x0055054E, 0x0055056E, (const uint8_t *)&g_ImageObject_0055054E},
+    {0x0055056E, 0x0055058E, (const uint8_t *)&g_ImageObject_0055056E},
+    {0x0055058E, 0x00550590, (const uint8_t *)&g_ImageObject_0055058E},
+    {0x00550590, 0x005505A0, (const uint8_t *)&g_ImageObject_00550590},
+    {0x005505A0, 0x0055C990, (const uint8_t *)&g_ImageObject_005505A0},
+    {0x0055EFB0, 0x0055EFC0, (const uint8_t *)&g_ImageObject_0055EFB0},
+    {0x0055EFC0, 0x0055F0C0, (const uint8_t *)&g_ImageObject_0055EFC0},
+    {0x0055F0C0, 0x0055F0C4, (const uint8_t *)&g_ImageObject_0055F0C0},
+    {0x0055F0C4, 0x0055F0F4, (const uint8_t *)&g_ImageObject_0055F0C4},
+    {0x0055F0F4, 0x0055F124, (const uint8_t *)&g_ImageObject_0055F0F4},
+    {0x0055F124, 0x0055F128, (const uint8_t *)&g_ImageObject_0055F124},
+    {0x0055F128, 0x0055F130, (const uint8_t *)&g_ImageObject_0055F128},
+    {0x0055F7B4, 0x0055F7C0, (const uint8_t *)&g_ImageObject_0055F7B4},
+    {0x0055F7C0, 0x0055F7C8, (const uint8_t *)&g_ImageObject_0055F7C0},
+    {0x0055F7C8, 0x0055F800, (const uint8_t *)&g_ImageObject_0055F7C8},
+    {0x0055F934, 0x0055F940, (const uint8_t *)&g_ImageObject_0055F934},
+    {0x0055F940, 0x0055F944, (const uint8_t *)&g_ImageObject_0055F940},
+    {0x0055F944, 0x0055F960, (const uint8_t *)&g_ImageObject_0055F944},
+    {0x0055F960, 0x0055F980, (const uint8_t *)&g_ImageObject_0055F960},
+    {0x00562498, 0x00562499, (const uint8_t *)&g_ImageObject_00562498},
+    {0x00562499, 0x005624A0, (const uint8_t *)&g_ImageObject_00562499},
+    {0x005624A0, 0x00562628, (const uint8_t *)&g_ImageObject_005624A0},
+    {0x00562628, 0x00562648, (const uint8_t *)&g_ImageObject_00562628},
+    {0x00562648, 0x0056264C, (const uint8_t *)&g_ImageObject_00562648},
+    {0x0056264C, 0x00562650, (const uint8_t *)&g_ImageObject_0056264C},
+    {0x00562650, 0x00562654, (const uint8_t *)&g_ImageObject_00562650},
+    {0x00562654, 0x00562678, (const uint8_t *)&g_ImageObject_00562654},
+    {0x00562678, 0x00562694, (const uint8_t *)&g_ImageObject_00562678},
+    {0x00562694, 0x005626A8, (const uint8_t *)&g_ImageObject_00562694},
+    {0x005626A8, 0x00562768, (const uint8_t *)&g_ImageObject_005626A8},
+    {0x00562768, 0x00562828, (const uint8_t *)&g_ImageObject_00562768},
+    {0x00562828, 0x005628E8, (const uint8_t *)&g_ImageObject_00562828},
+    {0x005628E8, 0x005629A8, (const uint8_t *)&g_ImageObject_005628E8},
+    {0x005629A8, 0x00562A68, (const uint8_t *)&g_ImageObject_005629A8},
+    {0x00562A68, 0x00562B10, (const uint8_t *)&g_ImageObject_00562A68},
+    {0x00562B10, 0x00562BB8, (const uint8_t *)&g_ImageObject_00562B10},
+    {0x00562BB8, 0x00562C60, (const uint8_t *)&g_ImageObject_00562BB8},
+    {0x00562C60, 0x00562CC0, (const uint8_t *)&g_ImageObject_00562C60},
+    {0x00562CC0, 0x00562CDC, (const uint8_t *)&g_ImageObject_00562CC0},
+    {0x00562CDC, 0x00562CF8, (const uint8_t *)&g_ImageObject_00562CDC},
+    {0x00562CF8, 0x00562D14, (const uint8_t *)&g_ImageObject_00562CF8},
+    {0x00562D14, 0x00562D30, (const uint8_t *)&g_ImageObject_00562D14},
+    {0x00562D30, 0x00562D4C, (const uint8_t *)&g_ImageObject_00562D30},
+    {0x00562D4C, 0x00562D68, (const uint8_t *)&g_ImageObject_00562D4C},
+    {0x00562D68, 0x00562D84, (const uint8_t *)&g_ImageObject_00562D68},
+    {0x00562D84, 0x00562DA0, (const uint8_t *)&g_ImageObject_00562D84},
+    {0x00562DA0, 0x00562DD0, (const uint8_t *)&g_ImageObject_00562DA0},
+    {0x00562DD0, 0x00562DEC, (const uint8_t *)&g_ImageObject_00562DD0},
+    {0x00562DEC, 0x00562E1C, (const uint8_t *)&g_ImageObject_00562DEC},
+    {0x00562E1C, 0x00562E48, (const uint8_t *)&g_ImageObject_00562E1C},
+    {0x00562E48, 0x00562EC8, (const uint8_t *)&g_ImageObject_00562E48},
+    {0x00562EC8, 0x00562ECC, (const uint8_t *)&g_ImageObject_00562EC8},
+    {0x00562ECC, 0x005630CC, (const uint8_t *)&g_ImageObject_00562ECC},
+    {0x005630CC, 0x005630D0, (const uint8_t *)&g_ImageObject_005630CC},
+    {0x005630D0, 0x005630FA, (const uint8_t *)&g_ImageObject_005630D0},
+    {0x005630FA, 0x00563120, (const uint8_t *)&g_ImageObject_005630FA},
+    {0x00563120, 0x0056314E, (const uint8_t *)&g_ImageObject_00563120},
+    {0x0056314E, 0x00563170, (const uint8_t *)&g_ImageObject_0056314E},
+    {0x00563170, 0x0056318E, (const uint8_t *)&g_ImageObject_00563170},
+    {0x0056318E, 0x005631B8, (const uint8_t *)&g_ImageObject_0056318E},
+    {0x005631B8, 0x005631DE, (const uint8_t *)&g_ImageObject_005631B8},
+    {0x005631DE, 0x0056321E, (const uint8_t *)&g_ImageObject_005631DE},
+    {0x0056321E, 0x00563260, (const uint8_t *)&g_ImageObject_0056321E},
+    {0x00563260, 0x00563264, (const uint8_t *)&g_ImageObject_00563260},
+    {0x00563264, 0x00563268, (const uint8_t *)&g_ImageObject_00563264},
+    {0x00563268, 0x0056326C, (const uint8_t *)&g_ImageObject_00563268},
+    {0x0056326C, 0x00563270, (const uint8_t *)&g_ImageObject_0056326C},
+    {0x00563270, 0x00563274, (const uint8_t *)&g_ImageObject_00563270},
+    {0x00563274, 0x00563278, (const uint8_t *)&g_ImageObject_00563274},
+    {0x00563278, 0x0056327C, (const uint8_t *)&g_ImageObject_00563278},
+    {0x0056327C, 0x00563280, (const uint8_t *)&g_ImageObject_0056327C},
+    {0x00563280, 0x00563284, (const uint8_t *)&g_ImageObject_00563280},
+    {0x00563284, 0x00563288, (const uint8_t *)&g_ImageObject_00563284},
+    {0x00563288, 0x0056328C, (const uint8_t *)&g_ImageObject_00563288},
+    {0x0056328C, 0x00563290, (const uint8_t *)&g_ImageObject_0056328C},
+    {0x00563290, 0x00563294, (const uint8_t *)&g_ImageObject_00563290},
+    {0x00563294, 0x00563298, (const uint8_t *)&g_ImageObject_00563294},
+    {0x00563298, 0x0056329C, (const uint8_t *)&g_ImageObject_00563298},
+    {0x0056329C, 0x005632A0, (const uint8_t *)&g_ImageObject_0056329C},
+    {0x005632A0, 0x005632A4, (const uint8_t *)&g_ImageObject_005632A0},
+    {0x005632A4, 0x005632A8, (const uint8_t *)&g_ImageObject_005632A4},
+    {0x005632A8, 0x005632AC, (const uint8_t *)&g_ImageObject_005632A8},
+    {0x005632AC, 0x005632B0, (const uint8_t *)&g_ImageObject_005632AC},
+    {0x005632B0, 0x005632B4, (const uint8_t *)&g_ImageObject_005632B0},
+    {0x005632B4, 0x005632B8, (const uint8_t *)&g_ImageObject_005632B4},
+    {0x005632B8, 0x005632BC, (const uint8_t *)&g_ImageObject_005632B8},
+    {0x005632BC, 0x005632C0, (const uint8_t *)&g_ImageObject_005632BC},
+    {0x005632C0, 0x005632C4, (const uint8_t *)&g_ImageObject_005632C0},
+    {0x005632C4, 0x005632C8, (const uint8_t *)&g_ImageObject_005632C4},
+    {0x005632C8, 0x005632CC, (const uint8_t *)&g_ImageObject_005632C8},
+    {0x005632CC, 0x005632D0, (const uint8_t *)&g_ImageObject_005632CC},
+    {0x005632D0, 0x005632D4, (const uint8_t *)&g_ImageObject_005632D0},
+    {0x005632D4, 0x005632D8, (const uint8_t *)&g_ImageObject_005632D4},
+    {0x005632D8, 0x005632DC, (const uint8_t *)&g_ImageObject_005632D8},
+    {0x005632DC, 0x005632E0, (const uint8_t *)&g_ImageObject_005632DC},
+    {0x005632E0, 0x005632E4, (const uint8_t *)&g_ImageObject_005632E0},
+    {0x005632E4, 0x005632E8, (const uint8_t *)&g_ImageObject_005632E4},
+    {0x005632E8, 0x005632EC, (const uint8_t *)&g_ImageObject_005632E8},
+    {0x005632EC, 0x005632F0, (const uint8_t *)&g_ImageObject_005632EC},
+    {0x005632F0, 0x005632F4, (const uint8_t *)&g_ImageObject_005632F0},
+    {0x005632F4, 0x005632F8, (const uint8_t *)&g_ImageObject_005632F4},
+    {0x005632F8, 0x005632FC, (const uint8_t *)&g_ImageObject_005632F8},
+    {0x005632FC, 0x00563300, (const uint8_t *)&g_ImageObject_005632FC},
+    {0x00563300, 0x00563320, (const uint8_t *)&g_ImageObject_00563300},
+    {0x00563320, 0x00563324, (const uint8_t *)&g_ImageObject_00563320},
+    {0x00563324, 0x00563328, (const uint8_t *)&g_ImageObject_00563324},
+    {0x00563328, 0x0056332C, (const uint8_t *)&g_ImageObject_00563328},
+    {0x0056332C, 0x00563330, (const uint8_t *)&g_ImageObject_0056332C},
+    {0x00563330, 0x00563334, (const uint8_t *)&g_ImageObject_00563330},
+    {0x00563334, 0x00563514, (const uint8_t *)&g_ImageObject_00563334},
+    {0x00563514, 0x00563518, (const uint8_t *)&g_ImageObject_00563514},
+    {0x00563518, 0x005635D8, (const uint8_t *)&g_ImageObject_00563518},
+    {0x005635D8, 0x00563680, (const uint8_t *)&g_ImageObject_005635D8},
+    {0x00563680, 0x005636E0, (const uint8_t *)&g_ImageObject_00563680},
+    {0x005636E0, 0x005636FC, (const uint8_t *)&g_ImageObject_005636E0},
+    {0x005636FC, 0x00563700, (const uint8_t *)&g_ImageObject_005636FC},
+    {0x00563700, 0x00563704, (const uint8_t *)&g_ImageObject_00563700},
+    {0x00563704, 0x00563708, (const uint8_t *)&g_ImageObject_00563704},
+    {0x00563708, 0x00563710, (const uint8_t *)&g_ImageObject_00563708},
+    {0x00563710, 0x00563714, (const uint8_t *)&g_ImageObject_00563710},
+    {0x00563714, 0x00563718, (const uint8_t *)&g_ImageObject_00563714},
+    {0x00563718, 0x00563720, (const uint8_t *)&g_ImageObject_00563718},
+    {0x00563720, 0x00563724, (const uint8_t *)&g_ImageObject_00563720},
+    {0x00563724, 0x00563728, (const uint8_t *)&g_ImageObject_00563724},
+    {0x00563728, 0x0056372C, (const uint8_t *)&g_ImageObject_00563728},
+    {0x0056372C, 0x00563734, (const uint8_t *)&g_ImageObject_0056372C},
+    {0x00563734, 0x00563738, (const uint8_t *)&g_ImageObject_00563734},
+    {0x00563738, 0x00563740, (const uint8_t *)&g_ImageObject_00563738},
+    {0x00563740, 0x00563744, (const uint8_t *)&g_ImageObject_00563740},
+    {0x00563744, 0x00563748, (const uint8_t *)&g_ImageObject_00563744},
+    {0x00563748, 0x00563768, (const uint8_t *)&g_ImageObject_00563748},
+    {0x00563768, 0x00563788, (const uint8_t *)&g_ImageObject_00563768},
+    {0x00563788, 0x005637A8, (const uint8_t *)&g_ImageObject_00563788},
+    {0x005637A8, 0x005637AC, (const uint8_t *)&g_ImageObject_005637A8},
+    {0x005637AC, 0x00563BAC, (const uint8_t *)&g_ImageObject_005637AC},
+    {0x00563BAC, 0x00563BB0, (const uint8_t *)&g_ImageObject_00563BAC},
+    {0x00563BB0, 0x00563BB4, (const uint8_t *)&g_ImageObject_00563BB0},
+    {0x00563BB4, 0x00563BB8, (const uint8_t *)&g_ImageObject_00563BB4},
+    {0x00563BB8, 0x00563BBC, (const uint8_t *)&g_ImageObject_00563BB8},
+    {0x00563BBC, 0x00563BC0, (const uint8_t *)&g_ImageObject_00563BBC},
+    {0x00563BC0, 0x00563BC4, (const uint8_t *)&g_ImageObject_00563BC0},
+    {0x00563BC4, 0x00563BD0, (const uint8_t *)&g_ImageObject_00563BC4},
+    {0x005658BC, 0x005658C0, (const uint8_t *)&g_ImageObject_005658BC},
+    {0x005658C0, 0x005658D8, (const uint8_t *)&g_ImageObject_005658C0},
+    {0x005658D8, 0x005658E0, (const uint8_t *)&g_ImageObject_005658D8},
+    {0x00565E2C, 0x00565E30, (const uint8_t *)&g_ImageObject_00565E2C},
+    {0x00566034, 0x00566040, (const uint8_t *)&g_ImageObject_00566034},
+    {0x00566040, 0x00566060, (const uint8_t *)&g_ImageObject_00566040},
+    {0x0056710C, 0x00567110, (const uint8_t *)&g_ImageObject_0056710C},
+    {0x00567110, 0x005671C4, (const uint8_t *)&g_ImageObject_00567110},
+    {0x005671C4, 0x005671D0, (const uint8_t *)&g_ImageObject_005671C4},
+    {0x005679AC, 0x005679B0, (const uint8_t *)&g_ImageObject_005679AC},
+    {0x005679B0, 0x00567CA4, (const uint8_t *)&g_ImageObject_005679B0},
+    {0x00567CA4, 0x00567CB0, (const uint8_t *)&g_ImageObject_00567CA4},
+    {0x0056A604, 0x0056A610, (const uint8_t *)&g_ImageObject_0056A604},
+    {0x0056D33C, 0x0056D340, (const uint8_t *)&g_ImageObject_0056D33C},
+    {0x0056D340, 0x0056D380, (const uint8_t *)&g_ImageObject_0056D340},
+    {0x0056D71C, 0x0056D720, (const uint8_t *)&g_ImageObject_0056D71C},
+    {0x0056D720, 0x0056D724, (const uint8_t *)&g_ImageObject_0056D720},
+    {0x0056D724, 0x0056D728, (const uint8_t *)&g_ImageObject_0056D724},
+    {0x0056D728, 0x0056D72C, (const uint8_t *)&g_ImageObject_0056D728},
+    {0x0056D72C, 0x0056D730, (const uint8_t *)&g_ImageObject_0056D72C},
+    {0x0056D730, 0x0056D734, (const uint8_t *)&g_ImageObject_0056D730},
+    {0x0056D734, 0x0056D73C, (const uint8_t *)&g_ImageObject_0056D734},
+    {0x0056D73C, 0x0056D740, (const uint8_t *)&g_ImageObject_0056D73C},
+    {0x0056D740, 0x0056D744, (const uint8_t *)&g_ImageObject_0056D740},
+    {0x0056D744, 0x0056D748, (const uint8_t *)&g_ImageObject_0056D744},
+    {0x0056D748, 0x0056D74C, (const uint8_t *)&g_ImageObject_0056D748},
+    {0x0056D74C, 0x0056D750, (const uint8_t *)&g_ImageObject_0056D74C},
+    {0x0056D750, 0x0056D754, (const uint8_t *)&g_ImageObject_0056D750},
+    {0x0056D754, 0x0056D75C, (const uint8_t *)&g_ImageObject_0056D754},
+    {0x0056D75C, 0x0056D760, (const uint8_t *)&g_ImageObject_0056D75C},
+    {0x0056D760, 0x0056D764, (const uint8_t *)&g_ImageObject_0056D760},
+    {0x0056D764, 0x0056D77C, (const uint8_t *)&g_ImageObject_0056D764},
+    {0x0056D77C, 0x0056D794, (const uint8_t *)&g_ImageObject_0056D77C},
+    {0x0056D794, 0x0056D7AC, (const uint8_t *)&g_ImageObject_0056D794},
+    {0x0056D7AC, 0x0056D7C4, (const uint8_t *)&g_ImageObject_0056D7AC},
+    {0x0056D7C4, 0x0056D7DC, (const uint8_t *)&g_ImageObject_0056D7C4},
+    {0x0056D7DC, 0x0056D80C, (const uint8_t *)&g_ImageObject_0056D7DC},
+    {0x0056D80C, 0x0056D814, (const uint8_t *)&g_ImageObject_0056D80C},
+    {0x0056D814, 0x0056D81C, (const uint8_t *)&g_ImageObject_0056D814},
+    {0x0056D81C, 0x0056D824, (const uint8_t *)&g_ImageObject_0056D81C},
+    {0x0056D824, 0x0056D82C, (const uint8_t *)&g_ImageObject_0056D824},
+    {0x0056D82C, 0x0056D830, (const uint8_t *)&g_ImageObject_0056D82C},
+    {0x0056D830, 0x0056D834, (const uint8_t *)&g_ImageObject_0056D830},
+    {0x0056D834, 0x0056D838, (const uint8_t *)&g_ImageObject_0056D834},
+    {0x0056D838, 0x0056D840, (const uint8_t *)&g_ImageObject_0056D838},
+    {0x0056E408, 0x0056E410, (const uint8_t *)&g_ImageObject_0056E408},
+    {0x0056E410, 0x0056E5C0, (const uint8_t *)&g_ImageObject_0056E410},
+    {0x0056E5C0, 0x0056E5D0, (const uint8_t *)&g_ImageObject_0056E5C0},
+    {0x0056F278, 0x0056F280, (const uint8_t *)&g_ImageObject_0056F278},
+    {0x0056F280, 0x0056F350, (const uint8_t *)&g_ImageObject_0056F280},
+    {0x0056F81C, 0x0056F820, (const uint8_t *)&g_ImageObject_0056F81C},
+    {0x0056F820, 0x0056F840, (const uint8_t *)&g_ImageObject_0056F820},
+    {0x0056FA98, 0x0056FAA0, (const uint8_t *)&g_ImageObject_0056FA98},
+    {0x0056FAA0, 0x0056FAC0, (const uint8_t *)&g_ImageObject_0056FAA0},
+    {0x00570408, 0x00570410, (const uint8_t *)&g_ImageObject_00570408},
+    {0x00570410, 0x00570430, (const uint8_t *)&g_ImageObject_00570410},
+    {0x00570D90, 0x00570DA0, (const uint8_t *)&g_ImageObject_00570D90},
+    {0x00570DA0, 0x00570DC0, (const uint8_t *)&g_ImageObject_00570DA0},
+    {0x00570F48, 0x00570F50, (const uint8_t *)&g_ImageObject_00570F48},
+    {0x00570F50, 0x00570F70, (const uint8_t *)&g_ImageObject_00570F50},
+    {0x00571AE4, 0x00571B00, (const uint8_t *)&g_ImageObject_00571AE4},
+    {0x00571B30, 0x00571B50, (const uint8_t *)&g_ImageObject_00571B30},
+    {0x00571D24, 0x00571D40, (const uint8_t *)&g_ImageObject_00571D24},
+    {0x00571D70, 0x00571D90, (const uint8_t *)&g_ImageObject_00571D70},
+    {0x00572030, 0x00572040, (const uint8_t *)&g_ImageObject_00572030},
+    {0x00572040, 0x00572060, (const uint8_t *)&g_ImageObject_00572040},
+    {0x00572060, 0x00572160, (const uint8_t *)&g_ImageObject_00572060},
+    {0x00572160, 0x00572260, (const uint8_t *)&g_ImageObject_00572160},
+    {0x00572260, 0x00572280, (const uint8_t *)&g_ImageObject_00572260},
+    {0x00572280, 0x005722A0, (const uint8_t *)&g_ImageObject_00572280},
+    {0x005722A0, 0x005722C0, (const uint8_t *)&g_ImageObject_005722A0},
+    {0x00572AB0, 0x00572AC0, (const uint8_t *)&g_ImageObject_00572AB0},
+    {0x00572AC0, 0x00572AC4, (const uint8_t *)&g_ImageObject_00572AC0},
+    {0x00572AC4, 0x00572AC8, (const uint8_t *)&g_ImageObject_00572AC4},
+    {0x00572AC8, 0x00572ACC, (const uint8_t *)&g_ImageObject_00572AC8},
+    {0x00572ACC, 0x00572AD0, (const uint8_t *)&g_ImageObject_00572ACC},
+    {0x00572AD0, 0x00572AD4, (const uint8_t *)&g_ImageObject_00572AD0},
+    {0x00572AD4, 0x00572AD8, (const uint8_t *)&g_ImageObject_00572AD4},
+    {0x00572AD8, 0x00572AF4, (const uint8_t *)&g_ImageObject_00572AD8},
+    {0x00572AF4, 0x00572AF8, (const uint8_t *)&g_ImageObject_00572AF4},
+    {0x00572AF8, 0x00572B00, (const uint8_t *)&g_ImageObject_00572AF8},
+    {0x00572B00, 0x00572B04, (const uint8_t *)&g_ImageObject_00572B00},
+    {0x00572B04, 0x00572B08, (const uint8_t *)&g_ImageObject_00572B04},
+    {0x00572B08, 0x00572B0C, (const uint8_t *)&g_ImageObject_00572B08},
+    {0x00572B0C, 0x00572B10, (const uint8_t *)&g_ImageObject_00572B0C},
+    {0x00572B10, 0x00572C10, (const uint8_t *)&g_ImageObject_00572B10},
+    {0x00572C10, 0x00572E10, (const uint8_t *)&g_ImageObject_00572C10},
+    {0x00572E10, 0x00572E20, (const uint8_t *)&g_ImageObject_00572E10},
+    {0x00572E20, 0x00572E39, (const uint8_t *)&g_ImageObject_00572E20},
+    {0x00572E39, 0x00572E56, (const uint8_t *)&g_ImageObject_00572E39},
+    {0x00572E56, 0x00572E6A, (const uint8_t *)&g_ImageObject_00572E56},
+    {0x00572E6A, 0x00572E82, (const uint8_t *)&g_ImageObject_00572E6A},
+    {0x00572E82, 0x00572E9A, (const uint8_t *)&g_ImageObject_00572E82},
+    {0x00572E9A, 0x00572EAE, (const uint8_t *)&g_ImageObject_00572E9A},
+    {0x00572EAE, 0x00572EC2, (const uint8_t *)&g_ImageObject_00572EAE},
+    {0x00572EC2, 0x00572ED6, (const uint8_t *)&g_ImageObject_00572EC2},
+    {0x00572ED6, 0x00572EEE, (const uint8_t *)&g_ImageObject_00572ED6},
+    {0x00572EEE, 0x00572F06, (const uint8_t *)&g_ImageObject_00572EEE},
+    {0x00572F06, 0x00572F2A, (const uint8_t *)&g_ImageObject_00572F06},
+    {0x00572F2A, 0x00572F4E, (const uint8_t *)&g_ImageObject_00572F2A},
+    {0x00572F4E, 0x00572F72, (const uint8_t *)&g_ImageObject_00572F4E},
+    {0x00572F72, 0x00572F96, (const uint8_t *)&g_ImageObject_00572F72},
+    {0x00572F96, 0x00572FBA, (const uint8_t *)&g_ImageObject_00572F96},
+    {0x00572FBA, 0x00572FDE, (const uint8_t *)&g_ImageObject_00572FBA},
+    {0x00572FDE, 0x00573002, (const uint8_t *)&g_ImageObject_00572FDE},
+    {0x00573002, 0x00573028, (const uint8_t *)&g_ImageObject_00573002},
+    {0x00573028, 0x00573046, (const uint8_t *)&g_ImageObject_00573028},
+    {0x00573046, 0x00573064, (const uint8_t *)&g_ImageObject_00573046},
+    {0x00573064, 0x00573070, (const uint8_t *)&g_ImageObject_00573064},
+    {0x00573EE8, 0x00573EF0, (const uint8_t *)&g_ImageObject_00573EE8},
+    {0x00573EF0, 0x00573F70, (const uint8_t *)&g_ImageObject_00573EF0},
+    {0x00573F70, 0x00573F74, (const uint8_t *)&g_ImageObject_00573F70},
+    {0x00573F74, 0x00573FBC, (const uint8_t *)&g_ImageObject_00573F74},
+    {0x00573FBC, 0x00573FC0, (const uint8_t *)&g_ImageObject_00573FBC},
+    {0x00573FC0, 0x00573FC4, (const uint8_t *)&g_ImageObject_00573FC0},
+    {0x00573FC4, 0x00573FC8, (const uint8_t *)&g_ImageObject_00573FC4},
+    {0x00573FC8, 0x00573FCC, (const uint8_t *)&g_ImageObject_00573FC8},
+    {0x00573FCC, 0x00573FD0, (const uint8_t *)&g_ImageObject_00573FCC},
+    {0x00573FD0, 0x00573FD4, (const uint8_t *)&g_ImageObject_00573FD0},
+    {0x00573FD4, 0x00573FD8, (const uint8_t *)&g_ImageObject_00573FD4},
+    {0x00573FD8, 0x005742A0, (const uint8_t *)&g_ImageObject_00573FD8},
+    {0x005742A0, 0x005742A4, (const uint8_t *)&g_ImageObject_005742A0},
+    {0x005742A4, 0x005742A8, (const uint8_t *)&g_ImageObject_005742A4},
+    {0x005742A8, 0x005742AC, (const uint8_t *)&g_ImageObject_005742A8},
+    {0x005742AC, 0x005742B0, (const uint8_t *)&g_ImageObject_005742AC},
+    {0x005742B0, 0x005742B4, (const uint8_t *)&g_ImageObject_005742B0},
+    {0x005742B4, 0x005742B8, (const uint8_t *)&g_ImageObject_005742B4},
+    {0x005742B8, 0x005742BC, (const uint8_t *)&g_ImageObject_005742B8},
+    {0x005742BC, 0x005742C0, (const uint8_t *)&g_ImageObject_005742BC},
+    {0x005742C0, 0x005742C4, (const uint8_t *)&g_ImageObject_005742C0},
+    {0x005742C4, 0x005742C8, (const uint8_t *)&g_ImageObject_005742C4},
+    {0x005742C8, 0x005742CC, (const uint8_t *)&g_ImageObject_005742C8},
+    {0x005742CC, 0x005742D0, (const uint8_t *)&g_ImageObject_005742CC},
+    {0x005742D0, 0x005742D4, (const uint8_t *)&g_ImageObject_005742D0},
+    {0x005742D4, 0x005742D8, (const uint8_t *)&g_ImageObject_005742D4},
+    {0x005742D8, 0x005742DC, (const uint8_t *)&g_ImageObject_005742D8},
+    {0x005742DC, 0x005742E0, (const uint8_t *)&g_ImageObject_005742DC},
+    {0x005742E0, 0x005742E4, (const uint8_t *)&g_ImageObject_005742E0},
+    {0x005742E4, 0x005742E8, (const uint8_t *)&g_ImageObject_005742E4},
+    {0x005742E8, 0x005742EC, (const uint8_t *)&g_ImageObject_005742E8},
+    {0x005742EC, 0x005742F0, (const uint8_t *)&g_ImageObject_005742EC},
+    {0x005742F0, 0x005742F4, (const uint8_t *)&g_ImageObject_005742F0},
+    {0x005742F4, 0x005742F8, (const uint8_t *)&g_ImageObject_005742F4},
+    {0x005742F8, 0x005742FC, (const uint8_t *)&g_ImageObject_005742F8},
+    {0x005742FC, 0x00574300, (const uint8_t *)&g_ImageObject_005742FC},
+    {0x00574300, 0x00574304, (const uint8_t *)&g_ImageObject_00574300},
+    {0x00574304, 0x00574308, (const uint8_t *)&g_ImageObject_00574304},
+    {0x00574308, 0x0057430C, (const uint8_t *)&g_ImageObject_00574308},
+    {0x0057430C, 0x00574310, (const uint8_t *)&g_ImageObject_0057430C},
+    {0x00574310, 0x00574314, (const uint8_t *)&g_ImageObject_00574310},
+    {0x00574314, 0x00574318, (const uint8_t *)&g_ImageObject_00574314},
+    {0x00574318, 0x0057431C, (const uint8_t *)&g_ImageObject_00574318},
+    {0x0057431C, 0x00574320, (const uint8_t *)&g_ImageObject_0057431C},
+    {0x00574320, 0x00574324, (const uint8_t *)&g_ImageObject_00574320},
+    {0x00574324, 0x00574328, (const uint8_t *)&g_ImageObject_00574324},
+    {0x00574328, 0x0057432C, (const uint8_t *)&g_ImageObject_00574328},
+    {0x0057432C, 0x00574330, (const uint8_t *)&g_ImageObject_0057432C},
+    {0x00574330, 0x00574334, (const uint8_t *)&g_ImageObject_00574330},
+    {0x00574334, 0x00574338, (const uint8_t *)&g_ImageObject_00574334},
+    {0x00574338, 0x0057433C, (const uint8_t *)&g_ImageObject_00574338},
+    {0x0057433C, 0x00574340, (const uint8_t *)&g_ImageObject_0057433C},
+    {0x00574340, 0x00574344, (const uint8_t *)&g_ImageObject_00574340},
+    {0x00574344, 0x00574348, (const uint8_t *)&g_ImageObject_00574344},
+    {0x00574348, 0x0057434C, (const uint8_t *)&g_ImageObject_00574348},
+    {0x0057434C, 0x00574350, (const uint8_t *)&g_ImageObject_0057434C},
+    {0x00574350, 0x00574354, (const uint8_t *)&g_ImageObject_00574350},
+    {0x00574354, 0x00574358, (const uint8_t *)&g_ImageObject_00574354},
+    {0x00574358, 0x0057435C, (const uint8_t *)&g_ImageObject_00574358},
+    {0x0057435C, 0x00574360, (const uint8_t *)&g_ImageObject_0057435C},
+    {0x00574360, 0x00574364, (const uint8_t *)&g_ImageObject_00574360},
+    {0x00574364, 0x00574368, (const uint8_t *)&g_ImageObject_00574364},
+    {0x00574368, 0x0057436C, (const uint8_t *)&g_ImageObject_00574368},
+    {0x0057436C, 0x00574370, (const uint8_t *)&g_ImageObject_0057436C},
+    {0x00574370, 0x00574374, (const uint8_t *)&g_ImageObject_00574370},
+    {0x00574374, 0x00574378, (const uint8_t *)&g_ImageObject_00574374},
+    {0x00574378, 0x0057437C, (const uint8_t *)&g_ImageObject_00574378},
+    {0x0057437C, 0x00574380, (const uint8_t *)&g_ImageObject_0057437C},
+    {0x00574380, 0x00574384, (const uint8_t *)&g_ImageObject_00574380},
+    {0x00574384, 0x00574388, (const uint8_t *)&g_ImageObject_00574384},
+    {0x00574388, 0x0057438C, (const uint8_t *)&g_ImageObject_00574388},
+    {0x0057438C, 0x00574390, (const uint8_t *)&g_ImageObject_0057438C},
+    {0x00574390, 0x00574394, (const uint8_t *)&g_ImageObject_00574390},
+    {0x00574394, 0x00574398, (const uint8_t *)&g_ImageObject_00574394},
+    {0x00574398, 0x0057439C, (const uint8_t *)&g_ImageObject_00574398},
+    {0x0057439C, 0x005743A0, (const uint8_t *)&g_ImageObject_0057439C},
+    {0x005743A0, 0x005743A4, (const uint8_t *)&g_ImageObject_005743A0},
+    {0x005743A4, 0x005743A8, (const uint8_t *)&g_ImageObject_005743A4},
+    {0x005743A8, 0x005743B0, (const uint8_t *)&g_ImageObject_005743A8},
+    {0x005743B0, 0x005743B4, (const uint8_t *)&g_ImageObject_005743B0},
+    {0x005743B4, 0x005743B8, (const uint8_t *)&g_ImageObject_005743B4},
+    {0x005743B8, 0x005743D8, (const uint8_t *)&g_ImageObject_005743B8},
+    {0x005743D8, 0x005743EC, (const uint8_t *)&g_ImageObject_005743D8},
+    {0x005743EC, 0x005743F0, (const uint8_t *)&g_ImageObject_005743EC},
+    {0x005743F0, 0x0057441C, (const uint8_t *)&g_ImageObject_005743F0},
+    {0x0057441C, 0x0057442C, (const uint8_t *)&g_ImageObject_0057441C},
+    {0x0057442C, 0x00574430, (const uint8_t *)&g_ImageObject_0057442C},
+    {0x00574430, 0x00574438, (const uint8_t *)&g_ImageObject_00574430},
+    {0x00574438, 0x0057443C, (const uint8_t *)&g_ImageObject_00574438},
+    {0x0057443C, 0x00574440, (const uint8_t *)&g_ImageObject_0057443C},
+    {0x00574440, 0x00574444, (const uint8_t *)&g_ImageObject_00574440},
+    {0x00574444, 0x00574448, (const uint8_t *)&g_ImageObject_00574444},
+    {0x00574448, 0x0057444C, (const uint8_t *)&g_ImageObject_00574448},
+    {0x0057444C, 0x00574450, (const uint8_t *)&g_ImageObject_0057444C},
+    {0x00574450, 0x00574454, (const uint8_t *)&g_ImageObject_00574450},
+    {0x00574454, 0x00574458, (const uint8_t *)&g_ImageObject_00574454},
+    {0x00574458, 0x0057445C, (const uint8_t *)&g_ImageObject_00574458},
+    {0x0057445C, 0x00574460, (const uint8_t *)&g_ImageObject_0057445C},
+    {0x00574460, 0x00574464, (const uint8_t *)&g_ImageObject_00574460},
+    {0x00574464, 0x00574468, (const uint8_t *)&g_ImageObject_00574464},
+    {0x00574468, 0x0057446C, (const uint8_t *)&g_ImageObject_00574468},
+    {0x0057446C, 0x00574470, (const uint8_t *)&g_ImageObject_0057446C},
+    {0x00574470, 0x00574474, (const uint8_t *)&g_ImageObject_00574470},
+    {0x00574474, 0x00574478, (const uint8_t *)&g_ImageObject_00574474},
+    {0x00574478, 0x005744A0, (const uint8_t *)&g_ImageObject_00574478},
+    {0x005744A0, 0x005744A4, (const uint8_t *)&g_ImageObject_005744A0},
+    {0x005744A4, 0x005744AE, (const uint8_t *)&g_ImageObject_005744A4},
+    {0x005744AE, 0x005744B4, (const uint8_t *)&g_ImageObject_005744AE},
+    {0x005744B4, 0x005744BA, (const uint8_t *)&g_ImageObject_005744B4},
+    {0x005744BA, 0x005744C2, (const uint8_t *)&g_ImageObject_005744BA},
+    {0x005744C2, 0x005744CA, (const uint8_t *)&g_ImageObject_005744C2},
+    {0x005744CA, 0x005744D2, (const uint8_t *)&g_ImageObject_005744CA},
+    {0x005744D2, 0x005744DC, (const uint8_t *)&g_ImageObject_005744D2},
+    {0x005744DC, 0x005744E4, (const uint8_t *)&g_ImageObject_005744DC},
+    {0x005744E4, 0x005744EC, (const uint8_t *)&g_ImageObject_005744E4},
+    {0x005744EC, 0x005744FA, (const uint8_t *)&g_ImageObject_005744EC},
+    {0x005744FA, 0x00574506, (const uint8_t *)&g_ImageObject_005744FA},
+    {0x00574506, 0x00574514, (const uint8_t *)&g_ImageObject_00574506},
+    {0x00574514, 0x00574526, (const uint8_t *)&g_ImageObject_00574514},
+    {0x00574526, 0x00574532, (const uint8_t *)&g_ImageObject_00574526},
+    {0x00574532, 0x00574540, (const uint8_t *)&g_ImageObject_00574532},
+    {0x00574540, 0x0057454E, (const uint8_t *)&g_ImageObject_00574540},
+    {0x0057454E, 0x0057455E, (const uint8_t *)&g_ImageObject_0057454E},
+    {0x0057455E, 0x00574570, (const uint8_t *)&g_ImageObject_0057455E},
+    {0x00574570, 0x00574586, (const uint8_t *)&g_ImageObject_00574570},
+    {0x00574586, 0x0057459A, (const uint8_t *)&g_ImageObject_00574586},
+    {0x0057459A, 0x005745AC, (const uint8_t *)&g_ImageObject_0057459A},
+    {0x005745AC, 0x005745C2, (const uint8_t *)&g_ImageObject_005745AC},
+    {0x005745C2, 0x005745DC, (const uint8_t *)&g_ImageObject_005745C2},
+    {0x005745DC, 0x005745FA, (const uint8_t *)&g_ImageObject_005745DC},
+    {0x005745FA, 0x00574610, (const uint8_t *)&g_ImageObject_005745FA},
+    {0x00574610, 0x0057462A, (const uint8_t *)&g_ImageObject_00574610},
+    {0x0057462A, 0x0057463E, (const uint8_t *)&g_ImageObject_0057462A},
+    {0x0057463E, 0x0057465E, (const uint8_t *)&g_ImageObject_0057463E},
+    {0x0057465E, 0x00574676, (const uint8_t *)&g_ImageObject_0057465E},
+    {0x00574676, 0x00574694, (const uint8_t *)&g_ImageObject_00574676},
+    {0x00574694, 0x005746A6, (const uint8_t *)&g_ImageObject_00574694},
+    {0x005746A6, 0x005746B6, (const uint8_t *)&g_ImageObject_005746A6},
+    {0x005746B6, 0x005746CA, (const uint8_t *)&g_ImageObject_005746B6},
+    {0x005746CA, 0x005746DE, (const uint8_t *)&g_ImageObject_005746CA},
+    {0x005746DE, 0x005746F0, (const uint8_t *)&g_ImageObject_005746DE},
+    {0x005746F0, 0x00574706, (const uint8_t *)&g_ImageObject_005746F0},
+    {0x00574706, 0x00574718, (const uint8_t *)&g_ImageObject_00574706},
+    {0x00574718, 0x0057472C, (const uint8_t *)&g_ImageObject_00574718},
+    {0x0057472C, 0x0057473C, (const uint8_t *)&g_ImageObject_0057472C},
+    {0x0057473C, 0x00574754, (const uint8_t *)&g_ImageObject_0057473C},
+    {0x00574754, 0x0057476A, (const uint8_t *)&g_ImageObject_00574754},
+    {0x0057476A, 0x00574778, (const uint8_t *)&g_ImageObject_0057476A},
+    {0x00574778, 0x0057478C, (const uint8_t *)&g_ImageObject_00574778},
+    {0x0057478C, 0x005747A6, (const uint8_t *)&g_ImageObject_0057478C},
+    {0x005747A6, 0x005747BC, (const uint8_t *)&g_ImageObject_005747A6},
+    {0x005747BC, 0x005747CC, (const uint8_t *)&g_ImageObject_005747BC},
+    {0x005747CC, 0x005747DC, (const uint8_t *)&g_ImageObject_005747CC},
+    {0x005747DC, 0x005747EA, (const uint8_t *)&g_ImageObject_005747DC},
+    {0x005747EA, 0x00574802, (const uint8_t *)&g_ImageObject_005747EA},
+    {0x00574802, 0x00574812, (const uint8_t *)&g_ImageObject_00574802},
+    {0x00574812, 0x00574820, (const uint8_t *)&g_ImageObject_00574812},
+    {0x00574820, 0x00574830, (const uint8_t *)&g_ImageObject_00574820},
+    {0x00574830, 0x00574844, (const uint8_t *)&g_ImageObject_00574830},
+    {0x00574844, 0x0057485A, (const uint8_t *)&g_ImageObject_00574844},
+    {0x0057485A, 0x0057487A, (const uint8_t *)&g_ImageObject_0057485A},
+    {0x0057487A, 0x00574886, (const uint8_t *)&g_ImageObject_0057487A},
+    {0x00574886, 0x0057489C, (const uint8_t *)&g_ImageObject_00574886},
+    {0x0057489C, 0x005748A8, (const uint8_t *)&g_ImageObject_0057489C},
+    {0x005748A8, 0x005748B4, (const uint8_t *)&g_ImageObject_005748A8},
+    {0x005748B4, 0x005748C8, (const uint8_t *)&g_ImageObject_005748B4},
+    {0x005748C8, 0x005748D6, (const uint8_t *)&g_ImageObject_005748C8},
+    {0x005748D6, 0x005748E4, (const uint8_t *)&g_ImageObject_005748D6},
+    {0x005748E4, 0x005748EE, (const uint8_t *)&g_ImageObject_005748E4},
+    {0x005748EE, 0x00574902, (const uint8_t *)&g_ImageObject_005748EE},
+    {0x00574902, 0x00574912, (const uint8_t *)&g_ImageObject_00574902},
+    {0x00574912, 0x00574926, (const uint8_t *)&g_ImageObject_00574912},
+    {0x00574926, 0x00574940, (const uint8_t *)&g_ImageObject_00574926},
+    {0x00574940, 0x00574950, (const uint8_t *)&g_ImageObject_00574940},
+    {0x00574950, 0x00574964, (const uint8_t *)&g_ImageObject_00574950},
+    {0x00574964, 0x0057497E, (const uint8_t *)&g_ImageObject_00574964},
+    {0x0057497E, 0x00574992, (const uint8_t *)&g_ImageObject_0057497E},
+    {0x00574992, 0x005749A8, (const uint8_t *)&g_ImageObject_00574992},
+    {0x005749A8, 0x005749BE, (const uint8_t *)&g_ImageObject_005749A8},
+    {0x005749BE, 0x005749CC, (const uint8_t *)&g_ImageObject_005749BE},
+    {0x005749CC, 0x005749E0, (const uint8_t *)&g_ImageObject_005749CC},
+    {0x005749E0, 0x005749F0, (const uint8_t *)&g_ImageObject_005749E0},
+    {0x005749F0, 0x00574A06, (const uint8_t *)&g_ImageObject_005749F0},
+    {0x00574A06, 0x00574A1C, (const uint8_t *)&g_ImageObject_00574A06},
+    {0x00574A1C, 0x00574A32, (const uint8_t *)&g_ImageObject_00574A1C},
+    {0x00574A32, 0x00574A44, (const uint8_t *)&g_ImageObject_00574A32},
+    {0x00574A44, 0x00574A50, (const uint8_t *)&g_ImageObject_00574A44},
+    {0x00574A50, 0x00574A64, (const uint8_t *)&g_ImageObject_00574A50},
+    {0x00574A64, 0x00574A74, (const uint8_t *)&g_ImageObject_00574A64},
+    {0x00574A74, 0x00574A84, (const uint8_t *)&g_ImageObject_00574A74},
+    {0x00574A84, 0x00574A96, (const uint8_t *)&g_ImageObject_00574A84},
+    {0x00574A96, 0x00574AA8, (const uint8_t *)&g_ImageObject_00574A96},
+    {0x00574AA8, 0x00574AC2, (const uint8_t *)&g_ImageObject_00574AA8},
+    {0x00574AC2, 0x00574AD8, (const uint8_t *)&g_ImageObject_00574AC2},
+    {0x00574AD8, 0x00574AF0, (const uint8_t *)&g_ImageObject_00574AD8},
+    {0x00574AF0, 0x00574B04, (const uint8_t *)&g_ImageObject_00574AF0},
+    {0x00574B04, 0x00574B16, (const uint8_t *)&g_ImageObject_00574B04},
+    {0x00574B16, 0x00574B2E, (const uint8_t *)&g_ImageObject_00574B16},
+    {0x00574B2E, 0x00574B46, (const uint8_t *)&g_ImageObject_00574B2E},
+    {0x00574B46, 0x00574B64, (const uint8_t *)&g_ImageObject_00574B46},
+    {0x00574B64, 0x00574B88, (const uint8_t *)&g_ImageObject_00574B64},
+    {0x00574B88, 0x00574B9E, (const uint8_t *)&g_ImageObject_00574B88},
+    {0x00574B9E, 0x00574BBC, (const uint8_t *)&g_ImageObject_00574B9E},
+    {0x00574BBC, 0x00574BD0, (const uint8_t *)&g_ImageObject_00574BBC},
+    {0x00574BD0, 0x00574BE6, (const uint8_t *)&g_ImageObject_00574BD0},
+    {0x00574BE6, 0x00574BFA, (const uint8_t *)&g_ImageObject_00574BE6},
+    {0x00574BFA, 0x00574C0E, (const uint8_t *)&g_ImageObject_00574BFA},
+    {0x00574C0E, 0x00574C22, (const uint8_t *)&g_ImageObject_00574C0E},
+    {0x00574C22, 0x00574C34, (const uint8_t *)&g_ImageObject_00574C22},
+    {0x00574C34, 0x00574C4E, (const uint8_t *)&g_ImageObject_00574C34},
+    {0x00574C4E, 0x00574C60, (const uint8_t *)&g_ImageObject_00574C4E},
+    {0x00574C60, 0x00574C70, (const uint8_t *)&g_ImageObject_00574C60},
+    {0x00574C70, 0x00574C8C, (const uint8_t *)&g_ImageObject_00574C70},
+    {0x00574C8C, 0x00574CA0, (const uint8_t *)&g_ImageObject_00574C8C},
+    {0x00574CA0, 0x00574CB0, (const uint8_t *)&g_ImageObject_00574CA0},
+    {0x00574CB0, 0x00574CC0, (const uint8_t *)&g_ImageObject_00574CB0},
+    {0x00574CC0, 0x00574CCE, (const uint8_t *)&g_ImageObject_00574CC0},
+    {0x00574CCE, 0x00574CE2, (const uint8_t *)&g_ImageObject_00574CCE},
+    {0x00574CE2, 0x00574CF8, (const uint8_t *)&g_ImageObject_00574CE2},
+    {0x00574CF8, 0x00574D10, (const uint8_t *)&g_ImageObject_00574CF8},
+    {0x00574D10, 0x00574D26, (const uint8_t *)&g_ImageObject_00574D10},
+    {0x00574D26, 0x00574D40, (const uint8_t *)&g_ImageObject_00574D26},
+    {0x00574D40, 0x00574D48, (const uint8_t *)&g_ImageObject_00574D40},
+    {0x00574D48, 0x00574D4E, (const uint8_t *)&g_ImageObject_00574D48},
+    {0x00574D4E, 0x00574D5A, (const uint8_t *)&g_ImageObject_00574D4E},
+    {0x00574D5A, 0x00574D62, (const uint8_t *)&g_ImageObject_00574D5A},
+    {0x00574D62, 0x00574D6E, (const uint8_t *)&g_ImageObject_00574D62},
+    {0x00574D6E, 0x00574D7A, (const uint8_t *)&g_ImageObject_00574D6E},
+    {0x00574D7A, 0x00574D86, (const uint8_t *)&g_ImageObject_00574D7A},
+    {0x00574D86, 0x00574D8C, (const uint8_t *)&g_ImageObject_00574D86},
+    {0x00574D8C, 0x00574D92, (const uint8_t *)&g_ImageObject_00574D8C},
+    {0x00574D92, 0x00574D9C, (const uint8_t *)&g_ImageObject_00574D92},
+    {0x00574D9C, 0x00574DA6, (const uint8_t *)&g_ImageObject_00574D9C},
+    {0x00574DA6, 0x00574DB2, (const uint8_t *)&g_ImageObject_00574DA6},
+    {0x00574DB2, 0x00574DBA, (const uint8_t *)&g_ImageObject_00574DB2},
+    {0x00574DBA, 0x00574DC0, (const uint8_t *)&g_ImageObject_00574DBA},
+    {0x00574DC0, 0x00574DC6, (const uint8_t *)&g_ImageObject_00574DC0},
+    {0x00574DC6, 0x00574DCC, (const uint8_t *)&g_ImageObject_00574DC6},
+    {0x00574DCC, 0x00574DD6, (const uint8_t *)&g_ImageObject_00574DCC},
+    {0x00574DD6, 0x00574DDE, (const uint8_t *)&g_ImageObject_00574DD6},
+    {0x00574DDE, 0x00574DE4, (const uint8_t *)&g_ImageObject_00574DDE},
+    {0x00574DE4, 0x00574DEC, (const uint8_t *)&g_ImageObject_00574DE4},
+    {0x00574DEC, 0x00574DF8, (const uint8_t *)&g_ImageObject_00574DEC},
+    {0x00574DF8, 0x00574E02, (const uint8_t *)&g_ImageObject_00574DF8},
+    {0x00574E02, 0x00574E0A, (const uint8_t *)&g_ImageObject_00574E02},
+    {0x00574E0A, 0x00574E18, (const uint8_t *)&g_ImageObject_00574E0A},
+    {0x00574E18, 0x00574E26, (const uint8_t *)&g_ImageObject_00574E18},
+    {0x00574E26, 0x00574E32, (const uint8_t *)&g_ImageObject_00574E26},
+    {0x00574E32, 0x00574E42, (const uint8_t *)&g_ImageObject_00574E32},
+    {0x00574E42, 0x00574E54, (const uint8_t *)&g_ImageObject_00574E42},
+    {0x00574E54, 0x00574E62, (const uint8_t *)&g_ImageObject_00574E54},
+    {0x00574E62, 0x00574E70, (const uint8_t *)&g_ImageObject_00574E62},
+    {0x00574E70, 0x00574E86, (const uint8_t *)&g_ImageObject_00574E70},
+    {0x00574E86, 0x00574E9C, (const uint8_t *)&g_ImageObject_00574E86},
+    {0x00574E9C, 0x00574EB4, (const uint8_t *)&g_ImageObject_00574E9C},
+    {0x00574EB4, 0x00574ECE, (const uint8_t *)&g_ImageObject_00574EB4},
+    {0x00574ECE, 0x00574EE4, (const uint8_t *)&g_ImageObject_00574ECE},
+    {0x00574EE4, 0x00574EFA, (const uint8_t *)&g_ImageObject_00574EE4},
+    {0x00574EFA, 0x00574F0A, (const uint8_t *)&g_ImageObject_00574EFA},
+    {0x00574F0A, 0x00574F20, (const uint8_t *)&g_ImageObject_00574F0A},
+    {0x00574F20, 0x00574F36, (const uint8_t *)&g_ImageObject_00574F20},
+    {0x00574F36, 0x00574F42, (const uint8_t *)&g_ImageObject_00574F36},
+    {0x00574F42, 0x00574F52, (const uint8_t *)&g_ImageObject_00574F42},
+    {0x00574F52, 0x00574F60, (const uint8_t *)&g_ImageObject_00574F52},
+    {0x00574F60, 0x00574F74, (const uint8_t *)&g_ImageObject_00574F60},
+    {0x00574F74, 0x00574F84, (const uint8_t *)&g_ImageObject_00574F74},
+    {0x00574F84, 0x00574F90, (const uint8_t *)&g_ImageObject_00574F84},
+    {0x00574F90, 0x00574FA6, (const uint8_t *)&g_ImageObject_00574F90},
+    {0x00574FA6, 0x00574FAE, (const uint8_t *)&g_ImageObject_00574FA6},
+    {0x00574FAE, 0x00574FB4, (const uint8_t *)&g_ImageObject_00574FAE},
+    {0x00574FB4, 0x00574FC0, (const uint8_t *)&g_ImageObject_00574FB4},
+    {0x00574FC0, 0x00574FC8, (const uint8_t *)&g_ImageObject_00574FC0},
+    {0x00574FC8, 0x00574FD4, (const uint8_t *)&g_ImageObject_00574FC8},
+    {0x00574FD4, 0x00574FE0, (const uint8_t *)&g_ImageObject_00574FD4},
+    {0x00574FE0, 0x00574FEC, (const uint8_t *)&g_ImageObject_00574FE0},
+    {0x00574FEC, 0x00574FF2, (const uint8_t *)&g_ImageObject_00574FEC},
+    {0x00574FF2, 0x00574FF8, (const uint8_t *)&g_ImageObject_00574FF2},
+    {0x00574FF8, 0x00575004, (const uint8_t *)&g_ImageObject_00574FF8},
+    {0x00575004, 0x0057500C, (const uint8_t *)&g_ImageObject_00575004},
+    {0x0057500C, 0x00575012, (const uint8_t *)&g_ImageObject_0057500C},
+    {0x00575012, 0x00575018, (const uint8_t *)&g_ImageObject_00575012},
+    {0x00575018, 0x0057501E, (const uint8_t *)&g_ImageObject_00575018},
+    {0x0057501E, 0x00575028, (const uint8_t *)&g_ImageObject_0057501E},
+    {0x00575028, 0x00575030, (const uint8_t *)&g_ImageObject_00575028},
+    {0x00575030, 0x00575036, (const uint8_t *)&g_ImageObject_00575030},
+    {0x00575036, 0x0057503E, (const uint8_t *)&g_ImageObject_00575036},
+    {0x0057503E, 0x0057504A, (const uint8_t *)&g_ImageObject_0057503E},
+    {0x0057504A, 0x00575054, (const uint8_t *)&g_ImageObject_0057504A},
+    {0x00575054, 0x0057505C, (const uint8_t *)&g_ImageObject_00575054},
+    {0x0057505C, 0x00575066, (const uint8_t *)&g_ImageObject_0057505C},
+    {0x00575066, 0x00575076, (const uint8_t *)&g_ImageObject_00575066},
+    {0x00575076, 0x0057508C, (const uint8_t *)&g_ImageObject_00575076},
+    {0x0057508C, 0x00575098, (const uint8_t *)&g_ImageObject_0057508C},
+    {0x00575098, 0x005750A6, (const uint8_t *)&g_ImageObject_00575098},
+    {0x005750A6, 0x005750B2, (const uint8_t *)&g_ImageObject_005750A6},
+    {0x005750B2, 0x005750C2, (const uint8_t *)&g_ImageObject_005750B2},
+    {0x005750C2, 0x005750D6, (const uint8_t *)&g_ImageObject_005750C2},
+    {0x005750D6, 0x005750EC, (const uint8_t *)&g_ImageObject_005750D6},
+    {0x005750EC, 0x005750FE, (const uint8_t *)&g_ImageObject_005750EC},
+    {0x005750FE, 0x0057510E, (const uint8_t *)&g_ImageObject_005750FE},
+    {0x0057510E, 0x0057511E, (const uint8_t *)&g_ImageObject_0057510E},
+    {0x0057511E, 0x00575136, (const uint8_t *)&g_ImageObject_0057511E},
+    {0x00575136, 0x00575146, (const uint8_t *)&g_ImageObject_00575136},
+    {0x00575146, 0x00575150, (const uint8_t *)&g_ImageObject_00575146},
+    {0x00575150, 0x0057515A, (const uint8_t *)&g_ImageObject_00575150},
+    {0x0057515A, 0x00575164, (const uint8_t *)&g_ImageObject_0057515A},
+    {0x00575164, 0x00575172, (const uint8_t *)&g_ImageObject_00575164},
+    {0x00575172, 0x0057517E, (const uint8_t *)&g_ImageObject_00575172},
+    {0x0057517E, 0x00575188, (const uint8_t *)&g_ImageObject_0057517E},
+    {0x00575188, 0x00575192, (const uint8_t *)&g_ImageObject_00575188},
+    {0x00575192, 0x0057519A, (const uint8_t *)&g_ImageObject_00575192},
+    {0x0057519A, 0x005751AC, (const uint8_t *)&g_ImageObject_0057519A},
+    {0x005751AC, 0x005751B8, (const uint8_t *)&g_ImageObject_005751AC},
+    {0x005751B8, 0x005751C6, (const uint8_t *)&g_ImageObject_005751B8},
+    {0x005751C6, 0x005751CE, (const uint8_t *)&g_ImageObject_005751C6},
+    {0x005751CE, 0x005751E0, (const uint8_t *)&g_ImageObject_005751CE},
+    {0x005751E0, 0x005751EA, (const uint8_t *)&g_ImageObject_005751E0},
+    {0x005751EA, 0x005751FE, (const uint8_t *)&g_ImageObject_005751EA},
+    {0x005751FE, 0x0057520A, (const uint8_t *)&g_ImageObject_005751FE},
+    {0x0057520A, 0x0057521A, (const uint8_t *)&g_ImageObject_0057520A},
+    {0x0057521A, 0x00575226, (const uint8_t *)&g_ImageObject_0057521A},
+    {0x00575226, 0x00575232, (const uint8_t *)&g_ImageObject_00575226},
+    {0x00575232, 0x00575248, (const uint8_t *)&g_ImageObject_00575232},
+    {0x00575248, 0x00575262, (const uint8_t *)&g_ImageObject_00575248},
+    {0x00575262, 0x0057526C, (const uint8_t *)&g_ImageObject_00575262},
+    {0x0057526C, 0x00575276, (const uint8_t *)&g_ImageObject_0057526C},
+    {0x00575276, 0x00575284, (const uint8_t *)&g_ImageObject_00575276},
+    {0x00575284, 0x00575292, (const uint8_t *)&g_ImageObject_00575284},
+    {0x00575292, 0x0057529E, (const uint8_t *)&g_ImageObject_00575292},
+    {0x0057529E, 0x005752AE, (const uint8_t *)&g_ImageObject_0057529E},
+    {0x005752AE, 0x005752C0, (const uint8_t *)&g_ImageObject_005752AE},
+    {0x005752C0, 0x005752CE, (const uint8_t *)&g_ImageObject_005752C0},
+    {0x005752CE, 0x005752DC, (const uint8_t *)&g_ImageObject_005752CE},
+    {0x005752DC, 0x005752F2, (const uint8_t *)&g_ImageObject_005752DC},
+    {0x005752F2, 0x00575308, (const uint8_t *)&g_ImageObject_005752F2},
+    {0x00575308, 0x00575320, (const uint8_t *)&g_ImageObject_00575308},
+    {0x00575320, 0x0057533A, (const uint8_t *)&g_ImageObject_00575320},
+    {0x0057533A, 0x00575350, (const uint8_t *)&g_ImageObject_0057533A},
+    {0x00575350, 0x00575366, (const uint8_t *)&g_ImageObject_00575350},
+    {0x00575366, 0x0057537C, (const uint8_t *)&g_ImageObject_00575366},
+    {0x0057537C, 0x00575390, (const uint8_t *)&g_ImageObject_0057537C},
+    {0x00575390, 0x005753AC, (const uint8_t *)&g_ImageObject_00575390},
+    {0x005753AC, 0x005753C4, (const uint8_t *)&g_ImageObject_005753AC},
+    {0x005753C4, 0x005753E6, (const uint8_t *)&g_ImageObject_005753C4},
+    {0x005753E6, 0x005753FE, (const uint8_t *)&g_ImageObject_005753E6},
+    {0x005753FE, 0x00575416, (const uint8_t *)&g_ImageObject_005753FE},
+    {0x00575416, 0x0057542A, (const uint8_t *)&g_ImageObject_00575416},
+    {0x0057542A, 0x00575440, (const uint8_t *)&g_ImageObject_0057542A},
+    {0x00575440, 0x00575456, (const uint8_t *)&g_ImageObject_00575440},
+    {0x00575456, 0x00575466, (const uint8_t *)&g_ImageObject_00575456},
+    {0x00575466, 0x00575480, (const uint8_t *)&g_ImageObject_00575466},
+    {0x00575480, 0x00575890, (const uint8_t *)&g_ImageObject_00575480},
+    {0x0057594C, 0x00575950, (const uint8_t *)&g_ImageObject_0057594C},
+    {0x00575950, 0x00575954, (const uint8_t *)&g_ImageObject_00575950},
+    {0x00575954, 0x0057595C, (const uint8_t *)&g_ImageObject_00575954},
+    {0x0057595C, 0x00575964, (const uint8_t *)&g_ImageObject_0057595C},
+    {0x00575964, 0x00575968, (const uint8_t *)&g_ImageObject_00575964},
+    {0x00575968, 0x0057596C, (const uint8_t *)&g_ImageObject_00575968},
+    {0x0057596C, 0x00575970, (const uint8_t *)&g_ImageObject_0057596C},
+    {0x00575970, 0x00575974, (const uint8_t *)&g_ImageObject_00575970},
+    {0x00575974, 0x00575978, (const uint8_t *)&g_ImageObject_00575974},
+    {0x00575978, 0x00575980, (const uint8_t *)&g_ImageObject_00575978},
+    {0x00575980, 0x00575981, (const uint8_t *)&g_ImageObject_00575980},
+    {0x00575981, 0x00575982, (const uint8_t *)&g_ImageObject_00575981},
+    {0x00575982, 0x00575A94, (const uint8_t *)&g_ImageObject_00575982},
+    {0x00575A94, 0x00575A98, (const uint8_t *)&g_ImageObject_00575A94},
+    {0x00575A98, 0x00575A9C, (const uint8_t *)&g_ImageObject_00575A98},
+    {0x00575A9C, 0x00575C9C, (const uint8_t *)&g_ImageObject_00575A9C},
+    {0x00575C9C, 0x00575CA0, (const uint8_t *)&g_ImageObject_00575C9C},
+    {0x00575CA0, 0x00575CB0, (const uint8_t *)&g_ImageObject_00575CA0},
+    {0x00576720, 0x00576784, (const uint8_t *)&g_ImageObject_00576720},
+    {0x00576B04, 0x00576B10, (const uint8_t *)&g_ImageObject_00576B04},
+    {0x00576B10, 0x00576B14, (const uint8_t *)&g_ImageObject_00576B10},
+    {0x00576B14, 0x00576B18, (const uint8_t *)&g_ImageObject_00576B14},
+    {0x00576B18, 0x00576B28, (const uint8_t *)&g_ImageObject_00576B18},
+    {0x00576B28, 0x00576B38, (const uint8_t *)&g_ImageObject_00576B28},
+    {0x00576B38, 0x00576B48, (const uint8_t *)&g_ImageObject_00576B38},
+    {0x00576B48, 0x00576B58, (const uint8_t *)&g_ImageObject_00576B48},
+    {0x00576B58, 0x00576B70, (const uint8_t *)&g_ImageObject_00576B58},
+    {0x00576B70, 0x00576BE0, (const uint8_t *)&g_ImageObject_00576B70},
+    {0x00576BE0, 0x00576BF4, (const uint8_t *)&g_ImageObject_00576BE0},
+    {0x00576BF4, 0x00576BF8, (const uint8_t *)&g_ImageObject_00576BF4},
+    {0x00576BF8, 0x00576BFC, (const uint8_t *)&g_ImageObject_00576BF8},
+    {0x00576BFC, 0x00576C0C, (const uint8_t *)&g_ImageObject_00576BFC},
+    {0x00576C0C, 0x00576C14, (const uint8_t *)&g_ImageObject_00576C0C},
+    {0x00576C14, 0x00576C18, (const uint8_t *)&g_ImageObject_00576C14},
+    {0x00576C18, 0x00576C1C, (const uint8_t *)&g_ImageObject_00576C18},
+    {0x00576C1C, 0x00576C20, (const uint8_t *)&g_ImageObject_00576C1C},
+    {0x00576C20, 0x00576C24, (const uint8_t *)&g_ImageObject_00576C20},
+    {0x00576C24, 0x00576C30, (const uint8_t *)&g_ImageObject_00576C24},
+    {0x00577BFC, 0x00577C00, (const uint8_t *)&g_ImageObject_00577BFC},
+    {0x00577C00, 0x00577C10, (const uint8_t *)&g_ImageObject_00577C00},
+    {0x00577C10, 0x00577C20, (const uint8_t *)&g_ImageObject_00577C10},
+    {0x00577C20, 0x00577C30, (const uint8_t *)&g_ImageObject_00577C20},
+    {0x00577C30, 0x00577C40, (const uint8_t *)&g_ImageObject_00577C30},
+    {0x00577C40, 0x00577C44, (const uint8_t *)&g_ImageObject_00577C40},
+    {0x00577C44, 0x00577C48, (const uint8_t *)&g_ImageObject_00577C44},
+    {0x00577C48, 0x00577C4C, (const uint8_t *)&g_ImageObject_00577C48},
+    {0x00577C4C, 0x00577C50, (const uint8_t *)&g_ImageObject_00577C4C},
+    {0x00577C50, 0x00577C54, (const uint8_t *)&g_ImageObject_00577C50},
+    {0x00577C54, 0x00577C58, (const uint8_t *)&g_ImageObject_00577C54},
+    {0x00577C58, 0x00577C5C, (const uint8_t *)&g_ImageObject_00577C58},
+    {0x00577C5C, 0x00577C60, (const uint8_t *)&g_ImageObject_00577C5C},
+    {0x00577C60, 0x00577C64, (const uint8_t *)&g_ImageObject_00577C60},
+    {0x00577C64, 0x00577C68, (const uint8_t *)&g_ImageObject_00577C64},
+    {0x00577C68, 0x00577C70, (const uint8_t *)&g_ImageObject_00577C68},
+    {0x00577C70, 0x00577C80, (const uint8_t *)&g_ImageObject_00577C70},
+    {0x00577C80, 0x00577CF0, (const uint8_t *)&g_ImageObject_00577C80},
+    {0x00577CF0, 0x00577D60, (const uint8_t *)&g_ImageObject_00577CF0},
+    {0x00577D60, 0x00577D90, (const uint8_t *)&g_ImageObject_00577D60},
+    {0x00577D90, 0x00577DB0, (const uint8_t *)&g_ImageObject_00577D90},
+    {0x00577DB0, 0x00577DD0, (const uint8_t *)&g_ImageObject_00577DB0},
+    {0x00577DD0, 0x00577DF0, (const uint8_t *)&g_ImageObject_00577DD0},
+    {0x00577DF0, 0x00577E10, (const uint8_t *)&g_ImageObject_00577DF0},
+    {0x00577E10, 0x00577E14, (const uint8_t *)&g_ImageObject_00577E10},
+    {0x00577E14, 0x00577E18, (const uint8_t *)&g_ImageObject_00577E14},
+    {0x00577E18, 0x00577E1C, (const uint8_t *)&g_ImageObject_00577E18},
+    {0x00577E1C, 0x00577E2C, (const uint8_t *)&g_ImageObject_00577E1C},
+    {0x00577E2C, 0x00577E30, (const uint8_t *)&g_ImageObject_00577E2C},
+    {0x00577E30, 0x00577E34, (const uint8_t *)&g_ImageObject_00577E30},
+    {0x00577E34, 0x00577E38, (const uint8_t *)&g_ImageObject_00577E34},
+    {0x00577E38, 0x00577E3C, (const uint8_t *)&g_ImageObject_00577E38},
+    {0x00577E3C, 0x00577E44, (const uint8_t *)&g_ImageObject_00577E3C},
+    {0x00577E44, 0x00577E4C, (const uint8_t *)&g_ImageObject_00577E44},
+    {0x00577E4C, 0x00577E50, (const uint8_t *)&g_ImageObject_00577E4C},
+    {0x00577E50, 0x00577EA0, (const uint8_t *)&g_ImageObject_00577E50},
+    {0x00577EA0, 0x00577FC0, (const uint8_t *)&g_ImageObject_00577EA0},
+    {0x00577FC0, 0x00578040, (const uint8_t *)&g_ImageObject_00577FC0},
+    {0x00578040, 0x00578050, (const uint8_t *)&g_ImageObject_00578040},
+    {0x00578050, 0x00578054, (const uint8_t *)&g_ImageObject_00578050},
+    {0x00578054, 0x00578058, (const uint8_t *)&g_ImageObject_00578054},
+    {0x00578058, 0x0057805C, (const uint8_t *)&g_ImageObject_00578058},
+    {0x0057805C, 0x00578060, (const uint8_t *)&g_ImageObject_0057805C},
+    {0x00578060, 0x00578070, (const uint8_t *)&g_ImageObject_00578060},
+    {0x00578070, 0x00578074, (const uint8_t *)&g_ImageObject_00578070},
+    {0x00578074, 0x00578078, (const uint8_t *)&g_ImageObject_00578074},
+    {0x00578078, 0x00578080, (const uint8_t *)&g_ImageObject_00578078},
+    {0x0057ECC8, 0x0057ECD0, (const uint8_t *)&g_ImageObject_0057ECC8},
+    {0x0057ECD0, 0x0057ECE0, (const uint8_t *)&g_ImageObject_0057ECD0},
+    {0x0057ECE0, 0x0057ECF0, (const uint8_t *)&g_ImageObject_0057ECE0},
+    {0x0057ECF0, 0x0057ED14, (const uint8_t *)&g_ImageObject_0057ECF0},
+    {0x0057ED14, 0x0057ED18, (const uint8_t *)&g_ImageObject_0057ED14},
+    {0x0057ED18, 0x0057ED20, (const uint8_t *)&g_ImageObject_0057ED18},
+    {0x0057ED20, 0x0057ED34, (const uint8_t *)&g_ImageObject_0057ED20},
+    {0x0057ED34, 0x0057ED48, (const uint8_t *)&g_ImageObject_0057ED34},
+    {0x0057ED48, 0x0057ED54, (const uint8_t *)&g_ImageObject_0057ED48},
+    {0x0057ED54, 0x0057ED5C, (const uint8_t *)&g_ImageObject_0057ED54},
+    {0x0057ED5C, 0x0057ED60, (const uint8_t *)&g_ImageObject_0057ED5C},
+    {0x0057ED60, 0x0057ED68, (const uint8_t *)&g_ImageObject_0057ED60},
+    {0x0057ED68, 0x0057ED6C, (const uint8_t *)&g_ImageObject_0057ED68},
+    {0x0057ED6C, 0x0057ED70, (const uint8_t *)&g_ImageObject_0057ED6C},
+    {0x0057ED70, 0x0057ED74, (const uint8_t *)&g_ImageObject_0057ED70},
+    {0x0057ED74, 0x0057ED7C, (const uint8_t *)&g_ImageObject_0057ED74},
+    {0x0057ED7C, 0x0057ED80, (const uint8_t *)&g_ImageObject_0057ED7C},
+    {0x0057ED80, 0x0057ED88, (const uint8_t *)&g_ImageObject_0057ED80},
+    {0x0057ED88, 0x0057ED8C, (const uint8_t *)&g_ImageObject_0057ED88},
+    {0x0057ED8C, 0x0057ED90, (const uint8_t *)&g_ImageObject_0057ED8C},
+    {0x0057ED90, 0x0057ED94, (const uint8_t *)&g_ImageObject_0057ED90},
+    {0x0057ED94, 0x0057ED9C, (const uint8_t *)&g_ImageObject_0057ED94},
+    {0x0057ED9C, 0x0057EDA0, (const uint8_t *)&g_ImageObject_0057ED9C},
+    {0x0057EDA0, 0x0057EDA8, (const uint8_t *)&g_ImageObject_0057EDA0},
+    {0x0057EDA8, 0x0057EDAC, (const uint8_t *)&g_ImageObject_0057EDA8},
+    {0x0057EDAC, 0x0057EDB0, (const uint8_t *)&g_ImageObject_0057EDAC},
+    {0x0057EDB0, 0x0057EDB4, (const uint8_t *)&g_ImageObject_0057EDB0},
+    {0x0057EDB4, 0x0057EDC8, (const uint8_t *)&g_ImageObject_0057EDB4},
+    {0x0057EDC8, 0x0057EDCC, (const uint8_t *)&g_ImageObject_0057EDC8},
+    {0x0057EDCC, 0x0057EDD8, (const uint8_t *)&g_ImageObject_0057EDCC},
+    {0x0057EDD8, 0x0057EDE4, (const uint8_t *)&g_ImageObject_0057EDD8},
+    {0x0057EDE4, 0x0057EDE8, (const uint8_t *)&g_ImageObject_0057EDE4},
+    {0x0057EDE8, 0x0057EDEC, (const uint8_t *)&g_ImageObject_0057EDE8},
+    {0x0057EDEC, 0x0057EDF0, (const uint8_t *)&g_ImageObject_0057EDEC},
+    {0x0057EDF0, 0x0057EDF4, (const uint8_t *)&g_ImageObject_0057EDF0},
+    {0x0057EDF4, 0x0057EE34, (const uint8_t *)&g_ImageObject_0057EDF4},
+    {0x0057EE34, 0x0057EE74, (const uint8_t *)&g_ImageObject_0057EE34},
+    {0x0057EE74, 0x0057EE78, (const uint8_t *)&g_ImageObject_0057EE74},
+    {0x0057EE78, 0x0057EE7C, (const uint8_t *)&g_ImageObject_0057EE78},
+    {0x0057EE7C, 0x0057EE80, (const uint8_t *)&g_ImageObject_0057EE7C},
+    {0x0057EE80, 0x0057EE84, (const uint8_t *)&g_ImageObject_0057EE80},
+    {0x0057EE84, 0x0057EE90, (const uint8_t *)&g_ImageObject_0057EE84},
+    {0x00582ED8, 0x00582EE0, (const uint8_t *)&g_ImageObject_00582ED8},
+    {0x00582EE0, 0x00582EE4, (const uint8_t *)&g_ImageObject_00582EE0},
+    {0x00582EE4, 0x00582EE8, (const uint8_t *)&g_ImageObject_00582EE4},
+    {0x00582EE8, 0x00582EEC, (const uint8_t *)&g_ImageObject_00582EE8},
+    {0x00582EEC, 0x00582EF0, (const uint8_t *)&g_ImageObject_00582EEC},
+    {0x00582EF0, 0x00582F10, (const uint8_t *)&g_ImageObject_00582EF0},
+    {0x00582F10, 0x00582F24, (const uint8_t *)&g_ImageObject_00582F10},
+    {0x00582F24, 0x00582F28, (const uint8_t *)&g_ImageObject_00582F24},
+    {0x00582F28, 0x00582F2E, (const uint8_t *)&g_ImageObject_00582F28},
+    {0x00582F2E, 0x00583140, (const uint8_t *)&g_ImageObject_00582F2E},
+    {0x00583D28, 0x00583D60, (const uint8_t *)&g_ImageObject_00583D28},
+    {0x00583D60, 0x00583D64, (const uint8_t *)&g_ImageObject_00583D60},
+    {0x00583D64, 0x00583EF2, (const uint8_t *)&g_ImageObject_00583D64},
+    {0x00583EF2, 0x00583EF6, (const uint8_t *)&g_ImageObject_00583EF2},
+    {0x00583EF6, 0x00583EFA, (const uint8_t *)&g_ImageObject_00583EF6},
+    {0x00583EFA, 0x00583EFE, (const uint8_t *)&g_ImageObject_00583EFA},
+    {0x00583EFE, 0x00583F0E, (const uint8_t *)&g_ImageObject_00583EFE},
+    {0x00583F0E, 0x00583F12, (const uint8_t *)&g_ImageObject_00583F0E},
+    {0x00583F12, 0x00583F16, (const uint8_t *)&g_ImageObject_00583F12},
+    {0x00583F16, 0x00583F1A, (const uint8_t *)&g_ImageObject_00583F16},
+    {0x00583F1A, 0x00583F1E, (const uint8_t *)&g_ImageObject_00583F1A},
+    {0x00583F1E, 0x00583F22, (const uint8_t *)&g_ImageObject_00583F1E},
+    {0x00583F22, 0x00583F40, (const uint8_t *)&g_ImageObject_00583F22},
+    {0x00583F40, 0x00584040, (const uint8_t *)&g_ImageObject_00583F40},
+    {0x00584040, 0x00584078, (const uint8_t *)&g_ImageObject_00584040},
+    {0x00584078, 0x00584080, (const uint8_t *)&g_ImageObject_00584078},
+    {0x00584E44, 0x00584E50, (const uint8_t *)&g_ImageObject_00584E44},
+    {0x005856A0, 0x005856B0, (const uint8_t *)&g_ImageObject_005856A0},
+    {0x005856B0, 0x005856B4, (const uint8_t *)&g_ImageObject_005856B0},
+    {0x005856B4, 0x005856B8, (const uint8_t *)&g_ImageObject_005856B4},
+    {0x005856B8, 0x005856BC, (const uint8_t *)&g_ImageObject_005856B8},
+    {0x005856BC, 0x005856C0, (const uint8_t *)&g_ImageObject_005856BC},
+    {0x005856C0, 0x00585708, (const uint8_t *)&g_ImageObject_005856C0},
+    {0x00585708, 0x0058571C, (const uint8_t *)&g_ImageObject_00585708},
+    {0x0058571C, 0x0058581C, (const uint8_t *)&g_ImageObject_0058571C},
+    {0x0058581C, 0x00585D1C, (const uint8_t *)&g_ImageObject_0058581C},
+    {0x00585D1C, 0x00585D2B, (const uint8_t *)&g_ImageObject_00585D1C},
+    {0x00585D2B, 0x00585D40, (const uint8_t *)&g_ImageObject_00585D2B},
+    {0x00586950, 0x00586A70, (const uint8_t *)&g_ImageObject_00586950},
+    {0x00586A70, 0x00586B70, (const uint8_t *)&g_ImageObject_00586A70},
+    {0x005873BC, 0x00587400, (const uint8_t *)&g_ImageObject_005873BC},
+    {0x00587400, 0x0058B400, (const uint8_t *)&g_ImageObject_00587400},
+    {0x0058B400, 0x0058C000, (const uint8_t *)&g_ImageObject_0058B400},
 };
 
 const ThandorImagePointer g_ThandorImagePointers[2393] = {

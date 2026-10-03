@@ -15,51 +15,138 @@
 #pragma pack(push, 1)
 
 /* original 0x00401000-0x00402B00 */
-typedef struct ImageData_00401000 {
+typedef struct ImageObject_00401000 {
     uint32_t at_DAT_00401000[1024]; /* 00401000 DAT_00401000 */
+} ImageObject_00401000;
+extern ImageObject_00401000 g_ImageObject_00401000;
+typedef struct ImageObject_00402000 {
     MemoryApiTable at_g_MemoryApi; /* 00402000 g_MemoryApi */
+} ImageObject_00402000;
+extern ImageObject_00402000 g_ImageObject_00402000;
+typedef struct ImageObject_00402018 {
     TimerRegisterPeriodicProc * at_g_TimerRegisterPeriodic; /* 00402018 g_TimerRegisterPeriodic */
+} ImageObject_00402018;
+extern ImageObject_00402018 g_ImageObject_00402018;
+typedef struct ImageObject_0040201C {
     TimerUnregisterPeriodicProc * at_g_TimerUnregisterPeriodic; /* 0040201C g_TimerUnregisterPeriodic */
+} ImageObject_0040201C;
+extern ImageObject_0040201C g_ImageObject_0040201C;
+typedef struct ImageObject_00402020 {
     Win32PumpMessagesProc * at_g_Win32PumpMessages; /* 00402020 g_Win32PumpMessages */
+} ImageObject_00402020;
+extern ImageObject_00402020 g_ImageObject_00402020;
+typedef struct ImageObject_00402024 {
     CommandLineFindOptionProc * at_g_CommandLineFindOption; /* 00402024 g_CommandLineFindOption */
+} ImageObject_00402024;
+extern ImageObject_00402024 g_ImageObject_00402024;
+typedef struct ImageObject_00402028 {
     CommandLineWideArguments at_g_CommandLineWideArguments; /* 00402028 g_CommandLineWideArguments */
+} ImageObject_00402028;
+extern ImageObject_00402028 g_ImageObject_00402028;
+typedef struct ImageObject_00402628 {
     WideNumberFormatUtf16Proc * at_g_WideNumberFormatUtf16; /* 00402628 g_WideNumberFormatUtf16 */
+} ImageObject_00402628;
+extern ImageObject_00402628 g_ImageObject_00402628;
+typedef struct ImageObject_0040262C {
     WideNumberFormatState at_g_WideNumberFormatState; /* 0040262C g_WideNumberFormatState */
+} ImageObject_0040262C;
+extern ImageObject_0040262C g_ImageObject_0040262C;
+typedef struct ImageObject_00402784 {
     SpinLockAcquireProc * at_g_SpinLockAcquire; /* 00402784 g_SpinLockAcquire */
+} ImageObject_00402784;
+extern ImageObject_00402784 g_ImageObject_00402784;
+typedef struct ImageObject_00402788 {
     SpinLockTryAcquireFlagsProc * at_g_SpinLockTryAcquire; /* 00402788 g_SpinLockTryAcquire */
+} ImageObject_00402788;
+extern ImageObject_00402788 g_ImageObject_00402788;
+typedef struct ImageObject_0040278C {
     SpinLockReleaseProc * at_g_SpinLockRelease; /* 0040278C g_SpinLockRelease */
+} ImageObject_0040278C;
+extern ImageObject_0040278C g_ImageObject_0040278C;
+typedef struct ImageObject_00402790 {
     SpinLockReleaseAndInvokeProc * at_g_SpinLockReleaseAndInvoke; /* 00402790 g_SpinLockReleaseAndInvoke */
+} ImageObject_00402790;
+extern ImageObject_00402790 g_ImageObject_00402790;
+typedef struct ImageObject_00402794 {
     LocaleFormatDateFieldsUtf16Proc * at_g_LocaleFormatDateFieldsUtf16; /* 00402794 g_LocaleFormatDateFieldsUtf16 */
+} ImageObject_00402794;
+extern ImageObject_00402794 g_ImageObject_00402794;
+typedef struct ImageObject_00402798 {
     LocaleFormatCurrentDateUtf16Proc * at_g_LocaleFormatCurrentDateUtf16; /* 00402798 g_LocaleFormatCurrentDateUtf16 */
+} ImageObject_00402798;
+extern ImageObject_00402798 g_ImageObject_00402798;
+typedef struct ImageObject_0040279C {
     LocaleGetPackedCurrentDateProc * at_g_LocaleGetPackedCurrentDate; /* 0040279C g_LocaleGetPackedCurrentDate */
+} ImageObject_0040279C;
+extern ImageObject_0040279C g_ImageObject_0040279C;
+typedef struct ImageObject_004027A0 {
     LocaleFormatTimeFieldsUtf16Proc * at_g_LocaleFormatTimeFieldsUtf16; /* 004027A0 g_LocaleFormatTimeFieldsUtf16 */
+} ImageObject_004027A0;
+extern ImageObject_004027A0 g_ImageObject_004027A0;
+typedef struct ImageObject_004027A4 {
     LocaleFormatCurrentTimeUtf16Proc * at_g_LocaleFormatCurrentTimeUtf16; /* 004027A4 g_LocaleFormatCurrentTimeUtf16 */
+} ImageObject_004027A4;
+extern ImageObject_004027A4 g_ImageObject_004027A4;
+typedef struct ImageObject_004027A8 {
     LocaleGetPackedCurrentTimeProc * at_g_LocaleGetPackedCurrentTime; /* 004027A8 g_LocaleGetPackedCurrentTime */
+} ImageObject_004027A8;
+extern ImageObject_004027A8 g_ImageObject_004027A8;
+typedef struct ImageObject_004027AC {
     LocaleGetTelephoneCountryCodeProc * at_g_LocaleGetDefaultTelephoneCountryCode; /* 004027AC g_LocaleGetDefaultTelephoneCountryCode */
+} ImageObject_004027AC;
+extern ImageObject_004027AC g_ImageObject_004027AC;
+typedef struct ImageObject_004027B0 {
     uint32_t at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked[1]; /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
+} ImageObject_004027B0;
+extern ImageObject_004027B0 g_ImageObject_004027B0;
+typedef struct ImageObject_004027B4 {
     LocaleCopyDefaultComputerLabelUtf16Proc * at_g_LocaleCopyDefaultComputerLabelUtf16; /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
+} ImageObject_004027B4;
+extern ImageObject_004027B4 g_ImageObject_004027B4;
+typedef struct ImageObject_004027B8 {
     CpuDetectFeaturesProc * at_g_CPUDetectFeatures; /* 004027B8 g_CPUDetectFeatures */
+} ImageObject_004027B8;
+extern ImageObject_004027B8 g_ImageObject_004027B8;
+typedef struct ImageObject_004027BC {
     pointer at_g_Utf16StringCompareAsciiCaseInsensitiveFlags; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
+} ImageObject_004027BC;
+extern ImageObject_004027BC g_ImageObject_004027BC;
+typedef struct ImageObject_004027C0 {
     uint32_t at_g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
+} ImageObject_004027C0;
+extern ImageObject_004027C0 g_ImageObject_004027C0;
+typedef struct ImageObject_004027C4 {
     uint32_t at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
     uint32_t at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
+} ImageObject_004027C4;
+extern ImageObject_004027C4 g_ImageObject_004027C4;
+typedef struct ImageObject_004027D0 {
     uint8_t at_g_FileSystemConfigCharacterNormalizationMap[256]; /* 004027D0 g_FileSystemConfigCharacterNormalizationMap: uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
+} ImageObject_004027D0;
+extern ImageObject_004027D0 g_ImageObject_004027D0;
+typedef struct ImageObject_004028D0 {
     PersistentSettingsRuntime at_g_PersistentSettings; /* 004028D0 g_PersistentSettings */
     uint32_t at_g_PersistentSettings_rest[9]; /* beyond the declared type */
-} ImageData_00401000;
-extern ImageData_00401000 g_ImageData_00401000;
+} ImageObject_004028D0;
+extern ImageObject_004028D0 g_ImageObject_004028D0;
 
 /* original 0x00403080-0x004030B0 */
-typedef struct ImageData_00403080 {
+typedef struct ImageObject_00403080 {
     uint8_t at_gap_00403080[32]; /* 00403080 gap */
+} ImageObject_00403080;
+extern ImageObject_00403080 g_ImageObject_00403080;
+typedef struct ImageObject_004030A0 {
     RandomGeneratorState at_g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
     uint32_t at_g_RandomGeneratorState_rest[1]; /* beyond the declared type */
-} ImageData_00403080;
-extern ImageData_00403080 g_ImageData_00403080;
+} ImageObject_004030A0;
+extern ImageObject_004030A0 g_ImageObject_004030A0;
 
 /* original 0x00403158-0x00407160 */
-typedef struct ImageData_00403158 {
+typedef struct ImageObject_00403158 {
     uint8_t at_gap_00403158[8]; /* 00403158 gap */
+} ImageObject_00403158;
+extern ImageObject_00403158 g_ImageObject_00403158;
+typedef struct ImageObject_00403160 {
     uint32_t at_g_UiTransferEncryptSbox0[16][16]; /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
     uint32_t at_g_UiTransferEncryptSbox1[16][16]; /* 00403560 g_UiTransferEncryptSbox1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     uint32_t at_g_UiTransferEncryptSbox2[16][16]; /* 00403960 g_UiTransferEncryptSbox2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
@@ -68,14 +155,23 @@ typedef struct ImageData_00403158 {
     uint32_t at_g_UiTransferEncryptSbox5[16][16]; /* 00404560 g_UiTransferEncryptSbox5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
     uint32_t at_g_UiTransferEncryptSbox6[16][16]; /* 00404960 g_UiTransferEncryptSbox6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     uint32_t at_g_UiTransferEncryptSbox7[16][16]; /* 00404D60 g_UiTransferEncryptSbox7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+} ImageObject_00403160;
+extern ImageObject_00403160 g_ImageObject_00403160;
+typedef struct ImageObject_00405160 {
     uint32_t at_g_UiTransferDecryptSboxes[8][16][16]; /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
-} ImageData_00403158;
-extern ImageData_00403158 g_ImageData_00403158;
+} ImageObject_00405160;
+extern ImageObject_00405160 g_ImageObject_00405160;
 
 /* original 0x00407510-0x00407F50 */
-typedef struct ImageData_00407510 {
+typedef struct ImageObject_00407510 {
     uint8_t at_gap_00407510[4]; /* 00407510 gap */
+} ImageObject_00407510;
+extern ImageObject_00407510 g_ImageObject_00407510;
+typedef struct ImageObject_00407514 {
     uint16_t at_g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
+} ImageObject_00407514;
+extern ImageObject_00407514 g_ImageObject_00407514;
+typedef struct ImageObject_00407714 {
     uint16_t at_g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
     uint8_t at_g_FatalErrorDetail2Utf16; /* 00407914 g_FatalErrorDetail2Utf16 */
     uint32_t at_g_FatalErrorDetail2Utf16_rest[127]; /* beyond the declared type */
@@ -83,174 +179,504 @@ typedef struct ImageData_00407510 {
     uint8_t at_g_FatalErrorDetail3Utf16; /* 00407B14 g_FatalErrorDetail3Utf16 */
     uint32_t at_g_FatalErrorDetail3Utf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_FatalErrorDetail3Utf16_rest_tail[3];
+} ImageObject_00407714;
+extern ImageObject_00407714 g_ImageObject_00407714;
+typedef struct ImageObject_00407D14 {
     FatalErrorPassThroughProc * at_g_FatalErrorExitHandler; /* 00407D14 g_FatalErrorExitHandler */
+} ImageObject_00407D14;
+extern ImageObject_00407D14 g_ImageObject_00407D14;
+typedef struct ImageObject_00407D18 {
     FatalErrorPassThroughProc * at_g_FatalErrorReportHandler; /* 00407D18 g_FatalErrorReportHandler */
+} ImageObject_00407D18;
+extern ImageObject_00407D18 g_ImageObject_00407D18;
+typedef struct ImageObject_00407D1C {
     FatalErrorPassThroughProc * at_g_FatalErrorFallbackHandler; /* 00407D1C g_FatalErrorFallbackHandler */
+} ImageObject_00407D1C;
+extern ImageObject_00407D1C g_ImageObject_00407D1C;
+typedef struct ImageObject_00407D20 {
     uint16_t at_u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
+} ImageObject_00407D20;
+extern ImageObject_00407D20 g_ImageObject_00407D20;
+typedef struct ImageObject_00407D40 {
     uint16_t at_g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
+} ImageObject_00407D40;
+extern ImageObject_00407D40 g_ImageObject_00407D40;
+typedef struct ImageObject_00407D84 {
     uint16_t at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
     uint8_t at_g_ErrorTextHeapAllocationFailed_padding[14];
+} ImageObject_00407D84;
+extern ImageObject_00407D84 g_ImageObject_00407D84;
+typedef struct ImageObject_00407E20 {
     UiRootNode * at_g_FatalErrorUiRootTemplate; /* 00407E20 g_FatalErrorUiRootTemplate */
+} ImageObject_00407E20;
+extern ImageObject_00407E20 g_ImageObject_00407E20;
+typedef struct ImageObject_00407E24 {
     uint32_t at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
+} ImageObject_00407E24;
+extern ImageObject_00407E24 g_ImageObject_00407E24;
+typedef struct ImageObject_00407E28 {
     UiRootCallbacks at_g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
+} ImageObject_00407E28;
+extern ImageObject_00407E28 g_ImageObject_00407E28;
+typedef struct ImageObject_00407E3C {
     FatalErrorUiImage at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
     uint8_t at_g_FatalErrorUiRootTemplateImage_padding[4]; /* alignment padding after the template */
-} ImageData_00407510;
-extern ImageData_00407510 g_ImageData_00407510;
+} ImageObject_00407E3C;
+extern ImageObject_00407E3C g_ImageObject_00407E3C;
 
 /* original 0x004080B4-0x0040A4C0 */
-typedef struct ImageData_004080B4 {
+typedef struct ImageObject_004080B4 {
     uint8_t at_gap_004080B4[12]; /* 004080B4 gap */
+} ImageObject_004080B4;
+extern ImageObject_004080B4 g_ImageObject_004080B4;
+typedef struct ImageObject_004080C0 {
     PckHuffmanSymbolState at_g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
+} ImageObject_004080C0;
+extern ImageObject_004080C0 g_ImageObject_004080C0;
+typedef struct ImageObject_004084C0 {
     PckHuffmanNode at_g_PckHuffmanLeafNodeWorkspace256[256]; /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
     PckHuffmanNode at_g_PckHuffmanInternalNodeWorkspace256[256]; /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
-} ImageData_004080B4;
-extern ImageData_004080B4 g_ImageData_004080B4;
+} ImageObject_004084C0;
+extern ImageObject_004084C0 g_ImageObject_004084C0;
 
 /* original 0x0040ABBC-0x0040E2B0 */
-typedef struct ImageData_0040ABBC {
+typedef struct ImageObject_0040ABBC {
     uint8_t at_gap_0040ABBC[4]; /* 0040ABBC gap */
+} ImageObject_0040ABBC;
+extern ImageObject_0040ABBC g_ImageObject_0040ABBC;
+typedef struct ImageObject_0040ABC0 {
     WidePathBuffer256 at_g_InitialWorkingDirectory; /* 0040ABC0 g_InitialWorkingDirectory */
+} ImageObject_0040ABC0;
+extern ImageObject_0040ABC0 g_ImageObject_0040ABC0;
+typedef struct ImageObject_0040ADC0 {
     uint16_t at_g_FileSystemCombinedPathScratchUtf16[256]; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
+} ImageObject_0040ADC0;
+extern ImageObject_0040ADC0 g_ImageObject_0040ADC0;
+typedef struct ImageObject_0040AFC0 {
     uint16_t at_g_ExecutableDirectoryUtf16[256]; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
+} ImageObject_0040AFC0;
+extern ImageObject_0040AFC0 g_ImageObject_0040AFC0;
+typedef struct ImageObject_0040B1C0 {
     FileSystemOpenProc * at_g_FileSystemOpen; /* 0040B1C0 g_FileSystemOpen */
+} ImageObject_0040B1C0;
+extern ImageObject_0040B1C0 g_ImageObject_0040B1C0;
+typedef struct ImageObject_0040B1C4 {
     FileSystemCloseProc * at_g_FileSystemClose; /* 0040B1C4 g_FileSystemClose */
+} ImageObject_0040B1C4;
+extern ImageObject_0040B1C4 g_ImageObject_0040B1C4;
+typedef struct ImageObject_0040B1C8 {
     FileSystemReadExactProc * at_g_FileSystemReadExact; /* 0040B1C8 g_FileSystemReadExact */
+} ImageObject_0040B1C8;
+extern ImageObject_0040B1C8 g_ImageObject_0040B1C8;
+typedef struct ImageObject_0040B1CC {
     FileSystemWriteExactOrFlushProc * at_g_FileSystemWriteExactOrFlush; /* 0040B1CC g_FileSystemWriteExactOrFlush */
+} ImageObject_0040B1CC;
+extern ImageObject_0040B1CC g_ImageObject_0040B1CC;
+typedef struct ImageObject_0040B1D0 {
     FileSystemGetSizeProc * at_g_FileSystemGetSize; /* 0040B1D0 g_FileSystemGetSize */
+} ImageObject_0040B1D0;
+extern ImageObject_0040B1D0 g_ImageObject_0040B1D0;
+typedef struct ImageObject_0040B1D4 {
     FileSystemGetPositionProc * at_g_FileSystemGetPosition; /* 0040B1D4 g_FileSystemGetPosition */
+} ImageObject_0040B1D4;
+extern ImageObject_0040B1D4 g_ImageObject_0040B1D4;
+typedef struct ImageObject_0040B1D8 {
     FileSystemSeekProc * at_g_FileSystemSeek; /* 0040B1D8 g_FileSystemSeek */
+} ImageObject_0040B1D8;
+extern ImageObject_0040B1D8 g_ImageObject_0040B1D8;
+typedef struct ImageObject_0040B1DC {
     FileSystemDeleteProc * at_g_FileSystemDelete; /* 0040B1DC g_FileSystemDelete */
+} ImageObject_0040B1DC;
+extern ImageObject_0040B1DC g_ImageObject_0040B1DC;
+typedef struct ImageObject_0040B1E0 {
     FileSystemGetCurrentDirectoryProc * at_g_FileSystemGetCurrentDirectory; /* 0040B1E0 g_FileSystemGetCurrentDirectory */
+} ImageObject_0040B1E0;
+extern ImageObject_0040B1E0 g_ImageObject_0040B1E0;
+typedef struct ImageObject_0040B1E4 {
     FileSystemSetCurrentDirectoryProc * at_g_FileSystemSetCurrentDirectory; /* 0040B1E4 g_FileSystemSetCurrentDirectory */
+} ImageObject_0040B1E4;
+extern ImageObject_0040B1E4 g_ImageObject_0040B1E4;
+typedef struct ImageObject_0040B1E8 {
     FileSystemCreateDirectoryRecursiveProc * at_g_FileSystemCreateDirectoryRecursive; /* 0040B1E8 g_FileSystemCreateDirectoryRecursive */
+} ImageObject_0040B1E8;
+extern ImageObject_0040B1E8 g_ImageObject_0040B1E8;
+typedef struct ImageObject_0040B1EC {
     FileSystemRemoveDirectoryProc * at_g_FileSystemRemoveDirectory; /* 0040B1EC g_FileSystemRemoveDirectory */
+} ImageObject_0040B1EC;
+extern ImageObject_0040B1EC g_ImageObject_0040B1EC;
+typedef struct ImageObject_0040B1F0 {
     FileSystemEnumerateDriveLettersProc * at_g_FileSystemEnumerateDriveLetters; /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
+} ImageObject_0040B1F0;
+extern ImageObject_0040B1F0 g_ImageObject_0040B1F0;
+typedef struct ImageObject_0040B1F4 {
     FileSystemGetDriveTypeCodeProc * at_g_FileSystemGetDriveTypeCode; /* 0040B1F4 g_FileSystemGetDriveTypeCode */
+} ImageObject_0040B1F4;
+extern ImageObject_0040B1F4 g_ImageObject_0040B1F4;
+typedef struct ImageObject_0040B1F8 {
     FileSystemDriveReadyProc * at_g_FileSystemCheckDriveMediaReady; /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
+} ImageObject_0040B1F8;
+extern ImageObject_0040B1F8 g_ImageObject_0040B1F8;
+typedef struct ImageObject_0040B1FC {
     FileSystemGetFreeAndTotalBytesRegsProc * at_g_FileSystemGetFreeAndTotalBytes; /* 0040B1FC g_FileSystemGetFreeAndTotalBytes */
+} ImageObject_0040B1FC;
+extern ImageObject_0040B1FC g_ImageObject_0040B1FC;
+typedef struct ImageObject_0040B200 {
     FileSystemGetLastWriteDosDateProc * at_g_FileSystemGetLastWriteDosDate; /* 0040B200 g_FileSystemGetLastWriteDosDate */
+} ImageObject_0040B200;
+extern ImageObject_0040B200 g_ImageObject_0040B200;
+typedef struct ImageObject_0040B204 {
     FileSystemGetLastWriteTimeHighProc * at_g_FileSystemGetLastWriteTimeHigh; /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
+} ImageObject_0040B204;
+extern ImageObject_0040B204 g_ImageObject_0040B204;
+typedef struct ImageObject_0040B208 {
     FileSystemGetVolumeSerialNumberProc * at_g_FileSystemGetVolumeSerialNumber; /* 0040B208 g_FileSystemGetVolumeSerialNumber */
+} ImageObject_0040B208;
+extern ImageObject_0040B208 g_ImageObject_0040B208;
+typedef struct ImageObject_0040B20C {
     FileSystemMoveProc * at_g_FileSystemMove; /* 0040B20C g_FileSystemMove */
+} ImageObject_0040B20C;
+extern ImageObject_0040B20C g_ImageObject_0040B20C;
+typedef struct ImageObject_0040B210 {
     FileSystemCopyProc * at_g_FileSystemCopy; /* 0040B210 g_FileSystemCopy */
+} ImageObject_0040B210;
+extern ImageObject_0040B210 g_ImageObject_0040B210;
+typedef struct ImageObject_0040B214 {
     FileSystemEnumerateDirectoryOrVolumeEntriesProc * at_g_FileSystemEnumerateDirectoryOrVolumeEntries; /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
+} ImageObject_0040B214;
+extern ImageObject_0040B214 g_ImageObject_0040B214;
+typedef struct ImageObject_0040B218 {
     FileSystemValidateDos83Proc * at_g_FileSystemValidateDos83Path; /* 0040B218 g_FileSystemValidateDos83Path */
+} ImageObject_0040B218;
+extern ImageObject_0040B218 g_ImageObject_0040B218;
+typedef struct ImageObject_0040B21C {
     uint8_t * at_g_PackageScratchBuffer; /* 0040B21C g_PackageScratchBuffer */
+} ImageObject_0040B21C;
+extern ImageObject_0040B21C g_ImageObject_0040B21C;
+typedef struct ImageObject_0040B220 {
     uint32_t at_g_EnginePackageLowPriorityMountHandle; /* 0040B220 g_EnginePackageLowPriorityMountHandle */
+} ImageObject_0040B220;
+extern ImageObject_0040B220 g_ImageObject_0040B220;
+typedef struct ImageObject_0040B224 {
     PckMountSlot at_g_PackageMountSlots[1024]; /* 0040B224 g_PackageMountSlots */
+} ImageObject_0040B224;
+extern ImageObject_0040B224 g_ImageObject_0040B224;
+typedef struct ImageObject_0040E224 {
     PckCodecProc * at_g_PckEncoderTable[3]; /* 0040E224 g_PckEncoderTable */
+} ImageObject_0040E224;
+extern ImageObject_0040E224 g_ImageObject_0040E224;
+typedef struct ImageObject_0040E230 {
     PckCodecProc * at_g_PckDecoderTable[3]; /* 0040E230 g_PckDecoderTable */
     uint8_t at_g_PckDecoderTable_rest_tail[1];
+} ImageObject_0040E230;
+extern ImageObject_0040E230 g_ImageObject_0040E230;
+typedef struct ImageObject_0040E23D {
     uint16_t at_u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
+} ImageObject_0040E23D;
+extern ImageObject_0040E23D g_ImageObject_0040E23D;
+typedef struct ImageObject_0040E255 {
     uint16_t at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
     uint8_t at_u_engine_pck_0040e255_padding[5];
+} ImageObject_0040E255;
+extern ImageObject_0040E255 g_ImageObject_0040E255;
+typedef struct ImageObject_0040E270 {
     uint16_t at_g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
-} ImageData_0040ABBC;
-extern ImageData_0040ABBC g_ImageData_0040ABBC;
+} ImageObject_0040E270;
+extern ImageObject_0040E270 g_ImageObject_0040E270;
 
 /* original 0x0040F524-0x0040FF70 */
-typedef struct ImageData_0040F524 {
+typedef struct ImageObject_0040F524 {
     uint8_t at_gap_0040F524[12]; /* 0040F524 gap */
+} ImageObject_0040F524;
+extern ImageObject_0040F524 g_ImageObject_0040F524;
+typedef struct ImageObject_0040F530 {
     uint8_t at_g_UiTimedListDriveLetters[32]; /* 0040F530 g_UiTimedListDriveLetters */
+} ImageObject_0040F530;
+extern ImageObject_0040F530 g_ImageObject_0040F530;
+typedef struct ImageObject_0040F550 {
     WidePathBuffer256 at_g_UiTimedListRecordPathScratch; /* 0040F550 g_UiTimedListRecordPathScratch */
+} ImageObject_0040F550;
+extern ImageObject_0040F550 g_ImageObject_0040F550;
+typedef struct ImageObject_0040F750 {
     WidePathBuffer256 at_g_UiTimedListCombinedPathScratch; /* 0040F750 g_UiTimedListCombinedPathScratch */
+} ImageObject_0040F750;
+extern ImageObject_0040F750 g_ImageObject_0040F750;
+typedef struct ImageObject_0040F950 {
     WidePathBuffer256 at_g_UiTimedListSecondaryPathScratch; /* 0040F950 g_UiTimedListSecondaryPathScratch */
+} ImageObject_0040F950;
+extern ImageObject_0040F950 g_ImageObject_0040F950;
+typedef struct ImageObject_0040FB50 {
     WidePathBuffer256 at_g_UiTimedListHierarchyPathScratch; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
+} ImageObject_0040FB50;
+extern ImageObject_0040FB50 g_ImageObject_0040FB50;
+typedef struct ImageObject_0040FD50 {
     WidePathBuffer256 at_g_UiTimedListHierarchyParentPathScratch; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
+} ImageObject_0040FD50;
+extern ImageObject_0040FD50 g_ImageObject_0040FD50;
+typedef struct ImageObject_0040FF50 {
     uint16_t at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
+} ImageObject_0040FF50;
+extern ImageObject_0040FF50 g_ImageObject_0040FF50;
+typedef struct ImageObject_0040FF58 {
     uint16_t at_g_UiTimedListDriveWildcardUtf16[7]; /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
     uint8_t at_g_UiTimedListDriveWildcardUtf16_padding[10];
-} ImageData_0040F524;
-extern ImageData_0040F524 g_ImageData_0040F524;
+} ImageObject_0040FF58;
+extern ImageObject_0040FF58 g_ImageObject_0040FF58;
 
 /* original 0x004107E8-0x004168B0 */
-typedef struct ImageData_004107E8 {
+typedef struct ImageObject_004107E8 {
     uint8_t at_gap_004107E8[8]; /* 004107E8 gap */
+} ImageObject_004107E8;
+extern ImageObject_004107E8 g_ImageObject_004107E8;
+typedef struct ImageObject_004107F0 {
     GraphicsCursorInputEvent18 at_g_CursorInputEvents[256]; /* 004107F0 g_CursorInputEvents */
     uint32_t at_g_CursorInputEvents_rest[4608]; /* beyond the declared type */
+} ImageObject_004107F0;
+extern ImageObject_004107F0 g_ImageObject_004107F0;
+typedef struct ImageObject_004167F0 {
     uint32_t at_g_CursorInputWriteIndex; /* 004167F0 g_CursorInputWriteIndex */
+} ImageObject_004167F0;
+extern ImageObject_004167F0 g_ImageObject_004167F0;
+typedef struct ImageObject_004167F4 {
     uint32_t at_g_CursorInputReadIndex; /* 004167F4 g_CursorInputReadIndex */
+} ImageObject_004167F4;
+extern ImageObject_004167F4 g_ImageObject_004167F4;
+typedef struct ImageObject_004167F8 {
     uint32_t at_g_CursorInputClockValue; /* 004167F8 g_CursorInputClockValue */
+} ImageObject_004167F8;
+extern ImageObject_004167F8 g_ImageObject_004167F8;
+typedef struct ImageObject_004167FC {
     uint32_t at_g_GraphicsCursorAnimationCountdown; /* 004167FC g_GraphicsCursorAnimationCountdown: uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
+} ImageObject_004167FC;
+extern ImageObject_004167FC g_ImageObject_004167FC;
+typedef struct ImageObject_00416800 {
     uint32_t at_g_CursorButtonReleaseClock[3]; /* 00416800 g_CursorButtonReleaseClock */
+} ImageObject_00416800;
+extern ImageObject_00416800 g_ImageObject_00416800;
+typedef struct ImageObject_0041680C {
     GraphicsTextureSourceAsset * at_g_CursorSourceAsset; /* 0041680C g_CursorSourceAsset */
+} ImageObject_0041680C;
+extern ImageObject_0041680C g_ImageObject_0041680C;
+typedef struct ImageObject_00416810 {
     GraphicsCursorFrameRecord * at_g_CursorFrameRecords; /* 00416810 g_CursorFrameRecords */
+} ImageObject_00416810;
+extern ImageObject_00416810 g_ImageObject_00416810;
+typedef struct ImageObject_00416814 {
     GraphicsCursorFrameIndex at_g_CursorFrameIndex; /* 00416814 g_CursorFrameIndex */
+} ImageObject_00416814;
+extern ImageObject_00416814 g_ImageObject_00416814;
+typedef struct ImageObject_00416818 {
     uint32_t at_g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosition */
+} ImageObject_00416818;
+extern ImageObject_00416818 g_ImageObject_00416818;
+typedef struct ImageObject_0041681C {
     GraphicsCursorFrameCount at_g_CursorFrameCount; /* 0041681C g_CursorFrameCount */
+} ImageObject_0041681C;
+extern ImageObject_0041681C g_ImageObject_0041681C;
+typedef struct ImageObject_00416820 {
     uint32_t at_g_CursorMaxWidth; /* 00416820 g_CursorMaxWidth */
+} ImageObject_00416820;
+extern ImageObject_00416820 g_ImageObject_00416820;
+typedef struct ImageObject_00416824 {
     uint32_t at_g_CursorMaxHeight; /* 00416824 g_CursorMaxHeight */
+} ImageObject_00416824;
+extern ImageObject_00416824 g_ImageObject_00416824;
+typedef struct ImageObject_00416828 {
     UiPixelCoordinate at_g_CursorOverrideX; /* 00416828 g_CursorOverrideX */
     UiPixelCoordinate at_g_CursorOverrideY; /* 0041682C g_CursorOverrideY */
+} ImageObject_00416828;
+extern ImageObject_00416828 g_ImageObject_00416828;
+typedef struct ImageObject_00416830 {
     UiPointerWheelDelta at_g_CursorWheelDelta; /* 00416830 g_CursorWheelDelta */
+} ImageObject_00416830;
+extern ImageObject_00416830 g_ImageObject_00416830;
+typedef struct ImageObject_00416834 {
     int32_t at_g_CursorVisibilityToken; /* 00416834 g_CursorVisibilityToken */
+} ImageObject_00416834;
+extern ImageObject_00416834 g_ImageObject_00416834;
+typedef struct ImageObject_00416838 {
     uint32_t at_g_CursorButtonState; /* 00416838 g_CursorButtonState */
+} ImageObject_00416838;
+extern ImageObject_00416838 g_ImageObject_00416838;
+typedef struct ImageObject_0041683C {
     UiPixelCoordinate at_g_CursorLastClickX; /* 0041683C g_CursorLastClickX */
     UiPixelCoordinate at_g_CursorLastClickY; /* 00416840 g_CursorLastClickY */
+} ImageObject_0041683C;
+extern ImageObject_0041683C g_ImageObject_0041683C;
+typedef struct ImageObject_00416844 {
     PointerFlushEventsProc * at_g_PointerFlushEvents; /* 00416844 g_PointerFlushEvents */
+} ImageObject_00416844;
+extern ImageObject_00416844 g_ImageObject_00416844;
+typedef struct ImageObject_00416848 {
     GraphicsCursorSetFrameProc * at_g_GraphicsCursorSetFrame; /* 00416848 g_GraphicsCursorSetFrame */
+} ImageObject_00416848;
+extern ImageObject_00416848 g_ImageObject_00416848;
+typedef struct ImageObject_0041684C {
     PointerSetPositionProc * at_g_PointerSetPosition; /* 0041684C g_PointerSetPosition */
+} ImageObject_0041684C;
+extern ImageObject_0041684C g_ImageObject_0041684C;
+typedef struct ImageObject_00416850 {
     GraphicsCursorConsumeEventProc * at_g_GraphicsCursorConsumeEvent; /* 00416850 g_GraphicsCursorConsumeEvent */
+} ImageObject_00416850;
+extern ImageObject_00416850 g_ImageObject_00416850;
+typedef struct ImageObject_00416854 {
     uint32_t at_g_CursorOverflowLeft; /* 00416854 g_CursorOverflowLeft */
+} ImageObject_00416854;
+extern ImageObject_00416854 g_ImageObject_00416854;
+typedef struct ImageObject_00416858 {
     uint32_t at_g_CursorOverflowRight; /* 00416858 g_CursorOverflowRight */
+} ImageObject_00416858;
+extern ImageObject_00416858 g_ImageObject_00416858;
+typedef struct ImageObject_0041685C {
     uint32_t at_g_CursorOverflowTop; /* 0041685C g_CursorOverflowTop */
+} ImageObject_0041685C;
+extern ImageObject_0041685C g_ImageObject_0041685C;
+typedef struct ImageObject_00416860 {
     uint32_t at_g_CursorOverflowBottom; /* 00416860 g_CursorOverflowBottom */
+} ImageObject_00416860;
+extern ImageObject_00416860 g_ImageObject_00416860;
+typedef struct ImageObject_00416864 {
     uint16_t at_u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_00416864 */
+} ImageObject_00416864;
+extern ImageObject_00416864 g_ImageObject_00416864;
+typedef struct ImageObject_00416886 {
     uint16_t at_u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
     uint8_t at_u_engine_mouse_dat_00416886_padding[8];
-} ImageData_004107E8;
-extern ImageData_004107E8 g_ImageData_004107E8;
+} ImageObject_00416886;
+extern ImageObject_00416886 g_ImageObject_00416886;
 
 /* original 0x004169DC-0x00417230 */
-typedef struct ImageData_004169DC {
+typedef struct ImageObject_004169DC {
     uint8_t at_gap_004169DC[4]; /* 004169DC gap */
+} ImageObject_004169DC;
+extern ImageObject_004169DC g_ImageObject_004169DC;
+typedef struct ImageObject_004169E0 {
     KeyboardInputEvent at_g_KeyboardEvents[64]; /* 004169E0 g_KeyboardEvents */
     uint32_t at_g_KeyboardEvents_rest[384]; /* beyond the declared type */
+} ImageObject_004169E0;
+extern ImageObject_004169E0 g_ImageObject_004169E0;
+typedef struct ImageObject_004171E0 {
     KeyboardEventRingIndex at_g_KeyboardWriteIndex; /* 004171E0 g_KeyboardWriteIndex */
+} ImageObject_004171E0;
+extern ImageObject_004171E0 g_ImageObject_004171E0;
+typedef struct ImageObject_004171E4 {
     KeyboardEventRingIndex at_g_KeyboardReadIndex; /* 004171E4 g_KeyboardReadIndex */
+} ImageObject_004171E4;
+extern ImageObject_004171E4 g_ImageObject_004171E4;
+typedef struct ImageObject_004171E8 {
     uint32_t at_g_KeyboardStateMask; /* 004171E8 g_KeyboardStateMask */
+} ImageObject_004171E8;
+extern ImageObject_004171E8 g_ImageObject_004171E8;
+typedef struct ImageObject_004171EC {
     uint32_t at_g_KeyboardToggleLatchMask; /* 004171EC g_KeyboardToggleLatchMask */
+} ImageObject_004171EC;
+extern ImageObject_004171EC g_ImageObject_004171EC;
+typedef struct ImageObject_004171F0 {
     uint8_t at_g_KeyboardSpecialKeyDown[32]; /* 004171F0 g_KeyboardSpecialKeyDown */
+} ImageObject_004171F0;
+extern ImageObject_004171F0 g_ImageObject_004171F0;
+typedef struct ImageObject_00417210 {
     KeyboardFlushEventsProc * at_g_KeyboardFlushEvents; /* 00417210 g_KeyboardFlushEvents */
+} ImageObject_00417210;
+extern ImageObject_00417210 g_ImageObject_00417210;
+typedef struct ImageObject_00417214 {
     KeyboardReadEventProc * at_g_KeyboardReadEvent; /* 00417214 g_KeyboardReadEvent */
+} ImageObject_00417214;
+extern ImageObject_00417214 g_ImageObject_00417214;
+typedef struct ImageObject_00417218 {
     KeyboardAsciiCaseTransformCallbackTable3 at_g_KeyboardAsciiCaseTransformCallbacks3; /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
     uint32_t at_g_KeyboardAsciiCaseTransformCallbacks3_rest[3]; /* beyond the declared type */
-} ImageData_004169DC;
-extern ImageData_004169DC g_ImageData_004169DC;
+} ImageObject_00417218;
+extern ImageObject_00417218 g_ImageObject_00417218;
 
 /* original 0x004172E8-0x00417570 */
-typedef struct ImageData_004172E8 {
+typedef struct ImageObject_004172E8 {
     uint8_t at_gap_004172E8[24]; /* 004172E8 gap */
+} ImageObject_004172E8;
+extern ImageObject_004172E8 g_ImageObject_004172E8;
+typedef struct ImageObject_00417300 {
     uint64_t at_g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
     uint64_t at_g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
     uint64_t at_g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
     uint64_t at_g_SoundDecodeMmxWordLaneMask3; /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
     uint32_t at_g_SoundDecodeMmxWordLaneMask3_rest[4]; /* beyond the declared type */
+} ImageObject_00417300;
+extern ImageObject_00417300 g_ImageObject_00417300;
+typedef struct ImageObject_00417330 {
     short * at_g_CosineDerivedLookupAllocation; /* 00417330 g_CosineDerivedLookupAllocation */
+} ImageObject_00417330;
+extern ImageObject_00417330 g_ImageObject_00417330;
+typedef struct ImageObject_00417334 {
     short * at_g_CosineDerivedLookupSecondTable; /* 00417334 g_CosineDerivedLookupSecondTable */
+} ImageObject_00417334;
+extern ImageObject_00417334 g_ImageObject_00417334;
+typedef struct ImageObject_00417338 {
     SoundCreateSampleVoiceSetProc * at_g_SoundCreateSampleVoiceSet; /* 00417338 g_SoundCreateSampleVoiceSet */
+} ImageObject_00417338;
+extern ImageObject_00417338 g_ImageObject_00417338;
+typedef struct ImageObject_0041733C {
     SoundReleaseSampleVoiceSetProc * at_g_SoundReleaseSampleVoiceSet; /* 0041733C g_SoundReleaseSampleVoiceSet */
+} ImageObject_0041733C;
+extern ImageObject_0041733C g_ImageObject_0041733C;
+typedef struct ImageObject_00417340 {
     SoundCreatePcmVoiceSetProc * at_g_SoundCreatePcmVoiceSet; /* 00417340 g_SoundCreatePcmVoiceSet */
+} ImageObject_00417340;
+extern ImageObject_00417340 g_ImageObject_00417340;
+typedef struct ImageObject_00417344 {
     SoundReleasePcmVoiceSetProc * at_g_SoundReleasePcmVoiceSet; /* 00417344 g_SoundReleasePcmVoiceSet */
+} ImageObject_00417344;
+extern ImageObject_00417344 g_ImageObject_00417344;
+typedef struct ImageObject_00417348 {
     SoundPlayVoiceProc * at_g_SoundPlayOneShot; /* 00417348 g_SoundPlayOneShot */
+} ImageObject_00417348;
+extern ImageObject_00417348 g_ImageObject_00417348;
+typedef struct ImageObject_0041734C {
     SoundPlayVoiceProc * at_g_SoundPlayLooping; /* 0041734C g_SoundPlayLooping */
+} ImageObject_0041734C;
+extern ImageObject_0041734C g_ImageObject_0041734C;
+typedef struct ImageObject_00417350 {
     SoundStopVoiceProc * at_g_SoundStopVoice; /* 00417350 g_SoundStopVoice */
+} ImageObject_00417350;
+extern ImageObject_00417350 g_ImageObject_00417350;
+typedef struct ImageObject_00417354 {
     SoundStopAllVoicesProc * at_g_SoundStopAllVoices; /* 00417354 g_SoundStopAllVoices */
+} ImageObject_00417354;
+extern ImageObject_00417354 g_ImageObject_00417354;
+typedef struct ImageObject_00417358 {
     SoundIsVoicePlayingProc * at_g_SoundIsVoicePlaying; /* 00417358 g_SoundIsVoicePlaying */
+} ImageObject_00417358;
+extern ImageObject_00417358 g_ImageObject_00417358;
+typedef struct ImageObject_0041735C {
     SoundQueryVoiceRegsProc * at_g_SoundQueryVoice; /* 0041735C g_SoundQueryVoice */
+} ImageObject_0041735C;
+extern ImageObject_0041735C g_ImageObject_0041735C;
+typedef struct ImageObject_00417360 {
     SoundSetVoiceGainsProc * at_g_SoundSetVoiceGains; /* 00417360 g_SoundSetVoiceGains */
+} ImageObject_00417360;
+extern ImageObject_00417360 g_ImageObject_00417360;
+typedef struct ImageObject_00417364 {
     short at_g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
     uint32_t at_g_SoundSampleCoefficientBlock_rest[3]; /* beyond the declared type */
-} ImageData_004172E8;
-extern ImageData_004172E8 g_ImageData_004172E8;
+} ImageObject_00417364;
+extern ImageObject_00417364 g_ImageObject_00417364;
 
 /* original 0x0041A53C-0x0041A580 */
-typedef struct ImageData_0041A53C {
+typedef struct ImageObject_0041A53C {
     uint8_t at_gap_0041A53C[4]; /* 0041A53C gap */
+} ImageObject_0041A53C;
+extern ImageObject_0041A53C g_ImageObject_0041A53C;
+typedef struct ImageObject_0041A540 {
     NetworkBackendInstanceDescriptorPrefix * at_g_NetworkBackendInstanceTable; /* 0041A540 g_NetworkBackendInstanceTable */
+} ImageObject_0041A540;
+extern ImageObject_0041A540 g_ImageObject_0041A540;
+typedef struct ImageObject_0041A544 {
     uint32_t at_g_NetworkBackendInstanceCount; /* 0041A544 g_NetworkBackendInstanceCount */
+} ImageObject_0041A544;
+extern ImageObject_0041A544 g_ImageObject_0041A544;
+typedef struct ImageObject_0041A548 {
     NetworkSessionContext * at_g_NetworkBackendSessionContext; /* 0041A548 g_NetworkBackendSessionContext */
+} ImageObject_0041A548;
+extern ImageObject_0041A548 g_ImageObject_0041A548;
+typedef struct ImageObject_0041A54C {
     NetworkBackendSetSessionCallback * at_g_NetworkBackendSlot0; /* 0041A54C g_NetworkBackendSlot0 */
     NetworkBackendCleanupCallback * at_g_NetworkBackendSlot1; /* 0041A550 g_NetworkBackendSlot1 */
     NetworkBackendOpenBindCallback * at_g_NetworkBackendSlot2; /* 0041A554 g_NetworkBackendSlot2 */
@@ -259,272 +685,524 @@ typedef struct ImageData_0041A53C {
     NetworkBackendSendCallback * at_g_NetworkBackendSlot5; /* 0041A560 g_NetworkBackendSlot5 */
     NetworkBackendParseEndpointCallback * at_g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
     NetworkBackendFormatAddressCallback * at_g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
+} ImageObject_0041A54C;
+extern ImageObject_0041A54C g_ImageObject_0041A54C;
+typedef struct ImageObject_0041A56C {
     UiTransferEndpointDescriptor at_g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
     uint32_t at_g_NetworkLocalEndpoint_rest[1]; /* beyond the declared type */
-} ImageData_0041A53C;
-extern ImageData_0041A53C g_ImageData_0041A53C;
+} ImageObject_0041A56C;
+extern ImageObject_0041A56C g_ImageObject_0041A56C;
 
 /* original 0x0041A740-0x0041B080 */
-typedef struct ImageData_0041A740 {
+typedef struct ImageObject_0041A740 {
     uint8_t at_gap_0041A740[16]; /* 0041A740 gap */
+} ImageObject_0041A740;
+extern ImageObject_0041A740 g_ImageObject_0041A740;
+typedef struct ImageObject_0041A750 {
     PackedArgb32 at_g_RichTextColorPalette0Argb; /* 0041A750 g_RichTextColorPalette0Argb: PackedArgb32 rich-text colour palette entry 0 (0xFFB0B0B0 grey); the palette is indexed by the 3-bit palette field of the packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0; also the normal cost colour of the technology panel. */
     PackedArgb32 at_g_RichTextColorPalette1Argb; /* 0041A754 g_RichTextColorPalette1Argb: PackedArgb32 rich-text colour palette entry 1 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_1. */
     PackedArgb32 at_g_RichTextColorPalette2Argb; /* 0041A758 g_RichTextColorPalette2Argb: PackedArgb32 rich-text colour palette entry 2 (0xFF707070 dark grey), RICHTEXT_OP_COLOR_PALETTE_2. */
     PackedArgb32 at_g_RichTextColorPalette3Argb; /* 0041A75C g_RichTextColorPalette3Argb: PackedArgb32 rich-text colour palette entry 3 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_3. */
     PackedArgb32 at_g_RichTextColorPalette4Argb; /* 0041A760 g_RichTextColorPalette4Argb: PackedArgb32 rich-text colour palette entry 4 (0xFF209020 green); only reachable through the packed text style's palette index, no direct code reference. */
     PackedArgb32 at_g_RichTextInsufficientResourceColorArgb; /* 0041A764 g_RichTextInsufficientResourceColorArgb: PackedArgb32 red (0xFFF02020) for technology costs the player cannot afford (ui/ingame/technology.c); also rich-text palette entry 5 by position. */
+} ImageObject_0041A750;
+extern ImageObject_0041A750 g_ImageObject_0041A750;
+typedef struct ImageObject_0041A768 {
     uint32_t at_g_RichTextShadowOffsetPalette0; /* 0041A768 g_RichTextShadowOffsetPalette0: uint32_t text shadow offset in pixels for colour palette entry 0 (2); indexed like the colour palette. */
     uint32_t at_g_RichTextShadowOffsetPalette1; /* 0041A76C g_RichTextShadowOffsetPalette1: uint32_t text shadow offset in pixels for colour palette entry 1 (2). */
     uint32_t at_g_RichTextShadowOffsetPalette2; /* 0041A770 g_RichTextShadowOffsetPalette2: uint32_t text shadow offset in pixels for colour palette entry 2 (1). */
     uint32_t at_g_RichTextShadowOffsetPalette3; /* 0041A774 g_RichTextShadowOffsetPalette3: uint32_t text shadow offset in pixels for colour palette entry 3 (2). */
     uint32_t at_g_RichTextShadowOffsetPalette3_rest[2]; /* beyond the declared type */
+} ImageObject_0041A768;
+extern ImageObject_0041A768 g_ImageObject_0041A768;
+typedef struct ImageObject_0041A780 {
     uint32_t at_g_ActiveFontIndex; /* 0041A780 g_ActiveFontIndex */
+} ImageObject_0041A780;
+extern ImageObject_0041A780 g_ImageObject_0041A780;
+typedef struct ImageObject_0041A784 {
     uint32_t at_g_RichTextCurrentColorArgb; /* 0041A784 g_RichTextCurrentColorArgb */
+} ImageObject_0041A784;
+extern ImageObject_0041A784 g_ImageObject_0041A784;
+typedef struct ImageObject_0041A788 {
     uint32_t at_g_RichTextCurrentShadowOffset; /* 0041A788 g_RichTextCurrentShadowOffset */
+} ImageObject_0041A788;
+extern ImageObject_0041A788 g_ImageObject_0041A788;
+typedef struct ImageObject_0041A78C {
     uint32_t at_g_RichTextSavedColorArgb; /* 0041A78C g_RichTextSavedColorArgb */
+} ImageObject_0041A78C;
+extern ImageObject_0041A78C g_ImageObject_0041A78C;
+typedef struct ImageObject_0041A790 {
     uint32_t at_g_RichTextSavedShadowOffset; /* 0041A790 g_RichTextSavedShadowOffset */
+} ImageObject_0041A790;
+extern ImageObject_0041A790 g_ImageObject_0041A790;
+typedef struct ImageObject_0041A794 {
     TextResourcePageBinding at_g_TextResourcePageBindings[256]; /* 0041A794 g_TextResourcePageBindings */
+} ImageObject_0041A794;
+extern ImageObject_0041A794 g_ImageObject_0041A794;
+typedef struct ImageObject_0041AF94 {
     TextResourceOverrideTable * at_g_TextResourceOverrides; /* 0041AF94 g_TextResourceOverrides */
+} ImageObject_0041AF94;
+extern ImageObject_0041AF94 g_ImageObject_0041AF94;
+typedef struct ImageObject_0041AF98 {
     uint8_t * at_g_FontRuntimeBuffer; /* 0041AF98 g_FontRuntimeBuffer */
+} ImageObject_0041AF98;
+extern ImageObject_0041AF98 g_ImageObject_0041AF98;
+typedef struct ImageObject_0041AF9C {
     uint32_t at_g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
     uint32_t at_g_RichTextRuntimeBufferUsedWords_rest[1]; /* beyond the declared type */
+} ImageObject_0041AF9C;
+extern ImageObject_0041AF9C g_ImageObject_0041AF9C;
+typedef struct ImageObject_0041AFA4 {
     uint16_t at_g_EmptyTextResourceUtf16[2]; /* 0041AFA4 g_EmptyTextResourceUtf16 */
+} ImageObject_0041AFA4;
+extern ImageObject_0041AFA4 g_ImageObject_0041AFA4;
+typedef struct ImageObject_0041AFA8 {
     uint8_t at_g_MissingTextResourceFallbackStream; /* 0041AFA8 g_MissingTextResourceFallbackStream */
     uint8_t at_g_MissingTextResourceFallbackStream_rest_tail[3];
+} ImageObject_0041AFA8;
+extern ImageObject_0041AFA8 g_ImageObject_0041AFA8;
+typedef struct ImageObject_0041AFAC {
     uint16_t at_u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
+} ImageObject_0041AFAC;
+extern ImageObject_0041AFAC g_ImageObject_0041AFAC;
+typedef struct ImageObject_0041B028 {
     GraphicsTextureSourceAsset * at_g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
+} ImageObject_0041B028;
+extern ImageObject_0041B028 g_ImageObject_0041B028;
+typedef struct ImageObject_0041B030 {
     uint16_t at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
     uint16_t at_str_0041B050[17]; /* 0041B050 str_0041B050 */
     uint8_t at_str_0041B050_padding[14];
-} ImageData_0041A740;
-extern ImageData_0041A740 g_ImageData_0041A740;
+} ImageObject_0041B030;
+extern ImageObject_0041B030 g_ImageObject_0041B030;
 
 /* original 0x0041B128-0x0041B1B0 */
-typedef struct ImageData_0041B128 {
+typedef struct ImageObject_0041B128 {
     uint8_t at_gap_0041B128[8]; /* 0041B128 gap */
+} ImageObject_0041B128;
+extern ImageObject_0041B128 g_ImageObject_0041B128;
+typedef struct ImageObject_0041B130 {
     uint32_t at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130[20]; /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
+} ImageObject_0041B130;
+extern ImageObject_0041B130 g_ImageObject_0041B130;
+typedef struct ImageObject_0041B180 {
     uint32_t at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
+} ImageObject_0041B180;
+extern ImageObject_0041B180 g_ImageObject_0041B180;
+typedef struct ImageObject_0041B190 {
     uint32_t at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
-} ImageData_0041B128;
-extern ImageData_0041B128 g_ImageData_0041B128;
+} ImageObject_0041B190;
+extern ImageObject_0041B190 g_ImageObject_0041B190;
 
 /* original 0x0041B228-0x0041B2B0 */
-typedef struct ImageData_0041B228 {
+typedef struct ImageObject_0041B228 {
     uint8_t at_gap_0041B228[8]; /* 0041B228 gap */
+} ImageObject_0041B228;
+extern ImageObject_0041B228 g_ImageObject_0041B228;
+typedef struct ImageObject_0041B230 {
     uint32_t at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230[20]; /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
+} ImageObject_0041B230;
+extern ImageObject_0041B230 g_ImageObject_0041B230;
+typedef struct ImageObject_0041B280 {
     uint32_t at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
+} ImageObject_0041B280;
+extern ImageObject_0041B280 g_ImageObject_0041B280;
+typedef struct ImageObject_0041B290 {
     uint32_t at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
-} ImageData_0041B228;
-extern ImageData_0041B228 g_ImageData_0041B228;
+} ImageObject_0041B290;
+extern ImageObject_0041B290 g_ImageObject_0041B290;
 
 /* original 0x0041B338-0x0041B3D0 */
-typedef struct ImageData_0041B338 {
+typedef struct ImageObject_0041B338 {
     uint8_t at_gap_0041B338[8]; /* 0041B338 gap */
+} ImageObject_0041B338;
+extern ImageObject_0041B338 g_ImageObject_0041B338;
+typedef struct ImageObject_0041B340 {
     uint32_t at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340[36]; /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
-} ImageData_0041B338;
-extern ImageData_0041B338 g_ImageData_0041B338;
+} ImageObject_0041B340;
+extern ImageObject_0041B340 g_ImageObject_0041B340;
 
 /* original 0x0041B448-0x0041B4D0 */
-typedef struct ImageData_0041B448 {
+typedef struct ImageObject_0041B448 {
     uint8_t at_gap_0041B448[8]; /* 0041B448 gap */
+} ImageObject_0041B448;
+extern ImageObject_0041B448 g_ImageObject_0041B448;
+typedef struct ImageObject_0041B450 {
     uint32_t at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450[32]; /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
-} ImageData_0041B448;
-extern ImageData_0041B448 g_ImageData_0041B448;
+} ImageObject_0041B450;
+extern ImageObject_0041B450 g_ImageObject_0041B450;
 
 /* original 0x0041B548-0x0041B5D0 */
-typedef struct ImageData_0041B548 {
+typedef struct ImageObject_0041B548 {
     uint8_t at_gap_0041B548[8]; /* 0041B548 gap */
+} ImageObject_0041B548;
+extern ImageObject_0041B548 g_ImageObject_0041B548;
+typedef struct ImageObject_0041B550 {
     uint32_t at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550[32]; /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
-} ImageData_0041B548;
-extern ImageData_0041B548 g_ImageData_0041B548;
+} ImageObject_0041B550;
+extern ImageObject_0041B550 g_ImageObject_0041B550;
 
 /* original 0x0041B648-0x0041B6E0 */
-typedef struct ImageData_0041B648 {
+typedef struct ImageObject_0041B648 {
     uint8_t at_gap_0041B648[8]; /* 0041B648 gap */
+} ImageObject_0041B648;
+extern ImageObject_0041B648 g_ImageObject_0041B648;
+typedef struct ImageObject_0041B650 {
     uint32_t at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650[36]; /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
-} ImageData_0041B648;
-extern ImageData_0041B648 g_ImageData_0041B648;
+} ImageObject_0041B650;
+extern ImageObject_0041B650 g_ImageObject_0041B650;
 
 /* original 0x0041B758-0x0041B7F0 */
-typedef struct ImageData_0041B758 {
+typedef struct ImageObject_0041B758 {
     uint8_t at_gap_0041B758[8]; /* 0041B758 gap */
+} ImageObject_0041B758;
+extern ImageObject_0041B758 g_ImageObject_0041B758;
+typedef struct ImageObject_0041B760 {
     uint32_t at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760[36]; /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
-} ImageData_0041B758;
-extern ImageData_0041B758 g_ImageData_0041B758;
+} ImageObject_0041B760;
+extern ImageObject_0041B760 g_ImageObject_0041B760;
 
 /* original 0x0041B868-0x0041B900 */
-typedef struct ImageData_0041B868 {
+typedef struct ImageObject_0041B868 {
     uint8_t at_gap_0041B868[8]; /* 0041B868 gap */
+} ImageObject_0041B868;
+extern ImageObject_0041B868 g_ImageObject_0041B868;
+typedef struct ImageObject_0041B870 {
     uint32_t at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870[36]; /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
-} ImageData_0041B868;
-extern ImageData_0041B868 g_ImageData_0041B868;
+} ImageObject_0041B870;
+extern ImageObject_0041B870 g_ImageObject_0041B870;
 
 /* original 0x0041B9C8-0x0041BA50 */
-typedef struct ImageData_0041B9C8 {
+typedef struct ImageObject_0041B9C8 {
     uint8_t at_gap_0041B9C8[8]; /* 0041B9C8 gap */
+} ImageObject_0041B9C8;
+extern ImageObject_0041B9C8 g_ImageObject_0041B9C8;
+typedef struct ImageObject_0041B9D0 {
     uint32_t at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0[20]; /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
+} ImageObject_0041B9D0;
+extern ImageObject_0041B9D0 g_ImageObject_0041B9D0;
+typedef struct ImageObject_0041BA20 {
     uint32_t at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
+} ImageObject_0041BA20;
+extern ImageObject_0041BA20 g_ImageObject_0041BA20;
+typedef struct ImageObject_0041BA30 {
     uint32_t at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
-} ImageData_0041B9C8;
-extern ImageData_0041B9C8 g_ImageData_0041B9C8;
+} ImageObject_0041BA30;
+extern ImageObject_0041BA30 g_ImageObject_0041BA30;
 
 /* original 0x0041BB78-0x0041BC00 */
-typedef struct ImageData_0041BB78 {
+typedef struct ImageObject_0041BB78 {
     uint8_t at_gap_0041BB78[8]; /* 0041BB78 gap */
+} ImageObject_0041BB78;
+extern ImageObject_0041BB78 g_ImageObject_0041BB78;
+typedef struct ImageObject_0041BB80 {
     uint32_t at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80[20]; /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
+} ImageObject_0041BB80;
+extern ImageObject_0041BB80 g_ImageObject_0041BB80;
+typedef struct ImageObject_0041BBD0 {
     uint32_t at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
+} ImageObject_0041BBD0;
+extern ImageObject_0041BBD0 g_ImageObject_0041BBD0;
+typedef struct ImageObject_0041BBE0 {
     uint32_t at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
-} ImageData_0041BB78;
-extern ImageData_0041BB78 g_ImageData_0041BB78;
+} ImageObject_0041BBE0;
+extern ImageObject_0041BBE0 g_ImageObject_0041BBE0;
 
 /* original 0x0041BCEC-0x0041C0F0 */
-typedef struct ImageData_0041BCEC {
+typedef struct ImageObject_0041BCEC {
     uint8_t at_gap_0041BCEC[4]; /* 0041BCEC gap */
+} ImageObject_0041BCEC;
+extern ImageObject_0041BCEC g_ImageObject_0041BCEC;
+typedef struct ImageObject_0041BCF0 {
     uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0[256]; /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
-} ImageData_0041BCEC;
-extern ImageData_0041BCEC g_ImageData_0041BCEC;
+} ImageObject_0041BCF0;
+extern ImageObject_0041BCF0 g_ImageObject_0041BCF0;
 
 /* original 0x0041C15C-0x0041C560 */
-typedef struct ImageData_0041C15C {
+typedef struct ImageObject_0041C15C {
     uint8_t at_gap_0041C15C[4]; /* 0041C15C gap */
+} ImageObject_0041C15C;
+extern ImageObject_0041C15C g_ImageObject_0041C15C;
+typedef struct ImageObject_0041C160 {
     uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160[48]; /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
+} ImageObject_0041C160;
+extern ImageObject_0041C160 g_ImageObject_0041C160;
+typedef struct ImageObject_0041C220 {
     uint32_t at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
+} ImageObject_0041C220;
+extern ImageObject_0041C220 g_ImageObject_0041C220;
+typedef struct ImageObject_0041C260 {
     uint32_t at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
-} ImageData_0041C15C;
-extern ImageData_0041C15C g_ImageData_0041C15C;
+} ImageObject_0041C260;
+extern ImageObject_0041C260 g_ImageObject_0041C260;
 
 /* original 0x0041C94C-0x0041C9D0 */
-typedef struct ImageData_0041C94C {
+typedef struct ImageObject_0041C94C {
     uint8_t at_gap_0041C94C[4]; /* 0041C94C gap */
+} ImageObject_0041C94C;
+extern ImageObject_0041C94C g_ImageObject_0041C94C;
+typedef struct ImageObject_0041C950 {
     uint32_t at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950[32]; /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
-} ImageData_0041C94C;
-extern ImageData_0041C94C g_ImageData_0041C94C;
+} ImageObject_0041C950;
+extern ImageObject_0041C950 g_ImageObject_0041C950;
 
 /* original 0x0041CAFC-0x0041CB04 */
-typedef struct ImageData_0041CAFC {
+typedef struct ImageObject_0041CAFC {
     uint8_t at_gap_0041CAFC[8]; /* 0041CAFC gap */
-} ImageData_0041CAFC;
-extern ImageData_0041CAFC g_ImageData_0041CAFC;
+} ImageObject_0041CAFC;
+extern ImageObject_0041CAFC g_ImageObject_0041CAFC;
 
 /* original 0x0041CB68-0x0041CBF0 */
-typedef struct ImageData_0041CB68 {
+typedef struct ImageObject_0041CB68 {
     uint8_t at_gap_0041CB68[8]; /* 0041CB68 gap */
+} ImageObject_0041CB68;
+extern ImageObject_0041CB68 g_ImageObject_0041CB68;
+typedef struct ImageObject_0041CB70 {
     uint32_t at_g_TextResourcePage_Load_SwitchTable_0041CB70[20]; /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
+} ImageObject_0041CB70;
+extern ImageObject_0041CB70 g_ImageObject_0041CB70;
+typedef struct ImageObject_0041CBC0 {
     uint32_t at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
+} ImageObject_0041CBC0;
+extern ImageObject_0041CBC0 g_ImageObject_0041CBC0;
+typedef struct ImageObject_0041CBD0 {
     uint32_t at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
-} ImageData_0041CB68;
-extern ImageData_0041CB68 g_ImageData_0041CB68;
+} ImageObject_0041CBD0;
+extern ImageObject_0041CBD0 g_ImageObject_0041CBD0;
 
 /* original 0x0041CF7C-0x0041D000 */
-typedef struct ImageData_0041CF7C {
+typedef struct ImageObject_0041CF7C {
     uint8_t at_gap_0041CF7C[4]; /* 0041CF7C gap */
+} ImageObject_0041CF7C;
+extern ImageObject_0041CF7C g_ImageObject_0041CF7C;
+typedef struct ImageObject_0041CF80 {
     uint32_t at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80[8]; /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
+} ImageObject_0041CF80;
+extern ImageObject_0041CF80 g_ImageObject_0041CF80;
+typedef struct ImageObject_0041CFA0 {
     uint32_t at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
+} ImageObject_0041CFA0;
+extern ImageObject_0041CFA0 g_ImageObject_0041CFA0;
+typedef struct ImageObject_0041CFD0 {
     uint32_t at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
+} ImageObject_0041CFD0;
+extern ImageObject_0041CFD0 g_ImageObject_0041CFD0;
+typedef struct ImageObject_0041CFE0 {
     uint32_t at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
-} ImageData_0041CF7C;
-extern ImageData_0041CF7C g_ImageData_0041CF7C;
+} ImageObject_0041CFE0;
+extern ImageObject_0041CFE0 g_ImageObject_0041CFE0;
 
 /* original 0x0041D07C-0x0041D090 */
-typedef struct ImageData_0041D07C {
+typedef struct ImageObject_0041D07C {
     uint8_t at_gap_0041D07C[20]; /* 0041D07C gap */
-} ImageData_0041D07C;
-extern ImageData_0041D07C g_ImageData_0041D07C;
+} ImageObject_0041D07C;
+extern ImageObject_0041D07C g_ImageObject_0041D07C;
 
 /* original 0x0041D144-0x0041D1D0 */
-typedef struct ImageData_0041D144 {
+typedef struct ImageObject_0041D144 {
     uint8_t at_gap_0041D144[12]; /* 0041D144 gap */
+} ImageObject_0041D144;
+extern ImageObject_0041D144 g_ImageObject_0041D144;
+typedef struct ImageObject_0041D150 {
     uint32_t at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150[8]; /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
+} ImageObject_0041D150;
+extern ImageObject_0041D150 g_ImageObject_0041D150;
+typedef struct ImageObject_0041D170 {
     uint32_t at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
-} ImageData_0041D144;
-extern ImageData_0041D144 g_ImageData_0041D144;
+} ImageObject_0041D170;
+extern ImageObject_0041D170 g_ImageObject_0041D170;
 
 /* original 0x0041D53C-0x0041D5C0 */
-typedef struct ImageData_0041D53C {
+typedef struct ImageObject_0041D53C {
     uint8_t at_gap_0041D53C[4]; /* 0041D53C gap */
+} ImageObject_0041D53C;
+extern ImageObject_0041D53C g_ImageObject_0041D53C;
+typedef struct ImageObject_0041D540 {
     uint32_t at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540[8]; /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
+} ImageObject_0041D540;
+extern ImageObject_0041D540 g_ImageObject_0041D540;
+typedef struct ImageObject_0041D560 {
     uint32_t at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
+} ImageObject_0041D560;
+extern ImageObject_0041D560 g_ImageObject_0041D560;
+typedef struct ImageObject_0041D590 {
     uint32_t at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
+} ImageObject_0041D590;
+extern ImageObject_0041D590 g_ImageObject_0041D590;
+typedef struct ImageObject_0041D5A0 {
     uint32_t at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
-} ImageData_0041D53C;
-extern ImageData_0041D53C g_ImageData_0041D53C;
+} ImageObject_0041D5A0;
+extern ImageObject_0041D5A0 g_ImageObject_0041D5A0;
 
 /* original 0x0041D75C-0x0041D770 */
-typedef struct ImageData_0041D75C {
+typedef struct ImageObject_0041D75C {
     uint8_t at_gap_0041D75C[20]; /* 0041D75C gap */
-} ImageData_0041D75C;
-extern ImageData_0041D75C g_ImageData_0041D75C;
+} ImageObject_0041D75C;
+extern ImageObject_0041D75C g_ImageObject_0041D75C;
 
 /* original 0x0041D880-0x0041D910 */
-typedef struct ImageData_0041D880 {
+typedef struct ImageObject_0041D880 {
     uint8_t at_gap_0041D880[16]; /* 0041D880 gap */
+} ImageObject_0041D880;
+extern ImageObject_0041D880 g_ImageObject_0041D880;
+typedef struct ImageObject_0041D890 {
     uint32_t at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890[8]; /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
+} ImageObject_0041D890;
+extern ImageObject_0041D890 g_ImageObject_0041D890;
+typedef struct ImageObject_0041D8B0 {
     uint32_t at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
-} ImageData_0041D880;
-extern ImageData_0041D880 g_ImageData_0041D880;
+} ImageObject_0041D8B0;
+extern ImageObject_0041D8B0 g_ImageObject_0041D8B0;
 
 /* original 0x0041DA44-0x0041DAD0 */
-typedef struct ImageData_0041DA44 {
+typedef struct ImageObject_0041DA44 {
     uint8_t at_gap_0041DA44[12]; /* 0041DA44 gap */
+} ImageObject_0041DA44;
+extern ImageObject_0041DA44 g_ImageObject_0041DA44;
+typedef struct ImageObject_0041DA50 {
     uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50[32]; /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
-} ImageData_0041DA44;
-extern ImageData_0041DA44 g_ImageData_0041DA44;
+} ImageObject_0041DA50;
+extern ImageObject_0041DA50 g_ImageObject_0041DA50;
 
 /* original 0x0041DBD4-0x0041DC60 */
-typedef struct ImageData_0041DBD4 {
+typedef struct ImageObject_0041DBD4 {
     uint8_t at_gap_0041DBD4[12]; /* 0041DBD4 gap */
+} ImageObject_0041DBD4;
+extern ImageObject_0041DBD4 g_ImageObject_0041DBD4;
+typedef struct ImageObject_0041DBE0 {
     uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0[32]; /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
-} ImageData_0041DBD4;
-extern ImageData_0041DBD4 g_ImageData_0041DBD4;
+} ImageObject_0041DBE0;
+extern ImageObject_0041DBE0 g_ImageObject_0041DBE0;
 
 /* original 0x0041DDFC-0x0041DE10 */
-typedef struct ImageData_0041DDFC {
+typedef struct ImageObject_0041DDFC {
     uint8_t at_gap_0041DDFC[20]; /* 0041DDFC gap */
-} ImageData_0041DDFC;
-extern ImageData_0041DDFC g_ImageData_0041DDFC;
+} ImageObject_0041DDFC;
+extern ImageObject_0041DDFC g_ImageObject_0041DDFC;
 
 /* original 0x0041DE7C-0x004227B0 */
-typedef struct ImageData_0041DE7C {
+typedef struct ImageObject_0041DE7C {
     uint8_t at_gap_0041DE7C[4]; /* 0041DE7C gap */
+} ImageObject_0041DE7C;
+extern ImageObject_0041DE7C g_ImageObject_0041DE7C;
+typedef struct ImageObject_0041DE80 {
     uint32_t at_g_PackedLightingLookupTable[1024]; /* 0041DE80 g_PackedLightingLookupTable */
+} ImageObject_0041DE80;
+extern ImageObject_0041DE80 g_ImageObject_0041DE80;
+typedef struct ImageObject_0041EE80 {
     SoftwareBgraWordLanes at_g_ShadingIntensityScaleMmx[256]; /* 0041EE80 g_ShadingIntensityScaleMmx */
+} ImageObject_0041EE80;
+extern ImageObject_0041EE80 g_ImageObject_0041EE80;
+typedef struct ImageObject_0041F680 {
     uint64_t at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
+} ImageObject_0041F680;
+extern ImageObject_0041F680 g_ImageObject_0041F680;
+typedef struct ImageObject_0041F688 {
     uint64_t at_g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
+} ImageObject_0041F688;
+extern ImageObject_0041F688 g_ImageObject_0041F688;
+typedef struct ImageObject_0041F690 {
     uint64_t at_g_TerrainOccupancyMmxSignBiasBytes; /* 0041F690 g_TerrainOccupancyMmxSignBiasBytes */
+} ImageObject_0041F690;
+extern ImageObject_0041F690 g_ImageObject_0041F690;
+typedef struct ImageObject_0041F698 {
     uint64_t at_g_TerrainOccupancyMmxClearBits1And2Mask; /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
+} ImageObject_0041F698;
+extern ImageObject_0041F698 g_ImageObject_0041F698;
+typedef struct ImageObject_0041F6A0 {
     uint64_t at_g_TerrainOccupancyMmxAllBitsMask; /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
+} ImageObject_0041F6A0;
+extern ImageObject_0041F6A0 g_ImageObject_0041F6A0;
+typedef struct ImageObject_0041F6A8 {
     uint64_t at_g_TerrainOccupancyMmxPackedScale0280; /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
+} ImageObject_0041F6A8;
+extern ImageObject_0041F6A8 g_ImageObject_0041F6A8;
+typedef struct ImageObject_0041F6B0 {
     uint64_t at_g_TerrainOccupancyMmxPersistentWeights; /* 0041F6B0 g_TerrainOccupancyMmxPersistentWeights */
+} ImageObject_0041F6B0;
+extern ImageObject_0041F6B0 g_ImageObject_0041F6B0;
+typedef struct ImageObject_0041F6B8 {
     uint64_t at_g_TerrainOccupancyMmxCurrentWeights; /* 0041F6B8 g_TerrainOccupancyMmxCurrentWeights */
+} ImageObject_0041F6B8;
+extern ImageObject_0041F6B8 g_ImageObject_0041F6B8;
+typedef struct ImageObject_0041F6C0 {
     uint64_t at_g_FieldGridOccupancyMmxHighBitMask; /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
+} ImageObject_0041F6C0;
+extern ImageObject_0041F6C0 g_ImageObject_0041F6C0;
+typedef struct ImageObject_0041F6C8 {
     uint64_t at_g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
     uint32_t at_g_GraphicsShadingMmxPacked3BitPerByteMask_rest[4]; /* beyond the declared type */
+} ImageObject_0041F6C8;
+extern ImageObject_0041F6C8 g_ImageObject_0041F6C8;
+typedef struct ImageObject_0041F6E0 {
     SoftwarePixelMmxConstants at_g_SoftwarePixelMmxConstants; /* 0041F6E0 g_SoftwarePixelMmxConstants */
+} ImageObject_0041F6E0;
+extern ImageObject_0041F6E0 g_ImageObject_0041F6E0;
+typedef struct ImageObject_0041F700 {
     uint64_t at_g_VertexColorAlphaPreserveMaskMMX; /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
+} ImageObject_0041F700;
+extern ImageObject_0041F700 g_ImageObject_0041F700;
+typedef struct ImageObject_0041F708 {
     uint64_t at_g_VertexColorRgbHalveMaskMMX; /* 0041F708 g_VertexColorRgbHalveMaskMMX */
     uint32_t at_g_VertexColorRgbHalveMaskMMX_rest[4]; /* beyond the declared type */
+} ImageObject_0041F708;
+extern ImageObject_0041F708 g_ImageObject_0041F708;
+typedef struct ImageObject_0041F720 {
     SoftwareBgraWordLanes at_g_UiScalerSecondPixelWeights[256]; /* 0041F720 g_UiScalerSecondPixelWeights */
+} ImageObject_0041F720;
+extern ImageObject_0041F720 g_ImageObject_0041F720;
+typedef struct ImageObject_0041FF20 {
     SoftwareBgraWordLanes at_g_SoftwareBilinearForwardFactors[256]; /* 0041FF20 g_SoftwareBilinearForwardFactors */
+} ImageObject_0041FF20;
+extern ImageObject_0041FF20 g_ImageObject_0041FF20;
+typedef struct ImageObject_00420720 {
     SoftwareBgraWordLanes at_g_UiScalerFirstPixelWeights[256]; /* 00420720 g_UiScalerFirstPixelWeights */
+} ImageObject_00420720;
+extern ImageObject_00420720 g_ImageObject_00420720;
+typedef struct ImageObject_00420F20 {
     SoftwareBgraWordLanes at_g_SoftwareBilinearInverseFactors[256]; /* 00420F20 g_SoftwareBilinearInverseFactors */
+} ImageObject_00420F20;
+extern ImageObject_00420F20 g_ImageObject_00420F20;
+typedef struct ImageObject_00421720 {
     SoftwareRgbWordLanes at_g_SoftwareBlendAlphaFactors[256]; /* 00421720 g_SoftwareBlendAlphaFactors */
+} ImageObject_00421720;
+extern ImageObject_00421720 g_ImageObject_00421720;
+typedef struct ImageObject_00421F20 {
     SoftwareRgbWordLanes at_g_SoftwareBlendInverseAlphaFactors[256]; /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
+} ImageObject_00421F20;
+extern ImageObject_00421F20 g_ImageObject_00421F20;
+typedef struct ImageObject_00422720 {
     UiNodeVtable at_g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
+} ImageObject_00422720;
+extern ImageObject_00422720 g_ImageObject_00422720;
+typedef struct ImageObject_00422768 {
     uint8_t at_g_GraphicsAdapterFormatScratch0Utf16; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
     uint32_t at_g_GraphicsAdapterFormatScratch0Utf16_rest[7]; /* beyond the declared type */
     uint8_t at_g_GraphicsAdapterFormatScratch0Utf16_rest_tail[3];
     uint8_t at_g_GraphicsAdapterFormatScratch1Utf16; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
     uint32_t at_g_GraphicsAdapterFormatScratch1Utf16_rest[9]; /* beyond the declared type */
     uint8_t at_g_GraphicsAdapterFormatScratch1Utf16_rest_tail[3];
-} ImageData_0041DE7C;
-extern ImageData_0041DE7C g_ImageData_0041DE7C;
+} ImageObject_00422768;
+extern ImageObject_00422768 g_ImageObject_00422768;
 
 /* original 0x00422978-0x00423600 */
-typedef struct ImageData_00422978 {
+typedef struct ImageObject_00422978 {
     uint8_t at_gap_00422978[40]; /* 00422978 gap */
+} ImageObject_00422978;
+extern ImageObject_00422978 g_ImageObject_00422978;
+typedef struct ImageObject_004229A0 {
     UiRootCallbacks at_g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
+} ImageObject_004229A0;
+extern ImageObject_004229A0 g_ImageObject_004229A0;
+typedef struct ImageObject_004229B4 {
     DisplaySettingsUiImage at_g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
+} ImageObject_004229B4;
+extern ImageObject_004229B4 g_ImageObject_004229B4;
+typedef struct ImageObject_00423588 {
     UiDisplayModeSelectionActionHandlerTable at_g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
+} ImageObject_00423588;
+extern ImageObject_00423588 g_ImageObject_00423588;
+typedef struct ImageObject_004235D8 {
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch0; /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch1; /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch2; /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
@@ -534,181 +1212,553 @@ typedef struct ImageData_00422978 {
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch6; /* 004235F0 g_UiDisplayModeDistinctValueScratch6 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch7; /* 004235F4 g_UiDisplayModeDistinctValueScratch7 */
     uint32_t at_g_UiDisplayModeDistinctValueScratch7_rest[2]; /* beyond the declared type */
-} ImageData_00422978;
-extern ImageData_00422978 g_ImageData_00422978;
+} ImageObject_004235D8;
+extern ImageObject_004235D8 g_ImageObject_004235D8;
 
 /* original 0x00424324-0x004244E0 */
-typedef struct ImageData_00424324 {
+typedef struct ImageObject_00424324 {
     UiRootCallbacks at_g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourValueDialogRootCallbacks */
+} ImageObject_00424324;
+extern ImageObject_00424324 g_ImageObject_00424324;
+typedef struct ImageObject_00424338 {
     FourValueDialogUiImage at_g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
     uint8_t at_g_UiFourValueDialogTemplateImage_padding[4]; /* alignment padding after the template */
-} ImageData_00424324;
-extern ImageData_00424324 g_ImageData_00424324;
+} ImageObject_00424338;
+extern ImageObject_00424338 g_ImageObject_00424338;
 
 /* original 0x00424684-0x004846A0 */
-typedef struct ImageData_00424684 {
+typedef struct ImageObject_00424684 {
     uint8_t at_gap_00424684[28]; /* 00424684 gap */
+} ImageObject_00424684;
+extern ImageObject_00424684 g_ImageObject_00424684;
+typedef struct ImageObject_004246A0 {
     uint32_t at_g_FixedSinBeforeZeroQ28[16384]; /* 004246A0 g_FixedSinBeforeZeroQ28 */
+} ImageObject_004246A0;
+extern ImageObject_004246A0 g_ImageObject_004246A0;
+typedef struct ImageObject_004346A0 {
     uint32_t at_g_FixedSinQ28[16384]; /* 004346A0 g_FixedSinQ28 */
     uint32_t at_g_FixedCosQ28[65536]; /* 004446A0 g_FixedCosQ28 */
-} ImageData_00424684;
-extern ImageData_00424684 g_ImageData_00424684;
+} ImageObject_004346A0;
+extern ImageObject_004346A0 g_ImageObject_004346A0;
 
 /* original 0x00485808-0x00485E40 */
-typedef struct ImageData_00485808 {
+typedef struct ImageObject_00485808 {
     uint8_t at_gap_00485808[12]; /* 00485808 gap */
+} ImageObject_00485808;
+extern ImageObject_00485808 g_ImageObject_00485808;
+typedef struct ImageObject_00485814 {
     uint32_t at_g_TextureDownsampleShift; /* 00485814 g_TextureDownsampleShift */
+} ImageObject_00485814;
+extern ImageObject_00485814 g_ImageObject_00485814;
+typedef struct ImageObject_00485818 {
     GraphicsSetViewportProc * at_g_GraphicsSetViewportAndClearDepth; /* 00485818 g_GraphicsSetViewportAndClearDepth */
+} ImageObject_00485818;
+extern ImageObject_00485818 g_ImageObject_00485818;
+typedef struct ImageObject_0048581C {
     GraphicsDrawPrimitiveQueueProc * at_g_GraphicsDrawPrimitiveQueue; /* 0048581C g_GraphicsDrawPrimitiveQueue */
+} ImageObject_0048581C;
+extern ImageObject_0048581C g_ImageObject_0048581C;
+typedef struct ImageObject_00485820 {
     GraphicsBeginSceneProc * at_g_GraphicsBeginScene; /* 00485820 g_GraphicsBeginScene */
+} ImageObject_00485820;
+extern ImageObject_00485820 g_ImageObject_00485820;
+typedef struct ImageObject_00485824 {
     GraphicsEndSceneProc * at_g_GraphicsEndScene; /* 00485824 g_GraphicsEndScene */
+} ImageObject_00485824;
+extern ImageObject_00485824 g_ImageObject_00485824;
+typedef struct ImageObject_00485828 {
     GraphicsTextureRebuildAllProc * at_g_GraphicsRebuildAllStagingTextures; /* 00485828 g_GraphicsRebuildAllStagingTextures */
+} ImageObject_00485828;
+extern ImageObject_00485828 g_ImageObject_00485828;
+typedef struct ImageObject_0048582C {
     GraphicsTextureSetLoadPackageProc * at_g_GraphicsTextureSetLoadPackage; /* 0048582C g_GraphicsTextureSetLoadPackage */
+} ImageObject_0048582C;
+extern ImageObject_0048582C g_ImageObject_0048582C;
+typedef struct ImageObject_00485830 {
     GraphicsTextureSetReleasePackageProc * at_g_GraphicsTextureSetReleasePackage; /* 00485830 g_GraphicsTextureSetReleasePackage */
+} ImageObject_00485830;
+extern ImageObject_00485830 g_ImageObject_00485830;
+typedef struct ImageObject_00485834 {
     GraphicsTextureSetCreateProc * at_g_GraphicsCreateTextureSet; /* 00485834 g_GraphicsCreateTextureSet */
+} ImageObject_00485834;
+extern ImageObject_00485834 g_ImageObject_00485834;
+typedef struct ImageObject_00485838 {
     GraphicsTextureSetDestroyProc * at_g_GraphicsDestroyTextureSet; /* 00485838 g_GraphicsDestroyTextureSet */
+} ImageObject_00485838;
+extern ImageObject_00485838 g_ImageObject_00485838;
+typedef struct ImageObject_0048583C {
     GraphicsTextureSetRefreshProc * at_g_GraphicsRefreshTextureColor; /* 0048583C g_GraphicsRefreshTextureColor */
+} ImageObject_0048583C;
+extern ImageObject_0048583C g_ImageObject_0048583C;
+typedef struct ImageObject_00485840 {
     GraphicsTextureSetRefreshProc * at_g_GraphicsRefreshTextureAlpha; /* 00485840 g_GraphicsRefreshTextureAlpha */
+} ImageObject_00485840;
+extern ImageObject_00485840 g_ImageObject_00485840;
+typedef struct ImageObject_00485844 {
     GraphicsPrimitiveQueueRadixSortProc * at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844; /* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
+} ImageObject_00485844;
+extern ImageObject_00485844 g_ImageObject_00485844;
+typedef struct ImageObject_00485848 {
     GraphicsOffscreenRenderModelListToTextureSourceProc * at_g_GraphicsOffscreenRenderModelListToTextureSource; /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSource */
+} ImageObject_00485848;
+extern ImageObject_00485848 g_ImageObject_00485848;
+typedef struct ImageObject_0048584C {
     uint32_t at_g_RenderedFrameCountSinceDebugRefresh; /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
+} ImageObject_0048584C;
+extern ImageObject_0048584C g_ImageObject_0048584C;
+typedef struct ImageObject_00485850 {
     GraphicsDiagnosticCounter at_g_PrimitiveDrawCallCount; /* 00485850 g_PrimitiveDrawCallCount */
+} ImageObject_00485850;
+extern ImageObject_00485850 g_ImageObject_00485850;
+typedef struct ImageObject_00485854 {
     GraphicsDiagnosticCounter at_g_TextureBindStateChangeCount; /* 00485854 g_TextureBindStateChangeCount */
+} ImageObject_00485854;
+extern ImageObject_00485854 g_ImageObject_00485854;
+typedef struct ImageObject_00485858 {
     GraphicsDiagnosticCounter at_g_TextureDeviceReloadCount; /* 00485858 g_TextureDeviceReloadCount */
+} ImageObject_00485858;
+extern ImageObject_00485858 g_ImageObject_00485858;
+typedef struct ImageObject_0048585C {
     GraphicsFixedVec3 at_g_ViewOriginFixed; /* 0048585C g_ViewOriginFixed */
+} ImageObject_0048585C;
+extern ImageObject_0048585C g_ImageObject_0048585C;
+typedef struct ImageObject_00485868 {
     int32_t at_g_ProjectionScaleFixed; /* 00485868 g_ProjectionScaleFixed */
+} ImageObject_00485868;
+extern ImageObject_00485868 g_ImageObject_00485868;
+typedef struct ImageObject_0048586C {
     uint32_t at_g_ViewAngle0; /* 0048586C g_ViewAngle0 */
     uint32_t at_g_ViewAngle1; /* 00485870 g_ViewAngle1 */
+} ImageObject_0048586C;
+extern ImageObject_0048586C g_ImageObject_0048586C;
+typedef struct ImageObject_00485874 {
     uint32_t at_g_ProjectionShift; /* 00485874 g_ProjectionShift */
+} ImageObject_00485874;
+extern ImageObject_00485874 g_ImageObject_00485874;
+typedef struct ImageObject_00485878 {
     uint32_t at_g_ProjectionScaleProduct; /* 00485878 g_ProjectionScaleProduct */
+} ImageObject_00485878;
+extern ImageObject_00485878 g_ImageObject_00485878;
+typedef struct ImageObject_0048587C {
     GraphicsWideFixed at_g_ProjectionNumerator; /* 0048587C g_ProjectionNumerator */
+} ImageObject_0048587C;
+extern ImageObject_0048587C g_ImageObject_0048587C;
+typedef struct ImageObject_00485884 {
     GraphicsFixedVec2 at_g_ProjectionCenterFixed; /* 00485884 g_ProjectionCenterFixed */
+} ImageObject_00485884;
+extern ImageObject_00485884 g_ImageObject_00485884;
+typedef struct ImageObject_0048588C {
     GraphicsPrimitiveQueue * at_g_ActivePrimitiveQueue; /* 0048588C g_ActivePrimitiveQueue */
+} ImageObject_0048588C;
+extern ImageObject_0048588C g_ImageObject_0048588C;
+typedef struct ImageObject_00485890 {
     GraphicsFixedRect at_g_ProjectionClipRect; /* 00485890 g_ProjectionClipRect */
+} ImageObject_00485890;
+extern ImageObject_00485890 g_ImageObject_00485890;
+typedef struct ImageObject_004858A0 {
     GraphicsFixedMatrix3x4 at_g_ViewProjectionMatrixFixed; /* 004858A0 g_ViewProjectionMatrixFixed */
+} ImageObject_004858A0;
+extern ImageObject_004858A0 g_ImageObject_004858A0;
+typedef struct ImageObject_004858D0 {
     GraphicsFixedMatrix3x4 at_g_ViewRotationMatrixFixed; /* 004858D0 g_ViewRotationMatrixFixed */
+} ImageObject_004858D0;
+extern ImageObject_004858D0 g_ImageObject_004858D0;
+typedef struct ImageObject_00485900 {
     GraphicsFixedMatrix3x4 at_g_CameraTransformMatrixFixed; /* 00485900 g_CameraTransformMatrixFixed */
+} ImageObject_00485900;
+extern ImageObject_00485900 g_ImageObject_00485900;
+typedef struct ImageObject_00485930 {
     GraphicsWideFixed at_g_ProjectionAngleFactors[2]; /* 00485930 g_ProjectionAngleFactors */
+} ImageObject_00485930;
+extern ImageObject_00485930 g_ImageObject_00485930;
+typedef struct ImageObject_00485940 {
     GraphicsFixedVec2 at_g_AuxiliaryOrientation; /* 00485940 g_AuxiliaryOrientation */
+} ImageObject_00485940;
+extern ImageObject_00485940 g_ImageObject_00485940;
+typedef struct ImageObject_00485948 {
     GraphicsFixedVec3 at_g_AuxiliaryForwardDirectionFixed; /* 00485948 g_AuxiliaryForwardDirectionFixed */
+} ImageObject_00485948;
+extern ImageObject_00485948 g_ImageObject_00485948;
+typedef struct ImageObject_00485954 {
     GraphicsFixedMatrix3x4 at_g_AuxiliaryRotationMatrixFixed; /* 00485954 g_AuxiliaryRotationMatrixFixed */
+} ImageObject_00485954;
+extern ImageObject_00485954 g_ImageObject_00485954;
+typedef struct ImageObject_00485984 {
     GraphicsFixedVec3 at_g_FrustumPlaneNormalFixed_0[4]; /* 00485984 g_FrustumPlaneNormalFixed_0 */
+} ImageObject_00485984;
+extern ImageObject_00485984 g_ImageObject_00485984;
+typedef struct ImageObject_004859B4 {
     GraphicsFixedVec3 at_g_FrustumCornerRayFixed_0[4]; /* 004859B4 g_FrustumCornerRayFixed_0 */
+} ImageObject_004859B4;
+extern ImageObject_004859B4 g_ImageObject_004859B4;
+typedef struct ImageObject_004859E4 {
     GraphicsSceneBounds8 at_g_SceneBoundsFixed; /* 004859E4 g_SceneBoundsFixed */
+} ImageObject_004859E4;
+extern ImageObject_004859E4 g_ImageObject_004859E4;
+typedef struct ImageObject_00485A04 {
     int32_t at_g_ModelLodDepthThresholdQ8; /* 00485A04 g_ModelLodDepthThresholdQ8 */
+} ImageObject_00485A04;
+extern ImageObject_00485A04 g_ImageObject_00485A04;
+typedef struct ImageObject_00485A08 {
     uint32_t at_g_ArmyPreviewViewOriginXQ12; /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
     uint32_t at_g_ArmyPreviewViewOriginYQ12; /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
     uint32_t at_g_ArmyPreviewViewOriginZQ12; /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
+} ImageObject_00485A08;
+extern ImageObject_00485A08 g_ImageObject_00485A08;
+typedef struct ImageObject_00485A14 {
     uint32_t at_g_ArmyPreviewProjectionScaleQ12; /* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
+} ImageObject_00485A14;
+extern ImageObject_00485A14 g_ImageObject_00485A14;
+typedef struct ImageObject_00485A18 {
     uint32_t at_g_ArmyPreviewViewAngle0; /* 00485A18 g_ArmyPreviewViewAngle0 */
     uint32_t at_g_ArmyPreviewViewAngle1; /* 00485A1C g_ArmyPreviewViewAngle1 */
+} ImageObject_00485A18;
+extern ImageObject_00485A18 g_ImageObject_00485A18;
+typedef struct ImageObject_00485A20 {
     uint32_t at_g_ArmyPreviewProjectionShift; /* 00485A20 g_ArmyPreviewProjectionShift */
+} ImageObject_00485A20;
+extern ImageObject_00485A20 g_ImageObject_00485A20;
+typedef struct ImageObject_00485A24 {
     uint32_t at_g_ArmyPreviewAuxiliaryOrientation0; /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
     uint32_t at_g_ArmyPreviewAuxiliaryOrientation1; /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
+} ImageObject_00485A24;
+extern ImageObject_00485A24 g_ImageObject_00485A24;
+typedef struct ImageObject_00485A2C {
     uint32_t at_g_ArmyPreviewPrimaryColorArgb; /* 00485A2C g_ArmyPreviewPrimaryColorArgb */
+} ImageObject_00485A2C;
+extern ImageObject_00485A2C g_ImageObject_00485A2C;
+typedef struct ImageObject_00485A30 {
     uint32_t at_g_ArmyPreviewSecondaryColorArgb; /* 00485A30 g_ArmyPreviewSecondaryColorArgb */
+} ImageObject_00485A30;
+extern ImageObject_00485A30 g_ImageObject_00485A30;
+typedef struct ImageObject_00485A34 {
     uint32_t at_g_ArmyPreviewModelNodePointer; /* 00485A34 g_ArmyPreviewModelNodePointer */
     uint32_t at_g_ArmyPreviewModelNodePointer_rest[2]; /* beyond the declared type */
+} ImageObject_00485A34;
+extern ImageObject_00485A34 g_ImageObject_00485A34;
+typedef struct ImageObject_00485A40 {
     uint32_t at_g_PrimitiveRadixBucketWords[256]; /* 00485A40 g_PrimitiveRadixBucketWords */
-} ImageData_00485808;
-extern ImageData_00485808 g_ImageData_00485808;
+} ImageObject_00485A40;
+extern ImageObject_00485A40 g_ImageObject_00485A40;
 
 /* original 0x00486D8C-0x004A6FB0 */
-typedef struct ImageData_00486D8C {
+typedef struct ImageObject_00486D8C {
     uint8_t at_gap_00486D8C[4]; /* 00486D8C gap */
+} ImageObject_00486D8C;
+extern ImageObject_00486D8C g_ImageObject_00486D8C;
+typedef struct ImageObject_00486D90 {
     uint32_t at_g_MovieChromaLumaToArgb[32768]; /* 00486D90 g_MovieChromaLumaToArgb */
+} ImageObject_00486D90;
+extern ImageObject_00486D90 g_ImageObject_00486D90;
+typedef struct ImageObject_004A6D90 {
     uint64_t at_g_MovieDeltaRgbHighNibbleMask2Pixels; /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
+} ImageObject_004A6D90;
+extern ImageObject_004A6D90 g_ImageObject_004A6D90;
+typedef struct ImageObject_004A6D98 {
     MovieRuntime * at_g_ActiveMovie; /* 004A6D98 g_ActiveMovie */
+} ImageObject_004A6D98;
+extern ImageObject_004A6D98 g_ImageObject_004A6D98;
+typedef struct ImageObject_004A6D9C {
     MovieAudioGainQ15 at_g_MovieDefaultAudioGainQ15; /* 004A6D9C g_MovieDefaultAudioGainQ15 */
+} ImageObject_004A6D9C;
+extern ImageObject_004A6D9C g_ImageObject_004A6D9C;
+typedef struct ImageObject_004A6DA0 {
     MovieAudioGainQ15 at_g_MovieAlternateAudioGainQ15; /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
+} ImageObject_004A6DA0;
+extern ImageObject_004A6DA0 g_ImageObject_004A6DA0;
+typedef struct ImageObject_004A6DA4 {
     WidePathBuffer256 at_g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
     uint32_t at_g_LooseMoviePathPrefix_rest[3]; /* beyond the declared type */
-} ImageData_00486D8C;
-extern ImageData_00486D8C g_ImageData_00486D8C;
+} ImageObject_004A6DA4;
+extern ImageObject_004A6DA4 g_ImageObject_004A6DA4;
 
 /* original 0x004A8E60-0x004A8F80 */
-typedef struct ImageData_004A8E60 {
+typedef struct ImageObject_004A8E60 {
     uint8_t at_gap_004A8E60[16]; /* 004A8E60 gap */
+} ImageObject_004A8E60;
+extern ImageObject_004A8E60 g_ImageObject_004A8E60;
+typedef struct ImageObject_004A8E70 {
     SoftwareFramebufferAccess * at_g_FramebufferAccess; /* 004A8E70 g_FramebufferAccess */
+} ImageObject_004A8E70;
+extern ImageObject_004A8E70 g_ImageObject_004A8E70;
+typedef struct ImageObject_004A8E74 {
     SoftwareFramebufferAccess * at_g_CursorSavedBackground; /* 004A8E74 g_CursorSavedBackground */
+} ImageObject_004A8E74;
+extern ImageObject_004A8E74 g_ImageObject_004A8E74;
+typedef struct ImageObject_004A8E78 {
     SoftwareFramebufferAccess * at_g_CursorCompositeBuffer; /* 004A8E78 g_CursorCompositeBuffer */
+} ImageObject_004A8E78;
+extern ImageObject_004A8E78 g_ImageObject_004A8E78;
+typedef struct ImageObject_004A8E7C {
     SoftwareFramebufferAccess * at_g_CursorAlternateSavedBackground; /* 004A8E7C g_CursorAlternateSavedBackground */
+} ImageObject_004A8E7C;
+extern ImageObject_004A8E7C g_ImageObject_004A8E7C;
+typedef struct ImageObject_004A8E80 {
     SoftwarePixelPackTables * at_g_SoftwarePixelPackTables; /* 004A8E80 g_SoftwarePixelPackTables */
+} ImageObject_004A8E80;
+extern ImageObject_004A8E80 g_ImageObject_004A8E80;
+typedef struct ImageObject_004A8E84 {
     uint32_t at_g_FramebufferRowStrideBytes; /* 004A8E84 g_FramebufferRowStrideBytes */
+} ImageObject_004A8E84;
+extern ImageObject_004A8E84 g_ImageObject_004A8E84;
+typedef struct ImageObject_004A8E88 {
     uint32_t at_g_FramebufferWidth; /* 004A8E88 g_FramebufferWidth */
+} ImageObject_004A8E88;
+extern ImageObject_004A8E88 g_ImageObject_004A8E88;
+typedef struct ImageObject_004A8E8C {
     uint32_t at_g_FramebufferHeight; /* 004A8E8C g_FramebufferHeight */
+} ImageObject_004A8E8C;
+extern ImageObject_004A8E8C g_ImageObject_004A8E8C;
+typedef struct ImageObject_004A8E90 {
     uint32_t at_g_ActiveGraphicsAdapterIndex; /* 004A8E90 g_ActiveGraphicsAdapterIndex: uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
+} ImageObject_004A8E90;
+extern ImageObject_004A8E90 g_ImageObject_004A8E90;
+typedef struct ImageObject_004A8E94 {
     int32_t at_g_SoftwareColorScaleQ16; /* 004A8E94 g_SoftwareColorScaleQ16 */
+} ImageObject_004A8E94;
+extern ImageObject_004A8E94 g_ImageObject_004A8E94;
+typedef struct ImageObject_004A8E98 {
     int32_t at_g_SoftwareColorBiasQ16; /* 004A8E98 g_SoftwareColorBiasQ16 */
+} ImageObject_004A8E98;
+extern ImageObject_004A8E98 g_ImageObject_004A8E98;
+typedef struct ImageObject_004A8E9C {
     GraphicsDisplayMode * at_g_GraphicsDisplayModes; /* 004A8E9C g_GraphicsDisplayModes */
+} ImageObject_004A8E9C;
+extern ImageObject_004A8E9C g_ImageObject_004A8E9C;
+typedef struct ImageObject_004A8EA0 {
     GraphicsDisplayModeCount at_g_GraphicsDisplayModeCount; /* 004A8EA0 g_GraphicsDisplayModeCount */
+} ImageObject_004A8EA0;
+extern ImageObject_004A8EA0 g_ImageObject_004A8EA0;
+typedef struct ImageObject_004A8EA4 {
     GraphicsAdapterRecord * at_g_GraphicsAdapters; /* 004A8EA4 g_GraphicsAdapters */
+} ImageObject_004A8EA4;
+extern ImageObject_004A8EA4 g_ImageObject_004A8EA4;
+typedef struct ImageObject_004A8EA8 {
     uint32_t at_g_GraphicsAdapterCount; /* 004A8EA8 g_GraphicsAdapterCount */
+} ImageObject_004A8EA8;
+extern ImageObject_004A8EA8 g_ImageObject_004A8EA8;
+typedef struct ImageObject_004A8EAC {
     SoftwarePixelFormatConfig at_g_SoftwarePixelFormatConfig; /* 004A8EAC g_SoftwarePixelFormatConfig */
+} ImageObject_004A8EAC;
+extern ImageObject_004A8EAC g_ImageObject_004A8EAC;
+typedef struct ImageObject_004A8ED0 {
     SoftwareDisplayModeHookProc * at_g_GraphicsSetDisplayMode; /* 004A8ED0 g_GraphicsSetDisplayMode */
+} ImageObject_004A8ED0;
+extern ImageObject_004A8ED0 g_ImageObject_004A8ED0;
+typedef struct ImageObject_004A8ED4 {
     GraphicsBackendRefreshActiveAdapterProc * at_g_GraphicsBackendRefreshActiveAdapter; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
+} ImageObject_004A8ED4;
+extern ImageObject_004A8ED4 g_ImageObject_004A8ED4;
+typedef struct ImageObject_004A8ED8 {
     SoftwareFramebufferCreateProc * at_g_SoftwareFramebufferCreate; /* 004A8ED8 g_SoftwareFramebufferCreate */
+} ImageObject_004A8ED8;
+extern ImageObject_004A8ED8 g_ImageObject_004A8ED8;
+typedef struct ImageObject_004A8EDC {
     SoftwareFramebufferDestroyProc * at_g_SoftwareFramebufferDestroy; /* 004A8EDC g_SoftwareFramebufferDestroy: SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
+} ImageObject_004A8EDC;
+extern ImageObject_004A8EDC g_ImageObject_004A8EDC;
+typedef struct ImageObject_004A8EE0 {
     GraphicsFramebufferPresentProc * at_g_GraphicsFramebufferPresent; /* 004A8EE0 g_GraphicsFramebufferPresent */
+} ImageObject_004A8EE0;
+extern ImageObject_004A8EE0 g_ImageObject_004A8EE0;
+typedef struct ImageObject_004A8EE4 {
     GraphicsFramebufferCaptureRegionProc * at_g_GraphicsFramebufferCaptureRegion; /* 004A8EE4 g_GraphicsFramebufferCaptureRegion */
+} ImageObject_004A8EE4;
+extern ImageObject_004A8EE4 g_ImageObject_004A8EE4;
+typedef struct ImageObject_004A8EE8 {
     SoftwareBuildPixelPackTablesProc * at_g_SoftwareBuildPixelPackTables; /* 004A8EE8 g_SoftwareBuildPixelPackTables */
+} ImageObject_004A8EE8;
+extern ImageObject_004A8EE8 g_ImageObject_004A8EE8;
+typedef struct ImageObject_004A8EEC {
     GraphicsFramebufferBeginAccessProc * at_g_GraphicsFramebufferBeginAccess; /* 004A8EEC g_GraphicsFramebufferBeginAccess */
+} ImageObject_004A8EEC;
+extern ImageObject_004A8EEC g_ImageObject_004A8EEC;
+typedef struct ImageObject_004A8EF0 {
     GraphicsFramebufferEndAccessProc * at_g_GraphicsFramebufferEndAccess; /* 004A8EF0 g_GraphicsFramebufferEndAccess */
+} ImageObject_004A8EF0;
+extern ImageObject_004A8EF0 g_ImageObject_004A8EF0;
+typedef struct ImageObject_004A8EF4 {
     GraphicsTextureSourceGetLogicalSizeProc * at_g_GraphicsTextureSourceGetLogicalSize; /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
+} ImageObject_004A8EF4;
+extern ImageObject_004A8EF4 g_ImageObject_004A8EF4;
+typedef struct ImageObject_004A8EF8 {
     GraphicsTextureSourceTestOpaquePixelProc * at_g_GraphicsTextureSourceTestOpaquePixel; /* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
+} ImageObject_004A8EF8;
+extern ImageObject_004A8EF8 g_ImageObject_004A8EF8;
+typedef struct ImageObject_004A8EFC {
     GraphicsTextureSourceBlitProc * at_g_GraphicsTextureSourceBlitSourceAlpha; /* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
+} ImageObject_004A8EFC;
+extern ImageObject_004A8EFC g_ImageObject_004A8EFC;
+typedef struct ImageObject_004A8F00 {
     GraphicsTextureSourceTiledBlitProc * at_g_GraphicsTextureSourceBlitTiledSourceAlpha; /* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
+} ImageObject_004A8F00;
+extern ImageObject_004A8F00 g_ImageObject_004A8F00;
+typedef struct ImageObject_004A8F04 {
     GraphicsTextureSourceBlitProc * at_g_GraphicsTextureSourceBlitHalfSourceRgb; /* 004A8F04 g_GraphicsTextureSourceBlitHalfSourceRgb */
+} ImageObject_004A8F04;
+extern ImageObject_004A8F04 g_ImageObject_004A8F04;
+typedef struct ImageObject_004A8F08 {
     GraphicsTextureSourceTiledBlitProc * at_g_GraphicsTextureSourceBlitTiledHalfSourceRgb; /* 004A8F08 g_GraphicsTextureSourceBlitTiledHalfSourceRgb */
+} ImageObject_004A8F08;
+extern ImageObject_004A8F08 g_ImageObject_004A8F08;
+typedef struct ImageObject_004A8F0C {
     GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc * at_g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha; /* 004A8F0C g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha */
+} ImageObject_004A8F0C;
+extern ImageObject_004A8F0C g_ImageObject_004A8F0C;
+typedef struct ImageObject_004A8F10 {
     GraphicsTextureSourceStretchDirectColorBilinearProc * at_g_GraphicsTextureSourceStretchDirectColorBilinear; /* 004A8F10 g_GraphicsTextureSourceStretchDirectColorBilinear */
+} ImageObject_004A8F10;
+extern ImageObject_004A8F10 g_ImageObject_004A8F10;
+typedef struct ImageObject_004A8F14 {
     GraphicsTextureSourceBlitSourceAlphaPaletteBankProc * at_g_GraphicsTextureSourceBlitSourceAlphaPaletteBank; /* 004A8F14 g_GraphicsTextureSourceBlitSourceAlphaPaletteBank */
+} ImageObject_004A8F14;
+extern ImageObject_004A8F14 g_ImageObject_004A8F14;
+typedef struct ImageObject_004A8F18 {
     GraphicsTextureSourceBlitModulatedSourceAlphaProc * at_g_GraphicsTextureSourceBlitModulatedSourceAlpha; /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
+} ImageObject_004A8F18;
+extern ImageObject_004A8F18 g_ImageObject_004A8F18;
+typedef struct ImageObject_004A8F1C {
     GraphicsTextureSourceSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitSaturatedAddRgb; /* 004A8F1C g_GraphicsTextureSourceBlitSaturatedAddRgb */
+} ImageObject_004A8F1C;
+extern ImageObject_004A8F1C g_ImageObject_004A8F1C;
+typedef struct ImageObject_004A8F20 {
     GraphicsTextureSourceTiledSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitTiledSaturatedAddRgb; /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb: GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledSaturatedAddRgb (texture.c). */
+} ImageObject_004A8F20;
+extern ImageObject_004A8F20 g_ImageObject_004A8F20;
+typedef struct ImageObject_004A8F24 {
     GraphicsTextureSourceSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd; /* 004A8F24 g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd */
+} ImageObject_004A8F24;
+extern ImageObject_004A8F24 g_ImageObject_004A8F24;
+typedef struct ImageObject_004A8F28 {
     GraphicsTextureSourceTiledSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd; /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd: GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd (texture.c). */
+} ImageObject_004A8F28;
+extern ImageObject_004A8F28 g_ImageObject_004A8F28;
+typedef struct ImageObject_004A8F2C {
     GraphicsTextureSourceDecomposeSubresourceProc * at_g_GraphicsTextureSourceDecomposeSubresourceRegionsCf; /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf: GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions (texture.c). */
+} ImageObject_004A8F2C;
+extern ImageObject_004A8F2C g_ImageObject_004A8F2C;
+typedef struct ImageObject_004A8F30 {
     GraphicsFramebufferFillRectArgbProc * at_g_GraphicsFramebufferFillRectArgb; /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+} ImageObject_004A8F30;
+extern ImageObject_004A8F30 g_ImageObject_004A8F30;
+typedef struct ImageObject_004A8F34 {
     GraphicsFramebufferCopyRegionToOriginProc * at_g_GraphicsFramebufferCopyRegionToOrigin; /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin: GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
+} ImageObject_004A8F34;
+extern ImageObject_004A8F34 g_ImageObject_004A8F34;
+typedef struct ImageObject_004A8F38 {
     GraphicsFramebufferCopyOriginToRegionProc * at_g_GraphicsFramebufferCopyOriginToRegion; /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion: GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
+} ImageObject_004A8F38;
+extern ImageObject_004A8F38 g_ImageObject_004A8F38;
+typedef struct ImageObject_004A8F3C {
     GraphicsTextureSourceLoadPackageAssetProc * at_g_GraphicsTextureSourceLoadPackageAsset; /* 004A8F3C g_GraphicsTextureSourceLoadPackageAsset */
+} ImageObject_004A8F3C;
+extern ImageObject_004A8F3C g_ImageObject_004A8F3C;
+typedef struct ImageObject_004A8F40 {
     GraphicsTextureSourceLifecycleCallbackTable at_g_GraphicsTextureSourceLifecycleCallbacks3; /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
+} ImageObject_004A8F40;
+extern ImageObject_004A8F40 g_ImageObject_004A8F40;
+typedef struct ImageObject_004A8F4C {
     GraphicsTextureSourceConvertPaletteEntriesProc * at_g_GraphicsTextureSourceConvertPaletteEntries; /* 004A8F4C g_GraphicsTextureSourceConvertPaletteEntries */
+} ImageObject_004A8F4C;
+extern ImageObject_004A8F4C g_ImageObject_004A8F4C;
+typedef struct ImageObject_004A8F50 {
     GraphicsTextureSourceResolveAllocationBaseProc * at_g_GraphicsTextureSourceResolveAllocationBase; /* 004A8F50 g_GraphicsTextureSourceResolveAllocationBase */
+} ImageObject_004A8F50;
+extern ImageObject_004A8F50 g_ImageObject_004A8F50;
+typedef struct ImageObject_004A8F54 {
     GraphicsPaletteAssetLoadPackageProc * at_g_GraphicsPaletteAssetLoadPackage; /* 004A8F54 g_GraphicsPaletteAssetLoadPackage */
+} ImageObject_004A8F54;
+extern ImageObject_004A8F54 g_ImageObject_004A8F54;
+typedef struct ImageObject_004A8F58 {
     GraphicsPaletteAssetLifecycleCallbackTable at_g_GraphicsPaletteAssetLifecycleCallbacks3; /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
+} ImageObject_004A8F58;
+extern ImageObject_004A8F58 g_ImageObject_004A8F58;
+typedef struct ImageObject_004A8F64 {
     GraphicsPaletteAssetValidateProc * at_g_GraphicsPaletteAssetValidate; /* 004A8F64 g_GraphicsPaletteAssetValidate */
+} ImageObject_004A8F64;
+extern ImageObject_004A8F64 g_ImageObject_004A8F64;
+typedef struct ImageObject_004A8F68 {
     GraphicsPaletteAssetResolveAllocationBaseProc * at_g_GraphicsPaletteAssetResolveAllocationBase; /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
+} ImageObject_004A8F68;
+extern ImageObject_004A8F68 g_ImageObject_004A8F68;
+typedef struct ImageObject_004A8F6C {
     uint16_t at_g_UnreferencedSoftwareTextUtf16[9]; /* 004A8F6C g_UnreferencedSoftwareTextUtf16: uint16_t[9] L"Software" after the graphics hook table, followed by two NOP padding bytes; no code or data reference found. */
     uint8_t at_g_UnreferencedSoftwareTextUtf16_rest_tail[2];
-} ImageData_004A8E60;
-extern ImageData_004A8E60 g_ImageData_004A8E60;
+} ImageObject_004A8F6C;
+extern ImageObject_004A8F6C g_ImageObject_004A8F6C;
 
 /* original 0x004AD92C-0x004AE230 */
-typedef struct ImageData_004AD92C {
+typedef struct ImageObject_004AD92C {
     uint8_t at_gap_004AD92C[4]; /* 004AD92C gap */
+} ImageObject_004AD92C;
+extern ImageObject_004AD92C g_ImageObject_004AD92C;
+typedef struct ImageObject_004AD930 {
     uint32_t at_g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
+} ImageObject_004AD930;
+extern ImageObject_004AD930 g_ImageObject_004AD930;
+typedef struct ImageObject_004AE130 {
     uint8_t at_g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
-} ImageData_004AD92C;
-extern ImageData_004AD92C g_ImageData_004AD92C;
+} ImageObject_004AE130;
+extern ImageObject_004AE130 g_ImageObject_004AE130;
 
 /* original 0x004AE95C-0x004AEB10 */
-typedef struct ImageData_004AE95C {
+typedef struct ImageObject_004AE95C {
     uint8_t at_gap_004AE95C[4]; /* 004AE95C gap */
+} ImageObject_004AE95C;
+extern ImageObject_004AE95C g_ImageObject_004AE95C;
+typedef struct ImageObject_004AE960 {
     UiRuntimeRecord * at_g_UiRuntimeRecordRing; /* 004AE960 g_UiRuntimeRecordRing */
+} ImageObject_004AE960;
+extern ImageObject_004AE960 g_ImageObject_004AE960;
+typedef struct ImageObject_004AE964 {
     uint32_t at_g_UiRuntimeRecordEndpointSlots; /* 004AE964 g_UiRuntimeRecordEndpointSlots */
+} ImageObject_004AE964;
+extern ImageObject_004AE964 g_ImageObject_004AE964;
+typedef struct ImageObject_004AE968 {
     uint8_t * at_g_UiTransferDataBuffer; /* 004AE968 g_UiTransferDataBuffer */
+} ImageObject_004AE968;
+extern ImageObject_004AE968 g_ImageObject_004AE968;
+typedef struct ImageObject_004AE96C {
     UiTransferEndpointDescriptor * at_g_UiTransferEndpointBuffer; /* 004AE96C g_UiTransferEndpointBuffer */
+} ImageObject_004AE96C;
+extern ImageObject_004AE96C g_ImageObject_004AE96C;
+typedef struct ImageObject_004AE970 {
     uint32_t at_g_UiRuntimeRecordReadIndex; /* 004AE970 g_UiRuntimeRecordReadIndex */
+} ImageObject_004AE970;
+extern ImageObject_004AE970 g_ImageObject_004AE970;
+typedef struct ImageObject_004AE974 {
     uint32_t at_g_UiRuntimeRecordWriteIndex; /* 004AE974 g_UiRuntimeRecordWriteIndex */
+} ImageObject_004AE974;
+extern ImageObject_004AE974 g_ImageObject_004AE974;
+typedef struct ImageObject_004AE978 {
     uint32_t at_g_UiTransferUnitCursor; /* 004AE978 g_UiTransferUnitCursor */
+} ImageObject_004AE978;
+extern ImageObject_004AE978 g_ImageObject_004AE978;
+typedef struct ImageObject_004AE97C {
     uint32_t at_g_UiTransferSequenceToken; /* 004AE97C g_UiTransferSequenceToken: uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+} ImageObject_004AE97C;
+extern ImageObject_004AE97C g_ImageObject_004AE97C;
+typedef struct ImageObject_004AE980 {
     uint32_t at_g_UiTransferSenderContext; /* 004AE980 g_UiTransferSenderContext */
+} ImageObject_004AE980;
+extern ImageObject_004AE980 g_ImageObject_004AE980;
+typedef struct ImageObject_004AE984 {
     RuntimeSpinLockValue * at_g_UiRuntimeFrameLock; /* 004AE984 g_UiRuntimeFrameLock */
+} ImageObject_004AE984;
+extern ImageObject_004AE984 g_ImageObject_004AE984;
+typedef struct ImageObject_004AE988 {
     UiRuntimePostUnlockCallbackProc * at_g_UiRuntimePostUnlockCallback; /* 004AE988 g_UiRuntimePostUnlockCallback */
+} ImageObject_004AE988;
+extern ImageObject_004AE988 g_ImageObject_004AE988;
+typedef struct ImageObject_004AE98C {
     RuntimeSpinLockValue at_g_UiRuntimeRecordRingLock; /* 004AE98C g_UiRuntimeRecordRingLock */
+} ImageObject_004AE98C;
+extern ImageObject_004AE98C g_ImageObject_004AE98C;
+typedef struct ImageObject_004AE990 {
     UiTransferMailboxState at_g_UiTransferMailbox; /* 004AE990 g_UiTransferMailbox */
+} ImageObject_004AE990;
+extern ImageObject_004AE990 g_ImageObject_004AE990;
+typedef struct ImageObject_004AE9A8 {
     uint32_t at_g_UiTransferRoundKeys16[12]; /* 004AE9A8 g_UiTransferRoundKeys16: uint32_t[12] packet cipher round keys 0..11 (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 are g_UiTransferRoundKeys16Tail). */
     uint32_t at_g_UiTransferRoundKeys16Tail[4]; /* 004AE9D8 g_UiTransferRoundKeys16Tail: uint32_t[4] packet cipher round keys 12..15 (bytes read by Ghidra as the text "mohTG sakere!!!e"); the mailbox chunk packet header follows at 0x004AE9E8. */
     uint32_t at_s__004ae9d8_0x10[1]; /* 004AE9E8 s__004ae9d8+0x10 */
@@ -717,1197 +1767,2493 @@ typedef struct ImageData_004AE95C {
     UiTransferMailboxByteOffset at_g_UiTransferMailboxChunkOffset; /* 004AE9F8 g_UiTransferMailboxChunkOffset */
     UiTransferMailboxByteCount at_g_UiTransferMailboxTransferByteCount; /* 004AE9FC g_UiTransferMailboxTransferByteCount */
     uint32_t at_g_UiTransferChunkPayload[58]; /* 004AEA00 g_UiTransferChunkPayload */
+} ImageObject_004AE9A8;
+extern ImageObject_004AE9A8 g_ImageObject_004AE9A8;
+typedef struct ImageObject_004AEAE8 {
     uint32_t at_g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket */
     uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken; /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
     uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken_rest[2]; /* beyond the declared type */
     uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick; /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
     uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick_rest[3]; /* beyond the declared type */
+} ImageObject_004AEAE8;
+extern ImageObject_004AEAE8 g_ImageObject_004AEAE8;
+typedef struct ImageObject_004AEB08 {
     UiTransferMailboxTickCounter at_g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
     uint32_t at_g_UiTransferMailboxTickCounter_rest[1]; /* beyond the declared type */
-} ImageData_004AE95C;
-extern ImageData_004AE95C g_ImageData_004AE95C;
+} ImageObject_004AEB08;
+extern ImageObject_004AEB08 g_ImageObject_004AEB08;
 
 /* original 0x004AF198-0x004AF1A0 */
-typedef struct ImageData_004AF198 {
+typedef struct ImageObject_004AF198 {
     uint8_t at_gap_004AF198[8]; /* 004AF198 gap */
-} ImageData_004AF198;
-extern ImageData_004AF198 g_ImageData_004AF198;
+} ImageObject_004AF198;
+extern ImageObject_004AF198 g_ImageObject_004AF198;
 
 /* original 0x004AF1D4-0x004AF210 */
-typedef struct ImageData_004AF1D4 {
+typedef struct ImageObject_004AF1D4 {
     uint8_t at_gap_004AF1D4[12]; /* 004AF1D4 gap */
+} ImageObject_004AF1D4;
+extern ImageObject_004AF1D4 g_ImageObject_004AF1D4;
+typedef struct ImageObject_004AF1E0 {
     UiTooltipState at_g_UiTooltipState; /* 004AF1E0 g_UiTooltipState */
+} ImageObject_004AF1E0;
+extern ImageObject_004AF1E0 g_ImageObject_004AF1E0;
+typedef struct ImageObject_004AF1F0 {
     uint32_t at_g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
+} ImageObject_004AF1F0;
+extern ImageObject_004AF1F0 g_ImageObject_004AF1F0;
+typedef struct ImageObject_004AF1F4 {
     UiDirtyRectCount at_g_UiDirtyRectCount; /* 004AF1F4 g_UiDirtyRectCount */
+} ImageObject_004AF1F4;
+extern ImageObject_004AF1F4 g_ImageObject_004AF1F4;
+typedef struct ImageObject_004AF1F8 {
     UiDirtyRectEntry * at_g_UiDirtyRectEntries; /* 004AF1F8 g_UiDirtyRectEntries */
+} ImageObject_004AF1F8;
+extern ImageObject_004AF1F8 g_ImageObject_004AF1F8;
+typedef struct ImageObject_004AF1FC {
     UiActionQueueUsedBytes at_g_UiActionQueueUsedBytes; /* 004AF1FC g_UiActionQueueUsedBytes */
+} ImageObject_004AF1FC;
+extern ImageObject_004AF1FC g_ImageObject_004AF1FC;
+typedef struct ImageObject_004AF200 {
     UiActionQueueEntry * at_g_UiActionQueueEntries; /* 004AF200 g_UiActionQueueEntries */
+} ImageObject_004AF200;
+extern ImageObject_004AF200 g_ImageObject_004AF200;
+typedef struct ImageObject_004AF204 {
     uint32_t at_g_UiRuntimeInitializationCount; /* 004AF204 g_UiRuntimeInitializationCount */
+} ImageObject_004AF204;
+extern ImageObject_004AF204 g_ImageObject_004AF204;
+typedef struct ImageObject_004AF208 {
     uint32_t at_g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
     uint32_t at_g_UiInvalidationSuppressed_rest[1]; /* beyond the declared type */
-} ImageData_004AF1D4;
-extern ImageData_004AF1D4 g_ImageData_004AF1D4;
+} ImageObject_004AF208;
+extern ImageObject_004AF208 g_ImageObject_004AF208;
 
 /* original 0x004AF39C-0x004AF3B0 */
-typedef struct ImageData_004AF39C {
+typedef struct ImageObject_004AF39C {
     uint8_t at_gap_004AF39C[20]; /* 004AF39C gap */
-} ImageData_004AF39C;
-extern ImageData_004AF39C g_ImageData_004AF39C;
+} ImageObject_004AF39C;
+extern ImageObject_004AF39C g_ImageObject_004AF39C;
 
 /* original 0x004B0A20-0x004B0F30 */
-typedef struct ImageData_004B0A20 {
+typedef struct ImageObject_004B0A20 {
     uint8_t at_gap_004B0A20[16]; /* 004B0A20 gap */
+} ImageObject_004B0A20;
+extern ImageObject_004B0A20 g_ImageObject_004B0A20;
+typedef struct ImageObject_004B0A30 {
     UiActionHandlerPage * at_g_UiActionHandlerPages[256]; /* 004B0A30 g_UiActionHandlerPages */
+} ImageObject_004B0A30;
+extern ImageObject_004B0A30 g_ImageObject_004B0A30;
+typedef struct ImageObject_004B0E30 {
     UiRootNode * at_g_UiRootNode; /* 004B0E30 g_UiRootNode */
+} ImageObject_004B0E30;
+extern ImageObject_004B0E30 g_ImageObject_004B0E30;
+typedef struct ImageObject_004B0E34 {
     GraphicsTextureSourceAsset * at_g_UiWindowTextureSource; /* 004B0E34 g_UiWindowTextureSource */
+} ImageObject_004B0E34;
+extern ImageObject_004B0E34 g_ImageObject_004B0E34;
+typedef struct ImageObject_004B0E38 {
     GraphicsTextureSourceAsset * at_g_UiWindowClassTextureSource; /* 004B0E38 g_UiWindowClassTextureSource */
+} ImageObject_004B0E38;
+extern ImageObject_004B0E38 g_ImageObject_004B0E38;
+typedef struct ImageObject_004B0E3C {
     UiNodeBase * at_g_UiPointerCaptureTarget; /* 004B0E3C g_UiPointerCaptureTarget */
+} ImageObject_004B0E3C;
+extern ImageObject_004B0E3C g_ImageObject_004B0E3C;
+typedef struct ImageObject_004B0E40 {
     UiNodeBase * at_g_UiKeyboardFocusNode; /* 004B0E40 g_UiKeyboardFocusNode */
+} ImageObject_004B0E40;
+extern ImageObject_004B0E40 g_ImageObject_004B0E40;
+typedef struct ImageObject_004B0E44 {
     AudioMixerGainQ15 at_g_UiSoundGainQ15; /* 004B0E44 g_UiSoundGainQ15 */
+} ImageObject_004B0E44;
+extern ImageObject_004B0E44 g_ImageObject_004B0E44;
+typedef struct ImageObject_004B0E48 {
     UiFrameDelayFrames at_g_UiTooltipDelayFrames; /* 004B0E48 g_UiTooltipDelayFrames */
+} ImageObject_004B0E48;
+extern ImageObject_004B0E48 g_ImageObject_004B0E48;
+typedef struct ImageObject_004B0E4C {
     uint32_t at_g_UiTooltipTextStyle; /* 004B0E4C g_UiTooltipTextStyle */
+} ImageObject_004B0E4C;
+extern ImageObject_004B0E4C g_ImageObject_004B0E4C;
+typedef struct ImageObject_004B0E50 {
     int32_t at_g_UiScrollWheelDefaultStep; /* 004B0E50 g_UiScrollWheelDefaultStep: int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
+} ImageObject_004B0E50;
+extern ImageObject_004B0E50 g_ImageObject_004B0E50;
+typedef struct ImageObject_004B0E54 {
     int32_t at_g_UiScrollWheelListStep; /* 004B0E54 g_UiScrollWheelListStep: int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
+} ImageObject_004B0E54;
+extern ImageObject_004B0E54 g_ImageObject_004B0E54;
+typedef struct ImageObject_004B0E58 {
     int32_t at_g_UiRangeSliderDragScale; /* 004B0E58 g_UiRangeSliderDragScale: int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+} ImageObject_004B0E58;
+extern ImageObject_004B0E58 g_ImageObject_004B0E58;
+typedef struct ImageObject_004B0E5C {
     UiFrameDelayFrames at_g_UiTimedListActionDelayFrames; /* 004B0E5C g_UiTimedListActionDelayFrames */
+} ImageObject_004B0E5C;
+extern ImageObject_004B0E5C g_ImageObject_004B0E5C;
+typedef struct ImageObject_004B0E60 {
     UiFrameDelayFrames at_g_UiListActivationPulseFrames; /* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+} ImageObject_004B0E60;
+extern ImageObject_004B0E60 g_ImageObject_004B0E60;
+typedef struct ImageObject_004B0E64 {
     int32_t at_g_UiResizableWindowTitleTextTopOffset; /* 004B0E64 g_UiResizableWindowTitleTextTopOffset: int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+} ImageObject_004B0E64;
+extern ImageObject_004B0E64 g_ImageObject_004B0E64;
+typedef struct ImageObject_004B0E68 {
     UiPackedTextStyle at_g_UiResizableWindowTitleTextStyle; /* 004B0E68 g_UiResizableWindowTitleTextStyle: UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+} ImageObject_004B0E68;
+extern ImageObject_004B0E68 g_ImageObject_004B0E68;
+typedef struct ImageObject_004B0E6C {
     int32_t at_g_UiWindowMoveHandleWidth; /* 004B0E6C g_UiWindowMoveHandleWidth: int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+} ImageObject_004B0E6C;
+extern ImageObject_004B0E6C g_ImageObject_004B0E6C;
+typedef struct ImageObject_004B0E70 {
     int32_t at_g_UiWindowResizeBorderThickness; /* 004B0E70 g_UiWindowResizeBorderThickness */
+} ImageObject_004B0E70;
+extern ImageObject_004B0E70 g_ImageObject_004B0E70;
+typedef struct ImageObject_004B0E74 {
     UiPackedTextStyle at_g_UiTextStyleSelected; /* 004B0E74 g_UiTextStyleSelected: UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
+} ImageObject_004B0E74;
+extern ImageObject_004B0E74 g_ImageObject_004B0E74;
+typedef struct ImageObject_004B0E78 {
     uint32_t at_g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
+} ImageObject_004B0E78;
+extern ImageObject_004B0E78 g_ImageObject_004B0E78;
+typedef struct ImageObject_004B0E7C {
     UiPackedTextStyle at_g_UiTextStyleDisabled; /* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
+} ImageObject_004B0E7C;
+extern ImageObject_004B0E7C g_ImageObject_004B0E7C;
+typedef struct ImageObject_004B0E80 {
     uint32_t at_g_UiTextStyleAlternate; /* 004B0E80 g_UiTextStyleAlternate */
     uint32_t at_g_UiTextStyleAlternate_rest[1]; /* beyond the declared type */
+} ImageObject_004B0E80;
+extern ImageObject_004B0E80 g_ImageObject_004B0E80;
+typedef struct ImageObject_004B0E88 {
     uint32_t at_g_UiWindowTitleTextStyle; /* 004B0E88 g_UiWindowTitleTextStyle */
+} ImageObject_004B0E88;
+extern ImageObject_004B0E88 g_ImageObject_004B0E88;
+typedef struct ImageObject_004B0E8C {
     int32_t at_g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
+} ImageObject_004B0E8C;
+extern ImageObject_004B0E8C g_ImageObject_004B0E8C;
+typedef struct ImageObject_004B0E90 {
     uint32_t at_g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
     uint32_t at_g_UiListTextStyle_rest[1]; /* beyond the declared type */
+} ImageObject_004B0E90;
+extern ImageObject_004B0E90 g_ImageObject_004B0E90;
+typedef struct ImageObject_004B0E98 {
     uint32_t at_g_UiTextEditActiveTextStyle; /* 004B0E98 g_UiTextEditActiveTextStyle */
+} ImageObject_004B0E98;
+extern ImageObject_004B0E98 g_ImageObject_004B0E98;
+typedef struct ImageObject_004B0E9C {
     uint32_t at_g_UiTextEditInactiveTextStyle; /* 004B0E9C g_UiTextEditInactiveTextStyle */
+} ImageObject_004B0E9C;
+extern ImageObject_004B0E9C g_ImageObject_004B0E9C;
+typedef struct ImageObject_004B0EA0 {
     uint32_t at_g_UiTextEditDisabledTextStyle; /* 004B0EA0 g_UiTextEditDisabledTextStyle */
+} ImageObject_004B0EA0;
+extern ImageObject_004B0EA0 g_ImageObject_004B0EA0;
+typedef struct ImageObject_004B0EA4 {
     UiFrameDelayFrames at_g_UiTextEditCaretBlinkPhaseStep; /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep: UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags (src/ui/controls/text.c). */
+} ImageObject_004B0EA4;
+extern ImageObject_004B0EA4 g_ImageObject_004B0EA4;
+typedef struct ImageObject_004B0EA8 {
     int32_t at_g_UiHorizontalGaugeLabelTopInset; /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset: int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+} ImageObject_004B0EA8;
+extern ImageObject_004B0EA8 g_ImageObject_004B0EA8;
+typedef struct ImageObject_004B0EAC {
     uint32_t at_g_UiHorizontalGaugeLabelTextStyle; /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
+} ImageObject_004B0EAC;
+extern ImageObject_004B0EAC g_ImageObject_004B0EAC;
+typedef struct ImageObject_004B0EB0 {
     UiRootStackActionHandlerPage2 at_g_UiRootStackActionHandlerPage; /* 004B0EB0 g_UiRootStackActionHandlerPage */
+} ImageObject_004B0EB0;
+extern ImageObject_004B0EB0 g_ImageObject_004B0EB0;
+typedef struct ImageObject_004B0EB8 {
     uint16_t at_g_UiWindowClassTexturePathUtf16[20]; /* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
+} ImageObject_004B0EB8;
+extern ImageObject_004B0EB8 g_ImageObject_004B0EB8;
+typedef struct ImageObject_004B0EE0 {
     uint16_t at_g_UiWindowClassTextPathUtf16[19]; /* 004B0EE0 g_UiWindowClassTextPathUtf16 */
+} ImageObject_004B0EE0;
+extern ImageObject_004B0EE0 g_ImageObject_004B0EE0;
+typedef struct ImageObject_004B0F06 {
     uint16_t at_g_UiWindowTexturePathUtf16[15]; /* 004B0F06 g_UiWindowTexturePathUtf16 */
+} ImageObject_004B0F06;
+extern ImageObject_004B0F06 g_ImageObject_004B0F06;
+typedef struct ImageObject_004B0F24 {
     UiPointerCaptureButton at_g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
     uint8_t at_g_UiPointerCaptureButton_rest_tail[3];
+} ImageObject_004B0F24;
+extern ImageObject_004B0F24 g_ImageObject_004B0F24;
+typedef struct ImageObject_004B0F28 {
     UiImageControl * at_g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
     uint32_t at_g_UiImageControlHoverTarget_rest[1]; /* beyond the declared type */
-} ImageData_004B0A20;
-extern ImageData_004B0A20 g_ImageData_004B0A20;
+} ImageObject_004B0F28;
+extern ImageObject_004B0F28 g_ImageObject_004B0F28;
 
 /* original 0x004B1500-0x004B1510 */
-typedef struct ImageData_004B1500 {
+typedef struct ImageObject_004B1500 {
     uint8_t at_gap_004B1500[16]; /* 004B1500 gap */
-} ImageData_004B1500;
-extern ImageData_004B1500 g_ImageData_004B1500;
+} ImageObject_004B1500;
+extern ImageObject_004B1500 g_ImageObject_004B1500;
 
 /* original 0x004B15C8-0x004B1620 */
-typedef struct ImageData_004B15C8 {
+typedef struct ImageObject_004B15C8 {
     uint8_t at_gap_004B15C8[8]; /* 004B15C8 gap */
+} ImageObject_004B15C8;
+extern ImageObject_004B15C8 g_ImageObject_004B15C8;
+typedef struct ImageObject_004B15D0 {
     UiNodeVtable at_g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
     uint32_t at_g_UiSpriteButtonControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B15C8;
-extern ImageData_004B15C8 g_ImageData_004B15C8;
+} ImageObject_004B15D0;
+extern ImageObject_004B15D0 g_ImageObject_004B15D0;
 
 /* original 0x004B1D74-0x004B1DD0 */
-typedef struct ImageData_004B1D74 {
+typedef struct ImageObject_004B1D74 {
     uint8_t at_gap_004B1D74[12]; /* 004B1D74 gap */
+} ImageObject_004B1D74;
+extern ImageObject_004B1D74 g_ImageObject_004B1D74;
+typedef struct ImageObject_004B1D80 {
     UiNodeVtable at_g_UiNodeVtable_004B1D80; /* 004B1D80 g_UiNodeVtable_004B1D80 */
     uint32_t at_g_UiNodeVtable_004B1D80_rest[2]; /* beyond the declared type */
-} ImageData_004B1D74;
-extern ImageData_004B1D74 g_ImageData_004B1D74;
+} ImageObject_004B1D80;
+extern ImageObject_004B1D80 g_ImageObject_004B1D80;
 
 /* original 0x004B2734-0x004B2790 */
-typedef struct ImageData_004B2734 {
+typedef struct ImageObject_004B2734 {
     uint8_t at_gap_004B2734[12]; /* 004B2734 gap */
+} ImageObject_004B2734;
+extern ImageObject_004B2734 g_ImageObject_004B2734;
+typedef struct ImageObject_004B2740 {
     UiNodeVtable at_g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
     uint32_t at_g_UiWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B2734;
-extern ImageData_004B2734 g_ImageData_004B2734;
+} ImageObject_004B2740;
+extern ImageObject_004B2740 g_ImageObject_004B2740;
 
 /* original 0x004B2CD8-0x004B2D30 */
-typedef struct ImageData_004B2CD8 {
+typedef struct ImageObject_004B2CD8 {
     uint8_t at_gap_004B2CD8[8]; /* 004B2CD8 gap */
+} ImageObject_004B2CD8;
+extern ImageObject_004B2CD8 g_ImageObject_004B2CD8;
+typedef struct ImageObject_004B2CE0 {
     UiNodeVtable at_g_UiNodeVtable_004B2CE0; /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
     uint32_t at_g_UiNodeVtable_004B2CE0_rest[2]; /* beyond the declared type */
-} ImageData_004B2CD8;
-extern ImageData_004B2CD8 g_ImageData_004B2CD8;
+} ImageObject_004B2CE0;
+extern ImageObject_004B2CE0 g_ImageObject_004B2CE0;
 
 /* original 0x004B33D0-0x004B3420 */
-typedef struct ImageData_004B33D0 {
+typedef struct ImageObject_004B33D0 {
     UiNodeVtable at_g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
     uint32_t at_g_UiTitledWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B33D0;
-extern ImageData_004B33D0 g_ImageData_004B33D0;
+} ImageObject_004B33D0;
+extern ImageObject_004B33D0 g_ImageObject_004B33D0;
 
 /* original 0x004B3760-0x004B37C0 */
-typedef struct ImageData_004B3760 {
+typedef struct ImageObject_004B3760 {
     uint8_t at_gap_004B3760[16]; /* 004B3760 gap */
+} ImageObject_004B3760;
+extern ImageObject_004B3760 g_ImageObject_004B3760;
+typedef struct ImageObject_004B3770 {
     UiNodeVtable at_g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
     uint32_t at_g_UiImagePanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B3760;
-extern ImageData_004B3760 g_ImageData_004B3760;
+} ImageObject_004B3770;
+extern ImageObject_004B3770 g_ImageObject_004B3770;
 
 /* original 0x004B3A48-0x004B3AA0 */
-typedef struct ImageData_004B3A48 {
+typedef struct ImageObject_004B3A48 {
     uint8_t at_gap_004B3A48[8]; /* 004B3A48 gap */
+} ImageObject_004B3A48;
+extern ImageObject_004B3A48 g_ImageObject_004B3A48;
+typedef struct ImageObject_004B3A50 {
     UiNodeVtable at_g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
     uint32_t at_g_UiFillPanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B3A48;
-extern ImageData_004B3A48 g_ImageData_004B3A48;
+} ImageObject_004B3A50;
+extern ImageObject_004B3A50 g_ImageObject_004B3A50;
 
 /* original 0x004B3C1C-0x004B3C80 */
-typedef struct ImageData_004B3C1C {
+typedef struct ImageObject_004B3C1C {
     uint8_t at_gap_004B3C1C[4]; /* 004B3C1C gap */
+} ImageObject_004B3C1C;
+extern ImageObject_004B3C1C g_ImageObject_004B3C1C;
+typedef struct ImageObject_004B3C20 {
     UiNodeVtable at_g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
+} ImageObject_004B3C20;
+extern ImageObject_004B3C20 g_ImageObject_004B3C20;
+typedef struct ImageObject_004B3C68 {
     uint16_t at_g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
     uint32_t at_g_UiWindowPercentTextUtf16_rest[3]; /* beyond the declared type */
     uint8_t at_g_UiWindowPercentTextUtf16_rest_tail[2];
-} ImageData_004B3C1C;
-extern ImageData_004B3C1C g_ImageData_004B3C1C;
+} ImageObject_004B3C68;
+extern ImageObject_004B3C68 g_ImageObject_004B3C68;
 
 /* original 0x004B3EEC-0x004B3F40 */
-typedef struct ImageData_004B3EEC {
+typedef struct ImageObject_004B3EEC {
     uint8_t at_gap_004B3EEC[4]; /* 004B3EEC gap */
+} ImageObject_004B3EEC;
+extern ImageObject_004B3EEC g_ImageObject_004B3EEC;
+typedef struct ImageObject_004B3EF0 {
     UiNodeVtable at_g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
     uint32_t at_g_UiRangeSliderControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B3EEC;
-extern ImageData_004B3EEC g_ImageData_004B3EEC;
+} ImageObject_004B3EF0;
+extern ImageObject_004B3EF0 g_ImageObject_004B3EF0;
 
 /* original 0x004B4648-0x004B46A0 */
-typedef struct ImageData_004B4648 {
+typedef struct ImageObject_004B4648 {
     uint8_t at_gap_004B4648[8]; /* 004B4648 gap */
+} ImageObject_004B4648;
+extern ImageObject_004B4648 g_ImageObject_004B4648;
+typedef struct ImageObject_004B4650 {
     UiNodeVtable at_g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
     uint32_t at_g_UiLayoutContainerControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B4648;
-extern ImageData_004B4648 g_ImageData_004B4648;
+} ImageObject_004B4650;
+extern ImageObject_004B4650 g_ImageObject_004B4650;
 
 /* original 0x004B494C-0x004B49A0 */
-typedef struct ImageData_004B494C {
+typedef struct ImageObject_004B494C {
     uint8_t at_gap_004B494C[4]; /* 004B494C gap */
+} ImageObject_004B494C;
+extern ImageObject_004B494C g_ImageObject_004B494C;
+typedef struct ImageObject_004B4950 {
     UiNodeVtable at_g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
     uint32_t at_g_UiPanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B494C;
-extern ImageData_004B494C g_ImageData_004B494C;
+} ImageObject_004B4950;
+extern ImageObject_004B4950 g_ImageObject_004B4950;
 
 /* original 0x004B4CB8-0x004B4D10 */
-typedef struct ImageData_004B4CB8 {
+typedef struct ImageObject_004B4CB8 {
     uint8_t at_gap_004B4CB8[8]; /* 004B4CB8 gap */
+} ImageObject_004B4CB8;
+extern ImageObject_004B4CB8 g_ImageObject_004B4CB8;
+typedef struct ImageObject_004B4CC0 {
     UiNodeVtable at_g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
     uint32_t at_g_UiResizableWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B4CB8;
-extern ImageData_004B4CB8 g_ImageData_004B4CB8;
+} ImageObject_004B4CC0;
+extern ImageObject_004B4CC0 g_ImageObject_004B4CC0;
 
 /* original 0x004B5890-0x004B58F0 */
-typedef struct ImageData_004B5890 {
+typedef struct ImageObject_004B5890 {
     uint8_t at_gap_004B5890[16]; /* 004B5890 gap */
+} ImageObject_004B5890;
+extern ImageObject_004B5890 g_ImageObject_004B5890;
+typedef struct ImageObject_004B58A0 {
     UiNodeVtable at_g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
     uint32_t at_g_UiNumericTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B5890;
-extern ImageData_004B5890 g_ImageData_004B5890;
+} ImageObject_004B58A0;
+extern ImageObject_004B58A0 g_ImageObject_004B58A0;
 
 /* original 0x004B67F4-0x004B6850 */
-typedef struct ImageData_004B67F4 {
+typedef struct ImageObject_004B67F4 {
     uint8_t at_gap_004B67F4[12]; /* 004B67F4 gap */
+} ImageObject_004B67F4;
+extern ImageObject_004B67F4 g_ImageObject_004B67F4;
+typedef struct ImageObject_004B6800 {
     UiNodeVtable at_g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
     uint32_t at_g_UiPathTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B67F4;
-extern ImageData_004B67F4 g_ImageData_004B67F4;
+} ImageObject_004B6800;
+extern ImageObject_004B6800 g_ImageObject_004B6800;
 
 /* original 0x004B7048-0x004B70A0 */
-typedef struct ImageData_004B7048 {
+typedef struct ImageObject_004B7048 {
     uint8_t at_gap_004B7048[8]; /* 004B7048 gap */
+} ImageObject_004B7048;
+extern ImageObject_004B7048 g_ImageObject_004B7048;
+typedef struct ImageObject_004B7050 {
     UiNodeVtable at_g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
     uint32_t at_g_UiRequiredTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B7048;
-extern ImageData_004B7048 g_ImageData_004B7048;
+} ImageObject_004B7050;
+extern ImageObject_004B7050 g_ImageObject_004B7050;
 
 /* original 0x004B7914-0x004B7970 */
-typedef struct ImageData_004B7914 {
+typedef struct ImageObject_004B7914 {
     uint8_t at_gap_004B7914[12]; /* 004B7914 gap */
+} ImageObject_004B7914;
+extern ImageObject_004B7914 g_ImageObject_004B7914;
+typedef struct ImageObject_004B7920 {
     UiNodeVtable at_g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
     uint32_t at_g_UiScrollableControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B7914;
-extern ImageData_004B7914 g_ImageData_004B7914;
+} ImageObject_004B7920;
+extern ImageObject_004B7920 g_ImageObject_004B7920;
 
 /* original 0x004B9530-0x004B9580 */
-typedef struct ImageData_004B9530 {
+typedef struct ImageObject_004B9530 {
     UiNodeVtable at_g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
     uint32_t at_g_UiFocusProxyControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B9530;
-extern ImageData_004B9530 g_ImageData_004B9530;
+} ImageObject_004B9530;
+extern ImageObject_004B9530 g_ImageObject_004B9530;
 
 /* original 0x004B9E38-0x004B9E90 */
-typedef struct ImageData_004B9E38 {
+typedef struct ImageObject_004B9E38 {
     uint8_t at_gap_004B9E38[8]; /* 004B9E38 gap */
+} ImageObject_004B9E38;
+extern ImageObject_004B9E38 g_ImageObject_004B9E38;
+typedef struct ImageObject_004B9E40 {
     UiNodeVtable at_g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
     uint32_t at_g_UiTextListControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004B9E38;
-extern ImageData_004B9E38 g_ImageData_004B9E38;
+} ImageObject_004B9E40;
+extern ImageObject_004B9E40 g_ImageObject_004B9E40;
 
 /* original 0x004BA58C-0x004BADE0 */
-typedef struct ImageData_004BA58C {
+typedef struct ImageObject_004BA58C {
     uint8_t at_gap_004BA58C[4]; /* 004BA58C gap */
+} ImageObject_004BA58C;
+extern ImageObject_004BA58C g_ImageObject_004BA58C;
+typedef struct ImageObject_004BA590 {
     UiNodeVtable at_g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
+} ImageObject_004BA590;
+extern ImageObject_004BA590 g_ImageObject_004BA590;
+typedef struct ImageObject_004BA5D8 {
     uint8_t at_g_UiPointerListExpandedLeftTextUtf16; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
     uint32_t at_g_UiPointerListExpandedLeftTextUtf16_rest[255]; /* beyond the declared type */
     uint8_t at_g_UiPointerListExpandedLeftTextUtf16_rest_tail[3];
+} ImageObject_004BA5D8;
+extern ImageObject_004BA5D8 g_ImageObject_004BA5D8;
+typedef struct ImageObject_004BA9D8 {
     uint8_t at_g_UiPointerListExpandedRightTextUtf16; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16 */
     uint32_t at_g_UiPointerListExpandedRightTextUtf16_rest[257]; /* beyond the declared type */
     uint8_t at_g_UiPointerListExpandedRightTextUtf16_rest_tail[3];
-} ImageData_004BA58C;
-extern ImageData_004BA58C g_ImageData_004BA58C;
+} ImageObject_004BA9D8;
+extern ImageObject_004BA9D8 g_ImageObject_004BA9D8;
 
 /* original 0x004BB988-0x004BB9E0 */
-typedef struct ImageData_004BB988 {
+typedef struct ImageObject_004BB988 {
     uint8_t at_gap_004BB988[8]; /* 004BB988 gap */
+} ImageObject_004BB988;
+extern ImageObject_004BB988 g_ImageObject_004BB988;
+typedef struct ImageObject_004BB990 {
     UiNodeVtable at_g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
     uint32_t at_g_UiTimedListControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004BB988;
-extern ImageData_004BB988 g_ImageData_004BB988;
+} ImageObject_004BB990;
+extern ImageObject_004BB990 g_ImageObject_004BB990;
 
 /* original 0x004BC404-0x004BC460 */
-typedef struct ImageData_004BC404 {
+typedef struct ImageObject_004BC404 {
     uint8_t at_gap_004BC404[12]; /* 004BC404 gap */
+} ImageObject_004BC404;
+extern ImageObject_004BC404 g_ImageObject_004BC404;
+typedef struct ImageObject_004BC410 {
     UiNodeVtable at_g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
     uint32_t at_g_UiListOffsetControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004BC404;
-extern ImageData_004BC404 g_ImageData_004BC404;
+} ImageObject_004BC410;
+extern ImageObject_004BC410 g_ImageObject_004BC410;
 
 /* original 0x004BC564-0x004BC5C0 */
-typedef struct ImageData_004BC564 {
+typedef struct ImageObject_004BC564 {
     uint8_t at_gap_004BC564[12]; /* 004BC564 gap */
+} ImageObject_004BC564;
+extern ImageObject_004BC564 g_ImageObject_004BC564;
+typedef struct ImageObject_004BC570 {
     UiNodeVtable at_g_UiNodeVtable_004BC570; /* 004BC570 g_UiNodeVtable_004BC570 */
     uint32_t at_g_UiNodeVtable_004BC570_rest[2]; /* beyond the declared type */
-} ImageData_004BC564;
-extern ImageData_004BC564 g_ImageData_004BC564;
+} ImageObject_004BC570;
+extern ImageObject_004BC570 g_ImageObject_004BC570;
 
 /* original 0x004BCC20-0x004BCC80 */
-typedef struct ImageData_004BCC20 {
+typedef struct ImageObject_004BCC20 {
     uint8_t at_gap_004BCC20[16]; /* 004BCC20 gap */
+} ImageObject_004BCC20;
+extern ImageObject_004BCC20 g_ImageObject_004BCC20;
+typedef struct ImageObject_004BCC30 {
     UiNodeVtable at_g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
     uint32_t at_g_UiNineSlicePanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_004BCC20;
-extern ImageData_004BCC20 g_ImageData_004BCC20;
+} ImageObject_004BCC30;
+extern ImageObject_004BCC30 g_ImageObject_004BCC30;
 
 /* original 0x004BCF14-0x004BCF70 */
-typedef struct ImageData_004BCF14 {
+typedef struct ImageObject_004BCF14 {
     uint8_t at_gap_004BCF14[12]; /* 004BCF14 gap */
+} ImageObject_004BCF14;
+extern ImageObject_004BCF14 g_ImageObject_004BCF14;
+typedef struct ImageObject_004BCF20 {
     GraphicsFixedMatrix3x4 at_g_GraphicsDirectionInverseTransform; /* 004BCF20 g_GraphicsDirectionInverseTransform */
+} ImageObject_004BCF20;
+extern ImageObject_004BCF20 g_ImageObject_004BCF20;
+typedef struct ImageObject_004BCF50 {
     GraphicsFixedVec3 at_g_GraphicsDirectionWorld; /* 004BCF50 g_GraphicsDirectionWorld */
+} ImageObject_004BCF50;
+extern ImageObject_004BCF50 g_ImageObject_004BCF50;
+typedef struct ImageObject_004BCF5C {
     GraphicsFixedVec3 at_g_GraphicsDirectionLocal; /* 004BCF5C g_GraphicsDirectionLocal */
+} ImageObject_004BCF5C;
+extern ImageObject_004BCF5C g_ImageObject_004BCF5C;
+typedef struct ImageObject_004BCF68 {
     uint32_t at_g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
     uint32_t at_g_GraphicsIntensityClampTableBase_rest[1]; /* beyond the declared type */
-} ImageData_004BCF14;
-extern ImageData_004BCF14 g_ImageData_004BCF14;
+} ImageObject_004BCF68;
+extern ImageObject_004BCF68 g_ImageObject_004BCF68;
 
 /* original 0x004BD2C4-0x004BD310 */
-typedef struct ImageData_004BD2C4 {
+typedef struct ImageObject_004BD2C4 {
     uint8_t at_gap_004BD2C4[28]; /* 004BD2C4 gap */
+} ImageObject_004BD2C4;
+extern ImageObject_004BD2C4 g_ImageObject_004BD2C4;
+typedef struct ImageObject_004BD2E0 {
     int32_t at_g_ModelBoundsMinimumX; /* 004BD2E0 g_ModelBoundsMinimumX */
+} ImageObject_004BD2E0;
+extern ImageObject_004BD2E0 g_ImageObject_004BD2E0;
+typedef struct ImageObject_004BD2E4 {
     int32_t at_g_ModelBoundsMaximumX; /* 004BD2E4 g_ModelBoundsMaximumX */
+} ImageObject_004BD2E4;
+extern ImageObject_004BD2E4 g_ImageObject_004BD2E4;
+typedef struct ImageObject_004BD2E8 {
     int32_t at_g_ModelBoundsMinimumY; /* 004BD2E8 g_ModelBoundsMinimumY */
+} ImageObject_004BD2E8;
+extern ImageObject_004BD2E8 g_ImageObject_004BD2E8;
+typedef struct ImageObject_004BD2EC {
     int32_t at_g_ModelBoundsMaximumY; /* 004BD2EC g_ModelBoundsMaximumY */
+} ImageObject_004BD2EC;
+extern ImageObject_004BD2EC g_ImageObject_004BD2EC;
+typedef struct ImageObject_004BD2F0 {
     int32_t at_g_ModelBoundsMinimumZ; /* 004BD2F0 g_ModelBoundsMinimumZ */
+} ImageObject_004BD2F0;
+extern ImageObject_004BD2F0 g_ImageObject_004BD2F0;
+typedef struct ImageObject_004BD2F4 {
     int32_t at_g_ModelBoundsMaximumZ; /* 004BD2F4 g_ModelBoundsMaximumZ */
+} ImageObject_004BD2F4;
+extern ImageObject_004BD2F4 g_ImageObject_004BD2F4;
+typedef struct ImageObject_004BD2F8 {
     int32_t at_g_ModelBoundsTransformedPointX; /* 004BD2F8 g_ModelBoundsTransformedPointX */
     int32_t at_g_ModelBoundsTransformedPointY; /* 004BD2FC g_ModelBoundsTransformedPointY */
     int32_t at_g_ModelBoundsTransformedPointZ; /* 004BD300 g_ModelBoundsTransformedPointZ */
     uint32_t at_g_ModelBoundsTransformedPointZ_rest[3]; /* beyond the declared type */
-} ImageData_004BD2C4;
-extern ImageData_004BD2C4 g_ImageData_004BD2C4;
+} ImageObject_004BD2F8;
+extern ImageObject_004BD2F8 g_ImageObject_004BD2F8;
 
 /* original 0x004BD440-0x004BD4B0 */
-typedef struct ImageData_004BD440 {
+typedef struct ImageObject_004BD440 {
     uint8_t at_gap_004BD440[16]; /* 004BD440 gap */
+} ImageObject_004BD440;
+extern ImageObject_004BD440 g_ImageObject_004BD440;
+typedef struct ImageObject_004BD450 {
     uint8_t at_g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
     uint32_t at_g_ModelViewCompositeTransform_rest[11]; /* beyond the declared type */
     uint8_t at_g_ModelViewCompositeTransform_rest_tail[3];
+} ImageObject_004BD450;
+extern ImageObject_004BD450 g_ImageObject_004BD450;
+typedef struct ImageObject_004BD480 {
     uint8_t at_g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
     uint32_t at_g_ModelViewDirectionLocal_rest[2]; /* beyond the declared type */
     uint8_t at_g_ModelViewDirectionLocal_rest_tail[3];
+} ImageObject_004BD480;
+extern ImageObject_004BD480 g_ImageObject_004BD480;
+typedef struct ImageObject_004BD48C {
     uint8_t at_g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
     uint32_t at_g_ModelViewDirectionWorld_rest[2]; /* beyond the declared type */
     uint8_t at_g_ModelViewDirectionWorld_rest_tail[3];
+} ImageObject_004BD48C;
+extern ImageObject_004BD48C g_ImageObject_004BD48C;
+typedef struct ImageObject_004BD498 {
     uint8_t at_g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
     uint32_t at_g_ModelAuxiliaryForwardDirectionLocal_rest[5]; /* beyond the declared type */
     uint8_t at_g_ModelAuxiliaryForwardDirectionLocal_rest_tail[3];
-} ImageData_004BD440;
-extern ImageData_004BD440 g_ImageData_004BD440;
+} ImageObject_004BD498;
+extern ImageObject_004BD498 g_ImageObject_004BD498;
 
 /* original 0x004BD880-0x004BD8D0 */
-typedef struct ImageData_004BD880 {
+typedef struct ImageObject_004BD880 {
     uint8_t at_gap_004BD880[16]; /* 004BD880 gap */
+} ImageObject_004BD880;
+extern ImageObject_004BD880 g_ImageObject_004BD880;
+typedef struct ImageObject_004BD890 {
     ArmyPlacementContactCallbackTable5 at_g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
     uint32_t at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
+} ImageObject_004BD890;
+extern ImageObject_004BD890 g_ImageObject_004BD890;
+typedef struct ImageObject_004BD8B0 {
     uint32_t at_g_ModelCullViewRelativeX; /* 004BD8B0 g_ModelCullViewRelativeX */
     uint32_t at_g_ModelCullViewRelativeY; /* 004BD8B4 g_ModelCullViewRelativeY */
     uint32_t at_g_ModelCullViewRelativeZ; /* 004BD8B8 g_ModelCullViewRelativeZ */
     uint32_t at_g_ModelCullViewRelativeZ_rest[3]; /* beyond the declared type */
+} ImageObject_004BD8B0;
+extern ImageObject_004BD8B0 g_ImageObject_004BD8B0;
+typedef struct ImageObject_004BD8C8 {
     SpriteAssetHeader * at_g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
     uint32_t at_g_SpriteAssetRegistryHead_rest[1]; /* beyond the declared type */
-} ImageData_004BD880;
-extern ImageData_004BD880 g_ImageData_004BD880;
+} ImageObject_004BD8C8;
+extern ImageObject_004BD8C8 g_ImageObject_004BD8C8;
 
 /* original 0x004BEA6C-0x004BEB20 */
-typedef struct ImageData_004BEA6C {
+typedef struct ImageObject_004BEA6C {
     uint8_t at_gap_004BEA6C[4]; /* 004BEA6C gap */
+} ImageObject_004BEA6C;
+extern ImageObject_004BEA6C g_ImageObject_004BEA6C;
+typedef struct ImageObject_004BEA70 {
     GraphicsFixedMatrix3x4 at_g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
+} ImageObject_004BEA70;
+extern ImageObject_004BEA70 g_ImageObject_004BEA70;
+typedef struct ImageObject_004BEAA0 {
     GraphicsFixedMatrix3x4 at_g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
+} ImageObject_004BEAA0;
+extern ImageObject_004BEAA0 g_ImageObject_004BEAA0;
+typedef struct ImageObject_004BEAD0 {
     GraphicsFixedMatrix3x4 at_g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
+} ImageObject_004BEAD0;
+extern ImageObject_004BEAD0 g_ImageObject_004BEAD0;
+typedef struct ImageObject_004BEB00 {
     int32_t at_g_ModelTransformInputX; /* 004BEB00 g_ModelTransformInputX */
     int32_t at_g_ModelTransformInputY; /* 004BEB04 g_ModelTransformInputY */
     int32_t at_g_ModelTransformInputZ; /* 004BEB08 g_ModelTransformInputZ */
+} ImageObject_004BEB00;
+extern ImageObject_004BEB00 g_ImageObject_004BEB00;
+typedef struct ImageObject_004BEB0C {
     Q12 at_g_ModelTransformOutputX; /* 004BEB0C g_ModelTransformOutputX */
     Q12 at_g_ModelTransformOutputY; /* 004BEB10 g_ModelTransformOutputY */
     Q12 at_g_ModelTransformOutputZ; /* 004BEB14 g_ModelTransformOutputZ */
     uint32_t at_g_ModelTransformOutputZ_rest[2]; /* beyond the declared type */
-} ImageData_004BEA6C;
-extern ImageData_004BEA6C g_ImageData_004BEA6C;
+} ImageObject_004BEB0C;
+extern ImageObject_004BEB0C g_ImageObject_004BEB0C;
 
 /* original 0x004BED4C-0x004CC710 */
-typedef struct ImageData_004BED4C {
+typedef struct ImageObject_004BED4C {
     uint8_t at_gap_004BED4C[3]; /* 004BED4C gap */
+} ImageObject_004BED4C;
+extern ImageObject_004BED4C g_ImageObject_004BED4C;
+typedef struct ImageObject_004BED4F {
     uint8_t at_DAT_004bed4f[1]; /* 004BED4F DAT_004bed4f */
+} ImageObject_004BED4F;
+extern ImageObject_004BED4F g_ImageObject_004BED4F;
+typedef struct ImageObject_004BED50 {
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingRuntimeRecords[256]; /* 004BED50 g_GraphicsShadingRuntimeRecords */
+} ImageObject_004BED50;
+extern ImageObject_004BED50 g_ImageObject_004BED50;
+typedef struct ImageObject_004C2D50 {
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingCompactRecords[256]; /* 004C2D50 g_GraphicsShadingCompactRecords */
+} ImageObject_004C2D50;
+extern ImageObject_004C2D50 g_ImageObject_004C2D50;
+typedef struct ImageObject_004C6D50 {
     GraphicsShadingRecordCount at_g_GraphicsShadingCompactRecordCount; /* 004C6D50 g_GraphicsShadingCompactRecordCount */
+} ImageObject_004C6D50;
+extern ImageObject_004C6D50 g_ImageObject_004C6D50;
+typedef struct ImageObject_004C6D54 {
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingNearbyRecords[256]; /* 004C6D54 g_GraphicsShadingNearbyRecords */
+} ImageObject_004C6D54;
+extern ImageObject_004C6D54 g_ImageObject_004C6D54;
+typedef struct ImageObject_004CAD54 {
     GraphicsShadingRecordCount at_g_GraphicsShadingNearbyRecordCount; /* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelDistanceAttenuationMmxNegativeRows. */
     uint32_t at_g_GraphicsShadingNearbyRecordCount_rest[2]; /* beyond the declared type */
+} ImageObject_004CAD54;
+extern ImageObject_004CAD54 g_ImageObject_004CAD54;
+typedef struct ImageObject_004CAD60 {
     SoftwareBgraWordLanes at_g_ModelDistanceAttenuationMmxNegativeRows[136]; /* 004CAD60 g_ModelDistanceAttenuationMmxNegativeRows: SoftwareBgraWordLanes[136]: rows -136..-1 of g_ModelDistanceAttenuationMmx, which ModelRender_ComputeVertexIntensityDefaultPath indexes with the signed light-facing dot >> 21; B/G/R lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF, alpha lane 0x4000; PMULHW multipliers. */
+} ImageObject_004CAD60;
+extern ImageObject_004CAD60 g_ImageObject_004CAD60;
+typedef struct ImageObject_004CB1A0 {
     SoftwareBgraWordLanes at_g_ModelDistanceAttenuationMmx[546]; /* 004CB1A0 g_ModelDistanceAttenuationMmx */
+} ImageObject_004CB1A0;
+extern ImageObject_004CB1A0 g_ImageObject_004CB1A0;
+typedef struct ImageObject_004CC2B0 {
     SoftwareBgraWordLanes at_g_ModelLightingScaleMmxMultiplierTable[137]; /* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable: SoftwareBgraWordLanes[137]: PMULHW multipliers for ModelRender_ComputeVertexIntensityScaledPath, indexed by (dot / lightingScaleQ12) >> 9 (signed; negative rows fall into g_ModelDistanceAttenuationMmx before it); B/G/R lanes 0x1FFF at row 0 falling by 0x80 to 0x007F, then 0, alpha lane 0x4000. */
+} ImageObject_004CC2B0;
+extern ImageObject_004CC2B0 g_ImageObject_004CC2B0;
+typedef struct ImageObject_004CC6F8 {
     GraphicsFixedVec3 at_g_ModelLightingVertexToLightVectorScratch; /* 004CC6F8 g_ModelLightingVertexToLightVectorScratch */
+} ImageObject_004CC6F8;
+extern ImageObject_004CC6F8 g_ImageObject_004CC6F8;
+typedef struct ImageObject_004CC704 {
     GraphicsFixedVec3 at_g_ModelLightingTransformedSurfaceNormalScratch; /* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
-} ImageData_004BED4C;
-extern ImageData_004BED4C g_ImageData_004BED4C;
+} ImageObject_004CC704;
+extern ImageObject_004CC704 g_ImageObject_004CC704;
 
 /* original 0x004CCDE8-0x004CCFF0 */
-typedef struct ImageData_004CCDE8 {
+typedef struct ImageObject_004CCDE8 {
     uint8_t at_gap_004CCDE8[24]; /* 004CCDE8 gap */
+} ImageObject_004CCDE8;
+extern ImageObject_004CCDE8 g_ImageObject_004CCDE8;
+typedef struct ImageObject_004CCE00 {
     uint32_t at_g_GraphicsShadingTextureDimension; /* 004CCE00 g_GraphicsShadingTextureDimension */
+} ImageObject_004CCE00;
+extern ImageObject_004CCE00 g_ImageObject_004CCE00;
+typedef struct ImageObject_004CCE04 {
     uint32_t at_g_GraphicsShadingGridHalfSize; /* 004CCE04 g_GraphicsShadingGridHalfSize */
+} ImageObject_004CCE04;
+extern ImageObject_004CCE04 g_ImageObject_004CCE04;
+typedef struct ImageObject_004CCE08 {
     uint8_t * at_g_GraphicsShadingGeneratedTexturePixelCursor; /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
+} ImageObject_004CCE08;
+extern ImageObject_004CCE08 g_ImageObject_004CCE08;
+typedef struct ImageObject_004CCE0C {
     uint32_t at_g_GraphicsShadingGeneratedTextureTileX; /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
     uint32_t at_g_GraphicsShadingGeneratedTextureTileY; /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
+} ImageObject_004CCE0C;
+extern ImageObject_004CCE0C g_ImageObject_004CCE0C;
+typedef struct ImageObject_004CCE14 {
     GraphicsSubresourceIndex at_g_GraphicsShadingGeneratedTextureSubresourceIndex; /* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
+} ImageObject_004CCE14;
+extern ImageObject_004CCE14 g_ImageObject_004CCE14;
+typedef struct ImageObject_004CCE18 {
     uint32_t at_g_GraphicsShadingSubresourceCount; /* 004CCE18 g_GraphicsShadingSubresourceCount */
+} ImageObject_004CCE18;
+extern ImageObject_004CCE18 g_ImageObject_004CCE18;
+typedef struct ImageObject_004CCE1C {
     uint32_t at_g_GraphicsShadingGeneratedTextureTileXQ20; /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
     uint32_t at_g_GraphicsShadingGeneratedTextureTileYQ20; /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
+} ImageObject_004CCE1C;
+extern ImageObject_004CCE1C g_ImageObject_004CCE1C;
+typedef struct ImageObject_004CCE24 {
     uint32_t at_g_GraphicsShadingGridStepQ20; /* 004CCE24 g_GraphicsShadingGridStepQ20 */
+} ImageObject_004CCE24;
+extern ImageObject_004CCE24 g_ImageObject_004CCE24;
+typedef struct ImageObject_004CCE28 {
     int32_t at_g_GraphicsShadingGridStepQ20Current; /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
+} ImageObject_004CCE28;
+extern ImageObject_004CCE28 g_ImageObject_004CCE28;
+typedef struct ImageObject_004CCE2C {
     GraphicsTextureSourceAsset * at_g_GraphicsShadingGeneratedAsset; /* 004CCE2C g_GraphicsShadingGeneratedAsset */
+} ImageObject_004CCE2C;
+extern ImageObject_004CCE2C g_ImageObject_004CCE2C;
+typedef struct ImageObject_004CCE30 {
     void * at_g_GraphicsShadingGridScratch; /* 004CCE30 g_GraphicsShadingGridScratch */
+} ImageObject_004CCE30;
+extern ImageObject_004CCE30 g_ImageObject_004CCE30;
+typedef struct ImageObject_004CCE34 {
     pointer at_g_GraphicsShadingGridScratchInterior; /* 004CCE34 g_GraphicsShadingGridScratchInterior */
+} ImageObject_004CCE34;
+extern ImageObject_004CCE34 g_ImageObject_004CCE34;
+typedef struct ImageObject_004CCE38 {
     GraphicsTextureSet * at_g_GraphicsShadingTextureSet; /* 004CCE38 g_GraphicsShadingTextureSet */
+} ImageObject_004CCE38;
+extern ImageObject_004CCE38 g_ImageObject_004CCE38;
+typedef struct ImageObject_004CCE3C {
     uint32_t at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount; /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
+} ImageObject_004CCE3C;
+extern ImageObject_004CCE3C g_ImageObject_004CCE3C;
+typedef struct ImageObject_004CCE40 {
     int32_t at_g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
+} ImageObject_004CCE40;
+extern ImageObject_004CCE40 g_ImageObject_004CCE40;
+typedef struct ImageObject_004CCE44 {
     int32_t at_g_GraphicsShadingNegativeGridOriginQ12; /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
+} ImageObject_004CCE44;
+extern ImageObject_004CCE44 g_ImageObject_004CCE44;
+typedef struct ImageObject_004CCE48 {
     GeneratedTextureScratchRuntime at_g_GeneratedTextureScratchRuntime; /* 004CCE48 g_GeneratedTextureScratchRuntime */
-} ImageData_004CCDE8;
-extern ImageData_004CCDE8 g_ImageData_004CCDE8;
+} ImageObject_004CCE48;
+extern ImageObject_004CCE48 g_ImageObject_004CCE48;
 
 /* original 0x004CD3C0-0x004CD3D0 */
-typedef struct ImageData_004CD3C0 {
+typedef struct ImageObject_004CD3C0 {
     uint8_t at_gap_004CD3C0[16]; /* 004CD3C0 gap */
-} ImageData_004CD3C0;
-extern ImageData_004CD3C0 g_ImageData_004CD3C0;
+} ImageObject_004CD3C0;
+extern ImageObject_004CD3C0 g_ImageObject_004CD3C0;
 
 /* original 0x004D09F4-0x004D0A10 */
-typedef struct ImageData_004D09F4 {
+typedef struct ImageObject_004D09F4 {
     uint8_t at_gap_004D09F4[12]; /* 004D09F4 gap */
+} ImageObject_004D09F4;
+extern ImageObject_004D09F4 g_ImageObject_004D09F4;
+typedef struct ImageObject_004D0A00 {
     GraphicsPrimitiveQueue * at_g_PrimitiveQueueStorage; /* 004D0A00 g_PrimitiveQueueStorage */
+} ImageObject_004D0A00;
+extern ImageObject_004D0A00 g_ImageObject_004D0A00;
+typedef struct ImageObject_004D0A04 {
     uint32_t at_g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
     uint32_t at_g_PrimitiveQueuePoolCapacity_rest[2]; /* beyond the declared type */
-} ImageData_004D09F4;
-extern ImageData_004D09F4 g_ImageData_004D09F4;
+} ImageObject_004D0A04;
+extern ImageObject_004D0A04 g_ImageObject_004D0A04;
 
 /* original 0x004D11B8-0x004D1560 */
-typedef struct ImageData_004D11B8 {
+typedef struct ImageObject_004D11B8 {
     uint8_t at_gap_004D11B8[8]; /* 004D11B8 gap */
+} ImageObject_004D11B8;
+extern ImageObject_004D11B8 g_ImageObject_004D11B8;
+typedef struct ImageObject_004D11C0 {
     SoftwareRasterScanState at_g_SoftwareRasterScanState; /* 004D11C0 g_SoftwareRasterScanState */
+} ImageObject_004D11C0;
+extern ImageObject_004D11C0 g_ImageObject_004D11C0;
+typedef struct ImageObject_004D1234 {
     uint32_t at_g_SoftwareDepthRowStrideBytes; /* 004D1234 g_SoftwareDepthRowStrideBytes */
+} ImageObject_004D1234;
+extern ImageObject_004D1234 g_ImageObject_004D1234;
+typedef struct ImageObject_004D1238 {
     int32_t * at_g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
+} ImageObject_004D1238;
+extern ImageObject_004D1238 g_ImageObject_004D1238;
+typedef struct ImageObject_004D123C {
     void * at_g_SoftwareAuxiliaryTargetBase; /* 004D123C g_SoftwareAuxiliaryTargetBase */
+} ImageObject_004D123C;
+extern ImageObject_004D123C g_ImageObject_004D123C;
+typedef struct ImageObject_004D1240 {
     int32_t at_g_SoftwareDepthEpoch; /* 004D1240 g_SoftwareDepthEpoch */
+} ImageObject_004D1240;
+extern ImageObject_004D1240 g_ImageObject_004D1240;
+typedef struct ImageObject_004D1244 {
     SoftwareDisplayModeHookProc * at_g_SoftwareChainedSetDisplayMode; /* 004D1244 g_SoftwareChainedSetDisplayMode */
+} ImageObject_004D1244;
+extern ImageObject_004D1244 g_ImageObject_004D1244;
+typedef struct ImageObject_004D1248 {
     SoftwareDrawQueueProc * at_g_SoftwareDrawQueue; /* 004D1248 g_SoftwareDrawQueue */
     uint32_t at_g_SoftwareDrawQueue_rest[5]; /* beyond the declared type */
+} ImageObject_004D1248;
+extern ImageObject_004D1248 g_ImageObject_004D1248;
+typedef struct ImageObject_004D1260 {
     SoftwareRasterHandler * at_g_SoftwareRasterHandlers16Bit[64]; /* 004D1260 g_SoftwareRasterHandlers16Bit */
+} ImageObject_004D1260;
+extern ImageObject_004D1260 g_ImageObject_004D1260;
+typedef struct ImageObject_004D1360 {
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersNon16Bit[64]; /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
+} ImageObject_004D1360;
+extern ImageObject_004D1360 g_ImageObject_004D1360;
+typedef struct ImageObject_004D1460 {
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersAuxiliary[64]; /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
-} ImageData_004D11B8;
-extern ImageData_004D11B8 g_ImageData_004D11B8;
+} ImageObject_004D1460;
+extern ImageObject_004D1460 g_ImageObject_004D1460;
 
 /* original 0x004FEA24-0x004FEA50 */
-typedef struct ImageData_004FEA24 {
+typedef struct ImageObject_004FEA24 {
     uint8_t at_gap_004FEA24[12]; /* 004FEA24 gap */
+} ImageObject_004FEA24;
+extern ImageObject_004FEA24 g_ImageObject_004FEA24;
+typedef struct ImageObject_004FEA30 {
     FieldGridInterpolationCallbackTable5 at_g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
     uint32_t at_g_FieldGridInterpolationCallbacks5_rest[3]; /* beyond the declared type */
-} ImageData_004FEA24;
-extern ImageData_004FEA24 g_ImageData_004FEA24;
+} ImageObject_004FEA30;
+extern ImageObject_004FEA30 g_ImageObject_004FEA30;
 
 /* original 0x004FFC78-0x005004A0 */
-typedef struct ImageData_004FFC78 {
+typedef struct ImageObject_004FFC78 {
     uint8_t at_gap_004FFC78[8]; /* 004FFC78 gap */
+} ImageObject_004FFC78;
+extern ImageObject_004FFC78 g_ImageObject_004FFC78;
+typedef struct ImageObject_004FFC80 {
     TerrainProjectedRowSpan at_g_TerrainProjectedRowSpans[260]; /* 004FFC80 g_TerrainProjectedRowSpans */
-} ImageData_004FFC78;
-extern ImageData_004FFC78 g_ImageData_004FFC78;
+} ImageObject_004FFC80;
+extern ImageObject_004FFC80 g_ImageObject_004FFC80;
 
 /* original 0x00501184-0x00503B10 */
-typedef struct ImageData_00501184 {
+typedef struct ImageObject_00501184 {
     uint8_t at_gap_00501184[12]; /* 00501184 gap */
+} ImageObject_00501184;
+extern ImageObject_00501184 g_ImageObject_00501184;
+typedef struct ImageObject_00501190 {
     PackedArgb32 at_g_TerrainLightingColorRampArgb256[256]; /* 00501190 g_TerrainLightingColorRampArgb256 */
+} ImageObject_00501190;
+extern ImageObject_00501190 g_ImageObject_00501190;
+typedef struct ImageObject_00501590 {
     PackedArgb32 at_g_TerrainDirectionalLightColorLut[257]; /* 00501590 g_TerrainDirectionalLightColorLut */
+} ImageObject_00501590;
+extern ImageObject_00501590 g_ImageObject_00501590;
+typedef struct ImageObject_00501994 {
     uint32_t at_g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
+} ImageObject_00501994;
+extern ImageObject_00501994 g_ImageObject_00501994;
+typedef struct ImageObject_00501998 {
     uint32_t at_g_TerrainLightDirectionX; /* 00501998 g_TerrainLightDirectionX */
     uint32_t at_g_TerrainLightDirectionY; /* 0050199C g_TerrainLightDirectionY */
     uint32_t at_g_TerrainLightDirectionZ; /* 005019A0 g_TerrainLightDirectionZ */
+} ImageObject_00501998;
+extern ImageObject_00501998 g_ImageObject_00501998;
+typedef struct ImageObject_005019A4 {
     uint8_t * at_g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
+} ImageObject_005019A4;
+extern ImageObject_005019A4 g_ImageObject_005019A4;
+typedef struct ImageObject_005019A8 {
     TerrainDirectionRecord at_g_TerrainDirectionRecordTable256[256]; /* 005019A8 g_TerrainDirectionRecordTable256 */
     uint32_t at_g_TerrainDirectionRecordTable256_rest[13]; /* beyond the declared type */
+} ImageObject_005019A8;
+extern ImageObject_005019A8 g_ImageObject_005019A8;
+typedef struct ImageObject_005039DC {
     GraphicsTextureSet * at_g_TerrainMaterialTextureSets[26]; /* 005039DC g_TerrainMaterialTextureSets */
     uint32_t at_g_TerrainMaterialTextureSets_rest[12]; /* beyond the declared type */
+} ImageObject_005039DC;
+extern ImageObject_005039DC g_ImageObject_005039DC;
+typedef struct ImageObject_00503A74 {
     GraphicsTextureSet * at_g_TerrainPrimaryTextureSet; /* 00503A74 g_TerrainPrimaryTextureSet */
+} ImageObject_00503A74;
+extern ImageObject_00503A74 g_ImageObject_00503A74;
+typedef struct ImageObject_00503A78 {
     void * at_g_TerrainSoilPacketTablePayload; /* 00503A78 g_TerrainSoilPacketTablePayload */
+} ImageObject_00503A78;
+extern ImageObject_00503A78 g_ImageObject_00503A78;
+typedef struct ImageObject_00503A7C {
     void * at_g_TerrainSurfacePacketTablePayload; /* 00503A7C g_TerrainSurfacePacketTablePayload */
+} ImageObject_00503A7C;
+extern ImageObject_00503A7C g_ImageObject_00503A7C;
+typedef struct ImageObject_00503A80 {
     GraphicsPaletteAsset * at_g_TerrainSecondaryPalette; /* 00503A80 g_TerrainSecondaryPalette */
+} ImageObject_00503A80;
+extern ImageObject_00503A80 g_ImageObject_00503A80;
+typedef struct ImageObject_00503A84 {
     GraphicsPaletteAsset * at_g_TerrainPrimaryPalette; /* 00503A84 g_TerrainPrimaryPalette */
+} ImageObject_00503A84;
+extern ImageObject_00503A84 g_ImageObject_00503A84;
+typedef struct ImageObject_00503A88 {
     uint32_t at_g_UiCommandModeGColorVariantFlags; /* 00503A88 g_UiCommandModeGColorVariantFlags: uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+} ImageObject_00503A88;
+extern ImageObject_00503A88 g_ImageObject_00503A88;
+typedef struct ImageObject_00503A8C {
     uint32_t at_g_UiCommandModeGColorVariantLimit; /* 00503A8C g_UiCommandModeGColorVariantLimit: uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
+} ImageObject_00503A8C;
+extern ImageObject_00503A8C g_ImageObject_00503A8C;
+typedef struct ImageObject_00503A90 {
     TerrainMaterialSuffixEntry at_g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26]; /* 00503A90 g_TerrainMaterialTextureSuffixLettersUtf16AtoZ */
+} ImageObject_00503A90;
+extern ImageObject_00503A90 g_ImageObject_00503A90;
+typedef struct ImageObject_00503AF8 {
     int32_t at_g_TerrainHeightBandMaximumDelta; /* 00503AF8 g_TerrainHeightBandMaximumDelta */
+} ImageObject_00503AF8;
+extern ImageObject_00503AF8 g_ImageObject_00503AF8;
+typedef struct ImageObject_00503AFC {
     int32_t at_g_TerrainHeightBandMinimumDelta; /* 00503AFC g_TerrainHeightBandMinimumDelta */
+} ImageObject_00503AFC;
+extern ImageObject_00503AFC g_ImageObject_00503AFC;
+typedef struct ImageObject_00503B00 {
     int32_t at_g_TerrainAuxHeightMinimum; /* 00503B00 g_TerrainAuxHeightMinimum: int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
+} ImageObject_00503B00;
+extern ImageObject_00503B00 g_ImageObject_00503B00;
+typedef struct ImageObject_00503B04 {
     int32_t at_g_TerrainUnreferencedValue00503B04; /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
     uint32_t at_g_TerrainUnreferencedValue00503B04_rest[2]; /* beyond the declared type */
-} ImageData_00501184;
-extern ImageData_00501184 g_ImageData_00501184;
+} ImageObject_00503B04;
+extern ImageObject_00503B04 g_ImageObject_00503B04;
 
 /* original 0x00505F98-0x005063B0 */
-typedef struct ImageData_00505F98 {
+typedef struct ImageObject_00505F98 {
     uint8_t at_gap_00505F98[8]; /* 00505F98 gap */
+} ImageObject_00505F98;
+extern ImageObject_00505F98 g_ImageObject_00505F98;
+typedef struct ImageObject_00505FA0 {
     int32_t at_g_TerrainHeightDeltaScaleByStepQ12[256]; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
+} ImageObject_00505FA0;
+extern ImageObject_00505FA0 g_ImageObject_00505FA0;
+typedef struct ImageObject_005063A0 {
     uint32_t at_g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
+} ImageObject_005063A0;
+extern ImageObject_005063A0 g_ImageObject_005063A0;
+typedef struct ImageObject_005063A4 {
     uint32_t at_g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
+} ImageObject_005063A4;
+extern ImageObject_005063A4 g_ImageObject_005063A4;
+typedef struct ImageObject_005063A8 {
     TerrainScanSelectorUnion at_g_TerrainScanSharedSelectorValue; /* 005063A8 g_TerrainScanSharedSelectorValue */
+} ImageObject_005063A8;
+extern ImageObject_005063A8 g_ImageObject_005063A8;
+typedef struct ImageObject_005063AC {
     uint32_t at_g_TerrainScanReferenceHeight; /* 005063AC g_TerrainScanReferenceHeight */
-} ImageData_00505F98;
-extern ImageData_00505F98 g_ImageData_00505F98;
+} ImageObject_005063AC;
+extern ImageObject_005063AC g_ImageObject_005063AC;
 
 /* original 0x0050A340-0x0050A430 */
-typedef struct ImageData_0050A340 {
+typedef struct ImageObject_0050A340 {
     uint8_t at_gap_0050A340[16]; /* 0050A340 gap */
+} ImageObject_0050A340;
+extern ImageObject_0050A340 g_ImageObject_0050A340;
+typedef struct ImageObject_0050A350 {
     GraphicsFixedMatrix3x4 at_g_GraphicsTransformScratchMatrix3x4; /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
+} ImageObject_0050A350;
+extern ImageObject_0050A350 g_ImageObject_0050A350;
+typedef struct ImageObject_0050A380 {
     GraphicsFixedVec3 at_g_GraphicsTransformInputScratchVec3; /* 0050A380 g_GraphicsTransformInputScratchVec3 */
     uint32_t at_g_GraphicsTransformInputScratchVec3_rest[9]; /* beyond the declared type */
+} ImageObject_0050A380;
+extern ImageObject_0050A380 g_ImageObject_0050A380;
+typedef struct ImageObject_0050A3B0 {
     GraphicsFixedVec3 at_g_GraphicsTransformOutputScratchVec3; /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
     uint32_t at_g_GraphicsTransformOutputScratchVec3_rest[9]; /* beyond the declared type */
+} ImageObject_0050A3B0;
+extern ImageObject_0050A3B0 g_ImageObject_0050A3B0;
+typedef struct ImageObject_0050A3E0 {
     GraphicsFixedVec3 at_g_GraphicsProjectionScratchVec3; /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
     uint32_t at_g_GraphicsProjectionScratchVec3_rest[1]; /* beyond the declared type */
+} ImageObject_0050A3E0;
+extern ImageObject_0050A3E0 g_ImageObject_0050A3E0;
+typedef struct ImageObject_0050A3F0 {
     GraphicsProjectedPoint2i at_g_ModelProjectedBoundsCornerScratch8[8]; /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
-} ImageData_0050A340;
-extern ImageData_0050A340 g_ImageData_0050A340;
+} ImageObject_0050A3F0;
+extern ImageObject_0050A3F0 g_ImageObject_0050A3F0;
 
 /* original 0x0050AE54-0x0050AEA0 */
-typedef struct ImageData_0050AE54 {
+typedef struct ImageObject_0050AE54 {
     uint8_t at_gap_0050AE54[12]; /* 0050AE54 gap */
+} ImageObject_0050AE54;
+extern ImageObject_0050AE54 g_ImageObject_0050AE54;
+typedef struct ImageObject_0050AE60 {
     int32_t at_g_ModelRaycastMaximumDistance; /* 0050AE60 g_ModelRaycastMaximumDistance */
+} ImageObject_0050AE60;
+extern ImageObject_0050AE60 g_ImageObject_0050AE60;
+typedef struct ImageObject_0050AE64 {
     int32_t at_g_ModelRaycastOriginX; /* 0050AE64 g_ModelRaycastOriginX */
     int32_t at_g_ModelRaycastOriginY; /* 0050AE68 g_ModelRaycastOriginY */
     int32_t at_g_ModelRaycastOriginZ; /* 0050AE6C g_ModelRaycastOriginZ */
+} ImageObject_0050AE64;
+extern ImageObject_0050AE64 g_ImageObject_0050AE64;
+typedef struct ImageObject_0050AE70 {
     int32_t at_g_ModelRaycastLocalOriginX; /* 0050AE70 g_ModelRaycastLocalOriginX */
     int32_t at_g_ModelRaycastLocalOriginY; /* 0050AE74 g_ModelRaycastLocalOriginY */
     int32_t at_g_ModelRaycastLocalOriginZ; /* 0050AE78 g_ModelRaycastLocalOriginZ */
+} ImageObject_0050AE70;
+extern ImageObject_0050AE70 g_ImageObject_0050AE70;
+typedef struct ImageObject_0050AE7C {
     uint32_t at_g_ModelRaycastWorldDirectionXQ28; /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
     uint32_t at_g_ModelRaycastWorldDirectionYQ28; /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
     uint32_t at_g_ModelRaycastWorldDirectionZQ28; /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
+} ImageObject_0050AE7C;
+extern ImageObject_0050AE7C g_ImageObject_0050AE7C;
+typedef struct ImageObject_0050AE88 {
     uint32_t at_g_ModelRaycastLocalDirectionXQ28; /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
     uint32_t at_g_ModelRaycastLocalDirectionYQ28; /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
     uint32_t at_g_ModelRaycastLocalDirectionZQ28; /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
     uint32_t at_g_ModelRaycastLocalDirectionZQ28_rest[3]; /* beyond the declared type */
-} ImageData_0050AE54;
-extern ImageData_0050AE54 g_ImageData_0050AE54;
+} ImageObject_0050AE88;
+extern ImageObject_0050AE88 g_ImageObject_0050AE88;
 
 /* original 0x0050B510-0x0050B5D0 */
-typedef struct ImageData_0050B510 {
+typedef struct ImageObject_0050B510 {
     uint8_t at_gap_0050B510[16]; /* 0050B510 gap */
+} ImageObject_0050B510;
+extern ImageObject_0050B510 g_ImageObject_0050B510;
+typedef struct ImageObject_0050B520 {
     uint8_t at_g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
     uint32_t at_g_SpatialSoundListenerTransform_rest[11]; /* beyond the declared type */
     uint8_t at_g_SpatialSoundListenerTransform_rest_tail[3];
+} ImageObject_0050B520;
+extern ImageObject_0050B520 g_ImageObject_0050B520;
+typedef struct ImageObject_0050B550 {
     GraphicsFixedMatrix3x4 at_g_SpatialSoundListenerRotation; /* 0050B550 g_SpatialSoundListenerRotation */
+} ImageObject_0050B550;
+extern ImageObject_0050B550 g_ImageObject_0050B550;
+typedef struct ImageObject_0050B580 {
     GraphicsFixedMatrix3x4 at_g_SpatialSoundListenerWorldToLocal; /* 0050B580 g_SpatialSoundListenerWorldToLocal */
+} ImageObject_0050B580;
+extern ImageObject_0050B580 g_ImageObject_0050B580;
+typedef struct ImageObject_0050B5B0 {
     uint32_t at_g_SpatialSoundRelativeX; /* 0050B5B0 g_SpatialSoundRelativeX */
     uint32_t at_g_SpatialSoundRelativeY; /* 0050B5B4 g_SpatialSoundRelativeY */
     uint32_t at_g_SpatialSoundRelativeZ; /* 0050B5B8 g_SpatialSoundRelativeZ */
+} ImageObject_0050B5B0;
+extern ImageObject_0050B5B0 g_ImageObject_0050B5B0;
+typedef struct ImageObject_0050B5BC {
     AudioMixerGainQ15 at_g_SoundEffectsGainQ15; /* 0050B5BC g_SoundEffectsGainQ15 */
+} ImageObject_0050B5BC;
+extern ImageObject_0050B5BC g_ImageObject_0050B5BC;
+typedef struct ImageObject_0050B5C0 {
     int32_t at_g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
+} ImageObject_0050B5C0;
+extern ImageObject_0050B5C0 g_ImageObject_0050B5C0;
+typedef struct ImageObject_0050B5C4 {
     SpatialSoundSlot * at_g_SpatialSoundSlots; /* 0050B5C4 g_SpatialSoundSlots */
     uint32_t at_g_SpatialSoundSlots_rest[2]; /* beyond the declared type */
-} ImageData_0050B510;
-extern ImageData_0050B510 g_ImageData_0050B510;
+} ImageObject_0050B5C4;
+extern ImageObject_0050B5C4 g_ImageObject_0050B5C4;
 
 /* original 0x0050BADC-0x0050BB10 */
-typedef struct ImageData_0050BADC {
+typedef struct ImageObject_0050BADC {
     uint8_t at_gap_0050BADC[2]; /* 0050BADC gap */
+} ImageObject_0050BADC;
+extern ImageObject_0050BADC g_ImageObject_0050BADC;
+typedef struct ImageObject_0050BADE {
     UQ12 at_g_WorldMotionTargetDistanceConvergenceStepQ12; /* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
+} ImageObject_0050BADE;
+extern ImageObject_0050BADE g_ImageObject_0050BADE;
+typedef struct ImageObject_0050BAE2 {
     Q12 at_g_WorldMotionPositionMagnitudeInputScaleQ12; /* 0050BAE2 g_WorldMotionPositionMagnitudeInputScaleQ12 */
+} ImageObject_0050BAE2;
+extern ImageObject_0050BAE2 g_ImageObject_0050BAE2;
+typedef struct ImageObject_0050BAE6 {
     uint8_t at_k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
     uint8_t at_k_CameraScreenDeltaDistanceScaleQ16_rest_tail[3];
+} ImageObject_0050BAE6;
+extern ImageObject_0050BAE6 g_ImageObject_0050BAE6;
+typedef struct ImageObject_0050BAEA {
     Q12 at_g_WorldMotionDistanceInputScaleQ12; /* 0050BAEA g_WorldMotionDistanceInputScaleQ12 */
+} ImageObject_0050BAEA;
+extern ImageObject_0050BAEA g_ImageObject_0050BAEA;
+typedef struct ImageObject_0050BAEE {
     AngleTurn32 at_g_WorldMotionHeadingInputScale; /* 0050BAEE g_WorldMotionHeadingInputScale */
+} ImageObject_0050BAEE;
+extern ImageObject_0050BAEE g_ImageObject_0050BAEE;
+typedef struct ImageObject_0050BAF2 {
     AngleTurn32 at_g_WorldMotionPitchInputScale; /* 0050BAF2 g_WorldMotionPitchInputScale */
+} ImageObject_0050BAF2;
+extern ImageObject_0050BAF2 g_ImageObject_0050BAF2;
+typedef struct ImageObject_0050BAF6 {
     int at_g_WorldMotionPointerWheelInputScale; /* 0050BAF6 g_WorldMotionPointerWheelInputScale */
+} ImageObject_0050BAF6;
+extern ImageObject_0050BAF6 g_ImageObject_0050BAF6;
+typedef struct ImageObject_0050BAFA {
     AngleTurn32 at_g_WorldMotionAlternateMinimumPitchAngle; /* 0050BAFA g_WorldMotionAlternateMinimumPitchAngle */
+} ImageObject_0050BAFA;
+extern ImageObject_0050BAFA g_ImageObject_0050BAFA;
+typedef struct ImageObject_0050BAFE {
     AngleTurn32 at_g_WorldMotionAlternateMaximumPitchAngle; /* 0050BAFE g_WorldMotionAlternateMaximumPitchAngle */
+} ImageObject_0050BAFE;
+extern ImageObject_0050BAFE g_ImageObject_0050BAFE;
+typedef struct ImageObject_0050BB02 {
     UQ12 at_g_WorldMotionAlternateMinimumDistanceQ12; /* 0050BB02 g_WorldMotionAlternateMinimumDistanceQ12 */
+} ImageObject_0050BB02;
+extern ImageObject_0050BB02 g_ImageObject_0050BB02;
+typedef struct ImageObject_0050BB06 {
     UQ12 at_g_WorldMotionAlternateMaximumDistanceQ12; /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
     uint32_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest[1]; /* beyond the declared type */
     uint8_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest_tail[2];
-} ImageData_0050BADC;
-extern ImageData_0050BADC g_ImageData_0050BADC;
+} ImageObject_0050BB06;
+extern ImageObject_0050BB06 g_ImageObject_0050BB06;
 
 /* original 0x0050BB34-0x0050BB80 */
-typedef struct ImageData_0050BB34 {
+typedef struct ImageObject_0050BB34 {
     uint8_t at_gap_0050BB34[3]; /* 0050BB34 gap */
+} ImageObject_0050BB34;
+extern ImageObject_0050BB34 g_ImageObject_0050BB34;
+typedef struct ImageObject_0050BB37 {
     UiNodeVtable at_g_FrontendModelPointerContextVtable; /* 0050BB37 g_FrontendModelPointerContextVtable */
     uint8_t at_g_FrontendModelPointerContextVtable_rest_tail[1];
-} ImageData_0050BB34;
-extern ImageData_0050BB34 g_ImageData_0050BB34;
+} ImageObject_0050BB37;
+extern ImageObject_0050BB37 g_ImageObject_0050BB37;
 
 /* original 0x0050D928-0x0050E0B0 */
-typedef struct ImageData_0050D928 {
+typedef struct ImageObject_0050D928 {
     uint8_t at_gap_0050D928[8]; /* 0050D928 gap */
+} ImageObject_0050D928;
+extern ImageObject_0050D928 g_ImageObject_0050D928;
+typedef struct ImageObject_0050D930 {
     TechnologyAsset * at_g_TechnologyAsset; /* 0050D930 g_TechnologyAsset */
+} ImageObject_0050D930;
+extern ImageObject_0050D930 g_ImageObject_0050D930;
+typedef struct ImageObject_0050D934 {
     uint32_t at_g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark1PositionZQ12; /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
+} ImageObject_0050D934;
+extern ImageObject_0050D934 g_ImageObject_0050D934;
+typedef struct ImageObject_0050D940 {
     uint32_t at_g_LevelCameraBookmark1PositionMagnitudeQ12; /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
+} ImageObject_0050D940;
+extern ImageObject_0050D940 g_ImageObject_0050D940;
+typedef struct ImageObject_0050D944 {
     uint32_t at_g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16; /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D944;
+extern ImageObject_0050D944 g_ImageObject_0050D944;
+typedef struct ImageObject_0050D948 {
     uint32_t at_g_LevelCameraBookmark2PositionXQ12; /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark2PositionYQ12; /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark2PositionZQ12; /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
+} ImageObject_0050D948;
+extern ImageObject_0050D948 g_ImageObject_0050D948;
+typedef struct ImageObject_0050D954 {
     uint32_t at_g_LevelCameraBookmark2PositionMagnitudeQ12; /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
+} ImageObject_0050D954;
+extern ImageObject_0050D954 g_ImageObject_0050D954;
+typedef struct ImageObject_0050D958 {
     uint32_t at_g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16; /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D958;
+extern ImageObject_0050D958 g_ImageObject_0050D958;
+typedef struct ImageObject_0050D95C {
     uint32_t at_g_LevelCameraBookmark3PositionXQ12; /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark3PositionYQ12; /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark3PositionZQ12; /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
+} ImageObject_0050D95C;
+extern ImageObject_0050D95C g_ImageObject_0050D95C;
+typedef struct ImageObject_0050D968 {
     uint32_t at_g_LevelCameraBookmark3PositionMagnitudeQ12; /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
+} ImageObject_0050D968;
+extern ImageObject_0050D968 g_ImageObject_0050D968;
+typedef struct ImageObject_0050D96C {
     uint32_t at_g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16; /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D96C;
+extern ImageObject_0050D96C g_ImageObject_0050D96C;
+typedef struct ImageObject_0050D970 {
     uint32_t at_g_LevelCameraBookmark4PositionXQ12; /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark4PositionYQ12; /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark4PositionZQ12; /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
+} ImageObject_0050D970;
+extern ImageObject_0050D970 g_ImageObject_0050D970;
+typedef struct ImageObject_0050D97C {
     uint32_t at_g_LevelCameraBookmark4PositionMagnitudeQ12; /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
+} ImageObject_0050D97C;
+extern ImageObject_0050D97C g_ImageObject_0050D97C;
+typedef struct ImageObject_0050D980 {
     uint32_t at_g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16; /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D980;
+extern ImageObject_0050D980 g_ImageObject_0050D980;
+typedef struct ImageObject_0050D984 {
     uint32_t at_g_LevelCameraBookmark5PositionXQ12; /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark5PositionYQ12; /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark5PositionZQ12; /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
+} ImageObject_0050D984;
+extern ImageObject_0050D984 g_ImageObject_0050D984;
+typedef struct ImageObject_0050D990 {
     uint32_t at_g_LevelCameraBookmark5PositionMagnitudeQ12; /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
+} ImageObject_0050D990;
+extern ImageObject_0050D990 g_ImageObject_0050D990;
+typedef struct ImageObject_0050D994 {
     uint32_t at_g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16; /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D994;
+extern ImageObject_0050D994 g_ImageObject_0050D994;
+typedef struct ImageObject_0050D998 {
     uint32_t at_g_LevelCameraBookmark6PositionXQ12; /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark6PositionYQ12; /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark6PositionZQ12; /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
+} ImageObject_0050D998;
+extern ImageObject_0050D998 g_ImageObject_0050D998;
+typedef struct ImageObject_0050D9A4 {
     uint32_t at_g_LevelCameraBookmark6PositionMagnitudeQ12; /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
+} ImageObject_0050D9A4;
+extern ImageObject_0050D9A4 g_ImageObject_0050D9A4;
+typedef struct ImageObject_0050D9A8 {
     uint32_t at_g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16; /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D9A8;
+extern ImageObject_0050D9A8 g_ImageObject_0050D9A8;
+typedef struct ImageObject_0050D9AC {
     uint32_t at_g_LevelCameraBookmark7PositionXQ12; /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
     uint32_t at_g_LevelCameraBookmark7PositionYQ12; /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
     uint32_t at_g_LevelCameraBookmark7PositionZQ12; /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
+} ImageObject_0050D9AC;
+extern ImageObject_0050D9AC g_ImageObject_0050D9AC;
+typedef struct ImageObject_0050D9B8 {
     uint32_t at_g_LevelCameraBookmark7PositionMagnitudeQ12; /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
+} ImageObject_0050D9B8;
+extern ImageObject_0050D9B8 g_ImageObject_0050D9B8;
+typedef struct ImageObject_0050D9BC {
     uint32_t at_g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16; /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
+} ImageObject_0050D9BC;
+extern ImageObject_0050D9BC g_ImageObject_0050D9BC;
+typedef struct ImageObject_0050D9C0 {
     ScenarioCatalogHeader * at_g_ScenarioCatalog; /* 0050D9C0 g_ScenarioCatalog */
+} ImageObject_0050D9C0;
+extern ImageObject_0050D9C0 g_ImageObject_0050D9C0;
+typedef struct ImageObject_0050D9C4 {
     uint32_t at_g_ScenarioCatalogUsedBytes; /* 0050D9C4 g_ScenarioCatalogUsedBytes */
+} ImageObject_0050D9C4;
+extern ImageObject_0050D9C4 g_ImageObject_0050D9C4;
+typedef struct ImageObject_0050D9C8 {
     uint16_t at_u_save___sve_0050d9c8[11]; /* 0050D9C8 u_save___sve_0050d9c8 */
+} ImageObject_0050D9C8;
+extern ImageObject_0050D9C8 g_ImageObject_0050D9C8;
+typedef struct ImageObject_0050D9DE {
     uint16_t at_g_UnreferencedLevelPatternUtf16[12]; /* 0050D9DE g_UnreferencedLevelPatternUtf16: UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
+} ImageObject_0050D9DE;
+extern ImageObject_0050D9DE g_ImageObject_0050D9DE;
+typedef struct ImageObject_0050D9F6 {
     uint16_t at_g_UnreferencedCampaignPatternUtf16[12]; /* 0050D9F6 g_UnreferencedCampaignPatternUtf16: UTF-16 L"level\\*.cgn"; no code reference found */
+} ImageObject_0050D9F6;
+extern ImageObject_0050D9F6 g_ImageObject_0050D9F6;
+typedef struct ImageObject_0050DA0E {
     uint16_t at_u_level_level_dat_0050da0e[16]; /* 0050DA0E u_level_level_dat_0050da0e */
+} ImageObject_0050DA0E;
+extern ImageObject_0050DA0E g_ImageObject_0050DA0E;
+typedef struct ImageObject_0050DA2E {
     ScenarioLevelDataPathTemplate24 at_g_ScenarioLevelDataPathTemplateUtf16; /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
+} ImageObject_0050DA2E;
+extern ImageObject_0050DA2E g_ImageObject_0050DA2E;
+typedef struct ImageObject_0050DA52 {
     uint16_t at_u_level_campagne_dat_0050da52[19]; /* 0050DA52 u_level_campagne_dat_0050da52 */
+} ImageObject_0050DA52;
+extern ImageObject_0050DA52 g_ImageObject_0050DA52;
+typedef struct ImageObject_0050DA78 {
     ScenarioCampaignDataPathTemplate2A at_g_ScenarioCampaignDataPathTemplateUtf16; /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
+} ImageObject_0050DA78;
+extern ImageObject_0050DA78 g_ImageObject_0050DA78;
+typedef struct ImageObject_0050DAA2 {
     uint16_t at_u_save_0050daa2[5]; /* 0050DAA2 u_save_0050daa2 */
+} ImageObject_0050DAA2;
+extern ImageObject_0050DAA2 g_ImageObject_0050DAA2;
+typedef struct ImageObject_0050DAAC {
     uint16_t at_u_level_0050daac[6]; /* 0050DAAC u_level_0050daac */
+} ImageObject_0050DAAC;
+extern ImageObject_0050DAAC g_ImageObject_0050DAAC;
+typedef struct ImageObject_0050DAB8 {
     uint16_t at_u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
+} ImageObject_0050DAB8;
+extern ImageObject_0050DAB8 g_ImageObject_0050DAB8;
+typedef struct ImageObject_0050DAC4 {
     uint8_t at_g_ScenarioCatalogPathScratchUtf16; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
     uint32_t at_g_ScenarioCatalogPathScratchUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
+} ImageObject_0050DAC4;
+extern ImageObject_0050DAC4 g_ImageObject_0050DAC4;
+typedef struct ImageObject_0050DCC4 {
     uint16_t at_g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
+} ImageObject_0050DCC4;
+extern ImageObject_0050DCC4 g_ImageObject_0050DCC4;
+typedef struct ImageObject_0050DEC4 {
     uint16_t at_u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
+} ImageObject_0050DEC4;
+extern ImageObject_0050DEC4 g_ImageObject_0050DEC4;
+typedef struct ImageObject_0050DEE6 {
     uint16_t at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
+} ImageObject_0050DEE6;
+extern ImageObject_0050DEE6 g_ImageObject_0050DEE6;
+typedef struct ImageObject_0050DF06 {
     uint16_t at_u_flm_ende0000_flm_0050df06[17]; /* 0050DF06 u_flm_ende0000_flm_0050df06 */
+} ImageObject_0050DF06;
+extern ImageObject_0050DF06 g_ImageObject_0050DF06;
+typedef struct ImageObject_0050DF28 {
     uint16_t at_u_flm_ende0001_flm_0050df28[17]; /* 0050DF28 u_flm_ende0001_flm_0050df28 */
+} ImageObject_0050DF28;
+extern ImageObject_0050DF28 g_ImageObject_0050DF28;
+typedef struct ImageObject_0050DF4A {
     uint16_t at_u_flm_ende0000_flm_0050df4a[17]; /* 0050DF4A u_flm_ende0000_flm_0050df4a */
+} ImageObject_0050DF4A;
+extern ImageObject_0050DF4A g_ImageObject_0050DF4A;
+typedef struct ImageObject_0050DF6C {
     uint16_t at_u_sound_level00_sam_0050df6c[18]; /* 0050DF6C u_sound_level00_sam_0050df6c */
+} ImageObject_0050DF6C;
+extern ImageObject_0050DF6C g_ImageObject_0050DF6C;
+typedef struct ImageObject_0050DF90 {
     uint16_t at_u_sound_music00_sam_0050df90[18]; /* 0050DF90 u_sound_music00_sam_0050df90 */
+} ImageObject_0050DF90;
+extern ImageObject_0050DF90 g_ImageObject_0050DF90;
+typedef struct ImageObject_0050DFB4 {
     uint16_t at_u_army_hex_0050dfb4[9]; /* 0050DFB4 u_army_hex_0050dfb4 */
+} ImageObject_0050DFB4;
+extern ImageObject_0050DFB4 g_ImageObject_0050DFB4;
+typedef struct ImageObject_0050DFC6 {
     uint16_t at_u_effect_hex_0050dfc6[11]; /* 0050DFC6 u_effect_hex_0050dfc6 */
+} ImageObject_0050DFC6;
+extern ImageObject_0050DFC6 g_ImageObject_0050DFC6;
+typedef struct ImageObject_0050DFDC {
     uint16_t at_u_shot_hex_0050dfdc[9]; /* 0050DFDC u_shot_hex_0050dfdc */
+} ImageObject_0050DFDC;
+extern ImageObject_0050DFDC g_ImageObject_0050DFDC;
+typedef struct ImageObject_0050DFEE {
     uint16_t at_u_modul_hex_0050dfee[10]; /* 0050DFEE u_modul_hex_0050dfee */
+} ImageObject_0050DFEE;
+extern ImageObject_0050DFEE g_ImageObject_0050DFEE;
+typedef struct ImageObject_0050E002 {
     uint16_t at_u_field_hex_0050e002[10]; /* 0050E002 u_field_hex_0050e002 */
+} ImageObject_0050E002;
+extern ImageObject_0050E002 g_ImageObject_0050E002;
+typedef struct ImageObject_0050E016 {
     uint16_t at_u_light_hex_0050e016[10]; /* 0050E016 u_light_hex_0050e016 */
+} ImageObject_0050E016;
+extern ImageObject_0050E016 g_ImageObject_0050E016;
+typedef struct ImageObject_0050E02A {
     uint16_t at_u_widget_hex_0050e02a[11]; /* 0050E02A u_widget_hex_0050e02a */
+} ImageObject_0050E02A;
+extern ImageObject_0050E02A g_ImageObject_0050E02A;
+typedef struct ImageObject_0050E040 {
     uint16_t at_u_level_hex_0050e040[10]; /* 0050E040 u_level_hex_0050e040 */
+} ImageObject_0050E040;
+extern ImageObject_0050E040 g_ImageObject_0050E040;
+typedef struct ImageObject_0050E054 {
     uint16_t at_u_daten_hex_0050e054[10]; /* 0050E054 u_daten_hex_0050e054 */
+} ImageObject_0050E054;
+extern ImageObject_0050E054 g_ImageObject_0050E054;
+typedef struct ImageObject_0050E068 {
     uint16_t at_u_campagne_hex_0050e068[13]; /* 0050E068 u_campagne_hex_0050e068 */
+} ImageObject_0050E068;
+extern ImageObject_0050E068 g_ImageObject_0050E068;
+typedef struct ImageObject_0050E082 {
     uint16_t at_u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
+} ImageObject_0050E082;
+extern ImageObject_0050E082 g_ImageObject_0050E082;
+typedef struct ImageObject_0050E094 {
     uint16_t at_u_oldunit_hex_0050e094[12]; /* 0050E094 u_oldunit_hex_0050e094 */
+} ImageObject_0050E094;
+extern ImageObject_0050E094 g_ImageObject_0050E094;
+typedef struct ImageObject_0050E0AC {
     uint8_t at_g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
     uint8_t at_g_InGameResourceRegistrationBusyCount_rest_tail[3];
-} ImageData_0050D928;
-extern ImageData_0050D928 g_ImageData_0050D928;
+} ImageObject_0050E0AC;
+extern ImageObject_0050E0AC g_ImageObject_0050E0AC;
 
 /* original 0x0050E164-0x0050E1B0 */
-typedef struct ImageData_0050E164 {
+typedef struct ImageObject_0050E164 {
     uint8_t at_gap_0050E164[12]; /* 0050E164 gap */
+} ImageObject_0050E164;
+extern ImageObject_0050E164 g_ImageObject_0050E164;
+typedef struct ImageObject_0050E170 {
     uint32_t at_switchdataD_0050e170[16]; /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
-} ImageData_0050E164;
-extern ImageData_0050E164 g_ImageData_0050E164;
+} ImageObject_0050E170;
+extern ImageObject_0050E170 g_ImageObject_0050E170;
 
 /* original 0x0050E21C-0x0050E230 */
-typedef struct ImageData_0050E21C {
+typedef struct ImageObject_0050E21C {
     uint8_t at_gap_0050E21C[20]; /* 0050E21C gap */
-} ImageData_0050E21C;
-extern ImageData_0050E21C g_ImageData_0050E21C;
+} ImageObject_0050E21C;
+extern ImageObject_0050E21C g_ImageObject_0050E21C;
 
 /* original 0x0050E95C-0x0050E970 */
-typedef struct ImageData_0050E95C {
+typedef struct ImageObject_0050E95C {
     uint8_t at_gap_0050E95C[4]; /* 0050E95C gap */
+} ImageObject_0050E95C;
+extern ImageObject_0050E95C g_ImageObject_0050E95C;
+typedef struct ImageObject_0050E960 {
     uint32_t at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
-} ImageData_0050E95C;
-extern ImageData_0050E95C g_ImageData_0050E95C;
+} ImageObject_0050E960;
+extern ImageObject_0050E960 g_ImageObject_0050E960;
 
 /* original 0x0050EB5C-0x0050EB70 */
-typedef struct ImageData_0050EB5C {
+typedef struct ImageObject_0050EB5C {
     uint8_t at_gap_0050EB5C[4]; /* 0050EB5C gap */
+} ImageObject_0050EB5C;
+extern ImageObject_0050EB5C g_ImageObject_0050EB5C;
+typedef struct ImageObject_0050EB60 {
     uint32_t at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[4]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
-} ImageData_0050EB5C;
-extern ImageData_0050EB5C g_ImageData_0050EB5C;
+} ImageObject_0050EB60;
+extern ImageObject_0050EB60 g_ImageObject_0050EB60;
 
 /* original 0x0050F044-0x0050F130 */
-typedef struct ImageData_0050F044 {
+typedef struct ImageObject_0050F044 {
     uint8_t at_gap_0050F044[12]; /* 0050F044 gap */
+} ImageObject_0050F044;
+extern ImageObject_0050F044 g_ImageObject_0050F044;
+typedef struct ImageObject_0050F050 {
     int32_t at_g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
+} ImageObject_0050F050;
+extern ImageObject_0050F050 g_ImageObject_0050F050;
+typedef struct ImageObject_0050F054 {
     uint16_t at_g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
+} ImageObject_0050F054;
+extern ImageObject_0050F054 g_ImageObject_0050F054;
+typedef struct ImageObject_0050F07C {
     uint16_t at_g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16 */
     uint32_t at_g_GameVersionUtf16_rest[1]; /* beyond the declared type */
     uint8_t at_g_GameVersionUtf16_rest_tail[2];
+} ImageObject_0050F07C;
+extern ImageObject_0050F07C g_ImageObject_0050F07C;
+typedef struct ImageObject_0050F090 {
     UiTransferEndpointDescriptor at_g_FrontendSelectedNetworkEndpoint; /* 0050F090 g_FrontendSelectedNetworkEndpoint */
+} ImageObject_0050F090;
+extern ImageObject_0050F090 g_ImageObject_0050F090;
+typedef struct ImageObject_0050F0A0 {
     uint32_t at_g_FrontendSessionToken; /* 0050F0A0 g_FrontendSessionToken */
+} ImageObject_0050F0A0;
+extern ImageObject_0050F0A0 g_ImageObject_0050F0A0;
+typedef struct ImageObject_0050F0A4 {
     SessionTransferTimeoutTicks at_g_SessionTransferTimeoutTicks; /* 0050F0A4 g_SessionTransferTimeoutTicks */
+} ImageObject_0050F0A4;
+extern ImageObject_0050F0A4 g_ImageObject_0050F0A4;
+typedef struct ImageObject_0050F0A8 {
     uint32_t at_g_FrontendTransferResponsePending; /* 0050F0A8 g_FrontendTransferResponsePending */
+} ImageObject_0050F0A8;
+extern ImageObject_0050F0A8 g_ImageObject_0050F0A8;
+typedef struct ImageObject_0050F0AC {
     uint32_t at_g_LocalPlayerRuntimeId; /* 0050F0AC g_LocalPlayerRuntimeId */
     uint32_t at_g_LocalPlayerRuntimeId_rest[4]; /* beyond the declared type */
+} ImageObject_0050F0AC;
+extern ImageObject_0050F0AC g_ImageObject_0050F0AC;
+typedef struct ImageObject_0050F0C0 {
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeBlocks; /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
+} ImageObject_0050F0C0;
+extern ImageObject_0050F0C0 g_ImageObject_0050F0C0;
+typedef struct ImageObject_0050F0C4 {
     FrontendPlayerRuntimeBlockCount at_g_FrontendPlayerRuntimeBlockCount; /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
+} ImageObject_0050F0C4;
+extern ImageObject_0050F0C4 g_ImageObject_0050F0C4;
+typedef struct ImageObject_0050F0C8 {
     SessionNetworkRoleFlags at_g_SessionNetworkRoleFlags; /* 0050F0C8 g_SessionNetworkRoleFlags */
+} ImageObject_0050F0C8;
+extern ImageObject_0050F0C8 g_ImageObject_0050F0C8;
+typedef struct ImageObject_0050F0CC {
     uint32_t at_g_FrontendSelectedPlayerToken; /* 0050F0CC g_FrontendSelectedPlayerToken: uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
+} ImageObject_0050F0CC;
+extern ImageObject_0050F0CC g_ImageObject_0050F0CC;
+typedef struct ImageObject_0050F0D0 {
     RecentTextSerialCounter at_g_RecentTextSerialCounter; /* 0050F0D0 g_RecentTextSerialCounter */
+} ImageObject_0050F0D0;
+extern ImageObject_0050F0D0 g_ImageObject_0050F0D0;
+typedef struct ImageObject_0050F0D4 {
     uint32_t at_g_SessionNetworkTickInterval; /* 0050F0D4 g_SessionNetworkTickInterval: uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
+} ImageObject_0050F0D4;
+extern ImageObject_0050F0D4 g_ImageObject_0050F0D4;
+typedef struct ImageObject_0050F0D8 {
     uint32_t at_g_SessionNetworkTickCounter; /* 0050F0D8 g_SessionNetworkTickCounter */
+} ImageObject_0050F0D8;
+extern ImageObject_0050F0D8 g_ImageObject_0050F0D8;
+typedef struct ImageObject_0050F0DC {
     uint32_t at_g_HostCommandBatchSyncSentThisInterval; /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
+} ImageObject_0050F0DC;
+extern ImageObject_0050F0DC g_ImageObject_0050F0DC;
+typedef struct ImageObject_0050F0E0 {
     RecentTextHistorySlot * at_g_RecentTextSlotStorage; /* 0050F0E0 g_RecentTextSlotStorage */
+} ImageObject_0050F0E0;
+extern ImageObject_0050F0E0 g_ImageObject_0050F0E0;
+typedef struct ImageObject_0050F0E4 {
     uint32_t at_g_RecentTextEntrySerials[8]; /* 0050F0E4 g_RecentTextEntrySerials */
+} ImageObject_0050F0E4;
+extern ImageObject_0050F0E4 g_ImageObject_0050F0E4;
+typedef struct ImageObject_0050F104 {
     uint16_t at_u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
     uint8_t at_u_texte_neterror_str_0050f104_padding[6];
-} ImageData_0050F044;
-extern ImageData_0050F044 g_ImageData_0050F044;
+} ImageObject_0050F104;
+extern ImageObject_0050F104 g_ImageObject_0050F104;
 
 /* original 0x0050F328-0x00512E70 */
-typedef struct ImageData_0050F328 {
+typedef struct ImageObject_0050F328 {
     uint8_t at_gap_0050F328[24]; /* 0050F328 gap */
+} ImageObject_0050F328;
+extern ImageObject_0050F328 g_ImageObject_0050F328;
+typedef struct ImageObject_0050F340 {
     GameFactionRuntimeImage at_g_GameFactionRuntimeImage; /* 0050F340 g_GameFactionRuntimeImage */
+} ImageObject_0050F340;
+extern ImageObject_0050F340 g_ImageObject_0050F340;
+typedef struct ImageObject_00512D60 {
     TerrainRegionCollectionCount at_g_TerrainRegionCollectionStoredCount; /* 00512D60 g_TerrainRegionCollectionStoredCount */
+} ImageObject_00512D60;
+extern ImageObject_00512D60 g_ImageObject_00512D60;
+typedef struct ImageObject_00512D64 {
     TerrainRegionCollectionCount at_g_TerrainRegionCollectionVisitedCount; /* 00512D64 g_TerrainRegionCollectionVisitedCount */
+} ImageObject_00512D64;
+extern ImageObject_00512D64 g_ImageObject_00512D64;
+typedef struct ImageObject_00512D68 {
     uint32_t at_g_TerrainRegionCollectionEntries; /* 00512D68 g_TerrainRegionCollectionEntries */
+} ImageObject_00512D68;
+extern ImageObject_00512D68 g_ImageObject_00512D68;
+typedef struct ImageObject_00512D6C {
     void * at_g_GameStatTableImage; /* 00512D6C g_GameStatTableImage */
+} ImageObject_00512D6C;
+extern ImageObject_00512D6C g_ImageObject_00512D6C;
+typedef struct ImageObject_00512D70 {
     GameDataAuxState at_g_GameDataAuxState; /* 00512D70 g_GameDataAuxState */
-} ImageData_0050F328;
-extern ImageData_0050F328 g_ImageData_0050F328;
+} ImageObject_00512D70;
+extern ImageObject_00512D70 g_ImageObject_00512D70;
 
 /* original 0x00513DA4-0x00513DF0 */
-typedef struct ImageData_00513DA4 {
+typedef struct ImageObject_00513DA4 {
     uint8_t at_gap_00513DA4[12]; /* 00513DA4 gap */
+} ImageObject_00513DA4;
+extern ImageObject_00513DA4 g_ImageObject_00513DA4;
+typedef struct ImageObject_00513DB0 {
     uint32_t at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0[16]; /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
-} ImageData_00513DA4;
-extern ImageData_00513DA4 g_ImageData_00513DA4;
+} ImageObject_00513DB0;
+extern ImageObject_00513DB0 g_ImageObject_00513DB0;
 
 /* original 0x0051494C-0x00514E40 */
-typedef struct ImageData_0051494C {
+typedef struct ImageObject_0051494C {
     uint8_t at_gap_0051494C[20]; /* 0051494C gap */
+} ImageObject_0051494C;
+extern ImageObject_0051494C g_ImageObject_0051494C;
+typedef struct ImageObject_00514960 {
     SelectionPlayerRuntimeBlock * at_g_SelectionPlayerRuntimeBlockPointers[8]; /* 00514960 g_SelectionPlayerRuntimeBlockPointers */
     uint32_t at_g_SelectionPlayerRuntimeBlockPointers_rest[248]; /* beyond the declared type */
+} ImageObject_00514960;
+extern ImageObject_00514960 g_ImageObject_00514960;
+typedef struct ImageObject_00514D60 {
     SelectionPlayerRuntimeBlock * at_g_SelectionPlayerBlocks; /* 00514D60 g_SelectionPlayerBlocks */
+} ImageObject_00514D60;
+extern ImageObject_00514D60 g_ImageObject_00514D60;
+typedef struct ImageObject_00514D64 {
     void * at_g_InGameFactionScratchBufferSetA8[8]; /* 00514D64 g_InGameFactionScratchBufferSetA8 */
+} ImageObject_00514D64;
+extern ImageObject_00514D64 g_ImageObject_00514D64;
+typedef struct ImageObject_00514D84 {
     void * at_g_InGameFactionScratchBufferSetB8[8]; /* 00514D84 g_InGameFactionScratchBufferSetB8 */
+} ImageObject_00514D84;
+extern ImageObject_00514D84 g_ImageObject_00514D84;
+typedef struct ImageObject_00514DA4 {
     uint8_t at_g_FrontendPlayerMessageScratchUtf16; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     uint32_t at_g_FrontendPlayerMessageScratchUtf16_rest[23]; /* beyond the declared type */
     uint8_t at_g_FrontendPlayerMessageScratchUtf16_rest_tail[3];
+} ImageObject_00514DA4;
+extern ImageObject_00514DA4 g_ImageObject_00514DA4;
+typedef struct ImageObject_00514E04 {
     UiCommandPayloadTextBatch48 at_g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
     uint32_t at_g_UiSevenSlotCommandPayloadText_rest[3]; /* beyond the declared type */
-} ImageData_0051494C;
-extern ImageData_0051494C g_ImageData_0051494C;
+} ImageObject_00514E04;
+extern ImageObject_00514E04 g_ImageObject_00514E04;
 
 /* original 0x00514FB4-0x00515010 */
-typedef struct ImageData_00514FB4 {
+typedef struct ImageObject_00514FB4 {
     uint8_t at_gap_00514FB4[12]; /* 00514FB4 gap */
+} ImageObject_00514FB4;
+extern ImageObject_00514FB4 g_ImageObject_00514FB4;
+typedef struct ImageObject_00514FC0 {
     UiNodeVtable at_g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
     uint32_t at_g_UiImageActionControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_00514FB4;
-extern ImageData_00514FB4 g_ImageData_00514FB4;
+} ImageObject_00514FC0;
+extern ImageObject_00514FC0 g_ImageObject_00514FC0;
 
 /* original 0x0051528C-0x005152E0 */
-typedef struct ImageData_0051528C {
+typedef struct ImageObject_0051528C {
     uint8_t at_gap_0051528C[4]; /* 0051528C gap */
+} ImageObject_0051528C;
+extern ImageObject_0051528C g_ImageObject_0051528C;
+typedef struct ImageObject_00515290 {
     UiNodeVtable at_g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
     uint32_t at_g_UiConditionalActionControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_0051528C;
-extern ImageData_0051528C g_ImageData_0051528C;
+} ImageObject_00515290;
+extern ImageObject_00515290 g_ImageObject_00515290;
 
 /* original 0x0051560C-0x005156A0 */
-typedef struct ImageData_0051560C {
+typedef struct ImageObject_0051560C {
     uint8_t at_gap_0051560C[4]; /* 0051560C gap */
+} ImageObject_0051560C;
+extern ImageObject_0051560C g_ImageObject_0051560C;
+typedef struct ImageObject_00515610 {
     UiNodeVtable at_g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
+} ImageObject_00515610;
+extern ImageObject_00515610 g_ImageObject_00515610;
+typedef struct ImageObject_00515658 {
     uint8_t at_g_UiNumericPairFirstValueScratchUtf16; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
     uint32_t at_g_UiNumericPairFirstValueScratchUtf16_rest[7]; /* beyond the declared type */
     uint8_t at_g_UiNumericPairFirstValueScratchUtf16_rest_tail[3];
+} ImageObject_00515658;
+extern ImageObject_00515658 g_ImageObject_00515658;
+typedef struct ImageObject_00515678 {
     uint8_t at_g_UiNumericPairSecondValueScratchUtf16; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
     uint32_t at_g_UiNumericPairSecondValueScratchUtf16_rest[9]; /* beyond the declared type */
     uint8_t at_g_UiNumericPairSecondValueScratchUtf16_rest_tail[3];
-} ImageData_0051560C;
-extern ImageData_0051560C g_ImageData_0051560C;
+} ImageObject_00515678;
+extern ImageObject_00515678 g_ImageObject_00515678;
 
 /* original 0x00515720-0x00515780 */
-typedef struct ImageData_00515720 {
+typedef struct ImageObject_00515720 {
     uint8_t at_gap_00515720[16]; /* 00515720 gap */
+} ImageObject_00515720;
+extern ImageObject_00515720 g_ImageObject_00515720;
+typedef struct ImageObject_00515730 {
     UiNodeVtable at_g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
     uint32_t at_g_UiPayloadPairTextButtonVtable_rest[2]; /* beyond the declared type */
-} ImageData_00515720;
-extern ImageData_00515720 g_ImageData_00515720;
+} ImageObject_00515730;
+extern ImageObject_00515730 g_ImageObject_00515730;
 
 /* original 0x005157D0-0x00515830 */
-typedef struct ImageData_005157D0 {
+typedef struct ImageObject_005157D0 {
     uint8_t at_gap_005157D0[16]; /* 005157D0 gap */
+} ImageObject_005157D0;
+extern ImageObject_005157D0 g_ImageObject_005157D0;
+typedef struct ImageObject_005157E0 {
     UiNodeVtable at_g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
     uint32_t at_g_UiFormattedContainerVtable_rest[2]; /* beyond the declared type */
-} ImageData_005157D0;
-extern ImageData_005157D0 g_ImageData_005157D0;
+} ImageObject_005157E0;
+extern ImageObject_005157E0 g_ImageObject_005157E0;
 
 /* original 0x00515C60-0x00515CC0 */
-typedef struct ImageData_00515C60 {
+typedef struct ImageObject_00515C60 {
     uint8_t at_gap_00515C60[16]; /* 00515C60 gap */
+} ImageObject_00515C60;
+extern ImageObject_00515C60 g_ImageObject_00515C60;
+typedef struct ImageObject_00515C70 {
     UiNodeVtable at_g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
     uint32_t at_g_UiSelectionGeometryControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_00515C60;
-extern ImageData_00515C60 g_ImageData_00515C60;
+} ImageObject_00515C70;
+extern ImageObject_00515C70 g_ImageObject_00515C70;
 
 /* original 0x005162BC-0x00516360 */
-typedef struct ImageData_005162BC {
+typedef struct ImageObject_005162BC {
     uint8_t at_gap_005162BC[4]; /* 005162BC gap */
+} ImageObject_005162BC;
+extern ImageObject_005162BC g_ImageObject_005162BC;
+typedef struct ImageObject_005162C0 {
     UiNodeVtable at_g_UiNodeVtable_005162C0; /* 005162C0 g_UiNodeVtable_005162C0 */
     uint32_t at_g_UiNodeVtable_005162C0_rest[2]; /* beyond the declared type */
+} ImageObject_005162C0;
+extern ImageObject_005162C0 g_ImageObject_005162C0;
+typedef struct ImageObject_00516310 {
     UiNodeVtable at_g_UiNodeVtable_00516310; /* 00516310 g_UiNodeVtable_00516310 */
     uint32_t at_g_UiNodeVtable_00516310_rest[2]; /* beyond the declared type */
-} ImageData_005162BC;
-extern ImageData_005162BC g_ImageData_005162BC;
+} ImageObject_00516310;
+extern ImageObject_00516310 g_ImageObject_00516310;
 
 /* original 0x0051650C-0x00516580 */
-typedef struct ImageData_0051650C {
+typedef struct ImageObject_0051650C {
     uint8_t at_gap_0051650C[4]; /* 0051650C gap */
+} ImageObject_0051650C;
+extern ImageObject_0051650C g_ImageObject_0051650C;
+typedef struct ImageObject_00516510 {
     uint16_t at_g_UiCatalogEntryRichTextScratchUtf16[16]; /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
+} ImageObject_00516510;
+extern ImageObject_00516510 g_ImageObject_00516510;
+typedef struct ImageObject_00516530 {
     UiNodeVtable at_g_UiNodeVtable_00516530; /* 00516530 g_UiNodeVtable_00516530 */
     uint32_t at_g_UiNodeVtable_00516530_rest[2]; /* beyond the declared type */
-} ImageData_0051650C;
-extern ImageData_0051650C g_ImageData_0051650C;
+} ImageObject_00516530;
+extern ImageObject_00516530 g_ImageObject_00516530;
 
 /* original 0x00516CBC-0x00516D10 */
-typedef struct ImageData_00516CBC {
+typedef struct ImageObject_00516CBC {
     uint8_t at_gap_00516CBC[4]; /* 00516CBC gap */
+} ImageObject_00516CBC;
+extern ImageObject_00516CBC g_ImageObject_00516CBC;
+typedef struct ImageObject_00516CC0 {
     UiNodeVtable at_g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
     uint32_t at_g_UiArmyMetricsPanelVtable_rest[2]; /* beyond the declared type */
-} ImageData_00516CBC;
-extern ImageData_00516CBC g_ImageData_00516CBC;
+} ImageObject_00516CC0;
+extern ImageObject_00516CC0 g_ImageObject_00516CC0;
 
 /* original 0x00516E90-0x00517020 */
-typedef struct ImageData_00516E90 {
+typedef struct ImageObject_00516E90 {
     uint8_t at_gap_00516E90[16]; /* 00516E90 gap */
+} ImageObject_00516E90;
+extern ImageObject_00516E90 g_ImageObject_00516E90;
+typedef struct ImageObject_00516EA0 {
     uint8_t at_g_FrontendResultsValueTextUtf16; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
     uint32_t at_g_FrontendResultsValueTextUtf16_rest[15]; /* beyond the declared type */
     uint8_t at_g_FrontendResultsValueTextUtf16_rest_tail[3];
+} ImageObject_00516EA0;
+extern ImageObject_00516EA0 g_ImageObject_00516EA0;
+typedef struct ImageObject_00516EE0 {
     uint8_t at_g_EndGameElapsedTimeScratchUtf16; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
     uint32_t at_g_EndGameElapsedTimeScratchUtf16_rest[31]; /* beyond the declared type */
     uint8_t at_g_EndGameElapsedTimeScratchUtf16_rest_tail[3];
+} ImageObject_00516EE0;
+extern ImageObject_00516EE0 g_ImageObject_00516EE0;
+typedef struct ImageObject_00516F60 {
     UiNodeVtable at_g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
+} ImageObject_00516F60;
+extern ImageObject_00516F60 g_ImageObject_00516F60;
+typedef struct ImageObject_00516FA8 {
     int at_g_FrontendResultsColumnAdvance00Pixels; /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
+} ImageObject_00516FA8;
+extern ImageObject_00516FA8 g_ImageObject_00516FA8;
+typedef struct ImageObject_00516FAC {
     int at_g_FrontendResultsColumnAdvance01Pixels; /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
+} ImageObject_00516FAC;
+extern ImageObject_00516FAC g_ImageObject_00516FAC;
+typedef struct ImageObject_00516FB0 {
     int at_g_FrontendResultsColumnAdvanceColourPixels; /* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
+} ImageObject_00516FB0;
+extern ImageObject_00516FB0 g_ImageObject_00516FB0;
+typedef struct ImageObject_00516FB4 {
     int at_g_FrontendResultsColumnAdvanceEconomyPixels; /* 00516FB4 g_FrontendResultsColumnAdvanceEconomyPixels */
+} ImageObject_00516FB4;
+extern ImageObject_00516FB4 g_ImageObject_00516FB4;
+typedef struct ImageObject_00516FB8 {
     int at_g_FrontendResultsColumnAdvanceMilitaryPixels; /* 00516FB8 g_FrontendResultsColumnAdvanceMilitaryPixels */
+} ImageObject_00516FB8;
+extern ImageObject_00516FB8 g_ImageObject_00516FB8;
+typedef struct ImageObject_00516FBC {
     int at_g_FrontendResultsColumnAdvancePointsPixels; /* 00516FBC g_FrontendResultsColumnAdvancePointsPixels */
+} ImageObject_00516FBC;
+extern ImageObject_00516FBC g_ImageObject_00516FBC;
+typedef struct ImageObject_00516FC0 {
     int at_g_FrontendResultsColumnAdvancePlayerPixels; /* 00516FC0 g_FrontendResultsColumnAdvancePlayerPixels */
+} ImageObject_00516FC0;
+extern ImageObject_00516FC0 g_ImageObject_00516FC0;
+typedef struct ImageObject_00516FC4 {
     int at_g_FrontendResultsColumnAdvanceFactionPixels; /* 00516FC4 g_FrontendResultsColumnAdvanceFactionPixels */
+} ImageObject_00516FC4;
+extern ImageObject_00516FC4 g_ImageObject_00516FC4;
+typedef struct ImageObject_00516FC8 {
     int at_g_FrontendResultsColumnAdvanceFactionField98Pixels; /* 00516FC8 g_FrontendResultsColumnAdvanceFactionField98Pixels */
+} ImageObject_00516FC8;
+extern ImageObject_00516FC8 g_ImageObject_00516FC8;
+typedef struct ImageObject_00516FCC {
     int at_g_FrontendResultsColumnAdvanceFactionField9CPixels; /* 00516FCC g_FrontendResultsColumnAdvanceFactionField9CPixels */
+} ImageObject_00516FCC;
+extern ImageObject_00516FCC g_ImageObject_00516FCC;
+typedef struct ImageObject_00516FD0 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldA0Pixels; /* 00516FD0 g_FrontendResultsColumnAdvanceFactionFieldA0Pixels */
+} ImageObject_00516FD0;
+extern ImageObject_00516FD0 g_ImageObject_00516FD0;
+typedef struct ImageObject_00516FD4 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldA4Pixels; /* 00516FD4 g_FrontendResultsColumnAdvanceFactionFieldA4Pixels */
+} ImageObject_00516FD4;
+extern ImageObject_00516FD4 g_ImageObject_00516FD4;
+typedef struct ImageObject_00516FD8 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldA8Pixels; /* 00516FD8 g_FrontendResultsColumnAdvanceFactionFieldA8Pixels */
+} ImageObject_00516FD8;
+extern ImageObject_00516FD8 g_ImageObject_00516FD8;
+typedef struct ImageObject_00516FDC {
     int at_g_FrontendResultsColumnAdvanceFactionFieldACPixels; /* 00516FDC g_FrontendResultsColumnAdvanceFactionFieldACPixels */
+} ImageObject_00516FDC;
+extern ImageObject_00516FDC g_ImageObject_00516FDC;
+typedef struct ImageObject_00516FE0 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldB0Pixels; /* 00516FE0 g_FrontendResultsColumnAdvanceFactionFieldB0Pixels */
+} ImageObject_00516FE0;
+extern ImageObject_00516FE0 g_ImageObject_00516FE0;
+typedef struct ImageObject_00516FE4 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldB4Pixels; /* 00516FE4 g_FrontendResultsColumnAdvanceFactionFieldB4Pixels */
+} ImageObject_00516FE4;
+extern ImageObject_00516FE4 g_ImageObject_00516FE4;
+typedef struct ImageObject_00516FE8 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldB8Pixels; /* 00516FE8 g_FrontendResultsColumnAdvanceFactionFieldB8Pixels */
+} ImageObject_00516FE8;
+extern ImageObject_00516FE8 g_ImageObject_00516FE8;
+typedef struct ImageObject_00516FEC {
     int at_g_FrontendResultsColumnAdvanceFactionFieldBCPixels; /* 00516FEC g_FrontendResultsColumnAdvanceFactionFieldBCPixels */
+} ImageObject_00516FEC;
+extern ImageObject_00516FEC g_ImageObject_00516FEC;
+typedef struct ImageObject_00516FF0 {
     uint32_t at_g_FrontendResultsFramebufferBytesPerPixel; /* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
+} ImageObject_00516FF0;
+extern ImageObject_00516FF0 g_ImageObject_00516FF0;
+typedef struct ImageObject_00516FF4 {
     uint32_t at_g_FrontendResultsFramebufferScanlineStrideBytes; /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
+} ImageObject_00516FF4;
+extern ImageObject_00516FF4 g_ImageObject_00516FF4;
+typedef struct ImageObject_00516FF8 {
     uint32_t at_g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
     uint32_t at_g_FrontendResultsFactionPackedPixelColors_rest[3]; /* beyond the declared type */
-} ImageData_00516E90;
-extern ImageData_00516E90 g_ImageData_00516E90;
+} ImageObject_00516FF8;
+extern ImageObject_00516FF8 g_ImageObject_00516FF8;
 
 /* original 0x00517068-0x005170C0 */
-typedef struct ImageData_00517068 {
+typedef struct ImageObject_00517068 {
     uint8_t at_gap_00517068[8]; /* 00517068 gap */
+} ImageObject_00517068;
+extern ImageObject_00517068 g_ImageObject_00517068;
+typedef struct ImageObject_00517070 {
     uint32_t at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
-} ImageData_00517068;
-extern ImageData_00517068 g_ImageData_00517068;
+} ImageObject_00517070;
+extern ImageObject_00517070 g_ImageObject_00517070;
 
 /* original 0x00517DD4-0x00517E30 */
-typedef struct ImageData_00517DD4 {
+typedef struct ImageObject_00517DD4 {
     uint8_t at_gap_00517DD4[12]; /* 00517DD4 gap */
+} ImageObject_00517DD4;
+extern ImageObject_00517DD4 g_ImageObject_00517DD4;
+typedef struct ImageObject_00517DE0 {
     UiNodeVtable at_g_UiNodeVtable_00517DE0; /* 00517DE0 g_UiNodeVtable_00517DE0 */
     uint32_t at_g_UiNodeVtable_00517DE0_rest[2]; /* beyond the declared type */
-} ImageData_00517DD4;
-extern ImageData_00517DD4 g_ImageData_00517DD4;
+} ImageObject_00517DE0;
+extern ImageObject_00517DE0 g_ImageObject_00517DE0;
 
 /* original 0x00517F00-0x00517F60 */
-typedef struct ImageData_00517F00 {
+typedef struct ImageObject_00517F00 {
     uint8_t at_gap_00517F00[16]; /* 00517F00 gap */
+} ImageObject_00517F00;
+extern ImageObject_00517F00 g_ImageObject_00517F00;
+typedef struct ImageObject_00517F10 {
     UiNodeVtable at_g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
     uint32_t at_g_UiCommandVisibilityWrappedTextVtable_rest[2]; /* beyond the declared type */
-} ImageData_00517F00;
-extern ImageData_00517F00 g_ImageData_00517F00;
+} ImageObject_00517F10;
+extern ImageObject_00517F10 g_ImageObject_00517F10;
 
 /* original 0x00517FBC-0x00518010 */
-typedef struct ImageData_00517FBC {
+typedef struct ImageObject_00517FBC {
     uint8_t at_gap_00517FBC[4]; /* 00517FBC gap */
+} ImageObject_00517FBC;
+extern ImageObject_00517FBC g_ImageObject_00517FBC;
+typedef struct ImageObject_00517FC0 {
     UiNodeVtable at_g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
     uint32_t at_g_UiCommandVisibilitySingleLineTextVtable_rest[2]; /* beyond the declared type */
-} ImageData_00517FBC;
-extern ImageData_00517FBC g_ImageData_00517FBC;
+} ImageObject_00517FC0;
+extern ImageObject_00517FC0 g_ImageObject_00517FC0;
 
 /* original 0x00518074-0x00518CE0 */
-typedef struct ImageData_00518074 {
+typedef struct ImageObject_00518074 {
     uint8_t at_gap_00518074[12]; /* 00518074 gap */
+} ImageObject_00518074;
+extern ImageObject_00518074 g_ImageObject_00518074;
+typedef struct ImageObject_00518080 {
     int16_t at_g_SoftwareBilinearPackedInterpolationWeights256[256][4]; /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256: int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
+} ImageObject_00518080;
+extern ImageObject_00518080 g_ImageObject_00518080;
+typedef struct ImageObject_00518880 {
     uint32_t at_g_SoftwarePixelIntensityToNativeColorLut256[256]; /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
+} ImageObject_00518880;
+extern ImageObject_00518880 g_ImageObject_00518880;
+typedef struct ImageObject_00518C80 {
     uint64_t at_g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
     uint32_t at_g_SoftwareBlendUnityWordLanesQ14_rest[2]; /* beyond the declared type */
+} ImageObject_00518C80;
+extern ImageObject_00518C80 g_ImageObject_00518C80;
+typedef struct ImageObject_00518C90 {
     UiNodeVtable at_g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
     uint32_t at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
-} ImageData_00518074;
-extern ImageData_00518074 g_ImageData_00518074;
+} ImageObject_00518C90;
+extern ImageObject_00518C90 g_ImageObject_00518C90;
 
 /* original 0x005191F0-0x005191FC */
-typedef struct ImageData_005191F0 {
+typedef struct ImageObject_005191F0 {
     uint8_t at_gap_005191F0[12]; /* 005191F0 gap */
-} ImageData_005191F0;
-extern ImageData_005191F0 g_ImageData_005191F0;
+} ImageObject_005191F0;
+extern ImageObject_005191F0 g_ImageObject_005191F0;
 
 /* original 0x0051936C-0x005193B0 */
-typedef struct ImageData_0051936C {
+typedef struct ImageObject_0051936C {
     uint8_t at_gap_0051936C[8]; /* 0051936C gap */
+} ImageObject_0051936C;
+extern ImageObject_0051936C g_ImageObject_0051936C;
+typedef struct ImageObject_00519374 {
     uint32_t at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374[15]; /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
-} ImageData_0051936C;
-extern ImageData_0051936C g_ImageData_0051936C;
+} ImageObject_00519374;
+extern ImageObject_00519374 g_ImageObject_00519374;
 
 /* original 0x0051972C-0x0051B3C0 */
-typedef struct ImageData_0051972C {
+typedef struct ImageObject_0051972C {
     uint8_t at_gap_0051972C[4]; /* 0051972C gap */
+} ImageObject_0051972C;
+extern ImageObject_0051972C g_ImageObject_0051972C;
+typedef struct ImageObject_00519730 {
     ArmyRuntimeSlot * at_g_ArmyRuntimeSlots; /* 00519730 g_ArmyRuntimeSlots */
+} ImageObject_00519730;
+extern ImageObject_00519730 g_ImageObject_00519730;
+typedef struct ImageObject_00519734 {
     void * at_g_ArmyRuntimeRebaseBaseMinusOne; /* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
+} ImageObject_00519734;
+extern ImageObject_00519734 g_ImageObject_00519734;
+typedef struct ImageObject_00519738 {
     ArmyGraphicsBinding at_g_ArmyGraphicsBindings[8]; /* 00519738 g_ArmyGraphicsBindings */
+} ImageObject_00519738;
+extern ImageObject_00519738 g_ImageObject_00519738;
+typedef struct ImageObject_00519778 {
     ArmyAssetRecordPrefix * at_g_ArmyAssetRecordRegistry[768]; /* 00519778 g_ArmyAssetRecordRegistry */
     uint32_t at_g_ArmyAssetRecordRegistry_rest[2]; /* beyond the declared type */
+} ImageObject_00519778;
+extern ImageObject_00519778 g_ImageObject_00519778;
+typedef struct ImageObject_0051A380 {
     uint64_t at_g_ArmyPreviewAlphaPremultiplyMmxLut256[256]; /* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256: uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
+} ImageObject_0051A380;
+extern ImageObject_0051A380 g_ImageObject_0051A380;
+typedef struct ImageObject_0051AB80 {
     uint64_t at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256]; /* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256: uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
+} ImageObject_0051AB80;
+extern ImageObject_0051AB80 g_ImageObject_0051AB80;
+typedef struct ImageObject_0051B380 {
     uint64_t at_g_ArmyPreviewDownsampleAlphaRoundingBiasMmx; /* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
+} ImageObject_0051B380;
+extern ImageObject_0051B380 g_ImageObject_0051B380;
+typedef struct ImageObject_0051B388 {
     ArmyCommandGeneration at_g_ArmyCommandGenerationStandard; /* 0051B388 g_ArmyCommandGenerationStandard */
+} ImageObject_0051B388;
+extern ImageObject_0051B388 g_ImageObject_0051B388;
+typedef struct ImageObject_0051B38C {
     ArmyCommandGeneration at_g_AiCommandGenerationCandidateBase; /* 0051B38C g_AiCommandGenerationCandidateBase */
+} ImageObject_0051B38C;
+extern ImageObject_0051B38C g_ImageObject_0051B38C;
+typedef struct ImageObject_0051B390 {
     ArmyCommandGeneration at_g_AiCommandGenerationRetainedTarget; /* 0051B390 g_AiCommandGenerationRetainedTarget: ArmyCommandGeneration (uint32_t) 0x200 assigned to an army's commandGeneration by the AI combat code (gameplay/ai/combat.c) */
+} ImageObject_0051B390;
+extern ImageObject_0051B390 g_ImageObject_0051B390;
+typedef struct ImageObject_0051B394 {
     uint16_t at_g_UnreferencedArmyTexturePathUtf16[13]; /* 0051B394 g_UnreferencedArmyTexturePathUtf16: UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
+} ImageObject_0051B394;
+extern ImageObject_0051B394 g_ImageObject_0051B394;
+typedef struct ImageObject_0051B3AE {
     char at_g_UnreferencedArmyTag[5]; /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
     uint32_t at_g_UnreferencedArmyTag_rest[3]; /* beyond the declared type */
     uint8_t at_g_UnreferencedArmyTag_rest_tail[1];
-} ImageData_0051972C;
-extern ImageData_0051972C g_ImageData_0051972C;
+} ImageObject_0051B3AE;
+extern ImageObject_0051B3AE g_ImageObject_0051B3AE;
 
 /* original 0x0051DBB4-0x0051DFD0 */
-typedef struct ImageData_0051DBB4 {
+typedef struct ImageObject_0051DBB4 {
     uint8_t at_gap_0051DBB4[12]; /* 0051DBB4 gap */
+} ImageObject_0051DBB4;
+extern ImageObject_0051DBB4 g_ImageObject_0051DBB4;
+typedef struct ImageObject_0051DBC0 {
     GraphicsTextureSet * at_g_EffectTextureSet; /* 0051DBC0 g_EffectTextureSet */
+} ImageObject_0051DBC0;
+extern ImageObject_0051DBC0 g_ImageObject_0051DBC0;
+typedef struct ImageObject_0051DBC4 {
     GraphicsPaletteAsset * at_g_EffectPalette; /* 0051DBC4 g_EffectPalette */
+} ImageObject_0051DBC4;
+extern ImageObject_0051DBC4 g_ImageObject_0051DBC4;
+typedef struct ImageObject_0051DBC8 {
     EffectRuntimeSlot * at_g_EffectRuntimeSlots; /* 0051DBC8 g_EffectRuntimeSlots */
+} ImageObject_0051DBC8;
+extern ImageObject_0051DBC8 g_ImageObject_0051DBC8;
+typedef struct ImageObject_0051DBCC {
     uint8_t * at_g_EffectRuntimeRebaseBaseMinusOne; /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
+} ImageObject_0051DBCC;
+extern ImageObject_0051DBCC g_ImageObject_0051DBCC;
+typedef struct ImageObject_0051DBD0 {
     EffectDefinition * at_g_EffectDefinitionRegistry[256]; /* 0051DBD0 g_EffectDefinitionRegistry */
-} ImageData_0051DBB4;
-extern ImageData_0051DBB4 g_ImageData_0051DBB4;
+} ImageObject_0051DBD0;
+extern ImageObject_0051DBD0 g_ImageObject_0051DBD0;
 
 /* original 0x0051EAA0-0x0051EAD0 */
-typedef struct ImageData_0051EAA0 {
+typedef struct ImageObject_0051EAA0 {
     uint8_t at_gap_0051EAA0[16]; /* 0051EAA0 gap */
+} ImageObject_0051EAA0;
+extern ImageObject_0051EAA0 g_ImageObject_0051EAA0;
+typedef struct ImageObject_0051EAB0 {
     uint32_t at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
-} ImageData_0051EAA0;
-extern ImageData_0051EAA0 g_ImageData_0051EAA0;
+} ImageObject_0051EAB0;
+extern ImageObject_0051EAB0 g_ImageObject_0051EAB0;
 
 /* original 0x0051EEE4-0x005200C0 */
-typedef struct ImageData_0051EEE4 {
+typedef struct ImageObject_0051EEE4 {
     uint8_t at_gap_0051EEE4[12]; /* 0051EEE4 gap */
+} ImageObject_0051EEE4;
+extern ImageObject_0051EEE4 g_ImageObject_0051EEE4;
+typedef struct ImageObject_0051EEF0 {
     ModelDefinitionRecordPrefix * at_g_ModelDefinitionRegistry[768]; /* 0051EEF0 g_ModelDefinitionRegistry */
+} ImageObject_0051EEF0;
+extern ImageObject_0051EEF0 g_ImageObject_0051EEF0;
+typedef struct ImageObject_0051FAF0 {
     TerrainClassPlacementAndOverlayCallbackTable10 at_g_TerrainClassPlacementAndOverlayCallbacks10; /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
+} ImageObject_0051FAF0;
+extern ImageObject_0051FAF0 g_ImageObject_0051FAF0;
+typedef struct ImageObject_0051FB18 {
     uint32_t at_g_FactionEnergyAllocationPriorityByModelClass[24]; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass: uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
+} ImageObject_0051FB18;
+extern ImageObject_0051FB18 g_ImageObject_0051FB18;
+typedef struct ImageObject_0051FB78 {
     uint32_t at_g_AiCombatTargetClassBaseScores[24]; /* 0051FB78 g_AiCombatTargetClassBaseScores: uint32_t[24] AI combat target base score per target runtime class (gameplay/ai/combat.c) */
+} ImageObject_0051FB78;
+extern ImageObject_0051FB78 g_ImageObject_0051FB78;
+typedef struct ImageObject_0051FBD8 {
     RuntimeModelClassPriorityTable24 at_g_RuntimeModelClassPriorityByModelClassId; /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
+} ImageObject_0051FBD8;
+extern ImageObject_0051FBD8 g_ImageObject_0051FBD8;
+typedef struct ImageObject_0051FC38 {
     uint32_t at_g_ArmyRuntimeDepthBinClassByModelClass[24]; /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass: uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
+} ImageObject_0051FC38;
+extern ImageObject_0051FC38 g_ImageObject_0051FC38;
+typedef struct ImageObject_0051FC98 {
     ArmyRuntimeOrderHandlerMatrix11x24 at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes; /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
+} ImageObject_0051FC98;
+extern ImageObject_0051FC98 g_ImageObject_0051FC98;
+typedef struct ImageObject_005200B8 {
     ModelRuntimeSlot * at_g_ModelRuntimeSlots; /* 005200B8 g_ModelRuntimeSlots */
+} ImageObject_005200B8;
+extern ImageObject_005200B8 g_ImageObject_005200B8;
+typedef struct ImageObject_005200BC {
     int at_g_ModelRuntimeRebaseDelta; /* 005200BC g_ModelRuntimeRebaseDelta */
-} ImageData_0051EEE4;
-extern ImageData_0051EEE4 g_ImageData_0051EEE4;
+} ImageObject_005200BC;
+extern ImageObject_005200BC g_ImageObject_005200BC;
 
 /* original 0x00520EA0-0x00520F60 */
-typedef struct ImageData_00520EA0 {
+typedef struct ImageObject_00520EA0 {
     uint8_t at_gap_00520EA0[16]; /* 00520EA0 gap */
+} ImageObject_00520EA0;
+extern ImageObject_00520EA0 g_ImageObject_00520EA0;
+typedef struct ImageObject_00520EB0 {
     uint32_t at_g_ArmySuspensionBlendVectorAXQ12; /* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
+} ImageObject_00520EB0;
+extern ImageObject_00520EB0 g_ImageObject_00520EB0;
+typedef struct ImageObject_00520EB4 {
     uint32_t at_g_ArmySuspensionBlendVectorAYQ12; /* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
+} ImageObject_00520EB4;
+extern ImageObject_00520EB4 g_ImageObject_00520EB4;
+typedef struct ImageObject_00520EB8 {
     uint32_t at_g_ArmySuspensionBlendVectorAZQ12; /* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
+} ImageObject_00520EB8;
+extern ImageObject_00520EB8 g_ImageObject_00520EB8;
+typedef struct ImageObject_00520EBC {
     uint32_t at_g_ArmySuspensionBlendVectorBXQ12; /* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
+} ImageObject_00520EBC;
+extern ImageObject_00520EBC g_ImageObject_00520EBC;
+typedef struct ImageObject_00520EC0 {
     uint32_t at_g_ArmySuspensionBlendVectorBYQ12; /* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
+} ImageObject_00520EC0;
+extern ImageObject_00520EC0 g_ImageObject_00520EC0;
+typedef struct ImageObject_00520EC4 {
     uint32_t at_g_ArmySuspensionBlendVectorBZQ12; /* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
+} ImageObject_00520EC4;
+extern ImageObject_00520EC4 g_ImageObject_00520EC4;
+typedef struct ImageObject_00520EC8 {
     uint8_t at_g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
     uint32_t at_g_ArmySuspensionRotationMatrixScratchA_rest[11]; /* beyond the declared type */
     uint8_t at_g_ArmySuspensionRotationMatrixScratchA_rest_tail[3];
+} ImageObject_00520EC8;
+extern ImageObject_00520EC8 g_ImageObject_00520EC8;
+typedef struct ImageObject_00520EF8 {
     uint8_t at_g_ArmySuspensionRotationMatrixScratchB; /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
     uint32_t at_g_ArmySuspensionRotationMatrixScratchB_rest[11]; /* beyond the declared type */
     uint8_t at_g_ArmySuspensionRotationMatrixScratchB_rest_tail[3];
+} ImageObject_00520EF8;
+extern ImageObject_00520EF8 g_ImageObject_00520EF8;
+typedef struct ImageObject_00520F28 {
     uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch */
     uint32_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest[13]; /* beyond the declared type */
     uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest_tail[3];
-} ImageData_00520EA0;
-extern ImageData_00520EA0 g_ImageData_00520EA0;
+} ImageObject_00520F28;
+extern ImageObject_00520F28 g_ImageObject_00520F28;
 
 /* original 0x00524110-0x00524130 */
-typedef struct ImageData_00524110 {
+typedef struct ImageObject_00524110 {
     uint8_t at_gap_00524110[16]; /* 00524110 gap */
+} ImageObject_00524110;
+extern ImageObject_00524110 g_ImageObject_00524110;
+typedef struct ImageObject_00524120 {
     uint32_t at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[4]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
-} ImageData_00524110;
-extern ImageData_00524110 g_ImageData_00524110;
+} ImageObject_00524120;
+extern ImageObject_00524120 g_ImageObject_00524120;
 
 /* original 0x005247C0-0x005247F0 */
-typedef struct ImageData_005247C0 {
+typedef struct ImageObject_005247C0 {
     uint8_t at_gap_005247C0[16]; /* 005247C0 gap */
+} ImageObject_005247C0;
+extern ImageObject_005247C0 g_ImageObject_005247C0;
+typedef struct ImageObject_005247D0 {
     uint32_t at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0[8]; /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
-} ImageData_005247C0;
-extern ImageData_005247C0 g_ImageData_005247C0;
+} ImageObject_005247D0;
+extern ImageObject_005247D0 g_ImageObject_005247D0;
 
 /* original 0x00525A8C-0x00525AB0 */
-typedef struct ImageData_00525A8C {
+typedef struct ImageObject_00525A8C {
     uint8_t at_gap_00525A8C[4]; /* 00525A8C gap */
+} ImageObject_00525A8C;
+extern ImageObject_00525A8C g_ImageObject_00525A8C;
+typedef struct ImageObject_00525A90 {
     uint32_t at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90[8]; /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
-} ImageData_00525A8C;
-extern ImageData_00525A8C g_ImageData_00525A8C;
+} ImageObject_00525A90;
+extern ImageObject_00525A90 g_ImageObject_00525A90;
 
 /* original 0x005266B0-0x005266D0 */
-typedef struct ImageData_005266B0 {
+typedef struct ImageObject_005266B0 {
     uint8_t at_gap_005266B0[16]; /* 005266B0 gap */
+} ImageObject_005266B0;
+extern ImageObject_005266B0 g_ImageObject_005266B0;
+typedef struct ImageObject_005266C0 {
     uint32_t at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
-} ImageData_005266B0;
-extern ImageData_005266B0 g_ImageData_005266B0;
+} ImageObject_005266C0;
+extern ImageObject_005266C0 g_ImageObject_005266C0;
 
 /* original 0x00526988-0x005269B0 */
-typedef struct ImageData_00526988 {
+typedef struct ImageObject_00526988 {
     uint8_t at_gap_00526988[8]; /* 00526988 gap */
+} ImageObject_00526988;
+extern ImageObject_00526988 g_ImageObject_00526988;
+typedef struct ImageObject_00526990 {
     uint32_t at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990[8]; /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
-} ImageData_00526988;
-extern ImageData_00526988 g_ImageData_00526988;
+} ImageObject_00526990;
+extern ImageObject_00526990 g_ImageObject_00526990;
 
 /* original 0x00527AA4-0x00527AC0 */
-typedef struct ImageData_00527AA4 {
+typedef struct ImageObject_00527AA4 {
     uint8_t at_gap_00527AA4[28]; /* 00527AA4 gap */
-} ImageData_00527AA4;
-extern ImageData_00527AA4 g_ImageData_00527AA4;
+} ImageObject_00527AA4;
+extern ImageObject_00527AA4 g_ImageObject_00527AA4;
 
 /* original 0x00528674-0x00528678 */
-typedef struct ImageData_00528674 {
+typedef struct ImageObject_00528674 {
     uint8_t at_gap_00528674[4]; /* 00528674 gap */
-} ImageData_00528674;
-extern ImageData_00528674 g_ImageData_00528674;
+} ImageObject_00528674;
+extern ImageObject_00528674 g_ImageObject_00528674;
 
 /* original 0x00528A6C-0x00528A70 */
-typedef struct ImageData_00528A6C {
+typedef struct ImageObject_00528A6C {
     uint8_t at_gap_00528A6C[4]; /* 00528A6C gap */
-} ImageData_00528A6C;
-extern ImageData_00528A6C g_ImageData_00528A6C;
+} ImageObject_00528A6C;
+extern ImageObject_00528A6C g_ImageObject_00528A6C;
 
 /* original 0x0052AF30-0x0052B350 */
-typedef struct ImageData_0052AF30 {
+typedef struct ImageObject_0052AF30 {
     uint8_t at_gap_0052AF30[16]; /* 0052AF30 gap */
+} ImageObject_0052AF30;
+extern ImageObject_0052AF30 g_ImageObject_0052AF30;
+typedef struct ImageObject_0052AF40 {
     GraphicsTextureSet * at_g_ShotTextureSet; /* 0052AF40 g_ShotTextureSet */
+} ImageObject_0052AF40;
+extern ImageObject_0052AF40 g_ImageObject_0052AF40;
+typedef struct ImageObject_0052AF44 {
     GraphicsPaletteAsset * at_g_ShotPalette; /* 0052AF44 g_ShotPalette */
+} ImageObject_0052AF44;
+extern ImageObject_0052AF44 g_ImageObject_0052AF44;
+typedef struct ImageObject_0052AF48 {
     ShotRuntimeSlot * at_g_ShotRuntimeSlots; /* 0052AF48 g_ShotRuntimeSlots */
+} ImageObject_0052AF48;
+extern ImageObject_0052AF48 g_ImageObject_0052AF48;
+typedef struct ImageObject_0052AF4C {
     uint8_t * at_g_ShotRuntimeRebaseBaseMinusOne; /* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
+} ImageObject_0052AF4C;
+extern ImageObject_0052AF4C g_ImageObject_0052AF4C;
+typedef struct ImageObject_0052AF50 {
     ShotDefinition * at_g_ShotDefinitionRegistry[256]; /* 0052AF50 g_ShotDefinitionRegistry */
-} ImageData_0052AF30;
-extern ImageData_0052AF30 g_ImageData_0052AF30;
+} ImageObject_0052AF50;
+extern ImageObject_0052AF50 g_ImageObject_0052AF50;
 
 /* original 0x0052CDE8-0x0052CEE0 */
-typedef struct ImageData_0052CDE8 {
+typedef struct ImageObject_0052CDE8 {
     uint8_t at_gap_0052CDE8[8]; /* 0052CDE8 gap */
+} ImageObject_0052CDE8;
+extern ImageObject_0052CDE8 g_ImageObject_0052CDE8;
+typedef struct ImageObject_0052CDF0 {
     GraphicsTextureSourceAsset * at_g_SelectionPanelTextureSource; /* 0052CDF0 g_SelectionPanelTextureSource */
+} ImageObject_0052CDF0;
+extern ImageObject_0052CDF0 g_ImageObject_0052CDF0;
+typedef struct ImageObject_0052CDF4 {
     GraphicsTextureSourceAsset * at_g_InfoPanelTextureSource; /* 0052CDF4 g_InfoPanelTextureSource */
+} ImageObject_0052CDF4;
+extern ImageObject_0052CDF4 g_ImageObject_0052CDF4;
+typedef struct ImageObject_0052CDF8 {
     void * at_g_SelectionPanelData; /* 0052CDF8 g_SelectionPanelData */
+} ImageObject_0052CDF8;
+extern ImageObject_0052CDF8 g_ImageObject_0052CDF8;
+typedef struct ImageObject_0052CDFC {
     void * at_g_InfoPanelData; /* 0052CDFC g_InfoPanelData */
+} ImageObject_0052CDFC;
+extern ImageObject_0052CDFC g_ImageObject_0052CDFC;
+typedef struct ImageObject_0052CE00 {
     UiPackedTextStyle at_g_SelectionPanelNumberTextStyle; /* 0052CE00 g_SelectionPanelNumberTextStyle: UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel (gameplay/selection/runtime.c) */
+} ImageObject_0052CE00;
+extern ImageObject_0052CE00 g_ImageObject_0052CE00;
+typedef struct ImageObject_0052CE04 {
     ModelProjectedBoundsPixels at_g_ModelProjectedBoundsPixels; /* 0052CE04 g_ModelProjectedBoundsPixels */
+} ImageObject_0052CE04;
+extern ImageObject_0052CE04 g_ImageObject_0052CE04;
+typedef struct ImageObject_0052CE14 {
     SelectionInfoEntitySlots * at_g_SelectionInfoEntitySlots; /* 0052CE14 g_SelectionInfoEntitySlots */
+} ImageObject_0052CE14;
+extern ImageObject_0052CE14 g_ImageObject_0052CE14;
+typedef struct ImageObject_0052CE18 {
     uint16_t at_u_gfx_panel_select_gfx_0052ce18[21]; /* 0052CE18 u_gfx_panel_select_gfx_0052ce18 */
+} ImageObject_0052CE18;
+extern ImageObject_0052CE18 g_ImageObject_0052CE18;
+typedef struct ImageObject_0052CE42 {
     uint16_t at_u_gfx_panel_info_gfx_0052ce42[19]; /* 0052CE42 u_gfx_panel_info_gfx_0052ce42 */
+} ImageObject_0052CE42;
+extern ImageObject_0052CE42 g_ImageObject_0052CE42;
+typedef struct ImageObject_0052CE68 {
     uint16_t at_u_gfx_panel_select_dat_0052ce68[21]; /* 0052CE68 u_gfx_panel_select_dat_0052ce68 */
+} ImageObject_0052CE68;
+extern ImageObject_0052CE68 g_ImageObject_0052CE68;
+typedef struct ImageObject_0052CE92 {
     uint16_t at_u_gfx_panel_info_dat_0052ce92[19]; /* 0052CE92 u_gfx_panel_info_dat_0052ce92 */
+} ImageObject_0052CE92;
+extern ImageObject_0052CE92 g_ImageObject_0052CE92;
+typedef struct ImageObject_0052CEB8 {
     uint8_t at_g_SelectionPanelNumberScratchUtf16; /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
     uint32_t at_g_SelectionPanelNumberScratchUtf16_rest[7]; /* beyond the declared type */
     uint8_t at_g_SelectionPanelNumberScratchUtf16_rest_tail[3];
+} ImageObject_0052CEB8;
+extern ImageObject_0052CEB8 g_ImageObject_0052CEB8;
+typedef struct ImageObject_0052CED8 {
     GraphicsTextureSourceBlitProc * at_g_SelectionPanelBlitOpaque; /* 0052CED8 g_SelectionPanelBlitOpaque */
+} ImageObject_0052CED8;
+extern ImageObject_0052CED8 g_ImageObject_0052CED8;
+typedef struct ImageObject_0052CEDC {
     GraphicsTextureSourceTiledBlitProc * at_g_SelectionPanelBlitClipped; /* 0052CEDC g_SelectionPanelBlitClipped */
-} ImageData_0052CDE8;
-extern ImageData_0052CDE8 g_ImageData_0052CDE8;
+} ImageObject_0052CEDC;
+extern ImageObject_0052CEDC g_ImageObject_0052CEDC;
 
 /* original 0x0052FF14-0x0052FF30 */
-typedef struct ImageData_0052FF14 {
+typedef struct ImageObject_0052FF14 {
     uint8_t at_gap_0052FF14[28]; /* 0052FF14 gap */
-} ImageData_0052FF14;
-extern ImageData_0052FF14 g_ImageData_0052FF14;
+} ImageObject_0052FF14;
+extern ImageObject_0052FF14 g_ImageObject_0052FF14;
 
 /* original 0x00530080-0x005300A0 */
-typedef struct ImageData_00530080 {
+typedef struct ImageObject_00530080 {
     uint8_t at_gap_00530080[32]; /* 00530080 gap */
-} ImageData_00530080;
-extern ImageData_00530080 g_ImageData_00530080;
+} ImageObject_00530080;
+extern ImageObject_00530080 g_ImageObject_00530080;
 
 /* original 0x005300C8-0x005300E0 */
-typedef struct ImageData_005300C8 {
+typedef struct ImageObject_005300C8 {
     uint8_t at_gap_005300C8[24]; /* 005300C8 gap */
-} ImageData_005300C8;
-extern ImageData_005300C8 g_ImageData_005300C8;
+} ImageObject_005300C8;
+extern ImageObject_005300C8 g_ImageObject_005300C8;
 
 /* original 0x00530818-0x00531080 */
-typedef struct ImageData_00530818 {
+typedef struct ImageObject_00530818 {
     uint8_t at_gap_00530818[8]; /* 00530818 gap */
+} ImageObject_00530818;
+extern ImageObject_00530818 g_ImageObject_00530818;
+typedef struct ImageObject_00530820 {
     void ** at_g_InGameLoadedResourcePointers; /* 00530820 g_InGameLoadedResourcePointers */
+} ImageObject_00530820;
+extern ImageObject_00530820 g_ImageObject_00530820;
+typedef struct ImageObject_00530824 {
     InGameLoadedResourcePointerCount at_g_InGameLoadedResourcePointerCount; /* 00530824 g_InGameLoadedResourcePointerCount */
+} ImageObject_00530824;
+extern ImageObject_00530824 g_ImageObject_00530824;
+typedef struct ImageObject_00530828 {
     uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
     uint32_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest_tail[3];
+} ImageObject_00530828;
+extern ImageObject_00530828 g_ImageObject_00530828;
+typedef struct ImageObject_00530A28 {
     uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16; /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
     uint32_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest_tail[3];
+} ImageObject_00530A28;
+extern ImageObject_00530A28 g_ImageObject_00530A28;
+typedef struct ImageObject_00530C28 {
     uint8_t at_g_LevelResourcePathScratchUtf16; /* 00530C28 g_LevelResourcePathScratchUtf16 */
     uint32_t at_g_LevelResourcePathScratchUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_LevelResourcePathScratchUtf16_rest_tail[3];
+} ImageObject_00530C28;
+extern ImageObject_00530C28 g_ImageObject_00530C28;
+typedef struct ImageObject_00530E28 {
     uint16_t at_g_LevelEndingMovieSourcePath[256]; /* 00530E28 g_LevelEndingMovieSourcePath */
+} ImageObject_00530E28;
+extern ImageObject_00530E28 g_ImageObject_00530E28;
+typedef struct ImageObject_00531028 {
     uint32_t at_g_InGameLevelTitleTextResourceIndex; /* 00531028 g_InGameLevelTitleTextResourceIndex */
+} ImageObject_00531028;
+extern ImageObject_00531028 g_ImageObject_00531028;
+typedef struct ImageObject_0053102C {
     uint32_t at_g_InGameLevelCampaignAssociationIndex; /* 0053102C g_InGameLevelCampaignAssociationIndex */
+} ImageObject_0053102C;
+extern ImageObject_0053102C g_ImageObject_0053102C;
+typedef struct ImageObject_00531030 {
     uint32_t at_g_InGameLevelEffectVoiceSet0; /* 00531030 g_InGameLevelEffectVoiceSet0 */
     uint32_t at_g_InGameLevelEffectVoiceSet1; /* 00531034 g_InGameLevelEffectVoiceSet1 */
     uint32_t at_g_InGameLevelEffectVoiceSet2; /* 00531038 g_InGameLevelEffectVoiceSet2 */
     uint32_t at_g_InGameLevelEffectVoiceSet3; /* 0053103C g_InGameLevelEffectVoiceSet3 */
+} ImageObject_00531030;
+extern ImageObject_00531030 g_ImageObject_00531030;
+typedef struct ImageObject_00531040 {
     uint32_t at_g_InGameActiveEffectVoice; /* 00531040 g_InGameActiveEffectVoice */
+} ImageObject_00531040;
+extern ImageObject_00531040 g_ImageObject_00531040;
+typedef struct ImageObject_00531044 {
     uint32_t at_g_InGameEffectsEnabled; /* 00531044 g_InGameEffectsEnabled */
+} ImageObject_00531044;
+extern ImageObject_00531044 g_ImageObject_00531044;
+typedef struct ImageObject_00531048 {
     uint32_t at_g_InGameLevelMusicVoiceSet0; /* 00531048 g_InGameLevelMusicVoiceSet0 */
     uint32_t at_g_InGameLevelMusicVoiceSet1; /* 0053104C g_InGameLevelMusicVoiceSet1 */
     uint32_t at_g_InGameLevelMusicVoiceSet2; /* 00531050 g_InGameLevelMusicVoiceSet2 */
     uint32_t at_g_InGameLevelMusicVoiceSet3; /* 00531054 g_InGameLevelMusicVoiceSet3 */
+} ImageObject_00531048;
+extern ImageObject_00531048 g_ImageObject_00531048;
+typedef struct ImageObject_00531058 {
     uint32_t at_g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice */
+} ImageObject_00531058;
+extern ImageObject_00531058 g_ImageObject_00531058;
+typedef struct ImageObject_0053105C {
     uint32_t at_g_InGameMusicNextTrackCountdown; /* 0053105C g_InGameMusicNextTrackCountdown */
+} ImageObject_0053105C;
+extern ImageObject_0053105C g_ImageObject_0053105C;
+typedef struct ImageObject_00531060 {
     InGameLevelRuntimeGlobalBlock20 at_g_InGameLevelRuntimeGlobalBlock; /* 00531060 g_InGameLevelRuntimeGlobalBlock */
-} ImageData_00530818;
-extern ImageData_00530818 g_ImageData_00530818;
+} ImageObject_00531060;
+extern ImageObject_00531060 g_ImageObject_00531060;
 
 /* original 0x00531FF4-0x00532000 */
-typedef struct ImageData_00531FF4 {
+typedef struct ImageObject_00531FF4 {
     uint8_t at_gap_00531FF4[12]; /* 00531FF4 gap */
-} ImageData_00531FF4;
-extern ImageData_00531FF4 g_ImageData_00531FF4;
+} ImageObject_00531FF4;
+extern ImageObject_00531FF4 g_ImageObject_00531FF4;
 
 /* original 0x00532998-0x005329A4 */
-typedef struct ImageData_00532998 {
+typedef struct ImageObject_00532998 {
     uint8_t at_gap_00532998[12]; /* 00532998 gap */
-} ImageData_00532998;
-extern ImageData_00532998 g_ImageData_00532998;
+} ImageObject_00532998;
+extern ImageObject_00532998 g_ImageObject_00532998;
 
 /* original 0x0053329C-0x005332C0 */
-typedef struct ImageData_0053329C {
+typedef struct ImageObject_0053329C {
     uint8_t at_gap_0053329C[4]; /* 0053329C gap */
+} ImageObject_0053329C;
+extern ImageObject_0053329C g_ImageObject_0053329C;
+typedef struct ImageObject_005332A0 {
     GridScratchCell * at_g_GridScratchPrimary; /* 005332A0 g_GridScratchPrimary */
+} ImageObject_005332A0;
+extern ImageObject_005332A0 g_ImageObject_005332A0;
+typedef struct ImageObject_005332A4 {
     GridScratchCell * at_g_GridScratchSecondary; /* 005332A4 g_GridScratchSecondary */
+} ImageObject_005332A4;
+extern ImageObject_005332A4 g_ImageObject_005332A4;
+typedef struct ImageObject_005332A8 {
     GridScratchCell ** at_g_GridPathCostQueueBegin; /* 005332A8 g_GridPathCostQueueBegin */
+} ImageObject_005332A8;
+extern ImageObject_005332A8 g_ImageObject_005332A8;
+typedef struct ImageObject_005332AC {
     GridScratchCell ** at_g_GridPathCostQueueEnd; /* 005332AC g_GridPathCostQueueEnd */
+} ImageObject_005332AC;
+extern ImageObject_005332AC g_ImageObject_005332AC;
+typedef struct ImageObject_005332B0 {
     GridScratchCell ** at_g_GridPathCostQueuePassBoundary; /* 005332B0 g_GridPathCostQueuePassBoundary */
+} ImageObject_005332B0;
+extern ImageObject_005332B0 g_ImageObject_005332B0;
+typedef struct ImageObject_005332B4 {
     uint32_t at_g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
+} ImageObject_005332B4;
+extern ImageObject_005332B4 g_ImageObject_005332B4;
+typedef struct ImageObject_005332B8 {
     int32_t at_g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
     uint32_t at_g_GridScratchHeight_rest[1]; /* beyond the declared type */
-} ImageData_0053329C;
-extern ImageData_0053329C g_ImageData_0053329C;
+} ImageObject_005332B8;
+extern ImageObject_005332B8 g_ImageObject_005332B8;
 
 /* original 0x00533D4C-0x00533D60 */
-typedef struct ImageData_00533D4C {
+typedef struct ImageObject_00533D4C {
     uint8_t at_gap_00533D4C[20]; /* 00533D4C gap */
-} ImageData_00533D4C;
-extern ImageData_00533D4C g_ImageData_00533D4C;
+} ImageObject_00533D4C;
+extern ImageObject_00533D4C g_ImageObject_00533D4C;
 
 /* original 0x00533ED0-0x00533EF0 */
-typedef struct ImageData_00533ED0 {
+typedef struct ImageObject_00533ED0 {
     uint32_t at_g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask */
+} ImageObject_00533ED0;
+extern ImageObject_00533ED0 g_ImageObject_00533ED0;
+typedef struct ImageObject_00533ED4 {
     uint32_t at_g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
+} ImageObject_00533ED4;
+extern ImageObject_00533ED4 g_ImageObject_00533ED4;
+typedef struct ImageObject_00533ED8 {
     uint32_t at_g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
+} ImageObject_00533ED8;
+extern ImageObject_00533ED8 g_ImageObject_00533ED8;
+typedef struct ImageObject_00533EDC {
     uint32_t at_g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
+} ImageObject_00533EDC;
+extern ImageObject_00533EDC g_ImageObject_00533EDC;
+typedef struct ImageObject_00533EE0 {
     uint32_t at_g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
     uint32_t at_g_GridPathUnreachableRegionReferenceRow_rest[3]; /* beyond the declared type */
-} ImageData_00533ED0;
-extern ImageData_00533ED0 g_ImageData_00533ED0;
+} ImageObject_00533EE0;
+extern ImageObject_00533EE0 g_ImageObject_00533EE0;
 
 /* original 0x005367CC-0x005368E0 */
-typedef struct ImageData_005367CC {
+typedef struct ImageObject_005367CC {
     uint8_t at_gap_005367CC[4]; /* 005367CC gap */
+} ImageObject_005367CC;
+extern ImageObject_005367CC g_ImageObject_005367CC;
+typedef struct ImageObject_005367D0 {
     EntityPathingPriorityPair * at_g_EntityPathingPriorityPairs; /* 005367D0 g_EntityPathingPriorityPairs */
+} ImageObject_005367D0;
+extern ImageObject_005367D0 g_ImageObject_005367D0;
+typedef struct ImageObject_005367D4 {
     uint32_t at_g_EntityPathingPriorityPairStorage[1]; /* 005367D4 g_EntityPathingPriorityPairStorage */
+} ImageObject_005367D4;
+extern ImageObject_005367D4 g_ImageObject_005367D4;
+typedef struct ImageObject_005367D8 {
     uint32_t at_g_EntityPathingPriorityPairStorage_0__priority[1]; /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
+} ImageObject_005367D8;
+extern ImageObject_005367D8 g_ImageObject_005367D8;
+typedef struct ImageObject_005367DC {
     uint32_t at_g_EntityPathingPriorityPairStorage_1__entity[1]; /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
+} ImageObject_005367DC;
+extern ImageObject_005367DC g_ImageObject_005367DC;
+typedef struct ImageObject_005367E0 {
     uint32_t at_g_EntityPathingPriorityPairStorage_1__priority[61]; /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
+} ImageObject_005367E0;
+extern ImageObject_005367E0 g_ImageObject_005367E0;
+typedef struct ImageObject_005368D4 {
     uint32_t at_g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
     uint32_t at_g_EntityPathingPriorityPairCount_rest[2]; /* beyond the declared type */
-} ImageData_005367CC;
-extern ImageData_005367CC g_ImageData_005367CC;
+} ImageObject_005368D4;
+extern ImageObject_005368D4 g_ImageObject_005368D4;
 
 /* original 0x00536F08-0x00536FC0 */
-typedef struct ImageData_00536F08 {
+typedef struct ImageObject_00536F08 {
     uint8_t at_gap_00536F08[8]; /* 00536F08 gap */
+} ImageObject_00536F08;
+extern ImageObject_00536F08 g_ImageObject_00536F08;
+typedef struct ImageObject_00536F10 {
     Q12 at_g_GridTerrainClassBit24MaxWaterSurfaceDelta; /* 00536F10 g_GridTerrainClassBit24MaxWaterSurfaceDelta */
+} ImageObject_00536F10;
+extern ImageObject_00536F10 g_ImageObject_00536F10;
+typedef struct ImageObject_00536F14 {
     AngleTurn16Stored32 at_g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16; /* 00536F14 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 */
+} ImageObject_00536F14;
+extern ImageObject_00536F14 g_ImageObject_00536F14;
+typedef struct ImageObject_00536F18 {
     AngleTurn16Stored32 at_g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16; /* 00536F18 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 */
+} ImageObject_00536F18;
+extern ImageObject_00536F18 g_ImageObject_00536F18;
+typedef struct ImageObject_00536F1C {
     AngleTurn16Stored32 at_g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16; /* 00536F1C g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 */
+} ImageObject_00536F1C;
+extern ImageObject_00536F1C g_ImageObject_00536F1C;
+typedef struct ImageObject_00536F20 {
     AngleTurn16Stored32 at_g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16; /* 00536F20 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 */
+} ImageObject_00536F20;
+extern ImageObject_00536F20 g_ImageObject_00536F20;
+typedef struct ImageObject_00536F24 {
     uint32_t at_g_ModelTraversalClass4SecondaryThresholdTable3[3]; /* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 14000/15000/15500 for model definitions with placement contact kind 4, indexed by terrainTraversalClass - 1 (ModelDefinition resolve in assets/model/definitions.c) */
+} ImageObject_00536F24;
+extern ImageObject_00536F24 g_ImageObject_00536F24;
+typedef struct ImageObject_00536F30 {
     Q12 at_g_GridTerrainClassBit28MinWaterSurfaceDelta; /* 00536F30 g_GridTerrainClassBit28MinWaterSurfaceDelta */
+} ImageObject_00536F30;
+extern ImageObject_00536F30 g_ImageObject_00536F30;
+typedef struct ImageObject_00536F34 {
     Q12 at_g_GridTerrainClassBit29MinWaterSurfaceDelta; /* 00536F34 g_GridTerrainClassBit29MinWaterSurfaceDelta */
+} ImageObject_00536F34;
+extern ImageObject_00536F34 g_ImageObject_00536F34;
+typedef struct ImageObject_00536F38 {
     Q12 at_g_GridTerrainClassBit30MinWaterSurfaceDelta; /* 00536F38 g_GridTerrainClassBit30MinWaterSurfaceDelta */
+} ImageObject_00536F38;
+extern ImageObject_00536F38 g_ImageObject_00536F38;
+typedef struct ImageObject_00536F3C {
     AngleTurn16Stored32 at_g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16; /* 00536F3C g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 */
+} ImageObject_00536F3C;
+extern ImageObject_00536F3C g_ImageObject_00536F3C;
+typedef struct ImageObject_00536F40 {
     AngleTurn16Stored32 at_g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16; /* 00536F40 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 */
+} ImageObject_00536F40;
+extern ImageObject_00536F40 g_ImageObject_00536F40;
+typedef struct ImageObject_00536F44 {
     AngleTurn16Stored32 at_g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16; /* 00536F44 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 */
+} ImageObject_00536F44;
+extern ImageObject_00536F44 g_ImageObject_00536F44;
+typedef struct ImageObject_00536F48 {
     uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3[3]; /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 12500/13500/14500 for the other contact kinds, indexed by terrainTraversalClass - 4 (assets/model/definitions.c); followed by 12 bytes of 0x90 padding */
     uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest[3]; /* beyond the declared type */
+} ImageObject_00536F48;
+extern ImageObject_00536F48 g_ImageObject_00536F48;
+typedef struct ImageObject_00536F60 {
     uint32_t at_g_GridInfluenceRadiusOffset0; /* 00536F60 g_GridInfluenceRadiusOffset0 */
     uint32_t at_g_GridInfluenceRadiusOffset1; /* 00536F64 g_GridInfluenceRadiusOffset1 */
     uint32_t at_g_GridInfluenceRadiusOffset2; /* 00536F68 g_GridInfluenceRadiusOffset2 */
@@ -1916,6 +4262,9 @@ typedef struct ImageData_00536F08 {
     uint32_t at_g_GridInfluenceRadiusOffset5; /* 00536F74 g_GridInfluenceRadiusOffset5 */
     uint32_t at_g_GridInfluenceRadiusOffset6; /* 00536F78 g_GridInfluenceRadiusOffset6 */
     uint32_t at_g_GridInfluenceRadiusOffset7; /* 00536F7C g_GridInfluenceRadiusOffset7 */
+} ImageObject_00536F60;
+extern ImageObject_00536F60 g_ImageObject_00536F60;
+typedef struct ImageObject_00536F80 {
     uint32_t at_g_GridInfluenceSquaredThreshold0; /* 00536F80 g_GridInfluenceSquaredThreshold0 */
     uint32_t at_g_GridInfluenceSquaredThreshold1; /* 00536F84 g_GridInfluenceSquaredThreshold1 */
     uint32_t at_g_GridInfluenceSquaredThreshold2; /* 00536F88 g_GridInfluenceSquaredThreshold2 */
@@ -1924,76 +4273,196 @@ typedef struct ImageData_00536F08 {
     uint32_t at_g_GridInfluenceSquaredThreshold5; /* 00536F94 g_GridInfluenceSquaredThreshold5 */
     uint32_t at_g_GridInfluenceSquaredThreshold6; /* 00536F98 g_GridInfluenceSquaredThreshold6 */
     uint32_t at_g_GridInfluenceSquaredThreshold7; /* 00536F9C g_GridInfluenceSquaredThreshold7 */
+} ImageObject_00536F80;
+extern ImageObject_00536F80 g_ImageObject_00536F80;
+typedef struct ImageObject_00536FA0 {
     int32_t at_g_AiCombatTargetRadialClearanceWeight; /* 00536FA0 g_AiCombatTargetRadialClearanceWeight: int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
+} ImageObject_00536FA0;
+extern ImageObject_00536FA0 g_ImageObject_00536FA0;
+typedef struct ImageObject_00536FA4 {
     int32_t at_g_AiCombatTargetCandidateCounterCountWeight; /* 00536FA4 g_AiCombatTargetCandidateCounterCountWeight: int32_t weight 0x12000 for the candidate class counter term of the AI combat target score, divided by the Q12 hierarchy scale unity (gameplay/ai/combat.c) */
+} ImageObject_00536FA4;
+extern ImageObject_00536FA4 g_ImageObject_00536FA4;
+typedef struct ImageObject_00536FA8 {
     int32_t at_g_AiCombatTargetSourceCounterCountWeight; /* 00536FA8 g_AiCombatTargetSourceCounterCountWeight: int32_t weight 0x20000 for the source class counter term of the AI combat target score (gameplay/ai/combat.c) */
+} ImageObject_00536FA8;
+extern ImageObject_00536FA8 g_ImageObject_00536FA8;
+typedef struct ImageObject_00536FAC {
     int32_t at_g_AiCombatTargetScaleDeficitWeight; /* 00536FAC g_AiCombatTargetScaleDeficitWeight: int32_t weight 0x1100 for the hierarchy scale deficit (1.0 - condition ratio) term of the AI combat target score (gameplay/ai/combat.c) */
+} ImageObject_00536FAC;
+extern ImageObject_00536FAC g_ImageObject_00536FAC;
+typedef struct ImageObject_00536FB0 {
     int32_t at_g_AiCombatTargetClassBaseScoreMultiplier; /* 00536FB0 g_AiCombatTargetClassBaseScoreMultiplier: int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score (gameplay/ai/combat.c) */
+} ImageObject_00536FB0;
+extern ImageObject_00536FB0 g_ImageObject_00536FB0;
+typedef struct ImageObject_00536FB4 {
     AiCommandGenerationRightShiftBits at_g_AiCombatTargetSelectedCommandGenerationRightShiftBits; /* 00536FB4 g_AiCombatTargetSelectedCommandGenerationRightShiftBits */
+} ImageObject_00536FB4;
+extern ImageObject_00536FB4 g_ImageObject_00536FB4;
+typedef struct ImageObject_00536FB8 {
     AiCommandGenerationRightShiftBits at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits; /* 00536FB8 g_AiCombatTargetCurrentCommandGenerationRightShiftBits */
     uint32_t at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits_rest[1]; /* beyond the declared type */
-} ImageData_00536F08;
-extern ImageData_00536F08 g_ImageData_00536F08;
+} ImageObject_00536FB8;
+extern ImageObject_00536FB8 g_ImageObject_00536FB8;
 
 /* original 0x00537410-0x00537420 */
-typedef struct ImageData_00537410 {
+typedef struct ImageObject_00537410 {
     AiCandidateWorkspaceEntry * at_g_AiWorkspace13Candidates; /* 00537410 g_AiWorkspace13Candidates */
+} ImageObject_00537410;
+extern ImageObject_00537410 g_ImageObject_00537410;
+typedef struct ImageObject_00537414 {
     uint32_t at_g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
+} ImageObject_00537414;
+extern ImageObject_00537414 g_ImageObject_00537414;
+typedef struct ImageObject_00537418 {
     uint32_t at_g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
     uint32_t at_g_AiPurchaseAppliedArmyClassMask_rest[1]; /* beyond the declared type */
-} ImageData_00537410;
-extern ImageData_00537410 g_ImageData_00537410;
+} ImageObject_00537418;
+extern ImageObject_00537418 g_ImageObject_00537418;
 
 /* original 0x0053795C-0x005379E0 */
-typedef struct ImageData_0053795C {
+typedef struct ImageObject_0053795C {
     uint8_t at_gap_0053795C[4]; /* 0053795C gap */
+} ImageObject_0053795C;
+extern ImageObject_0053795C g_ImageObject_0053795C;
+typedef struct ImageObject_00537960 {
     AiStructureWorkspaceEntry * at_g_AiWorkspace00Structures; /* 00537960 g_AiWorkspace00Structures */
+} ImageObject_00537960;
+extern ImageObject_00537960 g_ImageObject_00537960;
+typedef struct ImageObject_00537964 {
     uint32_t at_g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
+} ImageObject_00537964;
+extern ImageObject_00537964 g_ImageObject_00537964;
+typedef struct ImageObject_00537968 {
     AiRuntimeWorkspaceEntry * at_g_AiWorkspace01Units; /* 00537968 g_AiWorkspace01Units */
+} ImageObject_00537968;
+extern ImageObject_00537968 g_ImageObject_00537968;
+typedef struct ImageObject_0053796C {
     uint32_t at_g_AiWorkspace01Count; /* 0053796C g_AiWorkspace01Count */
+} ImageObject_0053796C;
+extern ImageObject_0053796C g_ImageObject_0053796C;
+typedef struct ImageObject_00537970 {
     AiRuntimeWorkspaceEntry * at_g_AiWorkspace02VisibleHostiles; /* 00537970 g_AiWorkspace02VisibleHostiles */
+} ImageObject_00537970;
+extern ImageObject_00537970 g_ImageObject_00537970;
+typedef struct ImageObject_00537974 {
     uint32_t at_g_AiWorkspace02Count; /* 00537974 g_AiWorkspace02Count */
+} ImageObject_00537974;
+extern ImageObject_00537974 g_ImageObject_00537974;
+typedef struct ImageObject_00537978 {
     AiRuntimeWorkspaceEntry * at_g_AiWorkspace03UnseenHostiles; /* 00537978 g_AiWorkspace03UnseenHostiles */
+} ImageObject_00537978;
+extern ImageObject_00537978 g_ImageObject_00537978;
+typedef struct ImageObject_0053797C {
     uint32_t at_g_AiWorkspace03Count; /* 0053797C g_AiWorkspace03Count */
+} ImageObject_0053797C;
+extern ImageObject_0053797C g_ImageObject_0053797C;
+typedef struct ImageObject_00537980 {
     AiRuntimeWorkspaceEntry * at_g_AiWorkspace04RequestedAssets; /* 00537980 g_AiWorkspace04RequestedAssets */
+} ImageObject_00537980;
+extern ImageObject_00537980 g_ImageObject_00537980;
+typedef struct ImageObject_00537984 {
     uint32_t at_g_AiWorkspace04Count; /* 00537984 g_AiWorkspace04Count */
+} ImageObject_00537984;
+extern ImageObject_00537984 g_ImageObject_00537984;
+typedef struct ImageObject_00537988 {
     AiScoredSiteWorkspaceEntry * at_g_AiWorkspace05GeneralSites; /* 00537988 g_AiWorkspace05GeneralSites */
+} ImageObject_00537988;
+extern ImageObject_00537988 g_ImageObject_00537988;
+typedef struct ImageObject_0053798C {
     uint32_t at_g_AiWorkspace05Count; /* 0053798C g_AiWorkspace05Count */
+} ImageObject_0053798C;
+extern ImageObject_0053798C g_ImageObject_0053798C;
+typedef struct ImageObject_00537990 {
     uint8_t * at_g_AiWorkspace06FlaggedSites; /* 00537990 g_AiWorkspace06FlaggedSites */
+} ImageObject_00537990;
+extern ImageObject_00537990 g_ImageObject_00537990;
+typedef struct ImageObject_00537994 {
     uint32_t at_g_AiWorkspace06Count; /* 00537994 g_AiWorkspace06Count */
+} ImageObject_00537994;
+extern ImageObject_00537994 g_ImageObject_00537994;
+typedef struct ImageObject_00537998 {
     AiTargetWorkspaceEntry * at_g_AiWorkspace07Targets; /* 00537998 g_AiWorkspace07Targets */
+} ImageObject_00537998;
+extern ImageObject_00537998 g_ImageObject_00537998;
+typedef struct ImageObject_0053799C {
     uint32_t at_g_AiWorkspace07Count; /* 0053799C g_AiWorkspace07Count */
+} ImageObject_0053799C;
+extern ImageObject_0053799C g_ImageObject_0053799C;
+typedef struct ImageObject_005379A0 {
     AiTerrainFeatureWorkspaceEntry * at_g_AiWorkspace08TerrainFeatureSites; /* 005379A0 g_AiWorkspace08TerrainFeatureSites */
+} ImageObject_005379A0;
+extern ImageObject_005379A0 g_ImageObject_005379A0;
+typedef struct ImageObject_005379A4 {
     uint32_t at_g_AiWorkspace08Count; /* 005379A4 g_AiWorkspace08Count */
+} ImageObject_005379A4;
+extern ImageObject_005379A4 g_ImageObject_005379A4;
+typedef struct ImageObject_005379A8 {
     FieldGridCell ** at_g_AiWorkspace09Cells; /* 005379A8 g_AiWorkspace09Cells */
+} ImageObject_005379A8;
+extern ImageObject_005379A8 g_ImageObject_005379A8;
+typedef struct ImageObject_005379AC {
     uint32_t at_g_AiWorkspace09Count; /* 005379AC g_AiWorkspace09Count */
+} ImageObject_005379AC;
+extern ImageObject_005379AC g_ImageObject_005379AC;
+typedef struct ImageObject_005379B0 {
     FieldGridCell ** at_g_AiWorkspace10Cells; /* 005379B0 g_AiWorkspace10Cells */
+} ImageObject_005379B0;
+extern ImageObject_005379B0 g_ImageObject_005379B0;
+typedef struct ImageObject_005379B4 {
     uint32_t at_g_AiWorkspace10Count; /* 005379B4 g_AiWorkspace10Count */
+} ImageObject_005379B4;
+extern ImageObject_005379B4 g_ImageObject_005379B4;
+typedef struct ImageObject_005379B8 {
     ArmyAssetRecordPrefix ** at_g_AiWorkspace11ProducibleAssets; /* 005379B8 g_AiWorkspace11ProducibleAssets */
+} ImageObject_005379B8;
+extern ImageObject_005379B8 g_ImageObject_005379B8;
+typedef struct ImageObject_005379BC {
     uint32_t at_g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
+} ImageObject_005379BC;
+extern ImageObject_005379BC g_ImageObject_005379BC;
+typedef struct ImageObject_005379C0 {
     AiTechnologyPlanningCandidate * at_g_AiWorkspace12TechnologyCandidates; /* 005379C0 g_AiWorkspace12TechnologyCandidates */
+} ImageObject_005379C0;
+extern ImageObject_005379C0 g_ImageObject_005379C0;
+typedef struct ImageObject_005379C4 {
     AiTechnologyPlanningCandidateCount at_g_AiWorkspace12Count; /* 005379C4 g_AiWorkspace12Count */
+} ImageObject_005379C4;
+extern ImageObject_005379C4 g_ImageObject_005379C4;
+typedef struct ImageObject_005379C8 {
     uint32_t at_g_AiActiveGridMaskClass0; /* 005379C8 g_AiActiveGridMaskClass0 */
     uint32_t at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
     uint32_t at_g_AiActiveGridMaskClass2; /* 005379D0 g_AiActiveGridMaskClass2 */
     uint32_t at_g_AiActiveGridMaskClass3; /* 005379D4 g_AiActiveGridMaskClass3 */
+} ImageObject_005379C8;
+extern ImageObject_005379C8 g_ImageObject_005379C8;
+typedef struct ImageObject_005379D8 {
     ModelRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
     uint32_t at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
-} ImageData_0053795C;
-extern ImageData_0053795C g_ImageData_0053795C;
+} ImageObject_005379D8;
+extern ImageObject_005379D8 g_ImageObject_005379D8;
 
 /* original 0x00539050-0x00539070 */
-typedef struct ImageData_00539050 {
+typedef struct ImageObject_00539050 {
     uint8_t at_gap_00539050[16]; /* 00539050 gap */
+} ImageObject_00539050;
+extern ImageObject_00539050 g_ImageObject_00539050;
+typedef struct ImageObject_00539060 {
     uint32_t at_g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
     uint32_t at_g_AiConstructionPendingAssetConsumedCount_rest[3]; /* beyond the declared type */
-} ImageData_00539050;
-extern ImageData_00539050 g_ImageData_00539050;
+} ImageObject_00539060;
+extern ImageObject_00539060 g_ImageObject_00539060;
 
 /* original 0x00539974-0x00539A40 */
-typedef struct ImageData_00539974 {
+typedef struct ImageObject_00539974 {
     uint8_t at_gap_00539974[12]; /* 00539974 gap */
+} ImageObject_00539974;
+extern ImageObject_00539974 g_ImageObject_00539974;
+typedef struct ImageObject_00539980 {
     uint32_t at_g_TechnologyCategoryMaximumReciprocalQ24Table8[8]; /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
+} ImageObject_00539980;
+extern ImageObject_00539980 g_ImageObject_00539980;
+typedef struct ImageObject_005399A0 {
     int32_t at_g_TechnologyCategoryMaximum0; /* 005399A0 g_TechnologyCategoryMaximum0 */
     uint32_t at_g_TechnologyCategoryMaximum1; /* 005399A4 g_TechnologyCategoryMaximum1 */
     uint32_t at_g_TechnologyCategoryMaximum2; /* 005399A8 g_TechnologyCategoryMaximum2 */
@@ -2002,123 +4471,255 @@ typedef struct ImageData_00539974 {
     uint32_t at_g_TechnologyCategoryMaximum5; /* 005399B4 g_TechnologyCategoryMaximum5 */
     uint32_t at_g_TechnologyCategoryMaximum6; /* 005399B8 g_TechnologyCategoryMaximum6 */
     uint32_t at_g_TechnologyCategoryMaximum7; /* 005399BC g_TechnologyCategoryMaximum7 */
+} ImageObject_005399A0;
+extern ImageObject_005399A0 g_ImageObject_005399A0;
+typedef struct ImageObject_005399C0 {
     int32_t at_g_AiArmyCandidateFlaggedDefinitionValueMaximum; /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
+} ImageObject_005399C0;
+extern ImageObject_005399C0 g_ImageObject_005399C0;
+typedef struct ImageObject_005399C4 {
     int32_t at_g_AiStrategicClassTerrainWeights[5][3]; /* 005399C4 g_AiStrategicClassTerrainWeights */
+} ImageObject_005399C4;
+extern ImageObject_005399C4 g_ImageObject_005399C4;
+typedef struct ImageObject_00539A00 {
     TechnologyCategoryMasks at_g_TechnologyCategoryMasks; /* 00539A00 g_TechnologyCategoryMasks */
-} ImageData_00539974;
-extern ImageData_00539974 g_ImageData_00539974;
+} ImageObject_00539A00;
+extern ImageObject_00539A00 g_ImageObject_00539A00;
 
 /* original 0x0053B0CC-0x0053B0E0 */
-typedef struct ImageData_0053B0CC {
+typedef struct ImageObject_0053B0CC {
     uint8_t at_gap_0053B0CC[4]; /* 0053B0CC gap */
+} ImageObject_0053B0CC;
+extern ImageObject_0053B0CC g_ImageObject_0053B0CC;
+typedef struct ImageObject_0053B0D0 {
     ArmyRuntimeSlot ** at_g_AiWorkspace14CollectedArmies; /* 0053B0D0 g_AiWorkspace14CollectedArmies */
+} ImageObject_0053B0D0;
+extern ImageObject_0053B0D0 g_ImageObject_0053B0D0;
+typedef struct ImageObject_0053B0D4 {
     uint32_t at_g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
     uint32_t at_g_AiCollectedEntityCount_rest[2]; /* beyond the declared type */
-} ImageData_0053B0CC;
-extern ImageData_0053B0CC g_ImageData_0053B0CC;
+} ImageObject_0053B0D4;
+extern ImageObject_0053B0D4 g_ImageObject_0053B0D4;
 
 /* original 0x0053B9CC-0x0053BA00 */
-typedef struct ImageData_0053B9CC {
+typedef struct ImageObject_0053B9CC {
     uint8_t at_gap_0053B9CC[20]; /* 0053B9CC gap */
+} ImageObject_0053B9CC;
+extern ImageObject_0053B9CC g_ImageObject_0053B9CC;
+typedef struct ImageObject_0053B9E0 {
     AiTechnologyCandidateScoreCallback * at_g_AiTechnologyCandidateScoreCallbackTable[6]; /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
     uint32_t at_g_AiTechnologyCandidateScoreCallbackTable_rest[2]; /* beyond the declared type */
-} ImageData_0053B9CC;
-extern ImageData_0053B9CC g_ImageData_0053B9CC;
+} ImageObject_0053B9E0;
+extern ImageObject_0053B9E0 g_ImageObject_0053B9E0;
 
 /* original 0x0053C154-0x0053C1A0 */
-typedef struct ImageData_0053C154 {
+typedef struct ImageObject_0053C154 {
     uint8_t at_gap_0053C154[12]; /* 0053C154 gap */
+} ImageObject_0053C154;
+extern ImageObject_0053C154 g_ImageObject_0053C154;
+typedef struct ImageObject_0053C160 {
     uint32_t at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160[16]; /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
-} ImageData_0053C154;
-extern ImageData_0053C154 g_ImageData_0053C154;
+} ImageObject_0053C160;
+extern ImageObject_0053C160 g_ImageObject_0053C160;
 
 /* original 0x0053C1FC-0x0053C210 */
-typedef struct ImageData_0053C1FC {
+typedef struct ImageObject_0053C1FC {
     uint8_t at_gap_0053C1FC[20]; /* 0053C1FC gap */
-} ImageData_0053C1FC;
-extern ImageData_0053C1FC g_ImageData_0053C1FC;
+} ImageObject_0053C1FC;
+extern ImageObject_0053C1FC g_ImageObject_0053C1FC;
 
 /* original 0x0053C5DC-0x0053C6C0 */
-typedef struct ImageData_0053C5DC {
+typedef struct ImageObject_0053C5DC {
     uint8_t at_gap_0053C5DC[4]; /* 0053C5DC gap */
+} ImageObject_0053C5DC;
+extern ImageObject_0053C5DC g_ImageObject_0053C5DC;
+typedef struct ImageObject_0053C5E0 {
     AiKnowledgeDataImage * at_g_AiKnowledgeData; /* 0053C5E0 g_AiKnowledgeData */
+} ImageObject_0053C5E0;
+extern ImageObject_0053C5E0 g_ImageObject_0053C5E0;
+typedef struct ImageObject_0053C5E4 {
     uint16_t at_u_engine_ki_dat_0053c5e4[14]; /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
+} ImageObject_0053C5E4;
+extern ImageObject_0053C5E4 g_ImageObject_0053C5E4;
+typedef struct ImageObject_0053C600 {
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantB15; /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
+} ImageObject_0053C600;
+extern ImageObject_0053C600 g_ImageObject_0053C600;
+typedef struct ImageObject_0053C63C {
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantA15; /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
+} ImageObject_0053C63C;
+extern ImageObject_0053C63C g_ImageObject_0053C63C;
+typedef struct ImageObject_0053C678 {
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantC15; /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
     uint32_t at_g_AiArmyCandidateScoreWeightsVariantC15_rest[3]; /* beyond the declared type */
-} ImageData_0053C5DC;
-extern ImageData_0053C5DC g_ImageData_0053C5DC;
+} ImageObject_0053C678;
+extern ImageObject_0053C678 g_ImageObject_0053C678;
 
 /* original 0x0053C808-0x0053C810 */
-typedef struct ImageData_0053C808 {
+typedef struct ImageObject_0053C808 {
     uint8_t at_gap_0053C808[8]; /* 0053C808 gap */
-} ImageData_0053C808;
-extern ImageData_0053C808 g_ImageData_0053C808;
+} ImageObject_0053C808;
+extern ImageObject_0053C808 g_ImageObject_0053C808;
 
 /* original 0x0053C99C-0x0053CA10 */
-typedef struct ImageData_0053C99C {
+typedef struct ImageObject_0053C99C {
     uint8_t at_gap_0053C99C[4]; /* 0053C99C gap */
+} ImageObject_0053C99C;
+extern ImageObject_0053C99C g_ImageObject_0053C99C;
+typedef struct ImageObject_0053C9A0 {
     float * at_g_WorldMotionSplineMatrixWorkspaces[6]; /* 0053C9A0 g_WorldMotionSplineMatrixWorkspaces */
+} ImageObject_0053C9A0;
+extern ImageObject_0053C9A0 g_ImageObject_0053C9A0;
+typedef struct ImageObject_0053C9B8 {
     float * at_g_WorldMotionSplineCoefficientTables[6]; /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
+} ImageObject_0053C9B8;
+extern ImageObject_0053C9B8 g_ImageObject_0053C9B8;
+typedef struct ImageObject_0053C9D0 {
     float at_g_WorldMotionSplineCachedDerivatives[6]; /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
+} ImageObject_0053C9D0;
+extern ImageObject_0053C9D0 g_ImageObject_0053C9D0;
+typedef struct ImageObject_0053C9E8 {
     int32_t at_g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
+} ImageObject_0053C9E8;
+extern ImageObject_0053C9E8 g_ImageObject_0053C9E8;
+typedef struct ImageObject_0053CA00 {
     float at_g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
     uint32_t at_g_Q12FloatScale4096_rest[3]; /* beyond the declared type */
-} ImageData_0053C99C;
-extern ImageData_0053C99C g_ImageData_0053C99C;
+} ImageObject_0053CA00;
+extern ImageObject_0053CA00 g_ImageObject_0053CA00;
 
 /* original 0x0053D358-0x0053D370 */
-typedef struct ImageData_0053D358 {
+typedef struct ImageObject_0053D358 {
     uint8_t at_gap_0053D358[8]; /* 0053D358 gap */
+} ImageObject_0053D358;
+extern ImageObject_0053D358 g_ImageObject_0053D358;
+typedef struct ImageObject_0053D360 {
     TerrainCompositeTextureRuntime * at_g_TerrainCompositeTexture; /* 0053D360 g_TerrainCompositeTexture */
     uint32_t at_g_TerrainCompositeTexture_rest[3]; /* beyond the declared type */
-} ImageData_0053D358;
-extern ImageData_0053D358 g_ImageData_0053D358;
+} ImageObject_0053D360;
+extern ImageObject_0053D360 g_ImageObject_0053D360;
 
 /* original 0x0053DA68-0x00543B70 */
-typedef struct ImageData_0053DA68 {
+typedef struct ImageObject_0053DA68 {
     uint8_t at_gap_0053DA68[8]; /* 0053DA68 gap */
+} ImageObject_0053DA68;
+extern ImageObject_0053DA68 g_ImageObject_0053DA68;
+typedef struct ImageObject_0053DA70 {
     UiRootCallbacks at_g_UiRootCallbacks_0053DA70; /* 0053DA70 g_UiRootCallbacks_0053DA70 */
+} ImageObject_0053DA70;
+extern ImageObject_0053DA70 g_ImageObject_0053DA70;
+typedef struct ImageObject_0053DA84 {
     FrontendSessionDiscoveryRecord ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
+} ImageObject_0053DA84;
+extern ImageObject_0053DA84 g_ImageObject_0053DA84;
+typedef struct ImageObject_0053DA88 {
     FrontendSessionDiscoveryRecord * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
+} ImageObject_0053DA88;
+extern ImageObject_0053DA88 g_ImageObject_0053DA88;
+typedef struct ImageObject_0053DA8C {
     FrontendUiImage at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
+} ImageObject_0053DA8C;
+extern ImageObject_0053DA8C g_ImageObject_0053DA8C;
+typedef struct ImageObject_005433E0 {
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[32]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
+} ImageObject_005433E0;
+extern ImageObject_005433E0 g_ImageObject_005433E0;
+typedef struct ImageObject_00543460 {
     FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 00543460 g_FrontendTaskAssignmentControlOffsets */
     uint32_t at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
+} ImageObject_00543460;
+extern ImageObject_00543460 g_ImageObject_00543460;
+typedef struct ImageObject_005438EC {
     FrontendUiScratch at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     uint32_t at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
-} ImageData_0053DA68;
-extern ImageData_0053DA68 g_ImageData_0053DA68;
+} ImageObject_005438EC;
+extern ImageObject_005438EC g_ImageObject_005438EC;
 
 /* original 0x00543E34-0x00543F50 */
-typedef struct ImageData_00543E34 {
+typedef struct ImageObject_00543E34 {
     uint8_t at_gap_00543E34[12]; /* 00543E34 gap */
+} ImageObject_00543E34;
+extern ImageObject_00543E34 g_ImageObject_00543E34;
+typedef struct ImageObject_00543E40 {
     UiCommandQueueRecord at_g_FrontendCommandQueueRecords[16]; /* 00543E40 g_FrontendCommandQueueRecords */
+} ImageObject_00543E40;
+extern ImageObject_00543E40 g_ImageObject_00543E40;
+typedef struct ImageObject_00543F40 {
     UiCommandQueueRecord * at_g_FrontendCommandQueueEnd; /* 00543F40 g_FrontendCommandQueueEnd */
     uint32_t at_g_FrontendCommandQueueEnd_rest[3]; /* beyond the declared type */
-} ImageData_00543E34;
-extern ImageData_00543E34 g_ImageData_00543E34;
+} ImageObject_00543F40;
+extern ImageObject_00543F40 g_ImageObject_00543F40;
 
 /* original 0x005456F0-0x005460E0 */
-typedef struct ImageData_005456F0 {
+typedef struct ImageObject_005456F0 {
     uint32_t at_g_FrontendRootNode; /* 005456F0 g_FrontendRootNode */
+} ImageObject_005456F0;
+extern ImageObject_005456F0 g_ImageObject_005456F0;
+typedef struct ImageObject_005456F4 {
     uint32_t at_g_FrontendPendingPageAction; /* 005456F4 g_FrontendPendingPageAction */
+} ImageObject_005456F4;
+extern ImageObject_005456F4 g_ImageObject_005456F4;
+typedef struct ImageObject_005456F8 {
     uint32_t at_g_FrontendRomTransitionPageAction; /* 005456F8 g_FrontendRomTransitionPageAction */
+} ImageObject_005456F8;
+extern ImageObject_005456F8 g_ImageObject_005456F8;
+typedef struct ImageObject_005456FC {
     uint32_t at_g_FrontendActiveRomRecord; /* 005456FC g_FrontendActiveRomRecord */
+} ImageObject_005456FC;
+extern ImageObject_005456FC g_ImageObject_005456FC;
+typedef struct ImageObject_00545700 {
     uint32_t at_g_FrontendRuntimeFlags; /* 00545700 g_FrontendRuntimeFlags */
+} ImageObject_00545700;
+extern ImageObject_00545700 g_ImageObject_00545700;
+typedef struct ImageObject_00545704 {
     uint32_t at_g_FrontendCentralTextureSet; /* 00545704 g_FrontendCentralTextureSet */
+} ImageObject_00545704;
+extern ImageObject_00545704 g_ImageObject_00545704;
+typedef struct ImageObject_00545708 {
     uint32_t at_g_FrontendCentralPaletteAsset; /* 00545708 g_FrontendCentralPaletteAsset */
+} ImageObject_00545708;
+extern ImageObject_00545708 g_ImageObject_00545708;
+typedef struct ImageObject_0054570C {
     GraphicsTextureSourceAsset * at_g_FrontendMenuTextureSource; /* 0054570C g_FrontendMenuTextureSource */
+} ImageObject_0054570C;
+extern ImageObject_0054570C g_ImageObject_0054570C;
+typedef struct ImageObject_00545710 {
     uint32_t at_g_FrontendNetworkTickCounter; /* 00545710 g_FrontendNetworkTickCounter */
+} ImageObject_00545710;
+extern ImageObject_00545710 g_ImageObject_00545710;
+typedef struct ImageObject_00545714 {
     uint32_t at_g_FrontendNetworkState; /* 00545714 g_FrontendNetworkState */
+} ImageObject_00545714;
+extern ImageObject_00545714 g_ImageObject_00545714;
+typedef struct ImageObject_00545718 {
     uint32_t at_g_FrontendFactionAssignmentReadyStateGeneration; /* 00545718 g_FrontendFactionAssignmentReadyStateGeneration */
+} ImageObject_00545718;
+extern ImageObject_00545718 g_ImageObject_00545718;
+typedef struct ImageObject_0054571C {
     uint32_t at_g_FrontendRomTransitionElapsedTicks; /* 0054571C g_FrontendRomTransitionElapsedTicks */
+} ImageObject_0054571C;
+extern ImageObject_0054571C g_ImageObject_0054571C;
+typedef struct ImageObject_00545720 {
     uint32_t at_g_FrontendRomTransitionSplineKeyframes; /* 00545720 g_FrontendRomTransitionSplineKeyframes */
+} ImageObject_00545720;
+extern ImageObject_00545720 g_ImageObject_00545720;
+typedef struct ImageObject_00545724 {
     uint32_t at_g_FrontendRomTransitionSplineKeyframeCount; /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
+} ImageObject_00545724;
+extern ImageObject_00545724 g_ImageObject_00545724;
+typedef struct ImageObject_00545728 {
     uint32_t at_g_FrontendRomTransitionTargetRecordId; /* 00545728 g_FrontendRomTransitionTargetRecordId */
+} ImageObject_00545728;
+extern ImageObject_00545728 g_ImageObject_00545728;
+typedef struct ImageObject_0054572C {
     uint32_t at_g_FrontendStateTickSpinLock; /* 0054572C g_FrontendStateTickSpinLock */
+} ImageObject_0054572C;
+extern ImageObject_0054572C g_ImageObject_0054572C;
+typedef struct ImageObject_00545730 {
     uint32_t at_g_FrontendTimerCountdownTicks; /* 00545730 g_FrontendTimerCountdownTicks */
+} ImageObject_00545730;
+extern ImageObject_00545730 g_ImageObject_00545730;
+typedef struct ImageObject_00545734 {
     uint32_t at_g_FrontendRomTransitionKeyframe0Channel0Q12; /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
     uint32_t at_g_FrontendRomTransitionKeyframe0Channel1Q12; /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
     uint32_t at_g_FrontendRomTransitionKeyframe0Channel2Q12; /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
@@ -2135,106 +4736,283 @@ typedef struct ImageData_005456F0 {
     uint32_t at_g_FrontendRomTransitionKeyframe1Channel5Q12; /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
     uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12; /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
     uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12_rest[1]; /* beyond the declared type */
+} ImageObject_00545734;
+extern ImageObject_00545734 g_ImageObject_00545734;
+typedef struct ImageObject_00545774 {
     uint32_t at_g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset */
+} ImageObject_00545774;
+extern ImageObject_00545774 g_ImageObject_00545774;
+typedef struct ImageObject_00545778 {
     RomRegistrySlot * at_g_RomRegistrySlots; /* 00545778 g_RomRegistrySlots */
+} ImageObject_00545778;
+extern ImageObject_00545778 g_ImageObject_00545778;
+typedef struct ImageObject_0054577C {
     WorldObjectRecord * at_g_FrontendWorldObjectRecords; /* 0054577C g_FrontendWorldObjectRecords */
+} ImageObject_0054577C;
+extern ImageObject_0054577C g_ImageObject_0054577C;
+typedef struct ImageObject_00545780 {
     FrontendLoadedLevelAsset * at_g_FrontendLoadedLevelAsset; /* 00545780 g_FrontendLoadedLevelAsset */
+} ImageObject_00545780;
+extern ImageObject_00545780 g_ImageObject_00545780;
+typedef struct ImageObject_00545784 {
     uint32_t at_g_FrontendMenuSoundVoiceSetTable100; /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
+} ImageObject_00545784;
+extern ImageObject_00545784 g_ImageObject_00545784;
+typedef struct ImageObject_00545788 {
     uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1; /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
     uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1_rest[98]; /* beyond the declared type */
+} ImageObject_00545788;
+extern ImageObject_00545788 g_ImageObject_00545788;
+typedef struct ImageObject_00545914 {
     uint32_t at_g_FrontendLoadedCampaignAsset; /* 00545914 g_FrontendLoadedCampaignAsset */
+} ImageObject_00545914;
+extern ImageObject_00545914 g_ImageObject_00545914;
+typedef struct ImageObject_00545918 {
     uint32_t at_g_FrontendScenarioTransferState; /* 00545918 g_FrontendScenarioTransferState */
+} ImageObject_00545918;
+extern ImageObject_00545918 g_ImageObject_00545918;
+typedef struct ImageObject_0054591C {
     uint32_t at_g_FrontendPlayerMessageBuffers; /* 0054591C g_FrontendPlayerMessageBuffers */
+} ImageObject_0054591C;
+extern ImageObject_0054591C g_ImageObject_0054591C;
+typedef struct ImageObject_00545920 {
     uint32_t at_g_FrontendLocalPlayerPcxPreview; /* 00545920 g_FrontendLocalPlayerPcxPreview */
+} ImageObject_00545920;
+extern ImageObject_00545920 g_ImageObject_00545920;
+typedef struct ImageObject_00545924 {
     uint32_t at_g_FrontendHostSnapshotTransferCountdown; /* 00545924 g_FrontendHostSnapshotTransferCountdown */
+} ImageObject_00545924;
+extern ImageObject_00545924 g_ImageObject_00545924;
+typedef struct ImageObject_00545928 {
     uint32_t at_g_FrontendScenarioInitializationCount; /* 00545928 g_FrontendScenarioInitializationCount */
+} ImageObject_00545928;
+extern ImageObject_00545928 g_ImageObject_00545928;
+typedef struct ImageObject_0054592C {
     uint32_t at_g_FrontendMusicVoiceSet; /* 0054592C g_FrontendMusicVoiceSet */
+} ImageObject_0054592C;
+extern ImageObject_0054592C g_ImageObject_0054592C;
+typedef struct ImageObject_00545930 {
     uint32_t at_g_FrontendMusicActiveBuffer; /* 00545930 g_FrontendMusicActiveBuffer */
+} ImageObject_00545930;
+extern ImageObject_00545930 g_ImageObject_00545930;
+typedef struct ImageObject_00545934 {
     uint32_t at_g_FrontendPendingPageActionDepth; /* 00545934 g_FrontendPendingPageActionDepth */
+} ImageObject_00545934;
+extern ImageObject_00545934 g_ImageObject_00545934;
+typedef struct ImageObject_00545938 {
     FrontendUiActionHandlerPage20Prefix at_g_FrontendUiActionHandlersPage20; /* 00545938 g_FrontendUiActionHandlersPage20 */
+} ImageObject_00545938;
+extern ImageObject_00545938 g_ImageObject_00545938;
+typedef struct ImageObject_00545A98 {
     ScenarioCatalogRefreshSelectedRecordCallback * at_g_FrontendScenarioMapOptionHandlerTable[3]; /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
+} ImageObject_00545A98;
+extern ImageObject_00545A98 g_ImageObject_00545A98;
+typedef struct ImageObject_00545AA4 {
     uint16_t at_u_engine_zentrale_rom_00545aa4[20]; /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
+} ImageObject_00545AA4;
+extern ImageObject_00545AA4 g_ImageObject_00545AA4;
+typedef struct ImageObject_00545ACC {
     uint16_t at_u_gfx_texturen_zentrale_gfx_00545acc[26]; /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
+} ImageObject_00545ACC;
+extern ImageObject_00545ACC g_ImageObject_00545ACC;
+typedef struct ImageObject_00545B00 {
     uint16_t at_u_gfx_texturen_zentrale_pal_00545b00[26]; /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
+} ImageObject_00545B00;
+extern ImageObject_00545B00 g_ImageObject_00545B00;
+typedef struct ImageObject_00545B34 {
     uint16_t at_u_texte_hilfe_str_00545b34[16]; /* 00545B34 u_texte_hilfe_str_00545b34 */
+} ImageObject_00545B34;
+extern ImageObject_00545B34 g_ImageObject_00545B34;
+typedef struct ImageObject_00545B54 {
     uint16_t at_u_sound_menue01_sam_00545b54[18]; /* 00545B54 u_sound_menue01_sam_00545b54 */
+} ImageObject_00545B54;
+extern ImageObject_00545B54 g_ImageObject_00545B54;
+typedef struct ImageObject_00545B78 {
     uint16_t at_u_gfx_panel_menue_gfx_00545b78[20]; /* 00545B78 u_gfx_panel_menue_gfx_00545b78 */
+} ImageObject_00545B78;
+extern ImageObject_00545B78 g_ImageObject_00545B78;
+typedef struct ImageObject_00545BA0 {
     uint16_t at_u_texte_menue_str_00545ba0[16]; /* 00545BA0 u_texte_menue_str_00545ba0 */
+} ImageObject_00545BA0;
+extern ImageObject_00545BA0 g_ImageObject_00545BA0;
+typedef struct ImageObject_00545BC0 {
     uint16_t at_u_texte_level_str_00545bc0[16]; /* 00545BC0 u_texte_level_str_00545bc0 */
+} ImageObject_00545BC0;
+extern ImageObject_00545BC0 g_ImageObject_00545BC0;
+typedef struct ImageObject_00545BE0 {
     uint16_t at_u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_00545be0 */
+} ImageObject_00545BE0;
+extern ImageObject_00545BE0 g_ImageObject_00545BE0;
+typedef struct ImageObject_00545C02 {
     uint16_t at_g_FrontendMissionBriefingMoviePathUtf16[7]; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: uint16_t[7] L"flm\\lev" without terminator: first half of the mission briefing movie path flm\lev0000.flm, continued by g_FrontendMissionBriefingLevelDigitsUtf16; opened with Movie_Open (ui/frontend/scenario.c) */
     uint16_t at_g_FrontendMissionBriefingLevelDigitsUtf16[9]; /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16: uint16_t[9] L"0000.flm" plus terminator: tail of the briefing movie path; the four digits are overwritten with the level number (ui/frontend/scenario.c) */
+} ImageObject_00545C02;
+extern ImageObject_00545C02 g_ImageObject_00545C02;
+typedef struct ImageObject_00545C22 {
     uint16_t at_g_CreditsTexturePathUtf16[22]; /* 00545C22 g_CreditsTexturePathUtf16 */
+} ImageObject_00545C22;
+extern ImageObject_00545C22 g_ImageObject_00545C22;
+typedef struct ImageObject_00545C4E {
     uint16_t at_u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
+} ImageObject_00545C4E;
+extern ImageObject_00545C4E g_ImageObject_00545C4E;
+typedef struct ImageObject_00545C72 {
     uint16_t at_g_FrontendScenarioPathScratchUtf16; /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
     uint32_t at_g_FrontendScenarioPathScratchUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_FrontendScenarioPathScratchUtf16_rest_tail[2];
+} ImageObject_00545C72;
+extern ImageObject_00545C72 g_ImageObject_00545C72;
+typedef struct ImageObject_00545E72 {
     char at_s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31]; /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
+} ImageObject_00545E72;
+extern ImageObject_00545E72 g_ImageObject_00545E72;
+typedef struct ImageObject_00545E91 {
     char at_s_NAME__CLIENT__KARTE___00545e91[533]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
+} ImageObject_00545E91;
+extern ImageObject_00545E91 g_ImageObject_00545E91;
+typedef struct ImageObject_005460A6 {
     uint16_t at_u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
+} ImageObject_005460A6;
+extern ImageObject_005460A6 g_ImageObject_005460A6;
+typedef struct ImageObject_005460BE {
     uint16_t at_u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
     uint8_t at_u_level___str_005460be_padding[10];
-} ImageData_005456F0;
-extern ImageData_005456F0 g_ImageData_005456F0;
+} ImageObject_005460BE;
+extern ImageObject_005460BE g_ImageObject_005460BE;
 
 /* original 0x00546BB4-0x00546BC0 */
-typedef struct ImageData_00546BB4 {
+typedef struct ImageObject_00546BB4 {
     uint8_t at_gap_00546BB4[12]; /* 00546BB4 gap */
-} ImageData_00546BB4;
-extern ImageData_00546BB4 g_ImageData_00546BB4;
+} ImageObject_00546BB4;
+extern ImageObject_00546BB4 g_ImageObject_00546BB4;
 
 /* original 0x00547660-0x00547680 */
-typedef struct ImageData_00547660 {
+typedef struct ImageObject_00547660 {
     uint32_t at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
-} ImageData_00547660;
-extern ImageData_00547660 g_ImageData_00547660;
+} ImageObject_00547660;
+extern ImageObject_00547660 g_ImageObject_00547660;
 
 /* original 0x00547D88-0x00547DB0 */
-typedef struct ImageData_00547D88 {
+typedef struct ImageObject_00547D88 {
     uint8_t at_gap_00547D88[8]; /* 00547D88 gap */
+} ImageObject_00547D88;
+extern ImageObject_00547D88 g_ImageObject_00547D88;
+typedef struct ImageObject_00547D90 {
     uint32_t at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90[8]; /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
-} ImageData_00547D88;
-extern ImageData_00547D88 g_ImageData_00547D88;
+} ImageObject_00547D90;
+extern ImageObject_00547D90 g_ImageObject_00547D90;
 
 /* original 0x00547DD8-0x00547DF0 */
-typedef struct ImageData_00547DD8 {
+typedef struct ImageObject_00547DD8 {
     uint8_t at_gap_00547DD8[24]; /* 00547DD8 gap */
-} ImageData_00547DD8;
-extern ImageData_00547DD8 g_ImageData_00547DD8;
+} ImageObject_00547DD8;
+extern ImageObject_00547DD8 g_ImageObject_00547DD8;
 
 /* original 0x005480FC-0x00548130 */
-typedef struct ImageData_005480FC {
+typedef struct ImageObject_005480FC {
     uint8_t at_gap_005480FC[4]; /* 005480FC gap */
+} ImageObject_005480FC;
+extern ImageObject_005480FC g_ImageObject_005480FC;
+typedef struct ImageObject_00548100 {
     UiCommandDispatchRecord at_g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[3]; /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 */
+} ImageObject_00548100;
+extern ImageObject_00548100 g_ImageObject_00548100;
+typedef struct ImageObject_00548124 {
     uint32_t at_g_FrontendCommandDispatchRecords_Terminator[3]; /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
-} ImageData_005480FC;
-extern ImageData_005480FC g_ImageData_005480FC;
+} ImageObject_00548124;
+extern ImageObject_00548124 g_ImageObject_00548124;
 
 /* original 0x0054D780-0x0054E230 */
-typedef struct ImageData_0054D780 {
+typedef struct ImageObject_0054D780 {
     uint8_t at_gap_0054D780[32]; /* 0054D780 gap */
+} ImageObject_0054D780;
+extern ImageObject_0054D780 g_ImageObject_0054D780;
+typedef struct ImageObject_0054D7A0 {
     FrontendPacket10000Handshake at_g_FrontendPacket10000Buffer; /* 0054D7A0 g_FrontendPacket10000Buffer */
+} ImageObject_0054D7A0;
+extern ImageObject_0054D7A0 g_ImageObject_0054D7A0;
+typedef struct ImageObject_0054D7C0 {
     FrontendPacket50001SessionAdvertisement at_g_FrontendPacket50001Buffer; /* 0054D7C0 g_FrontendPacket50001Buffer */
+} ImageObject_0054D7C0;
+extern ImageObject_0054D7C0 g_ImageObject_0054D7C0;
+typedef struct ImageObject_0054D860 {
     FrontendPacket20002PlayerDescriptor at_g_FrontendPacket20002Buffer; /* 0054D860 g_FrontendPacket20002Buffer */
+} ImageObject_0054D860;
+extern ImageObject_0054D860 g_ImageObject_0054D860;
+typedef struct ImageObject_0054D8A0 {
     FrontendPacket10003JoinAck at_g_FrontendPacket10003Buffer; /* 0054D8A0 g_FrontendPacket10003Buffer */
+} ImageObject_0054D8A0;
+extern ImageObject_0054D8A0 g_ImageObject_0054D8A0;
+typedef struct ImageObject_0054D8C0 {
     FrontendPacket10004PlayerSnapshotRequest at_g_FrontendPacket10004Buffer; /* 0054D8C0 g_FrontendPacket10004Buffer */
+} ImageObject_0054D8C0;
+extern ImageObject_0054D8C0 g_ImageObject_0054D8C0;
+typedef struct ImageObject_0054D8E0 {
     FrontendPacket30005PlayerSnapshot at_g_FrontendPacket30005Buffer; /* 0054D8E0 g_FrontendPacket30005Buffer */
+} ImageObject_0054D8E0;
+extern ImageObject_0054D8E0 g_ImageObject_0054D8E0;
+typedef struct ImageObject_0054D940 {
     FrontendPacket10006CapabilityHeartbeat at_g_FrontendPacket10006Buffer; /* 0054D940 g_FrontendPacket10006Buffer */
+} ImageObject_0054D940;
+extern ImageObject_0054D940 g_ImageObject_0054D940;
+typedef struct ImageObject_0054D960 {
     FrontendPacket40008LobbyRosterSnapshot at_g_FrontendPacket40008Buffer; /* 0054D960 g_FrontendPacket40008Buffer */
+} ImageObject_0054D960;
+extern ImageObject_0054D960 g_ImageObject_0054D960;
+typedef struct ImageObject_0054D9E0 {
     FrontendPacket10009SnapshotChunkRequest at_g_FrontendPacket10009Buffer; /* 0054D9E0 g_FrontendPacket10009Buffer */
+} ImageObject_0054D9E0;
+extern ImageObject_0054D9E0 g_ImageObject_0054D9E0;
+typedef struct ImageObject_0054DA00 {
     FrontendPacket8000ASnapshotChunk at_g_FrontendPacket8000ABuffer; /* 0054DA00 g_FrontendPacket8000ABuffer */
+} ImageObject_0054DA00;
+extern ImageObject_0054DA00 g_ImageObject_0054DA00;
+typedef struct ImageObject_0054DB00 {
     FrontendPlayerRemovalPacket10007 at_g_FrontendPlayerRemovalPacket10007; /* 0054DB00 g_FrontendPlayerRemovalPacket10007 */
+} ImageObject_0054DB00;
+extern ImageObject_0054DB00 g_ImageObject_0054DB00;
+typedef struct ImageObject_0054DB20 {
     FrontendCommandPacketRecord at_g_FrontendPlayerCommandRecords[8]; /* 0054DB20 g_FrontendPlayerCommandRecords */
+} ImageObject_0054DB20;
+extern ImageObject_0054DB20 g_ImageObject_0054DB20;
+typedef struct ImageObject_0054DC20 {
     FrontendCommandPacketRecord at_g_FrontendCommandBatchPacketBuffer[8]; /* 0054DC20 g_FrontendCommandBatchPacketBuffer */
+} ImageObject_0054DC20;
+extern ImageObject_0054DC20 g_ImageObject_0054DC20;
+typedef struct ImageObject_0054DD20 {
     FrontendCommandPacketRecord at_g_FrontendPacket10011Buffer; /* 0054DD20 g_FrontendPacket10011Buffer */
+} ImageObject_0054DD20;
+extern ImageObject_0054DD20 g_ImageObject_0054DD20;
+typedef struct ImageObject_0054DD40 {
     FrontendPacket10012SyncPending at_g_FrontendPacket10012Buffer; /* 0054DD40 g_FrontendPacket10012Buffer */
+} ImageObject_0054DD40;
+extern ImageObject_0054DD40 g_ImageObject_0054DD40;
+typedef struct ImageObject_0054DD60 {
     FrontendPacket10013HeartbeatAck at_g_FrontendPacket10013Buffer; /* 0054DD60 g_FrontendPacket10013Buffer */
+} ImageObject_0054DD60;
+extern ImageObject_0054DD60 g_ImageObject_0054DD60;
+typedef struct ImageObject_0054DD80 {
     FrontendPacket10032HostValue at_g_FrontendPacket10032Buffer; /* 0054DD80 g_FrontendPacket10032Buffer */
+} ImageObject_0054DD80;
+extern ImageObject_0054DD80 g_ImageObject_0054DD80;
+typedef struct ImageObject_0054DDA0 {
     uint32_t at_g_FrontendPendingSessionPlayerCount; /* 0054DDA0 g_FrontendPendingSessionPlayerCount */
     uint32_t at_g_FrontendPendingSessionPlayerCount_rest[1]; /* beyond the declared type */
+} ImageObject_0054DDA0;
+extern ImageObject_0054DDA0 g_ImageObject_0054DDA0;
+typedef struct ImageObject_0054DDA8 {
     uint32_t at_g_FrontendExpectedPlayerRuntimeBlockCount; /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
+} ImageObject_0054DDA8;
+extern ImageObject_0054DDA8 g_ImageObject_0054DDA8;
+typedef struct ImageObject_0054DDAC {
     uint32_t at_g_FrontendHostPublishRoundRobinCounter; /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
+} ImageObject_0054DDAC;
+extern ImageObject_0054DDAC g_ImageObject_0054DDAC;
+typedef struct ImageObject_0054DDB0 {
     uint32_t at_g_FrontendPlayerListRows; /* 0054DDB0 g_FrontendPlayerListRows */
+} ImageObject_0054DDB0;
+extern ImageObject_0054DDB0 g_ImageObject_0054DDB0;
+typedef struct ImageObject_0054DDB4 {
     uint32_t at_g_FrontendPlayerListRow1; /* 0054DDB4 g_FrontendPlayerListRow1 */
     uint32_t at_g_FrontendPlayerListRow2; /* 0054DDB8 g_FrontendPlayerListRow2 */
     uint32_t at_g_FrontendPlayerListRow3; /* 0054DDBC g_FrontendPlayerListRow3 */
@@ -2242,188 +5020,578 @@ typedef struct ImageData_0054D780 {
     uint32_t at_g_FrontendPlayerListRow5; /* 0054DDC4 g_FrontendPlayerListRow5 */
     uint32_t at_g_FrontendPlayerListRow6; /* 0054DDC8 g_FrontendPlayerListRow6 */
     uint32_t at_g_FrontendPlayerListRow7; /* 0054DDCC g_FrontendPlayerListRow7 */
+} ImageObject_0054DDB4;
+extern ImageObject_0054DDB4 g_ImageObject_0054DDB4;
+typedef struct ImageObject_0054DDD0 {
     UiTransferEndpointDescriptor at_g_FrontendNetworkEndpointScratch; /* 0054DDD0 g_FrontendNetworkEndpointScratch */
+} ImageObject_0054DDD0;
+extern ImageObject_0054DDD0 g_ImageObject_0054DDD0;
+typedef struct ImageObject_0054DDE0 {
     uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
     uint32_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest[1]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest_tail[3];
+} ImageObject_0054DDE0;
+extern ImageObject_0054DDE0 g_ImageObject_0054DDE0;
+typedef struct ImageObject_0054DDE8 {
     uint8_t at_g_FrontendNetworkPlayerCountTextUtf16; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
     uint32_t at_g_FrontendNetworkPlayerCountTextUtf16_rest[1]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkPlayerCountTextUtf16_rest_tail[3];
+} ImageObject_0054DDE8;
+extern ImageObject_0054DDE8 g_ImageObject_0054DDE8;
+typedef struct ImageObject_0054DDF0 {
     uint8_t at_g_FrontendNetworkSpeedLabelUtf16; /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
     uint32_t at_g_FrontendNetworkSpeedLabelUtf16_rest[15]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkSpeedLabelUtf16_rest_tail[3];
+} ImageObject_0054DDF0;
+extern ImageObject_0054DDF0 g_ImageObject_0054DDF0;
+typedef struct ImageObject_0054DE30 {
     uint8_t at_g_FrontendNetworkEndpointTextUtf16; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
     uint32_t at_g_FrontendNetworkEndpointTextUtf16_rest[255]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkEndpointTextUtf16_rest_tail[3];
-} ImageData_0054D780;
-extern ImageData_0054D780 g_ImageData_0054D780;
+} ImageObject_0054DE30;
+extern ImageObject_0054DE30 g_ImageObject_0054DE30;
 
 /* original 0x0054FBB0-0x0055C990 */
-typedef struct ImageData_0054FBB0 {
+typedef struct ImageObject_0054FBB0 {
     uint8_t at_gap_0054FBB0[16]; /* 0054FBB0 gap */
+} ImageObject_0054FBB0;
+extern ImageObject_0054FBB0 g_ImageObject_0054FBB0;
+typedef struct ImageObject_0054FBC0 {
     UiRootCallbacks at_g_UiRootCallbacks_0054FBC0; /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
+} ImageObject_0054FBC0;
+extern ImageObject_0054FBC0 g_ImageObject_0054FBC0;
+typedef struct ImageObject_0054FBD4 {
     uint16_t * at_g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
+} ImageObject_0054FBD4;
+extern ImageObject_0054FBD4 g_ImageObject_0054FBD4;
+typedef struct ImageObject_0054FBD8 {
     uint16_t * at_g_InGamePlayerListTextScratchUtf16; /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
+} ImageObject_0054FBD8;
+extern ImageObject_0054FBD8 g_ImageObject_0054FBD8;
+typedef struct ImageObject_0054FBDC {
     InGamePlayerStatusTextSlot at_g_InGamePlayerStatusTextSlots[8]; /* 0054FBDC g_InGamePlayerStatusTextSlots */
+} ImageObject_0054FBDC;
+extern ImageObject_0054FBDC g_ImageObject_0054FBDC;
+typedef struct ImageObject_0054FFDC {
     uint32_t at_g_InGameSelectionDetailNameTextUtf16[32]; /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
+} ImageObject_0054FFDC;
+extern ImageObject_0054FFDC g_ImageObject_0054FFDC;
+typedef struct ImageObject_0055005C {
     uint32_t at_g_InGameSelectionDetailArmourTextUtf16[32]; /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
+} ImageObject_0055005C;
+extern ImageObject_0055005C g_ImageObject_0055005C;
+typedef struct ImageObject_005500DC {
     uint32_t at_g_InGameSelectionDetailWeaponName0TextUtf16[32]; /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
+} ImageObject_005500DC;
+extern ImageObject_005500DC g_ImageObject_005500DC;
+typedef struct ImageObject_0055015C {
     uint32_t at_g_InGameSelectionDetailWeaponName1TextUtf16[32]; /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
+} ImageObject_0055015C;
+extern ImageObject_0055015C g_ImageObject_0055015C;
+typedef struct ImageObject_005501DC {
     uint32_t at_g_InGameSelectionDetailWeaponName2TextUtf16[32]; /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
+} ImageObject_005501DC;
+extern ImageObject_005501DC g_ImageObject_005501DC;
+typedef struct ImageObject_0055025C {
     uint32_t at_g_InGameSelectionDetailTextSlot05Utf16[32]; /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
+} ImageObject_0055025C;
+extern ImageObject_0055025C g_ImageObject_0055025C;
+typedef struct ImageObject_005502DC {
     uint32_t at_g_InGameSelectionDetailBuildXeniteCostTextUtf16[32]; /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
+} ImageObject_005502DC;
+extern ImageObject_005502DC g_ImageObject_005502DC;
+typedef struct ImageObject_0055035C {
     uint32_t at_g_InGameSelectionDetailBuildTimeTextUtf16[32]; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
+} ImageObject_0055035C;
+extern ImageObject_0055035C g_ImageObject_0055035C;
+typedef struct ImageObject_005503DC {
     uint32_t at_g_InGameSelectionDetailEnergyTextUtf16[32]; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
+} ImageObject_005503DC;
+extern ImageObject_005503DC g_ImageObject_005503DC;
+typedef struct ImageObject_0055045C {
     uint32_t at_g_InGameSelectionDetailTextSlot09Utf16[32]; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
+} ImageObject_0055045C;
+extern ImageObject_0055045C g_ImageObject_0055045C;
+typedef struct ImageObject_005504DC {
     uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
     uint32_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest[7]; /* beyond the declared type */
     uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest_tail[3];
+} ImageObject_005504DC;
+extern ImageObject_005504DC g_ImageObject_005504DC;
+typedef struct ImageObject_005504FC {
     uint16_t at_g_InGameTechnologyCostRichTextScratch; /* 005504FC g_InGameTechnologyCostRichTextScratch: uint16_t rich-text command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR) that heads the technology cost stream; its 8 payload units are g_InGameTechnologyCostColorWords8, then the xenite cost text follows; patched in as payload 0 of the technology label (ui/ingame/technology.c) */
+} ImageObject_005504FC;
+extern ImageObject_005504FC g_ImageObject_005504FC;
+typedef struct ImageObject_005504FE {
     uint16_t at_g_InGameTechnologyCostColorWords8[8]; /* 005504FE g_InGameTechnologyCostColorWords8 */
+} ImageObject_005504FE;
+extern ImageObject_005504FE g_ImageObject_005504FE;
+typedef struct ImageObject_0055050E {
     uint32_t at_g_InGameTechnologyXeniteCostTextUtf16[8]; /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
+} ImageObject_0055050E;
+extern ImageObject_0055050E g_ImageObject_0055050E;
+typedef struct ImageObject_0055052E {
     uint32_t at_g_InGameTechnologyEnergyCostTextUtf16[8]; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
+} ImageObject_0055052E;
+extern ImageObject_0055052E g_ImageObject_0055052E;
+typedef struct ImageObject_0055054E {
     uint32_t at_g_InGameTechnologyResearchTimeTextUtf16[8]; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
+} ImageObject_0055054E;
+extern ImageObject_0055054E g_ImageObject_0055054E;
+typedef struct ImageObject_0055056E {
     uint16_t at_g_InGameHudNumberTextUtf16[16]; /* 0055056E g_InGameHudNumberTextUtf16 */
+} ImageObject_0055056E;
+extern ImageObject_0055056E g_ImageObject_0055056E;
+typedef struct ImageObject_0055058E {
     uint8_t at_g_EmptyFrontendPlayerNameUtf16; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
     uint8_t at_g_EmptyFrontendPlayerNameUtf16_rest_tail[1];
+} ImageObject_0055058E;
+extern ImageObject_0055058E g_ImageObject_0055058E;
+typedef struct ImageObject_00550590 {
     uint16_t at_g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
+} ImageObject_00550590;
+extern ImageObject_00550590 g_ImageObject_00550590;
+typedef struct ImageObject_005505A0 {
     InGameUiImage at_g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
     uint8_t at_g_InGameRuntimeDefaultImageTemplate_padding[12]; /* alignment padding after the template */
-} ImageData_0054FBB0;
-extern ImageData_0054FBB0 g_ImageData_0054FBB0;
+} ImageObject_005505A0;
+extern ImageObject_005505A0 g_ImageObject_005505A0;
 
 /* original 0x0055EFB0-0x0055F130 */
-typedef struct ImageData_0055EFB0 {
+typedef struct ImageObject_0055EFB0 {
     uint8_t at_gap_0055EFB0[16]; /* 0055EFB0 gap */
+} ImageObject_0055EFB0;
+extern ImageObject_0055EFB0 g_ImageObject_0055EFB0;
+typedef struct ImageObject_0055EFC0 {
     UiCommandQueueRecord at_g_InGameCommandQueueRecords[16]; /* 0055EFC0 g_InGameCommandQueueRecords */
+} ImageObject_0055EFC0;
+extern ImageObject_0055EFC0 g_ImageObject_0055EFC0;
+typedef struct ImageObject_0055F0C0 {
     UiCommandQueueRecord * at_g_InGameCommandQueueEnd; /* 0055F0C0 g_InGameCommandQueueEnd */
+} ImageObject_0055F0C0;
+extern ImageObject_0055F0C0 g_ImageObject_0055F0C0;
+typedef struct ImageObject_0055F0C4 {
     uint8_t at_g_InGameSelectionInsertTripletDwords; /* 0055F0C4 g_InGameSelectionInsertTripletDwords */
     uint32_t at_g_InGameSelectionInsertTripletDwords_rest[11]; /* beyond the declared type */
     uint8_t at_g_InGameSelectionInsertTripletDwords_rest_tail[3];
+} ImageObject_0055F0C4;
+extern ImageObject_0055F0C4 g_ImageObject_0055F0C4;
+typedef struct ImageObject_0055F0F4 {
     uint8_t at_g_InGameSelectionRemoveTripletDwords; /* 0055F0F4 g_InGameSelectionRemoveTripletDwords */
     uint32_t at_g_InGameSelectionRemoveTripletDwords_rest[11]; /* beyond the declared type */
     uint8_t at_g_InGameSelectionRemoveTripletDwords_rest_tail[3];
+} ImageObject_0055F0F4;
+extern ImageObject_0055F0F4 g_ImageObject_0055F0F4;
+typedef struct ImageObject_0055F124 {
     int32_t at_g_InGameSelectionInsertTripletDwordCount; /* 0055F124 g_InGameSelectionInsertTripletDwordCount */
+} ImageObject_0055F124;
+extern ImageObject_0055F124 g_ImageObject_0055F124;
+typedef struct ImageObject_0055F128 {
     int32_t at_g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
     uint32_t at_g_InGameSelectionRemoveTripletDwordCount_rest[1]; /* beyond the declared type */
-} ImageData_0055EFB0;
-extern ImageData_0055EFB0 g_ImageData_0055EFB0;
+} ImageObject_0055F128;
+extern ImageObject_0055F128 g_ImageObject_0055F128;
 
 /* original 0x0055F7B4-0x0055F800 */
-typedef struct ImageData_0055F7B4 {
+typedef struct ImageObject_0055F7B4 {
     uint8_t at_gap_0055F7B4[12]; /* 0055F7B4 gap */
+} ImageObject_0055F7B4;
+extern ImageObject_0055F7B4 g_ImageObject_0055F7B4;
+typedef struct ImageObject_0055F7C0 {
     uint32_t at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0[2]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
+} ImageObject_0055F7C0;
+extern ImageObject_0055F7C0 g_ImageObject_0055F7C0;
+typedef struct ImageObject_0055F7C8 {
     uint32_t at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
-} ImageData_0055F7B4;
-extern ImageData_0055F7B4 g_ImageData_0055F7B4;
+} ImageObject_0055F7C8;
+extern ImageObject_0055F7C8 g_ImageObject_0055F7C8;
 
 /* original 0x0055F934-0x0055F980 */
-typedef struct ImageData_0055F934 {
+typedef struct ImageObject_0055F934 {
     uint8_t at_gap_0055F934[12]; /* 0055F934 gap */
+} ImageObject_0055F934;
+extern ImageObject_0055F934 g_ImageObject_0055F934;
+typedef struct ImageObject_0055F940 {
     uint32_t at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940[1]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
+} ImageObject_0055F940;
+extern ImageObject_0055F940 g_ImageObject_0055F940;
+typedef struct ImageObject_0055F944 {
     uint32_t at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
+} ImageObject_0055F944;
+extern ImageObject_0055F944 g_ImageObject_0055F944;
+typedef struct ImageObject_0055F960 {
     uint32_t at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
-} ImageData_0055F934;
-extern ImageData_0055F934 g_ImageData_0055F934;
+} ImageObject_0055F960;
+extern ImageObject_0055F960 g_ImageObject_0055F960;
 
 /* original 0x00562498-0x00563BD0 */
-typedef struct ImageData_00562498 {
+typedef struct ImageObject_00562498 {
     uint8_t at_gap_00562498[1]; /* 00562498 gap */
+} ImageObject_00562498;
+extern ImageObject_00562498 g_ImageObject_00562498;
+typedef struct ImageObject_00562499 {
     uint8_t at_InGameCommandHandlerCodeRegionEnd; /* 00562499 InGameCommandHandlerCodeRegionEnd */
     uint32_t at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
     uint8_t at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
+} ImageObject_00562499;
+extern ImageObject_00562499 g_ImageObject_00562499;
+typedef struct ImageObject_005624A0 {
     InGameUiActionHandlerPage10Prefix40 at_g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
     InGameUiCommandModeActionHandlerPage11 at_g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
     InGameUiActionHandlerPage12Prefix28 at_g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
+} ImageObject_005624A0;
+extern ImageObject_005624A0 g_ImageObject_005624A0;
+typedef struct ImageObject_00562628 {
     int32_t at_g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
+} ImageObject_00562628;
+extern ImageObject_00562628 g_ImageObject_00562628;
+typedef struct ImageObject_00562648 {
     uint32_t at_g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
+} ImageObject_00562648;
+extern ImageObject_00562648 g_ImageObject_00562648;
+typedef struct ImageObject_0056264C {
     uint32_t at_g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
+} ImageObject_0056264C;
+extern ImageObject_0056264C g_ImageObject_0056264C;
+typedef struct ImageObject_00562650 {
     uint32_t at_g_UiCommandSpriteVariantAColumnCount; /* 00562650 g_UiCommandSpriteVariantAColumnCount */
+} ImageObject_00562650;
+extern ImageObject_00562650 g_ImageObject_00562650;
+typedef struct ImageObject_00562654 {
     int32_t * at_g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
+} ImageObject_00562654;
+extern ImageObject_00562654 g_ImageObject_00562654;
+typedef struct ImageObject_00562678 {
     int32_t * at_g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
+} ImageObject_00562678;
+extern ImageObject_00562678 g_ImageObject_00562678;
+typedef struct ImageObject_00562694 {
     int32_t * at_g_UiCommandSpriteVariantAOffsetTables[5]; /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
+} ImageObject_00562694;
+extern ImageObject_00562694 g_ImageObject_00562694;
+typedef struct ImageObject_005626A8 {
     int32_t at_g_UiCatalogGroup48OffsetsDefault[48]; /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
+} ImageObject_005626A8;
+extern ImageObject_005626A8 g_ImageObject_005626A8;
+typedef struct ImageObject_00562768 {
     int32_t at_g_UiCatalogGroup48Offsets5Columns[48]; /* 00562768 g_UiCatalogGroup48Offsets5Columns */
+} ImageObject_00562768;
+extern ImageObject_00562768 g_ImageObject_00562768;
+typedef struct ImageObject_00562828 {
     int32_t at_g_UiCatalogGroup48Offsets6Columns[48]; /* 00562828 g_UiCatalogGroup48Offsets6Columns */
+} ImageObject_00562828;
+extern ImageObject_00562828 g_ImageObject_00562828;
+typedef struct ImageObject_005628E8 {
     int32_t at_g_UiCatalogGroup48Offsets7Columns[48]; /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
+} ImageObject_005628E8;
+extern ImageObject_005628E8 g_ImageObject_005628E8;
+typedef struct ImageObject_005629A8 {
     int32_t at_g_UiCatalogGroup48Offsets8Columns[48]; /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
+} ImageObject_005629A8;
+extern ImageObject_005629A8 g_ImageObject_005629A8;
+typedef struct ImageObject_00562A68 {
     int32_t at_g_UiCatalogGroup42OffsetsDefault[42]; /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
+} ImageObject_00562A68;
+extern ImageObject_00562A68 g_ImageObject_00562A68;
+typedef struct ImageObject_00562B10 {
     int32_t at_g_UiCatalogGroup42Offsets5Columns[42]; /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
+} ImageObject_00562B10;
+extern ImageObject_00562B10 g_ImageObject_00562B10;
+typedef struct ImageObject_00562BB8 {
     int32_t at_g_UiCatalogGroup42Offsets6Columns[42]; /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+} ImageObject_00562BB8;
+extern ImageObject_00562BB8 g_ImageObject_00562BB8;
+typedef struct ImageObject_00562C60 {
     int32_t at_g_UiCommandSpriteVariantAOffsets[24]; /* 00562C60 g_UiCommandSpriteVariantAOffsets */
+} ImageObject_00562C60;
+extern ImageObject_00562C60 g_ImageObject_00562C60;
+typedef struct ImageObject_00562CC0 {
     int32_t at_g_UiAction1012PlayerIndexTextOffsets[7]; /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
+} ImageObject_00562CC0;
+extern ImageObject_00562CC0 g_ImageObject_00562CC0;
+typedef struct ImageObject_00562CDC {
     int32_t at_g_UiAction1012PlayerLabelTextOffsets[7]; /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
+} ImageObject_00562CDC;
+extern ImageObject_00562CDC g_ImageObject_00562CDC;
+typedef struct ImageObject_00562CF8 {
     int32_t at_g_UiAction1012IconImageOffsets[7]; /* 00562CF8 g_UiAction1012IconImageOffsets */
+} ImageObject_00562CF8;
+extern ImageObject_00562CF8 g_ImageObject_00562CF8;
+typedef struct ImageObject_00562D14 {
     int32_t at_g_UiAction1012StateTextOffsets[7]; /* 00562D14 g_UiAction1012StateTextOffsets */
+} ImageObject_00562D14;
+extern ImageObject_00562D14 g_ImageObject_00562D14;
+typedef struct ImageObject_00562D30 {
     int32_t at_g_UiAction1012ControlOffsets[7]; /* 00562D30 g_UiAction1012ControlOffsets */
+} ImageObject_00562D30;
+extern ImageObject_00562D30 g_ImageObject_00562D30;
+typedef struct ImageObject_00562D4C {
     int32_t at_g_UiAction1012SlotPageOffsets[7]; /* 00562D4C g_UiAction1012SlotPageOffsets */
+} ImageObject_00562D4C;
+extern ImageObject_00562D4C g_ImageObject_00562D4C;
+typedef struct ImageObject_00562D68 {
     int at_g_TechnologyPanelRowFlagOffsets[7]; /* 00562D68 g_TechnologyPanelRowFlagOffsets */
+} ImageObject_00562D68;
+extern ImageObject_00562D68 g_ImageObject_00562D68;
+typedef struct ImageObject_00562D84 {
     int at_g_TechnologyPanelRowValueOffsets[7]; /* 00562D84 g_TechnologyPanelRowValueOffsets */
+} ImageObject_00562D84;
+extern ImageObject_00562D84 g_ImageObject_00562D84;
+typedef struct ImageObject_00562DA0 {
     int at_g_InGameSelectionDetailGridCellOffsets[12]; /* 00562DA0 g_InGameSelectionDetailGridCellOffsets */
+} ImageObject_00562DA0;
+extern ImageObject_00562DA0 g_ImageObject_00562DA0;
+typedef struct ImageObject_00562DD0 {
     int32_t at_g_UiSevenSlotSelectionControlOffsets[7]; /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
+} ImageObject_00562DD0;
+extern ImageObject_00562DD0 g_ImageObject_00562DD0;
+typedef struct ImageObject_00562DEC {
     RuntimeMaintenanceCallbackPhasesTyped at_g_RuntimeMaintenanceCallbackPhases; /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
+} ImageObject_00562DEC;
+extern ImageObject_00562DEC g_ImageObject_00562DEC;
+typedef struct ImageObject_00562E1C {
     uint32_t at_g_UiAction1012SubresourceByState[11]; /* 00562E1C g_UiAction1012SubresourceByState: uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
+} ImageObject_00562E1C;
+extern ImageObject_00562E1C g_ImageObject_00562E1C;
+typedef struct ImageObject_00562E48 {
     EffectRuntimeSlot * at_g_InGameOwnedEntityTransientEffectMarkers[32]; /* 00562E48 g_InGameOwnedEntityTransientEffectMarkers */
+} ImageObject_00562E48;
+extern ImageObject_00562E48 g_ImageObject_00562E48;
+typedef struct ImageObject_00562EC8 {
     uint32_t at_g_InGameOwnedEntityTransientEffectMarkerCount; /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
+} ImageObject_00562EC8;
+extern ImageObject_00562EC8 g_ImageObject_00562EC8;
+typedef struct ImageObject_00562ECC {
     EffectRuntimeSlot * at_g_InGameCommandTargetTransientEffectMarkers[128]; /* 00562ECC g_InGameCommandTargetTransientEffectMarkers */
+} ImageObject_00562ECC;
+extern ImageObject_00562ECC g_ImageObject_00562ECC;
+typedef struct ImageObject_005630CC {
     uint32_t at_g_InGameCommandTargetTransientEffectMarkerCount; /* 005630CC g_InGameCommandTargetTransientEffectMarkerCount */
+} ImageObject_005630CC;
+extern ImageObject_005630CC g_ImageObject_005630CC;
+typedef struct ImageObject_005630D0 {
     uint16_t at_u_gfx_panel_panel0_gfx_005630d0[21]; /* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
+} ImageObject_005630D0;
+extern ImageObject_005630D0 g_ImageObject_005630D0;
+typedef struct ImageObject_005630FA {
     uint16_t at_u_gfx_panel_tech_gfx_005630fa[19]; /* 005630FA u_gfx_panel_tech_gfx_005630fa */
+} ImageObject_005630FA;
+extern ImageObject_005630FA g_ImageObject_005630FA;
+typedef struct ImageObject_00563120 {
     uint16_t at_u_gfx_panel_diagram0_gfx_00563120[23]; /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
+} ImageObject_00563120;
+extern ImageObject_00563120 g_ImageObject_00563120;
+typedef struct ImageObject_0056314E {
     uint16_t at_u_flm_movie000_flm_0056314e[17]; /* 0056314E u_flm_movie000_flm_0056314e */
+} ImageObject_0056314E;
+extern ImageObject_0056314E g_ImageObject_0056314E;
+typedef struct ImageObject_00563170 {
     uint16_t at_u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
+} ImageObject_00563170;
+extern ImageObject_00563170 g_ImageObject_00563170;
+typedef struct ImageObject_0056318E {
     uint16_t at_u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
+} ImageObject_0056318E;
+extern ImageObject_0056318E g_ImageObject_0056318E;
+typedef struct ImageObject_005631B8 {
     uint16_t at_u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
+} ImageObject_005631B8;
+extern ImageObject_005631B8 g_ImageObject_005631B8;
+typedef struct ImageObject_005631DE {
     uint16_t at_g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
+} ImageObject_005631DE;
+extern ImageObject_005631DE g_ImageObject_005631DE;
+typedef struct ImageObject_0056321E {
     uint16_t at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
     uint8_t at_u_Hmmm__na_gut________0056321e_padding[26];
+} ImageObject_0056321E;
+extern ImageObject_0056321E g_ImageObject_0056321E;
+typedef struct ImageObject_00563260 {
     uint32_t at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
+} ImageObject_00563260;
+extern ImageObject_00563260 g_ImageObject_00563260;
+typedef struct ImageObject_00563264 {
     InGameSimulationStepBatchTicks at_g_InGameSimulationStepTicks; /* 00563264 g_InGameSimulationStepTicks */
+} ImageObject_00563264;
+extern ImageObject_00563264 g_ImageObject_00563264;
+typedef struct ImageObject_00563268 {
     int32_t at_g_InGamePendingSimulationTicks; /* 00563268 g_InGamePendingSimulationTicks */
+} ImageObject_00563268;
+extern ImageObject_00563268 g_ImageObject_00563268;
+typedef struct ImageObject_0056326C {
     uint32_t at_g_InGameSessionNotificationTimeoutTicks; /* 0056326C g_InGameSessionNotificationTimeoutTicks */
+} ImageObject_0056326C;
+extern ImageObject_0056326C g_ImageObject_0056326C;
+typedef struct ImageObject_00563270 {
     uint32_t at_g_EndGameResultsCurrentMusicTrackId; /* 00563270 g_EndGameResultsCurrentMusicTrackId */
+} ImageObject_00563270;
+extern ImageObject_00563270 g_ImageObject_00563270;
+typedef struct ImageObject_00563274 {
     uint32_t at_g_InGameNetworkTickCountdown; /* 00563274 g_InGameNetworkTickCountdown */
+} ImageObject_00563274;
+extern ImageObject_00563274 g_ImageObject_00563274;
+typedef struct ImageObject_00563278 {
     uint32_t at_g_InGameStateTickSpinLock; /* 00563278 g_InGameStateTickSpinLock */
+} ImageObject_00563278;
+extern ImageObject_00563278 g_ImageObject_00563278;
+typedef struct ImageObject_0056327C {
     InGameRuntimeRoot * at_g_InGameRuntimeRoot; /* 0056327C g_InGameRuntimeRoot */
+} ImageObject_0056327C;
+extern ImageObject_0056327C g_ImageObject_0056327C;
+typedef struct ImageObject_00563280 {
     GraphicsTextureSourceAsset * at_g_InGamePanelTextureSource; /* 00563280 g_InGamePanelTextureSource */
+} ImageObject_00563280;
+extern ImageObject_00563280 g_ImageObject_00563280;
+typedef struct ImageObject_00563284 {
     uint32_t at_g_InGameDiagramTextureSource; /* 00563284 g_InGameDiagramTextureSource */
+} ImageObject_00563284;
+extern ImageObject_00563284 g_ImageObject_00563284;
+typedef struct ImageObject_00563288 {
     uint32_t at_g_InGameTechnologyTextureSource; /* 00563288 g_InGameTechnologyTextureSource */
+} ImageObject_00563288;
+extern ImageObject_00563288 g_ImageObject_00563288;
+typedef struct ImageObject_0056328C {
     uint32_t at_g_InGameWindowTextureSource; /* 0056328C g_InGameWindowTextureSource */
+} ImageObject_0056328C;
+extern ImageObject_0056328C g_ImageObject_0056328C;
+typedef struct ImageObject_00563290 {
     int32_t at_g_InGamePanelTextureSubresource00Width; /* 00563290 g_InGamePanelTextureSubresource00Width */
+} ImageObject_00563290;
+extern ImageObject_00563290 g_ImageObject_00563290;
+typedef struct ImageObject_00563294 {
     int32_t at_g_InGamePanelTextureSubresource01Width; /* 00563294 g_InGamePanelTextureSubresource01Width */
+} ImageObject_00563294;
+extern ImageObject_00563294 g_ImageObject_00563294;
+typedef struct ImageObject_00563298 {
     int32_t at_g_InGamePanelTextureSubresource02Width; /* 00563298 g_InGamePanelTextureSubresource02Width */
+} ImageObject_00563298;
+extern ImageObject_00563298 g_ImageObject_00563298;
+typedef struct ImageObject_0056329C {
     int32_t at_g_InGamePanelTextureSubresource06Width; /* 0056329C g_InGamePanelTextureSubresource06Width */
+} ImageObject_0056329C;
+extern ImageObject_0056329C g_ImageObject_0056329C;
+typedef struct ImageObject_005632A0 {
     int32_t at_g_InGamePanelTextureSubresource07Width; /* 005632A0 g_InGamePanelTextureSubresource07Width */
+} ImageObject_005632A0;
+extern ImageObject_005632A0 g_ImageObject_005632A0;
+typedef struct ImageObject_005632A4 {
     int32_t at_g_InGamePanelTextureSubresource27Width; /* 005632A4 g_InGamePanelTextureSubresource27Width */
+} ImageObject_005632A4;
+extern ImageObject_005632A4 g_ImageObject_005632A4;
+typedef struct ImageObject_005632A8 {
     int32_t at_g_InGamePanelTextureSubresource28Width; /* 005632A8 g_InGamePanelTextureSubresource28Width */
+} ImageObject_005632A8;
+extern ImageObject_005632A8 g_ImageObject_005632A8;
+typedef struct ImageObject_005632AC {
     int32_t at_g_InGamePanelTextureSubresource19Width; /* 005632AC g_InGamePanelTextureSubresource19Width */
+} ImageObject_005632AC;
+extern ImageObject_005632AC g_ImageObject_005632AC;
+typedef struct ImageObject_005632B0 {
     int32_t at_g_InGamePanelTextureSubresource20Width; /* 005632B0 g_InGamePanelTextureSubresource20Width */
+} ImageObject_005632B0;
+extern ImageObject_005632B0 g_ImageObject_005632B0;
+typedef struct ImageObject_005632B4 {
     int32_t at_g_InGamePanelTextureSubresource34Width; /* 005632B4 g_InGamePanelTextureSubresource34Width */
+} ImageObject_005632B4;
+extern ImageObject_005632B4 g_ImageObject_005632B4;
+typedef struct ImageObject_005632B8 {
     int32_t at_g_InGamePanelTextureSubresource32Width; /* 005632B8 g_InGamePanelTextureSubresource32Width */
+} ImageObject_005632B8;
+extern ImageObject_005632B8 g_ImageObject_005632B8;
+typedef struct ImageObject_005632BC {
     int32_t at_g_InGamePanelTextureSubresource33Width; /* 005632BC g_InGamePanelTextureSubresource33Width */
+} ImageObject_005632BC;
+extern ImageObject_005632BC g_ImageObject_005632BC;
+typedef struct ImageObject_005632C0 {
     int32_t at_g_InGamePanelTextureSubresource02Height; /* 005632C0 g_InGamePanelTextureSubresource02Height */
+} ImageObject_005632C0;
+extern ImageObject_005632C0 g_ImageObject_005632C0;
+typedef struct ImageObject_005632C4 {
     int32_t at_g_InGamePanelTextureSubresource03Height; /* 005632C4 g_InGamePanelTextureSubresource03Height */
+} ImageObject_005632C4;
+extern ImageObject_005632C4 g_ImageObject_005632C4;
+typedef struct ImageObject_005632C8 {
     int32_t at_g_InGamePanelTextureSubresource04Height; /* 005632C8 g_InGamePanelTextureSubresource04Height */
+} ImageObject_005632C8;
+extern ImageObject_005632C8 g_ImageObject_005632C8;
+typedef struct ImageObject_005632CC {
     int32_t at_g_InGamePanelTextureSubresource05Height; /* 005632CC g_InGamePanelTextureSubresource05Height */
+} ImageObject_005632CC;
+extern ImageObject_005632CC g_ImageObject_005632CC;
+typedef struct ImageObject_005632D0 {
     int32_t at_g_InGamePanelTextureSubresource36Height; /* 005632D0 g_InGamePanelTextureSubresource36Height */
+} ImageObject_005632D0;
+extern ImageObject_005632D0 g_ImageObject_005632D0;
+typedef struct ImageObject_005632D4 {
     int32_t at_g_InGamePanelTextureSubresource37Height; /* 005632D4 g_InGamePanelTextureSubresource37Height */
+} ImageObject_005632D4;
+extern ImageObject_005632D4 g_ImageObject_005632D4;
+typedef struct ImageObject_005632D8 {
     int32_t at_g_InGamePanelTextureSubresource06Height; /* 005632D8 g_InGamePanelTextureSubresource06Height */
+} ImageObject_005632D8;
+extern ImageObject_005632D8 g_ImageObject_005632D8;
+typedef struct ImageObject_005632DC {
     int32_t at_g_InGamePanelTextureSubresource00Height; /* 005632DC g_InGamePanelTextureSubresource00Height */
+} ImageObject_005632DC;
+extern ImageObject_005632DC g_ImageObject_005632DC;
+typedef struct ImageObject_005632E0 {
     int32_t at_g_InGamePanelTextureSubresource07Height; /* 005632E0 g_InGamePanelTextureSubresource07Height */
+} ImageObject_005632E0;
+extern ImageObject_005632E0 g_ImageObject_005632E0;
+typedef struct ImageObject_005632E4 {
     int32_t at_g_InGamePanelTextureSubresource26Height; /* 005632E4 g_InGamePanelTextureSubresource26Height */
+} ImageObject_005632E4;
+extern ImageObject_005632E4 g_ImageObject_005632E4;
+typedef struct ImageObject_005632E8 {
     int32_t at_g_InGamePanelTextureSubresource31Height; /* 005632E8 g_InGamePanelTextureSubresource31Height */
+} ImageObject_005632E8;
+extern ImageObject_005632E8 g_ImageObject_005632E8;
+typedef struct ImageObject_005632EC {
     int32_t at_g_InGamePanelTextureSubresource18Height; /* 005632EC g_InGamePanelTextureSubresource18Height */
+} ImageObject_005632EC;
+extern ImageObject_005632EC g_ImageObject_005632EC;
+typedef struct ImageObject_005632F0 {
     int32_t at_g_InGamePanelTextureSubresource23Height; /* 005632F0 g_InGamePanelTextureSubresource23Height */
+} ImageObject_005632F0;
+extern ImageObject_005632F0 g_ImageObject_005632F0;
+typedef struct ImageObject_005632F4 {
     int32_t at_g_InGamePanelTextureSubresource34Height; /* 005632F4 g_InGamePanelTextureSubresource34Height */
+} ImageObject_005632F4;
+extern ImageObject_005632F4 g_ImageObject_005632F4;
+typedef struct ImageObject_005632F8 {
     int32_t at_g_InGamePanelTextureSubresource32Height; /* 005632F8 g_InGamePanelTextureSubresource32Height */
+} ImageObject_005632F8;
+extern ImageObject_005632F8 g_ImageObject_005632F8;
+typedef struct ImageObject_005632FC {
     UiCommandRuntimeRecordPrefix * at_g_UiHoverSelectionRecord; /* 005632FC g_UiHoverSelectionRecord */
+} ImageObject_005632FC;
+extern ImageObject_005632FC g_ImageObject_005632FC;
+typedef struct ImageObject_00563300 {
     PckTechnologyIdCatalog at_g_InGameSelectedTechnologyId; /* 00563300 g_InGameSelectedTechnologyId */
     uint32_t at_g_InGameSelectedTechnologyId_rest[7]; /* beyond the declared type */
+} ImageObject_00563300;
+extern ImageObject_00563300 g_ImageObject_00563300;
+typedef struct ImageObject_00563320 {
     uint32_t at_g_MoviePlaybackBaseFrameGroup; /* 00563320 g_MoviePlaybackBaseFrameGroup */
+} ImageObject_00563320;
+extern ImageObject_00563320 g_ImageObject_00563320;
+typedef struct ImageObject_00563324 {
     uint32_t at_g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackScheduleCounter */
+} ImageObject_00563324;
+extern ImageObject_00563324 g_ImageObject_00563324;
+typedef struct ImageObject_00563328 {
     uint32_t at_g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
+} ImageObject_00563328;
+extern ImageObject_00563328 g_ImageObject_00563328;
+typedef struct ImageObject_0056332C {
     uint32_t at_g_MoviePlaybackCurrentFrame; /* 0056332C g_MoviePlaybackCurrentFrame */
+} ImageObject_0056332C;
+extern ImageObject_0056332C g_ImageObject_0056332C;
+typedef struct ImageObject_00563330 {
     uint32_t at_g_DebugOverlayCounterRefreshCountdown; /* 00563330 g_DebugOverlayCounterRefreshCountdown: uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
+} ImageObject_00563330;
+extern ImageObject_00563330 g_ImageObject_00563330;
+typedef struct ImageObject_00563334 {
     uint16_t at_g_FrontendDebugOverlayTextSlot00Utf16[16]; /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
     uint16_t at_g_FrontendDebugOverlayTextSlot01Utf16[16]; /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
     uint16_t at_g_FrontendDebugOverlayTextSlot02Utf16[16]; /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
@@ -2439,1176 +5607,3066 @@ typedef struct ImageData_00562498 {
     uint16_t at_g_FrontendDebugOverlayTextSlot12Utf16[16]; /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
     uint16_t at_g_FrontendDebugOverlayTextSlot13Utf16[16]; /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
     uint32_t at_g_FrontendDebugOverlayTextSlot13Utf16_rest[8]; /* beyond the declared type */
+} ImageObject_00563334;
+extern ImageObject_00563334 g_ImageObject_00563334;
+typedef struct ImageObject_00563514 {
     uint32_t at_g_InGameReadyStateToggleFlags; /* 00563514 g_InGameReadyStateToggleFlags */
+} ImageObject_00563514;
+extern ImageObject_00563514 g_ImageObject_00563514;
+typedef struct ImageObject_00563518 {
     UiCommandRuntimeRecordPrefix * at_g_UiCatalogGroup48Records[48]; /* 00563518 g_UiCatalogGroup48Records */
+} ImageObject_00563518;
+extern ImageObject_00563518 g_ImageObject_00563518;
+typedef struct ImageObject_005635D8 {
     UiCommandRuntimeRecordPrefix * at_g_UiCatalogGroup42Records[42]; /* 005635D8 g_UiCatalogGroup42Records */
+} ImageObject_005635D8;
+extern ImageObject_005635D8 g_ImageObject_005635D8;
+typedef struct ImageObject_00563680 {
     UiCommandRuntimeRecordPrefix * at_g_UiCommandSpriteVariantARecords[24]; /* 00563680 g_UiCommandSpriteVariantARecords */
+} ImageObject_00563680;
+extern ImageObject_00563680 g_ImageObject_00563680;
+typedef struct ImageObject_005636E0 {
     uint32_t at_g_UiAction1012TargetPlayerIndices[7]; /* 005636E0 g_UiAction1012TargetPlayerIndices */
+} ImageObject_005636E0;
+extern ImageObject_005636E0 g_ImageObject_005636E0;
+typedef struct ImageObject_005636FC {
     WorldObjectRecord * at_g_InGameWorldObjectRecords; /* 005636FC g_InGameWorldObjectRecords */
+} ImageObject_005636FC;
+extern ImageObject_005636FC g_ImageObject_005636FC;
+typedef struct ImageObject_00563700 {
     uint8_t * at_g_RuntimeObjectRebaseBaseMinusOne; /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
+} ImageObject_00563700;
+extern ImageObject_00563700 g_ImageObject_00563700;
+typedef struct ImageObject_00563704 {
     uint32_t at_g_InGamePlacementHeading16; /* 00563704 g_InGamePlacementHeading16 */
+} ImageObject_00563704;
+extern ImageObject_00563704 g_ImageObject_00563704;
+typedef struct ImageObject_00563708 {
     uint32_t at_g_InGamePlacementPointerCaptureX; /* 00563708 g_InGamePlacementPointerCaptureX */
     uint32_t at_g_InGamePlacementPointerCaptureY; /* 0056370C g_InGamePlacementPointerCaptureY */
+} ImageObject_00563708;
+extern ImageObject_00563708 g_ImageObject_00563708;
+typedef struct ImageObject_00563710 {
     int32_t at_g_InGamePendingPlacementArmyAsset; /* 00563710 g_InGamePendingPlacementArmyAsset */
+} ImageObject_00563710;
+extern ImageObject_00563710 g_ImageObject_00563710;
+typedef struct ImageObject_00563714 {
     GameEntityRuntime * at_g_InGamePlacementPreviewArmyRuntime; /* 00563714 g_InGamePlacementPreviewArmyRuntime */
+} ImageObject_00563714;
+extern ImageObject_00563714 g_ImageObject_00563714;
+typedef struct ImageObject_00563718 {
     uint32_t at_g_InGamePlacementWorldYQ12; /* 00563718 g_InGamePlacementWorldYQ12 */
     uint32_t at_g_InGamePlacementWorldXQ12; /* 0056371C g_InGamePlacementWorldXQ12 */
+} ImageObject_00563718;
+extern ImageObject_00563718 g_ImageObject_00563718;
+typedef struct ImageObject_00563720 {
     int32_t at_g_InGamePlacementSurfaceHeightQ12OrSentinel; /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
+} ImageObject_00563720;
+extern ImageObject_00563720 g_ImageObject_00563720;
+typedef struct ImageObject_00563724 {
     GameEntityRuntime * at_g_InGameCommandPreviewArmyRuntime; /* 00563724 g_InGameCommandPreviewArmyRuntime */
+} ImageObject_00563724;
+extern ImageObject_00563724 g_ImageObject_00563724;
+typedef struct ImageObject_00563728 {
     uint32_t at_g_InGameCommandPreviewHeading16; /* 00563728 g_InGameCommandPreviewHeading16 */
+} ImageObject_00563728;
+extern ImageObject_00563728 g_ImageObject_00563728;
+typedef struct ImageObject_0056372C {
     uint32_t at_g_InGameCommandPreviewWorldYQ12; /* 0056372C g_InGameCommandPreviewWorldYQ12 */
     uint32_t at_g_InGameCommandPreviewWorldXQ12; /* 00563730 g_InGameCommandPreviewWorldXQ12 */
+} ImageObject_0056372C;
+extern ImageObject_0056372C g_ImageObject_0056372C;
+typedef struct ImageObject_00563734 {
     uint32_t at_g_InGameCommandPreviewSurfaceHeightQ12OrSentinel; /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
+} ImageObject_00563734;
+extern ImageObject_00563734 g_ImageObject_00563734;
+typedef struct ImageObject_00563738 {
     uint32_t at_g_InGameCommandPointerCaptureX; /* 00563738 g_InGameCommandPointerCaptureX */
     uint32_t at_g_InGameCommandPointerCaptureY; /* 0056373C g_InGameCommandPointerCaptureY */
+} ImageObject_00563738;
+extern ImageObject_00563738 g_ImageObject_00563738;
+typedef struct ImageObject_00563740 {
     uint32_t at_g_InGameCommandPreviewArmyAssetId; /* 00563740 g_InGameCommandPreviewArmyAssetId */
+} ImageObject_00563740;
+extern ImageObject_00563740 g_ImageObject_00563740;
+typedef struct ImageObject_00563744 {
     uint32_t at_g_InGamePointerInteractionStateFlags; /* 00563744 g_InGamePointerInteractionStateFlags */
+} ImageObject_00563744;
+extern ImageObject_00563744 g_ImageObject_00563744;
+typedef struct ImageObject_00563748 {
     code * at_g_InGamePointerModeHandlers[8]; /* 00563748 g_InGamePointerModeHandlers */
+} ImageObject_00563748;
+extern ImageObject_00563748 g_ImageObject_00563748;
+typedef struct ImageObject_00563768 {
     uint32_t at_g_InGamePointerModeCommandIds[8]; /* 00563768 g_InGamePointerModeCommandIds: uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
+} ImageObject_00563768;
+extern ImageObject_00563768 g_ImageObject_00563768;
+typedef struct ImageObject_00563788 {
     uint32_t at_g_InGamePointerModePreviewArmyIds[8]; /* 00563788 g_InGamePointerModePreviewArmyIds: uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+} ImageObject_00563788;
+extern ImageObject_00563788 g_ImageObject_00563788;
+typedef struct ImageObject_005637A8 {
     ArmyPlacementCandidateCount at_g_ArmyPlacementLateRejectionCount; /* 005637A8 g_ArmyPlacementLateRejectionCount */
+} ImageObject_005637A8;
+extern ImageObject_005637A8 g_ImageObject_005637A8;
+typedef struct ImageObject_005637AC {
     uint8_t at_g_InGameWorldRuntimeDwordArray256; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
     uint32_t at_g_InGameWorldRuntimeDwordArray256_rest[255]; /* beyond the declared type */
     uint8_t at_g_InGameWorldRuntimeDwordArray256_rest_tail[3];
+} ImageObject_005637AC;
+extern ImageObject_005637AC g_ImageObject_005637AC;
+typedef struct ImageObject_00563BAC {
     uint32_t at_g_EndMovieSelectionIndex; /* 00563BAC g_EndMovieSelectionIndex */
+} ImageObject_00563BAC;
+extern ImageObject_00563BAC g_ImageObject_00563BAC;
+typedef struct ImageObject_00563BB0 {
     uint32_t at_g_EndMovieVariantIndex; /* 00563BB0 g_EndMovieVariantIndex */
+} ImageObject_00563BB0;
+extern ImageObject_00563BB0 g_ImageObject_00563BB0;
+typedef struct ImageObject_00563BB4 {
     uint16_t * at_g_EndMoviePath; /* 00563BB4 g_EndMoviePath */
+} ImageObject_00563BB4;
+extern ImageObject_00563BB4 g_ImageObject_00563BB4;
+typedef struct ImageObject_00563BB8 {
     uint32_t at_g_EndMoviePendingTicks; /* 00563BB8 g_EndMoviePendingTicks */
+} ImageObject_00563BB8;
+extern ImageObject_00563BB8 g_ImageObject_00563BB8;
+typedef struct ImageObject_00563BBC {
     uint32_t * at_g_OldUnitSecondaryTable; /* 00563BBC g_OldUnitSecondaryTable */
+} ImageObject_00563BBC;
+extern ImageObject_00563BBC g_ImageObject_00563BBC;
+typedef struct ImageObject_00563BC0 {
     uint32_t * at_g_OldUnitPrimaryTable; /* 00563BC0 g_OldUnitPrimaryTable */
+} ImageObject_00563BC0;
+extern ImageObject_00563BC0 g_ImageObject_00563BC0;
+typedef struct ImageObject_00563BC4 {
     OldUnitRecordCount at_g_OldUnitRecordCount; /* 00563BC4 g_OldUnitRecordCount */
     uint32_t at_g_OldUnitRecordCount_rest[2]; /* beyond the declared type */
-} ImageData_00562498;
-extern ImageData_00562498 g_ImageData_00562498;
+} ImageObject_00563BC4;
+extern ImageObject_00563BC4 g_ImageObject_00563BC4;
 
 /* original 0x005658BC-0x005658E0 */
-typedef struct ImageData_005658BC {
+typedef struct ImageObject_005658BC {
     uint8_t at_gap_005658BC[4]; /* 005658BC gap */
+} ImageObject_005658BC;
+extern ImageObject_005658BC g_ImageObject_005658BC;
+typedef struct ImageObject_005658C0 {
     UiCommandDispatchRecord at_g_EndMovieCommandDispatchRecords[2]; /* 005658C0 g_EndMovieCommandDispatchRecords */
+} ImageObject_005658C0;
+extern ImageObject_005658C0 g_ImageObject_005658C0;
+typedef struct ImageObject_005658D8 {
     uint32_t at_g_EndMovieCommandDispatchRecords_Terminator[2]; /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
-} ImageData_005658BC;
-extern ImageData_005658BC g_ImageData_005658BC;
+} ImageObject_005658D8;
+extern ImageObject_005658D8 g_ImageObject_005658D8;
 
 /* original 0x00565E2C-0x00565E30 */
-typedef struct ImageData_00565E2C {
+typedef struct ImageObject_00565E2C {
     uint8_t at_gap_00565E2C[4]; /* 00565E2C gap */
-} ImageData_00565E2C;
-extern ImageData_00565E2C g_ImageData_00565E2C;
+} ImageObject_00565E2C;
+extern ImageObject_00565E2C g_ImageObject_00565E2C;
 
 /* original 0x00566034-0x00566060 */
-typedef struct ImageData_00566034 {
+typedef struct ImageObject_00566034 {
     uint8_t at_gap_00566034[12]; /* 00566034 gap */
+} ImageObject_00566034;
+extern ImageObject_00566034 g_ImageObject_00566034;
+typedef struct ImageObject_00566040 {
     uint32_t at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040[8]; /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
-} ImageData_00566034;
-extern ImageData_00566034 g_ImageData_00566034;
+} ImageObject_00566040;
+extern ImageObject_00566040 g_ImageObject_00566040;
 
 /* original 0x0056710C-0x005671D0 */
-typedef struct ImageData_0056710C {
+typedef struct ImageObject_0056710C {
     uint8_t at_gap_0056710C[4]; /* 0056710C gap */
+} ImageObject_0056710C;
+extern ImageObject_0056710C g_ImageObject_0056710C;
+typedef struct ImageObject_00567110 {
     UiCommandDispatchRecord at_g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[15]; /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 */
+} ImageObject_00567110;
+extern ImageObject_00567110 g_ImageObject_00567110;
+typedef struct ImageObject_005671C4 {
     uint32_t at_g_EndGameResultsCommandDispatchRecords_Terminator[3]; /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
-} ImageData_0056710C;
-extern ImageData_0056710C g_ImageData_0056710C;
+} ImageObject_005671C4;
+extern ImageObject_005671C4 g_ImageObject_005671C4;
 
 /* original 0x005679AC-0x00567CB0 */
-typedef struct ImageData_005679AC {
+typedef struct ImageObject_005679AC {
     uint8_t at_gap_005679AC[4]; /* 005679AC gap */
+} ImageObject_005679AC;
+extern ImageObject_005679AC g_ImageObject_005679AC;
+typedef struct ImageObject_005679B0 {
     UiCommandDispatchRecord at_g_InGameCommandDispatchRecords_00_Code00030073_Modifier33[63]; /* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
+} ImageObject_005679B0;
+extern ImageObject_005679B0 g_ImageObject_005679B0;
+typedef struct ImageObject_00567CA4 {
     uint32_t at_g_InGameCommandDispatchRecords_Terminator[3]; /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
-} ImageData_005679AC;
-extern ImageData_005679AC g_ImageData_005679AC;
+} ImageObject_00567CA4;
+extern ImageObject_00567CA4 g_ImageObject_00567CA4;
 
 /* original 0x0056A604-0x0056A610 */
-typedef struct ImageData_0056A604 {
+typedef struct ImageObject_0056A604 {
     uint8_t at_g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked */
     uint32_t at_g_InGameSessionStartedNetworked_rest[2]; /* beyond the declared type */
     uint8_t at_g_InGameSessionStartedNetworked_rest_tail[3];
-} ImageData_0056A604;
-extern ImageData_0056A604 g_ImageData_0056A604;
+} ImageObject_0056A604;
+extern ImageObject_0056A604 g_ImageObject_0056A604;
 
 /* original 0x0056D33C-0x0056D380 */
-typedef struct ImageData_0056D33C {
+typedef struct ImageObject_0056D33C {
     uint8_t at_gap_0056D33C[4]; /* 0056D33C gap */
+} ImageObject_0056D33C;
+extern ImageObject_0056D33C g_ImageObject_0056D33C;
+typedef struct ImageObject_0056D340 {
     uint32_t at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340[16]; /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
-} ImageData_0056D33C;
-extern ImageData_0056D33C g_ImageData_0056D33C;
+} ImageObject_0056D340;
+extern ImageObject_0056D340 g_ImageObject_0056D340;
 
 /* original 0x0056D71C-0x0056D840 */
-typedef struct ImageData_0056D71C {
+typedef struct ImageObject_0056D71C {
     uint8_t at_gap_0056D71C[4]; /* 0056D71C gap */
+} ImageObject_0056D71C;
+extern ImageObject_0056D71C g_ImageObject_0056D71C;
+typedef struct ImageObject_0056D720 {
     uint32_t at_g_UiCommandModeG; /* 0056D720 g_UiCommandModeG */
+} ImageObject_0056D720;
+extern ImageObject_0056D720 g_ImageObject_0056D720;
+typedef struct ImageObject_0056D724 {
     uint32_t at_g_UiCommandModeC; /* 0056D724 g_UiCommandModeC */
+} ImageObject_0056D724;
+extern ImageObject_0056D724 g_ImageObject_0056D724;
+typedef struct ImageObject_0056D728 {
     uint32_t at_g_UiCommandModeD; /* 0056D728 g_UiCommandModeD */
+} ImageObject_0056D728;
+extern ImageObject_0056D728 g_ImageObject_0056D728;
+typedef struct ImageObject_0056D72C {
     uint32_t at_g_UiCommandModeE; /* 0056D72C g_UiCommandModeE */
+} ImageObject_0056D72C;
+extern ImageObject_0056D72C g_ImageObject_0056D72C;
+typedef struct ImageObject_0056D730 {
     uint32_t at_g_UiCommandModeA; /* 0056D730 g_UiCommandModeA */
+} ImageObject_0056D730;
+extern ImageObject_0056D730 g_ImageObject_0056D730;
+typedef struct ImageObject_0056D734 {
     uint32_t at_g_UiCommandModeB; /* 0056D734 g_UiCommandModeB */
     uint32_t at_g_UiCommandModeB_rest[1]; /* beyond the declared type */
+} ImageObject_0056D734;
+extern ImageObject_0056D734 g_ImageObject_0056D734;
+typedef struct ImageObject_0056D73C {
     uint32_t at_g_UiCommandModeF; /* 0056D73C g_UiCommandModeF */
+} ImageObject_0056D73C;
+extern ImageObject_0056D73C g_ImageObject_0056D73C;
+typedef struct ImageObject_0056D740 {
     uint32_t at_g_UiCommandAbsoluteSelectionIndex; /* 0056D740 g_UiCommandAbsoluteSelectionIndex */
+} ImageObject_0056D740;
+extern ImageObject_0056D740 g_ImageObject_0056D740;
+typedef struct ImageObject_0056D744 {
     uint32_t at_g_UiCommandSelectionPageBaseIndex; /* 0056D744 g_UiCommandSelectionPageBaseIndex */
+} ImageObject_0056D744;
+extern ImageObject_0056D744 g_ImageObject_0056D744;
+typedef struct ImageObject_0056D748 {
     uint32_t at_g_UiCommandTerrainMaskToggleValue; /* 0056D748 g_UiCommandTerrainMaskToggleValue */
+} ImageObject_0056D748;
+extern ImageObject_0056D748 g_ImageObject_0056D748;
+typedef struct ImageObject_0056D74C {
     FactionRuntimeIndex at_g_UiCommandModeGOwnerFactionIndex; /* 0056D74C g_UiCommandModeGOwnerFactionIndex */
+} ImageObject_0056D74C;
+extern ImageObject_0056D74C g_ImageObject_0056D74C;
+typedef struct ImageObject_0056D750 {
     uint32_t at_g_UiCommandModeGArmyAssetId; /* 0056D750 g_UiCommandModeGArmyAssetId */
+} ImageObject_0056D750;
+extern ImageObject_0056D750 g_ImageObject_0056D750;
+typedef struct ImageObject_0056D754 {
     int32_t at_g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
     int32_t at_g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
+} ImageObject_0056D754;
+extern ImageObject_0056D754 g_ImageObject_0056D754;
+typedef struct ImageObject_0056D75C {
     PckArmyAssetIdCatalog at_g_UiCommandMode4ArmyAssetId; /* 0056D75C g_UiCommandMode4ArmyAssetId */
+} ImageObject_0056D75C;
+extern ImageObject_0056D75C g_ImageObject_0056D75C;
+typedef struct ImageObject_0056D760 {
     uint32_t at_g_UiCommandCallerMaskHighBit; /* 0056D760 g_UiCommandCallerMaskHighBit */
+} ImageObject_0056D760;
+extern ImageObject_0056D760 g_ImageObject_0056D760;
+typedef struct ImageObject_0056D764 {
     uint32_t at_g_UiCommandModeGPrimaryPageIndices[6]; /* 0056D764 g_UiCommandModeGPrimaryPageIndices: uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
+} ImageObject_0056D764;
+extern ImageObject_0056D764 g_ImageObject_0056D764;
+typedef struct ImageObject_0056D77C {
     uint32_t at_g_UiCommandModeGSecondaryPageIndices[6]; /* 0056D77C g_UiCommandModeGSecondaryPageIndices: uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
+} ImageObject_0056D77C;
+extern ImageObject_0056D77C g_ImageObject_0056D77C;
+typedef struct ImageObject_0056D794 {
     uint32_t at_g_UiCommandModeGTertiaryPageIndices[6]; /* 0056D794 g_UiCommandModeGTertiaryPageIndices: uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
+} ImageObject_0056D794;
+extern ImageObject_0056D794 g_ImageObject_0056D794;
+typedef struct ImageObject_0056D7AC {
     int32_t at_g_UiCommandModeGControlOffsets[6]; /* 0056D7AC g_UiCommandModeGControlOffsets */
+} ImageObject_0056D7AC;
+extern ImageObject_0056D7AC g_ImageObject_0056D7AC;
+typedef struct ImageObject_0056D7C4 {
     void * at_g_UiCommandModeGHandlers[6]; /* 0056D7C4 g_UiCommandModeGHandlers */
+} ImageObject_0056D7C4;
+extern ImageObject_0056D7C4 g_ImageObject_0056D7C4;
+typedef struct ImageObject_0056D7DC {
     int32_t at_g_UiMappedCommandControlOffsets[12]; /* 0056D7DC g_UiMappedCommandControlOffsets */
+} ImageObject_0056D7DC;
+extern ImageObject_0056D7DC g_ImageObject_0056D7DC;
+typedef struct ImageObject_0056D80C {
     int32_t at_g_UiCommandSelectionAnchorWorldXQ12; /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
     int32_t at_g_UiCommandSelectionAnchorWorldYQ12; /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
+} ImageObject_0056D80C;
+extern ImageObject_0056D80C g_ImageObject_0056D80C;
+typedef struct ImageObject_0056D814 {
     int32_t at_g_UiCommandSelectionCurrentWorldXQ12; /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
     int32_t at_g_UiCommandSelectionCurrentWorldYQ12; /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
+} ImageObject_0056D814;
+extern ImageObject_0056D814 g_ImageObject_0056D814;
+typedef struct ImageObject_0056D81C {
     uint32_t at_g_UiCommandDragAnchorWorldXQ12; /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
     uint32_t at_g_UiCommandDragAnchorWorldYQ12; /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
+} ImageObject_0056D81C;
+extern ImageObject_0056D81C g_ImageObject_0056D81C;
+typedef struct ImageObject_0056D824 {
     uint32_t at_g_UiCommandDragStartScreenX; /* 0056D824 g_UiCommandDragStartScreenX */
     uint32_t at_g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScreenY */
+} ImageObject_0056D824;
+extern ImageObject_0056D824 g_ImageObject_0056D824;
+typedef struct ImageObject_0056D82C {
     uint32_t at_g_TerrainMaterialEditFieldGrid; /* 0056D82C g_TerrainMaterialEditFieldGrid */
+} ImageObject_0056D82C;
+extern ImageObject_0056D82C g_ImageObject_0056D82C;
+typedef struct ImageObject_0056D830 {
     uint32_t at_g_TerrainMaterialEditDeltaBuffer; /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
+} ImageObject_0056D830;
+extern ImageObject_0056D830 g_ImageObject_0056D830;
+typedef struct ImageObject_0056D834 {
     uint32_t at_g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
+} ImageObject_0056D834;
+extern ImageObject_0056D834 g_ImageObject_0056D834;
+typedef struct ImageObject_0056D838 {
     uint32_t at_g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
     uint32_t at_g_TerrainMaterialEditReplacementMaterialByte_rest[1]; /* beyond the declared type */
-} ImageData_0056D71C;
-extern ImageData_0056D71C g_ImageData_0056D71C;
+} ImageObject_0056D838;
+extern ImageObject_0056D838 g_ImageObject_0056D838;
 
 /* original 0x0056E408-0x0056E5D0 */
-typedef struct ImageData_0056E408 {
+typedef struct ImageObject_0056E408 {
     uint8_t at_gap_0056E408[8]; /* 0056E408 gap */
+} ImageObject_0056E408;
+extern ImageObject_0056E408 g_ImageObject_0056E408;
+typedef struct ImageObject_0056E410 {
     UiCommandDispatchRecord at_g_InGameKeyboardDispatchRecords[36]; /* 0056E410 g_InGameKeyboardDispatchRecords */
+} ImageObject_0056E410;
+extern ImageObject_0056E410 g_ImageObject_0056E410;
+typedef struct ImageObject_0056E5C0 {
     uint32_t at_g_InGameKeyboardDispatchRecordsTerminator; /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
     uint32_t at_g_InGameKeyboardDispatchRecordsTerminator_rest[3]; /* beyond the declared type */
-} ImageData_0056E408;
-extern ImageData_0056E408 g_ImageData_0056E408;
+} ImageObject_0056E5C0;
+extern ImageObject_0056E5C0 g_ImageObject_0056E5C0;
 
 /* original 0x0056F278-0x0056F350 */
-typedef struct ImageData_0056F278 {
+typedef struct ImageObject_0056F278 {
     uint8_t at_gap_0056F278[8]; /* 0056F278 gap */
+} ImageObject_0056F278;
+extern ImageObject_0056F278 g_ImageObject_0056F278;
+typedef struct ImageObject_0056F280 {
     InGameCameraCommandDispatchTable at_g_InGameCameraCommandDispatchRecords16; /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
-} ImageData_0056F278;
-extern ImageData_0056F278 g_ImageData_0056F278;
+} ImageObject_0056F280;
+extern ImageObject_0056F280 g_ImageObject_0056F280;
 
 /* original 0x0056F81C-0x0056F840 */
-typedef struct ImageData_0056F81C {
+typedef struct ImageObject_0056F81C {
     uint8_t at_gap_0056F81C[4]; /* 0056F81C gap */
+} ImageObject_0056F81C;
+extern ImageObject_0056F81C g_ImageObject_0056F81C;
+typedef struct ImageObject_0056F820 {
     uint32_t at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageData_0056F81C;
-extern ImageData_0056F81C g_ImageData_0056F81C;
+} ImageObject_0056F820;
+extern ImageObject_0056F820 g_ImageObject_0056F820;
 
 /* original 0x0056FA98-0x0056FAC0 */
-typedef struct ImageData_0056FA98 {
+typedef struct ImageObject_0056FA98 {
     uint8_t at_gap_0056FA98[8]; /* 0056FA98 gap */
+} ImageObject_0056FA98;
+extern ImageObject_0056FA98 g_ImageObject_0056FA98;
+typedef struct ImageObject_0056FAA0 {
     uint32_t at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageData_0056FA98;
-extern ImageData_0056FA98 g_ImageData_0056FA98;
+} ImageObject_0056FAA0;
+extern ImageObject_0056FAA0 g_ImageObject_0056FAA0;
 
 /* original 0x00570408-0x00570430 */
-typedef struct ImageData_00570408 {
+typedef struct ImageObject_00570408 {
     uint8_t at_gap_00570408[8]; /* 00570408 gap */
+} ImageObject_00570408;
+extern ImageObject_00570408 g_ImageObject_00570408;
+typedef struct ImageObject_00570410 {
     uint32_t at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageData_00570408;
-extern ImageData_00570408 g_ImageData_00570408;
+} ImageObject_00570410;
+extern ImageObject_00570410 g_ImageObject_00570410;
 
 /* original 0x00570D90-0x00570DC0 */
-typedef struct ImageData_00570D90 {
+typedef struct ImageObject_00570D90 {
     uint8_t at_gap_00570D90[16]; /* 00570D90 gap */
+} ImageObject_00570D90;
+extern ImageObject_00570D90 g_ImageObject_00570D90;
+typedef struct ImageObject_00570DA0 {
     uint32_t at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageData_00570D90;
-extern ImageData_00570D90 g_ImageData_00570D90;
+} ImageObject_00570DA0;
+extern ImageObject_00570DA0 g_ImageObject_00570DA0;
 
 /* original 0x00570F48-0x00570F70 */
-typedef struct ImageData_00570F48 {
+typedef struct ImageObject_00570F48 {
     uint8_t at_gap_00570F48[8]; /* 00570F48 gap */
+} ImageObject_00570F48;
+extern ImageObject_00570F48 g_ImageObject_00570F48;
+typedef struct ImageObject_00570F50 {
     uint32_t at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageData_00570F48;
-extern ImageData_00570F48 g_ImageData_00570F48;
+} ImageObject_00570F50;
+extern ImageObject_00570F50 g_ImageObject_00570F50;
 
 /* original 0x00571AE4-0x00571B00 */
-typedef struct ImageData_00571AE4 {
+typedef struct ImageObject_00571AE4 {
     uint8_t at_gap_00571AE4[28]; /* 00571AE4 gap */
-} ImageData_00571AE4;
-extern ImageData_00571AE4 g_ImageData_00571AE4;
+} ImageObject_00571AE4;
+extern ImageObject_00571AE4 g_ImageObject_00571AE4;
 
 /* original 0x00571B30-0x00571B50 */
-typedef struct ImageData_00571B30 {
+typedef struct ImageObject_00571B30 {
     uint8_t at_gap_00571B30[32]; /* 00571B30 gap */
-} ImageData_00571B30;
-extern ImageData_00571B30 g_ImageData_00571B30;
+} ImageObject_00571B30;
+extern ImageObject_00571B30 g_ImageObject_00571B30;
 
 /* original 0x00571D24-0x00571D40 */
-typedef struct ImageData_00571D24 {
+typedef struct ImageObject_00571D24 {
     uint8_t at_gap_00571D24[28]; /* 00571D24 gap */
-} ImageData_00571D24;
-extern ImageData_00571D24 g_ImageData_00571D24;
+} ImageObject_00571D24;
+extern ImageObject_00571D24 g_ImageObject_00571D24;
 
 /* original 0x00571D70-0x00571D90 */
-typedef struct ImageData_00571D70 {
+typedef struct ImageObject_00571D70 {
     uint8_t at_gap_00571D70[32]; /* 00571D70 gap */
-} ImageData_00571D70;
-extern ImageData_00571D70 g_ImageData_00571D70;
+} ImageObject_00571D70;
+extern ImageObject_00571D70 g_ImageObject_00571D70;
 
 /* original 0x00572030-0x005722C0 */
-typedef struct ImageData_00572030 {
+typedef struct ImageObject_00572030 {
     uint8_t at_gap_00572030[16]; /* 00572030 gap */
+} ImageObject_00572030;
+extern ImageObject_00572030 g_ImageObject_00572030;
+typedef struct ImageObject_00572040 {
     FrontendPlayerRemovalPacket10007 at_g_FrontendClientPlayerRemovalPacket10007; /* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
+} ImageObject_00572040;
+extern ImageObject_00572040 g_ImageObject_00572040;
+typedef struct ImageObject_00572060 {
     FrontendCommandPacketRecord at_g_FrontendClientPlayerCommandRecords[8]; /* 00572060 g_FrontendClientPlayerCommandRecords */
+} ImageObject_00572060;
+extern ImageObject_00572060 g_ImageObject_00572060;
+typedef struct ImageObject_00572160 {
     FrontendCommandPacketRecord at_g_FrontendClientCommandBatchPacketBuffer[8]; /* 00572160 g_FrontendClientCommandBatchPacketBuffer */
+} ImageObject_00572160;
+extern ImageObject_00572160 g_ImageObject_00572160;
+typedef struct ImageObject_00572260 {
     FrontendCommandPacketRecord at_g_FrontendPacket10021Buffer; /* 00572260 g_FrontendPacket10021Buffer */
+} ImageObject_00572260;
+extern ImageObject_00572260 g_ImageObject_00572260;
+typedef struct ImageObject_00572280 {
     FrontendPacket10022StatePending at_g_FrontendPacket10022Buffer; /* 00572280 g_FrontendPacket10022Buffer */
+} ImageObject_00572280;
+extern ImageObject_00572280 g_ImageObject_00572280;
+typedef struct ImageObject_005722A0 {
     FrontendPacket10023StateAck at_g_FrontendPacket10023Buffer; /* 005722A0 g_FrontendPacket10023Buffer */
-} ImageData_00572030;
-extern ImageData_00572030 g_ImageData_00572030;
+} ImageObject_005722A0;
+extern ImageObject_005722A0 g_ImageObject_005722A0;
 
 /* original 0x00572AB0-0x00573070 */
-typedef struct ImageData_00572AB0 {
+typedef struct ImageObject_00572AB0 {
     uint8_t at_gap_00572AB0[16]; /* 00572AB0 gap */
+} ImageObject_00572AB0;
+extern ImageObject_00572AB0 g_ImageObject_00572AB0;
+typedef struct ImageObject_00572AC0 {
     uint32_t at_g_DataPackageHandle; /* 00572AC0 g_DataPackageHandle */
+} ImageObject_00572AC0;
+extern ImageObject_00572AC0 g_ImageObject_00572AC0;
+typedef struct ImageObject_00572AC4 {
     uint32_t at_g_ModelPackageHandle; /* 00572AC4 g_ModelPackageHandle */
+} ImageObject_00572AC4;
+extern ImageObject_00572AC4 g_ImageObject_00572AC4;
+typedef struct ImageObject_00572AC8 {
     uint32_t at_g_GraphicsPackageHandle; /* 00572AC8 g_GraphicsPackageHandle */
+} ImageObject_00572AC8;
+extern ImageObject_00572AC8 g_ImageObject_00572AC8;
+typedef struct ImageObject_00572ACC {
     uint32_t at_g_SoundPackageHandle; /* 00572ACC g_SoundPackageHandle */
+} ImageObject_00572ACC;
+extern ImageObject_00572ACC g_ImageObject_00572ACC;
+typedef struct ImageObject_00572AD0 {
     uint32_t at_g_MoviePackageHandle; /* 00572AD0 g_MoviePackageHandle */
+} ImageObject_00572AD0;
+extern ImageObject_00572AD0 g_ImageObject_00572AD0;
+typedef struct ImageObject_00572AD4 {
     uint32_t at_g_LevelPackageHandle; /* 00572AD4 g_LevelPackageHandle */
+} ImageObject_00572AD4;
+extern ImageObject_00572AD4 g_ImageObject_00572AD4;
+typedef struct ImageObject_00572AD8 {
     DirectSoundVoiceSet * at_g_UiButtonSoundVoiceSets7[7]; /* 00572AD8 g_UiButtonSoundVoiceSets7 */
+} ImageObject_00572AD8;
+extern ImageObject_00572AD8 g_ImageObject_00572AD8;
+typedef struct ImageObject_00572AF4 {
     FncModuleHeader * at_g_PcxFunctionModule; /* 00572AF4 g_PcxFunctionModule */
+} ImageObject_00572AF4;
+extern ImageObject_00572AF4 g_ImageObject_00572AF4;
+typedef struct ImageObject_00572AF8 {
     PcxEncodeProc * at_g_PcxFunctionExport3; /* 00572AF8 g_PcxFunctionExport3 */
     PcxDecodeProc * at_g_PcxFunctionExport2; /* 00572AFC g_PcxFunctionExport2 */
+} ImageObject_00572AF8;
+extern ImageObject_00572AF8 g_ImageObject_00572AF8;
+typedef struct ImageObject_00572B00 {
     uint32_t at_g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks */
+} ImageObject_00572B00;
+extern ImageObject_00572B00 g_ImageObject_00572B00;
+typedef struct ImageObject_00572B04 {
     uint32_t at_g_InstallRegistryKeyHandle; /* 00572B04 g_InstallRegistryKeyHandle */
+} ImageObject_00572B04;
+extern ImageObject_00572B04 g_ImageObject_00572B04;
+typedef struct ImageObject_00572B08 {
     uint32_t at_g_InstallRegistryValueDataCapacityBytes; /* 00572B08 g_InstallRegistryValueDataCapacityBytes: uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
+} ImageObject_00572B08;
+extern ImageObject_00572B08 g_ImageObject_00572B08;
+typedef struct ImageObject_00572B0C {
     uint32_t at_g_InstallRegistryValueType; /* 00572B0C g_InstallRegistryValueType */
+} ImageObject_00572B0C;
+extern ImageObject_00572B0C g_ImageObject_00572B0C;
+typedef struct ImageObject_00572B10 {
     uint8_t at_g_InstallRegistryValueDataA; /* 00572B10 g_InstallRegistryValueDataA */
     uint32_t at_g_InstallRegistryValueDataA_rest[63]; /* beyond the declared type */
     uint8_t at_g_InstallRegistryValueDataA_rest_tail[3];
+} ImageObject_00572B10;
+extern ImageObject_00572B10 g_ImageObject_00572B10;
+typedef struct ImageObject_00572C10 {
     uint16_t at_g_InstallDirectoryScratchUtf16[256]; /* 00572C10 g_InstallDirectoryScratchUtf16 */
+} ImageObject_00572C10;
+extern ImageObject_00572C10 g_ImageObject_00572C10;
+typedef struct ImageObject_00572E10 {
     uint16_t at_u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
+} ImageObject_00572E10;
+extern ImageObject_00572E10 g_ImageObject_00572E10;
+typedef struct ImageObject_00572E20 {
     char at_s_Software_Planet4_Thandor_00572e20[25]; /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
+} ImageObject_00572E20;
+extern ImageObject_00572E20 g_ImageObject_00572E20;
+typedef struct ImageObject_00572E39 {
     uint8_t at_s_InstallRegistryValueNameCD; /* 00572E39 s_InstallRegistryValueNameCD */
     uint16_t at_u_Dscreen00_pcx_00572e3a[1]; /* 00572E3A u_Dscreen00_pcx_00572e3a */
     uint16_t at_g_ScreenshotFileNameUtf16[13]; /* 00572E3C g_ScreenshotFileNameUtf16 */
+} ImageObject_00572E39;
+extern ImageObject_00572E39 g_ImageObject_00572E39;
+typedef struct ImageObject_00572E56 {
     uint16_t at_u_daten_pck_00572e56[10]; /* 00572E56 u_daten_pck_00572e56 */
+} ImageObject_00572E56;
+extern ImageObject_00572E56 g_ImageObject_00572E56;
+typedef struct ImageObject_00572E6A {
     uint16_t at_u_modelle_pck_00572e6a[12]; /* 00572E6A u_modelle_pck_00572e6a */
+} ImageObject_00572E6A;
+extern ImageObject_00572E6A g_ImageObject_00572E6A;
+typedef struct ImageObject_00572E82 {
     uint16_t at_u_graphik_pck_00572e82[12]; /* 00572E82 u_graphik_pck_00572e82 */
+} ImageObject_00572E82;
+extern ImageObject_00572E82 g_ImageObject_00572E82;
+typedef struct ImageObject_00572E9A {
     uint16_t at_u_sound_pck_00572e9a[10]; /* 00572E9A u_sound_pck_00572e9a */
+} ImageObject_00572E9A;
+extern ImageObject_00572E9A g_ImageObject_00572E9A;
+typedef struct ImageObject_00572EAE {
     uint16_t at_u_filme_pck_00572eae[10]; /* 00572EAE u_filme_pck_00572eae */
+} ImageObject_00572EAE;
+extern ImageObject_00572EAE g_ImageObject_00572EAE;
+typedef struct ImageObject_00572EC2 {
     uint16_t at_u_level_pck_00572ec2[10]; /* 00572EC2 u_level_pck_00572ec2 */
+} ImageObject_00572EC2;
+extern ImageObject_00572EC2 g_ImageObject_00572EC2;
+typedef struct ImageObject_00572ED6 {
     PatchArchivePathTemplate18 at_g_PatchArchivePathTemplateUtf16; /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
+} ImageObject_00572ED6;
+extern ImageObject_00572ED6 g_ImageObject_00572ED6;
+typedef struct ImageObject_00572EEE {
     LevelArchivePathTemplate18 at_g_LevelArchivePathTemplateUtf16; /* 00572EEE g_LevelArchivePathTemplateUtf16 */
+} ImageObject_00572EEE;
+extern ImageObject_00572EEE g_ImageObject_00572EEE;
+typedef struct ImageObject_00572F06 {
     uint16_t at_u_sound_button0_sam_00572f06[18]; /* 00572F06 u_sound_button0_sam_00572f06 */
+} ImageObject_00572F06;
+extern ImageObject_00572F06 g_ImageObject_00572F06;
+typedef struct ImageObject_00572F2A {
     uint16_t at_u_sound_button1_sam_00572f2a[18]; /* 00572F2A u_sound_button1_sam_00572f2a */
+} ImageObject_00572F2A;
+extern ImageObject_00572F2A g_ImageObject_00572F2A;
+typedef struct ImageObject_00572F4E {
     uint16_t at_u_sound_button2_sam_00572f4e[18]; /* 00572F4E u_sound_button2_sam_00572f4e */
+} ImageObject_00572F4E;
+extern ImageObject_00572F4E g_ImageObject_00572F4E;
+typedef struct ImageObject_00572F72 {
     uint16_t at_u_sound_button3_sam_00572f72[18]; /* 00572F72 u_sound_button3_sam_00572f72 */
+} ImageObject_00572F72;
+extern ImageObject_00572F72 g_ImageObject_00572F72;
+typedef struct ImageObject_00572F96 {
     uint16_t at_u_sound_button4_sam_00572f96[18]; /* 00572F96 u_sound_button4_sam_00572f96 */
+} ImageObject_00572F96;
+extern ImageObject_00572F96 g_ImageObject_00572F96;
+typedef struct ImageObject_00572FBA {
     uint16_t at_u_sound_button5_sam_00572fba[18]; /* 00572FBA u_sound_button5_sam_00572fba */
+} ImageObject_00572FBA;
+extern ImageObject_00572FBA g_ImageObject_00572FBA;
+typedef struct ImageObject_00572FDE {
     uint16_t at_u_sound_button6_sam_00572fde[18]; /* 00572FDE u_sound_button6_sam_00572fde */
+} ImageObject_00572FDE;
+extern ImageObject_00572FDE g_ImageObject_00572FDE;
+typedef struct ImageObject_00573002 {
     uint16_t at_u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
+} ImageObject_00573002;
+extern ImageObject_00573002 g_ImageObject_00573002;
+typedef struct ImageObject_00573028 {
     uint16_t at_u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
+} ImageObject_00573028;
+extern ImageObject_00573028 g_ImageObject_00573028;
+typedef struct ImageObject_00573046 {
     uint16_t at_u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
+} ImageObject_00573046;
+extern ImageObject_00573046 g_ImageObject_00573046;
+typedef struct ImageObject_00573064 {
     char at_g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
     uint8_t at_g_CommandLineOptionNoIntro_padding[4];
-} ImageData_00572AB0;
-extern ImageData_00572AB0 g_ImageData_00572AB0;
+} ImageObject_00573064;
+extern ImageObject_00573064 g_ImageObject_00573064;
 
 /* original 0x00573EE8-0x00575890 */
-typedef struct ImageData_00573EE8 {
+typedef struct ImageObject_00573EE8 {
     uint8_t at_gap_00573EE8[8]; /* 00573EE8 gap */
+} ImageObject_00573EE8;
+extern ImageObject_00573EE8 g_ImageObject_00573EE8;
+typedef struct ImageObject_00573EF0 {
     DynamicModuleEntry at_g_DynamicModules[16]; /* 00573EF0 g_DynamicModules */
+} ImageObject_00573EF0;
+extern ImageObject_00573EF0 g_ImageObject_00573EF0;
+typedef struct ImageObject_00573F70 {
     uint32_t at_g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
+} ImageObject_00573F70;
+extern ImageObject_00573F70 g_ImageObject_00573F70;
+typedef struct ImageObject_00573F74 {
     DynamicApiBinding at_g_BootstrapApiBindings[8]; /* 00573F74 g_BootstrapApiBindings */
     uint32_t at_g_BootstrapApiBindings_rest[2]; /* beyond the declared type */
+} ImageObject_00573F74;
+extern ImageObject_00573F74 g_ImageObject_00573F74;
+typedef struct ImageObject_00573FBC {
     DirectDrawCreate * at_pDirectDrawCreate; /* 00573FBC pDirectDrawCreate */
+} ImageObject_00573FBC;
+extern ImageObject_00573FBC g_ImageObject_00573FBC;
+typedef struct ImageObject_00573FC0 {
     DirectDrawEnumerateA * at_pDirectDrawEnumerateA; /* 00573FC0 pDirectDrawEnumerateA */
+} ImageObject_00573FC0;
+extern ImageObject_00573FC0 g_ImageObject_00573FC0;
+typedef struct ImageObject_00573FC4 {
     DirectInputCreateA * at_pDirectInputCreateA; /* 00573FC4 pDirectInputCreateA */
+} ImageObject_00573FC4;
+extern ImageObject_00573FC4 g_ImageObject_00573FC4;
+typedef struct ImageObject_00573FC8 {
     DirectSoundCreate * at_pDirectSoundCreate; /* 00573FC8 pDirectSoundCreate */
+} ImageObject_00573FC8;
+extern ImageObject_00573FC8 g_ImageObject_00573FC8;
+typedef struct ImageObject_00573FCC {
     DirectSoundEnumerateA * at_pDirectSoundEnumerateA; /* 00573FCC pDirectSoundEnumerateA */
+} ImageObject_00573FCC;
+extern ImageObject_00573FCC g_ImageObject_00573FCC;
+typedef struct ImageObject_00573FD0 {
     DirectSoundCaptureCreate * at_pDirectSoundCaptureCreate; /* 00573FD0 pDirectSoundCaptureCreate */
+} ImageObject_00573FD0;
+extern ImageObject_00573FD0 g_ImageObject_00573FD0;
+typedef struct ImageObject_00573FD4 {
     DirectSoundCaptureEnumerateA * at_pDirectSoundCaptureEnumerateA; /* 00573FD4 pDirectSoundCaptureEnumerateA */
+} ImageObject_00573FD4;
+extern ImageObject_00573FD4 g_ImageObject_00573FD4;
+typedef struct ImageObject_00573FD8 {
     GlideImportBinding at_g_GlideImportBindings[89]; /* 00573FD8 g_GlideImportBindings */
+} ImageObject_00573FD8;
+extern ImageObject_00573FD8 g_ImageObject_00573FD8;
+typedef struct ImageObject_005742A0 {
     WinSock_acceptProc * at_g_WinSock_accept; /* 005742A0 g_WinSock_accept */
+} ImageObject_005742A0;
+extern ImageObject_005742A0 g_ImageObject_005742A0;
+typedef struct ImageObject_005742A4 {
     WinSock_bindProc * at_g_WinSock_bind; /* 005742A4 g_WinSock_bind */
+} ImageObject_005742A4;
+extern ImageObject_005742A4 g_ImageObject_005742A4;
+typedef struct ImageObject_005742A8 {
     WinSock_closesocketProc * at_g_WinSock_closesocket; /* 005742A8 g_WinSock_closesocket */
+} ImageObject_005742A8;
+extern ImageObject_005742A8 g_ImageObject_005742A8;
+typedef struct ImageObject_005742AC {
     WinSock_connectProc * at_g_WinSock_connect; /* 005742AC g_WinSock_connect */
+} ImageObject_005742AC;
+extern ImageObject_005742AC g_ImageObject_005742AC;
+typedef struct ImageObject_005742B0 {
     WinSock_getpeernameProc * at_g_WinSock_getpeername; /* 005742B0 g_WinSock_getpeername */
+} ImageObject_005742B0;
+extern ImageObject_005742B0 g_ImageObject_005742B0;
+typedef struct ImageObject_005742B4 {
     WinSock_getsocknameProc * at_g_WinSock_getsockname; /* 005742B4 g_WinSock_getsockname */
+} ImageObject_005742B4;
+extern ImageObject_005742B4 g_ImageObject_005742B4;
+typedef struct ImageObject_005742B8 {
     WinSock_getsockoptProc * at_g_WinSock_getsockopt; /* 005742B8 g_WinSock_getsockopt */
+} ImageObject_005742B8;
+extern ImageObject_005742B8 g_ImageObject_005742B8;
+typedef struct ImageObject_005742BC {
     WinSock_htonlProc * at_g_WinSock_htonl; /* 005742BC g_WinSock_htonl */
+} ImageObject_005742BC;
+extern ImageObject_005742BC g_ImageObject_005742BC;
+typedef struct ImageObject_005742C0 {
     WinSock_htonsProc * at_g_WinSock_htons; /* 005742C0 g_WinSock_htons */
+} ImageObject_005742C0;
+extern ImageObject_005742C0 g_ImageObject_005742C0;
+typedef struct ImageObject_005742C4 {
     WinSock_inet_addrProc * at_g_WinSock_inet_addr; /* 005742C4 g_WinSock_inet_addr */
+} ImageObject_005742C4;
+extern ImageObject_005742C4 g_ImageObject_005742C4;
+typedef struct ImageObject_005742C8 {
     WinSock_inet_ntoaProc * at_g_WinSock_inet_ntoa; /* 005742C8 g_WinSock_inet_ntoa */
+} ImageObject_005742C8;
+extern ImageObject_005742C8 g_ImageObject_005742C8;
+typedef struct ImageObject_005742CC {
     WinSock_ioctlsocketProc * at_g_WinSock_ioctlsocket; /* 005742CC g_WinSock_ioctlsocket */
+} ImageObject_005742CC;
+extern ImageObject_005742CC g_ImageObject_005742CC;
+typedef struct ImageObject_005742D0 {
     WinSock_listenProc * at_g_WinSock_listen; /* 005742D0 g_WinSock_listen */
+} ImageObject_005742D0;
+extern ImageObject_005742D0 g_ImageObject_005742D0;
+typedef struct ImageObject_005742D4 {
     WinSock_ntohlProc * at_g_WinSock_ntohl; /* 005742D4 g_WinSock_ntohl */
+} ImageObject_005742D4;
+extern ImageObject_005742D4 g_ImageObject_005742D4;
+typedef struct ImageObject_005742D8 {
     WinSock_ntohsProc * at_g_WinSock_ntohs; /* 005742D8 g_WinSock_ntohs */
+} ImageObject_005742D8;
+extern ImageObject_005742D8 g_ImageObject_005742D8;
+typedef struct ImageObject_005742DC {
     WinSock_recvProc * at_g_WinSock_recv; /* 005742DC g_WinSock_recv */
+} ImageObject_005742DC;
+extern ImageObject_005742DC g_ImageObject_005742DC;
+typedef struct ImageObject_005742E0 {
     WinSock_recvfromProc * at_g_WinSock_recvfrom; /* 005742E0 g_WinSock_recvfrom */
+} ImageObject_005742E0;
+extern ImageObject_005742E0 g_ImageObject_005742E0;
+typedef struct ImageObject_005742E4 {
     WinSock_selectProc * at_g_WinSock_select; /* 005742E4 g_WinSock_select */
+} ImageObject_005742E4;
+extern ImageObject_005742E4 g_ImageObject_005742E4;
+typedef struct ImageObject_005742E8 {
     WinSock_sendProc * at_g_WinSock_send; /* 005742E8 g_WinSock_send */
+} ImageObject_005742E8;
+extern ImageObject_005742E8 g_ImageObject_005742E8;
+typedef struct ImageObject_005742EC {
     WinSock_sendtoProc * at_g_WinSock_sendto; /* 005742EC g_WinSock_sendto */
+} ImageObject_005742EC;
+extern ImageObject_005742EC g_ImageObject_005742EC;
+typedef struct ImageObject_005742F0 {
     WinSock_setsockoptProc * at_g_WinSock_setsockopt; /* 005742F0 g_WinSock_setsockopt */
+} ImageObject_005742F0;
+extern ImageObject_005742F0 g_ImageObject_005742F0;
+typedef struct ImageObject_005742F4 {
     WinSock_shutdownProc * at_g_WinSock_shutdown; /* 005742F4 g_WinSock_shutdown */
+} ImageObject_005742F4;
+extern ImageObject_005742F4 g_ImageObject_005742F4;
+typedef struct ImageObject_005742F8 {
     WinSock_socketProc * at_g_WinSock_socket; /* 005742F8 g_WinSock_socket */
+} ImageObject_005742F8;
+extern ImageObject_005742F8 g_ImageObject_005742F8;
+typedef struct ImageObject_005742FC {
     WinSock_gethostbyaddrProc * at_g_WinSock_gethostbyaddr; /* 005742FC g_WinSock_gethostbyaddr */
+} ImageObject_005742FC;
+extern ImageObject_005742FC g_ImageObject_005742FC;
+typedef struct ImageObject_00574300 {
     WinSock_gethostbynameProc * at_g_WinSock_gethostbyname; /* 00574300 g_WinSock_gethostbyname */
+} ImageObject_00574300;
+extern ImageObject_00574300 g_ImageObject_00574300;
+typedef struct ImageObject_00574304 {
     WinSock_gethostnameProc * at_g_WinSock_gethostname; /* 00574304 g_WinSock_gethostname */
+} ImageObject_00574304;
+extern ImageObject_00574304 g_ImageObject_00574304;
+typedef struct ImageObject_00574308 {
     WinSock_getprotobynameProc * at_g_WinSock_getprotobyname; /* 00574308 g_WinSock_getprotobyname */
+} ImageObject_00574308;
+extern ImageObject_00574308 g_ImageObject_00574308;
+typedef struct ImageObject_0057430C {
     WinSock_getprotobynumberProc * at_g_WinSock_getprotobynumber; /* 0057430C g_WinSock_getprotobynumber */
+} ImageObject_0057430C;
+extern ImageObject_0057430C g_ImageObject_0057430C;
+typedef struct ImageObject_00574310 {
     WinSock_getservbynameProc * at_g_WinSock_getservbyname; /* 00574310 g_WinSock_getservbyname */
+} ImageObject_00574310;
+extern ImageObject_00574310 g_ImageObject_00574310;
+typedef struct ImageObject_00574314 {
     WinSock_getservbyportProc * at_g_WinSock_getservbyport; /* 00574314 g_WinSock_getservbyport */
+} ImageObject_00574314;
+extern ImageObject_00574314 g_ImageObject_00574314;
+typedef struct ImageObject_00574318 {
     WinSock_WSAAsyncGetHostByAddrProc * at_g_WinSock_WSAAsyncGetHostByAddr; /* 00574318 g_WinSock_WSAAsyncGetHostByAddr */
+} ImageObject_00574318;
+extern ImageObject_00574318 g_ImageObject_00574318;
+typedef struct ImageObject_0057431C {
     WinSock_WSAAsyncGetHostByNameProc * at_g_WinSock_WSAAsyncGetHostByName; /* 0057431C g_WinSock_WSAAsyncGetHostByName */
+} ImageObject_0057431C;
+extern ImageObject_0057431C g_ImageObject_0057431C;
+typedef struct ImageObject_00574320 {
     WinSock_WSAAsyncGetProtoByNameProc * at_g_WinSock_WSAAsyncGetProtoByName; /* 00574320 g_WinSock_WSAAsyncGetProtoByName */
+} ImageObject_00574320;
+extern ImageObject_00574320 g_ImageObject_00574320;
+typedef struct ImageObject_00574324 {
     WinSock_WSAAsyncGetProtoByNumberProc * at_g_WinSock_WSAAsyncGetProtoByNumber; /* 00574324 g_WinSock_WSAAsyncGetProtoByNumber */
+} ImageObject_00574324;
+extern ImageObject_00574324 g_ImageObject_00574324;
+typedef struct ImageObject_00574328 {
     WinSock_WSAAsyncGetServByNameProc * at_g_WinSock_WSAAsyncGetServByName; /* 00574328 g_WinSock_WSAAsyncGetServByName */
+} ImageObject_00574328;
+extern ImageObject_00574328 g_ImageObject_00574328;
+typedef struct ImageObject_0057432C {
     WinSock_WSAAsyncGetServByPortProc * at_g_WinSock_WSAAsyncGetServByPort; /* 0057432C g_WinSock_WSAAsyncGetServByPort */
+} ImageObject_0057432C;
+extern ImageObject_0057432C g_ImageObject_0057432C;
+typedef struct ImageObject_00574330 {
     WinSock_WSAAsyncSelectProc * at_g_WinSock_WSAAsyncSelect; /* 00574330 g_WinSock_WSAAsyncSelect */
+} ImageObject_00574330;
+extern ImageObject_00574330 g_ImageObject_00574330;
+typedef struct ImageObject_00574334 {
     WinSock_WSACancelAsyncRequestProc * at_g_WinSock_WSACancelAsyncRequest; /* 00574334 g_WinSock_WSACancelAsyncRequest */
+} ImageObject_00574334;
+extern ImageObject_00574334 g_ImageObject_00574334;
+typedef struct ImageObject_00574338 {
     WinSock_WSACancelBlockingCallProc * at_g_WinSock_WSACancelBlockingCall; /* 00574338 g_WinSock_WSACancelBlockingCall */
+} ImageObject_00574338;
+extern ImageObject_00574338 g_ImageObject_00574338;
+typedef struct ImageObject_0057433C {
     WinSock_WSACleanupProc * at_g_WinSock_WSACleanup; /* 0057433C g_WinSock_WSACleanup */
+} ImageObject_0057433C;
+extern ImageObject_0057433C g_ImageObject_0057433C;
+typedef struct ImageObject_00574340 {
     WinSock_WSAGetLastErrorProc * at_g_WinSock_WSAGetLastError; /* 00574340 g_WinSock_WSAGetLastError */
+} ImageObject_00574340;
+extern ImageObject_00574340 g_ImageObject_00574340;
+typedef struct ImageObject_00574344 {
     WinSock_WSAIsBlockingProc * at_g_WinSock_WSAIsBlocking; /* 00574344 g_WinSock_WSAIsBlocking */
+} ImageObject_00574344;
+extern ImageObject_00574344 g_ImageObject_00574344;
+typedef struct ImageObject_00574348 {
     WinSock_WSASetBlockingHookProc * at_g_WinSock_WSASetBlockingHook; /* 00574348 g_WinSock_WSASetBlockingHook */
+} ImageObject_00574348;
+extern ImageObject_00574348 g_ImageObject_00574348;
+typedef struct ImageObject_0057434C {
     uint32_t at_g_WinSock_UnboundApiSlot34C[1]; /* 0057434C g_WinSock_UnboundApiSlot34C */
+} ImageObject_0057434C;
+extern ImageObject_0057434C g_ImageObject_0057434C;
+typedef struct ImageObject_00574350 {
     WinSock_WSAStartupProc * at_g_WinSock_WSAStartup; /* 00574350 g_WinSock_WSAStartup */
+} ImageObject_00574350;
+extern ImageObject_00574350 g_ImageObject_00574350;
+typedef struct ImageObject_00574354 {
     WinSock_WSAUnhookBlockingHookProc * at_g_WinSock_WSAUnhookBlockingHook; /* 00574354 g_WinSock_WSAUnhookBlockingHook */
+} ImageObject_00574354;
+extern ImageObject_00574354 g_ImageObject_00574354;
+typedef struct ImageObject_00574358 {
     uint32_t at_g_Ws2_32_accept[1]; /* 00574358 g_Ws2_32_accept */
+} ImageObject_00574358;
+extern ImageObject_00574358 g_ImageObject_00574358;
+typedef struct ImageObject_0057435C {
     WinSock_bindProc * at_g_Ws2_32_bind; /* 0057435C g_Ws2_32_bind */
+} ImageObject_0057435C;
+extern ImageObject_0057435C g_ImageObject_0057435C;
+typedef struct ImageObject_00574360 {
     WinSock_closesocketProc * at_g_Ws2_32_closesocket; /* 00574360 g_Ws2_32_closesocket */
+} ImageObject_00574360;
+extern ImageObject_00574360 g_ImageObject_00574360;
+typedef struct ImageObject_00574364 {
     uint32_t at_g_Ws2_32_connect[1]; /* 00574364 g_Ws2_32_connect */
+} ImageObject_00574364;
+extern ImageObject_00574364 g_ImageObject_00574364;
+typedef struct ImageObject_00574368 {
     uint32_t at_g_Ws2_32_getpeername[1]; /* 00574368 g_Ws2_32_getpeername */
+} ImageObject_00574368;
+extern ImageObject_00574368 g_ImageObject_00574368;
+typedef struct ImageObject_0057436C {
     uint32_t at_g_Ws2_32_getsockname[1]; /* 0057436C g_Ws2_32_getsockname */
+} ImageObject_0057436C;
+extern ImageObject_0057436C g_ImageObject_0057436C;
+typedef struct ImageObject_00574370 {
     uint32_t at_g_Ws2_32_getsockopt[1]; /* 00574370 g_Ws2_32_getsockopt */
+} ImageObject_00574370;
+extern ImageObject_00574370 g_ImageObject_00574370;
+typedef struct ImageObject_00574374 {
     uint32_t at_g_Ws2_32_htonl[1]; /* 00574374 g_Ws2_32_htonl */
+} ImageObject_00574374;
+extern ImageObject_00574374 g_ImageObject_00574374;
+typedef struct ImageObject_00574378 {
     WinSock_htonsProc * at_g_Ws2_32_htons; /* 00574378 g_Ws2_32_htons */
+} ImageObject_00574378;
+extern ImageObject_00574378 g_ImageObject_00574378;
+typedef struct ImageObject_0057437C {
     uint32_t at_g_Ws2_32_ioctlsocket[1]; /* 0057437C g_Ws2_32_ioctlsocket */
+} ImageObject_0057437C;
+extern ImageObject_0057437C g_ImageObject_0057437C;
+typedef struct ImageObject_00574380 {
     uint32_t at_g_Ws2_32_listen[1]; /* 00574380 g_Ws2_32_listen */
+} ImageObject_00574380;
+extern ImageObject_00574380 g_ImageObject_00574380;
+typedef struct ImageObject_00574384 {
     uint32_t at_g_Ws2_32_ntohl[1]; /* 00574384 g_Ws2_32_ntohl */
+} ImageObject_00574384;
+extern ImageObject_00574384 g_ImageObject_00574384;
+typedef struct ImageObject_00574388 {
     uint32_t at_g_Ws2_32_ntohs[1]; /* 00574388 g_Ws2_32_ntohs */
+} ImageObject_00574388;
+extern ImageObject_00574388 g_ImageObject_00574388;
+typedef struct ImageObject_0057438C {
     uint32_t at_g_Ws2_32_recv[1]; /* 0057438C g_Ws2_32_recv */
+} ImageObject_0057438C;
+extern ImageObject_0057438C g_ImageObject_0057438C;
+typedef struct ImageObject_00574390 {
     WinSock_recvfromProc * at_g_Ws2_32_recvfrom; /* 00574390 g_Ws2_32_recvfrom */
+} ImageObject_00574390;
+extern ImageObject_00574390 g_ImageObject_00574390;
+typedef struct ImageObject_00574394 {
     uint32_t at_g_Ws2_32_select[1]; /* 00574394 g_Ws2_32_select */
+} ImageObject_00574394;
+extern ImageObject_00574394 g_ImageObject_00574394;
+typedef struct ImageObject_00574398 {
     uint32_t at_g_Ws2_32_send[1]; /* 00574398 g_Ws2_32_send */
+} ImageObject_00574398;
+extern ImageObject_00574398 g_ImageObject_00574398;
+typedef struct ImageObject_0057439C {
     WinSock_sendtoProc * at_g_Ws2_32_sendto; /* 0057439C g_Ws2_32_sendto */
+} ImageObject_0057439C;
+extern ImageObject_0057439C g_ImageObject_0057439C;
+typedef struct ImageObject_005743A0 {
     WinSock_setsockoptProc * at_g_Ws2_32_setsockopt; /* 005743A0 g_Ws2_32_setsockopt */
+} ImageObject_005743A0;
+extern ImageObject_005743A0 g_ImageObject_005743A0;
+typedef struct ImageObject_005743A4 {
     uint32_t at_g_Ws2_32_shutdown[1]; /* 005743A4 g_Ws2_32_shutdown */
+} ImageObject_005743A4;
+extern ImageObject_005743A4 g_ImageObject_005743A4;
+typedef struct ImageObject_005743A8 {
     WinSock_socketProc * at_g_Ws2_32_socket; /* 005743A8 g_Ws2_32_socket */
     uint32_t at_g_Ws2_32_socket_rest[1]; /* beyond the declared type */
+} ImageObject_005743A8;
+extern ImageObject_005743A8 g_ImageObject_005743A8;
+typedef struct ImageObject_005743B0 {
     uint32_t at_g_Ws2_32_WSAAsyncSelect[1]; /* 005743B0 g_Ws2_32_WSAAsyncSelect */
+} ImageObject_005743B0;
+extern ImageObject_005743B0 g_ImageObject_005743B0;
+typedef struct ImageObject_005743B4 {
     uint32_t at_g_Ws2_32_WSACancelBlockingCall[1]; /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
+} ImageObject_005743B4;
+extern ImageObject_005743B4 g_ImageObject_005743B4;
+typedef struct ImageObject_005743B8 {
     WinSock_WSACleanupProc * at_g_Ws2_32_WSACleanup; /* 005743B8 g_Ws2_32_WSACleanup */
     uint32_t at_g_Ws2_32_WSACleanup_rest[7]; /* beyond the declared type */
+} ImageObject_005743B8;
+extern ImageObject_005743B8 g_ImageObject_005743B8;
+typedef struct ImageObject_005743D8 {
     WinSock_WSAGetLastErrorProc * at_g_Ws2_32_WSAGetLastError; /* 005743D8 g_Ws2_32_WSAGetLastError */
     uint32_t at_g_Ws2_32_WSAGetLastError_rest[4]; /* beyond the declared type */
+} ImageObject_005743D8;
+extern ImageObject_005743D8 g_ImageObject_005743D8;
+typedef struct ImageObject_005743EC {
     WSAIoctl_Proc * at_g_Ws2_32_WSAIoctl; /* 005743EC g_Ws2_32_WSAIoctl */
+} ImageObject_005743EC;
+extern ImageObject_005743EC g_ImageObject_005743EC;
+typedef struct ImageObject_005743F0 {
     uint32_t at_g_Ws2_32_WSAIsBlocking[11]; /* 005743F0 g_Ws2_32_WSAIsBlocking */
+} ImageObject_005743F0;
+extern ImageObject_005743F0 g_ImageObject_005743F0;
+typedef struct ImageObject_0057441C {
     uint32_t at_g_Ws2_32_WSASetBlockingHook[4]; /* 0057441C g_Ws2_32_WSASetBlockingHook */
+} ImageObject_0057441C;
+extern ImageObject_0057441C g_ImageObject_0057441C;
+typedef struct ImageObject_0057442C {
     uint32_t at_g_Ws2_32_WSAStartup[1]; /* 0057442C g_Ws2_32_WSAStartup */
+} ImageObject_0057442C;
+extern ImageObject_0057442C g_ImageObject_0057442C;
+typedef struct ImageObject_00574430 {
     uint32_t at_g_Ws2_32_WSAUnhookBlockingHook[2]; /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
+} ImageObject_00574430;
+extern ImageObject_00574430 g_ImageObject_00574430;
+typedef struct ImageObject_00574438 {
     uint32_t at_g_Ws2_32_inet_addr[1]; /* 00574438 g_Ws2_32_inet_addr */
+} ImageObject_00574438;
+extern ImageObject_00574438 g_ImageObject_00574438;
+typedef struct ImageObject_0057443C {
     uint32_t at_g_Ws2_32_inet_ntoa[1]; /* 0057443C g_Ws2_32_inet_ntoa */
+} ImageObject_0057443C;
+extern ImageObject_0057443C g_ImageObject_0057443C;
+typedef struct ImageObject_00574440 {
     uint32_t at_g_Ws2_32_gethostbyaddr[1]; /* 00574440 g_Ws2_32_gethostbyaddr */
+} ImageObject_00574440;
+extern ImageObject_00574440 g_ImageObject_00574440;
+typedef struct ImageObject_00574444 {
     WinSock_gethostbynameProc * at_g_Ws2_32_gethostbyname; /* 00574444 g_Ws2_32_gethostbyname */
+} ImageObject_00574444;
+extern ImageObject_00574444 g_ImageObject_00574444;
+typedef struct ImageObject_00574448 {
     uint32_t at_g_Ws2_32_gethostname[1]; /* 00574448 g_Ws2_32_gethostname */
+} ImageObject_00574448;
+extern ImageObject_00574448 g_ImageObject_00574448;
+typedef struct ImageObject_0057444C {
     uint32_t at_g_Ws2_32_getprotobyname[1]; /* 0057444C g_Ws2_32_getprotobyname */
+} ImageObject_0057444C;
+extern ImageObject_0057444C g_ImageObject_0057444C;
+typedef struct ImageObject_00574450 {
     uint32_t at_g_Ws2_32_getprotobynumber[1]; /* 00574450 g_Ws2_32_getprotobynumber */
+} ImageObject_00574450;
+extern ImageObject_00574450 g_ImageObject_00574450;
+typedef struct ImageObject_00574454 {
     uint32_t at_g_Ws2_32_getservbyname[1]; /* 00574454 g_Ws2_32_getservbyname */
+} ImageObject_00574454;
+extern ImageObject_00574454 g_ImageObject_00574454;
+typedef struct ImageObject_00574458 {
     uint32_t at_g_Ws2_32_getservbyport[1]; /* 00574458 g_Ws2_32_getservbyport */
+} ImageObject_00574458;
+extern ImageObject_00574458 g_ImageObject_00574458;
+typedef struct ImageObject_0057445C {
     uint32_t at_g_Ws2_32_WSAAsyncGetHostByAddr[1]; /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
+} ImageObject_0057445C;
+extern ImageObject_0057445C g_ImageObject_0057445C;
+typedef struct ImageObject_00574460 {
     uint32_t at_g_Ws2_32_WSAAsyncGetHostByName[1]; /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
+} ImageObject_00574460;
+extern ImageObject_00574460 g_ImageObject_00574460;
+typedef struct ImageObject_00574464 {
     uint32_t at_g_Ws2_32_WSAAsyncGetProtoByName[1]; /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
+} ImageObject_00574464;
+extern ImageObject_00574464 g_ImageObject_00574464;
+typedef struct ImageObject_00574468 {
     uint32_t at_g_Ws2_32_WSAAsyncGetProtoByNumber[1]; /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
+} ImageObject_00574468;
+extern ImageObject_00574468 g_ImageObject_00574468;
+typedef struct ImageObject_0057446C {
     uint32_t at_g_Ws2_32_WSAAsyncGetServByName[1]; /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
+} ImageObject_0057446C;
+extern ImageObject_0057446C g_ImageObject_0057446C;
+typedef struct ImageObject_00574470 {
     uint32_t at_g_Ws2_32_WSAAsyncGetServByPort[1]; /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
+} ImageObject_00574470;
+extern ImageObject_00574470 g_ImageObject_00574470;
+typedef struct ImageObject_00574474 {
     uint32_t at_g_Ws2_32_WSACancelAsyncRequest[1]; /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
+} ImageObject_00574474;
+extern ImageObject_00574474 g_ImageObject_00574474;
+typedef struct ImageObject_00574478 {
     WSAAddressToStringA_Proc * at_g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
     uint32_t at_g_Ws2_32_WSAAddressToStringA_rest[9]; /* beyond the declared type */
+} ImageObject_00574478;
+extern ImageObject_00574478 g_ImageObject_00574478;
+typedef struct ImageObject_005744A0 {
     WSAStringToAddressA_Proc * at_g_Ws2_32_WSAStringToAddressA; /* 005744A0 g_Ws2_32_WSAStringToAddressA */
+} ImageObject_005744A0;
+extern ImageObject_005744A0 g_ImageObject_005744A0;
+typedef struct ImageObject_005744A4 {
     char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
     uint8_t at_sz_KERNEL32_padding[1];
+} ImageObject_005744A4;
+extern ImageObject_005744A4 g_ImageObject_005744A4;
+typedef struct ImageObject_005744AE {
     char at_sz_WINMM[6]; /* 005744AE sz_WINMM */
+} ImageObject_005744AE;
+extern ImageObject_005744AE g_ImageObject_005744AE;
+typedef struct ImageObject_005744B4 {
     char at_sz_DDRAW[6]; /* 005744B4 sz_DDRAW */
+} ImageObject_005744B4;
+extern ImageObject_005744B4 g_ImageObject_005744B4;
+typedef struct ImageObject_005744BA {
     char at_dynapi_3[7]; /* 005744BA dynapi_3 */
     uint8_t at_dynapi_3_padding[1];
+} ImageObject_005744BA;
+extern ImageObject_005744BA g_ImageObject_005744BA;
+typedef struct ImageObject_005744C2 {
     char at_dynapi_4[7]; /* 005744C2 dynapi_4 */
     uint8_t at_dynapi_4_padding[1];
+} ImageObject_005744C2;
+extern ImageObject_005744C2 g_ImageObject_005744C2;
+typedef struct ImageObject_005744CA {
     char at_sz_GLIDE3X[8]; /* 005744CA sz_GLIDE3X */
+} ImageObject_005744CA;
+extern ImageObject_005744CA g_ImageObject_005744CA;
+typedef struct ImageObject_005744D2 {
     char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
     uint8_t at_sz_ADVAPI32_padding[1];
+} ImageObject_005744D2;
+extern ImageObject_005744D2 g_ImageObject_005744D2;
+typedef struct ImageObject_005744DC {
     char at_s_Wsock32ModuleName[8]; /* 005744DC s_Wsock32ModuleName */
+} ImageObject_005744DC;
+extern ImageObject_005744DC g_ImageObject_005744DC;
+typedef struct ImageObject_005744E4 {
     char at_sz_WS2_32[7]; /* 005744E4 sz_WS2_32 */
     uint8_t at_sz_WS2_32_padding[1];
+} ImageObject_005744E4;
+extern ImageObject_005744E4 g_ImageObject_005744E4;
+typedef struct ImageObject_005744EC {
     char at_dynapi_9[13]; /* 005744EC dynapi_9 */
     uint8_t at_dynapi_9_padding[1];
+} ImageObject_005744EC;
+extern ImageObject_005744EC g_ImageObject_005744EC;
+typedef struct ImageObject_005744FA {
     char at_dynapi_10[12]; /* 005744FA dynapi_10 */
+} ImageObject_005744FA;
+extern ImageObject_005744FA g_ImageObject_005744FA;
+typedef struct ImageObject_00574506 {
     char at_dynapi_11[14]; /* 00574506 dynapi_11 */
+} ImageObject_00574506;
+extern ImageObject_00574506 g_ImageObject_00574506;
+typedef struct ImageObject_00574514 {
     char at_dynapi_12[17]; /* 00574514 dynapi_12 */
     uint8_t at_dynapi_12_padding[1];
+} ImageObject_00574514;
+extern ImageObject_00574514 g_ImageObject_00574514;
+typedef struct ImageObject_00574526 {
     char at_dynapi_13[12]; /* 00574526 dynapi_13 */
+} ImageObject_00574526;
+extern ImageObject_00574526 g_ImageObject_00574526;
+typedef struct ImageObject_00574532 {
     char at_dynapi_14[13]; /* 00574532 dynapi_14 */
     uint8_t at_dynapi_14_padding[1];
+} ImageObject_00574532;
+extern ImageObject_00574532 g_ImageObject_00574532;
+typedef struct ImageObject_00574540 {
     char at_dynapi_15[14]; /* 00574540 dynapi_15 */
+} ImageObject_00574540;
+extern ImageObject_00574540 g_ImageObject_00574540;
+typedef struct ImageObject_0057454E {
     char at_dynapi_16[16]; /* 0057454E dynapi_16 */
+} ImageObject_0057454E;
+extern ImageObject_0057454E g_ImageObject_0057454E;
+typedef struct ImageObject_0057455E {
     char at_sz_DirectDrawCreate[17]; /* 0057455E sz_DirectDrawCreate */
     uint8_t at_sz_DirectDrawCreate_padding[1];
+} ImageObject_0057455E;
+extern ImageObject_0057455E g_ImageObject_0057455E;
+typedef struct ImageObject_00574570 {
     char at_sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
     uint8_t at_sz_DirectDrawEnumerateA_padding[1];
+} ImageObject_00574570;
+extern ImageObject_00574570 g_ImageObject_00574570;
+typedef struct ImageObject_00574586 {
     char at_dynapi_19[19]; /* 00574586 dynapi_19 */
     uint8_t at_dynapi_19_padding[1];
+} ImageObject_00574586;
+extern ImageObject_00574586 g_ImageObject_00574586;
+typedef struct ImageObject_0057459A {
     char at_dynapi_20[18]; /* 0057459A dynapi_20 */
+} ImageObject_0057459A;
+extern ImageObject_0057459A g_ImageObject_0057459A;
+typedef struct ImageObject_005745AC {
     char at_dynapi_21[22]; /* 005745AC dynapi_21 */
+} ImageObject_005745AC;
+extern ImageObject_005745AC g_ImageObject_005745AC;
+typedef struct ImageObject_005745C2 {
     char at_dynapi_22[25]; /* 005745C2 dynapi_22 */
     uint8_t at_dynapi_22_padding[1];
+} ImageObject_005745C2;
+extern ImageObject_005745C2 g_ImageObject_005745C2;
+typedef struct ImageObject_005745DC {
     char at_dynapi_23[29]; /* 005745DC dynapi_23 */
     uint8_t at_dynapi_23_padding[1];
+} ImageObject_005745DC;
+extern ImageObject_005745DC g_ImageObject_005745DC;
+typedef struct ImageObject_005745FA {
     char at_dynapi_24[21]; /* 005745FA dynapi_24 */
     uint8_t at_dynapi_24_padding[1];
+} ImageObject_005745FA;
+extern ImageObject_005745FA g_ImageObject_005745FA;
+typedef struct ImageObject_00574610 {
     char at_dynapi_25[25]; /* 00574610 dynapi_25 */
     uint8_t at_dynapi_25_padding[1];
+} ImageObject_00574610;
+extern ImageObject_00574610 g_ImageObject_00574610;
+typedef struct ImageObject_0057462A {
     char at_dynapi_26[19]; /* 0057462A dynapi_26 */
     uint8_t at_dynapi_26_padding[1];
+} ImageObject_0057462A;
+extern ImageObject_0057462A g_ImageObject_0057462A;
+typedef struct ImageObject_0057463E {
     char at_dynapi_27[32]; /* 0057463E dynapi_27 */
+} ImageObject_0057463E;
+extern ImageObject_0057463E g_ImageObject_0057463E;
+typedef struct ImageObject_0057465E {
     char at_dynapi_28[23]; /* 0057465E dynapi_28 */
     uint8_t at_dynapi_28_padding[1];
+} ImageObject_0057465E;
+extern ImageObject_0057465E g_ImageObject_0057465E;
+typedef struct ImageObject_00574676 {
     char at_dynapi_29[29]; /* 00574676 dynapi_29 */
     uint8_t at_dynapi_29_padding[1];
+} ImageObject_00574676;
+extern ImageObject_00574676 g_ImageObject_00574676;
+typedef struct ImageObject_00574694 {
     char at_dynapi_30[18]; /* 00574694 dynapi_30 */
+} ImageObject_00574694;
+extern ImageObject_00574694 g_ImageObject_00574694;
+typedef struct ImageObject_005746A6 {
     char at_dynapi_31[16]; /* 005746A6 dynapi_31 */
+} ImageObject_005746A6;
+extern ImageObject_005746A6 g_ImageObject_005746A6;
+typedef struct ImageObject_005746B6 {
     char at_dynapi_32[19]; /* 005746B6 dynapi_32 */
     uint8_t at_dynapi_32_padding[1];
+} ImageObject_005746B6;
+extern ImageObject_005746B6 g_ImageObject_005746B6;
+typedef struct ImageObject_005746CA {
     char at_dynapi_33[20]; /* 005746CA dynapi_33 */
+} ImageObject_005746CA;
+extern ImageObject_005746CA g_ImageObject_005746CA;
+typedef struct ImageObject_005746DE {
     char at_dynapi_34[17]; /* 005746DE dynapi_34 */
     uint8_t at_dynapi_34_padding[1];
+} ImageObject_005746DE;
+extern ImageObject_005746DE g_ImageObject_005746DE;
+typedef struct ImageObject_005746F0 {
     char at_dynapi_35[21]; /* 005746F0 dynapi_35 */
     uint8_t at_dynapi_35_padding[1];
+} ImageObject_005746F0;
+extern ImageObject_005746F0 g_ImageObject_005746F0;
+typedef struct ImageObject_00574706 {
     char at_dynapi_36[17]; /* 00574706 dynapi_36 */
     uint8_t at_dynapi_36_padding[1];
+} ImageObject_00574706;
+extern ImageObject_00574706 g_ImageObject_00574706;
+typedef struct ImageObject_00574718 {
     char at_dynapi_37[19]; /* 00574718 dynapi_37 */
     uint8_t at_dynapi_37_padding[1];
+} ImageObject_00574718;
+extern ImageObject_00574718 g_ImageObject_00574718;
+typedef struct ImageObject_0057472C {
     char at_dynapi_38[15]; /* 0057472C dynapi_38 */
     uint8_t at_dynapi_38_padding[1];
+} ImageObject_0057472C;
+extern ImageObject_0057472C g_ImageObject_0057472C;
+typedef struct ImageObject_0057473C {
     char at_dynapi_39[24]; /* 0057473C dynapi_39 */
+} ImageObject_0057473C;
+extern ImageObject_0057473C g_ImageObject_0057473C;
+typedef struct ImageObject_00574754 {
     char at_dynapi_40[21]; /* 00574754 dynapi_40 */
     uint8_t at_dynapi_40_padding[1];
+} ImageObject_00574754;
+extern ImageObject_00574754 g_ImageObject_00574754;
+typedef struct ImageObject_0057476A {
     char at_dynapi_41[14]; /* 0057476A dynapi_41 */
+} ImageObject_0057476A;
+extern ImageObject_0057476A g_ImageObject_0057476A;
+typedef struct ImageObject_00574778 {
     char at_dynapi_42[20]; /* 00574778 dynapi_42 */
+} ImageObject_00574778;
+extern ImageObject_00574778 g_ImageObject_00574778;
+typedef struct ImageObject_0057478C {
     char at_dynapi_43[25]; /* 0057478C dynapi_43 */
     uint8_t at_dynapi_43_padding[1];
+} ImageObject_0057478C;
+extern ImageObject_0057478C g_ImageObject_0057478C;
+typedef struct ImageObject_005747A6 {
     char at_dynapi_44[21]; /* 005747A6 dynapi_44 */
     uint8_t at_dynapi_44_padding[1];
+} ImageObject_005747A6;
+extern ImageObject_005747A6 g_ImageObject_005747A6;
+typedef struct ImageObject_005747BC {
     char at_dynapi_45[15]; /* 005747BC dynapi_45 */
     uint8_t at_dynapi_45_padding[1];
+} ImageObject_005747BC;
+extern ImageObject_005747BC g_ImageObject_005747BC;
+typedef struct ImageObject_005747CC {
     char at_dynapi_46[16]; /* 005747CC dynapi_46 */
+} ImageObject_005747CC;
+extern ImageObject_005747CC g_ImageObject_005747CC;
+typedef struct ImageObject_005747DC {
     char at_dynapi_47[13]; /* 005747DC dynapi_47 */
     uint8_t at_dynapi_47_padding[1];
+} ImageObject_005747DC;
+extern ImageObject_005747DC g_ImageObject_005747DC;
+typedef struct ImageObject_005747EA {
     char at_dynapi_48[23]; /* 005747EA dynapi_48 */
     uint8_t at_dynapi_48_padding[1];
+} ImageObject_005747EA;
+extern ImageObject_005747EA g_ImageObject_005747EA;
+typedef struct ImageObject_00574802 {
     char at_dynapi_49[16]; /* 00574802 dynapi_49 */
+} ImageObject_00574802;
+extern ImageObject_00574802 g_ImageObject_00574802;
+typedef struct ImageObject_00574812 {
     char at_dynapi_50[14]; /* 00574812 dynapi_50 */
+} ImageObject_00574812;
+extern ImageObject_00574812 g_ImageObject_00574812;
+typedef struct ImageObject_00574820 {
     char at_dynapi_51[15]; /* 00574820 dynapi_51 */
     uint8_t at_dynapi_51_padding[1];
+} ImageObject_00574820;
+extern ImageObject_00574820 g_ImageObject_00574820;
+typedef struct ImageObject_00574830 {
     char at_dynapi_52[19]; /* 00574830 dynapi_52 */
     uint8_t at_dynapi_52_padding[1];
+} ImageObject_00574830;
+extern ImageObject_00574830 g_ImageObject_00574830;
+typedef struct ImageObject_00574844 {
     char at_dynapi_53[22]; /* 00574844 dynapi_53 */
+} ImageObject_00574844;
+extern ImageObject_00574844 g_ImageObject_00574844;
+typedef struct ImageObject_0057485A {
     char at_dynapi_54[32]; /* 0057485A dynapi_54 */
+} ImageObject_0057485A;
+extern ImageObject_0057485A g_ImageObject_0057485A;
+typedef struct ImageObject_0057487A {
     char at_dynapi_55[12]; /* 0057487A dynapi_55 */
+} ImageObject_0057487A;
+extern ImageObject_0057487A g_ImageObject_0057487A;
+typedef struct ImageObject_00574886 {
     char at_dynapi_56[22]; /* 00574886 dynapi_56 */
+} ImageObject_00574886;
+extern ImageObject_00574886 g_ImageObject_00574886;
+typedef struct ImageObject_0057489C {
     char at_dynapi_57[12]; /* 0057489C dynapi_57 */
+} ImageObject_0057489C;
+extern ImageObject_0057489C g_ImageObject_0057489C;
+typedef struct ImageObject_005748A8 {
     char at_dynapi_58[11]; /* 005748A8 dynapi_58 */
     uint8_t at_dynapi_58_padding[1];
+} ImageObject_005748A8;
+extern ImageObject_005748A8 g_ImageObject_005748A8;
+typedef struct ImageObject_005748B4 {
     char at_dynapi_59[19]; /* 005748B4 dynapi_59 */
     uint8_t at_dynapi_59_padding[1];
+} ImageObject_005748B4;
+extern ImageObject_005748B4 g_ImageObject_005748B4;
+typedef struct ImageObject_005748C8 {
     char at_dynapi_60[13]; /* 005748C8 dynapi_60 */
     uint8_t at_dynapi_60_padding[1];
+} ImageObject_005748C8;
+extern ImageObject_005748C8 g_ImageObject_005748C8;
+typedef struct ImageObject_005748D6 {
     char at_dynapi_61[14]; /* 005748D6 dynapi_61 */
+} ImageObject_005748D6;
+extern ImageObject_005748D6 g_ImageObject_005748D6;
+typedef struct ImageObject_005748E4 {
     char at_dynapi_62[10]; /* 005748E4 dynapi_62 */
+} ImageObject_005748E4;
+extern ImageObject_005748E4 g_ImageObject_005748E4;
+typedef struct ImageObject_005748EE {
     char at_dynapi_63[20]; /* 005748EE dynapi_63 */
+} ImageObject_005748EE;
+extern ImageObject_005748EE g_ImageObject_005748EE;
+typedef struct ImageObject_00574902 {
     char at_dynapi_64[15]; /* 00574902 dynapi_64 */
     uint8_t at_dynapi_64_padding[1];
+} ImageObject_00574902;
+extern ImageObject_00574902 g_ImageObject_00574902;
+typedef struct ImageObject_00574912 {
     char at_dynapi_65[19]; /* 00574912 dynapi_65 */
     uint8_t at_dynapi_65_padding[1];
+} ImageObject_00574912;
+extern ImageObject_00574912 g_ImageObject_00574912;
+typedef struct ImageObject_00574926 {
     char at_dynapi_66[26]; /* 00574926 dynapi_66 */
+} ImageObject_00574926;
+extern ImageObject_00574926 g_ImageObject_00574926;
+typedef struct ImageObject_00574940 {
     char at_dynapi_67[15]; /* 00574940 dynapi_67 */
     uint8_t at_dynapi_67_padding[1];
+} ImageObject_00574940;
+extern ImageObject_00574940 g_ImageObject_00574940;
+typedef struct ImageObject_00574950 {
     char at_dynapi_68[19]; /* 00574950 dynapi_68 */
     uint8_t at_dynapi_68_padding[1];
+} ImageObject_00574950;
+extern ImageObject_00574950 g_ImageObject_00574950;
+typedef struct ImageObject_00574964 {
     char at_dynapi_69[26]; /* 00574964 dynapi_69 */
+} ImageObject_00574964;
+extern ImageObject_00574964 g_ImageObject_00574964;
+typedef struct ImageObject_0057497E {
     char at_dynapi_70[19]; /* 0057497E dynapi_70 */
     uint8_t at_dynapi_70_padding[1];
+} ImageObject_0057497E;
+extern ImageObject_0057497E g_ImageObject_0057497E;
+typedef struct ImageObject_00574992 {
     char at_dynapi_71[22]; /* 00574992 dynapi_71 */
+} ImageObject_00574992;
+extern ImageObject_00574992 g_ImageObject_00574992;
+typedef struct ImageObject_005749A8 {
     char at_dynapi_72[22]; /* 005749A8 dynapi_72 */
+} ImageObject_005749A8;
+extern ImageObject_005749A8 g_ImageObject_005749A8;
+typedef struct ImageObject_005749BE {
     char at_dynapi_73[14]; /* 005749BE dynapi_73 */
+} ImageObject_005749BE;
+extern ImageObject_005749BE g_ImageObject_005749BE;
+typedef struct ImageObject_005749CC {
     char at_dynapi_74[20]; /* 005749CC dynapi_74 */
+} ImageObject_005749CC;
+extern ImageObject_005749CC g_ImageObject_005749CC;
+typedef struct ImageObject_005749E0 {
     char at_dynapi_75[15]; /* 005749E0 dynapi_75 */
     uint8_t at_dynapi_75_padding[1];
+} ImageObject_005749E0;
+extern ImageObject_005749E0 g_ImageObject_005749E0;
+typedef struct ImageObject_005749F0 {
     char at_dynapi_76[21]; /* 005749F0 dynapi_76 */
     uint8_t at_dynapi_76_padding[1];
+} ImageObject_005749F0;
+extern ImageObject_005749F0 g_ImageObject_005749F0;
+typedef struct ImageObject_00574A06 {
     char at_dynapi_77[21]; /* 00574A06 dynapi_77 */
     uint8_t at_dynapi_77_padding[1];
+} ImageObject_00574A06;
+extern ImageObject_00574A06 g_ImageObject_00574A06;
+typedef struct ImageObject_00574A1C {
     char at_dynapi_78[22]; /* 00574A1C dynapi_78 */
+} ImageObject_00574A1C;
+extern ImageObject_00574A1C g_ImageObject_00574A1C;
+typedef struct ImageObject_00574A32 {
     char at_dynapi_79[18]; /* 00574A32 dynapi_79 */
+} ImageObject_00574A32;
+extern ImageObject_00574A32 g_ImageObject_00574A32;
+typedef struct ImageObject_00574A44 {
     char at_dynapi_80[11]; /* 00574A44 dynapi_80 */
     uint8_t at_dynapi_80_padding[1];
+} ImageObject_00574A44;
+extern ImageObject_00574A44 g_ImageObject_00574A44;
+typedef struct ImageObject_00574A50 {
     char at_dynapi_81[19]; /* 00574A50 dynapi_81 */
     uint8_t at_dynapi_81_padding[1];
+} ImageObject_00574A50;
+extern ImageObject_00574A50 g_ImageObject_00574A50;
+typedef struct ImageObject_00574A64 {
     char at_dynapi_82[15]; /* 00574A64 dynapi_82 */
     uint8_t at_dynapi_82_padding[1];
+} ImageObject_00574A64;
+extern ImageObject_00574A64 g_ImageObject_00574A64;
+typedef struct ImageObject_00574A74 {
     char at_dynapi_83[15]; /* 00574A74 dynapi_83 */
     uint8_t at_dynapi_83_padding[1];
+} ImageObject_00574A74;
+extern ImageObject_00574A74 g_ImageObject_00574A74;
+typedef struct ImageObject_00574A84 {
     char at_dynapi_84[17]; /* 00574A84 dynapi_84 */
     uint8_t at_dynapi_84_padding[1];
+} ImageObject_00574A84;
+extern ImageObject_00574A84 g_ImageObject_00574A84;
+typedef struct ImageObject_00574A96 {
     char at_dynapi_85[17]; /* 00574A96 dynapi_85 */
     uint8_t at_dynapi_85_padding[1];
+} ImageObject_00574A96;
+extern ImageObject_00574A96 g_ImageObject_00574A96;
+typedef struct ImageObject_00574AA8 {
     char at_dynapi_86[25]; /* 00574AA8 dynapi_86 */
     uint8_t at_dynapi_86_padding[1];
+} ImageObject_00574AA8;
+extern ImageObject_00574AA8 g_ImageObject_00574AA8;
+typedef struct ImageObject_00574AC2 {
     char at_dynapi_87[22]; /* 00574AC2 dynapi_87 */
+} ImageObject_00574AC2;
+extern ImageObject_00574AC2 g_ImageObject_00574AC2;
+typedef struct ImageObject_00574AD8 {
     char at_dynapi_88[24]; /* 00574AD8 dynapi_88 */
+} ImageObject_00574AD8;
+extern ImageObject_00574AD8 g_ImageObject_00574AD8;
+typedef struct ImageObject_00574AF0 {
     char at_dynapi_89[19]; /* 00574AF0 dynapi_89 */
     uint8_t at_dynapi_89_padding[1];
+} ImageObject_00574AF0;
+extern ImageObject_00574AF0 g_ImageObject_00574AF0;
+typedef struct ImageObject_00574B04 {
     char at_dynapi_90[17]; /* 00574B04 dynapi_90 */
     uint8_t at_dynapi_90_padding[1];
+} ImageObject_00574B04;
+extern ImageObject_00574B04 g_ImageObject_00574B04;
+typedef struct ImageObject_00574B16 {
     char at_dynapi_91[23]; /* 00574B16 dynapi_91 */
     uint8_t at_dynapi_91_padding[1];
+} ImageObject_00574B16;
+extern ImageObject_00574B16 g_ImageObject_00574B16;
+typedef struct ImageObject_00574B2E {
     char at_dynapi_92[24]; /* 00574B2E dynapi_92 */
+} ImageObject_00574B2E;
+extern ImageObject_00574B2E g_ImageObject_00574B2E;
+typedef struct ImageObject_00574B46 {
     char at_dynapi_93[29]; /* 00574B46 dynapi_93 */
     uint8_t at_dynapi_93_padding[1];
+} ImageObject_00574B46;
+extern ImageObject_00574B46 g_ImageObject_00574B46;
+typedef struct ImageObject_00574B64 {
     char at_dynapi_94[36]; /* 00574B64 dynapi_94 */
+} ImageObject_00574B64;
+extern ImageObject_00574B64 g_ImageObject_00574B64;
+typedef struct ImageObject_00574B88 {
     char at_dynapi_95[22]; /* 00574B88 dynapi_95 */
+} ImageObject_00574B88;
+extern ImageObject_00574B88 g_ImageObject_00574B88;
+typedef struct ImageObject_00574B9E {
     char at_dynapi_96[30]; /* 00574B9E dynapi_96 */
+} ImageObject_00574B9E;
+extern ImageObject_00574B9E g_ImageObject_00574B9E;
+typedef struct ImageObject_00574BBC {
     char at_dynapi_97[20]; /* 00574BBC dynapi_97 */
+} ImageObject_00574BBC;
+extern ImageObject_00574BBC g_ImageObject_00574BBC;
+typedef struct ImageObject_00574BD0 {
     char at_dynapi_98[21]; /* 00574BD0 dynapi_98 */
     uint8_t at_dynapi_98_padding[1];
+} ImageObject_00574BD0;
+extern ImageObject_00574BD0 g_ImageObject_00574BD0;
+typedef struct ImageObject_00574BE6 {
     char at_dynapi_99[19]; /* 00574BE6 dynapi_99 */
     uint8_t at_dynapi_99_padding[1];
+} ImageObject_00574BE6;
+extern ImageObject_00574BE6 g_ImageObject_00574BE6;
+typedef struct ImageObject_00574BFA {
     char at_dynapi_100[19]; /* 00574BFA dynapi_100 */
     uint8_t at_dynapi_100_padding[1];
+} ImageObject_00574BFA;
+extern ImageObject_00574BFA g_ImageObject_00574BFA;
+typedef struct ImageObject_00574C0E {
     char at_dynapi_101[20]; /* 00574C0E dynapi_101 */
+} ImageObject_00574C0E;
+extern ImageObject_00574C0E g_ImageObject_00574C0E;
+typedef struct ImageObject_00574C22 {
     char at_dynapi_102[18]; /* 00574C22 dynapi_102 */
+} ImageObject_00574C22;
+extern ImageObject_00574C22 g_ImageObject_00574C22;
+typedef struct ImageObject_00574C34 {
     char at_dynapi_103[26]; /* 00574C34 dynapi_103 */
+} ImageObject_00574C34;
+extern ImageObject_00574C34 g_ImageObject_00574C34;
+typedef struct ImageObject_00574C4E {
     char at_dynapi_104[17]; /* 00574C4E dynapi_104 */
     uint8_t at_dynapi_104_padding[1];
+} ImageObject_00574C4E;
+extern ImageObject_00574C4E g_ImageObject_00574C4E;
+typedef struct ImageObject_00574C60 {
     char at_dynapi_105[16]; /* 00574C60 dynapi_105 */
+} ImageObject_00574C60;
+extern ImageObject_00574C60 g_ImageObject_00574C60;
+typedef struct ImageObject_00574C70 {
     char at_dynapi_106[27]; /* 00574C70 dynapi_106 */
     uint8_t at_dynapi_106_padding[1];
+} ImageObject_00574C70;
+extern ImageObject_00574C70 g_ImageObject_00574C70;
+typedef struct ImageObject_00574C8C {
     char at_dynapi_107[19]; /* 00574C8C dynapi_107 */
     uint8_t at_dynapi_107_padding[1];
+} ImageObject_00574C8C;
+extern ImageObject_00574C8C g_ImageObject_00574C8C;
+typedef struct ImageObject_00574CA0 {
     char at_dynapi_108[15]; /* 00574CA0 dynapi_108 */
     uint8_t at_dynapi_108_padding[1];
+} ImageObject_00574CA0;
+extern ImageObject_00574CA0 g_ImageObject_00574CA0;
+typedef struct ImageObject_00574CB0 {
     char at_dynapi_109[16]; /* 00574CB0 dynapi_109 */
+} ImageObject_00574CB0;
+extern ImageObject_00574CB0 g_ImageObject_00574CB0;
+typedef struct ImageObject_00574CC0 {
     char at_dynapi_110[13]; /* 00574CC0 dynapi_110 */
     uint8_t at_dynapi_110_padding[1];
+} ImageObject_00574CC0;
+extern ImageObject_00574CC0 g_ImageObject_00574CC0;
+typedef struct ImageObject_00574CCE {
     char at_dynapi_111[20]; /* 00574CCE dynapi_111 */
+} ImageObject_00574CCE;
+extern ImageObject_00574CCE g_ImageObject_00574CCE;
+typedef struct ImageObject_00574CE2 {
     char at_dynapi_112[21]; /* 00574CE2 dynapi_112 */
     uint8_t at_dynapi_112_padding[1];
+} ImageObject_00574CE2;
+extern ImageObject_00574CE2 g_ImageObject_00574CE2;
+typedef struct ImageObject_00574CF8 {
     char at_dynapi_113[24]; /* 00574CF8 dynapi_113 */
+} ImageObject_00574CF8;
+extern ImageObject_00574CF8 g_ImageObject_00574CF8;
+typedef struct ImageObject_00574D10 {
     char at_dynapi_114[22]; /* 00574D10 dynapi_114 */
+} ImageObject_00574D10;
+extern ImageObject_00574D10 g_ImageObject_00574D10;
+typedef struct ImageObject_00574D26 {
     char at_dynapi_115[25]; /* 00574D26 dynapi_115 */
     uint8_t at_dynapi_115_padding[1];
+} ImageObject_00574D26;
+extern ImageObject_00574D26 g_ImageObject_00574D26;
+typedef struct ImageObject_00574D40 {
     char at_s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
     uint8_t at_s_Wsock32Export_accept_padding[1];
+} ImageObject_00574D40;
+extern ImageObject_00574D40 g_ImageObject_00574D40;
+typedef struct ImageObject_00574D48 {
     char at_s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
     uint8_t at_s_Wsock32Export_bind_padding[1];
+} ImageObject_00574D48;
+extern ImageObject_00574D48 g_ImageObject_00574D48;
+typedef struct ImageObject_00574D4E {
     char at_s_Wsock32Export_closesocket[12]; /* 00574D4E s_Wsock32Export_closesocket */
+} ImageObject_00574D4E;
+extern ImageObject_00574D4E g_ImageObject_00574D4E;
+typedef struct ImageObject_00574D5A {
     char at_s_Wsock32Export_connect[8]; /* 00574D5A s_Wsock32Export_connect */
+} ImageObject_00574D5A;
+extern ImageObject_00574D5A g_ImageObject_00574D5A;
+typedef struct ImageObject_00574D62 {
     char at_s_Wsock32Export_getpeername[12]; /* 00574D62 s_Wsock32Export_getpeername */
+} ImageObject_00574D62;
+extern ImageObject_00574D62 g_ImageObject_00574D62;
+typedef struct ImageObject_00574D6E {
     char at_s_Wsock32Export_getsockname[12]; /* 00574D6E s_Wsock32Export_getsockname */
+} ImageObject_00574D6E;
+extern ImageObject_00574D6E g_ImageObject_00574D6E;
+typedef struct ImageObject_00574D7A {
     char at_s_Wsock32Export_getsockopt[11]; /* 00574D7A s_Wsock32Export_getsockopt */
     uint8_t at_s_Wsock32Export_getsockopt_padding[1];
+} ImageObject_00574D7A;
+extern ImageObject_00574D7A g_ImageObject_00574D7A;
+typedef struct ImageObject_00574D86 {
     char at_s_Wsock32Export_htonl[6]; /* 00574D86 s_Wsock32Export_htonl */
+} ImageObject_00574D86;
+extern ImageObject_00574D86 g_ImageObject_00574D86;
+typedef struct ImageObject_00574D8C {
     char at_s_Wsock32Export_htons[6]; /* 00574D8C s_Wsock32Export_htons */
+} ImageObject_00574D8C;
+extern ImageObject_00574D8C g_ImageObject_00574D8C;
+typedef struct ImageObject_00574D92 {
     char at_s_Wsock32Export_inet_addr[10]; /* 00574D92 s_Wsock32Export_inet_addr */
+} ImageObject_00574D92;
+extern ImageObject_00574D92 g_ImageObject_00574D92;
+typedef struct ImageObject_00574D9C {
     char at_s_Wsock32Export_inet_ntoa[10]; /* 00574D9C s_Wsock32Export_inet_ntoa */
+} ImageObject_00574D9C;
+extern ImageObject_00574D9C g_ImageObject_00574D9C;
+typedef struct ImageObject_00574DA6 {
     char at_s_Wsock32Export_ioctlsocket[12]; /* 00574DA6 s_Wsock32Export_ioctlsocket */
+} ImageObject_00574DA6;
+extern ImageObject_00574DA6 g_ImageObject_00574DA6;
+typedef struct ImageObject_00574DB2 {
     char at_s_Wsock32Export_listen[7]; /* 00574DB2 s_Wsock32Export_listen */
     uint8_t at_s_Wsock32Export_listen_padding[1];
+} ImageObject_00574DB2;
+extern ImageObject_00574DB2 g_ImageObject_00574DB2;
+typedef struct ImageObject_00574DBA {
     char at_s_Wsock32Export_ntohl[6]; /* 00574DBA s_Wsock32Export_ntohl */
+} ImageObject_00574DBA;
+extern ImageObject_00574DBA g_ImageObject_00574DBA;
+typedef struct ImageObject_00574DC0 {
     char at_s_Wsock32Export_ntohs[6]; /* 00574DC0 s_Wsock32Export_ntohs */
+} ImageObject_00574DC0;
+extern ImageObject_00574DC0 g_ImageObject_00574DC0;
+typedef struct ImageObject_00574DC6 {
     char at_s_Wsock32Export_recv[5]; /* 00574DC6 s_Wsock32Export_recv */
     uint8_t at_s_Wsock32Export_recv_padding[1];
+} ImageObject_00574DC6;
+extern ImageObject_00574DC6 g_ImageObject_00574DC6;
+typedef struct ImageObject_00574DCC {
     char at_s_Wsock32Export_recvfrom[9]; /* 00574DCC s_Wsock32Export_recvfrom */
     uint8_t at_s_Wsock32Export_recvfrom_padding[1];
+} ImageObject_00574DCC;
+extern ImageObject_00574DCC g_ImageObject_00574DCC;
+typedef struct ImageObject_00574DD6 {
     char at_s_Wsock32Export_select[7]; /* 00574DD6 s_Wsock32Export_select */
     uint8_t at_s_Wsock32Export_select_padding[1];
+} ImageObject_00574DD6;
+extern ImageObject_00574DD6 g_ImageObject_00574DD6;
+typedef struct ImageObject_00574DDE {
     char at_s_Wsock32Export_send[5]; /* 00574DDE s_Wsock32Export_send */
     uint8_t at_s_Wsock32Export_send_padding[1];
+} ImageObject_00574DDE;
+extern ImageObject_00574DDE g_ImageObject_00574DDE;
+typedef struct ImageObject_00574DE4 {
     char at_s_Wsock32Export_sendto[7]; /* 00574DE4 s_Wsock32Export_sendto */
     uint8_t at_s_Wsock32Export_sendto_padding[1];
+} ImageObject_00574DE4;
+extern ImageObject_00574DE4 g_ImageObject_00574DE4;
+typedef struct ImageObject_00574DEC {
     char at_s_Wsock32Export_setsockopt[11]; /* 00574DEC s_Wsock32Export_setsockopt */
     uint8_t at_s_Wsock32Export_setsockopt_padding[1];
+} ImageObject_00574DEC;
+extern ImageObject_00574DEC g_ImageObject_00574DEC;
+typedef struct ImageObject_00574DF8 {
     char at_s_Wsock32Export_shutdown[9]; /* 00574DF8 s_Wsock32Export_shutdown */
     uint8_t at_s_Wsock32Export_shutdown_padding[1];
+} ImageObject_00574DF8;
+extern ImageObject_00574DF8 g_ImageObject_00574DF8;
+typedef struct ImageObject_00574E02 {
     char at_s_Wsock32Export_socket[7]; /* 00574E02 s_Wsock32Export_socket */
     uint8_t at_s_Wsock32Export_socket_padding[1];
+} ImageObject_00574E02;
+extern ImageObject_00574E02 g_ImageObject_00574E02;
+typedef struct ImageObject_00574E0A {
     char at_s_Wsock32Export_gethostbyaddr[14]; /* 00574E0A s_Wsock32Export_gethostbyaddr */
+} ImageObject_00574E0A;
+extern ImageObject_00574E0A g_ImageObject_00574E0A;
+typedef struct ImageObject_00574E18 {
     char at_s_Wsock32Export_gethostbyname[14]; /* 00574E18 s_Wsock32Export_gethostbyname */
+} ImageObject_00574E18;
+extern ImageObject_00574E18 g_ImageObject_00574E18;
+typedef struct ImageObject_00574E26 {
     char at_s_Wsock32Export_gethostname[12]; /* 00574E26 s_Wsock32Export_gethostname */
+} ImageObject_00574E26;
+extern ImageObject_00574E26 g_ImageObject_00574E26;
+typedef struct ImageObject_00574E32 {
     char at_s_Wsock32Export_getprotobyname[15]; /* 00574E32 s_Wsock32Export_getprotobyname */
     uint8_t at_s_Wsock32Export_getprotobyname_padding[1];
+} ImageObject_00574E32;
+extern ImageObject_00574E32 g_ImageObject_00574E32;
+typedef struct ImageObject_00574E42 {
     char at_s_Wsock32Export_getprotobynumber[17]; /* 00574E42 s_Wsock32Export_getprotobynumber */
     uint8_t at_s_Wsock32Export_getprotobynumber_padding[1];
+} ImageObject_00574E42;
+extern ImageObject_00574E42 g_ImageObject_00574E42;
+typedef struct ImageObject_00574E54 {
     char at_s_Wsock32Export_getservbyname[14]; /* 00574E54 s_Wsock32Export_getservbyname */
+} ImageObject_00574E54;
+extern ImageObject_00574E54 g_ImageObject_00574E54;
+typedef struct ImageObject_00574E62 {
     char at_s_Wsock32Export_getservbyport[14]; /* 00574E62 s_Wsock32Export_getservbyport */
+} ImageObject_00574E62;
+extern ImageObject_00574E62 g_ImageObject_00574E62;
+typedef struct ImageObject_00574E70 {
     char at_s_Wsock32Export_WSAAsyncGetHostByAddr[22]; /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
+} ImageObject_00574E70;
+extern ImageObject_00574E70 g_ImageObject_00574E70;
+typedef struct ImageObject_00574E86 {
     char at_s_Wsock32Export_WSAAsyncGetHostByName[22]; /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
+} ImageObject_00574E86;
+extern ImageObject_00574E86 g_ImageObject_00574E86;
+typedef struct ImageObject_00574E9C {
     char at_s_Wsock32Export_WSAAsyncGetProtoByName[23]; /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
     uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByName_padding[1];
+} ImageObject_00574E9C;
+extern ImageObject_00574E9C g_ImageObject_00574E9C;
+typedef struct ImageObject_00574EB4 {
     char at_s_Wsock32Export_WSAAsyncGetProtoByNumber[25]; /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
     uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByNumber_padding[1];
+} ImageObject_00574EB4;
+extern ImageObject_00574EB4 g_ImageObject_00574EB4;
+typedef struct ImageObject_00574ECE {
     char at_s_Wsock32Export_WSAAsyncGetServByName[22]; /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
+} ImageObject_00574ECE;
+extern ImageObject_00574ECE g_ImageObject_00574ECE;
+typedef struct ImageObject_00574EE4 {
     char at_s_Wsock32Export_WSAAsyncGetServByPort[22]; /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
+} ImageObject_00574EE4;
+extern ImageObject_00574EE4 g_ImageObject_00574EE4;
+typedef struct ImageObject_00574EFA {
     char at_s_Wsock32Export_WSAAsyncSelect[15]; /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
     uint8_t at_s_Wsock32Export_WSAAsyncSelect_padding[1];
+} ImageObject_00574EFA;
+extern ImageObject_00574EFA g_ImageObject_00574EFA;
+typedef struct ImageObject_00574F0A {
     char at_s_Wsock32Export_WSACancelAsyncRequest[22]; /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
+} ImageObject_00574F0A;
+extern ImageObject_00574F0A g_ImageObject_00574F0A;
+typedef struct ImageObject_00574F20 {
     char at_s_Wsock32Export_WSACancelBlockingCall[22]; /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
+} ImageObject_00574F20;
+extern ImageObject_00574F20 g_ImageObject_00574F20;
+typedef struct ImageObject_00574F36 {
     char at_s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSACleanup */
     uint8_t at_s_Wsock32Export_WSACleanup_padding[1];
+} ImageObject_00574F36;
+extern ImageObject_00574F36 g_ImageObject_00574F36;
+typedef struct ImageObject_00574F42 {
     char at_s_Wsock32Export_WSAGetLastError[16]; /* 00574F42 s_Wsock32Export_WSAGetLastError */
+} ImageObject_00574F42;
+extern ImageObject_00574F42 g_ImageObject_00574F42;
+typedef struct ImageObject_00574F52 {
     char at_s_Wsock32Export_WSAIsBlocking[14]; /* 00574F52 s_Wsock32Export_WSAIsBlocking */
+} ImageObject_00574F52;
+extern ImageObject_00574F52 g_ImageObject_00574F52;
+typedef struct ImageObject_00574F60 {
     char at_s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
     uint8_t at_s_Wsock32Export_WSASetBlockingHook_padding[1];
+} ImageObject_00574F60;
+extern ImageObject_00574F60 g_ImageObject_00574F60;
+typedef struct ImageObject_00574F74 {
     char at_dynapi_159[16]; /* 00574F74 dynapi_159 */
+} ImageObject_00574F74;
+extern ImageObject_00574F74 g_ImageObject_00574F74;
+typedef struct ImageObject_00574F84 {
     char at_s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
     uint8_t at_s_Wsock32Export_WSAStartup_padding[1];
+} ImageObject_00574F84;
+extern ImageObject_00574F84 g_ImageObject_00574F84;
+typedef struct ImageObject_00574F90 {
     char at_s_Wsock32Export_WSAUnhookBlockingHook[22]; /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
+} ImageObject_00574F90;
+extern ImageObject_00574F90 g_ImageObject_00574F90;
+typedef struct ImageObject_00574FA6 {
     char at_dynapi_162[7]; /* 00574FA6 dynapi_162 */
     uint8_t at_dynapi_162_padding[1];
+} ImageObject_00574FA6;
+extern ImageObject_00574FA6 g_ImageObject_00574FA6;
+typedef struct ImageObject_00574FAE {
     char at_dynapi_163[5]; /* 00574FAE dynapi_163 */
     uint8_t at_dynapi_163_padding[1];
+} ImageObject_00574FAE;
+extern ImageObject_00574FAE g_ImageObject_00574FAE;
+typedef struct ImageObject_00574FB4 {
     char at_dynapi_164[12]; /* 00574FB4 dynapi_164 */
+} ImageObject_00574FB4;
+extern ImageObject_00574FB4 g_ImageObject_00574FB4;
+typedef struct ImageObject_00574FC0 {
     char at_dynapi_165[8]; /* 00574FC0 dynapi_165 */
+} ImageObject_00574FC0;
+extern ImageObject_00574FC0 g_ImageObject_00574FC0;
+typedef struct ImageObject_00574FC8 {
     char at_dynapi_166[12]; /* 00574FC8 dynapi_166 */
+} ImageObject_00574FC8;
+extern ImageObject_00574FC8 g_ImageObject_00574FC8;
+typedef struct ImageObject_00574FD4 {
     char at_dynapi_167[12]; /* 00574FD4 dynapi_167 */
+} ImageObject_00574FD4;
+extern ImageObject_00574FD4 g_ImageObject_00574FD4;
+typedef struct ImageObject_00574FE0 {
     char at_dynapi_168[11]; /* 00574FE0 dynapi_168 */
     uint8_t at_dynapi_168_padding[1];
+} ImageObject_00574FE0;
+extern ImageObject_00574FE0 g_ImageObject_00574FE0;
+typedef struct ImageObject_00574FEC {
     char at_dynapi_169[6]; /* 00574FEC dynapi_169 */
+} ImageObject_00574FEC;
+extern ImageObject_00574FEC g_ImageObject_00574FEC;
+typedef struct ImageObject_00574FF2 {
     char at_dynapi_170[6]; /* 00574FF2 dynapi_170 */
+} ImageObject_00574FF2;
+extern ImageObject_00574FF2 g_ImageObject_00574FF2;
+typedef struct ImageObject_00574FF8 {
     char at_dynapi_171[12]; /* 00574FF8 dynapi_171 */
+} ImageObject_00574FF8;
+extern ImageObject_00574FF8 g_ImageObject_00574FF8;
+typedef struct ImageObject_00575004 {
     char at_dynapi_172[7]; /* 00575004 dynapi_172 */
     uint8_t at_dynapi_172_padding[1];
+} ImageObject_00575004;
+extern ImageObject_00575004 g_ImageObject_00575004;
+typedef struct ImageObject_0057500C {
     char at_dynapi_173[6]; /* 0057500C dynapi_173 */
+} ImageObject_0057500C;
+extern ImageObject_0057500C g_ImageObject_0057500C;
+typedef struct ImageObject_00575012 {
     char at_dynapi_174[6]; /* 00575012 dynapi_174 */
+} ImageObject_00575012;
+extern ImageObject_00575012 g_ImageObject_00575012;
+typedef struct ImageObject_00575018 {
     char at_dynapi_175[5]; /* 00575018 dynapi_175 */
     uint8_t at_dynapi_175_padding[1];
+} ImageObject_00575018;
+extern ImageObject_00575018 g_ImageObject_00575018;
+typedef struct ImageObject_0057501E {
     char at_dynapi_176[9]; /* 0057501E dynapi_176 */
     uint8_t at_dynapi_176_padding[1];
+} ImageObject_0057501E;
+extern ImageObject_0057501E g_ImageObject_0057501E;
+typedef struct ImageObject_00575028 {
     char at_dynapi_177[7]; /* 00575028 dynapi_177 */
     uint8_t at_dynapi_177_padding[1];
+} ImageObject_00575028;
+extern ImageObject_00575028 g_ImageObject_00575028;
+typedef struct ImageObject_00575030 {
     char at_dynapi_178[5]; /* 00575030 dynapi_178 */
     uint8_t at_dynapi_178_padding[1];
+} ImageObject_00575030;
+extern ImageObject_00575030 g_ImageObject_00575030;
+typedef struct ImageObject_00575036 {
     char at_dynapi_179[7]; /* 00575036 dynapi_179 */
     uint8_t at_dynapi_179_padding[1];
+} ImageObject_00575036;
+extern ImageObject_00575036 g_ImageObject_00575036;
+typedef struct ImageObject_0057503E {
     char at_dynapi_180[11]; /* 0057503E dynapi_180 */
     uint8_t at_dynapi_180_padding[1];
+} ImageObject_0057503E;
+extern ImageObject_0057503E g_ImageObject_0057503E;
+typedef struct ImageObject_0057504A {
     char at_dynapi_181[9]; /* 0057504A dynapi_181 */
     uint8_t at_dynapi_181_padding[1];
+} ImageObject_0057504A;
+extern ImageObject_0057504A g_ImageObject_0057504A;
+typedef struct ImageObject_00575054 {
     char at_dynapi_182[7]; /* 00575054 dynapi_182 */
     uint8_t at_dynapi_182_padding[1];
+} ImageObject_00575054;
+extern ImageObject_00575054 g_ImageObject_00575054;
+typedef struct ImageObject_0057505C {
     char at_dynapi_183[10]; /* 0057505C dynapi_183 */
+} ImageObject_0057505C;
+extern ImageObject_0057505C g_ImageObject_0057505C;
+typedef struct ImageObject_00575066 {
     char at_dynapi_184[15]; /* 00575066 dynapi_184 */
     uint8_t at_dynapi_184_padding[1];
+} ImageObject_00575066;
+extern ImageObject_00575066 g_ImageObject_00575066;
+typedef struct ImageObject_00575076 {
     char at_dynapi_185[22]; /* 00575076 dynapi_185 */
+} ImageObject_00575076;
+extern ImageObject_00575076 g_ImageObject_00575076;
+typedef struct ImageObject_0057508C {
     char at_dynapi_186[11]; /* 0057508C dynapi_186 */
     uint8_t at_dynapi_186_padding[1];
+} ImageObject_0057508C;
+extern ImageObject_0057508C g_ImageObject_0057508C;
+typedef struct ImageObject_00575098 {
     char at_dynapi_187[14]; /* 00575098 dynapi_187 */
+} ImageObject_00575098;
+extern ImageObject_00575098 g_ImageObject_00575098;
+typedef struct ImageObject_005750A6 {
     char at_dynapi_188[11]; /* 005750A6 dynapi_188 */
     uint8_t at_dynapi_188_padding[1];
+} ImageObject_005750A6;
+extern ImageObject_005750A6 g_ImageObject_005750A6;
+typedef struct ImageObject_005750B2 {
     char at_dynapi_189[15]; /* 005750B2 dynapi_189 */
     uint8_t at_dynapi_189_padding[1];
+} ImageObject_005750B2;
+extern ImageObject_005750B2 g_ImageObject_005750B2;
+typedef struct ImageObject_005750C2 {
     char at_dynapi_190[20]; /* 005750C2 dynapi_190 */
+} ImageObject_005750C2;
+extern ImageObject_005750C2 g_ImageObject_005750C2;
+typedef struct ImageObject_005750D6 {
     char at_dynapi_191[21]; /* 005750D6 dynapi_191 */
     uint8_t at_dynapi_191_padding[1];
+} ImageObject_005750D6;
+extern ImageObject_005750D6 g_ImageObject_005750D6;
+typedef struct ImageObject_005750EC {
     char at_dynapi_192[18]; /* 005750EC dynapi_192 */
+} ImageObject_005750EC;
+extern ImageObject_005750EC g_ImageObject_005750EC;
+typedef struct ImageObject_005750FE {
     char at_dynapi_193[15]; /* 005750FE dynapi_193 */
     uint8_t at_dynapi_193_padding[1];
+} ImageObject_005750FE;
+extern ImageObject_005750FE g_ImageObject_005750FE;
+typedef struct ImageObject_0057510E {
     char at_dynapi_194[16]; /* 0057510E dynapi_194 */
+} ImageObject_0057510E;
+extern ImageObject_0057510E g_ImageObject_0057510E;
+typedef struct ImageObject_0057511E {
     char at_dynapi_195[23]; /* 0057511E dynapi_195 */
     uint8_t at_dynapi_195_padding[1];
+} ImageObject_0057511E;
+extern ImageObject_0057511E g_ImageObject_0057511E;
+typedef struct ImageObject_00575136 {
     char at_dynapi_196[16]; /* 00575136 dynapi_196 */
+} ImageObject_00575136;
+extern ImageObject_00575136 g_ImageObject_00575136;
+typedef struct ImageObject_00575146 {
     char at_dynapi_197[9]; /* 00575146 dynapi_197 */
     uint8_t at_dynapi_197_padding[1];
+} ImageObject_00575146;
+extern ImageObject_00575146 g_ImageObject_00575146;
+typedef struct ImageObject_00575150 {
     char at_dynapi_198[9]; /* 00575150 dynapi_198 */
     uint8_t at_dynapi_198_padding[1];
+} ImageObject_00575150;
+extern ImageObject_00575150 g_ImageObject_00575150;
+typedef struct ImageObject_0057515A {
     char at_dynapi_199[9]; /* 0057515A dynapi_199 */
     uint8_t at_dynapi_199_padding[1];
+} ImageObject_0057515A;
+extern ImageObject_0057515A g_ImageObject_0057515A;
+typedef struct ImageObject_00575164 {
     char at_dynapi_200[14]; /* 00575164 dynapi_200 */
+} ImageObject_00575164;
+extern ImageObject_00575164 g_ImageObject_00575164;
+typedef struct ImageObject_00575172 {
     char at_dynapi_201[12]; /* 00575172 dynapi_201 */
+} ImageObject_00575172;
+extern ImageObject_00575172 g_ImageObject_00575172;
+typedef struct ImageObject_0057517E {
     char at_dynapi_202[9]; /* 0057517E dynapi_202 */
     uint8_t at_dynapi_202_padding[1];
+} ImageObject_0057517E;
+extern ImageObject_0057517E g_ImageObject_0057517E;
+typedef struct ImageObject_00575188 {
     char at_dynapi_203[9]; /* 00575188 dynapi_203 */
     uint8_t at_dynapi_203_padding[1];
+} ImageObject_00575188;
+extern ImageObject_00575188 g_ImageObject_00575188;
+typedef struct ImageObject_00575192 {
     char at_dynapi_204[8]; /* 00575192 dynapi_204 */
+} ImageObject_00575192;
+extern ImageObject_00575192 g_ImageObject_00575192;
+typedef struct ImageObject_0057519A {
     char at_dynapi_205[18]; /* 0057519A dynapi_205 */
+} ImageObject_0057519A;
+extern ImageObject_0057519A g_ImageObject_0057519A;
+typedef struct ImageObject_005751AC {
     char at_dynapi_206[12]; /* 005751AC dynapi_206 */
+} ImageObject_005751AC;
+extern ImageObject_005751AC g_ImageObject_005751AC;
+typedef struct ImageObject_005751B8 {
     char at_dynapi_207[14]; /* 005751B8 dynapi_207 */
+} ImageObject_005751B8;
+extern ImageObject_005751B8 g_ImageObject_005751B8;
+typedef struct ImageObject_005751C6 {
     char at_dynapi_208[8]; /* 005751C6 dynapi_208 */
+} ImageObject_005751C6;
+extern ImageObject_005751C6 g_ImageObject_005751C6;
+typedef struct ImageObject_005751CE {
     char at_dynapi_209[18]; /* 005751CE dynapi_209 */
+} ImageObject_005751CE;
+extern ImageObject_005751CE g_ImageObject_005751CE;
+typedef struct ImageObject_005751E0 {
     char at_dynapi_210[10]; /* 005751E0 dynapi_210 */
+} ImageObject_005751E0;
+extern ImageObject_005751E0 g_ImageObject_005751E0;
+typedef struct ImageObject_005751EA {
     char at_dynapi_211[19]; /* 005751EA dynapi_211 */
     uint8_t at_dynapi_211_padding[1];
+} ImageObject_005751EA;
+extern ImageObject_005751EA g_ImageObject_005751EA;
+typedef struct ImageObject_005751FE {
     char at_dynapi_212[12]; /* 005751FE dynapi_212 */
+} ImageObject_005751FE;
+extern ImageObject_005751FE g_ImageObject_005751FE;
+typedef struct ImageObject_0057520A {
     char at_dynapi_213[16]; /* 0057520A dynapi_213 */
+} ImageObject_0057520A;
+extern ImageObject_0057520A g_ImageObject_0057520A;
+typedef struct ImageObject_0057521A {
     char at_dynapi_214[11]; /* 0057521A dynapi_214 */
     uint8_t at_dynapi_214_padding[1];
+} ImageObject_0057521A;
+extern ImageObject_0057521A g_ImageObject_0057521A;
+typedef struct ImageObject_00575226 {
     char at_dynapi_215[11]; /* 00575226 dynapi_215 */
     uint8_t at_dynapi_215_padding[1];
+} ImageObject_00575226;
+extern ImageObject_00575226 g_ImageObject_00575226;
+typedef struct ImageObject_00575232 {
     char at_dynapi_216[22]; /* 00575232 dynapi_216 */
+} ImageObject_00575232;
+extern ImageObject_00575232 g_ImageObject_00575232;
+typedef struct ImageObject_00575248 {
     char at_dynapi_217[25]; /* 00575248 dynapi_217 */
     uint8_t at_dynapi_217_padding[1];
+} ImageObject_00575248;
+extern ImageObject_00575248 g_ImageObject_00575248;
+typedef struct ImageObject_00575262 {
     char at_dynapi_218[10]; /* 00575262 dynapi_218 */
+} ImageObject_00575262;
+extern ImageObject_00575262 g_ImageObject_00575262;
+typedef struct ImageObject_0057526C {
     char at_dynapi_219[10]; /* 0057526C dynapi_219 */
+} ImageObject_0057526C;
+extern ImageObject_0057526C g_ImageObject_0057526C;
+typedef struct ImageObject_00575276 {
     char at_dynapi_220[14]; /* 00575276 dynapi_220 */
+} ImageObject_00575276;
+extern ImageObject_00575276 g_ImageObject_00575276;
+typedef struct ImageObject_00575284 {
     char at_dynapi_221[14]; /* 00575284 dynapi_221 */
+} ImageObject_00575284;
+extern ImageObject_00575284 g_ImageObject_00575284;
+typedef struct ImageObject_00575292 {
     char at_dynapi_222[12]; /* 00575292 dynapi_222 */
+} ImageObject_00575292;
+extern ImageObject_00575292 g_ImageObject_00575292;
+typedef struct ImageObject_0057529E {
     char at_dynapi_223[15]; /* 0057529E dynapi_223 */
     uint8_t at_dynapi_223_padding[1];
+} ImageObject_0057529E;
+extern ImageObject_0057529E g_ImageObject_0057529E;
+typedef struct ImageObject_005752AE {
     char at_dynapi_224[17]; /* 005752AE dynapi_224 */
     uint8_t at_dynapi_224_padding[1];
+} ImageObject_005752AE;
+extern ImageObject_005752AE g_ImageObject_005752AE;
+typedef struct ImageObject_005752C0 {
     char at_dynapi_225[14]; /* 005752C0 dynapi_225 */
+} ImageObject_005752C0;
+extern ImageObject_005752C0 g_ImageObject_005752C0;
+typedef struct ImageObject_005752CE {
     char at_dynapi_226[14]; /* 005752CE dynapi_226 */
+} ImageObject_005752CE;
+extern ImageObject_005752CE g_ImageObject_005752CE;
+typedef struct ImageObject_005752DC {
     char at_dynapi_227[22]; /* 005752DC dynapi_227 */
+} ImageObject_005752DC;
+extern ImageObject_005752DC g_ImageObject_005752DC;
+typedef struct ImageObject_005752F2 {
     char at_dynapi_228[22]; /* 005752F2 dynapi_228 */
+} ImageObject_005752F2;
+extern ImageObject_005752F2 g_ImageObject_005752F2;
+typedef struct ImageObject_00575308 {
     char at_dynapi_229[23]; /* 00575308 dynapi_229 */
     uint8_t at_dynapi_229_padding[1];
+} ImageObject_00575308;
+extern ImageObject_00575308 g_ImageObject_00575308;
+typedef struct ImageObject_00575320 {
     char at_dynapi_230[25]; /* 00575320 dynapi_230 */
     uint8_t at_dynapi_230_padding[1];
+} ImageObject_00575320;
+extern ImageObject_00575320 g_ImageObject_00575320;
+typedef struct ImageObject_0057533A {
     char at_dynapi_231[22]; /* 0057533A dynapi_231 */
+} ImageObject_0057533A;
+extern ImageObject_0057533A g_ImageObject_0057533A;
+typedef struct ImageObject_00575350 {
     char at_dynapi_232[22]; /* 00575350 dynapi_232 */
+} ImageObject_00575350;
+extern ImageObject_00575350 g_ImageObject_00575350;
+typedef struct ImageObject_00575366 {
     char at_dynapi_233[22]; /* 00575366 dynapi_233 */
+} ImageObject_00575366;
+extern ImageObject_00575366 g_ImageObject_00575366;
+typedef struct ImageObject_0057537C {
     char at_dynapi_234[20]; /* 0057537C dynapi_234 */
+} ImageObject_0057537C;
+extern ImageObject_0057537C g_ImageObject_0057537C;
+typedef struct ImageObject_00575390 {
     char at_dynapi_235[27]; /* 00575390 dynapi_235 */
     uint8_t at_dynapi_235_padding[1];
+} ImageObject_00575390;
+extern ImageObject_00575390 g_ImageObject_00575390;
+typedef struct ImageObject_005753AC {
     char at_dynapi_236[24]; /* 005753AC dynapi_236 */
+} ImageObject_005753AC;
+extern ImageObject_005753AC g_ImageObject_005753AC;
+typedef struct ImageObject_005753C4 {
     char at_dynapi_237[33]; /* 005753C4 dynapi_237 */
     uint8_t at_dynapi_237_padding[1];
+} ImageObject_005753C4;
+extern ImageObject_005753C4 g_ImageObject_005753C4;
+typedef struct ImageObject_005753E6 {
     char at_dynapi_238[24]; /* 005753E6 dynapi_238 */
+} ImageObject_005753E6;
+extern ImageObject_005753E6 g_ImageObject_005753E6;
+typedef struct ImageObject_005753FE {
     char at_dynapi_239[23]; /* 005753FE dynapi_239 */
     uint8_t at_dynapi_239_padding[1];
+} ImageObject_005753FE;
+extern ImageObject_005753FE g_ImageObject_005753FE;
+typedef struct ImageObject_00575416 {
     char at_dynapi_240[20]; /* 00575416 dynapi_240 */
+} ImageObject_00575416;
+extern ImageObject_00575416 g_ImageObject_00575416;
+typedef struct ImageObject_0057542A {
     char at_dynapi_241[22]; /* 0057542A dynapi_241 */
+} ImageObject_0057542A;
+extern ImageObject_0057542A g_ImageObject_0057542A;
+typedef struct ImageObject_00575440 {
     char at_dynapi_242[22]; /* 00575440 dynapi_242 */
+} ImageObject_00575440;
+extern ImageObject_00575440 g_ImageObject_00575440;
+typedef struct ImageObject_00575456 {
     char at_dynapi_243[15]; /* 00575456 dynapi_243 */
     uint8_t at_dynapi_243_padding[1];
+} ImageObject_00575456;
+extern ImageObject_00575456 g_ImageObject_00575456;
+typedef struct ImageObject_00575466 {
     char at_dynapi_244[20]; /* 00575466 dynapi_244 */
     uint8_t at_dynapi_244_padding[6];
+} ImageObject_00575466;
+extern ImageObject_00575466 g_ImageObject_00575466;
+typedef struct ImageObject_00575480 {
     uint8_t at_g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
     uint32_t at_g_FatalErrorNarrowBuffer_rest[4]; /* beyond the declared type */
-} ImageData_00573EE8;
-extern ImageData_00573EE8 g_ImageData_00573EE8;
+} ImageObject_00575480;
+extern ImageObject_00575480 g_ImageObject_00575480;
 
 /* original 0x0057594C-0x00575CB0 */
-typedef struct ImageData_0057594C {
+typedef struct ImageObject_0057594C {
     uint8_t at_gap_0057594C[4]; /* 0057594C gap */
+} ImageObject_0057594C;
+extern ImageObject_0057594C g_ImageObject_0057594C;
+typedef struct ImageObject_00575950 {
     uint32_t at_g_Win32FileBytesTransferred; /* 00575950 g_Win32FileBytesTransferred */
+} ImageObject_00575950;
+extern ImageObject_00575950 g_ImageObject_00575950;
+typedef struct ImageObject_00575954 {
     uint32_t at_g_Win32FileCreationTimeOrDosDateScratch; /* 00575954 g_Win32FileCreationTimeOrDosDateScratch */
     uint32_t at_g_Win32FileCreationTimeOrDosDateScratch_rest[1]; /* beyond the declared type */
+} ImageObject_00575954;
+extern ImageObject_00575954 g_ImageObject_00575954;
+typedef struct ImageObject_0057595C {
     uint8_t at_g_Win32FileLastAccessTimeScratch; /* 0057595C g_Win32FileLastAccessTimeScratch */
     uint32_t at_g_Win32FileLastAccessTimeScratch_rest[1]; /* beyond the declared type */
     uint8_t at_g_Win32FileLastAccessTimeScratch_rest_tail[3];
+} ImageObject_0057595C;
+extern ImageObject_0057595C g_ImageObject_0057595C;
+typedef struct ImageObject_00575964 {
     uint8_t at_g_Win32FileLastWriteTimeScratch; /* 00575964 g_Win32FileLastWriteTimeScratch */
     uint8_t at_g_Win32FileLastWriteTimeScratch_rest_tail[3];
+} ImageObject_00575964;
+extern ImageObject_00575964 g_ImageObject_00575964;
+typedef struct ImageObject_00575968 {
     uint32_t at_g_Win32FileLastWriteTimeHighScratch; /* 00575968 g_Win32FileLastWriteTimeHighScratch */
+} ImageObject_00575968;
+extern ImageObject_00575968 g_ImageObject_00575968;
+typedef struct ImageObject_0057596C {
     uint32_t at_g_Win32DiskSectorsPerClusterScratch; /* 0057596C g_Win32DiskSectorsPerClusterScratch */
+} ImageObject_0057596C;
+extern ImageObject_0057596C g_ImageObject_0057596C;
+typedef struct ImageObject_00575970 {
     uint32_t at_g_Win32DiskBytesPerSectorScratch; /* 00575970 g_Win32DiskBytesPerSectorScratch */
+} ImageObject_00575970;
+extern ImageObject_00575970 g_ImageObject_00575970;
+typedef struct ImageObject_00575974 {
     uint32_t at_g_Win32DiskFreeClustersScratch; /* 00575974 g_Win32DiskFreeClustersScratch */
+} ImageObject_00575974;
+extern ImageObject_00575974 g_ImageObject_00575974;
+typedef struct ImageObject_00575978 {
     uint32_t at_g_Win32DiskTotalClustersScratch; /* 00575978 g_Win32DiskTotalClustersScratch */
     uint32_t at_g_Win32DiskTotalClustersScratch_rest[1]; /* beyond the declared type */
+} ImageObject_00575978;
+extern ImageObject_00575978 g_ImageObject_00575978;
+typedef struct ImageObject_00575980 {
     uint8_t at_g_Win32FindDataFileNameA; /* 00575980 g_Win32FindDataFileNameA */
+} ImageObject_00575980;
+extern ImageObject_00575980 g_ImageObject_00575980;
+typedef struct ImageObject_00575981 {
     uint8_t at_g_Win32FindDataFileNameSecondCharA; /* 00575981 g_Win32FindDataFileNameSecondCharA */
+} ImageObject_00575981;
+extern ImageObject_00575981 g_ImageObject_00575981;
+typedef struct ImageObject_00575982 {
     uint8_t at_g_Win32FindDataFileNameThirdCharA; /* 00575982 g_Win32FindDataFileNameThirdCharA */
     uint32_t at_g_Win32FindDataFileNameThirdCharA_rest[68]; /* beyond the declared type */
     uint8_t at_g_Win32FindDataFileNameThirdCharA_rest_tail[1];
+} ImageObject_00575982;
+extern ImageObject_00575982 g_ImageObject_00575982;
+typedef struct ImageObject_00575A94 {
     pointer at_g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
+} ImageObject_00575A94;
+extern ImageObject_00575A94 g_ImageObject_00575A94;
+typedef struct ImageObject_00575A98 {
     uint32_t at_g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
+} ImageObject_00575A98;
+extern ImageObject_00575A98 g_ImageObject_00575A98;
+typedef struct ImageObject_00575A9C {
     uint8_t at_g_Win32PathScratchA[256]; /* 00575A9C g_Win32PathScratchA */
     uint8_t at_g_Win32PathScratchB[256]; /* 00575B9C g_Win32PathScratchB */
+} ImageObject_00575A9C;
+extern ImageObject_00575A9C g_ImageObject_00575A9C;
+typedef struct ImageObject_00575C9C {
     char at_g_Win32DriveRootPathScratchA[4]; /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
+} ImageObject_00575C9C;
+extern ImageObject_00575C9C g_ImageObject_00575C9C;
+typedef struct ImageObject_00575CA0 {
     char at_g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
     uint32_t at_g_Win32DriveDevicePathA_rest[2]; /* beyond the declared type */
     uint8_t at_g_Win32DriveDevicePathA_rest_tail[1];
-} ImageData_0057594C;
-extern ImageData_0057594C g_ImageData_0057594C;
+} ImageObject_00575CA0;
+extern ImageObject_00575CA0 g_ImageObject_00575CA0;
 
 /* original 0x00576720-0x00576784 */
-typedef struct ImageData_00576720 {
+typedef struct ImageObject_00576720 {
     uint8_t at_gap_00576720[100]; /* 00576720 gap */
-} ImageData_00576720;
-extern ImageData_00576720 g_ImageData_00576720;
+} ImageObject_00576720;
+extern ImageObject_00576720 g_ImageObject_00576720;
 
 /* original 0x00576B04-0x00576C30 */
-typedef struct ImageData_00576B04 {
+typedef struct ImageObject_00576B04 {
     uint8_t at_gap_00576B04[12]; /* 00576B04 gap */
+} ImageObject_00576B04;
+extern ImageObject_00576B04 g_ImageObject_00576B04;
+typedef struct ImageObject_00576B10 {
     IDirectInputA * at_g_DirectInput; /* 00576B10 g_DirectInput */
+} ImageObject_00576B10;
+extern ImageObject_00576B10 g_ImageObject_00576B10;
+typedef struct ImageObject_00576B14 {
     IDirectInputDeviceA * at_g_MouseDevice; /* 00576B14 g_MouseDevice */
+} ImageObject_00576B14;
+extern ImageObject_00576B14 g_ImageObject_00576B14;
+typedef struct ImageObject_00576B18 {
     TH_LEGACY_GUID at_GUID_SysMouse_Local; /* 00576B18 GUID_SysMouse_Local */
+} ImageObject_00576B18;
+extern ImageObject_00576B18 g_ImageObject_00576B18;
+typedef struct ImageObject_00576B28 {
     TH_LEGACY_GUID at_GUID_XAxis_Local; /* 00576B28 GUID_XAxis_Local */
+} ImageObject_00576B28;
+extern ImageObject_00576B28 g_ImageObject_00576B28;
+typedef struct ImageObject_00576B38 {
     TH_LEGACY_GUID at_GUID_YAxis_Local; /* 00576B38 GUID_YAxis_Local */
+} ImageObject_00576B38;
+extern ImageObject_00576B38 g_ImageObject_00576B38;
+typedef struct ImageObject_00576B48 {
     TH_LEGACY_GUID at_GUID_ZAxis_Local; /* 00576B48 GUID_ZAxis_Local */
+} ImageObject_00576B48;
+extern ImageObject_00576B48 g_ImageObject_00576B48;
+typedef struct ImageObject_00576B58 {
     DIDATAFORMAT at_MouseDataFormat; /* 00576B58 MouseDataFormat */
+} ImageObject_00576B58;
+extern ImageObject_00576B58 g_ImageObject_00576B58;
+typedef struct ImageObject_00576B70 {
     DIOBJECTDATAFORMAT at_MouseObjectFormats[7]; /* 00576B70 MouseObjectFormats */
+} ImageObject_00576B70;
+extern ImageObject_00576B70 g_ImageObject_00576B70;
+typedef struct ImageObject_00576BE0 {
     DIPROPDWORD at_MouseBufferProperty; /* 00576BE0 MouseBufferProperty */
+} ImageObject_00576BE0;
+extern ImageObject_00576BE0 g_ImageObject_00576BE0;
+typedef struct ImageObject_00576BF4 {
     uint32_t at_g_MouseDeviceDataCount; /* 00576BF4 g_MouseDeviceDataCount */
+} ImageObject_00576BF4;
+extern ImageObject_00576BF4 g_ImageObject_00576BF4;
+typedef struct ImageObject_00576BF8 {
     uint32_t at_g_MousePollBusy; /* 00576BF8 g_MousePollBusy */
+} ImageObject_00576BF8;
+extern ImageObject_00576BF8 g_ImageObject_00576BF8;
+typedef struct ImageObject_00576BFC {
     DIDEVICEOBJECTDATA_DX3 at_g_MouseDeviceEvent; /* 00576BFC g_MouseDeviceEvent */
+} ImageObject_00576BFC;
+extern ImageObject_00576BFC g_ImageObject_00576BFC;
+typedef struct ImageObject_00576C0C {
     UiPixelCoordinate at_g_MouseX; /* 00576C0C g_MouseX */
     UiPixelCoordinate at_g_MouseY; /* 00576C10 g_MouseY */
+} ImageObject_00576C0C;
+extern ImageObject_00576C0C g_ImageObject_00576C0C;
+typedef struct ImageObject_00576C14 {
     UiPointerWheelDelta at_g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
+} ImageObject_00576C14;
+extern ImageObject_00576C14 g_ImageObject_00576C14;
+typedef struct ImageObject_00576C18 {
     GraphicsCursorButtonState at_g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
+} ImageObject_00576C18;
+extern ImageObject_00576C18 g_ImageObject_00576C18;
+typedef struct ImageObject_00576C1C {
     uint32_t at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
+} ImageObject_00576C1C;
+extern ImageObject_00576C1C g_ImageObject_00576C1C;
+typedef struct ImageObject_00576C20 {
     SoftwareDisplayModeHookProc * at_g_DirectInputMouseChainedSetDisplayMode; /* 00576C20 g_DirectInputMouseChainedSetDisplayMode */
+} ImageObject_00576C20;
+extern ImageObject_00576C20 g_ImageObject_00576C20;
+typedef struct ImageObject_00576C24 {
     UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
     uint32_t at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
-} ImageData_00576B04;
-extern ImageData_00576B04 g_ImageData_00576B04;
+} ImageObject_00576C24;
+extern ImageObject_00576C24 g_ImageObject_00576C24;
 
 /* original 0x00577BFC-0x00578080 */
-typedef struct ImageData_00577BFC {
+typedef struct ImageObject_00577BFC {
     uint8_t at_gap_00577BFC[4]; /* 00577BFC gap */
+} ImageObject_00577BFC;
+extern ImageObject_00577BFC g_ImageObject_00577BFC;
+typedef struct ImageObject_00577C00 {
     TH_LEGACY_GUID at_IID_IDirectDraw2_Local; /* 00577C00 IID_IDirectDraw2_Local */
+} ImageObject_00577C00;
+extern ImageObject_00577C00 g_ImageObject_00577C00;
+typedef struct ImageObject_00577C10 {
     TH_LEGACY_GUID at_IID_IDirectDrawSurface3_Local; /* 00577C10 IID_IDirectDrawSurface3_Local */
+} ImageObject_00577C10;
+extern ImageObject_00577C10 g_ImageObject_00577C10;
+typedef struct ImageObject_00577C20 {
     TH_LEGACY_GUID at_IID_IDirect3D2_Local; /* 00577C20 IID_IDirect3D2_Local */
+} ImageObject_00577C20;
+extern ImageObject_00577C20 g_ImageObject_00577C20;
+typedef struct ImageObject_00577C30 {
     TH_LEGACY_GUID at_IID_IDirect3DTexture2_Local; /* 00577C30 IID_IDirect3DTexture2_Local */
+} ImageObject_00577C30;
+extern ImageObject_00577C30 g_ImageObject_00577C30;
+typedef struct ImageObject_00577C40 {
     IDirectDraw * at_g_DirectDraw; /* 00577C40 g_DirectDraw */
+} ImageObject_00577C40;
+extern ImageObject_00577C40 g_ImageObject_00577C40;
+typedef struct ImageObject_00577C44 {
     IDirectDraw2 * at_g_DirectDraw2; /* 00577C44 g_DirectDraw2 */
+} ImageObject_00577C44;
+extern ImageObject_00577C44 g_ImageObject_00577C44;
+typedef struct ImageObject_00577C48 {
     IDirectDrawSurface * at_g_PrimarySurfaceBase; /* 00577C48 g_PrimarySurfaceBase */
+} ImageObject_00577C48;
+extern ImageObject_00577C48 g_ImageObject_00577C48;
+typedef struct ImageObject_00577C4C {
     IDirectDrawSurface3 * at_g_PrimarySurface3; /* 00577C4C g_PrimarySurface3 */
+} ImageObject_00577C4C;
+extern ImageObject_00577C4C g_ImageObject_00577C4C;
+typedef struct ImageObject_00577C50 {
     IDirectDrawSurface * at_g_BackSurfaceBase; /* 00577C50 g_BackSurfaceBase */
+} ImageObject_00577C50;
+extern ImageObject_00577C50 g_ImageObject_00577C50;
+typedef struct ImageObject_00577C54 {
     IDirectDrawSurface3 * at_g_BackSurface3; /* 00577C54 g_BackSurface3 */
+} ImageObject_00577C54;
+extern ImageObject_00577C54 g_ImageObject_00577C54;
+typedef struct ImageObject_00577C58 {
     IDirect3D2 * at_g_Direct3D2; /* 00577C58 g_Direct3D2 */
+} ImageObject_00577C58;
+extern ImageObject_00577C58 g_ImageObject_00577C58;
+typedef struct ImageObject_00577C5C {
     IDirect3DDevice2 * at_g_Direct3DDevice2; /* 00577C5C g_Direct3DDevice2 */
+} ImageObject_00577C5C;
+extern ImageObject_00577C5C g_ImageObject_00577C5C;
+typedef struct ImageObject_00577C60 {
     IDirectDrawSurface * at_g_ZSurfaceBase; /* 00577C60 g_ZSurfaceBase */
+} ImageObject_00577C60;
+extern ImageObject_00577C60 g_ImageObject_00577C60;
+typedef struct ImageObject_00577C64 {
     IDirectDrawSurface3 * at_g_ZSurface3; /* 00577C64 g_ZSurface3 */
+} ImageObject_00577C64;
+extern ImageObject_00577C64 g_ImageObject_00577C64;
+typedef struct ImageObject_00577C68 {
     IDirect3DViewport2 * at_g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
     uint32_t at_g_Direct3DViewport2_rest[1]; /* beyond the declared type */
+} ImageObject_00577C68;
+extern ImageObject_00577C68 g_ImageObject_00577C68;
+typedef struct ImageObject_00577C70 {
     D3DRECT_DX6 at_g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
+} ImageObject_00577C70;
+extern ImageObject_00577C70 g_ImageObject_00577C70;
+typedef struct ImageObject_00577C80 {
     DDSURFACEDESC_DX6 at_g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
     uint32_t at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
+} ImageObject_00577C80;
+extern ImageObject_00577C80 g_ImageObject_00577C80;
+typedef struct ImageObject_00577CF0 {
     uint32_t at_g_GraphicsCursorSurfaceDescScratch; /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
     uint32_t at_g_GraphicsCursorSurfaceDescScratch_rest[3]; /* beyond the declared type */
     int32_t at_g_GraphicsCursorSurfacePitchBytes; /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
     uint32_t at_g_GraphicsCursorSurfacePitchBytes_rest[4]; /* beyond the declared type */
     uint8_t * at_g_GraphicsCursorSurfacePixels; /* 00577D14 g_GraphicsCursorSurfacePixels */
     uint32_t at_g_GraphicsCursorSurfacePixels_rest[18]; /* beyond the declared type */
+} ImageObject_00577CF0;
+extern ImageObject_00577CF0 g_ImageObject_00577CF0;
+typedef struct ImageObject_00577D60 {
     D3DVIEWPORT2 at_g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
     uint32_t at_g_Direct3DViewportState_rest[1]; /* beyond the declared type */
+} ImageObject_00577D60;
+extern ImageObject_00577D60 g_ImageObject_00577D60;
+typedef struct ImageObject_00577D90 {
     DDPIXELFORMAT at_g_Direct3DOpaqueTextureFormat; /* 00577D90 g_Direct3DOpaqueTextureFormat */
+} ImageObject_00577D90;
+extern ImageObject_00577D90 g_ImageObject_00577D90;
+typedef struct ImageObject_00577DB0 {
     DDPIXELFORMAT at_g_Direct3DAlphaTextureFormat; /* 00577DB0 g_Direct3DAlphaTextureFormat */
+} ImageObject_00577DB0;
+extern ImageObject_00577DB0 g_ImageObject_00577DB0;
+typedef struct ImageObject_00577DD0 {
     DDPIXELFORMAT at_g_Direct3DSelectedOpaqueTextureFormat; /* 00577DD0 g_Direct3DSelectedOpaqueTextureFormat */
+} ImageObject_00577DD0;
+extern ImageObject_00577DD0 g_ImageObject_00577DD0;
+typedef struct ImageObject_00577DF0 {
     DDPIXELFORMAT at_g_Direct3DSelectedAlphaTextureFormat; /* 00577DF0 g_Direct3DSelectedAlphaTextureFormat */
+} ImageObject_00577DF0;
+extern ImageObject_00577DF0 g_ImageObject_00577DF0;
+typedef struct ImageObject_00577E10 {
     uint32_t at_g_Direct3DTextureFilterMode; /* 00577E10 g_Direct3DTextureFilterMode: uint32_t: D3DRENDERSTATE_TEXTUREMAG/MIN filter (2 = D3DFILTER_LINEAR) reapplied by the device setup; graphics/backend direct3d/directdraw */
+} ImageObject_00577E10;
+extern ImageObject_00577E10 g_ImageObject_00577E10;
+typedef struct ImageObject_00577E14 {
     uint32_t at_g_Direct3DTexturePerspectiveEnabled; /* 00577E14 g_Direct3DTexturePerspectiveEnabled: uint32_t: D3DRENDERSTATE_TEXTUREPERSPECTIVE value (1) reapplied by the device setup; graphics/backend direct3d/directdraw */
+} ImageObject_00577E14;
+extern ImageObject_00577E14 g_ImageObject_00577E14;
+typedef struct ImageObject_00577E18 {
     uint32_t at_g_Direct3DAntialiasMode; /* 00577E18 g_Direct3DAntialiasMode */
+} ImageObject_00577E18;
+extern ImageObject_00577E18 g_ImageObject_00577E18;
+typedef struct ImageObject_00577E1C {
     GraphicsPrimitiveRenderStateCache at_g_PrimitiveRenderStateCache; /* 00577E1C g_PrimitiveRenderStateCache */
+} ImageObject_00577E1C;
+extern ImageObject_00577E1C g_ImageObject_00577E1C;
+typedef struct ImageObject_00577E2C {
     uint32_t at_g_BoundTextureHandle; /* 00577E2C g_BoundTextureHandle */
+} ImageObject_00577E2C;
+extern ImageObject_00577E2C g_ImageObject_00577E2C;
+typedef struct ImageObject_00577E30 {
     SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeFinalize; /* 00577E30 g_GraphicsDisplayModeFinalize */
+} ImageObject_00577E30;
+extern ImageObject_00577E30 g_ImageObject_00577E30;
+typedef struct ImageObject_00577E34 {
     int32_t at_g_CursorCurrentVisibilityToken; /* 00577E34 g_CursorCurrentVisibilityToken */
+} ImageObject_00577E34;
+extern ImageObject_00577E34 g_ImageObject_00577E34;
+typedef struct ImageObject_00577E38 {
     int32_t at_g_CursorAlternateVisibilityToken; /* 00577E38 g_CursorAlternateVisibilityToken */
+} ImageObject_00577E38;
+extern ImageObject_00577E38 g_ImageObject_00577E38;
+typedef struct ImageObject_00577E3C {
     int32_t at_g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
     int32_t at_g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
+} ImageObject_00577E3C;
+extern ImageObject_00577E3C g_ImageObject_00577E3C;
+typedef struct ImageObject_00577E44 {
     int32_t at_g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
     int32_t at_g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
+} ImageObject_00577E44;
+extern ImageObject_00577E44 g_ImageObject_00577E44;
+typedef struct ImageObject_00577E4C {
     int32_t at_g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
+} ImageObject_00577E4C;
+extern ImageObject_00577E4C g_ImageObject_00577E4C;
+typedef struct ImageObject_00577E50 {
     GraphicsPrimitiveRenderStatePreset at_g_PrimitiveRenderStatePresets[5]; /* 00577E50 g_PrimitiveRenderStatePresets */
+} ImageObject_00577E50;
+extern ImageObject_00577E50 g_ImageObject_00577E50;
+typedef struct ImageObject_00577EA0 {
     GraphicsDispatchTable at_g_GraphicsDispatchTable; /* 00577EA0 g_GraphicsDispatchTable */
     uint32_t at_g_GraphicsDispatchTable_rest[2]; /* beyond the declared type */
+} ImageObject_00577EA0;
+extern ImageObject_00577EA0 g_ImageObject_00577EA0;
+typedef struct ImageObject_00577FC0 {
     D3DTLVERTEX_DX6 at_g_ImmediateTLVertices[4]; /* 00577FC0 g_ImmediateTLVertices */
+} ImageObject_00577FC0;
+extern ImageObject_00577FC0 g_ImageObject_00577FC0;
+typedef struct ImageObject_00578040 {
     D3DRECT_DX6 at_g_LastViewportRect; /* 00578040 g_LastViewportRect */
+} ImageObject_00578040;
+extern ImageObject_00578040 g_ImageObject_00578040;
+typedef struct ImageObject_00578050 {
     uint32_t at_g_ImmediateVertexCount; /* 00578050 g_ImmediateVertexCount */
+} ImageObject_00578050;
+extern ImageObject_00578050 g_ImageObject_00578050;
+typedef struct ImageObject_00578054 {
     uint32_t at_g_TextureUseSerial; /* 00578054 g_TextureUseSerial */
+} ImageObject_00578054;
+extern ImageObject_00578054 g_ImageObject_00578054;
+typedef struct ImageObject_00578058 {
     DirectDrawPaletteEntry * at_g_TexturePaletteEntries; /* 00578058 g_TexturePaletteEntries */
+} ImageObject_00578058;
+extern ImageObject_00578058 g_ImageObject_00578058;
+typedef struct ImageObject_0057805C {
     GraphicsTextureResource ** at_g_GraphicsTextureSlots; /* 0057805C g_GraphicsTextureSlots */
+} ImageObject_0057805C;
+extern ImageObject_0057805C g_ImageObject_0057805C;
+typedef struct ImageObject_00578060 {
     SoftwareFramebufferAccess at_g_DisplayFramebufferAccess; /* 00578060 g_DisplayFramebufferAccess */
+} ImageObject_00578060;
+extern ImageObject_00578060 g_ImageObject_00578060;
+typedef struct ImageObject_00578070 {
     uint32_t at_g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
+} ImageObject_00578070;
+extern ImageObject_00578070 g_ImageObject_00578070;
+typedef struct ImageObject_00578074 {
     uint32_t at_g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
+} ImageObject_00578074;
+extern ImageObject_00578074 g_ImageObject_00578074;
+typedef struct ImageObject_00578078 {
     char at_g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
     uint8_t at_g_CommandLineOptionD3dAll_padding[1];
-} ImageData_00577BFC;
-extern ImageData_00577BFC g_ImageData_00577BFC;
+} ImageObject_00578078;
+extern ImageObject_00578078 g_ImageObject_00578078;
 
 /* original 0x0057ECC8-0x0057EE90 */
-typedef struct ImageData_0057ECC8 {
+typedef struct ImageObject_0057ECC8 {
     uint8_t at_gap_0057ECC8[8]; /* 0057ECC8 gap */
+} ImageObject_0057ECC8;
+extern ImageObject_0057ECC8 g_ImageObject_0057ECC8;
+typedef struct ImageObject_0057ECD0 {
     GrResolution at_g_GlideEnumerationResolutionQuery; /* 0057ECD0 g_GlideEnumerationResolutionQuery: GrResolution: grQueryResolutions template {GR_QUERY_ANY, GR_QUERY_ANY, 2 colour buffers, 1 aux buffer} for enumerating modes; Glide3_InitAndEnumerate */
+} ImageObject_0057ECD0;
+extern ImageObject_0057ECD0 g_ImageObject_0057ECD0;
+typedef struct ImageObject_0057ECE0 {
     GrResolution at_g_GlideSelectedResolutionQuery; /* 0057ECE0 g_GlideSelectedResolutionQuery: GrResolution: grQueryResolutions template {resolution set at run time, GR_QUERY_ANY refresh, 2, 1} to pick the best refresh rate; GraphicsGlide3_ApplyDisplayModeAndInitializeResources */
+} ImageObject_0057ECE0;
+extern ImageObject_0057ECE0 g_ImageObject_0057ECE0;
+typedef struct ImageObject_0057ECF0 {
     uint32_t at_g_GlideRefreshRatesHz[9]; /* 0057ECF0 g_GlideRefreshRatesHz: uint32_t[9]: Hz per GR_REFRESH_* code (60,70,72,75,80,90,100,85,120); graphics/backend/glide.c */
+} ImageObject_0057ECF0;
+extern ImageObject_0057ECF0 g_ImageObject_0057ECF0;
+typedef struct ImageObject_0057ED14 {
     uint32_t at_g_GlideWindowContextHandle; /* 0057ED14 g_GlideWindowContextHandle */
+} ImageObject_0057ED14;
+extern ImageObject_0057ED14 g_ImageObject_0057ED14;
+typedef struct ImageObject_0057ED18 {
     uint32_t at_g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
     uint32_t at_g_GlideRuntimeActiveCount_rest[1]; /* beyond the declared type */
+} ImageObject_0057ED18;
+extern ImageObject_0057ED18 g_ImageObject_0057ED18;
+typedef struct ImageObject_0057ED20 {
     GlideLfbInfo at_g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
+} ImageObject_0057ED20;
+extern ImageObject_0057ED20 g_ImageObject_0057ED20;
+typedef struct ImageObject_0057ED34 {
     GlideLfbInfo at_g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
+} ImageObject_0057ED34;
+extern ImageObject_0057ED34 g_ImageObject_0057ED34;
+typedef struct ImageObject_0057ED48 {
     void * at_g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertex0/1/2; no code reads it (name is historical) */
+} ImageObject_0057ED48;
+extern ImageObject_0057ED48 g_ImageObject_0057ED48;
+typedef struct ImageObject_0057ED54 {
     uint32_t at_g_GlideVertex0ScreenX; /* 0057ED54 g_GlideVertex0ScreenX */
     uint32_t at_g_GlideVertex0ScreenY; /* 0057ED58 g_GlideVertex0ScreenY */
+} ImageObject_0057ED54;
+extern ImageObject_0057ED54 g_ImageObject_0057ED54;
+typedef struct ImageObject_0057ED5C {
     uint32_t at_g_GlideVertex0ReciprocalDepth; /* 0057ED5C g_GlideVertex0ReciprocalDepth */
+} ImageObject_0057ED5C;
+extern ImageObject_0057ED5C g_ImageObject_0057ED5C;
+typedef struct ImageObject_0057ED60 {
     uint32_t at_g_GlideVertex0PerspectiveScale; /* 0057ED60 g_GlideVertex0PerspectiveScale */
     uint32_t at_g_GlideVertex0PerspectiveScale_rest[1]; /* beyond the declared type */
+} ImageObject_0057ED60;
+extern ImageObject_0057ED60 g_ImageObject_0057ED60;
+typedef struct ImageObject_0057ED68 {
     uint32_t at_g_GlideVertex0ProjectedTextureU; /* 0057ED68 g_GlideVertex0ProjectedTextureU */
+} ImageObject_0057ED68;
+extern ImageObject_0057ED68 g_ImageObject_0057ED68;
+typedef struct ImageObject_0057ED6C {
     uint32_t at_g_GlideVertex0ProjectedTextureV; /* 0057ED6C g_GlideVertex0ProjectedTextureV */
+} ImageObject_0057ED6C;
+extern ImageObject_0057ED6C g_ImageObject_0057ED6C;
+typedef struct ImageObject_0057ED70 {
     uint32_t at_g_GlideVertex0DiffuseColor; /* 0057ED70 g_GlideVertex0DiffuseColor */
+} ImageObject_0057ED70;
+extern ImageObject_0057ED70 g_ImageObject_0057ED70;
+typedef struct ImageObject_0057ED74 {
     uint32_t at_g_GlideVertex1ScreenX; /* 0057ED74 g_GlideVertex1ScreenX */
     uint32_t at_g_GlideVertex1ScreenY; /* 0057ED78 g_GlideVertex1ScreenY */
+} ImageObject_0057ED74;
+extern ImageObject_0057ED74 g_ImageObject_0057ED74;
+typedef struct ImageObject_0057ED7C {
     uint32_t at_g_GlideVertex1ReciprocalDepth; /* 0057ED7C g_GlideVertex1ReciprocalDepth */
+} ImageObject_0057ED7C;
+extern ImageObject_0057ED7C g_ImageObject_0057ED7C;
+typedef struct ImageObject_0057ED80 {
     uint32_t at_g_GlideVertex1PerspectiveScale; /* 0057ED80 g_GlideVertex1PerspectiveScale */
     uint32_t at_g_GlideVertex1PerspectiveScale_rest[1]; /* beyond the declared type */
+} ImageObject_0057ED80;
+extern ImageObject_0057ED80 g_ImageObject_0057ED80;
+typedef struct ImageObject_0057ED88 {
     uint32_t at_g_GlideVertex1ProjectedTextureU; /* 0057ED88 g_GlideVertex1ProjectedTextureU */
+} ImageObject_0057ED88;
+extern ImageObject_0057ED88 g_ImageObject_0057ED88;
+typedef struct ImageObject_0057ED8C {
     uint32_t at_g_GlideVertex1ProjectedTextureV; /* 0057ED8C g_GlideVertex1ProjectedTextureV */
+} ImageObject_0057ED8C;
+extern ImageObject_0057ED8C g_ImageObject_0057ED8C;
+typedef struct ImageObject_0057ED90 {
     uint32_t at_g_GlideVertex1DiffuseColor; /* 0057ED90 g_GlideVertex1DiffuseColor */
+} ImageObject_0057ED90;
+extern ImageObject_0057ED90 g_ImageObject_0057ED90;
+typedef struct ImageObject_0057ED94 {
     uint32_t at_g_GlideVertex2ScreenX; /* 0057ED94 g_GlideVertex2ScreenX */
     uint32_t at_g_GlideVertex2ScreenY; /* 0057ED98 g_GlideVertex2ScreenY */
+} ImageObject_0057ED94;
+extern ImageObject_0057ED94 g_ImageObject_0057ED94;
+typedef struct ImageObject_0057ED9C {
     uint32_t at_g_GlideVertex2ReciprocalDepth; /* 0057ED9C g_GlideVertex2ReciprocalDepth */
+} ImageObject_0057ED9C;
+extern ImageObject_0057ED9C g_ImageObject_0057ED9C;
+typedef struct ImageObject_0057EDA0 {
     uint32_t at_g_GlideVertex2PerspectiveScale; /* 0057EDA0 g_GlideVertex2PerspectiveScale */
     uint32_t at_g_GlideVertex2PerspectiveScale_rest[1]; /* beyond the declared type */
+} ImageObject_0057EDA0;
+extern ImageObject_0057EDA0 g_ImageObject_0057EDA0;
+typedef struct ImageObject_0057EDA8 {
     uint32_t at_g_GlideVertex2ProjectedTextureU; /* 0057EDA8 g_GlideVertex2ProjectedTextureU */
+} ImageObject_0057EDA8;
+extern ImageObject_0057EDA8 g_ImageObject_0057EDA8;
+typedef struct ImageObject_0057EDAC {
     uint32_t at_g_GlideVertex2ProjectedTextureV; /* 0057EDAC g_GlideVertex2ProjectedTextureV */
+} ImageObject_0057EDAC;
+extern ImageObject_0057EDAC g_ImageObject_0057EDAC;
+typedef struct ImageObject_0057EDB0 {
     uint32_t at_g_GlideVertex2DiffuseColor; /* 0057EDB0 g_GlideVertex2DiffuseColor */
+} ImageObject_0057EDB0;
+extern ImageObject_0057EDB0 g_ImageObject_0057EDB0;
+typedef struct ImageObject_0057EDB4 {
     GlideTextureInfo at_g_GlideTextureInfo256Argb4444; /* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
+} ImageObject_0057EDB4;
+extern ImageObject_0057EDB4 g_ImageObject_0057EDB4;
+typedef struct ImageObject_0057EDC8 {
     uint32_t at_g_GlideTmuCount; /* 0057EDC8 g_GlideTmuCount */
+} ImageObject_0057EDC8;
+extern ImageObject_0057EDC8 g_ImageObject_0057EDC8;
+typedef struct ImageObject_0057EDCC {
     GlideTextureUploadProc * at_g_GlideTextureColorUpload[3]; /* 0057EDCC g_GlideTextureColorUpload */
+} ImageObject_0057EDCC;
+extern ImageObject_0057EDCC g_ImageObject_0057EDCC;
+typedef struct ImageObject_0057EDD8 {
     GlideTextureUploadProc * at_g_GlideTextureAlphaUpload[3]; /* 0057EDD8 g_GlideTextureAlphaUpload */
+} ImageObject_0057EDD8;
+extern ImageObject_0057EDD8 g_ImageObject_0057EDD8;
+typedef struct ImageObject_0057EDE4 {
     uint32_t at_g_GlideTexturingDisabledState; /* 0057EDE4 g_GlideTexturingDisabledState */
+} ImageObject_0057EDE4;
+extern ImageObject_0057EDE4 g_ImageObject_0057EDE4;
+typedef struct ImageObject_0057EDE8 {
     uint32_t at_g_GlideBlendModeState; /* 0057EDE8 g_GlideBlendModeState */
+} ImageObject_0057EDE8;
+extern ImageObject_0057EDE8 g_ImageObject_0057EDE8;
+typedef struct ImageObject_0057EDEC {
     uint32_t at_g_GlideDepthWriteEnabledState; /* 0057EDEC g_GlideDepthWriteEnabledState */
+} ImageObject_0057EDEC;
+extern ImageObject_0057EDEC g_ImageObject_0057EDEC;
+typedef struct ImageObject_0057EDF0 {
     GraphicsTextureResource * at_g_GlideBoundTexture; /* 0057EDF0 g_GlideBoundTexture */
+} ImageObject_0057EDF0;
+extern ImageObject_0057EDF0 g_ImageObject_0057EDF0;
+typedef struct ImageObject_0057EDF4 {
     uint32_t at_g_GlideTmuMinAddress[16]; /* 0057EDF4 g_GlideTmuMinAddress */
+} ImageObject_0057EDF4;
+extern ImageObject_0057EDF4 g_ImageObject_0057EDF4;
+typedef struct ImageObject_0057EE34 {
     uint32_t at_g_GlideTmuMaxAddress[16]; /* 0057EE34 g_GlideTmuMaxAddress */
+} ImageObject_0057EE34;
+extern ImageObject_0057EE34 g_ImageObject_0057EE34;
+typedef struct ImageObject_0057EE74 {
     GraphicsTextureResource * at_g_GlideResidentTextureTail; /* 0057EE74 g_GlideResidentTextureTail */
+} ImageObject_0057EE74;
+extern ImageObject_0057EE74 g_ImageObject_0057EE74;
+typedef struct ImageObject_0057EE78 {
     GraphicsTextureResource * at_g_GlideResidentTextureHead; /* 0057EE78 g_GlideResidentTextureHead */
+} ImageObject_0057EE78;
+extern ImageObject_0057EE78 g_ImageObject_0057EE78;
+typedef struct ImageObject_0057EE7C {
     int32_t at_g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
+} ImageObject_0057EE7C;
+extern ImageObject_0057EE7C g_ImageObject_0057EE7C;
+typedef struct ImageObject_0057EE80 {
     uint8_t * at_g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
+} ImageObject_0057EE80;
+extern ImageObject_0057EE80 g_ImageObject_0057EE80;
+typedef struct ImageObject_0057EE84 {
     char at_g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
     uint8_t at_g_CommandLineOptionGlide_padding[6];
-} ImageData_0057ECC8;
-extern ImageData_0057ECC8 g_ImageData_0057ECC8;
+} ImageObject_0057EE84;
+extern ImageObject_0057EE84 g_ImageObject_0057EE84;
 
 /* original 0x00582ED8-0x00583140 */
-typedef struct ImageData_00582ED8 {
+typedef struct ImageObject_00582ED8 {
     uint8_t at_gap_00582ED8[8]; /* 00582ED8 gap */
+} ImageObject_00582ED8;
+extern ImageObject_00582ED8 g_ImageObject_00582ED8;
+typedef struct ImageObject_00582EE0 {
     IDirectSound * at_g_DirectSound; /* 00582EE0 g_DirectSound */
+} ImageObject_00582EE0;
+extern ImageObject_00582EE0 g_ImageObject_00582EE0;
+typedef struct ImageObject_00582EE4 {
     IDirectSoundBuffer * at_g_PrimarySoundBuffer; /* 00582EE4 g_PrimarySoundBuffer */
+} ImageObject_00582EE4;
+extern ImageObject_00582EE4 g_ImageObject_00582EE4;
+typedef struct ImageObject_00582EE8 {
     TH_LEGACY_LONG at_g_PrimaryVolume; /* 00582EE8 g_PrimaryVolume */
+} ImageObject_00582EE8;
+extern ImageObject_00582EE8 g_ImageObject_00582EE8;
+typedef struct ImageObject_00582EEC {
     TH_LEGACY_LONG at_g_PrimaryPan; /* 00582EEC g_PrimaryPan */
+} ImageObject_00582EEC;
+extern ImageObject_00582EEC g_ImageObject_00582EEC;
+typedef struct ImageObject_00582EF0 {
     WAVEFORMATEX at_WaveFormat_PCM_22050_Stereo16; /* 00582EF0 WaveFormat_PCM_22050_Stereo16 */
     uint32_t at_WaveFormat_PCM_22050_Stereo16_rest[3]; /* beyond the declared type */
     uint8_t at_WaveFormat_PCM_22050_Stereo16_rest_tail[2];
+} ImageObject_00582EF0;
+extern ImageObject_00582EF0 g_ImageObject_00582EF0;
+typedef struct ImageObject_00582F10 {
     DSBUFFERDESC_DX6 at_PrimarySoundBufferDesc; /* 00582F10 PrimarySoundBufferDesc */
+} ImageObject_00582F10;
+extern ImageObject_00582F10 g_ImageObject_00582F10;
+typedef struct ImageObject_00582F24 {
     DirectSoundVoiceSet ** at_g_DirectSoundVoiceSetRegistry; /* 00582F24 g_DirectSoundVoiceSetRegistry */
+} ImageObject_00582F24;
+extern ImageObject_00582F24 g_ImageObject_00582F24;
+typedef struct ImageObject_00582F28 {
     char at_g_CommandLineOptionSound[6]; /* 00582F28 g_CommandLineOptionSound */
+} ImageObject_00582F28;
+extern ImageObject_00582F28 g_ImageObject_00582F28;
+typedef struct ImageObject_00582F2E {
     int32_t at_g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation */
     uint32_t at_g_DirectSoundGainAttenuation_rest[3]; /* beyond the declared type */
     uint8_t at_g_DirectSoundGainAttenuation_rest_tail[2];
-} ImageData_00582ED8;
-extern ImageData_00582ED8 g_ImageData_00582ED8;
+} ImageObject_00582F2E;
+extern ImageObject_00582F2E g_ImageObject_00582F2E;
 
 /* original 0x00583D28-0x00584080 */
-typedef struct ImageData_00583D28 {
+typedef struct ImageObject_00583D28 {
     uint8_t at_gap_00583D28[56]; /* 00583D28 gap */
+} ImageObject_00583D28;
+extern ImageObject_00583D28 g_ImageObject_00583D28;
+typedef struct ImageObject_00583D60 {
     uint32_t at_g_NetworkBackendMode; /* 00583D60 g_NetworkBackendMode */
+} ImageObject_00583D60;
+extern ImageObject_00583D60 g_ImageObject_00583D60;
+typedef struct ImageObject_00583D64 {
     WinSockData11 at_g_WinSockStartupData; /* 00583D64 g_WinSockStartupData */
+} ImageObject_00583D64;
+extern ImageObject_00583D64 g_ImageObject_00583D64;
+typedef struct ImageObject_00583EF2 {
     NetworkSocketHandle32 at_g_NetworkFallbackSocket; /* 00583EF2 g_NetworkFallbackSocket */
+} ImageObject_00583EF2;
+extern ImageObject_00583EF2 g_ImageObject_00583EF2;
+typedef struct ImageObject_00583EF6 {
     uint32_t at_g_NetworkFallbackSocketOptionOn; /* 00583EF6 g_NetworkFallbackSocketOptionOn: uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO); network/backend/fallback_udp.c */
+} ImageObject_00583EF6;
+extern ImageObject_00583EF6 g_ImageObject_00583EF6;
+typedef struct ImageObject_00583EFA {
     uint32_t at_g_NetworkFallbackAddressLength; /* 00583EFA g_NetworkFallbackAddressLength */
+} ImageObject_00583EFA;
+extern ImageObject_00583EFA g_ImageObject_00583EFA;
+typedef struct ImageObject_00583EFE {
     WinSockAddress at_g_NetworkFallbackBindEndpoint; /* 00583EFE g_NetworkFallbackBindEndpoint */
+} ImageObject_00583EFE;
+extern ImageObject_00583EFE g_ImageObject_00583EFE;
+typedef struct ImageObject_00583F0E {
     uint32_t at_g_NetworkBackendActiveAddressFamily; /* 00583F0E g_NetworkBackendActiveAddressFamily */
+} ImageObject_00583F0E;
+extern ImageObject_00583F0E g_ImageObject_00583F0E;
+typedef struct ImageObject_00583F12 {
     uint32_t at_g_NetworkBackendActiveSocketAddressLength; /* 00583F12 g_NetworkBackendActiveSocketAddressLength */
+} ImageObject_00583F12;
+extern ImageObject_00583F12 g_ImageObject_00583F12;
+typedef struct ImageObject_00583F16 {
     uint32_t at_g_NetworkBackendActiveSocketType; /* 00583F16 g_NetworkBackendActiveSocketType */
+} ImageObject_00583F16;
+extern ImageObject_00583F16 g_ImageObject_00583F16;
+typedef struct ImageObject_00583F1A {
     uint32_t at_g_NetworkBackendActiveProtocol; /* 00583F1A g_NetworkBackendActiveProtocol */
+} ImageObject_00583F1A;
+extern ImageObject_00583F1A g_ImageObject_00583F1A;
+typedef struct ImageObject_00583F1E {
     uint32_t at_g_NetworkBackendPortNetworkOrderCarrier; /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
+} ImageObject_00583F1E;
+extern ImageObject_00583F1E g_ImageObject_00583F1E;
+typedef struct ImageObject_00583F22 {
     NetworkBackendSocketAddress16 at_g_NetworkBackendBindAddress; /* 00583F22 g_NetworkBackendBindAddress */
     uint32_t at_g_NetworkBackendBindAddress_rest[3]; /* beyond the declared type */
     uint8_t at_g_NetworkBackendBindAddress_rest_tail[2];
+} ImageObject_00583F22;
+extern ImageObject_00583F22 g_ImageObject_00583F22;
+typedef struct ImageObject_00583F40 {
     uint8_t at_g_NetworkEndpointTextScratchA; /* 00583F40 g_NetworkEndpointTextScratchA */
     uint32_t at_g_NetworkEndpointTextScratchA_rest[63]; /* beyond the declared type */
     uint8_t at_g_NetworkEndpointTextScratchA_rest_tail[3];
+} ImageObject_00583F40;
+extern ImageObject_00583F40 g_ImageObject_00583F40;
+typedef struct ImageObject_00584040 {
     NetworkBackendInstanceDescriptorPrefix at_NetworkBackendInstanceDescriptorPrefix_00584040; /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
+} ImageObject_00584040;
+extern ImageObject_00584040 g_ImageObject_00584040;
+typedef struct ImageObject_00584078 {
     char at_s_CommandLineOptionIp[4]; /* 00584078 s_CommandLineOptionIp */
     uint32_t at_s_CommandLineOptionIp_rest[1]; /* beyond the declared type */
-} ImageData_00583D28;
-extern ImageData_00583D28 g_ImageData_00583D28;
+} ImageObject_00584078;
+extern ImageObject_00584078 g_ImageObject_00584078;
 
 /* original 0x00584E44-0x00584E50 */
-typedef struct ImageData_00584E44 {
+typedef struct ImageObject_00584E44 {
     uint8_t at_gap_00584E44[12]; /* 00584E44 gap */
-} ImageData_00584E44;
-extern ImageData_00584E44 g_ImageData_00584E44;
+} ImageObject_00584E44;
+extern ImageObject_00584E44 g_ImageObject_00584E44;
 
 /* original 0x005856A0-0x00585D40 */
-typedef struct ImageData_005856A0 {
+typedef struct ImageObject_005856A0 {
     uint8_t at_gap_005856A0[16]; /* 005856A0 gap */
+} ImageObject_005856A0;
+extern ImageObject_005856A0 g_ImageObject_005856A0;
+typedef struct ImageObject_005856B0 {
     HINSTANCE at_g_hInstance; /* 005856B0 g_hInstance */
+} ImageObject_005856B0;
+extern ImageObject_005856B0 g_ImageObject_005856B0;
+typedef struct ImageObject_005856B4 {
     HWND at_g_MainWindow; /* 005856B4 g_MainWindow */
+} ImageObject_005856B4;
+extern ImageObject_005856B4 g_ImageObject_005856B4;
+typedef struct ImageObject_005856B8 {
     uint32_t at_g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
+} ImageObject_005856B8;
+extern ImageObject_005856B8 g_ImageObject_005856B8;
+typedef struct ImageObject_005856BC {
     uint32_t at_g_AppActive; /* 005856BC g_AppActive: uint32_t: WM_ACTIVATEAPP wParam (application active flag), initially 1; platform/bootstrap/runtime.c */
+} ImageObject_005856BC;
+extern ImageObject_005856BC g_ImageObject_005856BC;
+typedef struct ImageObject_005856C0 {
     Win32MainMessageStorage at_g_MainMessageStorage; /* 005856C0 g_MainMessageStorage */
     uint32_t at_g_MainMessageStorage_rest[2]; /* beyond the declared type */
+} ImageObject_005856C0;
+extern ImageObject_005856C0 g_ImageObject_005856C0;
+typedef struct ImageObject_00585708 {
     ArenaState at_g_Arena; /* 00585708 g_Arena */
+} ImageObject_00585708;
+extern ImageObject_00585708 g_ImageObject_00585708;
+typedef struct ImageObject_0058571C {
     TimerSystemState at_g_TimerSystemState; /* 0058571C g_TimerSystemState */
+} ImageObject_0058571C;
+extern ImageObject_0058571C g_ImageObject_0058571C;
+typedef struct ImageObject_0058581C {
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */
+} ImageObject_0058581C;
+extern ImageObject_0058581C g_ImageObject_0058581C;
+typedef struct ImageObject_00585D1C {
     char at_sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
+} ImageObject_00585D1C;
+extern ImageObject_00585D1C g_ImageObject_00585D1C;
+typedef struct ImageObject_00585D2B {
     char at_sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
     uint8_t at_sz_MainWindowClass_padding[4];
-} ImageData_005856A0;
-extern ImageData_005856A0 g_ImageData_005856A0;
+} ImageObject_00585D2B;
+extern ImageObject_00585D2B g_ImageObject_00585D2B;
 
 /* original 0x00586950-0x00586B70 */
-typedef struct ImageData_00586950 {
+typedef struct ImageObject_00586950 {
     uint8_t at_g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
     uint32_t at_g_LocaleInfoScratch_rest[68]; /* beyond the declared type */
+} ImageObject_00586950;
+extern ImageObject_00586950 g_ImageObject_00586950;
+typedef struct ImageObject_00586A70 {
     LocaleSystemState at_g_LocaleSystemState; /* 00586A70 g_LocaleSystemState */
-} ImageData_00586950;
-extern ImageData_00586950 g_ImageData_00586950;
+} ImageObject_00586A70;
+extern ImageObject_00586A70 g_ImageObject_00586A70;
 
 /* original 0x005873BC-0x0058C000 */
-typedef struct ImageData_005873BC {
+typedef struct ImageObject_005873BC {
     uint8_t at_gap_005873BC[68]; /* 005873BC gap */
+} ImageObject_005873BC;
+extern ImageObject_005873BC g_ImageObject_005873BC;
+typedef struct ImageObject_00587400 {
     uint32_t at_g_Arena_3[4096]; /* 00587400 g_Arena_3 */
+} ImageObject_00587400;
+extern ImageObject_00587400 g_ImageObject_00587400;
+typedef struct ImageObject_0058B400 {
     uint32_t at_g_Arena_4[768]; /* 0058B400 g_Arena_4 */
-} ImageData_005873BC;
-extern ImageData_005873BC g_ImageData_005873BC;
+} ImageObject_0058B400;
+extern ImageObject_0058B400 g_ImageObject_0058B400;
 
 #pragma pack(pop)
 
 /* Objects the headers do not declare, by their Ghidra label. */
-#define g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 (g_ImageData_0041B128.at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130)
-#define g_SoundDispatchTable_0041B180 (g_ImageData_0041B128.at_g_SoundDispatchTable_0041B180)
-#define g_SoundDispatchTable_0041B190 (g_ImageData_0041B128.at_g_SoundDispatchTable_0041B190)
-#define g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 (g_ImageData_0041B228.at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230)
-#define g_SoundDispatchTable_0041B280 (g_ImageData_0041B228.at_g_SoundDispatchTable_0041B280)
-#define g_SoundDispatchTable_0041B290 (g_ImageData_0041B228.at_g_SoundDispatchTable_0041B290)
-#define g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 (g_ImageData_0041B338.at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340)
-#define g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 (g_ImageData_0041B448.at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450)
-#define g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 (g_ImageData_0041B548.at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550)
-#define g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 (g_ImageData_0041B648.at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650)
-#define g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 (g_ImageData_0041B758.at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760)
-#define g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 (g_ImageData_0041B868.at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870)
-#define g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 (g_ImageData_0041B9C8.at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0)
-#define g_SoundDispatchTable_0041BA20 (g_ImageData_0041B9C8.at_g_SoundDispatchTable_0041BA20)
-#define g_SoundDispatchTable_0041BA30 (g_ImageData_0041B9C8.at_g_SoundDispatchTable_0041BA30)
-#define g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 (g_ImageData_0041BB78.at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80)
-#define g_SoundDispatchTable_0041BBD0 (g_ImageData_0041BB78.at_g_SoundDispatchTable_0041BBD0)
-#define g_SoundDispatchTable_0041BBE0 (g_ImageData_0041BB78.at_g_SoundDispatchTable_0041BBE0)
-#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 (g_ImageData_0041BCEC.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0)
-#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 (g_ImageData_0041C15C.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160)
-#define g_SoundDispatchTable_0041C220 (g_ImageData_0041C15C.at_g_SoundDispatchTable_0041C220)
-#define g_SoundDispatchTable_0041C260 (g_ImageData_0041C15C.at_g_SoundDispatchTable_0041C260)
-#define g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 (g_ImageData_0041C94C.at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950)
-#define g_TextResourcePage_Load_SwitchTable_0041CB70 (g_ImageData_0041CB68.at_g_TextResourcePage_Load_SwitchTable_0041CB70)
-#define g_SoundDispatchTable_0041CBC0 (g_ImageData_0041CB68.at_g_SoundDispatchTable_0041CBC0)
-#define g_SoundDispatchTable_0041CBD0 (g_ImageData_0041CB68.at_g_SoundDispatchTable_0041CBD0)
-#define g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 (g_ImageData_0041CF7C.at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80)
-#define g_SoundDispatchTable_0041CFA0 (g_ImageData_0041CF7C.at_g_SoundDispatchTable_0041CFA0)
-#define g_SoundDispatchTable_0041CFD0 (g_ImageData_0041CF7C.at_g_SoundDispatchTable_0041CFD0)
-#define g_SoundDispatchTable_0041CFE0 (g_ImageData_0041CF7C.at_g_SoundDispatchTable_0041CFE0)
-#define g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 (g_ImageData_0041D144.at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150)
-#define g_SoundDispatchTable_0041D170 (g_ImageData_0041D144.at_g_SoundDispatchTable_0041D170)
-#define g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 (g_ImageData_0041D53C.at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540)
-#define g_SoundDispatchTable_0041D560 (g_ImageData_0041D53C.at_g_SoundDispatchTable_0041D560)
-#define g_SoundDispatchTable_0041D590 (g_ImageData_0041D53C.at_g_SoundDispatchTable_0041D590)
-#define g_SoundDispatchTable_0041D5A0 (g_ImageData_0041D53C.at_g_SoundDispatchTable_0041D5A0)
-#define g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 (g_ImageData_0041D880.at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890)
-#define g_SoundDispatchTable_0041D8B0 (g_ImageData_0041D880.at_g_SoundDispatchTable_0041D8B0)
-#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 (g_ImageData_0041DA44.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50)
-#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 (g_ImageData_0041DBD4.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0)
-#define g_UiGraphicsAdapterTextButtonVtable (g_ImageData_0041DE7C.at_g_UiGraphicsAdapterTextButtonVtable)
-#define g_UiNodeVtable_004B1D80 (g_ImageData_004B1D74.at_g_UiNodeVtable_004B1D80)
-#define g_UiWindowControlVtable (g_ImageData_004B2734.at_g_UiWindowControlVtable)
-#define g_UiNodeVtable_004B2CE0 (g_ImageData_004B2CD8.at_g_UiNodeVtable_004B2CE0)
-#define g_UiTitledWindowControlVtable (g_ImageData_004B33D0.at_g_UiTitledWindowControlVtable)
-#define g_UiImagePanelControlVtable (g_ImageData_004B3760.at_g_UiImagePanelControlVtable)
-#define g_UiFillPanelControlVtable (g_ImageData_004B3A48.at_g_UiFillPanelControlVtable)
-#define g_UiHorizontalGaugeControlVtable (g_ImageData_004B3C1C.at_g_UiHorizontalGaugeControlVtable)
-#define g_UiRangeSliderControlVtable (g_ImageData_004B3EEC.at_g_UiRangeSliderControlVtable)
-#define g_UiLayoutContainerControlVtable (g_ImageData_004B4648.at_g_UiLayoutContainerControlVtable)
-#define g_UiPanelControlVtable (g_ImageData_004B494C.at_g_UiPanelControlVtable)
-#define g_UiResizableWindowControlVtable (g_ImageData_004B4CB8.at_g_UiResizableWindowControlVtable)
-#define g_UiNumericTextEditControlVtable (g_ImageData_004B5890.at_g_UiNumericTextEditControlVtable)
-#define g_UiPathTextEditControlVtable (g_ImageData_004B67F4.at_g_UiPathTextEditControlVtable)
-#define g_UiRequiredTextEditControlVtable (g_ImageData_004B7048.at_g_UiRequiredTextEditControlVtable)
-#define g_UiFocusProxyControlVtable (g_ImageData_004B9530.at_g_UiFocusProxyControlVtable)
-#define g_UiListOffsetControlVtable (g_ImageData_004BC404.at_g_UiListOffsetControlVtable)
-#define g_UiNodeVtable_004BC570 (g_ImageData_004BC564.at_g_UiNodeVtable_004BC570)
-#define g_UiNineSlicePanelControlVtable (g_ImageData_004BCC20.at_g_UiNineSlicePanelControlVtable)
-#define g_ResourceRegistrationDomainPairCallbacks3 (g_ImageData_0050E95C.at_g_ResourceRegistrationDomainPairCallbacks3)
-#define g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 (g_ImageData_0050EB5C.at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60)
-#define g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 (g_ImageData_00513DA4.at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0)
-#define g_UiImageActionControlVtable (g_ImageData_00514FB4.at_g_UiImageActionControlVtable)
-#define g_UiConditionalActionControlVtable (g_ImageData_0051528C.at_g_UiConditionalActionControlVtable)
-#define g_UiNumericPairTextButtonVtable (g_ImageData_0051560C.at_g_UiNumericPairTextButtonVtable)
-#define g_UiPayloadPairTextButtonVtable (g_ImageData_00515720.at_g_UiPayloadPairTextButtonVtable)
-#define g_UiFormattedContainerVtable (g_ImageData_005157D0.at_g_UiFormattedContainerVtable)
-#define g_UiSelectionGeometryControlVtable (g_ImageData_00515C60.at_g_UiSelectionGeometryControlVtable)
-#define g_UiNodeVtable_005162C0 (g_ImageData_005162BC.at_g_UiNodeVtable_005162C0)
-#define g_UiNodeVtable_00516310 (g_ImageData_005162BC.at_g_UiNodeVtable_00516310)
-#define g_UiNodeVtable_00516530 (g_ImageData_0051650C.at_g_UiNodeVtable_00516530)
-#define g_UiArmyMetricsPanelVtable (g_ImageData_00516CBC.at_g_UiArmyMetricsPanelVtable)
-#define g_UiNodeVtable_00516F60 (g_ImageData_00516E90.at_g_UiNodeVtable_00516F60)
-#define g_UiNodeVtable_00517070 (g_ImageData_00517068.at_g_UiNodeVtable_00517070)
-#define g_UiNodeVtable_00517DE0 (g_ImageData_00517DD4.at_g_UiNodeVtable_00517DE0)
-#define g_UiCommandVisibilityWrappedTextVtable (g_ImageData_00517F00.at_g_UiCommandVisibilityWrappedTextVtable)
-#define g_UiCommandVisibilitySingleLineTextVtable (g_ImageData_00517FBC.at_g_UiCommandVisibilitySingleLineTextVtable)
-#define g_UiSoftwareTexturePreviewControlVtable (g_ImageData_00518074.at_g_UiSoftwareTexturePreviewControlVtable)
-#define g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 (g_ImageData_0051936C.at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374)
-#define g_EffectLifecycleTransitionDispatchTable5 (g_ImageData_0051EAA0.at_g_EffectLifecycleTransitionDispatchTable5)
-#define g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 (g_ImageData_00524110.at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120)
-#define g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 (g_ImageData_005247C0.at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0)
-#define g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 (g_ImageData_00525A8C.at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90)
-#define g_ArmyTerrainContactDispatchTable2 (g_ImageData_005266B0.at_g_ArmyTerrainContactDispatchTable2)
-#define g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 (g_ImageData_00526988.at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990)
-#define g_EntityPathingPriorityPairStorage (g_ImageData_005367CC.at_g_EntityPathingPriorityPairStorage)
-#define g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 (g_ImageData_0053C154.at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160)
-#define g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 (g_ImageData_00547D88.at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90)
-#define g_FrontendCommandDispatchRecords_Terminator (g_ImageData_005480FC.at_g_FrontendCommandDispatchRecords_Terminator)
-#define g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 (g_ImageData_0055F7B4.at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0)
-#define g_CodePointerTable_0055F7C8 (g_ImageData_0055F7B4.at_g_CodePointerTable_0055F7C8)
-#define g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 (g_ImageData_0055F934.at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940)
-#define g_CodePointerTable_0055F944 (g_ImageData_0055F934.at_g_CodePointerTable_0055F944)
-#define g_CodePointerTable_0055F960 (g_ImageData_0055F934.at_g_CodePointerTable_0055F960)
-#define g_EndMovieCommandDispatchRecords_Terminator (g_ImageData_005658BC.at_g_EndMovieCommandDispatchRecords_Terminator)
-#define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageData_00566034.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
-#define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageData_0056710C.at_g_EndGameResultsCommandDispatchRecords_Terminator)
-#define g_InGameCommandDispatchRecords_Terminator (g_ImageData_005679AC.at_g_InGameCommandDispatchRecords_Terminator)
-#define g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 (g_ImageData_0056D33C.at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340)
-#define g_InGameUiCommandCursorCodeModeDispatchTable (g_ImageData_0056F81C.at_g_InGameUiCommandCursorCodeModeDispatchTable)
-#define g_InGameUiCommandBeginInteractionModeDispatchTable (g_ImageData_0056FA98.at_g_InGameUiCommandBeginInteractionModeDispatchTable)
-#define g_InGameUiCommandUpdateInteractionModeDispatchTable (g_ImageData_00570408.at_g_InGameUiCommandUpdateInteractionModeDispatchTable)
-#define g_InGameUiCommandEndInteractionModeDispatchTable (g_ImageData_00570D90.at_g_InGameUiCommandEndInteractionModeDispatchTable)
-#define g_InGameUiCommandResetInteractionModeDispatchTable (g_ImageData_00570F48.at_g_InGameUiCommandResetInteractionModeDispatchTable)
-#define g_WinSock_UnboundApiSlot34C (g_ImageData_00573EE8.at_g_WinSock_UnboundApiSlot34C)
-#define g_Ws2_32_accept (g_ImageData_00573EE8.at_g_Ws2_32_accept)
-#define g_Ws2_32_connect (g_ImageData_00573EE8.at_g_Ws2_32_connect)
-#define g_Ws2_32_getpeername (g_ImageData_00573EE8.at_g_Ws2_32_getpeername)
-#define g_Ws2_32_getsockname (g_ImageData_00573EE8.at_g_Ws2_32_getsockname)
-#define g_Ws2_32_getsockopt (g_ImageData_00573EE8.at_g_Ws2_32_getsockopt)
-#define g_Ws2_32_htonl (g_ImageData_00573EE8.at_g_Ws2_32_htonl)
-#define g_Ws2_32_ioctlsocket (g_ImageData_00573EE8.at_g_Ws2_32_ioctlsocket)
-#define g_Ws2_32_listen (g_ImageData_00573EE8.at_g_Ws2_32_listen)
-#define g_Ws2_32_ntohl (g_ImageData_00573EE8.at_g_Ws2_32_ntohl)
-#define g_Ws2_32_ntohs (g_ImageData_00573EE8.at_g_Ws2_32_ntohs)
-#define g_Ws2_32_recv (g_ImageData_00573EE8.at_g_Ws2_32_recv)
-#define g_Ws2_32_select (g_ImageData_00573EE8.at_g_Ws2_32_select)
-#define g_Ws2_32_send (g_ImageData_00573EE8.at_g_Ws2_32_send)
-#define g_Ws2_32_shutdown (g_ImageData_00573EE8.at_g_Ws2_32_shutdown)
-#define g_Ws2_32_WSAAsyncSelect (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncSelect)
-#define g_Ws2_32_WSACancelBlockingCall (g_ImageData_00573EE8.at_g_Ws2_32_WSACancelBlockingCall)
-#define g_Ws2_32_WSAIsBlocking (g_ImageData_00573EE8.at_g_Ws2_32_WSAIsBlocking)
-#define g_Ws2_32_WSASetBlockingHook (g_ImageData_00573EE8.at_g_Ws2_32_WSASetBlockingHook)
-#define g_Ws2_32_WSAStartup (g_ImageData_00573EE8.at_g_Ws2_32_WSAStartup)
-#define g_Ws2_32_WSAUnhookBlockingHook (g_ImageData_00573EE8.at_g_Ws2_32_WSAUnhookBlockingHook)
-#define g_Ws2_32_inet_addr (g_ImageData_00573EE8.at_g_Ws2_32_inet_addr)
-#define g_Ws2_32_inet_ntoa (g_ImageData_00573EE8.at_g_Ws2_32_inet_ntoa)
-#define g_Ws2_32_gethostbyaddr (g_ImageData_00573EE8.at_g_Ws2_32_gethostbyaddr)
-#define g_Ws2_32_gethostname (g_ImageData_00573EE8.at_g_Ws2_32_gethostname)
-#define g_Ws2_32_getprotobyname (g_ImageData_00573EE8.at_g_Ws2_32_getprotobyname)
-#define g_Ws2_32_getprotobynumber (g_ImageData_00573EE8.at_g_Ws2_32_getprotobynumber)
-#define g_Ws2_32_getservbyname (g_ImageData_00573EE8.at_g_Ws2_32_getservbyname)
-#define g_Ws2_32_getservbyport (g_ImageData_00573EE8.at_g_Ws2_32_getservbyport)
-#define g_Ws2_32_WSAAsyncGetHostByAddr (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetHostByAddr)
-#define g_Ws2_32_WSAAsyncGetHostByName (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetHostByName)
-#define g_Ws2_32_WSAAsyncGetProtoByName (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetProtoByName)
-#define g_Ws2_32_WSAAsyncGetProtoByNumber (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetProtoByNumber)
-#define g_Ws2_32_WSAAsyncGetServByName (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetServByName)
-#define g_Ws2_32_WSAAsyncGetServByPort (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetServByPort)
-#define g_Ws2_32_WSACancelAsyncRequest (g_ImageData_00573EE8.at_g_Ws2_32_WSACancelAsyncRequest)
-#define g_Arena_3 (g_ImageData_005873BC.at_g_Arena_3)
-#define g_Arena_4 (g_ImageData_005873BC.at_g_Arena_4)
+#define g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 (g_ImageObject_0041B130.at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130)
+#define g_SoundDispatchTable_0041B180 (g_ImageObject_0041B180.at_g_SoundDispatchTable_0041B180)
+#define g_SoundDispatchTable_0041B190 (g_ImageObject_0041B190.at_g_SoundDispatchTable_0041B190)
+#define g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 (g_ImageObject_0041B230.at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230)
+#define g_SoundDispatchTable_0041B280 (g_ImageObject_0041B280.at_g_SoundDispatchTable_0041B280)
+#define g_SoundDispatchTable_0041B290 (g_ImageObject_0041B290.at_g_SoundDispatchTable_0041B290)
+#define g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 (g_ImageObject_0041B340.at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340)
+#define g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 (g_ImageObject_0041B450.at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450)
+#define g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 (g_ImageObject_0041B550.at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550)
+#define g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 (g_ImageObject_0041B650.at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650)
+#define g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 (g_ImageObject_0041B760.at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760)
+#define g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 (g_ImageObject_0041B870.at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870)
+#define g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 (g_ImageObject_0041B9D0.at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0)
+#define g_SoundDispatchTable_0041BA20 (g_ImageObject_0041BA20.at_g_SoundDispatchTable_0041BA20)
+#define g_SoundDispatchTable_0041BA30 (g_ImageObject_0041BA30.at_g_SoundDispatchTable_0041BA30)
+#define g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 (g_ImageObject_0041BB80.at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80)
+#define g_SoundDispatchTable_0041BBD0 (g_ImageObject_0041BBD0.at_g_SoundDispatchTable_0041BBD0)
+#define g_SoundDispatchTable_0041BBE0 (g_ImageObject_0041BBE0.at_g_SoundDispatchTable_0041BBE0)
+#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 (g_ImageObject_0041BCF0.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0)
+#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 (g_ImageObject_0041C160.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160)
+#define g_SoundDispatchTable_0041C220 (g_ImageObject_0041C220.at_g_SoundDispatchTable_0041C220)
+#define g_SoundDispatchTable_0041C260 (g_ImageObject_0041C260.at_g_SoundDispatchTable_0041C260)
+#define g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 (g_ImageObject_0041C950.at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950)
+#define g_TextResourcePage_Load_SwitchTable_0041CB70 (g_ImageObject_0041CB70.at_g_TextResourcePage_Load_SwitchTable_0041CB70)
+#define g_SoundDispatchTable_0041CBC0 (g_ImageObject_0041CBC0.at_g_SoundDispatchTable_0041CBC0)
+#define g_SoundDispatchTable_0041CBD0 (g_ImageObject_0041CBD0.at_g_SoundDispatchTable_0041CBD0)
+#define g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 (g_ImageObject_0041CF80.at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80)
+#define g_SoundDispatchTable_0041CFA0 (g_ImageObject_0041CFA0.at_g_SoundDispatchTable_0041CFA0)
+#define g_SoundDispatchTable_0041CFD0 (g_ImageObject_0041CFD0.at_g_SoundDispatchTable_0041CFD0)
+#define g_SoundDispatchTable_0041CFE0 (g_ImageObject_0041CFE0.at_g_SoundDispatchTable_0041CFE0)
+#define g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 (g_ImageObject_0041D150.at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150)
+#define g_SoundDispatchTable_0041D170 (g_ImageObject_0041D170.at_g_SoundDispatchTable_0041D170)
+#define g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 (g_ImageObject_0041D540.at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540)
+#define g_SoundDispatchTable_0041D560 (g_ImageObject_0041D560.at_g_SoundDispatchTable_0041D560)
+#define g_SoundDispatchTable_0041D590 (g_ImageObject_0041D590.at_g_SoundDispatchTable_0041D590)
+#define g_SoundDispatchTable_0041D5A0 (g_ImageObject_0041D5A0.at_g_SoundDispatchTable_0041D5A0)
+#define g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 (g_ImageObject_0041D890.at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890)
+#define g_SoundDispatchTable_0041D8B0 (g_ImageObject_0041D8B0.at_g_SoundDispatchTable_0041D8B0)
+#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 (g_ImageObject_0041DA50.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50)
+#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 (g_ImageObject_0041DBE0.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0)
+#define g_UiGraphicsAdapterTextButtonVtable (g_ImageObject_00422720.at_g_UiGraphicsAdapterTextButtonVtable)
+#define g_UiNodeVtable_004B1D80 (g_ImageObject_004B1D80.at_g_UiNodeVtable_004B1D80)
+#define g_UiWindowControlVtable (g_ImageObject_004B2740.at_g_UiWindowControlVtable)
+#define g_UiNodeVtable_004B2CE0 (g_ImageObject_004B2CE0.at_g_UiNodeVtable_004B2CE0)
+#define g_UiTitledWindowControlVtable (g_ImageObject_004B33D0.at_g_UiTitledWindowControlVtable)
+#define g_UiImagePanelControlVtable (g_ImageObject_004B3770.at_g_UiImagePanelControlVtable)
+#define g_UiFillPanelControlVtable (g_ImageObject_004B3A50.at_g_UiFillPanelControlVtable)
+#define g_UiHorizontalGaugeControlVtable (g_ImageObject_004B3C20.at_g_UiHorizontalGaugeControlVtable)
+#define g_UiRangeSliderControlVtable (g_ImageObject_004B3EF0.at_g_UiRangeSliderControlVtable)
+#define g_UiLayoutContainerControlVtable (g_ImageObject_004B4650.at_g_UiLayoutContainerControlVtable)
+#define g_UiPanelControlVtable (g_ImageObject_004B4950.at_g_UiPanelControlVtable)
+#define g_UiResizableWindowControlVtable (g_ImageObject_004B4CC0.at_g_UiResizableWindowControlVtable)
+#define g_UiNumericTextEditControlVtable (g_ImageObject_004B58A0.at_g_UiNumericTextEditControlVtable)
+#define g_UiPathTextEditControlVtable (g_ImageObject_004B6800.at_g_UiPathTextEditControlVtable)
+#define g_UiRequiredTextEditControlVtable (g_ImageObject_004B7050.at_g_UiRequiredTextEditControlVtable)
+#define g_UiFocusProxyControlVtable (g_ImageObject_004B9530.at_g_UiFocusProxyControlVtable)
+#define g_UiListOffsetControlVtable (g_ImageObject_004BC410.at_g_UiListOffsetControlVtable)
+#define g_UiNodeVtable_004BC570 (g_ImageObject_004BC570.at_g_UiNodeVtable_004BC570)
+#define g_UiNineSlicePanelControlVtable (g_ImageObject_004BCC30.at_g_UiNineSlicePanelControlVtable)
+#define g_ResourceRegistrationDomainPairCallbacks3 (g_ImageObject_0050E960.at_g_ResourceRegistrationDomainPairCallbacks3)
+#define g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 (g_ImageObject_0050EB60.at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60)
+#define g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 (g_ImageObject_00513DB0.at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0)
+#define g_UiImageActionControlVtable (g_ImageObject_00514FC0.at_g_UiImageActionControlVtable)
+#define g_UiConditionalActionControlVtable (g_ImageObject_00515290.at_g_UiConditionalActionControlVtable)
+#define g_UiNumericPairTextButtonVtable (g_ImageObject_00515610.at_g_UiNumericPairTextButtonVtable)
+#define g_UiPayloadPairTextButtonVtable (g_ImageObject_00515730.at_g_UiPayloadPairTextButtonVtable)
+#define g_UiFormattedContainerVtable (g_ImageObject_005157E0.at_g_UiFormattedContainerVtable)
+#define g_UiSelectionGeometryControlVtable (g_ImageObject_00515C70.at_g_UiSelectionGeometryControlVtable)
+#define g_UiNodeVtable_005162C0 (g_ImageObject_005162C0.at_g_UiNodeVtable_005162C0)
+#define g_UiNodeVtable_00516310 (g_ImageObject_00516310.at_g_UiNodeVtable_00516310)
+#define g_UiNodeVtable_00516530 (g_ImageObject_00516530.at_g_UiNodeVtable_00516530)
+#define g_UiArmyMetricsPanelVtable (g_ImageObject_00516CC0.at_g_UiArmyMetricsPanelVtable)
+#define g_UiNodeVtable_00516F60 (g_ImageObject_00516F60.at_g_UiNodeVtable_00516F60)
+#define g_UiNodeVtable_00517070 (g_ImageObject_00517070.at_g_UiNodeVtable_00517070)
+#define g_UiNodeVtable_00517DE0 (g_ImageObject_00517DE0.at_g_UiNodeVtable_00517DE0)
+#define g_UiCommandVisibilityWrappedTextVtable (g_ImageObject_00517F10.at_g_UiCommandVisibilityWrappedTextVtable)
+#define g_UiCommandVisibilitySingleLineTextVtable (g_ImageObject_00517FC0.at_g_UiCommandVisibilitySingleLineTextVtable)
+#define g_UiSoftwareTexturePreviewControlVtable (g_ImageObject_00518C90.at_g_UiSoftwareTexturePreviewControlVtable)
+#define g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 (g_ImageObject_00519374.at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374)
+#define g_EffectLifecycleTransitionDispatchTable5 (g_ImageObject_0051EAB0.at_g_EffectLifecycleTransitionDispatchTable5)
+#define g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 (g_ImageObject_00524120.at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120)
+#define g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 (g_ImageObject_005247D0.at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0)
+#define g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 (g_ImageObject_00525A90.at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90)
+#define g_ArmyTerrainContactDispatchTable2 (g_ImageObject_005266C0.at_g_ArmyTerrainContactDispatchTable2)
+#define g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 (g_ImageObject_00526990.at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990)
+#define g_EntityPathingPriorityPairStorage (g_ImageObject_005367D4.at_g_EntityPathingPriorityPairStorage)
+#define g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 (g_ImageObject_0053C160.at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160)
+#define g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 (g_ImageObject_00547D90.at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90)
+#define g_FrontendCommandDispatchRecords_Terminator (g_ImageObject_00548124.at_g_FrontendCommandDispatchRecords_Terminator)
+#define g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 (g_ImageObject_0055F7C0.at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0)
+#define g_CodePointerTable_0055F7C8 (g_ImageObject_0055F7C8.at_g_CodePointerTable_0055F7C8)
+#define g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 (g_ImageObject_0055F940.at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940)
+#define g_CodePointerTable_0055F944 (g_ImageObject_0055F944.at_g_CodePointerTable_0055F944)
+#define g_CodePointerTable_0055F960 (g_ImageObject_0055F960.at_g_CodePointerTable_0055F960)
+#define g_EndMovieCommandDispatchRecords_Terminator (g_ImageObject_005658D8.at_g_EndMovieCommandDispatchRecords_Terminator)
+#define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageObject_00566040.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
+#define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageObject_005671C4.at_g_EndGameResultsCommandDispatchRecords_Terminator)
+#define g_InGameCommandDispatchRecords_Terminator (g_ImageObject_00567CA4.at_g_InGameCommandDispatchRecords_Terminator)
+#define g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 (g_ImageObject_0056D340.at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340)
+#define g_InGameUiCommandCursorCodeModeDispatchTable (g_ImageObject_0056F820.at_g_InGameUiCommandCursorCodeModeDispatchTable)
+#define g_InGameUiCommandBeginInteractionModeDispatchTable (g_ImageObject_0056FAA0.at_g_InGameUiCommandBeginInteractionModeDispatchTable)
+#define g_InGameUiCommandUpdateInteractionModeDispatchTable (g_ImageObject_00570410.at_g_InGameUiCommandUpdateInteractionModeDispatchTable)
+#define g_InGameUiCommandEndInteractionModeDispatchTable (g_ImageObject_00570DA0.at_g_InGameUiCommandEndInteractionModeDispatchTable)
+#define g_InGameUiCommandResetInteractionModeDispatchTable (g_ImageObject_00570F50.at_g_InGameUiCommandResetInteractionModeDispatchTable)
+#define g_WinSock_UnboundApiSlot34C (g_ImageObject_0057434C.at_g_WinSock_UnboundApiSlot34C)
+#define g_Ws2_32_accept (g_ImageObject_00574358.at_g_Ws2_32_accept)
+#define g_Ws2_32_connect (g_ImageObject_00574364.at_g_Ws2_32_connect)
+#define g_Ws2_32_getpeername (g_ImageObject_00574368.at_g_Ws2_32_getpeername)
+#define g_Ws2_32_getsockname (g_ImageObject_0057436C.at_g_Ws2_32_getsockname)
+#define g_Ws2_32_getsockopt (g_ImageObject_00574370.at_g_Ws2_32_getsockopt)
+#define g_Ws2_32_htonl (g_ImageObject_00574374.at_g_Ws2_32_htonl)
+#define g_Ws2_32_ioctlsocket (g_ImageObject_0057437C.at_g_Ws2_32_ioctlsocket)
+#define g_Ws2_32_listen (g_ImageObject_00574380.at_g_Ws2_32_listen)
+#define g_Ws2_32_ntohl (g_ImageObject_00574384.at_g_Ws2_32_ntohl)
+#define g_Ws2_32_ntohs (g_ImageObject_00574388.at_g_Ws2_32_ntohs)
+#define g_Ws2_32_recv (g_ImageObject_0057438C.at_g_Ws2_32_recv)
+#define g_Ws2_32_select (g_ImageObject_00574394.at_g_Ws2_32_select)
+#define g_Ws2_32_send (g_ImageObject_00574398.at_g_Ws2_32_send)
+#define g_Ws2_32_shutdown (g_ImageObject_005743A4.at_g_Ws2_32_shutdown)
+#define g_Ws2_32_WSAAsyncSelect (g_ImageObject_005743B0.at_g_Ws2_32_WSAAsyncSelect)
+#define g_Ws2_32_WSACancelBlockingCall (g_ImageObject_005743B4.at_g_Ws2_32_WSACancelBlockingCall)
+#define g_Ws2_32_WSAIsBlocking (g_ImageObject_005743F0.at_g_Ws2_32_WSAIsBlocking)
+#define g_Ws2_32_WSASetBlockingHook (g_ImageObject_0057441C.at_g_Ws2_32_WSASetBlockingHook)
+#define g_Ws2_32_WSAStartup (g_ImageObject_0057442C.at_g_Ws2_32_WSAStartup)
+#define g_Ws2_32_WSAUnhookBlockingHook (g_ImageObject_00574430.at_g_Ws2_32_WSAUnhookBlockingHook)
+#define g_Ws2_32_inet_addr (g_ImageObject_00574438.at_g_Ws2_32_inet_addr)
+#define g_Ws2_32_inet_ntoa (g_ImageObject_0057443C.at_g_Ws2_32_inet_ntoa)
+#define g_Ws2_32_gethostbyaddr (g_ImageObject_00574440.at_g_Ws2_32_gethostbyaddr)
+#define g_Ws2_32_gethostname (g_ImageObject_00574448.at_g_Ws2_32_gethostname)
+#define g_Ws2_32_getprotobyname (g_ImageObject_0057444C.at_g_Ws2_32_getprotobyname)
+#define g_Ws2_32_getprotobynumber (g_ImageObject_00574450.at_g_Ws2_32_getprotobynumber)
+#define g_Ws2_32_getservbyname (g_ImageObject_00574454.at_g_Ws2_32_getservbyname)
+#define g_Ws2_32_getservbyport (g_ImageObject_00574458.at_g_Ws2_32_getservbyport)
+#define g_Ws2_32_WSAAsyncGetHostByAddr (g_ImageObject_0057445C.at_g_Ws2_32_WSAAsyncGetHostByAddr)
+#define g_Ws2_32_WSAAsyncGetHostByName (g_ImageObject_00574460.at_g_Ws2_32_WSAAsyncGetHostByName)
+#define g_Ws2_32_WSAAsyncGetProtoByName (g_ImageObject_00574464.at_g_Ws2_32_WSAAsyncGetProtoByName)
+#define g_Ws2_32_WSAAsyncGetProtoByNumber (g_ImageObject_00574468.at_g_Ws2_32_WSAAsyncGetProtoByNumber)
+#define g_Ws2_32_WSAAsyncGetServByName (g_ImageObject_0057446C.at_g_Ws2_32_WSAAsyncGetServByName)
+#define g_Ws2_32_WSAAsyncGetServByPort (g_ImageObject_00574470.at_g_Ws2_32_WSAAsyncGetServByPort)
+#define g_Ws2_32_WSACancelAsyncRequest (g_ImageObject_00574474.at_g_Ws2_32_WSACancelAsyncRequest)
+#define g_Arena_3 (g_ImageObject_00587400.at_g_Arena_3)
+#define g_Arena_4 (g_ImageObject_0058B400.at_g_Arena_4)
 
 /* Original address -> generated storage. */
 #define THANDOR_IMAGE_0x00000017 ((uintptr_t)0x00000017u)
@@ -3619,1627 +8677,1627 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0000004f ((uintptr_t)0x0000004fu)
 #define THANDOR_IMAGE_0x00007f00 ((uintptr_t)0x00007f00u)
 #define THANDOR_IMAGE_0x00400000 ((uintptr_t)0x00400000u)
-#define THANDOR_IMAGE_0x00402000 ((uintptr_t)&g_ImageData_00401000.at_g_MemoryApi)
-#define THANDOR_IMAGE_0x00402018 ((uintptr_t)&g_ImageData_00401000.at_g_TimerRegisterPeriodic)
-#define THANDOR_IMAGE_0x0040201c ((uintptr_t)&g_ImageData_00401000.at_g_TimerUnregisterPeriodic)
-#define THANDOR_IMAGE_0x00402020 ((uintptr_t)&g_ImageData_00401000.at_g_Win32PumpMessages)
-#define THANDOR_IMAGE_0x00402024 ((uintptr_t)&g_ImageData_00401000.at_g_CommandLineFindOption)
-#define THANDOR_IMAGE_0x00402028 ((uintptr_t)&g_ImageData_00401000.at_g_CommandLineWideArguments)
-#define THANDOR_IMAGE_0x00402628 ((uintptr_t)&g_ImageData_00401000.at_g_WideNumberFormatUtf16)
-#define THANDOR_IMAGE_0x0040262c ((uintptr_t)&g_ImageData_00401000.at_g_WideNumberFormatState)
-#define THANDOR_IMAGE_0x00402784 ((uintptr_t)&g_ImageData_00401000.at_g_SpinLockAcquire)
-#define THANDOR_IMAGE_0x00402788 ((uintptr_t)&g_ImageData_00401000.at_g_SpinLockTryAcquire)
-#define THANDOR_IMAGE_0x0040278c ((uintptr_t)&g_ImageData_00401000.at_g_SpinLockRelease)
-#define THANDOR_IMAGE_0x00402790 ((uintptr_t)&g_ImageData_00401000.at_g_SpinLockReleaseAndInvoke)
-#define THANDOR_IMAGE_0x00402794 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleFormatDateFieldsUtf16)
-#define THANDOR_IMAGE_0x00402798 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleFormatCurrentDateUtf16)
-#define THANDOR_IMAGE_0x0040279c ((uintptr_t)&g_ImageData_00401000.at_g_LocaleGetPackedCurrentDate)
-#define THANDOR_IMAGE_0x004027a0 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleFormatTimeFieldsUtf16)
-#define THANDOR_IMAGE_0x004027a4 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleFormatCurrentTimeUtf16)
-#define THANDOR_IMAGE_0x004027a8 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleGetPackedCurrentTime)
-#define THANDOR_IMAGE_0x004027ac ((uintptr_t)&g_ImageData_00401000.at_g_LocaleGetDefaultTelephoneCountryCode)
-#define THANDOR_IMAGE_0x004027b0 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked)
-#define THANDOR_IMAGE_0x004027b4 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleCopyDefaultComputerLabelUtf16)
-#define THANDOR_IMAGE_0x004027b8 ((uintptr_t)&g_ImageData_00401000.at_g_CPUDetectFeatures)
-#define THANDOR_IMAGE_0x004027bc ((uintptr_t)&g_ImageData_00401000.at_g_Utf16StringCompareAsciiCaseInsensitiveFlags)
-#define THANDOR_IMAGE_0x004027c0 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleCountryCodeOverride)
-#define THANDOR_IMAGE_0x004027c4 ((uintptr_t)&g_ImageData_00401000.at_g_CpuFeatureFlags)
-#define THANDOR_IMAGE_0x004027d0 ((uintptr_t)&g_ImageData_00401000.at_g_FileSystemConfigCharacterNormalizationMap)
-#define THANDOR_IMAGE_0x004028d0 ((uintptr_t)&g_ImageData_00401000.at_g_PersistentSettings)
-#define THANDOR_IMAGE_0x004030a0 ((uintptr_t)&g_ImageData_00403080.at_g_RandomGeneratorState)
-#define THANDOR_IMAGE_0x00403160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox0)
-#define THANDOR_IMAGE_0x00403560 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox1)
-#define THANDOR_IMAGE_0x00403960 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox2)
-#define THANDOR_IMAGE_0x00403d60 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox3)
-#define THANDOR_IMAGE_0x00404160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox4)
-#define THANDOR_IMAGE_0x00404560 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox5)
-#define THANDOR_IMAGE_0x004046a0 ((uintptr_t)&g_ImageData_00403158 + 0x1548)
-#define THANDOR_IMAGE_0x00404960 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox6)
-#define THANDOR_IMAGE_0x00404d60 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox7)
-#define THANDOR_IMAGE_0x00405160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferDecryptSboxes)
-#define THANDOR_IMAGE_0x00407514 ((uintptr_t)&g_ImageData_00407510.at_g_PackageLastErrorPath)
-#define THANDOR_IMAGE_0x00407714 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail1Utf16)
-#define THANDOR_IMAGE_0x00407914 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail2Utf16)
-#define THANDOR_IMAGE_0x00407b14 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail3Utf16)
-#define THANDOR_IMAGE_0x00407d14 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorExitHandler)
-#define THANDOR_IMAGE_0x00407d18 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorReportHandler)
-#define THANDOR_IMAGE_0x00407d1c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorFallbackHandler)
-#define THANDOR_IMAGE_0x00407d20 ((uintptr_t)&g_ImageData_00407510.at_u_texte_error_str_00407d20)
-#define THANDOR_IMAGE_0x00407d40 ((uintptr_t)&g_ImageData_00407510.at_g_ErrorTextIoInitializationFailed)
-#define THANDOR_IMAGE_0x00407d84 ((uintptr_t)&g_ImageData_00407510.at_g_ErrorTextHeapAllocationFailed)
-#define THANDOR_IMAGE_0x00407e20 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorUiRootTemplate)
-#define THANDOR_IMAGE_0x00407e24 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDialogDismissed)
-#define THANDOR_IMAGE_0x00407e28 ((uintptr_t)&g_ImageData_00407510.at_g_UiRootCallbacks_00407E28)
-#define THANDOR_IMAGE_0x00407e3c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorUiRootTemplateImage)
-#define THANDOR_IMAGE_0x00407e5c ((uintptr_t)&g_ImageData_00407510 + 0x94C)
-#define THANDOR_IMAGE_0x00407e64 ((uintptr_t)&g_ImageData_00407510 + 0x954)
-#define THANDOR_IMAGE_0x00407eb4 ((uintptr_t)&g_ImageData_00407510 + 0x9A4)
-#define THANDOR_IMAGE_0x00407ebc ((uintptr_t)&g_ImageData_00407510 + 0x9AC)
-#define THANDOR_IMAGE_0x00407ee8 ((uintptr_t)&g_ImageData_00407510 + 0x9D8)
-#define THANDOR_IMAGE_0x004080c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanSymbolWorkspace256)
-#define THANDOR_IMAGE_0x004084c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanLeafNodeWorkspace256)
-#define THANDOR_IMAGE_0x004094c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanInternalNodeWorkspace256)
-#define THANDOR_IMAGE_0x0040abc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_InitialWorkingDirectory)
-#define THANDOR_IMAGE_0x0040adc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCombinedPathScratchUtf16)
-#define THANDOR_IMAGE_0x0040afc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_ExecutableDirectoryUtf16)
-#define THANDOR_IMAGE_0x0040b1c0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemOpen)
-#define THANDOR_IMAGE_0x0040b1c4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemClose)
-#define THANDOR_IMAGE_0x0040b1c8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemReadExact)
-#define THANDOR_IMAGE_0x0040b1cc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemWriteExactOrFlush)
-#define THANDOR_IMAGE_0x0040b1d0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetSize)
-#define THANDOR_IMAGE_0x0040b1d4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetPosition)
-#define THANDOR_IMAGE_0x0040b1d8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSeek)
-#define THANDOR_IMAGE_0x0040b1dc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemDelete)
-#define THANDOR_IMAGE_0x0040b1e0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetCurrentDirectory)
-#define THANDOR_IMAGE_0x0040b1e4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSetCurrentDirectory)
-#define THANDOR_IMAGE_0x0040b1e8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCreateDirectoryRecursive)
-#define THANDOR_IMAGE_0x0040b1ec ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemRemoveDirectory)
-#define THANDOR_IMAGE_0x0040b1f0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDriveLetters)
-#define THANDOR_IMAGE_0x0040b1f4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetDriveTypeCode)
-#define THANDOR_IMAGE_0x0040b1f8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCheckDriveMediaReady)
-#define THANDOR_IMAGE_0x0040b1fc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetFreeAndTotalBytes)
-#define THANDOR_IMAGE_0x0040b200 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteDosDate)
-#define THANDOR_IMAGE_0x0040b204 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteTimeHigh)
-#define THANDOR_IMAGE_0x0040b208 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetVolumeSerialNumber)
-#define THANDOR_IMAGE_0x0040b20c ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemMove)
-#define THANDOR_IMAGE_0x0040b210 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCopy)
-#define THANDOR_IMAGE_0x0040b214 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDirectoryOrVolumeEntries)
-#define THANDOR_IMAGE_0x0040b218 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemValidateDos83Path)
-#define THANDOR_IMAGE_0x0040b21c ((uintptr_t)&g_ImageData_0040ABBC.at_g_PackageScratchBuffer)
-#define THANDOR_IMAGE_0x0040b220 ((uintptr_t)&g_ImageData_0040ABBC.at_g_EnginePackageLowPriorityMountHandle)
-#define THANDOR_IMAGE_0x0040b224 ((uintptr_t)&g_ImageData_0040ABBC.at_g_PackageMountSlots)
-#define THANDOR_IMAGE_0x0040e224 ((uintptr_t)&g_ImageData_0040ABBC.at_g_PckEncoderTable)
-#define THANDOR_IMAGE_0x0040e230 ((uintptr_t)&g_ImageData_0040ABBC.at_g_PckDecoderTable)
-#define THANDOR_IMAGE_0x0040e23d ((uintptr_t)&g_ImageData_0040ABBC.at_u_THANDOR_cfg_0040e23d)
-#define THANDOR_IMAGE_0x0040e255 ((uintptr_t)&g_ImageData_0040ABBC.at_u_engine_pck_0040e255)
-#define THANDOR_IMAGE_0x0040e270 ((uintptr_t)&g_ImageData_0040ABBC.at_g_DefaultComputerLabelUtf16)
-#define THANDOR_IMAGE_0x0040f530 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListDriveLetters)
-#define THANDOR_IMAGE_0x0040f550 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListRecordPathScratch)
-#define THANDOR_IMAGE_0x0040f750 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListCombinedPathScratch)
-#define THANDOR_IMAGE_0x0040f950 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListSecondaryPathScratch)
-#define THANDOR_IMAGE_0x0040fb50 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListHierarchyPathScratch)
-#define THANDOR_IMAGE_0x0040fd50 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListHierarchyParentPathScratch)
-#define THANDOR_IMAGE_0x0040ff50 ((uintptr_t)&g_ImageData_0040F524.at_g_WildcardAllFilesUtf16)
-#define THANDOR_IMAGE_0x0040ff58 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListDriveWildcardUtf16)
-#define THANDOR_IMAGE_0x004107f0 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputEvents)
-#define THANDOR_IMAGE_0x004167f0 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputWriteIndex)
-#define THANDOR_IMAGE_0x004167f4 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputReadIndex)
-#define THANDOR_IMAGE_0x004167f8 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputClockValue)
-#define THANDOR_IMAGE_0x004167fc ((uintptr_t)&g_ImageData_004107E8.at_g_GraphicsCursorAnimationCountdown)
-#define THANDOR_IMAGE_0x00416800 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorButtonReleaseClock)
-#define THANDOR_IMAGE_0x0041680c ((uintptr_t)&g_ImageData_004107E8.at_g_CursorSourceAsset)
-#define THANDOR_IMAGE_0x00416810 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorFrameRecords)
-#define THANDOR_IMAGE_0x00416814 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorFrameIndex)
-#define THANDOR_IMAGE_0x00416818 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorUseOverridePosition)
-#define THANDOR_IMAGE_0x0041681c ((uintptr_t)&g_ImageData_004107E8.at_g_CursorFrameCount)
-#define THANDOR_IMAGE_0x00416820 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorMaxWidth)
-#define THANDOR_IMAGE_0x00416824 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorMaxHeight)
-#define THANDOR_IMAGE_0x00416828 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverrideX)
-#define THANDOR_IMAGE_0x0041682c ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverrideY)
-#define THANDOR_IMAGE_0x00416830 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorWheelDelta)
-#define THANDOR_IMAGE_0x00416834 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorVisibilityToken)
-#define THANDOR_IMAGE_0x00416838 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorButtonState)
-#define THANDOR_IMAGE_0x0041683c ((uintptr_t)&g_ImageData_004107E8.at_g_CursorLastClickX)
-#define THANDOR_IMAGE_0x00416840 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorLastClickY)
-#define THANDOR_IMAGE_0x00416844 ((uintptr_t)&g_ImageData_004107E8.at_g_PointerFlushEvents)
-#define THANDOR_IMAGE_0x00416848 ((uintptr_t)&g_ImageData_004107E8.at_g_GraphicsCursorSetFrame)
-#define THANDOR_IMAGE_0x0041684c ((uintptr_t)&g_ImageData_004107E8.at_g_PointerSetPosition)
-#define THANDOR_IMAGE_0x00416850 ((uintptr_t)&g_ImageData_004107E8.at_g_GraphicsCursorConsumeEvent)
-#define THANDOR_IMAGE_0x00416854 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverflowLeft)
-#define THANDOR_IMAGE_0x00416858 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverflowRight)
-#define THANDOR_IMAGE_0x0041685c ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverflowTop)
-#define THANDOR_IMAGE_0x00416860 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorOverflowBottom)
-#define THANDOR_IMAGE_0x00416864 ((uintptr_t)&g_ImageData_004107E8.at_u_engine_mouse_gfx_00416864)
-#define THANDOR_IMAGE_0x00416886 ((uintptr_t)&g_ImageData_004107E8.at_u_engine_mouse_dat_00416886)
-#define THANDOR_IMAGE_0x004169e0 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardEvents)
-#define THANDOR_IMAGE_0x004171e0 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardWriteIndex)
-#define THANDOR_IMAGE_0x004171e4 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardReadIndex)
-#define THANDOR_IMAGE_0x004171e8 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardStateMask)
-#define THANDOR_IMAGE_0x004171ec ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardToggleLatchMask)
-#define THANDOR_IMAGE_0x004171f0 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardSpecialKeyDown)
-#define THANDOR_IMAGE_0x00417210 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardFlushEvents)
-#define THANDOR_IMAGE_0x00417214 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardReadEvent)
-#define THANDOR_IMAGE_0x00417218 ((uintptr_t)&g_ImageData_004169DC.at_g_KeyboardAsciiCaseTransformCallbacks3)
-#define THANDOR_IMAGE_0x00417300 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundDecodeMmxWordLaneMask0)
-#define THANDOR_IMAGE_0x00417308 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundDecodeMmxWordLaneMask1)
-#define THANDOR_IMAGE_0x00417310 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundDecodeMmxWordLaneMask2)
-#define THANDOR_IMAGE_0x00417318 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundDecodeMmxWordLaneMask3)
-#define THANDOR_IMAGE_0x00417330 ((uintptr_t)&g_ImageData_004172E8.at_g_CosineDerivedLookupAllocation)
-#define THANDOR_IMAGE_0x00417334 ((uintptr_t)&g_ImageData_004172E8.at_g_CosineDerivedLookupSecondTable)
-#define THANDOR_IMAGE_0x00417338 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundCreateSampleVoiceSet)
-#define THANDOR_IMAGE_0x0041733c ((uintptr_t)&g_ImageData_004172E8.at_g_SoundReleaseSampleVoiceSet)
-#define THANDOR_IMAGE_0x00417340 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundCreatePcmVoiceSet)
-#define THANDOR_IMAGE_0x00417344 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundReleasePcmVoiceSet)
-#define THANDOR_IMAGE_0x00417348 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundPlayOneShot)
-#define THANDOR_IMAGE_0x0041734c ((uintptr_t)&g_ImageData_004172E8.at_g_SoundPlayLooping)
-#define THANDOR_IMAGE_0x00417350 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundStopVoice)
-#define THANDOR_IMAGE_0x00417354 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundStopAllVoices)
-#define THANDOR_IMAGE_0x00417358 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundIsVoicePlaying)
-#define THANDOR_IMAGE_0x0041735c ((uintptr_t)&g_ImageData_004172E8.at_g_SoundQueryVoice)
-#define THANDOR_IMAGE_0x00417360 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundSetVoiceGains)
-#define THANDOR_IMAGE_0x00417364 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundSampleCoefficientBlock)
-#define THANDOR_IMAGE_0x0041a540 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendInstanceTable)
-#define THANDOR_IMAGE_0x0041a544 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendInstanceCount)
-#define THANDOR_IMAGE_0x0041a548 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSessionContext)
-#define THANDOR_IMAGE_0x0041a54c ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot0)
-#define THANDOR_IMAGE_0x0041a550 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot1)
-#define THANDOR_IMAGE_0x0041a554 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot2)
-#define THANDOR_IMAGE_0x0041a558 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot3)
-#define THANDOR_IMAGE_0x0041a55c ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot4)
-#define THANDOR_IMAGE_0x0041a560 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot5)
-#define THANDOR_IMAGE_0x0041a564 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot6)
-#define THANDOR_IMAGE_0x0041a568 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot7)
-#define THANDOR_IMAGE_0x0041a56c ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkLocalEndpoint)
-#define THANDOR_IMAGE_0x0041a750 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette0Argb)
-#define THANDOR_IMAGE_0x0041a754 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette1Argb)
-#define THANDOR_IMAGE_0x0041a758 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette2Argb)
-#define THANDOR_IMAGE_0x0041a75c ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette3Argb)
-#define THANDOR_IMAGE_0x0041a760 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette4Argb)
-#define THANDOR_IMAGE_0x0041a764 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextInsufficientResourceColorArgb)
-#define THANDOR_IMAGE_0x0041a768 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextShadowOffsetPalette0)
-#define THANDOR_IMAGE_0x0041a76c ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextShadowOffsetPalette1)
-#define THANDOR_IMAGE_0x0041a770 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextShadowOffsetPalette2)
-#define THANDOR_IMAGE_0x0041a774 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextShadowOffsetPalette3)
-#define THANDOR_IMAGE_0x0041a780 ((uintptr_t)&g_ImageData_0041A740.at_g_ActiveFontIndex)
-#define THANDOR_IMAGE_0x0041a784 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextCurrentColorArgb)
-#define THANDOR_IMAGE_0x0041a788 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextCurrentShadowOffset)
-#define THANDOR_IMAGE_0x0041a78c ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextSavedColorArgb)
-#define THANDOR_IMAGE_0x0041a790 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextSavedShadowOffset)
-#define THANDOR_IMAGE_0x0041a794 ((uintptr_t)&g_ImageData_0041A740.at_g_TextResourcePageBindings)
-#define THANDOR_IMAGE_0x0041af94 ((uintptr_t)&g_ImageData_0041A740.at_g_TextResourceOverrides)
-#define THANDOR_IMAGE_0x0041af98 ((uintptr_t)&g_ImageData_0041A740.at_g_FontRuntimeBuffer)
-#define THANDOR_IMAGE_0x0041af9c ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextRuntimeBufferUsedWords)
-#define THANDOR_IMAGE_0x0041afa4 ((uintptr_t)&g_ImageData_0041A740.at_g_EmptyTextResourceUtf16)
-#define THANDOR_IMAGE_0x0041afa8 ((uintptr_t)&g_ImageData_0041A740.at_g_MissingTextResourceFallbackStream)
-#define THANDOR_IMAGE_0x0041afac ((uintptr_t)&g_ImageData_0041A740.at_u_error__TXT2STR__unknown_characte_0041afac)
-#define THANDOR_IMAGE_0x0041b028 ((uintptr_t)&g_ImageData_0041A740.at_g_FontTextureSources)
-#define THANDOR_IMAGE_0x0041b030 ((uintptr_t)&g_ImageData_0041A740.at_u_engine_font_gfx_0041b030)
-#define THANDOR_IMAGE_0x0041de80 ((uintptr_t)&g_ImageData_0041DE7C.at_g_PackedLightingLookupTable)
-#define THANDOR_IMAGE_0x0041ee80 ((uintptr_t)&g_ImageData_0041DE7C.at_g_ShadingIntensityScaleMmx)
-#define THANDOR_IMAGE_0x0041f680 ((uintptr_t)&g_ImageData_0041DE7C.at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero)
-#define THANDOR_IMAGE_0x0041f688 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwareBilinearPackedByteClampMask)
-#define THANDOR_IMAGE_0x0041f690 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxSignBiasBytes)
-#define THANDOR_IMAGE_0x0041f698 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxClearBits1And2Mask)
-#define THANDOR_IMAGE_0x0041f6a0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxAllBitsMask)
-#define THANDOR_IMAGE_0x0041f6a8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPackedScale0280)
-#define THANDOR_IMAGE_0x0041f6b0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPersistentWeights)
-#define THANDOR_IMAGE_0x0041f6b8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxCurrentWeights)
-#define THANDOR_IMAGE_0x0041f6c0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_FieldGridOccupancyMmxHighBitMask)
-#define THANDOR_IMAGE_0x0041f6c8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_GraphicsShadingMmxPacked3BitPerByteMask)
-#define THANDOR_IMAGE_0x0041f6e0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwarePixelMmxConstants)
-#define THANDOR_IMAGE_0x0041f700 ((uintptr_t)&g_ImageData_0041DE7C.at_g_VertexColorAlphaPreserveMaskMMX)
-#define THANDOR_IMAGE_0x0041f708 ((uintptr_t)&g_ImageData_0041DE7C.at_g_VertexColorRgbHalveMaskMMX)
-#define THANDOR_IMAGE_0x0041f720 ((uintptr_t)&g_ImageData_0041DE7C.at_g_UiScalerSecondPixelWeights)
-#define THANDOR_IMAGE_0x0041ff20 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwareBilinearForwardFactors)
-#define THANDOR_IMAGE_0x00420720 ((uintptr_t)&g_ImageData_0041DE7C.at_g_UiScalerFirstPixelWeights)
-#define THANDOR_IMAGE_0x00420f20 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwareBilinearInverseFactors)
-#define THANDOR_IMAGE_0x00421720 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwareBlendAlphaFactors)
-#define THANDOR_IMAGE_0x00421f20 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwareBlendInverseAlphaFactors)
-#define THANDOR_IMAGE_0x00422768 ((uintptr_t)&g_ImageData_0041DE7C.at_g_GraphicsAdapterFormatScratch0Utf16)
-#define THANDOR_IMAGE_0x00422788 ((uintptr_t)&g_ImageData_0041DE7C.at_g_GraphicsAdapterFormatScratch1Utf16)
-#define THANDOR_IMAGE_0x004229a0 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplaySettingsRootCallbacks)
-#define THANDOR_IMAGE_0x004229b4 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplaySettingsRootTemplate)
-#define THANDOR_IMAGE_0x00423588 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeSelectionActionHandlers20)
-#define THANDOR_IMAGE_0x004235d8 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch0)
-#define THANDOR_IMAGE_0x004235dc ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch1)
-#define THANDOR_IMAGE_0x004235e0 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch2)
-#define THANDOR_IMAGE_0x004235e4 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch3)
-#define THANDOR_IMAGE_0x004235e8 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch4)
-#define THANDOR_IMAGE_0x004235ec ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch5)
-#define THANDOR_IMAGE_0x004235f0 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch6)
-#define THANDOR_IMAGE_0x004235f4 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch7)
-#define THANDOR_IMAGE_0x00424324 ((uintptr_t)&g_ImageData_00424324.at_g_UiFourValueDialogRootCallbacks)
-#define THANDOR_IMAGE_0x00424338 ((uintptr_t)&g_ImageData_00424324.at_g_UiFourValueDialogTemplateImage)
-#define THANDOR_IMAGE_0x004246a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedSinBeforeZeroQ28)
-#define THANDOR_IMAGE_0x004346a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedSinQ28)
-#define THANDOR_IMAGE_0x004446a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedCosQ28)
-#define THANDOR_IMAGE_0x00485814 ((uintptr_t)&g_ImageData_00485808.at_g_TextureDownsampleShift)
-#define THANDOR_IMAGE_0x00485818 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsSetViewportAndClearDepth)
-#define THANDOR_IMAGE_0x0048581c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsDrawPrimitiveQueue)
-#define THANDOR_IMAGE_0x00485820 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsBeginScene)
-#define THANDOR_IMAGE_0x00485824 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsEndScene)
-#define THANDOR_IMAGE_0x00485828 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRebuildAllStagingTextures)
-#define THANDOR_IMAGE_0x0048582c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetLoadPackage)
-#define THANDOR_IMAGE_0x00485830 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetReleasePackage)
-#define THANDOR_IMAGE_0x00485834 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsCreateTextureSet)
-#define THANDOR_IMAGE_0x00485838 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsDestroyTextureSet)
-#define THANDOR_IMAGE_0x0048583c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRefreshTextureColor)
-#define THANDOR_IMAGE_0x00485840 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRefreshTextureAlpha)
-#define THANDOR_IMAGE_0x00485844 ((uintptr_t)&g_ImageData_00485808.at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844)
-#define THANDOR_IMAGE_0x00485848 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsOffscreenRenderModelListToTextureSource)
-#define THANDOR_IMAGE_0x0048584c ((uintptr_t)&g_ImageData_00485808.at_g_RenderedFrameCountSinceDebugRefresh)
-#define THANDOR_IMAGE_0x00485850 ((uintptr_t)&g_ImageData_00485808.at_g_PrimitiveDrawCallCount)
-#define THANDOR_IMAGE_0x00485854 ((uintptr_t)&g_ImageData_00485808.at_g_TextureBindStateChangeCount)
-#define THANDOR_IMAGE_0x00485858 ((uintptr_t)&g_ImageData_00485808.at_g_TextureDeviceReloadCount)
-#define THANDOR_IMAGE_0x0048585c ((uintptr_t)&g_ImageData_00485808.at_g_ViewOriginFixed)
-#define THANDOR_IMAGE_0x00485868 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionScaleFixed)
-#define THANDOR_IMAGE_0x0048586c ((uintptr_t)&g_ImageData_00485808.at_g_ViewAngle0)
-#define THANDOR_IMAGE_0x00485870 ((uintptr_t)&g_ImageData_00485808.at_g_ViewAngle1)
-#define THANDOR_IMAGE_0x00485874 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionShift)
-#define THANDOR_IMAGE_0x00485878 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionScaleProduct)
-#define THANDOR_IMAGE_0x0048587c ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionNumerator)
-#define THANDOR_IMAGE_0x00485884 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionCenterFixed)
-#define THANDOR_IMAGE_0x0048588c ((uintptr_t)&g_ImageData_00485808.at_g_ActivePrimitiveQueue)
-#define THANDOR_IMAGE_0x00485890 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionClipRect)
-#define THANDOR_IMAGE_0x004858a0 ((uintptr_t)&g_ImageData_00485808.at_g_ViewProjectionMatrixFixed)
-#define THANDOR_IMAGE_0x004858d0 ((uintptr_t)&g_ImageData_00485808.at_g_ViewRotationMatrixFixed)
-#define THANDOR_IMAGE_0x00485900 ((uintptr_t)&g_ImageData_00485808.at_g_CameraTransformMatrixFixed)
-#define THANDOR_IMAGE_0x00485930 ((uintptr_t)&g_ImageData_00485808.at_g_ProjectionAngleFactors)
-#define THANDOR_IMAGE_0x00485940 ((uintptr_t)&g_ImageData_00485808.at_g_AuxiliaryOrientation)
-#define THANDOR_IMAGE_0x00485948 ((uintptr_t)&g_ImageData_00485808.at_g_AuxiliaryForwardDirectionFixed)
-#define THANDOR_IMAGE_0x00485954 ((uintptr_t)&g_ImageData_00485808.at_g_AuxiliaryRotationMatrixFixed)
-#define THANDOR_IMAGE_0x00485984 ((uintptr_t)&g_ImageData_00485808.at_g_FrustumPlaneNormalFixed_0)
-#define THANDOR_IMAGE_0x004859b4 ((uintptr_t)&g_ImageData_00485808.at_g_FrustumCornerRayFixed_0)
-#define THANDOR_IMAGE_0x004859e4 ((uintptr_t)&g_ImageData_00485808.at_g_SceneBoundsFixed)
-#define THANDOR_IMAGE_0x00485a04 ((uintptr_t)&g_ImageData_00485808.at_g_ModelLodDepthThresholdQ8)
-#define THANDOR_IMAGE_0x00485a08 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewViewOriginXQ12)
-#define THANDOR_IMAGE_0x00485a0c ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewViewOriginYQ12)
-#define THANDOR_IMAGE_0x00485a10 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewViewOriginZQ12)
-#define THANDOR_IMAGE_0x00485a14 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewProjectionScaleQ12)
-#define THANDOR_IMAGE_0x00485a18 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewViewAngle0)
-#define THANDOR_IMAGE_0x00485a1c ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewViewAngle1)
-#define THANDOR_IMAGE_0x00485a20 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewProjectionShift)
-#define THANDOR_IMAGE_0x00485a24 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewAuxiliaryOrientation0)
-#define THANDOR_IMAGE_0x00485a28 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewAuxiliaryOrientation1)
-#define THANDOR_IMAGE_0x00485a2c ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewPrimaryColorArgb)
-#define THANDOR_IMAGE_0x00485a30 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewSecondaryColorArgb)
-#define THANDOR_IMAGE_0x00485a34 ((uintptr_t)&g_ImageData_00485808.at_g_ArmyPreviewModelNodePointer)
-#define THANDOR_IMAGE_0x00485a40 ((uintptr_t)&g_ImageData_00485808.at_g_PrimitiveRadixBucketWords)
-#define THANDOR_IMAGE_0x00486d90 ((uintptr_t)&g_ImageData_00486D8C.at_g_MovieChromaLumaToArgb)
-#define THANDOR_IMAGE_0x004a6d90 ((uintptr_t)&g_ImageData_00486D8C.at_g_MovieDeltaRgbHighNibbleMask2Pixels)
-#define THANDOR_IMAGE_0x004a6d98 ((uintptr_t)&g_ImageData_00486D8C.at_g_ActiveMovie)
-#define THANDOR_IMAGE_0x004a6d9c ((uintptr_t)&g_ImageData_00486D8C.at_g_MovieDefaultAudioGainQ15)
-#define THANDOR_IMAGE_0x004a6da0 ((uintptr_t)&g_ImageData_00486D8C.at_g_MovieAlternateAudioGainQ15)
-#define THANDOR_IMAGE_0x004a6da4 ((uintptr_t)&g_ImageData_00486D8C.at_g_LooseMoviePathPrefix)
-#define THANDOR_IMAGE_0x004a8e70 ((uintptr_t)&g_ImageData_004A8E60.at_g_FramebufferAccess)
-#define THANDOR_IMAGE_0x004a8e74 ((uintptr_t)&g_ImageData_004A8E60.at_g_CursorSavedBackground)
-#define THANDOR_IMAGE_0x004a8e78 ((uintptr_t)&g_ImageData_004A8E60.at_g_CursorCompositeBuffer)
-#define THANDOR_IMAGE_0x004a8e7c ((uintptr_t)&g_ImageData_004A8E60.at_g_CursorAlternateSavedBackground)
-#define THANDOR_IMAGE_0x004a8e80 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwarePixelPackTables)
-#define THANDOR_IMAGE_0x004a8e84 ((uintptr_t)&g_ImageData_004A8E60.at_g_FramebufferRowStrideBytes)
-#define THANDOR_IMAGE_0x004a8e88 ((uintptr_t)&g_ImageData_004A8E60.at_g_FramebufferWidth)
-#define THANDOR_IMAGE_0x004a8e8c ((uintptr_t)&g_ImageData_004A8E60.at_g_FramebufferHeight)
-#define THANDOR_IMAGE_0x004a8e90 ((uintptr_t)&g_ImageData_004A8E60.at_g_ActiveGraphicsAdapterIndex)
-#define THANDOR_IMAGE_0x004a8e94 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareColorScaleQ16)
-#define THANDOR_IMAGE_0x004a8e98 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareColorBiasQ16)
-#define THANDOR_IMAGE_0x004a8e9c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsDisplayModes)
-#define THANDOR_IMAGE_0x004a8ea0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsDisplayModeCount)
-#define THANDOR_IMAGE_0x004a8ea4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsAdapters)
-#define THANDOR_IMAGE_0x004a8ea8 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsAdapterCount)
-#define THANDOR_IMAGE_0x004a8eac ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwarePixelFormatConfig)
-#define THANDOR_IMAGE_0x004a8ed0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsSetDisplayMode)
-#define THANDOR_IMAGE_0x004a8ed4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsBackendRefreshActiveAdapter)
-#define THANDOR_IMAGE_0x004a8ed8 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareFramebufferCreate)
-#define THANDOR_IMAGE_0x004a8edc ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareFramebufferDestroy)
-#define THANDOR_IMAGE_0x004a8ee0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferPresent)
-#define THANDOR_IMAGE_0x004a8ee4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferCaptureRegion)
-#define THANDOR_IMAGE_0x004a8ee8 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareBuildPixelPackTables)
-#define THANDOR_IMAGE_0x004a8eec ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferBeginAccess)
-#define THANDOR_IMAGE_0x004a8ef0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferEndAccess)
-#define THANDOR_IMAGE_0x004a8ef4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceGetLogicalSize)
-#define THANDOR_IMAGE_0x004a8ef8 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceTestOpaquePixel)
-#define THANDOR_IMAGE_0x004a8efc ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitSourceAlpha)
-#define THANDOR_IMAGE_0x004a8f00 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitTiledSourceAlpha)
-#define THANDOR_IMAGE_0x004a8f04 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitHalfSourceRgb)
-#define THANDOR_IMAGE_0x004a8f08 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitTiledHalfSourceRgb)
-#define THANDOR_IMAGE_0x004a8f0c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha)
-#define THANDOR_IMAGE_0x004a8f10 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceStretchDirectColorBilinear)
-#define THANDOR_IMAGE_0x004a8f14 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitSourceAlphaPaletteBank)
-#define THANDOR_IMAGE_0x004a8f18 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-#define THANDOR_IMAGE_0x004a8f1c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitSaturatedAddRgb)
-#define THANDOR_IMAGE_0x004a8f20 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitTiledSaturatedAddRgb)
-#define THANDOR_IMAGE_0x004a8f24 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd)
-#define THANDOR_IMAGE_0x004a8f28 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd)
-#define THANDOR_IMAGE_0x004a8f2c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceDecomposeSubresourceRegionsCf)
-#define THANDOR_IMAGE_0x004a8f30 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferFillRectArgb)
-#define THANDOR_IMAGE_0x004a8f34 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferCopyRegionToOrigin)
-#define THANDOR_IMAGE_0x004a8f38 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferCopyOriginToRegion)
-#define THANDOR_IMAGE_0x004a8f3c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceLoadPackageAsset)
-#define THANDOR_IMAGE_0x004a8f40 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceLifecycleCallbacks3)
-#define THANDOR_IMAGE_0x004a8f4c ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceConvertPaletteEntries)
-#define THANDOR_IMAGE_0x004a8f50 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsTextureSourceResolveAllocationBase)
-#define THANDOR_IMAGE_0x004a8f54 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsPaletteAssetLoadPackage)
-#define THANDOR_IMAGE_0x004a8f58 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsPaletteAssetLifecycleCallbacks3)
-#define THANDOR_IMAGE_0x004a8f64 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsPaletteAssetValidate)
-#define THANDOR_IMAGE_0x004a8f68 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsPaletteAssetResolveAllocationBase)
-#define THANDOR_IMAGE_0x004a8f6c ((uintptr_t)&g_ImageData_004A8E60.at_g_UnreferencedSoftwareTextUtf16)
-#define THANDOR_IMAGE_0x004ad930 ((uintptr_t)&g_ImageData_004AD92C.at_g_GraphicsPaletteBankSlots)
-#define THANDOR_IMAGE_0x004ae130 ((uintptr_t)&g_ImageData_004AD92C.at_g_GraphicsPaletteRemapBytes)
-#define THANDOR_IMAGE_0x004ae960 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordRing)
-#define THANDOR_IMAGE_0x004ae964 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordEndpointSlots)
-#define THANDOR_IMAGE_0x004ae968 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferDataBuffer)
-#define THANDOR_IMAGE_0x004ae96c ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferEndpointBuffer)
-#define THANDOR_IMAGE_0x004ae970 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordReadIndex)
-#define THANDOR_IMAGE_0x004ae974 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordWriteIndex)
-#define THANDOR_IMAGE_0x004ae978 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferUnitCursor)
-#define THANDOR_IMAGE_0x004ae97c ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferSequenceToken)
-#define THANDOR_IMAGE_0x004ae980 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferSenderContext)
-#define THANDOR_IMAGE_0x004ae984 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeFrameLock)
-#define THANDOR_IMAGE_0x004ae988 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimePostUnlockCallback)
-#define THANDOR_IMAGE_0x004ae98c ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordRingLock)
-#define THANDOR_IMAGE_0x004ae990 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailbox)
-#define THANDOR_IMAGE_0x004ae9a8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferRoundKeys16)
-#define THANDOR_IMAGE_0x004ae9d8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferRoundKeys16Tail)
-#define THANDOR_IMAGE_0x004ae9ec ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferChunkPacketSequenceToken)
-#define THANDOR_IMAGE_0x004ae9f8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxChunkOffset)
-#define THANDOR_IMAGE_0x004ae9fc ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxTransferByteCount)
-#define THANDOR_IMAGE_0x004aea00 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferChunkPayload)
-#define THANDOR_IMAGE_0x004aeae8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferPingEchoPacket)
-#define THANDOR_IMAGE_0x004aeaec ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxReplyPacket10033SequenceToken)
-#define THANDOR_IMAGE_0x004aeaf8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxReplyPacket10033EchoedTick)
-#define THANDOR_IMAGE_0x004aeb08 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxTickCounter)
-#define THANDOR_IMAGE_0x004af1e0 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiTooltipState)
-#define THANDOR_IMAGE_0x004af1f0 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiPendingFrameTicks)
-#define THANDOR_IMAGE_0x004af1f4 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiDirtyRectCount)
-#define THANDOR_IMAGE_0x004af1f8 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiDirtyRectEntries)
-#define THANDOR_IMAGE_0x004af1fc ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiActionQueueUsedBytes)
-#define THANDOR_IMAGE_0x004af200 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiActionQueueEntries)
-#define THANDOR_IMAGE_0x004af204 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiRuntimeInitializationCount)
-#define THANDOR_IMAGE_0x004af208 ((uintptr_t)&g_ImageData_004AF1D4.at_g_UiInvalidationSuppressed)
-#define THANDOR_IMAGE_0x004b0a30 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiActionHandlerPages)
-#define THANDOR_IMAGE_0x004b0e30 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiRootNode)
-#define THANDOR_IMAGE_0x004b0e34 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowTextureSource)
-#define THANDOR_IMAGE_0x004b0e38 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowClassTextureSource)
-#define THANDOR_IMAGE_0x004b0e3c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiPointerCaptureTarget)
-#define THANDOR_IMAGE_0x004b0e40 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiKeyboardFocusNode)
-#define THANDOR_IMAGE_0x004b0e44 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiSoundGainQ15)
-#define THANDOR_IMAGE_0x004b0e48 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTooltipDelayFrames)
-#define THANDOR_IMAGE_0x004b0e4c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTooltipTextStyle)
-#define THANDOR_IMAGE_0x004b0e50 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiScrollWheelDefaultStep)
-#define THANDOR_IMAGE_0x004b0e54 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiScrollWheelListStep)
-#define THANDOR_IMAGE_0x004b0e58 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiRangeSliderDragScale)
-#define THANDOR_IMAGE_0x004b0e5c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTimedListActionDelayFrames)
-#define THANDOR_IMAGE_0x004b0e60 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiListActivationPulseFrames)
-#define THANDOR_IMAGE_0x004b0e64 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiResizableWindowTitleTextTopOffset)
-#define THANDOR_IMAGE_0x004b0e68 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiResizableWindowTitleTextStyle)
-#define THANDOR_IMAGE_0x004b0e6c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowMoveHandleWidth)
-#define THANDOR_IMAGE_0x004b0e70 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowResizeBorderThickness)
-#define THANDOR_IMAGE_0x004b0e74 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextStyleSelected)
-#define THANDOR_IMAGE_0x004b0e78 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextStyleNormal)
-#define THANDOR_IMAGE_0x004b0e7c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextStyleDisabled)
-#define THANDOR_IMAGE_0x004b0e80 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextStyleAlternate)
-#define THANDOR_IMAGE_0x004b0e88 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowTitleTextStyle)
-#define THANDOR_IMAGE_0x004b0e8c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowFrameInset)
-#define THANDOR_IMAGE_0x004b0e90 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiListTextStyle)
-#define THANDOR_IMAGE_0x004b0e98 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextEditActiveTextStyle)
-#define THANDOR_IMAGE_0x004b0e9c ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextEditInactiveTextStyle)
-#define THANDOR_IMAGE_0x004b0ea0 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextEditDisabledTextStyle)
-#define THANDOR_IMAGE_0x004b0ea4 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiTextEditCaretBlinkPhaseStep)
-#define THANDOR_IMAGE_0x004b0ea8 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiHorizontalGaugeLabelTopInset)
-#define THANDOR_IMAGE_0x004b0eac ((uintptr_t)&g_ImageData_004B0A20.at_g_UiHorizontalGaugeLabelTextStyle)
-#define THANDOR_IMAGE_0x004b0eb0 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiRootStackActionHandlerPage)
-#define THANDOR_IMAGE_0x004b0eb8 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowClassTexturePathUtf16)
-#define THANDOR_IMAGE_0x004b0ee0 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowClassTextPathUtf16)
-#define THANDOR_IMAGE_0x004b0f06 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowTexturePathUtf16)
-#define THANDOR_IMAGE_0x004b0f24 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiPointerCaptureButton)
-#define THANDOR_IMAGE_0x004b0f28 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiImageControlHoverTarget)
-#define THANDOR_IMAGE_0x004b15d0 ((uintptr_t)&g_ImageData_004B15C8.at_g_UiSpriteButtonControlVtable)
-#define THANDOR_IMAGE_0x004b3c68 ((uintptr_t)&g_ImageData_004B3C1C.at_g_UiWindowPercentTextUtf16)
-#define THANDOR_IMAGE_0x004b7920 ((uintptr_t)&g_ImageData_004B7914.at_g_UiScrollableControlVtable)
-#define THANDOR_IMAGE_0x004b9e40 ((uintptr_t)&g_ImageData_004B9E38.at_g_UiTextListControlVtable)
-#define THANDOR_IMAGE_0x004ba590 ((uintptr_t)&g_ImageData_004BA58C.at_g_UiListControlVtable)
-#define THANDOR_IMAGE_0x004ba5d8 ((uintptr_t)&g_ImageData_004BA58C.at_g_UiPointerListExpandedLeftTextUtf16)
-#define THANDOR_IMAGE_0x004ba9d8 ((uintptr_t)&g_ImageData_004BA58C.at_g_UiPointerListExpandedRightTextUtf16)
-#define THANDOR_IMAGE_0x004bb990 ((uintptr_t)&g_ImageData_004BB988.at_g_UiTimedListControlVtable)
-#define THANDOR_IMAGE_0x004bcf20 ((uintptr_t)&g_ImageData_004BCF14.at_g_GraphicsDirectionInverseTransform)
-#define THANDOR_IMAGE_0x004bcf50 ((uintptr_t)&g_ImageData_004BCF14.at_g_GraphicsDirectionWorld)
-#define THANDOR_IMAGE_0x004bcf54 ((uintptr_t)&g_ImageData_004BCF14 + 0x40)
-#define THANDOR_IMAGE_0x004bcf58 ((uintptr_t)&g_ImageData_004BCF14 + 0x44)
-#define THANDOR_IMAGE_0x004bcf5c ((uintptr_t)&g_ImageData_004BCF14.at_g_GraphicsDirectionLocal)
-#define THANDOR_IMAGE_0x004bcf68 ((uintptr_t)&g_ImageData_004BCF14.at_g_GraphicsIntensityClampTableBase)
-#define THANDOR_IMAGE_0x004bd2e0 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMinimumX)
-#define THANDOR_IMAGE_0x004bd2e4 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMaximumX)
-#define THANDOR_IMAGE_0x004bd2e8 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMinimumY)
-#define THANDOR_IMAGE_0x004bd2ec ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMaximumY)
-#define THANDOR_IMAGE_0x004bd2f0 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMinimumZ)
-#define THANDOR_IMAGE_0x004bd2f4 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsMaximumZ)
-#define THANDOR_IMAGE_0x004bd2f8 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsTransformedPointX)
-#define THANDOR_IMAGE_0x004bd2fc ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsTransformedPointY)
-#define THANDOR_IMAGE_0x004bd300 ((uintptr_t)&g_ImageData_004BD2C4.at_g_ModelBoundsTransformedPointZ)
-#define THANDOR_IMAGE_0x004bd450 ((uintptr_t)&g_ImageData_004BD440.at_g_ModelViewCompositeTransform)
-#define THANDOR_IMAGE_0x004bd480 ((uintptr_t)&g_ImageData_004BD440.at_g_ModelViewDirectionLocal)
-#define THANDOR_IMAGE_0x004bd48c ((uintptr_t)&g_ImageData_004BD440.at_g_ModelViewDirectionWorld)
-#define THANDOR_IMAGE_0x004bd498 ((uintptr_t)&g_ImageData_004BD440.at_g_ModelAuxiliaryForwardDirectionLocal)
-#define THANDOR_IMAGE_0x004bd890 ((uintptr_t)&g_ImageData_004BD880.at_g_ArmyPlacementContactKindDispatchTable)
-#define THANDOR_IMAGE_0x004bd8b0 ((uintptr_t)&g_ImageData_004BD880.at_g_ModelCullViewRelativeX)
-#define THANDOR_IMAGE_0x004bd8b4 ((uintptr_t)&g_ImageData_004BD880.at_g_ModelCullViewRelativeY)
-#define THANDOR_IMAGE_0x004bd8b8 ((uintptr_t)&g_ImageData_004BD880.at_g_ModelCullViewRelativeZ)
-#define THANDOR_IMAGE_0x004bd8c8 ((uintptr_t)&g_ImageData_004BD880.at_g_SpriteAssetRegistryHead)
-#define THANDOR_IMAGE_0x004bea70 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformScratchMatrix)
-#define THANDOR_IMAGE_0x004bea94 ((uintptr_t)&g_ImageData_004BEA6C + 0x28)
-#define THANDOR_IMAGE_0x004bea98 ((uintptr_t)&g_ImageData_004BEA6C + 0x2C)
-#define THANDOR_IMAGE_0x004bea9c ((uintptr_t)&g_ImageData_004BEA6C + 0x30)
-#define THANDOR_IMAGE_0x004beaa0 ((uintptr_t)&g_ImageData_004BEA6C.at_g_FixedTransformInputRotationScratch)
-#define THANDOR_IMAGE_0x004bead0 ((uintptr_t)&g_ImageData_004BEA6C.at_g_FixedTransformComposedRotationScratch)
-#define THANDOR_IMAGE_0x004beb00 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformInputX)
-#define THANDOR_IMAGE_0x004beb04 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformInputY)
-#define THANDOR_IMAGE_0x004beb08 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformInputZ)
-#define THANDOR_IMAGE_0x004beb0c ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputX)
-#define THANDOR_IMAGE_0x004beb10 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputY)
-#define THANDOR_IMAGE_0x004beb14 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputZ)
-#define THANDOR_IMAGE_0x004bed50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingRuntimeRecords)
-#define THANDOR_IMAGE_0x004c2d50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingCompactRecords)
-#define THANDOR_IMAGE_0x004c6d50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingCompactRecordCount)
-#define THANDOR_IMAGE_0x004c6d54 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingNearbyRecords)
-#define THANDOR_IMAGE_0x004cad54 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingNearbyRecordCount)
-#define THANDOR_IMAGE_0x004cad60 ((uintptr_t)&g_ImageData_004BED4C.at_g_ModelDistanceAttenuationMmxNegativeRows)
-#define THANDOR_IMAGE_0x004cb1a0 ((uintptr_t)&g_ImageData_004BED4C.at_g_ModelDistanceAttenuationMmx)
-#define THANDOR_IMAGE_0x004cc2b0 ((uintptr_t)&g_ImageData_004BED4C.at_g_ModelLightingScaleMmxMultiplierTable)
-#define THANDOR_IMAGE_0x004cc6f8 ((uintptr_t)&g_ImageData_004BED4C.at_g_ModelLightingVertexToLightVectorScratch)
-#define THANDOR_IMAGE_0x004cc704 ((uintptr_t)&g_ImageData_004BED4C.at_g_ModelLightingTransformedSurfaceNormalScratch)
-#define THANDOR_IMAGE_0x004cce00 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingTextureDimension)
-#define THANDOR_IMAGE_0x004cce04 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGridHalfSize)
-#define THANDOR_IMAGE_0x004cce08 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTexturePixelCursor)
-#define THANDOR_IMAGE_0x004cce0c ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureTileX)
-#define THANDOR_IMAGE_0x004cce10 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureTileY)
-#define THANDOR_IMAGE_0x004cce14 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureSubresourceIndex)
-#define THANDOR_IMAGE_0x004cce18 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingSubresourceCount)
-#define THANDOR_IMAGE_0x004cce1c ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureTileXQ20)
-#define THANDOR_IMAGE_0x004cce20 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureTileYQ20)
-#define THANDOR_IMAGE_0x004cce24 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGridStepQ20)
-#define THANDOR_IMAGE_0x004cce28 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGridStepQ20Current)
-#define THANDOR_IMAGE_0x004cce2c ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedAsset)
-#define THANDOR_IMAGE_0x004cce30 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGridScratch)
-#define THANDOR_IMAGE_0x004cce34 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGridScratchInterior)
-#define THANDOR_IMAGE_0x004cce38 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingTextureSet)
-#define THANDOR_IMAGE_0x004cce3c ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount)
-#define THANDOR_IMAGE_0x004cce40 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingPositiveGridOriginQ12)
-#define THANDOR_IMAGE_0x004cce44 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GraphicsShadingNegativeGridOriginQ12)
-#define THANDOR_IMAGE_0x004cce48 ((uintptr_t)&g_ImageData_004CCDE8.at_g_GeneratedTextureScratchRuntime)
-#define THANDOR_IMAGE_0x004d0a00 ((uintptr_t)&g_ImageData_004D09F4.at_g_PrimitiveQueueStorage)
-#define THANDOR_IMAGE_0x004d0a04 ((uintptr_t)&g_ImageData_004D09F4.at_g_PrimitiveQueuePoolCapacity)
-#define THANDOR_IMAGE_0x004d11c0 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterScanState)
-#define THANDOR_IMAGE_0x004d1234 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDepthRowStrideBytes)
-#define THANDOR_IMAGE_0x004d1238 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDepthBuffer)
-#define THANDOR_IMAGE_0x004d123c ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareAuxiliaryTargetBase)
-#define THANDOR_IMAGE_0x004d1240 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDepthEpoch)
-#define THANDOR_IMAGE_0x004d1244 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareChainedSetDisplayMode)
-#define THANDOR_IMAGE_0x004d1248 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDrawQueue)
-#define THANDOR_IMAGE_0x004d1260 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlers16Bit)
-#define THANDOR_IMAGE_0x004d1360 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlersNon16Bit)
-#define THANDOR_IMAGE_0x004d1460 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlersAuxiliary)
-#define THANDOR_IMAGE_0x004fea30 ((uintptr_t)&g_ImageData_004FEA24.at_g_FieldGridInterpolationCallbacks5)
-#define THANDOR_IMAGE_0x004ffc80 ((uintptr_t)&g_ImageData_004FFC78.at_g_TerrainProjectedRowSpans)
-#define THANDOR_IMAGE_0x00501190 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainLightingColorRampArgb256)
-#define THANDOR_IMAGE_0x00501590 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainDirectionalLightColorLut)
-#define THANDOR_IMAGE_0x00501994 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainDirectionalLightSecondaryColor)
-#define THANDOR_IMAGE_0x00501998 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainLightDirectionX)
-#define THANDOR_IMAGE_0x0050199c ((uintptr_t)&g_ImageData_00501184.at_g_TerrainLightDirectionY)
-#define THANDOR_IMAGE_0x005019a0 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainLightDirectionZ)
-#define THANDOR_IMAGE_0x005019a4 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainByteClampLookup)
-#define THANDOR_IMAGE_0x005019a8 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainDirectionRecordTable256)
-#define THANDOR_IMAGE_0x005039dc ((uintptr_t)&g_ImageData_00501184.at_g_TerrainMaterialTextureSets)
-#define THANDOR_IMAGE_0x00503a74 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainPrimaryTextureSet)
-#define THANDOR_IMAGE_0x00503a78 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainSoilPacketTablePayload)
-#define THANDOR_IMAGE_0x00503a7c ((uintptr_t)&g_ImageData_00501184.at_g_TerrainSurfacePacketTablePayload)
-#define THANDOR_IMAGE_0x00503a80 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainSecondaryPalette)
-#define THANDOR_IMAGE_0x00503a84 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainPrimaryPalette)
-#define THANDOR_IMAGE_0x00503a88 ((uintptr_t)&g_ImageData_00501184.at_g_UiCommandModeGColorVariantFlags)
-#define THANDOR_IMAGE_0x00503a8c ((uintptr_t)&g_ImageData_00501184.at_g_UiCommandModeGColorVariantLimit)
-#define THANDOR_IMAGE_0x00503a90 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainMaterialTextureSuffixLettersUtf16AtoZ)
-#define THANDOR_IMAGE_0x00503af8 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainHeightBandMaximumDelta)
-#define THANDOR_IMAGE_0x00503afc ((uintptr_t)&g_ImageData_00501184.at_g_TerrainHeightBandMinimumDelta)
-#define THANDOR_IMAGE_0x00503b00 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainAuxHeightMinimum)
-#define THANDOR_IMAGE_0x00503b04 ((uintptr_t)&g_ImageData_00501184.at_g_TerrainUnreferencedValue00503B04)
-#define THANDOR_IMAGE_0x00505fa0 ((uintptr_t)&g_ImageData_00505F98.at_g_TerrainHeightDeltaScaleByStepQ12)
-#define THANDOR_IMAGE_0x005063a0 ((uintptr_t)&g_ImageData_00505F98.at_g_TerrainScanRowStrideBytes)
-#define THANDOR_IMAGE_0x005063a4 ((uintptr_t)&g_ImageData_00505F98.at_g_TerrainScanStepLimit)
-#define THANDOR_IMAGE_0x005063a8 ((uintptr_t)&g_ImageData_00505F98.at_g_TerrainScanSharedSelectorValue)
-#define THANDOR_IMAGE_0x005063ac ((uintptr_t)&g_ImageData_00505F98.at_g_TerrainScanReferenceHeight)
-#define THANDOR_IMAGE_0x0050a350 ((uintptr_t)&g_ImageData_0050A340.at_g_GraphicsTransformScratchMatrix3x4)
-#define THANDOR_IMAGE_0x0050a380 ((uintptr_t)&g_ImageData_0050A340.at_g_GraphicsTransformInputScratchVec3)
-#define THANDOR_IMAGE_0x0050a3b0 ((uintptr_t)&g_ImageData_0050A340.at_g_GraphicsTransformOutputScratchVec3)
-#define THANDOR_IMAGE_0x0050a3e0 ((uintptr_t)&g_ImageData_0050A340.at_g_GraphicsProjectionScratchVec3)
-#define THANDOR_IMAGE_0x0050a3f0 ((uintptr_t)&g_ImageData_0050A340.at_g_ModelProjectedBoundsCornerScratch8)
-#define THANDOR_IMAGE_0x0050ae60 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastMaximumDistance)
-#define THANDOR_IMAGE_0x0050ae64 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastOriginX)
-#define THANDOR_IMAGE_0x0050ae68 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastOriginY)
-#define THANDOR_IMAGE_0x0050ae6c ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastOriginZ)
-#define THANDOR_IMAGE_0x0050ae70 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalOriginX)
-#define THANDOR_IMAGE_0x0050ae74 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalOriginY)
-#define THANDOR_IMAGE_0x0050ae78 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalOriginZ)
-#define THANDOR_IMAGE_0x0050ae7c ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastWorldDirectionXQ28)
-#define THANDOR_IMAGE_0x0050ae80 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastWorldDirectionYQ28)
-#define THANDOR_IMAGE_0x0050ae84 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastWorldDirectionZQ28)
-#define THANDOR_IMAGE_0x0050ae88 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalDirectionXQ28)
-#define THANDOR_IMAGE_0x0050ae8c ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalDirectionYQ28)
-#define THANDOR_IMAGE_0x0050ae90 ((uintptr_t)&g_ImageData_0050AE54.at_g_ModelRaycastLocalDirectionZQ28)
-#define THANDOR_IMAGE_0x0050b520 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundListenerTransform)
-#define THANDOR_IMAGE_0x0050b550 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundListenerRotation)
-#define THANDOR_IMAGE_0x0050b574 ((uintptr_t)&g_ImageData_0050B510 + 0x64)
-#define THANDOR_IMAGE_0x0050b578 ((uintptr_t)&g_ImageData_0050B510 + 0x68)
-#define THANDOR_IMAGE_0x0050b57c ((uintptr_t)&g_ImageData_0050B510 + 0x6C)
-#define THANDOR_IMAGE_0x0050b580 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundListenerWorldToLocal)
-#define THANDOR_IMAGE_0x0050b584 ((uintptr_t)&g_ImageData_0050B510 + 0x74)
-#define THANDOR_IMAGE_0x0050b588 ((uintptr_t)&g_ImageData_0050B510 + 0x78)
-#define THANDOR_IMAGE_0x0050b58c ((uintptr_t)&g_ImageData_0050B510 + 0x7C)
-#define THANDOR_IMAGE_0x0050b590 ((uintptr_t)&g_ImageData_0050B510 + 0x80)
-#define THANDOR_IMAGE_0x0050b594 ((uintptr_t)&g_ImageData_0050B510 + 0x84)
-#define THANDOR_IMAGE_0x0050b598 ((uintptr_t)&g_ImageData_0050B510 + 0x88)
-#define THANDOR_IMAGE_0x0050b59c ((uintptr_t)&g_ImageData_0050B510 + 0x8C)
-#define THANDOR_IMAGE_0x0050b5a0 ((uintptr_t)&g_ImageData_0050B510 + 0x90)
-#define THANDOR_IMAGE_0x0050b5a4 ((uintptr_t)&g_ImageData_0050B510 + 0x94)
-#define THANDOR_IMAGE_0x0050b5a8 ((uintptr_t)&g_ImageData_0050B510 + 0x98)
-#define THANDOR_IMAGE_0x0050b5ac ((uintptr_t)&g_ImageData_0050B510 + 0x9C)
-#define THANDOR_IMAGE_0x0050b5b0 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundRelativeX)
-#define THANDOR_IMAGE_0x0050b5b4 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundRelativeY)
-#define THANDOR_IMAGE_0x0050b5b8 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundRelativeZ)
-#define THANDOR_IMAGE_0x0050b5bc ((uintptr_t)&g_ImageData_0050B510.at_g_SoundEffectsGainQ15)
-#define THANDOR_IMAGE_0x0050b5c0 ((uintptr_t)&g_ImageData_0050B510.at_g_ReverseStereoMask)
-#define THANDOR_IMAGE_0x0050b5c4 ((uintptr_t)&g_ImageData_0050B510.at_g_SpatialSoundSlots)
-#define THANDOR_IMAGE_0x0050bade ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionTargetDistanceConvergenceStepQ12)
-#define THANDOR_IMAGE_0x0050bae2 ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionPositionMagnitudeInputScaleQ12)
-#define THANDOR_IMAGE_0x0050bae6 ((uintptr_t)&g_ImageData_0050BADC.at_k_CameraScreenDeltaDistanceScaleQ16)
-#define THANDOR_IMAGE_0x0050baea ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionDistanceInputScaleQ12)
-#define THANDOR_IMAGE_0x0050baee ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionHeadingInputScale)
-#define THANDOR_IMAGE_0x0050baf2 ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionPitchInputScale)
-#define THANDOR_IMAGE_0x0050baf6 ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionPointerWheelInputScale)
-#define THANDOR_IMAGE_0x0050bafa ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionAlternateMinimumPitchAngle)
-#define THANDOR_IMAGE_0x0050bafe ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionAlternateMaximumPitchAngle)
-#define THANDOR_IMAGE_0x0050bb02 ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionAlternateMinimumDistanceQ12)
-#define THANDOR_IMAGE_0x0050bb06 ((uintptr_t)&g_ImageData_0050BADC.at_g_WorldMotionAlternateMaximumDistanceQ12)
-#define THANDOR_IMAGE_0x0050bb37 ((uintptr_t)&g_ImageData_0050BB34.at_g_FrontendModelPointerContextVtable)
-#define THANDOR_IMAGE_0x0050bb5f ((uintptr_t)&g_ImageData_0050BB34 + 0x2B)
-#define THANDOR_IMAGE_0x0050d930 ((uintptr_t)&g_ImageData_0050D928.at_g_TechnologyAsset)
-#define THANDOR_IMAGE_0x0050d934 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark1PositionXQ12)
-#define THANDOR_IMAGE_0x0050d938 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark1PositionYQ12)
-#define THANDOR_IMAGE_0x0050d93c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark1PositionZQ12)
-#define THANDOR_IMAGE_0x0050d940 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark1PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d944 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d948 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark2PositionXQ12)
-#define THANDOR_IMAGE_0x0050d94c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark2PositionYQ12)
-#define THANDOR_IMAGE_0x0050d950 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark2PositionZQ12)
-#define THANDOR_IMAGE_0x0050d954 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark2PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d958 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d95c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark3PositionXQ12)
-#define THANDOR_IMAGE_0x0050d960 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark3PositionYQ12)
-#define THANDOR_IMAGE_0x0050d964 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark3PositionZQ12)
-#define THANDOR_IMAGE_0x0050d968 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark3PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d96c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d970 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark4PositionXQ12)
-#define THANDOR_IMAGE_0x0050d974 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark4PositionYQ12)
-#define THANDOR_IMAGE_0x0050d978 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark4PositionZQ12)
-#define THANDOR_IMAGE_0x0050d97c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark4PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d980 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d984 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark5PositionXQ12)
-#define THANDOR_IMAGE_0x0050d988 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark5PositionYQ12)
-#define THANDOR_IMAGE_0x0050d98c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark5PositionZQ12)
-#define THANDOR_IMAGE_0x0050d990 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark5PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d994 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d998 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark6PositionXQ12)
-#define THANDOR_IMAGE_0x0050d99c ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark6PositionYQ12)
-#define THANDOR_IMAGE_0x0050d9a0 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark6PositionZQ12)
-#define THANDOR_IMAGE_0x0050d9a4 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark6PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d9a8 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d9ac ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark7PositionXQ12)
-#define THANDOR_IMAGE_0x0050d9b0 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark7PositionYQ12)
-#define THANDOR_IMAGE_0x0050d9b4 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark7PositionZQ12)
-#define THANDOR_IMAGE_0x0050d9b8 ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark7PositionMagnitudeQ12)
-#define THANDOR_IMAGE_0x0050d9bc ((uintptr_t)&g_ImageData_0050D928.at_g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16)
-#define THANDOR_IMAGE_0x0050d9c0 ((uintptr_t)&g_ImageData_0050D928.at_g_ScenarioCatalog)
-#define THANDOR_IMAGE_0x0050d9c4 ((uintptr_t)&g_ImageData_0050D928.at_g_ScenarioCatalogUsedBytes)
-#define THANDOR_IMAGE_0x0050d9c8 ((uintptr_t)&g_ImageData_0050D928.at_u_save___sve_0050d9c8)
-#define THANDOR_IMAGE_0x0050d9de ((uintptr_t)&g_ImageData_0050D928.at_g_UnreferencedLevelPatternUtf16)
-#define THANDOR_IMAGE_0x0050d9f6 ((uintptr_t)&g_ImageData_0050D928.at_g_UnreferencedCampaignPatternUtf16)
-#define THANDOR_IMAGE_0x0050da0e ((uintptr_t)&g_ImageData_0050D928.at_u_level_level_dat_0050da0e)
-#define THANDOR_IMAGE_0x0050da2e ((uintptr_t)&g_ImageData_0050D928.at_g_ScenarioLevelDataPathTemplateUtf16)
-#define THANDOR_IMAGE_0x0050da52 ((uintptr_t)&g_ImageData_0050D928.at_u_level_campagne_dat_0050da52)
-#define THANDOR_IMAGE_0x0050da78 ((uintptr_t)&g_ImageData_0050D928.at_g_ScenarioCampaignDataPathTemplateUtf16)
-#define THANDOR_IMAGE_0x0050daa2 ((uintptr_t)&g_ImageData_0050D928.at_u_save_0050daa2)
-#define THANDOR_IMAGE_0x0050daac ((uintptr_t)&g_ImageData_0050D928.at_u_level_0050daac)
-#define THANDOR_IMAGE_0x0050dab8 ((uintptr_t)&g_ImageData_0050D928.at_u_level_0050dab8)
-#define THANDOR_IMAGE_0x0050dac4 ((uintptr_t)&g_ImageData_0050D928.at_g_ScenarioCatalogPathScratchUtf16)
-#define THANDOR_IMAGE_0x0050dcc4 ((uintptr_t)&g_ImageData_0050D928.at_g_ResourceRegistrationDirectoryUtf16)
-#define THANDOR_IMAGE_0x0050dec4 ((uintptr_t)&g_ImageData_0050D928.at_u_texte_techno_str_0050dec4)
-#define THANDOR_IMAGE_0x0050df06 ((uintptr_t)&g_ImageData_0050D928.at_u_flm_ende0000_flm_0050df06)
-#define THANDOR_IMAGE_0x0050df28 ((uintptr_t)&g_ImageData_0050D928.at_u_flm_ende0001_flm_0050df28)
-#define THANDOR_IMAGE_0x0050df4a ((uintptr_t)&g_ImageData_0050D928.at_u_flm_ende0000_flm_0050df4a)
-#define THANDOR_IMAGE_0x0050df6c ((uintptr_t)&g_ImageData_0050D928.at_u_sound_level00_sam_0050df6c)
-#define THANDOR_IMAGE_0x0050df90 ((uintptr_t)&g_ImageData_0050D928.at_u_sound_music00_sam_0050df90)
-#define THANDOR_IMAGE_0x0050dfb4 ((uintptr_t)&g_ImageData_0050D928.at_u_army_hex_0050dfb4)
-#define THANDOR_IMAGE_0x0050dfc6 ((uintptr_t)&g_ImageData_0050D928.at_u_effect_hex_0050dfc6)
-#define THANDOR_IMAGE_0x0050dfdc ((uintptr_t)&g_ImageData_0050D928.at_u_shot_hex_0050dfdc)
-#define THANDOR_IMAGE_0x0050dfee ((uintptr_t)&g_ImageData_0050D928.at_u_modul_hex_0050dfee)
-#define THANDOR_IMAGE_0x0050e002 ((uintptr_t)&g_ImageData_0050D928.at_u_field_hex_0050e002)
-#define THANDOR_IMAGE_0x0050e016 ((uintptr_t)&g_ImageData_0050D928.at_u_light_hex_0050e016)
-#define THANDOR_IMAGE_0x0050e02a ((uintptr_t)&g_ImageData_0050D928.at_u_widget_hex_0050e02a)
-#define THANDOR_IMAGE_0x0050e040 ((uintptr_t)&g_ImageData_0050D928.at_u_level_hex_0050e040)
-#define THANDOR_IMAGE_0x0050e054 ((uintptr_t)&g_ImageData_0050D928.at_u_daten_hex_0050e054)
-#define THANDOR_IMAGE_0x0050e068 ((uintptr_t)&g_ImageData_0050D928.at_u_campagne_hex_0050e068)
-#define THANDOR_IMAGE_0x0050e082 ((uintptr_t)&g_ImageData_0050D928.at_u_stat_hex_0050e082)
-#define THANDOR_IMAGE_0x0050e094 ((uintptr_t)&g_ImageData_0050D928.at_u_oldunit_hex_0050e094)
-#define THANDOR_IMAGE_0x0050e0ac ((uintptr_t)&g_ImageData_0050D928.at_g_InGameResourceRegistrationBusyCount)
-#define THANDOR_IMAGE_0x0050f050 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendPlayerRuntimeCount)
-#define THANDOR_IMAGE_0x0050f054 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendLocalPlayerNameUtf16)
-#define THANDOR_IMAGE_0x0050f07c ((uintptr_t)&g_ImageData_0050F044.at_g_GameVersionUtf16)
-#define THANDOR_IMAGE_0x0050f090 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendSelectedNetworkEndpoint)
-#define THANDOR_IMAGE_0x0050f0a0 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendSessionToken)
-#define THANDOR_IMAGE_0x0050f0a4 ((uintptr_t)&g_ImageData_0050F044.at_g_SessionTransferTimeoutTicks)
-#define THANDOR_IMAGE_0x0050f0a8 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendTransferResponsePending)
-#define THANDOR_IMAGE_0x0050f0ac ((uintptr_t)&g_ImageData_0050F044.at_g_LocalPlayerRuntimeId)
-#define THANDOR_IMAGE_0x0050f0c0 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendPlayerRuntimeBlocks)
-#define THANDOR_IMAGE_0x0050f0c4 ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendPlayerRuntimeBlockCount)
-#define THANDOR_IMAGE_0x0050f0c8 ((uintptr_t)&g_ImageData_0050F044.at_g_SessionNetworkRoleFlags)
-#define THANDOR_IMAGE_0x0050f0cc ((uintptr_t)&g_ImageData_0050F044.at_g_FrontendSelectedPlayerToken)
-#define THANDOR_IMAGE_0x0050f0d0 ((uintptr_t)&g_ImageData_0050F044.at_g_RecentTextSerialCounter)
-#define THANDOR_IMAGE_0x0050f0d4 ((uintptr_t)&g_ImageData_0050F044.at_g_SessionNetworkTickInterval)
-#define THANDOR_IMAGE_0x0050f0d8 ((uintptr_t)&g_ImageData_0050F044.at_g_SessionNetworkTickCounter)
-#define THANDOR_IMAGE_0x0050f0dc ((uintptr_t)&g_ImageData_0050F044.at_g_HostCommandBatchSyncSentThisInterval)
-#define THANDOR_IMAGE_0x0050f0e0 ((uintptr_t)&g_ImageData_0050F044.at_g_RecentTextSlotStorage)
-#define THANDOR_IMAGE_0x0050f0e4 ((uintptr_t)&g_ImageData_0050F044.at_g_RecentTextEntrySerials)
-#define THANDOR_IMAGE_0x0050f104 ((uintptr_t)&g_ImageData_0050F044.at_u_texte_neterror_str_0050f104)
-#define THANDOR_IMAGE_0x0050f340 ((uintptr_t)&g_ImageData_0050F328.at_g_GameFactionRuntimeImage)
-#define THANDOR_IMAGE_0x00512d60 ((uintptr_t)&g_ImageData_0050F328.at_g_TerrainRegionCollectionStoredCount)
-#define THANDOR_IMAGE_0x00512d64 ((uintptr_t)&g_ImageData_0050F328.at_g_TerrainRegionCollectionVisitedCount)
-#define THANDOR_IMAGE_0x00512d68 ((uintptr_t)&g_ImageData_0050F328.at_g_TerrainRegionCollectionEntries)
-#define THANDOR_IMAGE_0x00512d6c ((uintptr_t)&g_ImageData_0050F328.at_g_GameStatTableImage)
-#define THANDOR_IMAGE_0x00512d70 ((uintptr_t)&g_ImageData_0050F328.at_g_GameDataAuxState)
-#define THANDOR_IMAGE_0x00514960 ((uintptr_t)&g_ImageData_0051494C.at_g_SelectionPlayerRuntimeBlockPointers)
-#define THANDOR_IMAGE_0x00514d60 ((uintptr_t)&g_ImageData_0051494C.at_g_SelectionPlayerBlocks)
-#define THANDOR_IMAGE_0x00514d64 ((uintptr_t)&g_ImageData_0051494C.at_g_InGameFactionScratchBufferSetA8)
-#define THANDOR_IMAGE_0x00514d84 ((uintptr_t)&g_ImageData_0051494C.at_g_InGameFactionScratchBufferSetB8)
-#define THANDOR_IMAGE_0x00514da4 ((uintptr_t)&g_ImageData_0051494C.at_g_FrontendPlayerMessageScratchUtf16)
-#define THANDOR_IMAGE_0x00514e04 ((uintptr_t)&g_ImageData_0051494C.at_g_UiSevenSlotCommandPayloadText)
-#define THANDOR_IMAGE_0x00515658 ((uintptr_t)&g_ImageData_0051560C.at_g_UiNumericPairFirstValueScratchUtf16)
-#define THANDOR_IMAGE_0x00515678 ((uintptr_t)&g_ImageData_0051560C.at_g_UiNumericPairSecondValueScratchUtf16)
-#define THANDOR_IMAGE_0x00516510 ((uintptr_t)&g_ImageData_0051650C.at_g_UiCatalogEntryRichTextScratchUtf16)
-#define THANDOR_IMAGE_0x00516ea0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsValueTextUtf16)
-#define THANDOR_IMAGE_0x00516ee0 ((uintptr_t)&g_ImageData_00516E90.at_g_EndGameElapsedTimeScratchUtf16)
-#define THANDOR_IMAGE_0x00516fa8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvance00Pixels)
-#define THANDOR_IMAGE_0x00516fac ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvance01Pixels)
-#define THANDOR_IMAGE_0x00516fb0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceColourPixels)
-#define THANDOR_IMAGE_0x00516fb4 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceEconomyPixels)
-#define THANDOR_IMAGE_0x00516fb8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceMilitaryPixels)
-#define THANDOR_IMAGE_0x00516fbc ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvancePointsPixels)
-#define THANDOR_IMAGE_0x00516fc0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvancePlayerPixels)
-#define THANDOR_IMAGE_0x00516fc4 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionPixels)
-#define THANDOR_IMAGE_0x00516fc8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionField98Pixels)
-#define THANDOR_IMAGE_0x00516fcc ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionField9CPixels)
-#define THANDOR_IMAGE_0x00516fd0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldA0Pixels)
-#define THANDOR_IMAGE_0x00516fd4 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldA4Pixels)
-#define THANDOR_IMAGE_0x00516fd8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldA8Pixels)
-#define THANDOR_IMAGE_0x00516fdc ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldACPixels)
-#define THANDOR_IMAGE_0x00516fe0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldB0Pixels)
-#define THANDOR_IMAGE_0x00516fe4 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldB4Pixels)
-#define THANDOR_IMAGE_0x00516fe8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldB8Pixels)
-#define THANDOR_IMAGE_0x00516fec ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsColumnAdvanceFactionFieldBCPixels)
-#define THANDOR_IMAGE_0x00516ff0 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsFramebufferBytesPerPixel)
-#define THANDOR_IMAGE_0x00516ff4 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsFramebufferScanlineStrideBytes)
-#define THANDOR_IMAGE_0x00516ff8 ((uintptr_t)&g_ImageData_00516E90.at_g_FrontendResultsFactionPackedPixelColors)
-#define THANDOR_IMAGE_0x00518080 ((uintptr_t)&g_ImageData_00518074.at_g_SoftwareBilinearPackedInterpolationWeights256)
-#define THANDOR_IMAGE_0x00518880 ((uintptr_t)&g_ImageData_00518074.at_g_SoftwarePixelIntensityToNativeColorLut256)
-#define THANDOR_IMAGE_0x00518c80 ((uintptr_t)&g_ImageData_00518074.at_g_SoftwareBlendUnityWordLanesQ14)
-#define THANDOR_IMAGE_0x00519730 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyRuntimeSlots)
-#define THANDOR_IMAGE_0x00519734 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyRuntimeRebaseBaseMinusOne)
-#define THANDOR_IMAGE_0x00519738 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyGraphicsBindings)
-#define THANDOR_IMAGE_0x00519778 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyAssetRecordRegistry)
-#define THANDOR_IMAGE_0x0051a380 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyPreviewAlphaPremultiplyMmxLut256)
-#define THANDOR_IMAGE_0x0051ab80 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
-#define THANDOR_IMAGE_0x0051b380 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyPreviewDownsampleAlphaRoundingBiasMmx)
-#define THANDOR_IMAGE_0x0051b388 ((uintptr_t)&g_ImageData_0051972C.at_g_ArmyCommandGenerationStandard)
-#define THANDOR_IMAGE_0x0051b38c ((uintptr_t)&g_ImageData_0051972C.at_g_AiCommandGenerationCandidateBase)
-#define THANDOR_IMAGE_0x0051b390 ((uintptr_t)&g_ImageData_0051972C.at_g_AiCommandGenerationRetainedTarget)
-#define THANDOR_IMAGE_0x0051b394 ((uintptr_t)&g_ImageData_0051972C.at_g_UnreferencedArmyTexturePathUtf16)
-#define THANDOR_IMAGE_0x0051b3ae ((uintptr_t)&g_ImageData_0051972C.at_g_UnreferencedArmyTag)
-#define THANDOR_IMAGE_0x0051dbc0 ((uintptr_t)&g_ImageData_0051DBB4.at_g_EffectTextureSet)
-#define THANDOR_IMAGE_0x0051dbc4 ((uintptr_t)&g_ImageData_0051DBB4.at_g_EffectPalette)
-#define THANDOR_IMAGE_0x0051dbc8 ((uintptr_t)&g_ImageData_0051DBB4.at_g_EffectRuntimeSlots)
-#define THANDOR_IMAGE_0x0051dbcc ((uintptr_t)&g_ImageData_0051DBB4.at_g_EffectRuntimeRebaseBaseMinusOne)
-#define THANDOR_IMAGE_0x0051dbd0 ((uintptr_t)&g_ImageData_0051DBB4.at_g_EffectDefinitionRegistry)
-#define THANDOR_IMAGE_0x0051eef0 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ModelDefinitionRegistry)
-#define THANDOR_IMAGE_0x0051faf0 ((uintptr_t)&g_ImageData_0051EEE4.at_g_TerrainClassPlacementAndOverlayCallbacks10)
-#define THANDOR_IMAGE_0x0051fb18 ((uintptr_t)&g_ImageData_0051EEE4.at_g_FactionEnergyAllocationPriorityByModelClass)
-#define THANDOR_IMAGE_0x0051fb78 ((uintptr_t)&g_ImageData_0051EEE4.at_g_AiCombatTargetClassBaseScores)
-#define THANDOR_IMAGE_0x0051fbd8 ((uintptr_t)&g_ImageData_0051EEE4.at_g_RuntimeModelClassPriorityByModelClassId)
-#define THANDOR_IMAGE_0x0051fc38 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ArmyRuntimeDepthBinClassByModelClass)
-#define THANDOR_IMAGE_0x0051fc98 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes)
-#define THANDOR_IMAGE_0x005200b8 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ModelRuntimeSlots)
-#define THANDOR_IMAGE_0x005200bc ((uintptr_t)&g_ImageData_0051EEE4.at_g_ModelRuntimeRebaseDelta)
-#define THANDOR_IMAGE_0x00520eb0 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorAXQ12)
-#define THANDOR_IMAGE_0x00520eb4 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorAYQ12)
-#define THANDOR_IMAGE_0x00520eb8 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorAZQ12)
-#define THANDOR_IMAGE_0x00520ebc ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorBXQ12)
-#define THANDOR_IMAGE_0x00520ec0 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorBYQ12)
-#define THANDOR_IMAGE_0x00520ec4 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionBlendVectorBZQ12)
-#define THANDOR_IMAGE_0x00520ec8 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionRotationMatrixScratchA)
-#define THANDOR_IMAGE_0x00520ef8 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionRotationMatrixScratchB)
-#define THANDOR_IMAGE_0x00520f28 ((uintptr_t)&g_ImageData_00520EA0.at_g_ArmySuspensionRotationMatrixComposedScratch)
-#define THANDOR_IMAGE_0x0052af40 ((uintptr_t)&g_ImageData_0052AF30.at_g_ShotTextureSet)
-#define THANDOR_IMAGE_0x0052af44 ((uintptr_t)&g_ImageData_0052AF30.at_g_ShotPalette)
-#define THANDOR_IMAGE_0x0052af48 ((uintptr_t)&g_ImageData_0052AF30.at_g_ShotRuntimeSlots)
-#define THANDOR_IMAGE_0x0052af4c ((uintptr_t)&g_ImageData_0052AF30.at_g_ShotRuntimeRebaseBaseMinusOne)
-#define THANDOR_IMAGE_0x0052af50 ((uintptr_t)&g_ImageData_0052AF30.at_g_ShotDefinitionRegistry)
-#define THANDOR_IMAGE_0x0052cdf0 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelTextureSource)
-#define THANDOR_IMAGE_0x0052cdf4 ((uintptr_t)&g_ImageData_0052CDE8.at_g_InfoPanelTextureSource)
-#define THANDOR_IMAGE_0x0052cdf8 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelData)
-#define THANDOR_IMAGE_0x0052cdfc ((uintptr_t)&g_ImageData_0052CDE8.at_g_InfoPanelData)
-#define THANDOR_IMAGE_0x0052ce00 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelNumberTextStyle)
-#define THANDOR_IMAGE_0x0052ce04 ((uintptr_t)&g_ImageData_0052CDE8.at_g_ModelProjectedBoundsPixels)
-#define THANDOR_IMAGE_0x0052ce14 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionInfoEntitySlots)
-#define THANDOR_IMAGE_0x0052ce18 ((uintptr_t)&g_ImageData_0052CDE8.at_u_gfx_panel_select_gfx_0052ce18)
-#define THANDOR_IMAGE_0x0052ce42 ((uintptr_t)&g_ImageData_0052CDE8.at_u_gfx_panel_info_gfx_0052ce42)
-#define THANDOR_IMAGE_0x0052ce68 ((uintptr_t)&g_ImageData_0052CDE8.at_u_gfx_panel_select_dat_0052ce68)
-#define THANDOR_IMAGE_0x0052ce92 ((uintptr_t)&g_ImageData_0052CDE8.at_u_gfx_panel_info_dat_0052ce92)
-#define THANDOR_IMAGE_0x0052ceb8 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelNumberScratchUtf16)
-#define THANDOR_IMAGE_0x0052ced8 ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelBlitOpaque)
-#define THANDOR_IMAGE_0x0052cedc ((uintptr_t)&g_ImageData_0052CDE8.at_g_SelectionPanelBlitClipped)
-#define THANDOR_IMAGE_0x00530820 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLoadedResourcePointers)
-#define THANDOR_IMAGE_0x00530824 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLoadedResourcePointerCount)
-#define THANDOR_IMAGE_0x00530828 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16)
-#define THANDOR_IMAGE_0x00530a28 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelSoundParentDirectoryScratchUtf16)
-#define THANDOR_IMAGE_0x00530c28 ((uintptr_t)&g_ImageData_00530818.at_g_LevelResourcePathScratchUtf16)
-#define THANDOR_IMAGE_0x00530e28 ((uintptr_t)&g_ImageData_00530818.at_g_LevelEndingMovieSourcePath)
-#define THANDOR_IMAGE_0x00531028 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelTitleTextResourceIndex)
-#define THANDOR_IMAGE_0x0053102c ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelCampaignAssociationIndex)
-#define THANDOR_IMAGE_0x00531030 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelEffectVoiceSet0)
-#define THANDOR_IMAGE_0x00531034 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelEffectVoiceSet1)
-#define THANDOR_IMAGE_0x00531038 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelEffectVoiceSet2)
-#define THANDOR_IMAGE_0x0053103c ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelEffectVoiceSet3)
-#define THANDOR_IMAGE_0x00531040 ((uintptr_t)&g_ImageData_00530818.at_g_InGameActiveEffectVoice)
-#define THANDOR_IMAGE_0x00531044 ((uintptr_t)&g_ImageData_00530818.at_g_InGameEffectsEnabled)
-#define THANDOR_IMAGE_0x00531048 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet0)
-#define THANDOR_IMAGE_0x0053104c ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet1)
-#define THANDOR_IMAGE_0x00531050 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet2)
-#define THANDOR_IMAGE_0x00531054 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet3)
-#define THANDOR_IMAGE_0x00531058 ((uintptr_t)&g_ImageData_00530818.at_g_InGameActiveMusicVoice)
-#define THANDOR_IMAGE_0x0053105c ((uintptr_t)&g_ImageData_00530818.at_g_InGameMusicNextTrackCountdown)
-#define THANDOR_IMAGE_0x00531060 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelRuntimeGlobalBlock)
-#define THANDOR_IMAGE_0x005332a0 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchPrimary)
-#define THANDOR_IMAGE_0x005332a4 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchSecondary)
-#define THANDOR_IMAGE_0x005332a8 ((uintptr_t)&g_ImageData_0053329C.at_g_GridPathCostQueueBegin)
-#define THANDOR_IMAGE_0x005332ac ((uintptr_t)&g_ImageData_0053329C.at_g_GridPathCostQueueEnd)
-#define THANDOR_IMAGE_0x005332b0 ((uintptr_t)&g_ImageData_0053329C.at_g_GridPathCostQueuePassBoundary)
-#define THANDOR_IMAGE_0x005332b4 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchWidth)
-#define THANDOR_IMAGE_0x005332b8 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchHeight)
-#define THANDOR_IMAGE_0x00533ed0 ((uintptr_t)&g_ImageData_00533ED0.at_g_GridPathEntityClassMask)
-#define THANDOR_IMAGE_0x00533ed4 ((uintptr_t)&g_ImageData_00533ED0.at_g_GridPathBlockingMask)
-#define THANDOR_IMAGE_0x00533ed8 ((uintptr_t)&g_ImageData_00533ED0.at_g_GridPathHighCostMask)
-#define THANDOR_IMAGE_0x00533edc ((uintptr_t)&g_ImageData_00533ED0.at_g_GridPathUnreachableRegionReferenceColumn)
-#define THANDOR_IMAGE_0x00533ee0 ((uintptr_t)&g_ImageData_00533ED0.at_g_GridPathUnreachableRegionReferenceRow)
-#define THANDOR_IMAGE_0x005367d0 ((uintptr_t)&g_ImageData_005367CC.at_g_EntityPathingPriorityPairs)
-#define THANDOR_IMAGE_0x005368d4 ((uintptr_t)&g_ImageData_005367CC.at_g_EntityPathingPriorityPairCount)
-#define THANDOR_IMAGE_0x00536f10 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit24MaxWaterSurfaceDelta)
-#define THANDOR_IMAGE_0x00536f14 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f18 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f1c ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f20 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f24 ((uintptr_t)&g_ImageData_00536F08.at_g_ModelTraversalClass4SecondaryThresholdTable3)
-#define THANDOR_IMAGE_0x00536f30 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit28MinWaterSurfaceDelta)
-#define THANDOR_IMAGE_0x00536f34 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit29MinWaterSurfaceDelta)
-#define THANDOR_IMAGE_0x00536f38 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit30MinWaterSurfaceDelta)
-#define THANDOR_IMAGE_0x00536f3c ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f40 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f44 ((uintptr_t)&g_ImageData_00536F08.at_g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16)
-#define THANDOR_IMAGE_0x00536f48 ((uintptr_t)&g_ImageData_00536F08.at_g_ModelTraversalFallbackSecondaryThresholdTable3)
-#define THANDOR_IMAGE_0x00536f60 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset0)
-#define THANDOR_IMAGE_0x00536f64 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset1)
-#define THANDOR_IMAGE_0x00536f68 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset2)
-#define THANDOR_IMAGE_0x00536f6c ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset3)
-#define THANDOR_IMAGE_0x00536f70 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset4)
-#define THANDOR_IMAGE_0x00536f74 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset5)
-#define THANDOR_IMAGE_0x00536f78 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset6)
-#define THANDOR_IMAGE_0x00536f7c ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceRadiusOffset7)
-#define THANDOR_IMAGE_0x00536f80 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold0)
-#define THANDOR_IMAGE_0x00536f84 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold1)
-#define THANDOR_IMAGE_0x00536f88 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold2)
-#define THANDOR_IMAGE_0x00536f8c ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold3)
-#define THANDOR_IMAGE_0x00536f90 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold4)
-#define THANDOR_IMAGE_0x00536f94 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold5)
-#define THANDOR_IMAGE_0x00536f98 ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold6)
-#define THANDOR_IMAGE_0x00536f9c ((uintptr_t)&g_ImageData_00536F08.at_g_GridInfluenceSquaredThreshold7)
-#define THANDOR_IMAGE_0x00536fa0 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetRadialClearanceWeight)
-#define THANDOR_IMAGE_0x00536fa4 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetCandidateCounterCountWeight)
-#define THANDOR_IMAGE_0x00536fa8 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetSourceCounterCountWeight)
-#define THANDOR_IMAGE_0x00536fac ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetScaleDeficitWeight)
-#define THANDOR_IMAGE_0x00536fb0 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetClassBaseScoreMultiplier)
-#define THANDOR_IMAGE_0x00536fb4 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetSelectedCommandGenerationRightShiftBits)
-#define THANDOR_IMAGE_0x00536fb8 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits)
-#define THANDOR_IMAGE_0x00537410 ((uintptr_t)&g_ImageData_00537410.at_g_AiWorkspace13Candidates)
-#define THANDOR_IMAGE_0x00537414 ((uintptr_t)&g_ImageData_00537410.at_g_AiCandidateWorkspaceEntryCount)
-#define THANDOR_IMAGE_0x00537418 ((uintptr_t)&g_ImageData_00537410.at_g_AiPurchaseAppliedArmyClassMask)
-#define THANDOR_IMAGE_0x00537960 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace00Structures)
-#define THANDOR_IMAGE_0x00537964 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace00Count)
-#define THANDOR_IMAGE_0x00537968 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace01Units)
-#define THANDOR_IMAGE_0x0053796c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace01Count)
-#define THANDOR_IMAGE_0x00537970 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace02VisibleHostiles)
-#define THANDOR_IMAGE_0x00537974 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace02Count)
-#define THANDOR_IMAGE_0x00537978 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace03UnseenHostiles)
-#define THANDOR_IMAGE_0x0053797c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace03Count)
-#define THANDOR_IMAGE_0x00537980 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace04RequestedAssets)
-#define THANDOR_IMAGE_0x00537984 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace04Count)
-#define THANDOR_IMAGE_0x00537988 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace05GeneralSites)
-#define THANDOR_IMAGE_0x0053798c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace05Count)
-#define THANDOR_IMAGE_0x00537990 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace06FlaggedSites)
-#define THANDOR_IMAGE_0x00537994 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace06Count)
-#define THANDOR_IMAGE_0x00537998 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace07Targets)
-#define THANDOR_IMAGE_0x0053799c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace07Count)
-#define THANDOR_IMAGE_0x005379a0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace08TerrainFeatureSites)
-#define THANDOR_IMAGE_0x005379a4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace08Count)
-#define THANDOR_IMAGE_0x005379a8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace09Cells)
-#define THANDOR_IMAGE_0x005379ac ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace09Count)
-#define THANDOR_IMAGE_0x005379b0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace10Cells)
-#define THANDOR_IMAGE_0x005379b4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace10Count)
-#define THANDOR_IMAGE_0x005379b8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace11ProducibleAssets)
-#define THANDOR_IMAGE_0x005379bc ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace11Count)
-#define THANDOR_IMAGE_0x005379c0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace12TechnologyCandidates)
-#define THANDOR_IMAGE_0x005379c4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace12Count)
-#define THANDOR_IMAGE_0x005379c8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass0)
-#define THANDOR_IMAGE_0x005379cc ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass1)
-#define THANDOR_IMAGE_0x005379d0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass2)
-#define THANDOR_IMAGE_0x005379d4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass3)
-#define THANDOR_IMAGE_0x005379d8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceOwnedAsset300Runtime)
-#define THANDOR_IMAGE_0x00539060 ((uintptr_t)&g_ImageData_00539050.at_g_AiConstructionPendingAssetConsumedCount)
-#define THANDOR_IMAGE_0x00539980 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximumReciprocalQ24Table8)
-#define THANDOR_IMAGE_0x005399a0 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum0)
-#define THANDOR_IMAGE_0x005399a4 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum1)
-#define THANDOR_IMAGE_0x005399a8 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum2)
-#define THANDOR_IMAGE_0x005399ac ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum3)
-#define THANDOR_IMAGE_0x005399b0 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum4)
-#define THANDOR_IMAGE_0x005399b4 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum5)
-#define THANDOR_IMAGE_0x005399b8 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum6)
-#define THANDOR_IMAGE_0x005399bc ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMaximum7)
-#define THANDOR_IMAGE_0x005399c0 ((uintptr_t)&g_ImageData_00539974.at_g_AiArmyCandidateFlaggedDefinitionValueMaximum)
-#define THANDOR_IMAGE_0x005399c4 ((uintptr_t)&g_ImageData_00539974.at_g_AiStrategicClassTerrainWeights)
-#define THANDOR_IMAGE_0x00539a00 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMasks)
-#define THANDOR_IMAGE_0x0053b0d0 ((uintptr_t)&g_ImageData_0053B0CC.at_g_AiWorkspace14CollectedArmies)
-#define THANDOR_IMAGE_0x0053b0d4 ((uintptr_t)&g_ImageData_0053B0CC.at_g_AiCollectedEntityCount)
-#define THANDOR_IMAGE_0x0053b9e0 ((uintptr_t)&g_ImageData_0053B9CC.at_g_AiTechnologyCandidateScoreCallbackTable)
-#define THANDOR_IMAGE_0x0053c5e0 ((uintptr_t)&g_ImageData_0053C5DC.at_g_AiKnowledgeData)
-#define THANDOR_IMAGE_0x0053c5e4 ((uintptr_t)&g_ImageData_0053C5DC.at_u_engine_ki_dat_0053c5e4)
-#define THANDOR_IMAGE_0x0053c600 ((uintptr_t)&g_ImageData_0053C5DC.at_g_AiArmyCandidateScoreWeightsVariantB15)
-#define THANDOR_IMAGE_0x0053c63c ((uintptr_t)&g_ImageData_0053C5DC.at_g_AiArmyCandidateScoreWeightsVariantA15)
-#define THANDOR_IMAGE_0x0053c678 ((uintptr_t)&g_ImageData_0053C5DC.at_g_AiArmyCandidateScoreWeightsVariantC15)
-#define THANDOR_IMAGE_0x0053c9a0 ((uintptr_t)&g_ImageData_0053C99C.at_g_WorldMotionSplineMatrixWorkspaces)
-#define THANDOR_IMAGE_0x0053c9b8 ((uintptr_t)&g_ImageData_0053C99C.at_g_WorldMotionSplineCoefficientTables)
-#define THANDOR_IMAGE_0x0053c9d0 ((uintptr_t)&g_ImageData_0053C99C.at_g_WorldMotionSplineCachedDerivatives)
-#define THANDOR_IMAGE_0x0053c9e8 ((uintptr_t)&g_ImageData_0053C99C.at_g_WorldMotionSplineEquationCounts)
-#define THANDOR_IMAGE_0x0053ca00 ((uintptr_t)&g_ImageData_0053C99C.at_g_Q12FloatScale4096)
-#define THANDOR_IMAGE_0x0053d360 ((uintptr_t)&g_ImageData_0053D358.at_g_TerrainCompositeTexture)
-#define THANDOR_IMAGE_0x0053da70 ((uintptr_t)&g_ImageData_0053DA68.at_g_UiRootCallbacks_0053DA70)
-#define THANDOR_IMAGE_0x0053da84 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendSessionListRows)
-#define THANDOR_IMAGE_0x0053da88 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendSessionDiscoveryRecords)
-#define THANDOR_IMAGE_0x0053da8c ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendRootInitializationTemplate)
-#define THANDOR_IMAGE_0x00542230 ((uintptr_t)&g_ImageData_0053DA68 + 0x47C8)
-#define THANDOR_IMAGE_0x00542854 ((uintptr_t)&g_ImageData_0053DA68 + 0x4DEC)
-#define THANDOR_IMAGE_0x005433e0 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendPlayerRuntimeRecordPointers32)
-#define THANDOR_IMAGE_0x00543460 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendTaskAssignmentControlOffsets)
-#define THANDOR_IMAGE_0x005438ec ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendUiDisplayModeAndTaskAssignmentScratch)
-#define THANDOR_IMAGE_0x00543e40 ((uintptr_t)&g_ImageData_00543E34.at_g_FrontendCommandQueueRecords)
-#define THANDOR_IMAGE_0x00543f40 ((uintptr_t)&g_ImageData_00543E34.at_g_FrontendCommandQueueEnd)
-#define THANDOR_IMAGE_0x005456f0 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRootNode)
-#define THANDOR_IMAGE_0x005456f4 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendPendingPageAction)
-#define THANDOR_IMAGE_0x005456f8 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionPageAction)
-#define THANDOR_IMAGE_0x005456fc ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendActiveRomRecord)
-#define THANDOR_IMAGE_0x00545700 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRuntimeFlags)
-#define THANDOR_IMAGE_0x00545704 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendCentralTextureSet)
-#define THANDOR_IMAGE_0x00545708 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendCentralPaletteAsset)
-#define THANDOR_IMAGE_0x0054570c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMenuTextureSource)
-#define THANDOR_IMAGE_0x00545710 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendNetworkTickCounter)
-#define THANDOR_IMAGE_0x00545714 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendNetworkState)
-#define THANDOR_IMAGE_0x00545718 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendFactionAssignmentReadyStateGeneration)
-#define THANDOR_IMAGE_0x0054571c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionElapsedTicks)
-#define THANDOR_IMAGE_0x00545720 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionSplineKeyframes)
-#define THANDOR_IMAGE_0x00545724 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionSplineKeyframeCount)
-#define THANDOR_IMAGE_0x00545728 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionTargetRecordId)
-#define THANDOR_IMAGE_0x0054572c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendStateTickSpinLock)
-#define THANDOR_IMAGE_0x00545730 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendTimerCountdownTicks)
-#define THANDOR_IMAGE_0x00545734 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel0Q12)
-#define THANDOR_IMAGE_0x00545738 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel1Q12)
-#define THANDOR_IMAGE_0x0054573c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel2Q12)
-#define THANDOR_IMAGE_0x00545740 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel3Q12)
-#define THANDOR_IMAGE_0x00545744 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel4Q12)
-#define THANDOR_IMAGE_0x00545748 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel5Q12)
-#define THANDOR_IMAGE_0x0054574c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0TimeQ12)
-#define THANDOR_IMAGE_0x00545754 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel0Q12)
-#define THANDOR_IMAGE_0x00545758 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel1Q12)
-#define THANDOR_IMAGE_0x0054575c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel2Q12)
-#define THANDOR_IMAGE_0x00545760 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel3Q12)
-#define THANDOR_IMAGE_0x00545764 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel4Q12)
-#define THANDOR_IMAGE_0x00545768 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1Channel5Q12)
-#define THANDOR_IMAGE_0x0054576c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe1TimeQ12)
-#define THANDOR_IMAGE_0x00545774 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendCentralRomAsset)
-#define THANDOR_IMAGE_0x00545778 ((uintptr_t)&g_ImageData_005456F0.at_g_RomRegistrySlots)
-#define THANDOR_IMAGE_0x0054577c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendWorldObjectRecords)
-#define THANDOR_IMAGE_0x00545780 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendLoadedLevelAsset)
-#define THANDOR_IMAGE_0x00545784 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMenuSoundVoiceSetTable100)
-#define THANDOR_IMAGE_0x00545788 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1)
-#define THANDOR_IMAGE_0x00545914 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendLoadedCampaignAsset)
-#define THANDOR_IMAGE_0x00545918 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendScenarioTransferState)
-#define THANDOR_IMAGE_0x0054591c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendPlayerMessageBuffers)
-#define THANDOR_IMAGE_0x00545920 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendLocalPlayerPcxPreview)
-#define THANDOR_IMAGE_0x00545924 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendHostSnapshotTransferCountdown)
-#define THANDOR_IMAGE_0x00545928 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendScenarioInitializationCount)
-#define THANDOR_IMAGE_0x0054592c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMusicVoiceSet)
-#define THANDOR_IMAGE_0x00545930 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMusicActiveBuffer)
-#define THANDOR_IMAGE_0x00545934 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendPendingPageActionDepth)
-#define THANDOR_IMAGE_0x00545938 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendUiActionHandlersPage20)
-#define THANDOR_IMAGE_0x00545a98 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendScenarioMapOptionHandlerTable)
-#define THANDOR_IMAGE_0x00545aa4 ((uintptr_t)&g_ImageData_005456F0.at_u_engine_zentrale_rom_00545aa4)
-#define THANDOR_IMAGE_0x00545acc ((uintptr_t)&g_ImageData_005456F0.at_u_gfx_texturen_zentrale_gfx_00545acc)
-#define THANDOR_IMAGE_0x00545b00 ((uintptr_t)&g_ImageData_005456F0.at_u_gfx_texturen_zentrale_pal_00545b00)
-#define THANDOR_IMAGE_0x00545b34 ((uintptr_t)&g_ImageData_005456F0.at_u_texte_hilfe_str_00545b34)
-#define THANDOR_IMAGE_0x00545b54 ((uintptr_t)&g_ImageData_005456F0.at_u_sound_menue01_sam_00545b54)
-#define THANDOR_IMAGE_0x00545b78 ((uintptr_t)&g_ImageData_005456F0.at_u_gfx_panel_menue_gfx_00545b78)
-#define THANDOR_IMAGE_0x00545ba0 ((uintptr_t)&g_ImageData_005456F0.at_u_texte_menue_str_00545ba0)
-#define THANDOR_IMAGE_0x00545bc0 ((uintptr_t)&g_ImageData_005456F0.at_u_texte_level_str_00545bc0)
-#define THANDOR_IMAGE_0x00545be0 ((uintptr_t)&g_ImageData_005456F0.at_u_texte_inhalt_str_00545be0)
-#define THANDOR_IMAGE_0x00545c02 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMissionBriefingMoviePathUtf16)
-#define THANDOR_IMAGE_0x00545c10 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMissionBriefingLevelDigitsUtf16)
-#define THANDOR_IMAGE_0x00545c22 ((uintptr_t)&g_ImageData_005456F0.at_g_CreditsTexturePathUtf16)
-#define THANDOR_IMAGE_0x00545c4e ((uintptr_t)&g_ImageData_005456F0.at_u_sound_music00_sam_00545c4e)
-#define THANDOR_IMAGE_0x00545c72 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendScenarioPathScratchUtf16)
-#define THANDOR_IMAGE_0x00545e72 ((uintptr_t)&g_ImageData_005456F0.at_s_SPIELER__SPIEL__NETZWERK__HOST_00545e72)
-#define THANDOR_IMAGE_0x00545e91 ((uintptr_t)&g_ImageData_005456F0.at_s_NAME__CLIENT__KARTE___00545e91)
-#define THANDOR_IMAGE_0x005460a6 ((uintptr_t)&g_ImageData_005456F0.at_u_level___lev_005460a6)
-#define THANDOR_IMAGE_0x005460be ((uintptr_t)&g_ImageData_005456F0.at_u_level___str_005460be)
-#define THANDOR_IMAGE_0x00548100 ((uintptr_t)&g_ImageData_005480FC.at_g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30)
-#define THANDOR_IMAGE_0x0054d7a0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10000Buffer)
-#define THANDOR_IMAGE_0x0054d7c0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket50001Buffer)
-#define THANDOR_IMAGE_0x0054d860 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket20002Buffer)
-#define THANDOR_IMAGE_0x0054d8a0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10003Buffer)
-#define THANDOR_IMAGE_0x0054d8c0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10004Buffer)
-#define THANDOR_IMAGE_0x0054d8e0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket30005Buffer)
-#define THANDOR_IMAGE_0x0054d940 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10006Buffer)
-#define THANDOR_IMAGE_0x0054d960 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket40008Buffer)
-#define THANDOR_IMAGE_0x0054d9e0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10009Buffer)
-#define THANDOR_IMAGE_0x0054da00 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket8000ABuffer)
-#define THANDOR_IMAGE_0x0054db00 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerRemovalPacket10007)
-#define THANDOR_IMAGE_0x0054db20 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerCommandRecords)
-#define THANDOR_IMAGE_0x0054dc20 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendCommandBatchPacketBuffer)
-#define THANDOR_IMAGE_0x0054dd20 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10011Buffer)
-#define THANDOR_IMAGE_0x0054dd40 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10012Buffer)
-#define THANDOR_IMAGE_0x0054dd60 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10013Buffer)
-#define THANDOR_IMAGE_0x0054dd80 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPacket10032Buffer)
-#define THANDOR_IMAGE_0x0054dda0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPendingSessionPlayerCount)
-#define THANDOR_IMAGE_0x0054dda8 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendExpectedPlayerRuntimeBlockCount)
-#define THANDOR_IMAGE_0x0054ddac ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendHostPublishRoundRobinCounter)
-#define THANDOR_IMAGE_0x0054ddb0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRows)
-#define THANDOR_IMAGE_0x0054ddb4 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow1)
-#define THANDOR_IMAGE_0x0054ddb8 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow2)
-#define THANDOR_IMAGE_0x0054ddbc ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow3)
-#define THANDOR_IMAGE_0x0054ddc0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow4)
-#define THANDOR_IMAGE_0x0054ddc4 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow5)
-#define THANDOR_IMAGE_0x0054ddc8 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow6)
-#define THANDOR_IMAGE_0x0054ddcc ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendPlayerListRow7)
-#define THANDOR_IMAGE_0x0054ddd0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkEndpointScratch)
-#define THANDOR_IMAGE_0x0054dde0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkRuntimeCountTextUtf16)
-#define THANDOR_IMAGE_0x0054dde8 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkPlayerCountTextUtf16)
-#define THANDOR_IMAGE_0x0054ddf0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkSpeedLabelUtf16)
-#define THANDOR_IMAGE_0x0054de30 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkEndpointTextUtf16)
-#define THANDOR_IMAGE_0x0054fbc0 ((uintptr_t)&g_ImageData_0054FBB0.at_g_UiRootCallbacks_0054FBC0)
-#define THANDOR_IMAGE_0x0054fbd4 ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameFactionStatusTextScratchUtf16)
-#define THANDOR_IMAGE_0x0054fbd8 ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGamePlayerListTextScratchUtf16)
-#define THANDOR_IMAGE_0x0054fbdc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGamePlayerStatusTextSlots)
-#define THANDOR_IMAGE_0x0054ffdc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailNameTextUtf16)
-#define THANDOR_IMAGE_0x0055005c ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailArmourTextUtf16)
-#define THANDOR_IMAGE_0x005500dc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailWeaponName0TextUtf16)
-#define THANDOR_IMAGE_0x0055015c ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailWeaponName1TextUtf16)
-#define THANDOR_IMAGE_0x005501dc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailWeaponName2TextUtf16)
-#define THANDOR_IMAGE_0x0055025c ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailTextSlot05Utf16)
-#define THANDOR_IMAGE_0x005502dc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailBuildXeniteCostTextUtf16)
-#define THANDOR_IMAGE_0x0055035c ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailBuildTimeTextUtf16)
-#define THANDOR_IMAGE_0x005503dc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailEnergyTextUtf16)
-#define THANDOR_IMAGE_0x0055045c ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameSelectionDetailTextSlot09Utf16)
-#define THANDOR_IMAGE_0x005504dc ((uintptr_t)&g_ImageData_0054FBB0.at_g_FrontendCurrentFactionPrimaryResourceTextUtf16)
-#define THANDOR_IMAGE_0x005504fc ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameTechnologyCostRichTextScratch)
-#define THANDOR_IMAGE_0x005504fe ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameTechnologyCostColorWords8)
-#define THANDOR_IMAGE_0x0055050e ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameTechnologyXeniteCostTextUtf16)
-#define THANDOR_IMAGE_0x0055052e ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameTechnologyEnergyCostTextUtf16)
-#define THANDOR_IMAGE_0x0055054e ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameTechnologyResearchTimeTextUtf16)
-#define THANDOR_IMAGE_0x0055056e ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameHudNumberTextUtf16)
-#define THANDOR_IMAGE_0x0055058e ((uintptr_t)&g_ImageData_0054FBB0.at_g_EmptyFrontendPlayerNameUtf16)
-#define THANDOR_IMAGE_0x00550590 ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameCountdownTextUtf16)
-#define THANDOR_IMAGE_0x005505a0 ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameRuntimeDefaultImageTemplate)
-#define THANDOR_IMAGE_0x00550944 ((uintptr_t)&g_ImageData_0054FBB0 + 0xD94)
-#define THANDOR_IMAGE_0x00551ae0 ((uintptr_t)&g_ImageData_0054FBB0 + 0x1F30)
-#define THANDOR_IMAGE_0x00551b48 ((uintptr_t)&g_ImageData_0054FBB0 + 0x1F98)
-#define THANDOR_IMAGE_0x00551bb0 ((uintptr_t)&g_ImageData_0054FBB0 + 0x2000)
-#define THANDOR_IMAGE_0x00551c18 ((uintptr_t)&g_ImageData_0054FBB0 + 0x2068)
-#define THANDOR_IMAGE_0x00551c80 ((uintptr_t)&g_ImageData_0054FBB0 + 0x20D0)
-#define THANDOR_IMAGE_0x00551ce8 ((uintptr_t)&g_ImageData_0054FBB0 + 0x2138)
-#define THANDOR_IMAGE_0x00551d50 ((uintptr_t)&g_ImageData_0054FBB0 + 0x21A0)
-#define THANDOR_IMAGE_0x00552978 ((uintptr_t)&g_ImageData_0054FBB0 + 0x2DC8)
-#define THANDOR_IMAGE_0x00552a8c ((uintptr_t)&g_ImageData_0054FBB0 + 0x2EDC)
-#define THANDOR_IMAGE_0x00553538 ((uintptr_t)&g_ImageData_0054FBB0 + 0x3988)
-#define THANDOR_IMAGE_0x0055efc0 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameCommandQueueRecords)
-#define THANDOR_IMAGE_0x0055f0c0 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameCommandQueueEnd)
-#define THANDOR_IMAGE_0x0055f0c4 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameSelectionInsertTripletDwords)
-#define THANDOR_IMAGE_0x0055f0f4 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameSelectionRemoveTripletDwords)
-#define THANDOR_IMAGE_0x0055f124 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameSelectionInsertTripletDwordCount)
-#define THANDOR_IMAGE_0x0055f128 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameSelectionRemoveTripletDwordCount)
-#define THANDOR_IMAGE_0x00562499 ((uintptr_t)&g_ImageData_00562498.at_InGameCommandHandlerCodeRegionEnd)
-#define THANDOR_IMAGE_0x005624a0 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage10)
-#define THANDOR_IMAGE_0x00562540 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage11)
-#define THANDOR_IMAGE_0x005625b8 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage12)
-#define THANDOR_IMAGE_0x00562628 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction100AControlOffsets)
-#define THANDOR_IMAGE_0x00562648 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48ColumnCount)
-#define THANDOR_IMAGE_0x0056264c ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42ColumnCount)
-#define THANDOR_IMAGE_0x00562650 ((uintptr_t)&g_ImageData_00562498.at_g_UiCommandSpriteVariantAColumnCount)
-#define THANDOR_IMAGE_0x00562654 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables)
-#define THANDOR_IMAGE_0x00562678 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42OffsetTables)
-#define THANDOR_IMAGE_0x00562694 ((uintptr_t)&g_ImageData_00562498.at_g_UiCommandSpriteVariantAOffsetTables)
-#define THANDOR_IMAGE_0x005626a8 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48OffsetsDefault)
-#define THANDOR_IMAGE_0x00562768 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48Offsets5Columns)
-#define THANDOR_IMAGE_0x00562828 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48Offsets6Columns)
-#define THANDOR_IMAGE_0x005628e8 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48Offsets7Columns)
-#define THANDOR_IMAGE_0x005629a8 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48Offsets8Columns)
-#define THANDOR_IMAGE_0x00562a68 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42OffsetsDefault)
-#define THANDOR_IMAGE_0x00562b10 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42Offsets5Columns)
-#define THANDOR_IMAGE_0x00562bb8 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42Offsets6Columns)
-#define THANDOR_IMAGE_0x00562c60 ((uintptr_t)&g_ImageData_00562498.at_g_UiCommandSpriteVariantAOffsets)
-#define THANDOR_IMAGE_0x00562cc0 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012PlayerIndexTextOffsets)
-#define THANDOR_IMAGE_0x00562cdc ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012PlayerLabelTextOffsets)
-#define THANDOR_IMAGE_0x00562cf8 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012IconImageOffsets)
-#define THANDOR_IMAGE_0x00562d14 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012StateTextOffsets)
-#define THANDOR_IMAGE_0x00562d30 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012ControlOffsets)
-#define THANDOR_IMAGE_0x00562d4c ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012SlotPageOffsets)
-#define THANDOR_IMAGE_0x00562d68 ((uintptr_t)&g_ImageData_00562498.at_g_TechnologyPanelRowFlagOffsets)
-#define THANDOR_IMAGE_0x00562d84 ((uintptr_t)&g_ImageData_00562498.at_g_TechnologyPanelRowValueOffsets)
-#define THANDOR_IMAGE_0x00562da0 ((uintptr_t)&g_ImageData_00562498.at_g_InGameSelectionDetailGridCellOffsets)
-#define THANDOR_IMAGE_0x00562dd0 ((uintptr_t)&g_ImageData_00562498.at_g_UiSevenSlotSelectionControlOffsets)
-#define THANDOR_IMAGE_0x00562dec ((uintptr_t)&g_ImageData_00562498.at_g_RuntimeMaintenanceCallbackPhases)
-#define THANDOR_IMAGE_0x00562e1c ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012SubresourceByState)
-#define THANDOR_IMAGE_0x00562e48 ((uintptr_t)&g_ImageData_00562498.at_g_InGameOwnedEntityTransientEffectMarkers)
-#define THANDOR_IMAGE_0x00562ec8 ((uintptr_t)&g_ImageData_00562498.at_g_InGameOwnedEntityTransientEffectMarkerCount)
-#define THANDOR_IMAGE_0x00562ecc ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandTargetTransientEffectMarkers)
-#define THANDOR_IMAGE_0x005630cc ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandTargetTransientEffectMarkerCount)
-#define THANDOR_IMAGE_0x005630d0 ((uintptr_t)&g_ImageData_00562498.at_u_gfx_panel_panel0_gfx_005630d0)
-#define THANDOR_IMAGE_0x005630fa ((uintptr_t)&g_ImageData_00562498.at_u_gfx_panel_tech_gfx_005630fa)
-#define THANDOR_IMAGE_0x00563120 ((uintptr_t)&g_ImageData_00562498.at_u_gfx_panel_diagram0_gfx_00563120)
-#define THANDOR_IMAGE_0x0056314e ((uintptr_t)&g_ImageData_00562498.at_u_flm_movie000_flm_0056314e)
-#define THANDOR_IMAGE_0x00563170 ((uintptr_t)&g_ImageData_00562498.at_u_texte_help_str_00563170)
-#define THANDOR_IMAGE_0x0056318e ((uintptr_t)&g_ImageData_00562498.at_u_gfx_panel_window_gfx_0056318e)
-#define THANDOR_IMAGE_0x005631b8 ((uintptr_t)&g_ImageData_00562498.at_u_texte_tastatur_str_005631b8)
-#define THANDOR_IMAGE_0x005631de ((uintptr_t)&g_ImageData_00562498.at_g_DeveloperChatPhraseUtf16)
-#define THANDOR_IMAGE_0x0056321e ((uintptr_t)&g_ImageData_00562498.at_u_Hmmm__na_gut________0056321e)
-#define THANDOR_IMAGE_0x00563260 ((uintptr_t)&g_ImageData_00562498.at_g_UiCommandRuntimeFlags)
-#define THANDOR_IMAGE_0x00563264 ((uintptr_t)&g_ImageData_00562498.at_g_InGameSimulationStepTicks)
-#define THANDOR_IMAGE_0x00563268 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePendingSimulationTicks)
-#define THANDOR_IMAGE_0x0056326c ((uintptr_t)&g_ImageData_00562498.at_g_InGameSessionNotificationTimeoutTicks)
-#define THANDOR_IMAGE_0x00563270 ((uintptr_t)&g_ImageData_00562498.at_g_EndGameResultsCurrentMusicTrackId)
-#define THANDOR_IMAGE_0x00563274 ((uintptr_t)&g_ImageData_00562498.at_g_InGameNetworkTickCountdown)
-#define THANDOR_IMAGE_0x00563278 ((uintptr_t)&g_ImageData_00562498.at_g_InGameStateTickSpinLock)
-#define THANDOR_IMAGE_0x0056327c ((uintptr_t)&g_ImageData_00562498.at_g_InGameRuntimeRoot)
-#define THANDOR_IMAGE_0x00563280 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSource)
-#define THANDOR_IMAGE_0x00563284 ((uintptr_t)&g_ImageData_00562498.at_g_InGameDiagramTextureSource)
-#define THANDOR_IMAGE_0x00563288 ((uintptr_t)&g_ImageData_00562498.at_g_InGameTechnologyTextureSource)
-#define THANDOR_IMAGE_0x0056328c ((uintptr_t)&g_ImageData_00562498.at_g_InGameWindowTextureSource)
-#define THANDOR_IMAGE_0x00563290 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource00Width)
-#define THANDOR_IMAGE_0x00563294 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource01Width)
-#define THANDOR_IMAGE_0x00563298 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource02Width)
-#define THANDOR_IMAGE_0x0056329c ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource06Width)
-#define THANDOR_IMAGE_0x005632a0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource07Width)
-#define THANDOR_IMAGE_0x005632a4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource27Width)
-#define THANDOR_IMAGE_0x005632a8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource28Width)
-#define THANDOR_IMAGE_0x005632ac ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource19Width)
-#define THANDOR_IMAGE_0x005632b0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource20Width)
-#define THANDOR_IMAGE_0x005632b4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource34Width)
-#define THANDOR_IMAGE_0x005632b8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource32Width)
-#define THANDOR_IMAGE_0x005632bc ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource33Width)
-#define THANDOR_IMAGE_0x005632c0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource02Height)
-#define THANDOR_IMAGE_0x005632c4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource03Height)
-#define THANDOR_IMAGE_0x005632c8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource04Height)
-#define THANDOR_IMAGE_0x005632cc ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource05Height)
-#define THANDOR_IMAGE_0x005632d0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource36Height)
-#define THANDOR_IMAGE_0x005632d4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource37Height)
-#define THANDOR_IMAGE_0x005632d8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource06Height)
-#define THANDOR_IMAGE_0x005632dc ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource00Height)
-#define THANDOR_IMAGE_0x005632e0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource07Height)
-#define THANDOR_IMAGE_0x005632e4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource26Height)
-#define THANDOR_IMAGE_0x005632e8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource31Height)
-#define THANDOR_IMAGE_0x005632ec ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource18Height)
-#define THANDOR_IMAGE_0x005632f0 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource23Height)
-#define THANDOR_IMAGE_0x005632f4 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource34Height)
-#define THANDOR_IMAGE_0x005632f8 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePanelTextureSubresource32Height)
-#define THANDOR_IMAGE_0x005632fc ((uintptr_t)&g_ImageData_00562498.at_g_UiHoverSelectionRecord)
-#define THANDOR_IMAGE_0x00563300 ((uintptr_t)&g_ImageData_00562498.at_g_InGameSelectedTechnologyId)
-#define THANDOR_IMAGE_0x00563320 ((uintptr_t)&g_ImageData_00562498.at_g_MoviePlaybackBaseFrameGroup)
-#define THANDOR_IMAGE_0x00563324 ((uintptr_t)&g_ImageData_00562498.at_g_MoviePlaybackScheduleCounter)
-#define THANDOR_IMAGE_0x00563328 ((uintptr_t)&g_ImageData_00562498.at_g_MoviePlaybackScheduleSpan)
-#define THANDOR_IMAGE_0x0056332c ((uintptr_t)&g_ImageData_00562498.at_g_MoviePlaybackCurrentFrame)
-#define THANDOR_IMAGE_0x00563330 ((uintptr_t)&g_ImageData_00562498.at_g_DebugOverlayCounterRefreshCountdown)
-#define THANDOR_IMAGE_0x00563334 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot00Utf16)
-#define THANDOR_IMAGE_0x00563354 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot01Utf16)
-#define THANDOR_IMAGE_0x00563374 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot02Utf16)
-#define THANDOR_IMAGE_0x00563394 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot03Utf16)
-#define THANDOR_IMAGE_0x005633b4 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot04Utf16)
-#define THANDOR_IMAGE_0x005633d4 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot05Utf16)
-#define THANDOR_IMAGE_0x005633f4 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot06Utf16)
-#define THANDOR_IMAGE_0x00563414 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot07Utf16)
-#define THANDOR_IMAGE_0x00563434 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot08Utf16)
-#define THANDOR_IMAGE_0x00563454 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot09Utf16)
-#define THANDOR_IMAGE_0x00563474 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot10Utf16)
-#define THANDOR_IMAGE_0x00563494 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot11Utf16)
-#define THANDOR_IMAGE_0x005634b4 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot12Utf16)
-#define THANDOR_IMAGE_0x005634d4 ((uintptr_t)&g_ImageData_00562498.at_g_FrontendDebugOverlayTextSlot13Utf16)
-#define THANDOR_IMAGE_0x00563514 ((uintptr_t)&g_ImageData_00562498.at_g_InGameReadyStateToggleFlags)
-#define THANDOR_IMAGE_0x00563518 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48Records)
-#define THANDOR_IMAGE_0x005635d8 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup42Records)
-#define THANDOR_IMAGE_0x00563680 ((uintptr_t)&g_ImageData_00562498.at_g_UiCommandSpriteVariantARecords)
-#define THANDOR_IMAGE_0x005636e0 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction1012TargetPlayerIndices)
-#define THANDOR_IMAGE_0x005636fc ((uintptr_t)&g_ImageData_00562498.at_g_InGameWorldObjectRecords)
-#define THANDOR_IMAGE_0x00563700 ((uintptr_t)&g_ImageData_00562498.at_g_RuntimeObjectRebaseBaseMinusOne)
-#define THANDOR_IMAGE_0x00563704 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementHeading16)
-#define THANDOR_IMAGE_0x00563708 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementPointerCaptureX)
-#define THANDOR_IMAGE_0x0056370c ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementPointerCaptureY)
-#define THANDOR_IMAGE_0x00563710 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePendingPlacementArmyAsset)
-#define THANDOR_IMAGE_0x00563714 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementPreviewArmyRuntime)
-#define THANDOR_IMAGE_0x00563718 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementWorldYQ12)
-#define THANDOR_IMAGE_0x0056371c ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementWorldXQ12)
-#define THANDOR_IMAGE_0x00563720 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePlacementSurfaceHeightQ12OrSentinel)
-#define THANDOR_IMAGE_0x00563724 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewArmyRuntime)
-#define THANDOR_IMAGE_0x00563728 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewHeading16)
-#define THANDOR_IMAGE_0x0056372c ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewWorldYQ12)
-#define THANDOR_IMAGE_0x00563730 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewWorldXQ12)
-#define THANDOR_IMAGE_0x00563734 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewSurfaceHeightQ12OrSentinel)
-#define THANDOR_IMAGE_0x00563738 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPointerCaptureX)
-#define THANDOR_IMAGE_0x0056373c ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPointerCaptureY)
-#define THANDOR_IMAGE_0x00563740 ((uintptr_t)&g_ImageData_00562498.at_g_InGameCommandPreviewArmyAssetId)
-#define THANDOR_IMAGE_0x00563744 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePointerInteractionStateFlags)
-#define THANDOR_IMAGE_0x00563748 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePointerModeHandlers)
-#define THANDOR_IMAGE_0x00563768 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePointerModeCommandIds)
-#define THANDOR_IMAGE_0x00563788 ((uintptr_t)&g_ImageData_00562498.at_g_InGamePointerModePreviewArmyIds)
-#define THANDOR_IMAGE_0x0056378c ((uintptr_t)&g_ImageData_00562498 + 0x12F4)
-#define THANDOR_IMAGE_0x00563790 ((uintptr_t)&g_ImageData_00562498 + 0x12F8)
-#define THANDOR_IMAGE_0x00563798 ((uintptr_t)&g_ImageData_00562498 + 0x1300)
-#define THANDOR_IMAGE_0x005637a8 ((uintptr_t)&g_ImageData_00562498.at_g_ArmyPlacementLateRejectionCount)
-#define THANDOR_IMAGE_0x005637ac ((uintptr_t)&g_ImageData_00562498.at_g_InGameWorldRuntimeDwordArray256)
-#define THANDOR_IMAGE_0x00563bac ((uintptr_t)&g_ImageData_00562498.at_g_EndMovieSelectionIndex)
-#define THANDOR_IMAGE_0x00563bb0 ((uintptr_t)&g_ImageData_00562498.at_g_EndMovieVariantIndex)
-#define THANDOR_IMAGE_0x00563bb4 ((uintptr_t)&g_ImageData_00562498.at_g_EndMoviePath)
-#define THANDOR_IMAGE_0x00563bb8 ((uintptr_t)&g_ImageData_00562498.at_g_EndMoviePendingTicks)
-#define THANDOR_IMAGE_0x00563bbc ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitSecondaryTable)
-#define THANDOR_IMAGE_0x00563bc0 ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitPrimaryTable)
-#define THANDOR_IMAGE_0x00563bc4 ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitRecordCount)
-#define THANDOR_IMAGE_0x005658c0 ((uintptr_t)&g_ImageData_005658BC.at_g_EndMovieCommandDispatchRecords)
-#define THANDOR_IMAGE_0x00567110 ((uintptr_t)&g_ImageData_0056710C.at_g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30)
-#define THANDOR_IMAGE_0x005679b0 ((uintptr_t)&g_ImageData_005679AC.at_g_InGameCommandDispatchRecords_00_Code00030073_Modifier33)
-#define THANDOR_IMAGE_0x0056a604 ((uintptr_t)&g_ImageData_0056A604.at_g_InGameSessionStartedNetworked)
-#define THANDOR_IMAGE_0x0056d720 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeG)
-#define THANDOR_IMAGE_0x0056d724 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeC)
-#define THANDOR_IMAGE_0x0056d728 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeD)
-#define THANDOR_IMAGE_0x0056d72c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeE)
-#define THANDOR_IMAGE_0x0056d730 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeA)
-#define THANDOR_IMAGE_0x0056d734 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeB)
-#define THANDOR_IMAGE_0x0056d73c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeF)
-#define THANDOR_IMAGE_0x0056d740 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandAbsoluteSelectionIndex)
-#define THANDOR_IMAGE_0x0056d744 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandSelectionPageBaseIndex)
-#define THANDOR_IMAGE_0x0056d748 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandTerrainMaskToggleValue)
-#define THANDOR_IMAGE_0x0056d74c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGOwnerFactionIndex)
-#define THANDOR_IMAGE_0x0056d750 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGArmyAssetId)
-#define THANDOR_IMAGE_0x0056d754 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragReferenceX)
-#define THANDOR_IMAGE_0x0056d758 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragReferenceY)
-#define THANDOR_IMAGE_0x0056d75c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandMode4ArmyAssetId)
-#define THANDOR_IMAGE_0x0056d760 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandCallerMaskHighBit)
-#define THANDOR_IMAGE_0x0056d764 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGPrimaryPageIndices)
-#define THANDOR_IMAGE_0x0056d77c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGSecondaryPageIndices)
-#define THANDOR_IMAGE_0x0056d794 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGTertiaryPageIndices)
-#define THANDOR_IMAGE_0x0056d7ac ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGControlOffsets)
-#define THANDOR_IMAGE_0x0056d7c4 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandModeGHandlers)
-#define THANDOR_IMAGE_0x0056d7dc ((uintptr_t)&g_ImageData_0056D71C.at_g_UiMappedCommandControlOffsets)
-#define THANDOR_IMAGE_0x0056d80c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandSelectionAnchorWorldXQ12)
-#define THANDOR_IMAGE_0x0056d810 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandSelectionAnchorWorldYQ12)
-#define THANDOR_IMAGE_0x0056d814 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandSelectionCurrentWorldXQ12)
-#define THANDOR_IMAGE_0x0056d818 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandSelectionCurrentWorldYQ12)
-#define THANDOR_IMAGE_0x0056d81c ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragAnchorWorldXQ12)
-#define THANDOR_IMAGE_0x0056d820 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragAnchorWorldYQ12)
-#define THANDOR_IMAGE_0x0056d824 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragStartScreenX)
-#define THANDOR_IMAGE_0x0056d828 ((uintptr_t)&g_ImageData_0056D71C.at_g_UiCommandDragStartScreenY)
-#define THANDOR_IMAGE_0x0056d82c ((uintptr_t)&g_ImageData_0056D71C.at_g_TerrainMaterialEditFieldGrid)
-#define THANDOR_IMAGE_0x0056d830 ((uintptr_t)&g_ImageData_0056D71C.at_g_TerrainMaterialEditDeltaBuffer)
-#define THANDOR_IMAGE_0x0056d834 ((uintptr_t)&g_ImageData_0056D71C.at_g_TerrainMaterialEditReferenceMaterialByte)
-#define THANDOR_IMAGE_0x0056d838 ((uintptr_t)&g_ImageData_0056D71C.at_g_TerrainMaterialEditReplacementMaterialByte)
-#define THANDOR_IMAGE_0x0056e410 ((uintptr_t)&g_ImageData_0056E408.at_g_InGameKeyboardDispatchRecords)
-#define THANDOR_IMAGE_0x0056e5c0 ((uintptr_t)&g_ImageData_0056E408.at_g_InGameKeyboardDispatchRecordsTerminator)
-#define THANDOR_IMAGE_0x0056f280 ((uintptr_t)&g_ImageData_0056F278.at_g_InGameCameraCommandDispatchRecords16)
-#define THANDOR_IMAGE_0x00572040 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendClientPlayerRemovalPacket10007)
-#define THANDOR_IMAGE_0x00572060 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendClientPlayerCommandRecords)
-#define THANDOR_IMAGE_0x00572160 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendClientCommandBatchPacketBuffer)
-#define THANDOR_IMAGE_0x00572260 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendPacket10021Buffer)
-#define THANDOR_IMAGE_0x00572280 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendPacket10022Buffer)
-#define THANDOR_IMAGE_0x005722a0 ((uintptr_t)&g_ImageData_00572030.at_g_FrontendPacket10023Buffer)
-#define THANDOR_IMAGE_0x00572ac0 ((uintptr_t)&g_ImageData_00572AB0.at_g_DataPackageHandle)
-#define THANDOR_IMAGE_0x00572ac4 ((uintptr_t)&g_ImageData_00572AB0.at_g_ModelPackageHandle)
-#define THANDOR_IMAGE_0x00572ac8 ((uintptr_t)&g_ImageData_00572AB0.at_g_GraphicsPackageHandle)
-#define THANDOR_IMAGE_0x00572acc ((uintptr_t)&g_ImageData_00572AB0.at_g_SoundPackageHandle)
-#define THANDOR_IMAGE_0x00572ad0 ((uintptr_t)&g_ImageData_00572AB0.at_g_MoviePackageHandle)
-#define THANDOR_IMAGE_0x00572ad4 ((uintptr_t)&g_ImageData_00572AB0.at_g_LevelPackageHandle)
-#define THANDOR_IMAGE_0x00572ad8 ((uintptr_t)&g_ImageData_00572AB0.at_g_UiButtonSoundVoiceSets7)
-#define THANDOR_IMAGE_0x00572af4 ((uintptr_t)&g_ImageData_00572AB0.at_g_PcxFunctionModule)
-#define THANDOR_IMAGE_0x00572af8 ((uintptr_t)&g_ImageData_00572AB0.at_g_PcxFunctionExport3)
-#define THANDOR_IMAGE_0x00572afc ((uintptr_t)&g_ImageData_00572AB0.at_g_PcxFunctionExport2)
-#define THANDOR_IMAGE_0x00572b00 ((uintptr_t)&g_ImageData_00572AB0.at_g_IntroMoviePendingTicks)
-#define THANDOR_IMAGE_0x00572b04 ((uintptr_t)&g_ImageData_00572AB0.at_g_InstallRegistryKeyHandle)
-#define THANDOR_IMAGE_0x00572b08 ((uintptr_t)&g_ImageData_00572AB0.at_g_InstallRegistryValueDataCapacityBytes)
-#define THANDOR_IMAGE_0x00572b0c ((uintptr_t)&g_ImageData_00572AB0.at_g_InstallRegistryValueType)
-#define THANDOR_IMAGE_0x00572b10 ((uintptr_t)&g_ImageData_00572AB0.at_g_InstallRegistryValueDataA)
-#define THANDOR_IMAGE_0x00572c10 ((uintptr_t)&g_ImageData_00572AB0.at_g_InstallDirectoryScratchUtf16)
-#define THANDOR_IMAGE_0x00572e10 ((uintptr_t)&g_ImageData_00572AB0.at_u_Thandor_00572e10)
-#define THANDOR_IMAGE_0x00572e20 ((uintptr_t)&g_ImageData_00572AB0.at_s_Software_Planet4_Thandor_00572e20)
-#define THANDOR_IMAGE_0x00572e39 ((uintptr_t)&g_ImageData_00572AB0.at_s_InstallRegistryValueNameCD)
-#define THANDOR_IMAGE_0x00572e3a ((uintptr_t)&g_ImageData_00572AB0.at_u_Dscreen00_pcx_00572e3a)
-#define THANDOR_IMAGE_0x00572e3c ((uintptr_t)&g_ImageData_00572AB0.at_g_ScreenshotFileNameUtf16)
-#define THANDOR_IMAGE_0x00572e56 ((uintptr_t)&g_ImageData_00572AB0.at_u_daten_pck_00572e56)
-#define THANDOR_IMAGE_0x00572e6a ((uintptr_t)&g_ImageData_00572AB0.at_u_modelle_pck_00572e6a)
-#define THANDOR_IMAGE_0x00572e82 ((uintptr_t)&g_ImageData_00572AB0.at_u_graphik_pck_00572e82)
-#define THANDOR_IMAGE_0x00572e9a ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_pck_00572e9a)
-#define THANDOR_IMAGE_0x00572eae ((uintptr_t)&g_ImageData_00572AB0.at_u_filme_pck_00572eae)
-#define THANDOR_IMAGE_0x00572ec2 ((uintptr_t)&g_ImageData_00572AB0.at_u_level_pck_00572ec2)
-#define THANDOR_IMAGE_0x00572ed6 ((uintptr_t)&g_ImageData_00572AB0.at_g_PatchArchivePathTemplateUtf16)
-#define THANDOR_IMAGE_0x00572eee ((uintptr_t)&g_ImageData_00572AB0.at_g_LevelArchivePathTemplateUtf16)
-#define THANDOR_IMAGE_0x00572f06 ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button0_sam_00572f06)
-#define THANDOR_IMAGE_0x00572f2a ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button1_sam_00572f2a)
-#define THANDOR_IMAGE_0x00572f4e ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button2_sam_00572f4e)
-#define THANDOR_IMAGE_0x00572f72 ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button3_sam_00572f72)
-#define THANDOR_IMAGE_0x00572f96 ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button4_sam_00572f96)
-#define THANDOR_IMAGE_0x00572fba ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button5_sam_00572fba)
-#define THANDOR_IMAGE_0x00572fde ((uintptr_t)&g_ImageData_00572AB0.at_u_sound_button6_sam_00572fde)
-#define THANDOR_IMAGE_0x00573002 ((uintptr_t)&g_ImageData_00572AB0.at_u_gfx_panel_stat_gfx_00573002)
-#define THANDOR_IMAGE_0x00573028 ((uintptr_t)&g_ImageData_00572AB0.at_u_engine_pcx_fnc_00573028)
-#define THANDOR_IMAGE_0x00573046 ((uintptr_t)&g_ImageData_00572AB0.at_u_flm_intro0_flm_00573046)
-#define THANDOR_IMAGE_0x00573064 ((uintptr_t)&g_ImageData_00572AB0.at_g_CommandLineOptionNoIntro)
-#define THANDOR_IMAGE_0x00573ef0 ((uintptr_t)&g_ImageData_00573EE8.at_g_DynamicModules)
-#define THANDOR_IMAGE_0x00573f70 ((uintptr_t)&g_ImageData_00573EE8.at_g_DynamicModuleCount)
-#define THANDOR_IMAGE_0x00573f74 ((uintptr_t)&g_ImageData_00573EE8.at_g_BootstrapApiBindings)
-#define THANDOR_IMAGE_0x00573fbc ((uintptr_t)&g_ImageData_00573EE8.at_pDirectDrawCreate)
-#define THANDOR_IMAGE_0x00573fc0 ((uintptr_t)&g_ImageData_00573EE8.at_pDirectDrawEnumerateA)
-#define THANDOR_IMAGE_0x00573fc4 ((uintptr_t)&g_ImageData_00573EE8.at_pDirectInputCreateA)
-#define THANDOR_IMAGE_0x00573fc8 ((uintptr_t)&g_ImageData_00573EE8.at_pDirectSoundCreate)
-#define THANDOR_IMAGE_0x00573fcc ((uintptr_t)&g_ImageData_00573EE8.at_pDirectSoundEnumerateA)
-#define THANDOR_IMAGE_0x00573fd0 ((uintptr_t)&g_ImageData_00573EE8.at_pDirectSoundCaptureCreate)
-#define THANDOR_IMAGE_0x00573fd4 ((uintptr_t)&g_ImageData_00573EE8.at_pDirectSoundCaptureEnumerateA)
-#define THANDOR_IMAGE_0x00573fd8 ((uintptr_t)&g_ImageData_00573EE8.at_g_GlideImportBindings)
-#define THANDOR_IMAGE_0x00573fe0 ((uintptr_t)&g_ImageData_00573EE8 + 0xF8)
-#define THANDOR_IMAGE_0x00573fe8 ((uintptr_t)&g_ImageData_00573EE8 + 0x100)
-#define THANDOR_IMAGE_0x00574008 ((uintptr_t)&g_ImageData_00573EE8 + 0x120)
-#define THANDOR_IMAGE_0x00574010 ((uintptr_t)&g_ImageData_00573EE8 + 0x128)
-#define THANDOR_IMAGE_0x00574028 ((uintptr_t)&g_ImageData_00573EE8 + 0x140)
-#define THANDOR_IMAGE_0x00574030 ((uintptr_t)&g_ImageData_00573EE8 + 0x148)
-#define THANDOR_IMAGE_0x00574048 ((uintptr_t)&g_ImageData_00573EE8 + 0x160)
-#define THANDOR_IMAGE_0x00574050 ((uintptr_t)&g_ImageData_00573EE8 + 0x168)
-#define THANDOR_IMAGE_0x00574060 ((uintptr_t)&g_ImageData_00573EE8 + 0x178)
-#define THANDOR_IMAGE_0x00574068 ((uintptr_t)&g_ImageData_00573EE8 + 0x180)
-#define THANDOR_IMAGE_0x00574070 ((uintptr_t)&g_ImageData_00573EE8 + 0x188)
-#define THANDOR_IMAGE_0x005740a8 ((uintptr_t)&g_ImageData_00573EE8 + 0x1C0)
-#define THANDOR_IMAGE_0x005740d0 ((uintptr_t)&g_ImageData_00573EE8 + 0x1E8)
-#define THANDOR_IMAGE_0x005740f8 ((uintptr_t)&g_ImageData_00573EE8 + 0x210)
-#define THANDOR_IMAGE_0x00574108 ((uintptr_t)&g_ImageData_00573EE8 + 0x220)
-#define THANDOR_IMAGE_0x00574120 ((uintptr_t)&g_ImageData_00573EE8 + 0x238)
-#define THANDOR_IMAGE_0x00574138 ((uintptr_t)&g_ImageData_00573EE8 + 0x250)
-#define THANDOR_IMAGE_0x00574150 ((uintptr_t)&g_ImageData_00573EE8 + 0x268)
-#define THANDOR_IMAGE_0x00574158 ((uintptr_t)&g_ImageData_00573EE8 + 0x270)
-#define THANDOR_IMAGE_0x00574160 ((uintptr_t)&g_ImageData_00573EE8 + 0x278)
-#define THANDOR_IMAGE_0x00574178 ((uintptr_t)&g_ImageData_00573EE8 + 0x290)
-#define THANDOR_IMAGE_0x005741a0 ((uintptr_t)&g_ImageData_00573EE8 + 0x2B8)
-#define THANDOR_IMAGE_0x005741a8 ((uintptr_t)&g_ImageData_00573EE8 + 0x2C0)
-#define THANDOR_IMAGE_0x005741b0 ((uintptr_t)&g_ImageData_00573EE8 + 0x2C8)
-#define THANDOR_IMAGE_0x005741c0 ((uintptr_t)&g_ImageData_00573EE8 + 0x2D8)
-#define THANDOR_IMAGE_0x005741c8 ((uintptr_t)&g_ImageData_00573EE8 + 0x2E0)
-#define THANDOR_IMAGE_0x005741d8 ((uintptr_t)&g_ImageData_00573EE8 + 0x2F0)
-#define THANDOR_IMAGE_0x00574200 ((uintptr_t)&g_ImageData_00573EE8 + 0x318)
-#define THANDOR_IMAGE_0x00574210 ((uintptr_t)&g_ImageData_00573EE8 + 0x328)
-#define THANDOR_IMAGE_0x00574218 ((uintptr_t)&g_ImageData_00573EE8 + 0x330)
-#define THANDOR_IMAGE_0x00574220 ((uintptr_t)&g_ImageData_00573EE8 + 0x338)
-#define THANDOR_IMAGE_0x00574240 ((uintptr_t)&g_ImageData_00573EE8 + 0x358)
-#define THANDOR_IMAGE_0x00574250 ((uintptr_t)&g_ImageData_00573EE8 + 0x368)
-#define THANDOR_IMAGE_0x00574258 ((uintptr_t)&g_ImageData_00573EE8 + 0x370)
-#define THANDOR_IMAGE_0x00574290 ((uintptr_t)&g_ImageData_00573EE8 + 0x3A8)
-#define THANDOR_IMAGE_0x005742a0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_accept)
-#define THANDOR_IMAGE_0x005742a4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_bind)
-#define THANDOR_IMAGE_0x005742a8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_closesocket)
-#define THANDOR_IMAGE_0x005742ac ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_connect)
-#define THANDOR_IMAGE_0x005742b0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getpeername)
-#define THANDOR_IMAGE_0x005742b4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getsockname)
-#define THANDOR_IMAGE_0x005742b8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getsockopt)
-#define THANDOR_IMAGE_0x005742bc ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_htonl)
-#define THANDOR_IMAGE_0x005742c0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_htons)
-#define THANDOR_IMAGE_0x005742c4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_inet_addr)
-#define THANDOR_IMAGE_0x005742c8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_inet_ntoa)
-#define THANDOR_IMAGE_0x005742cc ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_ioctlsocket)
-#define THANDOR_IMAGE_0x005742d0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_listen)
-#define THANDOR_IMAGE_0x005742d4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_ntohl)
-#define THANDOR_IMAGE_0x005742d8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_ntohs)
-#define THANDOR_IMAGE_0x005742dc ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_recv)
-#define THANDOR_IMAGE_0x005742e0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_recvfrom)
-#define THANDOR_IMAGE_0x005742e4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_select)
-#define THANDOR_IMAGE_0x005742e8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_send)
-#define THANDOR_IMAGE_0x005742ec ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_sendto)
-#define THANDOR_IMAGE_0x005742f0 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_setsockopt)
-#define THANDOR_IMAGE_0x005742f4 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_shutdown)
-#define THANDOR_IMAGE_0x005742f8 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_socket)
-#define THANDOR_IMAGE_0x005742fc ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_gethostbyaddr)
-#define THANDOR_IMAGE_0x00574300 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_gethostbyname)
-#define THANDOR_IMAGE_0x00574304 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_gethostname)
-#define THANDOR_IMAGE_0x00574308 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getprotobyname)
-#define THANDOR_IMAGE_0x0057430c ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getprotobynumber)
-#define THANDOR_IMAGE_0x00574310 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getservbyname)
-#define THANDOR_IMAGE_0x00574314 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_getservbyport)
-#define THANDOR_IMAGE_0x00574318 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetHostByAddr)
-#define THANDOR_IMAGE_0x0057431c ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetHostByName)
-#define THANDOR_IMAGE_0x00574320 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetProtoByName)
-#define THANDOR_IMAGE_0x00574324 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetProtoByNumber)
-#define THANDOR_IMAGE_0x00574328 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetServByName)
-#define THANDOR_IMAGE_0x0057432c ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncGetServByPort)
-#define THANDOR_IMAGE_0x00574330 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAAsyncSelect)
-#define THANDOR_IMAGE_0x00574334 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSACancelAsyncRequest)
-#define THANDOR_IMAGE_0x00574338 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSACancelBlockingCall)
-#define THANDOR_IMAGE_0x0057433c ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSACleanup)
-#define THANDOR_IMAGE_0x00574340 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAGetLastError)
-#define THANDOR_IMAGE_0x00574344 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAIsBlocking)
-#define THANDOR_IMAGE_0x00574348 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSASetBlockingHook)
-#define THANDOR_IMAGE_0x00574350 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAStartup)
-#define THANDOR_IMAGE_0x00574354 ((uintptr_t)&g_ImageData_00573EE8.at_g_WinSock_WSAUnhookBlockingHook)
-#define THANDOR_IMAGE_0x0057435c ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_bind)
-#define THANDOR_IMAGE_0x00574360 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_closesocket)
-#define THANDOR_IMAGE_0x00574378 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_htons)
-#define THANDOR_IMAGE_0x00574390 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_recvfrom)
-#define THANDOR_IMAGE_0x0057439c ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_sendto)
-#define THANDOR_IMAGE_0x005743a0 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_setsockopt)
-#define THANDOR_IMAGE_0x005743a8 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_socket)
-#define THANDOR_IMAGE_0x005743b8 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSACleanup)
-#define THANDOR_IMAGE_0x005743d8 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAGetLastError)
-#define THANDOR_IMAGE_0x005743ec ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAIoctl)
-#define THANDOR_IMAGE_0x00574444 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_gethostbyname)
-#define THANDOR_IMAGE_0x00574478 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAAddressToStringA)
-#define THANDOR_IMAGE_0x005744a0 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAStringToAddressA)
-#define THANDOR_IMAGE_0x005744b4 ((uintptr_t)&g_ImageData_00573EE8.at_sz_DDRAW)
-#define THANDOR_IMAGE_0x005744ba ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_3)
-#define THANDOR_IMAGE_0x005744c2 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_4)
-#define THANDOR_IMAGE_0x005744ca ((uintptr_t)&g_ImageData_00573EE8.at_sz_GLIDE3X)
-#define THANDOR_IMAGE_0x005744dc ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32ModuleName)
-#define THANDOR_IMAGE_0x005744ec ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_9)
-#define THANDOR_IMAGE_0x0057455e ((uintptr_t)&g_ImageData_00573EE8.at_sz_DirectDrawCreate)
-#define THANDOR_IMAGE_0x00574570 ((uintptr_t)&g_ImageData_00573EE8.at_sz_DirectDrawEnumerateA)
-#define THANDOR_IMAGE_0x00574586 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_19)
-#define THANDOR_IMAGE_0x0057459a ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_20)
-#define THANDOR_IMAGE_0x005745ac ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_21)
-#define THANDOR_IMAGE_0x005745c2 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_22)
-#define THANDOR_IMAGE_0x005745dc ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_23)
-#define THANDOR_IMAGE_0x00574d40 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_accept)
-#define THANDOR_IMAGE_0x00574d48 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_bind)
-#define THANDOR_IMAGE_0x00574d4e ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_closesocket)
-#define THANDOR_IMAGE_0x00574d5a ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_connect)
-#define THANDOR_IMAGE_0x00574d62 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getpeername)
-#define THANDOR_IMAGE_0x00574d6e ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getsockname)
-#define THANDOR_IMAGE_0x00574d7a ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getsockopt)
-#define THANDOR_IMAGE_0x00574d86 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_htonl)
-#define THANDOR_IMAGE_0x00574d8c ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_htons)
-#define THANDOR_IMAGE_0x00574d92 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_inet_addr)
-#define THANDOR_IMAGE_0x00574d9c ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_inet_ntoa)
-#define THANDOR_IMAGE_0x00574da6 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_ioctlsocket)
-#define THANDOR_IMAGE_0x00574db2 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_listen)
-#define THANDOR_IMAGE_0x00574dba ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_ntohl)
-#define THANDOR_IMAGE_0x00574dc0 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_ntohs)
-#define THANDOR_IMAGE_0x00574dc6 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_recv)
-#define THANDOR_IMAGE_0x00574dcc ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_recvfrom)
-#define THANDOR_IMAGE_0x00574dd6 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_select)
-#define THANDOR_IMAGE_0x00574dde ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_send)
-#define THANDOR_IMAGE_0x00574de4 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_sendto)
-#define THANDOR_IMAGE_0x00574dec ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_setsockopt)
-#define THANDOR_IMAGE_0x00574df8 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_shutdown)
-#define THANDOR_IMAGE_0x00574e02 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_socket)
-#define THANDOR_IMAGE_0x00574e0a ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_gethostbyaddr)
-#define THANDOR_IMAGE_0x00574e18 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_gethostbyname)
-#define THANDOR_IMAGE_0x00574e26 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_gethostname)
-#define THANDOR_IMAGE_0x00574e32 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getprotobyname)
-#define THANDOR_IMAGE_0x00574e42 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getprotobynumber)
-#define THANDOR_IMAGE_0x00574e54 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getservbyname)
-#define THANDOR_IMAGE_0x00574e62 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_getservbyport)
-#define THANDOR_IMAGE_0x00574e70 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetHostByAddr)
-#define THANDOR_IMAGE_0x00574e86 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetHostByName)
-#define THANDOR_IMAGE_0x00574e9c ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetProtoByName)
-#define THANDOR_IMAGE_0x00574eb4 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetProtoByNumber)
-#define THANDOR_IMAGE_0x00574ece ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetServByName)
-#define THANDOR_IMAGE_0x00574ee4 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncGetServByPort)
-#define THANDOR_IMAGE_0x00574efa ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAAsyncSelect)
-#define THANDOR_IMAGE_0x00574f0a ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSACancelAsyncRequest)
-#define THANDOR_IMAGE_0x00574f20 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSACancelBlockingCall)
-#define THANDOR_IMAGE_0x00574f36 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSACleanup)
-#define THANDOR_IMAGE_0x00574f42 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAGetLastError)
-#define THANDOR_IMAGE_0x00574f52 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAIsBlocking)
-#define THANDOR_IMAGE_0x00574f60 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSASetBlockingHook)
-#define THANDOR_IMAGE_0x00574f84 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAStartup)
-#define THANDOR_IMAGE_0x00574f90 ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32Export_WSAUnhookBlockingHook)
-#define THANDOR_IMAGE_0x00575480 ((uintptr_t)&g_ImageData_00573EE8.at_g_FatalErrorNarrowBuffer)
-#define THANDOR_IMAGE_0x00575950 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FileBytesTransferred)
-#define THANDOR_IMAGE_0x00575954 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FileCreationTimeOrDosDateScratch)
-#define THANDOR_IMAGE_0x0057595c ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FileLastAccessTimeScratch)
-#define THANDOR_IMAGE_0x00575964 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FileLastWriteTimeScratch)
-#define THANDOR_IMAGE_0x00575968 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FileLastWriteTimeHighScratch)
-#define THANDOR_IMAGE_0x0057596c ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DiskSectorsPerClusterScratch)
-#define THANDOR_IMAGE_0x00575970 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DiskBytesPerSectorScratch)
-#define THANDOR_IMAGE_0x00575974 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DiskFreeClustersScratch)
-#define THANDOR_IMAGE_0x00575978 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DiskTotalClustersScratch)
-#define THANDOR_IMAGE_0x00575980 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FindDataFileNameA)
-#define THANDOR_IMAGE_0x00575981 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FindDataFileNameSecondCharA)
-#define THANDOR_IMAGE_0x00575982 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32FindDataFileNameThirdCharA)
-#define THANDOR_IMAGE_0x00575a94 ((uintptr_t)&g_ImageData_0057594C.at_g_FileSystemInitComputerNameCapacityOrConfigCursor)
-#define THANDOR_IMAGE_0x00575a98 ((uintptr_t)&g_ImageData_0057594C.at_g_FileSystemConfigRemainingBytes)
-#define THANDOR_IMAGE_0x00575a9c ((uintptr_t)&g_ImageData_0057594C.at_g_Win32PathScratchA)
-#define THANDOR_IMAGE_0x00575b9c ((uintptr_t)&g_ImageData_0057594C.at_g_Win32PathScratchB)
-#define THANDOR_IMAGE_0x00575c9c ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DriveRootPathScratchA)
-#define THANDOR_IMAGE_0x00575ca0 ((uintptr_t)&g_ImageData_0057594C.at_g_Win32DriveDevicePathA)
-#define THANDOR_IMAGE_0x00576b10 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInput)
-#define THANDOR_IMAGE_0x00576b14 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseDevice)
-#define THANDOR_IMAGE_0x00576b18 ((uintptr_t)&g_ImageData_00576B04.at_GUID_SysMouse_Local)
-#define THANDOR_IMAGE_0x00576b28 ((uintptr_t)&g_ImageData_00576B04.at_GUID_XAxis_Local)
-#define THANDOR_IMAGE_0x00576b38 ((uintptr_t)&g_ImageData_00576B04.at_GUID_YAxis_Local)
-#define THANDOR_IMAGE_0x00576b48 ((uintptr_t)&g_ImageData_00576B04.at_GUID_ZAxis_Local)
-#define THANDOR_IMAGE_0x00576b58 ((uintptr_t)&g_ImageData_00576B04.at_MouseDataFormat)
-#define THANDOR_IMAGE_0x00576b70 ((uintptr_t)&g_ImageData_00576B04.at_MouseObjectFormats)
-#define THANDOR_IMAGE_0x00576be0 ((uintptr_t)&g_ImageData_00576B04.at_MouseBufferProperty)
-#define THANDOR_IMAGE_0x00576bf4 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseDeviceDataCount)
-#define THANDOR_IMAGE_0x00576bf8 ((uintptr_t)&g_ImageData_00576B04.at_g_MousePollBusy)
-#define THANDOR_IMAGE_0x00576bfc ((uintptr_t)&g_ImageData_00576B04.at_g_MouseDeviceEvent)
-#define THANDOR_IMAGE_0x00576c0c ((uintptr_t)&g_ImageData_00576B04.at_g_MouseX)
-#define THANDOR_IMAGE_0x00576c10 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseY)
-#define THANDOR_IMAGE_0x00576c14 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseWheelDelta)
-#define THANDOR_IMAGE_0x00576c18 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseButtonMask)
-#define THANDOR_IMAGE_0x00576c1c ((uintptr_t)&g_ImageData_00576B04.at_g_MouseEventsProcessed)
-#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseChainedSetDisplayMode)
-#define THANDOR_IMAGE_0x00576c24 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseRefreshCountdown)
-#define THANDOR_IMAGE_0x00577c00 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDraw2_Local)
-#define THANDOR_IMAGE_0x00577c10 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDrawSurface3_Local)
-#define THANDOR_IMAGE_0x00577c20 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirect3D2_Local)
-#define THANDOR_IMAGE_0x00577c30 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirect3DTexture2_Local)
-#define THANDOR_IMAGE_0x00577c40 ((uintptr_t)&g_ImageData_00577BFC.at_g_DirectDraw)
-#define THANDOR_IMAGE_0x00577c44 ((uintptr_t)&g_ImageData_00577BFC.at_g_DirectDraw2)
-#define THANDOR_IMAGE_0x00577c48 ((uintptr_t)&g_ImageData_00577BFC.at_g_PrimarySurfaceBase)
-#define THANDOR_IMAGE_0x00577c4c ((uintptr_t)&g_ImageData_00577BFC.at_g_PrimarySurface3)
-#define THANDOR_IMAGE_0x00577c50 ((uintptr_t)&g_ImageData_00577BFC.at_g_BackSurfaceBase)
-#define THANDOR_IMAGE_0x00577c54 ((uintptr_t)&g_ImageData_00577BFC.at_g_BackSurface3)
-#define THANDOR_IMAGE_0x00577c58 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3D2)
-#define THANDOR_IMAGE_0x00577c5c ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DDevice2)
-#define THANDOR_IMAGE_0x00577c60 ((uintptr_t)&g_ImageData_00577BFC.at_g_ZSurfaceBase)
-#define THANDOR_IMAGE_0x00577c64 ((uintptr_t)&g_ImageData_00577BFC.at_g_ZSurface3)
-#define THANDOR_IMAGE_0x00577c68 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DViewport2)
-#define THANDOR_IMAGE_0x00577c70 ((uintptr_t)&g_ImageData_00577BFC.at_g_CurrentClearRect)
-#define THANDOR_IMAGE_0x00577c80 ((uintptr_t)&g_ImageData_00577BFC.at_g_SurfaceDesc)
-#define THANDOR_IMAGE_0x00577cf0 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsCursorSurfaceDescScratch)
-#define THANDOR_IMAGE_0x00577d00 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsCursorSurfacePitchBytes)
-#define THANDOR_IMAGE_0x00577d14 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsCursorSurfacePixels)
-#define THANDOR_IMAGE_0x00577d60 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DViewportState)
-#define THANDOR_IMAGE_0x00577d90 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DOpaqueTextureFormat)
-#define THANDOR_IMAGE_0x00577d9c ((uintptr_t)&g_ImageData_00577BFC + 0x1A0)
-#define THANDOR_IMAGE_0x00577da0 ((uintptr_t)&g_ImageData_00577BFC + 0x1A4)
-#define THANDOR_IMAGE_0x00577da4 ((uintptr_t)&g_ImageData_00577BFC + 0x1A8)
-#define THANDOR_IMAGE_0x00577da8 ((uintptr_t)&g_ImageData_00577BFC + 0x1AC)
-#define THANDOR_IMAGE_0x00577db0 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DAlphaTextureFormat)
-#define THANDOR_IMAGE_0x00577dbc ((uintptr_t)&g_ImageData_00577BFC + 0x1C0)
-#define THANDOR_IMAGE_0x00577dcc ((uintptr_t)&g_ImageData_00577BFC + 0x1D0)
-#define THANDOR_IMAGE_0x00577dd0 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DSelectedOpaqueTextureFormat)
-#define THANDOR_IMAGE_0x00577df0 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DSelectedAlphaTextureFormat)
-#define THANDOR_IMAGE_0x00577e10 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DTextureFilterMode)
-#define THANDOR_IMAGE_0x00577e14 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DTexturePerspectiveEnabled)
-#define THANDOR_IMAGE_0x00577e18 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DAntialiasMode)
-#define THANDOR_IMAGE_0x00577e1c ((uintptr_t)&g_ImageData_00577BFC.at_g_PrimitiveRenderStateCache)
-#define THANDOR_IMAGE_0x00577e2c ((uintptr_t)&g_ImageData_00577BFC.at_g_BoundTextureHandle)
-#define THANDOR_IMAGE_0x00577e30 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsDisplayModeFinalize)
-#define THANDOR_IMAGE_0x00577e34 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorCurrentVisibilityToken)
-#define THANDOR_IMAGE_0x00577e38 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorAlternateVisibilityToken)
-#define THANDOR_IMAGE_0x00577e3c ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorCurrentDrawX)
-#define THANDOR_IMAGE_0x00577e40 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorCurrentDrawY)
-#define THANDOR_IMAGE_0x00577e44 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorAlternateDrawX)
-#define THANDOR_IMAGE_0x00577e48 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorAlternateDrawY)
-#define THANDOR_IMAGE_0x00577e4c ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsBackendAccessState)
-#define THANDOR_IMAGE_0x00577e50 ((uintptr_t)&g_ImageData_00577BFC.at_g_PrimitiveRenderStatePresets)
-#define THANDOR_IMAGE_0x00577ea0 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsDispatchTable)
-#define THANDOR_IMAGE_0x00577fc0 ((uintptr_t)&g_ImageData_00577BFC.at_g_ImmediateTLVertices)
-#define THANDOR_IMAGE_0x00578040 ((uintptr_t)&g_ImageData_00577BFC.at_g_LastViewportRect)
-#define THANDOR_IMAGE_0x00578050 ((uintptr_t)&g_ImageData_00577BFC.at_g_ImmediateVertexCount)
-#define THANDOR_IMAGE_0x00578054 ((uintptr_t)&g_ImageData_00577BFC.at_g_TextureUseSerial)
-#define THANDOR_IMAGE_0x00578058 ((uintptr_t)&g_ImageData_00577BFC.at_g_TexturePaletteEntries)
-#define THANDOR_IMAGE_0x0057805c ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsTextureSlots)
-#define THANDOR_IMAGE_0x00578060 ((uintptr_t)&g_ImageData_00577BFC.at_g_DisplayFramebufferAccess)
-#define THANDOR_IMAGE_0x00578070 ((uintptr_t)&g_ImageData_00577BFC.at_g_ActiveTextureUploads)
-#define THANDOR_IMAGE_0x00578074 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsEnumerateAllDevicesFlag)
-#define THANDOR_IMAGE_0x00578078 ((uintptr_t)&g_ImageData_00577BFC.at_g_CommandLineOptionD3dAll)
-#define THANDOR_IMAGE_0x0057ecd0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideEnumerationResolutionQuery)
-#define THANDOR_IMAGE_0x0057ece0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSelectedResolutionQuery)
-#define THANDOR_IMAGE_0x0057ecf0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideRefreshRatesHz)
-#define THANDOR_IMAGE_0x0057ed14 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideWindowContextHandle)
-#define THANDOR_IMAGE_0x0057ed18 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideRuntimeActiveCount)
-#define THANDOR_IMAGE_0x0057ed20 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlidePrimaryLfbInfo)
-#define THANDOR_IMAGE_0x0057ed34 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondaryLfbInfo)
-#define THANDOR_IMAGE_0x0057ed48 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTextureRefreshHandlers)
-#define THANDOR_IMAGE_0x0057ed54 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ScreenX)
-#define THANDOR_IMAGE_0x0057ed58 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ScreenY)
-#define THANDOR_IMAGE_0x0057ed5c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ReciprocalDepth)
-#define THANDOR_IMAGE_0x0057ed60 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0PerspectiveScale)
-#define THANDOR_IMAGE_0x0057ed68 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ProjectedTextureU)
-#define THANDOR_IMAGE_0x0057ed6c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ProjectedTextureV)
-#define THANDOR_IMAGE_0x0057ed70 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0DiffuseColor)
-#define THANDOR_IMAGE_0x0057ed74 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1ScreenX)
-#define THANDOR_IMAGE_0x0057ed78 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1ScreenY)
-#define THANDOR_IMAGE_0x0057ed7c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1ReciprocalDepth)
-#define THANDOR_IMAGE_0x0057ed80 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1PerspectiveScale)
-#define THANDOR_IMAGE_0x0057ed88 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1ProjectedTextureU)
-#define THANDOR_IMAGE_0x0057ed8c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1ProjectedTextureV)
-#define THANDOR_IMAGE_0x0057ed90 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex1DiffuseColor)
-#define THANDOR_IMAGE_0x0057ed94 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2ScreenX)
-#define THANDOR_IMAGE_0x0057ed98 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2ScreenY)
-#define THANDOR_IMAGE_0x0057ed9c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2ReciprocalDepth)
-#define THANDOR_IMAGE_0x0057eda0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2PerspectiveScale)
-#define THANDOR_IMAGE_0x0057eda8 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2ProjectedTextureU)
-#define THANDOR_IMAGE_0x0057edac ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2ProjectedTextureV)
-#define THANDOR_IMAGE_0x0057edb0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex2DiffuseColor)
-#define THANDOR_IMAGE_0x0057edb4 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTextureInfo256Argb4444)
-#define THANDOR_IMAGE_0x0057edc8 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTmuCount)
-#define THANDOR_IMAGE_0x0057edcc ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTextureColorUpload)
-#define THANDOR_IMAGE_0x0057edd8 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTextureAlphaUpload)
-#define THANDOR_IMAGE_0x0057ede4 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTexturingDisabledState)
-#define THANDOR_IMAGE_0x0057ede8 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideBlendModeState)
-#define THANDOR_IMAGE_0x0057edec ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideDepthWriteEnabledState)
-#define THANDOR_IMAGE_0x0057edf0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideBoundTexture)
-#define THANDOR_IMAGE_0x0057edf4 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTmuMinAddress)
-#define THANDOR_IMAGE_0x0057ee34 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideTmuMaxAddress)
-#define THANDOR_IMAGE_0x0057ee74 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideResidentTextureTail)
-#define THANDOR_IMAGE_0x0057ee78 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideResidentTextureHead)
-#define THANDOR_IMAGE_0x0057ee7c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondBufferOffset)
-#define THANDOR_IMAGE_0x0057ee80 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondBufferBase)
-#define THANDOR_IMAGE_0x0057ee84 ((uintptr_t)&g_ImageData_0057ECC8.at_g_CommandLineOptionGlide)
-#define THANDOR_IMAGE_0x00582ee0 ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSound)
-#define THANDOR_IMAGE_0x00582ee4 ((uintptr_t)&g_ImageData_00582ED8.at_g_PrimarySoundBuffer)
-#define THANDOR_IMAGE_0x00582ee8 ((uintptr_t)&g_ImageData_00582ED8.at_g_PrimaryVolume)
-#define THANDOR_IMAGE_0x00582eec ((uintptr_t)&g_ImageData_00582ED8.at_g_PrimaryPan)
-#define THANDOR_IMAGE_0x00582ef0 ((uintptr_t)&g_ImageData_00582ED8.at_WaveFormat_PCM_22050_Stereo16)
-#define THANDOR_IMAGE_0x00582f10 ((uintptr_t)&g_ImageData_00582ED8.at_PrimarySoundBufferDesc)
-#define THANDOR_IMAGE_0x00582f24 ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSoundVoiceSetRegistry)
-#define THANDOR_IMAGE_0x00582f28 ((uintptr_t)&g_ImageData_00582ED8.at_g_CommandLineOptionSound)
-#define THANDOR_IMAGE_0x00582f2e ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSoundGainAttenuation)
-#define THANDOR_IMAGE_0x00583d60 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendMode)
-#define THANDOR_IMAGE_0x00583d64 ((uintptr_t)&g_ImageData_00583D28.at_g_WinSockStartupData)
-#define THANDOR_IMAGE_0x00583ef2 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkFallbackSocket)
-#define THANDOR_IMAGE_0x00583ef6 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkFallbackSocketOptionOn)
-#define THANDOR_IMAGE_0x00583efa ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkFallbackAddressLength)
-#define THANDOR_IMAGE_0x00583efe ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkFallbackBindEndpoint)
-#define THANDOR_IMAGE_0x00583f0e ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendActiveAddressFamily)
-#define THANDOR_IMAGE_0x00583f12 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendActiveSocketAddressLength)
-#define THANDOR_IMAGE_0x00583f16 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendActiveSocketType)
-#define THANDOR_IMAGE_0x00583f1a ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendActiveProtocol)
-#define THANDOR_IMAGE_0x00583f1e ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendPortNetworkOrderCarrier)
-#define THANDOR_IMAGE_0x00583f22 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendBindAddress)
-#define THANDOR_IMAGE_0x00583f40 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkEndpointTextScratchA)
-#define THANDOR_IMAGE_0x00584040 ((uintptr_t)&g_ImageData_00583D28.at_NetworkBackendInstanceDescriptorPrefix_00584040)
-#define THANDOR_IMAGE_0x00584078 ((uintptr_t)&g_ImageData_00583D28.at_s_CommandLineOptionIp)
-#define THANDOR_IMAGE_0x005856b0 ((uintptr_t)&g_ImageData_005856A0.at_g_hInstance)
-#define THANDOR_IMAGE_0x005856b4 ((uintptr_t)&g_ImageData_005856A0.at_g_MainWindow)
-#define THANDOR_IMAGE_0x005856b8 ((uintptr_t)&g_ImageData_005856A0.at_g_WindowDestroyDepth)
-#define THANDOR_IMAGE_0x005856bc ((uintptr_t)&g_ImageData_005856A0.at_g_AppActive)
-#define THANDOR_IMAGE_0x005856c0 ((uintptr_t)&g_ImageData_005856A0.at_g_MainMessageStorage)
-#define THANDOR_IMAGE_0x00585708 ((uintptr_t)&g_ImageData_005856A0.at_g_Arena)
-#define THANDOR_IMAGE_0x0058571c ((uintptr_t)&g_ImageData_005856A0.at_g_TimerSystemState)
-#define THANDOR_IMAGE_0x0058581c ((uintptr_t)&g_ImageData_005856A0.at_g_CommandLine)
-#define THANDOR_IMAGE_0x00585d1c ((uintptr_t)&g_ImageData_005856A0.at_sz_MainWindowTitle)
-#define THANDOR_IMAGE_0x00585d2b ((uintptr_t)&g_ImageData_005856A0.at_sz_MainWindowClass)
-#define THANDOR_IMAGE_0x00586950 ((uintptr_t)&g_ImageData_00586950.at_g_LocaleInfoScratch)
-#define THANDOR_IMAGE_0x00586a70 ((uintptr_t)&g_ImageData_00586950.at_g_LocaleSystemState)
+#define THANDOR_IMAGE_0x00402000 ((uintptr_t)&g_ImageObject_00402000.at_g_MemoryApi)
+#define THANDOR_IMAGE_0x00402018 ((uintptr_t)&g_ImageObject_00402018.at_g_TimerRegisterPeriodic)
+#define THANDOR_IMAGE_0x0040201c ((uintptr_t)&g_ImageObject_0040201C.at_g_TimerUnregisterPeriodic)
+#define THANDOR_IMAGE_0x00402020 ((uintptr_t)&g_ImageObject_00402020.at_g_Win32PumpMessages)
+#define THANDOR_IMAGE_0x00402024 ((uintptr_t)&g_ImageObject_00402024.at_g_CommandLineFindOption)
+#define THANDOR_IMAGE_0x00402028 ((uintptr_t)&g_ImageObject_00402028.at_g_CommandLineWideArguments)
+#define THANDOR_IMAGE_0x00402628 ((uintptr_t)&g_ImageObject_00402628.at_g_WideNumberFormatUtf16)
+#define THANDOR_IMAGE_0x0040262c ((uintptr_t)&g_ImageObject_0040262C.at_g_WideNumberFormatState)
+#define THANDOR_IMAGE_0x00402784 ((uintptr_t)&g_ImageObject_00402784.at_g_SpinLockAcquire)
+#define THANDOR_IMAGE_0x00402788 ((uintptr_t)&g_ImageObject_00402788.at_g_SpinLockTryAcquire)
+#define THANDOR_IMAGE_0x0040278c ((uintptr_t)&g_ImageObject_0040278C.at_g_SpinLockRelease)
+#define THANDOR_IMAGE_0x00402790 ((uintptr_t)&g_ImageObject_00402790.at_g_SpinLockReleaseAndInvoke)
+#define THANDOR_IMAGE_0x00402794 ((uintptr_t)&g_ImageObject_00402794.at_g_LocaleFormatDateFieldsUtf16)
+#define THANDOR_IMAGE_0x00402798 ((uintptr_t)&g_ImageObject_00402798.at_g_LocaleFormatCurrentDateUtf16)
+#define THANDOR_IMAGE_0x0040279c ((uintptr_t)&g_ImageObject_0040279C.at_g_LocaleGetPackedCurrentDate)
+#define THANDOR_IMAGE_0x004027a0 ((uintptr_t)&g_ImageObject_004027A0.at_g_LocaleFormatTimeFieldsUtf16)
+#define THANDOR_IMAGE_0x004027a4 ((uintptr_t)&g_ImageObject_004027A4.at_g_LocaleFormatCurrentTimeUtf16)
+#define THANDOR_IMAGE_0x004027a8 ((uintptr_t)&g_ImageObject_004027A8.at_g_LocaleGetPackedCurrentTime)
+#define THANDOR_IMAGE_0x004027ac ((uintptr_t)&g_ImageObject_004027AC.at_g_LocaleGetDefaultTelephoneCountryCode)
+#define THANDOR_IMAGE_0x004027b0 ((uintptr_t)&g_ImageObject_004027B0.at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked)
+#define THANDOR_IMAGE_0x004027b4 ((uintptr_t)&g_ImageObject_004027B4.at_g_LocaleCopyDefaultComputerLabelUtf16)
+#define THANDOR_IMAGE_0x004027b8 ((uintptr_t)&g_ImageObject_004027B8.at_g_CPUDetectFeatures)
+#define THANDOR_IMAGE_0x004027bc ((uintptr_t)&g_ImageObject_004027BC.at_g_Utf16StringCompareAsciiCaseInsensitiveFlags)
+#define THANDOR_IMAGE_0x004027c0 ((uintptr_t)&g_ImageObject_004027C0.at_g_LocaleCountryCodeOverride)
+#define THANDOR_IMAGE_0x004027c4 ((uintptr_t)&g_ImageObject_004027C4.at_g_CpuFeatureFlags)
+#define THANDOR_IMAGE_0x004027d0 ((uintptr_t)&g_ImageObject_004027D0.at_g_FileSystemConfigCharacterNormalizationMap)
+#define THANDOR_IMAGE_0x004028d0 ((uintptr_t)&g_ImageObject_004028D0.at_g_PersistentSettings)
+#define THANDOR_IMAGE_0x004030a0 ((uintptr_t)&g_ImageObject_004030A0.at_g_RandomGeneratorState)
+#define THANDOR_IMAGE_0x00403160 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox0)
+#define THANDOR_IMAGE_0x00403560 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox1)
+#define THANDOR_IMAGE_0x00403960 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox2)
+#define THANDOR_IMAGE_0x00403d60 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox3)
+#define THANDOR_IMAGE_0x00404160 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox4)
+#define THANDOR_IMAGE_0x00404560 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox5)
+#define THANDOR_IMAGE_0x004046a0 ((uintptr_t)&g_ImageObject_00403160 + 0x1540)
+#define THANDOR_IMAGE_0x00404960 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox6)
+#define THANDOR_IMAGE_0x00404d60 ((uintptr_t)&g_ImageObject_00403160.at_g_UiTransferEncryptSbox7)
+#define THANDOR_IMAGE_0x00405160 ((uintptr_t)&g_ImageObject_00405160.at_g_UiTransferDecryptSboxes)
+#define THANDOR_IMAGE_0x00407514 ((uintptr_t)&g_ImageObject_00407514.at_g_PackageLastErrorPath)
+#define THANDOR_IMAGE_0x00407714 ((uintptr_t)&g_ImageObject_00407714.at_g_FatalErrorDetail1Utf16)
+#define THANDOR_IMAGE_0x00407914 ((uintptr_t)&g_ImageObject_00407714.at_g_FatalErrorDetail2Utf16)
+#define THANDOR_IMAGE_0x00407b14 ((uintptr_t)&g_ImageObject_00407714.at_g_FatalErrorDetail3Utf16)
+#define THANDOR_IMAGE_0x00407d14 ((uintptr_t)&g_ImageObject_00407D14.at_g_FatalErrorExitHandler)
+#define THANDOR_IMAGE_0x00407d18 ((uintptr_t)&g_ImageObject_00407D18.at_g_FatalErrorReportHandler)
+#define THANDOR_IMAGE_0x00407d1c ((uintptr_t)&g_ImageObject_00407D1C.at_g_FatalErrorFallbackHandler)
+#define THANDOR_IMAGE_0x00407d20 ((uintptr_t)&g_ImageObject_00407D20.at_u_texte_error_str_00407d20)
+#define THANDOR_IMAGE_0x00407d40 ((uintptr_t)&g_ImageObject_00407D40.at_g_ErrorTextIoInitializationFailed)
+#define THANDOR_IMAGE_0x00407d84 ((uintptr_t)&g_ImageObject_00407D84.at_g_ErrorTextHeapAllocationFailed)
+#define THANDOR_IMAGE_0x00407e20 ((uintptr_t)&g_ImageObject_00407E20.at_g_FatalErrorUiRootTemplate)
+#define THANDOR_IMAGE_0x00407e24 ((uintptr_t)&g_ImageObject_00407E24.at_g_FatalErrorDialogDismissed)
+#define THANDOR_IMAGE_0x00407e28 ((uintptr_t)&g_ImageObject_00407E28.at_g_UiRootCallbacks_00407E28)
+#define THANDOR_IMAGE_0x00407e3c ((uintptr_t)&g_ImageObject_00407E3C.at_g_FatalErrorUiRootTemplateImage)
+#define THANDOR_IMAGE_0x00407e5c ((uintptr_t)&g_ImageObject_00407E3C + 0x20)
+#define THANDOR_IMAGE_0x00407e64 ((uintptr_t)&g_ImageObject_00407E3C + 0x28)
+#define THANDOR_IMAGE_0x00407eb4 ((uintptr_t)&g_ImageObject_00407E3C + 0x78)
+#define THANDOR_IMAGE_0x00407ebc ((uintptr_t)&g_ImageObject_00407E3C + 0x80)
+#define THANDOR_IMAGE_0x00407ee8 ((uintptr_t)&g_ImageObject_00407E3C + 0xAC)
+#define THANDOR_IMAGE_0x004080c0 ((uintptr_t)&g_ImageObject_004080C0.at_g_PckHuffmanSymbolWorkspace256)
+#define THANDOR_IMAGE_0x004084c0 ((uintptr_t)&g_ImageObject_004084C0.at_g_PckHuffmanLeafNodeWorkspace256)
+#define THANDOR_IMAGE_0x004094c0 ((uintptr_t)&g_ImageObject_004084C0.at_g_PckHuffmanInternalNodeWorkspace256)
+#define THANDOR_IMAGE_0x0040abc0 ((uintptr_t)&g_ImageObject_0040ABC0.at_g_InitialWorkingDirectory)
+#define THANDOR_IMAGE_0x0040adc0 ((uintptr_t)&g_ImageObject_0040ADC0.at_g_FileSystemCombinedPathScratchUtf16)
+#define THANDOR_IMAGE_0x0040afc0 ((uintptr_t)&g_ImageObject_0040AFC0.at_g_ExecutableDirectoryUtf16)
+#define THANDOR_IMAGE_0x0040b1c0 ((uintptr_t)&g_ImageObject_0040B1C0.at_g_FileSystemOpen)
+#define THANDOR_IMAGE_0x0040b1c4 ((uintptr_t)&g_ImageObject_0040B1C4.at_g_FileSystemClose)
+#define THANDOR_IMAGE_0x0040b1c8 ((uintptr_t)&g_ImageObject_0040B1C8.at_g_FileSystemReadExact)
+#define THANDOR_IMAGE_0x0040b1cc ((uintptr_t)&g_ImageObject_0040B1CC.at_g_FileSystemWriteExactOrFlush)
+#define THANDOR_IMAGE_0x0040b1d0 ((uintptr_t)&g_ImageObject_0040B1D0.at_g_FileSystemGetSize)
+#define THANDOR_IMAGE_0x0040b1d4 ((uintptr_t)&g_ImageObject_0040B1D4.at_g_FileSystemGetPosition)
+#define THANDOR_IMAGE_0x0040b1d8 ((uintptr_t)&g_ImageObject_0040B1D8.at_g_FileSystemSeek)
+#define THANDOR_IMAGE_0x0040b1dc ((uintptr_t)&g_ImageObject_0040B1DC.at_g_FileSystemDelete)
+#define THANDOR_IMAGE_0x0040b1e0 ((uintptr_t)&g_ImageObject_0040B1E0.at_g_FileSystemGetCurrentDirectory)
+#define THANDOR_IMAGE_0x0040b1e4 ((uintptr_t)&g_ImageObject_0040B1E4.at_g_FileSystemSetCurrentDirectory)
+#define THANDOR_IMAGE_0x0040b1e8 ((uintptr_t)&g_ImageObject_0040B1E8.at_g_FileSystemCreateDirectoryRecursive)
+#define THANDOR_IMAGE_0x0040b1ec ((uintptr_t)&g_ImageObject_0040B1EC.at_g_FileSystemRemoveDirectory)
+#define THANDOR_IMAGE_0x0040b1f0 ((uintptr_t)&g_ImageObject_0040B1F0.at_g_FileSystemEnumerateDriveLetters)
+#define THANDOR_IMAGE_0x0040b1f4 ((uintptr_t)&g_ImageObject_0040B1F4.at_g_FileSystemGetDriveTypeCode)
+#define THANDOR_IMAGE_0x0040b1f8 ((uintptr_t)&g_ImageObject_0040B1F8.at_g_FileSystemCheckDriveMediaReady)
+#define THANDOR_IMAGE_0x0040b1fc ((uintptr_t)&g_ImageObject_0040B1FC.at_g_FileSystemGetFreeAndTotalBytes)
+#define THANDOR_IMAGE_0x0040b200 ((uintptr_t)&g_ImageObject_0040B200.at_g_FileSystemGetLastWriteDosDate)
+#define THANDOR_IMAGE_0x0040b204 ((uintptr_t)&g_ImageObject_0040B204.at_g_FileSystemGetLastWriteTimeHigh)
+#define THANDOR_IMAGE_0x0040b208 ((uintptr_t)&g_ImageObject_0040B208.at_g_FileSystemGetVolumeSerialNumber)
+#define THANDOR_IMAGE_0x0040b20c ((uintptr_t)&g_ImageObject_0040B20C.at_g_FileSystemMove)
+#define THANDOR_IMAGE_0x0040b210 ((uintptr_t)&g_ImageObject_0040B210.at_g_FileSystemCopy)
+#define THANDOR_IMAGE_0x0040b214 ((uintptr_t)&g_ImageObject_0040B214.at_g_FileSystemEnumerateDirectoryOrVolumeEntries)
+#define THANDOR_IMAGE_0x0040b218 ((uintptr_t)&g_ImageObject_0040B218.at_g_FileSystemValidateDos83Path)
+#define THANDOR_IMAGE_0x0040b21c ((uintptr_t)&g_ImageObject_0040B21C.at_g_PackageScratchBuffer)
+#define THANDOR_IMAGE_0x0040b220 ((uintptr_t)&g_ImageObject_0040B220.at_g_EnginePackageLowPriorityMountHandle)
+#define THANDOR_IMAGE_0x0040b224 ((uintptr_t)&g_ImageObject_0040B224.at_g_PackageMountSlots)
+#define THANDOR_IMAGE_0x0040e224 ((uintptr_t)&g_ImageObject_0040E224.at_g_PckEncoderTable)
+#define THANDOR_IMAGE_0x0040e230 ((uintptr_t)&g_ImageObject_0040E230.at_g_PckDecoderTable)
+#define THANDOR_IMAGE_0x0040e23d ((uintptr_t)&g_ImageObject_0040E23D.at_u_THANDOR_cfg_0040e23d)
+#define THANDOR_IMAGE_0x0040e255 ((uintptr_t)&g_ImageObject_0040E255.at_u_engine_pck_0040e255)
+#define THANDOR_IMAGE_0x0040e270 ((uintptr_t)&g_ImageObject_0040E270.at_g_DefaultComputerLabelUtf16)
+#define THANDOR_IMAGE_0x0040f530 ((uintptr_t)&g_ImageObject_0040F530.at_g_UiTimedListDriveLetters)
+#define THANDOR_IMAGE_0x0040f550 ((uintptr_t)&g_ImageObject_0040F550.at_g_UiTimedListRecordPathScratch)
+#define THANDOR_IMAGE_0x0040f750 ((uintptr_t)&g_ImageObject_0040F750.at_g_UiTimedListCombinedPathScratch)
+#define THANDOR_IMAGE_0x0040f950 ((uintptr_t)&g_ImageObject_0040F950.at_g_UiTimedListSecondaryPathScratch)
+#define THANDOR_IMAGE_0x0040fb50 ((uintptr_t)&g_ImageObject_0040FB50.at_g_UiTimedListHierarchyPathScratch)
+#define THANDOR_IMAGE_0x0040fd50 ((uintptr_t)&g_ImageObject_0040FD50.at_g_UiTimedListHierarchyParentPathScratch)
+#define THANDOR_IMAGE_0x0040ff50 ((uintptr_t)&g_ImageObject_0040FF50.at_g_WildcardAllFilesUtf16)
+#define THANDOR_IMAGE_0x0040ff58 ((uintptr_t)&g_ImageObject_0040FF58.at_g_UiTimedListDriveWildcardUtf16)
+#define THANDOR_IMAGE_0x004107f0 ((uintptr_t)&g_ImageObject_004107F0.at_g_CursorInputEvents)
+#define THANDOR_IMAGE_0x004167f0 ((uintptr_t)&g_ImageObject_004167F0.at_g_CursorInputWriteIndex)
+#define THANDOR_IMAGE_0x004167f4 ((uintptr_t)&g_ImageObject_004167F4.at_g_CursorInputReadIndex)
+#define THANDOR_IMAGE_0x004167f8 ((uintptr_t)&g_ImageObject_004167F8.at_g_CursorInputClockValue)
+#define THANDOR_IMAGE_0x004167fc ((uintptr_t)&g_ImageObject_004167FC.at_g_GraphicsCursorAnimationCountdown)
+#define THANDOR_IMAGE_0x00416800 ((uintptr_t)&g_ImageObject_00416800.at_g_CursorButtonReleaseClock)
+#define THANDOR_IMAGE_0x0041680c ((uintptr_t)&g_ImageObject_0041680C.at_g_CursorSourceAsset)
+#define THANDOR_IMAGE_0x00416810 ((uintptr_t)&g_ImageObject_00416810.at_g_CursorFrameRecords)
+#define THANDOR_IMAGE_0x00416814 ((uintptr_t)&g_ImageObject_00416814.at_g_CursorFrameIndex)
+#define THANDOR_IMAGE_0x00416818 ((uintptr_t)&g_ImageObject_00416818.at_g_CursorUseOverridePosition)
+#define THANDOR_IMAGE_0x0041681c ((uintptr_t)&g_ImageObject_0041681C.at_g_CursorFrameCount)
+#define THANDOR_IMAGE_0x00416820 ((uintptr_t)&g_ImageObject_00416820.at_g_CursorMaxWidth)
+#define THANDOR_IMAGE_0x00416824 ((uintptr_t)&g_ImageObject_00416824.at_g_CursorMaxHeight)
+#define THANDOR_IMAGE_0x00416828 ((uintptr_t)&g_ImageObject_00416828.at_g_CursorOverrideX)
+#define THANDOR_IMAGE_0x0041682c ((uintptr_t)&g_ImageObject_00416828.at_g_CursorOverrideY)
+#define THANDOR_IMAGE_0x00416830 ((uintptr_t)&g_ImageObject_00416830.at_g_CursorWheelDelta)
+#define THANDOR_IMAGE_0x00416834 ((uintptr_t)&g_ImageObject_00416834.at_g_CursorVisibilityToken)
+#define THANDOR_IMAGE_0x00416838 ((uintptr_t)&g_ImageObject_00416838.at_g_CursorButtonState)
+#define THANDOR_IMAGE_0x0041683c ((uintptr_t)&g_ImageObject_0041683C.at_g_CursorLastClickX)
+#define THANDOR_IMAGE_0x00416840 ((uintptr_t)&g_ImageObject_0041683C.at_g_CursorLastClickY)
+#define THANDOR_IMAGE_0x00416844 ((uintptr_t)&g_ImageObject_00416844.at_g_PointerFlushEvents)
+#define THANDOR_IMAGE_0x00416848 ((uintptr_t)&g_ImageObject_00416848.at_g_GraphicsCursorSetFrame)
+#define THANDOR_IMAGE_0x0041684c ((uintptr_t)&g_ImageObject_0041684C.at_g_PointerSetPosition)
+#define THANDOR_IMAGE_0x00416850 ((uintptr_t)&g_ImageObject_00416850.at_g_GraphicsCursorConsumeEvent)
+#define THANDOR_IMAGE_0x00416854 ((uintptr_t)&g_ImageObject_00416854.at_g_CursorOverflowLeft)
+#define THANDOR_IMAGE_0x00416858 ((uintptr_t)&g_ImageObject_00416858.at_g_CursorOverflowRight)
+#define THANDOR_IMAGE_0x0041685c ((uintptr_t)&g_ImageObject_0041685C.at_g_CursorOverflowTop)
+#define THANDOR_IMAGE_0x00416860 ((uintptr_t)&g_ImageObject_00416860.at_g_CursorOverflowBottom)
+#define THANDOR_IMAGE_0x00416864 ((uintptr_t)&g_ImageObject_00416864.at_u_engine_mouse_gfx_00416864)
+#define THANDOR_IMAGE_0x00416886 ((uintptr_t)&g_ImageObject_00416886.at_u_engine_mouse_dat_00416886)
+#define THANDOR_IMAGE_0x004169e0 ((uintptr_t)&g_ImageObject_004169E0.at_g_KeyboardEvents)
+#define THANDOR_IMAGE_0x004171e0 ((uintptr_t)&g_ImageObject_004171E0.at_g_KeyboardWriteIndex)
+#define THANDOR_IMAGE_0x004171e4 ((uintptr_t)&g_ImageObject_004171E4.at_g_KeyboardReadIndex)
+#define THANDOR_IMAGE_0x004171e8 ((uintptr_t)&g_ImageObject_004171E8.at_g_KeyboardStateMask)
+#define THANDOR_IMAGE_0x004171ec ((uintptr_t)&g_ImageObject_004171EC.at_g_KeyboardToggleLatchMask)
+#define THANDOR_IMAGE_0x004171f0 ((uintptr_t)&g_ImageObject_004171F0.at_g_KeyboardSpecialKeyDown)
+#define THANDOR_IMAGE_0x00417210 ((uintptr_t)&g_ImageObject_00417210.at_g_KeyboardFlushEvents)
+#define THANDOR_IMAGE_0x00417214 ((uintptr_t)&g_ImageObject_00417214.at_g_KeyboardReadEvent)
+#define THANDOR_IMAGE_0x00417218 ((uintptr_t)&g_ImageObject_00417218.at_g_KeyboardAsciiCaseTransformCallbacks3)
+#define THANDOR_IMAGE_0x00417300 ((uintptr_t)&g_ImageObject_00417300.at_g_SoundDecodeMmxWordLaneMask0)
+#define THANDOR_IMAGE_0x00417308 ((uintptr_t)&g_ImageObject_00417300.at_g_SoundDecodeMmxWordLaneMask1)
+#define THANDOR_IMAGE_0x00417310 ((uintptr_t)&g_ImageObject_00417300.at_g_SoundDecodeMmxWordLaneMask2)
+#define THANDOR_IMAGE_0x00417318 ((uintptr_t)&g_ImageObject_00417300.at_g_SoundDecodeMmxWordLaneMask3)
+#define THANDOR_IMAGE_0x00417330 ((uintptr_t)&g_ImageObject_00417330.at_g_CosineDerivedLookupAllocation)
+#define THANDOR_IMAGE_0x00417334 ((uintptr_t)&g_ImageObject_00417334.at_g_CosineDerivedLookupSecondTable)
+#define THANDOR_IMAGE_0x00417338 ((uintptr_t)&g_ImageObject_00417338.at_g_SoundCreateSampleVoiceSet)
+#define THANDOR_IMAGE_0x0041733c ((uintptr_t)&g_ImageObject_0041733C.at_g_SoundReleaseSampleVoiceSet)
+#define THANDOR_IMAGE_0x00417340 ((uintptr_t)&g_ImageObject_00417340.at_g_SoundCreatePcmVoiceSet)
+#define THANDOR_IMAGE_0x00417344 ((uintptr_t)&g_ImageObject_00417344.at_g_SoundReleasePcmVoiceSet)
+#define THANDOR_IMAGE_0x00417348 ((uintptr_t)&g_ImageObject_00417348.at_g_SoundPlayOneShot)
+#define THANDOR_IMAGE_0x0041734c ((uintptr_t)&g_ImageObject_0041734C.at_g_SoundPlayLooping)
+#define THANDOR_IMAGE_0x00417350 ((uintptr_t)&g_ImageObject_00417350.at_g_SoundStopVoice)
+#define THANDOR_IMAGE_0x00417354 ((uintptr_t)&g_ImageObject_00417354.at_g_SoundStopAllVoices)
+#define THANDOR_IMAGE_0x00417358 ((uintptr_t)&g_ImageObject_00417358.at_g_SoundIsVoicePlaying)
+#define THANDOR_IMAGE_0x0041735c ((uintptr_t)&g_ImageObject_0041735C.at_g_SoundQueryVoice)
+#define THANDOR_IMAGE_0x00417360 ((uintptr_t)&g_ImageObject_00417360.at_g_SoundSetVoiceGains)
+#define THANDOR_IMAGE_0x00417364 ((uintptr_t)&g_ImageObject_00417364.at_g_SoundSampleCoefficientBlock)
+#define THANDOR_IMAGE_0x0041a540 ((uintptr_t)&g_ImageObject_0041A540.at_g_NetworkBackendInstanceTable)
+#define THANDOR_IMAGE_0x0041a544 ((uintptr_t)&g_ImageObject_0041A544.at_g_NetworkBackendInstanceCount)
+#define THANDOR_IMAGE_0x0041a548 ((uintptr_t)&g_ImageObject_0041A548.at_g_NetworkBackendSessionContext)
+#define THANDOR_IMAGE_0x0041a54c ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot0)
+#define THANDOR_IMAGE_0x0041a550 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot1)
+#define THANDOR_IMAGE_0x0041a554 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot2)
+#define THANDOR_IMAGE_0x0041a558 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot3)
+#define THANDOR_IMAGE_0x0041a55c ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot4)
+#define THANDOR_IMAGE_0x0041a560 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot5)
+#define THANDOR_IMAGE_0x0041a564 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot6)
+#define THANDOR_IMAGE_0x0041a568 ((uintptr_t)&g_ImageObject_0041A54C.at_g_NetworkBackendSlot7)
+#define THANDOR_IMAGE_0x0041a56c ((uintptr_t)&g_ImageObject_0041A56C.at_g_NetworkLocalEndpoint)
+#define THANDOR_IMAGE_0x0041a750 ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextColorPalette0Argb)
+#define THANDOR_IMAGE_0x0041a754 ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextColorPalette1Argb)
+#define THANDOR_IMAGE_0x0041a758 ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextColorPalette2Argb)
+#define THANDOR_IMAGE_0x0041a75c ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextColorPalette3Argb)
+#define THANDOR_IMAGE_0x0041a760 ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextColorPalette4Argb)
+#define THANDOR_IMAGE_0x0041a764 ((uintptr_t)&g_ImageObject_0041A750.at_g_RichTextInsufficientResourceColorArgb)
+#define THANDOR_IMAGE_0x0041a768 ((uintptr_t)&g_ImageObject_0041A768.at_g_RichTextShadowOffsetPalette0)
+#define THANDOR_IMAGE_0x0041a76c ((uintptr_t)&g_ImageObject_0041A768.at_g_RichTextShadowOffsetPalette1)
+#define THANDOR_IMAGE_0x0041a770 ((uintptr_t)&g_ImageObject_0041A768.at_g_RichTextShadowOffsetPalette2)
+#define THANDOR_IMAGE_0x0041a774 ((uintptr_t)&g_ImageObject_0041A768.at_g_RichTextShadowOffsetPalette3)
+#define THANDOR_IMAGE_0x0041a780 ((uintptr_t)&g_ImageObject_0041A780.at_g_ActiveFontIndex)
+#define THANDOR_IMAGE_0x0041a784 ((uintptr_t)&g_ImageObject_0041A784.at_g_RichTextCurrentColorArgb)
+#define THANDOR_IMAGE_0x0041a788 ((uintptr_t)&g_ImageObject_0041A788.at_g_RichTextCurrentShadowOffset)
+#define THANDOR_IMAGE_0x0041a78c ((uintptr_t)&g_ImageObject_0041A78C.at_g_RichTextSavedColorArgb)
+#define THANDOR_IMAGE_0x0041a790 ((uintptr_t)&g_ImageObject_0041A790.at_g_RichTextSavedShadowOffset)
+#define THANDOR_IMAGE_0x0041a794 ((uintptr_t)&g_ImageObject_0041A794.at_g_TextResourcePageBindings)
+#define THANDOR_IMAGE_0x0041af94 ((uintptr_t)&g_ImageObject_0041AF94.at_g_TextResourceOverrides)
+#define THANDOR_IMAGE_0x0041af98 ((uintptr_t)&g_ImageObject_0041AF98.at_g_FontRuntimeBuffer)
+#define THANDOR_IMAGE_0x0041af9c ((uintptr_t)&g_ImageObject_0041AF9C.at_g_RichTextRuntimeBufferUsedWords)
+#define THANDOR_IMAGE_0x0041afa4 ((uintptr_t)&g_ImageObject_0041AFA4.at_g_EmptyTextResourceUtf16)
+#define THANDOR_IMAGE_0x0041afa8 ((uintptr_t)&g_ImageObject_0041AFA8.at_g_MissingTextResourceFallbackStream)
+#define THANDOR_IMAGE_0x0041afac ((uintptr_t)&g_ImageObject_0041AFAC.at_u_error__TXT2STR__unknown_characte_0041afac)
+#define THANDOR_IMAGE_0x0041b028 ((uintptr_t)&g_ImageObject_0041B028.at_g_FontTextureSources)
+#define THANDOR_IMAGE_0x0041b030 ((uintptr_t)&g_ImageObject_0041B030.at_u_engine_font_gfx_0041b030)
+#define THANDOR_IMAGE_0x0041de80 ((uintptr_t)&g_ImageObject_0041DE80.at_g_PackedLightingLookupTable)
+#define THANDOR_IMAGE_0x0041ee80 ((uintptr_t)&g_ImageObject_0041EE80.at_g_ShadingIntensityScaleMmx)
+#define THANDOR_IMAGE_0x0041f680 ((uintptr_t)&g_ImageObject_0041F680.at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero)
+#define THANDOR_IMAGE_0x0041f688 ((uintptr_t)&g_ImageObject_0041F688.at_g_SoftwareBilinearPackedByteClampMask)
+#define THANDOR_IMAGE_0x0041f690 ((uintptr_t)&g_ImageObject_0041F690.at_g_TerrainOccupancyMmxSignBiasBytes)
+#define THANDOR_IMAGE_0x0041f698 ((uintptr_t)&g_ImageObject_0041F698.at_g_TerrainOccupancyMmxClearBits1And2Mask)
+#define THANDOR_IMAGE_0x0041f6a0 ((uintptr_t)&g_ImageObject_0041F6A0.at_g_TerrainOccupancyMmxAllBitsMask)
+#define THANDOR_IMAGE_0x0041f6a8 ((uintptr_t)&g_ImageObject_0041F6A8.at_g_TerrainOccupancyMmxPackedScale0280)
+#define THANDOR_IMAGE_0x0041f6b0 ((uintptr_t)&g_ImageObject_0041F6B0.at_g_TerrainOccupancyMmxPersistentWeights)
+#define THANDOR_IMAGE_0x0041f6b8 ((uintptr_t)&g_ImageObject_0041F6B8.at_g_TerrainOccupancyMmxCurrentWeights)
+#define THANDOR_IMAGE_0x0041f6c0 ((uintptr_t)&g_ImageObject_0041F6C0.at_g_FieldGridOccupancyMmxHighBitMask)
+#define THANDOR_IMAGE_0x0041f6c8 ((uintptr_t)&g_ImageObject_0041F6C8.at_g_GraphicsShadingMmxPacked3BitPerByteMask)
+#define THANDOR_IMAGE_0x0041f6e0 ((uintptr_t)&g_ImageObject_0041F6E0.at_g_SoftwarePixelMmxConstants)
+#define THANDOR_IMAGE_0x0041f700 ((uintptr_t)&g_ImageObject_0041F700.at_g_VertexColorAlphaPreserveMaskMMX)
+#define THANDOR_IMAGE_0x0041f708 ((uintptr_t)&g_ImageObject_0041F708.at_g_VertexColorRgbHalveMaskMMX)
+#define THANDOR_IMAGE_0x0041f720 ((uintptr_t)&g_ImageObject_0041F720.at_g_UiScalerSecondPixelWeights)
+#define THANDOR_IMAGE_0x0041ff20 ((uintptr_t)&g_ImageObject_0041FF20.at_g_SoftwareBilinearForwardFactors)
+#define THANDOR_IMAGE_0x00420720 ((uintptr_t)&g_ImageObject_00420720.at_g_UiScalerFirstPixelWeights)
+#define THANDOR_IMAGE_0x00420f20 ((uintptr_t)&g_ImageObject_00420F20.at_g_SoftwareBilinearInverseFactors)
+#define THANDOR_IMAGE_0x00421720 ((uintptr_t)&g_ImageObject_00421720.at_g_SoftwareBlendAlphaFactors)
+#define THANDOR_IMAGE_0x00421f20 ((uintptr_t)&g_ImageObject_00421F20.at_g_SoftwareBlendInverseAlphaFactors)
+#define THANDOR_IMAGE_0x00422768 ((uintptr_t)&g_ImageObject_00422768.at_g_GraphicsAdapterFormatScratch0Utf16)
+#define THANDOR_IMAGE_0x00422788 ((uintptr_t)&g_ImageObject_00422768.at_g_GraphicsAdapterFormatScratch1Utf16)
+#define THANDOR_IMAGE_0x004229a0 ((uintptr_t)&g_ImageObject_004229A0.at_g_UiDisplaySettingsRootCallbacks)
+#define THANDOR_IMAGE_0x004229b4 ((uintptr_t)&g_ImageObject_004229B4.at_g_UiDisplaySettingsRootTemplate)
+#define THANDOR_IMAGE_0x00423588 ((uintptr_t)&g_ImageObject_00423588.at_g_UiDisplayModeSelectionActionHandlers20)
+#define THANDOR_IMAGE_0x004235d8 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch0)
+#define THANDOR_IMAGE_0x004235dc ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch1)
+#define THANDOR_IMAGE_0x004235e0 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch2)
+#define THANDOR_IMAGE_0x004235e4 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch3)
+#define THANDOR_IMAGE_0x004235e8 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch4)
+#define THANDOR_IMAGE_0x004235ec ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch5)
+#define THANDOR_IMAGE_0x004235f0 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch6)
+#define THANDOR_IMAGE_0x004235f4 ((uintptr_t)&g_ImageObject_004235D8.at_g_UiDisplayModeDistinctValueScratch7)
+#define THANDOR_IMAGE_0x00424324 ((uintptr_t)&g_ImageObject_00424324.at_g_UiFourValueDialogRootCallbacks)
+#define THANDOR_IMAGE_0x00424338 ((uintptr_t)&g_ImageObject_00424338.at_g_UiFourValueDialogTemplateImage)
+#define THANDOR_IMAGE_0x004246a0 ((uintptr_t)&g_ImageObject_004246A0.at_g_FixedSinBeforeZeroQ28)
+#define THANDOR_IMAGE_0x004346a0 ((uintptr_t)&g_ImageObject_004346A0.at_g_FixedSinQ28)
+#define THANDOR_IMAGE_0x004446a0 ((uintptr_t)&g_ImageObject_004346A0.at_g_FixedCosQ28)
+#define THANDOR_IMAGE_0x00485814 ((uintptr_t)&g_ImageObject_00485814.at_g_TextureDownsampleShift)
+#define THANDOR_IMAGE_0x00485818 ((uintptr_t)&g_ImageObject_00485818.at_g_GraphicsSetViewportAndClearDepth)
+#define THANDOR_IMAGE_0x0048581c ((uintptr_t)&g_ImageObject_0048581C.at_g_GraphicsDrawPrimitiveQueue)
+#define THANDOR_IMAGE_0x00485820 ((uintptr_t)&g_ImageObject_00485820.at_g_GraphicsBeginScene)
+#define THANDOR_IMAGE_0x00485824 ((uintptr_t)&g_ImageObject_00485824.at_g_GraphicsEndScene)
+#define THANDOR_IMAGE_0x00485828 ((uintptr_t)&g_ImageObject_00485828.at_g_GraphicsRebuildAllStagingTextures)
+#define THANDOR_IMAGE_0x0048582c ((uintptr_t)&g_ImageObject_0048582C.at_g_GraphicsTextureSetLoadPackage)
+#define THANDOR_IMAGE_0x00485830 ((uintptr_t)&g_ImageObject_00485830.at_g_GraphicsTextureSetReleasePackage)
+#define THANDOR_IMAGE_0x00485834 ((uintptr_t)&g_ImageObject_00485834.at_g_GraphicsCreateTextureSet)
+#define THANDOR_IMAGE_0x00485838 ((uintptr_t)&g_ImageObject_00485838.at_g_GraphicsDestroyTextureSet)
+#define THANDOR_IMAGE_0x0048583c ((uintptr_t)&g_ImageObject_0048583C.at_g_GraphicsRefreshTextureColor)
+#define THANDOR_IMAGE_0x00485840 ((uintptr_t)&g_ImageObject_00485840.at_g_GraphicsRefreshTextureAlpha)
+#define THANDOR_IMAGE_0x00485844 ((uintptr_t)&g_ImageObject_00485844.at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844)
+#define THANDOR_IMAGE_0x00485848 ((uintptr_t)&g_ImageObject_00485848.at_g_GraphicsOffscreenRenderModelListToTextureSource)
+#define THANDOR_IMAGE_0x0048584c ((uintptr_t)&g_ImageObject_0048584C.at_g_RenderedFrameCountSinceDebugRefresh)
+#define THANDOR_IMAGE_0x00485850 ((uintptr_t)&g_ImageObject_00485850.at_g_PrimitiveDrawCallCount)
+#define THANDOR_IMAGE_0x00485854 ((uintptr_t)&g_ImageObject_00485854.at_g_TextureBindStateChangeCount)
+#define THANDOR_IMAGE_0x00485858 ((uintptr_t)&g_ImageObject_00485858.at_g_TextureDeviceReloadCount)
+#define THANDOR_IMAGE_0x0048585c ((uintptr_t)&g_ImageObject_0048585C.at_g_ViewOriginFixed)
+#define THANDOR_IMAGE_0x00485868 ((uintptr_t)&g_ImageObject_00485868.at_g_ProjectionScaleFixed)
+#define THANDOR_IMAGE_0x0048586c ((uintptr_t)&g_ImageObject_0048586C.at_g_ViewAngle0)
+#define THANDOR_IMAGE_0x00485870 ((uintptr_t)&g_ImageObject_0048586C.at_g_ViewAngle1)
+#define THANDOR_IMAGE_0x00485874 ((uintptr_t)&g_ImageObject_00485874.at_g_ProjectionShift)
+#define THANDOR_IMAGE_0x00485878 ((uintptr_t)&g_ImageObject_00485878.at_g_ProjectionScaleProduct)
+#define THANDOR_IMAGE_0x0048587c ((uintptr_t)&g_ImageObject_0048587C.at_g_ProjectionNumerator)
+#define THANDOR_IMAGE_0x00485884 ((uintptr_t)&g_ImageObject_00485884.at_g_ProjectionCenterFixed)
+#define THANDOR_IMAGE_0x0048588c ((uintptr_t)&g_ImageObject_0048588C.at_g_ActivePrimitiveQueue)
+#define THANDOR_IMAGE_0x00485890 ((uintptr_t)&g_ImageObject_00485890.at_g_ProjectionClipRect)
+#define THANDOR_IMAGE_0x004858a0 ((uintptr_t)&g_ImageObject_004858A0.at_g_ViewProjectionMatrixFixed)
+#define THANDOR_IMAGE_0x004858d0 ((uintptr_t)&g_ImageObject_004858D0.at_g_ViewRotationMatrixFixed)
+#define THANDOR_IMAGE_0x00485900 ((uintptr_t)&g_ImageObject_00485900.at_g_CameraTransformMatrixFixed)
+#define THANDOR_IMAGE_0x00485930 ((uintptr_t)&g_ImageObject_00485930.at_g_ProjectionAngleFactors)
+#define THANDOR_IMAGE_0x00485940 ((uintptr_t)&g_ImageObject_00485940.at_g_AuxiliaryOrientation)
+#define THANDOR_IMAGE_0x00485948 ((uintptr_t)&g_ImageObject_00485948.at_g_AuxiliaryForwardDirectionFixed)
+#define THANDOR_IMAGE_0x00485954 ((uintptr_t)&g_ImageObject_00485954.at_g_AuxiliaryRotationMatrixFixed)
+#define THANDOR_IMAGE_0x00485984 ((uintptr_t)&g_ImageObject_00485984.at_g_FrustumPlaneNormalFixed_0)
+#define THANDOR_IMAGE_0x004859b4 ((uintptr_t)&g_ImageObject_004859B4.at_g_FrustumCornerRayFixed_0)
+#define THANDOR_IMAGE_0x004859e4 ((uintptr_t)&g_ImageObject_004859E4.at_g_SceneBoundsFixed)
+#define THANDOR_IMAGE_0x00485a04 ((uintptr_t)&g_ImageObject_00485A04.at_g_ModelLodDepthThresholdQ8)
+#define THANDOR_IMAGE_0x00485a08 ((uintptr_t)&g_ImageObject_00485A08.at_g_ArmyPreviewViewOriginXQ12)
+#define THANDOR_IMAGE_0x00485a0c ((uintptr_t)&g_ImageObject_00485A08.at_g_ArmyPreviewViewOriginYQ12)
+#define THANDOR_IMAGE_0x00485a10 ((uintptr_t)&g_ImageObject_00485A08.at_g_ArmyPreviewViewOriginZQ12)
+#define THANDOR_IMAGE_0x00485a14 ((uintptr_t)&g_ImageObject_00485A14.at_g_ArmyPreviewProjectionScaleQ12)
+#define THANDOR_IMAGE_0x00485a18 ((uintptr_t)&g_ImageObject_00485A18.at_g_ArmyPreviewViewAngle0)
+#define THANDOR_IMAGE_0x00485a1c ((uintptr_t)&g_ImageObject_00485A18.at_g_ArmyPreviewViewAngle1)
+#define THANDOR_IMAGE_0x00485a20 ((uintptr_t)&g_ImageObject_00485A20.at_g_ArmyPreviewProjectionShift)
+#define THANDOR_IMAGE_0x00485a24 ((uintptr_t)&g_ImageObject_00485A24.at_g_ArmyPreviewAuxiliaryOrientation0)
+#define THANDOR_IMAGE_0x00485a28 ((uintptr_t)&g_ImageObject_00485A24.at_g_ArmyPreviewAuxiliaryOrientation1)
+#define THANDOR_IMAGE_0x00485a2c ((uintptr_t)&g_ImageObject_00485A2C.at_g_ArmyPreviewPrimaryColorArgb)
+#define THANDOR_IMAGE_0x00485a30 ((uintptr_t)&g_ImageObject_00485A30.at_g_ArmyPreviewSecondaryColorArgb)
+#define THANDOR_IMAGE_0x00485a34 ((uintptr_t)&g_ImageObject_00485A34.at_g_ArmyPreviewModelNodePointer)
+#define THANDOR_IMAGE_0x00485a40 ((uintptr_t)&g_ImageObject_00485A40.at_g_PrimitiveRadixBucketWords)
+#define THANDOR_IMAGE_0x00486d90 ((uintptr_t)&g_ImageObject_00486D90.at_g_MovieChromaLumaToArgb)
+#define THANDOR_IMAGE_0x004a6d90 ((uintptr_t)&g_ImageObject_004A6D90.at_g_MovieDeltaRgbHighNibbleMask2Pixels)
+#define THANDOR_IMAGE_0x004a6d98 ((uintptr_t)&g_ImageObject_004A6D98.at_g_ActiveMovie)
+#define THANDOR_IMAGE_0x004a6d9c ((uintptr_t)&g_ImageObject_004A6D9C.at_g_MovieDefaultAudioGainQ15)
+#define THANDOR_IMAGE_0x004a6da0 ((uintptr_t)&g_ImageObject_004A6DA0.at_g_MovieAlternateAudioGainQ15)
+#define THANDOR_IMAGE_0x004a6da4 ((uintptr_t)&g_ImageObject_004A6DA4.at_g_LooseMoviePathPrefix)
+#define THANDOR_IMAGE_0x004a8e70 ((uintptr_t)&g_ImageObject_004A8E70.at_g_FramebufferAccess)
+#define THANDOR_IMAGE_0x004a8e74 ((uintptr_t)&g_ImageObject_004A8E74.at_g_CursorSavedBackground)
+#define THANDOR_IMAGE_0x004a8e78 ((uintptr_t)&g_ImageObject_004A8E78.at_g_CursorCompositeBuffer)
+#define THANDOR_IMAGE_0x004a8e7c ((uintptr_t)&g_ImageObject_004A8E7C.at_g_CursorAlternateSavedBackground)
+#define THANDOR_IMAGE_0x004a8e80 ((uintptr_t)&g_ImageObject_004A8E80.at_g_SoftwarePixelPackTables)
+#define THANDOR_IMAGE_0x004a8e84 ((uintptr_t)&g_ImageObject_004A8E84.at_g_FramebufferRowStrideBytes)
+#define THANDOR_IMAGE_0x004a8e88 ((uintptr_t)&g_ImageObject_004A8E88.at_g_FramebufferWidth)
+#define THANDOR_IMAGE_0x004a8e8c ((uintptr_t)&g_ImageObject_004A8E8C.at_g_FramebufferHeight)
+#define THANDOR_IMAGE_0x004a8e90 ((uintptr_t)&g_ImageObject_004A8E90.at_g_ActiveGraphicsAdapterIndex)
+#define THANDOR_IMAGE_0x004a8e94 ((uintptr_t)&g_ImageObject_004A8E94.at_g_SoftwareColorScaleQ16)
+#define THANDOR_IMAGE_0x004a8e98 ((uintptr_t)&g_ImageObject_004A8E98.at_g_SoftwareColorBiasQ16)
+#define THANDOR_IMAGE_0x004a8e9c ((uintptr_t)&g_ImageObject_004A8E9C.at_g_GraphicsDisplayModes)
+#define THANDOR_IMAGE_0x004a8ea0 ((uintptr_t)&g_ImageObject_004A8EA0.at_g_GraphicsDisplayModeCount)
+#define THANDOR_IMAGE_0x004a8ea4 ((uintptr_t)&g_ImageObject_004A8EA4.at_g_GraphicsAdapters)
+#define THANDOR_IMAGE_0x004a8ea8 ((uintptr_t)&g_ImageObject_004A8EA8.at_g_GraphicsAdapterCount)
+#define THANDOR_IMAGE_0x004a8eac ((uintptr_t)&g_ImageObject_004A8EAC.at_g_SoftwarePixelFormatConfig)
+#define THANDOR_IMAGE_0x004a8ed0 ((uintptr_t)&g_ImageObject_004A8ED0.at_g_GraphicsSetDisplayMode)
+#define THANDOR_IMAGE_0x004a8ed4 ((uintptr_t)&g_ImageObject_004A8ED4.at_g_GraphicsBackendRefreshActiveAdapter)
+#define THANDOR_IMAGE_0x004a8ed8 ((uintptr_t)&g_ImageObject_004A8ED8.at_g_SoftwareFramebufferCreate)
+#define THANDOR_IMAGE_0x004a8edc ((uintptr_t)&g_ImageObject_004A8EDC.at_g_SoftwareFramebufferDestroy)
+#define THANDOR_IMAGE_0x004a8ee0 ((uintptr_t)&g_ImageObject_004A8EE0.at_g_GraphicsFramebufferPresent)
+#define THANDOR_IMAGE_0x004a8ee4 ((uintptr_t)&g_ImageObject_004A8EE4.at_g_GraphicsFramebufferCaptureRegion)
+#define THANDOR_IMAGE_0x004a8ee8 ((uintptr_t)&g_ImageObject_004A8EE8.at_g_SoftwareBuildPixelPackTables)
+#define THANDOR_IMAGE_0x004a8eec ((uintptr_t)&g_ImageObject_004A8EEC.at_g_GraphicsFramebufferBeginAccess)
+#define THANDOR_IMAGE_0x004a8ef0 ((uintptr_t)&g_ImageObject_004A8EF0.at_g_GraphicsFramebufferEndAccess)
+#define THANDOR_IMAGE_0x004a8ef4 ((uintptr_t)&g_ImageObject_004A8EF4.at_g_GraphicsTextureSourceGetLogicalSize)
+#define THANDOR_IMAGE_0x004a8ef8 ((uintptr_t)&g_ImageObject_004A8EF8.at_g_GraphicsTextureSourceTestOpaquePixel)
+#define THANDOR_IMAGE_0x004a8efc ((uintptr_t)&g_ImageObject_004A8EFC.at_g_GraphicsTextureSourceBlitSourceAlpha)
+#define THANDOR_IMAGE_0x004a8f00 ((uintptr_t)&g_ImageObject_004A8F00.at_g_GraphicsTextureSourceBlitTiledSourceAlpha)
+#define THANDOR_IMAGE_0x004a8f04 ((uintptr_t)&g_ImageObject_004A8F04.at_g_GraphicsTextureSourceBlitHalfSourceRgb)
+#define THANDOR_IMAGE_0x004a8f08 ((uintptr_t)&g_ImageObject_004A8F08.at_g_GraphicsTextureSourceBlitTiledHalfSourceRgb)
+#define THANDOR_IMAGE_0x004a8f0c ((uintptr_t)&g_ImageObject_004A8F0C.at_g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha)
+#define THANDOR_IMAGE_0x004a8f10 ((uintptr_t)&g_ImageObject_004A8F10.at_g_GraphicsTextureSourceStretchDirectColorBilinear)
+#define THANDOR_IMAGE_0x004a8f14 ((uintptr_t)&g_ImageObject_004A8F14.at_g_GraphicsTextureSourceBlitSourceAlphaPaletteBank)
+#define THANDOR_IMAGE_0x004a8f18 ((uintptr_t)&g_ImageObject_004A8F18.at_g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+#define THANDOR_IMAGE_0x004a8f1c ((uintptr_t)&g_ImageObject_004A8F1C.at_g_GraphicsTextureSourceBlitSaturatedAddRgb)
+#define THANDOR_IMAGE_0x004a8f20 ((uintptr_t)&g_ImageObject_004A8F20.at_g_GraphicsTextureSourceBlitTiledSaturatedAddRgb)
+#define THANDOR_IMAGE_0x004a8f24 ((uintptr_t)&g_ImageObject_004A8F24.at_g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd)
+#define THANDOR_IMAGE_0x004a8f28 ((uintptr_t)&g_ImageObject_004A8F28.at_g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd)
+#define THANDOR_IMAGE_0x004a8f2c ((uintptr_t)&g_ImageObject_004A8F2C.at_g_GraphicsTextureSourceDecomposeSubresourceRegionsCf)
+#define THANDOR_IMAGE_0x004a8f30 ((uintptr_t)&g_ImageObject_004A8F30.at_g_GraphicsFramebufferFillRectArgb)
+#define THANDOR_IMAGE_0x004a8f34 ((uintptr_t)&g_ImageObject_004A8F34.at_g_GraphicsFramebufferCopyRegionToOrigin)
+#define THANDOR_IMAGE_0x004a8f38 ((uintptr_t)&g_ImageObject_004A8F38.at_g_GraphicsFramebufferCopyOriginToRegion)
+#define THANDOR_IMAGE_0x004a8f3c ((uintptr_t)&g_ImageObject_004A8F3C.at_g_GraphicsTextureSourceLoadPackageAsset)
+#define THANDOR_IMAGE_0x004a8f40 ((uintptr_t)&g_ImageObject_004A8F40.at_g_GraphicsTextureSourceLifecycleCallbacks3)
+#define THANDOR_IMAGE_0x004a8f4c ((uintptr_t)&g_ImageObject_004A8F4C.at_g_GraphicsTextureSourceConvertPaletteEntries)
+#define THANDOR_IMAGE_0x004a8f50 ((uintptr_t)&g_ImageObject_004A8F50.at_g_GraphicsTextureSourceResolveAllocationBase)
+#define THANDOR_IMAGE_0x004a8f54 ((uintptr_t)&g_ImageObject_004A8F54.at_g_GraphicsPaletteAssetLoadPackage)
+#define THANDOR_IMAGE_0x004a8f58 ((uintptr_t)&g_ImageObject_004A8F58.at_g_GraphicsPaletteAssetLifecycleCallbacks3)
+#define THANDOR_IMAGE_0x004a8f64 ((uintptr_t)&g_ImageObject_004A8F64.at_g_GraphicsPaletteAssetValidate)
+#define THANDOR_IMAGE_0x004a8f68 ((uintptr_t)&g_ImageObject_004A8F68.at_g_GraphicsPaletteAssetResolveAllocationBase)
+#define THANDOR_IMAGE_0x004a8f6c ((uintptr_t)&g_ImageObject_004A8F6C.at_g_UnreferencedSoftwareTextUtf16)
+#define THANDOR_IMAGE_0x004ad930 ((uintptr_t)&g_ImageObject_004AD930.at_g_GraphicsPaletteBankSlots)
+#define THANDOR_IMAGE_0x004ae130 ((uintptr_t)&g_ImageObject_004AE130.at_g_GraphicsPaletteRemapBytes)
+#define THANDOR_IMAGE_0x004ae960 ((uintptr_t)&g_ImageObject_004AE960.at_g_UiRuntimeRecordRing)
+#define THANDOR_IMAGE_0x004ae964 ((uintptr_t)&g_ImageObject_004AE964.at_g_UiRuntimeRecordEndpointSlots)
+#define THANDOR_IMAGE_0x004ae968 ((uintptr_t)&g_ImageObject_004AE968.at_g_UiTransferDataBuffer)
+#define THANDOR_IMAGE_0x004ae96c ((uintptr_t)&g_ImageObject_004AE96C.at_g_UiTransferEndpointBuffer)
+#define THANDOR_IMAGE_0x004ae970 ((uintptr_t)&g_ImageObject_004AE970.at_g_UiRuntimeRecordReadIndex)
+#define THANDOR_IMAGE_0x004ae974 ((uintptr_t)&g_ImageObject_004AE974.at_g_UiRuntimeRecordWriteIndex)
+#define THANDOR_IMAGE_0x004ae978 ((uintptr_t)&g_ImageObject_004AE978.at_g_UiTransferUnitCursor)
+#define THANDOR_IMAGE_0x004ae97c ((uintptr_t)&g_ImageObject_004AE97C.at_g_UiTransferSequenceToken)
+#define THANDOR_IMAGE_0x004ae980 ((uintptr_t)&g_ImageObject_004AE980.at_g_UiTransferSenderContext)
+#define THANDOR_IMAGE_0x004ae984 ((uintptr_t)&g_ImageObject_004AE984.at_g_UiRuntimeFrameLock)
+#define THANDOR_IMAGE_0x004ae988 ((uintptr_t)&g_ImageObject_004AE988.at_g_UiRuntimePostUnlockCallback)
+#define THANDOR_IMAGE_0x004ae98c ((uintptr_t)&g_ImageObject_004AE98C.at_g_UiRuntimeRecordRingLock)
+#define THANDOR_IMAGE_0x004ae990 ((uintptr_t)&g_ImageObject_004AE990.at_g_UiTransferMailbox)
+#define THANDOR_IMAGE_0x004ae9a8 ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferRoundKeys16)
+#define THANDOR_IMAGE_0x004ae9d8 ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferRoundKeys16Tail)
+#define THANDOR_IMAGE_0x004ae9ec ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferChunkPacketSequenceToken)
+#define THANDOR_IMAGE_0x004ae9f8 ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferMailboxChunkOffset)
+#define THANDOR_IMAGE_0x004ae9fc ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferMailboxTransferByteCount)
+#define THANDOR_IMAGE_0x004aea00 ((uintptr_t)&g_ImageObject_004AE9A8.at_g_UiTransferChunkPayload)
+#define THANDOR_IMAGE_0x004aeae8 ((uintptr_t)&g_ImageObject_004AEAE8.at_g_UiTransferPingEchoPacket)
+#define THANDOR_IMAGE_0x004aeaec ((uintptr_t)&g_ImageObject_004AEAE8.at_g_UiTransferMailboxReplyPacket10033SequenceToken)
+#define THANDOR_IMAGE_0x004aeaf8 ((uintptr_t)&g_ImageObject_004AEAE8.at_g_UiTransferMailboxReplyPacket10033EchoedTick)
+#define THANDOR_IMAGE_0x004aeb08 ((uintptr_t)&g_ImageObject_004AEB08.at_g_UiTransferMailboxTickCounter)
+#define THANDOR_IMAGE_0x004af1e0 ((uintptr_t)&g_ImageObject_004AF1E0.at_g_UiTooltipState)
+#define THANDOR_IMAGE_0x004af1f0 ((uintptr_t)&g_ImageObject_004AF1F0.at_g_UiPendingFrameTicks)
+#define THANDOR_IMAGE_0x004af1f4 ((uintptr_t)&g_ImageObject_004AF1F4.at_g_UiDirtyRectCount)
+#define THANDOR_IMAGE_0x004af1f8 ((uintptr_t)&g_ImageObject_004AF1F8.at_g_UiDirtyRectEntries)
+#define THANDOR_IMAGE_0x004af1fc ((uintptr_t)&g_ImageObject_004AF1FC.at_g_UiActionQueueUsedBytes)
+#define THANDOR_IMAGE_0x004af200 ((uintptr_t)&g_ImageObject_004AF200.at_g_UiActionQueueEntries)
+#define THANDOR_IMAGE_0x004af204 ((uintptr_t)&g_ImageObject_004AF204.at_g_UiRuntimeInitializationCount)
+#define THANDOR_IMAGE_0x004af208 ((uintptr_t)&g_ImageObject_004AF208.at_g_UiInvalidationSuppressed)
+#define THANDOR_IMAGE_0x004b0a30 ((uintptr_t)&g_ImageObject_004B0A30.at_g_UiActionHandlerPages)
+#define THANDOR_IMAGE_0x004b0e30 ((uintptr_t)&g_ImageObject_004B0E30.at_g_UiRootNode)
+#define THANDOR_IMAGE_0x004b0e34 ((uintptr_t)&g_ImageObject_004B0E34.at_g_UiWindowTextureSource)
+#define THANDOR_IMAGE_0x004b0e38 ((uintptr_t)&g_ImageObject_004B0E38.at_g_UiWindowClassTextureSource)
+#define THANDOR_IMAGE_0x004b0e3c ((uintptr_t)&g_ImageObject_004B0E3C.at_g_UiPointerCaptureTarget)
+#define THANDOR_IMAGE_0x004b0e40 ((uintptr_t)&g_ImageObject_004B0E40.at_g_UiKeyboardFocusNode)
+#define THANDOR_IMAGE_0x004b0e44 ((uintptr_t)&g_ImageObject_004B0E44.at_g_UiSoundGainQ15)
+#define THANDOR_IMAGE_0x004b0e48 ((uintptr_t)&g_ImageObject_004B0E48.at_g_UiTooltipDelayFrames)
+#define THANDOR_IMAGE_0x004b0e4c ((uintptr_t)&g_ImageObject_004B0E4C.at_g_UiTooltipTextStyle)
+#define THANDOR_IMAGE_0x004b0e50 ((uintptr_t)&g_ImageObject_004B0E50.at_g_UiScrollWheelDefaultStep)
+#define THANDOR_IMAGE_0x004b0e54 ((uintptr_t)&g_ImageObject_004B0E54.at_g_UiScrollWheelListStep)
+#define THANDOR_IMAGE_0x004b0e58 ((uintptr_t)&g_ImageObject_004B0E58.at_g_UiRangeSliderDragScale)
+#define THANDOR_IMAGE_0x004b0e5c ((uintptr_t)&g_ImageObject_004B0E5C.at_g_UiTimedListActionDelayFrames)
+#define THANDOR_IMAGE_0x004b0e60 ((uintptr_t)&g_ImageObject_004B0E60.at_g_UiListActivationPulseFrames)
+#define THANDOR_IMAGE_0x004b0e64 ((uintptr_t)&g_ImageObject_004B0E64.at_g_UiResizableWindowTitleTextTopOffset)
+#define THANDOR_IMAGE_0x004b0e68 ((uintptr_t)&g_ImageObject_004B0E68.at_g_UiResizableWindowTitleTextStyle)
+#define THANDOR_IMAGE_0x004b0e6c ((uintptr_t)&g_ImageObject_004B0E6C.at_g_UiWindowMoveHandleWidth)
+#define THANDOR_IMAGE_0x004b0e70 ((uintptr_t)&g_ImageObject_004B0E70.at_g_UiWindowResizeBorderThickness)
+#define THANDOR_IMAGE_0x004b0e74 ((uintptr_t)&g_ImageObject_004B0E74.at_g_UiTextStyleSelected)
+#define THANDOR_IMAGE_0x004b0e78 ((uintptr_t)&g_ImageObject_004B0E78.at_g_UiTextStyleNormal)
+#define THANDOR_IMAGE_0x004b0e7c ((uintptr_t)&g_ImageObject_004B0E7C.at_g_UiTextStyleDisabled)
+#define THANDOR_IMAGE_0x004b0e80 ((uintptr_t)&g_ImageObject_004B0E80.at_g_UiTextStyleAlternate)
+#define THANDOR_IMAGE_0x004b0e88 ((uintptr_t)&g_ImageObject_004B0E88.at_g_UiWindowTitleTextStyle)
+#define THANDOR_IMAGE_0x004b0e8c ((uintptr_t)&g_ImageObject_004B0E8C.at_g_UiWindowFrameInset)
+#define THANDOR_IMAGE_0x004b0e90 ((uintptr_t)&g_ImageObject_004B0E90.at_g_UiListTextStyle)
+#define THANDOR_IMAGE_0x004b0e98 ((uintptr_t)&g_ImageObject_004B0E98.at_g_UiTextEditActiveTextStyle)
+#define THANDOR_IMAGE_0x004b0e9c ((uintptr_t)&g_ImageObject_004B0E9C.at_g_UiTextEditInactiveTextStyle)
+#define THANDOR_IMAGE_0x004b0ea0 ((uintptr_t)&g_ImageObject_004B0EA0.at_g_UiTextEditDisabledTextStyle)
+#define THANDOR_IMAGE_0x004b0ea4 ((uintptr_t)&g_ImageObject_004B0EA4.at_g_UiTextEditCaretBlinkPhaseStep)
+#define THANDOR_IMAGE_0x004b0ea8 ((uintptr_t)&g_ImageObject_004B0EA8.at_g_UiHorizontalGaugeLabelTopInset)
+#define THANDOR_IMAGE_0x004b0eac ((uintptr_t)&g_ImageObject_004B0EAC.at_g_UiHorizontalGaugeLabelTextStyle)
+#define THANDOR_IMAGE_0x004b0eb0 ((uintptr_t)&g_ImageObject_004B0EB0.at_g_UiRootStackActionHandlerPage)
+#define THANDOR_IMAGE_0x004b0eb8 ((uintptr_t)&g_ImageObject_004B0EB8.at_g_UiWindowClassTexturePathUtf16)
+#define THANDOR_IMAGE_0x004b0ee0 ((uintptr_t)&g_ImageObject_004B0EE0.at_g_UiWindowClassTextPathUtf16)
+#define THANDOR_IMAGE_0x004b0f06 ((uintptr_t)&g_ImageObject_004B0F06.at_g_UiWindowTexturePathUtf16)
+#define THANDOR_IMAGE_0x004b0f24 ((uintptr_t)&g_ImageObject_004B0F24.at_g_UiPointerCaptureButton)
+#define THANDOR_IMAGE_0x004b0f28 ((uintptr_t)&g_ImageObject_004B0F28.at_g_UiImageControlHoverTarget)
+#define THANDOR_IMAGE_0x004b15d0 ((uintptr_t)&g_ImageObject_004B15D0.at_g_UiSpriteButtonControlVtable)
+#define THANDOR_IMAGE_0x004b3c68 ((uintptr_t)&g_ImageObject_004B3C68.at_g_UiWindowPercentTextUtf16)
+#define THANDOR_IMAGE_0x004b7920 ((uintptr_t)&g_ImageObject_004B7920.at_g_UiScrollableControlVtable)
+#define THANDOR_IMAGE_0x004b9e40 ((uintptr_t)&g_ImageObject_004B9E40.at_g_UiTextListControlVtable)
+#define THANDOR_IMAGE_0x004ba590 ((uintptr_t)&g_ImageObject_004BA590.at_g_UiListControlVtable)
+#define THANDOR_IMAGE_0x004ba5d8 ((uintptr_t)&g_ImageObject_004BA5D8.at_g_UiPointerListExpandedLeftTextUtf16)
+#define THANDOR_IMAGE_0x004ba9d8 ((uintptr_t)&g_ImageObject_004BA9D8.at_g_UiPointerListExpandedRightTextUtf16)
+#define THANDOR_IMAGE_0x004bb990 ((uintptr_t)&g_ImageObject_004BB990.at_g_UiTimedListControlVtable)
+#define THANDOR_IMAGE_0x004bcf20 ((uintptr_t)&g_ImageObject_004BCF20.at_g_GraphicsDirectionInverseTransform)
+#define THANDOR_IMAGE_0x004bcf50 ((uintptr_t)&g_ImageObject_004BCF50.at_g_GraphicsDirectionWorld)
+#define THANDOR_IMAGE_0x004bcf54 ((uintptr_t)&g_ImageObject_004BCF50 + 0x4)
+#define THANDOR_IMAGE_0x004bcf58 ((uintptr_t)&g_ImageObject_004BCF50 + 0x8)
+#define THANDOR_IMAGE_0x004bcf5c ((uintptr_t)&g_ImageObject_004BCF5C.at_g_GraphicsDirectionLocal)
+#define THANDOR_IMAGE_0x004bcf68 ((uintptr_t)&g_ImageObject_004BCF68.at_g_GraphicsIntensityClampTableBase)
+#define THANDOR_IMAGE_0x004bd2e0 ((uintptr_t)&g_ImageObject_004BD2E0.at_g_ModelBoundsMinimumX)
+#define THANDOR_IMAGE_0x004bd2e4 ((uintptr_t)&g_ImageObject_004BD2E4.at_g_ModelBoundsMaximumX)
+#define THANDOR_IMAGE_0x004bd2e8 ((uintptr_t)&g_ImageObject_004BD2E8.at_g_ModelBoundsMinimumY)
+#define THANDOR_IMAGE_0x004bd2ec ((uintptr_t)&g_ImageObject_004BD2EC.at_g_ModelBoundsMaximumY)
+#define THANDOR_IMAGE_0x004bd2f0 ((uintptr_t)&g_ImageObject_004BD2F0.at_g_ModelBoundsMinimumZ)
+#define THANDOR_IMAGE_0x004bd2f4 ((uintptr_t)&g_ImageObject_004BD2F4.at_g_ModelBoundsMaximumZ)
+#define THANDOR_IMAGE_0x004bd2f8 ((uintptr_t)&g_ImageObject_004BD2F8.at_g_ModelBoundsTransformedPointX)
+#define THANDOR_IMAGE_0x004bd2fc ((uintptr_t)&g_ImageObject_004BD2F8.at_g_ModelBoundsTransformedPointY)
+#define THANDOR_IMAGE_0x004bd300 ((uintptr_t)&g_ImageObject_004BD2F8.at_g_ModelBoundsTransformedPointZ)
+#define THANDOR_IMAGE_0x004bd450 ((uintptr_t)&g_ImageObject_004BD450.at_g_ModelViewCompositeTransform)
+#define THANDOR_IMAGE_0x004bd480 ((uintptr_t)&g_ImageObject_004BD480.at_g_ModelViewDirectionLocal)
+#define THANDOR_IMAGE_0x004bd48c ((uintptr_t)&g_ImageObject_004BD48C.at_g_ModelViewDirectionWorld)
+#define THANDOR_IMAGE_0x004bd498 ((uintptr_t)&g_ImageObject_004BD498.at_g_ModelAuxiliaryForwardDirectionLocal)
+#define THANDOR_IMAGE_0x004bd890 ((uintptr_t)&g_ImageObject_004BD890.at_g_ArmyPlacementContactKindDispatchTable)
+#define THANDOR_IMAGE_0x004bd8b0 ((uintptr_t)&g_ImageObject_004BD8B0.at_g_ModelCullViewRelativeX)
+#define THANDOR_IMAGE_0x004bd8b4 ((uintptr_t)&g_ImageObject_004BD8B0.at_g_ModelCullViewRelativeY)
+#define THANDOR_IMAGE_0x004bd8b8 ((uintptr_t)&g_ImageObject_004BD8B0.at_g_ModelCullViewRelativeZ)
+#define THANDOR_IMAGE_0x004bd8c8 ((uintptr_t)&g_ImageObject_004BD8C8.at_g_SpriteAssetRegistryHead)
+#define THANDOR_IMAGE_0x004bea70 ((uintptr_t)&g_ImageObject_004BEA70.at_g_ModelTransformScratchMatrix)
+#define THANDOR_IMAGE_0x004bea94 ((uintptr_t)&g_ImageObject_004BEA70 + 0x24)
+#define THANDOR_IMAGE_0x004bea98 ((uintptr_t)&g_ImageObject_004BEA70 + 0x28)
+#define THANDOR_IMAGE_0x004bea9c ((uintptr_t)&g_ImageObject_004BEA70 + 0x2C)
+#define THANDOR_IMAGE_0x004beaa0 ((uintptr_t)&g_ImageObject_004BEAA0.at_g_FixedTransformInputRotationScratch)
+#define THANDOR_IMAGE_0x004bead0 ((uintptr_t)&g_ImageObject_004BEAD0.at_g_FixedTransformComposedRotationScratch)
+#define THANDOR_IMAGE_0x004beb00 ((uintptr_t)&g_ImageObject_004BEB00.at_g_ModelTransformInputX)
+#define THANDOR_IMAGE_0x004beb04 ((uintptr_t)&g_ImageObject_004BEB00.at_g_ModelTransformInputY)
+#define THANDOR_IMAGE_0x004beb08 ((uintptr_t)&g_ImageObject_004BEB00.at_g_ModelTransformInputZ)
+#define THANDOR_IMAGE_0x004beb0c ((uintptr_t)&g_ImageObject_004BEB0C.at_g_ModelTransformOutputX)
+#define THANDOR_IMAGE_0x004beb10 ((uintptr_t)&g_ImageObject_004BEB0C.at_g_ModelTransformOutputY)
+#define THANDOR_IMAGE_0x004beb14 ((uintptr_t)&g_ImageObject_004BEB0C.at_g_ModelTransformOutputZ)
+#define THANDOR_IMAGE_0x004bed50 ((uintptr_t)&g_ImageObject_004BED50.at_g_GraphicsShadingRuntimeRecords)
+#define THANDOR_IMAGE_0x004c2d50 ((uintptr_t)&g_ImageObject_004C2D50.at_g_GraphicsShadingCompactRecords)
+#define THANDOR_IMAGE_0x004c6d50 ((uintptr_t)&g_ImageObject_004C6D50.at_g_GraphicsShadingCompactRecordCount)
+#define THANDOR_IMAGE_0x004c6d54 ((uintptr_t)&g_ImageObject_004C6D54.at_g_GraphicsShadingNearbyRecords)
+#define THANDOR_IMAGE_0x004cad54 ((uintptr_t)&g_ImageObject_004CAD54.at_g_GraphicsShadingNearbyRecordCount)
+#define THANDOR_IMAGE_0x004cad60 ((uintptr_t)&g_ImageObject_004CAD60.at_g_ModelDistanceAttenuationMmxNegativeRows)
+#define THANDOR_IMAGE_0x004cb1a0 ((uintptr_t)&g_ImageObject_004CB1A0.at_g_ModelDistanceAttenuationMmx)
+#define THANDOR_IMAGE_0x004cc2b0 ((uintptr_t)&g_ImageObject_004CC2B0.at_g_ModelLightingScaleMmxMultiplierTable)
+#define THANDOR_IMAGE_0x004cc6f8 ((uintptr_t)&g_ImageObject_004CC6F8.at_g_ModelLightingVertexToLightVectorScratch)
+#define THANDOR_IMAGE_0x004cc704 ((uintptr_t)&g_ImageObject_004CC704.at_g_ModelLightingTransformedSurfaceNormalScratch)
+#define THANDOR_IMAGE_0x004cce00 ((uintptr_t)&g_ImageObject_004CCE00.at_g_GraphicsShadingTextureDimension)
+#define THANDOR_IMAGE_0x004cce04 ((uintptr_t)&g_ImageObject_004CCE04.at_g_GraphicsShadingGridHalfSize)
+#define THANDOR_IMAGE_0x004cce08 ((uintptr_t)&g_ImageObject_004CCE08.at_g_GraphicsShadingGeneratedTexturePixelCursor)
+#define THANDOR_IMAGE_0x004cce0c ((uintptr_t)&g_ImageObject_004CCE0C.at_g_GraphicsShadingGeneratedTextureTileX)
+#define THANDOR_IMAGE_0x004cce10 ((uintptr_t)&g_ImageObject_004CCE0C.at_g_GraphicsShadingGeneratedTextureTileY)
+#define THANDOR_IMAGE_0x004cce14 ((uintptr_t)&g_ImageObject_004CCE14.at_g_GraphicsShadingGeneratedTextureSubresourceIndex)
+#define THANDOR_IMAGE_0x004cce18 ((uintptr_t)&g_ImageObject_004CCE18.at_g_GraphicsShadingSubresourceCount)
+#define THANDOR_IMAGE_0x004cce1c ((uintptr_t)&g_ImageObject_004CCE1C.at_g_GraphicsShadingGeneratedTextureTileXQ20)
+#define THANDOR_IMAGE_0x004cce20 ((uintptr_t)&g_ImageObject_004CCE1C.at_g_GraphicsShadingGeneratedTextureTileYQ20)
+#define THANDOR_IMAGE_0x004cce24 ((uintptr_t)&g_ImageObject_004CCE24.at_g_GraphicsShadingGridStepQ20)
+#define THANDOR_IMAGE_0x004cce28 ((uintptr_t)&g_ImageObject_004CCE28.at_g_GraphicsShadingGridStepQ20Current)
+#define THANDOR_IMAGE_0x004cce2c ((uintptr_t)&g_ImageObject_004CCE2C.at_g_GraphicsShadingGeneratedAsset)
+#define THANDOR_IMAGE_0x004cce30 ((uintptr_t)&g_ImageObject_004CCE30.at_g_GraphicsShadingGridScratch)
+#define THANDOR_IMAGE_0x004cce34 ((uintptr_t)&g_ImageObject_004CCE34.at_g_GraphicsShadingGridScratchInterior)
+#define THANDOR_IMAGE_0x004cce38 ((uintptr_t)&g_ImageObject_004CCE38.at_g_GraphicsShadingTextureSet)
+#define THANDOR_IMAGE_0x004cce3c ((uintptr_t)&g_ImageObject_004CCE3C.at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount)
+#define THANDOR_IMAGE_0x004cce40 ((uintptr_t)&g_ImageObject_004CCE40.at_g_GraphicsShadingPositiveGridOriginQ12)
+#define THANDOR_IMAGE_0x004cce44 ((uintptr_t)&g_ImageObject_004CCE44.at_g_GraphicsShadingNegativeGridOriginQ12)
+#define THANDOR_IMAGE_0x004cce48 ((uintptr_t)&g_ImageObject_004CCE48.at_g_GeneratedTextureScratchRuntime)
+#define THANDOR_IMAGE_0x004d0a00 ((uintptr_t)&g_ImageObject_004D0A00.at_g_PrimitiveQueueStorage)
+#define THANDOR_IMAGE_0x004d0a04 ((uintptr_t)&g_ImageObject_004D0A04.at_g_PrimitiveQueuePoolCapacity)
+#define THANDOR_IMAGE_0x004d11c0 ((uintptr_t)&g_ImageObject_004D11C0.at_g_SoftwareRasterScanState)
+#define THANDOR_IMAGE_0x004d1234 ((uintptr_t)&g_ImageObject_004D1234.at_g_SoftwareDepthRowStrideBytes)
+#define THANDOR_IMAGE_0x004d1238 ((uintptr_t)&g_ImageObject_004D1238.at_g_SoftwareDepthBuffer)
+#define THANDOR_IMAGE_0x004d123c ((uintptr_t)&g_ImageObject_004D123C.at_g_SoftwareAuxiliaryTargetBase)
+#define THANDOR_IMAGE_0x004d1240 ((uintptr_t)&g_ImageObject_004D1240.at_g_SoftwareDepthEpoch)
+#define THANDOR_IMAGE_0x004d1244 ((uintptr_t)&g_ImageObject_004D1244.at_g_SoftwareChainedSetDisplayMode)
+#define THANDOR_IMAGE_0x004d1248 ((uintptr_t)&g_ImageObject_004D1248.at_g_SoftwareDrawQueue)
+#define THANDOR_IMAGE_0x004d1260 ((uintptr_t)&g_ImageObject_004D1260.at_g_SoftwareRasterHandlers16Bit)
+#define THANDOR_IMAGE_0x004d1360 ((uintptr_t)&g_ImageObject_004D1360.at_g_SoftwareRasterHandlersNon16Bit)
+#define THANDOR_IMAGE_0x004d1460 ((uintptr_t)&g_ImageObject_004D1460.at_g_SoftwareRasterHandlersAuxiliary)
+#define THANDOR_IMAGE_0x004fea30 ((uintptr_t)&g_ImageObject_004FEA30.at_g_FieldGridInterpolationCallbacks5)
+#define THANDOR_IMAGE_0x004ffc80 ((uintptr_t)&g_ImageObject_004FFC80.at_g_TerrainProjectedRowSpans)
+#define THANDOR_IMAGE_0x00501190 ((uintptr_t)&g_ImageObject_00501190.at_g_TerrainLightingColorRampArgb256)
+#define THANDOR_IMAGE_0x00501590 ((uintptr_t)&g_ImageObject_00501590.at_g_TerrainDirectionalLightColorLut)
+#define THANDOR_IMAGE_0x00501994 ((uintptr_t)&g_ImageObject_00501994.at_g_TerrainDirectionalLightSecondaryColor)
+#define THANDOR_IMAGE_0x00501998 ((uintptr_t)&g_ImageObject_00501998.at_g_TerrainLightDirectionX)
+#define THANDOR_IMAGE_0x0050199c ((uintptr_t)&g_ImageObject_00501998.at_g_TerrainLightDirectionY)
+#define THANDOR_IMAGE_0x005019a0 ((uintptr_t)&g_ImageObject_00501998.at_g_TerrainLightDirectionZ)
+#define THANDOR_IMAGE_0x005019a4 ((uintptr_t)&g_ImageObject_005019A4.at_g_TerrainByteClampLookup)
+#define THANDOR_IMAGE_0x005019a8 ((uintptr_t)&g_ImageObject_005019A8.at_g_TerrainDirectionRecordTable256)
+#define THANDOR_IMAGE_0x005039dc ((uintptr_t)&g_ImageObject_005039DC.at_g_TerrainMaterialTextureSets)
+#define THANDOR_IMAGE_0x00503a74 ((uintptr_t)&g_ImageObject_00503A74.at_g_TerrainPrimaryTextureSet)
+#define THANDOR_IMAGE_0x00503a78 ((uintptr_t)&g_ImageObject_00503A78.at_g_TerrainSoilPacketTablePayload)
+#define THANDOR_IMAGE_0x00503a7c ((uintptr_t)&g_ImageObject_00503A7C.at_g_TerrainSurfacePacketTablePayload)
+#define THANDOR_IMAGE_0x00503a80 ((uintptr_t)&g_ImageObject_00503A80.at_g_TerrainSecondaryPalette)
+#define THANDOR_IMAGE_0x00503a84 ((uintptr_t)&g_ImageObject_00503A84.at_g_TerrainPrimaryPalette)
+#define THANDOR_IMAGE_0x00503a88 ((uintptr_t)&g_ImageObject_00503A88.at_g_UiCommandModeGColorVariantFlags)
+#define THANDOR_IMAGE_0x00503a8c ((uintptr_t)&g_ImageObject_00503A8C.at_g_UiCommandModeGColorVariantLimit)
+#define THANDOR_IMAGE_0x00503a90 ((uintptr_t)&g_ImageObject_00503A90.at_g_TerrainMaterialTextureSuffixLettersUtf16AtoZ)
+#define THANDOR_IMAGE_0x00503af8 ((uintptr_t)&g_ImageObject_00503AF8.at_g_TerrainHeightBandMaximumDelta)
+#define THANDOR_IMAGE_0x00503afc ((uintptr_t)&g_ImageObject_00503AFC.at_g_TerrainHeightBandMinimumDelta)
+#define THANDOR_IMAGE_0x00503b00 ((uintptr_t)&g_ImageObject_00503B00.at_g_TerrainAuxHeightMinimum)
+#define THANDOR_IMAGE_0x00503b04 ((uintptr_t)&g_ImageObject_00503B04.at_g_TerrainUnreferencedValue00503B04)
+#define THANDOR_IMAGE_0x00505fa0 ((uintptr_t)&g_ImageObject_00505FA0.at_g_TerrainHeightDeltaScaleByStepQ12)
+#define THANDOR_IMAGE_0x005063a0 ((uintptr_t)&g_ImageObject_005063A0.at_g_TerrainScanRowStrideBytes)
+#define THANDOR_IMAGE_0x005063a4 ((uintptr_t)&g_ImageObject_005063A4.at_g_TerrainScanStepLimit)
+#define THANDOR_IMAGE_0x005063a8 ((uintptr_t)&g_ImageObject_005063A8.at_g_TerrainScanSharedSelectorValue)
+#define THANDOR_IMAGE_0x005063ac ((uintptr_t)&g_ImageObject_005063AC.at_g_TerrainScanReferenceHeight)
+#define THANDOR_IMAGE_0x0050a350 ((uintptr_t)&g_ImageObject_0050A350.at_g_GraphicsTransformScratchMatrix3x4)
+#define THANDOR_IMAGE_0x0050a380 ((uintptr_t)&g_ImageObject_0050A380.at_g_GraphicsTransformInputScratchVec3)
+#define THANDOR_IMAGE_0x0050a3b0 ((uintptr_t)&g_ImageObject_0050A3B0.at_g_GraphicsTransformOutputScratchVec3)
+#define THANDOR_IMAGE_0x0050a3e0 ((uintptr_t)&g_ImageObject_0050A3E0.at_g_GraphicsProjectionScratchVec3)
+#define THANDOR_IMAGE_0x0050a3f0 ((uintptr_t)&g_ImageObject_0050A3F0.at_g_ModelProjectedBoundsCornerScratch8)
+#define THANDOR_IMAGE_0x0050ae60 ((uintptr_t)&g_ImageObject_0050AE60.at_g_ModelRaycastMaximumDistance)
+#define THANDOR_IMAGE_0x0050ae64 ((uintptr_t)&g_ImageObject_0050AE64.at_g_ModelRaycastOriginX)
+#define THANDOR_IMAGE_0x0050ae68 ((uintptr_t)&g_ImageObject_0050AE64.at_g_ModelRaycastOriginY)
+#define THANDOR_IMAGE_0x0050ae6c ((uintptr_t)&g_ImageObject_0050AE64.at_g_ModelRaycastOriginZ)
+#define THANDOR_IMAGE_0x0050ae70 ((uintptr_t)&g_ImageObject_0050AE70.at_g_ModelRaycastLocalOriginX)
+#define THANDOR_IMAGE_0x0050ae74 ((uintptr_t)&g_ImageObject_0050AE70.at_g_ModelRaycastLocalOriginY)
+#define THANDOR_IMAGE_0x0050ae78 ((uintptr_t)&g_ImageObject_0050AE70.at_g_ModelRaycastLocalOriginZ)
+#define THANDOR_IMAGE_0x0050ae7c ((uintptr_t)&g_ImageObject_0050AE7C.at_g_ModelRaycastWorldDirectionXQ28)
+#define THANDOR_IMAGE_0x0050ae80 ((uintptr_t)&g_ImageObject_0050AE7C.at_g_ModelRaycastWorldDirectionYQ28)
+#define THANDOR_IMAGE_0x0050ae84 ((uintptr_t)&g_ImageObject_0050AE7C.at_g_ModelRaycastWorldDirectionZQ28)
+#define THANDOR_IMAGE_0x0050ae88 ((uintptr_t)&g_ImageObject_0050AE88.at_g_ModelRaycastLocalDirectionXQ28)
+#define THANDOR_IMAGE_0x0050ae8c ((uintptr_t)&g_ImageObject_0050AE88.at_g_ModelRaycastLocalDirectionYQ28)
+#define THANDOR_IMAGE_0x0050ae90 ((uintptr_t)&g_ImageObject_0050AE88.at_g_ModelRaycastLocalDirectionZQ28)
+#define THANDOR_IMAGE_0x0050b520 ((uintptr_t)&g_ImageObject_0050B520.at_g_SpatialSoundListenerTransform)
+#define THANDOR_IMAGE_0x0050b550 ((uintptr_t)&g_ImageObject_0050B550.at_g_SpatialSoundListenerRotation)
+#define THANDOR_IMAGE_0x0050b574 ((uintptr_t)&g_ImageObject_0050B550 + 0x24)
+#define THANDOR_IMAGE_0x0050b578 ((uintptr_t)&g_ImageObject_0050B550 + 0x28)
+#define THANDOR_IMAGE_0x0050b57c ((uintptr_t)&g_ImageObject_0050B550 + 0x2C)
+#define THANDOR_IMAGE_0x0050b580 ((uintptr_t)&g_ImageObject_0050B580.at_g_SpatialSoundListenerWorldToLocal)
+#define THANDOR_IMAGE_0x0050b584 ((uintptr_t)&g_ImageObject_0050B580 + 0x4)
+#define THANDOR_IMAGE_0x0050b588 ((uintptr_t)&g_ImageObject_0050B580 + 0x8)
+#define THANDOR_IMAGE_0x0050b58c ((uintptr_t)&g_ImageObject_0050B580 + 0xC)
+#define THANDOR_IMAGE_0x0050b590 ((uintptr_t)&g_ImageObject_0050B580 + 0x10)
+#define THANDOR_IMAGE_0x0050b594 ((uintptr_t)&g_ImageObject_0050B580 + 0x14)
+#define THANDOR_IMAGE_0x0050b598 ((uintptr_t)&g_ImageObject_0050B580 + 0x18)
+#define THANDOR_IMAGE_0x0050b59c ((uintptr_t)&g_ImageObject_0050B580 + 0x1C)
+#define THANDOR_IMAGE_0x0050b5a0 ((uintptr_t)&g_ImageObject_0050B580 + 0x20)
+#define THANDOR_IMAGE_0x0050b5a4 ((uintptr_t)&g_ImageObject_0050B580 + 0x24)
+#define THANDOR_IMAGE_0x0050b5a8 ((uintptr_t)&g_ImageObject_0050B580 + 0x28)
+#define THANDOR_IMAGE_0x0050b5ac ((uintptr_t)&g_ImageObject_0050B580 + 0x2C)
+#define THANDOR_IMAGE_0x0050b5b0 ((uintptr_t)&g_ImageObject_0050B5B0.at_g_SpatialSoundRelativeX)
+#define THANDOR_IMAGE_0x0050b5b4 ((uintptr_t)&g_ImageObject_0050B5B0.at_g_SpatialSoundRelativeY)
+#define THANDOR_IMAGE_0x0050b5b8 ((uintptr_t)&g_ImageObject_0050B5B0.at_g_SpatialSoundRelativeZ)
+#define THANDOR_IMAGE_0x0050b5bc ((uintptr_t)&g_ImageObject_0050B5BC.at_g_SoundEffectsGainQ15)
+#define THANDOR_IMAGE_0x0050b5c0 ((uintptr_t)&g_ImageObject_0050B5C0.at_g_ReverseStereoMask)
+#define THANDOR_IMAGE_0x0050b5c4 ((uintptr_t)&g_ImageObject_0050B5C4.at_g_SpatialSoundSlots)
+#define THANDOR_IMAGE_0x0050bade ((uintptr_t)&g_ImageObject_0050BADE.at_g_WorldMotionTargetDistanceConvergenceStepQ12)
+#define THANDOR_IMAGE_0x0050bae2 ((uintptr_t)&g_ImageObject_0050BAE2.at_g_WorldMotionPositionMagnitudeInputScaleQ12)
+#define THANDOR_IMAGE_0x0050bae6 ((uintptr_t)&g_ImageObject_0050BAE6.at_k_CameraScreenDeltaDistanceScaleQ16)
+#define THANDOR_IMAGE_0x0050baea ((uintptr_t)&g_ImageObject_0050BAEA.at_g_WorldMotionDistanceInputScaleQ12)
+#define THANDOR_IMAGE_0x0050baee ((uintptr_t)&g_ImageObject_0050BAEE.at_g_WorldMotionHeadingInputScale)
+#define THANDOR_IMAGE_0x0050baf2 ((uintptr_t)&g_ImageObject_0050BAF2.at_g_WorldMotionPitchInputScale)
+#define THANDOR_IMAGE_0x0050baf6 ((uintptr_t)&g_ImageObject_0050BAF6.at_g_WorldMotionPointerWheelInputScale)
+#define THANDOR_IMAGE_0x0050bafa ((uintptr_t)&g_ImageObject_0050BAFA.at_g_WorldMotionAlternateMinimumPitchAngle)
+#define THANDOR_IMAGE_0x0050bafe ((uintptr_t)&g_ImageObject_0050BAFE.at_g_WorldMotionAlternateMaximumPitchAngle)
+#define THANDOR_IMAGE_0x0050bb02 ((uintptr_t)&g_ImageObject_0050BB02.at_g_WorldMotionAlternateMinimumDistanceQ12)
+#define THANDOR_IMAGE_0x0050bb06 ((uintptr_t)&g_ImageObject_0050BB06.at_g_WorldMotionAlternateMaximumDistanceQ12)
+#define THANDOR_IMAGE_0x0050bb37 ((uintptr_t)&g_ImageObject_0050BB37.at_g_FrontendModelPointerContextVtable)
+#define THANDOR_IMAGE_0x0050bb5f ((uintptr_t)&g_ImageObject_0050BB37 + 0x28)
+#define THANDOR_IMAGE_0x0050d930 ((uintptr_t)&g_ImageObject_0050D930.at_g_TechnologyAsset)
+#define THANDOR_IMAGE_0x0050d934 ((uintptr_t)&g_ImageObject_0050D934.at_g_LevelCameraBookmark1PositionXQ12)
+#define THANDOR_IMAGE_0x0050d938 ((uintptr_t)&g_ImageObject_0050D934.at_g_LevelCameraBookmark1PositionYQ12)
+#define THANDOR_IMAGE_0x0050d93c ((uintptr_t)&g_ImageObject_0050D934.at_g_LevelCameraBookmark1PositionZQ12)
+#define THANDOR_IMAGE_0x0050d940 ((uintptr_t)&g_ImageObject_0050D940.at_g_LevelCameraBookmark1PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d944 ((uintptr_t)&g_ImageObject_0050D944.at_g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d948 ((uintptr_t)&g_ImageObject_0050D948.at_g_LevelCameraBookmark2PositionXQ12)
+#define THANDOR_IMAGE_0x0050d94c ((uintptr_t)&g_ImageObject_0050D948.at_g_LevelCameraBookmark2PositionYQ12)
+#define THANDOR_IMAGE_0x0050d950 ((uintptr_t)&g_ImageObject_0050D948.at_g_LevelCameraBookmark2PositionZQ12)
+#define THANDOR_IMAGE_0x0050d954 ((uintptr_t)&g_ImageObject_0050D954.at_g_LevelCameraBookmark2PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d958 ((uintptr_t)&g_ImageObject_0050D958.at_g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d95c ((uintptr_t)&g_ImageObject_0050D95C.at_g_LevelCameraBookmark3PositionXQ12)
+#define THANDOR_IMAGE_0x0050d960 ((uintptr_t)&g_ImageObject_0050D95C.at_g_LevelCameraBookmark3PositionYQ12)
+#define THANDOR_IMAGE_0x0050d964 ((uintptr_t)&g_ImageObject_0050D95C.at_g_LevelCameraBookmark3PositionZQ12)
+#define THANDOR_IMAGE_0x0050d968 ((uintptr_t)&g_ImageObject_0050D968.at_g_LevelCameraBookmark3PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d96c ((uintptr_t)&g_ImageObject_0050D96C.at_g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d970 ((uintptr_t)&g_ImageObject_0050D970.at_g_LevelCameraBookmark4PositionXQ12)
+#define THANDOR_IMAGE_0x0050d974 ((uintptr_t)&g_ImageObject_0050D970.at_g_LevelCameraBookmark4PositionYQ12)
+#define THANDOR_IMAGE_0x0050d978 ((uintptr_t)&g_ImageObject_0050D970.at_g_LevelCameraBookmark4PositionZQ12)
+#define THANDOR_IMAGE_0x0050d97c ((uintptr_t)&g_ImageObject_0050D97C.at_g_LevelCameraBookmark4PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d980 ((uintptr_t)&g_ImageObject_0050D980.at_g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d984 ((uintptr_t)&g_ImageObject_0050D984.at_g_LevelCameraBookmark5PositionXQ12)
+#define THANDOR_IMAGE_0x0050d988 ((uintptr_t)&g_ImageObject_0050D984.at_g_LevelCameraBookmark5PositionYQ12)
+#define THANDOR_IMAGE_0x0050d98c ((uintptr_t)&g_ImageObject_0050D984.at_g_LevelCameraBookmark5PositionZQ12)
+#define THANDOR_IMAGE_0x0050d990 ((uintptr_t)&g_ImageObject_0050D990.at_g_LevelCameraBookmark5PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d994 ((uintptr_t)&g_ImageObject_0050D994.at_g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d998 ((uintptr_t)&g_ImageObject_0050D998.at_g_LevelCameraBookmark6PositionXQ12)
+#define THANDOR_IMAGE_0x0050d99c ((uintptr_t)&g_ImageObject_0050D998.at_g_LevelCameraBookmark6PositionYQ12)
+#define THANDOR_IMAGE_0x0050d9a0 ((uintptr_t)&g_ImageObject_0050D998.at_g_LevelCameraBookmark6PositionZQ12)
+#define THANDOR_IMAGE_0x0050d9a4 ((uintptr_t)&g_ImageObject_0050D9A4.at_g_LevelCameraBookmark6PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d9a8 ((uintptr_t)&g_ImageObject_0050D9A8.at_g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d9ac ((uintptr_t)&g_ImageObject_0050D9AC.at_g_LevelCameraBookmark7PositionXQ12)
+#define THANDOR_IMAGE_0x0050d9b0 ((uintptr_t)&g_ImageObject_0050D9AC.at_g_LevelCameraBookmark7PositionYQ12)
+#define THANDOR_IMAGE_0x0050d9b4 ((uintptr_t)&g_ImageObject_0050D9AC.at_g_LevelCameraBookmark7PositionZQ12)
+#define THANDOR_IMAGE_0x0050d9b8 ((uintptr_t)&g_ImageObject_0050D9B8.at_g_LevelCameraBookmark7PositionMagnitudeQ12)
+#define THANDOR_IMAGE_0x0050d9bc ((uintptr_t)&g_ImageObject_0050D9BC.at_g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16)
+#define THANDOR_IMAGE_0x0050d9c0 ((uintptr_t)&g_ImageObject_0050D9C0.at_g_ScenarioCatalog)
+#define THANDOR_IMAGE_0x0050d9c4 ((uintptr_t)&g_ImageObject_0050D9C4.at_g_ScenarioCatalogUsedBytes)
+#define THANDOR_IMAGE_0x0050d9c8 ((uintptr_t)&g_ImageObject_0050D9C8.at_u_save___sve_0050d9c8)
+#define THANDOR_IMAGE_0x0050d9de ((uintptr_t)&g_ImageObject_0050D9DE.at_g_UnreferencedLevelPatternUtf16)
+#define THANDOR_IMAGE_0x0050d9f6 ((uintptr_t)&g_ImageObject_0050D9F6.at_g_UnreferencedCampaignPatternUtf16)
+#define THANDOR_IMAGE_0x0050da0e ((uintptr_t)&g_ImageObject_0050DA0E.at_u_level_level_dat_0050da0e)
+#define THANDOR_IMAGE_0x0050da2e ((uintptr_t)&g_ImageObject_0050DA2E.at_g_ScenarioLevelDataPathTemplateUtf16)
+#define THANDOR_IMAGE_0x0050da52 ((uintptr_t)&g_ImageObject_0050DA52.at_u_level_campagne_dat_0050da52)
+#define THANDOR_IMAGE_0x0050da78 ((uintptr_t)&g_ImageObject_0050DA78.at_g_ScenarioCampaignDataPathTemplateUtf16)
+#define THANDOR_IMAGE_0x0050daa2 ((uintptr_t)&g_ImageObject_0050DAA2.at_u_save_0050daa2)
+#define THANDOR_IMAGE_0x0050daac ((uintptr_t)&g_ImageObject_0050DAAC.at_u_level_0050daac)
+#define THANDOR_IMAGE_0x0050dab8 ((uintptr_t)&g_ImageObject_0050DAB8.at_u_level_0050dab8)
+#define THANDOR_IMAGE_0x0050dac4 ((uintptr_t)&g_ImageObject_0050DAC4.at_g_ScenarioCatalogPathScratchUtf16)
+#define THANDOR_IMAGE_0x0050dcc4 ((uintptr_t)&g_ImageObject_0050DCC4.at_g_ResourceRegistrationDirectoryUtf16)
+#define THANDOR_IMAGE_0x0050dec4 ((uintptr_t)&g_ImageObject_0050DEC4.at_u_texte_techno_str_0050dec4)
+#define THANDOR_IMAGE_0x0050df06 ((uintptr_t)&g_ImageObject_0050DF06.at_u_flm_ende0000_flm_0050df06)
+#define THANDOR_IMAGE_0x0050df28 ((uintptr_t)&g_ImageObject_0050DF28.at_u_flm_ende0001_flm_0050df28)
+#define THANDOR_IMAGE_0x0050df4a ((uintptr_t)&g_ImageObject_0050DF4A.at_u_flm_ende0000_flm_0050df4a)
+#define THANDOR_IMAGE_0x0050df6c ((uintptr_t)&g_ImageObject_0050DF6C.at_u_sound_level00_sam_0050df6c)
+#define THANDOR_IMAGE_0x0050df90 ((uintptr_t)&g_ImageObject_0050DF90.at_u_sound_music00_sam_0050df90)
+#define THANDOR_IMAGE_0x0050dfb4 ((uintptr_t)&g_ImageObject_0050DFB4.at_u_army_hex_0050dfb4)
+#define THANDOR_IMAGE_0x0050dfc6 ((uintptr_t)&g_ImageObject_0050DFC6.at_u_effect_hex_0050dfc6)
+#define THANDOR_IMAGE_0x0050dfdc ((uintptr_t)&g_ImageObject_0050DFDC.at_u_shot_hex_0050dfdc)
+#define THANDOR_IMAGE_0x0050dfee ((uintptr_t)&g_ImageObject_0050DFEE.at_u_modul_hex_0050dfee)
+#define THANDOR_IMAGE_0x0050e002 ((uintptr_t)&g_ImageObject_0050E002.at_u_field_hex_0050e002)
+#define THANDOR_IMAGE_0x0050e016 ((uintptr_t)&g_ImageObject_0050E016.at_u_light_hex_0050e016)
+#define THANDOR_IMAGE_0x0050e02a ((uintptr_t)&g_ImageObject_0050E02A.at_u_widget_hex_0050e02a)
+#define THANDOR_IMAGE_0x0050e040 ((uintptr_t)&g_ImageObject_0050E040.at_u_level_hex_0050e040)
+#define THANDOR_IMAGE_0x0050e054 ((uintptr_t)&g_ImageObject_0050E054.at_u_daten_hex_0050e054)
+#define THANDOR_IMAGE_0x0050e068 ((uintptr_t)&g_ImageObject_0050E068.at_u_campagne_hex_0050e068)
+#define THANDOR_IMAGE_0x0050e082 ((uintptr_t)&g_ImageObject_0050E082.at_u_stat_hex_0050e082)
+#define THANDOR_IMAGE_0x0050e094 ((uintptr_t)&g_ImageObject_0050E094.at_u_oldunit_hex_0050e094)
+#define THANDOR_IMAGE_0x0050e0ac ((uintptr_t)&g_ImageObject_0050E0AC.at_g_InGameResourceRegistrationBusyCount)
+#define THANDOR_IMAGE_0x0050f050 ((uintptr_t)&g_ImageObject_0050F050.at_g_FrontendPlayerRuntimeCount)
+#define THANDOR_IMAGE_0x0050f054 ((uintptr_t)&g_ImageObject_0050F054.at_g_FrontendLocalPlayerNameUtf16)
+#define THANDOR_IMAGE_0x0050f07c ((uintptr_t)&g_ImageObject_0050F07C.at_g_GameVersionUtf16)
+#define THANDOR_IMAGE_0x0050f090 ((uintptr_t)&g_ImageObject_0050F090.at_g_FrontendSelectedNetworkEndpoint)
+#define THANDOR_IMAGE_0x0050f0a0 ((uintptr_t)&g_ImageObject_0050F0A0.at_g_FrontendSessionToken)
+#define THANDOR_IMAGE_0x0050f0a4 ((uintptr_t)&g_ImageObject_0050F0A4.at_g_SessionTransferTimeoutTicks)
+#define THANDOR_IMAGE_0x0050f0a8 ((uintptr_t)&g_ImageObject_0050F0A8.at_g_FrontendTransferResponsePending)
+#define THANDOR_IMAGE_0x0050f0ac ((uintptr_t)&g_ImageObject_0050F0AC.at_g_LocalPlayerRuntimeId)
+#define THANDOR_IMAGE_0x0050f0c0 ((uintptr_t)&g_ImageObject_0050F0C0.at_g_FrontendPlayerRuntimeBlocks)
+#define THANDOR_IMAGE_0x0050f0c4 ((uintptr_t)&g_ImageObject_0050F0C4.at_g_FrontendPlayerRuntimeBlockCount)
+#define THANDOR_IMAGE_0x0050f0c8 ((uintptr_t)&g_ImageObject_0050F0C8.at_g_SessionNetworkRoleFlags)
+#define THANDOR_IMAGE_0x0050f0cc ((uintptr_t)&g_ImageObject_0050F0CC.at_g_FrontendSelectedPlayerToken)
+#define THANDOR_IMAGE_0x0050f0d0 ((uintptr_t)&g_ImageObject_0050F0D0.at_g_RecentTextSerialCounter)
+#define THANDOR_IMAGE_0x0050f0d4 ((uintptr_t)&g_ImageObject_0050F0D4.at_g_SessionNetworkTickInterval)
+#define THANDOR_IMAGE_0x0050f0d8 ((uintptr_t)&g_ImageObject_0050F0D8.at_g_SessionNetworkTickCounter)
+#define THANDOR_IMAGE_0x0050f0dc ((uintptr_t)&g_ImageObject_0050F0DC.at_g_HostCommandBatchSyncSentThisInterval)
+#define THANDOR_IMAGE_0x0050f0e0 ((uintptr_t)&g_ImageObject_0050F0E0.at_g_RecentTextSlotStorage)
+#define THANDOR_IMAGE_0x0050f0e4 ((uintptr_t)&g_ImageObject_0050F0E4.at_g_RecentTextEntrySerials)
+#define THANDOR_IMAGE_0x0050f104 ((uintptr_t)&g_ImageObject_0050F104.at_u_texte_neterror_str_0050f104)
+#define THANDOR_IMAGE_0x0050f340 ((uintptr_t)&g_ImageObject_0050F340.at_g_GameFactionRuntimeImage)
+#define THANDOR_IMAGE_0x00512d60 ((uintptr_t)&g_ImageObject_00512D60.at_g_TerrainRegionCollectionStoredCount)
+#define THANDOR_IMAGE_0x00512d64 ((uintptr_t)&g_ImageObject_00512D64.at_g_TerrainRegionCollectionVisitedCount)
+#define THANDOR_IMAGE_0x00512d68 ((uintptr_t)&g_ImageObject_00512D68.at_g_TerrainRegionCollectionEntries)
+#define THANDOR_IMAGE_0x00512d6c ((uintptr_t)&g_ImageObject_00512D6C.at_g_GameStatTableImage)
+#define THANDOR_IMAGE_0x00512d70 ((uintptr_t)&g_ImageObject_00512D70.at_g_GameDataAuxState)
+#define THANDOR_IMAGE_0x00514960 ((uintptr_t)&g_ImageObject_00514960.at_g_SelectionPlayerRuntimeBlockPointers)
+#define THANDOR_IMAGE_0x00514d60 ((uintptr_t)&g_ImageObject_00514D60.at_g_SelectionPlayerBlocks)
+#define THANDOR_IMAGE_0x00514d64 ((uintptr_t)&g_ImageObject_00514D64.at_g_InGameFactionScratchBufferSetA8)
+#define THANDOR_IMAGE_0x00514d84 ((uintptr_t)&g_ImageObject_00514D84.at_g_InGameFactionScratchBufferSetB8)
+#define THANDOR_IMAGE_0x00514da4 ((uintptr_t)&g_ImageObject_00514DA4.at_g_FrontendPlayerMessageScratchUtf16)
+#define THANDOR_IMAGE_0x00514e04 ((uintptr_t)&g_ImageObject_00514E04.at_g_UiSevenSlotCommandPayloadText)
+#define THANDOR_IMAGE_0x00515658 ((uintptr_t)&g_ImageObject_00515658.at_g_UiNumericPairFirstValueScratchUtf16)
+#define THANDOR_IMAGE_0x00515678 ((uintptr_t)&g_ImageObject_00515678.at_g_UiNumericPairSecondValueScratchUtf16)
+#define THANDOR_IMAGE_0x00516510 ((uintptr_t)&g_ImageObject_00516510.at_g_UiCatalogEntryRichTextScratchUtf16)
+#define THANDOR_IMAGE_0x00516ea0 ((uintptr_t)&g_ImageObject_00516EA0.at_g_FrontendResultsValueTextUtf16)
+#define THANDOR_IMAGE_0x00516ee0 ((uintptr_t)&g_ImageObject_00516EE0.at_g_EndGameElapsedTimeScratchUtf16)
+#define THANDOR_IMAGE_0x00516fa8 ((uintptr_t)&g_ImageObject_00516FA8.at_g_FrontendResultsColumnAdvance00Pixels)
+#define THANDOR_IMAGE_0x00516fac ((uintptr_t)&g_ImageObject_00516FAC.at_g_FrontendResultsColumnAdvance01Pixels)
+#define THANDOR_IMAGE_0x00516fb0 ((uintptr_t)&g_ImageObject_00516FB0.at_g_FrontendResultsColumnAdvanceColourPixels)
+#define THANDOR_IMAGE_0x00516fb4 ((uintptr_t)&g_ImageObject_00516FB4.at_g_FrontendResultsColumnAdvanceEconomyPixels)
+#define THANDOR_IMAGE_0x00516fb8 ((uintptr_t)&g_ImageObject_00516FB8.at_g_FrontendResultsColumnAdvanceMilitaryPixels)
+#define THANDOR_IMAGE_0x00516fbc ((uintptr_t)&g_ImageObject_00516FBC.at_g_FrontendResultsColumnAdvancePointsPixels)
+#define THANDOR_IMAGE_0x00516fc0 ((uintptr_t)&g_ImageObject_00516FC0.at_g_FrontendResultsColumnAdvancePlayerPixels)
+#define THANDOR_IMAGE_0x00516fc4 ((uintptr_t)&g_ImageObject_00516FC4.at_g_FrontendResultsColumnAdvanceFactionPixels)
+#define THANDOR_IMAGE_0x00516fc8 ((uintptr_t)&g_ImageObject_00516FC8.at_g_FrontendResultsColumnAdvanceFactionField98Pixels)
+#define THANDOR_IMAGE_0x00516fcc ((uintptr_t)&g_ImageObject_00516FCC.at_g_FrontendResultsColumnAdvanceFactionField9CPixels)
+#define THANDOR_IMAGE_0x00516fd0 ((uintptr_t)&g_ImageObject_00516FD0.at_g_FrontendResultsColumnAdvanceFactionFieldA0Pixels)
+#define THANDOR_IMAGE_0x00516fd4 ((uintptr_t)&g_ImageObject_00516FD4.at_g_FrontendResultsColumnAdvanceFactionFieldA4Pixels)
+#define THANDOR_IMAGE_0x00516fd8 ((uintptr_t)&g_ImageObject_00516FD8.at_g_FrontendResultsColumnAdvanceFactionFieldA8Pixels)
+#define THANDOR_IMAGE_0x00516fdc ((uintptr_t)&g_ImageObject_00516FDC.at_g_FrontendResultsColumnAdvanceFactionFieldACPixels)
+#define THANDOR_IMAGE_0x00516fe0 ((uintptr_t)&g_ImageObject_00516FE0.at_g_FrontendResultsColumnAdvanceFactionFieldB0Pixels)
+#define THANDOR_IMAGE_0x00516fe4 ((uintptr_t)&g_ImageObject_00516FE4.at_g_FrontendResultsColumnAdvanceFactionFieldB4Pixels)
+#define THANDOR_IMAGE_0x00516fe8 ((uintptr_t)&g_ImageObject_00516FE8.at_g_FrontendResultsColumnAdvanceFactionFieldB8Pixels)
+#define THANDOR_IMAGE_0x00516fec ((uintptr_t)&g_ImageObject_00516FEC.at_g_FrontendResultsColumnAdvanceFactionFieldBCPixels)
+#define THANDOR_IMAGE_0x00516ff0 ((uintptr_t)&g_ImageObject_00516FF0.at_g_FrontendResultsFramebufferBytesPerPixel)
+#define THANDOR_IMAGE_0x00516ff4 ((uintptr_t)&g_ImageObject_00516FF4.at_g_FrontendResultsFramebufferScanlineStrideBytes)
+#define THANDOR_IMAGE_0x00516ff8 ((uintptr_t)&g_ImageObject_00516FF8.at_g_FrontendResultsFactionPackedPixelColors)
+#define THANDOR_IMAGE_0x00518080 ((uintptr_t)&g_ImageObject_00518080.at_g_SoftwareBilinearPackedInterpolationWeights256)
+#define THANDOR_IMAGE_0x00518880 ((uintptr_t)&g_ImageObject_00518880.at_g_SoftwarePixelIntensityToNativeColorLut256)
+#define THANDOR_IMAGE_0x00518c80 ((uintptr_t)&g_ImageObject_00518C80.at_g_SoftwareBlendUnityWordLanesQ14)
+#define THANDOR_IMAGE_0x00519730 ((uintptr_t)&g_ImageObject_00519730.at_g_ArmyRuntimeSlots)
+#define THANDOR_IMAGE_0x00519734 ((uintptr_t)&g_ImageObject_00519734.at_g_ArmyRuntimeRebaseBaseMinusOne)
+#define THANDOR_IMAGE_0x00519738 ((uintptr_t)&g_ImageObject_00519738.at_g_ArmyGraphicsBindings)
+#define THANDOR_IMAGE_0x00519778 ((uintptr_t)&g_ImageObject_00519778.at_g_ArmyAssetRecordRegistry)
+#define THANDOR_IMAGE_0x0051a380 ((uintptr_t)&g_ImageObject_0051A380.at_g_ArmyPreviewAlphaPremultiplyMmxLut256)
+#define THANDOR_IMAGE_0x0051ab80 ((uintptr_t)&g_ImageObject_0051AB80.at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
+#define THANDOR_IMAGE_0x0051b380 ((uintptr_t)&g_ImageObject_0051B380.at_g_ArmyPreviewDownsampleAlphaRoundingBiasMmx)
+#define THANDOR_IMAGE_0x0051b388 ((uintptr_t)&g_ImageObject_0051B388.at_g_ArmyCommandGenerationStandard)
+#define THANDOR_IMAGE_0x0051b38c ((uintptr_t)&g_ImageObject_0051B38C.at_g_AiCommandGenerationCandidateBase)
+#define THANDOR_IMAGE_0x0051b390 ((uintptr_t)&g_ImageObject_0051B390.at_g_AiCommandGenerationRetainedTarget)
+#define THANDOR_IMAGE_0x0051b394 ((uintptr_t)&g_ImageObject_0051B394.at_g_UnreferencedArmyTexturePathUtf16)
+#define THANDOR_IMAGE_0x0051b3ae ((uintptr_t)&g_ImageObject_0051B3AE.at_g_UnreferencedArmyTag)
+#define THANDOR_IMAGE_0x0051dbc0 ((uintptr_t)&g_ImageObject_0051DBC0.at_g_EffectTextureSet)
+#define THANDOR_IMAGE_0x0051dbc4 ((uintptr_t)&g_ImageObject_0051DBC4.at_g_EffectPalette)
+#define THANDOR_IMAGE_0x0051dbc8 ((uintptr_t)&g_ImageObject_0051DBC8.at_g_EffectRuntimeSlots)
+#define THANDOR_IMAGE_0x0051dbcc ((uintptr_t)&g_ImageObject_0051DBCC.at_g_EffectRuntimeRebaseBaseMinusOne)
+#define THANDOR_IMAGE_0x0051dbd0 ((uintptr_t)&g_ImageObject_0051DBD0.at_g_EffectDefinitionRegistry)
+#define THANDOR_IMAGE_0x0051eef0 ((uintptr_t)&g_ImageObject_0051EEF0.at_g_ModelDefinitionRegistry)
+#define THANDOR_IMAGE_0x0051faf0 ((uintptr_t)&g_ImageObject_0051FAF0.at_g_TerrainClassPlacementAndOverlayCallbacks10)
+#define THANDOR_IMAGE_0x0051fb18 ((uintptr_t)&g_ImageObject_0051FB18.at_g_FactionEnergyAllocationPriorityByModelClass)
+#define THANDOR_IMAGE_0x0051fb78 ((uintptr_t)&g_ImageObject_0051FB78.at_g_AiCombatTargetClassBaseScores)
+#define THANDOR_IMAGE_0x0051fbd8 ((uintptr_t)&g_ImageObject_0051FBD8.at_g_RuntimeModelClassPriorityByModelClassId)
+#define THANDOR_IMAGE_0x0051fc38 ((uintptr_t)&g_ImageObject_0051FC38.at_g_ArmyRuntimeDepthBinClassByModelClass)
+#define THANDOR_IMAGE_0x0051fc98 ((uintptr_t)&g_ImageObject_0051FC98.at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes)
+#define THANDOR_IMAGE_0x005200b8 ((uintptr_t)&g_ImageObject_005200B8.at_g_ModelRuntimeSlots)
+#define THANDOR_IMAGE_0x005200bc ((uintptr_t)&g_ImageObject_005200BC.at_g_ModelRuntimeRebaseDelta)
+#define THANDOR_IMAGE_0x00520eb0 ((uintptr_t)&g_ImageObject_00520EB0.at_g_ArmySuspensionBlendVectorAXQ12)
+#define THANDOR_IMAGE_0x00520eb4 ((uintptr_t)&g_ImageObject_00520EB4.at_g_ArmySuspensionBlendVectorAYQ12)
+#define THANDOR_IMAGE_0x00520eb8 ((uintptr_t)&g_ImageObject_00520EB8.at_g_ArmySuspensionBlendVectorAZQ12)
+#define THANDOR_IMAGE_0x00520ebc ((uintptr_t)&g_ImageObject_00520EBC.at_g_ArmySuspensionBlendVectorBXQ12)
+#define THANDOR_IMAGE_0x00520ec0 ((uintptr_t)&g_ImageObject_00520EC0.at_g_ArmySuspensionBlendVectorBYQ12)
+#define THANDOR_IMAGE_0x00520ec4 ((uintptr_t)&g_ImageObject_00520EC4.at_g_ArmySuspensionBlendVectorBZQ12)
+#define THANDOR_IMAGE_0x00520ec8 ((uintptr_t)&g_ImageObject_00520EC8.at_g_ArmySuspensionRotationMatrixScratchA)
+#define THANDOR_IMAGE_0x00520ef8 ((uintptr_t)&g_ImageObject_00520EF8.at_g_ArmySuspensionRotationMatrixScratchB)
+#define THANDOR_IMAGE_0x00520f28 ((uintptr_t)&g_ImageObject_00520F28.at_g_ArmySuspensionRotationMatrixComposedScratch)
+#define THANDOR_IMAGE_0x0052af40 ((uintptr_t)&g_ImageObject_0052AF40.at_g_ShotTextureSet)
+#define THANDOR_IMAGE_0x0052af44 ((uintptr_t)&g_ImageObject_0052AF44.at_g_ShotPalette)
+#define THANDOR_IMAGE_0x0052af48 ((uintptr_t)&g_ImageObject_0052AF48.at_g_ShotRuntimeSlots)
+#define THANDOR_IMAGE_0x0052af4c ((uintptr_t)&g_ImageObject_0052AF4C.at_g_ShotRuntimeRebaseBaseMinusOne)
+#define THANDOR_IMAGE_0x0052af50 ((uintptr_t)&g_ImageObject_0052AF50.at_g_ShotDefinitionRegistry)
+#define THANDOR_IMAGE_0x0052cdf0 ((uintptr_t)&g_ImageObject_0052CDF0.at_g_SelectionPanelTextureSource)
+#define THANDOR_IMAGE_0x0052cdf4 ((uintptr_t)&g_ImageObject_0052CDF4.at_g_InfoPanelTextureSource)
+#define THANDOR_IMAGE_0x0052cdf8 ((uintptr_t)&g_ImageObject_0052CDF8.at_g_SelectionPanelData)
+#define THANDOR_IMAGE_0x0052cdfc ((uintptr_t)&g_ImageObject_0052CDFC.at_g_InfoPanelData)
+#define THANDOR_IMAGE_0x0052ce00 ((uintptr_t)&g_ImageObject_0052CE00.at_g_SelectionPanelNumberTextStyle)
+#define THANDOR_IMAGE_0x0052ce04 ((uintptr_t)&g_ImageObject_0052CE04.at_g_ModelProjectedBoundsPixels)
+#define THANDOR_IMAGE_0x0052ce14 ((uintptr_t)&g_ImageObject_0052CE14.at_g_SelectionInfoEntitySlots)
+#define THANDOR_IMAGE_0x0052ce18 ((uintptr_t)&g_ImageObject_0052CE18.at_u_gfx_panel_select_gfx_0052ce18)
+#define THANDOR_IMAGE_0x0052ce42 ((uintptr_t)&g_ImageObject_0052CE42.at_u_gfx_panel_info_gfx_0052ce42)
+#define THANDOR_IMAGE_0x0052ce68 ((uintptr_t)&g_ImageObject_0052CE68.at_u_gfx_panel_select_dat_0052ce68)
+#define THANDOR_IMAGE_0x0052ce92 ((uintptr_t)&g_ImageObject_0052CE92.at_u_gfx_panel_info_dat_0052ce92)
+#define THANDOR_IMAGE_0x0052ceb8 ((uintptr_t)&g_ImageObject_0052CEB8.at_g_SelectionPanelNumberScratchUtf16)
+#define THANDOR_IMAGE_0x0052ced8 ((uintptr_t)&g_ImageObject_0052CED8.at_g_SelectionPanelBlitOpaque)
+#define THANDOR_IMAGE_0x0052cedc ((uintptr_t)&g_ImageObject_0052CEDC.at_g_SelectionPanelBlitClipped)
+#define THANDOR_IMAGE_0x00530820 ((uintptr_t)&g_ImageObject_00530820.at_g_InGameLoadedResourcePointers)
+#define THANDOR_IMAGE_0x00530824 ((uintptr_t)&g_ImageObject_00530824.at_g_InGameLoadedResourcePointerCount)
+#define THANDOR_IMAGE_0x00530828 ((uintptr_t)&g_ImageObject_00530828.at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16)
+#define THANDOR_IMAGE_0x00530a28 ((uintptr_t)&g_ImageObject_00530A28.at_g_InGameLevelSoundParentDirectoryScratchUtf16)
+#define THANDOR_IMAGE_0x00530c28 ((uintptr_t)&g_ImageObject_00530C28.at_g_LevelResourcePathScratchUtf16)
+#define THANDOR_IMAGE_0x00530e28 ((uintptr_t)&g_ImageObject_00530E28.at_g_LevelEndingMovieSourcePath)
+#define THANDOR_IMAGE_0x00531028 ((uintptr_t)&g_ImageObject_00531028.at_g_InGameLevelTitleTextResourceIndex)
+#define THANDOR_IMAGE_0x0053102c ((uintptr_t)&g_ImageObject_0053102C.at_g_InGameLevelCampaignAssociationIndex)
+#define THANDOR_IMAGE_0x00531030 ((uintptr_t)&g_ImageObject_00531030.at_g_InGameLevelEffectVoiceSet0)
+#define THANDOR_IMAGE_0x00531034 ((uintptr_t)&g_ImageObject_00531030.at_g_InGameLevelEffectVoiceSet1)
+#define THANDOR_IMAGE_0x00531038 ((uintptr_t)&g_ImageObject_00531030.at_g_InGameLevelEffectVoiceSet2)
+#define THANDOR_IMAGE_0x0053103c ((uintptr_t)&g_ImageObject_00531030.at_g_InGameLevelEffectVoiceSet3)
+#define THANDOR_IMAGE_0x00531040 ((uintptr_t)&g_ImageObject_00531040.at_g_InGameActiveEffectVoice)
+#define THANDOR_IMAGE_0x00531044 ((uintptr_t)&g_ImageObject_00531044.at_g_InGameEffectsEnabled)
+#define THANDOR_IMAGE_0x00531048 ((uintptr_t)&g_ImageObject_00531048.at_g_InGameLevelMusicVoiceSet0)
+#define THANDOR_IMAGE_0x0053104c ((uintptr_t)&g_ImageObject_00531048.at_g_InGameLevelMusicVoiceSet1)
+#define THANDOR_IMAGE_0x00531050 ((uintptr_t)&g_ImageObject_00531048.at_g_InGameLevelMusicVoiceSet2)
+#define THANDOR_IMAGE_0x00531054 ((uintptr_t)&g_ImageObject_00531048.at_g_InGameLevelMusicVoiceSet3)
+#define THANDOR_IMAGE_0x00531058 ((uintptr_t)&g_ImageObject_00531058.at_g_InGameActiveMusicVoice)
+#define THANDOR_IMAGE_0x0053105c ((uintptr_t)&g_ImageObject_0053105C.at_g_InGameMusicNextTrackCountdown)
+#define THANDOR_IMAGE_0x00531060 ((uintptr_t)&g_ImageObject_00531060.at_g_InGameLevelRuntimeGlobalBlock)
+#define THANDOR_IMAGE_0x005332a0 ((uintptr_t)&g_ImageObject_005332A0.at_g_GridScratchPrimary)
+#define THANDOR_IMAGE_0x005332a4 ((uintptr_t)&g_ImageObject_005332A4.at_g_GridScratchSecondary)
+#define THANDOR_IMAGE_0x005332a8 ((uintptr_t)&g_ImageObject_005332A8.at_g_GridPathCostQueueBegin)
+#define THANDOR_IMAGE_0x005332ac ((uintptr_t)&g_ImageObject_005332AC.at_g_GridPathCostQueueEnd)
+#define THANDOR_IMAGE_0x005332b0 ((uintptr_t)&g_ImageObject_005332B0.at_g_GridPathCostQueuePassBoundary)
+#define THANDOR_IMAGE_0x005332b4 ((uintptr_t)&g_ImageObject_005332B4.at_g_GridScratchWidth)
+#define THANDOR_IMAGE_0x005332b8 ((uintptr_t)&g_ImageObject_005332B8.at_g_GridScratchHeight)
+#define THANDOR_IMAGE_0x00533ed0 ((uintptr_t)&g_ImageObject_00533ED0.at_g_GridPathEntityClassMask)
+#define THANDOR_IMAGE_0x00533ed4 ((uintptr_t)&g_ImageObject_00533ED4.at_g_GridPathBlockingMask)
+#define THANDOR_IMAGE_0x00533ed8 ((uintptr_t)&g_ImageObject_00533ED8.at_g_GridPathHighCostMask)
+#define THANDOR_IMAGE_0x00533edc ((uintptr_t)&g_ImageObject_00533EDC.at_g_GridPathUnreachableRegionReferenceColumn)
+#define THANDOR_IMAGE_0x00533ee0 ((uintptr_t)&g_ImageObject_00533EE0.at_g_GridPathUnreachableRegionReferenceRow)
+#define THANDOR_IMAGE_0x005367d0 ((uintptr_t)&g_ImageObject_005367D0.at_g_EntityPathingPriorityPairs)
+#define THANDOR_IMAGE_0x005368d4 ((uintptr_t)&g_ImageObject_005368D4.at_g_EntityPathingPriorityPairCount)
+#define THANDOR_IMAGE_0x00536f10 ((uintptr_t)&g_ImageObject_00536F10.at_g_GridTerrainClassBit24MaxWaterSurfaceDelta)
+#define THANDOR_IMAGE_0x00536f14 ((uintptr_t)&g_ImageObject_00536F14.at_g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f18 ((uintptr_t)&g_ImageObject_00536F18.at_g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f1c ((uintptr_t)&g_ImageObject_00536F1C.at_g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f20 ((uintptr_t)&g_ImageObject_00536F20.at_g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f24 ((uintptr_t)&g_ImageObject_00536F24.at_g_ModelTraversalClass4SecondaryThresholdTable3)
+#define THANDOR_IMAGE_0x00536f30 ((uintptr_t)&g_ImageObject_00536F30.at_g_GridTerrainClassBit28MinWaterSurfaceDelta)
+#define THANDOR_IMAGE_0x00536f34 ((uintptr_t)&g_ImageObject_00536F34.at_g_GridTerrainClassBit29MinWaterSurfaceDelta)
+#define THANDOR_IMAGE_0x00536f38 ((uintptr_t)&g_ImageObject_00536F38.at_g_GridTerrainClassBit30MinWaterSurfaceDelta)
+#define THANDOR_IMAGE_0x00536f3c ((uintptr_t)&g_ImageObject_00536F3C.at_g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f40 ((uintptr_t)&g_ImageObject_00536F40.at_g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f44 ((uintptr_t)&g_ImageObject_00536F44.at_g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16)
+#define THANDOR_IMAGE_0x00536f48 ((uintptr_t)&g_ImageObject_00536F48.at_g_ModelTraversalFallbackSecondaryThresholdTable3)
+#define THANDOR_IMAGE_0x00536f60 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset0)
+#define THANDOR_IMAGE_0x00536f64 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset1)
+#define THANDOR_IMAGE_0x00536f68 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset2)
+#define THANDOR_IMAGE_0x00536f6c ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset3)
+#define THANDOR_IMAGE_0x00536f70 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset4)
+#define THANDOR_IMAGE_0x00536f74 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset5)
+#define THANDOR_IMAGE_0x00536f78 ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset6)
+#define THANDOR_IMAGE_0x00536f7c ((uintptr_t)&g_ImageObject_00536F60.at_g_GridInfluenceRadiusOffset7)
+#define THANDOR_IMAGE_0x00536f80 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold0)
+#define THANDOR_IMAGE_0x00536f84 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold1)
+#define THANDOR_IMAGE_0x00536f88 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold2)
+#define THANDOR_IMAGE_0x00536f8c ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold3)
+#define THANDOR_IMAGE_0x00536f90 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold4)
+#define THANDOR_IMAGE_0x00536f94 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold5)
+#define THANDOR_IMAGE_0x00536f98 ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold6)
+#define THANDOR_IMAGE_0x00536f9c ((uintptr_t)&g_ImageObject_00536F80.at_g_GridInfluenceSquaredThreshold7)
+#define THANDOR_IMAGE_0x00536fa0 ((uintptr_t)&g_ImageObject_00536FA0.at_g_AiCombatTargetRadialClearanceWeight)
+#define THANDOR_IMAGE_0x00536fa4 ((uintptr_t)&g_ImageObject_00536FA4.at_g_AiCombatTargetCandidateCounterCountWeight)
+#define THANDOR_IMAGE_0x00536fa8 ((uintptr_t)&g_ImageObject_00536FA8.at_g_AiCombatTargetSourceCounterCountWeight)
+#define THANDOR_IMAGE_0x00536fac ((uintptr_t)&g_ImageObject_00536FAC.at_g_AiCombatTargetScaleDeficitWeight)
+#define THANDOR_IMAGE_0x00536fb0 ((uintptr_t)&g_ImageObject_00536FB0.at_g_AiCombatTargetClassBaseScoreMultiplier)
+#define THANDOR_IMAGE_0x00536fb4 ((uintptr_t)&g_ImageObject_00536FB4.at_g_AiCombatTargetSelectedCommandGenerationRightShiftBits)
+#define THANDOR_IMAGE_0x00536fb8 ((uintptr_t)&g_ImageObject_00536FB8.at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits)
+#define THANDOR_IMAGE_0x00537410 ((uintptr_t)&g_ImageObject_00537410.at_g_AiWorkspace13Candidates)
+#define THANDOR_IMAGE_0x00537414 ((uintptr_t)&g_ImageObject_00537414.at_g_AiCandidateWorkspaceEntryCount)
+#define THANDOR_IMAGE_0x00537418 ((uintptr_t)&g_ImageObject_00537418.at_g_AiPurchaseAppliedArmyClassMask)
+#define THANDOR_IMAGE_0x00537960 ((uintptr_t)&g_ImageObject_00537960.at_g_AiWorkspace00Structures)
+#define THANDOR_IMAGE_0x00537964 ((uintptr_t)&g_ImageObject_00537964.at_g_AiWorkspace00Count)
+#define THANDOR_IMAGE_0x00537968 ((uintptr_t)&g_ImageObject_00537968.at_g_AiWorkspace01Units)
+#define THANDOR_IMAGE_0x0053796c ((uintptr_t)&g_ImageObject_0053796C.at_g_AiWorkspace01Count)
+#define THANDOR_IMAGE_0x00537970 ((uintptr_t)&g_ImageObject_00537970.at_g_AiWorkspace02VisibleHostiles)
+#define THANDOR_IMAGE_0x00537974 ((uintptr_t)&g_ImageObject_00537974.at_g_AiWorkspace02Count)
+#define THANDOR_IMAGE_0x00537978 ((uintptr_t)&g_ImageObject_00537978.at_g_AiWorkspace03UnseenHostiles)
+#define THANDOR_IMAGE_0x0053797c ((uintptr_t)&g_ImageObject_0053797C.at_g_AiWorkspace03Count)
+#define THANDOR_IMAGE_0x00537980 ((uintptr_t)&g_ImageObject_00537980.at_g_AiWorkspace04RequestedAssets)
+#define THANDOR_IMAGE_0x00537984 ((uintptr_t)&g_ImageObject_00537984.at_g_AiWorkspace04Count)
+#define THANDOR_IMAGE_0x00537988 ((uintptr_t)&g_ImageObject_00537988.at_g_AiWorkspace05GeneralSites)
+#define THANDOR_IMAGE_0x0053798c ((uintptr_t)&g_ImageObject_0053798C.at_g_AiWorkspace05Count)
+#define THANDOR_IMAGE_0x00537990 ((uintptr_t)&g_ImageObject_00537990.at_g_AiWorkspace06FlaggedSites)
+#define THANDOR_IMAGE_0x00537994 ((uintptr_t)&g_ImageObject_00537994.at_g_AiWorkspace06Count)
+#define THANDOR_IMAGE_0x00537998 ((uintptr_t)&g_ImageObject_00537998.at_g_AiWorkspace07Targets)
+#define THANDOR_IMAGE_0x0053799c ((uintptr_t)&g_ImageObject_0053799C.at_g_AiWorkspace07Count)
+#define THANDOR_IMAGE_0x005379a0 ((uintptr_t)&g_ImageObject_005379A0.at_g_AiWorkspace08TerrainFeatureSites)
+#define THANDOR_IMAGE_0x005379a4 ((uintptr_t)&g_ImageObject_005379A4.at_g_AiWorkspace08Count)
+#define THANDOR_IMAGE_0x005379a8 ((uintptr_t)&g_ImageObject_005379A8.at_g_AiWorkspace09Cells)
+#define THANDOR_IMAGE_0x005379ac ((uintptr_t)&g_ImageObject_005379AC.at_g_AiWorkspace09Count)
+#define THANDOR_IMAGE_0x005379b0 ((uintptr_t)&g_ImageObject_005379B0.at_g_AiWorkspace10Cells)
+#define THANDOR_IMAGE_0x005379b4 ((uintptr_t)&g_ImageObject_005379B4.at_g_AiWorkspace10Count)
+#define THANDOR_IMAGE_0x005379b8 ((uintptr_t)&g_ImageObject_005379B8.at_g_AiWorkspace11ProducibleAssets)
+#define THANDOR_IMAGE_0x005379bc ((uintptr_t)&g_ImageObject_005379BC.at_g_AiWorkspace11Count)
+#define THANDOR_IMAGE_0x005379c0 ((uintptr_t)&g_ImageObject_005379C0.at_g_AiWorkspace12TechnologyCandidates)
+#define THANDOR_IMAGE_0x005379c4 ((uintptr_t)&g_ImageObject_005379C4.at_g_AiWorkspace12Count)
+#define THANDOR_IMAGE_0x005379c8 ((uintptr_t)&g_ImageObject_005379C8.at_g_AiActiveGridMaskClass0)
+#define THANDOR_IMAGE_0x005379cc ((uintptr_t)&g_ImageObject_005379C8.at_g_AiActiveGridMaskClass1)
+#define THANDOR_IMAGE_0x005379d0 ((uintptr_t)&g_ImageObject_005379C8.at_g_AiActiveGridMaskClass2)
+#define THANDOR_IMAGE_0x005379d4 ((uintptr_t)&g_ImageObject_005379C8.at_g_AiActiveGridMaskClass3)
+#define THANDOR_IMAGE_0x005379d8 ((uintptr_t)&g_ImageObject_005379D8.at_g_AiWorkspaceOwnedAsset300Runtime)
+#define THANDOR_IMAGE_0x00539060 ((uintptr_t)&g_ImageObject_00539060.at_g_AiConstructionPendingAssetConsumedCount)
+#define THANDOR_IMAGE_0x00539980 ((uintptr_t)&g_ImageObject_00539980.at_g_TechnologyCategoryMaximumReciprocalQ24Table8)
+#define THANDOR_IMAGE_0x005399a0 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum0)
+#define THANDOR_IMAGE_0x005399a4 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum1)
+#define THANDOR_IMAGE_0x005399a8 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum2)
+#define THANDOR_IMAGE_0x005399ac ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum3)
+#define THANDOR_IMAGE_0x005399b0 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum4)
+#define THANDOR_IMAGE_0x005399b4 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum5)
+#define THANDOR_IMAGE_0x005399b8 ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum6)
+#define THANDOR_IMAGE_0x005399bc ((uintptr_t)&g_ImageObject_005399A0.at_g_TechnologyCategoryMaximum7)
+#define THANDOR_IMAGE_0x005399c0 ((uintptr_t)&g_ImageObject_005399C0.at_g_AiArmyCandidateFlaggedDefinitionValueMaximum)
+#define THANDOR_IMAGE_0x005399c4 ((uintptr_t)&g_ImageObject_005399C4.at_g_AiStrategicClassTerrainWeights)
+#define THANDOR_IMAGE_0x00539a00 ((uintptr_t)&g_ImageObject_00539A00.at_g_TechnologyCategoryMasks)
+#define THANDOR_IMAGE_0x0053b0d0 ((uintptr_t)&g_ImageObject_0053B0D0.at_g_AiWorkspace14CollectedArmies)
+#define THANDOR_IMAGE_0x0053b0d4 ((uintptr_t)&g_ImageObject_0053B0D4.at_g_AiCollectedEntityCount)
+#define THANDOR_IMAGE_0x0053b9e0 ((uintptr_t)&g_ImageObject_0053B9E0.at_g_AiTechnologyCandidateScoreCallbackTable)
+#define THANDOR_IMAGE_0x0053c5e0 ((uintptr_t)&g_ImageObject_0053C5E0.at_g_AiKnowledgeData)
+#define THANDOR_IMAGE_0x0053c5e4 ((uintptr_t)&g_ImageObject_0053C5E4.at_u_engine_ki_dat_0053c5e4)
+#define THANDOR_IMAGE_0x0053c600 ((uintptr_t)&g_ImageObject_0053C600.at_g_AiArmyCandidateScoreWeightsVariantB15)
+#define THANDOR_IMAGE_0x0053c63c ((uintptr_t)&g_ImageObject_0053C63C.at_g_AiArmyCandidateScoreWeightsVariantA15)
+#define THANDOR_IMAGE_0x0053c678 ((uintptr_t)&g_ImageObject_0053C678.at_g_AiArmyCandidateScoreWeightsVariantC15)
+#define THANDOR_IMAGE_0x0053c9a0 ((uintptr_t)&g_ImageObject_0053C9A0.at_g_WorldMotionSplineMatrixWorkspaces)
+#define THANDOR_IMAGE_0x0053c9b8 ((uintptr_t)&g_ImageObject_0053C9B8.at_g_WorldMotionSplineCoefficientTables)
+#define THANDOR_IMAGE_0x0053c9d0 ((uintptr_t)&g_ImageObject_0053C9D0.at_g_WorldMotionSplineCachedDerivatives)
+#define THANDOR_IMAGE_0x0053c9e8 ((uintptr_t)&g_ImageObject_0053C9E8.at_g_WorldMotionSplineEquationCounts)
+#define THANDOR_IMAGE_0x0053ca00 ((uintptr_t)&g_ImageObject_0053CA00.at_g_Q12FloatScale4096)
+#define THANDOR_IMAGE_0x0053d360 ((uintptr_t)&g_ImageObject_0053D360.at_g_TerrainCompositeTexture)
+#define THANDOR_IMAGE_0x0053da70 ((uintptr_t)&g_ImageObject_0053DA70.at_g_UiRootCallbacks_0053DA70)
+#define THANDOR_IMAGE_0x0053da84 ((uintptr_t)&g_ImageObject_0053DA84.at_g_FrontendSessionListRows)
+#define THANDOR_IMAGE_0x0053da88 ((uintptr_t)&g_ImageObject_0053DA88.at_g_FrontendSessionDiscoveryRecords)
+#define THANDOR_IMAGE_0x0053da8c ((uintptr_t)&g_ImageObject_0053DA8C.at_g_FrontendRootInitializationTemplate)
+#define THANDOR_IMAGE_0x00542230 ((uintptr_t)&g_ImageObject_0053DA8C + 0x47A4)
+#define THANDOR_IMAGE_0x00542854 ((uintptr_t)&g_ImageObject_0053DA8C + 0x4DC8)
+#define THANDOR_IMAGE_0x005433e0 ((uintptr_t)&g_ImageObject_005433E0.at_g_FrontendPlayerRuntimeRecordPointers32)
+#define THANDOR_IMAGE_0x00543460 ((uintptr_t)&g_ImageObject_00543460.at_g_FrontendTaskAssignmentControlOffsets)
+#define THANDOR_IMAGE_0x005438ec ((uintptr_t)&g_ImageObject_005438EC.at_g_FrontendUiDisplayModeAndTaskAssignmentScratch)
+#define THANDOR_IMAGE_0x00543e40 ((uintptr_t)&g_ImageObject_00543E40.at_g_FrontendCommandQueueRecords)
+#define THANDOR_IMAGE_0x00543f40 ((uintptr_t)&g_ImageObject_00543F40.at_g_FrontendCommandQueueEnd)
+#define THANDOR_IMAGE_0x005456f0 ((uintptr_t)&g_ImageObject_005456F0.at_g_FrontendRootNode)
+#define THANDOR_IMAGE_0x005456f4 ((uintptr_t)&g_ImageObject_005456F4.at_g_FrontendPendingPageAction)
+#define THANDOR_IMAGE_0x005456f8 ((uintptr_t)&g_ImageObject_005456F8.at_g_FrontendRomTransitionPageAction)
+#define THANDOR_IMAGE_0x005456fc ((uintptr_t)&g_ImageObject_005456FC.at_g_FrontendActiveRomRecord)
+#define THANDOR_IMAGE_0x00545700 ((uintptr_t)&g_ImageObject_00545700.at_g_FrontendRuntimeFlags)
+#define THANDOR_IMAGE_0x00545704 ((uintptr_t)&g_ImageObject_00545704.at_g_FrontendCentralTextureSet)
+#define THANDOR_IMAGE_0x00545708 ((uintptr_t)&g_ImageObject_00545708.at_g_FrontendCentralPaletteAsset)
+#define THANDOR_IMAGE_0x0054570c ((uintptr_t)&g_ImageObject_0054570C.at_g_FrontendMenuTextureSource)
+#define THANDOR_IMAGE_0x00545710 ((uintptr_t)&g_ImageObject_00545710.at_g_FrontendNetworkTickCounter)
+#define THANDOR_IMAGE_0x00545714 ((uintptr_t)&g_ImageObject_00545714.at_g_FrontendNetworkState)
+#define THANDOR_IMAGE_0x00545718 ((uintptr_t)&g_ImageObject_00545718.at_g_FrontendFactionAssignmentReadyStateGeneration)
+#define THANDOR_IMAGE_0x0054571c ((uintptr_t)&g_ImageObject_0054571C.at_g_FrontendRomTransitionElapsedTicks)
+#define THANDOR_IMAGE_0x00545720 ((uintptr_t)&g_ImageObject_00545720.at_g_FrontendRomTransitionSplineKeyframes)
+#define THANDOR_IMAGE_0x00545724 ((uintptr_t)&g_ImageObject_00545724.at_g_FrontendRomTransitionSplineKeyframeCount)
+#define THANDOR_IMAGE_0x00545728 ((uintptr_t)&g_ImageObject_00545728.at_g_FrontendRomTransitionTargetRecordId)
+#define THANDOR_IMAGE_0x0054572c ((uintptr_t)&g_ImageObject_0054572C.at_g_FrontendStateTickSpinLock)
+#define THANDOR_IMAGE_0x00545730 ((uintptr_t)&g_ImageObject_00545730.at_g_FrontendTimerCountdownTicks)
+#define THANDOR_IMAGE_0x00545734 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel0Q12)
+#define THANDOR_IMAGE_0x00545738 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel1Q12)
+#define THANDOR_IMAGE_0x0054573c ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel2Q12)
+#define THANDOR_IMAGE_0x00545740 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel3Q12)
+#define THANDOR_IMAGE_0x00545744 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel4Q12)
+#define THANDOR_IMAGE_0x00545748 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0Channel5Q12)
+#define THANDOR_IMAGE_0x0054574c ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe0TimeQ12)
+#define THANDOR_IMAGE_0x00545754 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel0Q12)
+#define THANDOR_IMAGE_0x00545758 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel1Q12)
+#define THANDOR_IMAGE_0x0054575c ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel2Q12)
+#define THANDOR_IMAGE_0x00545760 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel3Q12)
+#define THANDOR_IMAGE_0x00545764 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel4Q12)
+#define THANDOR_IMAGE_0x00545768 ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1Channel5Q12)
+#define THANDOR_IMAGE_0x0054576c ((uintptr_t)&g_ImageObject_00545734.at_g_FrontendRomTransitionKeyframe1TimeQ12)
+#define THANDOR_IMAGE_0x00545774 ((uintptr_t)&g_ImageObject_00545774.at_g_FrontendCentralRomAsset)
+#define THANDOR_IMAGE_0x00545778 ((uintptr_t)&g_ImageObject_00545778.at_g_RomRegistrySlots)
+#define THANDOR_IMAGE_0x0054577c ((uintptr_t)&g_ImageObject_0054577C.at_g_FrontendWorldObjectRecords)
+#define THANDOR_IMAGE_0x00545780 ((uintptr_t)&g_ImageObject_00545780.at_g_FrontendLoadedLevelAsset)
+#define THANDOR_IMAGE_0x00545784 ((uintptr_t)&g_ImageObject_00545784.at_g_FrontendMenuSoundVoiceSetTable100)
+#define THANDOR_IMAGE_0x00545788 ((uintptr_t)&g_ImageObject_00545788.at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1)
+#define THANDOR_IMAGE_0x00545914 ((uintptr_t)&g_ImageObject_00545914.at_g_FrontendLoadedCampaignAsset)
+#define THANDOR_IMAGE_0x00545918 ((uintptr_t)&g_ImageObject_00545918.at_g_FrontendScenarioTransferState)
+#define THANDOR_IMAGE_0x0054591c ((uintptr_t)&g_ImageObject_0054591C.at_g_FrontendPlayerMessageBuffers)
+#define THANDOR_IMAGE_0x00545920 ((uintptr_t)&g_ImageObject_00545920.at_g_FrontendLocalPlayerPcxPreview)
+#define THANDOR_IMAGE_0x00545924 ((uintptr_t)&g_ImageObject_00545924.at_g_FrontendHostSnapshotTransferCountdown)
+#define THANDOR_IMAGE_0x00545928 ((uintptr_t)&g_ImageObject_00545928.at_g_FrontendScenarioInitializationCount)
+#define THANDOR_IMAGE_0x0054592c ((uintptr_t)&g_ImageObject_0054592C.at_g_FrontendMusicVoiceSet)
+#define THANDOR_IMAGE_0x00545930 ((uintptr_t)&g_ImageObject_00545930.at_g_FrontendMusicActiveBuffer)
+#define THANDOR_IMAGE_0x00545934 ((uintptr_t)&g_ImageObject_00545934.at_g_FrontendPendingPageActionDepth)
+#define THANDOR_IMAGE_0x00545938 ((uintptr_t)&g_ImageObject_00545938.at_g_FrontendUiActionHandlersPage20)
+#define THANDOR_IMAGE_0x00545a98 ((uintptr_t)&g_ImageObject_00545A98.at_g_FrontendScenarioMapOptionHandlerTable)
+#define THANDOR_IMAGE_0x00545aa4 ((uintptr_t)&g_ImageObject_00545AA4.at_u_engine_zentrale_rom_00545aa4)
+#define THANDOR_IMAGE_0x00545acc ((uintptr_t)&g_ImageObject_00545ACC.at_u_gfx_texturen_zentrale_gfx_00545acc)
+#define THANDOR_IMAGE_0x00545b00 ((uintptr_t)&g_ImageObject_00545B00.at_u_gfx_texturen_zentrale_pal_00545b00)
+#define THANDOR_IMAGE_0x00545b34 ((uintptr_t)&g_ImageObject_00545B34.at_u_texte_hilfe_str_00545b34)
+#define THANDOR_IMAGE_0x00545b54 ((uintptr_t)&g_ImageObject_00545B54.at_u_sound_menue01_sam_00545b54)
+#define THANDOR_IMAGE_0x00545b78 ((uintptr_t)&g_ImageObject_00545B78.at_u_gfx_panel_menue_gfx_00545b78)
+#define THANDOR_IMAGE_0x00545ba0 ((uintptr_t)&g_ImageObject_00545BA0.at_u_texte_menue_str_00545ba0)
+#define THANDOR_IMAGE_0x00545bc0 ((uintptr_t)&g_ImageObject_00545BC0.at_u_texte_level_str_00545bc0)
+#define THANDOR_IMAGE_0x00545be0 ((uintptr_t)&g_ImageObject_00545BE0.at_u_texte_inhalt_str_00545be0)
+#define THANDOR_IMAGE_0x00545c02 ((uintptr_t)&g_ImageObject_00545C02.at_g_FrontendMissionBriefingMoviePathUtf16)
+#define THANDOR_IMAGE_0x00545c10 ((uintptr_t)&g_ImageObject_00545C02.at_g_FrontendMissionBriefingLevelDigitsUtf16)
+#define THANDOR_IMAGE_0x00545c22 ((uintptr_t)&g_ImageObject_00545C22.at_g_CreditsTexturePathUtf16)
+#define THANDOR_IMAGE_0x00545c4e ((uintptr_t)&g_ImageObject_00545C4E.at_u_sound_music00_sam_00545c4e)
+#define THANDOR_IMAGE_0x00545c72 ((uintptr_t)&g_ImageObject_00545C72.at_g_FrontendScenarioPathScratchUtf16)
+#define THANDOR_IMAGE_0x00545e72 ((uintptr_t)&g_ImageObject_00545E72.at_s_SPIELER__SPIEL__NETZWERK__HOST_00545e72)
+#define THANDOR_IMAGE_0x00545e91 ((uintptr_t)&g_ImageObject_00545E91.at_s_NAME__CLIENT__KARTE___00545e91)
+#define THANDOR_IMAGE_0x005460a6 ((uintptr_t)&g_ImageObject_005460A6.at_u_level___lev_005460a6)
+#define THANDOR_IMAGE_0x005460be ((uintptr_t)&g_ImageObject_005460BE.at_u_level___str_005460be)
+#define THANDOR_IMAGE_0x00548100 ((uintptr_t)&g_ImageObject_00548100.at_g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30)
+#define THANDOR_IMAGE_0x0054d7a0 ((uintptr_t)&g_ImageObject_0054D7A0.at_g_FrontendPacket10000Buffer)
+#define THANDOR_IMAGE_0x0054d7c0 ((uintptr_t)&g_ImageObject_0054D7C0.at_g_FrontendPacket50001Buffer)
+#define THANDOR_IMAGE_0x0054d860 ((uintptr_t)&g_ImageObject_0054D860.at_g_FrontendPacket20002Buffer)
+#define THANDOR_IMAGE_0x0054d8a0 ((uintptr_t)&g_ImageObject_0054D8A0.at_g_FrontendPacket10003Buffer)
+#define THANDOR_IMAGE_0x0054d8c0 ((uintptr_t)&g_ImageObject_0054D8C0.at_g_FrontendPacket10004Buffer)
+#define THANDOR_IMAGE_0x0054d8e0 ((uintptr_t)&g_ImageObject_0054D8E0.at_g_FrontendPacket30005Buffer)
+#define THANDOR_IMAGE_0x0054d940 ((uintptr_t)&g_ImageObject_0054D940.at_g_FrontendPacket10006Buffer)
+#define THANDOR_IMAGE_0x0054d960 ((uintptr_t)&g_ImageObject_0054D960.at_g_FrontendPacket40008Buffer)
+#define THANDOR_IMAGE_0x0054d9e0 ((uintptr_t)&g_ImageObject_0054D9E0.at_g_FrontendPacket10009Buffer)
+#define THANDOR_IMAGE_0x0054da00 ((uintptr_t)&g_ImageObject_0054DA00.at_g_FrontendPacket8000ABuffer)
+#define THANDOR_IMAGE_0x0054db00 ((uintptr_t)&g_ImageObject_0054DB00.at_g_FrontendPlayerRemovalPacket10007)
+#define THANDOR_IMAGE_0x0054db20 ((uintptr_t)&g_ImageObject_0054DB20.at_g_FrontendPlayerCommandRecords)
+#define THANDOR_IMAGE_0x0054dc20 ((uintptr_t)&g_ImageObject_0054DC20.at_g_FrontendCommandBatchPacketBuffer)
+#define THANDOR_IMAGE_0x0054dd20 ((uintptr_t)&g_ImageObject_0054DD20.at_g_FrontendPacket10011Buffer)
+#define THANDOR_IMAGE_0x0054dd40 ((uintptr_t)&g_ImageObject_0054DD40.at_g_FrontendPacket10012Buffer)
+#define THANDOR_IMAGE_0x0054dd60 ((uintptr_t)&g_ImageObject_0054DD60.at_g_FrontendPacket10013Buffer)
+#define THANDOR_IMAGE_0x0054dd80 ((uintptr_t)&g_ImageObject_0054DD80.at_g_FrontendPacket10032Buffer)
+#define THANDOR_IMAGE_0x0054dda0 ((uintptr_t)&g_ImageObject_0054DDA0.at_g_FrontendPendingSessionPlayerCount)
+#define THANDOR_IMAGE_0x0054dda8 ((uintptr_t)&g_ImageObject_0054DDA8.at_g_FrontendExpectedPlayerRuntimeBlockCount)
+#define THANDOR_IMAGE_0x0054ddac ((uintptr_t)&g_ImageObject_0054DDAC.at_g_FrontendHostPublishRoundRobinCounter)
+#define THANDOR_IMAGE_0x0054ddb0 ((uintptr_t)&g_ImageObject_0054DDB0.at_g_FrontendPlayerListRows)
+#define THANDOR_IMAGE_0x0054ddb4 ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow1)
+#define THANDOR_IMAGE_0x0054ddb8 ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow2)
+#define THANDOR_IMAGE_0x0054ddbc ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow3)
+#define THANDOR_IMAGE_0x0054ddc0 ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow4)
+#define THANDOR_IMAGE_0x0054ddc4 ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow5)
+#define THANDOR_IMAGE_0x0054ddc8 ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow6)
+#define THANDOR_IMAGE_0x0054ddcc ((uintptr_t)&g_ImageObject_0054DDB4.at_g_FrontendPlayerListRow7)
+#define THANDOR_IMAGE_0x0054ddd0 ((uintptr_t)&g_ImageObject_0054DDD0.at_g_FrontendNetworkEndpointScratch)
+#define THANDOR_IMAGE_0x0054dde0 ((uintptr_t)&g_ImageObject_0054DDE0.at_g_FrontendNetworkRuntimeCountTextUtf16)
+#define THANDOR_IMAGE_0x0054dde8 ((uintptr_t)&g_ImageObject_0054DDE8.at_g_FrontendNetworkPlayerCountTextUtf16)
+#define THANDOR_IMAGE_0x0054ddf0 ((uintptr_t)&g_ImageObject_0054DDF0.at_g_FrontendNetworkSpeedLabelUtf16)
+#define THANDOR_IMAGE_0x0054de30 ((uintptr_t)&g_ImageObject_0054DE30.at_g_FrontendNetworkEndpointTextUtf16)
+#define THANDOR_IMAGE_0x0054fbc0 ((uintptr_t)&g_ImageObject_0054FBC0.at_g_UiRootCallbacks_0054FBC0)
+#define THANDOR_IMAGE_0x0054fbd4 ((uintptr_t)&g_ImageObject_0054FBD4.at_g_InGameFactionStatusTextScratchUtf16)
+#define THANDOR_IMAGE_0x0054fbd8 ((uintptr_t)&g_ImageObject_0054FBD8.at_g_InGamePlayerListTextScratchUtf16)
+#define THANDOR_IMAGE_0x0054fbdc ((uintptr_t)&g_ImageObject_0054FBDC.at_g_InGamePlayerStatusTextSlots)
+#define THANDOR_IMAGE_0x0054ffdc ((uintptr_t)&g_ImageObject_0054FFDC.at_g_InGameSelectionDetailNameTextUtf16)
+#define THANDOR_IMAGE_0x0055005c ((uintptr_t)&g_ImageObject_0055005C.at_g_InGameSelectionDetailArmourTextUtf16)
+#define THANDOR_IMAGE_0x005500dc ((uintptr_t)&g_ImageObject_005500DC.at_g_InGameSelectionDetailWeaponName0TextUtf16)
+#define THANDOR_IMAGE_0x0055015c ((uintptr_t)&g_ImageObject_0055015C.at_g_InGameSelectionDetailWeaponName1TextUtf16)
+#define THANDOR_IMAGE_0x005501dc ((uintptr_t)&g_ImageObject_005501DC.at_g_InGameSelectionDetailWeaponName2TextUtf16)
+#define THANDOR_IMAGE_0x0055025c ((uintptr_t)&g_ImageObject_0055025C.at_g_InGameSelectionDetailTextSlot05Utf16)
+#define THANDOR_IMAGE_0x005502dc ((uintptr_t)&g_ImageObject_005502DC.at_g_InGameSelectionDetailBuildXeniteCostTextUtf16)
+#define THANDOR_IMAGE_0x0055035c ((uintptr_t)&g_ImageObject_0055035C.at_g_InGameSelectionDetailBuildTimeTextUtf16)
+#define THANDOR_IMAGE_0x005503dc ((uintptr_t)&g_ImageObject_005503DC.at_g_InGameSelectionDetailEnergyTextUtf16)
+#define THANDOR_IMAGE_0x0055045c ((uintptr_t)&g_ImageObject_0055045C.at_g_InGameSelectionDetailTextSlot09Utf16)
+#define THANDOR_IMAGE_0x005504dc ((uintptr_t)&g_ImageObject_005504DC.at_g_FrontendCurrentFactionPrimaryResourceTextUtf16)
+#define THANDOR_IMAGE_0x005504fc ((uintptr_t)&g_ImageObject_005504FC.at_g_InGameTechnologyCostRichTextScratch)
+#define THANDOR_IMAGE_0x005504fe ((uintptr_t)&g_ImageObject_005504FE.at_g_InGameTechnologyCostColorWords8)
+#define THANDOR_IMAGE_0x0055050e ((uintptr_t)&g_ImageObject_0055050E.at_g_InGameTechnologyXeniteCostTextUtf16)
+#define THANDOR_IMAGE_0x0055052e ((uintptr_t)&g_ImageObject_0055052E.at_g_InGameTechnologyEnergyCostTextUtf16)
+#define THANDOR_IMAGE_0x0055054e ((uintptr_t)&g_ImageObject_0055054E.at_g_InGameTechnologyResearchTimeTextUtf16)
+#define THANDOR_IMAGE_0x0055056e ((uintptr_t)&g_ImageObject_0055056E.at_g_InGameHudNumberTextUtf16)
+#define THANDOR_IMAGE_0x0055058e ((uintptr_t)&g_ImageObject_0055058E.at_g_EmptyFrontendPlayerNameUtf16)
+#define THANDOR_IMAGE_0x00550590 ((uintptr_t)&g_ImageObject_00550590.at_g_InGameCountdownTextUtf16)
+#define THANDOR_IMAGE_0x005505a0 ((uintptr_t)&g_ImageObject_005505A0.at_g_InGameRuntimeDefaultImageTemplate)
+#define THANDOR_IMAGE_0x00550944 ((uintptr_t)&g_ImageObject_005505A0 + 0x3A4)
+#define THANDOR_IMAGE_0x00551ae0 ((uintptr_t)&g_ImageObject_005505A0 + 0x1540)
+#define THANDOR_IMAGE_0x00551b48 ((uintptr_t)&g_ImageObject_005505A0 + 0x15A8)
+#define THANDOR_IMAGE_0x00551bb0 ((uintptr_t)&g_ImageObject_005505A0 + 0x1610)
+#define THANDOR_IMAGE_0x00551c18 ((uintptr_t)&g_ImageObject_005505A0 + 0x1678)
+#define THANDOR_IMAGE_0x00551c80 ((uintptr_t)&g_ImageObject_005505A0 + 0x16E0)
+#define THANDOR_IMAGE_0x00551ce8 ((uintptr_t)&g_ImageObject_005505A0 + 0x1748)
+#define THANDOR_IMAGE_0x00551d50 ((uintptr_t)&g_ImageObject_005505A0 + 0x17B0)
+#define THANDOR_IMAGE_0x00552978 ((uintptr_t)&g_ImageObject_005505A0 + 0x23D8)
+#define THANDOR_IMAGE_0x00552a8c ((uintptr_t)&g_ImageObject_005505A0 + 0x24EC)
+#define THANDOR_IMAGE_0x00553538 ((uintptr_t)&g_ImageObject_005505A0 + 0x2F98)
+#define THANDOR_IMAGE_0x0055efc0 ((uintptr_t)&g_ImageObject_0055EFC0.at_g_InGameCommandQueueRecords)
+#define THANDOR_IMAGE_0x0055f0c0 ((uintptr_t)&g_ImageObject_0055F0C0.at_g_InGameCommandQueueEnd)
+#define THANDOR_IMAGE_0x0055f0c4 ((uintptr_t)&g_ImageObject_0055F0C4.at_g_InGameSelectionInsertTripletDwords)
+#define THANDOR_IMAGE_0x0055f0f4 ((uintptr_t)&g_ImageObject_0055F0F4.at_g_InGameSelectionRemoveTripletDwords)
+#define THANDOR_IMAGE_0x0055f124 ((uintptr_t)&g_ImageObject_0055F124.at_g_InGameSelectionInsertTripletDwordCount)
+#define THANDOR_IMAGE_0x0055f128 ((uintptr_t)&g_ImageObject_0055F128.at_g_InGameSelectionRemoveTripletDwordCount)
+#define THANDOR_IMAGE_0x00562499 ((uintptr_t)&g_ImageObject_00562499.at_InGameCommandHandlerCodeRegionEnd)
+#define THANDOR_IMAGE_0x005624a0 ((uintptr_t)&g_ImageObject_005624A0.at_g_InGameUiActionHandlersPage10)
+#define THANDOR_IMAGE_0x00562540 ((uintptr_t)&g_ImageObject_005624A0.at_g_InGameUiActionHandlersPage11)
+#define THANDOR_IMAGE_0x005625b8 ((uintptr_t)&g_ImageObject_005624A0.at_g_InGameUiActionHandlersPage12)
+#define THANDOR_IMAGE_0x00562628 ((uintptr_t)&g_ImageObject_00562628.at_g_UiAction100AControlOffsets)
+#define THANDOR_IMAGE_0x00562648 ((uintptr_t)&g_ImageObject_00562648.at_g_UiCatalogGroup48ColumnCount)
+#define THANDOR_IMAGE_0x0056264c ((uintptr_t)&g_ImageObject_0056264C.at_g_UiCatalogGroup42ColumnCount)
+#define THANDOR_IMAGE_0x00562650 ((uintptr_t)&g_ImageObject_00562650.at_g_UiCommandSpriteVariantAColumnCount)
+#define THANDOR_IMAGE_0x00562654 ((uintptr_t)&g_ImageObject_00562654.at_g_UiCatalogGroup48OffsetTables)
+#define THANDOR_IMAGE_0x00562678 ((uintptr_t)&g_ImageObject_00562678.at_g_UiCatalogGroup42OffsetTables)
+#define THANDOR_IMAGE_0x00562694 ((uintptr_t)&g_ImageObject_00562694.at_g_UiCommandSpriteVariantAOffsetTables)
+#define THANDOR_IMAGE_0x005626a8 ((uintptr_t)&g_ImageObject_005626A8.at_g_UiCatalogGroup48OffsetsDefault)
+#define THANDOR_IMAGE_0x00562768 ((uintptr_t)&g_ImageObject_00562768.at_g_UiCatalogGroup48Offsets5Columns)
+#define THANDOR_IMAGE_0x00562828 ((uintptr_t)&g_ImageObject_00562828.at_g_UiCatalogGroup48Offsets6Columns)
+#define THANDOR_IMAGE_0x005628e8 ((uintptr_t)&g_ImageObject_005628E8.at_g_UiCatalogGroup48Offsets7Columns)
+#define THANDOR_IMAGE_0x005629a8 ((uintptr_t)&g_ImageObject_005629A8.at_g_UiCatalogGroup48Offsets8Columns)
+#define THANDOR_IMAGE_0x00562a68 ((uintptr_t)&g_ImageObject_00562A68.at_g_UiCatalogGroup42OffsetsDefault)
+#define THANDOR_IMAGE_0x00562b10 ((uintptr_t)&g_ImageObject_00562B10.at_g_UiCatalogGroup42Offsets5Columns)
+#define THANDOR_IMAGE_0x00562bb8 ((uintptr_t)&g_ImageObject_00562BB8.at_g_UiCatalogGroup42Offsets6Columns)
+#define THANDOR_IMAGE_0x00562c60 ((uintptr_t)&g_ImageObject_00562C60.at_g_UiCommandSpriteVariantAOffsets)
+#define THANDOR_IMAGE_0x00562cc0 ((uintptr_t)&g_ImageObject_00562CC0.at_g_UiAction1012PlayerIndexTextOffsets)
+#define THANDOR_IMAGE_0x00562cdc ((uintptr_t)&g_ImageObject_00562CDC.at_g_UiAction1012PlayerLabelTextOffsets)
+#define THANDOR_IMAGE_0x00562cf8 ((uintptr_t)&g_ImageObject_00562CF8.at_g_UiAction1012IconImageOffsets)
+#define THANDOR_IMAGE_0x00562d14 ((uintptr_t)&g_ImageObject_00562D14.at_g_UiAction1012StateTextOffsets)
+#define THANDOR_IMAGE_0x00562d30 ((uintptr_t)&g_ImageObject_00562D30.at_g_UiAction1012ControlOffsets)
+#define THANDOR_IMAGE_0x00562d4c ((uintptr_t)&g_ImageObject_00562D4C.at_g_UiAction1012SlotPageOffsets)
+#define THANDOR_IMAGE_0x00562d68 ((uintptr_t)&g_ImageObject_00562D68.at_g_TechnologyPanelRowFlagOffsets)
+#define THANDOR_IMAGE_0x00562d84 ((uintptr_t)&g_ImageObject_00562D84.at_g_TechnologyPanelRowValueOffsets)
+#define THANDOR_IMAGE_0x00562da0 ((uintptr_t)&g_ImageObject_00562DA0.at_g_InGameSelectionDetailGridCellOffsets)
+#define THANDOR_IMAGE_0x00562dd0 ((uintptr_t)&g_ImageObject_00562DD0.at_g_UiSevenSlotSelectionControlOffsets)
+#define THANDOR_IMAGE_0x00562dec ((uintptr_t)&g_ImageObject_00562DEC.at_g_RuntimeMaintenanceCallbackPhases)
+#define THANDOR_IMAGE_0x00562e1c ((uintptr_t)&g_ImageObject_00562E1C.at_g_UiAction1012SubresourceByState)
+#define THANDOR_IMAGE_0x00562e48 ((uintptr_t)&g_ImageObject_00562E48.at_g_InGameOwnedEntityTransientEffectMarkers)
+#define THANDOR_IMAGE_0x00562ec8 ((uintptr_t)&g_ImageObject_00562EC8.at_g_InGameOwnedEntityTransientEffectMarkerCount)
+#define THANDOR_IMAGE_0x00562ecc ((uintptr_t)&g_ImageObject_00562ECC.at_g_InGameCommandTargetTransientEffectMarkers)
+#define THANDOR_IMAGE_0x005630cc ((uintptr_t)&g_ImageObject_005630CC.at_g_InGameCommandTargetTransientEffectMarkerCount)
+#define THANDOR_IMAGE_0x005630d0 ((uintptr_t)&g_ImageObject_005630D0.at_u_gfx_panel_panel0_gfx_005630d0)
+#define THANDOR_IMAGE_0x005630fa ((uintptr_t)&g_ImageObject_005630FA.at_u_gfx_panel_tech_gfx_005630fa)
+#define THANDOR_IMAGE_0x00563120 ((uintptr_t)&g_ImageObject_00563120.at_u_gfx_panel_diagram0_gfx_00563120)
+#define THANDOR_IMAGE_0x0056314e ((uintptr_t)&g_ImageObject_0056314E.at_u_flm_movie000_flm_0056314e)
+#define THANDOR_IMAGE_0x00563170 ((uintptr_t)&g_ImageObject_00563170.at_u_texte_help_str_00563170)
+#define THANDOR_IMAGE_0x0056318e ((uintptr_t)&g_ImageObject_0056318E.at_u_gfx_panel_window_gfx_0056318e)
+#define THANDOR_IMAGE_0x005631b8 ((uintptr_t)&g_ImageObject_005631B8.at_u_texte_tastatur_str_005631b8)
+#define THANDOR_IMAGE_0x005631de ((uintptr_t)&g_ImageObject_005631DE.at_g_DeveloperChatPhraseUtf16)
+#define THANDOR_IMAGE_0x0056321e ((uintptr_t)&g_ImageObject_0056321E.at_u_Hmmm__na_gut________0056321e)
+#define THANDOR_IMAGE_0x00563260 ((uintptr_t)&g_ImageObject_00563260.at_g_UiCommandRuntimeFlags)
+#define THANDOR_IMAGE_0x00563264 ((uintptr_t)&g_ImageObject_00563264.at_g_InGameSimulationStepTicks)
+#define THANDOR_IMAGE_0x00563268 ((uintptr_t)&g_ImageObject_00563268.at_g_InGamePendingSimulationTicks)
+#define THANDOR_IMAGE_0x0056326c ((uintptr_t)&g_ImageObject_0056326C.at_g_InGameSessionNotificationTimeoutTicks)
+#define THANDOR_IMAGE_0x00563270 ((uintptr_t)&g_ImageObject_00563270.at_g_EndGameResultsCurrentMusicTrackId)
+#define THANDOR_IMAGE_0x00563274 ((uintptr_t)&g_ImageObject_00563274.at_g_InGameNetworkTickCountdown)
+#define THANDOR_IMAGE_0x00563278 ((uintptr_t)&g_ImageObject_00563278.at_g_InGameStateTickSpinLock)
+#define THANDOR_IMAGE_0x0056327c ((uintptr_t)&g_ImageObject_0056327C.at_g_InGameRuntimeRoot)
+#define THANDOR_IMAGE_0x00563280 ((uintptr_t)&g_ImageObject_00563280.at_g_InGamePanelTextureSource)
+#define THANDOR_IMAGE_0x00563284 ((uintptr_t)&g_ImageObject_00563284.at_g_InGameDiagramTextureSource)
+#define THANDOR_IMAGE_0x00563288 ((uintptr_t)&g_ImageObject_00563288.at_g_InGameTechnologyTextureSource)
+#define THANDOR_IMAGE_0x0056328c ((uintptr_t)&g_ImageObject_0056328C.at_g_InGameWindowTextureSource)
+#define THANDOR_IMAGE_0x00563290 ((uintptr_t)&g_ImageObject_00563290.at_g_InGamePanelTextureSubresource00Width)
+#define THANDOR_IMAGE_0x00563294 ((uintptr_t)&g_ImageObject_00563294.at_g_InGamePanelTextureSubresource01Width)
+#define THANDOR_IMAGE_0x00563298 ((uintptr_t)&g_ImageObject_00563298.at_g_InGamePanelTextureSubresource02Width)
+#define THANDOR_IMAGE_0x0056329c ((uintptr_t)&g_ImageObject_0056329C.at_g_InGamePanelTextureSubresource06Width)
+#define THANDOR_IMAGE_0x005632a0 ((uintptr_t)&g_ImageObject_005632A0.at_g_InGamePanelTextureSubresource07Width)
+#define THANDOR_IMAGE_0x005632a4 ((uintptr_t)&g_ImageObject_005632A4.at_g_InGamePanelTextureSubresource27Width)
+#define THANDOR_IMAGE_0x005632a8 ((uintptr_t)&g_ImageObject_005632A8.at_g_InGamePanelTextureSubresource28Width)
+#define THANDOR_IMAGE_0x005632ac ((uintptr_t)&g_ImageObject_005632AC.at_g_InGamePanelTextureSubresource19Width)
+#define THANDOR_IMAGE_0x005632b0 ((uintptr_t)&g_ImageObject_005632B0.at_g_InGamePanelTextureSubresource20Width)
+#define THANDOR_IMAGE_0x005632b4 ((uintptr_t)&g_ImageObject_005632B4.at_g_InGamePanelTextureSubresource34Width)
+#define THANDOR_IMAGE_0x005632b8 ((uintptr_t)&g_ImageObject_005632B8.at_g_InGamePanelTextureSubresource32Width)
+#define THANDOR_IMAGE_0x005632bc ((uintptr_t)&g_ImageObject_005632BC.at_g_InGamePanelTextureSubresource33Width)
+#define THANDOR_IMAGE_0x005632c0 ((uintptr_t)&g_ImageObject_005632C0.at_g_InGamePanelTextureSubresource02Height)
+#define THANDOR_IMAGE_0x005632c4 ((uintptr_t)&g_ImageObject_005632C4.at_g_InGamePanelTextureSubresource03Height)
+#define THANDOR_IMAGE_0x005632c8 ((uintptr_t)&g_ImageObject_005632C8.at_g_InGamePanelTextureSubresource04Height)
+#define THANDOR_IMAGE_0x005632cc ((uintptr_t)&g_ImageObject_005632CC.at_g_InGamePanelTextureSubresource05Height)
+#define THANDOR_IMAGE_0x005632d0 ((uintptr_t)&g_ImageObject_005632D0.at_g_InGamePanelTextureSubresource36Height)
+#define THANDOR_IMAGE_0x005632d4 ((uintptr_t)&g_ImageObject_005632D4.at_g_InGamePanelTextureSubresource37Height)
+#define THANDOR_IMAGE_0x005632d8 ((uintptr_t)&g_ImageObject_005632D8.at_g_InGamePanelTextureSubresource06Height)
+#define THANDOR_IMAGE_0x005632dc ((uintptr_t)&g_ImageObject_005632DC.at_g_InGamePanelTextureSubresource00Height)
+#define THANDOR_IMAGE_0x005632e0 ((uintptr_t)&g_ImageObject_005632E0.at_g_InGamePanelTextureSubresource07Height)
+#define THANDOR_IMAGE_0x005632e4 ((uintptr_t)&g_ImageObject_005632E4.at_g_InGamePanelTextureSubresource26Height)
+#define THANDOR_IMAGE_0x005632e8 ((uintptr_t)&g_ImageObject_005632E8.at_g_InGamePanelTextureSubresource31Height)
+#define THANDOR_IMAGE_0x005632ec ((uintptr_t)&g_ImageObject_005632EC.at_g_InGamePanelTextureSubresource18Height)
+#define THANDOR_IMAGE_0x005632f0 ((uintptr_t)&g_ImageObject_005632F0.at_g_InGamePanelTextureSubresource23Height)
+#define THANDOR_IMAGE_0x005632f4 ((uintptr_t)&g_ImageObject_005632F4.at_g_InGamePanelTextureSubresource34Height)
+#define THANDOR_IMAGE_0x005632f8 ((uintptr_t)&g_ImageObject_005632F8.at_g_InGamePanelTextureSubresource32Height)
+#define THANDOR_IMAGE_0x005632fc ((uintptr_t)&g_ImageObject_005632FC.at_g_UiHoverSelectionRecord)
+#define THANDOR_IMAGE_0x00563300 ((uintptr_t)&g_ImageObject_00563300.at_g_InGameSelectedTechnologyId)
+#define THANDOR_IMAGE_0x00563320 ((uintptr_t)&g_ImageObject_00563320.at_g_MoviePlaybackBaseFrameGroup)
+#define THANDOR_IMAGE_0x00563324 ((uintptr_t)&g_ImageObject_00563324.at_g_MoviePlaybackScheduleCounter)
+#define THANDOR_IMAGE_0x00563328 ((uintptr_t)&g_ImageObject_00563328.at_g_MoviePlaybackScheduleSpan)
+#define THANDOR_IMAGE_0x0056332c ((uintptr_t)&g_ImageObject_0056332C.at_g_MoviePlaybackCurrentFrame)
+#define THANDOR_IMAGE_0x00563330 ((uintptr_t)&g_ImageObject_00563330.at_g_DebugOverlayCounterRefreshCountdown)
+#define THANDOR_IMAGE_0x00563334 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot00Utf16)
+#define THANDOR_IMAGE_0x00563354 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot01Utf16)
+#define THANDOR_IMAGE_0x00563374 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot02Utf16)
+#define THANDOR_IMAGE_0x00563394 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot03Utf16)
+#define THANDOR_IMAGE_0x005633b4 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot04Utf16)
+#define THANDOR_IMAGE_0x005633d4 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot05Utf16)
+#define THANDOR_IMAGE_0x005633f4 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot06Utf16)
+#define THANDOR_IMAGE_0x00563414 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot07Utf16)
+#define THANDOR_IMAGE_0x00563434 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot08Utf16)
+#define THANDOR_IMAGE_0x00563454 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot09Utf16)
+#define THANDOR_IMAGE_0x00563474 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot10Utf16)
+#define THANDOR_IMAGE_0x00563494 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot11Utf16)
+#define THANDOR_IMAGE_0x005634b4 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot12Utf16)
+#define THANDOR_IMAGE_0x005634d4 ((uintptr_t)&g_ImageObject_00563334.at_g_FrontendDebugOverlayTextSlot13Utf16)
+#define THANDOR_IMAGE_0x00563514 ((uintptr_t)&g_ImageObject_00563514.at_g_InGameReadyStateToggleFlags)
+#define THANDOR_IMAGE_0x00563518 ((uintptr_t)&g_ImageObject_00563518.at_g_UiCatalogGroup48Records)
+#define THANDOR_IMAGE_0x005635d8 ((uintptr_t)&g_ImageObject_005635D8.at_g_UiCatalogGroup42Records)
+#define THANDOR_IMAGE_0x00563680 ((uintptr_t)&g_ImageObject_00563680.at_g_UiCommandSpriteVariantARecords)
+#define THANDOR_IMAGE_0x005636e0 ((uintptr_t)&g_ImageObject_005636E0.at_g_UiAction1012TargetPlayerIndices)
+#define THANDOR_IMAGE_0x005636fc ((uintptr_t)&g_ImageObject_005636FC.at_g_InGameWorldObjectRecords)
+#define THANDOR_IMAGE_0x00563700 ((uintptr_t)&g_ImageObject_00563700.at_g_RuntimeObjectRebaseBaseMinusOne)
+#define THANDOR_IMAGE_0x00563704 ((uintptr_t)&g_ImageObject_00563704.at_g_InGamePlacementHeading16)
+#define THANDOR_IMAGE_0x00563708 ((uintptr_t)&g_ImageObject_00563708.at_g_InGamePlacementPointerCaptureX)
+#define THANDOR_IMAGE_0x0056370c ((uintptr_t)&g_ImageObject_00563708.at_g_InGamePlacementPointerCaptureY)
+#define THANDOR_IMAGE_0x00563710 ((uintptr_t)&g_ImageObject_00563710.at_g_InGamePendingPlacementArmyAsset)
+#define THANDOR_IMAGE_0x00563714 ((uintptr_t)&g_ImageObject_00563714.at_g_InGamePlacementPreviewArmyRuntime)
+#define THANDOR_IMAGE_0x00563718 ((uintptr_t)&g_ImageObject_00563718.at_g_InGamePlacementWorldYQ12)
+#define THANDOR_IMAGE_0x0056371c ((uintptr_t)&g_ImageObject_00563718.at_g_InGamePlacementWorldXQ12)
+#define THANDOR_IMAGE_0x00563720 ((uintptr_t)&g_ImageObject_00563720.at_g_InGamePlacementSurfaceHeightQ12OrSentinel)
+#define THANDOR_IMAGE_0x00563724 ((uintptr_t)&g_ImageObject_00563724.at_g_InGameCommandPreviewArmyRuntime)
+#define THANDOR_IMAGE_0x00563728 ((uintptr_t)&g_ImageObject_00563728.at_g_InGameCommandPreviewHeading16)
+#define THANDOR_IMAGE_0x0056372c ((uintptr_t)&g_ImageObject_0056372C.at_g_InGameCommandPreviewWorldYQ12)
+#define THANDOR_IMAGE_0x00563730 ((uintptr_t)&g_ImageObject_0056372C.at_g_InGameCommandPreviewWorldXQ12)
+#define THANDOR_IMAGE_0x00563734 ((uintptr_t)&g_ImageObject_00563734.at_g_InGameCommandPreviewSurfaceHeightQ12OrSentinel)
+#define THANDOR_IMAGE_0x00563738 ((uintptr_t)&g_ImageObject_00563738.at_g_InGameCommandPointerCaptureX)
+#define THANDOR_IMAGE_0x0056373c ((uintptr_t)&g_ImageObject_00563738.at_g_InGameCommandPointerCaptureY)
+#define THANDOR_IMAGE_0x00563740 ((uintptr_t)&g_ImageObject_00563740.at_g_InGameCommandPreviewArmyAssetId)
+#define THANDOR_IMAGE_0x00563744 ((uintptr_t)&g_ImageObject_00563744.at_g_InGamePointerInteractionStateFlags)
+#define THANDOR_IMAGE_0x00563748 ((uintptr_t)&g_ImageObject_00563748.at_g_InGamePointerModeHandlers)
+#define THANDOR_IMAGE_0x00563768 ((uintptr_t)&g_ImageObject_00563768.at_g_InGamePointerModeCommandIds)
+#define THANDOR_IMAGE_0x00563788 ((uintptr_t)&g_ImageObject_00563788.at_g_InGamePointerModePreviewArmyIds)
+#define THANDOR_IMAGE_0x0056378c ((uintptr_t)&g_ImageObject_00563788 + 0x4)
+#define THANDOR_IMAGE_0x00563790 ((uintptr_t)&g_ImageObject_00563788 + 0x8)
+#define THANDOR_IMAGE_0x00563798 ((uintptr_t)&g_ImageObject_00563788 + 0x10)
+#define THANDOR_IMAGE_0x005637a8 ((uintptr_t)&g_ImageObject_005637A8.at_g_ArmyPlacementLateRejectionCount)
+#define THANDOR_IMAGE_0x005637ac ((uintptr_t)&g_ImageObject_005637AC.at_g_InGameWorldRuntimeDwordArray256)
+#define THANDOR_IMAGE_0x00563bac ((uintptr_t)&g_ImageObject_00563BAC.at_g_EndMovieSelectionIndex)
+#define THANDOR_IMAGE_0x00563bb0 ((uintptr_t)&g_ImageObject_00563BB0.at_g_EndMovieVariantIndex)
+#define THANDOR_IMAGE_0x00563bb4 ((uintptr_t)&g_ImageObject_00563BB4.at_g_EndMoviePath)
+#define THANDOR_IMAGE_0x00563bb8 ((uintptr_t)&g_ImageObject_00563BB8.at_g_EndMoviePendingTicks)
+#define THANDOR_IMAGE_0x00563bbc ((uintptr_t)&g_ImageObject_00563BBC.at_g_OldUnitSecondaryTable)
+#define THANDOR_IMAGE_0x00563bc0 ((uintptr_t)&g_ImageObject_00563BC0.at_g_OldUnitPrimaryTable)
+#define THANDOR_IMAGE_0x00563bc4 ((uintptr_t)&g_ImageObject_00563BC4.at_g_OldUnitRecordCount)
+#define THANDOR_IMAGE_0x005658c0 ((uintptr_t)&g_ImageObject_005658C0.at_g_EndMovieCommandDispatchRecords)
+#define THANDOR_IMAGE_0x00567110 ((uintptr_t)&g_ImageObject_00567110.at_g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30)
+#define THANDOR_IMAGE_0x005679b0 ((uintptr_t)&g_ImageObject_005679B0.at_g_InGameCommandDispatchRecords_00_Code00030073_Modifier33)
+#define THANDOR_IMAGE_0x0056a604 ((uintptr_t)&g_ImageObject_0056A604.at_g_InGameSessionStartedNetworked)
+#define THANDOR_IMAGE_0x0056d720 ((uintptr_t)&g_ImageObject_0056D720.at_g_UiCommandModeG)
+#define THANDOR_IMAGE_0x0056d724 ((uintptr_t)&g_ImageObject_0056D724.at_g_UiCommandModeC)
+#define THANDOR_IMAGE_0x0056d728 ((uintptr_t)&g_ImageObject_0056D728.at_g_UiCommandModeD)
+#define THANDOR_IMAGE_0x0056d72c ((uintptr_t)&g_ImageObject_0056D72C.at_g_UiCommandModeE)
+#define THANDOR_IMAGE_0x0056d730 ((uintptr_t)&g_ImageObject_0056D730.at_g_UiCommandModeA)
+#define THANDOR_IMAGE_0x0056d734 ((uintptr_t)&g_ImageObject_0056D734.at_g_UiCommandModeB)
+#define THANDOR_IMAGE_0x0056d73c ((uintptr_t)&g_ImageObject_0056D73C.at_g_UiCommandModeF)
+#define THANDOR_IMAGE_0x0056d740 ((uintptr_t)&g_ImageObject_0056D740.at_g_UiCommandAbsoluteSelectionIndex)
+#define THANDOR_IMAGE_0x0056d744 ((uintptr_t)&g_ImageObject_0056D744.at_g_UiCommandSelectionPageBaseIndex)
+#define THANDOR_IMAGE_0x0056d748 ((uintptr_t)&g_ImageObject_0056D748.at_g_UiCommandTerrainMaskToggleValue)
+#define THANDOR_IMAGE_0x0056d74c ((uintptr_t)&g_ImageObject_0056D74C.at_g_UiCommandModeGOwnerFactionIndex)
+#define THANDOR_IMAGE_0x0056d750 ((uintptr_t)&g_ImageObject_0056D750.at_g_UiCommandModeGArmyAssetId)
+#define THANDOR_IMAGE_0x0056d754 ((uintptr_t)&g_ImageObject_0056D754.at_g_UiCommandDragReferenceX)
+#define THANDOR_IMAGE_0x0056d758 ((uintptr_t)&g_ImageObject_0056D754.at_g_UiCommandDragReferenceY)
+#define THANDOR_IMAGE_0x0056d75c ((uintptr_t)&g_ImageObject_0056D75C.at_g_UiCommandMode4ArmyAssetId)
+#define THANDOR_IMAGE_0x0056d760 ((uintptr_t)&g_ImageObject_0056D760.at_g_UiCommandCallerMaskHighBit)
+#define THANDOR_IMAGE_0x0056d764 ((uintptr_t)&g_ImageObject_0056D764.at_g_UiCommandModeGPrimaryPageIndices)
+#define THANDOR_IMAGE_0x0056d77c ((uintptr_t)&g_ImageObject_0056D77C.at_g_UiCommandModeGSecondaryPageIndices)
+#define THANDOR_IMAGE_0x0056d794 ((uintptr_t)&g_ImageObject_0056D794.at_g_UiCommandModeGTertiaryPageIndices)
+#define THANDOR_IMAGE_0x0056d7ac ((uintptr_t)&g_ImageObject_0056D7AC.at_g_UiCommandModeGControlOffsets)
+#define THANDOR_IMAGE_0x0056d7c4 ((uintptr_t)&g_ImageObject_0056D7C4.at_g_UiCommandModeGHandlers)
+#define THANDOR_IMAGE_0x0056d7dc ((uintptr_t)&g_ImageObject_0056D7DC.at_g_UiMappedCommandControlOffsets)
+#define THANDOR_IMAGE_0x0056d80c ((uintptr_t)&g_ImageObject_0056D80C.at_g_UiCommandSelectionAnchorWorldXQ12)
+#define THANDOR_IMAGE_0x0056d810 ((uintptr_t)&g_ImageObject_0056D80C.at_g_UiCommandSelectionAnchorWorldYQ12)
+#define THANDOR_IMAGE_0x0056d814 ((uintptr_t)&g_ImageObject_0056D814.at_g_UiCommandSelectionCurrentWorldXQ12)
+#define THANDOR_IMAGE_0x0056d818 ((uintptr_t)&g_ImageObject_0056D814.at_g_UiCommandSelectionCurrentWorldYQ12)
+#define THANDOR_IMAGE_0x0056d81c ((uintptr_t)&g_ImageObject_0056D81C.at_g_UiCommandDragAnchorWorldXQ12)
+#define THANDOR_IMAGE_0x0056d820 ((uintptr_t)&g_ImageObject_0056D81C.at_g_UiCommandDragAnchorWorldYQ12)
+#define THANDOR_IMAGE_0x0056d824 ((uintptr_t)&g_ImageObject_0056D824.at_g_UiCommandDragStartScreenX)
+#define THANDOR_IMAGE_0x0056d828 ((uintptr_t)&g_ImageObject_0056D824.at_g_UiCommandDragStartScreenY)
+#define THANDOR_IMAGE_0x0056d82c ((uintptr_t)&g_ImageObject_0056D82C.at_g_TerrainMaterialEditFieldGrid)
+#define THANDOR_IMAGE_0x0056d830 ((uintptr_t)&g_ImageObject_0056D830.at_g_TerrainMaterialEditDeltaBuffer)
+#define THANDOR_IMAGE_0x0056d834 ((uintptr_t)&g_ImageObject_0056D834.at_g_TerrainMaterialEditReferenceMaterialByte)
+#define THANDOR_IMAGE_0x0056d838 ((uintptr_t)&g_ImageObject_0056D838.at_g_TerrainMaterialEditReplacementMaterialByte)
+#define THANDOR_IMAGE_0x0056e410 ((uintptr_t)&g_ImageObject_0056E410.at_g_InGameKeyboardDispatchRecords)
+#define THANDOR_IMAGE_0x0056e5c0 ((uintptr_t)&g_ImageObject_0056E5C0.at_g_InGameKeyboardDispatchRecordsTerminator)
+#define THANDOR_IMAGE_0x0056f280 ((uintptr_t)&g_ImageObject_0056F280.at_g_InGameCameraCommandDispatchRecords16)
+#define THANDOR_IMAGE_0x00572040 ((uintptr_t)&g_ImageObject_00572040.at_g_FrontendClientPlayerRemovalPacket10007)
+#define THANDOR_IMAGE_0x00572060 ((uintptr_t)&g_ImageObject_00572060.at_g_FrontendClientPlayerCommandRecords)
+#define THANDOR_IMAGE_0x00572160 ((uintptr_t)&g_ImageObject_00572160.at_g_FrontendClientCommandBatchPacketBuffer)
+#define THANDOR_IMAGE_0x00572260 ((uintptr_t)&g_ImageObject_00572260.at_g_FrontendPacket10021Buffer)
+#define THANDOR_IMAGE_0x00572280 ((uintptr_t)&g_ImageObject_00572280.at_g_FrontendPacket10022Buffer)
+#define THANDOR_IMAGE_0x005722a0 ((uintptr_t)&g_ImageObject_005722A0.at_g_FrontendPacket10023Buffer)
+#define THANDOR_IMAGE_0x00572ac0 ((uintptr_t)&g_ImageObject_00572AC0.at_g_DataPackageHandle)
+#define THANDOR_IMAGE_0x00572ac4 ((uintptr_t)&g_ImageObject_00572AC4.at_g_ModelPackageHandle)
+#define THANDOR_IMAGE_0x00572ac8 ((uintptr_t)&g_ImageObject_00572AC8.at_g_GraphicsPackageHandle)
+#define THANDOR_IMAGE_0x00572acc ((uintptr_t)&g_ImageObject_00572ACC.at_g_SoundPackageHandle)
+#define THANDOR_IMAGE_0x00572ad0 ((uintptr_t)&g_ImageObject_00572AD0.at_g_MoviePackageHandle)
+#define THANDOR_IMAGE_0x00572ad4 ((uintptr_t)&g_ImageObject_00572AD4.at_g_LevelPackageHandle)
+#define THANDOR_IMAGE_0x00572ad8 ((uintptr_t)&g_ImageObject_00572AD8.at_g_UiButtonSoundVoiceSets7)
+#define THANDOR_IMAGE_0x00572af4 ((uintptr_t)&g_ImageObject_00572AF4.at_g_PcxFunctionModule)
+#define THANDOR_IMAGE_0x00572af8 ((uintptr_t)&g_ImageObject_00572AF8.at_g_PcxFunctionExport3)
+#define THANDOR_IMAGE_0x00572afc ((uintptr_t)&g_ImageObject_00572AF8.at_g_PcxFunctionExport2)
+#define THANDOR_IMAGE_0x00572b00 ((uintptr_t)&g_ImageObject_00572B00.at_g_IntroMoviePendingTicks)
+#define THANDOR_IMAGE_0x00572b04 ((uintptr_t)&g_ImageObject_00572B04.at_g_InstallRegistryKeyHandle)
+#define THANDOR_IMAGE_0x00572b08 ((uintptr_t)&g_ImageObject_00572B08.at_g_InstallRegistryValueDataCapacityBytes)
+#define THANDOR_IMAGE_0x00572b0c ((uintptr_t)&g_ImageObject_00572B0C.at_g_InstallRegistryValueType)
+#define THANDOR_IMAGE_0x00572b10 ((uintptr_t)&g_ImageObject_00572B10.at_g_InstallRegistryValueDataA)
+#define THANDOR_IMAGE_0x00572c10 ((uintptr_t)&g_ImageObject_00572C10.at_g_InstallDirectoryScratchUtf16)
+#define THANDOR_IMAGE_0x00572e10 ((uintptr_t)&g_ImageObject_00572E10.at_u_Thandor_00572e10)
+#define THANDOR_IMAGE_0x00572e20 ((uintptr_t)&g_ImageObject_00572E20.at_s_Software_Planet4_Thandor_00572e20)
+#define THANDOR_IMAGE_0x00572e39 ((uintptr_t)&g_ImageObject_00572E39.at_s_InstallRegistryValueNameCD)
+#define THANDOR_IMAGE_0x00572e3a ((uintptr_t)&g_ImageObject_00572E39.at_u_Dscreen00_pcx_00572e3a)
+#define THANDOR_IMAGE_0x00572e3c ((uintptr_t)&g_ImageObject_00572E39.at_g_ScreenshotFileNameUtf16)
+#define THANDOR_IMAGE_0x00572e56 ((uintptr_t)&g_ImageObject_00572E56.at_u_daten_pck_00572e56)
+#define THANDOR_IMAGE_0x00572e6a ((uintptr_t)&g_ImageObject_00572E6A.at_u_modelle_pck_00572e6a)
+#define THANDOR_IMAGE_0x00572e82 ((uintptr_t)&g_ImageObject_00572E82.at_u_graphik_pck_00572e82)
+#define THANDOR_IMAGE_0x00572e9a ((uintptr_t)&g_ImageObject_00572E9A.at_u_sound_pck_00572e9a)
+#define THANDOR_IMAGE_0x00572eae ((uintptr_t)&g_ImageObject_00572EAE.at_u_filme_pck_00572eae)
+#define THANDOR_IMAGE_0x00572ec2 ((uintptr_t)&g_ImageObject_00572EC2.at_u_level_pck_00572ec2)
+#define THANDOR_IMAGE_0x00572ed6 ((uintptr_t)&g_ImageObject_00572ED6.at_g_PatchArchivePathTemplateUtf16)
+#define THANDOR_IMAGE_0x00572eee ((uintptr_t)&g_ImageObject_00572EEE.at_g_LevelArchivePathTemplateUtf16)
+#define THANDOR_IMAGE_0x00572f06 ((uintptr_t)&g_ImageObject_00572F06.at_u_sound_button0_sam_00572f06)
+#define THANDOR_IMAGE_0x00572f2a ((uintptr_t)&g_ImageObject_00572F2A.at_u_sound_button1_sam_00572f2a)
+#define THANDOR_IMAGE_0x00572f4e ((uintptr_t)&g_ImageObject_00572F4E.at_u_sound_button2_sam_00572f4e)
+#define THANDOR_IMAGE_0x00572f72 ((uintptr_t)&g_ImageObject_00572F72.at_u_sound_button3_sam_00572f72)
+#define THANDOR_IMAGE_0x00572f96 ((uintptr_t)&g_ImageObject_00572F96.at_u_sound_button4_sam_00572f96)
+#define THANDOR_IMAGE_0x00572fba ((uintptr_t)&g_ImageObject_00572FBA.at_u_sound_button5_sam_00572fba)
+#define THANDOR_IMAGE_0x00572fde ((uintptr_t)&g_ImageObject_00572FDE.at_u_sound_button6_sam_00572fde)
+#define THANDOR_IMAGE_0x00573002 ((uintptr_t)&g_ImageObject_00573002.at_u_gfx_panel_stat_gfx_00573002)
+#define THANDOR_IMAGE_0x00573028 ((uintptr_t)&g_ImageObject_00573028.at_u_engine_pcx_fnc_00573028)
+#define THANDOR_IMAGE_0x00573046 ((uintptr_t)&g_ImageObject_00573046.at_u_flm_intro0_flm_00573046)
+#define THANDOR_IMAGE_0x00573064 ((uintptr_t)&g_ImageObject_00573064.at_g_CommandLineOptionNoIntro)
+#define THANDOR_IMAGE_0x00573ef0 ((uintptr_t)&g_ImageObject_00573EF0.at_g_DynamicModules)
+#define THANDOR_IMAGE_0x00573f70 ((uintptr_t)&g_ImageObject_00573F70.at_g_DynamicModuleCount)
+#define THANDOR_IMAGE_0x00573f74 ((uintptr_t)&g_ImageObject_00573F74.at_g_BootstrapApiBindings)
+#define THANDOR_IMAGE_0x00573fbc ((uintptr_t)&g_ImageObject_00573FBC.at_pDirectDrawCreate)
+#define THANDOR_IMAGE_0x00573fc0 ((uintptr_t)&g_ImageObject_00573FC0.at_pDirectDrawEnumerateA)
+#define THANDOR_IMAGE_0x00573fc4 ((uintptr_t)&g_ImageObject_00573FC4.at_pDirectInputCreateA)
+#define THANDOR_IMAGE_0x00573fc8 ((uintptr_t)&g_ImageObject_00573FC8.at_pDirectSoundCreate)
+#define THANDOR_IMAGE_0x00573fcc ((uintptr_t)&g_ImageObject_00573FCC.at_pDirectSoundEnumerateA)
+#define THANDOR_IMAGE_0x00573fd0 ((uintptr_t)&g_ImageObject_00573FD0.at_pDirectSoundCaptureCreate)
+#define THANDOR_IMAGE_0x00573fd4 ((uintptr_t)&g_ImageObject_00573FD4.at_pDirectSoundCaptureEnumerateA)
+#define THANDOR_IMAGE_0x00573fd8 ((uintptr_t)&g_ImageObject_00573FD8.at_g_GlideImportBindings)
+#define THANDOR_IMAGE_0x00573fe0 ((uintptr_t)&g_ImageObject_00573FD8 + 0x8)
+#define THANDOR_IMAGE_0x00573fe8 ((uintptr_t)&g_ImageObject_00573FD8 + 0x10)
+#define THANDOR_IMAGE_0x00574008 ((uintptr_t)&g_ImageObject_00573FD8 + 0x30)
+#define THANDOR_IMAGE_0x00574010 ((uintptr_t)&g_ImageObject_00573FD8 + 0x38)
+#define THANDOR_IMAGE_0x00574028 ((uintptr_t)&g_ImageObject_00573FD8 + 0x50)
+#define THANDOR_IMAGE_0x00574030 ((uintptr_t)&g_ImageObject_00573FD8 + 0x58)
+#define THANDOR_IMAGE_0x00574048 ((uintptr_t)&g_ImageObject_00573FD8 + 0x70)
+#define THANDOR_IMAGE_0x00574050 ((uintptr_t)&g_ImageObject_00573FD8 + 0x78)
+#define THANDOR_IMAGE_0x00574060 ((uintptr_t)&g_ImageObject_00573FD8 + 0x88)
+#define THANDOR_IMAGE_0x00574068 ((uintptr_t)&g_ImageObject_00573FD8 + 0x90)
+#define THANDOR_IMAGE_0x00574070 ((uintptr_t)&g_ImageObject_00573FD8 + 0x98)
+#define THANDOR_IMAGE_0x005740a8 ((uintptr_t)&g_ImageObject_00573FD8 + 0xD0)
+#define THANDOR_IMAGE_0x005740d0 ((uintptr_t)&g_ImageObject_00573FD8 + 0xF8)
+#define THANDOR_IMAGE_0x005740f8 ((uintptr_t)&g_ImageObject_00573FD8 + 0x120)
+#define THANDOR_IMAGE_0x00574108 ((uintptr_t)&g_ImageObject_00573FD8 + 0x130)
+#define THANDOR_IMAGE_0x00574120 ((uintptr_t)&g_ImageObject_00573FD8 + 0x148)
+#define THANDOR_IMAGE_0x00574138 ((uintptr_t)&g_ImageObject_00573FD8 + 0x160)
+#define THANDOR_IMAGE_0x00574150 ((uintptr_t)&g_ImageObject_00573FD8 + 0x178)
+#define THANDOR_IMAGE_0x00574158 ((uintptr_t)&g_ImageObject_00573FD8 + 0x180)
+#define THANDOR_IMAGE_0x00574160 ((uintptr_t)&g_ImageObject_00573FD8 + 0x188)
+#define THANDOR_IMAGE_0x00574178 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1A0)
+#define THANDOR_IMAGE_0x005741a0 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1C8)
+#define THANDOR_IMAGE_0x005741a8 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1D0)
+#define THANDOR_IMAGE_0x005741b0 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1D8)
+#define THANDOR_IMAGE_0x005741c0 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1E8)
+#define THANDOR_IMAGE_0x005741c8 ((uintptr_t)&g_ImageObject_00573FD8 + 0x1F0)
+#define THANDOR_IMAGE_0x005741d8 ((uintptr_t)&g_ImageObject_00573FD8 + 0x200)
+#define THANDOR_IMAGE_0x00574200 ((uintptr_t)&g_ImageObject_00573FD8 + 0x228)
+#define THANDOR_IMAGE_0x00574210 ((uintptr_t)&g_ImageObject_00573FD8 + 0x238)
+#define THANDOR_IMAGE_0x00574218 ((uintptr_t)&g_ImageObject_00573FD8 + 0x240)
+#define THANDOR_IMAGE_0x00574220 ((uintptr_t)&g_ImageObject_00573FD8 + 0x248)
+#define THANDOR_IMAGE_0x00574240 ((uintptr_t)&g_ImageObject_00573FD8 + 0x268)
+#define THANDOR_IMAGE_0x00574250 ((uintptr_t)&g_ImageObject_00573FD8 + 0x278)
+#define THANDOR_IMAGE_0x00574258 ((uintptr_t)&g_ImageObject_00573FD8 + 0x280)
+#define THANDOR_IMAGE_0x00574290 ((uintptr_t)&g_ImageObject_00573FD8 + 0x2B8)
+#define THANDOR_IMAGE_0x005742a0 ((uintptr_t)&g_ImageObject_005742A0.at_g_WinSock_accept)
+#define THANDOR_IMAGE_0x005742a4 ((uintptr_t)&g_ImageObject_005742A4.at_g_WinSock_bind)
+#define THANDOR_IMAGE_0x005742a8 ((uintptr_t)&g_ImageObject_005742A8.at_g_WinSock_closesocket)
+#define THANDOR_IMAGE_0x005742ac ((uintptr_t)&g_ImageObject_005742AC.at_g_WinSock_connect)
+#define THANDOR_IMAGE_0x005742b0 ((uintptr_t)&g_ImageObject_005742B0.at_g_WinSock_getpeername)
+#define THANDOR_IMAGE_0x005742b4 ((uintptr_t)&g_ImageObject_005742B4.at_g_WinSock_getsockname)
+#define THANDOR_IMAGE_0x005742b8 ((uintptr_t)&g_ImageObject_005742B8.at_g_WinSock_getsockopt)
+#define THANDOR_IMAGE_0x005742bc ((uintptr_t)&g_ImageObject_005742BC.at_g_WinSock_htonl)
+#define THANDOR_IMAGE_0x005742c0 ((uintptr_t)&g_ImageObject_005742C0.at_g_WinSock_htons)
+#define THANDOR_IMAGE_0x005742c4 ((uintptr_t)&g_ImageObject_005742C4.at_g_WinSock_inet_addr)
+#define THANDOR_IMAGE_0x005742c8 ((uintptr_t)&g_ImageObject_005742C8.at_g_WinSock_inet_ntoa)
+#define THANDOR_IMAGE_0x005742cc ((uintptr_t)&g_ImageObject_005742CC.at_g_WinSock_ioctlsocket)
+#define THANDOR_IMAGE_0x005742d0 ((uintptr_t)&g_ImageObject_005742D0.at_g_WinSock_listen)
+#define THANDOR_IMAGE_0x005742d4 ((uintptr_t)&g_ImageObject_005742D4.at_g_WinSock_ntohl)
+#define THANDOR_IMAGE_0x005742d8 ((uintptr_t)&g_ImageObject_005742D8.at_g_WinSock_ntohs)
+#define THANDOR_IMAGE_0x005742dc ((uintptr_t)&g_ImageObject_005742DC.at_g_WinSock_recv)
+#define THANDOR_IMAGE_0x005742e0 ((uintptr_t)&g_ImageObject_005742E0.at_g_WinSock_recvfrom)
+#define THANDOR_IMAGE_0x005742e4 ((uintptr_t)&g_ImageObject_005742E4.at_g_WinSock_select)
+#define THANDOR_IMAGE_0x005742e8 ((uintptr_t)&g_ImageObject_005742E8.at_g_WinSock_send)
+#define THANDOR_IMAGE_0x005742ec ((uintptr_t)&g_ImageObject_005742EC.at_g_WinSock_sendto)
+#define THANDOR_IMAGE_0x005742f0 ((uintptr_t)&g_ImageObject_005742F0.at_g_WinSock_setsockopt)
+#define THANDOR_IMAGE_0x005742f4 ((uintptr_t)&g_ImageObject_005742F4.at_g_WinSock_shutdown)
+#define THANDOR_IMAGE_0x005742f8 ((uintptr_t)&g_ImageObject_005742F8.at_g_WinSock_socket)
+#define THANDOR_IMAGE_0x005742fc ((uintptr_t)&g_ImageObject_005742FC.at_g_WinSock_gethostbyaddr)
+#define THANDOR_IMAGE_0x00574300 ((uintptr_t)&g_ImageObject_00574300.at_g_WinSock_gethostbyname)
+#define THANDOR_IMAGE_0x00574304 ((uintptr_t)&g_ImageObject_00574304.at_g_WinSock_gethostname)
+#define THANDOR_IMAGE_0x00574308 ((uintptr_t)&g_ImageObject_00574308.at_g_WinSock_getprotobyname)
+#define THANDOR_IMAGE_0x0057430c ((uintptr_t)&g_ImageObject_0057430C.at_g_WinSock_getprotobynumber)
+#define THANDOR_IMAGE_0x00574310 ((uintptr_t)&g_ImageObject_00574310.at_g_WinSock_getservbyname)
+#define THANDOR_IMAGE_0x00574314 ((uintptr_t)&g_ImageObject_00574314.at_g_WinSock_getservbyport)
+#define THANDOR_IMAGE_0x00574318 ((uintptr_t)&g_ImageObject_00574318.at_g_WinSock_WSAAsyncGetHostByAddr)
+#define THANDOR_IMAGE_0x0057431c ((uintptr_t)&g_ImageObject_0057431C.at_g_WinSock_WSAAsyncGetHostByName)
+#define THANDOR_IMAGE_0x00574320 ((uintptr_t)&g_ImageObject_00574320.at_g_WinSock_WSAAsyncGetProtoByName)
+#define THANDOR_IMAGE_0x00574324 ((uintptr_t)&g_ImageObject_00574324.at_g_WinSock_WSAAsyncGetProtoByNumber)
+#define THANDOR_IMAGE_0x00574328 ((uintptr_t)&g_ImageObject_00574328.at_g_WinSock_WSAAsyncGetServByName)
+#define THANDOR_IMAGE_0x0057432c ((uintptr_t)&g_ImageObject_0057432C.at_g_WinSock_WSAAsyncGetServByPort)
+#define THANDOR_IMAGE_0x00574330 ((uintptr_t)&g_ImageObject_00574330.at_g_WinSock_WSAAsyncSelect)
+#define THANDOR_IMAGE_0x00574334 ((uintptr_t)&g_ImageObject_00574334.at_g_WinSock_WSACancelAsyncRequest)
+#define THANDOR_IMAGE_0x00574338 ((uintptr_t)&g_ImageObject_00574338.at_g_WinSock_WSACancelBlockingCall)
+#define THANDOR_IMAGE_0x0057433c ((uintptr_t)&g_ImageObject_0057433C.at_g_WinSock_WSACleanup)
+#define THANDOR_IMAGE_0x00574340 ((uintptr_t)&g_ImageObject_00574340.at_g_WinSock_WSAGetLastError)
+#define THANDOR_IMAGE_0x00574344 ((uintptr_t)&g_ImageObject_00574344.at_g_WinSock_WSAIsBlocking)
+#define THANDOR_IMAGE_0x00574348 ((uintptr_t)&g_ImageObject_00574348.at_g_WinSock_WSASetBlockingHook)
+#define THANDOR_IMAGE_0x00574350 ((uintptr_t)&g_ImageObject_00574350.at_g_WinSock_WSAStartup)
+#define THANDOR_IMAGE_0x00574354 ((uintptr_t)&g_ImageObject_00574354.at_g_WinSock_WSAUnhookBlockingHook)
+#define THANDOR_IMAGE_0x0057435c ((uintptr_t)&g_ImageObject_0057435C.at_g_Ws2_32_bind)
+#define THANDOR_IMAGE_0x00574360 ((uintptr_t)&g_ImageObject_00574360.at_g_Ws2_32_closesocket)
+#define THANDOR_IMAGE_0x00574378 ((uintptr_t)&g_ImageObject_00574378.at_g_Ws2_32_htons)
+#define THANDOR_IMAGE_0x00574390 ((uintptr_t)&g_ImageObject_00574390.at_g_Ws2_32_recvfrom)
+#define THANDOR_IMAGE_0x0057439c ((uintptr_t)&g_ImageObject_0057439C.at_g_Ws2_32_sendto)
+#define THANDOR_IMAGE_0x005743a0 ((uintptr_t)&g_ImageObject_005743A0.at_g_Ws2_32_setsockopt)
+#define THANDOR_IMAGE_0x005743a8 ((uintptr_t)&g_ImageObject_005743A8.at_g_Ws2_32_socket)
+#define THANDOR_IMAGE_0x005743b8 ((uintptr_t)&g_ImageObject_005743B8.at_g_Ws2_32_WSACleanup)
+#define THANDOR_IMAGE_0x005743d8 ((uintptr_t)&g_ImageObject_005743D8.at_g_Ws2_32_WSAGetLastError)
+#define THANDOR_IMAGE_0x005743ec ((uintptr_t)&g_ImageObject_005743EC.at_g_Ws2_32_WSAIoctl)
+#define THANDOR_IMAGE_0x00574444 ((uintptr_t)&g_ImageObject_00574444.at_g_Ws2_32_gethostbyname)
+#define THANDOR_IMAGE_0x00574478 ((uintptr_t)&g_ImageObject_00574478.at_g_Ws2_32_WSAAddressToStringA)
+#define THANDOR_IMAGE_0x005744a0 ((uintptr_t)&g_ImageObject_005744A0.at_g_Ws2_32_WSAStringToAddressA)
+#define THANDOR_IMAGE_0x005744b4 ((uintptr_t)&g_ImageObject_005744B4.at_sz_DDRAW)
+#define THANDOR_IMAGE_0x005744ba ((uintptr_t)&g_ImageObject_005744BA.at_dynapi_3)
+#define THANDOR_IMAGE_0x005744c2 ((uintptr_t)&g_ImageObject_005744C2.at_dynapi_4)
+#define THANDOR_IMAGE_0x005744ca ((uintptr_t)&g_ImageObject_005744CA.at_sz_GLIDE3X)
+#define THANDOR_IMAGE_0x005744dc ((uintptr_t)&g_ImageObject_005744DC.at_s_Wsock32ModuleName)
+#define THANDOR_IMAGE_0x005744ec ((uintptr_t)&g_ImageObject_005744EC.at_dynapi_9)
+#define THANDOR_IMAGE_0x0057455e ((uintptr_t)&g_ImageObject_0057455E.at_sz_DirectDrawCreate)
+#define THANDOR_IMAGE_0x00574570 ((uintptr_t)&g_ImageObject_00574570.at_sz_DirectDrawEnumerateA)
+#define THANDOR_IMAGE_0x00574586 ((uintptr_t)&g_ImageObject_00574586.at_dynapi_19)
+#define THANDOR_IMAGE_0x0057459a ((uintptr_t)&g_ImageObject_0057459A.at_dynapi_20)
+#define THANDOR_IMAGE_0x005745ac ((uintptr_t)&g_ImageObject_005745AC.at_dynapi_21)
+#define THANDOR_IMAGE_0x005745c2 ((uintptr_t)&g_ImageObject_005745C2.at_dynapi_22)
+#define THANDOR_IMAGE_0x005745dc ((uintptr_t)&g_ImageObject_005745DC.at_dynapi_23)
+#define THANDOR_IMAGE_0x00574d40 ((uintptr_t)&g_ImageObject_00574D40.at_s_Wsock32Export_accept)
+#define THANDOR_IMAGE_0x00574d48 ((uintptr_t)&g_ImageObject_00574D48.at_s_Wsock32Export_bind)
+#define THANDOR_IMAGE_0x00574d4e ((uintptr_t)&g_ImageObject_00574D4E.at_s_Wsock32Export_closesocket)
+#define THANDOR_IMAGE_0x00574d5a ((uintptr_t)&g_ImageObject_00574D5A.at_s_Wsock32Export_connect)
+#define THANDOR_IMAGE_0x00574d62 ((uintptr_t)&g_ImageObject_00574D62.at_s_Wsock32Export_getpeername)
+#define THANDOR_IMAGE_0x00574d6e ((uintptr_t)&g_ImageObject_00574D6E.at_s_Wsock32Export_getsockname)
+#define THANDOR_IMAGE_0x00574d7a ((uintptr_t)&g_ImageObject_00574D7A.at_s_Wsock32Export_getsockopt)
+#define THANDOR_IMAGE_0x00574d86 ((uintptr_t)&g_ImageObject_00574D86.at_s_Wsock32Export_htonl)
+#define THANDOR_IMAGE_0x00574d8c ((uintptr_t)&g_ImageObject_00574D8C.at_s_Wsock32Export_htons)
+#define THANDOR_IMAGE_0x00574d92 ((uintptr_t)&g_ImageObject_00574D92.at_s_Wsock32Export_inet_addr)
+#define THANDOR_IMAGE_0x00574d9c ((uintptr_t)&g_ImageObject_00574D9C.at_s_Wsock32Export_inet_ntoa)
+#define THANDOR_IMAGE_0x00574da6 ((uintptr_t)&g_ImageObject_00574DA6.at_s_Wsock32Export_ioctlsocket)
+#define THANDOR_IMAGE_0x00574db2 ((uintptr_t)&g_ImageObject_00574DB2.at_s_Wsock32Export_listen)
+#define THANDOR_IMAGE_0x00574dba ((uintptr_t)&g_ImageObject_00574DBA.at_s_Wsock32Export_ntohl)
+#define THANDOR_IMAGE_0x00574dc0 ((uintptr_t)&g_ImageObject_00574DC0.at_s_Wsock32Export_ntohs)
+#define THANDOR_IMAGE_0x00574dc6 ((uintptr_t)&g_ImageObject_00574DC6.at_s_Wsock32Export_recv)
+#define THANDOR_IMAGE_0x00574dcc ((uintptr_t)&g_ImageObject_00574DCC.at_s_Wsock32Export_recvfrom)
+#define THANDOR_IMAGE_0x00574dd6 ((uintptr_t)&g_ImageObject_00574DD6.at_s_Wsock32Export_select)
+#define THANDOR_IMAGE_0x00574dde ((uintptr_t)&g_ImageObject_00574DDE.at_s_Wsock32Export_send)
+#define THANDOR_IMAGE_0x00574de4 ((uintptr_t)&g_ImageObject_00574DE4.at_s_Wsock32Export_sendto)
+#define THANDOR_IMAGE_0x00574dec ((uintptr_t)&g_ImageObject_00574DEC.at_s_Wsock32Export_setsockopt)
+#define THANDOR_IMAGE_0x00574df8 ((uintptr_t)&g_ImageObject_00574DF8.at_s_Wsock32Export_shutdown)
+#define THANDOR_IMAGE_0x00574e02 ((uintptr_t)&g_ImageObject_00574E02.at_s_Wsock32Export_socket)
+#define THANDOR_IMAGE_0x00574e0a ((uintptr_t)&g_ImageObject_00574E0A.at_s_Wsock32Export_gethostbyaddr)
+#define THANDOR_IMAGE_0x00574e18 ((uintptr_t)&g_ImageObject_00574E18.at_s_Wsock32Export_gethostbyname)
+#define THANDOR_IMAGE_0x00574e26 ((uintptr_t)&g_ImageObject_00574E26.at_s_Wsock32Export_gethostname)
+#define THANDOR_IMAGE_0x00574e32 ((uintptr_t)&g_ImageObject_00574E32.at_s_Wsock32Export_getprotobyname)
+#define THANDOR_IMAGE_0x00574e42 ((uintptr_t)&g_ImageObject_00574E42.at_s_Wsock32Export_getprotobynumber)
+#define THANDOR_IMAGE_0x00574e54 ((uintptr_t)&g_ImageObject_00574E54.at_s_Wsock32Export_getservbyname)
+#define THANDOR_IMAGE_0x00574e62 ((uintptr_t)&g_ImageObject_00574E62.at_s_Wsock32Export_getservbyport)
+#define THANDOR_IMAGE_0x00574e70 ((uintptr_t)&g_ImageObject_00574E70.at_s_Wsock32Export_WSAAsyncGetHostByAddr)
+#define THANDOR_IMAGE_0x00574e86 ((uintptr_t)&g_ImageObject_00574E86.at_s_Wsock32Export_WSAAsyncGetHostByName)
+#define THANDOR_IMAGE_0x00574e9c ((uintptr_t)&g_ImageObject_00574E9C.at_s_Wsock32Export_WSAAsyncGetProtoByName)
+#define THANDOR_IMAGE_0x00574eb4 ((uintptr_t)&g_ImageObject_00574EB4.at_s_Wsock32Export_WSAAsyncGetProtoByNumber)
+#define THANDOR_IMAGE_0x00574ece ((uintptr_t)&g_ImageObject_00574ECE.at_s_Wsock32Export_WSAAsyncGetServByName)
+#define THANDOR_IMAGE_0x00574ee4 ((uintptr_t)&g_ImageObject_00574EE4.at_s_Wsock32Export_WSAAsyncGetServByPort)
+#define THANDOR_IMAGE_0x00574efa ((uintptr_t)&g_ImageObject_00574EFA.at_s_Wsock32Export_WSAAsyncSelect)
+#define THANDOR_IMAGE_0x00574f0a ((uintptr_t)&g_ImageObject_00574F0A.at_s_Wsock32Export_WSACancelAsyncRequest)
+#define THANDOR_IMAGE_0x00574f20 ((uintptr_t)&g_ImageObject_00574F20.at_s_Wsock32Export_WSACancelBlockingCall)
+#define THANDOR_IMAGE_0x00574f36 ((uintptr_t)&g_ImageObject_00574F36.at_s_Wsock32Export_WSACleanup)
+#define THANDOR_IMAGE_0x00574f42 ((uintptr_t)&g_ImageObject_00574F42.at_s_Wsock32Export_WSAGetLastError)
+#define THANDOR_IMAGE_0x00574f52 ((uintptr_t)&g_ImageObject_00574F52.at_s_Wsock32Export_WSAIsBlocking)
+#define THANDOR_IMAGE_0x00574f60 ((uintptr_t)&g_ImageObject_00574F60.at_s_Wsock32Export_WSASetBlockingHook)
+#define THANDOR_IMAGE_0x00574f84 ((uintptr_t)&g_ImageObject_00574F84.at_s_Wsock32Export_WSAStartup)
+#define THANDOR_IMAGE_0x00574f90 ((uintptr_t)&g_ImageObject_00574F90.at_s_Wsock32Export_WSAUnhookBlockingHook)
+#define THANDOR_IMAGE_0x00575480 ((uintptr_t)&g_ImageObject_00575480.at_g_FatalErrorNarrowBuffer)
+#define THANDOR_IMAGE_0x00575950 ((uintptr_t)&g_ImageObject_00575950.at_g_Win32FileBytesTransferred)
+#define THANDOR_IMAGE_0x00575954 ((uintptr_t)&g_ImageObject_00575954.at_g_Win32FileCreationTimeOrDosDateScratch)
+#define THANDOR_IMAGE_0x0057595c ((uintptr_t)&g_ImageObject_0057595C.at_g_Win32FileLastAccessTimeScratch)
+#define THANDOR_IMAGE_0x00575964 ((uintptr_t)&g_ImageObject_00575964.at_g_Win32FileLastWriteTimeScratch)
+#define THANDOR_IMAGE_0x00575968 ((uintptr_t)&g_ImageObject_00575968.at_g_Win32FileLastWriteTimeHighScratch)
+#define THANDOR_IMAGE_0x0057596c ((uintptr_t)&g_ImageObject_0057596C.at_g_Win32DiskSectorsPerClusterScratch)
+#define THANDOR_IMAGE_0x00575970 ((uintptr_t)&g_ImageObject_00575970.at_g_Win32DiskBytesPerSectorScratch)
+#define THANDOR_IMAGE_0x00575974 ((uintptr_t)&g_ImageObject_00575974.at_g_Win32DiskFreeClustersScratch)
+#define THANDOR_IMAGE_0x00575978 ((uintptr_t)&g_ImageObject_00575978.at_g_Win32DiskTotalClustersScratch)
+#define THANDOR_IMAGE_0x00575980 ((uintptr_t)&g_ImageObject_00575980.at_g_Win32FindDataFileNameA)
+#define THANDOR_IMAGE_0x00575981 ((uintptr_t)&g_ImageObject_00575981.at_g_Win32FindDataFileNameSecondCharA)
+#define THANDOR_IMAGE_0x00575982 ((uintptr_t)&g_ImageObject_00575982.at_g_Win32FindDataFileNameThirdCharA)
+#define THANDOR_IMAGE_0x00575a94 ((uintptr_t)&g_ImageObject_00575A94.at_g_FileSystemInitComputerNameCapacityOrConfigCursor)
+#define THANDOR_IMAGE_0x00575a98 ((uintptr_t)&g_ImageObject_00575A98.at_g_FileSystemConfigRemainingBytes)
+#define THANDOR_IMAGE_0x00575a9c ((uintptr_t)&g_ImageObject_00575A9C.at_g_Win32PathScratchA)
+#define THANDOR_IMAGE_0x00575b9c ((uintptr_t)&g_ImageObject_00575A9C.at_g_Win32PathScratchB)
+#define THANDOR_IMAGE_0x00575c9c ((uintptr_t)&g_ImageObject_00575C9C.at_g_Win32DriveRootPathScratchA)
+#define THANDOR_IMAGE_0x00575ca0 ((uintptr_t)&g_ImageObject_00575CA0.at_g_Win32DriveDevicePathA)
+#define THANDOR_IMAGE_0x00576b10 ((uintptr_t)&g_ImageObject_00576B10.at_g_DirectInput)
+#define THANDOR_IMAGE_0x00576b14 ((uintptr_t)&g_ImageObject_00576B14.at_g_MouseDevice)
+#define THANDOR_IMAGE_0x00576b18 ((uintptr_t)&g_ImageObject_00576B18.at_GUID_SysMouse_Local)
+#define THANDOR_IMAGE_0x00576b28 ((uintptr_t)&g_ImageObject_00576B28.at_GUID_XAxis_Local)
+#define THANDOR_IMAGE_0x00576b38 ((uintptr_t)&g_ImageObject_00576B38.at_GUID_YAxis_Local)
+#define THANDOR_IMAGE_0x00576b48 ((uintptr_t)&g_ImageObject_00576B48.at_GUID_ZAxis_Local)
+#define THANDOR_IMAGE_0x00576b58 ((uintptr_t)&g_ImageObject_00576B58.at_MouseDataFormat)
+#define THANDOR_IMAGE_0x00576b70 ((uintptr_t)&g_ImageObject_00576B70.at_MouseObjectFormats)
+#define THANDOR_IMAGE_0x00576be0 ((uintptr_t)&g_ImageObject_00576BE0.at_MouseBufferProperty)
+#define THANDOR_IMAGE_0x00576bf4 ((uintptr_t)&g_ImageObject_00576BF4.at_g_MouseDeviceDataCount)
+#define THANDOR_IMAGE_0x00576bf8 ((uintptr_t)&g_ImageObject_00576BF8.at_g_MousePollBusy)
+#define THANDOR_IMAGE_0x00576bfc ((uintptr_t)&g_ImageObject_00576BFC.at_g_MouseDeviceEvent)
+#define THANDOR_IMAGE_0x00576c0c ((uintptr_t)&g_ImageObject_00576C0C.at_g_MouseX)
+#define THANDOR_IMAGE_0x00576c10 ((uintptr_t)&g_ImageObject_00576C0C.at_g_MouseY)
+#define THANDOR_IMAGE_0x00576c14 ((uintptr_t)&g_ImageObject_00576C14.at_g_MouseWheelDelta)
+#define THANDOR_IMAGE_0x00576c18 ((uintptr_t)&g_ImageObject_00576C18.at_g_MouseButtonMask)
+#define THANDOR_IMAGE_0x00576c1c ((uintptr_t)&g_ImageObject_00576C1C.at_g_MouseEventsProcessed)
+#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageObject_00576C20.at_g_DirectInputMouseChainedSetDisplayMode)
+#define THANDOR_IMAGE_0x00576c24 ((uintptr_t)&g_ImageObject_00576C24.at_g_DirectInputMouseRefreshCountdown)
+#define THANDOR_IMAGE_0x00577c00 ((uintptr_t)&g_ImageObject_00577C00.at_IID_IDirectDraw2_Local)
+#define THANDOR_IMAGE_0x00577c10 ((uintptr_t)&g_ImageObject_00577C10.at_IID_IDirectDrawSurface3_Local)
+#define THANDOR_IMAGE_0x00577c20 ((uintptr_t)&g_ImageObject_00577C20.at_IID_IDirect3D2_Local)
+#define THANDOR_IMAGE_0x00577c30 ((uintptr_t)&g_ImageObject_00577C30.at_IID_IDirect3DTexture2_Local)
+#define THANDOR_IMAGE_0x00577c40 ((uintptr_t)&g_ImageObject_00577C40.at_g_DirectDraw)
+#define THANDOR_IMAGE_0x00577c44 ((uintptr_t)&g_ImageObject_00577C44.at_g_DirectDraw2)
+#define THANDOR_IMAGE_0x00577c48 ((uintptr_t)&g_ImageObject_00577C48.at_g_PrimarySurfaceBase)
+#define THANDOR_IMAGE_0x00577c4c ((uintptr_t)&g_ImageObject_00577C4C.at_g_PrimarySurface3)
+#define THANDOR_IMAGE_0x00577c50 ((uintptr_t)&g_ImageObject_00577C50.at_g_BackSurfaceBase)
+#define THANDOR_IMAGE_0x00577c54 ((uintptr_t)&g_ImageObject_00577C54.at_g_BackSurface3)
+#define THANDOR_IMAGE_0x00577c58 ((uintptr_t)&g_ImageObject_00577C58.at_g_Direct3D2)
+#define THANDOR_IMAGE_0x00577c5c ((uintptr_t)&g_ImageObject_00577C5C.at_g_Direct3DDevice2)
+#define THANDOR_IMAGE_0x00577c60 ((uintptr_t)&g_ImageObject_00577C60.at_g_ZSurfaceBase)
+#define THANDOR_IMAGE_0x00577c64 ((uintptr_t)&g_ImageObject_00577C64.at_g_ZSurface3)
+#define THANDOR_IMAGE_0x00577c68 ((uintptr_t)&g_ImageObject_00577C68.at_g_Direct3DViewport2)
+#define THANDOR_IMAGE_0x00577c70 ((uintptr_t)&g_ImageObject_00577C70.at_g_CurrentClearRect)
+#define THANDOR_IMAGE_0x00577c80 ((uintptr_t)&g_ImageObject_00577C80.at_g_SurfaceDesc)
+#define THANDOR_IMAGE_0x00577cf0 ((uintptr_t)&g_ImageObject_00577CF0.at_g_GraphicsCursorSurfaceDescScratch)
+#define THANDOR_IMAGE_0x00577d00 ((uintptr_t)&g_ImageObject_00577CF0.at_g_GraphicsCursorSurfacePitchBytes)
+#define THANDOR_IMAGE_0x00577d14 ((uintptr_t)&g_ImageObject_00577CF0.at_g_GraphicsCursorSurfacePixels)
+#define THANDOR_IMAGE_0x00577d60 ((uintptr_t)&g_ImageObject_00577D60.at_g_Direct3DViewportState)
+#define THANDOR_IMAGE_0x00577d90 ((uintptr_t)&g_ImageObject_00577D90.at_g_Direct3DOpaqueTextureFormat)
+#define THANDOR_IMAGE_0x00577d9c ((uintptr_t)&g_ImageObject_00577D90 + 0xC)
+#define THANDOR_IMAGE_0x00577da0 ((uintptr_t)&g_ImageObject_00577D90 + 0x10)
+#define THANDOR_IMAGE_0x00577da4 ((uintptr_t)&g_ImageObject_00577D90 + 0x14)
+#define THANDOR_IMAGE_0x00577da8 ((uintptr_t)&g_ImageObject_00577D90 + 0x18)
+#define THANDOR_IMAGE_0x00577db0 ((uintptr_t)&g_ImageObject_00577DB0.at_g_Direct3DAlphaTextureFormat)
+#define THANDOR_IMAGE_0x00577dbc ((uintptr_t)&g_ImageObject_00577DB0 + 0xC)
+#define THANDOR_IMAGE_0x00577dcc ((uintptr_t)&g_ImageObject_00577DB0 + 0x1C)
+#define THANDOR_IMAGE_0x00577dd0 ((uintptr_t)&g_ImageObject_00577DD0.at_g_Direct3DSelectedOpaqueTextureFormat)
+#define THANDOR_IMAGE_0x00577df0 ((uintptr_t)&g_ImageObject_00577DF0.at_g_Direct3DSelectedAlphaTextureFormat)
+#define THANDOR_IMAGE_0x00577e10 ((uintptr_t)&g_ImageObject_00577E10.at_g_Direct3DTextureFilterMode)
+#define THANDOR_IMAGE_0x00577e14 ((uintptr_t)&g_ImageObject_00577E14.at_g_Direct3DTexturePerspectiveEnabled)
+#define THANDOR_IMAGE_0x00577e18 ((uintptr_t)&g_ImageObject_00577E18.at_g_Direct3DAntialiasMode)
+#define THANDOR_IMAGE_0x00577e1c ((uintptr_t)&g_ImageObject_00577E1C.at_g_PrimitiveRenderStateCache)
+#define THANDOR_IMAGE_0x00577e2c ((uintptr_t)&g_ImageObject_00577E2C.at_g_BoundTextureHandle)
+#define THANDOR_IMAGE_0x00577e30 ((uintptr_t)&g_ImageObject_00577E30.at_g_GraphicsDisplayModeFinalize)
+#define THANDOR_IMAGE_0x00577e34 ((uintptr_t)&g_ImageObject_00577E34.at_g_CursorCurrentVisibilityToken)
+#define THANDOR_IMAGE_0x00577e38 ((uintptr_t)&g_ImageObject_00577E38.at_g_CursorAlternateVisibilityToken)
+#define THANDOR_IMAGE_0x00577e3c ((uintptr_t)&g_ImageObject_00577E3C.at_g_CursorCurrentDrawX)
+#define THANDOR_IMAGE_0x00577e40 ((uintptr_t)&g_ImageObject_00577E3C.at_g_CursorCurrentDrawY)
+#define THANDOR_IMAGE_0x00577e44 ((uintptr_t)&g_ImageObject_00577E44.at_g_CursorAlternateDrawX)
+#define THANDOR_IMAGE_0x00577e48 ((uintptr_t)&g_ImageObject_00577E44.at_g_CursorAlternateDrawY)
+#define THANDOR_IMAGE_0x00577e4c ((uintptr_t)&g_ImageObject_00577E4C.at_g_GraphicsBackendAccessState)
+#define THANDOR_IMAGE_0x00577e50 ((uintptr_t)&g_ImageObject_00577E50.at_g_PrimitiveRenderStatePresets)
+#define THANDOR_IMAGE_0x00577ea0 ((uintptr_t)&g_ImageObject_00577EA0.at_g_GraphicsDispatchTable)
+#define THANDOR_IMAGE_0x00577fc0 ((uintptr_t)&g_ImageObject_00577FC0.at_g_ImmediateTLVertices)
+#define THANDOR_IMAGE_0x00578040 ((uintptr_t)&g_ImageObject_00578040.at_g_LastViewportRect)
+#define THANDOR_IMAGE_0x00578050 ((uintptr_t)&g_ImageObject_00578050.at_g_ImmediateVertexCount)
+#define THANDOR_IMAGE_0x00578054 ((uintptr_t)&g_ImageObject_00578054.at_g_TextureUseSerial)
+#define THANDOR_IMAGE_0x00578058 ((uintptr_t)&g_ImageObject_00578058.at_g_TexturePaletteEntries)
+#define THANDOR_IMAGE_0x0057805c ((uintptr_t)&g_ImageObject_0057805C.at_g_GraphicsTextureSlots)
+#define THANDOR_IMAGE_0x00578060 ((uintptr_t)&g_ImageObject_00578060.at_g_DisplayFramebufferAccess)
+#define THANDOR_IMAGE_0x00578070 ((uintptr_t)&g_ImageObject_00578070.at_g_ActiveTextureUploads)
+#define THANDOR_IMAGE_0x00578074 ((uintptr_t)&g_ImageObject_00578074.at_g_GraphicsEnumerateAllDevicesFlag)
+#define THANDOR_IMAGE_0x00578078 ((uintptr_t)&g_ImageObject_00578078.at_g_CommandLineOptionD3dAll)
+#define THANDOR_IMAGE_0x0057ecd0 ((uintptr_t)&g_ImageObject_0057ECD0.at_g_GlideEnumerationResolutionQuery)
+#define THANDOR_IMAGE_0x0057ece0 ((uintptr_t)&g_ImageObject_0057ECE0.at_g_GlideSelectedResolutionQuery)
+#define THANDOR_IMAGE_0x0057ecf0 ((uintptr_t)&g_ImageObject_0057ECF0.at_g_GlideRefreshRatesHz)
+#define THANDOR_IMAGE_0x0057ed14 ((uintptr_t)&g_ImageObject_0057ED14.at_g_GlideWindowContextHandle)
+#define THANDOR_IMAGE_0x0057ed18 ((uintptr_t)&g_ImageObject_0057ED18.at_g_GlideRuntimeActiveCount)
+#define THANDOR_IMAGE_0x0057ed20 ((uintptr_t)&g_ImageObject_0057ED20.at_g_GlidePrimaryLfbInfo)
+#define THANDOR_IMAGE_0x0057ed34 ((uintptr_t)&g_ImageObject_0057ED34.at_g_GlideSecondaryLfbInfo)
+#define THANDOR_IMAGE_0x0057ed48 ((uintptr_t)&g_ImageObject_0057ED48.at_g_GlideTextureRefreshHandlers)
+#define THANDOR_IMAGE_0x0057ed54 ((uintptr_t)&g_ImageObject_0057ED54.at_g_GlideVertex0ScreenX)
+#define THANDOR_IMAGE_0x0057ed58 ((uintptr_t)&g_ImageObject_0057ED54.at_g_GlideVertex0ScreenY)
+#define THANDOR_IMAGE_0x0057ed5c ((uintptr_t)&g_ImageObject_0057ED5C.at_g_GlideVertex0ReciprocalDepth)
+#define THANDOR_IMAGE_0x0057ed60 ((uintptr_t)&g_ImageObject_0057ED60.at_g_GlideVertex0PerspectiveScale)
+#define THANDOR_IMAGE_0x0057ed68 ((uintptr_t)&g_ImageObject_0057ED68.at_g_GlideVertex0ProjectedTextureU)
+#define THANDOR_IMAGE_0x0057ed6c ((uintptr_t)&g_ImageObject_0057ED6C.at_g_GlideVertex0ProjectedTextureV)
+#define THANDOR_IMAGE_0x0057ed70 ((uintptr_t)&g_ImageObject_0057ED70.at_g_GlideVertex0DiffuseColor)
+#define THANDOR_IMAGE_0x0057ed74 ((uintptr_t)&g_ImageObject_0057ED74.at_g_GlideVertex1ScreenX)
+#define THANDOR_IMAGE_0x0057ed78 ((uintptr_t)&g_ImageObject_0057ED74.at_g_GlideVertex1ScreenY)
+#define THANDOR_IMAGE_0x0057ed7c ((uintptr_t)&g_ImageObject_0057ED7C.at_g_GlideVertex1ReciprocalDepth)
+#define THANDOR_IMAGE_0x0057ed80 ((uintptr_t)&g_ImageObject_0057ED80.at_g_GlideVertex1PerspectiveScale)
+#define THANDOR_IMAGE_0x0057ed88 ((uintptr_t)&g_ImageObject_0057ED88.at_g_GlideVertex1ProjectedTextureU)
+#define THANDOR_IMAGE_0x0057ed8c ((uintptr_t)&g_ImageObject_0057ED8C.at_g_GlideVertex1ProjectedTextureV)
+#define THANDOR_IMAGE_0x0057ed90 ((uintptr_t)&g_ImageObject_0057ED90.at_g_GlideVertex1DiffuseColor)
+#define THANDOR_IMAGE_0x0057ed94 ((uintptr_t)&g_ImageObject_0057ED94.at_g_GlideVertex2ScreenX)
+#define THANDOR_IMAGE_0x0057ed98 ((uintptr_t)&g_ImageObject_0057ED94.at_g_GlideVertex2ScreenY)
+#define THANDOR_IMAGE_0x0057ed9c ((uintptr_t)&g_ImageObject_0057ED9C.at_g_GlideVertex2ReciprocalDepth)
+#define THANDOR_IMAGE_0x0057eda0 ((uintptr_t)&g_ImageObject_0057EDA0.at_g_GlideVertex2PerspectiveScale)
+#define THANDOR_IMAGE_0x0057eda8 ((uintptr_t)&g_ImageObject_0057EDA8.at_g_GlideVertex2ProjectedTextureU)
+#define THANDOR_IMAGE_0x0057edac ((uintptr_t)&g_ImageObject_0057EDAC.at_g_GlideVertex2ProjectedTextureV)
+#define THANDOR_IMAGE_0x0057edb0 ((uintptr_t)&g_ImageObject_0057EDB0.at_g_GlideVertex2DiffuseColor)
+#define THANDOR_IMAGE_0x0057edb4 ((uintptr_t)&g_ImageObject_0057EDB4.at_g_GlideTextureInfo256Argb4444)
+#define THANDOR_IMAGE_0x0057edc8 ((uintptr_t)&g_ImageObject_0057EDC8.at_g_GlideTmuCount)
+#define THANDOR_IMAGE_0x0057edcc ((uintptr_t)&g_ImageObject_0057EDCC.at_g_GlideTextureColorUpload)
+#define THANDOR_IMAGE_0x0057edd8 ((uintptr_t)&g_ImageObject_0057EDD8.at_g_GlideTextureAlphaUpload)
+#define THANDOR_IMAGE_0x0057ede4 ((uintptr_t)&g_ImageObject_0057EDE4.at_g_GlideTexturingDisabledState)
+#define THANDOR_IMAGE_0x0057ede8 ((uintptr_t)&g_ImageObject_0057EDE8.at_g_GlideBlendModeState)
+#define THANDOR_IMAGE_0x0057edec ((uintptr_t)&g_ImageObject_0057EDEC.at_g_GlideDepthWriteEnabledState)
+#define THANDOR_IMAGE_0x0057edf0 ((uintptr_t)&g_ImageObject_0057EDF0.at_g_GlideBoundTexture)
+#define THANDOR_IMAGE_0x0057edf4 ((uintptr_t)&g_ImageObject_0057EDF4.at_g_GlideTmuMinAddress)
+#define THANDOR_IMAGE_0x0057ee34 ((uintptr_t)&g_ImageObject_0057EE34.at_g_GlideTmuMaxAddress)
+#define THANDOR_IMAGE_0x0057ee74 ((uintptr_t)&g_ImageObject_0057EE74.at_g_GlideResidentTextureTail)
+#define THANDOR_IMAGE_0x0057ee78 ((uintptr_t)&g_ImageObject_0057EE78.at_g_GlideResidentTextureHead)
+#define THANDOR_IMAGE_0x0057ee7c ((uintptr_t)&g_ImageObject_0057EE7C.at_g_GlideSecondBufferOffset)
+#define THANDOR_IMAGE_0x0057ee80 ((uintptr_t)&g_ImageObject_0057EE80.at_g_GlideSecondBufferBase)
+#define THANDOR_IMAGE_0x0057ee84 ((uintptr_t)&g_ImageObject_0057EE84.at_g_CommandLineOptionGlide)
+#define THANDOR_IMAGE_0x00582ee0 ((uintptr_t)&g_ImageObject_00582EE0.at_g_DirectSound)
+#define THANDOR_IMAGE_0x00582ee4 ((uintptr_t)&g_ImageObject_00582EE4.at_g_PrimarySoundBuffer)
+#define THANDOR_IMAGE_0x00582ee8 ((uintptr_t)&g_ImageObject_00582EE8.at_g_PrimaryVolume)
+#define THANDOR_IMAGE_0x00582eec ((uintptr_t)&g_ImageObject_00582EEC.at_g_PrimaryPan)
+#define THANDOR_IMAGE_0x00582ef0 ((uintptr_t)&g_ImageObject_00582EF0.at_WaveFormat_PCM_22050_Stereo16)
+#define THANDOR_IMAGE_0x00582f10 ((uintptr_t)&g_ImageObject_00582F10.at_PrimarySoundBufferDesc)
+#define THANDOR_IMAGE_0x00582f24 ((uintptr_t)&g_ImageObject_00582F24.at_g_DirectSoundVoiceSetRegistry)
+#define THANDOR_IMAGE_0x00582f28 ((uintptr_t)&g_ImageObject_00582F28.at_g_CommandLineOptionSound)
+#define THANDOR_IMAGE_0x00582f2e ((uintptr_t)&g_ImageObject_00582F2E.at_g_DirectSoundGainAttenuation)
+#define THANDOR_IMAGE_0x00583d60 ((uintptr_t)&g_ImageObject_00583D60.at_g_NetworkBackendMode)
+#define THANDOR_IMAGE_0x00583d64 ((uintptr_t)&g_ImageObject_00583D64.at_g_WinSockStartupData)
+#define THANDOR_IMAGE_0x00583ef2 ((uintptr_t)&g_ImageObject_00583EF2.at_g_NetworkFallbackSocket)
+#define THANDOR_IMAGE_0x00583ef6 ((uintptr_t)&g_ImageObject_00583EF6.at_g_NetworkFallbackSocketOptionOn)
+#define THANDOR_IMAGE_0x00583efa ((uintptr_t)&g_ImageObject_00583EFA.at_g_NetworkFallbackAddressLength)
+#define THANDOR_IMAGE_0x00583efe ((uintptr_t)&g_ImageObject_00583EFE.at_g_NetworkFallbackBindEndpoint)
+#define THANDOR_IMAGE_0x00583f0e ((uintptr_t)&g_ImageObject_00583F0E.at_g_NetworkBackendActiveAddressFamily)
+#define THANDOR_IMAGE_0x00583f12 ((uintptr_t)&g_ImageObject_00583F12.at_g_NetworkBackendActiveSocketAddressLength)
+#define THANDOR_IMAGE_0x00583f16 ((uintptr_t)&g_ImageObject_00583F16.at_g_NetworkBackendActiveSocketType)
+#define THANDOR_IMAGE_0x00583f1a ((uintptr_t)&g_ImageObject_00583F1A.at_g_NetworkBackendActiveProtocol)
+#define THANDOR_IMAGE_0x00583f1e ((uintptr_t)&g_ImageObject_00583F1E.at_g_NetworkBackendPortNetworkOrderCarrier)
+#define THANDOR_IMAGE_0x00583f22 ((uintptr_t)&g_ImageObject_00583F22.at_g_NetworkBackendBindAddress)
+#define THANDOR_IMAGE_0x00583f40 ((uintptr_t)&g_ImageObject_00583F40.at_g_NetworkEndpointTextScratchA)
+#define THANDOR_IMAGE_0x00584040 ((uintptr_t)&g_ImageObject_00584040.at_NetworkBackendInstanceDescriptorPrefix_00584040)
+#define THANDOR_IMAGE_0x00584078 ((uintptr_t)&g_ImageObject_00584078.at_s_CommandLineOptionIp)
+#define THANDOR_IMAGE_0x005856b0 ((uintptr_t)&g_ImageObject_005856B0.at_g_hInstance)
+#define THANDOR_IMAGE_0x005856b4 ((uintptr_t)&g_ImageObject_005856B4.at_g_MainWindow)
+#define THANDOR_IMAGE_0x005856b8 ((uintptr_t)&g_ImageObject_005856B8.at_g_WindowDestroyDepth)
+#define THANDOR_IMAGE_0x005856bc ((uintptr_t)&g_ImageObject_005856BC.at_g_AppActive)
+#define THANDOR_IMAGE_0x005856c0 ((uintptr_t)&g_ImageObject_005856C0.at_g_MainMessageStorage)
+#define THANDOR_IMAGE_0x00585708 ((uintptr_t)&g_ImageObject_00585708.at_g_Arena)
+#define THANDOR_IMAGE_0x0058571c ((uintptr_t)&g_ImageObject_0058571C.at_g_TimerSystemState)
+#define THANDOR_IMAGE_0x0058581c ((uintptr_t)&g_ImageObject_0058581C.at_g_CommandLine)
+#define THANDOR_IMAGE_0x00585d1c ((uintptr_t)&g_ImageObject_00585D1C.at_sz_MainWindowTitle)
+#define THANDOR_IMAGE_0x00585d2b ((uintptr_t)&g_ImageObject_00585D2B.at_sz_MainWindowClass)
+#define THANDOR_IMAGE_0x00586950 ((uintptr_t)&g_ImageObject_00586950.at_g_LocaleInfoScratch)
+#define THANDOR_IMAGE_0x00586a70 ((uintptr_t)&g_ImageObject_00586A70.at_g_LocaleSystemState)
 
 /* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its original range, and every converted
    pointer with its original location and value. */
 typedef struct ThandorImageBlock { uint32_t start; uint32_t end; const uint8_t *data; } ThandorImageBlock;
 typedef struct ThandorImagePointer { uint32_t location; uint32_t originalValue; } ThandorImagePointer;
-extern const ThandorImageBlock g_ThandorImageBlocks[203];
+extern const ThandorImageBlock g_ThandorImageBlocks[1889];
 extern const ThandorImagePointer g_ThandorImagePointers[2393];
 
 #endif

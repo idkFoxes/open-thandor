@@ -30,10 +30,11 @@ folder; the tools started from here make further copies next to it), windowed, w
                without crash or hang (ports 910-914)
 --new defaults to build-test/thandor.exe, --release to build-rel/thandor.exe of this repository. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
-pixels/). A failed determinism, multiplayer or maps check is run once more on its own after the others (start-ups
-can stall under the full load; determinism has a rare timing-dependent one-tick shift); the table then shows the
-retry result and the first one. Exit status 1 when any check failed. Only game processes started from the copies of this run are
-stopped at the end.
+pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
+(start-ups can stall under the full load; determinism has a rare timing-dependent one-tick shift); the table then
+shows the retry result and the first one. Exit status 1 when any check failed. Only game processes started from the
+copies of this run are stopped at the end. Progress: each finished check prints "[k/N done, m:ss]", and a status
+line with the checks still running follows every minute.
 
 The input scripts (tools/test/*.txt, format: src/platform/debug/script.c; lines that do not start with a number are
 comments) use layout 1280x720 in an 800-high window: script y = screen y - 40.
@@ -55,8 +56,9 @@ SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; ev
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'imagecmp', 'campaign', 'maps']
 # timing sensitive: a failure in the parallel run is retried alone. Determinism: a rare one-tick shift of a single
 # effect around tick 68 (the simulation seems to read state the renderer updates between steps; see
-# ot-scratch/findings.md) - a real regression shows up again in the retry and in aihash.
-RETRY_ALONE = ('determinism', 'multiplayer', 'maps')
+# ot-scratch/findings.md) - a real regression shows up again in the retry and in aihash. Saveload: a system-wide
+# stall of several seconds (seen in several instances at once) leaves a hang.log, which the check counts.
+RETRY_ALONE = ('determinism', 'saveload', 'multiplayer', 'maps')
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
              'imagecmp': 0, 'campaign': 5}
 
@@ -415,18 +417,40 @@ def main():
                                                                 args.map_minutes, out_dir), flush=True)
 
     results = {}
+    running = set()
+    lock = threading.Lock()
+    begin = time.time()
+
+    def elapsed():
+        seconds = int(time.time() - begin)
+        return '%d:%02d' % (seconds // 60, seconds % 60)
 
     def runner(name):
         start = time.time()
+        with lock:
+            running.add(name)
         try:
             status, details = globals()['check_' + name]()
         except Exception as error:  # a broken check must not hide the others
             status, details = 'FAIL', 'exception: %r' % error
-        results[name] = (status, details, time.time() - start)
-        print('  %-12s %-4s %4.0fs  %s' % (name, status, results[name][2], details), flush=True)
+        with lock:
+            results[name] = (status, details, time.time() - start)
+            running.discard(name)
+            done = sum(1 for n in selected if n in results)
+        print('  [%d/%d done, %s] %-12s %-4s %4.0fs  %s' % (done, len(selected), elapsed(), name, status,
+                                                            results[name][2], details), flush=True)
 
-    begin = time.time()
+    def heartbeat(stop):
+        # a status line every minute, so a long run shows how far it is
+        while not stop.wait(60):
+            with lock:
+                done = sum(1 for n in selected if n in results)
+                still = ', '.join(sorted(running))
+            print('  [%d/%d done, %s] running: %s' % (done, len(selected), elapsed(), still), flush=True)
+
     threads = []
+    stop_heartbeat = threading.Event()
+    threading.Thread(target=heartbeat, args=(stop_heartbeat,), daemon=True).start()
     try:
         for name in selected:
             thread = threading.Thread(target=runner, args=(name,))
@@ -448,6 +472,7 @@ def main():
         runner(name)
         status, details, seconds = results[name]
         results[name] = (status, '%s [retry alone; in the parallel run: %s]' % (details, first[1]), seconds)
+    stop_heartbeat.set()
     for name in CHECKS:
         if name not in selected:
             results[name] = ('SKIP', 'no --old' if name == 'pixels' and not args.old else 'skipped', 0)

@@ -84,6 +84,21 @@ def block_of(addr):
 def block_name(k):
     return 'g_ImageData_%08X' % blocks[k][0]
 
+# Every object (with its _rest/_padding/_tail parts) and every gap is its own variable g_ImageObject_<start>
+# since step 4 of the readability plan: the original order of the objects no longer exists in memory.
+def object_var(start):
+    return 'g_ImageObject_%08X' % start
+
+def object_type(start):
+    return 'ImageObject_%08X' % start
+
+def object_alignment(start):
+    """__declspec(align) of an object: the alignment its original address had, 4..16."""
+    align = 16
+    while align > 4 and start % align:
+        align //= 2
+    return align
+
 # ---- objects (layout.tsv) and the names a pointer target may carry
 objects = []
 declared_sizes = {}  # start -> size of the declared type (the extent may run on into alignment padding)
@@ -215,13 +230,82 @@ for k, (a, b) in enumerate(blocks):
         fields.append((cursor, b, identifier('gap_%08X' % cursor, used), None))
     members.append(fields)
 
+field_starts = [[f[0] for f in fields] for fields in members]
+
+# Objects the code overruns into their neighbour on purpose (original behaviour): each one and the field
+# directly after it stay in one variable, so the neighbour still follows it in memory.
+KEEP_WITH_NEXT = {
+    'g_Win32PathScratchA',  # the directory sort swaps 0x200-byte records through this 0x100-byte buffer
+    'u_engine_font_gfx_0041b030',  # FontRuntime_Init takes the second font path from behind the first one
+    'g_PckHuffmanLeafNodeWorkspace256',  # the Huffman node scans run over leaf and internal nodes as one array
+    'g_FixedSinQ28',  # the cosine lookups index on into g_FixedCosQ28
+    'g_ModelCullViewRelativeX', 'g_ModelCullViewRelativeY',  # read as one X, Y, Z vector
+    's_InstallRegistryValueNameCD', 'u_Dscreen00_pcx_00572e3a',  # "CD" / "screen00.pcx" overlap: +1 reaches the file name
+    'g_FrontendMissionBriefingMoviePathUtf16',  # L"flm\lev" without terminator, continued by the level digits
+}
+# Objects Ghidra split out of one structure the code uses as a whole: every field starting within the given
+# number of bytes from the named object stays in its variable.
+KEEP_SPAN = {
+    'g_GraphicsCursorSurfaceDescScratch': 0x6C,  # one DDSURFACEDESC: Lock fills the pitch and pixel fields too
+    'g_FrontendRomTransitionKeyframe0Channel0Q12': 0x40,  # two 0x20-byte spline keyframes, used as an array
+    'g_RichTextColorPalette0Argb': 0x18,  # six palette colours, indexed by the text style's palette field
+    'g_RichTextShadowOffsetPalette0': 0x18,  # six shadow offsets, indexed the same way
+    # 16 cipher round keys, then the 0x100-byte chunk packet (header reached as round keys + 0x40; sequence
+    # token, chunk offset, byte count and payload are its fields), sent as a whole from the header
+    'g_UiTransferRoundKeys16': 0x140,
+    'g_UiTransferPingEchoPacket': 0x20,  # ping answer packet: header, sequence token, echoed tick
+}
+# Debug aid: OPEN_THANDOR_SPLIT_RANGE=lo-hi (hex original addresses) splits only the fields starting in that
+# range and keeps everything else in one variable per block, to bisect a layout dependency.
+split_range = os.environ.get('OPEN_THANDOR_SPLIT_RANGE')
+split_range = tuple(int(x, 16) for x in split_range.split('-')) if split_range else None
+
+def series_stem(name):
+    """Name with its element index replaced by '#' (g_FooX/Y/Z, g_Foo0/1/2, also before a unit suffix such as
+    Q12 or Argb), or None. Ghidra split vectors and small arrays into one object per element, and the code
+    indexes them from the first element (a vector written through a pointer to X), so neighbours of one series
+    stay in one variable."""
+    if not name:
+        return None
+    stem = re.sub(r'(?:(?<=[a-z0-9])[XYZ]|(?<=[a-z])\d+)(?=(?:Q\d+|Argb|Utf16|A)?$)', '#', name, count=1)
+    return stem if stem != name else None
+
+series_joins = 0
+group_start = {}    # field start -> start of the variable holding it
+for fields in members:
+    previous = None
+    span_end = None  # end of the current KEEP_SPAN range
+    for start, end, member, name in fields:
+        if previous is not None and split_range and not (split_range[0] <= start < split_range[1]):
+            group_start[start] = group_start[previous[0]]
+        elif previous is not None and series_stem(name) and series_stem(name) == series_stem(previous[3]):
+            group_start[start] = group_start[previous[0]]
+            series_joins += 1
+        elif span_end is not None and start < span_end:
+            group_start[start] = group_start[previous[0]]
+        elif previous is not None and previous[3] in KEEP_WITH_NEXT:
+            group_start[start] = group_start[previous[0]]
+        else:
+            group_start[start] = start
+            span_end = None
+        if name in KEEP_SPAN:
+            span_end = start + KEEP_SPAN[name]
+        previous = (start, end, member, name)
+
+def field_of(addr):
+    """(variable start, field start, member) of the field (object or gap) holding original address addr."""
+    k = block_of(addr)
+    i = bisect.bisect_right(field_starts[k], addr) - 1
+    start, end, member, name = members[k][i]
+    return group_start[start], start, member
+
 # objects known only by a Ghidra label (vtables, handler tables) get an alias in image_data.h so the
 # data can name them
 label_aliases = {}
 for k, fields in enumerate(members):
     for start, end, member, name in fields:
         if name and re.match(r'^[gk]_\w+$', name) and name not in macros and name not in label_aliases:
-            label_aliases[name] = (start, '%s.%s' % (block_name(k), member))
+            label_aliases[name] = (start, '%s.%s' % (object_var(group_start[start]), member))
 
 def address_expression(value):
     """C constant expression for the generated address of original data address value: through the
@@ -232,11 +316,10 @@ def address_expression(value):
                               label_aliases.get(owner[2], (None,))[0] == owner[0]):
         offset = value - owner[0]
         return '&%s' % owner[2] if offset == 0 else '(uint8_t *)&%s + 0x%X' % (owner[2], offset)
-    if value in member_at:
-        k, member = member_at[value]
-        return '&%s.%s' % (block_name(k), member)
-    k = block_of(value)
-    return '(uint8_t *)&%s + 0x%X' % (block_name(k), value - blocks[k][0])
+    var_start, start, member = field_of(value)
+    if value == start:
+        return '&%s.%s' % (object_var(var_start), member)
+    return '(uint8_t *)&%s + 0x%X' % (object_var(var_start), value - var_start)
 
 # ---- initializers
 def c_string_literal(value, wide):
@@ -826,10 +909,17 @@ def note(start, end, name, kind):
             any(byte_at(x) for x in range(start, end)):
         kind = 'padding'
     inventory.append((start, end, name or '', kind))
+field_marks = []    # per block: (start, end, first decl index, first init index) of every field
 for k, (a, b) in enumerate(blocks):
     decls = []
     inits = []
+    marks = []
+    field_marks.append(marks)
     for start, end, member, name in members[k]:
+        if group_start[start] == start:
+            marks.append([start, end, len(decls), len(inits)])
+        else:
+            marks[-1][1] = end  # stays in the variable of the field before (KEEP_WITH_NEXT)
         comment = '/* %08X %s */' % (start, name if name else 'gap')
         if name in OBJECT_NOTES:
             comment = '/* %08X %s: %s */' % (start, name, OBJECT_NOTES[name])
@@ -919,23 +1009,33 @@ hdr = [HEADER % 'include/thandor/generated/image_data.h',
        '#ifndef THANDOR_GENERATED_IMAGE_DATA_H\n#define THANDOR_GENERATED_IMAGE_DATA_H\n\n'
        '#include <thandor/generated/types.h>\n#include <thandor/generated/ui_templates.h>\n\n'
        '#pragma pack(push, 1)\n']
+def field_parts(k, lines, index):
+    """The lines of field number index of block k (index 2 = declarations, 3 = initializers)."""
+    marks = field_marks[k]
+    for i, mark in enumerate(marks):
+        end_index = marks[i + 1][index] if i + 1 < len(marks) else len(lines)
+        yield mark[0], mark[1], lines[mark[index]:end_index]
+
 for k, (a, b) in enumerate(blocks):
     if k in extra_types:
         hdr.append('\n' + '\n'.join(extra_types[k]))
-    hdr.append('\n/* original 0x%08X-0x%08X */\ntypedef struct ImageData_%08X {\n%s\n} ImageData_%08X;\n'
-               'extern ImageData_%08X %s;\n' % (a, b, a, '\n'.join(layout_lines[k]), a, a, block_name(k)))
+    hdr.append('\n/* original 0x%08X-0x%08X */\n' % (a, b))
+    for start, end, decls in field_parts(k, layout_lines[k], 2):
+        hdr.append('typedef struct %s {\n%s\n} %s;\nextern %s %s;\n' % (
+            object_type(start), '\n'.join(decls), object_type(start), object_type(start), object_var(start)))
 hdr.append('\n#pragma pack(pop)\n\n/* Objects the headers do not declare, by their Ghidra label. */\n')
 for name, (start, target) in sorted(label_aliases.items(), key=lambda x: x[1][0]):
     hdr.append('#define %s (%s)\n' % (name, target))
 hdr.append('\n/* Original address -> generated storage. */\n')
 missing = []
 for addr in sorted(set(a for _, (_, a) in macros.items())):
-    if addr in member_at:
-        k, member = member_at[addr]
-        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s.%s)\n' % (addr, block_name(k), member))
-    elif block_of(addr) is not None:
-        k = block_of(addr)
-        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s + 0x%X)\n' % (addr, block_name(k), addr - blocks[k][0]))
+    if block_of(addr) is not None:
+        var_start, start, member = field_of(addr)
+        if addr == start:
+            hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s.%s)\n' % (addr, object_var(var_start), member))
+        else:
+            hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s + 0x%X)\n' % (
+                addr, object_var(var_start), addr - var_start))
     elif not START <= addr < END:
         # numbers Ghidra typed as addresses (low error codes, the image base in a comparison)
         hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)0x%08xu)\n' % (addr, addr))
@@ -946,7 +1046,8 @@ hdr.append('\n/* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its origina
            'typedef struct ThandorImageBlock { uint32_t start; uint32_t end; const uint8_t *data; } ThandorImageBlock;\n'
            'typedef struct ThandorImagePointer { uint32_t location; uint32_t originalValue; } ThandorImagePointer;\n'
            'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n'
-           'extern const ThandorImagePointer g_ThandorImagePointers[%d];\n\n#endif\n' % (len(blocks), len(pointers)))
+           'extern const ThandorImagePointer g_ThandorImagePointers[%d];\n\n#endif\n' % (
+               sum(len(m) for m in field_marks), len(pointers)))
 open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'image_data.h'), 'w',
      encoding='utf-8').write(''.join(hdr))
 
@@ -983,10 +1084,14 @@ for k, (a, b) in enumerate(blocks):
     # a multi-line initializer gets its object comment as a heading instead of at its end
     lines = [re.sub(r'^    (\{[^\n]*\n.*), (/\* [0-9A-F]{8} [^\n]* \*/)$', r'    \2\n    \1,', line, flags=re.S)
              for line in init_lines[k]]
-    src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(lines)))
-src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
+    for start, end, inits in field_parts(k, lines, 3):
+        src.append('\n__declspec(align(%d)) %s %s = {\n%s\n};\n' % (
+            object_alignment(start), object_type(start), object_var(start), '\n'.join(inits)))
+object_count = sum(len(m) for m in field_marks)
+src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % object_count)
 for k, (a, b) in enumerate(blocks):
-    src.append('    {0x%08X, 0x%08X, (const uint8_t *)&%s},\n' % (a, b, block_name(k)))
+    for start, end, _, _ in field_marks[k]:
+        src.append('    {0x%08X, 0x%08X, (const uint8_t *)&%s},\n' % (start, end, object_var(start)))
 src.append('};\n\nconst ThandorImagePointer g_ThandorImagePointers[%d] = {\n' % len(pointers))
 for location, value, kind, name in pointers:
     src.append('    {0x%08X, 0x%08X},\n' % (location, value))
@@ -1009,5 +1114,6 @@ string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l 
 print('%d blocks, %d bytes, %d members (%d typed), %d function pointers, %d data pointers' % (
     len(blocks), sum(b - a for a, b in blocks), sum(len(m) for m in members), typed_count,
     sum(1 for p in pointers if p[2] == 'function'), sum(1 for p in pointers if p[2] == 'data')))
+print('%d variables (%d series elements joined to their predecessor)' % (len(set(group_start.values())), series_joins))
 if missing:
     print('address macros outside every block:', ', '.join('%08x' % a for a in missing))

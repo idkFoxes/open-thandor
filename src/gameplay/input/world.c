@@ -624,11 +624,10 @@ static void InGameWorldInput_CommitCommandModeRelease
     modeHandler(g_LocalPlayerRuntimeId,g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
   }
   else {
-    /* the command code is the handler's original address minus INGAME_COMMAND_CODE_BASE; the table
-       holds recovered C functions, so map back to the original address first */
+    /* the command code is the handler's code in the in-game command table (in the original its address
+       minus INGAME_COMMAND_CODE_BASE) */
     InGameCommandQueue_AppendLocalPlayerCommand
-              ((UiActionId)(Thandor_OriginalAddressOfFunction((const void *)modeHandler) -
-                            INGAME_COMMAND_CODE_BASE),
+              ((UiActionId)CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,(const void *)modeHandler),
                g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {

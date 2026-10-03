@@ -904,7 +904,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   FindClose(findHandle);
   /* bubble sort; each swap goes through g_Win32PathScratchA, which is only 0x100 bytes: the 0x200-byte
      record also fills g_Win32PathScratchB behind it (original behaviour; relies on B directly following A,
-     0x00575A9C/0x00575B9C, which the generated image struct g_ImageData_0057594C keeps) */
+     0x00575A9C/0x00575B9C; tools/data/gen_image_data.py keeps the two in one variable, KEEP_WITH_NEXT) */
   if (1 < recordCount) {
     for (passesRemaining = recordCount - 1; passesRemaining != 0; passesRemaining--) {
       leftRecordDwords = (uint32_t *)outputRecords;
