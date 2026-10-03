@@ -60,10 +60,9 @@ PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.lo
            'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
-# timing sensitive: a failure in the parallel run is retried alone. Determinism: a rare one-tick shift of a single
-# effect around tick 68 (the simulation seems to read state the renderer updates between steps; see
-# ot-scratch/findings.md) - a real regression shows up again in the retry and in aihash. Saveload: a system-wide
-# stall of several seconds (seen in several instances at once) leaves a hang.log, which the check counts.
+# timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
+# Saveload: a system-wide stall of several seconds (seen in several instances at once) leaves a hang.log, which the
+# check counts.
 RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
 GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
 # start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
@@ -160,10 +159,7 @@ def check_determinism():
     folder = make_copy('det', args.new)
     code, text = run_tool(os.path.join(out_dir, 'determinism.txt'),
                           [os.path.join(HERE, 'run_determinism.py'), folder, '--reference',
-                           os.path.join(HERE, 'determinism_reference'),
-                           # rare unexplained production mismatch at tick 68 (ot-scratch/findings.md): keep the
-                           # per-army values of that tick in GAME_DIR_chk_det_d<k>/statehash.txt for the next one
-                           '--detail', '68'], 1800)
+                           os.path.join(HERE, 'determinism_reference')], 1800)
     lines = [l for l in text.splitlines() if l.split() and l.split()[0] in ('battle', 'turrets', 'production')]
     details = '; '.join(l.split()[0] + ' ok' if l.split()[1] == 'ok:' else ' '.join(l.split(' (rerun')[0].split())
                         for l in lines) or 'no result (exit %s)' % code

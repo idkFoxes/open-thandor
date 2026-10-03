@@ -87,6 +87,9 @@ void DebugHook_CampaignLoaded(void *campaignAsset);
 void DebugHook_CampaignCarryOver(int afterMerge);
 
 /* --- in-game session --- */
+/* InGameRuntime_RunSessionUntilExit, before the session is initialised (the first simulation steps already run
+   during the initialisation): state hash random seed. */
+void DebugHook_SessionInitializing(void);
 /* After the session is initialised, before its first frame (session counter, state hash start). */
 void DebugHook_SessionStarted(void);
 /* Start and end of every in-game frame (frame counter for the input script; OPEN_THANDOR_AUTOWIN). */
@@ -138,6 +141,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_CampaignLoaded(campaignAsset) ((void)0)
 #define DebugHook_CampaignCarryOver(afterMerge) ((void)0)
 
+#define DebugHook_SessionInitializing() ((void)0)
 #define DebugHook_SessionStarted() ((void)0)
 #define DebugHook_SessionFrameBegin() ((void)0)
 #define DebugHook_SessionFrameEnd() ((void)0)

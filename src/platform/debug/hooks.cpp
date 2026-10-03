@@ -141,6 +141,11 @@ void DebugHook_CampaignCarryOver(int afterMerge)
 
 /* --- in-game session --- */
 
+void DebugHook_SessionInitializing(void)
+{
+  DebugStateHash_SessionInitializing();
+}
+
 void DebugHook_SessionStarted(void)
 {
   g_TestAidSessionCount++;
