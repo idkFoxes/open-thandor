@@ -3950,6 +3950,11 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
   uint32_t startupError;
   bool started;
 
+  /* Original quirk: a local game leaves the simulation on the primary random stream, which the frontend and the
+     in-game UI also advance per drawn frame, so its outcome depends on the frame rate (a network game seeds both
+     streams and simulates on the secondary one). The state hash test aid does the same as a network game here,
+     before the first simulation steps, which already run during the initialisation. */
+  DebugHook_SessionInitializing();
   if ((loadExistingSessionFlag & 1U) == 0) {
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }

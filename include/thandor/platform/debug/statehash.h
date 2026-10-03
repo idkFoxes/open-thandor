@@ -17,7 +17,11 @@
    draws no longer change it. OPEN_THANDOR_STATEHASH_DETAIL=<tick> also writes every army's values at that tick.
    Driven by tools/test/run_determinism.py. */
 
-/* After the session is initialised, before its first simulation step (InGameRuntime_RunSessionUntilExit). */
+/* Before the session is built (InGameRuntime_RunSessionUntilExit): seeds both random streams and selects the
+   secondary one, before the first simulation steps, which already run during the initialisation. */
+void DebugStateHash_SessionInitializing(void);
+/* After the session is initialised, before its first frame (InGameRuntime_RunSessionUntilExit): starts recording;
+   the steps run during the initialisation are not recorded. */
 void DebugStateHash_SessionStart(void);
 /* After every complete simulation step (InGameRuntime_UpdateSimulationAndNetworkTick, step lock held). */
 void DebugStateHash_AfterStep(void);

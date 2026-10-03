@@ -41,6 +41,27 @@ static int32_t DebugStateHash_ArmyIndex(const void *army)
   return (int32_t)(((const uint8_t *)army - (const uint8_t *)g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
 }
 
+void DebugStateHash_SessionInitializing(void)
+{
+  const char *steps = getenv("OPEN_THANDOR_STATEHASH");
+  const char *seed = getenv("OPEN_THANDOR_STATEHASH_SEED");
+  if (steps == NULL || atoi(steps) <= 0) {
+    return;
+  }
+  /* The simulation draws from g_RandomGeneratorState.next; in a local game that is the primary stream, which the
+     frontend and the in-game UI also advance per drawn frame (ambient sound and music in InGameUiRoot_UpdateFrame,
+     button and input code), so the run would depend on the frame rate. A network game seeds both streams and moves
+     the simulation to the secondary one before the session is built; do the same with a fixed seed. It has to
+     happen here, before the level is instantiated: the first simulation steps (ticks 1-2, under load 1-3) already
+     run inside the initialisation, in the "waiting for players" loop of InGameRuntime_InitializeNewSession, before
+     DebugStateHash_SessionStart. They draw the first random part of every effect emitter timer
+     (ArmyRuntime_UpdateTimedShotAndEffectEmitters); seeded only at SessionStart, those timers came from a primary
+     stream that the frames drawn so far had advanced, and one emitter effect (with its random draw) came a tick
+     early or late around tick 68 depending on the load. */
+  Random_SetBothSeeds((RandomSeed)(seed != NULL ? strtoul(seed, NULL, 0) : 12345u));
+  Random_SelectSecondaryStream();
+}
+
 void DebugStateHash_SessionStart(void)
 {
   const char *steps = getenv("OPEN_THANDOR_STATEHASH");
@@ -54,12 +75,7 @@ void DebugStateHash_SessionStart(void)
   s_detailTick = detail != NULL ? (unsigned)atoi(detail) : 0;
   s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != NULL ?
                 (unsigned)atoi(getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT")) : 0;
-  /* The simulation draws from g_RandomGeneratorState.next; in a local game that is the primary stream, which the
-     ambient sound and music code (InGameUiRoot_UpdateFrame) also advances once per rendered frame, so the run would
-     depend on the frame rate. A network game seeds both streams and moves the simulation to the secondary one;
-     do the same with a fixed seed. */
-  Random_SetBothSeeds((RandomSeed)(seed != NULL ? strtoul(seed, NULL, 0) : 12345u));
-  Random_SelectSecondaryStream();
+  /* the random streams were seeded in DebugStateHash_SessionInitializing */
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
               seed != NULL ? seed : "12345");
