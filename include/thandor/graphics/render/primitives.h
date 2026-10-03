@@ -22,11 +22,9 @@
 #define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES 0x20
 #define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET 0xA0
 /* GraphicsPrimitiveQueue_RadixSortForRendering ends the sorted traversal list with this node pointer */
-#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)0xffffffff)
+#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)(intptr_t)-1) /* 0xffffffff in the original */
 /* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16
-   marks a textured packet, bits 12..14 the blend mode; Glide3_DrawPrimitiveQueue draws blend mode 0 opaque,
-   1 alpha-blended without depth writes, 2 additive without depth writes, every other mode alpha-blended with
-   depth writes, and treats bit 17 as blend mode 1. */
+   marks a textured packet, bits 12..14 the blend mode. */
 #define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
 #define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
 /* bits 12..17: raster handler index; the software queue renderers shift by 10 to get its byte offset */

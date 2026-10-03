@@ -842,19 +842,19 @@ __declspec(align(16)) uint32_t g_UiPendingFrameTicks = 0;
 __declspec(align(8)) uint32_t g_UiInvalidationSuppressed = 0;
 
 /* 004B0E30 g_UiRootNode */
-__declspec(align(16)) UiRootNode *g_UiRootNode = (void *)0xFFFFFFFF;
+__declspec(align(16)) UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
 
 /* 004B0E34 g_UiWindowTextureSource */
-__declspec(align(4)) GraphicsTextureSourceAsset *g_UiWindowTextureSource = (void *)0xFFFFFFFF;
+__declspec(align(4)) GraphicsTextureSourceAsset *g_UiWindowTextureSource = (void *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
 
 /* 004B0E38 g_UiWindowClassTextureSource */
 __declspec(align(8)) GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = 0;
 
 /* 004B0E3C g_UiPointerCaptureTarget */
-__declspec(align(4)) UiNodeBase *g_UiPointerCaptureTarget = (void *)0xFFFFFFFF;
+__declspec(align(4)) UiNodeBase *g_UiPointerCaptureTarget = UI_NODE_NONE;
 
 /* 004B0E40 g_UiKeyboardFocusNode */
-__declspec(align(16)) UiNodeBase *g_UiKeyboardFocusNode = (void *)0xFFFFFFFF;
+__declspec(align(16)) UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
 
 /* 004B0E44 g_UiSoundGainQ15 */
 __declspec(align(4)) AudioMixerGainQ15 g_UiSoundGainQ15 = 32768;

@@ -467,8 +467,14 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       remainingCommands =
            packet->packet10000Handshake.header.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
       g_FrontendSelectedPlayerToken = packetSenderContext;
+      /* Not in the original: a count of 0 (which wraps) or one past the 0x100-byte receive slot executes
+         nothing. The receive check (UiTransferMailbox_DecryptAndVerifyRecord) already drops such packets;
+         valid batches have 1..8 records. */
+      if (remainingCommands == 0 || remainingCommands > FRONTEND_PACKET_MAX_UNIT_COUNT) {
+        remainingCommands = 0;
+      }
       /* the batch is an array of 0x20-byte command records; the first header is the batch header */
-      do {
+      while (remainingCommands != 0) {
         commandHandlerIndex = packet->command10011Or10021.command.packedCommandAndPlayerId >> 8;
         if (commandHandlerIndex != 0) {
           CommandQueueHandlerProc *commandHandler =
@@ -484,7 +490,7 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
         }
         packet = (FrontendTransferPacketUnion *)(&packet->command10011Or10021 + 1);
         remainingCommands--;
-      } while (remainingCommands != 0);
+      }
       FrontendTransfer_SendCommandSubmit();
       g_FrontendTransferResponsePending = 1;
       return true;

@@ -78,7 +78,7 @@ or to other layout-compatible structs, which C only allows through a union.
 static __inline UiNodeBase *Thandor_UiRoot(const void *node)
 {
     UiNodeBase *current = (UiNodeBase *)node;
-    while (current->parent != (UiNodeBase *)0xffffffff) {
+    while (current->parent != UI_TEMPLATE_NO_LINK) {
         current = current->parent;
     }
     return current;

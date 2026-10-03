@@ -28,6 +28,7 @@ static bool UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord
   UiTransferXorChecksum *checksumField;
   UiTransferXorChecksum checksum;
   const uint32_t *packetDwordCursor;
+  uint32_t unitCount;
   int dwordsRemaining;
 
   UiTransfer_DecryptPacketBlocks
@@ -37,7 +38,14 @@ static bool UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord
   checksum = *checksumField;
   *checksumField = 0;
   UNLOCK();
-  dwordsRemaining = (ringRecord->packetHeader.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT) << 3;
+  unitCount = ringRecord->packetHeader.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
+  /* Not in the original: a unit count of 0 or one that does not fit the 0x100-byte ring slot is rejected like
+     a bad checksum (see the quirk at UiTransferMailbox_ServiceAndRetransmitTimer). A valid packet always fits:
+     the datagram is received into a 0x100-byte buffer, a longer one fails to arrive. */
+  if (unitCount == 0 || unitCount > FRONTEND_PACKET_MAX_UNIT_COUNT) {
+    return false;
+  }
+  dwordsRemaining = (int)(unitCount << 3);
   packetDwordCursor = (const uint32_t *)ringRecord;
   do {
     checksum = checksum ^ *packetDwordCursor;
@@ -222,7 +230,8 @@ static void UiTransferMailbox_StorePingRoundTrip
    whose round trip becomes the player's latency text. Skipped while the ring lock is held elsewhere.
    Original quirk: the checksum loop trusts the unit count of the (descrambled) packet header (0x004AEB74..
    0x004AEB96: SHR 0x10, SHL 3, DEC/JNZ) - neither the received byte count nor the 0x100-byte ring slot limit it,
-   so a count above 8 XORs past the slot and a count of 0 wraps the counter and reads on until it faults.
+   so a count above 8 XORs past the slot and a count of 0 wraps the counter and reads on until it faults. Here
+   such packets are rejected (UiTransferMailbox_DecryptAndVerifyRecord); valid packets are not affected.
    Original quirk: on a host chunk request (0x10031) the timeout extension goes to the dword at +0x10 of the
    sender's receive scratch slot (0x004AED10 ADD [ESI+0x10],0x40; ESI = auxiliary endpoint slot), not to the
    requesting player's heartbeatExpiryTicks at +0x10 of the player record (EBX), which was probably meant; the
@@ -312,8 +321,8 @@ static void FrontendTransfer_CopyCommandRecord
   }
 }
 
-/* Executes commandCount consecutive 0x20-byte lobby command records (at least one: a count of 0 wraps, as in
-   the original). Command dword = handler offset << 8 | player id; offsets past the command handlers are
+/* Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a
+   count of 0 wraps). Command dword = handler offset << 8 | player id; offsets past the command handlers are
    ignored. */
 static void FrontendTransfer_ExecuteLobbyCommandRecords
           (const FrontendCommandPacketRecord *commandRecord,uint32_t commandCount)
@@ -322,6 +331,12 @@ static void FrontendTransfer_ExecuteLobbyCommandRecords
   uint32_t commandHandlerIndex;
   CommandQueueHandlerProc *commandHandler;
 
+  /* Not in the original: a count of 0 (which wraps) or one past the 0x100-byte receive slot executes nothing.
+     The receive check (UiTransferMailbox_DecryptAndVerifyRecord) already drops such packets; valid batches
+     have 1..8 records. */
+  if (commandCount == 0 || commandCount > FRONTEND_PACKET_MAX_UNIT_COUNT) {
+    return;
+  }
   do {
     packedCommand = commandRecord->command.packedCommandAndPlayerId;
     commandHandlerIndex = packedCommand >> 8;

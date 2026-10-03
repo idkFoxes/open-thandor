@@ -146,7 +146,7 @@ bool Movie_EncodeFlmBufferFromFrameProvider
   /* video stream bytes once the header is subtracted below */
   header->videoStreamBytes = byteCount;
   /* the provider ends the sequence with the error 0xFFFFFFFF; any other error fails the encode */
-  if (providerResult.frameOrError != (void *)0xffffffff) {
+  if (providerResult.frameOrError != (void *)(intptr_t)-1) {
     return false;
   }
   header->videoStreamBytes = header->videoStreamBytes - MOVIE_FILE_HEADER_BYTES;

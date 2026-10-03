@@ -10,6 +10,10 @@
 
 /* Implementation ownership: gameplay/ai/combat. */
 
+/* Source class count AiCombatTarget_SelectBestCandidate reports for a zero class counter sum, in place of the
+   original's positive stack leftover (see the quirk there). */
+#define AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER 1
+
 /* Address: 0x00536FC0.
    Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases). Skipped while an
@@ -156,7 +160,8 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
    the sum in *outSourceClassCount (the original returned the pair in EAX:EDX).
    Only called by AiCombatDecision_UpdateTargetAssignment.
    Original quirk: a zero sum stores a stack leftover instead of the sum (see the body); the C stores the
-   world runtime pointer, the positive value the traced original paths leave there.
+   positive constant AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER, since every traced original path leaves a positive
+   value there and the caller only tests the sign.
 */
 ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime,
@@ -195,9 +200,11 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
      frame leaves e.g. the movement length ([EBP-8], 0x0052094B) or a pushed pointer / return address. The
      value is class and state dependent, but every traced path leaves a positive one (the movement length is
      0 only when the unit stands exactly on its movement point), and the caller only tests EDX > 0
-     (0x00537013), so the C returns the most common of them, the world runtime pointer (positive:
-     /LARGEADDRESSAWARE:NO). */
-  returnedSourceClassCount = (AiSourceClassCount)(uintptr_t)worldRuntime;
+     (0x00537013). The C formerly returned the most common of them, the world runtime pointer (positive:
+     /LARGEADDRESSAWARE:NO); since the only use of the value is that sign test (the zero-sum path finds no
+     candidate, and AiCombatDecision_UpdateTargetAssignment reads sourceClassCount nowhere else), any positive
+     constant gives the same decisions and stays positive on 64-bit. */
+  returnedSourceClassCount = AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER;
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
     searchRadiusQ12 = sourceArmyRuntime->weaponRangeQ12 + 4 * Q12_ONE;

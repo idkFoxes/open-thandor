@@ -16,11 +16,12 @@
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
    previousRoot link holds it. */
-#define UI_ROOT_STACK_END ((UiRootNode *)0xffffffff)
+#define UI_ROOT_STACK_END ((UiRootNode *)(intptr_t)-1)
 
-/* "No node" in the UI tree links (firstChild, nextSibling, parent) and the node-list pointers. */
+/* "No node" in the UI tree links (firstChild, nextSibling, parent) and the node-list pointers. The same
+   all-bits-set value as UI_TEMPLATE_NO_LINK, which the templates store (0xffffffff in the original). */
 #ifndef UI_NODE_NONE
-#define UI_NODE_NONE ((UiNodeBase *)0xffffffff)
+#define UI_NODE_NONE UI_TEMPLATE_NO_LINK
 #endif
 /* nodeFlags bit 0 (not in the UiNodeFlags enum): set on every node of the top root of the stack by
    UiRootStack_Push/Pop/BringToFront through applyFlags; window frames draw their inactive variant without it. */

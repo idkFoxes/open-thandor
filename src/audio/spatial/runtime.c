@@ -19,7 +19,6 @@ bool SpatialSoundPool_Init(uint32_t *outError)
 
 {
   SpatialSoundSlot *clearCursor;
-  int dwordsRemaining;
   uint32_t allocError;
 
   allocError = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot),(void **)&clearCursor);
@@ -28,12 +27,8 @@ bool SpatialSoundPool_Init(uint32_t *outError)
     return false;
   }
   g_SpatialSoundSlots = clearCursor;
-  /* REP STOSD over the whole pool: the cursor advances one dword (to the next field) per step */
-  for (dwordsRemaining = SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot) / 4; dwordsRemaining != 0;
-       dwordsRemaining--) {
-    clearCursor->voiceSet = NULL;
-    clearCursor = (SpatialSoundSlot *)&clearCursor->activeVoice;
-  }
+  /* the whole pool is zeroed (REP STOSD in the original) */
+  memset(clearCursor,0,SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot));
   return true;
 }
 
@@ -240,20 +235,14 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
 
 /* Address: 0x0050B9D0.
    Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
-   (all four dwords), which makes it free again. A NULL slot is ignored.
+   (all four fields), which makes it free again. A NULL slot is ignored.
 */
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 
 {
-  int slotEntriesRemaining;
-  
-  slotEntriesRemaining = sizeof(SpatialSoundSlot) / 4;
   if (slot != NULL) {
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
-    for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
-      slot->voiceSet = NULL;
-      slot = (SpatialSoundSlot *)&slot->activeVoice;
-    }
+    memset(slot,0,sizeof(SpatialSoundSlot));
   }
   return;
 }

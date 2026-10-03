@@ -4047,7 +4047,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
        (modelRuntime->classState).shotEmitterTimerTicks - g_InGameSimulationStepTicks;
   /* the shot timer has reached 0 or below (signed compare of the old value with the step) */
   if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
-     ((emitterDefinition->emitterShotDefinitionReference).definition != (ShotDefinition *)0xffffffff)) {
+     ((emitterDefinition->emitterShotDefinitionReference).definition != (ShotDefinition *)(intptr_t)-1)) {
     randomTicks = 0;
     if (emitterDefinition->shotEmitterRandomTicks != 0) {
       randomValue = g_RandomGeneratorState.next();

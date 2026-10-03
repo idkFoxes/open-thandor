@@ -304,6 +304,18 @@ static const CommandTableEntry g_InGameCommandTable[] = {
 
 #define COMMAND_TABLE_COUNT(table) (sizeof(table) / sizeof((table)[0]))
 
+/* False for the table entries that are no four-argument command handlers: the queue functions and the queue
+   lookup helper, listed only because they start in the handler regions. */
+static bool CommandDispatch_IsCommandHandler(const void *handler)
+
+{
+  return handler != (const void *)&FrontendCommandQueue_EnqueueLocalPlayerCommand &&
+         handler != (const void *)&FrontendCommandQueue_DequeueFirstIntoRecord &&
+         handler != (const void *)&InGameCommandQueue_AppendLocalPlayerCommand &&
+         handler != (const void *)&InGameCommandQueue_DequeueFirstIntoRecord &&
+         handler != (const void *)&InGameCommandQueue_ContainsTripletValue;
+}
+
 /* The handler table of a command code base (FRONTEND_COMMAND_CODE_BASE or INGAME_COMMAND_CODE_BASE). */
 static const CommandTableEntry *CommandDispatch_TableForBase(uint32_t codeBase,uint32_t *outCount)
 
@@ -343,6 +355,13 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
   table = CommandDispatch_TableForBase(codeBase,&count);
   for (index = 0; index < count; index++) {
     if (table[index].code == code) {
+      /* Not in the original: the queue functions (codes 0x0 and 0x60) and the in-game queue lookup helper
+         (0xD0) start in the handler region, so the original would call them for such a received code, e.g.
+         the dequeue function with the player id as its record pointer. No valid peer sends these codes (0 is
+         the empty record and skipped by every caller), so they are ignored like a code that is no handler. */
+      if (!CommandDispatch_IsCommandHandler(table[index].handler)) {
+        break;
+      }
       return (CommandQueueHandlerProc *)table[index].handler;
     }
   }

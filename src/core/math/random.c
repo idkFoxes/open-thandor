@@ -22,7 +22,7 @@
 uint32_t Random_NextPrimary(void)
 
 {
-  int firstStepSeed;
+  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's IMUL/ADD */
 
   firstStepSeed = g_RandomGeneratorState.primarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   g_RandomGeneratorState.primarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
@@ -38,7 +38,7 @@ uint32_t Random_NextPrimary(void)
 uint32_t Random_NextSecondary(void)
 
 {
-  int firstStepSeed;
+  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's IMUL/ADD */
 
 #ifdef THANDOR_TEST_AIDS
   Thandor_TestAidNoteOutsideStep("session random draw", _ReturnAddress());

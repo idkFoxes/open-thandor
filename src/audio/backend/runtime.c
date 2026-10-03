@@ -45,7 +45,7 @@ void DirectSound_Shutdown(void)
 uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
 
 {
-  *outVoiceSet = (DirectSoundVoiceSet *)0xffffffff;
+  *outVoiceSet = (DirectSoundVoiceSet *)(intptr_t)-1;
   return 0;
 }
 
@@ -397,37 +397,29 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
-  DirectSoundVoiceSet **registryGuard;
-  int voicesRemaining;
-  DirectSoundVoiceSet **registryRemaining; /* a count; Ghidra shares the register with registryGuard */
-  IDirectSoundBuffer **voiceCursor;
-  DirectSoundVoiceSet **registryCursor;
+  int voiceIndex;
+  int registryIndex;
+  DirectSoundVoiceSet **registry;
   IDirectSoundBuffer *voiceBuffer;
 
-  voicesRemaining = DIRECTSOUND_VOICES_PER_SET;
-  voiceCursor = voiceSet->voices;
   if (voiceSet != NULL) {
-    do {
-      voiceBuffer = *voiceCursor;
+    for (voiceIndex = 0; voiceIndex < DIRECTSOUND_VOICES_PER_SET; voiceIndex++) {
+      voiceBuffer = voiceSet->voices[voiceIndex];
       if (voiceBuffer != NULL) {
         voiceBuffer->lpVtbl->Release(voiceBuffer);
       }
-      voiceCursor++;
-      voicesRemaining--;
-    } while (voicesRemaining != 0);
+    }
     g_MemoryApi.free(voiceSet);
-    registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
-    registryCursor = g_DirectSoundVoiceSetRegistry;
-    registryGuard = g_DirectSoundVoiceSetRegistry;
-    /* first pass tests the registry pointer, later passes the remaining count */
-    while (registryGuard != NULL) {
-      if (voiceSet == *registryCursor) {
-        *registryCursor = NULL;
-        return;
+    /* the original's loop register holds the registry pointer on the first pass (a NULL registry searches
+       nothing) and the remaining count afterwards */
+    registry = g_DirectSoundVoiceSetRegistry;
+    if (registry != NULL) {
+      for (registryIndex = 0; registryIndex < DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryIndex++) {
+        if (voiceSet == registry[registryIndex]) {
+          registry[registryIndex] = NULL;
+          return;
+        }
       }
-      registryCursor++;
-      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
-      registryGuard = registryRemaining;
     }
   }
   return;
@@ -560,33 +552,29 @@ void DirectSound_StopAllVoices(void)
 
 {
   IDirectSoundBuffer *voiceBuffer;
-  DirectSoundVoiceSet **registryGuard;
-  IDirectSoundBuffer **voiceGuard;
-  DirectSoundVoiceSet **registryRemaining; /* counts; Ghidra shares their registers with the guards */
-  IDirectSoundBuffer **voicesRemaining;
-  IDirectSoundBuffer **voiceCursor;
-  DirectSoundVoiceSet **registryCursor;
+  DirectSoundVoiceSet **registry;
+  DirectSoundVoiceSet *voiceSet;
+  int registryIndex;
+  int voiceIndex;
 
-  registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
-  registryCursor = g_DirectSoundVoiceSetRegistry;
-  registryGuard = g_DirectSoundVoiceSetRegistry;
-  while (registryGuard != NULL) {
-    voicesRemaining = (IDirectSoundBuffer **)DIRECTSOUND_VOICES_PER_SET;
-    /* voices is at offset 0, so an empty registry slot yields a NULL cursor and skips the set */
-    voiceCursor = (*registryCursor)->voices;
-    voiceGuard = voiceCursor;
-    while (voiceGuard != NULL) {
-      voiceBuffer = *voiceCursor;
+  /* The original's loop registers hold the registry pointer and the set's voices pointer on the first pass
+     and the remaining counts afterwards: a NULL registry stops nothing, and since voices is at offset 0 an
+     empty registry slot skips its set. */
+  registry = g_DirectSoundVoiceSetRegistry;
+  if (registry == NULL) {
+    return;
+  }
+  for (registryIndex = 0; registryIndex < DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryIndex++) {
+    voiceSet = registry[registryIndex];
+    if (voiceSet == NULL) {
+      continue;
+    }
+    for (voiceIndex = 0; voiceIndex < DIRECTSOUND_VOICES_PER_SET; voiceIndex++) {
+      voiceBuffer = voiceSet->voices[voiceIndex];
       if (voiceBuffer != NULL) {
         voiceBuffer->lpVtbl->Stop(voiceBuffer);
       }
-      voiceCursor++;
-      voicesRemaining = (IDirectSoundBuffer **)((int)voicesRemaining - 1);
-      voiceGuard = voicesRemaining;
     }
-    registryCursor++;
-    registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
-    registryGuard = registryRemaining;
   }
   return;
 }

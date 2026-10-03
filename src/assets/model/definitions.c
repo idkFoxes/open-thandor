@@ -545,7 +545,7 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
     if (status != 0) return status;
   }
   /* -1: the definition has no shot at +0x168 */
-  if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
+  if (definition->emitterShotDefinitionReference != (ShotDefinition *)(intptr_t)-1) {
     status = ShotDefinitionRegistry_FindByIdWithError
                        ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
     if (status != 0) return status;

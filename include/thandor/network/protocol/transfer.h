@@ -16,7 +16,7 @@
 
 /* g_UiTransferMailbox.receivedAllocation sentinel published by UiTransferMailbox_MarkUnavailable when a
    requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
-#define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)0xffffffff)
+#define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)(intptr_t)-1) /* all bits set, as 0xffffffff in the original */
 
 /* In-game lockstep command exchange. packedTypeAndUnitCount holds the packet type in the low word and the
    number of 0x20-byte units in the high word. Each tick interval the host collects one command record per
@@ -25,6 +25,8 @@
    COMMAND_WAIT and answers COMMAND_WAIT_ACK, which only refreshes its timeout on the host. */
 #define FRONTEND_PACKET_TYPE_MASK 0xffff
 #define FRONTEND_PACKET_UNIT_COUNT_SHIFT 16
+/* Most 0x20-byte units a received packet can have: the 0x100-byte receive ring slot (and receive buffer). */
+#define FRONTEND_PACKET_MAX_UNIT_COUNT 8
 #define FRONTEND_PACKET_COMMAND_BATCH_TYPE 0x20             /* host -> clients; unit count = command records */
 #define FRONTEND_PACKET_COMMAND_SUBMIT FRONTEND_PACKET_10021_COMMAND_SUBMIT   /* client -> host: its next command record */
 #define FRONTEND_PACKET_COMMAND_WAIT FRONTEND_PACKET_10022_COMMAND_WAIT     /* host -> client: command received, batch pending */
