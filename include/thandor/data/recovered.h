@@ -15,127 +15,95 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- network/protocol/transfer: 64-bit block cipher, eight 16x16 nibble substitution tables
    (table n maps round-key nibble n and data nibble to a 4-bit output, stored as dwords). */
-#define g_UiTransferDecryptSboxes (*(uint32_t (*)[8][16][16])THANDOR_IMAGE(0x00405160))
 
 /* ---- platform/system/time_locale: function-pointer slot statically holding
    Locale_MapTelephoneCountryCodeToRegionTagPacked (no code reference to the slot found). */
-#define g_LocaleMapTelephoneCountryCodeToRegionTagPacked (*(LocaleRegionTagPacked (**)(LocaleTelephoneCountryCode))THANDOR_IMAGE(0x004027b0))
+#define g_LocaleMapTelephoneCountryCodeToRegionTagPacked (*(LocaleRegionTagPacked (**)(LocaleTelephoneCountryCode))&g_ImageObject_004027B0.at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked)
 
 /* ---- core/math/fixed: the quarter turn of the sine table before angle 0 (sin of -16384..-1 in
    Q28), directly followed by g_FixedSinQ28 and g_FixedCosQ28; signed angle lookups reach it. */
-#define g_FixedSinBeforeZeroQ28 (*(int32_t (*)[16384])THANDOR_IMAGE(0x004246a0))
+#define g_FixedSinBeforeZeroQ28 (*(int32_t (*)[16384])&g_ImageObject_004246A0.at_g_FixedSinBeforeZeroQ28)
 
 /* ---- core/error: fatal error texts; their addresses double as the error codes. */
-#define g_ErrorTextIoInitializationFailed (*(uint16_t (*)[34])THANDOR_IMAGE(0x00407d40))
-#define g_ErrorTextHeapAllocationFailed (*(uint16_t (*)[71])THANDOR_IMAGE(0x00407d84))
+#define g_ErrorTextHeapAllocationFailed (*(uint16_t (*)[71])&g_ImageObject_00407D84.at_g_ErrorTextHeapAllocationFailed)
 
 /* ---- ui/controls/lists: drive-letter buffer and the "*.*" search pattern. */
-#define g_UiTimedListDriveLetters (*(uint8_t (*)[32])THANDOR_IMAGE(0x0040f530))
-#define g_WildcardAllFilesUtf16 (*(uint16_t (*)[4])THANDOR_IMAGE(0x0040ff50))
 
 /* ---- audio/backend: decoded coefficient block of the current SAM frame. */
-#define g_SoundSampleCoefficientBlock (*(short (*)[256])THANDOR_IMAGE(0x00417364))
+#define g_SoundSampleCoefficientBlock (*(short (*)[256])&g_ImageObject_00417364.at_g_SoundSampleCoefficientBlock)
 
 /* ---- assets/text: empty string returned for missing text resources. */
-#define g_EmptyTextResourceUtf16 (*(uint16_t (*)[2])THANDOR_IMAGE(0x0041afa4))
 
 /* ---- graphics/render/shading: MMX intensity scale per 8-bit level (four word lanes each). */
-#define g_ShadingIntensityScaleMmx (*(SoftwareBgraWordLanes (*)[256])THANDOR_IMAGE(0x0041ee80))
 
 /* ---- software scaling weights. With g_SoftwareBilinearForwardFactors (0x0041FF20) and
    g_SoftwareBilinearInverseFactors (0x00420F20) these are four 256-entry tables; the UI scaler in
    ui/controls/input uses the pair below (first-pixel weight 0x4000 at index 0). */
-#define g_UiScalerSecondPixelWeights (*(SoftwareBgraWordLanes (*)[256])THANDOR_IMAGE(0x0041f720))
-#define g_UiScalerFirstPixelWeights (*(SoftwareBgraWordLanes (*)[256])THANDOR_IMAGE(0x00420720))
 
 /* ---- ui/controls/misc: display-settings dialog tree, copied into a fresh root. */
-#define g_UiDisplaySettingsRootTemplate (*(uint32_t (*)[0x2f5])THANDOR_IMAGE(0x004229b4))
+#define g_UiDisplaySettingsRootTemplate (*(uint32_t (*)[0x2f5])&g_ImageObject_004229B4.at_g_UiDisplaySettingsRootTemplate)
 
 /* ---- graphics/resources/palette: palette bank slots and the remap byte table. */
-#define g_GraphicsPaletteBankSlots (*(uint32_t (*)[0x200])THANDOR_IMAGE(0x004ad930))
-#define g_GraphicsPaletteRemapBytes (*(uint8_t (*)[0x100])THANDOR_IMAGE(0x004ae130))
+#define g_GraphicsPaletteBankSlots (*(uint32_t (*)[0x200])&g_ImageObject_004AD930.at_g_GraphicsPaletteBankSlots)
+#define g_GraphicsPaletteRemapBytes (*(uint8_t (*)[0x100])&g_ImageObject_004AE130.at_g_GraphicsPaletteRemapBytes)
 
 /* ---- network/protocol/transfer: outgoing chunk payload. */
-#define g_UiTransferChunkPayload (*(uint32_t (*)[0x3a])THANDOR_IMAGE(0x004aea00))
+#define g_UiTransferChunkPayload (*(uint32_t (*)[0x3a])&g_ImageObject_004AE9A8.at_g_UiTransferChunkPayload)
 
 /* ---- graphics/core: scratch for direction-to-angles in an object's local frame. */
-#define g_GraphicsDirectionInverseTransform (*(GraphicsFixedMatrix3x4 *)THANDOR_IMAGE(0x004bcf20))
-#define g_GraphicsDirectionWorld (*(GraphicsFixedVec3 *)THANDOR_IMAGE(0x004bcf50))
-#define g_GraphicsDirectionLocal (*(GraphicsFixedVec3 *)THANDOR_IMAGE(0x004bcf5c))
 
 /* ---- graphics/render/model: entries -136..-1 of g_ModelDistanceAttenuationMmx. ModelRender_ComputeVertexIntensity-
    DefaultPath indexes that table with the signed light-facing dot >> 21, so negative dots read these rows: a ramp
    rising by 0x80 per step from 0x007F (index -1) to 0x3F7F, then 0x3FFF (-128..-136); alpha lane 0x4000. The
    8 bytes 0x004cad58..0x004cad5f before it are 0x90 filler. */
-#define g_ModelDistanceAttenuationMmxNegativeRows (*(SoftwareBgraWordLanes (*)[136])THANDOR_IMAGE(0x004cad60))
 
 /* ---- graphics/render/model: MMX distance attenuation per (distance >> 21), up to the lighting
    multiplier table that follows it. */
-#define g_ModelDistanceAttenuationMmx (*(SoftwareBgraWordLanes (*)[0x222])THANDOR_IMAGE(0x004cb1a0))
+#define g_ModelDistanceAttenuationMmx (*(SoftwareBgraWordLanes (*)[0x222])&g_ImageObject_004CB1A0.at_g_ModelDistanceAttenuationMmx)
 
 /* ---- audio/spatial: listener rotation basis and the combined world-to-listener transform. */
-#define g_SpatialSoundListenerRotation (*(GraphicsFixedMatrix3x4 *)THANDOR_IMAGE(0x0050b550))
-#define g_SpatialSoundListenerWorldToLocal (*(GraphicsFixedMatrix3x4 *)THANDOR_IMAGE(0x0050b580))
 
 /* ---- ui/ingame: directory scratch for resource registration. */
-#define g_ResourceRegistrationDirectoryUtf16 (*(uint16_t (*)[0x100])THANDOR_IMAGE(0x0050dcc4))
+#define g_ResourceRegistrationDirectoryUtf16 (*(uint16_t (*)[0x100])&g_ImageObject_0050DCC4.at_g_ResourceRegistrationDirectoryUtf16)
 
 /* ---- network/protocol/transfer: version string shown to joining players ("1.5.45"). */
-#define g_GameVersionUtf16 (*(uint16_t (*)[7])THANDOR_IMAGE(0x0050f07c))
+#define g_GameVersionUtf16 (*(uint16_t (*)[7])&g_ImageObject_0050F07C.at_g_GameVersionUtf16)
 
 /* ---- ui/ingame: HUD number and countdown ("mm:ss") text scratch. */
-#define g_InGameHudNumberTextUtf16 (*(uint16_t (*)[16])THANDOR_IMAGE(0x0055056e))
-#define g_InGameCountdownTextUtf16 (*(uint16_t (*)[8])THANDOR_IMAGE(0x00550590))
 
 /* ---- ui/ingame/technology: per-slot offsets of the technology panel's row controls. */
-#define g_TechnologyPanelRowFlagOffsets (*(int (*)[7])THANDOR_IMAGE(0x00562d68))
-#define g_TechnologyPanelRowValueOffsets (*(int (*)[7])THANDOR_IMAGE(0x00562d84))
 
 /* ---- gameplay/selection/overlay: transient effect markers on command targets. */
-#define g_InGameCommandTargetTransientEffectMarkers (*(EffectRuntimeSlot *(*)[128])THANDOR_IMAGE(0x00562ecc))
 
 /* ---- ui/ingame: the chat phrase that unlocks the developer toggles. */
-#define g_DeveloperChatPhraseUtf16 (*(uint16_t (*)[32])THANDOR_IMAGE(0x005631de))
 
 /* ---- gameplay/input/world: per pointer mode, the click handler, command id and preview army. */
-#define g_InGamePointerModeHandlers (*(code *(*)[8])THANDOR_IMAGE(0x00563748))
-#define g_InGamePointerModeCommandIds (*(uint32_t (*)[8])THANDOR_IMAGE(0x00563768))
-#define g_InGamePointerModePreviewArmyIds (*(uint32_t (*)[8])THANDOR_IMAGE(0x00563788))
 
 /* ---- ui/ingame: keyboard dispatch records {key code, modifier mask, handler} ending in 0. */
-#define g_InGameKeyboardDispatchRecords (*(UiCommandDispatchRecord (*)[36])THANDOR_IMAGE(0x0056e410))
-#define g_InGameKeyboardDispatchRecordsTerminator (*(uint32_t *)THANDOR_IMAGE(0x0056e5c0))
+#define g_InGameKeyboardDispatchRecordsTerminator (*(uint32_t *)&g_ImageObject_0056E5C0.at_g_InGameKeyboardDispatchRecordsTerminator)
 
 /* ---- screenshots: "screen00.pcx" with its two-digit counter at code units 6 and 7. */
-#define g_ScreenshotFileNameUtf16 (*(uint16_t (*)[13])THANDOR_IMAGE(0x00572e3c))
+#define g_ScreenshotFileNameUtf16 (*(uint16_t (*)[13])&g_ImageObject_00572E39.at_g_ScreenshotFileNameUtf16)
 
 /* ---- graphics/backend/direct3d: enumerated and selected texture pixel formats. */
-#define g_Direct3DOpaqueTextureFormat (*(DDPIXELFORMAT *)THANDOR_IMAGE(0x00577d90))
-#define g_Direct3DAlphaTextureFormat (*(DDPIXELFORMAT *)THANDOR_IMAGE(0x00577db0))
-#define g_Direct3DSelectedOpaqueTextureFormat (*(DDPIXELFORMAT *)THANDOR_IMAGE(0x00577dd0))
-#define g_Direct3DSelectedAlphaTextureFormat (*(DDPIXELFORMAT *)THANDOR_IMAGE(0x00577df0))
 
 /* ---- graphics/backend/glide: refresh rates offered for Glide modes. */
-#define g_GlideRefreshRatesHz (*(uint32_t (*)[9])THANDOR_IMAGE(0x0057ecf0))
 
 /* ---- graphics/backend/glide: pointers to the three GrVertex records g_GlideVertex0/1/2 (from
    g_GlideVertex0ScreenX); no code reads the list (Glide3_DrawPrimitiveQueue pushes the vertex addresses
    directly), the name is historical. */
-#define g_GlideTextureRefreshHandlers (*(void *(*)[3])THANDOR_IMAGE(0x0057ed48))
 /* ---- graphics/backend/glide: a GrTexInfo {smallLodLog2 8, largeLodLog2 8 (256), aspect 0 (1:1),
    format 0xC (GR_TEXFMT_ARGB_4444), data NULL} after the vertex records; no code references it by
    address. */
-#define g_GlideTextureInfo256Argb4444 (*(GlideTextureInfo *)THANDOR_IMAGE(0x0057edb4))
 
 /* ---- platform/filesystem/win32: "\\.\X:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY
    probe in Win32Drive_CheckMediaReady (drive letter at index 4); 9 bytes of NOP fill follow up to
    FileSystem_Init. */
-#define g_Win32DriveDevicePathA (*(char (*)[7])THANDOR_IMAGE(0x00575ca0))
+#define g_Win32DriveDevicePathA (*(char (*)[7])&g_ImageObject_00575CA0.at_g_Win32DriveDevicePathA)
 
 /* ---- network/backend/fallback_udp: nonzero option value (0xFFFFFFFF) for setsockopt/ioctlsocket,
    "IP=" option. */
-#define g_NetworkFallbackSocketOptionOn (*(uint32_t *)THANDOR_IMAGE(0x00583ef6))
-#define s_CommandLineOptionIp (*(char (*)[4])THANDOR_IMAGE(0x00584078))
+#define s_CommandLineOptionIp (*(char (*)[4])&g_ImageObject_00584078.at_s_CommandLineOptionIp)
 
 /* Byte-offset access into a named object, for code that indexes records by computed offsets. */
 #define THANDOR_BYTE_AT(object, offset) ((uint8_t *)&(object) + (int)(offset))
@@ -144,36 +112,20 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 #define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
 
 /* ---- ui/core: the path of the window class image, after the root-stack action page. */
-#define g_UiWindowClassTexturePathUtf16 (*(uint16_t (*)[20])THANDOR_IMAGE(0x004b0eb8))
 
 /* ---- gameplay/selection: transient effect markers over the owned entities (count:
    g_InGameOwnedEntityTransientEffectMarkerCount). */
-#define g_InGameOwnedEntityTransientEffectMarkers (*(EffectRuntimeSlot * (*)[32])THANDOR_IMAGE(0x00562e48))
 
 /* ---- platform/input: the DirectInput mouse data format's object list and axis GUIDs. */
-#define GUID_XAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b28))
-#define GUID_YAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b38))
-#define GUID_ZAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b48))
-#define MouseObjectFormats (*(DIOBJECTDATAFORMAT (*)[7])THANDOR_IMAGE(0x00576b70))
 
 /* ---- ui/frontend: vtable of the 3D model pointer context (unaligned; slot 10 is
    g_FrontendModelPointerContextUpdateCallback). */
-#define g_FrontendModelPointerContextVtable (*(UiNodeVtable *)THANDOR_IMAGE(0x0050bb37))
+#define g_FrontendModelPointerContextVtable (*(UiNodeVtable *)&g_ImageObject_0050BB37.at_g_FrontendModelPointerContextVtable)
 
 /* ---- graphics/backend/glide: the import table walked by Glide3_InitAndEnumerate. */
-#define g_GlideImportBindings (*(GlideImportBinding (*)[89])THANDOR_IMAGE(0x00573fd8))
 
 /* ---- ui/ingame: offsets of the catalog grid cells in the in-game UI image, per column count
    (the pointer tables g_UiCatalogGroup48OffsetTables etc. share the default for 0..4 columns). */
-#define g_UiCatalogGroup48OffsetsDefault (*(int32_t (*)[48])THANDOR_IMAGE(0x005626a8))
-#define g_UiCatalogGroup48Offsets5Columns (*(int32_t (*)[48])THANDOR_IMAGE(0x00562768))
-#define g_UiCatalogGroup48Offsets6Columns (*(int32_t (*)[48])THANDOR_IMAGE(0x00562828))
-#define g_UiCatalogGroup48Offsets7Columns (*(int32_t (*)[48])THANDOR_IMAGE(0x005628e8))
-#define g_UiCatalogGroup48Offsets8Columns (*(int32_t (*)[48])THANDOR_IMAGE(0x005629a8))
-#define g_UiCatalogGroup42OffsetsDefault (*(int32_t (*)[42])THANDOR_IMAGE(0x00562a68))
-#define g_UiCatalogGroup42Offsets5Columns (*(int32_t (*)[42])THANDOR_IMAGE(0x00562b10))
-#define g_UiCatalogGroup42Offsets6Columns (*(int32_t (*)[42])THANDOR_IMAGE(0x00562bb8))
-#define g_UiCommandSpriteVariantAOffsets (*(int32_t (*)[24])THANDOR_IMAGE(0x00562c60))
 
 /* ---- platform/bootstrap: the main message buffer and the main window's class, which overlap in
    the original (see Win32MainMessageStorage). */
@@ -182,31 +134,22 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- unreferenced original data (no code reference found; kept as data). */
 /* value after g_TerrainAuxHeightMinimum (0x2000, Q12 2.0), followed by 0x90 fill up to 0x00503b10 */
-#define g_TerrainUnreferencedValue00503B04 (*(int32_t *)THANDOR_IMAGE(0x00503b04))
+#define g_TerrainUnreferencedValue00503B04 (*(int32_t *)&g_ImageObject_00503B04.at_g_TerrainUnreferencedValue00503B04)
 /* file patterns after u_save___sve_0050d9c8: L"level\\*.lev" and L"level\\*.cgn" */
-#define g_UnreferencedLevelPatternUtf16 (*(uint16_t (*)[12])THANDOR_IMAGE(0x0050d9de))
-#define g_UnreferencedCampaignPatternUtf16 (*(uint16_t (*)[12])THANDOR_IMAGE(0x0050d9f6))
 /* L"army0000.gfx" and "ARMY" after g_AiCommandGenerationRetainedTarget, followed by 0x90 fill up to
    0x0051b3c0 */
-#define g_UnreferencedArmyTexturePathUtf16 (*(uint16_t (*)[13])THANDOR_IMAGE(0x0051b394))
-#define g_UnreferencedArmyTag (*(char (*)[5])THANDOR_IMAGE(0x0051b3ae))
+#define g_UnreferencedArmyTag (*(char (*)[5])&g_ImageObject_0051B3AE.at_g_UnreferencedArmyTag)
 
 /* ---- assets/text/richtext: colour palette entry 4 (green). The packed text style selects the palette
    entry with 3 bits and indexes the colours from g_RichTextColorPalette0Argb, so entry 4 is this one and
    entry 5 is g_RichTextInsufficientResourceColorArgb; no code names entry 4 directly. */
-#define g_RichTextColorPalette4Argb (*(PackedArgb32 *)THANDOR_IMAGE(0x0041a760))
+#define g_RichTextColorPalette4Argb (*(PackedArgb32 *)&g_ImageObject_0041A750.at_g_RichTextColorPalette4Argb)
 
 /* ---- graphics/backend/software, graphics/resources/texture: function-pointer slots of the software
    backend's hook table (statically holding the software implementations). */
-#define g_SoftwareFramebufferDestroy (*(SoftwareFramebufferDestroyProc * *)THANDOR_IMAGE(0x004a8edc))
-#define g_GraphicsTextureSourceBlitTiledSaturatedAddRgb (*(GraphicsTextureSourceTiledSaturatedAddRgbProc * *)THANDOR_IMAGE(0x004a8f20))
-#define g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd (*(GraphicsTextureSourceTiledSaturatedAddRgbProc * *)THANDOR_IMAGE(0x004a8f28))
-#define g_GraphicsTextureSourceDecomposeSubresourceRegionsCf (*(GraphicsTextureSourceDecomposeSubresourceProc * *)THANDOR_IMAGE(0x004a8f2c))
-#define g_GraphicsFramebufferCopyRegionToOrigin (*(GraphicsFramebufferCopyRegionToOriginProc * *)THANDOR_IMAGE(0x004a8f34))
-#define g_GraphicsFramebufferCopyOriginToRegion (*(GraphicsFramebufferCopyOriginToRegionProc * *)THANDOR_IMAGE(0x004a8f38))
 
 /* ---- graphics: L"Software" behind the hook table (followed by two NOP padding bytes before the code at
    0x004A8F80); no code or data reference to it found. */
-#define g_UnreferencedSoftwareTextUtf16 (*(uint16_t (*)[9])THANDOR_IMAGE(0x004a8f6c))
+#define g_UnreferencedSoftwareTextUtf16 (*(uint16_t (*)[9])&g_ImageObject_004A8F6C.at_g_UnreferencedSoftwareTextUtf16)
 
 #endif /* THANDOR_DATA_RECOVERED_H */

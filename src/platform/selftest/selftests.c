@@ -841,18 +841,6 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestStretchCompare();
         return 1;
     }
-    if (name != NULL && strcmp(name, "rastercmp") == 0) {
-        Thandor_SelfTestRasterCompare(); /* raster.c */
-        return 1;
-    }
-    if (name != NULL && strcmp(name, "blendscalecmp") == 0) {
-        Thandor_SelfTestBlendScaleCompare(); /* blendscale.c */
-        return 1;
-    }
-    if (name != NULL && strcmp(name, "blitcmp") == 0) {
-        Thandor_SelfTestBlitCompare(); /* blit.c */
-        return 1;
-    }
     if (name != NULL && strcmp(name, "relaxcmp") == 0) {
         Thandor_SelfTestRelaxCompare(); /* relax.c */
         return 1;

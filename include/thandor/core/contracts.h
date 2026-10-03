@@ -49,19 +49,11 @@ or to other layout-compatible structs, which C only allows through a union.
 
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/ghidra.h>
-/* Where the original image data lives. By default the generated C data (src/generated/image_data.c,
-   tools/data/gen_image_data.py); with THANDOR_MAPPED_IMAGE the copy of the original executable mapped
-   at its original address (platform/bootstrap/image.c), as before the data was generated. */
-#ifdef THANDOR_MAPPED_IMAGE
-#define THANDOR_IMAGE(address) ((uintptr_t)(address))
-#else
-#define THANDOR_IMAGE(address) THANDOR_IMAGE_##address
-#endif
+/* The original image data: C variables in src/generated/image_data.c (declared in image_data.h); globals.h
+   and recovered.h name the parts of the objects that are not yet variables of their own. */
 #include <thandor/generated/globals.h>
 #include <thandor/generated/ui_templates.h>
-#ifndef THANDOR_MAPPED_IMAGE
 #include <thandor/generated/image_data.h>
-#endif
 #include <thandor/data/recovered.h>
 #include <thandor/generated/imports.h>
 

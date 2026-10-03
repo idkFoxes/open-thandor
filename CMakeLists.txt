@@ -9,20 +9,13 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # before assigning them; the debug runtime checks would stop on each one.
 string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
-# OFF (default): the original data is compiled in from src/generated/image_data.c.
-# ON: map thandor_original.exe at 0x400000 and use its data there (the former runtime model).
-option(THANDOR_MAPPED_IMAGE "Use the data of a mapped thandor_original.exe" OFF)
-if(THANDOR_MAPPED_IMAGE)
-    add_compile_definitions(THANDOR_MAPPED_IMAGE)
-endif()
-
 # OFF (default): the build matches the original's code. ON: compile in the runtime test aids for a
 # local two-instance multiplayer test and windowed mode (OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE,
 # OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG; see docs/BUILDING.md and tools/test/run_multiplayer.py).
 option(THANDOR_TEST_AIDS "Build the local multiplayer/windowed test aids" OFF)
 
 # The code needs MSVC (inline __asm, __stdcall/__fastcall, MSVC pragmas) targeting 32-bit x86.
-# Use a preset (CMakePresets.json: debug, release, mapped, test), which finds MSVC x86 by itself, or
+# Use a preset (CMakePresets.json: debug, release, test), which finds MSVC x86 by itself, or
 # configure from a vcvars32 prompt. In CLion: Settings > Build > CMake, enable the presets and
 # disable the default MinGW profile.
 if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -149,15 +142,12 @@ add_library(thandor_curated STATIC
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# The executable maps the original image at 0x400000 (see platform/bootstrap/image.h),
-# so it must load elsewhere.
+# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): crash logs and the self-tests that run
+# copies of original code rely on stable addresses.
 add_executable(thandor WIN32
     src/platform/bootstrap/main.c
     src/platform/bootstrap/image.c
     src/platform/selftest/selftests.c
-    src/platform/selftest/raster.c
-    src/platform/selftest/blendscale.c
-    src/platform/selftest/blit.c
     src/platform/selftest/relax.c
     src/generated/function_map.c
     src/generated/image_data.c

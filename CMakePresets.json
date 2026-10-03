@@ -24,12 +24,6 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
     },
     {
-      "name": "mapped",
-      "displayName": "MSVC x86 RelWithDebInfo, mapped original image (self-tests)",
-      "inherits": "msvc-x86",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_MAPPED_IMAGE": "ON" }
-    },
-    {
       "name": "test",
       "displayName": "MSVC x86 RelWithDebInfo with test aids (windowed, local multiplayer)",
       "inherits": "msvc-x86",
@@ -39,7 +33,6 @@
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
     { "name": "release", "configurePreset": "release" },
-    { "name": "mapped", "configurePreset": "mapped" },
     { "name": "test", "configurePreset": "test" }
   ]
 }
