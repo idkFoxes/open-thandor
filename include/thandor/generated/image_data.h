@@ -150,11 +150,7 @@ extern uint8_t *g_PackageScratchBuffer; /* 0040B21C g_PackageScratchBuffer */
 extern uint32_t g_EnginePackageLowPriorityMountHandle; /* 0040B220 g_EnginePackageLowPriorityMountHandle */
 extern PckMountSlot g_PackageMountSlots[1024]; /* 0040B224 g_PackageMountSlots */
 extern PckCodecProc *g_PckEncoderTable[3]; /* 0040E224 g_PckEncoderTable */
-typedef struct ImageObject_0040E230 {
-    PckCodecProc * at_g_PckDecoderTable[3]; /* 0040E230 g_PckDecoderTable */
-    uint8_t at_g_PckDecoderTable_rest_tail[1];
-} ImageObject_0040E230;
-extern ImageObject_0040E230 g_ImageObject_0040E230;
+extern PckCodecProc *g_PckDecoderTable[3]; /* 0040E230 g_PckDecoderTable */
 extern uint16_t u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
 typedef struct ImageObject_0040E255 {
     uint16_t at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
@@ -1697,20 +1693,14 @@ typedef struct ImageObject_0050E95C {
     uint8_t at_gap_0050E95C[4]; /* 0050E95C gap */
 } ImageObject_0050E95C;
 extern ImageObject_0050E95C g_ImageObject_0050E95C;
-typedef struct ImageObject_0050E960 {
-    uint32_t at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
-} ImageObject_0050E960;
-extern ImageObject_0050E960 g_ImageObject_0050E960;
+extern uint32_t g_ResourceRegistrationDomainPairCallbacks3[3]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
 
 /* original 0x0050EB5C-0x0050EB70 */
 typedef struct ImageObject_0050EB5C {
     uint8_t at_gap_0050EB5C[4]; /* 0050EB5C gap */
 } ImageObject_0050EB5C;
 extern ImageObject_0050EB5C g_ImageObject_0050EB5C;
-typedef struct ImageObject_0050EB60 {
-    uint32_t at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[4]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
-} ImageObject_0050EB60;
-extern ImageObject_0050EB60 g_ImageObject_0050EB60;
+extern uint32_t g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[3]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
 
 /* original 0x0050F044-0x0050F130 */
 typedef struct ImageObject_0050F044 {
@@ -1751,10 +1741,6 @@ typedef struct ImageObject_0050F104 {
 extern ImageObject_0050F104 g_ImageObject_0050F104;
 
 /* original 0x0050F328-0x00512E70 */
-typedef struct ImageObject_0050F328 {
-    uint8_t at_gap_0050F328[24]; /* 0050F328 gap */
-} ImageObject_0050F328;
-extern ImageObject_0050F328 g_ImageObject_0050F328;
 extern GameFactionRuntimeImage g_GameFactionRuntimeImage; /* 0050F340 g_GameFactionRuntimeImage */
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount; /* 00512D60 g_TerrainRegionCollectionStoredCount */
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount; /* 00512D64 g_TerrainRegionCollectionVisitedCount */
@@ -2028,10 +2014,6 @@ typedef struct ImageObject_005191F0 {
 extern ImageObject_005191F0 g_ImageObject_005191F0;
 
 /* original 0x0051936C-0x005193B0 */
-typedef struct ImageObject_0051936C {
-    uint8_t at_gap_0051936C[8]; /* 0051936C gap */
-} ImageObject_0051936C;
-extern ImageObject_0051936C g_ImageObject_0051936C;
 typedef struct ImageObject_00519374 {
     uint32_t at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374[15]; /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
 } ImageObject_00519374;
@@ -2105,12 +2087,8 @@ typedef struct ImageObject_00520EA0 {
     uint8_t at_gap_00520EA0[16]; /* 00520EA0 gap */
 } ImageObject_00520EA0;
 extern ImageObject_00520EA0 g_ImageObject_00520EA0;
-extern uint32_t g_ArmySuspensionBlendVectorAXQ12; /* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
-extern uint32_t g_ArmySuspensionBlendVectorAYQ12; /* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
-extern uint32_t g_ArmySuspensionBlendVectorAZQ12; /* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
-extern uint32_t g_ArmySuspensionBlendVectorBXQ12; /* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
-extern uint32_t g_ArmySuspensionBlendVectorBYQ12; /* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
-extern uint32_t g_ArmySuspensionBlendVectorBZQ12; /* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
+extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorA; /* 00520EB0 g_ArmySuspensionBlendVectorA */
+extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorB; /* 00520EBC g_ArmySuspensionBlendVectorB */
 typedef struct ImageObject_00520EC8 {
     uint8_t at_g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
     uint32_t at_g_ArmySuspensionRotationMatrixScratchA_rest[11]; /* beyond the declared type */
@@ -2135,10 +2113,7 @@ typedef struct ImageObject_00524110 {
     uint8_t at_gap_00524110[16]; /* 00524110 gap */
 } ImageObject_00524110;
 extern ImageObject_00524110 g_ImageObject_00524110;
-typedef struct ImageObject_00524120 {
-    uint32_t at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[4]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
-} ImageObject_00524120;
-extern ImageObject_00524120 g_ImageObject_00524120;
+extern uint32_t g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[2]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
 
 /* original 0x005247C0-0x005247F0 */
 typedef struct ImageObject_005247C0 {
@@ -2165,10 +2140,7 @@ typedef struct ImageObject_005266B0 {
     uint8_t at_gap_005266B0[16]; /* 005266B0 gap */
 } ImageObject_005266B0;
 extern ImageObject_005266B0 g_ImageObject_005266B0;
-typedef struct ImageObject_005266C0 {
-    uint32_t at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
-} ImageObject_005266C0;
-extern ImageObject_005266C0 g_ImageObject_005266C0;
+extern uint32_t g_ArmyTerrainContactDispatchTable2[2]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
 
 /* original 0x00526988-0x005269B0 */
 typedef struct ImageObject_00526988 {
@@ -2367,23 +2339,25 @@ typedef struct ImageObject_00536F08 {
     uint8_t at_gap_00536F08[8]; /* 00536F08 gap */
 } ImageObject_00536F08;
 extern ImageObject_00536F08 g_ImageObject_00536F08;
-extern Q12 g_GridTerrainClassBit24MaxWaterSurfaceDelta; /* 00536F10 g_GridTerrainClassBit24MaxWaterSurfaceDelta */
-extern AngleTurn16Stored32 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16; /* 00536F14 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 */
-extern AngleTurn16Stored32 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16; /* 00536F18 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 */
-extern AngleTurn16Stored32 g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16; /* 00536F1C g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 */
-extern AngleTurn16Stored32 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16; /* 00536F20 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 */
-extern uint32_t g_ModelTraversalClass4SecondaryThresholdTable3[3]; /* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 14000/15000/15500 for model definitions with placement contact kind 4, indexed by terrainTraversalClass - 1 (ModelDefinition resolve in assets/model/definitions.c) */
-extern Q12 g_GridTerrainClassBit28MinWaterSurfaceDelta; /* 00536F30 g_GridTerrainClassBit28MinWaterSurfaceDelta */
-extern Q12 g_GridTerrainClassBit29MinWaterSurfaceDelta; /* 00536F34 g_GridTerrainClassBit29MinWaterSurfaceDelta */
-extern Q12 g_GridTerrainClassBit30MinWaterSurfaceDelta; /* 00536F38 g_GridTerrainClassBit30MinWaterSurfaceDelta */
-extern AngleTurn16Stored32 g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16; /* 00536F3C g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 */
-extern AngleTurn16Stored32 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16; /* 00536F40 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 */
-extern AngleTurn16Stored32 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16; /* 00536F44 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 */
-typedef struct ImageObject_00536F48 {
-    uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3[3]; /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 12500/13500/14500 for the other contact kinds, indexed by terrainTraversalClass - 4 (assets/model/definitions.c); followed by 12 bytes of 0x90 padding */
-    uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest[3]; /* beyond the declared type */
-} ImageObject_00536F48;
-extern ImageObject_00536F48 g_ImageObject_00536F48;
+/* Indices into g_GridTerrainClassThresholds (one table at 0x536F10-0x536F54 in the original). Water surface
+   deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
+enum {
+    GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA = 0,
+    GRID_TERRAIN_THRESHOLD_BIT24_MAX_TRIANGLE1_NORMAL_ANGLE = 1,
+    GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE = 2,
+    GRID_TERRAIN_THRESHOLD_BIT26_MAX_SELECTED_NORMAL_ANGLE = 3,
+    GRID_TERRAIN_THRESHOLD_BIT27_MAX_SELECTED_NORMAL_ANGLE = 4,
+    GRID_TERRAIN_THRESHOLD_CLASS4_SECONDARY = 5, /* [3] 14000/15000/15500, contact kind 4, class 1..3 */
+    GRID_TERRAIN_THRESHOLD_BIT28_MIN_WATER_SURFACE_DELTA = 8,
+    GRID_TERRAIN_THRESHOLD_BIT29_MIN_WATER_SURFACE_DELTA = 9,
+    GRID_TERRAIN_THRESHOLD_BIT30_MIN_WATER_SURFACE_DELTA = 10,
+    GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE = 11,
+    GRID_TERRAIN_THRESHOLD_BIT29_MAX_TRIANGLE0_NORMAL_ANGLE = 12,
+    GRID_TERRAIN_THRESHOLD_BIT30_MAX_TRIANGLE0_NORMAL_ANGLE = 13,
+    GRID_TERRAIN_THRESHOLD_FALLBACK_SECONDARY = 14, /* [3] 12500/13500/14500, other contact kinds, class 4..6 */
+    GRID_TERRAIN_THRESHOLD_COUNT = 17
+};
+extern int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT]; /* 00536F10 g_GridTerrainClassThresholds: int32_t[17] terrain-class thresholds of the grid classification and the model definition terrain-class values, one table (ModelDefinition_CopyTerrainClassValues indexes across entries); followed by 12 bytes of 0x90 padding */
 extern uint32_t g_GridInfluenceRadiusOffset[8]; /* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets 1000..4100, indexed by ring / footprint radius class (world/pathing/influence.c, assets/model/definitions.c) */
 extern uint32_t g_GridInfluenceSquaredThreshold[8]; /* 00536F80 g_GridInfluenceSquaredThreshold: uint32_t[8] squared influence ring radii, ring n = (g_GridInfluenceRadiusOffset[n] + radius + margin)^2; [6] is also reused as the footprint clearance disc (world/pathing/influence.c, world/pathing/grid.c) */
 extern int32_t g_AiCombatTargetRadialClearanceWeight; /* 00536FA0 g_AiCombatTargetRadialClearanceWeight: int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
@@ -2612,12 +2586,7 @@ extern uint32_t g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset
 extern RomRegistrySlot *g_RomRegistrySlots; /* 00545778 g_RomRegistrySlots */
 extern WorldObjectRecord *g_FrontendWorldObjectRecords; /* 0054577C g_FrontendWorldObjectRecords */
 extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset; /* 00545780 g_FrontendLoadedLevelAsset */
-extern uint32_t g_FrontendMenuSoundVoiceSetTable100; /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
-typedef struct ImageObject_00545788 {
-    uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1; /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
-    uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1_rest[98]; /* beyond the declared type */
-} ImageObject_00545788;
-extern ImageObject_00545788 g_ImageObject_00545788;
+extern DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 00545784 g_FrontendMenuSoundVoiceSets: 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
 extern uint32_t g_FrontendLoadedCampaignAsset; /* 00545914 g_FrontendLoadedCampaignAsset */
 extern uint32_t g_FrontendScenarioTransferState; /* 00545918 g_FrontendScenarioTransferState */
 extern uint32_t g_FrontendPlayerMessageBuffers; /* 0054591C g_FrontendPlayerMessageBuffers */
@@ -2867,32 +2836,14 @@ typedef struct ImageObject_0055F7B4 {
     uint8_t at_gap_0055F7B4[12]; /* 0055F7B4 gap */
 } ImageObject_0055F7B4;
 extern ImageObject_0055F7B4 g_ImageObject_0055F7B4;
-typedef struct ImageObject_0055F7C0 {
-    uint32_t at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0[2]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
-} ImageObject_0055F7C0;
-extern ImageObject_0055F7C0 g_ImageObject_0055F7C0;
-typedef struct ImageObject_0055F7C8 {
-    uint32_t at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
-} ImageObject_0055F7C8;
-extern ImageObject_0055F7C8 g_ImageObject_0055F7C8;
+extern uint32_t g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable[16]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
 
 /* original 0x0055F934-0x0055F980 */
 typedef struct ImageObject_0055F934 {
     uint8_t at_gap_0055F934[12]; /* 0055F934 gap */
 } ImageObject_0055F934;
 extern ImageObject_0055F934 g_ImageObject_0055F934;
-typedef struct ImageObject_0055F940 {
-    uint32_t at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940[1]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
-} ImageObject_0055F940;
-extern ImageObject_0055F940 g_ImageObject_0055F940;
-typedef struct ImageObject_0055F944 {
-    uint32_t at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
-} ImageObject_0055F944;
-extern ImageObject_0055F944 g_ImageObject_0055F944;
-typedef struct ImageObject_0055F960 {
-    uint32_t at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
-} ImageObject_0055F960;
-extern ImageObject_0055F960 g_ImageObject_0055F960;
+extern uint32_t g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable[16]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
 
 /* original 0x00562498-0x00563BD0 */
 typedef struct ImageObject_00562498 {
@@ -4967,8 +4918,6 @@ extern ImageObject_0058B400 g_ImageObject_0058B400;
 #define g_UiListOffsetControlVtable (g_ImageObject_004BC410.at_g_UiListOffsetControlVtable)
 #define g_UiNodeVtable_004BC570 (g_ImageObject_004BC570.at_g_UiNodeVtable_004BC570)
 #define g_UiNineSlicePanelControlVtable (g_ImageObject_004BCC30.at_g_UiNineSlicePanelControlVtable)
-#define g_ResourceRegistrationDomainPairCallbacks3 (g_ImageObject_0050E960.at_g_ResourceRegistrationDomainPairCallbacks3)
-#define g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 (g_ImageObject_0050EB60.at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60)
 #define g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 (g_ImageObject_00513DB0.at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0)
 #define g_UiImageActionControlVtable (g_ImageObject_00514FC0.at_g_UiImageActionControlVtable)
 #define g_UiConditionalActionControlVtable (g_ImageObject_00515290.at_g_UiConditionalActionControlVtable)
@@ -4988,20 +4937,13 @@ extern ImageObject_0058B400 g_ImageObject_0058B400;
 #define g_UiSoftwareTexturePreviewControlVtable (g_ImageObject_00518C90.at_g_UiSoftwareTexturePreviewControlVtable)
 #define g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 (g_ImageObject_00519374.at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374)
 #define g_EffectLifecycleTransitionDispatchTable5 (g_ImageObject_0051EAB0.at_g_EffectLifecycleTransitionDispatchTable5)
-#define g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 (g_ImageObject_00524120.at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120)
 #define g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 (g_ImageObject_005247D0.at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0)
 #define g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 (g_ImageObject_00525A90.at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90)
-#define g_ArmyTerrainContactDispatchTable2 (g_ImageObject_005266C0.at_g_ArmyTerrainContactDispatchTable2)
 #define g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 (g_ImageObject_00526990.at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990)
 #define g_EntityPathingPriorityPairStorage (g_ImageObject_005367D4.at_g_EntityPathingPriorityPairStorage)
 #define g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 (g_ImageObject_0053C160.at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160)
 #define g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 (g_ImageObject_00547D90.at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90)
 #define g_FrontendCommandDispatchRecords_Terminator (g_ImageObject_00548124.at_g_FrontendCommandDispatchRecords_Terminator)
-#define g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 (g_ImageObject_0055F7C0.at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0)
-#define g_CodePointerTable_0055F7C8 (g_ImageObject_0055F7C8.at_g_CodePointerTable_0055F7C8)
-#define g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 (g_ImageObject_0055F940.at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940)
-#define g_CodePointerTable_0055F944 (g_ImageObject_0055F944.at_g_CodePointerTable_0055F944)
-#define g_CodePointerTable_0055F960 (g_ImageObject_0055F960.at_g_CodePointerTable_0055F960)
 #define g_EndMovieCommandDispatchRecords_Terminator (g_ImageObject_005658D8.at_g_EndMovieCommandDispatchRecords_Terminator)
 #define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageObject_00566040.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
 #define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageObject_005671C4.at_g_EndGameResultsCommandDispatchRecords_Terminator)

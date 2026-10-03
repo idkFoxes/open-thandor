@@ -27,7 +27,7 @@ typedef struct FrontendRomActionEntry {
     int32_t pageAction;                  /* +0x20 FRONTEND_PAGE_ACTION_*, negative closes the menu-room view */
     uint32_t keyframeCount;              /* +0x24 */
     RomRecordId targetRecordId;          /* +0x28 */
-    uint32_t activationSoundIndex;       /* +0x2C into g_FrontendMenuSoundVoiceSetTable100, 0 = none */
+    uint32_t activationSoundIndex;       /* +0x2C into g_FrontendMenuSoundVoiceSets, 0 = none */
     uint8_t unknown30_3F[0x10];
     WorldMotionSplineKeyframe keyframes[14]; /* +0x40 camera flight; keyframe 0 is the current camera */
 } FrontendRomActionEntry;

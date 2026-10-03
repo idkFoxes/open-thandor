@@ -398,10 +398,10 @@ static GridScratchStateMask GridScratch_ClassifyFieldCell(FieldGridCell *fieldCe
   waterSurfaceDelta = fieldCell->waterSurfaceDelta;
   triangle0Angle = (int)fieldCell->triangle0NormalAngles >> 16;
   triangle1Angle = (int)fieldCell->triangle1NormalAngles >> 16;
-  if (waterSurfaceDelta <= g_GridTerrainClassBit24MaxWaterSurfaceDelta) {
+  if (waterSurfaceDelta <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
   }
-  if (triangle1Angle <= g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16) {
+  if (triangle1Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT24_MAX_TRIANGLE1_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
   }
   /* below the water surface the first triangle's slope counts */
@@ -409,31 +409,31 @@ static GridScratchStateMask GridScratch_ClassifyFieldCell(FieldGridCell *fieldCe
   if (waterSurfaceDelta < 0) {
     selectedNormalAngle = triangle0Angle;
   }
-  if (selectedNormalAngle <= g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16) {
+  if (selectedNormalAngle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT25;
   }
-  if (selectedNormalAngle <= g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16) {
+  if (selectedNormalAngle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT26_MAX_SELECTED_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT26;
   }
-  if (selectedNormalAngle <= g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16) {
+  if (selectedNormalAngle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT27_MAX_SELECTED_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT27;
   }
-  if (g_GridTerrainClassBit28MinWaterSurfaceDelta <= waterSurfaceDelta) {
+  if (g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MIN_WATER_SURFACE_DELTA] <= waterSurfaceDelta) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
   }
-  if (g_GridTerrainClassBit29MinWaterSurfaceDelta <= waterSurfaceDelta) {
+  if (g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT29_MIN_WATER_SURFACE_DELTA] <= waterSurfaceDelta) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
   }
-  if (g_GridTerrainClassBit30MinWaterSurfaceDelta <= waterSurfaceDelta) {
+  if (g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT30_MIN_WATER_SURFACE_DELTA] <= waterSurfaceDelta) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
   }
-  if (triangle0Angle <= g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16) {
+  if (triangle0Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
   }
-  if (triangle0Angle <= g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16) {
+  if (triangle0Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT29_MAX_TRIANGLE0_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
   }
-  if (triangle0Angle <= g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16) {
+  if (triangle0Angle <= g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT30_MAX_TRIANGLE0_NORMAL_ANGLE]) {
     cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
   }
   if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {

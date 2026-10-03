@@ -577,22 +577,31 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
     definition->footprintRadiusCopy = footprintRadius;
   }
   if ((int)terrainClass < 0) return;
+  /* All lookups index one threshold table from different entries; the class is not bounded, so a class
+     outside the run of its entry reads the neighbouring entries (as in the original). */
   if (definition->placementContactKindIndex == 1) {
-    uint32_t maxWaterSurfaceDelta = (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[terrainClass];
-    uint32_t maxNormalAngle = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[terrainClass];
+    uint32_t maxWaterSurfaceDelta =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA + terrainClass];
+    uint32_t maxNormalAngle =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE + terrainClass];
     ((ModelDefinition *)definition)->classParameterCC = maxWaterSurfaceDelta;
     definition->runtimeValue24 = maxNormalAngle;
   }
   else if (definition->placementContactKindIndex == 4) {
-    uint32_t secondaryThreshold = g_ModelTraversalClass4SecondaryThresholdTable3[terrainClass - 1];
-    definition->runtimeValue24 = (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[terrainClass - 1];
+    uint32_t secondaryThreshold =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_CLASS4_SECONDARY + (terrainClass - 1)];
+    definition->runtimeValue24 =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE + (terrainClass - 1)];
     definition->traversalSecondaryThreshold = secondaryThreshold;
   }
   else {
     int fallbackIndex = terrainClass - 4;
-    uint32_t minWaterSurfaceDelta = (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[fallbackIndex];
-    uint32_t maxNormalAngle = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[fallbackIndex];
-    uint32_t secondaryThreshold = g_ModelTraversalFallbackSecondaryThresholdTable3[fallbackIndex];
+    uint32_t minWaterSurfaceDelta =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MIN_WATER_SURFACE_DELTA + fallbackIndex];
+    uint32_t maxNormalAngle =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE + fallbackIndex];
+    uint32_t secondaryThreshold =
+         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_FALLBACK_SECONDARY + fallbackIndex];
     definition->waterDamageThreshold = minWaterSurfaceDelta;
     definition->runtimeValue24 = maxNormalAngle;
     definition->traversalSecondaryThreshold = secondaryThreshold;

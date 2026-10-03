@@ -3000,28 +3000,28 @@ static void ArticulatedWalker_PlaceFootAlongStep
 }
 
 /* Foot tilt: blends the target ground normal (packed elevation << 16 | azimuth) by progress with the current
-   ground normal by (1.0 - progress) in the g_ArmySuspensionBlendVector* scratch vectors and returns the
+   ground normal by (1.0 - progress) in the g_ArmySuspensionBlendVectorA/B scratch vectors and returns the
    angles of the blended normal. */
 static FixedElevationAzimuth ArticulatedWalker_BlendGroundNormal
           (int targetNormalAngles,int currentNormalAngles,int blendQ12,int inverseBlendQ12)
 
 {
   FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12,
+            (&g_ArmySuspensionBlendVectorA,
              targetNormalAngles >> 16,targetNormalAngles & FIXED_ANGLE16_MASK);
   FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorBXQ12,
+            (&g_ArmySuspensionBlendVectorB,
              currentNormalAngles >> 16,currentNormalAngles & FIXED_ANGLE16_MASK);
-  g_ArmySuspensionBlendVectorAXQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAXQ12,blendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBXQ12,inverseBlendQ12,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAYQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAYQ12,blendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBYQ12,inverseBlendQ12,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAZQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAZQ12,blendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBZQ12,inverseBlendQ12,Q12_SHIFT);
-  return FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
+  g_ArmySuspensionBlendVectorA.x =
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorA.x,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorB.x,inverseBlendQ12,Q12_SHIFT);
+  g_ArmySuspensionBlendVectorA.y =
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorA.y,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorB.y,inverseBlendQ12,Q12_SHIFT);
+  g_ArmySuspensionBlendVectorA.z =
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorA.z,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR(g_ArmySuspensionBlendVectorB.z,inverseBlendQ12,Q12_SHIFT);
+  return FixedMath_VectorToAnglesVec3(&g_ArmySuspensionBlendVectorA);
 }
 
 /* Foot orientation: world rotation (footHeading, blended normal angles) times the inverse of the foot's

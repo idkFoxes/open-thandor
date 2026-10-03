@@ -49,10 +49,10 @@ void FrontendRomActionTable_ExecuteRecord
     return;
   }
   if (entry->activationSoundIndex != 0 && suppressActivationSound == 0 &&
-      (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex] != NULL) {
+      g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex] != NULL) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex],NULL);
+               g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex],NULL);
   }
   if (targetRecordId == 0) {
     if ((int)pageAction < 0) {

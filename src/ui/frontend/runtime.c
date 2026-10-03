@@ -2448,14 +2448,14 @@ void Frontend_PlaySelectedEndMovie(void)
    creation error. */
 static uint32_t FrontendInit_LoadMenuSounds(void)
 {
-  uint32_t *voiceSetSlot;
+  DirectSoundVoiceSet **voiceSetSlot;
   SoundSampleAsset *loadedSample;
   DirectSoundVoiceSet *menuVoiceSet;
   uint32_t voiceSetError;
 
   u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
   u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'1';
-  voiceSetSlot = &g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
+  voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
   while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
     while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
       if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL)) {
@@ -2466,7 +2466,7 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
         Resource_Release(loadedSample);
         return voiceSetError;
       }
-      *voiceSetSlot = (uint32_t)menuVoiceSet;
+      *voiceSetSlot = menuVoiceSet;
       Resource_Release(loadedSample);
       u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] =
            u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] + 1;
@@ -3246,7 +3246,7 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
 {
   UiRootNode *root;
   int voiceSetsRemaining;
-  uint32_t *voiceSetCursor;
+  DirectSoundVoiceSet **voiceSetCursor;
 
   UiRuntime_SetSynchronizationHooks(NULL,NULL);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
@@ -3272,13 +3272,13 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   g_FrontendCentralPaletteAsset = NULL;
   g_FrontendMenuTextureSource = NULL;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
-  voiceSetCursor = &g_FrontendMenuSoundVoiceSetTable100;
+  voiceSetCursor = g_FrontendMenuSoundVoiceSets;
   voiceSetsRemaining = 100;
   do {
-    if ((DirectSoundVoiceSet *)*voiceSetCursor != NULL) {
-      g_SoundReleaseSampleVoiceSet((DirectSoundVoiceSet *)*voiceSetCursor);
+    if (*voiceSetCursor != NULL) {
+      g_SoundReleaseSampleVoiceSet(*voiceSetCursor);
     }
-    *voiceSetCursor = 0;
+    *voiceSetCursor = NULL;
     voiceSetCursor++;
     voiceSetsRemaining--;
   } while (voiceSetsRemaining != 0);

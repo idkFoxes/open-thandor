@@ -621,10 +621,8 @@ __declspec(align(4)) PckMountSlot g_PackageMountSlots[1024] = {0};
 /* 0040E224 g_PckEncoderTable */
 __declspec(align(4)) PckCodecProc *g_PckEncoderTable[3] = {(void *)PckCodec_EncodeHuffmanRle, (void *)PckCodec_EncodeStored, (void *)PckCodec_EncodeFieldGrid};
 
-__declspec(align(16)) ImageObject_0040E230 g_ImageObject_0040E230 = {
-    {(void *)PckCodec_DecodeHuffmanRle, (void *)PckCodec_DecodeStored, (void *)PckCodec_DecodeFieldGrid}, /* 0040E230 g_PckDecoderTable */
-    {0},
-};
+/* 0040E230 g_PckDecoderTable */
+__declspec(align(16)) PckCodecProc *g_PckDecoderTable[3] = {(void *)PckCodec_DecodeHuffmanRle, (void *)PckCodec_DecodeStored, (void *)PckCodec_DecodeFieldGrid};
 
 /* 0040E23D u_THANDOR_cfg_0040e23d */
 __declspec(align(4)) uint16_t u_THANDOR_cfg_0040e23d[12] = L"THANDOR.cfg";
@@ -6962,21 +6960,15 @@ __declspec(align(4)) ImageObject_0050E95C g_ImageObject_0050E95C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050E95C gap */
 };
 
-__declspec(align(16)) ImageObject_0050E960 g_ImageObject_0050E960 = {
-    /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
-    {
-        0x0050E970, 0x0050E9A0, 0x0050E9C0, 0x90909090},
-};
+/* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
+__declspec(align(16)) uint32_t g_ResourceRegistrationDomainPairCallbacks3[3] = {0x0050E970, 0x0050E9A0, 0x0050E9C0};
 
 __declspec(align(4)) ImageObject_0050EB5C g_ImageObject_0050EB5C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050EB5C gap */
 };
 
-__declspec(align(16)) ImageObject_0050EB60 g_ImageObject_0050EB60 = {
-    /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
-    {
-        0x0050EB70, 0x0050EBA0, 0x0050EBC0, 0x90909090},
-};
+/* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
+__declspec(align(16)) uint32_t g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[3] = {0x0050EB70, 0x0050EBA0, 0x0050EBC0};
 
 __declspec(align(4)) ImageObject_0050F044 g_ImageObject_0050F044 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050F044 gap */
@@ -7046,10 +7038,6 @@ __declspec(align(4)) uint32_t g_RecentTextEntrySerials[8] = {0};
 __declspec(align(4)) ImageObject_0050F104 g_ImageObject_0050F104 = {
     L"texte\\neterror.str", /* 0050F104 u_texte_neterror_str_0050f104 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
-
-__declspec(align(8)) ImageObject_0050F328 g_ImageObject_0050F328 = {
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050F328 gap */
 };
 
 /* 0050F340 g_GameFactionRuntimeImage */
@@ -7917,10 +7905,6 @@ __declspec(align(16)) ImageObject_005191F0 g_ImageObject_005191F0 = {
     {0x00, 0xF9, 0x89, 0xEC, 0x5D, 0x5B, 0xC2, 0x0C}, /* 005191F0 gap */
 };
 
-__declspec(align(4)) ImageObject_0051936C g_ImageObject_0051936C = {
-    {0x00, 0x90, 0x90, 0x90}, /* 0051936C gap */
-};
-
 __declspec(align(4)) ImageObject_00519374 g_ImageObject_00519374 = {
     /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
     {
@@ -8424,23 +8408,11 @@ __declspec(align(16)) ImageObject_00520EA0 g_ImageObject_00520EA0 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00520EA0 gap */
 };
 
-/* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
-__declspec(align(16)) uint32_t g_ArmySuspensionBlendVectorAXQ12 = 0;
+/* 00520EB0 g_ArmySuspensionBlendVectorA */
+__declspec(align(16)) GraphicsFixedVec3 g_ArmySuspensionBlendVectorA = {0, 0, 0};
 
-/* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
-__declspec(align(4)) uint32_t g_ArmySuspensionBlendVectorAYQ12 = 0;
-
-/* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
-__declspec(align(8)) uint32_t g_ArmySuspensionBlendVectorAZQ12 = 0;
-
-/* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
-__declspec(align(4)) uint32_t g_ArmySuspensionBlendVectorBXQ12 = 0;
-
-/* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
-__declspec(align(16)) uint32_t g_ArmySuspensionBlendVectorBYQ12 = 0;
-
-/* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
-__declspec(align(4)) uint32_t g_ArmySuspensionBlendVectorBZQ12 = 0;
+/* 00520EBC g_ArmySuspensionBlendVectorB */
+__declspec(align(4)) GraphicsFixedVec3 g_ArmySuspensionBlendVectorB = {0, 0, 0};
 
 __declspec(align(8)) ImageObject_00520EC8 g_ImageObject_00520EC8 = {
     0, /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
@@ -8466,11 +8438,9 @@ __declspec(align(16)) ImageObject_00524110 g_ImageObject_00524110 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00524110 gap */
 };
 
-__declspec(align(16)) ImageObject_00524120 g_ImageObject_00524120 = {
-    /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
-    {
-        0x00524130, 0x00524280, 0x90909090, 0x90909090},
-};
+/* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
+__declspec(align(16)) uint32_t g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[2] = {
+    0x00524130, 0x00524280};
 
 __declspec(align(16)) ImageObject_005247C0 g_ImageObject_005247C0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005247C0 gap */
@@ -8496,11 +8466,9 @@ __declspec(align(16)) ImageObject_005266B0 g_ImageObject_005266B0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005266B0 gap */
 };
 
-__declspec(align(16)) ImageObject_005266C0 g_ImageObject_005266C0 = {
-    /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
-    {
-        0x005266D0, 0x00526830, 0x90909090, 0x90909090},
-};
+/* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
+__declspec(align(16)) uint32_t g_ArmyTerrainContactDispatchTable2[2] = {
+    0x005266D0, 0x00526830};
 
 __declspec(align(8)) ImageObject_00526988 g_ImageObject_00526988 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00526988 gap */
@@ -8753,46 +8721,28 @@ __declspec(align(8)) ImageObject_00536F08 g_ImageObject_00536F08 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00536F08 gap */
 };
 
-/* 00536F10 g_GridTerrainClassBit24MaxWaterSurfaceDelta */
-__declspec(align(16)) Q12 g_GridTerrainClassBit24MaxWaterSurfaceDelta = 0;
-
-/* 00536F14 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 */
-__declspec(align(4)) AngleTurn16Stored32 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 = 11500;
-
-/* 00536F18 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 */
-__declspec(align(8)) AngleTurn16Stored32 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 = 10500;
-
-/* 00536F1C g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 */
-__declspec(align(4)) AngleTurn16Stored32 g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 = 10500;
-
-/* 00536F20 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 */
-__declspec(align(16)) AngleTurn16Stored32 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 = 10500;
-
-/* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 14000/15000/15500 for model definitions with placement contact kind 4, indexed by terrainTraversalClass - 1 (ModelDefinition resolve in assets/model/definitions.c) */
-__declspec(align(4)) uint32_t g_ModelTraversalClass4SecondaryThresholdTable3[3] = {14000, 15000, 15500};
-
-/* 00536F30 g_GridTerrainClassBit28MinWaterSurfaceDelta */
-__declspec(align(16)) Q12 g_GridTerrainClassBit28MinWaterSurfaceDelta = 500 /* 0.12207 */;
-
-/* 00536F34 g_GridTerrainClassBit29MinWaterSurfaceDelta */
-__declspec(align(4)) Q12 g_GridTerrainClassBit29MinWaterSurfaceDelta = 500 /* 0.12207 */;
-
-/* 00536F38 g_GridTerrainClassBit30MinWaterSurfaceDelta */
-__declspec(align(8)) Q12 g_GridTerrainClassBit30MinWaterSurfaceDelta = 500 /* 0.12207 */;
-
-/* 00536F3C g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 */
-__declspec(align(4)) AngleTurn16Stored32 g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 = 10500;
-
-/* 00536F40 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 */
-__declspec(align(16)) AngleTurn16Stored32 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 = 10500;
-
-/* 00536F44 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 */
-__declspec(align(4)) AngleTurn16Stored32 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 = 10500;
-
-__declspec(align(8)) ImageObject_00536F48 g_ImageObject_00536F48 = {
-    {12500, 13500, 14500}, /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3: uint32_t[3] traversal secondary thresholds 12500/13500/14500 for the other contact kinds, indexed by terrainTraversalClass - 4 (assets/model/definitions.c); followed by 12 bytes of 0x90 padding */
-    {
-        0x90909090, 0x90909090, 0x90909090},
+/* 00536F10 g_GridTerrainClassThresholds: int32_t[17] terrain-class thresholds, one table in the original
+   (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
+   ModelDefinition_CopyTerrainClassValues indexes from several entries into their neighbours by the model's
+   terrainTraversalClass (assets/model/definitions.c). Followed by 12 bytes of 0x90 padding (0x536F54). */
+__declspec(align(16)) int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT] = {
+    0, /* 00536F10 [0] bit 24 max water surface delta (Q12) */
+    11500, /* 00536F14 [1] bit 24 max triangle 1 normal angle (high 16) */
+    10500, /* 00536F18 [2] bit 25 max selected normal angle (high 16) */
+    10500, /* 00536F1C [3] bit 26 max selected normal angle (high 16) */
+    10500, /* 00536F20 [4] bit 27 max selected normal angle (high 16) */
+    14000, /* 00536F24 [5] contact kind 4 traversal secondary threshold, class 1 */
+    15000, /* 00536F28 [6] contact kind 4 traversal secondary threshold, class 2 */
+    15500, /* 00536F2C [7] contact kind 4 traversal secondary threshold, class 3 */
+    500 /* 0.12207 */, /* 00536F30 [8] bit 28 min water surface delta (Q12) */
+    500 /* 0.12207 */, /* 00536F34 [9] bit 29 min water surface delta (Q12) */
+    500 /* 0.12207 */, /* 00536F38 [10] bit 30 min water surface delta (Q12) */
+    10500, /* 00536F3C [11] bit 28 max triangle 0 normal angle (high 16) */
+    10500, /* 00536F40 [12] bit 29 max triangle 0 normal angle (high 16) */
+    10500, /* 00536F44 [13] bit 30 max triangle 0 normal angle (high 16) */
+    12500, /* 00536F48 [14] fallback traversal secondary threshold, class 4 */
+    13500, /* 00536F4C [15] fallback traversal secondary threshold, class 5 */
+    14500, /* 00536F50 [16] fallback traversal secondary threshold, class 6 */
 };
 
 /* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets */
@@ -11241,13 +11191,9 @@ __declspec(align(4)) WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
 /* 00545780 g_FrontendLoadedLevelAsset */
 __declspec(align(16)) FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = 0;
 
-/* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
-__declspec(align(4)) uint32_t g_FrontendMenuSoundVoiceSetTable100 = 0;
-
-__declspec(align(8)) ImageObject_00545788 g_ImageObject_00545788 = {
-    0, /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
-    {0},
-};
+/* 00545784 g_FrontendMenuSoundVoiceSets: the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
+   loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
+__declspec(align(4)) DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {0};
 
 /* 00545914 g_FrontendLoadedCampaignAsset */
 __declspec(align(4)) uint32_t g_FrontendLoadedCampaignAsset = 0;
@@ -15533,39 +15479,22 @@ __declspec(align(4)) ImageObject_0055F7B4 g_ImageObject_0055F7B4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F7B4 gap */
 };
 
-__declspec(align(16)) ImageObject_0055F7C0 g_ImageObject_0055F7C0 = {
-    /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
-    {
-        0x0055F820, 0x0055F820},
-};
-
-__declspec(align(8)) ImageObject_0055F7C8 g_ImageObject_0055F7C8 = {
-    /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
-    {
-        0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903, 0x0055F8C0, 0x0055F8D0,
-        0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903},
+/* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the
+   original code, not used by the C code */
+__declspec(align(16)) uint32_t g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable[16] = {
+    0x0055F820, 0x0055F820, 0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903,
+    0x0055F8C0, 0x0055F8D0, 0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903,
 };
 
 __declspec(align(4)) ImageObject_0055F934 g_ImageObject_0055F934 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F934 gap */
 };
 
-__declspec(align(16)) ImageObject_0055F940 g_ImageObject_0055F940 = {
-    /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
-    {
-        0x0055FA13},
-};
-
-__declspec(align(4)) ImageObject_0055F944 g_ImageObject_0055F944 = {
-    /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
-    {
-        0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13},
-};
-
-__declspec(align(16)) ImageObject_0055F960 g_ImageObject_0055F960 = {
-    /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
-    {
-        0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13},
+/* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the
+   original code, not used by the C code */
+__declspec(align(16)) uint32_t g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable[16] = {
+    0x0055FA13, 0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13,
+    0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13,
 };
 
 __declspec(align(8)) ImageObject_00562498 g_ImageObject_00562498 = {
@@ -19086,7 +19015,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0040B220, 0x0040B224, (const uint8_t *)&g_EnginePackageLowPriorityMountHandle},
     {0x0040B224, 0x0040E224, (const uint8_t *)&g_PackageMountSlots},
     {0x0040E224, 0x0040E230, (const uint8_t *)&g_PckEncoderTable},
-    {0x0040E230, 0x0040E23D, (const uint8_t *)&g_ImageObject_0040E230},
+    {0x0040E230, 0x0040E23C, (const uint8_t *)&g_PckDecoderTable},
     {0x0040E23D, 0x0040E255, (const uint8_t *)&u_THANDOR_cfg_0040e23d},
     {0x0040E255, 0x0040E270, (const uint8_t *)&g_ImageObject_0040E255},
     {0x0040E270, 0x0040E2B0, (const uint8_t *)&g_DefaultComputerLabelUtf16},
@@ -19725,9 +19654,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050E170, 0x0050E1B0, (const uint8_t *)&g_ImageObject_0050E170},
     {0x0050E21C, 0x0050E230, (const uint8_t *)&g_ImageObject_0050E21C},
     {0x0050E95C, 0x0050E960, (const uint8_t *)&g_ImageObject_0050E95C},
-    {0x0050E960, 0x0050E970, (const uint8_t *)&g_ImageObject_0050E960},
+    {0x0050E960, 0x0050E96C, (const uint8_t *)&g_ResourceRegistrationDomainPairCallbacks3},
     {0x0050EB5C, 0x0050EB60, (const uint8_t *)&g_ImageObject_0050EB5C},
-    {0x0050EB60, 0x0050EB70, (const uint8_t *)&g_ImageObject_0050EB60},
+    {0x0050EB60, 0x0050EB6C, (const uint8_t *)&g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60},
     {0x0050F044, 0x0050F050, (const uint8_t *)&g_ImageObject_0050F044},
     {0x0050F050, 0x0050F054, (const uint8_t *)&g_FrontendPlayerRuntimeCount},
     {0x0050F054, 0x0050F07C, (const uint8_t *)&g_FrontendLocalPlayerNameUtf16},
@@ -19748,7 +19677,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050F0E0, 0x0050F0E4, (const uint8_t *)&g_RecentTextSlotStorage},
     {0x0050F0E4, 0x0050F104, (const uint8_t *)&g_RecentTextEntrySerials},
     {0x0050F104, 0x0050F130, (const uint8_t *)&g_ImageObject_0050F104},
-    {0x0050F328, 0x0050F340, (const uint8_t *)&g_ImageObject_0050F328},
     {0x0050F340, 0x00512D60, (const uint8_t *)&g_GameFactionRuntimeImage},
     {0x00512D60, 0x00512D64, (const uint8_t *)&g_TerrainRegionCollectionStoredCount},
     {0x00512D64, 0x00512D68, (const uint8_t *)&g_TerrainRegionCollectionVisitedCount},
@@ -19825,7 +19753,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00518C80, 0x00518C90, (const uint8_t *)&g_ImageObject_00518C80},
     {0x00518C90, 0x00518CE0, (const uint8_t *)&g_ImageObject_00518C90},
     {0x005191F0, 0x005191FC, (const uint8_t *)&g_ImageObject_005191F0},
-    {0x0051936C, 0x00519374, (const uint8_t *)&g_ImageObject_0051936C},
     {0x00519374, 0x005193B0, (const uint8_t *)&g_ImageObject_00519374},
     {0x0051972C, 0x00519730, (const uint8_t *)&g_ImageObject_0051972C},
     {0x00519730, 0x00519734, (const uint8_t *)&g_ArmyRuntimeSlots},
@@ -19859,23 +19786,19 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005200B8, 0x005200BC, (const uint8_t *)&g_ModelRuntimeSlots},
     {0x005200BC, 0x005200C0, (const uint8_t *)&g_ModelRuntimeRebaseDelta},
     {0x00520EA0, 0x00520EB0, (const uint8_t *)&g_ImageObject_00520EA0},
-    {0x00520EB0, 0x00520EB4, (const uint8_t *)&g_ArmySuspensionBlendVectorAXQ12},
-    {0x00520EB4, 0x00520EB8, (const uint8_t *)&g_ArmySuspensionBlendVectorAYQ12},
-    {0x00520EB8, 0x00520EBC, (const uint8_t *)&g_ArmySuspensionBlendVectorAZQ12},
-    {0x00520EBC, 0x00520EC0, (const uint8_t *)&g_ArmySuspensionBlendVectorBXQ12},
-    {0x00520EC0, 0x00520EC4, (const uint8_t *)&g_ArmySuspensionBlendVectorBYQ12},
-    {0x00520EC4, 0x00520EC8, (const uint8_t *)&g_ArmySuspensionBlendVectorBZQ12},
+    {0x00520EB0, 0x00520EBC, (const uint8_t *)&g_ArmySuspensionBlendVectorA},
+    {0x00520EBC, 0x00520EC8, (const uint8_t *)&g_ArmySuspensionBlendVectorB},
     {0x00520EC8, 0x00520EF8, (const uint8_t *)&g_ImageObject_00520EC8},
     {0x00520EF8, 0x00520F28, (const uint8_t *)&g_ImageObject_00520EF8},
     {0x00520F28, 0x00520F60, (const uint8_t *)&g_ImageObject_00520F28},
     {0x00524110, 0x00524120, (const uint8_t *)&g_ImageObject_00524110},
-    {0x00524120, 0x00524130, (const uint8_t *)&g_ImageObject_00524120},
+    {0x00524120, 0x00524128, (const uint8_t *)&g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120},
     {0x005247C0, 0x005247D0, (const uint8_t *)&g_ImageObject_005247C0},
     {0x005247D0, 0x005247F0, (const uint8_t *)&g_ImageObject_005247D0},
     {0x00525A8C, 0x00525A90, (const uint8_t *)&g_ImageObject_00525A8C},
     {0x00525A90, 0x00525AB0, (const uint8_t *)&g_ImageObject_00525A90},
     {0x005266B0, 0x005266C0, (const uint8_t *)&g_ImageObject_005266B0},
-    {0x005266C0, 0x005266D0, (const uint8_t *)&g_ImageObject_005266C0},
+    {0x005266C0, 0x005266C8, (const uint8_t *)&g_ArmyTerrainContactDispatchTable2},
     {0x00526988, 0x00526990, (const uint8_t *)&g_ImageObject_00526988},
     {0x00526990, 0x005269B0, (const uint8_t *)&g_ImageObject_00526990},
     {0x00527AA4, 0x00527AC0, (const uint8_t *)&g_ImageObject_00527AA4},
@@ -19945,19 +19868,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005367E0, 0x005368D4, (const uint8_t *)&g_ImageObject_005367E0},
     {0x005368D4, 0x005368E0, (const uint8_t *)&g_ImageObject_005368D4},
     {0x00536F08, 0x00536F10, (const uint8_t *)&g_ImageObject_00536F08},
-    {0x00536F10, 0x00536F14, (const uint8_t *)&g_GridTerrainClassBit24MaxWaterSurfaceDelta},
-    {0x00536F14, 0x00536F18, (const uint8_t *)&g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16},
-    {0x00536F18, 0x00536F1C, (const uint8_t *)&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16},
-    {0x00536F1C, 0x00536F20, (const uint8_t *)&g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16},
-    {0x00536F20, 0x00536F24, (const uint8_t *)&g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16},
-    {0x00536F24, 0x00536F30, (const uint8_t *)&g_ModelTraversalClass4SecondaryThresholdTable3},
-    {0x00536F30, 0x00536F34, (const uint8_t *)&g_GridTerrainClassBit28MinWaterSurfaceDelta},
-    {0x00536F34, 0x00536F38, (const uint8_t *)&g_GridTerrainClassBit29MinWaterSurfaceDelta},
-    {0x00536F38, 0x00536F3C, (const uint8_t *)&g_GridTerrainClassBit30MinWaterSurfaceDelta},
-    {0x00536F3C, 0x00536F40, (const uint8_t *)&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16},
-    {0x00536F40, 0x00536F44, (const uint8_t *)&g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16},
-    {0x00536F44, 0x00536F48, (const uint8_t *)&g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16},
-    {0x00536F48, 0x00536F60, (const uint8_t *)&g_ImageObject_00536F48},
+    {0x00536F10, 0x00536F54, (const uint8_t *)&g_GridTerrainClassThresholds},
     {0x00536F60, 0x00536F80, (const uint8_t *)&g_GridInfluenceRadiusOffset},
     {0x00536F80, 0x00536FA0, (const uint8_t *)&g_GridInfluenceSquaredThreshold},
     {0x00536FA0, 0x00536FA4, (const uint8_t *)&g_AiCombatTargetRadialClearanceWeight},
@@ -20063,8 +19974,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00545778, 0x0054577C, (const uint8_t *)&g_RomRegistrySlots},
     {0x0054577C, 0x00545780, (const uint8_t *)&g_FrontendWorldObjectRecords},
     {0x00545780, 0x00545784, (const uint8_t *)&g_FrontendLoadedLevelAsset},
-    {0x00545784, 0x00545788, (const uint8_t *)&g_FrontendMenuSoundVoiceSetTable100},
-    {0x00545788, 0x00545914, (const uint8_t *)&g_ImageObject_00545788},
+    {0x00545784, 0x00545914, (const uint8_t *)&g_FrontendMenuSoundVoiceSets},
     {0x00545914, 0x00545918, (const uint8_t *)&g_FrontendLoadedCampaignAsset},
     {0x00545918, 0x0054591C, (const uint8_t *)&g_FrontendScenarioTransferState},
     {0x0054591C, 0x00545920, (const uint8_t *)&g_FrontendPlayerMessageBuffers},
@@ -20161,12 +20071,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0055F124, 0x0055F128, (const uint8_t *)&g_InGameSelectionInsertTripletDwordCount},
     {0x0055F128, 0x0055F130, (const uint8_t *)&g_ImageObject_0055F128},
     {0x0055F7B4, 0x0055F7C0, (const uint8_t *)&g_ImageObject_0055F7B4},
-    {0x0055F7C0, 0x0055F7C8, (const uint8_t *)&g_ImageObject_0055F7C0},
-    {0x0055F7C8, 0x0055F800, (const uint8_t *)&g_ImageObject_0055F7C8},
+    {0x0055F7C0, 0x0055F800, (const uint8_t *)&g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable},
     {0x0055F934, 0x0055F940, (const uint8_t *)&g_ImageObject_0055F934},
-    {0x0055F940, 0x0055F944, (const uint8_t *)&g_ImageObject_0055F940},
-    {0x0055F944, 0x0055F960, (const uint8_t *)&g_ImageObject_0055F944},
-    {0x0055F960, 0x0055F980, (const uint8_t *)&g_ImageObject_0055F960},
+    {0x0055F940, 0x0055F980, (const uint8_t *)&g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable},
     {0x00562498, 0x00562499, (const uint8_t *)&g_ImageObject_00562498},
     {0x00562499, 0x005624A0, (const uint8_t *)&g_ImageObject_00562499},
     {0x005624A0, 0x00562540, (const uint8_t *)&g_InGameUiActionHandlersPage10},
