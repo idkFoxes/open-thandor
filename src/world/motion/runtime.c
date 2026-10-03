@@ -19,62 +19,56 @@ uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worl
 
 {
   uint32_t edgeScrollStep;
-  uint32_t bottomStepOrCursorFrame;
-  uint32_t rightStepOrDeltaDown;
+  uint32_t rightStep;
+  uint32_t bottomStep;
   uint32_t screenDeltaRight;
+  uint32_t screenDeltaDown;
 
   edgeScrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  rightStepOrDeltaDown = 0;
+  rightStep = 0;
   if (g_CursorOverflowRight != 0) {
-    rightStepOrDeltaDown = edgeScrollStep;
+    rightStep = edgeScrollStep;
   }
-  bottomStepOrCursorFrame = 0;
+  bottomStep = 0;
   if (g_CursorOverflowBottom != 0) {
-    bottomStepOrCursorFrame = edgeScrollStep;
+    bottomStep = edgeScrollStep;
   }
   /* delta = right/bottom step - left/top overflow; a negative result becomes -step */
-  screenDeltaRight = rightStepOrDeltaDown - g_CursorOverflowLeft;
-  if ((int)(rightStepOrDeltaDown - g_CursorOverflowLeft) < 0) {
-    screenDeltaRight = -edgeScrollStep;
+  screenDeltaRight = rightStep - g_CursorOverflowLeft;
+  if ((int)screenDeltaRight < 0) {
+    screenDeltaRight = 0u - edgeScrollStep;
   }
-  rightStepOrDeltaDown = bottomStepOrCursorFrame - g_CursorOverflowTop;
-  if ((int)(bottomStepOrCursorFrame - g_CursorOverflowTop) < 0) {
-    rightStepOrDeltaDown = -edgeScrollStep;
+  screenDeltaDown = bottomStep - g_CursorOverflowTop;
+  if ((int)screenDeltaDown < 0) {
+    screenDeltaDown = 0u - edgeScrollStep;
   }
-  WorldRuntime_TranslateCameraByScreenDelta(rightStepOrDeltaDown,screenDeltaRight,worldRuntime);
+  WorldRuntime_TranslateCameraByScreenDelta(screenDeltaDown,screenDeltaRight,worldRuntime);
   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-  bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP;
-  if ((screenDeltaRight == 0) && (rightStepOrDeltaDown == 0)) {
-    bottomStepOrCursorFrame = 0;
-  }
-  else if (screenDeltaRight == 0) {
-    if (-1 < (int)rightStepOrDeltaDown) {
-      bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN;
+  if (screenDeltaRight == 0) {
+    if (screenDeltaDown == 0) {
+      return 0;
     }
-  }
-  else if ((int)screenDeltaRight < 0) {
-    bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_LEFT;
-    if (rightStepOrDeltaDown != 0) {
-      if ((int)rightStepOrDeltaDown < 0) {
-        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP_LEFT;
-      }
-      else {
-        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN_LEFT;
-      }
+    if ((int)screenDeltaDown < 0) {
+      return WORLD_CURSOR_SCROLL_UP;
     }
+    return WORLD_CURSOR_SCROLL_DOWN;
   }
-  else {
-    bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_RIGHT;
-    if (rightStepOrDeltaDown != 0) {
-      if ((int)rightStepOrDeltaDown < 0) {
-        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP_RIGHT;
-      }
-      else {
-        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN_RIGHT;
-      }
+  if ((int)screenDeltaRight < 0) {
+    if (screenDeltaDown == 0) {
+      return WORLD_CURSOR_SCROLL_LEFT;
     }
+    if ((int)screenDeltaDown < 0) {
+      return WORLD_CURSOR_SCROLL_UP_LEFT;
+    }
+    return WORLD_CURSOR_SCROLL_DOWN_LEFT;
   }
-  return bottomStepOrCursorFrame;
+  if (screenDeltaDown == 0) {
+    return WORLD_CURSOR_SCROLL_RIGHT;
+  }
+  if ((int)screenDeltaDown < 0) {
+    return WORLD_CURSOR_SCROLL_UP_RIGHT;
+  }
+  return WORLD_CURSOR_SCROLL_DOWN_RIGHT;
 }
 
 
@@ -227,12 +221,13 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
       clampedDistanceQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
-           (clampedDistanceQ12 = g_WorldMotionAlternateMaximumDistanceQ12,
-           (int)requestedDistanceQ12 <= (int)g_WorldMotionAlternateMaximumDistanceQ12)) &&
-          (clampedDistanceQ12 = requestedDistanceQ12,
-           (int)requestedDistanceQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
-    clampedDistanceQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
+  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+    if ((int)g_WorldMotionAlternateMaximumDistanceQ12 < (int)requestedDistanceQ12) {
+      clampedDistanceQ12 = g_WorldMotionAlternateMaximumDistanceQ12;
+    }
+    else if ((int)requestedDistanceQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12) {
+      clampedDistanceQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
+    }
   }
   if ((int)clampedDistanceQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
     clampedDistanceQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
@@ -271,12 +266,13 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
       clampedMagnitudeQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
-           (clampedMagnitudeQ12 = g_WorldMotionAlternateMaximumDistanceQ12,
-           (int)requestedMagnitudeQ12 <= (int)g_WorldMotionAlternateMaximumDistanceQ12)) &&
-          (clampedMagnitudeQ12 = requestedMagnitudeQ12,
-           (int)requestedMagnitudeQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
-    clampedMagnitudeQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
+  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+    if ((int)g_WorldMotionAlternateMaximumDistanceQ12 < (int)requestedMagnitudeQ12) {
+      clampedMagnitudeQ12 = g_WorldMotionAlternateMaximumDistanceQ12;
+    }
+    else if ((int)requestedMagnitudeQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12) {
+      clampedMagnitudeQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
+    }
   }
   if ((int)clampedMagnitudeQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
     clampedMagnitudeQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
@@ -303,27 +299,26 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
   requestedPitchAngle = worldRuntime->motion.pitchAngle + pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
-    if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
+    if ((int)worldRuntime->motion.maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
-    else if ((int)requestedPitchAngle < (int)(worldRuntime->motion).minimumPitchAngle) {
+    else if ((int)requestedPitchAngle < (int)worldRuntime->motion.minimumPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
-           (clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle,
-           (int)requestedPitchAngle <= (int)g_WorldMotionAlternateMaximumPitchAngle)) &&
-          (clampedPitchAngle = requestedPitchAngle,
-           (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
-    clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
-  }
-  if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
-    if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
-      clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
+  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+    if ((int)g_WorldMotionAlternateMaximumPitchAngle < (int)requestedPitchAngle) {
+      clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle;
+    }
+    else if ((int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle) {
+      clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
     }
   }
-  else {
+  if ((int)clampedPitchAngle > FIXED_ANGLE16_QUARTER_TURN) {
     clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
+  }
+  else if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+    clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
   }
   worldRuntime->motion.pitchAngle = clampedPitchAngle;
   cameraOffset = FixedMath_DirectionFromAnglesScaled
@@ -351,27 +346,26 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
   requestedPitchAngle = worldRuntime->motion.pitchAngle - pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
-    if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
+    if ((int)worldRuntime->motion.maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
-    else if ((int)requestedPitchAngle < (int)(worldRuntime->motion).minimumPitchAngle) {
+    else if ((int)requestedPitchAngle < (int)worldRuntime->motion.minimumPitchAngle) {
       clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
-           (clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle,
-           (int)requestedPitchAngle <= (int)g_WorldMotionAlternateMaximumPitchAngle)) &&
-          (clampedPitchAngle = requestedPitchAngle,
-           (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
-    clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
-  }
-  if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
-    if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
-      clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
+  else if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) {
+    if ((int)g_WorldMotionAlternateMaximumPitchAngle < (int)requestedPitchAngle) {
+      clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle;
+    }
+    else if ((int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle) {
+      clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
     }
   }
-  else {
+  if ((int)clampedPitchAngle > FIXED_ANGLE16_QUARTER_TURN) {
     clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
+  }
+  else if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+    clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
   }
   worldRuntime->motion.pitchAngle = clampedPitchAngle;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
@@ -389,36 +383,24 @@ void WorldRuntime_TranslateCameraByScreenDelta
           )
 
 {
-  Q12 *coordinateField;
-  AngleTurn32 angle;
-  int distanceScaleOrSideDeltaY;
-  FixedSinCos movementDeltaXYQ12;
-  FixedSinCos sideMovementDeltaXYQ12;
-  Q12 movementDeltaXQ12;
-  Q12 movementDeltaYQ12;
-  Q12 *motionCoordinateField;
+  AngleTurn32 headingAngle;
+  int distanceScale;
+  FixedSinCos forwardDeltaXYQ12;
+  FixedSinCos sideDeltaXYQ12;
 
-  distanceScaleOrSideDeltaY =
-       (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
-  angle = worldRuntime->motion.headingAngle;
-  movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaDown * distanceScaleOrSideDeltaY);
-  movementDeltaXQ12 = movementDeltaXYQ12.cosValue;
-  movementDeltaYQ12 = movementDeltaXYQ12.sinValue;
-  worldRuntime->motion.positionXQ12 =
-       worldRuntime->motion.positionXQ12 - movementDeltaXQ12;
-  motionCoordinateField = &worldRuntime->motion.positionYQ12;
-  *motionCoordinateField = *motionCoordinateField - movementDeltaYQ12;
-  coordinateField = &worldRuntime->motion.targetPositionXQ12;
-  *coordinateField = *coordinateField - movementDeltaXQ12;
-  coordinateField = &worldRuntime->motion.targetPositionYQ12;
-  *coordinateField = *coordinateField - movementDeltaYQ12;
-  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
-                                                  screenDeltaRight * distanceScaleOrSideDeltaY);
-  distanceScaleOrSideDeltaY = sideMovementDeltaXYQ12.sinValue;
-  worldRuntime->motion.positionXQ12 -= sideMovementDeltaXYQ12.cosValue;
-  worldRuntime->motion.positionYQ12 -= distanceScaleOrSideDeltaY;
-  worldRuntime->motion.targetPositionXQ12 -= sideMovementDeltaXYQ12.cosValue;
-  worldRuntime->motion.targetPositionYQ12 -= distanceScaleOrSideDeltaY;
+  distanceScale = (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
+  headingAngle = worldRuntime->motion.headingAngle;
+  forwardDeltaXYQ12 = FixedMath_SinCosScaled(headingAngle,screenDeltaDown * distanceScale);
+  worldRuntime->motion.positionXQ12 -= forwardDeltaXYQ12.cosValue;
+  worldRuntime->motion.positionYQ12 -= forwardDeltaXYQ12.sinValue;
+  worldRuntime->motion.targetPositionXQ12 -= forwardDeltaXYQ12.cosValue;
+  worldRuntime->motion.targetPositionYQ12 -= forwardDeltaXYQ12.sinValue;
+  sideDeltaXYQ12 = FixedMath_SinCosScaled(headingAngle + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
+                                          screenDeltaRight * distanceScale);
+  worldRuntime->motion.positionXQ12 -= sideDeltaXYQ12.cosValue;
+  worldRuntime->motion.positionYQ12 -= sideDeltaXYQ12.sinValue;
+  worldRuntime->motion.targetPositionXQ12 -= sideDeltaXYQ12.cosValue;
+  worldRuntime->motion.targetPositionYQ12 -= sideDeltaXYQ12.sinValue;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }

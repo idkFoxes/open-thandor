@@ -22,52 +22,52 @@ void Technology_UnlockForFaction
 
 {
   WorldOwnerListNode *ownerNode;
-  ArmyRuntimeSlot *modelRuntimeHolder;
-  InGameRuntimeRoot *node;
+  ArmyRuntimeSlot *ownerArmy;
+  InGameRuntimeRoot *root;
   uint32_t technologyBitMask;
   uint32_t *factionTechnologyMaskWord;
   TechnologyAsset *technologyAsset;
-  
-  node = g_InGameRuntimeRoot;
+
+  root = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
   technologyBitMask = 1 << ((uint8_t)technologyIndex & 31);
   /* the word of the faction's 256-bit technology mask that holds the bit */
   factionTechnologyMaskWord =
        &g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[technologyIndex >> 5];
-  if ((*factionTechnologyMaskWord & technologyBitMask) == 0) {
-    *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
-    /* no announcement while the session still waits for its players */
-    if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) &&
-       (factionIndex == (node->worldRuntime).activeFactionRuntimeIndex)) {
-      if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
-        InGameNotificationQueue_InsertPriorityRecord
-                  (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,5,
-                   g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
-      }
-      else {
-        InGameNotificationQueue_InsertPriorityRecord
-                  (TECHNOLOGY_UNLOCK_POSITION,0,0,0,notificationXQ12,notificationYQ12,5,
-                   g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
-      }
+  if ((*factionTechnologyMaskWord & technologyBitMask) != 0) {
+    return;
+  }
+  *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
+  /* no announcement while the session still waits for its players */
+  if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) &&
+     (factionIndex == (root->worldRuntime).activeFactionRuntimeIndex)) {
+    if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
+      InGameNotificationQueue_InsertPriorityRecord
+                (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,5,
+                 g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
     }
-    Technology_UnlockForFaction
-              (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex)
-    ;
-    for (ownerNode = (node->worldRuntime).ownerListHead; ownerNode != NULL;
-        ownerNode = ownerNode->nextNode) {
-      if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-         (modelRuntimeHolder =
-               ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
-         factionIndex == modelRuntimeHolder->factionIndex)) {
-        ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,modelRuntimeHolder);
-      }
-    }
-    if (factionIndex == (node->worldRuntime).activeFactionRuntimeIndex) {
-      InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
-      InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)node);
+    else {
+      InGameNotificationQueue_InsertPriorityRecord
+                (TECHNOLOGY_UNLOCK_POSITION,0,0,0,notificationXQ12,notificationYQ12,5,
+                 g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
     }
   }
-  return;
+  /* the dependency is unlocked without a position; the recursion ends at an already unlocked technology */
+  Technology_UnlockForFaction
+            (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex);
+  for (ownerNode = (root->worldRuntime).ownerListHead; ownerNode != NULL;
+      ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      if (factionIndex == ownerArmy->factionIndex) {
+        ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,ownerArmy);
+      }
+    }
+  }
+  if (factionIndex == (root->worldRuntime).activeFactionRuntimeIndex) {
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)root);
+    InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)root);
+  }
 }
 
 
@@ -99,52 +99,37 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
 {
   WorldOwnerListNode *ownerNode;
   ModelRuntimeSlot *researchingModel;
+  const uint32_t *factionTechnologyMasks;
+  const uint32_t *prerequisiteMasks;
+  int maskWordIndex;
 
-  /* the first test reads the faction's unlock bit, as Technology_IsUnlockedForFaction does */
-  if ((*(uint32_t *)(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
-                    THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,technologyMasks256Bits)) +
-                    (technologyIndex >> 5) * 4) &
-       1 << ((uint8_t)technologyIndex & 31)) == 0 &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[1]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[2]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[3]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[4]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[5]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[6]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &&
-      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
-       g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[7]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7]) {
-    /* scan the world's model owner nodes for an army of the faction that is already researching (runtime flag
-       0x40) this technology (+0x100) */
-    for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
-        ownerNode = ownerNode->nextNode) {
-      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        researchingModel = ownerNode->runtimePayload;
-        if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
-            factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
-            technologyIndex == researchingModel->researchTechnologyId) {
-          return false;
-        }
+  factionTechnologyMasks = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits;
+  /* already unlocked: not available */
+  if ((factionTechnologyMasks[technologyIndex >> 5] & 1 << ((uint8_t)technologyIndex & 31)) != 0) {
+    return false;
+  }
+  /* every prerequisite bit must be unlocked for the faction */
+  prerequisiteMasks = g_TechnologyAsset->records[technologyIndex].prerequisiteMasks;
+  for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
+    if ((prerequisiteMasks[maskWordIndex] & factionTechnologyMasks[maskWordIndex]) !=
+        prerequisiteMasks[maskWordIndex]) {
+      return false;
+    }
+  }
+  /* scan the world's model owner nodes for an army of the faction that is already researching (runtime flag
+     0x40) this technology (+0x100) */
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+      ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      researchingModel = ownerNode->runtimePayload;
+      if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
+          factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
+          technologyIndex == researchingModel->researchTechnologyId) {
+        return false;
       }
     }
-    return true;
   }
-  return false;
+  return true;
 }
 
 
@@ -191,13 +176,12 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
 {
   ModelDefinition *definitionRecord;
-  uint32_t technologyBitMask;
-  int remainingCount;
+  int registrySlotIndex;
+  int categoryIndex;
   int maskWordIndex;
-  ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  uint32_t *categoryReciprocalCursor;
-  uint32_t *categoryMaskClearCursor;
-  TechnologyRecord *technologyRecordCursor;
+  int technologyIndex;
+  uint32_t technologyBitMask;
+  const TechnologyRecord *technologyRecord;
   ArmyAssetRecordPrefix *armyAssetRecord;
 
   g_TechnologyCategoryMaximum0 = 1;
@@ -210,9 +194,8 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   g_TechnologyCategoryMaximum7 = 1;
   g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
   /* every registered army asset with flag +0x14 bit 0: look at its root model definition */
-  armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
-  for (remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT; remainingCount != 0; remainingCount--) {
-    armyAssetRecord = *armyAssetRegistryCursor;
+  for (registrySlotIndex = 0; registrySlotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotIndex++) {
+    armyAssetRecord = g_ArmyAssetRecordRegistry[registrySlotIndex];
     if ((armyAssetRecord != NULL) &&
        ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
       /* the root node's model definition id (+0x20) */
@@ -231,42 +214,32 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
         }
       }
     }
-    armyAssetRegistryCursor++;
   }
-  /* the eight category maxima follow the reciprocal table directly */
-  categoryReciprocalCursor = g_TechnologyCategoryMaximumReciprocalQ24Table8;
-  for (remainingCount = 8; remainingCount != 0; remainingCount--) {
-    *categoryReciprocalCursor = TECHNOLOGY_RECIPROCAL_Q24_ONE / categoryReciprocalCursor[8];
-    categoryReciprocalCursor++;
+  /* Q24 reciprocal of each category maximum (the maxima start at 1, so no division by zero) */
+  for (categoryIndex = 0; categoryIndex < 8; categoryIndex++) {
+    g_TechnologyCategoryMaximumReciprocalQ24Table8[categoryIndex] =
+         TECHNOLOGY_RECIPROCAL_Q24_ONE / (uint32_t)(&g_TechnologyCategoryMaximum0)[categoryIndex];
   }
-  /* clear both category masks (2 x 8 dwords) */
-  categoryMaskClearCursor = g_TechnologyCategoryMasks.category2;
-  for (remainingCount = 16; remainingCount != 0; remainingCount--) {
-    *categoryMaskClearCursor = 0;
-    categoryMaskClearCursor++;
+  /* clear both category masks */
+  for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
+    g_TechnologyCategoryMasks.category2[maskWordIndex] = 0;
+  }
+  for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
+    g_TechnologyCategoryMasks.category3[maskWordIndex] = 0;
   }
   /* one bit per technology record, category field at record +0x34 */
-  remainingCount = TECHNOLOGY_RECORD_COUNT;
-  technologyRecordCursor = g_TechnologyAsset->records;
-  technologyBitMask = 1;
-  maskWordIndex = 0;
-  do {
-    if (technologyRecordCursor->category == TECHNOLOGY_CATEGORY_C) {
+  for (technologyIndex = 0; technologyIndex < TECHNOLOGY_RECORD_COUNT; technologyIndex++) {
+    technologyRecord = &g_TechnologyAsset->records[technologyIndex];
+    maskWordIndex = technologyIndex >> 5;
+    technologyBitMask = 1u << (technologyIndex & 31);
+    if (technologyRecord->category == TECHNOLOGY_CATEGORY_C) {
       g_TechnologyCategoryMasks.category2[maskWordIndex] =
            g_TechnologyCategoryMasks.category2[maskWordIndex] | technologyBitMask;
     }
-    if (technologyRecordCursor->category == TECHNOLOGY_CATEGORY_D) {
+    if (technologyRecord->category == TECHNOLOGY_CATEGORY_D) {
       g_TechnologyCategoryMasks.category3[maskWordIndex] =
            g_TechnologyCategoryMasks.category3[maskWordIndex] | technologyBitMask;
     }
-    technologyRecordCursor++;
-    technologyBitMask = technologyBitMask * 2;
-    if (technologyBitMask == 0) {
-      maskWordIndex++;
-      technologyBitMask = 1;
-    }
-    remainingCount--;
-  } while (remainingCount != 0);
-  return;
+  }
 }
 

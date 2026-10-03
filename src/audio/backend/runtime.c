@@ -168,6 +168,89 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
 }
 
 
+/* Resolves the four DSOUND.DLL exports DirectSound_Init uses, in order; returns 0 or the first
+   DynAPI_Resolve error (the remaining exports are then not resolved). */
+static uint32_t DirectSound_ResolveExports(HINSTANCE module)
+{
+  uint32_t resolveError;
+
+  /* dynapi_20..23: "DirectSoundCreate", "DirectSoundEnumerateA", "DirectSoundCaptureCreate",
+     "DirectSoundCaptureEnumerateA" */
+  resolveError = DynAPI_Resolve((void **)&pDirectSoundCreate,module,dynapi_20);
+  if (resolveError != 0) {
+    return resolveError;
+  }
+  resolveError = DynAPI_Resolve((void **)&pDirectSoundEnumerateA,module,dynapi_21);
+  if (resolveError != 0) {
+    return resolveError;
+  }
+  resolveError = DynAPI_Resolve((void **)&pDirectSoundCaptureCreate,module,dynapi_22);
+  if (resolveError != 0) {
+    return resolveError;
+  }
+  return DynAPI_Resolve((void **)&pDirectSoundCaptureEnumerateA,module,dynapi_23);
+}
+
+/* DirectSound_Init's device setup after DirectSoundCreate: exclusive cooperative level, then the primary
+   buffer (create, 22050 Hz 16-bit stereo format, save volume/pan, full volume, centre pan, looping play).
+   Returns 0 or the failing step's HRESULT; *passedStages receives the number of steps that succeeded
+   before the failing one (the stage number in DirectSound_Init's error message). */
+static TH_LEGACY_HRESULT DirectSound_StartPrimaryBuffer(int32_t *passedStages)
+{
+  TH_LEGACY_HRESULT directSoundResult;
+
+  *passedStages = 0;
+  directSoundResult =
+       g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,DSSCL_EXCLUSIVE);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 1;
+  Memory_ZeroDwords(DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES,&WaveFormat_PCM_22050_Stereo16);
+  Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
+  WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
+  WaveFormat_PCM_22050_Stereo16.nChannels = 2;
+  WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
+  WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
+  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
+  WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
+  PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
+  PrimarySoundBufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME;
+  directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
+                    (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,NULL);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 2;
+  directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetFormat
+                    (g_PrimarySoundBuffer,&WaveFormat_PCM_22050_Stereo16);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 3;
+  directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetVolume(g_PrimarySoundBuffer,&g_PrimaryVolume);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 4;
+  directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetPan(g_PrimarySoundBuffer,&g_PrimaryPan);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 5;
+  directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,DSBVOLUME_MAX);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 6;
+  directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,DSBPAN_CENTER);
+  if (directSoundResult != 0) {
+    return directSoundResult;
+  }
+  *passedStages = 7;
+  return g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,DSBPLAY_LOOPING);
+}
+
 /* Address: 0x00583140.
    Binds DSOUND.DLL, opens the default DirectSound device in exclusive mode and starts the looping primary
    buffer as 22050 Hz 16-bit stereo, then allocates the 256-entry voice-set registry and switches the
@@ -181,108 +264,101 @@ uint32_t DirectSound_Init(void)
 {
   HINSTANCE module;
   TH_LEGACY_HRESULT directSoundResult;
-  int remainingCount;
-  DirectSoundVoiceSet **registryCursor;
+  int registryIndex;
+  DirectSoundVoiceSet **registry;
   uint32_t resolveError;
   uint32_t registryAllocError;
   void *registryPayload;
   int32_t failedStage; /* number of setup steps passed, shown in the error message */
 
-  failedStage = 0;
   module = DynDLL_Load(dynapi_4); /* "DSOUND" */
-  /* dynapi_20..23: "DirectSoundCreate", "DirectSoundEnumerateA", "DirectSoundCaptureCreate",
-     "DirectSoundCaptureEnumerateA" */
-  if (module != NULL &&
-      (resolveError = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20)) == 0 &&
-      (resolveError = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21)) == 0 &&
-      (resolveError = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22)) == 0 &&
-      (resolveError = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23)) == 0) {
-    directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
-    Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
-    if (directSoundResult != 0) {
-      /* no DirectSound device: not an error, the game runs silent (the original returns the HRESULT with
-         CF clear; no caller reads it) */
-      return 0;
-    }
-    directSoundResult =
-         g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,DSSCL_EXCLUSIVE);
-    if (directSoundResult == 0) {
-      failedStage = 1;
-      Memory_ZeroDwords(DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES,&WaveFormat_PCM_22050_Stereo16);
-      Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
-      WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
-      WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-      WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
-      WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
-      WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
-      WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
-      PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
-      PrimarySoundBufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME;
-      directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                        (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,NULL);
-      if (directSoundResult == 0) {
-        failedStage = 2;
-        directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetFormat
-                          (g_PrimarySoundBuffer,&WaveFormat_PCM_22050_Stereo16);
-        if (directSoundResult == 0) {
-          failedStage = 3;
-          directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetVolume(g_PrimarySoundBuffer,&g_PrimaryVolume);
-          if (directSoundResult == 0) {
-            failedStage = 4;
-            directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetPan(g_PrimarySoundBuffer,&g_PrimaryPan);
-            if (directSoundResult == 0) {
-              failedStage = 5;
-              directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,DSBVOLUME_MAX);
-              if (directSoundResult == 0) {
-                failedStage = 6;
-                directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,DSBPAN_CENTER);
-                if (directSoundResult == 0) {
-                  failedStage = 7;
-                  directSoundResult =
-                       g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,DSBPLAY_LOOPING);
-                  if (directSoundResult == 0) {
-                    registryAllocError = g_MemoryApi.alloc(DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY *
-                                                           sizeof(DirectSoundVoiceSet *),&registryPayload);
-                    if (registryAllocError == 0) {
-                      registryCursor = (DirectSoundVoiceSet **)registryPayload;
-                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryPayload;
-                      for (remainingCount = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; remainingCount != 0;
-                           remainingCount--) {
-                        *registryCursor = NULL;
-                        registryCursor++;
-                      }
-                      g_SoundCreateSampleVoiceSet = DirectSound_CreateSampleVoiceSet;
-                      g_SoundReleaseSampleVoiceSet = DirectSound_ReleaseSampleVoiceSet;
-                      g_SoundCreatePcmVoiceSet = DirectSound_CreatePcmVoiceSet;
-                      g_SoundReleasePcmVoiceSet = DirectSound_ReleasePcmVoiceSet;
-                      g_SoundPlayOneShot = DirectSound_PlayOneShot;
-                      g_SoundPlayLooping = DirectSound_PlayLooping;
-                      g_SoundStopVoice = DirectSound_StopVoice;
-                      g_SoundStopAllVoices = DirectSound_StopAllVoices;
-                      g_SoundIsVoicePlaying = DirectSound_IsVoicePlaying;
-                      g_SoundQueryVoice = DirectSound_QueryVoiceStub;
-                      g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
-                      CosineDerivedLookupTables_Init();
-                      return 0;
-                    }
-                    return registryAllocError;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+  if (module == NULL) {
+    Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
+    return FATAL_ERROR_DLL_LOAD_FAILED;
+  }
+  resolveError = DirectSound_ResolveExports(module);
+  if (resolveError != 0) {
+    Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
+    return resolveError;
+  }
+
+  directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
+  Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
+  if (directSoundResult != 0) {
+    /* no DirectSound device: not an error, the game runs silent (the original returns the HRESULT with
+       CF clear; no caller reads it) */
+    return 0;
+  }
+
+  directSoundResult = DirectSound_StartPrimaryBuffer(&failedStage);
+  if (directSoundResult != 0) {
     Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage,
                 (uint32_t)directSoundResult);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
     return FATAL_ERROR_DIRECTSOUND_SETUP;
   }
-  Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  return module == NULL ? FATAL_ERROR_DLL_LOAD_FAILED : resolveError;
+
+  registryAllocError = g_MemoryApi.alloc(DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY *
+                                         sizeof(DirectSoundVoiceSet *),&registryPayload);
+  if (registryAllocError != 0) {
+    return registryAllocError;
+  }
+  registry = (DirectSoundVoiceSet **)registryPayload;
+  g_DirectSoundVoiceSetRegistry = registry;
+  for (registryIndex = 0; registryIndex < DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryIndex++) {
+    registry[registryIndex] = NULL;
+  }
+  g_SoundCreateSampleVoiceSet = DirectSound_CreateSampleVoiceSet;
+  g_SoundReleaseSampleVoiceSet = DirectSound_ReleaseSampleVoiceSet;
+  g_SoundCreatePcmVoiceSet = DirectSound_CreatePcmVoiceSet;
+  g_SoundReleasePcmVoiceSet = DirectSound_ReleasePcmVoiceSet;
+  g_SoundPlayOneShot = DirectSound_PlayOneShot;
+  g_SoundPlayLooping = DirectSound_PlayLooping;
+  g_SoundStopVoice = DirectSound_StopVoice;
+  g_SoundStopAllVoices = DirectSound_StopAllVoices;
+  g_SoundIsVoicePlaying = DirectSound_IsVoicePlaying;
+  g_SoundQueryVoice = DirectSound_QueryVoiceStub;
+  g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
+  CosineDerivedLookupTables_Init();
+  return 0;
 }
 
+
+/* Shared failure exit of DirectSound_CreateSampleVoiceSet and DirectSound_CreatePcmVoiceSet: releases
+   the secondary buffer if one was created, writes the failing stage number to g_PackageLastErrorPath
+   and returns errorCode. */
+static uint32_t DirectSound_FailVoiceSet(IDirectSoundBuffer *soundBuffer,int32_t failedStage,uint32_t errorCode)
+{
+  if (soundBuffer != NULL) {
+    soundBuffer->lpVtbl->Release(soundBuffer);
+  }
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+  return errorCode;
+}
+
+/* Shared success tail of DirectSound_CreateSampleVoiceSet and DirectSound_CreatePcmVoiceSet: clears the
+   eight voices of the freshly allocated set, puts soundBuffer into voices[0] and registers the set in the
+   first free registry slot (a full or missing registry is not an error). */
+static void DirectSound_InitAndRegisterVoiceSet(DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer *soundBuffer)
+{
+  int voiceIndex;
+  int registryIndex;
+  DirectSoundVoiceSet **registry;
+
+  for (voiceIndex = 0; voiceIndex < DIRECTSOUND_VOICES_PER_SET; voiceIndex++) {
+    voiceSet->voices[voiceIndex] = NULL;
+  }
+  registry = g_DirectSoundVoiceSetRegistry;
+  voiceSet->voices[0] = soundBuffer;
+  if (registry != NULL) {
+    for (registryIndex = 0; registryIndex < DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryIndex++) {
+      if (registry[registryIndex] == NULL) {
+        registry[registryIndex] = voiceSet;
+        break;
+      }
+    }
+  }
+}
 
 /* Address: 0x00583490.
    Turns a .sam sound asset into a voice set: checks the 0x200-byte header, creates a 22050 Hz 16-bit
@@ -298,16 +374,11 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
   TH_LEGACY_HRESULT directSoundResult;
   uint32_t encodedBlockSize;
   uint32_t remainingBlocks;
-  int remainingCount;
-  int registryRemaining;
-  IDirectSoundBuffer **voiceSetOrErrorCode;
-  IDirectSoundBuffer **voiceCursor;
   SoundSampleAsset *encodedBlock;
   short *outputStereoPcm;
-  DirectSoundVoiceSet **registryCursor;
   uint32_t voiceSetAllocError;
   void *voiceSetPayload;
-  int32_t failedStage;
+  DirectSoundVoiceSet *voiceSet;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
   uint32_t lockedByteCount;
@@ -315,85 +386,61 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
   IDirectSoundBuffer *soundBuffer;
 
   soundBuffer = NULL;
-  failedStage = DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER;
   Memory_ZeroDwords(DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES,&WaveFormat_PCM_22050_Stereo16);
   Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
-  voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_SOUND_SAMPLE_INVALID;
-  if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == SOUND_SAMPLE_FORMAT_VERSION)) {
-    WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
-    WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-    /* the original writes only the low word; the high word was zeroed above, so the dword is 22050 */
-    WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
-    WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
-    WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
-    WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
-    /* decodedBlockCount * SOUND_SAMPLE_DECODED_BLOCK_BYTES */
-    PrimarySoundBufferDesc.dwBufferBytes = sampleAsset->decodedBlockCount * SOUND_SAMPLE_DECODED_BLOCK_BYTES;
-    PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
-    PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
-    PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-    directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                      (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
-    voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-    if (directSoundResult == 0) {
-      failedStage = DIRECTSOUND_VOICE_STAGE_LOCK;
-      directSoundResult = soundBuffer->lpVtbl->Lock
-                        (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,
-                         DSBLOCK_ENTIREBUFFER);
-      voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-      if (directSoundResult == 0) {
-        failedStage = DIRECTSOUND_VOICE_STAGE_FILL;
-        encodedBlock = sampleAsset + 1; /* the packed blocks follow the 0x200-byte header */
-        remainingBlocks = lockedByteCount / SOUND_SAMPLE_DECODED_BLOCK_BYTES;
-        outputStereoPcm = lockedPcm;
-        do {
-          encodedBlockSize =
-               SoundSample_DecodePackedCoefficientBlock(g_SoundSampleCoefficientBlock,(uint8_t *)encodedBlock);
-          SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,g_SoundSampleCoefficientBlock);
-          encodedBlock = (SoundSampleAsset *)((uint8_t *)encodedBlock + encodedBlockSize);
-          outputStereoPcm = outputStereoPcm + SOUND_SAMPLE_DECODED_BLOCK_BYTES / sizeof(short);
-          remainingBlocks = remainingBlocks - 1;
-        } while (remainingBlocks != 0);
-        directSoundResult =
-             soundBuffer->lpVtbl->Unlock(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
-        voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-        if (directSoundResult == 0) {
-          voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
-          voiceSetOrErrorCode = (IDirectSoundBuffer **)(voiceSetAllocError != 0 ? voiceSetAllocError
-                                                                                : (uint32_t)voiceSetPayload);
-          if (voiceSetAllocError == 0) {
-            remainingCount = DIRECTSOUND_VOICES_PER_SET;
-            voiceCursor = voiceSetOrErrorCode;
-            do {
-              *voiceCursor = NULL;
-              voiceCursor++;
-              remainingCount--;
-            } while (remainingCount != 0);
-            registryCursor = g_DirectSoundVoiceSetRegistry;
-            *voiceSetOrErrorCode = soundBuffer;
-            /* Register the set in the first free registry slot; a full or missing registry is not an error. */
-            if (registryCursor != NULL) {
-              for (registryRemaining = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryRemaining != 0;
-                   registryRemaining--) {
-                if (*registryCursor == NULL) {
-                  *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-                  break;
-                }
-                registryCursor++;
-              }
-            }
-            *outVoiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-            return 0;
-          }
-        }
-      }
-    }
+  if ((sampleAsset->magic != ASSET_MAGIC_SAM) || (sampleAsset->formatVersion != SOUND_SAMPLE_FORMAT_VERSION)) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER,
+                                    FATAL_ERROR_SOUND_SAMPLE_INVALID);
   }
-  if (soundBuffer != NULL) {
-    soundBuffer->lpVtbl->Release(soundBuffer);
+  WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
+  WaveFormat_PCM_22050_Stereo16.nChannels = 2;
+  /* the original writes only the low word; the high word was zeroed above, so the dword is 22050 */
+  WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
+  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
+  WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
+  WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
+  PrimarySoundBufferDesc.dwBufferBytes = sampleAsset->decodedBlockCount * SOUND_SAMPLE_DECODED_BLOCK_BYTES;
+  PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
+  PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
+  PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
+  directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
+                    (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER,
+                                    FATAL_ERROR_DIRECTSOUND_SETUP);
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  return (uint32_t)voiceSetOrErrorCode;
+  directSoundResult = soundBuffer->lpVtbl->Lock
+                    (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,
+                     DSBLOCK_ENTIREBUFFER);
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_LOCK,FATAL_ERROR_DIRECTSOUND_SETUP);
+  }
+  encodedBlock = sampleAsset + 1; /* the packed blocks follow the 0x200-byte header */
+  remainingBlocks = lockedByteCount / SOUND_SAMPLE_DECODED_BLOCK_BYTES;
+  outputStereoPcm = lockedPcm;
+  /* Original quirk: the loop body runs before the count is tested, so a buffer smaller than one decoded
+     block (count 0) still decodes once and then wraps the count around. */
+  do {
+    encodedBlockSize =
+         SoundSample_DecodePackedCoefficientBlock(g_SoundSampleCoefficientBlock,(uint8_t *)encodedBlock);
+    SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,g_SoundSampleCoefficientBlock);
+    encodedBlock = (SoundSampleAsset *)((uint8_t *)encodedBlock + encodedBlockSize);
+    outputStereoPcm = outputStereoPcm + SOUND_SAMPLE_DECODED_BLOCK_BYTES / sizeof(short);
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
+  directSoundResult =
+       soundBuffer->lpVtbl->Unlock(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,FATAL_ERROR_DIRECTSOUND_SETUP);
+  }
+  voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
+  if (voiceSetAllocError != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,voiceSetAllocError);
+  }
+  voiceSet = (DirectSoundVoiceSet *)voiceSetPayload;
+  DirectSound_InitAndRegisterVoiceSet(voiceSet,soundBuffer);
+  *outVoiceSet = voiceSet;
+  return 0;
 }
 
 
@@ -453,101 +500,66 @@ uint32_t DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,Audi
           uint32_t *pcmData,DirectSoundVoiceSet **outVoiceSet)
 
 {
-  int32_t pendingStage;
-  uint32_t blockAlignOrDwordCount;
+  uint32_t bytesPerFrame;
+  uint32_t remainingDwords;
   TH_LEGACY_HRESULT directSoundResult;
-  int remainingCount;
-  int registryRemaining;
-  IDirectSoundBuffer **voiceSetOrErrorCode;
-  IDirectSoundBuffer **voiceCursor;
   uint32_t *destCursor;
-  DirectSoundVoiceSet **registryCursor;
   uint32_t voiceSetAllocError;
   void *voiceSetPayload;
-  int32_t failedStage;
+  DirectSoundVoiceSet *voiceSet;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
   uint32_t lockedByteCount;
   uint32_t *lockedData;
   IDirectSoundBuffer *soundBuffer;
-  
+
   soundBuffer = NULL;
-  failedStage = DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER;
   Memory_ZeroDwords(DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES,&WaveFormat_PCM_22050_Stereo16);
   Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
   /* the shared WaveFormat_PCM_22050_Stereo16 buffer is reused with the caller's format */
   WaveFormat_PCM_22050_Stereo16.nChannels = (AudioChannelCount)channelCount;
   WaveFormat_PCM_22050_Stereo16.wBitsPerSample = (AudioBitsPerSample)bitsPerSample;
-  blockAlignOrDwordCount = bitsPerSample * channelCount >> 3; /* bytes per frame */
+  bytesPerFrame = bitsPerSample * channelCount >> 3;
   PrimarySoundBufferDesc.dwBufferBytes = bufferByteCount;
-  WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)blockAlignOrDwordCount;
+  WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)bytesPerFrame;
   WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = sampleRateHz;
-  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = blockAlignOrDwordCount * sampleRateHz;
+  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = bytesPerFrame * sampleRateHz;
   WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
   PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
   PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
   PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
   directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
                     (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
-  voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-  pendingStage = failedStage;
-  if (directSoundResult == 0) {
-    directSoundResult = soundBuffer->lpVtbl->Lock
-                      (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,
-                       DSBLOCK_ENTIREBUFFER);
-    voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-    pendingStage = DIRECTSOUND_VOICE_STAGE_LOCK;
-    if (directSoundResult == 0) {
-      failedStage = DIRECTSOUND_VOICE_STAGE_FILL;
-      destCursor = lockedData;
-      /* copies lockedByteCount / 4 dwords; a trailing 1..3 bytes stay uncopied */
-      for (blockAlignOrDwordCount = lockedByteCount >> 2; blockAlignOrDwordCount != 0; blockAlignOrDwordCount--) {
-        *destCursor = *pcmData;
-        pcmData++;
-        destCursor++;
-      }
-      directSoundResult =
-           soundBuffer->lpVtbl->Unlock(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
-      voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
-      pendingStage = DIRECTSOUND_VOICE_STAGE_FILL;
-      if (directSoundResult == 0) {
-        voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
-        voiceSetOrErrorCode = (IDirectSoundBuffer **)(voiceSetAllocError != 0 ? voiceSetAllocError
-                                                                              : (uint32_t)voiceSetPayload);
-        pendingStage = failedStage;
-        if (voiceSetAllocError == 0) {
-          remainingCount = DIRECTSOUND_VOICES_PER_SET;
-          voiceCursor = voiceSetOrErrorCode;
-          do {
-            *voiceCursor = NULL;
-            voiceCursor++;
-            remainingCount--;
-          } while (remainingCount != 0);
-          registryCursor = g_DirectSoundVoiceSetRegistry;
-          *voiceSetOrErrorCode = soundBuffer;
-          /* Register the set in the first free registry slot; a full or missing registry is not an error. */
-          if (registryCursor != NULL) {
-            for (registryRemaining = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryRemaining != 0;
-                 registryRemaining--) {
-              if (*registryCursor == NULL) {
-                *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-                break;
-              }
-              registryCursor++;
-            }
-          }
-          *outVoiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-          return 0;
-        }
-      }
-    }
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER,
+                                    FATAL_ERROR_DIRECTSOUND_SETUP);
   }
-  failedStage = pendingStage;
-  if (soundBuffer != NULL) {
-    soundBuffer->lpVtbl->Release(soundBuffer);
+  directSoundResult = soundBuffer->lpVtbl->Lock
+                    (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,
+                     DSBLOCK_ENTIREBUFFER);
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_LOCK,FATAL_ERROR_DIRECTSOUND_SETUP);
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  return (uint32_t)voiceSetOrErrorCode;
+  destCursor = lockedData;
+  /* copies lockedByteCount / 4 dwords; a trailing 1..3 bytes stay uncopied */
+  for (remainingDwords = lockedByteCount >> 2; remainingDwords != 0; remainingDwords--) {
+    *destCursor = *pcmData;
+    pcmData++;
+    destCursor++;
+  }
+  directSoundResult =
+       soundBuffer->lpVtbl->Unlock(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
+  if (directSoundResult != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,FATAL_ERROR_DIRECTSOUND_SETUP);
+  }
+  voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
+  if (voiceSetAllocError != 0) {
+    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,voiceSetAllocError);
+  }
+  voiceSet = (DirectSoundVoiceSet *)voiceSetPayload;
+  DirectSound_InitAndRegisterVoiceSet(voiceSet,soundBuffer);
+  *outVoiceSet = voiceSet;
+  return 0;
 }
 
 

@@ -2932,6 +2932,9 @@ static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
   WorldRuntimeContext *worldRuntime;
   WorldOwnerListNode *worldNode;
 
+#ifdef THANDOR_TEST_AIDS
+  g_TestAidInSimulationStep = 1;
+#endif
   g_GameFactionRuntimeImage.tail.simulationTick++;
   worldRuntime = &inGameRoot->worldRuntime;
   tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
@@ -2944,6 +2947,7 @@ static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
   }
   InGameTick_RunWorldJob(inGameRoot,tickPhase);
 #ifdef THANDOR_TEST_AIDS
+  g_TestAidInSimulationStep = 0;
   DebugStateHash_AfterStep();
 #endif
 }

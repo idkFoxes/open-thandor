@@ -190,28 +190,26 @@ bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
   bool lockUnavailable;
 
   lockUnavailable = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
-  if (!lockUnavailable) {
-    if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
-      recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-      ringIndex = g_UiRuntimeRecordReadIndex;
-      while( true ) {
-        if (sessionToken == (recordCursor->packetHeader).sequenceToken) {
-          g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
-          return true;
-        }
-        ringIndex++;
-        recordCursor++;
-        if (ringIndex == g_UiRuntimeRecordWriteIndex) break;
-        if (UI_RUNTIME_RECORD_RING_LAST_INDEX < ringIndex) {
-          /* wrap around the 256-entry ring */
-          ringIndex = 0;
-          recordCursor = g_UiRuntimeRecordRing;
-          if (g_UiRuntimeRecordWriteIndex == 0) break;
-        }
-      }
-    }
-    g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
+  if (lockUnavailable) {
+    return false;
   }
+  /* walk the pending records from the read index up to the write index (both stay in 0..LAST_INDEX) */
+  ringIndex = g_UiRuntimeRecordReadIndex;
+  recordCursor = g_UiRuntimeRecordRing + ringIndex;
+  while (ringIndex != g_UiRuntimeRecordWriteIndex) {
+    if (sessionToken == (recordCursor->packetHeader).sequenceToken) {
+      g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
+      return true;
+    }
+    ringIndex++;
+    recordCursor++;
+    if (UI_RUNTIME_RECORD_RING_LAST_INDEX < ringIndex) {
+      /* wrap around the 256-entry ring */
+      ringIndex = 0;
+      recordCursor = g_UiRuntimeRecordRing;
+    }
+  }
+  g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
   return false;
 }
 
@@ -576,16 +574,17 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
 PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
 
 {
-  PackedArgb32 tintArgb;
   ModelRuntimeFlags stateFlags;
 
-  /* each test leaves the tint of its branch in tintArgb, as the original loads EAX before every TEST */
-  tintArgb = UI_MODEL_TINT_OPAQUE_WHITE;
   stateFlags = node->runtimeFlags;
-  if ((((stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) &&
-      (tintArgb = 0, (stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)) &&
-     (tintArgb = UI_MODEL_TINT_TRANSPARENT_WHITE, (stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0)) {
-    tintArgb = UI_MODEL_TINT_OPAQUE_GREY;
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
+    return UI_MODEL_TINT_OPAQUE_WHITE;
   }
-  return tintArgb;
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) == 0) {
+    return 0;
+  }
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) != 0) {
+    return UI_MODEL_TINT_TRANSPARENT_WHITE;
+  }
+  return UI_MODEL_TINT_OPAQUE_GREY;
 }

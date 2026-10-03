@@ -37,6 +37,28 @@ int Thandor_TestAidStateHashActive(void)
     return active;
 }
 
+volatile int g_TestAidInSimulationStep;
+
+/* Test aid (not in the original): see test_aids.h. Logs each distinct caller once per kind. */
+void Thandor_TestAidNoteOutsideStep(const char *what, void *caller)
+{
+    static void *seen[64];
+    static unsigned seenCount;
+    unsigned i;
+    if (g_TestAidInSimulationStep || !Thandor_TestAidStateHashActive()) {
+        return;
+    }
+    for (i = 0; i < seenCount; i++) {
+        if (seen[i] == caller) {
+            return;
+        }
+    }
+    if (seenCount < 64) {
+        seen[seenCount++] = caller;
+    }
+    Thandor_Log("test aid: %s outside a simulation step, caller %p", what, caller);
+}
+
 /* Test aid (not in the original): see test_aids.h. */
 int Thandor_TestAidAllowSecondInstance(void)
 {

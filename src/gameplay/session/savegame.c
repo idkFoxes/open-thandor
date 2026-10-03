@@ -10,6 +10,34 @@
 
 /* Implementation ownership: gameplay/session/savegame. */
 
+/* Shows an existing save's description: its level title text alone, or, while a campaign is loaded, the level and
+   campaign titles patched into the saved-game template text. The text box holds a text id, not a string. Shared by
+   InGameSaveGameList_SelectAndRefreshDetail and InGameSaveGamePage_RebuildCatalog. */
+static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descriptionBox,
+                                                 const ScenarioCatalogSaveRecord *record)
+{
+  TextResourceId levelTitleId;
+  uint16_t *templateText;
+  uint16_t *fieldText;
+
+  if (g_FrontendLoadedCampaignAsset == 0) {
+    levelTitleId = record->levelTitleTextId;
+    fieldText = TextResource_Resolve(levelTitleId);
+    *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+    descriptionBox->text = (uint16_t *)levelTitleId;
+  }
+  else {
+    templateText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
+    fieldText = TextResource_Resolve(record->levelTitleTextId);
+    *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+    RichTextCommandStream_PatchPayloadBySelector(1,fieldText,templateText);
+    fieldText = TextResource_Resolve(record->campaignTitleTextId);
+    RichTextCommandStream_PatchPayloadBySelector(0,fieldText,templateText);
+    descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
+  }
+}
+
+
 /* Address: 0x0056C030.
    Row handler of the in-game save list (action INGAME_ACTION_SAVE_GAME_SELECT, g_InGameUiActionHandlersPage12
    slot 15). Shows the name edit only for the trailing "new savegame" row. A confirmed (double-clicked) existing
@@ -24,14 +52,12 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   UiPageStackControl *saveNameEntryStack;
   UiWrappedTextControl *descriptionBox;
   void **rowSlotArray;
-  void *selectedRowRecord;
-  TextResourceId resourceId;
+  ScenarioCatalogSaveRecord *selectedRowRecord;
   UiListRowIndex selectedIndex;
-  UiNodeBase *firstNode;
+  UiNodeBase *rootNode;
   UiListRowIndex lastRowIndex;
   bool selectionConfirmed;
-  uint16_t *descriptionText;
-  uint16_t *fieldText;
+  bool isNewSaveRow;
 
   saveNameEntryStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
@@ -40,49 +66,39 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(catalogList,&selectionConfirmed);
-  selectedRowRecord = rowSlotArray[selectedIndex];
+  selectedRowRecord = (ScenarioCatalogSaveRecord *)rowSlotArray[selectedIndex];
+  isNewSaveRow = selectedIndex == lastRowIndex;
+  /* page 1 of the stack is the name edit, shown only for the "new savegame" row */
+  UiPageStack_SetActiveIndex((uint32_t)isNewSaveRow,saveNameEntryStack);
   if (selectionConfirmed) {
-    UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
-    if (selectedIndex != lastRowIndex) {
+    if (!isNewSaveRow) {
+      /* a double-clicked existing save is overwritten at once */
       InGameSaveGame_SaveSelectedOrTypedName
                 (THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameSaveButton));
       return;
     }
   }
   else {
-    UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
     /* the text box holds a text id here, not a string */
     descriptionBox->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-    if (selectedIndex != lastRowIndex) {
-      if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId;
-        descriptionText = TextResource_Resolve(resourceId);
-        *descriptionText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        descriptionBox->text = (uint16_t *)resourceId;
-      }
-      else {
-        descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId);
-        *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText,descriptionText);
-        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->campaignTitleTextId);
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText,descriptionText);
-        descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
-      }
-      firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
-      UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
-      goto enableSave;
+    if (!isNewSaveRow) {
+      InGameSaveGame_ShowRecordDescription(descriptionBox,selectedRowRecord);
+      rootNode = UiNode_GetRoot(&saveNameEntryStack->base);
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
+      return;
     }
   }
-  firstNode = UiNode_GetRoot(&catalogList->base);
-  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
+  /* the "new savegame" row: no Delete, Save only for a valid typed name */
+  rootNode = UiNode_GetRoot(&catalogList->base);
+  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
   if ((((UiTextEditControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEdit))->
        editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
-    return;
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
   }
-enableSave:
-  UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
+  else {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
+  }
 }
 
 
@@ -94,21 +110,19 @@ enableSave:
 void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePageControlAddress32 deleteButton)
 
 {
+  UiPointerListControl *saveList;
   uint16_t *leaf;
-  int rowOrdinal;
-  uint32_t deleteError;
   UiListRowIndex selectedIndex;
+  uint32_t deleteError;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed
-                    ((UiPointerListControl *)
-                     THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList),NULL);
-  rowOrdinal = selectedIndex + 1;
-  if (rowOrdinal != (int)((UiPointerListControl *)
-                          THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList))->rowCount) {
-    leaf = (uint16_t *)((UiPointerListControl *)
-                        THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList))->
-           rowSlots[rowOrdinal - 1];
+  saveList =
+       (UiPointerListControl *)THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList);
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL);
+  /* the trailing "new savegame" row has no file */
+  if (selectedIndex + 1 != saveList->rowCount) {
+    /* the row record starts with the save's name, used as the file name */
+    leaf = (uint16_t *)saveList->rowSlots[selectedIndex];
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
@@ -138,126 +152,101 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   InGameUiImage *inGameUi;
   UiPointerListControl *saveList;
   UiWrappedTextControl *descriptionText;
-  UiNodeBase *parentCursor;
-  UiNodeBase *firstNode;
+  UiNodeBase *rootNode;
   UiListRowCount listRowCount;
   void **rowSlots;
   ScenarioCatalogSaveRecord *selectedRecord;
-  TextResourceId resourceId;
-  ScenarioCatalogHeader *rowPointerCursor;
+  ScenarioCatalogByteOffset *rowSlot;
+  uint32_t *record;
+  uint8_t *enumRecord;
+  ScenarioCatalogSaveRecord *saveRecord;
   void *handle;
+  uint32_t rowCount;
   uint32_t remainingCount;
-  int clearCount;
-  uint16_t *leaf;
-  ScenarioCatalogByteOffset *destination;
-  ScenarioCatalogByteOffset *clearCursor;
+  int clearIndex;
   uint32_t allocError;
   uint32_t openError;
-  uint16_t *resolvedText;
+  uint16_t *newRowText;
   UiListRowIndex selectedIndex;
-  uint16_t *fieldText;
-  void *closeHandle;
-  uint32_t rowCount;
-  
+
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  remainingCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                     (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
-                      &g_ScenarioCatalogPathScratchUtf16);
+  rowCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
+               (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
+                &g_ScenarioCatalogPathScratchUtf16);
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocError = g_MemoryApi.alloc((remainingCount + 1) * 260,(void **)&rowPointerCursor);
+  allocError = g_MemoryApi.alloc((rowCount + 1) * 260,(void **)&rowSlot);
   if (allocError != 0) {
-    rowPointerCursor = (ScenarioCatalogHeader *)allocError;
+    return;
   }
-  else {
-    destination = &rowPointerCursor->campaignRecordsOffset + remainingCount; /* behind count + 1 pointers */
-    g_ScenarioCatalog = rowPointerCursor;
-    rowCount = remainingCount;
-    leaf = (uint16_t *)g_PackageScratchBuffer;
-    for (; remainingCount != 0; remainingCount = remainingCount - 1) {
-      rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
-      *destination = 0;
-      WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
-                 (uint16_t *)&g_ExecutableDirectoryUtf16);
-      WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-                 (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      openError = g_FileSystemOpen
-                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16,&handle);
-      /* the catalog record is the second 0x100 bytes of the .sve; a save that cannot be opened stays empty */
-      if (openError == 0) {
-        closeHandle = handle;
-        g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
-        g_FileSystemReadExact(256,destination,handle);
-        g_FileSystemClose(closeHandle);
-        /* level index -> level title text, campaign index -> campaign title text */
-        ((ScenarioCatalogSaveRecord *)destination)->levelTitleTextId =
-             ((ScenarioCatalogSaveRecord *)destination)->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE;
-        ((ScenarioCatalogSaveRecord *)destination)->campaignTitleTextId =
-             ((ScenarioCatalogSaveRecord *)destination)->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
-      }
-      rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
-      destination = destination + 64;
-      leaf = (uint16_t *)((int)leaf + FILESYSTEM_ENUMERATION_RECORD_BYTES); /* next enumerated file name */
+  record = (uint32_t *)(rowSlot + rowCount + 1); /* behind the rowCount + 1 row pointers */
+  g_ScenarioCatalog = (ScenarioCatalogHeader *)rowSlot;
+  enumRecord = g_PackageScratchBuffer; /* each enumeration record starts with the file name */
+  for (remainingCount = rowCount; remainingCount != 0; remainingCount--) {
+    *rowSlot = (ScenarioCatalogByteOffset)record;
+    *record = 0;
+    WidePath_CombineDirectoryAndLeaf
+              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+               (uint16_t *)&g_ExecutableDirectoryUtf16);
+    WidePath_CombineDirectoryAndLeaf
+              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)enumRecord,
+               (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    openError = g_FileSystemOpen
+                      (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16,&handle);
+    /* the catalog record is the second 0x100 bytes of the .sve; for a save that cannot be opened only the first
+       dword is cleared */
+    if (openError == 0) {
+      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
+      g_FileSystemReadExact(256,record,handle);
+      g_FileSystemClose(handle);
+      /* level index -> level title text, campaign index -> campaign title text */
+      saveRecord = (ScenarioCatalogSaveRecord *)record;
+      saveRecord->levelTitleTextId = saveRecord->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE;
+      saveRecord->campaignTitleTextId = saveRecord->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
     }
-    rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
-    clearCursor = destination;
-    for (clearCount = 64; clearCount != 0; clearCount--) {
-      *clearCursor = 0;
-      clearCursor++;
-    }
-    resolvedText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
-    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText,NULL);
-    /* The action source is the game menu's Save button (in-game template +0x2550). */
-    inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
-    saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
-    descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
-    UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
-    UiPointerList_SortByDwordPairFieldDescending(240,saveList);
-    UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
-    UiPointerList_SelectColumnListIndex(rowCount,saveList);
-    UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
-    parentCursor = saveMenuButton->parent;
-    firstNode = saveMenuButton;
-    /* up to the root node (its parent is -1) */
-    while (parentCursor != UI_NODE_NONE) {
-      firstNode = firstNode->parent;
-      parentCursor = firstNode->parent;
-    }
-    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
-    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
-    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)INGAME_UI(firstNode, saveNameEdit));
-    InGameSaveName_UpdateSaveActionValidity(INGAME_UI(firstNode, saveNameEdit));
-    listRowCount = saveList->rowCount;
-    rowSlots = saveList->rowSlots;
-    selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL);
-    selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectedIndex];
-    /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
-    descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-    if (listRowCount - 1 != selectedIndex) {
-      if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = selectedRecord->levelTitleTextId;
-        resolvedText = TextResource_Resolve(resourceId);
-        *resolvedText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        descriptionText->text = (uint16_t *)resourceId;
-      }
-      else {
-        resolvedText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-        fieldText = TextResource_Resolve(selectedRecord->levelTitleTextId);
-        *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText,resolvedText);
-        fieldText = TextResource_Resolve(selectedRecord->campaignTitleTextId);
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText,resolvedText);
-        descriptionText->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
-      }
-    }
+    rowSlot++;
+    record += 64; /* 0x100 bytes */
+    enumRecord += FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
-  return;
+  /* the trailing "new savegame" row: a cleared record holding text 0x2151 */
+  *rowSlot = (ScenarioCatalogByteOffset)record;
+  for (clearIndex = 0; clearIndex < 64; clearIndex++) {
+    record[clearIndex] = 0;
+  }
+  newRowText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
+  RichTextCommandStream_CopyExpanded(256,(uint16_t *)record,newRowText,NULL);
+  /* The action source is the game menu's Save button (in-game template +0x2550). */
+  inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
+  saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
+  descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
+  /* sort only the saves, then append the new row and select it */
+  UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
+  UiPointerList_SortByDwordPairFieldDescending(240,saveList);
+  UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
+  UiPointerList_SelectColumnListIndex(rowCount,saveList);
+  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
+  /* up to the root node (its parent is -1) */
+  rootNode = saveMenuButton;
+  while (rootNode->parent != UI_NODE_NONE) {
+    rootNode = rootNode->parent;
+  }
+  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
+  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
+  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)INGAME_UI(rootNode, saveNameEdit));
+  InGameSaveName_UpdateSaveActionValidity(INGAME_UI(rootNode, saveNameEdit));
+  listRowCount = saveList->rowCount;
+  rowSlots = saveList->rowSlots;
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL);
+  selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectedIndex];
+  /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
+  descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
+  if (listRowCount - 1 != selectedIndex) {
+    InGameSaveGame_ShowRecordDescription(descriptionText,selectedRecord);
+  }
 }
 
 
@@ -272,19 +261,18 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 {
   /* saveButton is the save page's saveGameSaveButton node of the in-game UI copy. */
   UiPointerListControl *saveList;
-  uint32_t errorOrValue;
+  uint32_t rowOrdinal;
   uint16_t *leaf;
-  uint8_t saveStatus;
-  uint32_t saveCarry;
+  bool saveFailed;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
-  errorOrValue = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL) + 1;
+  rowOrdinal = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL) + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
          textBuffer;
-  if (errorOrValue != saveList->rowCount) {
-    leaf = (uint16_t *)saveList->rowSlots[errorOrValue - 1];
+  if (rowOrdinal != saveList->rowCount) {
+    leaf = (uint16_t *)saveList->rowSlots[rowOrdinal - 1];
   }
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
@@ -293,16 +281,13 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
              (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-  /* The error check below uses the save routine's CF, not the extension helper's. */
-  saveStatus = InGameSaveGame_WritePackage
+  saveFailed = InGameSaveGame_WritePackage
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
                      &g_ScenarioCatalogPathScratchUtf16);
-  saveCarry = (uint32_t)(saveStatus & 1);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-  /* The original passes EAX (kept across the cursor call with PUSHFD/PUSH EAX) as the error code. The save
-     routine (0x0050ECE0) and both WidePath helpers push and pop EAX, so EAX is still the row ordinal from
-     INC EAX at 0x0056C250. */
-  FatalError_ReportIfFailed(errorOrValue,(saveCarry & 1) != 0);
+  /* Original quirk: the error code reported for a failed save is the selected row ordinal (selected index + 1),
+     not an error from the save routine; the original never replaces that value before the report. */
+  FatalError_ReportIfFailed(rowOrdinal,saveFailed);
   UiSelectableControl_SetSelected
             (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls

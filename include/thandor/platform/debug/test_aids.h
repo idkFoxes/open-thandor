@@ -30,6 +30,10 @@ int Thandor_TestAidScriptActive(void);
    markers: they come from the render path, take effect pool slots and world objects (and possibly random
    numbers) shared with the simulation, so how many frames fall between two steps would change the hashes. */
 int Thandor_TestAidStateHashActive(void);
+/* 1 while InGameTick_RunSimulationStep runs (test builds); with OPEN_THANDOR_STATEHASH set, effect creation and
+   session random draws outside a step are logged with their caller (Thandor_TestAidNoteOutsideStep). */
+extern volatile int g_TestAidInSimulationStep;
+void Thandor_TestAidNoteOutsideStep(const char *what, void *caller);
 unsigned Thandor_TestAidNetworkBindPort(unsigned gamePort);
 /* OPEN_THANDOR_NETLOG=1: logs every datagram (direction, sockaddr_in, size, first dwords). */
 void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, unsigned byteCount,

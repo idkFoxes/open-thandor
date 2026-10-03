@@ -543,23 +543,24 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
    with the parent's world transform; then the children are rebuilt recursively. No caller in the executable
    besides itself (only in g_ThandorFunctionMap).
    As in the original, the child loop takes its count from this object (+0x0C) but reads the child pointers from
-   the parent's list at +0x78 (EBX = parent), so a root object with children would read from address 0x78.
+   the parent's list at +0x78, so a root object with children would read from address 0x78.
 */
 void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
   GraphicsObject *object;
+  GraphicsObject *parent;
   int remainingChildCount;
-  int parentObjectOrCursor;
+  GraphicsObjectAddress32 *childCursor;
   GraphicsFixedMatrix3x4 *output;
   FixedDirection translationDirection;
-  
+
   object = (GraphicsObject *)graphicsObjectAddress;
   /* a child builds its local transform in the scratch matrix shared with
      GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles */
   output = &g_GraphicsDirectionInverseTransform;
-  parentObjectOrCursor = object->parentObject;
-  if (parentObjectOrCursor == 0) {
+  parent = (GraphicsObject *)object->parentObject;
+  if (parent == NULL) {
     output = &object->worldTransform;
   }
   FixedTransform_BuildRotationBasis
@@ -572,14 +573,15 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
   (output->translation).y = translationDirection.y;
   (output->translation).z = translationDirection.z;
   remainingChildCount = object->childCount;
-  if (parentObjectOrCursor != 0) {
-    FixedTransform_Compose
-              (&object->worldTransform,output,&((GraphicsObject *)parentObjectOrCursor)->worldTransform);
+  if (parent != NULL) {
+    FixedTransform_Compose(&object->worldTransform,output,&parent->worldTransform);
   }
+  /* Original quirk (see above): the children are taken from the parent's list, not this object's; computed as
+     an address so a root object (parent NULL) yields 0x78 like the original instead of a null dereference */
+  childCursor = (GraphicsObjectAddress32 *)((uintptr_t)parent + offsetof(GraphicsObject,childObjects));
   for (; remainingChildCount != 0; remainingChildCount--) {
-    /* the cursor advances 4 bytes per child: childObjects[i] of the parent */
-    GraphicsObject_RebuildTransformHierarchyRecursive(((GraphicsObject *)parentObjectOrCursor)->childObjects[0]);
-    parentObjectOrCursor = parentObjectOrCursor + 4;
+    GraphicsObject_RebuildTransformHierarchyRecursive(*childCursor);
+    childCursor++;
   }
 }
 
@@ -598,171 +600,157 @@ uint32_t __cdecl Graphics_Init(void)
   SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
   uint32_t remainingAdapters;
-  GraphicsAdapterRecord *cursorOrResult; /* allocation, adapter cursor, and the error code */
+  void *allocation;
   uint32_t *zeroCursor;
   uint32_t displayAdapterIndex;
-  GraphicsAdapterRecord *adapterOrModule;
+  GraphicsAdapterRecord *adapter;
+  struct TH_LEGACY_GUID *driverGuid;
+  HINSTANCE ddrawModule;
   uint32_t glideError;
   uint32_t allocError;
   uint32_t resolveError;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
 
-  allocError = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *),
-                                 (void **)&cursorOrResult);
+  allocError = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *),&allocation);
   if (allocError != 0) {
-    cursorOrResult = (GraphicsAdapterRecord *)allocError;
+    return allocError;
   }
-  else {
-    g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
-    zeroCursor = (uint32_t *)cursorOrResult;
-    for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingDwords != 0; remainingDwords--) {
-      *zeroCursor = 0;
-      zeroCursor++;
-    }
-    allocError = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry),(void **)&cursorOrResult); /* 256 palette entries */
-    if (allocError != 0) {
-      cursorOrResult = (GraphicsAdapterRecord *)allocError;
-    }
-    else {
-      g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
-      zeroCursor = (uint32_t *)cursorOrResult;
-      for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
-        *zeroCursor = 0;
-        zeroCursor++;
-      }
-      /* ADC of the not-found carry: the flag becomes nonzero without -D3DALL, and then
-         Direct3D_EnumDeviceCallback accepts only hardware devices with the required caps */
-      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag +
-        (CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll) == NULL);
-      allocError = g_MemoryApi.alloc(GRAPHICS_ADAPTER_CAPACITY * sizeof(GraphicsAdapterRecord),
-                                     (void **)&cursorOrResult);
-      if (allocError != 0) {
-        cursorOrResult = (GraphicsAdapterRecord *)allocError;
-      }
-      else {
-        g_GraphicsAdapterCount = 0;
-        g_GraphicsAdapters = cursorOrResult;
-        allocError = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode),
-                                       (void **)&cursorOrResult);
-        if (allocError != 0) {
-          cursorOrResult = (GraphicsAdapterRecord *)allocError;
-        }
-        else {
-          g_GraphicsDisplayModeCount = 0;
-          g_GraphicsDisplayModes = (GraphicsDisplayMode *)cursorOrResult;
+  g_GraphicsTextureSlots = (GraphicsTextureResource **)allocation;
+  zeroCursor = (uint32_t *)allocation;
+  for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingDwords != 0; remainingDwords--) {
+    *zeroCursor = 0;
+    zeroCursor++;
+  }
+  allocError = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry),&allocation); /* 256 palette entries */
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_TexturePaletteEntries = (DirectDrawPaletteEntry *)allocation;
+  zeroCursor = (uint32_t *)allocation;
+  for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
+    *zeroCursor = 0;
+    zeroCursor++;
+  }
+  /* the not-found result is added: the flag becomes nonzero without -D3DALL, and then
+     Direct3D_EnumDeviceCallback accepts only hardware devices with the required caps */
+  g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag +
+    (CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll) == NULL);
+  allocError = g_MemoryApi.alloc(GRAPHICS_ADAPTER_CAPACITY * sizeof(GraphicsAdapterRecord),&allocation);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_GraphicsAdapterCount = 0;
+  g_GraphicsAdapters = (GraphicsAdapterRecord *)allocation;
+  allocError = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode),&allocation);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_GraphicsDisplayModeCount = 0;
+  g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocation;
 #ifdef THANDOR_TEST_AIDS
-          /* Glide is optional, unless -GLIDE asks for it. The windowed test aid (OPEN_THANDOR_WINDOWED, not in
-             the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
+  /* Glide is optional, unless -GLIDE asks for it. The windowed test aid (OPEN_THANDOR_WINDOWED, not in
+     the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
+  if (!Thandor_TestAidWindowed()) {
+    glideError = Glide3_InitAndEnumerate();
+    if ((glideError != 0) &&
+        CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
+      FatalError_ExitIfFailed(glideError,true);
+    }
+  }
+#else
+  /* Glide is optional, unless -GLIDE asks for it */
+  glideError = Glide3_InitAndEnumerate();
+  if ((glideError != 0) &&
+      CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
+    FatalError_ExitIfFailed(glideError,true);
+  }
+#endif
+  ddrawModule = DynDLL_Load(sz_DDRAW);
+  if (ddrawModule == NULL) {
+    return FATAL_ERROR_DLL_LOAD_FAILED;
+  }
+  resolveError = DynAPI_Resolve(&pDirectDrawCreate,ddrawModule,sz_DirectDrawCreate);
+  if (resolveError != 0) {
+    return resolveError;
+  }
+  resolveError = DynAPI_Resolve(&pDirectDrawEnumerateA,ddrawModule,sz_DirectDrawEnumerateA);
+  if (resolveError != 0) {
+    return resolveError;
+  }
+  hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
+  if ((hresult != 0) || (g_GraphicsAdapterCount == 0)) {
+    return FATAL_ERROR_DIRECTDRAW_NO_ADAPTER;
+  }
+  /* collect the Direct3D devices of every DirectDraw adapter */
+  remainingAdapters = g_GraphicsAdapterCount;
+  adapter = g_GraphicsAdapters;
+  do {
+    if ((adapter->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
+      driverGuid = &adapter->adapterGuid;
+      if ((adapter->adapterGuid).Data1 == 0) {
+        driverGuid = NULL; /* primary display driver: NULL GUID */
+      }
+      hresult = pDirectDrawCreate(driverGuid,&directDraw,NULL);
+      if (hresult == 0) {
+        hresult = directDraw->lpVtbl->QueryInterface(directDraw,&IID_IDirect3D2_Local,&direct3D2);
+        if (hresult == 0) {
+#ifdef THANDOR_TEST_AIDS
           if (!Thandor_TestAidWindowed()) {
-            glideError = Glide3_InitAndEnumerate();
-            if ((glideError != 0) &&
-                CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
-              FatalError_ExitIfFailed(glideError,true);
-            }
+            direct3D2->lpVtbl->EnumDevices(direct3D2,Direct3D_EnumDeviceCallback,adapter);
           }
 #else
-          /* Glide is optional, unless -GLIDE asks for it */
-          glideError = Glide3_InitAndEnumerate();
-          if ((glideError != 0) &&
-              CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
-            FatalError_ExitIfFailed(glideError,true);
-          }
+          direct3D2->lpVtbl->EnumDevices(direct3D2,Direct3D_EnumDeviceCallback,adapter);
 #endif
-          adapterOrModule = (GraphicsAdapterRecord *)DynDLL_Load(sz_DDRAW);
-          cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DLL_LOAD_FAILED;
-          if (adapterOrModule != NULL) {
-            resolveError = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,sz_DirectDrawCreate);
-            cursorOrResult = (GraphicsAdapterRecord *)resolveError;
-            if (resolveError == 0) {
-              resolveError = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,sz_DirectDrawEnumerateA);
-              cursorOrResult = (GraphicsAdapterRecord *)resolveError;
-              if (resolveError == 0) {
-                hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
-                cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_ADAPTER;
-                if ((hresult == 0) &&
-                   (remainingAdapters = g_GraphicsAdapterCount, adapterOrModule = g_GraphicsAdapters,
-                   g_GraphicsAdapterCount != 0)) {
-                  /* collect the Direct3D devices of every DirectDraw adapter */
-                  do {
-                    if ((adapterOrModule->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
-                      cursorOrResult = adapterOrModule;
-                      if ((adapterOrModule->adapterGuid).Data1 == 0) {
-                        cursorOrResult = NULL; /* primary display driver: NULL GUID */
-                      }
-                      hresult = pDirectDrawCreate(&cursorOrResult->adapterGuid,&directDraw,NULL);
-                      if (hresult == 0) {
-                        hresult = directDraw->lpVtbl->QueryInterface
-                                          (directDraw,&IID_IDirect3D2_Local,&direct3D2);
-                        if (hresult == 0) {
-#ifdef THANDOR_TEST_AIDS
-                          if (!Thandor_TestAidWindowed()) {
-                            direct3D2->lpVtbl->EnumDevices
-                                      (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
-                          }
-#else
-                          direct3D2->lpVtbl->EnumDevices
-                                    (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
-#endif
-                          direct3D2->lpVtbl->Release(direct3D2);
-                        }
-                        directDraw->lpVtbl->Release(directDraw);
-                      }
-                    }
-                    remainingAdapters--;
-                    adapterOrModule++;
-                  } while (remainingAdapters != 0);
-                  /* collect the display modes, tagged with the adapter index */
-                  displayAdapterIndex = 0;
-                  remainingAdapters = g_GraphicsAdapterCount;
-                  cursorOrResult = g_GraphicsAdapters;
-                  do {
-                    if ((cursorOrResult->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
-                      adapterOrModule = cursorOrResult;
-                      if ((cursorOrResult->adapterGuid).Data1 == 0) {
-                        adapterOrModule = NULL; /* primary display driver: NULL GUID */
-                      }
-                      hresult = pDirectDrawCreate(&adapterOrModule->adapterGuid,&directDraw,NULL);
-                      if (hresult == 0) {
-                        directDraw->lpVtbl->EnumDisplayModes
-                                  (directDraw,0,NULL,displayAdapterIndex,DirectDraw_EnumDisplayModeCallback);
-                        directDraw->lpVtbl->Release(directDraw);
-                      }
-                    }
-                    displayModeHook = g_GraphicsSetDisplayMode;
-                    displayAdapterIndex++;
-                    cursorOrResult++;
-                    remainingAdapters--;
-                  } while (remainingAdapters != 0);
-                  cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE;
-                  if (g_GraphicsDisplayModeCount != 0) {
-                    g_GraphicsBackendRefreshActiveAdapter =
-                         GraphicsBackend_ShutdownGlideOnDeactivate;
-                    g_GraphicsSetDisplayMode =
-                         GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
-                    g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
-                    g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
-                    g_GraphicsSetViewportAndClearDepth = Graphics_SetViewportAndClearDepth;
-                    g_GraphicsDrawPrimitiveQueue = Graphics_DrawPrimitiveQueue;
-                    g_GraphicsBeginScene = Graphics_BeginScene;
-                    g_GraphicsEndScene = Graphics_EndScene;
-                    g_GraphicsCreateTextureSet = GraphicsTextureSet_Create;
-                    g_GraphicsDestroyTextureSet = GraphicsTextureSet_Destroy;
-                    g_GraphicsRefreshTextureColor = GraphicsTextureSet_RefreshColor;
-                    g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
-                    g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
-                    g_GraphicsDisplayModeFinalize = displayModeHook;
-                    return 0;
-                  }
-                }
-              }
-            }
-          }
+          direct3D2->lpVtbl->Release(direct3D2);
         }
+        directDraw->lpVtbl->Release(directDraw);
       }
     }
+    remainingAdapters--;
+    adapter++;
+  } while (remainingAdapters != 0);
+  /* collect the display modes, tagged with the adapter index */
+  displayAdapterIndex = 0;
+  remainingAdapters = g_GraphicsAdapterCount;
+  adapter = g_GraphicsAdapters;
+  do {
+    if ((adapter->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
+      driverGuid = &adapter->adapterGuid;
+      if ((adapter->adapterGuid).Data1 == 0) {
+        driverGuid = NULL; /* primary display driver: NULL GUID */
+      }
+      hresult = pDirectDrawCreate(driverGuid,&directDraw,NULL);
+      if (hresult == 0) {
+        directDraw->lpVtbl->EnumDisplayModes
+                  (directDraw,0,NULL,displayAdapterIndex,DirectDraw_EnumDisplayModeCallback);
+        directDraw->lpVtbl->Release(directDraw);
+      }
+    }
+    displayAdapterIndex++;
+    adapter++;
+    remainingAdapters--;
+  } while (remainingAdapters != 0);
+  /* the display-mode hook installed before (the software renderer's) */
+  displayModeHook = g_GraphicsSetDisplayMode;
+  if (g_GraphicsDisplayModeCount == 0) {
+    return FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE;
   }
-  return (uint32_t)cursorOrResult;
+  g_GraphicsBackendRefreshActiveAdapter = GraphicsBackend_ShutdownGlideOnDeactivate;
+  g_GraphicsSetDisplayMode = GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
+  g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
+  g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
+  g_GraphicsSetViewportAndClearDepth = Graphics_SetViewportAndClearDepth;
+  g_GraphicsDrawPrimitiveQueue = Graphics_DrawPrimitiveQueue;
+  g_GraphicsBeginScene = Graphics_BeginScene;
+  g_GraphicsEndScene = Graphics_EndScene;
+  g_GraphicsCreateTextureSet = GraphicsTextureSet_Create;
+  g_GraphicsDestroyTextureSet = GraphicsTextureSet_Destroy;
+  g_GraphicsRefreshTextureColor = GraphicsTextureSet_RefreshColor;
+  g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
+  g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
+  g_GraphicsDisplayModeFinalize = displayModeHook;
+  return 0;
 }
 
 
@@ -791,8 +779,7 @@ void GraphicsBackend_ShutdownGlideOnDeactivate(void)
 void Graphics_Shutdown(void)
 
 {
-  GraphicsTextureResource **slotsOrRemaining;
-  GraphicsTextureResource **remainingSlots;
+  int remainingSlots;
   GraphicsTextureResource **slotCursor;
 
   /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */
@@ -804,18 +791,15 @@ void Graphics_Shutdown(void)
   g_CursorCompositeBuffer = NULL;
   g_CursorAlternateSavedBackground = NULL;
   GlideBackend_ShutdownWrapper();
-  /* GRAPHICS_TEXTURE_SLOT_CAPACITY texture slots; slotsOrRemaining first carries the table pointer (skipped
-     when it is NULL), then the number of slots still to visit */
-  remainingSlots = (GraphicsTextureResource **)GRAPHICS_TEXTURE_SLOT_CAPACITY;
-  slotCursor = g_GraphicsTextureSlots;
-  slotsOrRemaining = g_GraphicsTextureSlots;
-  while (slotsOrRemaining != NULL) {
-    if (*slotCursor != NULL) {
-      GraphicsTexture_ReleaseObjects(*slotCursor);
+  /* the GRAPHICS_TEXTURE_SLOT_CAPACITY texture slots, unless the table was never allocated */
+  if (g_GraphicsTextureSlots != NULL) {
+    slotCursor = g_GraphicsTextureSlots;
+    for (remainingSlots = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingSlots != 0; remainingSlots--) {
+      if (*slotCursor != NULL) {
+        GraphicsTexture_ReleaseObjects(*slotCursor);
+      }
+      slotCursor++;
     }
-    slotCursor++;
-    remainingSlots = (GraphicsTextureResource **)((int)remainingSlots - 1);
-    slotsOrRemaining = remainingSlots;
   }
   g_LastViewportRect.x1 = 0;
   g_LastViewportRect.y1 = 0;
@@ -935,33 +919,26 @@ void Graphics_BeginScene(void)
 
 {
   TH_LEGACY_DWORD deviceKind;
-  TH_LEGACY_HRESULT hresult;
+  TH_LEGACY_HRESULT lostResult;
   int restoreResult;
-  bool isSoftwareBackend;
 
   deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  isSoftwareBackend = deviceKind == GRAPHICS_DEVICE_GUID_SOFTWARE;
-  if (isSoftwareBackend) {
+  if (deviceKind == GRAPHICS_DEVICE_GUID_SOFTWARE) {
     return;
   }
   if (deviceKind == GRAPHICS_DEVICE_GUID_GLIDE) {
     GlideBackend_BeginSceneNoOp();
-    if (!isSoftwareBackend) {
-      return;
-    }
+    return;
   }
-  else {
-    hresult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
-    restoreResult = 0;
-    if (hresult != 0) {
-      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
-    }
-    if ((restoreResult == 0) &&
-       (hresult = g_Direct3DDevice2->lpVtbl->BeginScene(g_Direct3DDevice2), hresult == 0)) {
-      return;
-    }
+  lostResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
+  restoreResult = 0;
+  if (lostResult != 0) {
+    restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
   }
-  return;
+  if (restoreResult == 0) {
+    /* the BeginScene result was only reported in CF (see above) */
+    g_Direct3DDevice2->lpVtbl->BeginScene(g_Direct3DDevice2);
+  }
 }
 
 

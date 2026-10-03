@@ -10,6 +10,73 @@
 
 /* Implementation ownership: graphics/render/primitives. */
 
+/* Sort key of one queued packet for GraphicsPrimitiveQueue_RadixSortForRendering. */
+static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePacket *packet)
+{
+  if ((packet->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
+    return ((uint32_t)packet->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
+           (packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
+  }
+  return (packet->vertices[0].depth + packet->vertices[1].depth + packet->vertices[2].depth) &
+         GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK;
+}
+
+/* One stable radix pass of GraphicsPrimitiveQueue_RadixSortForRendering over the key byte at keyShift: counts
+   the keys per bucket in g_PrimitiveRadixBucketWords, turns the counts into write cursors into destination
+   (bucket 0xFF first, so the order is descending) and copies sortKey and packet of every source node, in source
+   order, to its bucket's next slot. The links of the nodes are not copied. */
+static void GraphicsPrimitiveQueue_RadixPass(const GraphicsPrimitiveQueueNode *source,
+                                             GraphicsPrimitiveQueueNode *destination,uint32_t nodeCount,
+                                             int keyShift)
+{
+  GraphicsPrimitiveRadixBucket *buckets;
+  GraphicsPrimitiveQueueNode *bucketStart;
+  GraphicsPrimitiveQueueNode *slot;
+  uint32_t bucketCount;
+  uint32_t nodeIndex;
+  int bucketIndex;
+
+  buckets = (GraphicsPrimitiveRadixBucket *)g_PrimitiveRadixBucketWords;
+  for (bucketIndex = 0; bucketIndex < 256; bucketIndex++) {
+    buckets[bucketIndex].count = 0;
+  }
+  for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+    buckets[(source[nodeIndex].sortKey >> keyShift) & 0xff].count++;
+  }
+  bucketStart = destination;
+  for (bucketIndex = 255; bucketIndex >= 0; bucketIndex--) {
+    bucketCount = buckets[bucketIndex].count;
+    buckets[bucketIndex].writeCursor = bucketStart;
+    bucketStart = bucketStart + bucketCount;
+  }
+  for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+    slot = buckets[(source[nodeIndex].sortKey >> keyShift) & 0xff].writeCursor++;
+    slot->sortKey = source[nodeIndex].sortKey;
+    slot->packet = source[nodeIndex].packet;
+  }
+}
+
+/* Halves the RGB of the packet's three vertex colours and keeps their alpha (MMX). */
+static void GraphicsPrimitivePacket_HalveVertexRgb(GraphicsPrimitivePacket *packet)
+{
+  uint64_t vertex0HalvedColor;
+  uint64_t vertex1HalvedColor;
+  uint64_t vertex2HalvedColor;
+
+  vertex0HalvedColor =
+       paddusb((packet->vertices[0].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+               packet->vertices[0].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+  vertex1HalvedColor =
+       paddusb((packet->vertices[1].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+               packet->vertices[1].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+  vertex2HalvedColor =
+       paddusb((packet->vertices[2].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+               packet->vertices[2].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+  packet->vertices[0].diffuseColor = (int)vertex0HalvedColor;
+  packet->vertices[1].diffuseColor = (int)vertex1HalvedColor;
+  packet->vertices[2].diffuseColor = (int)vertex2HalvedColor;
+}
+
 /* Address: 0x00486080.
    Sorts a filled primitive queue for drawing and links the sorted nodes into the traversal list read by
    GraphicsPrimitiveQueue_Begin/Next. Each node gets a 32-bit key: blended packets (any blend-mode bit) the sum
@@ -25,257 +92,42 @@
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
 {
-  int *bucketSlot;
-  GraphicsPrimitivePacket *packetOrNode;
-  uint32_t *bucketWriteCursor;
-  uint32_t bucketIndexOrOffset;
-  GraphicsPrimitiveQueueNode *nodeCursor;
-  GraphicsPrimitiveQueueNode *pass3BucketStart;
+  uint32_t nodeCount;
+  uint32_t nodeIndex;
   GraphicsPrimitiveQueueNode *primaryNodes;
-  GraphicsPrimitivePacket *previousNode;
-  GraphicsPrimitivePacket *previousNodeMmx;
-  GraphicsPrimitivePacket *linkNode;
-  uint32_t nodeSortKey;
-  int bucketCountdown;
-  uint32_t remainingOrBucketCount;
-  uint32_t remainingNodeCount;
-  GraphicsPrimitiveQueueNode *readNode;
-  GraphicsPrimitiveQueueNode *pass3ReadNode;
-  uint32_t *bucketWordCursor;
-  uint32_t *pass4BucketCursor;
   GraphicsPrimitiveQueueNode *scratchNodes;
-  GraphicsPrimitivePacket *nextNode;
-  GraphicsPrimitivePacket *nextNodeMmx;
-  uint64_t vertex0HalvedColor;
-  uint64_t vertex1HalvedColor;
-  uint64_t vertex2HalvedColor;
-  GraphicsPrimitivePacket *keyPacket;
-  uint32_t *pass2WriteCursor;
-  GraphicsPrimitivePacket *halvedPacket;
-  
-  /* g_PrimitiveRadixBucketWords holds per pass first the bucket counts, then each bucket's write cursor
-     (bucket 0xFF gets the first place, so the result is in descending key order) */
-  remainingNodeCount = queue->count;
-  scratchNodes = queue->radixScratchPool;
-  primaryNodes = queue->primaryNodes;
-  if (remainingNodeCount != 0) {
-    remainingOrBucketCount = remainingNodeCount;
-    nodeCursor = primaryNodes;
-    if (remainingNodeCount != 1) {
-      do {
-        keyPacket = nodeCursor->packet;
-        if ((keyPacket->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
-          nodeSortKey = ((uint32_t)keyPacket->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
-                  (keyPacket->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
-        }
-        else {
-          nodeSortKey = keyPacket->vertices[0].depth +
-                  keyPacket->vertices[1].depth +
-                  keyPacket->vertices[2].depth & GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK;
-        }
-        nodeCursor->sortKey = nodeSortKey;
-        nodeCursor++;
-        remainingOrBucketCount--;
-      } while (remainingOrBucketCount != 0);
-      /* pass 1: key bits 0..7, primaryNodes -> radixScratchPool */
-      bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdown = 256; remainingOrBucketCount = remainingNodeCount,
-           nodeCursor = primaryNodes, bucketCountdown != 0; bucketCountdown--) {
-        *bucketWordCursor = 0;
-        bucketWordCursor++;
-      }
-      do {
-        g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] =
-             g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] + 1;
-        remainingOrBucketCount--;
-        nodeCursor++;
-      } while (remainingOrBucketCount != 0);
-      bucketCountdown = 256;
-      bucketWordCursor = g_PrimitiveRadixBucketWords + 255;
-      nodeCursor = scratchNodes;
-      do {
-        remainingOrBucketCount = *bucketWordCursor;
-        *bucketWordCursor = (uint32_t)nodeCursor;
-        bucketWordCursor--;
-        nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketCountdown--;
-        remainingOrBucketCount = remainingNodeCount;
-        readNode = primaryNodes;
-      } while (bucketCountdown != 0);
-      do {
-        nodeSortKey = readNode->sortKey;
-        packetOrNode = readNode->packet;
-        bucketIndexOrOffset = nodeSortKey & 0xff;
-        bucketWriteCursor = (uint32_t *)g_PrimitiveRadixBucketWords[bucketIndexOrOffset];
-        g_PrimitiveRadixBucketWords[bucketIndexOrOffset] = g_PrimitiveRadixBucketWords[bucketIndexOrOffset] + 16;
-        *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrNode;
-        remainingOrBucketCount--;
-        readNode++;
-      } while (remainingOrBucketCount != 0);
-      /* pass 2: key bits 8..15 (shifted straight to a byte offset into the bucket words), back to primaryNodes */
-      bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdown = 256; remainingOrBucketCount = remainingNodeCount,
-           nodeCursor = scratchNodes, bucketCountdown != 0; bucketCountdown--) {
-        *bucketWordCursor = 0;
-        bucketWordCursor++;
-      }
-      do {
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
-        *bucketSlot = *bucketSlot + 1;
-        remainingOrBucketCount--;
-        nodeCursor++;
-      } while (remainingOrBucketCount != 0);
-      bucketCountdown = 256;
-      bucketWordCursor = g_PrimitiveRadixBucketWords + 255;
-      nodeCursor = primaryNodes;
-      do {
-        remainingOrBucketCount = *bucketWordCursor;
-        *bucketWordCursor = (uint32_t)nodeCursor;
-        bucketWordCursor--;
-        nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketCountdown--;
-        remainingOrBucketCount = remainingNodeCount;
-        readNode = scratchNodes;
-      } while (bucketCountdown != 0);
-      do {
-        nodeSortKey = readNode->sortKey;
-        packetOrNode = readNode->packet;
-        bucketIndexOrOffset = (nodeSortKey & 0xff00) >> 6;
-        pass2WriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketSlot = *bucketSlot + 16;
-        *pass2WriteCursor = nodeSortKey;
-        pass2WriteCursor[1] = (uint32_t)packetOrNode;
-        remainingOrBucketCount--;
-        readNode++;
-      } while (remainingOrBucketCount != 0);
-      /* pass 3: key bits 16..23, primaryNodes -> radixScratchPool */
-      bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdown = 256; remainingOrBucketCount = remainingNodeCount,
-           nodeCursor = primaryNodes, bucketCountdown != 0; bucketCountdown--) {
-        *bucketWordCursor = 0;
-        bucketWordCursor++;
-      }
-      do {
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 14));
-        *bucketSlot = *bucketSlot + 1;
-        remainingOrBucketCount--;
-        nodeCursor++;
-      } while (remainingOrBucketCount != 0);
-      bucketCountdown = 256;
-      bucketWordCursor = g_PrimitiveRadixBucketWords + 255;
-      pass3BucketStart = scratchNodes;
-      do {
-        remainingOrBucketCount = *bucketWordCursor;
-        *bucketWordCursor = (uint32_t)pass3BucketStart;
-        bucketWordCursor--;
-        pass3BucketStart = pass3BucketStart + remainingOrBucketCount;
-        bucketCountdown--;
-        remainingOrBucketCount = remainingNodeCount;
-        pass3ReadNode = primaryNodes;
-      } while (bucketCountdown != 0);
-      do {
-        nodeSortKey = pass3ReadNode->sortKey;
-        packetOrNode = pass3ReadNode->packet;
-        pass3ReadNode++;
-        bucketIndexOrOffset = (nodeSortKey & 0xff0000) >> 14;
-        bucketWriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketSlot = *bucketSlot + 16;
-        *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrNode;
-        remainingOrBucketCount--;
-      } while (remainingOrBucketCount != 0);
-      /* pass 4: key bits 24..31, back to primaryNodes */
-      bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdown = 256; remainingOrBucketCount = remainingNodeCount,
-           nodeCursor = scratchNodes, bucketCountdown != 0; bucketCountdown--) {
-        *bucketWordCursor = 0;
-        bucketWordCursor++;
-      }
-      do {
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 22));
-        *bucketSlot = *bucketSlot + 1;
-        remainingOrBucketCount--;
-        nodeCursor++;
-      } while (remainingOrBucketCount != 0);
-      bucketCountdown = 256;
-      pass4BucketCursor = g_PrimitiveRadixBucketWords + 255;
-      do {
-        remainingOrBucketCount = *pass4BucketCursor;
-        *pass4BucketCursor = (uint32_t)primaryNodes;
-        pass4BucketCursor--;
-        primaryNodes = primaryNodes + remainingOrBucketCount;
-        bucketCountdown--;
-        remainingOrBucketCount = remainingNodeCount;
-      } while (bucketCountdown != 0);
-      do {
-        nodeSortKey = scratchNodes->sortKey;
-        packetOrNode = scratchNodes->packet;
-        scratchNodes++;
-        bucketIndexOrOffset = (nodeSortKey & 0xff000000) >> 22;
-        bucketWriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketSlot = *bucketSlot + 16;
-        *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrNode;
-        remainingOrBucketCount--;
-      } while (remainingOrBucketCount != 0);
-    }
-    /* Link the sorted primaryNodes in order. Ghidra types the nodes as packets here: vertices[0].backendCoord0
-       is node->next (+0x08), backendCoord1 node->previous (+0x0C), vertices[0].screenY node->packet (+0x04),
-       and &vertices[0].depth (+0x10) the following node; (queue + 1) is primaryNodes + 1. */
-    packetOrNode = (GraphicsPrimitivePacket *)queue->primaryNodes;
-    queue->traversalCursor = (GraphicsPrimitiveQueueNode *)packetOrNode;
-    previousNodeMmx = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
-    previousNode = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
-    nextNodeMmx = (GraphicsPrimitivePacket *)(queue + 1);
-    nextNode = (GraphicsPrimitivePacket *)(queue + 1);
-    if (halveVertexRgb == GRAPHICS_STATE_DISABLED) {
-      do {
-        linkNode = packetOrNode;
-        linkNode->vertices[0].backendCoord1 =
-             (GraphicsPrimitiveBackendCoordinate)previousNode;
-        linkNode->vertices[0].backendCoord0 =
-             (GraphicsPrimitiveBackendCoordinate)nextNode;
-        remainingNodeCount--;
-        previousNode = linkNode;
-        packetOrNode = nextNode;
-        nextNode = (GraphicsPrimitivePacket *)&nextNode->vertices[0].depth;
-      } while (remainingNodeCount != 0);
-    }
-    else {
-      do {
-        linkNode = packetOrNode;
-        linkNode->vertices[0].backendCoord1 =
-             (GraphicsPrimitiveBackendCoordinate)previousNodeMmx;
-        linkNode->vertices[0].backendCoord0 =
-             (GraphicsPrimitiveBackendCoordinate)nextNodeMmx;
-        /* the node's packet */
-        halvedPacket = (GraphicsPrimitivePacket *)linkNode->vertices[0].screenY;
-        vertex0HalvedColor =
-             paddusb((halvedPacket->vertices[0].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     halvedPacket->vertices[0].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
-        vertex1HalvedColor =
-             paddusb((halvedPacket->vertices[1].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     halvedPacket->vertices[1].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
-        vertex2HalvedColor =
-             paddusb((halvedPacket->vertices[2].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     halvedPacket->vertices[2].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
-        halvedPacket->vertices[0].diffuseColor = (int)vertex0HalvedColor;
-        halvedPacket->vertices[1].diffuseColor = (int)vertex1HalvedColor;
-        halvedPacket->vertices[2].diffuseColor = (int)vertex2HalvedColor;
-        remainingNodeCount--;
-        previousNodeMmx = linkNode;
-        packetOrNode = nextNodeMmx;
-        nextNodeMmx =
-             (GraphicsPrimitivePacket *)&nextNodeMmx->vertices[0].depth;
-      } while (remainingNodeCount != 0);
-    }
-    linkNode->vertices[0].backendCoord0 = -1; /* last node: next = GRAPHICS_PRIMITIVE_QUEUE_END_NODE */
+  GraphicsPrimitiveQueueNode *node;
+  GraphicsPrimitiveQueueNode *previousNode;
+
+  nodeCount = queue->count;
+  if (nodeCount == 0) {
+    return;
   }
-  return;
+  primaryNodes = queue->primaryNodes;
+  scratchNodes = queue->radixScratchPool;
+  if (nodeCount != 1) {
+    for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+      primaryNodes[nodeIndex].sortKey = GraphicsPrimitiveQueue_RenderSortKey(primaryNodes[nodeIndex].packet);
+    }
+    /* key byte 0 to the scratch pool, byte 1 back, byte 2 to the scratch pool, byte 3 back to primaryNodes */
+    GraphicsPrimitiveQueue_RadixPass(primaryNodes,scratchNodes,nodeCount,0);
+    GraphicsPrimitiveQueue_RadixPass(scratchNodes,primaryNodes,nodeCount,8);
+    GraphicsPrimitiveQueue_RadixPass(primaryNodes,scratchNodes,nodeCount,16);
+    GraphicsPrimitiveQueue_RadixPass(scratchNodes,primaryNodes,nodeCount,24);
+  }
+  /* Link the sorted primaryNodes in array order */
+  queue->traversalCursor = primaryNodes;
+  previousNode = GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
+  for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+    node = &primaryNodes[nodeIndex];
+    node->previous = previousNode;
+    node->next = node + 1;
+    if (halveVertexRgb != GRAPHICS_STATE_DISABLED) {
+      GraphicsPrimitivePacket_HalveVertexRgb(node->packet);
+    }
+    previousNode = node;
+  }
+  previousNode->next = GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
 }
 
 
@@ -545,6 +397,24 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
 }
 
 
+/* Fills one packet vertex from a terrain vertex's second screen/depth block for
+   GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle; the colour is masked with
+   g_UiCommandModeGColorVariantLimit when the vertex's secondary projection depth is negative. */
+static void GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(GraphicsPrimitiveVertexRaw *vertex,
+                                                                   const TerrainProjectedVertexWorkRecord *source,
+                                                                   PackedArgb32 diffuseColor)
+{
+  if (source->secondaryProjectionDepthQ12 < 0) {
+    diffuseColor = diffuseColor & g_UiCommandModeGColorVariantLimit;
+  }
+  vertex->screenX = source->projectedPointB.projectedX;
+  vertex->screenY = source->projectedPointB.projectedY;
+  vertex->diffuseColor = diffuseColor;
+  vertex->backendCoord0 = source->viewPointB.x;
+  vertex->backendCoord1 = source->viewPointB.y;
+  vertex->depth = source->viewPointB.z;
+}
+
 /* Address: 0x004D0DA0.
    Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
    appends a packet from the terrain vertices' second screen/depth block (+0x2C..+0x3C), the per-vertex colours
@@ -564,89 +434,65 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
 
 {
   GraphicsPrimitiveQueue *primitiveQueue;
-  uint32_t packetIndexOrCoordinate;
-  GraphicsPrimitiveScreenCoordinate sourceScreenX;
-  GraphicsPrimitiveBackendCoordinate sourceBackendCoord1;
-  GraphicsPrimitiveDepthFixed sourceDepth;
-  uint32_t textureCoordinate;
+  uint32_t packetIndex;
   uint32_t textureEntryIndex;
   GraphicsTextureSet *terrainTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
 
   primitiveQueue = renderContext->activePrimitiveQueue;
-  packetIndexOrCoordinate = primitiveQueue->count;
-  if (packetIndexOrCoordinate + 1 < primitiveQueue->capacity) {
-    primitiveQueue->count = packetIndexOrCoordinate + 1;
-    newPacket = primitiveQueue->packetPool + packetIndexOrCoordinate;
-    primitiveQueue->primaryNodes[packetIndexOrCoordinate].packet = newPacket;
-    /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
-    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->projectedPointB.projectedY;
-    if (((TerrainProjectedVertexWorkRecord *)vertex0Projected)->secondaryProjectionDepthQ12 < 0) {
-      vertex0DiffuseColor = vertex0DiffuseColor & g_UiCommandModeGColorVariantLimit;
-    }
-    newPacket->vertices[0].screenX = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->projectedPointB.projectedX;
-    newPacket->vertices[0].screenY = sourceScreenX;
-    newPacket->vertices[0].diffuseColor = vertex0DiffuseColor;
-    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.y;
-    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.z;
-    newPacket->vertices[0].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.x;
-    newPacket->vertices[0].backendCoord1 = sourceBackendCoord1;
-    newPacket->vertices[0].depth = sourceDepth;
-    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->projectedPointB.projectedY;
-    if (((TerrainProjectedVertexWorkRecord *)vertex1Projected)->secondaryProjectionDepthQ12 < 0) {
-      vertex1DiffuseColor = vertex1DiffuseColor & g_UiCommandModeGColorVariantLimit;
-    }
-    newPacket->vertices[1].screenX = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->projectedPointB.projectedX;
-    newPacket->vertices[1].screenY = sourceScreenX;
-    newPacket->vertices[1].diffuseColor = vertex1DiffuseColor;
-    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.y;
-    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.z;
-    newPacket->vertices[1].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.x;
-    newPacket->vertices[1].backendCoord1 = sourceBackendCoord1;
-    newPacket->vertices[1].depth = sourceDepth;
-    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->projectedPointB.projectedY;
-    if (((TerrainProjectedVertexWorkRecord *)vertex2Projected)->secondaryProjectionDepthQ12 < 0) {
-      vertex2DiffuseColor = vertex2DiffuseColor & g_UiCommandModeGColorVariantLimit;
-    }
-    newPacket->vertices[2].screenX = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->projectedPointB.projectedX;
-    newPacket->vertices[2].screenY = sourceScreenX;
-    newPacket->vertices[2].diffuseColor = vertex2DiffuseColor;
-    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.y;
-    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.z;
-    newPacket->vertices[2].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.x;
-    newPacket->vertices[2].backendCoord1 = sourceBackendCoord1;
-    newPacket->vertices[2].depth = sourceDepth;
-    packetIndexOrCoordinate = terrainPacketRecord[2];
-    textureCoordinate = terrainPacketRecord[4];
-    newPacket->vertices[0].textureU = *terrainPacketRecord;
-    newPacket->vertices[1].textureU = packetIndexOrCoordinate;
-    newPacket->vertices[2].textureU = textureCoordinate;
-    packetIndexOrCoordinate = terrainPacketRecord[3];
-    textureCoordinate = terrainPacketRecord[5];
-    newPacket->vertices[0].textureV = terrainPacketRecord[1];
-    newPacket->vertices[1].textureV = packetIndexOrCoordinate;
-    newPacket->vertices[2].textureV = textureCoordinate;
-    paletteModulationColor = 0;
-    if (g_TerrainPrimaryPalette != NULL) {
-      paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
-              alternateModulationColorArgb;
-    }
-    newPacket->renderFlags = GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
-    newPacket->modulationColor = paletteModulationColor;
-    terrainTextureSet = g_TerrainPrimaryTextureSet;
-    textureEntryIndex = terrainPacketRecord[6];
-    newPacket->textureEntry = NULL;
-    if ((terrainTextureSet != NULL) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
-      newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
-      newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
-    }
-    return newPacket;
+  packetIndex = primitiveQueue->count;
+  if (packetIndex + 1 >= primitiveQueue->capacity) {
+    /* Queue full (the original left the result register untouched and set CF; no caller reads the result) */
+    return NULL;
   }
-  /* Queue full (the original left EAX untouched and set CF; no caller reads the result) */
-  return NULL;
+  primitiveQueue->count = packetIndex + 1;
+  newPacket = primitiveQueue->packetPool + packetIndex;
+  primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
+  /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[0],
+          (const TerrainProjectedVertexWorkRecord *)vertex0Projected,vertex0DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[1],
+          (const TerrainProjectedVertexWorkRecord *)vertex1Projected,vertex1DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[2],
+          (const TerrainProjectedVertexWorkRecord *)vertex2Projected,vertex2DiffuseColor);
+  newPacket->vertices[0].textureU = terrainPacketRecord[0];
+  newPacket->vertices[1].textureU = terrainPacketRecord[2];
+  newPacket->vertices[2].textureU = terrainPacketRecord[4];
+  newPacket->vertices[0].textureV = terrainPacketRecord[1];
+  newPacket->vertices[1].textureV = terrainPacketRecord[3];
+  newPacket->vertices[2].textureV = terrainPacketRecord[5];
+  paletteModulationColor = 0;
+  if (g_TerrainPrimaryPalette != NULL) {
+    paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
+            alternateModulationColorArgb;
+  }
+  newPacket->renderFlags = GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
+  newPacket->modulationColor = paletteModulationColor;
+  terrainTextureSet = g_TerrainPrimaryTextureSet;
+  textureEntryIndex = terrainPacketRecord[6];
+  newPacket->textureEntry = NULL;
+  if ((terrainTextureSet != NULL) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
+    newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
+    newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
+  }
+  return newPacket;
 }
 
+
+/* Fills one packet vertex for GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle: the five projected
+   attribute dwords (+0x0C..+0x1C) are screenX, screenY, backendCoord0, backendCoord1 and depth. */
+static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitiveVertexRaw *vertex,
+                                                               const GraphicsProjectedVertexSource *source,
+                                                               PackedArgb32 diffuseColor)
+{
+  vertex->screenX = (GraphicsPrimitiveScreenCoordinate)source->texturedPacketAttributes[0];
+  vertex->screenY = (GraphicsPrimitiveScreenCoordinate)source->texturedPacketAttributes[1];
+  vertex->diffuseColor = diffuseColor;
+  vertex->backendCoord0 = (GraphicsPrimitiveBackendCoordinate)source->texturedPacketAttributes[2];
+  vertex->backendCoord1 = (GraphicsPrimitiveBackendCoordinate)source->texturedPacketAttributes[3];
+  vertex->depth = (GraphicsPrimitiveDepthFixed)source->texturedPacketAttributes[4];
+}
 
 /* Address: 0x004D0F20.
    Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
@@ -666,69 +512,38 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
 
 {
   GraphicsPrimitiveQueue *primitiveQueue;
-  uint32_t packetIndexOrAttribute;
-  uint32_t packetAttribute;
+  uint32_t packetIndex;
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
-  uint32_t *packetDwords;
+  GraphicsPrimitivePacket *newPacket;
 
   primitiveQueue = renderContext->activePrimitiveQueue;
-  packetIndexOrAttribute = primitiveQueue->count;
-  if (packetIndexOrAttribute + 1 < primitiveQueue->capacity) {
-    primitiveQueue->count = packetIndexOrAttribute + 1;
-    packetDwords = (uint32_t *)(primitiveQueue->packetPool + packetIndexOrAttribute);
-    primitiveQueue->primaryNodes[packetIndexOrAttribute].packet = (GraphicsPrimitivePacket *)packetDwords;
-    /* packet dwords: 0..7 vertex 0 (screenX, screenY, backendCoord0, backendCoord1, depth, textureU, textureV,
-       diffuseColor), 8..15 vertex 1, 16..23 vertex 2, 24 modulationColor, 25 textureEntry, 26 renderFlags */
-    packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[1];
-    *packetDwords = vertex0Projected->texturedPacketAttributes[0];
-    packetDwords[1] = packetIndexOrAttribute;
-    packetDwords[7] = vertex0DiffuseColor;
-    packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[3];
-    packetAttribute = vertex0Projected->texturedPacketAttributes[4];
-    packetDwords[2] = vertex0Projected->texturedPacketAttributes[2];
-    packetDwords[3] = packetIndexOrAttribute;
-    packetDwords[4] = packetAttribute;
-    packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[1];
-    packetDwords[8] = vertex1Projected->texturedPacketAttributes[0];
-    packetDwords[9] = packetIndexOrAttribute;
-    packetDwords[15] = vertex1DiffuseColor;
-    packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[3];
-    packetAttribute = vertex1Projected->texturedPacketAttributes[4];
-    packetDwords[10] = vertex1Projected->texturedPacketAttributes[2];
-    packetDwords[11] = packetIndexOrAttribute;
-    packetDwords[12] = packetAttribute;
-    packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[1];
-    packetDwords[16] = vertex2Projected->texturedPacketAttributes[0];
-    packetDwords[17] = packetIndexOrAttribute;
-    packetDwords[23] = vertex2DiffuseColor;
-    packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[3];
-    packetAttribute = vertex2Projected->texturedPacketAttributes[4];
-    packetDwords[18] = vertex2Projected->texturedPacketAttributes[2];
-    packetDwords[19] = packetIndexOrAttribute;
-    packetDwords[20] = packetAttribute;
-    packetIndexOrAttribute = terrainPacketRecord[2];
-    packetAttribute = terrainPacketRecord[4];
-    packetDwords[5] = *terrainPacketRecord;
-    packetDwords[13] = packetIndexOrAttribute;
-    packetDwords[21] = packetAttribute;
-    packetIndexOrAttribute = terrainPacketRecord[3];
-    packetAttribute = terrainPacketRecord[5];
-    packetDwords[6] = terrainPacketRecord[1];
-    packetDwords[14] = packetIndexOrAttribute;
-    packetDwords[22] = packetAttribute;
-    paletteModulationColor = 0;
-    if (g_TerrainSecondaryPalette != NULL) {
-      paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
-              alternateModulationColorArgb;
-    }
-    packetDwords[24] = paletteModulationColor;
-    materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
-    packetDwords[26] = g_UiCommandModeGColorVariantFlags;
-    packetDwords[25] = (uint32_t)materialTextureSet->entries;
-    return (GraphicsPrimitivePacket *)packetDwords;
+  packetIndex = primitiveQueue->count;
+  if (packetIndex + 1 >= primitiveQueue->capacity) {
+    return NULL;
   }
-  return NULL;
+  primitiveQueue->count = packetIndex + 1;
+  newPacket = primitiveQueue->packetPool + packetIndex;
+  primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[0],vertex0Projected,vertex0DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[1],vertex1Projected,vertex1DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[2],vertex2Projected,vertex2DiffuseColor);
+  newPacket->vertices[0].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[0];
+  newPacket->vertices[1].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[2];
+  newPacket->vertices[2].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[4];
+  newPacket->vertices[0].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[1];
+  newPacket->vertices[1].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[3];
+  newPacket->vertices[2].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[5];
+  paletteModulationColor = 0;
+  if (g_TerrainSecondaryPalette != NULL) {
+    paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
+            alternateModulationColorArgb;
+  }
+  newPacket->modulationColor = paletteModulationColor;
+  materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
+  newPacket->renderFlags = g_UiCommandModeGColorVariantFlags;
+  newPacket->textureEntry = materialTextureSet->entries;
+  return newPacket;
 }
 
 

@@ -7,6 +7,10 @@
 
 #include <thandor/core/math/random.h>
 #include <thandor/thandor.h>
+#ifdef THANDOR_TEST_AIDS
+#include <intrin.h>
+#include <thandor/platform/debug/test_aids.h>
+#endif
 
 /* Implementation ownership: core/math/random. */
 
@@ -36,6 +40,9 @@ uint32_t Random_NextSecondary(void)
 {
   int firstStepSeed;
 
+#ifdef THANDOR_TEST_AIDS
+  Thandor_TestAidNoteOutsideStep("session random draw", _ReturnAddress());
+#endif
   firstStepSeed = g_RandomGeneratorState.secondarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   g_RandomGeneratorState.secondarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   return (firstStepSeed * RANDOM_OUTPUT_FIRST_STEP_SCALE) ^ (g_RandomGeneratorState.secondarySeed >> 2);

@@ -111,6 +111,71 @@ void NetworkFallback_NoOpBackendCleanup(void)
 }
 
 
+/* The bind address from the -IP="host" command-line option: the quoted dotted address or host name,
+   resolved through WinSock. 0 (INADDR_ANY) when the option is missing, not quoted, the quote is not the
+   option's last character (or never closed), or the host name is unknown. The quoted text is copied into
+   g_PackageScratchBuffer.
+*/
+static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress(void)
+
+{
+  uint8_t copiedByte;
+  WinSockHostEnt32 *hostEntry;
+  NetworkIpv4AddressNetworkOrder bindAddress;
+  uint8_t *optionCursor;
+  uint8_t *outputCursor;
+  uint8_t *ipOption;
+
+  ipOption = g_CommandLineFindOption(3,s_CommandLineOptionIp); /* "IP=" */
+  if ((ipOption == NULL) || (ipOption[3] != '"')) {
+    return 0;
+  }
+  /* copy the quoted value, up to and including the closing quote (or the terminator), into the scratch
+     buffer; outputCursor ends on the last byte copied */
+  optionCursor = ipOption + 4;
+  outputCursor = g_PackageScratchBuffer;
+  copiedByte = *optionCursor;
+  *outputCursor = copiedByte;
+  optionCursor++;
+  while ((copiedByte != 0) && (copiedByte != '"')) {
+    outputCursor++;
+    copiedByte = *optionCursor;
+    *outputCursor = copiedByte;
+    optionCursor++;
+  }
+  /* only a closing quote that ends the option counts */
+  if ((copiedByte != '"') || (*optionCursor != 0)) {
+    return 0;
+  }
+  *outputCursor = 0;
+  bindAddress = g_WinSock_inet_addr(g_PackageScratchBuffer);
+  if (bindAddress == INADDR_NONE) {
+    hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
+    bindAddress = 0;
+    if (hostEntry != NULL) {
+      bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
+    }
+  }
+  return bindAddress;
+}
+
+/* Failure exit of NetworkFallback_OpenAndBindUdpSocket: leaves the WinSock error code as decimal text in
+   g_PackageLastErrorPath (for the fatal-error message), closes socketToClose unless it is INVALID_SOCKET
+   and returns FATAL_ERROR_NETWORK_SOCKET.
+*/
+static uint32_t NetworkFallback_FailSocketSetup(uint32_t socketToClose)
+
+{
+  int winsockErrorCode;
+
+  winsockErrorCode = g_WinSock_WSAGetLastError();
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
+  if (socketToClose != INVALID_SOCKET) {
+    g_WinSock_closesocket(socketToClose);
+  }
+  return FATAL_ERROR_NETWORK_SOCKET;
+}
+
 /* Address: 0x00584E80.
    Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as
    -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking
@@ -121,110 +186,64 @@ void NetworkFallback_NoOpBackendCleanup(void)
 uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 
 {
-  uint8_t copiedByte;
-  uint8_t *nextOutput;
-  WinSockHostEnt32 *hostEntry;
-  int winsockResultOrError;
   NetworkIpv4AddressNetworkOrder bindAddress;
-  uint8_t *optionCursor;
-  uint8_t *outputCursor;
   uint32_t socketHandle;
-  uint8_t *ipOption;
-  uint32_t socketToClose;
 
-  socketToClose = INVALID_SOCKET;
   socketHandle = g_WinSock_socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-  if (socketHandle != INVALID_SOCKET) {
-    bindAddress = 0; /* INADDR_ANY */
-    ipOption = g_CommandLineFindOption(3,s_CommandLineOptionIp); /* "IP=" */
-    if (ipOption != NULL) {
-      optionCursor = ipOption + 4;
-      nextOutput = g_PackageScratchBuffer;
-      if (ipOption[3] == '"') {
-        /* copy the quoted value, including the closing quote, into the scratch buffer */
-        do {
-          outputCursor = nextOutput;
-          copiedByte = *optionCursor;
-          *outputCursor = copiedByte;
-          optionCursor++;
-          if (copiedByte == 0) break;
-          nextOutput = outputCursor + 1;
-        } while (copiedByte != '"');
-        /* A closing quote that ends the option: resolve the quoted address (unterminated quote: no bind
-           address). */
-        if ((copiedByte == '"') && (*optionCursor == 0)) {
-          *outputCursor = 0;
-          bindAddress = g_WinSock_inet_addr(g_PackageScratchBuffer);
-          if (bindAddress == INADDR_NONE) {
-            hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
-            bindAddress = 0;
-            if (hostEntry != NULL) {
-              bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
-            }
-          }
-        }
-      }
-    }
-#ifdef THANDOR_TEST_AIDS
-    /* test aid (OPEN_THANDOR_NET_PORT, not in the original): a second instance on this machine binds to
-       another port; the local/broadcast descriptor below keeps the game port */
-    g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
-         g_WinSock_htons((uint16_t)Thandor_TestAidNetworkBindPort(localPort));
-#else
-    g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
-         g_WinSock_htons((uint16_t)localPort);
-#endif
-    g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
-    g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
-    g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[1] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[2] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[3] = 0;
-    /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
-#ifdef THANDOR_TEST_AIDS
-    g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
-         (uint32_t)g_WinSock_htons((uint16_t)localPort) << 16 | NETWORK_ADDRESS_FAMILY_IPV4;
-#else
-    g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
-         (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
-         NETWORK_ADDRESS_FAMILY_IPV4;
-#endif
-    g_NetworkFallbackBindEndpoint.zeroPadding[4] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
-    g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-    winsockResultOrError = g_WinSock_bind(socketHandle,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
-    socketToClose = socketHandle;
-    if (winsockResultOrError == 0) {
-      /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
-      winsockResultOrError = g_WinSock_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,
-                                                  (uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
-      if (winsockResultOrError == 0) {
-        winsockResultOrError = g_WinSock_ioctlsocket(socketHandle,FIONBIO,
-                                                     &g_NetworkFallbackSocketOptionOn);
-        if (winsockResultOrError == 0) {
-          g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = INADDR_BROADCAST;
-          g_NetworkLocalEndpoint.zeroPadding[0] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[1] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[2] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[3] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[4] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[5] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[6] = 0;
-          g_NetworkLocalEndpoint.zeroPadding[7] = 0;
-          g_NetworkFallbackSocket = socketHandle;
-          return 0;
-        }
-      }
-    }
+  if (socketHandle == INVALID_SOCKET) {
+    return NetworkFallback_FailSocketSetup(INVALID_SOCKET);
   }
-  winsockResultOrError = g_WinSock_WSAGetLastError();
-  /* the error code as decimal text, for the fatal-error message */
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
-  if (socketToClose != INVALID_SOCKET) {
-    g_WinSock_closesocket(socketToClose);
+  bindAddress = NetworkFallback_ResolveIpOptionAddress();
+#ifdef THANDOR_TEST_AIDS
+  /* test aid (OPEN_THANDOR_NET_PORT, not in the original): a second instance on this machine binds to
+     another port; the local/broadcast descriptor below keeps the game port */
+  g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
+       g_WinSock_htons((uint16_t)Thandor_TestAidNetworkBindPort(localPort));
+#else
+  g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
+       g_WinSock_htons((uint16_t)localPort);
+#endif
+  g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
+  g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
+  g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[1] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[2] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[3] = 0;
+  /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
+#ifdef THANDOR_TEST_AIDS
+  g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
+       (uint32_t)g_WinSock_htons((uint16_t)localPort) << 16 | NETWORK_ADDRESS_FAMILY_IPV4;
+#else
+  g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
+       (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
+       NETWORK_ADDRESS_FAMILY_IPV4;
+#endif
+  g_NetworkFallbackBindEndpoint.zeroPadding[4] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
+  g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
+  if (g_WinSock_bind(socketHandle,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress)) != 0) {
+    return NetworkFallback_FailSocketSetup(socketHandle);
   }
-  return FATAL_ERROR_NETWORK_SOCKET;
+  /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
+  if (g_WinSock_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,
+                           (uint8_t *)&g_NetworkFallbackSocketOptionOn,4) != 0) {
+    return NetworkFallback_FailSocketSetup(socketHandle);
+  }
+  if (g_WinSock_ioctlsocket(socketHandle,FIONBIO,&g_NetworkFallbackSocketOptionOn) != 0) {
+    return NetworkFallback_FailSocketSetup(socketHandle);
+  }
+  g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = INADDR_BROADCAST;
+  g_NetworkLocalEndpoint.zeroPadding[0] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[1] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[2] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[3] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[4] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[5] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[6] = 0;
+  g_NetworkLocalEndpoint.zeroPadding[7] = 0;
+  g_NetworkFallbackSocket = socketHandle;
+  return 0;
 }
 
 
@@ -309,7 +328,8 @@ bool NetworkFallback_SendDatagram
 /* Address: 0x00585120.
    Turns the UTF-16 peer address typed by the player (dotted address or host name) into a 16-byte
    sockaddr_in with the game's port. An empty text yields the broadcast address from the local
-   endpoint descriptor. CF is set when the text does not convert or the host is unknown.
+   endpoint descriptor. Returns true (CF in the original) when the text does not convert or the host is
+   unknown, false on success.
 */
 bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
 
@@ -322,15 +342,18 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
                     (255,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText)) {
     return true;
   }
+  /* empty text: the broadcast address of the local descriptor */
   ipv4AddressNetworkOrder = g_NetworkLocalEndpoint.ipv4AddressNetworkOrder;
-  if ((g_NetworkEndpointTextScratchA != '\0') &&
-     (ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA),
-     ipv4AddressNetworkOrder == INADDR_NONE)) {
-    resolvedHostEntry = g_WinSock_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
-    if (resolvedHostEntry == NULL) {
-      return true;
+  if (g_NetworkEndpointTextScratchA != '\0') {
+    ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA);
+    if (ipv4AddressNetworkOrder == INADDR_NONE) {
+      /* not a dotted address: look the host name up */
+      resolvedHostEntry = g_WinSock_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
+      if (resolvedHostEntry == NULL) {
+        return true;
+      }
+      ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
     }
-    ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
   }
 #ifdef THANDOR_TEST_AIDS
   /* The original copies family and port from g_NetworkFallbackBindEndpoint. The local descriptor holds the
@@ -388,6 +411,23 @@ void NetworkBackend_NoOpCleanup(void)
   return;
 }
 
+/* Failure exit of NetworkBackend_OpenAndBindActiveSocket: leaves the WinSock error code as decimal text in
+   g_PackageLastErrorPath (for the fatal-error message), closes socketToClose unless it is INVALID_SOCKET
+   and returns FATAL_ERROR_NETWORK_SOCKET.
+*/
+static uint32_t NetworkBackend_FailSocketSetup(uint32_t socketToClose)
+
+{
+  int winsockErrorCode;
+
+  winsockErrorCode = g_Ws2_32_WSAGetLastError();
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
+  if (socketToClose != INVALID_SOCKET) {
+    g_Ws2_32_closesocket(socketToClose);
+  }
+  return FATAL_ERROR_NETWORK_SOCKET;
+}
+
 /* Address: 0x005852A0.
    ws2_32 counterpart of NetworkFallback_OpenAndBindUdpSocket for the selected backend instance (IPv4 or
    IPX, see NetworkBackend_SelectInstanceByIndex): opens a socket of the instance's family, type and
@@ -400,85 +440,75 @@ uint32_t NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder,uint32_t 
 
 {
   uint16_t networkPort;
-  uint32_t socketOrAddressLength;
-  int winsockResultOrError;
+  uint32_t bindAddressLength;
   uint32_t bytesReturned;
   uint32_t socketHandle;
 
-  socketHandle = INVALID_SOCKET;
-  socketOrAddressLength = g_Ws2_32_socket(g_NetworkBackendActiveAddressFamily,g_NetworkBackendActiveSocketType,
-                             g_NetworkBackendActiveProtocol);
-  if (socketOrAddressLength != INVALID_SOCKET) {
-    socketHandle = socketOrAddressLength;
-    networkPort = g_Ws2_32_htons(portHostOrder);
-    /* Stored as a dword; only the low word (the port) is ever read
-       (this function and NetworkBackend_ParseEndpointText). */
-    g_NetworkBackendPortNetworkOrderCarrier = (uint32_t)networkPort;
-    /* bind address: the family dword, then all zero (INADDR_ANY / any IPX network and node) */
-    g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
-    memset(g_NetworkBackendBindAddress.ipv4.zeroPadding, 0, sizeof(g_NetworkBackendBindAddress.ipv4.zeroPadding));
-    /* the whole first dword: the family in the low word, port 0 in the high word */
-    g_NetworkBackendBindAddress.ipv4.addressHeader.packedFamilyAndPort = g_NetworkBackendActiveAddressFamily;
-    /* bind with the instance's address length, at least 16 bytes */
-    socketOrAddressLength = g_NetworkBackendActiveSocketAddressLength;
-    if (g_NetworkBackendActiveSocketAddressLength < 16) {
-      socketOrAddressLength = 16;
-    }
-    if (g_NetworkBackendActiveAddressFamily == AF_INET) {
-      g_NetworkBackendBindAddress.ipv4.addressHeader.fields.portNetworkOrder = networkPort;
-      g_NetworkBackendBindAddress.ipx.addressFamily = AF_INET;
-    }
-    else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
-      g_NetworkBackendBindAddress.ipx.padding[0] = 0;
-      g_NetworkBackendBindAddress.ipx.padding[1] = 0;
-      g_NetworkBackendBindAddress.ipx.socketNetworkOrder = networkPort;
-    }
-    winsockResultOrError = g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
-    if (winsockResultOrError == 0) {
-      /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
-      winsockResultOrError = g_Ws2_32_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,(uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
-      if (winsockResultOrError == 0) {
-        winsockResultOrError = g_Ws2_32_WSAIoctl
-                          (socketHandle,FIONBIO,&g_NetworkFallbackSocketOptionOn,4,NULL,0,&bytesReturned,
-                           NULL,NULL);
-        if (winsockResultOrError == 0) {
-          if (g_NetworkBackendActiveAddressFamily == AF_INET) {
-            /* 255.255.255.255 on the game port */
-            g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
-                 NETWORK_ADDRESS_FAMILY_IPV4;
-            g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffffffffu;
-            g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder =
-                 (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
-          }
-          else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
-            /* SOCKADDR_IPX: network 0 (this network), node FF:FF:FF:FF:FF:FF (broadcast), the game socket */
-            g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
-                 NETWORK_ADDRESS_FAMILY_IPX;
-            g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder = 0;
-            /* network bytes 2..3 = 0, node bytes 0..1 = FF FF */
-            g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffff0000u;
-            g_NetworkLocalEndpoint.zeroPadding[0] = 0xff;
-            g_NetworkLocalEndpoint.zeroPadding[1] = 0xff;
-            g_NetworkLocalEndpoint.zeroPadding[2] = 0xff;
-            g_NetworkLocalEndpoint.zeroPadding[3] = 0xff;
-            /* the socket number, stored as it lies in memory (low byte first) */
-            g_NetworkLocalEndpoint.zeroPadding[4] = (uint8_t)g_NetworkBackendPortNetworkOrderCarrier;
-            g_NetworkLocalEndpoint.zeroPadding[5] = (uint8_t)(g_NetworkBackendPortNetworkOrderCarrier >> 8);
-          }
-          g_NetworkFallbackSocket = socketHandle;
-          *outSocket = socketHandle;
-          return 0;
-        }
-      }
-    }
+  socketHandle = g_Ws2_32_socket(g_NetworkBackendActiveAddressFamily,g_NetworkBackendActiveSocketType,
+                                 g_NetworkBackendActiveProtocol);
+  if (socketHandle == INVALID_SOCKET) {
+    return NetworkBackend_FailSocketSetup(INVALID_SOCKET);
   }
-  winsockResultOrError = g_Ws2_32_WSAGetLastError();
-  /* the error code as decimal text, for the fatal-error message */
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
-  if (socketHandle != INVALID_SOCKET) {
-    g_Ws2_32_closesocket(socketHandle);
+  networkPort = g_Ws2_32_htons(portHostOrder);
+  /* Stored as a dword; only the low word (the port) is ever read
+     (this function and NetworkBackend_ParseEndpointText). */
+  g_NetworkBackendPortNetworkOrderCarrier = (uint32_t)networkPort;
+  /* bind address: the family dword, then all zero (INADDR_ANY / any IPX network and node) */
+  g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
+  memset(g_NetworkBackendBindAddress.ipv4.zeroPadding, 0, sizeof(g_NetworkBackendBindAddress.ipv4.zeroPadding));
+  /* the whole first dword: the family in the low word, port 0 in the high word */
+  g_NetworkBackendBindAddress.ipv4.addressHeader.packedFamilyAndPort = g_NetworkBackendActiveAddressFamily;
+  /* bind with the instance's address length, at least 16 bytes */
+  bindAddressLength = g_NetworkBackendActiveSocketAddressLength;
+  if (g_NetworkBackendActiveSocketAddressLength < 16) {
+    bindAddressLength = 16;
   }
-  return FATAL_ERROR_NETWORK_SOCKET;
+  if (g_NetworkBackendActiveAddressFamily == AF_INET) {
+    g_NetworkBackendBindAddress.ipv4.addressHeader.fields.portNetworkOrder = networkPort;
+    g_NetworkBackendBindAddress.ipx.addressFamily = AF_INET;
+  }
+  else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
+    g_NetworkBackendBindAddress.ipx.padding[0] = 0;
+    g_NetworkBackendBindAddress.ipx.padding[1] = 0;
+    g_NetworkBackendBindAddress.ipx.socketNetworkOrder = networkPort;
+  }
+  if (g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,bindAddressLength) != 0) {
+    return NetworkBackend_FailSocketSetup(socketHandle);
+  }
+  /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
+  if (g_Ws2_32_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,(uint8_t *)&g_NetworkFallbackSocketOptionOn,4) != 0) {
+    return NetworkBackend_FailSocketSetup(socketHandle);
+  }
+  if (g_Ws2_32_WSAIoctl(socketHandle,FIONBIO,&g_NetworkFallbackSocketOptionOn,4,NULL,0,&bytesReturned,
+                        NULL,NULL) != 0) {
+    return NetworkBackend_FailSocketSetup(socketHandle);
+  }
+  if (g_NetworkBackendActiveAddressFamily == AF_INET) {
+    /* 255.255.255.255 on the game port */
+    g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
+         NETWORK_ADDRESS_FAMILY_IPV4;
+    g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffffffffu;
+    g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder =
+         (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
+  }
+  else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
+    /* SOCKADDR_IPX: network 0 (this network), node FF:FF:FF:FF:FF:FF (broadcast), the game socket */
+    g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
+         NETWORK_ADDRESS_FAMILY_IPX;
+    g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder = 0;
+    /* network bytes 2..3 = 0, node bytes 0..1 = FF FF */
+    g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffff0000u;
+    g_NetworkLocalEndpoint.zeroPadding[0] = 0xff;
+    g_NetworkLocalEndpoint.zeroPadding[1] = 0xff;
+    g_NetworkLocalEndpoint.zeroPadding[2] = 0xff;
+    g_NetworkLocalEndpoint.zeroPadding[3] = 0xff;
+    /* the socket number, stored as it lies in memory (low byte first) */
+    g_NetworkLocalEndpoint.zeroPadding[4] = (uint8_t)g_NetworkBackendPortNetworkOrderCarrier;
+    g_NetworkLocalEndpoint.zeroPadding[5] = (uint8_t)(g_NetworkBackendPortNetworkOrderCarrier >> 8);
+  }
+  g_NetworkFallbackSocket = socketHandle;
+  *outSocket = socketHandle;
+  return 0;
 }
 
 /* Address: 0x00585450.

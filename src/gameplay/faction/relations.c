@@ -97,31 +97,36 @@ bool GameFactionRelations_TestPairTransitionAllowed
   FactionRelationState relationState;
   FactionActiveMask targetEligibleMask;
   FactionActiveMask sourceEligibleMask;
-  bool rulesSatisfied;
+  FactionActiveMask combinedMask;
+  uint32_t relationUiFlags;
 
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
-  /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
-  if (relationState != 2 && relationState != 5 && relationState != 9 &&
-      (g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_ALL) == 0 &&
-      (relationState < FACTION_RELATION_STATE_FRIENDLY ||
-       ((g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) == 0 &&
-        (relationState < FACTION_RELATION_STATE_ALLIED ||
-         (g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) == 0)))) {
-    if (FACTION_RELATION_STATE_FRIENDLY - 1 < relationState) {
-      return false;
-    }
-    targetEligibleMask = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
-    sourceEligibleMask = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
-    rulesSatisfied =
-         GameFactionRelations_EvaluateTransitionRules(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
-    if ((!rulesSatisfied) &&
-       (rulesSatisfied =
-             GameFactionRelations_EvaluateTransitionRules(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
-       !rulesSatisfied)) {
-      return false;
-    }
+  if (relationState == 2 || relationState == 5 || relationState == 9) {
+    return true; /* pending state */
   }
-  return true;
+  /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
+  relationUiFlags = g_GameFactionRuntimeImage.tail.relationUiFlags;
+  if ((relationUiFlags & FACTION_RELATION_FREEZE_ALL) != 0) {
+    return true;
+  }
+  if (relationState >= FACTION_RELATION_STATE_FRIENDLY &&
+      (relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) != 0) {
+    return true;
+  }
+  if (relationState >= FACTION_RELATION_STATE_ALLIED &&
+      (relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) != 0) {
+    return true;
+  }
+  if (relationState >= FACTION_RELATION_STATE_FRIENDLY) {
+    return false;
+  }
+  targetEligibleMask = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
+  sourceEligibleMask = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
+  combinedMask = sourceEligibleMask | targetEligibleMask;
+  if (GameFactionRelations_EvaluateTransitionRules(targetFactionIndex,combinedMask)) {
+    return true;
+  }
+  return GameFactionRelations_EvaluateTransitionRules(sourceFactionIndex,combinedMask);
 }
 
 
@@ -135,24 +140,88 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
   uint32_t relationStateNibble;
   int factionIndex;
   uint32_t blocFactionMask;
-  uint32_t currentFactionBit;
 
   blocFactionMask = 0;
-  currentFactionBit = FACTION_MASK_BIT(7);
-  factionIndex = 7;
-  do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] ==
+  for (factionIndex = 7; factionIndex != 0; factionIndex--) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] !=
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      if ((factionIndex == sourceFactionIndex) ||
-          (relationStateNibble = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex),
-           FACTION_RELATION_STATE_FRIENDLY - 1 < relationStateNibble)) {
-        blocFactionMask = blocFactionMask | currentFactionBit;
-      }
+      continue;
     }
-    currentFactionBit = currentFactionBit >> 1;
-    factionIndex--;
-  } while (factionIndex != 0);
+    if (factionIndex == sourceFactionIndex) {
+      blocFactionMask = blocFactionMask | FACTION_MASK_BIT(factionIndex);
+      continue;
+    }
+    relationStateNibble = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex);
+    if (relationStateNibble >= FACTION_RELATION_STATE_FRIENDLY) {
+      blocFactionMask = blocFactionMask | FACTION_MASK_BIT(factionIndex);
+    }
+  }
   return blocFactionMask;
+}
+
+
+/* True when the faction named by a condition's operand 0 is in factionMask. */
+static bool GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
+{
+  return (factionMask & 1 << ((uint8_t)factionOperand & 31)) != 0;
+}
+
+
+/* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition on a bit stack: 0xFF OR, 0xFE AND, 0xFD NOT, 0xFC end,
+   anything else pushes the satisfied bit of the condition with that index. Returns the bit stack; bit 0 is the
+   result. The stack keeps the signed int width of the original (a condition-kind enum register). */
+static int GameFactionRelations_EvaluatePostfixExpression
+          (InGameLevelConditionStorage *levelConditionStorage,const uint8_t *expression)
+{
+  int bitStack;
+  uint8_t token;
+
+  bitStack = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
+  for (token = *expression++; token != INGAME_CONDITION_TOKEN_END; token = *expression++) {
+    if (token == INGAME_CONDITION_TOKEN_OR) {
+      bitStack = bitStack >> 1 | bitStack & 1;
+    }
+    else if (token == INGAME_CONDITION_TOKEN_AND) {
+      bitStack = bitStack >> 1 & (bitStack | ~1u);
+    }
+    else if (token == INGAME_CONDITION_TOKEN_NOT) {
+      bitStack = bitStack ^ 1;
+    }
+    else {
+      bitStack = ((levelConditionStorage->schedule).conditions[token].statusAndKind.raw &
+                  INGAME_SCHEDULED_CONDITION_SATISFIED) + bitStack * 2;
+    }
+  }
+  return bitStack;
+}
+
+
+/* Whether a scheduled condition of the given kind would hold if only the factions in activeFactionMask were
+   left (GameFactionRelations_EvaluateTransitionRules). Unknown kinds never hold. */
+static bool GameFactionRelations_PredictConditionHolds
+          (InGameLevelConditionStorage *levelConditionStorage,InGameScheduledConditionRecord10 *condition,
+           uint32_t kind,FactionActiveMask activeFactionMask)
+{
+  switch(kind) {
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
+  case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
+  case INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A:
+    return !GameFactionRelations_IsOperandFactionInMask(activeFactionMask,condition->payload.operands[0]);
+  case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
+    return GameFactionRelations_IsOperandFactionInMask(activeFactionMask,condition->payload.operands[0]);
+  case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
+  case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
+  case INGAME_SCHEDULED_CONDITION_XENITE_STORAGE_LIMIT_AT_MOST_0FA0:
+    return true;
+  case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
+    return condition->payload.operands[1] == 0;
+  case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
+    return (GameFactionRelations_EvaluatePostfixExpression
+              (levelConditionStorage,&condition->statusAndKind.kindAndExpression[1]) & 1) != 0;
+  default:
+    return false;
+  }
 }
 
 
@@ -168,138 +237,57 @@ bool GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
-  uint8_t tokenOrFactionIndex;
   InGameLevelConditionStorage *levelConditionStorage;
   uint32_t actualActiveMask;
-  int remainingCount;
-  uint32_t currentFactionBit;
-  InGameScheduledConditionKind kindOrStackValue;
-  uint8_t *expressionCursor;
+  int factionIndex;
+  int conditionIndex;
+  int triggerIndex;
+  uint32_t kindAndStatus;
+  uint8_t triggerFactionIndex;
   uint8_t movieVariant;
-  InGameConditionSchedule *conditionCursor;
-  InGameEndConditionTriggerRecord8ReferenceView *triggerCursor;
+  InGameScheduledConditionRecord10 *condition;
+  InGameEndConditionTriggerRecord8ReferenceView *trigger;
 
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   actualActiveMask = 0;
-  currentFactionBit = FACTION_MASK_BIT(7);
-  remainingCount = 7; /* doubles as the faction index 7..1 */
-  do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[remainingCount] ==
+  for (factionIndex = 7; factionIndex != 0; factionIndex--) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      actualActiveMask = actualActiveMask | currentFactionBit;
+      actualActiveMask = actualActiveMask | FACTION_MASK_BIT(factionIndex);
     }
-    currentFactionBit = currentFactionBit >> 1;
-    remainingCount--;
-  } while (remainingCount != 0);
-  if (actualActiveMask != activeFactionMask) {
-    remainingCount = INGAME_SCHEDULED_CONDITION_COUNT;
-    conditionCursor = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
-    do {
-      /* bit 0 of kind is the satisfied flag: clear it, set it again when the condition would hold */
-      kindOrStackValue = conditionCursor->conditions[0].statusAndKind.kind;
-      conditionCursor->conditions[0].statusAndKind.kind =
-           conditionCursor->conditions[0].statusAndKind.kind & ~INGAME_SCHEDULED_CONDITION_SATISFIED;
-      switch(kindOrStackValue & INGAME_SCHEDULED_CONDITION_KIND_MASK) {
-      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
-        conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        break;
-      case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) != 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
-        conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        break;
-      case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
-        if (conditionCursor->conditions[0].payload.operands[1] == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_XENITE_STORAGE_LIMIT_AT_MOST_0FA0:
-        conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        break;
-      case INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind =
-               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
-        }
-        break;
-      case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-        /* postfix bytes after the kind byte, a bit stack in kindOrStackValue: 0xFF OR, 0xFE AND, 0xFD NOT,
-           0xFC end, anything else pushes the satisfied bit of that condition index */
-        expressionCursor = &conditionCursor->conditions[0].statusAndKind.kindAndExpression[1];
-        kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
-        do {
-          /* read the next token; runs of OR tokens are applied in this inner loop (the original's code shape) */
-          while (tokenOrFactionIndex = *expressionCursor, expressionCursor = expressionCursor + 1,
-                 tokenOrFactionIndex == INGAME_CONDITION_TOKEN_OR) {
-            kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
-          }
-          if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_AND) {
-            kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | ~1u);
-          }
-          else if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_NOT) {
-            kindOrStackValue = kindOrStackValue ^ 1;
-          }
-          else if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_END) {
-            kindOrStackValue =
-                 ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind &
-                  INGAME_SCHEDULED_CONDITION_SATISFIED) + kindOrStackValue * 2;
-          }
-        } while (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_END);
-        conditionCursor->conditions[0].statusAndKind.kind =
-             conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
-      }
-      conditionCursor = (InGameConditionSchedule *)(conditionCursor->conditions + 1);
-      remainingCount--;
-    } while (remainingCount != 0);
-    triggerCursor = (levelConditionStorage->schedule).triggers;
-    remainingCount = INGAME_END_CONDITION_TRIGGER_COUNT;
-    do {
-      if ((triggerCursor->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
-         (((levelConditionStorage->schedule).conditions[triggerCursor->conditionIndex].statusAndKind.kind &
-           INGAME_SCHEDULED_CONDITION_SATISFIED) != 0)) {
-        tokenOrFactionIndex = triggerCursor->factionRuntimeIndex;
-        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[tokenOrFactionIndex] ==
-            FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-          movieVariant = triggerCursor->movieVariantSelector;
-          if ((focalFactionIndex != (uint32_t)tokenOrFactionIndex) &&
-              ((activeFactionMask & 1 << (tokenOrFactionIndex & 31)) == 0)) {
-            movieVariant = movieVariant ^ 1;
-          }
-          if (movieVariant == 0) {
-            return true;
-          }
-          return false;
-        }
-      }
-      triggerCursor++;
-      remainingCount--;
-    } while (remainingCount != 0);
+  }
+  if (actualActiveMask == activeFactionMask) {
+    return true;
+  }
+  condition = levelConditionStorage->schedule.conditions;
+  for (conditionIndex = 0; conditionIndex < INGAME_SCHEDULED_CONDITION_COUNT; conditionIndex++, condition++) {
+    /* bit 0 of kind is the satisfied flag: clear it, set it again when the condition would hold */
+    kindAndStatus = condition->statusAndKind.raw;
+    condition->statusAndKind.raw = kindAndStatus & ~(uint32_t)INGAME_SCHEDULED_CONDITION_SATISFIED;
+    if (GameFactionRelations_PredictConditionHolds(levelConditionStorage,condition,
+                                                   kindAndStatus & INGAME_SCHEDULED_CONDITION_KIND_MASK,
+                                                   activeFactionMask)) {
+      condition->statusAndKind.raw = condition->statusAndKind.raw | INGAME_SCHEDULED_CONDITION_SATISFIED;
+    }
+  }
+  trigger = levelConditionStorage->schedule.triggers;
+  for (triggerIndex = 0; triggerIndex < INGAME_END_CONDITION_TRIGGER_COUNT; triggerIndex++, trigger++) {
+    if (trigger->stateFlags != INGAME_END_CONDITION_TRIGGER_ACTIVE ||
+        (levelConditionStorage->schedule.conditions[trigger->conditionIndex].statusAndKind.raw &
+         INGAME_SCHEDULED_CONDITION_SATISFIED) == 0) {
+      continue;
+    }
+    triggerFactionIndex = trigger->factionRuntimeIndex;
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[triggerFactionIndex] !=
+        FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
+      continue;
+    }
+    movieVariant = trigger->movieVariantSelector;
+    if ((focalFactionIndex != (uint32_t)triggerFactionIndex) &&
+        ((activeFactionMask & 1 << (triggerFactionIndex & 31)) == 0)) {
+      movieVariant = movieVariant ^ 1;
+    }
+    return movieVariant == 0;
   }
   return true;
 }

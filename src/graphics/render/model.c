@@ -101,7 +101,8 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  uint32_t groupFlagsOrMask;
+  uint32_t groupFlags;
+  uint32_t nodeMeshGroupMask;
   AngleTurn32 savedRotationAngle0;
   AngleTurn32 savedRotationAngle1;
   AngleTurn32 savedRotationAngle2;
@@ -121,7 +122,7 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   ModelMeshHeader *meshRecord;
 
   /* the ModelMeshHeader records follow the ModelMeshGroupHeader, each byteSize long */
-  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
+  groupFlags = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
   remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
   savedRotationAngle0 = (modelNode->modelPayload).worldRotationAngle0;
   savedRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
@@ -138,16 +139,16 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   savedBasis21 = (modelNode->worldTransform).basisRow2[1];
   savedBasis22 = (modelNode->worldTransform).basisRow2[2];
   savedTranslationZ = (modelNode->worldTransform).translation.z;
-  if ((groupFlagsOrMask & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
+  if ((groupFlags & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlagsOrMask & MODEL_MESH_GROUP_BILLBOARD) != 0) {
+  if ((groupFlags & MODEL_MESH_GROUP_BILLBOARD) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
   meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
-  groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
+  nodeMeshGroupMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
-    if ((meshRecord->groupMask & groupFlagsOrMask) != 0) {
+    if ((meshRecord->groupMask & nodeMeshGroupMask) != 0) {
       ModelRender_SubmitMeshTriangles
                 (facingThresholdQ12,(ModelMeshGroupAddress32)meshRecord,modelNode);
     }
@@ -180,22 +181,23 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
 void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  uint32_t groupFlagsOrMask;
+  uint32_t groupFlags;
+  uint32_t nodeMeshGroupMask;
   int remainingMeshCount;
   ModelMeshHeader *meshRecord;
 
-  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
+  groupFlags = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
   remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
-  if ((groupFlagsOrMask & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
+  if ((groupFlags & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlagsOrMask & MODEL_MESH_GROUP_BILLBOARD) != 0) {
+  if ((groupFlags & MODEL_MESH_GROUP_BILLBOARD) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
   meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
-  groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
+  nodeMeshGroupMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
-    if ((meshRecord->groupMask & groupFlagsOrMask) != 0) {
+    if ((meshRecord->groupMask & nodeMeshGroupMask) != 0) {
       ModelRender_SubmitMeshTrianglesAlternatePath((ModelMeshGroupAddress32)meshRecord,modelNode);
     }
     meshRecord = (ModelMeshHeader *)((uint8_t *)meshRecord + meshRecord->byteSize);
@@ -244,7 +246,6 @@ void ModelRender_PrepareProjectedVertex
   GraphicsFixedVec3 *surfaceNormalQ12;
   GraphicsProjectedPointPair projectedScreenPoint;
   GraphicsWorldCoordinateQ12 savedVertexXQ12;
-  int64_t scaledVertexCoordinateProduct;
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
   GraphicsWorldCoordinateQ12 savedVertexYQ12;
 
@@ -255,7 +256,7 @@ void ModelRender_PrepareProjectedVertex
     savedVertexZQ12 = vertex->z;
     depthBiasHalf = (uint32_t)modelNode->renderDepthBiasOrState >> 1;
     /* half the depth bias for z == 0, the full bias for z > 0 */
-    if (-1 < vertex->z) {
+    if (vertex->z >= 0) {
       if (vertex->z != 0) {
         vertex->z = vertex->z + depthBiasHalf;
       }
@@ -263,8 +264,8 @@ void ModelRender_PrepareProjectedVertex
     }
     if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
       /* 64-bit product >> 12 (IMUL + SHRD) */
-      scaledVertexCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
-      vertex->x = FIXED_PRODUCT_SHR(scaledVertexCoordinateProduct, Q12_SHIFT);
+      scaledCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
+      vertex->x = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
       scaledCoordinateProduct = (int64_t)vertex->y * (int64_t)modelNode->modelScaleQ12;
       vertex->y = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
       scaledCoordinateProduct = (int64_t)vertex->z * (int64_t)modelNode->modelScaleQ12;
@@ -314,6 +315,46 @@ void ModelRender_PrepareProjectedVertex
 }
 
 
+/* True unless all three projected vertices lie beyond the same edge of g_ProjectionClipRect (shared by
+   ModelRender_SubmitTriangle and ModelRender_SubmitTriangleAlternatePath). */
+static bool ModelRender_TriangleOverlapsClipRect
+          (const GraphicsProjectedVertexSource *firstVertex,const GraphicsProjectedVertexSource *secondVertex,
+           const GraphicsProjectedVertexSource *thirdVertex)
+{
+  if (!(g_ProjectionClipRect.minX <= firstVertex->screenX || g_ProjectionClipRect.minX <= secondVertex->screenX ||
+        g_ProjectionClipRect.minX <= thirdVertex->screenX)) {
+    return false;
+  }
+  if (!(firstVertex->screenX < g_ProjectionClipRect.maxX || secondVertex->screenX < g_ProjectionClipRect.maxX ||
+        thirdVertex->screenX < g_ProjectionClipRect.maxX)) {
+    return false;
+  }
+  if (!(g_ProjectionClipRect.minY <= firstVertex->screenY || g_ProjectionClipRect.minY <= secondVertex->screenY ||
+        g_ProjectionClipRect.minY <= thirdVertex->screenY)) {
+    return false;
+  }
+  return firstVertex->screenY < g_ProjectionClipRect.maxY || secondVertex->screenY < g_ProjectionClipRect.maxY ||
+         thirdVertex->screenY < g_ProjectionClipRect.maxY;
+}
+
+/* Node flag 0x80 scrolls the texture coordinates of the just queued triangle when it uses the node's primary
+   animated subresource; with flag 0x400 as well, also when it uses the secondary one. */
+static void ModelRender_ApplyTextureScroll(const ModelRuntimeNode *modelNode,GraphicsSubresourceIndex triangleSubresource)
+{
+  if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) == 0) {
+    return;
+  }
+  if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
+    GraphicsPrimitiveQueue_OffsetTextureCoordinates
+              (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,g_ActivePrimitiveQueue);
+  }
+  if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
+      (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
+    GraphicsPrimitiveQueue_OffsetTextureCoordinates
+              (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,g_ActivePrimitiveQueue);
+  }
+}
+
 /* Address: 0x004BD9B0.
    Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not
    below facingThresholdQ12, unless MODEL_TRIANGLE_DOUBLE_SIDED), projects and lights its three vertices, drops it
@@ -330,88 +371,55 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   GraphicsProjectedVertexSource *thirdVertex;
   GraphicsTextureSet *nodeTextureSet;
   GraphicsPaletteAsset *nodePaletteAsset;
-  GraphicsSubresourceIndex triangleSubresource;
   int32_t facingDotQ12;
   uint32_t paletteBankIndex;
+  PackedArgb32 materialColor;
   bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
-  if ((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) != 0 || facingDotQ12 < facingThresholdQ12) {
-    firstVertex = triangle->vertex0;
-    secondVertex = triangle->vertex1;
-    thirdVertex = triangle->vertex2;
-    ModelRender_PrepareProjectedVertex
-              (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)firstVertex);
-    ModelRender_PrepareProjectedVertex
-              (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)secondVertex);
-    ModelRender_PrepareProjectedVertex
-              (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)thirdVertex);
-    if ((g_ProjectionClipRect.minX <= firstVertex->screenX || g_ProjectionClipRect.minX <= secondVertex->screenX ||
-         g_ProjectionClipRect.minX <= thirdVertex->screenX) &&
-        (firstVertex->screenX < g_ProjectionClipRect.maxX || secondVertex->screenX < g_ProjectionClipRect.maxX ||
-         thirdVertex->screenX < g_ProjectionClipRect.maxX)) {
-      if ((g_ProjectionClipRect.minY <= firstVertex->screenY || g_ProjectionClipRect.minY <= secondVertex->screenY ||
-           g_ProjectionClipRect.minY <= thirdVertex->screenY) &&
-          (firstVertex->screenY < g_ProjectionClipRect.maxY || secondVertex->screenY < g_ProjectionClipRect.maxY ||
-           thirdVertex->screenY < g_ProjectionClipRect.maxY)) {
-        appendFailed = GraphicsPrimitiveQueue_AppendTriangle
-                          (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
-                           triangle->vertex0,g_ActivePrimitiveQueue);
-        if (!appendFailed) {
-          GraphicsPrimitiveQueue_SetVertexColors
-                    (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
-                     triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
-          nodeTextureSet = (modelNode->modelPayload).textureSet;
-          textureEntry = NULL;
-          if ((nodeTextureSet != NULL) &&
-             (triangle->subresourceIndex < nodeTextureSet->subresourceCount)) {
-            textureEntry = nodeTextureSet->entries +
-                           triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
-          }
-          nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-          if ((nodePaletteAsset == NULL) ||
-             (paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK,
-              nodePaletteAsset->paletteBankCount <= paletteBankIndex)) {
-            GraphicsPrimitiveQueue_SetMaterial(ARGB8888_OPAQUE_WHITE,textureEntry,g_ActivePrimitiveQueue);
-            triangleSubresource = triangle->subresourceIndex;
-            if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) != 0) {
-              if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
-                GraphicsPrimitiveQueue_OffsetTextureCoordinates
-                          (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
-                           g_ActivePrimitiveQueue);
-              }
-              if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
-                 (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
-                GraphicsPrimitiveQueue_OffsetTextureCoordinates
-                          (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
-                           g_ActivePrimitiveQueue);
-              }
-            }
-          }
-          else {
-            GraphicsPrimitiveQueue_SetMaterial
-                      (nodePaletteAsset->paletteEntries[paletteBankIndex].argb8888,textureEntry,g_ActivePrimitiveQueue);
-            triangleSubresource = triangle->subresourceIndex;
-            if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) != 0) {
-              if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
-                GraphicsPrimitiveQueue_OffsetTextureCoordinates
-                          (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
-                           g_ActivePrimitiveQueue);
-              }
-              if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
-                 (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
-                GraphicsPrimitiveQueue_OffsetTextureCoordinates
-                          (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
-                           g_ActivePrimitiveQueue);
-                return;
-              }
-            }
-          }
-        }
-      }
+  if ((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) == 0 && facingDotQ12 >= facingThresholdQ12) {
+    return;
+  }
+  firstVertex = triangle->vertex0;
+  secondVertex = triangle->vertex1;
+  thirdVertex = triangle->vertex2;
+  ModelRender_PrepareProjectedVertex
+            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)firstVertex);
+  ModelRender_PrepareProjectedVertex
+            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)secondVertex);
+  ModelRender_PrepareProjectedVertex
+            (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)thirdVertex);
+  if (!ModelRender_TriangleOverlapsClipRect(firstVertex,secondVertex,thirdVertex)) {
+    return;
+  }
+  appendFailed = GraphicsPrimitiveQueue_AppendTriangle
+                    (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
+                     triangle->vertex0,g_ActivePrimitiveQueue);
+  if (appendFailed) {
+    return;
+  }
+  GraphicsPrimitiveQueue_SetVertexColors
+            (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
+             triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
+  nodeTextureSet = (modelNode->modelPayload).textureSet;
+  textureEntry = NULL;
+  if ((nodeTextureSet != NULL) &&
+     (triangle->subresourceIndex < nodeTextureSet->subresourceCount)) {
+    textureEntry = nodeTextureSet->entries +
+                   triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
+  }
+  /* the palette bank's colour, opaque white without a palette or with a bank out of range */
+  materialColor = ARGB8888_OPAQUE_WHITE;
+  nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
+  if (nodePaletteAsset != NULL) {
+    paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK;
+    if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {
+      materialColor = nodePaletteAsset->paletteEntries[paletteBankIndex].argb8888;
     }
   }
+  GraphicsPrimitiveQueue_SetMaterial(materialColor,textureEntry,g_ActivePrimitiveQueue);
+  ModelRender_ApplyTextureScroll(modelNode,triangle->subresourceIndex);
 }
 
 
@@ -537,67 +545,53 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   GraphicsProjectedVertexSource *thirdVertex;
   GraphicsTextureSet *nodeTextureSet;
   GraphicsPaletteAsset *nodePaletteAsset;
-  uint32_t subresourceOrPaletteBank;
-  bool rejected;
+  GraphicsSubresourceIndex subresourceIndex;
+  uint32_t paletteBankIndex;
+  PackedArgb32 modulationColor;
+  bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   firstVertex = triangle->vertex0;
   secondVertex = triangle->vertex1;
   thirdVertex = triangle->vertex2;
-  rejected = ModelRender_PrepareProjectedVertexAlternatePath
-                    (modelNode,triangle,(GraphicsFixedVec3 *)firstVertex);
-  if (!rejected) {
-    rejected = ModelRender_PrepareProjectedVertexAlternatePath
-                      (modelNode,triangle,(GraphicsFixedVec3 *)secondVertex);
-    if (!rejected) {
-      rejected = ModelRender_PrepareProjectedVertexAlternatePath
-                        (modelNode,triangle,(GraphicsFixedVec3 *)thirdVertex);
-      if (!rejected) {
-        if ((g_ProjectionClipRect.minX <= firstVertex->screenX ||
-             g_ProjectionClipRect.minX <= secondVertex->screenX ||
-             g_ProjectionClipRect.minX <= thirdVertex->screenX) &&
-            (firstVertex->screenX < g_ProjectionClipRect.maxX ||
-             secondVertex->screenX < g_ProjectionClipRect.maxX ||
-             thirdVertex->screenX < g_ProjectionClipRect.maxX)) {
-          if ((g_ProjectionClipRect.minY <= firstVertex->screenY ||
-               g_ProjectionClipRect.minY <= secondVertex->screenY ||
-               g_ProjectionClipRect.minY <= thirdVertex->screenY) &&
-              (firstVertex->screenY < g_ProjectionClipRect.maxY ||
-               secondVertex->screenY < g_ProjectionClipRect.maxY ||
-               thirdVertex->screenY < g_ProjectionClipRect.maxY)) {
-            rejected = GraphicsPrimitiveQueue_AppendTriangle
-                              (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
-                               triangle->vertex0,g_ActivePrimitiveQueue);
-            if (!rejected) {
-              GraphicsPrimitiveQueue_SetVertexColors
-                        (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
-                         triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
-              nodeTextureSet = (modelNode->modelPayload).textureSet;
-              subresourceOrPaletteBank = triangle->subresourceIndex;
-              textureEntry = NULL;
-              /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
-              if (subresourceOrPaletteBank != UINT32_MAX &&
-                  subresourceOrPaletteBank < nodeTextureSet->subresourceCount) {
-                textureEntry = nodeTextureSet->entries + subresourceOrPaletteBank +
-                               modelNode->textureSubresourceBaseIndex;
-              }
-              nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-              /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
-              if ((nodePaletteAsset != NULL) &&
-                 (subresourceOrPaletteBank = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK,
-                  subresourceOrPaletteBank < nodePaletteAsset->paletteBankCount)) {
-                GraphicsPrimitiveQueue_SetMaterial
-                          (nodePaletteAsset->paletteEntries[subresourceOrPaletteBank].alternateModulationColorArgb,
-                           textureEntry,g_ActivePrimitiveQueue);
-                return;
-              }
-              GraphicsPrimitiveQueue_SetMaterial(0,textureEntry,g_ActivePrimitiveQueue);
-            }
-          }
-        }
-      }
+  /* a vertex in front of the near plane drops the triangle; the remaining vertices are not prepared */
+  if (ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)firstVertex) ||
+      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)secondVertex) ||
+      ModelRender_PrepareProjectedVertexAlternatePath(modelNode,triangle,(GraphicsFixedVec3 *)thirdVertex)) {
+    return;
+  }
+  if (!ModelRender_TriangleOverlapsClipRect(firstVertex,secondVertex,thirdVertex)) {
+    return;
+  }
+  appendFailed = GraphicsPrimitiveQueue_AppendTriangle
+                    (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
+                     triangle->vertex0,g_ActivePrimitiveQueue);
+  if (appendFailed) {
+    return;
+  }
+  GraphicsPrimitiveQueue_SetVertexColors
+            (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
+             triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
+  nodeTextureSet = (modelNode->modelPayload).textureSet;
+  subresourceIndex = triangle->subresourceIndex;
+  textureEntry = NULL;
+  /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
+  if (subresourceIndex != UINT32_MAX &&
+      subresourceIndex < nodeTextureSet->subresourceCount) {
+    textureEntry = nodeTextureSet->entries + subresourceIndex +
+                   modelNode->textureSubresourceBaseIndex;
+  }
+  /* the palette bank's alternate modulation colour, 0 without a palette or with a bank out of range */
+  modulationColor = 0;
+  nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
+  if (nodePaletteAsset != NULL) {
+    /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
+    paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK;
+    if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {
+      modulationColor = nodePaletteAsset->paletteEntries[paletteBankIndex].alternateModulationColorArgb;
     }
   }
+  GraphicsPrimitiveQueue_SetMaterial(modulationColor,textureEntry,g_ActivePrimitiveQueue);
 }
 
 
