@@ -10,20 +10,20 @@
 
 /* Module data. */
 
-__declspec(align(4)) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = (void *)GraphicsPaletteAsset_LoadPackage;
+__declspec(align(4)) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = THANDOR_FN(GraphicsPaletteAsset_LoadPackage);
 
-static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = (void *)GraphicsPaletteAsset_Validate;
+static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = THANDOR_FN(GraphicsPaletteAsset_Validate);
 
-static GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase = (void *)GraphicsPaletteAsset_ResolveAllocationBase;
+static GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase = THANDOR_FN(GraphicsPaletteAsset_ResolveAllocationBase);
 
 static uint32_t g_GraphicsPaletteBankSlots[512] = {0};
 
 static uint8_t g_GraphicsPaletteRemapBytes[256] = {0};
 
 GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3 = {
-    .releasePackage = (void *)GraphicsPaletteAsset_ReleasePackage,
-    .clone = (void *)GraphicsPaletteAsset_Clone,
-    .releaseClone = (void *)GraphicsPaletteAsset_ReleaseClone};
+    .releasePackage = THANDOR_FN(GraphicsPaletteAsset_ReleasePackage),
+    .clone = THANDOR_FN(GraphicsPaletteAsset_Clone),
+    .releaseClone = THANDOR_FN(GraphicsPaletteAsset_ReleaseClone)};
 
 /* Implementation ownership: graphics/resources/palette. */
 

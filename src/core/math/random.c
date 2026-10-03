@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-RandomGeneratorState g_RandomGeneratorState = {.next = (void *)Random_NextPrimary, .primarySeed = 0x198F};
+RandomGeneratorState g_RandomGeneratorState = {.next = THANDOR_FN(Random_NextPrimary), .primarySeed = 0x198F};
 
 /* Implementation ownership: core/math/random. */
 

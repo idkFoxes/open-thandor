@@ -208,35 +208,35 @@ typedef struct DisplaySettingsUiImage {
 /* A link to node `node` of the template (its offset in the template, made a pointer when the copy is linked). */
 #define DISPLAY_SETTINGS_LINK(node) UI_TEMPLATE_LINK(offsetof(DisplaySettingsUiImage, node))
 /* The node offsets of the original template image: the field structs must keep them. */
-_Static_assert(offsetof(DisplaySettingsUiImage, displaySettingsWindow) == 0x0, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, cancelButton) == 0x78, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, applyButton) == 0xD4, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionHeading) == 0x160, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorDepthHeading) == 0x1BC, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterHeading) == 0x218, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorDepthOption1) == 0x280, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorDepthOption2) == 0x2E8, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorDepthOption3) == 0x350, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorDepthOption4) == 0x3B8, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption1) == 0x420, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption2) == 0x488, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption3) == 0x4F0, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption4) == 0x558, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption5) == 0x5C0, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption6) == 0x628, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption7) == 0x690, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, resolutionOption8) == 0x6F8, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterOption1) == 0x760, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterOption2) == 0x7C8, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterOption3) == 0x830, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterOption4) == 0x898, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, adapterOption5) == 0x900, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorScaleSliderFrame) == 0x95C, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorScaleSlider) == 0x9B8, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorBiasSliderFrame) == 0xA1C, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorBiasSlider) == 0xA78, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC, "DisplaySettingsUiImage layout");
-_Static_assert(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, displaySettingsWindow) == 0x0, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, cancelButton) == 0x78, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, applyButton) == 0xD4, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionHeading) == 0x160, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorDepthHeading) == 0x1BC, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterHeading) == 0x218, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorDepthOption1) == 0x280, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorDepthOption2) == 0x2E8, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorDepthOption3) == 0x350, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorDepthOption4) == 0x3B8, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption1) == 0x420, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption2) == 0x488, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption3) == 0x4F0, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption4) == 0x558, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption5) == 0x5C0, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption6) == 0x628, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption7) == 0x690, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, resolutionOption8) == 0x6F8, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterOption1) == 0x760, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterOption2) == 0x7C8, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterOption3) == 0x830, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterOption4) == 0x898, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, adapterOption5) == 0x900, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorScaleSliderFrame) == 0x95C, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorScaleSlider) == 0x9B8, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasSliderFrame) == 0xA1C, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasSlider) == 0xA78, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC, "DisplaySettingsUiImage layout");
+THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38, "DisplaySettingsUiImage layout");
 
 /* g_UiFourValueDialogTemplateImage: 4 UI nodes. FOUR_VALUE_DIALOG_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */

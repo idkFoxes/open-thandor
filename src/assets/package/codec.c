@@ -717,11 +717,11 @@ Bool8 PckCodec_DecodeHuffmanRle
 
 /* PCK codecs by compression method (PckEntryHeader.compressionMethod): 0 Huffman/RLE, 1 stored, 2 field grid. */
 PckCodecProc *const g_PckEncoderTable[3] = {
-    /* 0 */ (void *)PckCodec_EncodeHuffmanRle,
-    /* 1 */ (void *)PckCodec_EncodeStored,
-    /* 2 */ (void *)PckCodec_EncodeFieldGrid};
+    /* 0 */ THANDOR_FN(PckCodec_EncodeHuffmanRle),
+    /* 1 */ THANDOR_FN(PckCodec_EncodeStored),
+    /* 2 */ THANDOR_FN(PckCodec_EncodeFieldGrid)};
 
 PckCodecProc *const g_PckDecoderTable[3] = {
-    /* 0 */ (void *)PckCodec_DecodeHuffmanRle,
-    /* 1 */ (void *)PckCodec_DecodeStored,
-    /* 2 */ (void *)PckCodec_DecodeFieldGrid};
+    /* 0 */ THANDOR_FN(PckCodec_DecodeHuffmanRle),
+    /* 1 */ THANDOR_FN(PckCodec_DecodeStored),
+    /* 2 */ THANDOR_FN(PckCodec_DecodeFieldGrid)};

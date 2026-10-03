@@ -188,7 +188,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     sequenceToken = g_UiTransferSequenceToken;
     g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */
     firstPlayerRecord->peerSequenceToken = sequenceToken;
-    localPlayerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
+    localPlayerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
     localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
     for (dwordsRemaining = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); dwordsRemaining != 0;
          dwordsRemaining--) {
@@ -535,7 +535,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */
   firstPlayerRecord->peerSequenceToken = sequenceToken;
   firstPlayerRecord->playerRuntimeId = 0;
-  localPlayerNameCursor = (void *)g_FrontendLocalPlayerNameUtf16;
+  localPlayerNameCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
   localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
   for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {

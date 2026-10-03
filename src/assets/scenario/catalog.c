@@ -240,7 +240,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
         controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
-      Resource_Release((void *)g_FrontendLoadedCampaignAsset);
+      Resource_Release(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
       g_FrontendLoadedCampaignAsset = 0;
       /* Select the mission and load it: directly, or in a network session through the command queue. */
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==

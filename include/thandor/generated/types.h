@@ -676,7 +676,7 @@ typedef struct InGameLevelRuntimeGlobalBlock20 InGameLevelRuntimeGlobalBlock20, 
 typedef struct InGameLevelConditionStorage InGameLevelConditionStorage, *PInGameLevelConditionStorage;
 typedef struct LevelInitialArmyPlacementRecord20 LevelInitialArmyPlacementRecord20, *PLevelInitialArmyPlacementRecord20;
 
-typedef enum LocaleRegionTagPacked {
+enum {
     LOCALE_REGION_TAG_FALLBACK_DASH=45,
     LOCALE_REGION_TAG_BELGIUM=66,
     LOCALE_REGION_TAG_GERMANY=68,
@@ -689,14 +689,16 @@ typedef enum LocaleRegionTagPacked {
     LOCALE_REGION_TAG_USA=4281173,
     LOCALE_REGION_TAG_CANADA=5129283,
     LOCALE_REGION_TAG_GENERIC=7234887
-} LocaleRegionTagPacked;
+};
+typedef int LocaleRegionTagPacked;
 
-/* DirectX/DirectInput entry points resolved at runtime via GetProcAddress. Unprototyped on
- * purpose until the real SDK signatures are wired in (all return HRESULT, __stdcall). */
-typedef long __stdcall DirectDrawCreate();
-typedef long __stdcall DirectDrawEnumerateA();
-typedef long __stdcall DirectInputCreateA();
-typedef long __stdcall DirectSoundCreate();
+/* DirectX/DirectInput entry points resolved at runtime via GetProcAddress (HRESULT results). The interface
+   out-parameters are the address of the interface pointer variable. */
+typedef long __stdcall DirectDrawCreate(TH_LEGACY_GUID *driverGuid, void *outDirectDraw, void *outerUnknown);
+typedef long __stdcall DirectDrawEnumerateA
+          (int (__stdcall *callback)(TH_LEGACY_GUID *, char *, char *, void *), void *context);
+typedef long __stdcall DirectInputCreateA(void *instance, uint32_t version, void *outDirectInput, void *outerUnknown);
+typedef long __stdcall DirectSoundCreate(const TH_LEGACY_GUID *deviceGuid, void *outDirectSound, void *outerUnknown);
 
 #define FIELD_GRID_WORLD_Y_Q20_MULTIPLIER 0x1c6e9c
 #define FIELD_GRID_WORLD_X_Q21_MULTIPLIER_NEG 0xffdf3734
@@ -1083,13 +1085,14 @@ typedef uint32_t ArmyCommandGeneration;
 
 typedef uint32_t FieldGridRegionMask;
 
-typedef enum WorldOwnerRuntimeClassId {
+enum {
     WORLD_OWNER_RUNTIME_MODEL=0,
     WORLD_OWNER_RUNTIME_SHOT=1,
     WORLD_OWNER_RUNTIME_EFFECT=2
-} WorldOwnerRuntimeClassId;
+};
+typedef int WorldOwnerRuntimeClassId;
 
-typedef enum ModelRuntimeClassId {
+enum {
     MODEL_RUNTIME_CLASS_00=0,
     MODEL_RUNTIME_CLASS_01_GROUND=1,
     MODEL_RUNTIME_CLASS_02_TRACKED=2,
@@ -1114,9 +1117,10 @@ typedef enum ModelRuntimeClassId {
     MODEL_RUNTIME_CLASS_21_AIRCRAFT=21,
     MODEL_RUNTIME_CLASS_22=22,
     MODEL_RUNTIME_CLASS_23=23
-} ModelRuntimeClassId;
+};
+typedef int ModelRuntimeClassId;
 
-typedef enum PckArmyAssetIdCatalog {
+enum {
     ARM_0001_UNIT_MDL0100=1,
     ARM_0002_UNIT_MDL0100=2,
     ARM_0003_UNIT_MDL0100=3,
@@ -1443,7 +1447,8 @@ typedef enum PckArmyAssetIdCatalog {
     ARM_0853_ROHSTOFF_MDL0853=853,
     ARM_0854_ROHSTOFF_MDL0854=854,
     ARM_0855_ROHSTOFF_MDL0855=855
-} PckArmyAssetIdCatalog;
+};
+typedef int PckArmyAssetIdCatalog;
 
 typedef uint32_t ArmyRuntimeFlags;
 
@@ -1455,12 +1460,13 @@ typedef uint32_t EffectAnimationFrameCount;
 
 typedef uint32_t DefinitionReferencePresentFlag;
 
-typedef enum EffectRuntimeCompletionAction {
+enum {
     EFFECT_RUNTIME_COMPLETION_NONE=0,
     EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY=1,
     EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER=2,
     EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL=3
-} EffectRuntimeCompletionAction;
+};
+typedef int EffectRuntimeCompletionAction;
 
 typedef uint32_t EffectShadingCountdownTicks;
 
@@ -1490,12 +1496,13 @@ typedef uint32_t ModelDepthBinMask;
 
 typedef int ArmyTurnVelocityAngle16;
 
-typedef enum ArmyTerrainContactDispatchMode {
+enum {
     ARMY_TERRAIN_CONTACT_ACQUIRE_OR_INITIALIZE_CONTACT_SLOT=0,
     ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE=1
-} ArmyTerrainContactDispatchMode;
+};
+typedef int ArmyTerrainContactDispatchMode;
 
-typedef enum PckEffectDefinitionIdCatalog {
+enum {
     EFF_0001_EGRXA0=1,
     EFF_0002_EGRXB0=2,
     EFF_0003_EGRXC0=3,
@@ -1636,11 +1643,12 @@ typedef enum PckEffectDefinitionIdCatalog {
     EFF_0240_ERCKA0=240,
     EFF_0241_ERCKB0=241,
     EFF_0242_ERCKC0=242
-} PckEffectDefinitionIdCatalog;
+};
+typedef int PckEffectDefinitionIdCatalog;
 
 typedef uint32_t EffectAnimationFrameAccumulatorQ4;
 
-typedef enum PckShotDefinitionIdCatalog {
+enum {
     SHT_0000_SLRAY0=0,
     SHT_0001_SSFBA0=1,
     SHT_0002_SPMGW0=2,
@@ -1777,7 +1785,8 @@ typedef enum PckShotDefinitionIdCatalog {
     SHT_3031_SRMIB0=3031,
     SHT_3032_SRMIB0=3032,
     SHT_3033_SIIOB0=3033
-} PckShotDefinitionIdCatalog;
+};
+typedef int PckShotDefinitionIdCatalog;
 
 typedef uint32_t ShotAnimationFrameIndex;
 
@@ -1811,10 +1820,11 @@ typedef uint32_t EffectFrameAdvanceThresholdQ4;
 
 typedef int TerrainGridMaskIndex;
 
-typedef enum EffectCreationFlagBits {
+enum {
     EFFECT_CREATION_RANDOMIZE_ORIENTATION=1,
     EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET=2
-} EffectCreationFlagBits;
+};
+typedef int EffectCreationFlagBits;
 
 typedef uint32_t EffectAlphaFadeTicks;
 
@@ -1824,12 +1834,13 @@ typedef uint32_t SpatialSoundMaximumDistanceQ12;
 
 typedef uint32_t OwnedNestedResourceFlag;
 
-typedef enum ShotTrajectoryMode {
+enum {
     SHOT_TRAJECTORY_DIRECT_LINE=0,
     SHOT_TRAJECTORY_BALLISTIC=1,
     SHOT_TRAJECTORY_FIXED_RANGE=2,
     SHOT_TRAJECTORY_LEAD_ADJUSTED=3
-} ShotTrajectoryMode;
+};
+typedef int ShotTrajectoryMode;
 
 typedef uint32_t ShotProjectileLifetimeTicks;
 
@@ -1863,7 +1874,7 @@ typedef uint32_t WorldWorkspaceElementCount;
 
 typedef uint32_t WorldRuntimeControlFlags;
 
-typedef enum AssetMagic {
+enum {
     ASSET_MAGIC_TEC=6514036,
     ASSET_MAGIC_FNC=6516326,
     ASSET_MAGIC_FLD=6581350,
@@ -1879,7 +1890,8 @@ typedef enum AssetMagic {
     ASSET_MAGIC_SHT=7628915,
     ASSET_MAGIC_LEV=7759212,
     ASSET_MAGIC_GFX=7890535
-} AssetMagic;
+};
+typedef int AssetMagic;
 
 typedef uint32_t AssetAllocationSizeBytes;
 
@@ -1895,9 +1907,10 @@ typedef uint32_t ModelMeshGroupRelativeOffset;
 
 typedef uint32_t ModelPackedGeometryRecordCount;
 
-typedef enum ModelResourceHitTestFlags {
+enum {
     MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST=4
-} ModelResourceHitTestFlags;
+};
+typedef int ModelResourceHitTestFlags;
 
 typedef uint32_t GameEntityCommandTargetFlags;
 
@@ -1907,13 +1920,14 @@ typedef uint32_t TechnologyEnergyCostQ4;
 
 typedef uint32_t TechnologyXeniteCostQ4;
 
-typedef enum EffectLifecycleTransitionKind {
+enum {
     EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN=0,
     EFFECT_TRANSITION_ADVANCE_PERIODIC_EMISSION_AND_COMPLETION_ACTION=1,
     EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION=2,
     EFFECT_TRANSITION_NO_ADDITIONAL_ACTION=3,
     EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT=4
-} EffectLifecycleTransitionKind;
+};
+typedef int EffectLifecycleTransitionKind;
 
 typedef uint32_t WorldInteractionFlags;
 
@@ -1935,7 +1949,7 @@ typedef uint32_t ModelChildNodeIndex;
 
 typedef uint32_t AssetFormatVersion;
 
-typedef enum PckConverterVersion {
+enum {
     PCK_CONVERTER_ROM_00010005=65541,
     PCK_CONVERTER_TEC_00020000=131072,
     PCK_CONVERTER_SPR_00020007=131079,
@@ -1944,11 +1958,12 @@ typedef enum PckConverterVersion {
     PCK_CONVERTER_FLD_SHT_00060006=393222,
     PCK_CONVERTER_LEV_00070001=458753,
     PCK_CONVERTER_MDL_0008000A=524298
-} PckConverterVersion;
+};
+typedef int PckConverterVersion;
 
 typedef uint32_t PackedTerrainNormalAngles;
 
-typedef enum FieldCellPackedFlagsAndMaterial { 
+enum { 
     FIELD_CELL_MATERIAL_ID_MASK=255,
     FIELD_CELL_RANDOM_VARIANT_MASK=1792,
     FIELD_CELL_XENITE_SUPPORT=2048,
@@ -1962,7 +1977,8 @@ typedef enum FieldCellPackedFlagsAndMaterial {
     FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28=268435456,
     FIELD_CELL_FLUID_RECEIVER_EXCLUDED=536870912,
     FIELD_CELL_FLUID_SOURCE_EXCLUDED=1073741824
-} FieldCellPackedFlagsAndMaterial;
+};
+typedef int FieldCellPackedFlagsAndMaterial;
 
 typedef uint32_t FieldCellPersistedAux;
 
@@ -1982,7 +1998,7 @@ typedef int GraphicsPixelOrigin;
 
 typedef uint32_t AssetRecordByteCount;
 
-typedef enum PckModelDefinitionIdCatalog {
+enum {
     MDL_0100_UNTERBAU1=100,
     MDL_0101_UNTERBAU1=101,
     MDL_0102_UNTERBAU1=102,
@@ -2361,7 +2377,8 @@ typedef enum PckModelDefinitionIdCatalog {
     MDL_2327_BUILDING3=2327,
     MDL_2328_BUILDING3=2328,
     MDL_2329_BUILDING3=2329
-} PckModelDefinitionIdCatalog;
+};
+typedef int PckModelDefinitionIdCatalog;
 
 typedef uint32_t SprAttachmentPackedKey;
 
@@ -2414,7 +2431,7 @@ struct ModelResource {
     ModelMeshGroupRelativeOffset firstMeshGroupRelativeOffset;
     ModelPackedGeometryRecordCount packedGeometryRecordCount; 
     uint8_t reserved208_20B[4]; 
-    enum ModelResourceHitTestFlags hitTestFlags20C; 
+    ModelResourceHitTestFlags hitTestFlags20C; 
 };
 
 union GameEntityDamageCounterOrTerminalReference4 {
@@ -2482,7 +2499,7 @@ struct IDirectDrawSurface3_Vtbl {
 struct ModelDefinitionRecordPrefix {
     AssetRecordByteCount byteSize;
     uint32_t nameTextIndex; // Model name text: TEXT_ID_MODEL_NAME_BASE (0x18004F) + nameTextIndex.
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
 };
 
 struct GameEntityTechnologyPayload {
@@ -2533,9 +2550,9 @@ struct GameEntityOwnershipState10 {
 };
 
 struct ShotDefinition {
-    enum ShotTrajectoryMode trajectoryMode; // Shot trajectory selector; enum is partial.
+    ShotTrajectoryMode trajectoryMode; // Shot trajectory selector; enum is partial.
     uint32_t reservedDword04; // Exact fixed dword with semantics deferred.
-    enum PckShotDefinitionIdCatalog definitionId; // Shot-definition registry identifier.
+    PckShotDefinitionIdCatalog definitionId; // Shot-definition registry identifier.
     Q12 launchSpeedQ12; // Launch speed in Q12.
     struct EffectDefinition *primaryEffectDefinition; // Primary effect identifier resolved in place to EffectDefinition pointer.
     struct EffectDefinition *terrainImpactEffectDefinitions31[31]; // SHT +0x14 exact 31-entry terrain-impact effect array.
@@ -2815,10 +2832,10 @@ struct GeneratedAssetBuildMetadata {
 };
 
 struct GeneratedAssetCommonPrefix {
-    enum AssetMagic magic;
+    AssetMagic magic;
     AssetAllocationSizeBytes allocationSizeBytes;
     AssetFormatVersion formatVersion;
-    enum PckConverterVersion converterVersion;
+    PckConverterVersion converterVersion;
     struct GeneratedAssetBuildMetadata buildMetadata;
 };
 
@@ -2834,7 +2851,7 @@ union ArmyRuntimeContactRadiusOrLinkedSlotMask {
 };
 
 struct ArmyRuntimeArticulatedContactState {
-    enum ArmyTerrainContactDispatchMode terrainContactMode; 
+    ArmyTerrainContactDispatchMode terrainContactMode; 
     Q12 lateralOffsetQ12; 
     union ArmyRuntimeContactRadiusOrLinkedSlotMask contactRadiusOrLinkedSlotMask; 
     Q12 fallbackPosition0Q12; 
@@ -2861,7 +2878,7 @@ struct GraphicsPaletteAssetEntry {
 };
 
 struct GraphicsPaletteAsset {
-    enum AssetMagic magic;
+    AssetMagic magic;
     AssetAllocationSizeBytes allocationSizeBytes;
     uint8_t reserved08_AF[168];
     AssetPaletteBankCount paletteBankCount;
@@ -2879,7 +2896,7 @@ struct GraphicsTextureResource {
 
 union ShotDefinitionReferenceOrSavedId {
     struct ShotDefinition *definition; 
-    enum PckShotDefinitionIdCatalog savedId; 
+    PckShotDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
 
@@ -3018,13 +3035,13 @@ struct WorldRuntimeNodeCommon {
 };
 
 struct EffectDefinitionTransitionPrefix {
-    enum EffectLifecycleTransitionKind transitionKind; 
+    EffectLifecycleTransitionKind transitionKind; 
     uint32_t reserved04; 
 };
 
 struct EffectDefinition {
     struct EffectDefinitionTransitionPrefix transitionPrefix; 
-    enum PckEffectDefinitionIdCatalog definitionId; 
+    PckEffectDefinitionIdCatalog definitionId; 
     EffectAnimationFrameCount animationFrameCount; 
     DefinitionReferencePresentFlag linkedEffectPresent; 
     struct EffectDefinition *linkedEffectDefinition; 
@@ -3034,7 +3051,7 @@ struct EffectDefinition {
     uint32_t completionCountdownTicks; /* +0x24 copied to the effect slot */
     EffectFrameAdvanceThresholdQ4 frameAdvanceThresholdQ4; 
     TerrainGridMaskIndex soundSlotIndex; 
-    enum EffectCreationFlagBits creationFlags; 
+    EffectCreationFlagBits creationFlags; 
     PackedArgb32 shadingColorArgb; 
     GraphicsTransitionTickCount shadingTransitionDurationTicks; 
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks; 
@@ -3097,7 +3114,7 @@ struct ModelRuntimeNode {
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
     uint32_t runtimeStateA0; 
-    enum WorldOwnerRuntimeClassId ownerClassId; 
+    WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
     ModelTextureOffsetTexel secondaryTextureOffsetV; 
@@ -3179,8 +3196,8 @@ struct ArmyRuntimeSlot {
     uint32_t occupancyMarkRadius; // +0x90 largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
     uint32_t aiUnitFlags; // +0x94 AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
     uint32_t assignedTargetArmyRuntime; // +0x98 ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
-    enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
-    enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
+    ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
+    PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
     uint32_t movementRetryCountdown; // +0xA4 ArmyMovementRuntime.retryCountdown; counted down by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
     uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState articulatedContact; // Terrain-contact and articulated movement state.
@@ -3364,7 +3381,7 @@ struct DDSURFACEDESC_DX6 {
 
 union EffectDefinitionReferenceOrSavedId {
     struct EffectDefinition *definition; 
-    enum PckEffectDefinitionIdCatalog savedId; 
+    PckEffectDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
 
@@ -3392,7 +3409,7 @@ struct EffectRuntimeSlot {
     DefinitionReferencePresentFlag linkedEffectPresent; 
     DefinitionReferencePresentFlag linkedShotPresent; 
     struct EffectRuntimeLifecycleState lifecycleOwnerAndDefinition; 
-    enum EffectRuntimeCompletionAction completionAction; 
+    EffectRuntimeCompletionAction completionAction; 
     EffectShadingCountdownTicks shadingStartCountdownTicksRemaining; 
     EffectShadingCountdownTicks shadingStopCountdownTicksRemaining; 
     EffectPeriodicIntervalTicks periodicEffectCountdownTicks; 
@@ -3565,24 +3582,27 @@ struct AiWorkspace09AnchorRegisterResult {
 
 typedef uint32_t AiPlanningPhaseIndex;
 
-typedef enum TerrainRelaxationMode {
+enum {
     TERRAIN_RELAXATION_SIGN_GATED=0,
     TERRAIN_RELAXATION_UNGATED_LAND_TOOL=1
-} TerrainRelaxationMode;
+};
+typedef int TerrainRelaxationMode;
 
-typedef enum EngineDriveTypeCode {
+enum {
     ENGINE_DRIVE_REMOVABLE=40,
     ENGINE_DRIVE_OTHER=41,
     ENGINE_DRIVE_REMOTE=42,
     ENGINE_DRIVE_CDROM=43
-} EngineDriveTypeCode;
+};
+typedef int EngineDriveTypeCode;
 
-typedef enum FrontendCommandSyncPendingState {
+enum {
     FRONTEND_COMMAND_SYNC_CLEAR=0,
     FRONTEND_COMMAND_SYNC_PENDING=1
-} FrontendCommandSyncPendingState;
+};
+typedef int FrontendCommandSyncPendingState;
 
-typedef enum InGameCameraCommandKeyCode {
+enum {
     EncodedDigit1=196657,
     EncodedDigit2=196658,
     EncodedDigit3=196659,
@@ -3592,26 +3612,30 @@ typedef enum InGameCameraCommandKeyCode {
     EncodedDigit7=196663,
     EncodedLowercaseC=196707,
     EncodedLowercaseS=196723
-} InGameCameraCommandKeyCode;
+};
+typedef int InGameCameraCommandKeyCode;
 
-typedef enum DirectSoundBufferCaps {
+enum {
     DSBCAPS_CTRLPAN=64,
     DSBCAPS_CTRLVOLUME=128
-} DirectSoundBufferCaps;
+};
+typedef int DirectSoundBufferCaps;
 
-typedef enum ArenaBlockStateMagic {
+enum {
     ARENA_BLOCK_ALLOCATED=1515870810,
     ARENA_BLOCK_FREE=2779096485
-} ArenaBlockStateMagic;
+};
+typedef int ArenaBlockStateMagic;
 
-typedef enum FileSystemOpenFlags {
+enum {
     FILESYSTEM_OPEN_CREATE_OR_TRUNCATE=1,
     FILESYSTEM_OPEN_EXCLUSIVE_SHARE=2,
     FILESYSTEM_OPEN_EXISTING_OR_CREATE=4,
     FILESYSTEM_OPEN_WRITE_ACCESS=8
-} FileSystemOpenFlags;
+};
+typedef int FileSystemOpenFlags;
 
-typedef enum UiTextEditStateFlags {
+enum {
     UI_TEXT_EDIT_VALUE_VALID=1,
     UI_TEXT_EDIT_DRAW_FRAMED_CHROME=8,
     UI_TEXT_EDIT_CARET_VISIBLE_PHASE=16,
@@ -3621,9 +3645,10 @@ typedef enum UiTextEditStateFlags {
     UI_TEXT_EDIT_DRAW_TILED_INTERIOR=256,
     UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY=512,
     UI_TEXT_EDIT_PLAY_INTERACTION_SOUND=1024
-} UiTextEditStateFlags;
+};
+typedef int UiTextEditStateFlags;
 
-typedef enum UiScrollableStateFlags {
+enum {
     UI_SCROLL_HORIZONTAL_BAR_AT_TOP=1,
     UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM=2,
     UI_SCROLL_VERTICAL_BAR_AT_LEFT=4,
@@ -3639,21 +3664,24 @@ typedef enum UiScrollableStateFlags {
     UI_SCROLL_VERTICAL_THUMB_ACTIVE=67108864,
     UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE=134217728,
     UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456
-} UiScrollableStateFlags;
+};
+typedef int UiScrollableStateFlags;
 
-typedef enum TechnologyCategory {
+enum {
     TECHNOLOGY_CATEGORY_A=0,
     TECHNOLOGY_CATEGORY_B=1,
     TECHNOLOGY_CATEGORY_C=2,
     TECHNOLOGY_CATEGORY_D=3
-} TechnologyCategory;
+};
+typedef int TechnologyCategory;
 
-typedef enum PersistentToggleState {
+enum {
     PERSISTENT_TOGGLE_DISABLED=0,
     PERSISTENT_TOGGLE_ENABLED=1
-} PersistentToggleState;
+};
+typedef int PersistentToggleState;
 
-typedef enum UiNodeFlags {
+enum {
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
     UI_NODE_HAS_KEYBOARD_FOCUS=4,
     UI_NODE_SUPPRESSED=8,
@@ -3662,33 +3690,38 @@ typedef enum UiNodeFlags {
     UI_NODE_REPEAT_OR_DOUBLE_CLICK=128,
     UI_NODE_TOOLTIP_ELIGIBLE=256,
     UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16=512
-} UiNodeFlags;
+};
+typedef int UiNodeFlags;
 
-typedef enum UiTimedListStateFlags {
+enum {
     UI_TIMED_LIST_ACTION_DELAY_PENDING=2
-} UiTimedListStateFlags;
+};
+typedef int UiTimedListStateFlags;
 
-typedef enum UiSelectableStateFlags {
+enum {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
-} UiSelectableStateFlags;
+};
+typedef int UiSelectableStateFlags;
 
-typedef enum InGameTargetingObservedActionState {
+enum {
     INGAME_TARGETING_OBSERVED_IDLE=0,
     INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE=7,
     INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE=27
-} InGameTargetingObservedActionState;
+};
+typedef int InGameTargetingObservedActionState;
 
-typedef enum UiTextListStateFlags {
+enum {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
     UI_TEXT_LIST_DEFERRED_ACTION_PENDING=2,
     UI_TEXT_LIST_SELECTION_CONFIRMED=4,
     UI_TEXT_LIST_PLAY_SELECTION_SOUND=8
-} UiTextListStateFlags;
+};
+typedef int UiTextListStateFlags;
 
-typedef enum GraphicsCursorButtonState {
+enum {
     CURSOR_BUTTON_NONE=0,
     LEFT=1,
     MIDDLE=2,
@@ -3697,27 +3730,31 @@ typedef enum GraphicsCursorButtonState {
     LEFT_RIGHT=5,
     MIDDLE_RIGHT=6,
     LEFT_MIDDLE_RIGHT=7
-} GraphicsCursorButtonState;
+};
+typedef int GraphicsCursorButtonState;
 
-typedef enum FileSystemDos83ValidationFlags {
+enum {
     FILESYSTEM_DOS83_ALLOW_WILDCARDS=1,
     FILESYSTEM_DOS83_COMPONENT_ONLY=2,
     FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION=4
-} FileSystemDos83ValidationFlags;
+};
+typedef int FileSystemDos83ValidationFlags;
 
-typedef enum FileSystemEnumerationMode {
+enum {
     FILESYSTEM_ENUMERATE_FILES=0,
     FILESYSTEM_ENUMERATE_VOLUME_LABEL=1,
     FILESYSTEM_ENUMERATE_DIRECTORIES=2
-} FileSystemEnumerationMode;
+};
+typedef int FileSystemEnumerationMode;
 
-typedef enum FileSystemSeekOrigin {
+enum {
     FILESYSTEM_SEEK_BEGIN=0,
     FILESYSTEM_SEEK_CURRENT=1,
     FILESYSTEM_SEEK_END=2
-} FileSystemSeekOrigin;
+};
+typedef int FileSystemSeekOrigin;
 
-typedef enum GraphicsCursorEventType {
+enum {
     MOTION_OR_WHEEL=0,
     LEFT_PRESS=1,
     MIDDLE_PRESS=2,
@@ -3725,7 +3762,8 @@ typedef enum GraphicsCursorEventType {
     LEFT_RELEASE=5,
     MIDDLE_RELEASE=6,
     RIGHT_RELEASE=7
-} GraphicsCursorEventType;
+};
+typedef int GraphicsCursorEventType;
 
 enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_INACTIVE=0, /* slot unused, or absorbed by a merge (state 11 relation) */
@@ -3740,17 +3778,19 @@ enum /* WinSockIpv4AddressLength, stored in 2 byte(s) */ {
 };
 typedef uint16_t WinSockIpv4AddressLength;
 
-typedef enum RuntimeRegistrationRecordFlags {
+enum {
     RUNTIME_REGISTRATION_RECORD_ALLOCATED=1073741824
-} RuntimeRegistrationRecordFlags;
+};
+typedef int RuntimeRegistrationRecordFlags;
 
-typedef enum PckCompressionMethod {
+enum {
     PCK_COMPRESSION_HUFFMAN_RLE=0,
     PCK_COMPRESSION_STORED=1,
     PCK_COMPRESSION_FIELD_GRID=2
-} PckCompressionMethod;
+};
+typedef int PckCompressionMethod;
 
-typedef enum UiRequiredTextEditStateFlags {
+enum {
     UI_REQUIRED_TEXT_VALUE_VALID=1,
     UI_REQUIRED_TEXT_DRAW_FRAMED_CHROME=8,
     UI_REQUIRED_TEXT_CARET_VISIBLE_PHASE=16,
@@ -3761,21 +3801,24 @@ typedef enum UiRequiredTextEditStateFlags {
     UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY=512,
     UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND=1024,
     UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION=2048
-} UiRequiredTextEditStateFlags;
+};
+typedef int UiRequiredTextEditStateFlags;
 
-typedef enum FrontendSnapshotTransferFlags {
+enum {
     FRONTEND_SNAPSHOT_SOURCE_AVAILABLE=1,
     FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE=2,
     FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY=4
-} FrontendSnapshotTransferFlags;
+};
+typedef int FrontendSnapshotTransferFlags;
 
-typedef enum PersistentMouseLinkPanelOptionFlags {
+enum {
     PERSISTENT_MOUSE_LINK_ROTATION_ZOOM=1,
     PERSISTENT_MOUSE_LINK_ROTATION_TILT=2,
     PERSISTENT_UI_HIDE_PANEL=4
-} PersistentMouseLinkPanelOptionFlags;
+};
+typedef int PersistentMouseLinkPanelOptionFlags;
 
-typedef enum PckAssetTypeTag {
+enum {
     PCK_ASSET_TYPE_TEC=6514036,
     PCK_ASSET_TYPE_FNC=6516326,
     PCK_ASSET_TYPE_FLD=6581350,
@@ -3792,32 +3835,37 @@ typedef enum PckAssetTypeTag {
     PCK_ASSET_TYPE_SHT=7628915,
     PCK_ASSET_TYPE_LEV=7759212,
     PCK_ASSET_TYPE_GFX=7890535
-} PckAssetTypeTag;
+};
+typedef int PckAssetTypeTag;
 
-typedef enum InGameNotificationInteractionState {
+enum {
     NOTIFICATION_INTERACTION_NONE=0,
     PAYLOAD_ACTIVE=7
-} InGameNotificationInteractionState;
+};
+typedef int InGameNotificationInteractionState;
 
-typedef enum GraphicsPaletteTextureAssetMagic {
+enum {
     GRAPHICS_PALETTE_TEXTURE_MAGIC_GFX=7890535
-} GraphicsPaletteTextureAssetMagic;
+};
+typedef int GraphicsPaletteTextureAssetMagic;
 
-typedef enum FileSystemCreateDirectoryFlags {
+enum {
     FILESYSTEM_CREATE_DIRECTORY_RECURSIVE=1
-} FileSystemCreateDirectoryFlags;
+};
+typedef int FileSystemCreateDirectoryFlags;
 
-typedef enum UiTransferJoinAvailability {
+enum {
     UI_TRANSFER_JOIN_UNAVAILABLE=0,
     UI_TRANSFER_JOIN_AVAILABLE=4294967295
-} UiTransferJoinAvailability;
+};
+typedef int UiTransferJoinAvailability;
 
 enum /* WaveFormatTag, stored in 2 byte(s) */ {
     WAVE_FORMAT_PCM=1
 };
 typedef uint16_t WaveFormatTag;
 
-typedef enum FrontendModelPointerContextFlags {
+enum {
     FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
     FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK=32,
     FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION=64,
@@ -3830,9 +3878,10 @@ typedef enum FrontendModelPointerContextFlags {
     FRONTEND_MODEL_POINTER_CONTEXT_HIDE_PANEL=67108864, /* = WORLD_RUNTIME_FLAG_HIDE_PANEL */
     FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM=1073741824, /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM */
     FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT=2147483648 /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT */
-} FrontendModelPointerContextFlags;
+};
+typedef int FrontendModelPointerContextFlags;
 
-typedef enum PckTechnologyIdCatalog {
+enum {
     TEC_000_BASIC_TECHNOLOGY=0,
     TEC_001_ARMS_FACTORIES=1,
     TEC_002_WEASEL=2,
@@ -4089,9 +4138,10 @@ typedef enum PckTechnologyIdCatalog {
     TEC_253_RESERVED=253,
     TEC_254_RESERVED=254,
     TEC_255_RESERVED=255
-} PckTechnologyIdCatalog;
+};
+typedef int PckTechnologyIdCatalog;
 
-typedef enum UiTransferPacketPackedType {
+enum {
     FRONTEND_PACKET_10000_HANDSHAKE=65536,
     FRONTEND_PACKET_10003_JOIN_ACK=65539,
     FRONTEND_PACKET_10004_SNAPSHOT_REQUEST=65540,
@@ -4113,68 +4163,79 @@ typedef enum UiTransferPacketPackedType {
     FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT=327681,
     FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK=524298,
     FRONTEND_PACKET_80030_MAILBOX_CHUNK=524336
-} UiTransferPacketPackedType;
+};
+typedef int UiTransferPacketPackedType;
 
-typedef enum PersistentMapMouseOptionFlags {
+enum {
     PERSISTENT_MAP_AUTOMATIC_ZOOM_OFF=1,
     PERSISTENT_MAP_AUTOMATIC_ROTATION_OFF=2,
     PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL=4
-} PersistentMapMouseOptionFlags;
+};
+typedef int PersistentMapMouseOptionFlags;
 
-typedef enum UiCommandActivationStateFlags {
+enum {
     UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK=12,
     UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK=15,
     UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK=262144,
     UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON=2147483648
-} UiCommandActivationStateFlags;
+};
+typedef int UiCommandActivationStateFlags;
 
-typedef enum InGameNotificationPayloadKind {
+enum {
     NOTIFICATION_PAYLOAD_NONE=0,
     ARMY_CREATED=1,
     TECHNOLOGY_UNLOCK_POSITION=2,
     FACTION_IMPACT_ANCHOR=3
-} InGameNotificationPayloadKind;
+};
+typedef int InGameNotificationPayloadKind;
 
-typedef enum UiListStateFlags {
+enum {
     UI_LIST_DEFERRED_ACTION_PENDING=2,
     UI_LIST_SELECTION_CONFIRMED=4,
     UI_LIST_PLAY_SELECTION_SOUND=8
-} UiListStateFlags;
+};
+typedef int UiListStateFlags;
 
-typedef enum SessionNetworkRoleFlags {
+enum {
     SESSION_NETWORK_ROLE_LOCAL=0,
     SESSION_NETWORK_ROLE_CLIENT=1,
     SESSION_NETWORK_ROLE_HOST=2,
     SESSION_NETWORK_ROLE_NETWORKED_MASK=3
-} SessionNetworkRoleFlags;
+};
+typedef int SessionNetworkRoleFlags;
 
-typedef enum FactionRelationState {
+enum {
     FACTION_RELATION_MERGE=11
-} FactionRelationState;
+};
+typedef int FactionRelationState;
 
-typedef enum SoftwareFramebufferPixelSize {
+enum {
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT=2,
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT=4
-} SoftwareFramebufferPixelSize;
+};
+typedef int SoftwareFramebufferPixelSize;
 
-typedef enum UiTimedListRecordFlags {
+enum {
     UI_TIMED_LIST_RECORD_EXPANDABLE=1,
     UI_TIMED_LIST_RECORD_EXPANDED=2,
     UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY=2147483648
-} UiTimedListRecordFlags;
+};
+typedef int UiTimedListRecordFlags;
 
-typedef enum GraphicsBooleanState {
+enum {
     GRAPHICS_STATE_DISABLED=0,
     GRAPHICS_STATE_ENABLED=1
-} GraphicsBooleanState;
+};
+typedef int GraphicsBooleanState;
 
-typedef enum RuntimeModelClassPriority {
+enum {
     RUNTIME_MODEL_CLASS_PRIORITY_LOW=0,
     RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM=1,
     RUNTIME_MODEL_CLASS_PRIORITY_HIGH=2
-} RuntimeModelClassPriority;
+};
+typedef int RuntimeModelClassPriority;
 
-typedef enum UiNumericTextEditStateFlags {
+enum {
     UI_NUMERIC_TEXT_VALUE_VALID=1,
     UI_NUMERIC_TEXT_SIGNED_VALUE=2,
     UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT=4,
@@ -4186,9 +4247,10 @@ typedef enum UiNumericTextEditStateFlags {
     UI_NUMERIC_TEXT_DRAW_TILED_INTERIOR=256,
     UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY=512,
     UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND=1024
-} UiNumericTextEditStateFlags;
+};
+typedef int UiNumericTextEditStateFlags;
 
-typedef enum LocaleTelephoneCountryCode {
+enum {
     LOCALE_COUNTRY_GENERIC=0,
     LOCALE_COUNTRY_USA=1,
     LOCALE_COUNTRY_CANADA=2,
@@ -4200,11 +4262,13 @@ typedef enum LocaleTelephoneCountryCode {
     LOCALE_COUNTRY_GREAT_BRITAIN=44,
     LOCALE_COUNTRY_DENMARK=45,
     LOCALE_COUNTRY_GERMANY=49
-} LocaleTelephoneCountryCode;
+};
+typedef int LocaleTelephoneCountryCode;
 
-typedef enum GraphicsPaletteTextureFormatVersion {
+enum {
     GRAPHICS_PALETTE_TEXTURE_FORMAT_VERSION_1=1
-} GraphicsPaletteTextureFormatVersion;
+};
+typedef int GraphicsPaletteTextureFormatVersion;
 
 typedef uint32_t TerrainRelaxationPassCount;
 
@@ -4438,12 +4502,12 @@ struct UiNodeBase {
     UiAnchorFractionQ31 bottomAnchorQ31; 
     int32_t layoutWidth; 
     int32_t layoutHeight; 
-    enum UiNodeFlags nodeFlags; 
+    UiNodeFlags nodeFlags; 
 };
 
 struct UiNumericTextControl {
     struct UiNodeBase base; 
-    enum UiNumericTextEditStateFlags editStateFlags; 
+    UiNumericTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
     UiNumericValue32 currentValue; 
@@ -4472,7 +4536,7 @@ struct IDirectSound_Vtbl {
 
 struct UiSelectableControl {
     struct UiNodeBase base;
-    enum UiSelectableStateFlags stateFlags;
+    UiSelectableStateFlags stateFlags;
     UiActionId actionId;
 };
 
@@ -4546,7 +4610,7 @@ struct IDirectSoundBuffer_Vtbl {
 
 struct DSBUFFERDESC_DX6 {
     DirectSoundBufferDescriptionByteSize dwSize; 
-    enum DirectSoundBufferCaps dwFlags; 
+    DirectSoundBufferCaps dwFlags; 
     AudioBufferByteCount dwBufferBytes; 
     TH_LEGACY_DWORD dwReserved;
     struct WAVEFORMATEX *lpwfxFormat;
@@ -4636,7 +4700,7 @@ typedef uint32_t UiListRowCount;
    the following reserved bytes, and methods that need columnCount/columns view it as UiListControl. */
 struct UiPointerListControl {
     struct UiNodeBase base; 
-    enum UiListStateFlags listStateFlags; 
+    UiListStateFlags listStateFlags; 
     void **rowSlots; 
     UiListRowCount rowCount; 
     UiPixelExtent rowHeight; 
@@ -5252,7 +5316,7 @@ struct FieldGridCell {
     Q12 worldY; // Generated world Y coordinate.
     Q12 terrainHeight; // Terrain height.
     Q12 waterSurfaceDelta; // Water-surface delta.
-    enum FieldCellPackedFlagsAndMaterial flagsAndMaterial; // [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] FLD +0x50 namespace: low byte material; 0x700 runtime-random variant; 0x0800 Xenite support; 0x1000 Tritium support; 0x88006000 hard edges; 0x10000 transient region-visited; 0x20000000 fluid receiver exclusion; 0x40000000 fluid source exclusion; 0x10000000 terrain-visual-clearable but semantic unresolved; 0x8000 init-cleared unresolved. Numeric GridScratch class bits are a different allocation and must not be written here.
+    FieldCellPackedFlagsAndMaterial flagsAndMaterial; // [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] FLD +0x50 namespace: low byte material; 0x700 runtime-random variant; 0x0800 Xenite support; 0x1000 Tritium support; 0x88006000 hard edges; 0x10000 transient region-visited; 0x20000000 fluid receiver exclusion; 0x40000000 fluid source exclusion; 0x10000000 terrain-visual-clearable but semantic unresolved; 0x8000 init-cleared unresolved. Numeric GridScratch class bits are a different allocation and must not be written here.
     FieldCellPersistedAux persistedAux54; // Persisted field-cell auxiliary value.
     PackedArgb32 groundDirectionalLightColor; // Packed ground directional-light color written by FieldGridCell_ComputeDirectionalLightColor and consumed by terrain shading.
     PackedArgb32 secondarySurfaceDirectionalLightColor; // Packed secondary-surface directional-light color written beside the ground color and consumed by the secondary terrain shading path.
@@ -5335,7 +5399,7 @@ typedef struct InGameCommandTextEditControlCC *InGameCommandTextEntryPageTextEdi
 
 struct InGameCommandTextEditControlCC {
     struct UiNodeBase base; 
-    enum UiTextEditStateFlags editStateFlags; 
+    UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
     uint32_t bufferCapacityCodeUnits; 
@@ -5406,8 +5470,8 @@ struct WinSockProtoEnt32 {
 };
 
 struct GraphicsCursorInputEvent18 {
-    enum GraphicsCursorEventType eventType;
-    enum GraphicsCursorButtonState buttonState;
+    GraphicsCursorEventType eventType;
+    GraphicsCursorButtonState buttonState;
     UiPixelCoordinate pointerX;
     UiPixelCoordinate pointerY;
     UiPointerWheelDelta wheelDelta;
@@ -5416,7 +5480,7 @@ struct GraphicsCursorInputEvent18 {
 
 struct UiTextEditControl {
     struct UiNodeBase base; 
-    enum UiTextEditStateFlags editStateFlags; 
+    UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
     uint32_t bufferCapacityCodeUnits; 
@@ -5553,14 +5617,14 @@ struct UiTimedListTreeRecord {
     uint32_t countOrLabelText;
     uint32_t parentBlockOrIcon;
     struct UiTimedListTreeRecord *childBlockOrParentRecord;
-    enum UiTimedListRecordFlags flags;
+    UiTimedListRecordFlags flags;
 };
 
 /* Tree list (g_UiTimedListControlVtable), e.g. the directory browser; the full object is
    UiTimedListTreeControl (0x88 bytes). No UI template instantiates it. */
 struct UiTimedListControl {
     struct UiNodeBase base;
-    enum UiTimedListStateFlags listStateAndDelay;
+    UiTimedListStateFlags listStateAndDelay;
     struct UiTimedListTreeRecord *recordTree;
     UiListRowCount rowCount;
     UiPixelExtent rowHeight;
@@ -5603,7 +5667,7 @@ struct FrontendResultsColumnDrawDispatchTable {
 };
 
 struct UiTransferPacketHeader {
-    enum UiTransferPacketPackedType packedTypeAndUnitCount; 
+    UiTransferPacketPackedType packedTypeAndUnitCount; 
     UiTransferSequenceToken sequenceToken; 
     UiTransferSenderContext senderContext; 
     UiTransferXorChecksum xorChecksum; 
@@ -5612,7 +5676,7 @@ struct UiTransferPacketHeader {
 struct FrontendPacket50001SessionAdvertisement {
     struct UiTransferPacketHeader header; 
     UiTransferPayloadByteCount payloadByteCount; 
-    enum UiTransferJoinAvailability joinAvailableFlag; 
+    UiTransferJoinAvailability joinAvailableFlag; 
     uint16_t sessionTitleUtf16[20]; 
     uint16_t hostDescriptionUtf16[44]; 
     uint16_t playerCountTextUtf16[4]; 
@@ -5652,30 +5716,30 @@ struct LevelArchivePathTemplate18 {
 #pragma pack(pop)
 
 struct RuntimeModelClassPriorityTable24 {
-    enum RuntimeModelClassPriority modelClass00Priority; 
-    enum RuntimeModelClassPriority modelClass01Priority; 
-    enum RuntimeModelClassPriority modelClass02Priority; 
-    enum RuntimeModelClassPriority modelClass03Priority; 
-    enum RuntimeModelClassPriority modelClass04Priority; 
-    enum RuntimeModelClassPriority modelClass05Priority; 
-    enum RuntimeModelClassPriority modelClass06Priority; 
-    enum RuntimeModelClassPriority modelClass07Priority; 
-    enum RuntimeModelClassPriority modelClass08Priority; 
-    enum RuntimeModelClassPriority modelClass09Priority; 
-    enum RuntimeModelClassPriority modelClass10Priority; 
-    enum RuntimeModelClassPriority modelClass11Priority; 
-    enum RuntimeModelClassPriority modelClass12Priority; 
-    enum RuntimeModelClassPriority modelClass13Priority; 
-    enum RuntimeModelClassPriority modelClass14Priority; 
-    enum RuntimeModelClassPriority modelClass15Priority; 
-    enum RuntimeModelClassPriority modelClass16Priority; 
-    enum RuntimeModelClassPriority modelClass17Priority; 
-    enum RuntimeModelClassPriority modelClass18Priority; 
-    enum RuntimeModelClassPriority modelClass19Priority; 
-    enum RuntimeModelClassPriority modelClass20Priority; 
-    enum RuntimeModelClassPriority modelClass21Priority; 
-    enum RuntimeModelClassPriority modelClass22Priority; 
-    enum RuntimeModelClassPriority modelClass23Priority; 
+    RuntimeModelClassPriority modelClass00Priority; 
+    RuntimeModelClassPriority modelClass01Priority; 
+    RuntimeModelClassPriority modelClass02Priority; 
+    RuntimeModelClassPriority modelClass03Priority; 
+    RuntimeModelClassPriority modelClass04Priority; 
+    RuntimeModelClassPriority modelClass05Priority; 
+    RuntimeModelClassPriority modelClass06Priority; 
+    RuntimeModelClassPriority modelClass07Priority; 
+    RuntimeModelClassPriority modelClass08Priority; 
+    RuntimeModelClassPriority modelClass09Priority; 
+    RuntimeModelClassPriority modelClass10Priority; 
+    RuntimeModelClassPriority modelClass11Priority; 
+    RuntimeModelClassPriority modelClass12Priority; 
+    RuntimeModelClassPriority modelClass13Priority; 
+    RuntimeModelClassPriority modelClass14Priority; 
+    RuntimeModelClassPriority modelClass15Priority; 
+    RuntimeModelClassPriority modelClass16Priority; 
+    RuntimeModelClassPriority modelClass17Priority; 
+    RuntimeModelClassPriority modelClass18Priority; 
+    RuntimeModelClassPriority modelClass19Priority; 
+    RuntimeModelClassPriority modelClass20Priority; 
+    RuntimeModelClassPriority modelClass21Priority; 
+    RuntimeModelClassPriority modelClass22Priority; 
+    RuntimeModelClassPriority modelClass23Priority; 
 };
 
 struct WinSockServEnt32 {
@@ -5688,7 +5752,7 @@ struct WinSockServEnt32 {
 
 struct UiTextListControl {
     struct UiNodeBase base; 
-    enum UiTextListStateFlags listStateFlags; 
+    UiTextListStateFlags listStateFlags; 
     uint16_t **rowTextSlots; 
     UiListRowCount rowCount; 
     UiPixelExtent rowHeight; 
@@ -5705,11 +5769,12 @@ struct SprRelocationBlockHeader {
     uint8_t reserved10_1F[16];
 };
 
-typedef enum InGameConditionKind {
+enum {
     MODEL_RUNTIME=0,
     SHOT_RUNTIME=1,
     EFFECT_RUNTIME=2
-} InGameConditionKind;
+};
+typedef int InGameConditionKind;
 
 union InGameConditionPayloadPointer {
     struct ModelRuntimeSlot *modelRuntime; 
@@ -5724,7 +5789,7 @@ struct InGameNotificationPayload {
     AngleTurn32 headingAngle; // Camera heading when jumping to the target.
     uint32_t orientationOrPresentationValue;
     uint32_t reserved10;
-    enum InGameNotificationPayloadKind payloadKind;
+    InGameNotificationPayloadKind payloadKind;
 };
 
 struct WinSockHostEnt32 {
@@ -5748,7 +5813,7 @@ struct UiTransferSenderEndpointSlot {
 
 struct FrontendModelPointerHitContext {
     struct UiNodeBase base; // Accepted frontend UI-node prefix.
-    enum FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
+    FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
     uint8_t reserved50_5F[16]; // Unresolved.
     Q12 hitReferenceWorldXQ12; // Subtracted from model world-transform X when computing the hit metric.
     Q12 hitReferenceWorldYQ12; // Subtracted from model world-transform Y when computing the hit metric.
@@ -5847,7 +5912,7 @@ struct UiListColumn {
    the columns that no list method reads. UiPointerListControl is the 0x64-byte prefix of this class. */
 struct UiListControl {
     struct UiNodeBase base;
-    enum UiListStateFlags listStateFlags;
+    UiListStateFlags listStateFlags;
     void **rowSlots;
     UiListRowCount rowCount;
     UiPixelExtent rowHeight;
@@ -5915,7 +5980,7 @@ struct WinSockData11 {
 
 struct UiScrollableControl {
     struct UiNodeBase base; 
-    enum UiScrollableStateFlags scrollStateFlags; 
+    UiScrollableStateFlags scrollStateFlags; 
     UiPixelExtent viewportWidth; 
     UiPixelExtent viewportHeight; 
     UiPixelExtent contentWidth; 
@@ -5937,7 +6002,7 @@ struct UiScrollableControl {
 struct InGameTargetingContext {
     struct UiNodeBase base; 
     uint8_t reserved4C_4F[4]; 
-    enum InGameTargetingObservedActionState actionState; 
+    InGameTargetingObservedActionState actionState; 
     uint8_t reserved54_FF[172]; 
 };
 
@@ -5989,7 +6054,7 @@ struct NetworkSessionContext {
 };
 
 struct InGameCameraCommandDispatchRecord {
-    enum InGameCameraCommandKeyCode keyCode;
+    InGameCameraCommandKeyCode keyCode;
     uint32_t requiredModifierMask;
     ContinuationEntryAddress32 continuationEntryAddress; 
 };
@@ -6000,16 +6065,18 @@ struct InGameCameraCommandDispatchTable {
     uint8_t alignmentPadding[12];
 };
 
-typedef enum UiRootFlags {
+enum {
     UI_ROOT_DISABLE_POINTER_HIT_TEST=256 
-} UiRootFlags;
+};
+typedef int UiRootFlags;
 
-typedef enum MovieStreamState {
+enum {
     MOVIE_STREAM_IDLE=0,
     MOVIE_STREAM_FILL_REQUESTED=1,
     MOVIE_STREAM_READ_FAILED=2,
     MOVIE_STREAM_SHUTDOWN=3
-} MovieStreamState;
+};
+typedef int MovieStreamState;
 
 struct SelectionPlayerPairRecord {
     uint32_t pairKey; 
@@ -6030,7 +6097,7 @@ struct MovieFileHeader {
 
 struct UiRootNode {
     struct UiNodeBase base;
-    enum UiRootFlags rootFlags;
+    UiRootFlags rootFlags;
     struct UiRootCallbacks *callbacks;
     struct UiRootNode *previousRoot;
 };
@@ -6128,7 +6195,7 @@ struct InGameRuntimeRoot {
     AngleTurn32 minimapRotationAngle; // Minimap rotationAngle, follows the camera heading unless automatic rotation is off.
     struct TerrainCompositeTextureRuntime *minimapTextureSource; // Minimap textureSource: the terrain composite texture.
     uint8_t reserved9A80_9B4B[204];
-    enum InGameNotificationInteractionState notificationButtonCursorFrame; // UiImageActionControl.cursorFrame of the notification target button (+0x9AFC): 7 while a notification target can be jumped to, 0x1B after the jump (next click cancels), 0 idle.
+    InGameNotificationInteractionState notificationButtonCursorFrame; // UiImageActionControl.cursorFrame of the notification target button (+0x9AFC): 7 while a notification target can be jumped to, 0x1B after the jump (next click cancels), 0 idle.
     uint32_t notificationButtonTextureSource; // Its textureSource: the playing notification movie, or the panel texture when none plays.
     uint32_t notificationButtonSubresource; // Its subresource: 0 for a movie frame, 0x25 (idle panel image) after playback closes.
     uint8_t reserved9B58_9E3F[744];
@@ -6165,7 +6232,7 @@ struct MovieRuntime {
     MovieOpenFlags openFlags; 
     MovieAudioGainQ15 audioGainQ15; 
     MovieWorkerActiveFlag workerActive; 
-    enum MovieStreamState streamState; 
+    MovieStreamState streamState; 
     void *refillSemaphore; 
     uint32_t reservedFC;
     char unusedText[256]; // The gfx asset header's text at +0x100 (see GraphicsTextureSourceAsset); Movie_Open clears its first byte.
@@ -6241,7 +6308,7 @@ struct ModelRuntimeSlotClassStateSerializedScalar {
 };
 
 struct ModelRuntimeSlotSavedView {
-    enum PckModelDefinitionIdCatalog definitionSavedId; 
+    PckModelDefinitionIdCatalog definitionSavedId; 
     uint32_t rootModelNodeSavedOffset; 
     uint32_t ownerArmyRuntimeSavedOffset; 
     uint32_t attachmentCount; 
@@ -6264,13 +6331,13 @@ struct ModelRuntimeSlotSavedView {
 };
 
 struct EffectRuntimeSlotSerializedScalarView {
-    enum PckEffectDefinitionIdCatalog definitionSavedId; 
+    PckEffectDefinitionIdCatalog definitionSavedId; 
     uint32_t modelNodeSavedOffset; 
     EffectAnimationFrameCount animationFramesRemaining; 
     DefinitionReferencePresentFlag linkedEffectPresent; 
     DefinitionReferencePresentFlag linkedShotPresent; 
     struct EffectRuntimeLifecycleState lifecycleOwnerAndDefinition; 
-    enum EffectCreationFlagBits creationFlags; 
+    EffectCreationFlagBits creationFlags; 
     EffectShadingCountdownTicks shadingStartCountdownTicksRemaining; 
     EffectShadingCountdownTicks shadingStopCountdownTicksRemaining; 
     EffectPeriodicIntervalTicks periodicEffectCountdownTicks; 
@@ -6279,11 +6346,12 @@ struct EffectRuntimeSlotSerializedScalarView {
     uint32_t serializationToggleDword; 
 };
 
-typedef enum ResourceRegistrationDomainIndex {
+enum {
     RESOURCE_DOMAIN_ARMY_RUNTIME=0,
     RESOURCE_DOMAIN_SHOT_RUNTIME=1,
     RESOURCE_DOMAIN_EFFECT_RUNTIME=2
-} ResourceRegistrationDomainIndex;
+};
+typedef int ResourceRegistrationDomainIndex;
 
 struct ResourceRegistrationRecordSavedView {
     uint32_t primarySavedIdOrOffset; 
@@ -6296,11 +6364,11 @@ struct ResourceRegistrationRecordSavedView {
     uint32_t spriteAssetSavedIdOrOffset; 
     uint8_t reserved0044_0047[4]; 
     uint32_t runtimePayloadSavedOffset; 
-    enum RuntimeRegistrationRecordFlags flags; 
+    RuntimeRegistrationRecordFlags flags; 
     uint8_t reserved0050_005B[12]; 
     uint32_t auxiliarySavedIdOrOffset; 
     uint8_t reserved0060_00A3[68]; 
-    enum ResourceRegistrationDomainIndex domainIndex; 
+    ResourceRegistrationDomainIndex domainIndex; 
     uint8_t reserved00A8_00C3[28]; 
     uint32_t nestedBaseSavedOffset; 
     uint32_t nestedCount; 
@@ -6335,11 +6403,11 @@ struct ResourceRegistrationRecord {
     struct SpriteAssetHeader *spriteAsset; 
     uint8_t reserved0044_0047[4]; 
     union ResourceRegistrationRuntimePayloadReference4 runtimePayload; 
-    enum RuntimeRegistrationRecordFlags flags; 
+    RuntimeRegistrationRecordFlags flags; 
     uint8_t reserved0050_005B[12]; 
     union ResourceRegistrationPointerOrSavedOffset4 auxiliaryPointerOrSavedOffset; 
     uint8_t reserved0060_00A3[68]; 
-    enum ResourceRegistrationDomainIndex domainIndex; 
+    ResourceRegistrationDomainIndex domainIndex; 
     uint8_t reserved00A8_00C3[28]; 
     union ResourceRegistrationPointerOrSavedOffset4 nestedBasePointerOrSavedOffset; 
     uint32_t nestedCount; 
@@ -6356,7 +6424,7 @@ struct ShotRuntimeOwnerAndTrajectorySerializedState {
 };
 
 struct ShotRuntimeSlotSerializedScalarView {
-    enum PckShotDefinitionIdCatalog definitionSavedId; 
+    PckShotDefinitionIdCatalog definitionSavedId; 
     Q12 launchSpeedQ12; 
     uint32_t terrainRuntimeClassState; 
     ShotAnimationFrameAccumulatorQ4 animationFrameAccumulatorQ4; 
@@ -6435,7 +6503,7 @@ struct ArmyRuntimeLinkedChildSlotMaskState {
 };
 
 struct ArmyRuntimeLinkedChildMaskArticulatedContactState {
-    enum ArmyTerrainContactDispatchMode terrainContactMode; 
+    ArmyTerrainContactDispatchMode terrainContactMode; 
     Q12 lateralOffsetQ12; 
     struct ArmyRuntimeLinkedChildSlotMaskState linkedChildSlotMaskState; 
     Q12 fallbackPosition0Q12; 
@@ -6480,8 +6548,8 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     uint32_t occupancyMarkRadius; 
     uint32_t aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     uint32_t movementRetryCountdown; 
     uint32_t runtimeStateA8; 
     struct ArmyRuntimeLinkedChildMaskArticulatedContactState articulatedContact; 
@@ -6541,8 +6609,8 @@ struct ArmyRuntimeMovementCountdownSlotView {
     uint32_t occupancyMarkRadius; 
     uint32_t aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     uint32_t movementRetryCountdown; 
     uint32_t runtimeStateA8; 
     struct ArmyRuntimeArticulatedContactState articulatedContact; 
@@ -6642,8 +6710,8 @@ struct ArmyRuntimeWaypointCoordinateSlotView {
     uint32_t occupancyMarkRadius; 
     uint32_t aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     uint32_t movementRetryCountdown; 
     uint32_t runtimeStateA8; 
     struct ArmyRuntimeArticulatedContactState articulatedContact; 
@@ -6724,8 +6792,8 @@ struct ArmyMovementRuntime {
     uint32_t runtimeState90; 
     uint32_t runtimeState94; 
     uint32_t runtimeState98; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     ArmyMovementRetryCountdown retryCountdown; 
     ArmyWaypointCount queuedWaypointCount; 
     uint8_t unresolvedMovementPrefix[12]; 
@@ -6919,17 +6987,19 @@ struct NetworkBackendInstanceDescriptorPrefix {
     uint16_t displayNameUtf16[20]; // Twenty UTF-16 code units: WinSock32 1.1 - UDP.
 };
 
-typedef enum PersistentSoundOptionFlags {
+enum {
     SOUND_OPTIONS_EFFECTS_ENABLED=1,
     SOUND_OPTIONS_MUSIC_ENABLED=2,
     SOUND_OPTIONS_REVERSE_STEREO=4
-} PersistentSoundOptionFlags;
+};
+typedef int PersistentSoundOptionFlags;
 
-typedef enum PersistentTextureQualityLevel {
+enum {
     TEXTURE_QUALITY_HIGH=0,
     TEXTURE_QUALITY_MEDIUM=1,
     TEXTURE_QUALITY_LOW=2
-} PersistentTextureQualityLevel;
+};
+typedef int PersistentTextureQualityLevel;
 
 struct PersistentSettingsRuntime {
     struct PersistentSettingsImage *image; 
@@ -6946,21 +7016,21 @@ struct PersistentSettingsImage {
     PersistentShadingGridHalfSize shadingGridHalfSize; 
     PersistentShadingTextureDimension shadingTextureDimension; 
     PersistentShadingSubresourceCount shadingTextureSubresourceCount; 
-    enum PersistentToggleState shadingEnabled; 
-    enum PersistentSoundOptionFlags soundOptionFlags; 
+    PersistentToggleState shadingEnabled; 
+    PersistentSoundOptionFlags soundOptionFlags; 
     SpatialSoundGainQ15 soundEffectsGainQ15; 
     MovieAudioGainQ15 movieDefaultAudioGainQ15; 
     SpatialSoundGainQ15 musicGainQ15; 
-    enum PersistentTextureQualityLevel textureQualityLevel; 
+    PersistentTextureQualityLevel textureQualityLevel; 
     PersistentModelLodDepthQ8 modelLodDepthThresholdQ8; 
     LocaleCountryCode localeCountryCodeOverride; 
     NetworkPlayerCount networkPlayerCount; 
-    enum PersistentMapMouseOptionFlags mapMouseOptionFlags; 
+    PersistentMapMouseOptionFlags mapMouseOptionFlags; 
     GameSpeedPercent gameSpeedPercent; 
     CameraScrollStepPixels cameraScrollStep; 
     MovieAudioGainQ15 movieAlternateAudioGainQ15; 
     uint8_t reserved50_5B[12]; 
-    enum PersistentMouseLinkPanelOptionFlags mouseLinkPanelOptionFlags; 
+    PersistentMouseLinkPanelOptionFlags mouseLinkPanelOptionFlags; 
     uint16_t playerName[20]; 
     uint16_t gameName[20]; 
     uint8_t reservedB0_C7[24]; 
@@ -7057,7 +7127,7 @@ struct AiScoredSiteWorkspaceEntry {
 struct AiTerrainFeatureWorkspaceEntry {
     struct FieldGridCell *cell; 
     uint32_t unresolved04; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    PckArmyAssetIdCatalog armyAssetId; 
     int priority; 
 };
 
@@ -7065,7 +7135,7 @@ struct AiRuntimeWorkspaceEntry {
     /* the model runtime (runtimePayload) of a MODEL node of the world owner list, NULL for a pending asset;
        its owning army is modelRuntime->ownerArmyRuntimeOrSavedOffset (AiPlanning_RebuildFactionWorkspaces) */
     struct ModelRuntimeSlot *modelRuntime; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    PckArmyAssetIdCatalog armyAssetId; 
 };
 
 struct AiTargetWorkspaceEntry {
@@ -7081,7 +7151,7 @@ struct AiLinkedDefinitionListView {
     ModelLinkedDefinitionListAddress32 childList0Address; 
     ModelLinkedDefinitionListAddress32 childList1Address; 
     uint8_t unresolved14_1F[12]; 
-    enum PckModelDefinitionIdCatalog definitionIds[8]; 
+    PckModelDefinitionIdCatalog definitionIds[8]; 
 };
 
 struct AiArmyScoreWeights {
@@ -7097,19 +7167,20 @@ struct AiArmyScoreWeights {
 
 typedef int AiTechnologyCandidateScore;
 
-typedef enum AiTechnologyCandidateScoreKind {
+enum {
     AI_TECHNOLOGY_SCORE_DEFAULT_ZERO=0,
     AI_TECHNOLOGY_SCORE_FACTION_SCALED=1,
     AI_TECHNOLOGY_SCORE_BASE_VALUE_KIND2=2,
     AI_TECHNOLOGY_SCORE_RUNTIME_CLASS_COMPATIBLE=3,
     AI_TECHNOLOGY_SCORE_BASE_VALUE_KIND4=4,
     AI_TECHNOLOGY_SCORE_CATEGORY_COMPATIBLE=5
-} AiTechnologyCandidateScoreKind;
+};
+typedef int AiTechnologyCandidateScoreKind;
 
 struct AiTechnologyPlanningCandidate {
-    enum PckTechnologyIdCatalog technologyId00; 
+    PckTechnologyIdCatalog technologyId00; 
     struct ModelRuntimeSlot *sourceModelRuntime04; /* the own structure's model runtime (workspace 00 entry) */
-    enum AiTechnologyCandidateScoreKind scoreKind08; 
+    AiTechnologyCandidateScoreKind scoreKind08; 
     uint32_t reserved0C; 
 };
 
@@ -7120,7 +7191,7 @@ typedef uint32_t AiTechnologyCategoryMask;
 typedef uint32_t AssetDecodedBlockCount;
 
 struct SoundSampleAsset {
-    enum AssetMagic magic;
+    AssetMagic magic;
     uint8_t reserved04_0B[8];
     AssetFormatVersion formatVersion;
     uint8_t reserved10_AF[160];
@@ -7205,9 +7276,9 @@ struct PckEntryHeader {
     uint16_t path[246]; 
     PckRuntimePayloadOffset runtimePayloadOffset; 
     PckDecodedByteCount unpackedSize; 
-    enum PckAssetTypeTag typeTag; 
+    PckAssetTypeTag typeTag; 
     PckStoredByteCount packedSize; 
-    enum PckCompressionMethod compressionMethod; 
+    PckCompressionMethod compressionMethod; 
 };
 
 struct PckMountSlot {
@@ -7219,7 +7290,7 @@ struct PckMountSlot {
 union ShotRayDistanceOrDefinitionReference {
     Q12 rayDistanceQ12; 
     struct ShotDefinition *definition; 
-    enum PckShotDefinitionIdCatalog savedId; 
+    PckShotDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
 
@@ -7253,21 +7324,21 @@ struct ModelRuntimeSlotUnrebaseView {
 
 union ArmyAssetReferenceOrSavedId4 {
     struct ArmyAssetRecordPrefix *record; 
-    enum PckArmyAssetIdCatalog savedId; 
+    PckArmyAssetIdCatalog savedId; 
     uint32_t raw; 
 };
 
 struct ArmyAssetRecordPrefix {
     AssetRecordByteCount byteSize; 
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex; 
-    enum PckArmyAssetIdCatalog registryId; 
+    PckArmyAssetIdCatalog registryId; 
     uint32_t rootNodeOffsetOrPointer; 
 };
 
 struct ArmyAssetRecord {
     AssetRecordByteCount byteSize;
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex;
-    enum PckArmyAssetIdCatalog registryId;
+    PckArmyAssetIdCatalog registryId;
     uint32_t rootNodeOffsetOrPointer;
     void *linkedRuntimeOrRecord10;
     uint32_t flags; /* +0x14 ARMY_ASSET_FLAG_*: 1 enabled/buildable, 0x100 editor-placeable, 0x200 editor object */
@@ -7278,7 +7349,7 @@ struct ArmyAssetRecord {
     uint32_t buildTicks; /* +0x24 ModelDefinition.buildTicks */
     uint32_t xeniteCostQ4; /* +0x28 ModelDefinition.xeniteValueQ4 */
     uint32_t energyLoadQ4; /* +0x2C ModelDefinition.buildEnergyLoadQ4; added to the builder's energyLoadQ4 while building */
-    enum PckArmyAssetIdCatalog linkedArmyAssetIds[16]; /* +0x30 ARMY_ASSET_LINKED_ID_COUNT linked army ids, 0 = none */
+    PckArmyAssetIdCatalog linkedArmyAssetIds[16]; /* +0x30 ARMY_ASSET_LINKED_ID_COUNT linked army ids, 0 = none */
     uint32_t definitionClassValue70; 
     uint32_t definitionClassValue74; 
     uint32_t definitionClassValue78; 
@@ -7288,7 +7359,7 @@ struct ArmyAssetRecord {
 struct ModelDefinition {
     AssetRecordByteCount byteSize;
     uint32_t nameTextIndex; /* +0x04 model name text: TEXT_ID_MODEL_NAME_BASE (0x18004F) + nameTextIndex */
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     int movementSpeed; /* +0x0C movement speed; door/animation step per tick */
     int animatedChild0RotationStep; /* +0x10 per-tick rotation of animated child node 0 */
     int animatedChild2BobStep; /* +0x14 per-tick up/down step of animated child node 2 */
@@ -7301,7 +7372,7 @@ struct ModelDefinition {
     int reloadTicks; /* +0x30 weapon reload ticks; nonzero = armed (the shot in shotDefinitionReference counts for selection range and damage) */
     uint8_t reserved034_047[20];
     uint32_t visibilityRadius; /* +0x48 terrain visibility (occlusion) radius; the army keeps the maximum in ArmyRuntimeSlot.visibilityRadius */
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     Q12 aimHeightOffsetQ12; /* +0x50 height above the model origin that shots aim at */
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference; /* +0x58 timed/step effect used instead of emitterEffectDefinitionReference over water */
@@ -7314,7 +7385,7 @@ struct ModelDefinition {
     uint8_t field22_0x6e;
     uint8_t field23_0x6f;
     int visibilityHeightOffset; /* +0x70 eye height above the model; the army keeps the maximum in ArmyRuntimeSlot.visibilityHeightOffset */
-    enum PckArmyAssetIdCatalog destroyedReplacementArmyAssetId; /* +0x74 army spawned in place of a destroyed root model, -1 = none */
+    PckArmyAssetIdCatalog destroyedReplacementArmyAssetId; /* +0x74 army spawned in place of a destroyed root model, -1 = none */
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with positionedSoundMaximumDistanceQ12 to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with positionedSoundGainQ15.
     union EffectDefinitionReferenceOrSavedId destructionEffect0; /* +0x80 + 8 * i: destruction effect channel i (ModelRuntimeSlot.destructionEffectTimers) */
@@ -7373,7 +7444,7 @@ struct ModelDefinition {
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
     uint32_t requiredTechnologyBit; /* +0x1C0 technology bit the faction needs; also matched against a runtime class id by ModelDefinitionRegistry_FindByRuntimeClassId */
     uint32_t researchTechnologyIds[29]; /* +0x1C4 [1..28] (+0x1C8..+0x234) the technologies researchable here */
-    enum PckModelDefinitionIdCatalog variantModelDefinitionIds[6]; /* +0x238 technology variants, 0 = none */
+    PckModelDefinitionIdCatalog variantModelDefinitionIds[6]; /* +0x238 technology variants, 0 = none */
     int damageEffectHealthPercent; /* +0x250 damage effect below this health percentage */
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
     int damageEffectIntervalTicks; /* +0x258 */
@@ -7391,7 +7462,7 @@ struct ModelDefinition {
 struct ModelDefinitionResolveView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint32_t movementSpeed; // Movement speed; also the AI coefficient at +24.
     uint8_t reserved010_017[8]; // Unresolved intervening fields.
     uint32_t accelerationPerTick; // Movement acceleration; nonzero (mobile) enables the AI score bonus.
@@ -7402,7 +7473,7 @@ struct ModelDefinitionResolveView {
     uint32_t reloadTicks; // ModelDefinition.reloadTicks; the AI divides shot damage by it (damage per tick), nonzero = armed.
     uint8_t reserved034_047[20]; // Unresolved remaining fields.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     Q12 aimHeightOffsetQ12; /* +0x50 height above the model origin that shots aim at */
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     struct EffectDefinition *waterEmitterEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
@@ -7415,7 +7486,7 @@ struct ModelDefinitionResolveView {
     uint8_t field26_0x6e;
     uint8_t field27_0x6f;
     int visibilityHeightOffset; /* +0x70 */
-    enum PckArmyAssetIdCatalog destroyedReplacementArmyAssetId; /* +0x74 */
+    PckArmyAssetIdCatalog destroyedReplacementArmyAssetId; /* +0x74 */
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with positionedSoundMaximumDistanceQ12 to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with positionedSoundGainQ15.
     struct EffectDefinition *destructionEffect0; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
@@ -7465,7 +7536,7 @@ struct ModelDefinitionResolveView {
 };
 
 struct ArmyRuntimeTerrainContactLinkedChildState {
-    enum ArmyTerrainContactDispatchMode terrainContactMode; 
+    ArmyTerrainContactDispatchMode terrainContactMode; 
     uint32_t linkedChildDispatchState; 
     union ArmyRuntimeContactRadiusOrLinkedSlotMask contactRadiusOrLinkedSlotMask; 
     Q12 fallbackPosition0Q12; 
@@ -7510,8 +7581,8 @@ struct ArmyRuntimeTerrainContactLinkedChildClassView {
     uint32_t occupancyMarkRadius; 
     uint32_t aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     uint32_t movementRetryCountdown; 
     uint32_t runtimeStateA8; 
     struct ArmyRuntimeTerrainContactLinkedChildState terrainContactLinkedChildState; 
@@ -7627,8 +7698,8 @@ struct ArmyRuntimeTerrainContactLinkedChildModelView {
     uint32_t occupancyMarkRadius; 
     uint32_t aiUnitFlags; 
     uint32_t assignedTargetArmyRuntime; 
-    enum ModelRuntimeClassId depthBinClass; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    ModelRuntimeClassId depthBinClass; 
+    PckArmyAssetIdCatalog armyAssetId; 
     uint32_t movementRetryCountdown; 
     uint32_t runtimeStateA8; 
     struct ArmyRuntimeTerrainContactLinkedChildState terrainContactLinkedChildState; 
@@ -7679,7 +7750,7 @@ struct ArmyRuntimeTerrainContactLinkedChildSlotView {
     FactionArmyAssetCount linkedChildUsedSlotCount; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
-    enum PckArmyAssetIdCatalog linkedChildAssetIdSlots13[13]; 
+    PckArmyAssetIdCatalog linkedChildAssetIdSlots13[13]; 
     struct ArmyRuntimeTerrainContactLinkedChildState terrainContactLinkedChildState; 
     struct ArmyRuntimeLinkedChildOverloadedState linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters linkedChildSpawnParameters; 
@@ -7714,7 +7785,7 @@ struct EffectModelRuntimeNode {
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
     uint32_t runtimeStateA0; 
-    enum WorldOwnerRuntimeClassId ownerClassId; 
+    WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
     ModelTextureOffsetTexel secondaryTextureOffsetV; 
@@ -7759,7 +7830,7 @@ struct ResourceRegistrationDomainPairDispatchTable3 {
     ResourceRegistrationImagePair (*callbacks[3])(void); 
 };
 
-typedef enum InGameScheduledConditionKind {
+enum {
     INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED=0,
     INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY=2,
     INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY=4,
@@ -7774,7 +7845,8 @@ typedef enum InGameScheduledConditionKind {
     INGAME_SCHEDULED_CONDITION_XENITE_STORAGE_LIMIT_AT_MOST_0FA0=22,
     INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A=24,
     INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION=26
-} InGameScheduledConditionKind;
+};
+typedef int InGameScheduledConditionKind;
 
 enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
     INGAME_END_CONDITION_TRIGGER_ACTIVE=1,
@@ -7782,12 +7854,13 @@ enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
 };
 typedef uint8_t InGameEndConditionTriggerStateFlags;
 
-typedef enum InGameScheduledConditionStatusFlags {
+enum {
     INGAME_SCHEDULED_CONDITION_SATISFIED=1,
     INGAME_SCHEDULED_CONDITION_KIND_MASK=254
-} InGameScheduledConditionStatusFlags;
+};
+typedef int InGameScheduledConditionStatusFlags;
 
-typedef enum FrontendPointerContextFlags {
+enum {
     FRONTEND_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
     FRONTEND_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK=32,
     FRONTEND_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION=64,
@@ -7799,7 +7872,8 @@ typedef enum FrontendPointerContextFlags {
     FRONTEND_POINTER_CONTEXT_OBSERVED_BUTTON_BRANCH_04000000=67108864,
     FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_40000000=1073741824,
     FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_80000000=2147483648
-} FrontendPointerContextFlags;
+};
+typedef int FrontendPointerContextFlags;
 
 typedef uint32_t ArenaAlignedPayloadByteCount;
 
@@ -7871,8 +7945,8 @@ struct InGameEndConditionTriggerRecord8 {
 };
 
 union InGameScheduledConditionStatusAndKind4 {
-    enum InGameScheduledConditionKind kind; 
-    enum InGameScheduledConditionStatusFlags statusFlags;
+    InGameScheduledConditionKind kind; 
+    InGameScheduledConditionStatusFlags statusFlags;
     uint32_t raw;
     uint8_t kindAndExpression[4]; /* byte 0 kind; a BOOLEAN_POSTFIX_EXPRESSION starts at byte 1 */
 };
@@ -7938,7 +8012,7 @@ struct FileSystemEntryNameUtf16_200 {
 struct MdlDefinitionSemanticPrefix {
     AssetRecordByteCount byteSize; 
     uint32_t nameTextOffset; 
-    enum PckModelDefinitionIdCatalog definitionId; 
+    PckModelDefinitionIdCatalog definitionId; 
     Q12 classSpeedQ12; 
     uint32_t yawMaxVelocityTurn16; 
     uint32_t pitchMaxVelocityTurn16; 
@@ -7947,7 +8021,7 @@ struct MdlDefinitionSemanticPrefix {
     uint32_t pitchAccelerationTurn16; 
     int pitchMinimumTurn16; 
     int pitchMaximumTurn16; 
-    enum PckShotDefinitionIdCatalog shotDefinitionId; 
+    PckShotDefinitionIdCatalog shotDefinitionId; 
     MdlReloadTicks reloadTicks; 
     uint32_t recoilRotationStepTurn16; 
     uint32_t recoilDurationOrIntershotTicks; 
@@ -7955,7 +8029,7 @@ struct MdlDefinitionSemanticPrefix {
     uint32_t actionVector0; 
     uint32_t actionVector1; 
     uint32_t visibilityRadius; // ModelDefinition.visibilityRadius
-    enum ModelRuntimeClassId runtimeClassId; 
+    ModelRuntimeClassId runtimeClassId; 
     uint32_t aimHeightOffsetQ12; // ModelDefinition.aimHeightOffsetQ12
     Q12 placementHeightOffsetQ12; // ModelDefinition.placementHeightOffsetQ12
     uint32_t waterEmitterEffectId; // ModelDefinition.waterEmitterEffectDefinitionReference (serialized id)
@@ -8010,14 +8084,14 @@ struct InGameRuntimeRootPartialView {
 struct ShotDefinitionDisk {
     uint32_t trajectoryMode; 
     uint32_t reservedZero04; 
-    enum PckShotDefinitionIdCatalog definitionId; 
+    PckShotDefinitionIdCatalog definitionId; 
     Q12 launchSpeedQ12; 
-    enum PckEffectDefinitionIdCatalog primaryEffectId; 
-    enum PckEffectDefinitionIdCatalog terrainImpactEffectIds[31]; 
-    enum PckEffectDefinitionIdCatalog targetClassImpactEffectIds[8]; 
+    PckEffectDefinitionIdCatalog primaryEffectId; 
+    PckEffectDefinitionIdCatalog terrainImpactEffectIds[31]; 
+    PckEffectDefinitionIdCatalog targetClassImpactEffectIds[8]; 
     Q12 targetClassImpactDamageQ12[8]; 
     ShotProjectileLifetimeTicks projectileLifetimeTicks;
-    enum PckEffectDefinitionIdCatalog launchEffectId;
+    PckEffectDefinitionIdCatalog launchEffectId;
     ShotModelSpinStepTurn16 modelSpinStepTurn16;
     Q12 ballisticDivisorQ12;
     ShotTerrainImpactHeightDeltaQ12 terrainImpactHeightDeltasQ12[31];
@@ -8028,7 +8102,7 @@ struct ShotDefinitionDisk {
     PackedArgb32 shadingColorArgb;
     GraphicsTransitionTickCount shadingTransitionDurationTicks;
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks;
-    enum PckEffectDefinitionIdCatalog secondaryEffectId;
+    PckEffectDefinitionIdCatalog secondaryEffectId;
     ShotSecondaryEffectIntervalTicks secondaryEffectIntervalTicks;
     ShotTrajectoryRampDurationTicks trajectoryRampDurationTicks;
     ShotFixedRangeTransitionAgeTicks fixedRangeTransitionAgeThresholdTicks;
@@ -8070,7 +8144,7 @@ struct SprVertexRecord {
 
 struct FrontendPointerHitContext {
     struct UiNodeBase base; 
-    enum FrontendPointerContextFlags contextFlags; 
+    FrontendPointerContextFlags contextFlags; 
     uint8_t reserved50_D7[136]; 
     struct UiNodeBase *candidateNodeListHead; 
     uint32_t activePlayerRuntimeId; 
@@ -8094,12 +8168,12 @@ struct TechnologyMask256 {
 struct EffectDefinitionDisk {
     uint32_t transitionKind; 
     uint32_t reservedZero04; 
-    enum PckEffectDefinitionIdCatalog definitionId;
+    PckEffectDefinitionIdCatalog definitionId;
     EffectAnimationFrameCount animationFrameCount;
     uint32_t linkedEffectPresent;
-    enum PckEffectDefinitionIdCatalog linkedEffectId; 
+    PckEffectDefinitionIdCatalog linkedEffectId; 
     uint32_t linkedShotPresent; 
-    enum PckShotDefinitionIdCatalog linkedShotId; 
+    PckShotDefinitionIdCatalog linkedShotId; 
     EffectMovementSpeedQ12 movementSpeedQ12; 
     uint32_t completionCountdownTicks; /* +0x24 copied to the effect slot */
     EffectFrameAdvanceThresholdQ4 frameAdvanceThresholdQ4; 
@@ -8110,7 +8184,7 @@ struct EffectDefinitionDisk {
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks; 
     EffectShadingCountdownTicks shadingStartCountdownTicks; 
     EffectShadingCountdownTicks shadingStopCountdownTicks; 
-    enum PckEffectDefinitionIdCatalog periodicEffectId; 
+    PckEffectDefinitionIdCatalog periodicEffectId; 
     EffectPeriodicIntervalTicks periodicEffectIntervalTicks; 
     EffectAlphaFadeTicks alphaFadeInTicks; 
     EffectAlphaFadeTicks alphaFadeOutTicks;
@@ -8144,7 +8218,7 @@ struct CubicSplineMatrixWorkspace1000 {
 };
 
 struct LevelPlacementRecord {
-    enum PckArmyAssetIdCatalog armyAssetId; 
+    PckArmyAssetIdCatalog armyAssetId; 
     FactionRuntimeIndex factionIndex; 
     GraphicsWorldCoordinateQ12 worldYQ12; 
     GraphicsWorldCoordinateQ12 worldXQ12; 
@@ -8166,7 +8240,7 @@ struct FieldGridCompactCell {
     FieldCellPersistedAux serializedAux54; 
     Q12 terrainHeightQ12; 
     Q12 waterSurfaceDeltaQ12; 
-    enum FieldCellPackedFlagsAndMaterial flagsAndMaterial; 
+    FieldCellPackedFlagsAndMaterial flagsAndMaterial; 
 };
 
 union FieldGridAux54LifetimeUnion {
@@ -8214,7 +8288,7 @@ struct TechnologyRecordDisk40 {
     TechnologyXeniteCostQ4 xeniteCostQ4; 
     TechnologyEnergyCostQ4 energyCostQ4; 
     TechnologyResearchDurationQ5 researchDurationQ5; 
-    enum PckTechnologyIdCatalog dependencyTechnologyIndex; 
+    PckTechnologyIdCatalog dependencyTechnologyIndex; 
     UiTextResourceId completionMessageResourceId; 
     uint32_t category; 
     AiTechnologyCandidateScore baseCandidateScore; 
@@ -8234,7 +8308,7 @@ struct TextResourceAssetHeader {
 struct TextResourceLocaleBlockPrefix {
     TextResourceLocaleBlockByteSize blockSizeBytes; 
     TextResourceStringCount stringCount; 
-    enum LocaleTelephoneCountryCode countryCode; 
+    LocaleTelephoneCountryCode countryCode; 
     uint32_t reserved0C; 
 };
 
@@ -8267,7 +8341,7 @@ struct TextResourceOverrideTable {
     uint16_t *textPointers[4096]; 
 };
 
-typedef enum WideNumberFormatFlags {
+enum {
     WIDE_FORMAT_SIGNED_VALUE=1,
     WIDE_FORMAT_HEXADECIMAL=2,
     WIDE_FORMAT_FIXED_FRACTION_WIDTH=4,
@@ -8276,7 +8350,8 @@ typedef enum WideNumberFormatFlags {
     WIDE_FORMAT_SHOW_PLUS_SIGN=32,
     WIDE_FORMAT_WRITE_TERMINATOR=64,
     WIDE_FORMAT_GROUP_THOUSANDS=128
-} WideNumberFormatFlags;
+};
+typedef int WideNumberFormatFlags;
 typedef uint32_t WideNumberFormatUtf16Proc(WideNumberFormatFlags flags, uint32_t fractionalDigits, uint32_t integerDigitLimit, uint32_t denominator, int32_t value, uint16_t * destination);
 
 struct RichTextExtent {
@@ -8308,9 +8383,9 @@ struct GraphicsProjectedVertexSource {
 };
 
 struct GraphicsPaletteTextureSourceAsset {
-    enum GraphicsPaletteTextureAssetMagic magic; 
+    GraphicsPaletteTextureAssetMagic magic; 
     GraphicsAssetAllocationByteSize allocationSizeBytes; 
-    enum GraphicsPaletteTextureFormatVersion formatVersion; 
+    GraphicsPaletteTextureFormatVersion formatVersion; 
     uint32_t reserved0C; 
     uint8_t reserved10_AF[160]; 
     GraphicsAssetSubresourceCount subresourceCount; 
@@ -8412,12 +8487,12 @@ struct SoftwareRgbWordLanes {
 struct SoftwareFramebufferAccess {
     GraphicsPixelDimension width; 
     GraphicsPixelDimension height; 
-    enum SoftwareFramebufferPixelSize bytesPerPixel; 
+    SoftwareFramebufferPixelSize bytesPerPixel; 
     uint8_t *pixels; 
 };
 
 struct GraphicsCursorInputEvent {
-    enum GraphicsCursorEventType eventType; 
+    GraphicsCursorEventType eventType; 
     uint32_t buttonMask; 
     UiPixelCoordinate x; 
     UiPixelCoordinate y; 
@@ -8554,7 +8629,7 @@ struct DirectDrawPaletteEntry {
 
 typedef uint32_t GridPathCost;
 
-typedef enum GridScratchStateMask { 
+enum { 
     GRID_SCRATCH_TRAVERSAL_VISITED=1,
     GRID_SCRATCH_TERRAIN_CLASS_BIT24=16777216,
     GRID_SCRATCH_TERRAIN_CLASS_BIT25=33554432,
@@ -8563,10 +8638,11 @@ typedef enum GridScratchStateMask {
     GRID_SCRATCH_TERRAIN_CLASS_BIT28=268435456,
     GRID_SCRATCH_TERRAIN_CLASS_BIT29=536870912,
     GRID_SCRATCH_TERRAIN_CLASS_BIT30=1073741824
-} GridScratchStateMask;
+};
+typedef int GridScratchStateMask;
 
 struct GridScratchCell {
-    enum GridScratchStateMask stateMask; 
+    GridScratchStateMask stateMask; 
     GridPathCost pathCost; 
 };
 
@@ -8600,7 +8676,7 @@ struct FncModuleExportBindingDescriptor {
 };
 
 struct FncModuleHeader {
-    enum AssetMagic magic;
+    AssetMagic magic;
     AssetAllocationSizeBytes allocationSizeBytes;
     AssetFormatVersion formatVersion;
     uint32_t reserved0C;
@@ -8744,7 +8820,7 @@ struct UiPayloadPairTextButton {
 struct UiCommandRuntimeRecordPrefix {
     AssetRecordByteCount byteSize; /* ArmyAssetRecord.byteSize */
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex; /* +0x04 added to the hover text id base */
-    enum PckArmyAssetIdCatalog armyAssetId;
+    PckArmyAssetIdCatalog armyAssetId;
     uint32_t rootNodeOffsetOrPointer; /* +0x0C ArmyAssetRecord.rootNodeOffsetOrPointer (ArmyModelTreeNode * after registration) */
     void *linkedRuntimeOrRecord10;
     uint32_t assetFlags14; /* +0x14 army asset flags (ArmyAssetRecord.flags): 1 buildable, 0x10 special catalog, rest capability bits */
@@ -8777,7 +8853,7 @@ struct UiSpriteButtonControl {
 
 struct UiCommandSpriteButtonControl {
     struct UiSpriteButtonControl sprite; 
-    enum UiCommandActivationStateFlags activationInputState; 
+    UiCommandActivationStateFlags activationInputState; 
 };
 
 struct UiCatalogEntryControl {
@@ -8968,7 +9044,7 @@ struct InGamePlayerStatusTextSlot {
 
 struct UiRequiredTextEditControl {
     struct UiNodeBase base; 
-    enum UiRequiredTextEditStateFlags editStateFlags; 
+    UiRequiredTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
     UiTextCodeUnitCount bufferCapacityCodeUnits; 
@@ -8981,7 +9057,7 @@ struct UiRequiredTextEditControl {
 
 struct UiPathTextEditControl {
     struct UiNodeBase base; 
-    enum UiTextEditStateFlags editStateFlags; 
+    UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
     uint32_t bufferCapacityCodeUnits; 
@@ -9046,7 +9122,7 @@ struct DynamicApiBinding {
 
 struct ArenaBlockHeader {
     uint32_t payloadSize; 
-    enum ArenaBlockStateMagic stateMagic; 
+    ArenaBlockStateMagic stateMagic; 
     struct ArenaBlockHeader *next; 
     struct ArenaBlockHeader *previous; 
     uint8_t alignmentPadding[16];
@@ -9287,10 +9363,11 @@ struct LocaleSystemState {
     uint16_t pmDesignator[16]; 
 };
 
-typedef enum RuntimeSpinLockValue {
+enum {
     SPIN_LOCK_UNLOCKED=0,
     SPIN_LOCK_LOCKED=4294967295
-} RuntimeSpinLockValue;
+};
+typedef int RuntimeSpinLockValue;
 
 struct TimerSystemState {
     void (*callbacks[32])(void); 
@@ -9357,9 +9434,9 @@ struct TechnologyRecord {
     TechnologyXeniteCostQ4 xeniteCostQ4; 
     TechnologyEnergyCostQ4 energyCostQ4; 
     TechnologyResearchDurationQ5 researchDurationQ5; 
-    enum PckTechnologyIdCatalog dependencyTechnologyIndex; 
+    PckTechnologyIdCatalog dependencyTechnologyIndex; 
     UiTextResourceId completionMessageResourceId; 
-    enum TechnologyCategory category; 
+    TechnologyCategory category; 
     AiTechnologyCandidateScore baseCandidateScore; 
     uint32_t reserved3C; 
 };
@@ -9584,10 +9661,10 @@ struct FrontendPlayerRuntimeRecord {
     FrontendPlayerRuntimeId playerRuntimeId; // Stable player runtime identifier.
     struct FrontendPlayerNameUtf16 playerName; // Typed UTF-16 player name/descriptor text.
     struct UiTransferEndpointDescriptor endpoint; // Remote IPv4 endpoint; address is compared at record offset +0x44.
-    enum FrontendCommandSyncPendingState commandSyncPending; // Command synchronization pending state.
+    FrontendCommandSyncPendingState commandSyncPending; // Command synchronization pending state.
     struct FrontendPlayerFactionAssignmentState factionAssignment; // Exact ready/wait, faction assignment, consensus, and role-state subrecord. commandSyncPending at +0x50 remains separate.
     uint32_t colourCycleFlags; /* +0x64 toggled by FRONTEND_COMMAND_XOR_PLAYER_STATE; bit 0 adds an eighth faction colour */
-    enum FrontendSnapshotTransferFlags snapshotTransferFlags; // Snapshot transfer-state flags.
+    FrontendSnapshotTransferFlags snapshotTransferFlags; // Snapshot transfer-state flags.
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; // Current snapshot chunk offset.
     uint32_t transferProgressBytes; /* +0x70 mailbox transfer: end offset of the chunk last requested, 0x7FFFFFFF = done */
     FrontendCapabilityFlags capabilityFlags; // Player capability/selection flags.
@@ -9844,7 +9921,7 @@ struct IMAGE_RESOURCE_DIRECTORY_ENTRY {
     union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion DirectoryUnion;
 };
 
-typedef enum SectionFlags {
+enum {
     IMAGE_SCN_TYPE_NO_PAD=8,
     IMAGE_SCN_RESERVED_0001=16,
     IMAGE_SCN_CNT_CODE=32,
@@ -9882,7 +9959,8 @@ typedef enum SectionFlags {
     IMAGE_SCN_MEM_EXECUTE=536870912,
     IMAGE_SCN_MEM_READ=1073741824,
     IMAGE_SCN_MEM_WRITE=2147483648
-} SectionFlags;
+};
+typedef int SectionFlags;
 
 union Misc {
     uint32_t PhysicalAddress;
@@ -9899,7 +9977,7 @@ struct IMAGE_SECTION_HEADER {
     uint32_t PointerToLinenumbers;
     uint16_t NumberOfRelocations;
     uint16_t NumberOfLinenumbers;
-    enum SectionFlags Characteristics;
+    SectionFlags Characteristics;
 };
 
 struct IMAGE_RESOURCE_DATA_ENTRY {
@@ -10087,7 +10165,7 @@ struct GeneratedTextureRenderContextView {
 
 struct CursorPointerEvent {
     uint32_t eventType; // GraphicsCursorEventType of the consumed event
-    enum GraphicsCursorButtonState buttonState; // button state, bit 31 set for a double click
+    GraphicsCursorButtonState buttonState; // button state, bit 31 set for a double click
     UiPixelCoordinate pointerX;
     UiPixelCoordinate pointerY;
     UiPointerWheelDelta wheelDelta;
@@ -10267,7 +10345,7 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved8D04_9A6B[3432];
     FieldGridCoordinates minimapOriginGridPosition;
     uint8_t reserved9A74_9B4B[216];
-    enum InGameNotificationInteractionState notificationButtonCursorFrame;
+    InGameNotificationInteractionState notificationButtonCursorFrame;
     uint32_t notificationButtonTextureSource;
     uint32_t notificationButtonSubresource;
     uint8_t reserved9B58_9E3F[744];
@@ -10295,7 +10373,7 @@ struct InGameRuntimeRootFrameView {
     uint8_t reserved0B8C_0BCF[68];
     struct UiPageStackControl gameWindowPageStack;
     uint8_t reserved0C24_44BF[14492];
-    enum UiNodeFlags countdownPanelNodeFlags; // UiNodeBase.nodeFlags of the countdown text panel (+0x4478).
+    UiNodeFlags countdownPanelNodeFlags; // UiNodeBase.nodeFlags of the countdown text panel (+0x4478).
 };
 
 struct WidePathPrefix4 {
@@ -10305,7 +10383,7 @@ struct WidePathPrefix4 {
 
 struct FrontendModelPointerContext {
     struct UiNodeBase base; // Accepted frontend UI-node prefix.
-    enum FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
+    FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
     uint32_t activeFactionRuntimeIndex; // WorldRuntimeContext.activeFactionRuntimeIndex of the in-game world view; unused by the frontend paths.
     struct FieldGridAsset *fieldGrid; // Field grid consumed by generated-texture and selection-overlay paths.
     uint32_t worldObjectArray; // WorldRuntimeContext.objectArray of the in-game world view; cleared by relocation.
@@ -10338,7 +10416,7 @@ struct FrontendModelPointerContext {
     uint32_t workspaceDwordCount; // WorldRuntimeContext.dwordArrayCount of the in-game world view; unused by the frontend paths.
     struct GraphicsPrimitiveQueue *activePrimitiveQueue; // Primitive queue captured from GraphicsPrimitiveQueue_ResetGlobal for all model/terrain passes.
     uint32_t runtimeControlFlags; // WorldRuntimeContext.runtimeControlFlags of the in-game world view; unused by the frontend paths.
-    enum RuntimeSpinLockValue *renderSpinLock; // Spin lock acquired around graphics queue construction.
+    RuntimeSpinLockValue *renderSpinLock; // Spin lock acquired around graphics queue construction.
     void (*renderSpinLockReleaseCallback)(void); // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
     struct ModelRuntimeNode *candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
     uint32_t activePlayerRuntimeId; // WorldRuntimeContext.selection.activePlayerRuntimeId of the in-game world view; not consumed by the frontend selection paths.
@@ -10367,7 +10445,7 @@ struct FrontendModelPointerContext {
     GraphicsSceneExtentFixed sceneBound6; // Exact bound6 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound7; // Exact bound7 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     uint8_t reserved140_15B[28]; // Observed but not semantically resolved in this pass.
-    void (*renderPhaseCallback)(enum GraphicsBooleanState, struct WorldRuntimeContext *); // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; the installed target is InGameWorldOverlay_RebuildOrReleaseTransientMarkers.
+    void (*renderPhaseCallback)(GraphicsBooleanState, struct WorldRuntimeContext *); // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; the installed target is InGameWorldOverlay_RebuildOrReleaseTransientMarkers.
     UiPixelCoordinate dragFrameStartX; // Pointer X of the non-right press (NonRightPress); first corner of the selection-overlay drag frame in DrawClipped.
     UiPixelCoordinate dragFrameStartY; // Pointer Y of the non-right press (NonRightPress); first corner of the selection-overlay drag frame in DrawClipped.
     UiPixelCoordinate dragFrameEndX; // Pointer X of the latest non-right drag (NonRightDrag); second corner of the drag frame.
@@ -10425,7 +10503,7 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
     uint8_t opaqueGap0010_0013[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     int arcCoefficient;
     uint8_t opaqueGap0018_002B[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    enum PckEffectDefinitionIdCatalog modelPointEffectId;
+    PckEffectDefinitionIdCatalog modelPointEffectId;
     int modelPointStep;
     uint8_t opaqueGap0034_0047[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t worldPointAllowedContext;
@@ -10519,7 +10597,7 @@ struct FrontendPointerHintControl {
 
 struct FrontendPointerSceneRuntimeView {
     struct UiNodeBase base;
-    enum FrontendModelPointerContextFlags contextFlags;
+    FrontendModelPointerContextFlags contextFlags;
     uint32_t activeFactionRuntimeIndex;
     struct FieldGridAsset *fieldGrid;
     uint32_t worldObjectArray;
@@ -10552,7 +10630,7 @@ struct FrontendPointerSceneRuntimeView {
     uint32_t workspaceDwordCount;
     struct GraphicsPrimitiveQueue *activePrimitiveQueue;
     uint32_t runtimeControlFlags;
-    enum RuntimeSpinLockValue *renderSpinLock;
+    RuntimeSpinLockValue *renderSpinLock;
     void (*renderSpinLockReleaseCallback)(void);
     struct ModelRuntimeNode *candidateModelListHead;
     uint32_t activePlayerRuntimeId;
@@ -10840,7 +10918,7 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
     Q12 worldY;
     Q12 terrainHeight;
     Q12 waterSurfaceDelta;
-    enum FieldCellPackedFlagsAndMaterial flagsAndMaterial;
+    FieldCellPackedFlagsAndMaterial flagsAndMaterial;
     FieldCellPersistedAux persistedAux54;
     uint32_t groundDirectionalLightColor;
     uint32_t secondarySurfaceDirectionalLightColor;
@@ -10855,7 +10933,7 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 
 struct AiStructureWorkspaceEntry {
     AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot address (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime), kept as an integer like the original's consumers use it.
-    enum PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
+    PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
 };
 
 struct LevelPlacedModelRecord20 {
@@ -11000,7 +11078,7 @@ struct WorldOwnerListNode {
     Q12 worldYQ12;
     Q12 worldZQ12;
     uint32_t runtimeStateA0;
-    enum WorldOwnerRuntimeClassId ownerClassId; // Binary constructors prove MODEL=0, SHOT=1, EFFECT=2.
+    WorldOwnerRuntimeClassId ownerClassId; // Binary constructors prove MODEL=0, SHOT=1, EFFECT=2.
     uint8_t opaqueA8_B3[12]; // Opaque owner-list bytes; semantics remain class-dependent.
     ModelDepthBinMask modelDepthBinMaskNear; // ModelRuntimeNode near depth-bin mask; valid only for MODEL owner nodes.
     ModelDepthBinMask modelDepthBinMaskFar; // ModelRuntimeNode far depth-bin mask; valid only for MODEL owner nodes.
@@ -11033,7 +11111,7 @@ struct ModelRuntimePlacementValidationView {
 struct ArmyWeaponDefinitionView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     int movementSpeed; // ModelDefinition.movementSpeed
     ArmyTurnVelocityAngle16 yawTurnRateLimitAnglePerTick; // Positive magnitude cap for the signed yaw turn velocity used by ModelNodeRuntime_SmoothYawTowardTarget.
     ArmyTurnVelocityAngle16 pitchTurnRateLimitAnglePerTick; // Positive magnitude cap for the signed pitch turn velocity used by ModelNodeRuntime_SmoothPitchTowardTarget.
@@ -11085,8 +11163,8 @@ struct ArmyWeaponRuntimeSlotView {
     uint32_t runtimeState90; // Committed V218d army runtime field.
     uint32_t runtimeState94; // Committed V218d army runtime field.
     uint32_t runtimeState98; // Committed V218d army runtime field.
-    enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
-    enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
+    ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
+    PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
     uint32_t runtimeStateA4; // Committed V218d army runtime field.
     uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState articulatedContact; // Terrain-contact and articulated movement state.
@@ -11148,14 +11226,14 @@ struct ModelRuntimeUpdateView {
 struct ModelDefinitionClass14PlacementView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
     uint8_t field11_0x51;
     uint8_t field12_0x52;
@@ -11275,11 +11353,11 @@ struct ModelRuntimePlacementClass14View {
 struct InGameTargetingRootTraversalView {
     struct UiNodeBase base; // UI-node prefix valid both for the initiating targeting control and while walking its parent chain.
     uint8_t reserved4C_4F[4];
-    enum InGameTargetingObservedActionState actionState; // The button's cursorFrame (InGameRuntimeRoot.notificationButtonCursorFrame): idle, advance/resolve (7), or cancel/restore (0x1B).
+    InGameTargetingObservedActionState actionState; // The button's cursorFrame (InGameRuntimeRoot.notificationButtonCursorFrame): idle, advance/resolve (7), or cancel/restore (0x1B).
     uint8_t reserved54_A2F[2524];
     struct WorldRuntimeContext worldRuntime; // Root image WorldRuntimeContext reached after parent traversal.
     uint8_t reservedB8C_9B4B[36800];
-    enum InGameNotificationInteractionState notificationButtonCursorFrame; // See InGameRuntimeRoot.
+    InGameNotificationInteractionState notificationButtonCursorFrame; // See InGameRuntimeRoot.
     uint32_t notificationButtonTextureSource;
     uint32_t notificationButtonSubresource;
     uint8_t reserved9B58_9E3F[744];
@@ -11308,7 +11386,7 @@ struct ShotModelRuntimeNode {
     ModelTextureOffsetTexel primaryTextureOffsetV; // Primary animated texture V offset.
     struct GraphicsFixedMatrix3x4 worldTransform; // Composed world transform.
     uint32_t runtimeStateA0; // Class-specific runtime state.
-    enum WorldOwnerRuntimeClassId ownerClassId; // Runtime owner/class discriminator.
+    WorldOwnerRuntimeClassId ownerClassId; // Runtime owner/class discriminator.
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; // Secondary animated texture subresource index.
     ModelTextureOffsetTexel secondaryTextureOffsetU; // Secondary animated texture U offset.
     ModelTextureOffsetTexel secondaryTextureOffsetV; // Secondary animated texture V offset.
@@ -11517,7 +11595,7 @@ struct ModelRuntimePositionedSoundClassState {
 struct ModelDefinitionVerticalDeploymentView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     Q12 verticalDeploymentStepQ12PerTick; // Signed local-Z displacement applied per simulation tick while deploying/retracting the child model.
     uint8_t field4_0x10;
     uint8_t field5_0x11;
@@ -11544,7 +11622,7 @@ struct ModelDefinitionVerticalDeploymentView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
     uint8_t field31_0x51;
     uint8_t field32_0x52;
@@ -11649,14 +11727,14 @@ struct ModelRuntimeTimedEffectsUpdateView {
 struct ModelDefinitionTimedEffectsUpdateView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
     uint8_t field11_0x51;
     uint8_t field12_0x52;
@@ -11909,7 +11987,7 @@ struct ModelRuntimeGroundMovementPositionedSoundView {
 struct ModelDefinitionLinkedChildStateView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     ModelTextureOffsetTexel linkedChildTextureVStepPerTick; // Signed per-tick primary texture-V step used by the linked-child transition animation.
     uint8_t field4_0x10;
     uint8_t field5_0x11;
@@ -11936,7 +12014,7 @@ struct ModelDefinitionLinkedChildStateView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
     uint8_t field31_0x51;
     uint8_t field32_0x52;
@@ -12064,7 +12142,7 @@ struct ModelRuntimeTimedTargetState {
 struct ModelDefinitionDestroyEffectsView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     Q12 verticalTranslationStepQ12PerTick; // Signed world-Z translation step applied each simulation tick before destroying the model hierarchy at the travel limit.
     uint8_t field4_0x10;
     uint8_t field5_0x11;
@@ -12091,7 +12169,7 @@ struct ModelDefinitionDestroyEffectsView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
     uint8_t field31_0x51;
     uint8_t field32_0x52;
@@ -12188,14 +12266,14 @@ struct ModelRuntimeResourceStorageClass15View {
 struct ModelDefinitionResourceStorageClass15View {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     Q12 storageEmptyChildLocalZQ12; // Child-0 local Z endpoint used when the selected faction resource storage is empty.
     Q12 storageFullChildLocalZQ12; // Child-0 local Z endpoint used when the selected faction resource storage is at its limit.
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
     uint8_t field11_0x51;
     uint8_t field12_0x52;
@@ -12326,8 +12404,8 @@ struct ArmyRuntimeGroundMovementPositionedSoundView {
     uint32_t occupancyMarkRadius; // Committed V218d army runtime field.
     uint32_t aiUnitFlags; // Committed V218d army runtime field.
     uint32_t assignedTargetArmyRuntime; // Committed V218d army runtime field.
-    enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
-    enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
+    ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
+    PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
     uint32_t movementRetryCountdown; // Committed V218d army runtime field.
     uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState articulatedContact; // Terrain-contact and articulated movement state.
@@ -12399,7 +12477,7 @@ struct ModelRuntimeGroundMovementTrackView {
 struct ModelDefinitionGroundMovementTrackView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     Q12 movementStepQ12PerTick; // Per-tick planar movement step; also used as the short-range movement threshold scale in the banking variant.
     ArmyTurnVelocityAngle16 turnRateLimitAnglePerTick; // Positive magnitude cap for the signed per-tick heading turn rate.
     uint32_t trackTextureUScalePerDistance; // Signed scale converting traveled planar distance into animated track texture-U offset.
@@ -12417,7 +12495,7 @@ struct ModelDefinitionGroundMovementTrackView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field21_0x50;
     uint8_t field22_0x51;
     uint8_t field23_0x52;
@@ -12514,7 +12592,7 @@ struct ModelRuntimeLinkedChildPendingSpawnCounts {
 };
 
 struct ModelRuntimeLinkedChildBuildState {
-    enum PckArmyAssetIdCatalog selectedSecondaryArmyAssetId; // Secondary Army asset id selected from the faction queue and committed when its build interval completes.
+    PckArmyAssetIdCatalog selectedSecondaryArmyAssetId; // Secondary Army asset id selected from the faction queue and committed when its build interval completes.
     uint32_t secondaryArmyAssetBuildElapsedTicks; // Simulation ticks elapsed while the selected secondary Army asset is being completed.
     uint32_t secondaryArmyAssetBuildRequiredTicks; // Required build interval copied from the selected secondary Army asset record (ArmyAssetRecord.buildTicks), adjusted by fast-build mode.
     FactionArmyAssetCount completedSecondaryArmyAssetCount; // Number of completed secondary Army asset ids already stored in completedSecondaryArmyAssetIds.
@@ -12532,7 +12610,7 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
     uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeLinkedChildBuildState linkedChildBuildState; // Class-local secondary-Army build and completed-slot counters.
-    enum PckArmyAssetIdCatalog completedSecondaryArmyAssetIds[13]; // Thirteen dword slots from +0x78 through +0xAB. The definition slot-capacity bounds the reverse scan; +0xAC is independent state.
+    PckArmyAssetIdCatalog completedSecondaryArmyAssetIds[13]; // Thirteen dword slots from +0x78 through +0xAB. The definition slot-capacity bounds the reverse scan; +0xAC is independent state.
     uint32_t secondaryArmyAssetBuildState; // Two-state secondary-Army selection/build-completion state (0 idle/select, 1 building).
     uint32_t linkedChildTransitionState; // Seven-way linked-child transition/spawn state used by the switch in ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode.
     uint8_t opaqueB4_B7[4]; // Class-local dword not interpreted by this callback.
@@ -12585,7 +12663,7 @@ struct ModelRuntimeGroundMovementSteeringView {
 struct ModelDefinitionGroundMovementSteeringView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     Q12 movementStepQ12PerTick; // Per-tick planar movement step; also used as the short-range movement threshold scale in the banking variant.
     ArmyTurnVelocityAngle16 turnRateLimitAnglePerTick; // Positive magnitude cap for the signed per-tick heading turn rate.
     uint8_t field5_0x14;
@@ -12606,7 +12684,7 @@ struct ModelDefinitionGroundMovementSteeringView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field24_0x50;
     uint8_t field25_0x51;
     uint8_t field26_0x52;
@@ -12715,14 +12793,14 @@ struct ModelDefinitionTimedTargetParameters {
 struct ModelDefinitionTimedTargetProjectileView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     struct ModelDefinitionTimedTargetParameters timedTargetParameters; // Class-20 timed-target projectile parameters rooted at MDL +0x30.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
     uint8_t field11_0x51;
     uint8_t field12_0x52;
@@ -12819,14 +12897,14 @@ struct ModelRuntimeTimedTargetProjectileView {
 struct ModelDefinitionResourceExtractorClass14View {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
     uint8_t field11_0x51;
     uint8_t field12_0x52;
@@ -13065,7 +13143,7 @@ struct ModelRuntimeClass21State {
 struct ModelDefinitionArticulatedMovementView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
-    enum PckModelDefinitionIdCatalog definitionId;
+    PckModelDefinitionIdCatalog definitionId;
     uint8_t field3_0xc;
     uint8_t field4_0xd;
     uint8_t field5_0xe;
@@ -13092,7 +13170,7 @@ struct ModelDefinitionArticulatedMovementView {
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
     uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t visibilityRadius;
-    enum ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
+    ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
     uint8_t field31_0x51;
     uint8_t field32_0x52;
@@ -13261,7 +13339,7 @@ struct InGameLevelConditionStorage {
 };
 
 struct LevelInitialArmyPlacementRecord20 {
-    enum PckArmyAssetIdCatalog armyAssetId;
+    PckArmyAssetIdCatalog armyAssetId;
     FactionRuntimeIndex factionIndex;
     Q12 worldYQ12;
     Q12 worldXQ12;

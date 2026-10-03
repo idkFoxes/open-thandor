@@ -23,15 +23,15 @@ RuntimeSpinLockValue g_UiRuntimeRecordRingLock = 0;
 UiDirtyRectCount g_UiDirtyRectCount = 0;
 
 static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
-    .vetoClose = (void *)UiRootCallbacks_Free,
-    .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
-    .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
-    .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
+    .vetoClose = THANDOR_FN(UiRootCallbacks_Free),
+    .frameUpdate = THANDOR_FN(UiFourValueDialog_TickCountdownAndRequestClose),
+    .method08 = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerPress),
+    .pointerMissPolicy = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerMotion)};
 
 static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
-            .vtable = (void *)&g_UiPanelControlVtable,
+            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
             .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
@@ -39,7 +39,7 @@ static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             0x00000003},
         { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
@@ -47,7 +47,7 @@ static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             0x00000008, 0x0000020D, 0x00000101},
         { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
@@ -55,7 +55,7 @@ static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             0x00000004, 0x00000000, 0x00000100},
         { /* +0110 countdownMessageText g_UiListOffsetControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiListOffsetControlVtable,
+            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
             .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},

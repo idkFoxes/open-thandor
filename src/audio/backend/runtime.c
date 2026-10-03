@@ -11,11 +11,11 @@
 
 /* Module data. */
 
-__declspec(align(8)) SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet = (void *)SoundBackendDisabled_CreateSampleVoiceSet;
+__declspec(align(8)) SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet = THANDOR_FN(SoundBackendDisabled_CreateSampleVoiceSet);
 
-__declspec(align(4)) SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet = (void *)SoundBackendDisabled_ReleaseSampleVoiceSet;
+__declspec(align(4)) SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet = THANDOR_FN(SoundBackendDisabled_ReleaseSampleVoiceSet);
 
-__declspec(align(4)) SoundStopAllVoicesProc *g_SoundStopAllVoices = (void *)SoundBackendDisabled_StopAllVoices;
+__declspec(align(4)) SoundStopAllVoicesProc *g_SoundStopAllVoices = THANDOR_FN(SoundBackendDisabled_StopAllVoices);
 
 static short g_SoundSampleCoefficientBlock[256] = {0};
 
@@ -62,15 +62,15 @@ static const int32_t g_DirectSoundGainAttenuation[129] = {
         /* 128 */ 0,
 };
 
-SoundPlayVoiceProc *g_SoundPlayLooping = (void *)SoundBackendDisabled_PlayLooping;
+SoundPlayVoiceProc *g_SoundPlayLooping = THANDOR_FN(SoundBackendDisabled_PlayLooping);
 
-SoundStopVoiceProc *g_SoundStopVoice = (void *)SoundBackendDisabled_StopVoice;
+SoundStopVoiceProc *g_SoundStopVoice = THANDOR_FN(SoundBackendDisabled_StopVoice);
 
-SoundIsVoicePlayingProc *g_SoundIsVoicePlaying = (void *)SoundBackendDisabled_IsVoicePlaying;
+SoundIsVoicePlayingProc *g_SoundIsVoicePlaying = THANDOR_FN(SoundBackendDisabled_IsVoicePlaying);
 
-SoundSetVoiceGainsProc *g_SoundSetVoiceGains = (void *)SoundBackendDisabled_SetVoiceGains;
+SoundSetVoiceGainsProc *g_SoundSetVoiceGains = THANDOR_FN(SoundBackendDisabled_SetVoiceGains);
 
-SoundPlayVoiceProc *g_SoundPlayOneShot = (void *)SoundBackendDisabled_PlayOneShot;
+SoundPlayVoiceProc *g_SoundPlayOneShot = THANDOR_FN(SoundBackendDisabled_PlayOneShot);
 
 /* Implementation ownership: audio/backend/runtime. */
 

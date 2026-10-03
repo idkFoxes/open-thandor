@@ -336,11 +336,12 @@ static void ShotModel_CastHitRays
 
 /* Which of the three rays stops the shot: the secondary surface wins when it is strictly nearest, otherwise the
    army wins over the terrain on a tie (and whenever the secondary surface is nearer than the terrain). */
-typedef enum ShotNearestHitKind {
+enum {
   SHOT_NEAREST_HIT_SECONDARY_SURFACE,
   SHOT_NEAREST_HIT_ARMY,
   SHOT_NEAREST_HIT_TERRAIN
-} ShotNearestHitKind;
+};
+typedef int ShotNearestHitKind;
 
 static ShotNearestHitKind ShotModel_SelectNearestHit(const ShotRayHits *hits)
 

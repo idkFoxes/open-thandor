@@ -22,7 +22,7 @@ __declspec(align(8)) uint32_t g_CursorButtonState = 0;
 
 __declspec(align(16)) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
 
-__declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = (void *)Keyboard_FlushEvents;
+__declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = THANDOR_FN(Keyboard_FlushEvents);
 
 __declspec(align(8)) uint32_t g_KeyboardStateMask = 0;
 
@@ -35,9 +35,9 @@ static TH_LEGACY_GUID GUID_YAxis_Local = {.Data1 = 0xA36D02E1, .Data2 = 51699, .
 static TH_LEGACY_GUID GUID_ZAxis_Local = {.Data1 = 0xA36D02E2, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"};
 
 static DIOBJECTDATAFORMAT MouseObjectFormats[7] = {
-    /* 0 */ {.pguid = (void *)&GUID_XAxis_Local, .dwType = 0xFFFF03},
-    /* 1 */ {.pguid = (void *)&GUID_YAxis_Local, .dwOfs = 4, .dwType = 0xFFFF03},
-    /* 2 */ {.pguid = (void *)&GUID_ZAxis_Local, .dwOfs = 8, .dwType = 0x80FFFF03},
+    /* 0 */ {.pguid = THANDOR_PTR(&GUID_XAxis_Local), .dwType = 0xFFFF03},
+    /* 1 */ {.pguid = THANDOR_PTR(&GUID_YAxis_Local), .dwOfs = 4, .dwType = 0xFFFF03},
+    /* 2 */ {.pguid = THANDOR_PTR(&GUID_ZAxis_Local), .dwOfs = 8, .dwType = 0x80FFFF03},
     /* 3 */ {.dwOfs = 12, .dwType = 0xFFFF0C},
     /* 4 */ {.dwOfs = 13, .dwType = 0xFFFF0C},
     /* 5 */ {.dwOfs = 14, .dwType = 0x80FFFF0C},
@@ -75,7 +75,7 @@ static DIDATAFORMAT MouseDataFormat = {
     .dwFlags = 0x2,
     .dwDataSize = 16,
     .dwNumObjs = 7,
-    .rgodf = (void *)&MouseObjectFormats};
+    .rgodf = THANDOR_PTR(&MouseObjectFormats)};
 
 static DIPROPDWORD MouseBufferProperty = {.diph = {.dwSize = 20, .dwHeaderSize = 16}, .dwData = 256};
 
@@ -111,7 +111,7 @@ UiPixelCoordinate g_MouseY = 0;
 
 GraphicsCursorButtonState g_MouseButtonMask = 0;
 
-KeyboardReadEventProc *g_KeyboardReadEvent = (void *)Keyboard_ReadNextEvent;
+KeyboardReadEventProc *g_KeyboardReadEvent = THANDOR_FN(Keyboard_ReadNextEvent);
 
 uint32_t g_CursorUseOverridePosition = 0;
 
@@ -920,6 +920,6 @@ uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 /* Class vtables. */
 
 KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3 = {
-    .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
-    .toUpper = (void *)Keyboard_ToUpperAscii,
-    .toLower = (void *)Keyboard_ToLowerAscii};
+    .compareCaseInsensitiveFlags = THANDOR_FN(Keyboard_CompareAsciiCaseInsensitiveFlags),
+    .toUpper = THANDOR_FN(Keyboard_ToUpperAscii),
+    .toLower = THANDOR_FN(Keyboard_ToLowerAscii)};

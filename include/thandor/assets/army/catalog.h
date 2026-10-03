@@ -36,7 +36,7 @@ typedef struct ArmyModelTreeNode {
     uint8_t unknown00_07[8];
     uint32_t childCount;                      /* +0x08 */
     struct ArmyModelTreeNode *children[5];    /* +0x0C */
-    enum PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
+    PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
 } ArmyModelTreeNode;
 /* Functions are grouped by semantic ownership. */
 

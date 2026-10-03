@@ -21,6 +21,40 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 typedef int Q12;
 typedef unsigned int UQ12;
 
+/* Compile-time checks, in C and C++. */
+#ifdef __cplusplus
+#define THANDOR_STATIC_ASSERT(condition, message) static_assert(condition, message)
+#else
+#define THANDOR_STATIC_ASSERT(condition, message) _Static_assert(condition, message)
+#endif
+
+/* THANDOR_FN(function) / THANDOR_PTR(pointer): an untyped function or object address for a table entry or
+   argument whose exact pointer type is given by its target (vtable slots, callback tables, handler tables).
+   In C this is exactly (void *)(x); in C++ the value converts to the pointer type it is assigned to. To be
+   replaced by exactly typed entries when the tables become classes. */
+#ifdef __cplusplus
+struct ThandorAnyFn {
+    void (*fn)(void);
+    template <class F> operator F *() const { return (F *)fn; }
+};
+struct ThandorAnyPtr {
+    void *ptr;
+    template <class T> operator T *() const { return (T *)ptr; }
+};
+#define THANDOR_FN(f) (ThandorAnyFn{(void (*)(void))(f)})
+#define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
+#else
+#define THANDOR_FN(f) ((void *)(f))
+#define THANDOR_PTR(p) ((void *)(p))
+#endif
+
+/* A temporary of type T from a braced initializer, in C and C++: THANDOR_COMPOUND(T){a, b}. */
+#ifdef __cplusplus
+#define THANDOR_COMPOUND(T) T
+#else
+#define THANDOR_COMPOUND(T) (T)
+#endif
+
 /* The original's one-byte booleans are Bool8 (generated/types.h); true/false are 1/0 for them in C. */
 #if !defined(__cplusplus) && !defined(true)
 #define true 1

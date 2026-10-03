@@ -2983,10 +2983,10 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 const FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5 = {
     .callbacks = {
-        /* 0 */ (void *)FieldGrid_InterpolateTerrainHeight,
-        /* 1 */ (void *)FieldGrid_InterpolateWaterSurfaceHeight,
-        /* 2 */ (void *)FieldGrid_InterpolateTerrainHeight,
-        /* 3 */ (void *)FieldGrid_InterpolateTerrainHeight,
-        /* 4 */ (void *)FieldGrid_InterpolateTopSurfaceHeight
+        /* 0 */ THANDOR_FN(FieldGrid_InterpolateTerrainHeight),
+        /* 1 */ THANDOR_FN(FieldGrid_InterpolateWaterSurfaceHeight),
+        /* 2 */ THANDOR_FN(FieldGrid_InterpolateTerrainHeight),
+        /* 3 */ THANDOR_FN(FieldGrid_InterpolateTerrainHeight),
+        /* 4 */ THANDOR_FN(FieldGrid_InterpolateTopSurfaceHeight)
     }
 };

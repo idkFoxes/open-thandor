@@ -643,7 +643,7 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
   ArmyAssetRecordPrefix *class10ArmyDefinition;
   ArmyAssetRecordPrefix *registryArmyDefinition;
   ModelDefinitionRecordPrefix *rootModelDefinition;
-  enum ModelRuntimeClassId rootClassId;
+  ModelRuntimeClassId rootClassId;
   int registrySlot;
   uint32_t factionIndex;
   uint32_t factionModelFlags; /* bit 0: has a model with a group-A class command, bit 1: has a class-18 model */

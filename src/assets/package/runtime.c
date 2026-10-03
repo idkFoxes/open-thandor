@@ -114,13 +114,13 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
       return false;
     }
   }
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) != 0) {
+  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle)) != 0) {
     return false;
   }
-  if (g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+  if (g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
     return false;
   }
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) != 0) {
+  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle)) != 0) {
     return false;
   }
   ((PckArchiveHeader *)destination)->entryCount++;
@@ -141,18 +141,18 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
     *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
     *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
     Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
-    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
+    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
     if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination + PCK_ENTRY_HEADER_BYTES,
-                                      (void *)fileHandle) != 0) {
+                                      THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
-    if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,(void *)fileHandle) != 0) {
+    if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
   }
@@ -173,15 +173,15 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
     *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
     *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
     Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
-    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
+    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
     if (g_FileSystemWriteExactOrFlush
-          (byteCount,destination + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle) != 0) {
+          (byteCount,destination + PCK_ENTRY_HEADER_BYTES,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
   }
@@ -357,11 +357,11 @@ static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,u
 {
   uint32_t statusCode;
 
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
+  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
@@ -369,11 +369,11 @@ static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,u
   ((PckArchiveHeader *)destination)->entryCount--;
   *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
        *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  return g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
+  return g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle));
 }
 
 
@@ -386,33 +386,33 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
   uint32_t statusCode;
 
   if (tailByteCount == 0) {
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,(void *)fileHandle);
+    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,THANDOR_PTR(fileHandle));
     if (statusCode != 0) {
       return statusCode;
     }
     /* a zero-byte write truncates the file at the current position */
-    return g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
+    return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
   }
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,(void *)fileHandle);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
   if (PACKAGE_SCRATCH_BUFFER_BYTES < tailByteCount) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
-  statusCode = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
+  statusCode = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,(void *)fileHandle);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  statusCode = g_FileSystemWriteExactOrFlush(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
+  statusCode = g_FileSystemWriteExactOrFlush(tailByteCount,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  return g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
+  return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
 }
 
 
@@ -731,7 +731,7 @@ void Package_Unmount(EngineFileHandle fileHandle)
     return;
   }
   g_MemoryApi.free(mountSlot->entryHeaders);
-  g_FileSystemClose((void *)fileHandle);
+  g_FileSystemClose(THANDOR_PTR(fileHandle));
   mountSlot->fileHandle = 0;
   mountSlot->entryHeaders = NULL;
   mountSlot->entryCount = 0;
@@ -777,10 +777,10 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
   uint32_t decoderStatusCode;
 
   decoderStatusCode = g_FileSystemSeek
-                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle);
+                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,THANDOR_PTR(fileHandle));
   if (decoderStatusCode == 0) {
     entryCompression = entry->compressionMethod;
-    decoderStatusCode = g_FileSystemReadExact(entry->packedSize,g_PackageScratchBuffer,(void *)fileHandle);
+    decoderStatusCode = g_FileSystemReadExact(entry->packedSize,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
     if (decoderStatusCode == 0) {
       /* the decoder stores its byte count straight into *outByteCount (NULL is allowed) */
       if (g_PckDecoderTable[entryCompression]
@@ -972,11 +972,11 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
   PckEntryHeader *entryHeader;
 
   entryHeader = mountSlot->entryHeaders;
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
-  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,g_PackageScratchBuffer,(void *)fileHandle);
+  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
   }
@@ -985,14 +985,14 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
   /* each entry is its header followed directly by its packed payload */
   entryHeaderOffset = PCK_ENTRY_HEADER_BYTES;
   for (; entriesRemaining != 0; entriesRemaining--) {
-    statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,(void *)fileHandle);
+    statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,THANDOR_PTR(fileHandle));
     if (statusCode != 0) {
       return statusCode;
     }
     entryHeader->runtimePayloadOffset = entryHeaderOffset;
     entryHeaderOffset = entryHeaderOffset + entryHeader->packedSize + PCK_ENTRY_HEADER_BYTES;
     entryHeader++;
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryHeaderOffset,(void *)fileHandle);
+    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryHeaderOffset,THANDOR_PTR(fileHandle));
     if (statusCode != 0) {
       return statusCode;
     }

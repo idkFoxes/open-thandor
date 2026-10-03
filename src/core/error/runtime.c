@@ -28,13 +28,13 @@ static UiRootNode *g_FatalErrorUiRootTemplate = 0;
 static uint32_t g_FatalErrorDialogDismissed = 0;
 
 static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
-    .method08 = (void *)FatalErrorDialog_BlockMissedPointerPress,
-    .pointerMissPolicy = (void *)FatalErrorDialog_BlockMissedPointerMotion};
+    .method08 = THANDOR_FN(FatalErrorDialog_BlockMissedPointerPress),
+    .pointerMissPolicy = THANDOR_FN(FatalErrorDialog_BlockMissedPointerMotion)};
 
 static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
-            .vtable = (void *)&g_UiPanelControlVtable,
+            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
             .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
@@ -43,7 +43,7 @@ static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             0x00000003, 0xFFFFFFFF, 0xFFFFFFFF},
         { /* +0058 errorMessageText g_UiListOffsetControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiListOffsetControlVtable,
+            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
             .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -51,7 +51,7 @@ static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             0x00000015},
         { /* +00B4 okButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},

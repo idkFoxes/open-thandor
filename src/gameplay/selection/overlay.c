@@ -1077,10 +1077,10 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
 
 InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {
     /* 0 */ 0,
-    /* 1 */ (void *)InGameSelection_SetAircraftPadTargetLane1,
-    /* 2 */ (void *)InGameSelection_SetAircraftPadTargetLane2,
-    /* 3 */ (void *)SelectionMarkerCoordinates_ApplyType3,
-    /* 4 */ (void *)SelectionMarkerCoordinates_ApplyType4,
-    /* 5 */ (void *)SelectionMarkerCoordinates_ApplyType5,
-    /* 6 */ (void *)SelectionMarkerCoordinates_ApplyType6,
-    /* 7 */ (void *)SelectionMarkerCoordinates_ApplyType7};
+    /* 1 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane1),
+    /* 2 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane2),
+    /* 3 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType3),
+    /* 4 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType4),
+    /* 5 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType5),
+    /* 6 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType6),
+    /* 7 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType7)};

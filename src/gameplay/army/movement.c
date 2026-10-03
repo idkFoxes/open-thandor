@@ -25,12 +25,13 @@ const ArmyCommandGeneration g_ArmyCommandGenerationStandard = 1024;
 /* Implementation ownership: gameplay/army/movement. */
 
 /* What ArticulatedWalker_TryStartRouteStep decided for a standing walker. */
-typedef enum ArticulatedRouteStep {
+enum {
   ARTICULATED_ROUTE_STEP_NONE,             /* nothing started: check whether the feet need closing */
   ARTICULATED_ROUTE_STEP_STARTED,          /* a walking step or a turn on the spot has been started */
   ARTICULATED_ROUTE_STEP_CLOSE_FEET,       /* walking ended off the walk-on angle: close the feet */
   ARTICULATED_ROUTE_STEP_ADVANCE_WAYPOINT  /* the route point is reached */
-} ArticulatedRouteStep;
+};
+typedef int ArticulatedRouteStep;
 
 /* Advances the running step of the articulated walker: walking speed rises in the first half of the step
    and falls in the second; the step progress grows by previous speed * step rate (fallbackPosition1Q12) *

@@ -11,17 +11,17 @@
 /* Module data. */
 
 __declspec(align(16)) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
-    .releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset,
-    .clone = (void *)GraphicsTextureSource_CloneAsset,
-    .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset};
+    .releasePackage = THANDOR_FN(GraphicsTextureSource_ReleasePackageAsset),
+    .clone = THANDOR_FN(GraphicsTextureSource_CloneAsset),
+    .releaseClone = THANDOR_FN(GraphicsTextureSource_ReleaseClonedAsset)};
 
-__declspec(align(4)) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = (void *)GraphicsTextureSource_LoadPackageAsset;
+__declspec(align(4)) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = THANDOR_FN(GraphicsTextureSource_LoadPackageAsset);
 
-__declspec(align(4)) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = (void *)GraphicsTextureSet_LoadPackage;
+__declspec(align(4)) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = THANDOR_FN(GraphicsTextureSet_LoadPackage);
 
-__declspec(align(16)) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = (void *)GraphicsTextureSet_ReleasePackage;
+__declspec(align(16)) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = THANDOR_FN(GraphicsTextureSet_ReleasePackage);
 
-GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = (void *)GraphicsTextureSet_RefreshNoOp;
+GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
 
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = 0;
 
@@ -33,36 +33,36 @@ GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSatu
 
 GraphicsTextureResource **g_GraphicsTextureSlots = 0;
 
-static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = (void *)GraphicsTextureSet_RefreshNoOp;
+static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
 
 /* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledSaturatedAddRgb (texture.c). */
-static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledSaturatedAddRgb = (void *)GraphicsTextureSource_BlitTiledSaturatedAddRgb;
+static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledSaturatedAddRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledSaturatedAddRgb);
 
 /* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd (texture.c). */
-static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd = (void *)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd;
+static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd);
 
 /* GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions (texture.c). */
-static GraphicsTextureSourceDecomposeSubresourceProc *g_GraphicsTextureSourceDecomposeSubresourceRegionsCf = (void *)GraphicsTextureSource_DecomposeSubresourceRegions;
+static GraphicsTextureSourceDecomposeSubresourceProc *g_GraphicsTextureSourceDecomposeSubresourceRegionsCf = THANDOR_FN(GraphicsTextureSource_DecomposeSubresourceRegions);
 
-GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = (void *)GraphicsTextureSet_AllocateMetadata;
+GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = THANDOR_FN(GraphicsTextureSet_AllocateMetadata);
 
-GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = (void *)GraphicsTextureSet_FreeMetadata;
+GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = THANDOR_FN(GraphicsTextureSet_FreeMetadata);
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = (void *)GraphicsTextureSource_BlitTiledHalfSourceRgb;
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfSourceRgb);
 
-GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = (void *)GraphicsTextureSource_ConvertPaletteEntries;
+GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = THANDOR_FN(GraphicsTextureSource_ConvertPaletteEntries);
 
-GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase = (void *)GraphicsTextureSource_ResolveAllocationBase;
+GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase = THANDOR_FN(GraphicsTextureSource_ResolveAllocationBase);
 
-GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = (void *)GraphicsTexture_RebuildNoOp;
+GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = THANDOR_FN(GraphicsTexture_RebuildNoOp);
 
-GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = (void *)GraphicsTextureSource_GetLogicalSize;
+GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = THANDOR_FN(GraphicsTextureSource_GetLogicalSize);
 
-GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = (void *)GraphicsTextureSource_TestOpaquePixel;
+GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = THANDOR_FN(GraphicsTextureSource_TestOpaquePixel);
 
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = 0;
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = (void *)GraphicsTextureSource_BlitTiledSourceAlpha;
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = THANDOR_FN(GraphicsTextureSource_BlitTiledSourceAlpha);
 
 GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = 0;
 

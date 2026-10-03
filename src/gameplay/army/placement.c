@@ -1256,9 +1256,9 @@ Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
 
 ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
     .callbacks = {
-        /* 0 */ (void *)ArmyPlacementContact_ApplyTerrainHeight,
-        /* 1 */ (void *)ArmyPlacementContact_ApplyWaterSurfaceHeight,
-        /* 2 */ (void *)ArmyPlacementContact_ApplyTerrainHeightAndNormal,
-        /* 3 */ (void *)ArmyPlacementContact_InitializeArticulatedSuspension,
-        /* 4 */ (void *)ArmyPlacementContact_ApplyTopSurfaceHeight
+        /* 0 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeight),
+        /* 1 */ THANDOR_FN(ArmyPlacementContact_ApplyWaterSurfaceHeight),
+        /* 2 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeightAndNormal),
+        /* 3 */ THANDOR_FN(ArmyPlacementContact_InitializeArticulatedSuspension),
+        /* 4 */ THANDOR_FN(ArmyPlacementContact_ApplyTopSurfaceHeight)
     }};

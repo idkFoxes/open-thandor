@@ -121,7 +121,7 @@ Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
 
 /* Score kind of a new technology candidate (see AiTechnologyPlanning_AddCandidateRecord); the first match
    decides. */
-static enum AiTechnologyCandidateScoreKind AiTechnologyPlanning_SelectScoreKind
+static AiTechnologyCandidateScoreKind AiTechnologyPlanning_SelectScoreKind
           (PckTechnologyIdCatalog technologyId,const MdlDefinitionSemanticPrefix *sourceArmyModelDefinition)
 {
   if (technologyId == TEC_216_WALL || technologyId == TEC_217_HIGH_WALL) {
@@ -351,9 +351,9 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
 /* Class vtables. */
 
 AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6] = {
-    /* 0 */ (void *)AiTechnologyScore_AlwaysZero,
-    /* 1 */ (void *)AiTechnologyScore_ComputeFactionScaledCandidateValue,
-    /* 2 */ (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind2,
-    /* 3 */ (void *)AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue,
-    /* 4 */ (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind4,
-    /* 5 */ (void *)AiTechnologyScore_ComputeCategoryCompatibleCandidateValue};
+    /* 0 */ THANDOR_FN(AiTechnologyScore_AlwaysZero),
+    /* 1 */ THANDOR_FN(AiTechnologyScore_ComputeFactionScaledCandidateValue),
+    /* 2 */ THANDOR_FN(AiTechnologyScore_ReturnBaseCandidateValueForKind2),
+    /* 3 */ THANDOR_FN(AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue),
+    /* 4 */ THANDOR_FN(AiTechnologyScore_ReturnBaseCandidateValueForKind4),
+    /* 5 */ THANDOR_FN(AiTechnologyScore_ComputeCategoryCompatibleCandidateValue)};

@@ -173,16 +173,16 @@ uint16_t g_ScreenshotFileNameUtf16[13] = L"screen00.pcx";
 
 /* 8 bindings, then the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
 DynamicApiBinding g_BootstrapApiBindings[9] = {
-        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)g_Kernel32ModuleName},
-        /* 1 */ {.destination = (void *)g_BootstrapApiName_FreeLibrary, .moduleName = (void *)g_Kernel32ModuleName},
-        /* 2 */ {.destination = (void *)g_BootstrapApiName_timeSetEvent, .moduleName = (void *)g_WinmmModuleName},
-        /* 3 */ {.destination = (void *)g_BootstrapApiName_timeKillEvent, .moduleName = (void *)g_WinmmModuleName},
-        /* 4 */ {.destination = (void *)g_BootstrapApiName_mciSendCommandA, .moduleName = (void *)g_WinmmModuleName},
-        /* 5 */ {.destination = (void *)g_BootstrapApiName_RegOpenKeyExA, .moduleName = (void *)g_Advapi32ModuleName},
+        /* 0 */ {.destination = THANDOR_PTR(&dynapi_9), .moduleName = THANDOR_PTR(g_Kernel32ModuleName)},
+        /* 1 */ {.destination = THANDOR_PTR(g_BootstrapApiName_FreeLibrary), .moduleName = THANDOR_PTR(g_Kernel32ModuleName)},
+        /* 2 */ {.destination = THANDOR_PTR(g_BootstrapApiName_timeSetEvent), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
+        /* 3 */ {.destination = THANDOR_PTR(g_BootstrapApiName_timeKillEvent), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
+        /* 4 */ {.destination = THANDOR_PTR(g_BootstrapApiName_mciSendCommandA), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
+        /* 5 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegOpenKeyExA), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
         /* 6 */ {
-        .destination = (void *)g_BootstrapApiName_RegQueryValueExA,
-        .moduleName = (void *)g_Advapi32ModuleName},
-        /* 7 */ {.destination = (void *)g_BootstrapApiName_RegCloseKey, .moduleName = (void *)g_Advapi32ModuleName},
+        .destination = THANDOR_PTR(g_BootstrapApiName_RegQueryValueExA),
+        .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
+        /* 7 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegCloseKey), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
         /* 8: terminator */ {0}};
 
 HINSTANCE g_hInstance = 0;
@@ -190,7 +190,7 @@ HINSTANCE g_hInstance = 0;
 HWND g_MainWindow = 0;
 
 Win32MainMessageStorage g_MainMessageStorage = {
-    .overlay = {.windowClass = {.style = 3, .windowProc = (void *)MainWindowProc, .className = (void *)&sz_MainWindowClass}}};
+    .overlay = {.windowClass = {.style = 3, .windowProc = THANDOR_FN(MainWindowProc), .className = THANDOR_PTR(&sz_MainWindowClass)}}};
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 

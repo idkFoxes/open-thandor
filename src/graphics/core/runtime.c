@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-__declspec(align(8)) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = (void *)GraphicsCursor_SetFrameIndex;
+__declspec(align(8)) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = THANDOR_FN(GraphicsCursor_SetFrameIndex);
 
 __declspec(align(4)) GraphicsFixedVec3 g_ViewOriginFixed = {0};
 
@@ -93,7 +93,7 @@ GraphicsCursorFrameRecord *g_CursorFrameRecords = 0;
 
 GraphicsCursorFrameCount g_CursorFrameCount = 0;
 
-GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = (void *)GraphicsCursor_ConsumeNextInputEvent;
+GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = THANDOR_FN(GraphicsCursor_ConsumeNextInputEvent);
 
 GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed = {0};
 

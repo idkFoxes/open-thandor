@@ -1028,7 +1028,7 @@ Bool8 UiTransfer_SendPlayerDescriptor(void)
   
   g_FrontendPacket20002Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_20002_PLAYER_DESCRIPTOR;
   g_FrontendPacket20002Buffer.payloadByteCount = 64;
-  nameSourceCursor = (void *)g_FrontendLocalPlayerNameUtf16;
+  nameSourceCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
   payloadCursor = g_FrontendPacket20002Buffer.playerDescriptorPayload;
   for (dwordCount = 10; dwordCount != 0; dwordCount--) {
     *payloadCursor = *nameSourceCursor;

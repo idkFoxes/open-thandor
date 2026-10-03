@@ -12,25 +12,25 @@
 
 __declspec(align(4)) uint32_t g_NetworkBackendInstanceCount = 0;
 
-__declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = (void *)NetworkBackendFallback_SetSessionContext;
+__declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = THANDOR_FN(NetworkBackendFallback_SetSessionContext);
 
-__declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = (void *)NetworkBackendFallback_Cleanup;
+__declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = THANDOR_FN(NetworkBackendFallback_Cleanup);
 
-__declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = (void *)NetworkBackendFallback_OpenAndBindUdpSocket;
+__declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = THANDOR_FN(NetworkBackendFallback_OpenAndBindUdpSocket);
 
-__declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = (void *)NetworkBackendFallback_CloseActiveSocket;
+__declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = THANDOR_FN(NetworkBackendFallback_CloseActiveSocket);
 
-__declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = (void *)NetworkBackendFallback_ParsePeerEndpoint;
+__declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = THANDOR_FN(NetworkBackendFallback_ParsePeerEndpoint);
 
-__declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = (void *)NetworkBackendFallback_FormatPeerAddress;
+__declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = THANDOR_FN(NetworkBackendFallback_FormatPeerAddress);
 
 __declspec(align(16)) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
 
 NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = 0;
 
-NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = (void *)NetworkBackendFallback_ReceiveDatagram;
+NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = THANDOR_FN(NetworkBackendFallback_ReceiveDatagram);
 
-NetworkBackendSendCallback *g_NetworkBackendSlot5 = (void *)NetworkBackendFallback_SendDatagram;
+NetworkBackendSendCallback *g_NetworkBackendSlot5 = THANDOR_FN(NetworkBackendFallback_SendDatagram);
 
 /* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
 uint32_t g_FrontendSelectedPlayerToken = 1;

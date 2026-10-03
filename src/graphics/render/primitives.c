@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc = (void *)GraphicsPrimitiveQueue_RadixSortForRendering;
+GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc = THANDOR_FN(GraphicsPrimitiveQueue_RadixSortForRendering);
 
 GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
 

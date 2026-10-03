@@ -60,7 +60,7 @@ typedef struct CampaignLevelRecord {
 } CampaignLevelRecord;
 
 typedef struct CampaignAsset {
-    enum AssetMagic magic;               /* +0x00 */
+    AssetMagic magic;               /* +0x00 */
     PckDecodedByteCount decodedSizeBytes; /* +0x04 allocation/decoded size of the whole asset */
     uint8_t reserved08_B3[0xac];
     int32_t firstLevelId;                /* +0xB4 */
