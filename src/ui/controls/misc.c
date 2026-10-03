@@ -756,7 +756,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 
 
 /* Address: 0x00517E30.
-   drawClipped of the transfer progress gauge (g_UiNodeVtable_00517DE0) shown while the player snapshots
+   drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
    are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count
    and the value the smallest progress any client has reported (transferProgressBytes of player blocks 1..n); on a
    client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is

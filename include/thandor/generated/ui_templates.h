@@ -519,7 +519,7 @@ typedef struct FrontendUiImage {
     uint32_t bottomBarConditionalAction_fields[5];
     UiNodeBase bottomBarStatusText; /* +4750 g_UiFocusProxyControlVtable: Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred). */
     uint32_t bottomBarStatusText_fields[4];
-    UiNodeBase transferProgressGauge; /* +47AC g_UiNodeVtable_00517DE0: Horizontal gauge (UiHorizontalGaugeControl subclass 00517DE0) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
+    UiNodeBase transferProgressGauge; /* +47AC g_UiTransferProgressGaugeVtable: Horizontal gauge (UiHorizontalGaugeControl subclass 00517DE0) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
     uint32_t transferProgressGauge_fields[4];
     UiNodeBase networkGamePage; /* +4808 g_UiImagePanelControlVtable: Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list. */
     uint32_t networkGamePage_fields[4];

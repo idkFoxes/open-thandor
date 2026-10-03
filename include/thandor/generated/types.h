@@ -13749,7 +13749,7 @@ struct UiRangeSliderControl {
 };
 
 /* Horizontal progress gauge drawing a framed fill for value within minimumValue..maximumValue, optionally with a
-   centered percent label (g_UiHorizontalGaugeControlVtable). g_UiNodeVtable_00517DE0 is a subclass with no extra
+   centered percent label (g_UiHorizontalGaugeControlVtable). g_UiTransferProgressGaugeVtable is a subclass with no extra
    fields that first reloads the range from the network transfer mailbox (file-transfer progress). 0x5C bytes. */
 typedef struct UiHorizontalGaugeControl UiHorizontalGaugeControl;
 struct UiHorizontalGaugeControl {

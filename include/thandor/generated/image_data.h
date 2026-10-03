@@ -15,10 +15,6 @@
 #pragma pack(push, 1)
 
 /* original 0x00401000-0x00402B00 */
-typedef struct ImageObject_00401000 {
-    uint32_t at_DAT_00401000[1024]; /* 00401000 DAT_00401000 */
-} ImageObject_00401000;
-extern ImageObject_00401000 g_ImageObject_00401000;
 extern MemoryApiTable g_MemoryApi; /* 00402000 g_MemoryApi */
 extern TimerRegisterPeriodicProc *g_TimerRegisterPeriodic; /* 00402018 g_TimerRegisterPeriodic */
 extern TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic; /* 0040201C g_TimerUnregisterPeriodic */
@@ -48,25 +44,13 @@ extern uint8_t g_FileSystemConfigCharacterNormalizationMap[256]; /* 004027D0 g_F
 extern PersistentSettingsRuntime g_PersistentSettings; /* 004028D0 g_PersistentSettings */
 
 /* original 0x00403080-0x004030B0 */
-typedef struct ImageObject_00403080 {
-    uint8_t at_gap_00403080[32]; /* 00403080 gap */
-} ImageObject_00403080;
-extern ImageObject_00403080 g_ImageObject_00403080;
 extern RandomGeneratorState g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
 
 /* original 0x00403158-0x00407160 */
-typedef struct ImageObject_00403158 {
-    uint8_t at_gap_00403158[8]; /* 00403158 gap */
-} ImageObject_00403158;
-extern ImageObject_00403158 g_ImageObject_00403158;
 extern uint32_t g_UiTransferEncryptSboxes[8][16][16]; /* 00403160 g_UiTransferEncryptSboxes: Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
 extern uint32_t g_UiTransferDecryptSboxes[8][16][16]; /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
 
 /* original 0x00407510-0x00407F50 */
-typedef struct ImageObject_00407510 {
-    uint8_t at_gap_00407510[4]; /* 00407510 gap */
-} ImageObject_00407510;
-extern ImageObject_00407510 g_ImageObject_00407510;
 extern uint16_t g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
 extern uint16_t g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
 extern uint16_t g_FatalErrorDetail2Utf16[256]; /* 00407914 g_FatalErrorDetail2Utf16 */
@@ -83,20 +67,12 @@ extern UiRootCallbacks g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks
 extern FatalErrorUiImage g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
 
 /* original 0x004080B4-0x0040A4C0 */
-typedef struct ImageObject_004080B4 {
-    uint8_t at_gap_004080B4[12]; /* 004080B4 gap */
-} ImageObject_004080B4;
-extern ImageObject_004080B4 g_ImageObject_004080B4;
 extern PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
 /* 004084C0 Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol, 004084C0),
    [256..511] internal nodes (004094C0); the tree-building scans run over both halves as one array. */
 extern PckHuffmanNode g_PckHuffmanNodeWorkspace[512];
 
 /* original 0x0040ABBC-0x0040E2B0 */
-typedef struct ImageObject_0040ABBC {
-    uint8_t at_gap_0040ABBC[4]; /* 0040ABBC gap */
-} ImageObject_0040ABBC;
-extern ImageObject_0040ABBC g_ImageObject_0040ABBC;
 extern WidePathBuffer256 g_InitialWorkingDirectory; /* 0040ABC0 g_InitialWorkingDirectory */
 extern uint16_t g_FileSystemCombinedPathScratchUtf16[256]; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
 extern uint16_t g_ExecutableDirectoryUtf16[256]; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
@@ -133,10 +109,6 @@ extern uint16_t u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
 extern uint16_t g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
 
 /* original 0x0040F524-0x0040FF70 */
-typedef struct ImageObject_0040F524 {
-    uint8_t at_gap_0040F524[12]; /* 0040F524 gap */
-} ImageObject_0040F524;
-extern ImageObject_0040F524 g_ImageObject_0040F524;
 extern uint8_t g_UiTimedListDriveLetters[32]; /* 0040F530 g_UiTimedListDriveLetters */
 extern WidePathBuffer256 g_UiTimedListRecordPathScratch; /* 0040F550 g_UiTimedListRecordPathScratch */
 extern WidePathBuffer256 g_UiTimedListCombinedPathScratch; /* 0040F750 g_UiTimedListCombinedPathScratch */
@@ -147,10 +119,6 @@ extern uint16_t g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 
 extern uint16_t g_UiTimedListDriveWildcardUtf16[7]; /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
 
 /* original 0x004107E8-0x004168B0 */
-typedef struct ImageObject_004107E8 {
-    uint8_t at_gap_004107E8[8]; /* 004107E8 gap */
-} ImageObject_004107E8;
-extern ImageObject_004107E8 g_ImageObject_004107E8;
 extern GraphicsCursorInputEvent18 g_CursorInputEvents[256]; /* 004107F0 g_CursorInputEvents */
 extern uint32_t g_CursorInputWriteIndex; /* 004167F0 g_CursorInputWriteIndex */
 extern uint32_t g_CursorInputReadIndex; /* 004167F4 g_CursorInputReadIndex */
@@ -183,10 +151,6 @@ extern uint16_t u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_
 extern uint16_t u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
 
 /* original 0x004169DC-0x00417230 */
-typedef struct ImageObject_004169DC {
-    uint8_t at_gap_004169DC[4]; /* 004169DC gap */
-} ImageObject_004169DC;
-extern ImageObject_004169DC g_ImageObject_004169DC;
 extern KeyboardInputEvent g_KeyboardEvents[256]; /* 004169E0 g_KeyboardEvents; the ring uses only the first 64 */
 extern KeyboardEventRingIndex g_KeyboardWriteIndex; /* 004171E0 g_KeyboardWriteIndex */
 extern KeyboardEventRingIndex g_KeyboardReadIndex; /* 004171E4 g_KeyboardReadIndex */
@@ -198,10 +162,6 @@ extern KeyboardReadEventProc *g_KeyboardReadEvent; /* 00417214 g_KeyboardReadEve
 extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3; /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
 
 /* original 0x004172E8-0x00417570 */
-typedef struct ImageObject_004172E8 {
-    uint8_t at_gap_004172E8[24]; /* 004172E8 gap */
-} ImageObject_004172E8;
-extern ImageObject_004172E8 g_ImageObject_004172E8;
 extern uint64_t g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
 extern uint64_t g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
 extern uint64_t g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
@@ -223,10 +183,6 @@ extern SoundSetVoiceGainsProc *g_SoundSetVoiceGains; /* 00417360 g_SoundSetVoice
 extern short g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
 
 /* original 0x0041A53C-0x0041A580 */
-typedef struct ImageObject_0041A53C {
-    uint8_t at_gap_0041A53C[4]; /* 0041A53C gap */
-} ImageObject_0041A53C;
-extern ImageObject_0041A53C g_ImageObject_0041A53C;
 extern NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable; /* 0041A540 g_NetworkBackendInstanceTable */
 extern uint32_t g_NetworkBackendInstanceCount; /* 0041A544 g_NetworkBackendInstanceCount */
 extern NetworkSessionContext *g_NetworkBackendSessionContext; /* 0041A548 g_NetworkBackendSessionContext */
@@ -241,10 +197,6 @@ extern NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7; /* 0041A568 g
 extern UiTransferEndpointDescriptor g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
 
 /* original 0x0041A740-0x0041B080 */
-typedef struct ImageObject_0041A740 {
-    uint8_t at_gap_0041A740[16]; /* 0041A740 gap */
-} ImageObject_0041A740;
-extern ImageObject_0041A740 g_ImageObject_0041A740;
 /* 0041A750 g_RichTextColorPaletteArgb: rich-text colour palette, indexed by the 3-bit palette field of the
    packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0..3:
    [0] 0xFFB0B0B0 grey, also the normal cost colour of the technology panel;
@@ -275,315 +227,7 @@ extern GraphicsTextureSourceAsset *g_FontTextureSources[2]; /* 0041B028 g_FontTe
    FontRuntime_Init scans past the first terminator to reach the second */
 extern uint16_t g_FontTexturePathsUtf16[33];
 
-/* original 0x0041B128-0x0041B1B0 */
-typedef struct ImageObject_0041B128 {
-    uint8_t at_gap_0041B128[8]; /* 0041B128 gap */
-} ImageObject_0041B128;
-extern ImageObject_0041B128 g_ImageObject_0041B128;
-typedef struct ImageObject_0041B130 {
-    uint32_t at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130[20]; /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
-} ImageObject_0041B130;
-extern ImageObject_0041B130 g_ImageObject_0041B130;
-typedef struct ImageObject_0041B180 {
-    uint32_t at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
-} ImageObject_0041B180;
-extern ImageObject_0041B180 g_ImageObject_0041B180;
-typedef struct ImageObject_0041B190 {
-    uint32_t at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
-} ImageObject_0041B190;
-extern ImageObject_0041B190 g_ImageObject_0041B190;
-
-/* original 0x0041B228-0x0041B2B0 */
-typedef struct ImageObject_0041B228 {
-    uint8_t at_gap_0041B228[8]; /* 0041B228 gap */
-} ImageObject_0041B228;
-extern ImageObject_0041B228 g_ImageObject_0041B228;
-typedef struct ImageObject_0041B230 {
-    uint32_t at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230[20]; /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
-} ImageObject_0041B230;
-extern ImageObject_0041B230 g_ImageObject_0041B230;
-typedef struct ImageObject_0041B280 {
-    uint32_t at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
-} ImageObject_0041B280;
-extern ImageObject_0041B280 g_ImageObject_0041B280;
-typedef struct ImageObject_0041B290 {
-    uint32_t at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
-} ImageObject_0041B290;
-extern ImageObject_0041B290 g_ImageObject_0041B290;
-
-/* original 0x0041B338-0x0041B3D0 */
-typedef struct ImageObject_0041B338 {
-    uint8_t at_gap_0041B338[8]; /* 0041B338 gap */
-} ImageObject_0041B338;
-extern ImageObject_0041B338 g_ImageObject_0041B338;
-typedef struct ImageObject_0041B340 {
-    uint32_t at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340[36]; /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
-} ImageObject_0041B340;
-extern ImageObject_0041B340 g_ImageObject_0041B340;
-
-/* original 0x0041B448-0x0041B4D0 */
-typedef struct ImageObject_0041B448 {
-    uint8_t at_gap_0041B448[8]; /* 0041B448 gap */
-} ImageObject_0041B448;
-extern ImageObject_0041B448 g_ImageObject_0041B448;
-typedef struct ImageObject_0041B450 {
-    uint32_t at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450[32]; /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
-} ImageObject_0041B450;
-extern ImageObject_0041B450 g_ImageObject_0041B450;
-
-/* original 0x0041B548-0x0041B5D0 */
-typedef struct ImageObject_0041B548 {
-    uint8_t at_gap_0041B548[8]; /* 0041B548 gap */
-} ImageObject_0041B548;
-extern ImageObject_0041B548 g_ImageObject_0041B548;
-typedef struct ImageObject_0041B550 {
-    uint32_t at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550[32]; /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
-} ImageObject_0041B550;
-extern ImageObject_0041B550 g_ImageObject_0041B550;
-
-/* original 0x0041B648-0x0041B6E0 */
-typedef struct ImageObject_0041B648 {
-    uint8_t at_gap_0041B648[8]; /* 0041B648 gap */
-} ImageObject_0041B648;
-extern ImageObject_0041B648 g_ImageObject_0041B648;
-typedef struct ImageObject_0041B650 {
-    uint32_t at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650[36]; /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
-} ImageObject_0041B650;
-extern ImageObject_0041B650 g_ImageObject_0041B650;
-
-/* original 0x0041B758-0x0041B7F0 */
-typedef struct ImageObject_0041B758 {
-    uint8_t at_gap_0041B758[8]; /* 0041B758 gap */
-} ImageObject_0041B758;
-extern ImageObject_0041B758 g_ImageObject_0041B758;
-typedef struct ImageObject_0041B760 {
-    uint32_t at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760[36]; /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
-} ImageObject_0041B760;
-extern ImageObject_0041B760 g_ImageObject_0041B760;
-
-/* original 0x0041B868-0x0041B900 */
-typedef struct ImageObject_0041B868 {
-    uint8_t at_gap_0041B868[8]; /* 0041B868 gap */
-} ImageObject_0041B868;
-extern ImageObject_0041B868 g_ImageObject_0041B868;
-typedef struct ImageObject_0041B870 {
-    uint32_t at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870[36]; /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
-} ImageObject_0041B870;
-extern ImageObject_0041B870 g_ImageObject_0041B870;
-
-/* original 0x0041B9C8-0x0041BA50 */
-typedef struct ImageObject_0041B9C8 {
-    uint8_t at_gap_0041B9C8[8]; /* 0041B9C8 gap */
-} ImageObject_0041B9C8;
-extern ImageObject_0041B9C8 g_ImageObject_0041B9C8;
-typedef struct ImageObject_0041B9D0 {
-    uint32_t at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0[20]; /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
-} ImageObject_0041B9D0;
-extern ImageObject_0041B9D0 g_ImageObject_0041B9D0;
-typedef struct ImageObject_0041BA20 {
-    uint32_t at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
-} ImageObject_0041BA20;
-extern ImageObject_0041BA20 g_ImageObject_0041BA20;
-typedef struct ImageObject_0041BA30 {
-    uint32_t at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
-} ImageObject_0041BA30;
-extern ImageObject_0041BA30 g_ImageObject_0041BA30;
-
-/* original 0x0041BB78-0x0041BC00 */
-typedef struct ImageObject_0041BB78 {
-    uint8_t at_gap_0041BB78[8]; /* 0041BB78 gap */
-} ImageObject_0041BB78;
-extern ImageObject_0041BB78 g_ImageObject_0041BB78;
-typedef struct ImageObject_0041BB80 {
-    uint32_t at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80[20]; /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
-} ImageObject_0041BB80;
-extern ImageObject_0041BB80 g_ImageObject_0041BB80;
-typedef struct ImageObject_0041BBD0 {
-    uint32_t at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
-} ImageObject_0041BBD0;
-extern ImageObject_0041BBD0 g_ImageObject_0041BBD0;
-typedef struct ImageObject_0041BBE0 {
-    uint32_t at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
-} ImageObject_0041BBE0;
-extern ImageObject_0041BBE0 g_ImageObject_0041BBE0;
-
-/* original 0x0041BCEC-0x0041C0F0 */
-typedef struct ImageObject_0041BCEC {
-    uint8_t at_gap_0041BCEC[4]; /* 0041BCEC gap */
-} ImageObject_0041BCEC;
-extern ImageObject_0041BCEC g_ImageObject_0041BCEC;
-typedef struct ImageObject_0041BCF0 {
-    uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0[256]; /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
-} ImageObject_0041BCF0;
-extern ImageObject_0041BCF0 g_ImageObject_0041BCF0;
-
-/* original 0x0041C15C-0x0041C560 */
-typedef struct ImageObject_0041C15C {
-    uint8_t at_gap_0041C15C[4]; /* 0041C15C gap */
-} ImageObject_0041C15C;
-extern ImageObject_0041C15C g_ImageObject_0041C15C;
-typedef struct ImageObject_0041C160 {
-    uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160[48]; /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
-} ImageObject_0041C160;
-extern ImageObject_0041C160 g_ImageObject_0041C160;
-typedef struct ImageObject_0041C220 {
-    uint32_t at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
-} ImageObject_0041C220;
-extern ImageObject_0041C220 g_ImageObject_0041C220;
-typedef struct ImageObject_0041C260 {
-    uint32_t at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
-} ImageObject_0041C260;
-extern ImageObject_0041C260 g_ImageObject_0041C260;
-
-/* original 0x0041C94C-0x0041C9D0 */
-typedef struct ImageObject_0041C94C {
-    uint8_t at_gap_0041C94C[4]; /* 0041C94C gap */
-} ImageObject_0041C94C;
-extern ImageObject_0041C94C g_ImageObject_0041C94C;
-typedef struct ImageObject_0041C950 {
-    uint32_t at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950[32]; /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
-} ImageObject_0041C950;
-extern ImageObject_0041C950 g_ImageObject_0041C950;
-
-/* original 0x0041CAFC-0x0041CB04 */
-typedef struct ImageObject_0041CAFC {
-    uint8_t at_gap_0041CAFC[8]; /* 0041CAFC gap */
-} ImageObject_0041CAFC;
-extern ImageObject_0041CAFC g_ImageObject_0041CAFC;
-
-/* original 0x0041CB68-0x0041CBF0 */
-typedef struct ImageObject_0041CB68 {
-    uint8_t at_gap_0041CB68[8]; /* 0041CB68 gap */
-} ImageObject_0041CB68;
-extern ImageObject_0041CB68 g_ImageObject_0041CB68;
-typedef struct ImageObject_0041CB70 {
-    uint32_t at_g_TextResourcePage_Load_SwitchTable_0041CB70[20]; /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
-} ImageObject_0041CB70;
-extern ImageObject_0041CB70 g_ImageObject_0041CB70;
-typedef struct ImageObject_0041CBC0 {
-    uint32_t at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
-} ImageObject_0041CBC0;
-extern ImageObject_0041CBC0 g_ImageObject_0041CBC0;
-typedef struct ImageObject_0041CBD0 {
-    uint32_t at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
-} ImageObject_0041CBD0;
-extern ImageObject_0041CBD0 g_ImageObject_0041CBD0;
-
-/* original 0x0041CF7C-0x0041D000 */
-typedef struct ImageObject_0041CF7C {
-    uint8_t at_gap_0041CF7C[4]; /* 0041CF7C gap */
-} ImageObject_0041CF7C;
-extern ImageObject_0041CF7C g_ImageObject_0041CF7C;
-typedef struct ImageObject_0041CF80 {
-    uint32_t at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80[8]; /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
-} ImageObject_0041CF80;
-extern ImageObject_0041CF80 g_ImageObject_0041CF80;
-typedef struct ImageObject_0041CFA0 {
-    uint32_t at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
-} ImageObject_0041CFA0;
-extern ImageObject_0041CFA0 g_ImageObject_0041CFA0;
-typedef struct ImageObject_0041CFD0 {
-    uint32_t at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
-} ImageObject_0041CFD0;
-extern ImageObject_0041CFD0 g_ImageObject_0041CFD0;
-typedef struct ImageObject_0041CFE0 {
-    uint32_t at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
-} ImageObject_0041CFE0;
-extern ImageObject_0041CFE0 g_ImageObject_0041CFE0;
-
-/* original 0x0041D07C-0x0041D090 */
-typedef struct ImageObject_0041D07C {
-    uint8_t at_gap_0041D07C[20]; /* 0041D07C gap */
-} ImageObject_0041D07C;
-extern ImageObject_0041D07C g_ImageObject_0041D07C;
-
-/* original 0x0041D144-0x0041D1D0 */
-typedef struct ImageObject_0041D144 {
-    uint8_t at_gap_0041D144[12]; /* 0041D144 gap */
-} ImageObject_0041D144;
-extern ImageObject_0041D144 g_ImageObject_0041D144;
-typedef struct ImageObject_0041D150 {
-    uint32_t at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150[8]; /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
-} ImageObject_0041D150;
-extern ImageObject_0041D150 g_ImageObject_0041D150;
-typedef struct ImageObject_0041D170 {
-    uint32_t at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
-} ImageObject_0041D170;
-extern ImageObject_0041D170 g_ImageObject_0041D170;
-
-/* original 0x0041D53C-0x0041D5C0 */
-typedef struct ImageObject_0041D53C {
-    uint8_t at_gap_0041D53C[4]; /* 0041D53C gap */
-} ImageObject_0041D53C;
-extern ImageObject_0041D53C g_ImageObject_0041D53C;
-typedef struct ImageObject_0041D540 {
-    uint32_t at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540[8]; /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
-} ImageObject_0041D540;
-extern ImageObject_0041D540 g_ImageObject_0041D540;
-typedef struct ImageObject_0041D560 {
-    uint32_t at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
-} ImageObject_0041D560;
-extern ImageObject_0041D560 g_ImageObject_0041D560;
-typedef struct ImageObject_0041D590 {
-    uint32_t at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
-} ImageObject_0041D590;
-extern ImageObject_0041D590 g_ImageObject_0041D590;
-typedef struct ImageObject_0041D5A0 {
-    uint32_t at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
-} ImageObject_0041D5A0;
-extern ImageObject_0041D5A0 g_ImageObject_0041D5A0;
-
-/* original 0x0041D75C-0x0041D770 */
-typedef struct ImageObject_0041D75C {
-    uint8_t at_gap_0041D75C[20]; /* 0041D75C gap */
-} ImageObject_0041D75C;
-extern ImageObject_0041D75C g_ImageObject_0041D75C;
-
-/* original 0x0041D880-0x0041D910 */
-typedef struct ImageObject_0041D880 {
-    uint8_t at_gap_0041D880[16]; /* 0041D880 gap */
-} ImageObject_0041D880;
-extern ImageObject_0041D880 g_ImageObject_0041D880;
-typedef struct ImageObject_0041D890 {
-    uint32_t at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890[8]; /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
-} ImageObject_0041D890;
-extern ImageObject_0041D890 g_ImageObject_0041D890;
-typedef struct ImageObject_0041D8B0 {
-    uint32_t at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
-} ImageObject_0041D8B0;
-extern ImageObject_0041D8B0 g_ImageObject_0041D8B0;
-
-/* original 0x0041DA44-0x0041DAD0 */
-typedef struct ImageObject_0041DA44 {
-    uint8_t at_gap_0041DA44[12]; /* 0041DA44 gap */
-} ImageObject_0041DA44;
-extern ImageObject_0041DA44 g_ImageObject_0041DA44;
-typedef struct ImageObject_0041DA50 {
-    uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50[32]; /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
-} ImageObject_0041DA50;
-extern ImageObject_0041DA50 g_ImageObject_0041DA50;
-
-/* original 0x0041DBD4-0x0041DC60 */
-typedef struct ImageObject_0041DBD4 {
-    uint8_t at_gap_0041DBD4[12]; /* 0041DBD4 gap */
-} ImageObject_0041DBD4;
-extern ImageObject_0041DBD4 g_ImageObject_0041DBD4;
-typedef struct ImageObject_0041DBE0 {
-    uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0[32]; /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
-} ImageObject_0041DBE0;
-extern ImageObject_0041DBE0 g_ImageObject_0041DBE0;
-
-/* original 0x0041DDFC-0x0041DE10 */
-typedef struct ImageObject_0041DDFC {
-    uint8_t at_gap_0041DDFC[20]; /* 0041DDFC gap */
-} ImageObject_0041DDFC;
-extern ImageObject_0041DDFC g_ImageObject_0041DDFC;
-
-/* original 0x0041DE7C-0x004227B0 */
-typedef struct ImageObject_0041DE7C {
-    uint8_t at_gap_0041DE7C[4]; /* 0041DE7C gap */
-} ImageObject_0041DE7C;
-extern ImageObject_0041DE7C g_ImageObject_0041DE7C;
+/* original 0x0041DE80-0x004227B0 */
 extern uint64_t g_PackedLightingLookupTable[512]; /* 0041DE80 g_PackedLightingLookupTable */
 extern SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256]; /* 0041EE80 g_ShadingIntensityScaleMmx */
 extern uint64_t g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
@@ -605,18 +249,11 @@ extern SoftwareBgraWordLanes g_UiScalerFirstPixelWeights[256]; /* 00420720 g_UiS
 extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[256]; /* 00420F20 g_SoftwareBilinearInverseFactors */
 extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256]; /* 00421720 g_SoftwareBlendAlphaFactors */
 extern SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256]; /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
-typedef struct ImageObject_00422720 {
-    UiNodeVtable at_g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
-} ImageObject_00422720;
-extern ImageObject_00422720 g_ImageObject_00422720;
+extern UiNodeVtable g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
 extern uint16_t g_GraphicsAdapterFormatScratch0Utf16[16]; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
 extern uint16_t g_GraphicsAdapterFormatScratch1Utf16[16]; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
 
 /* original 0x00422978-0x00423600 */
-typedef struct ImageObject_00422978 {
-    uint8_t at_gap_00422978[40]; /* 00422978 gap */
-} ImageObject_00422978;
-extern ImageObject_00422978 g_ImageObject_00422978;
 extern UiRootCallbacks g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
 extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
 extern UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
@@ -629,20 +266,12 @@ extern UiRootCallbacks g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourVal
 extern FourValueDialogUiImage g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
 
 /* original 0x00424684-0x004846A0 */
-typedef struct ImageObject_00424684 {
-    uint8_t at_gap_00424684[28]; /* 00424684 gap */
-} ImageObject_00424684;
-extern ImageObject_00424684 g_ImageObject_00424684;
 /* 004246A0 one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1) at
    004246A0, sin(0..16383) at 004346A0 (FIXED_SINE_TABLE_SIN), cos(0..65535) at 004446A0
    (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
 extern int32_t g_FixedSineQ28[98304];
 
 /* original 0x00485808-0x00485E40 */
-typedef struct ImageObject_00485808 {
-    uint8_t at_gap_00485808[12]; /* 00485808 gap */
-} ImageObject_00485808;
-extern ImageObject_00485808 g_ImageObject_00485808;
 extern uint32_t g_TextureDownsampleShift; /* 00485814 g_TextureDownsampleShift */
 extern GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth; /* 00485818 g_GraphicsSetViewportAndClearDepth */
 extern GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue; /* 0048581C g_GraphicsDrawPrimitiveQueue */
@@ -694,10 +323,6 @@ extern ModelRuntimeNode *g_ArmyPreviewModelNode; /* 00485A34 g_ArmyPreviewModelN
 extern uint32_t g_PrimitiveRadixBucketWords[256]; /* 00485A40 g_PrimitiveRadixBucketWords */
 
 /* original 0x00486D8C-0x004A6FB0 */
-typedef struct ImageObject_00486D8C {
-    uint8_t at_gap_00486D8C[4]; /* 00486D8C gap */
-} ImageObject_00486D8C;
-extern ImageObject_00486D8C g_ImageObject_00486D8C;
 extern uint32_t g_MovieChromaLumaToArgb[1024][32]; /* 00486D90 g_MovieChromaLumaToArgb */
 extern uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels; /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
 extern MovieRuntime *g_ActiveMovie; /* 004A6D98 g_ActiveMovie */
@@ -706,10 +331,6 @@ extern MovieAudioGainQ15 g_MovieAlternateAudioGainQ15; /* 004A6DA0 g_MovieAltern
 extern WidePathBuffer256 g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
 
 /* original 0x004A8E60-0x004A8F80 */
-typedef struct ImageObject_004A8E60 {
-    uint8_t at_gap_004A8E60[16]; /* 004A8E60 gap */
-} ImageObject_004A8E60;
-extern ImageObject_004A8E60 g_ImageObject_004A8E60;
 extern SoftwareFramebufferAccess *g_FramebufferAccess; /* 004A8E70 g_FramebufferAccess */
 extern SoftwareFramebufferAccess *g_CursorSavedBackground; /* 004A8E74 g_CursorSavedBackground */
 extern SoftwareFramebufferAccess *g_CursorCompositeBuffer; /* 004A8E78 g_CursorCompositeBuffer */
@@ -764,18 +385,10 @@ extern GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetReso
 extern uint16_t g_UnreferencedSoftwareTextUtf16[9]; /* 004A8F6C g_UnreferencedSoftwareTextUtf16: L"Software" after the graphics hook table, followed by two NOP padding bytes (dropped); no code or data reference found. */
 
 /* original 0x004AD92C-0x004AE230 */
-typedef struct ImageObject_004AD92C {
-    uint8_t at_gap_004AD92C[4]; /* 004AD92C gap */
-} ImageObject_004AD92C;
-extern ImageObject_004AD92C g_ImageObject_004AD92C;
 extern uint32_t g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
 extern uint8_t g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
 
 /* original 0x004AE95C-0x004AEB10 */
-typedef struct ImageObject_004AE95C {
-    uint8_t at_gap_004AE95C[4]; /* 004AE95C gap */
-} ImageObject_004AE95C;
-extern ImageObject_004AE95C g_ImageObject_004AE95C;
 extern UiRuntimeRecord *g_UiRuntimeRecordRing; /* 004AE960 g_UiRuntimeRecordRing */
 extern uint32_t g_UiRuntimeRecordEndpointSlots; /* 004AE964 g_UiRuntimeRecordEndpointSlots */
 extern uint8_t *g_UiTransferDataBuffer; /* 004AE968 g_UiTransferDataBuffer */
@@ -794,17 +407,7 @@ extern UiRuntimeRecord g_UiTransferChunkPacket; /* 004AE9E8 g_UiTransferChunkPac
 extern FrontendPacket10032HostValue g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033 (same layout as the 0x10032 ping): header (sequence token at 0x004AEAEC), echoed tick (0x004AEAF8). */
 extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
 
-/* original 0x004AF198-0x004AF1A0 */
-typedef struct ImageObject_004AF198 {
-    uint8_t at_gap_004AF198[8]; /* 004AF198 gap */
-} ImageObject_004AF198;
-extern ImageObject_004AF198 g_ImageObject_004AF198;
-
 /* original 0x004AF1D4-0x004AF210 */
-typedef struct ImageObject_004AF1D4 {
-    uint8_t at_gap_004AF1D4[12]; /* 004AF1D4 gap */
-} ImageObject_004AF1D4;
-extern ImageObject_004AF1D4 g_ImageObject_004AF1D4;
 extern UiTooltipState g_UiTooltipState; /* 004AF1E0 g_UiTooltipState */
 extern uint32_t g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
 extern UiDirtyRectCount g_UiDirtyRectCount; /* 004AF1F4 g_UiDirtyRectCount */
@@ -814,17 +417,7 @@ extern UiActionQueueEntry *g_UiActionQueueEntries; /* 004AF200 g_UiActionQueueEn
 extern uint32_t g_UiRuntimeInitializationCount; /* 004AF204 g_UiRuntimeInitializationCount */
 extern uint32_t g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
 
-/* original 0x004AF39C-0x004AF3B0 */
-typedef struct ImageObject_004AF39C {
-    uint8_t at_gap_004AF39C[20]; /* 004AF39C gap */
-} ImageObject_004AF39C;
-extern ImageObject_004AF39C g_ImageObject_004AF39C;
-
 /* original 0x004B0A20-0x004B0F30 */
-typedef struct ImageObject_004B0A20 {
-    uint8_t at_gap_004B0A20[16]; /* 004B0A20 gap */
-} ImageObject_004B0A20;
-extern ImageObject_004B0A20 g_ImageObject_004B0A20;
 extern UiActionHandlerPage *g_UiActionHandlerPages[256]; /* 004B0A30 g_UiActionHandlerPages */
 extern UiRootNode *g_UiRootNode; /* 004B0E30 g_UiRootNode */
 extern GraphicsTextureSourceAsset *g_UiWindowTextureSource; /* 004B0E34 g_UiWindowTextureSource */
@@ -863,254 +456,85 @@ extern uint16_t g_UiWindowTexturePathUtf16[15]; /* 004B0F06 g_UiWindowTexturePat
 extern UiPointerCaptureButton g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
 extern UiImageControl * g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
 
-/* original 0x004B1500-0x004B1510 */
-typedef struct ImageObject_004B1500 {
-    uint8_t at_gap_004B1500[16]; /* 004B1500 gap */
-} ImageObject_004B1500;
-extern ImageObject_004B1500 g_ImageObject_004B1500;
-
 /* original 0x004B15C8-0x004B1620 */
-typedef struct ImageObject_004B15C8 {
-    uint8_t at_gap_004B15C8[8]; /* 004B15C8 gap */
-} ImageObject_004B15C8;
-extern ImageObject_004B15C8 g_ImageObject_004B15C8;
 extern UiNodeVtable g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
 
 /* original 0x004B1D74-0x004B1DD0 */
-typedef struct ImageObject_004B1D74 {
-    uint8_t at_gap_004B1D74[12]; /* 004B1D74 gap */
-} ImageObject_004B1D74;
-extern ImageObject_004B1D74 g_ImageObject_004B1D74;
-typedef struct ImageObject_004B1D80 {
-    UiNodeVtable at_g_UiNodeVtable_004B1D80; /* 004B1D80 g_UiNodeVtable_004B1D80 */
-    uint32_t at_g_UiNodeVtable_004B1D80_rest[2]; /* beyond the declared type */
-} ImageObject_004B1D80;
-extern ImageObject_004B1D80 g_ImageObject_004B1D80;
+extern UiNodeVtable g_UiNodeVtable_004B1D80; /* 004B1D80 g_UiNodeVtable_004B1D80 (framed text button) */
 
 /* original 0x004B2734-0x004B2790 */
-typedef struct ImageObject_004B2734 {
-    uint8_t at_gap_004B2734[12]; /* 004B2734 gap */
-} ImageObject_004B2734;
-extern ImageObject_004B2734 g_ImageObject_004B2734;
-typedef struct ImageObject_004B2740 {
-    UiNodeVtable at_g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
-    uint32_t at_g_UiWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B2740;
-extern ImageObject_004B2740 g_ImageObject_004B2740;
+extern UiNodeVtable g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
 
 /* original 0x004B2CD8-0x004B2D30 */
-typedef struct ImageObject_004B2CD8 {
-    uint8_t at_gap_004B2CD8[8]; /* 004B2CD8 gap */
-} ImageObject_004B2CD8;
-extern ImageObject_004B2CD8 g_ImageObject_004B2CD8;
-typedef struct ImageObject_004B2CE0 {
-    UiNodeVtable at_g_UiNodeVtable_004B2CE0; /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
-    uint32_t at_g_UiNodeVtable_004B2CE0_rest[2]; /* beyond the declared type */
-} ImageObject_004B2CE0;
-extern ImageObject_004B2CE0 g_ImageObject_004B2CE0;
+extern UiNodeVtable g_UiNodeVtable_004B2CE0; /* 004B2CE0 g_UiNodeVtable_004B2CE0 (text button) */
 
 /* original 0x004B33D0-0x004B3420 */
-typedef struct ImageObject_004B33D0 {
-    UiNodeVtable at_g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
-    uint32_t at_g_UiTitledWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B33D0;
-extern ImageObject_004B33D0 g_ImageObject_004B33D0;
+extern UiNodeVtable g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
 
 /* original 0x004B3760-0x004B37C0 */
-typedef struct ImageObject_004B3760 {
-    uint8_t at_gap_004B3760[16]; /* 004B3760 gap */
-} ImageObject_004B3760;
-extern ImageObject_004B3760 g_ImageObject_004B3760;
-typedef struct ImageObject_004B3770 {
-    UiNodeVtable at_g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
-    uint32_t at_g_UiImagePanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B3770;
-extern ImageObject_004B3770 g_ImageObject_004B3770;
+extern UiNodeVtable g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
 
 /* original 0x004B3A48-0x004B3AA0 */
-typedef struct ImageObject_004B3A48 {
-    uint8_t at_gap_004B3A48[8]; /* 004B3A48 gap */
-} ImageObject_004B3A48;
-extern ImageObject_004B3A48 g_ImageObject_004B3A48;
-typedef struct ImageObject_004B3A50 {
-    UiNodeVtable at_g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
-    uint32_t at_g_UiFillPanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B3A50;
-extern ImageObject_004B3A50 g_ImageObject_004B3A50;
+extern UiNodeVtable g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
 
 /* original 0x004B3C1C-0x004B3C80 */
-typedef struct ImageObject_004B3C1C {
-    uint8_t at_gap_004B3C1C[4]; /* 004B3C1C gap */
-} ImageObject_004B3C1C;
-extern ImageObject_004B3C1C g_ImageObject_004B3C1C;
-typedef struct ImageObject_004B3C20 {
-    UiNodeVtable at_g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
-} ImageObject_004B3C20;
-extern ImageObject_004B3C20 g_ImageObject_004B3C20;
+extern UiNodeVtable g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
 extern uint16_t g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
 
 /* original 0x004B3EEC-0x004B3F40 */
-typedef struct ImageObject_004B3EEC {
-    uint8_t at_gap_004B3EEC[4]; /* 004B3EEC gap */
-} ImageObject_004B3EEC;
-extern ImageObject_004B3EEC g_ImageObject_004B3EEC;
-typedef struct ImageObject_004B3EF0 {
-    UiNodeVtable at_g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
-    uint32_t at_g_UiRangeSliderControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B3EF0;
-extern ImageObject_004B3EF0 g_ImageObject_004B3EF0;
+extern UiNodeVtable g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
 
 /* original 0x004B4648-0x004B46A0 */
-typedef struct ImageObject_004B4648 {
-    uint8_t at_gap_004B4648[8]; /* 004B4648 gap */
-} ImageObject_004B4648;
-extern ImageObject_004B4648 g_ImageObject_004B4648;
-typedef struct ImageObject_004B4650 {
-    UiNodeVtable at_g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
-    uint32_t at_g_UiLayoutContainerControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B4650;
-extern ImageObject_004B4650 g_ImageObject_004B4650;
+extern UiNodeVtable g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
 
 /* original 0x004B494C-0x004B49A0 */
-typedef struct ImageObject_004B494C {
-    uint8_t at_gap_004B494C[4]; /* 004B494C gap */
-} ImageObject_004B494C;
-extern ImageObject_004B494C g_ImageObject_004B494C;
-typedef struct ImageObject_004B4950 {
-    UiNodeVtable at_g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
-    uint32_t at_g_UiPanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B4950;
-extern ImageObject_004B4950 g_ImageObject_004B4950;
+extern UiNodeVtable g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
 
 /* original 0x004B4CB8-0x004B4D10 */
-typedef struct ImageObject_004B4CB8 {
-    uint8_t at_gap_004B4CB8[8]; /* 004B4CB8 gap */
-} ImageObject_004B4CB8;
-extern ImageObject_004B4CB8 g_ImageObject_004B4CB8;
-typedef struct ImageObject_004B4CC0 {
-    UiNodeVtable at_g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
-    uint32_t at_g_UiResizableWindowControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B4CC0;
-extern ImageObject_004B4CC0 g_ImageObject_004B4CC0;
+extern UiNodeVtable g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
 
 /* original 0x004B5890-0x004B58F0 */
-typedef struct ImageObject_004B5890 {
-    uint8_t at_gap_004B5890[16]; /* 004B5890 gap */
-} ImageObject_004B5890;
-extern ImageObject_004B5890 g_ImageObject_004B5890;
-typedef struct ImageObject_004B58A0 {
-    UiNodeVtable at_g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
-    uint32_t at_g_UiNumericTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B58A0;
-extern ImageObject_004B58A0 g_ImageObject_004B58A0;
+extern UiNodeVtable g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
 
 /* original 0x004B67F4-0x004B6850 */
-typedef struct ImageObject_004B67F4 {
-    uint8_t at_gap_004B67F4[12]; /* 004B67F4 gap */
-} ImageObject_004B67F4;
-extern ImageObject_004B67F4 g_ImageObject_004B67F4;
-typedef struct ImageObject_004B6800 {
-    UiNodeVtable at_g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
-    uint32_t at_g_UiPathTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B6800;
-extern ImageObject_004B6800 g_ImageObject_004B6800;
+extern UiNodeVtable g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
 
 /* original 0x004B7048-0x004B70A0 */
-typedef struct ImageObject_004B7048 {
-    uint8_t at_gap_004B7048[8]; /* 004B7048 gap */
-} ImageObject_004B7048;
-extern ImageObject_004B7048 g_ImageObject_004B7048;
-typedef struct ImageObject_004B7050 {
-    UiNodeVtable at_g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
-    uint32_t at_g_UiRequiredTextEditControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B7050;
-extern ImageObject_004B7050 g_ImageObject_004B7050;
+extern UiNodeVtable g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
 
 /* original 0x004B7914-0x004B7970 */
-typedef struct ImageObject_004B7914 {
-    uint8_t at_gap_004B7914[12]; /* 004B7914 gap */
-} ImageObject_004B7914;
-extern ImageObject_004B7914 g_ImageObject_004B7914;
 extern UiNodeVtable g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
 
 /* original 0x004B9530-0x004B9580 */
-typedef struct ImageObject_004B9530 {
-    UiNodeVtable at_g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
-    uint32_t at_g_UiFocusProxyControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B9530;
-extern ImageObject_004B9530 g_ImageObject_004B9530;
+extern UiNodeVtable g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
 
 /* original 0x004B9E38-0x004B9E90 */
-typedef struct ImageObject_004B9E38 {
-    uint8_t at_gap_004B9E38[8]; /* 004B9E38 gap */
-} ImageObject_004B9E38;
-extern ImageObject_004B9E38 g_ImageObject_004B9E38;
 extern UiNodeVtable g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
 
 /* original 0x004BA58C-0x004BADE0 */
-typedef struct ImageObject_004BA58C {
-    uint8_t at_gap_004BA58C[4]; /* 004BA58C gap */
-} ImageObject_004BA58C;
-extern ImageObject_004BA58C g_ImageObject_004BA58C;
 extern UiNodeVtable g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
 extern uint16_t g_UiPointerListExpandedLeftTextUtf16[512]; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 extern uint16_t g_UiPointerListExpandedRightTextUtf16[512]; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 
 /* original 0x004BB988-0x004BB9E0 */
-typedef struct ImageObject_004BB988 {
-    uint8_t at_gap_004BB988[8]; /* 004BB988 gap */
-} ImageObject_004BB988;
-extern ImageObject_004BB988 g_ImageObject_004BB988;
 extern UiNodeVtable g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
 
 /* original 0x004BC404-0x004BC460 */
-typedef struct ImageObject_004BC404 {
-    uint8_t at_gap_004BC404[12]; /* 004BC404 gap */
-} ImageObject_004BC404;
-extern ImageObject_004BC404 g_ImageObject_004BC404;
-typedef struct ImageObject_004BC410 {
-    UiNodeVtable at_g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
-    uint32_t at_g_UiListOffsetControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004BC410;
-extern ImageObject_004BC410 g_ImageObject_004BC410;
+extern UiNodeVtable g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
 
 /* original 0x004BC564-0x004BC5C0 */
-typedef struct ImageObject_004BC564 {
-    uint8_t at_gap_004BC564[12]; /* 004BC564 gap */
-} ImageObject_004BC564;
-extern ImageObject_004BC564 g_ImageObject_004BC564;
-typedef struct ImageObject_004BC570 {
-    UiNodeVtable at_g_UiNodeVtable_004BC570; /* 004BC570 g_UiNodeVtable_004BC570 */
-    uint32_t at_g_UiNodeVtable_004BC570_rest[2]; /* beyond the declared type */
-} ImageObject_004BC570;
-extern ImageObject_004BC570 g_ImageObject_004BC570;
+extern UiNodeVtable g_UiNodeVtable_004BC570; /* 004BC570 g_UiNodeVtable_004BC570 */
 
 /* original 0x004BCC20-0x004BCC80 */
-typedef struct ImageObject_004BCC20 {
-    uint8_t at_gap_004BCC20[16]; /* 004BCC20 gap */
-} ImageObject_004BCC20;
-extern ImageObject_004BCC20 g_ImageObject_004BCC20;
-typedef struct ImageObject_004BCC30 {
-    UiNodeVtable at_g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
-    uint32_t at_g_UiNineSlicePanelControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004BCC30;
-extern ImageObject_004BCC30 g_ImageObject_004BCC30;
+extern UiNodeVtable g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
 
 /* original 0x004BCF14-0x004BCF70 */
-typedef struct ImageObject_004BCF14 {
-    uint8_t at_gap_004BCF14[12]; /* 004BCF14 gap */
-} ImageObject_004BCF14;
-extern ImageObject_004BCF14 g_ImageObject_004BCF14;
 extern GraphicsFixedMatrix3x4 g_GraphicsDirectionInverseTransform; /* 004BCF20 g_GraphicsDirectionInverseTransform */
 extern GraphicsFixedVec3 g_GraphicsDirectionWorld; /* 004BCF50 g_GraphicsDirectionWorld */
 extern GraphicsFixedVec3 g_GraphicsDirectionLocal; /* 004BCF5C g_GraphicsDirectionLocal */
 extern uint32_t g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
 
 /* original 0x004BD2C4-0x004BD310 */
-typedef struct ImageObject_004BD2C4 {
-    uint8_t at_gap_004BD2C4[28]; /* 004BD2C4 gap */
-} ImageObject_004BD2C4;
-extern ImageObject_004BD2C4 g_ImageObject_004BD2C4;
 extern int32_t g_ModelBoundsMinimumX; /* 004BD2E0 g_ModelBoundsMinimumX */
 extern int32_t g_ModelBoundsMaximumX; /* 004BD2E4 g_ModelBoundsMaximumX */
 extern int32_t g_ModelBoundsMinimumY; /* 004BD2E8 g_ModelBoundsMinimumY */
@@ -1120,29 +544,17 @@ extern int32_t g_ModelBoundsMaximumZ; /* 004BD2F4 g_ModelBoundsMaximumZ */
 extern GraphicsFixedVec3 g_ModelBoundsTransformedPoint; /* 004BD2F8 g_ModelBoundsTransformedPoint */
 
 /* original 0x004BD440-0x004BD4B0 */
-typedef struct ImageObject_004BD440 {
-    uint8_t at_gap_004BD440[16]; /* 004BD440 gap */
-} ImageObject_004BD440;
-extern ImageObject_004BD440 g_ImageObject_004BD440;
 extern GraphicsFixedMatrix3x4 g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
 extern GraphicsFixedVec3 g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
 extern GraphicsFixedVec3 g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
 extern GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
 
 /* original 0x004BD880-0x004BD8D0 */
-typedef struct ImageObject_004BD880 {
-    uint8_t at_gap_004BD880[16]; /* 004BD880 gap */
-} ImageObject_004BD880;
-extern ImageObject_004BD880 g_ImageObject_004BD880;
 extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
 extern GraphicsFixedVec3 g_ModelCullViewRelative; /* 004BD8B0 g_ModelCullViewRelative */
 extern SpriteAssetHeader * g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
 
 /* original 0x004BEA6C-0x004BEB20 */
-typedef struct ImageObject_004BEA6C {
-    uint8_t at_gap_004BEA6C[4]; /* 004BEA6C gap */
-} ImageObject_004BEA6C;
-extern ImageObject_004BEA6C g_ImageObject_004BEA6C;
 extern GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
 extern GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
 extern GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
@@ -1150,14 +562,6 @@ extern GraphicsFixedVec3 g_ModelTransformInput; /* 004BEB00 g_ModelTransformInpu
 extern GraphicsFixedVec3 g_ModelTransformOutput; /* 004BEB0C g_ModelTransformOutput */
 
 /* original 0x004BED4C-0x004CC710 */
-typedef struct ImageObject_004BED4C {
-    uint8_t at_gap_004BED4C[3]; /* 004BED4C gap */
-} ImageObject_004BED4C;
-extern ImageObject_004BED4C g_ImageObject_004BED4C;
-typedef struct ImageObject_004BED4F {
-    uint8_t at_DAT_004bed4f[1]; /* 004BED4F DAT_004bed4f */
-} ImageObject_004BED4F;
-extern ImageObject_004BED4F g_ImageObject_004BED4F;
 extern GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256]; /* 004BED50 g_GraphicsShadingRuntimeRecords */
 extern GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256]; /* 004C2D50 g_GraphicsShadingCompactRecords */
 extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount; /* 004C6D50 g_GraphicsShadingCompactRecordCount */
@@ -1168,10 +572,6 @@ extern GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch; /* 004CC6F8 
 extern GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch; /* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
 
 /* original 0x004CCDE8-0x004CCFF0 */
-typedef struct ImageObject_004CCDE8 {
-    uint8_t at_gap_004CCDE8[24]; /* 004CCDE8 gap */
-} ImageObject_004CCDE8;
-extern ImageObject_004CCDE8 g_ImageObject_004CCDE8;
 extern uint32_t g_GraphicsShadingTextureDimension; /* 004CCE00 g_GraphicsShadingTextureDimension */
 extern uint32_t g_GraphicsShadingGridHalfSize; /* 004CCE04 g_GraphicsShadingGridHalfSize */
 extern uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor; /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
@@ -1192,25 +592,11 @@ extern int32_t g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsSha
 extern int32_t g_GraphicsShadingNegativeGridOriginQ12; /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
 extern GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime; /* 004CCE48 g_GeneratedTextureScratchRuntime */
 
-/* original 0x004CD3C0-0x004CD3D0 */
-typedef struct ImageObject_004CD3C0 {
-    uint8_t at_gap_004CD3C0[16]; /* 004CD3C0 gap */
-} ImageObject_004CD3C0;
-extern ImageObject_004CD3C0 g_ImageObject_004CD3C0;
-
 /* original 0x004D09F4-0x004D0A10 */
-typedef struct ImageObject_004D09F4 {
-    uint8_t at_gap_004D09F4[12]; /* 004D09F4 gap */
-} ImageObject_004D09F4;
-extern ImageObject_004D09F4 g_ImageObject_004D09F4;
 extern GraphicsPrimitiveQueue *g_PrimitiveQueueStorage; /* 004D0A00 g_PrimitiveQueueStorage */
 extern uint32_t g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
 
 /* original 0x004D11B8-0x004D1560 */
-typedef struct ImageObject_004D11B8 {
-    uint8_t at_gap_004D11B8[8]; /* 004D11B8 gap */
-} ImageObject_004D11B8;
-extern ImageObject_004D11B8 g_ImageObject_004D11B8;
 extern SoftwareRasterScanState g_SoftwareRasterScanState; /* 004D11C0 g_SoftwareRasterScanState */
 extern uint32_t g_SoftwareDepthRowStrideBytes; /* 004D1234 g_SoftwareDepthRowStrideBytes */
 extern int32_t *g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
@@ -1223,24 +609,12 @@ extern SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64]; /* 004D1360 
 extern SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64]; /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
 
 /* original 0x004FEA24-0x004FEA50 */
-typedef struct ImageObject_004FEA24 {
-    uint8_t at_gap_004FEA24[12]; /* 004FEA24 gap */
-} ImageObject_004FEA24;
-extern ImageObject_004FEA24 g_ImageObject_004FEA24;
 extern FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
 
 /* original 0x004FFC78-0x005004A0 */
-typedef struct ImageObject_004FFC78 {
-    uint8_t at_gap_004FFC78[8]; /* 004FFC78 gap */
-} ImageObject_004FFC78;
-extern ImageObject_004FFC78 g_ImageObject_004FFC78;
 extern TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260]; /* 004FFC80 g_TerrainProjectedRowSpans */
 
 /* original 0x00501184-0x00503B10 */
-typedef struct ImageObject_00501184 {
-    uint8_t at_gap_00501184[12]; /* 00501184 gap */
-} ImageObject_00501184;
-extern ImageObject_00501184 g_ImageObject_00501184;
 extern PackedArgb32 g_TerrainDirectionalLightColorLut[513]; /* 00501190 g_TerrainDirectionalLightColorLut: shaded ramp (256) + lit half (257, from 00501590), indexed from the middle entry */
 extern uint32_t g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
 extern GraphicsFixedVec3 g_TerrainLightDirection; /* 00501998 g_TerrainLightDirection: Q28 unit vector */
@@ -1261,10 +635,6 @@ extern int32_t g_TerrainAuxHeightMinimum; /* 00503B00 g_TerrainAuxHeightMinimum:
 extern int32_t g_TerrainUnreferencedValue00503B04; /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
 
 /* original 0x00505F98-0x005063B0 */
-typedef struct ImageObject_00505F98 {
-    uint8_t at_gap_00505F98[8]; /* 00505F98 gap */
-} ImageObject_00505F98;
-extern ImageObject_00505F98 g_ImageObject_00505F98;
 extern int32_t g_TerrainHeightDeltaScaleByStepQ12[256]; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
 extern uint32_t g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
 extern uint32_t g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
@@ -1272,10 +642,6 @@ extern TerrainScanSelectorUnion g_TerrainScanSharedSelectorValue; /* 005063A8 g_
 extern uint32_t g_TerrainScanReferenceHeight; /* 005063AC g_TerrainScanReferenceHeight */
 
 /* original 0x0050A340-0x0050A430 */
-typedef struct ImageObject_0050A340 {
-    uint8_t at_gap_0050A340[16]; /* 0050A340 gap */
-} ImageObject_0050A340;
-extern ImageObject_0050A340 g_ImageObject_0050A340;
 extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4; /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
 extern GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3; /* 0050A380 g_GraphicsTransformInputScratchVec3 */
 extern GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3; /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
@@ -1283,10 +649,6 @@ extern GraphicsFixedVec3 g_GraphicsProjectionScratchVec3; /* 0050A3E0 g_Graphics
 extern GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8]; /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
 
 /* original 0x0050AE54-0x0050AEA0 */
-typedef struct ImageObject_0050AE54 {
-    uint8_t at_gap_0050AE54[12]; /* 0050AE54 gap */
-} ImageObject_0050AE54;
-extern ImageObject_0050AE54 g_ImageObject_0050AE54;
 extern int32_t g_ModelRaycastMaximumDistance; /* 0050AE60 g_ModelRaycastMaximumDistance */
 extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* 0050AE64 g_ModelRaycastOrigin: Q12 world-space ray origin */
 extern GraphicsFixedVec3 g_ModelRaycastLocalOrigin; /* 0050AE70 g_ModelRaycastLocalOrigin: Q12 ray origin in the tested node's frame */
@@ -1294,10 +656,6 @@ extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* 0050AE7C g_ModelRay
 extern GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28; /* 0050AE88 g_ModelRaycastLocalDirectionQ28: Q28 ray direction in the tested node's frame */
 
 /* original 0x0050B510-0x0050B5D0 */
-typedef struct ImageObject_0050B510 {
-    uint8_t at_gap_0050B510[16]; /* 0050B510 gap */
-} ImageObject_0050B510;
-extern ImageObject_0050B510 g_ImageObject_0050B510;
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation; /* 0050B550 g_SpatialSoundListenerRotation */
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal; /* 0050B580 g_SpatialSoundListenerWorldToLocal */
@@ -1307,10 +665,6 @@ extern int32_t g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
 extern SpatialSoundSlot *g_SpatialSoundSlots; /* 0050B5C4 g_SpatialSoundSlots */
 
 /* original 0x0050BADC-0x0050BB10 */
-typedef struct ImageObject_0050BADC {
-    uint8_t at_gap_0050BADC[2]; /* 0050BADC gap */
-} ImageObject_0050BADC;
-extern ImageObject_0050BADC g_ImageObject_0050BADC;
 extern UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12; /* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
 extern Q12 g_WorldMotionPositionMagnitudeInputScaleQ12; /* 0050BAE2 g_WorldMotionPositionMagnitudeInputScaleQ12 */
 extern uint32_t k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
@@ -1324,17 +678,9 @@ extern UQ12 g_WorldMotionAlternateMinimumDistanceQ12; /* 0050BB02 g_WorldMotionA
 extern UQ12 g_WorldMotionAlternateMaximumDistanceQ12; /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
 
 /* original 0x0050BB34-0x0050BB80 */
-typedef struct ImageObject_0050BB34 {
-    uint8_t at_gap_0050BB34[3]; /* 0050BB34 gap */
-} ImageObject_0050BB34;
-extern ImageObject_0050BB34 g_ImageObject_0050BB34;
 extern UiNodeVtable g_FrontendModelPointerContextVtable; /* 0050BB37 g_FrontendModelPointerContextVtable */
 
 /* original 0x0050D928-0x0050E0B0 */
-typedef struct ImageObject_0050D928 {
-    uint8_t at_gap_0050D928[8]; /* 0050D928 gap */
-} ImageObject_0050D928;
-extern ImageObject_0050D928 g_ImageObject_0050D928;
 extern TechnologyAsset *g_TechnologyAsset; /* 0050D930 g_TechnologyAsset */
 extern uint32_t g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
 extern uint32_t g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
@@ -1386,10 +732,6 @@ extern uint16_t u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
 extern uint16_t g_ScenarioCatalogPathScratchUtf16[256]; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
 extern uint16_t g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
 extern uint16_t u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
-typedef struct ImageObject_0050DEE6 {
-    uint16_t at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
-} ImageObject_0050DEE6;
-extern ImageObject_0050DEE6 g_ImageObject_0050DEE6;
 extern uint16_t u_flm_ende0000_flm_0050df06[17]; /* 0050DF06 u_flm_ende0000_flm_0050df06 */
 extern uint16_t u_flm_ende0001_flm_0050df28[17]; /* 0050DF28 u_flm_ende0001_flm_0050df28 */
 extern uint16_t u_flm_ende0000_flm_0050df4a[17]; /* 0050DF4A u_flm_ende0000_flm_0050df4a */
@@ -1409,41 +751,13 @@ extern uint16_t u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
 extern uint16_t u_oldunit_hex_0050e094[12]; /* 0050E094 u_oldunit_hex_0050e094 */
 extern uint8_t g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
 
-/* original 0x0050E164-0x0050E1B0 */
-typedef struct ImageObject_0050E164 {
-    uint8_t at_gap_0050E164[12]; /* 0050E164 gap */
-} ImageObject_0050E164;
-extern ImageObject_0050E164 g_ImageObject_0050E164;
-typedef struct ImageObject_0050E170 {
-    uint32_t at_switchdataD_0050e170[16]; /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
-} ImageObject_0050E170;
-extern ImageObject_0050E170 g_ImageObject_0050E170;
-
-/* original 0x0050E21C-0x0050E230 */
-typedef struct ImageObject_0050E21C {
-    uint8_t at_gap_0050E21C[20]; /* 0050E21C gap */
-} ImageObject_0050E21C;
-extern ImageObject_0050E21C g_ImageObject_0050E21C;
-
 /* original 0x0050E95C-0x0050E970 */
-typedef struct ImageObject_0050E95C {
-    uint8_t at_gap_0050E95C[4]; /* 0050E95C gap */
-} ImageObject_0050E95C;
-extern ImageObject_0050E95C g_ImageObject_0050E95C;
 extern uint32_t g_ResourceRegistrationDomainPairCallbacks3[3]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
 
 /* original 0x0050EB5C-0x0050EB70 */
-typedef struct ImageObject_0050EB5C {
-    uint8_t at_gap_0050EB5C[4]; /* 0050EB5C gap */
-} ImageObject_0050EB5C;
-extern ImageObject_0050EB5C g_ImageObject_0050EB5C;
 extern uint32_t g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[3]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
 
-/* original 0x0050F044-0x0050F130 */
-typedef struct ImageObject_0050F044 {
-    uint8_t at_gap_0050F044[12]; /* 0050F044 gap */
-} ImageObject_0050F044;
-extern ImageObject_0050F044 g_ImageObject_0050F044;
+/* original 0x0050F050-0x0050F130 */
 extern int32_t g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
 extern uint16_t g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
 extern uint16_t g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16: version string shown to joining players ("1.5.45") */
@@ -1472,21 +786,7 @@ extern uint32_t g_TerrainRegionCollectionEntries; /* 00512D68 g_TerrainRegionCol
 extern void *g_GameStatTableImage; /* 00512D6C g_GameStatTableImage */
 extern GameDataAuxState g_GameDataAuxState; /* 00512D70 g_GameDataAuxState */
 
-/* original 0x00513DA4-0x00513DF0 */
-typedef struct ImageObject_00513DA4 {
-    uint8_t at_gap_00513DA4[12]; /* 00513DA4 gap */
-} ImageObject_00513DA4;
-extern ImageObject_00513DA4 g_ImageObject_00513DA4;
-typedef struct ImageObject_00513DB0 {
-    uint32_t at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0[16]; /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
-} ImageObject_00513DB0;
-extern ImageObject_00513DB0 g_ImageObject_00513DB0;
-
-/* original 0x0051494C-0x00514E40 */
-typedef struct ImageObject_0051494C {
-    uint8_t at_gap_0051494C[20]; /* 0051494C gap */
-} ImageObject_0051494C;
-extern ImageObject_0051494C g_ImageObject_0051494C;
+/* original 0x00514960-0x00514E40 */
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256]; /* 00514960 g_SelectionPlayerRuntimeBlockPointers: indexed by player runtime id (0..254, FrontendTransfer_FindLowestFreePlayerRuntimeId), 0x400 bytes in the original */
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks; /* 00514D60 g_SelectionPlayerBlocks */
 extern void *g_InGameFactionScratchBufferSetA8[8]; /* 00514D64 g_InGameFactionScratchBufferSetA8 */
@@ -1494,123 +794,41 @@ extern void *g_InGameFactionScratchBufferSetB8[8]; /* 00514D84 g_InGameFactionSc
 extern uint16_t g_FrontendPlayerMessageScratchUtf16[48]; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
 extern UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
 
-/* original 0x00514FB4-0x00515010 */
-typedef struct ImageObject_00514FB4 {
-    uint8_t at_gap_00514FB4[12]; /* 00514FB4 gap */
-} ImageObject_00514FB4;
-extern ImageObject_00514FB4 g_ImageObject_00514FB4;
-typedef struct ImageObject_00514FC0 {
-    UiNodeVtable at_g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
-    uint32_t at_g_UiImageActionControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00514FC0;
-extern ImageObject_00514FC0 g_ImageObject_00514FC0;
+/* original 0x00514FC0-0x00515008 */
+extern UiNodeVtable g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
 
-/* original 0x0051528C-0x005152E0 */
-typedef struct ImageObject_0051528C {
-    uint8_t at_gap_0051528C[4]; /* 0051528C gap */
-} ImageObject_0051528C;
-extern ImageObject_0051528C g_ImageObject_0051528C;
-typedef struct ImageObject_00515290 {
-    UiNodeVtable at_g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
-    uint32_t at_g_UiConditionalActionControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00515290;
-extern ImageObject_00515290 g_ImageObject_00515290;
+/* original 0x00515290-0x005152D8 */
+extern UiNodeVtable g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
 
-/* original 0x0051560C-0x005156A0 */
-typedef struct ImageObject_0051560C {
-    uint8_t at_gap_0051560C[4]; /* 0051560C gap */
-} ImageObject_0051560C;
-extern ImageObject_0051560C g_ImageObject_0051560C;
-typedef struct ImageObject_00515610 {
-    UiNodeVtable at_g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
-} ImageObject_00515610;
-extern ImageObject_00515610 g_ImageObject_00515610;
+/* original 0x00515610-0x005156A0 */
+extern UiNodeVtable g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
 extern uint16_t g_UiNumericPairFirstValueScratchUtf16[16]; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
 extern uint16_t g_UiNumericPairSecondValueScratchUtf16[16]; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
 
-/* original 0x00515720-0x00515780 */
-typedef struct ImageObject_00515720 {
-    uint8_t at_gap_00515720[16]; /* 00515720 gap */
-} ImageObject_00515720;
-extern ImageObject_00515720 g_ImageObject_00515720;
-typedef struct ImageObject_00515730 {
-    UiNodeVtable at_g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
-    uint32_t at_g_UiPayloadPairTextButtonVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00515730;
-extern ImageObject_00515730 g_ImageObject_00515730;
+/* original 0x00515730-0x00515778 */
+extern UiNodeVtable g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
 
-/* original 0x005157D0-0x00515830 */
-typedef struct ImageObject_005157D0 {
-    uint8_t at_gap_005157D0[16]; /* 005157D0 gap */
-} ImageObject_005157D0;
-extern ImageObject_005157D0 g_ImageObject_005157D0;
-typedef struct ImageObject_005157E0 {
-    UiNodeVtable at_g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
-    uint32_t at_g_UiFormattedContainerVtable_rest[2]; /* beyond the declared type */
-} ImageObject_005157E0;
-extern ImageObject_005157E0 g_ImageObject_005157E0;
+/* original 0x005157E0-0x00515828 */
+extern UiNodeVtable g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
 
-/* original 0x00515C60-0x00515CC0 */
-typedef struct ImageObject_00515C60 {
-    uint8_t at_gap_00515C60[16]; /* 00515C60 gap */
-} ImageObject_00515C60;
-extern ImageObject_00515C60 g_ImageObject_00515C60;
-typedef struct ImageObject_00515C70 {
-    UiNodeVtable at_g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
-    uint32_t at_g_UiSelectionGeometryControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00515C70;
-extern ImageObject_00515C70 g_ImageObject_00515C70;
+/* original 0x00515C70-0x00515CB8 */
+extern UiNodeVtable g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
 
-/* original 0x005162BC-0x00516360 */
-typedef struct ImageObject_005162BC {
-    uint8_t at_gap_005162BC[4]; /* 005162BC gap */
-} ImageObject_005162BC;
-extern ImageObject_005162BC g_ImageObject_005162BC;
-typedef struct ImageObject_005162C0 {
-    UiNodeVtable at_g_UiNodeVtable_005162C0; /* 005162C0 g_UiNodeVtable_005162C0 */
-    uint32_t at_g_UiNodeVtable_005162C0_rest[2]; /* beyond the declared type */
-} ImageObject_005162C0;
-extern ImageObject_005162C0 g_ImageObject_005162C0;
-typedef struct ImageObject_00516310 {
-    UiNodeVtable at_g_UiNodeVtable_00516310; /* 00516310 g_UiNodeVtable_00516310 */
-    uint32_t at_g_UiNodeVtable_00516310_rest[2]; /* beyond the declared type */
-} ImageObject_00516310;
-extern ImageObject_00516310 g_ImageObject_00516310;
+/* original 0x005162C0-0x00516358 */
+extern UiNodeVtable g_UiNodeVtable_005162C0; /* 005162C0 g_UiNodeVtable_005162C0 */
+extern UiNodeVtable g_UiNodeVtable_00516310; /* 00516310 g_UiNodeVtable_00516310 */
 
-/* original 0x0051650C-0x00516580 */
-typedef struct ImageObject_0051650C {
-    uint8_t at_gap_0051650C[4]; /* 0051650C gap */
-} ImageObject_0051650C;
-extern ImageObject_0051650C g_ImageObject_0051650C;
+/* original 0x00516510-0x00516578 */
 extern uint16_t g_UiCatalogEntryRichTextScratchUtf16[16]; /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
-typedef struct ImageObject_00516530 {
-    UiNodeVtable at_g_UiNodeVtable_00516530; /* 00516530 g_UiNodeVtable_00516530 */
-    uint32_t at_g_UiNodeVtable_00516530_rest[2]; /* beyond the declared type */
-} ImageObject_00516530;
-extern ImageObject_00516530 g_ImageObject_00516530;
+extern UiNodeVtable g_UiNodeVtable_00516530; /* 00516530 g_UiNodeVtable_00516530 */
 
-/* original 0x00516CBC-0x00516D10 */
-typedef struct ImageObject_00516CBC {
-    uint8_t at_gap_00516CBC[4]; /* 00516CBC gap */
-} ImageObject_00516CBC;
-extern ImageObject_00516CBC g_ImageObject_00516CBC;
-typedef struct ImageObject_00516CC0 {
-    UiNodeVtable at_g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
-    uint32_t at_g_UiArmyMetricsPanelVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00516CC0;
-extern ImageObject_00516CC0 g_ImageObject_00516CC0;
+/* original 0x00516CC0-0x00516D08 */
+extern UiNodeVtable g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
 
-/* original 0x00516E90-0x00517020 */
-typedef struct ImageObject_00516E90 {
-    uint8_t at_gap_00516E90[16]; /* 00516E90 gap */
-} ImageObject_00516E90;
-extern ImageObject_00516E90 g_ImageObject_00516E90;
+/* original 0x00516EA0-0x00517020 */
 extern uint16_t g_FrontendResultsValueTextUtf16[32]; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
 extern uint16_t g_EndGameElapsedTimeScratchUtf16[64]; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
-typedef struct ImageObject_00516F60 {
-    UiNodeVtable at_g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
-} ImageObject_00516F60;
-extern ImageObject_00516F60 g_ImageObject_00516F60;
+extern UiNodeVtable g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
 extern int g_FrontendResultsColumnAdvance00Pixels; /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
 extern int g_FrontendResultsColumnAdvance01Pixels; /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
 extern int g_FrontendResultsColumnAdvanceColourPixels; /* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
@@ -1633,80 +851,22 @@ extern uint32_t g_FrontendResultsFramebufferBytesPerPixel; /* 00516FF0 g_Fronten
 extern uint32_t g_FrontendResultsFramebufferScanlineStrideBytes; /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
 extern uint32_t g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
 
-/* original 0x00517068-0x005170C0 */
-typedef struct ImageObject_00517068 {
-    uint8_t at_gap_00517068[8]; /* 00517068 gap */
-} ImageObject_00517068;
-extern ImageObject_00517068 g_ImageObject_00517068;
-typedef struct ImageObject_00517070 {
-    uint32_t at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
-} ImageObject_00517070;
-extern ImageObject_00517070 g_ImageObject_00517070;
-
 /* original 0x00517DD4-0x00517E30 */
-typedef struct ImageObject_00517DD4 {
-    uint8_t at_gap_00517DD4[12]; /* 00517DD4 gap */
-} ImageObject_00517DD4;
-extern ImageObject_00517DD4 g_ImageObject_00517DD4;
-typedef struct ImageObject_00517DE0 {
-    UiNodeVtable at_g_UiNodeVtable_00517DE0; /* 00517DE0 g_UiNodeVtable_00517DE0 */
-    uint32_t at_g_UiNodeVtable_00517DE0_rest[2]; /* beyond the declared type */
-} ImageObject_00517DE0;
-extern ImageObject_00517DE0 g_ImageObject_00517DE0;
+extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* 00517DE0 g_UiTransferProgressGaugeVtable: UiHorizontalGaugeControl subclass of the transfer progress gauge; followed by 0x90 code alignment fill */
 
 /* original 0x00517F00-0x00517F60 */
-typedef struct ImageObject_00517F00 {
-    uint8_t at_gap_00517F00[16]; /* 00517F00 gap */
-} ImageObject_00517F00;
-extern ImageObject_00517F00 g_ImageObject_00517F00;
-typedef struct ImageObject_00517F10 {
-    UiNodeVtable at_g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
-    uint32_t at_g_UiCommandVisibilityWrappedTextVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00517F10;
-extern ImageObject_00517F10 g_ImageObject_00517F10;
+extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable; followed by 0x90 code alignment fill */
 
 /* original 0x00517FBC-0x00518010 */
-typedef struct ImageObject_00517FBC {
-    uint8_t at_gap_00517FBC[4]; /* 00517FBC gap */
-} ImageObject_00517FBC;
-extern ImageObject_00517FBC g_ImageObject_00517FBC;
-typedef struct ImageObject_00517FC0 {
-    UiNodeVtable at_g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
-    uint32_t at_g_UiCommandVisibilitySingleLineTextVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00517FC0;
-extern ImageObject_00517FC0 g_ImageObject_00517FC0;
+extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable; followed by 0x90 code alignment fill */
 
 /* original 0x00518074-0x00518CE0 */
-typedef struct ImageObject_00518074 {
-    uint8_t at_gap_00518074[12]; /* 00518074 gap */
-} ImageObject_00518074;
-extern ImageObject_00518074 g_ImageObject_00518074;
 extern int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4]; /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256: int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
 extern uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256]; /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
 extern uint64_t g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
-typedef struct ImageObject_00518C90 {
-    UiNodeVtable at_g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
-    uint32_t at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_00518C90;
-extern ImageObject_00518C90 g_ImageObject_00518C90;
-
-/* original 0x005191F0-0x005191FC */
-typedef struct ImageObject_005191F0 {
-    uint8_t at_gap_005191F0[12]; /* 005191F0 gap */
-} ImageObject_005191F0;
-extern ImageObject_005191F0 g_ImageObject_005191F0;
-
-/* original 0x0051936C-0x005193B0 */
-typedef struct ImageObject_00519374 {
-    uint32_t at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374[15]; /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
-} ImageObject_00519374;
-extern ImageObject_00519374 g_ImageObject_00519374;
+extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable; followed by 0x90 code alignment fill */
 
 /* original 0x0051972C-0x0051B3C0 */
-typedef struct ImageObject_0051972C {
-    uint8_t at_gap_0051972C[4]; /* 0051972C gap */
-} ImageObject_0051972C;
-extern ImageObject_0051972C g_ImageObject_0051972C;
 extern ArmyRuntimeSlot *g_ArmyRuntimeSlots; /* 00519730 g_ArmyRuntimeSlots */
 extern void *g_ArmyRuntimeRebaseBaseMinusOne; /* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
 extern ArmyGraphicsBinding g_ArmyGraphicsBindings[8]; /* 00519738 g_ArmyGraphicsBindings */
@@ -1721,31 +881,13 @@ extern uint16_t g_UnreferencedArmyTexturePathUtf16[13]; /* 0051B394 g_Unreferenc
 extern char g_UnreferencedArmyTag[5]; /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
 
 /* original 0x0051DBB4-0x0051DFD0 */
-typedef struct ImageObject_0051DBB4 {
-    uint8_t at_gap_0051DBB4[12]; /* 0051DBB4 gap */
-} ImageObject_0051DBB4;
-extern ImageObject_0051DBB4 g_ImageObject_0051DBB4;
 extern GraphicsTextureSet *g_EffectTextureSet; /* 0051DBC0 g_EffectTextureSet */
 extern GraphicsPaletteAsset *g_EffectPalette; /* 0051DBC4 g_EffectPalette */
 extern EffectRuntimeSlot *g_EffectRuntimeSlots; /* 0051DBC8 g_EffectRuntimeSlots */
 extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne; /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
 extern EffectDefinition *g_EffectDefinitionRegistry[256]; /* 0051DBD0 g_EffectDefinitionRegistry */
 
-/* original 0x0051EAA0-0x0051EAD0 */
-typedef struct ImageObject_0051EAA0 {
-    uint8_t at_gap_0051EAA0[16]; /* 0051EAA0 gap */
-} ImageObject_0051EAA0;
-extern ImageObject_0051EAA0 g_ImageObject_0051EAA0;
-typedef struct ImageObject_0051EAB0 {
-    uint32_t at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
-} ImageObject_0051EAB0;
-extern ImageObject_0051EAB0 g_ImageObject_0051EAB0;
-
 /* original 0x0051EEE4-0x005200C0 */
-typedef struct ImageObject_0051EEE4 {
-    uint8_t at_gap_0051EEE4[12]; /* 0051EEE4 gap */
-} ImageObject_0051EEE4;
-extern ImageObject_0051EEE4 g_ImageObject_0051EEE4;
 extern ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768]; /* 0051EEF0 g_ModelDefinitionRegistry */
 extern TerrainClassPlacementAndOverlayCallbackTable10 g_TerrainClassPlacementAndOverlayCallbacks10; /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
 extern uint32_t g_FactionEnergyAllocationPriorityByModelClass[24]; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass: uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
@@ -1757,10 +899,6 @@ extern ModelRuntimeSlot *g_ModelRuntimeSlots; /* 005200B8 g_ModelRuntimeSlots */
 extern int g_ModelRuntimeRebaseDelta; /* 005200BC g_ModelRuntimeRebaseDelta */
 
 /* original 0x00520EA0-0x00520F60 */
-typedef struct ImageObject_00520EA0 {
-    uint8_t at_gap_00520EA0[16]; /* 00520EA0 gap */
-} ImageObject_00520EA0;
-extern ImageObject_00520EA0 g_ImageObject_00520EA0;
 extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorA; /* 00520EB0 g_ArmySuspensionBlendVectorA */
 extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorB; /* 00520EBC g_ArmySuspensionBlendVectorB */
 extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
@@ -1768,83 +906,19 @@ extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB; /* 00520EF
 extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch; followed by 0x90 code alignment fill up to 00520F60 */
 
 /* original 0x00524110-0x00524130 */
-typedef struct ImageObject_00524110 {
-    uint8_t at_gap_00524110[16]; /* 00524110 gap */
-} ImageObject_00524110;
-extern ImageObject_00524110 g_ImageObject_00524110;
 extern uint32_t g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[2]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
 
-/* original 0x005247C0-0x005247F0 */
-typedef struct ImageObject_005247C0 {
-    uint8_t at_gap_005247C0[16]; /* 005247C0 gap */
-} ImageObject_005247C0;
-extern ImageObject_005247C0 g_ImageObject_005247C0;
-typedef struct ImageObject_005247D0 {
-    uint32_t at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0[8]; /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
-} ImageObject_005247D0;
-extern ImageObject_005247D0 g_ImageObject_005247D0;
-
-/* original 0x00525A8C-0x00525AB0 */
-typedef struct ImageObject_00525A8C {
-    uint8_t at_gap_00525A8C[4]; /* 00525A8C gap */
-} ImageObject_00525A8C;
-extern ImageObject_00525A8C g_ImageObject_00525A8C;
-typedef struct ImageObject_00525A90 {
-    uint32_t at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90[8]; /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
-} ImageObject_00525A90;
-extern ImageObject_00525A90 g_ImageObject_00525A90;
-
 /* original 0x005266B0-0x005266D0 */
-typedef struct ImageObject_005266B0 {
-    uint8_t at_gap_005266B0[16]; /* 005266B0 gap */
-} ImageObject_005266B0;
-extern ImageObject_005266B0 g_ImageObject_005266B0;
 extern uint32_t g_ArmyTerrainContactDispatchTable2[2]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
 
-/* original 0x00526988-0x005269B0 */
-typedef struct ImageObject_00526988 {
-    uint8_t at_gap_00526988[8]; /* 00526988 gap */
-} ImageObject_00526988;
-extern ImageObject_00526988 g_ImageObject_00526988;
-typedef struct ImageObject_00526990 {
-    uint32_t at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990[8]; /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
-} ImageObject_00526990;
-extern ImageObject_00526990 g_ImageObject_00526990;
-
-/* original 0x00527AA4-0x00527AC0 */
-typedef struct ImageObject_00527AA4 {
-    uint8_t at_gap_00527AA4[28]; /* 00527AA4 gap */
-} ImageObject_00527AA4;
-extern ImageObject_00527AA4 g_ImageObject_00527AA4;
-
-/* original 0x00528674-0x00528678 */
-typedef struct ImageObject_00528674 {
-    uint8_t at_gap_00528674[4]; /* 00528674 gap */
-} ImageObject_00528674;
-extern ImageObject_00528674 g_ImageObject_00528674;
-
-/* original 0x00528A6C-0x00528A70 */
-typedef struct ImageObject_00528A6C {
-    uint8_t at_gap_00528A6C[4]; /* 00528A6C gap */
-} ImageObject_00528A6C;
-extern ImageObject_00528A6C g_ImageObject_00528A6C;
-
-/* original 0x0052AF30-0x0052B350 */
-typedef struct ImageObject_0052AF30 {
-    uint8_t at_gap_0052AF30[16]; /* 0052AF30 gap */
-} ImageObject_0052AF30;
-extern ImageObject_0052AF30 g_ImageObject_0052AF30;
+/* original 0x0052AF40-0x0052B350 */
 extern GraphicsTextureSet *g_ShotTextureSet; /* 0052AF40 g_ShotTextureSet */
 extern GraphicsPaletteAsset *g_ShotPalette; /* 0052AF44 g_ShotPalette */
 extern ShotRuntimeSlot *g_ShotRuntimeSlots; /* 0052AF48 g_ShotRuntimeSlots */
 extern uint8_t *g_ShotRuntimeRebaseBaseMinusOne; /* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
 extern ShotDefinition *g_ShotDefinitionRegistry[256]; /* 0052AF50 g_ShotDefinitionRegistry */
 
-/* original 0x0052CDE8-0x0052CEE0 */
-typedef struct ImageObject_0052CDE8 {
-    uint8_t at_gap_0052CDE8[8]; /* 0052CDE8 gap */
-} ImageObject_0052CDE8;
-extern ImageObject_0052CDE8 g_ImageObject_0052CDE8;
+/* original 0x0052CDF0-0x0052CEE0 */
 extern GraphicsTextureSourceAsset *g_SelectionPanelTextureSource; /* 0052CDF0 g_SelectionPanelTextureSource */
 extern GraphicsTextureSourceAsset *g_InfoPanelTextureSource; /* 0052CDF4 g_InfoPanelTextureSource */
 extern void *g_SelectionPanelData; /* 0052CDF8 g_SelectionPanelData */
@@ -1860,29 +934,7 @@ extern uint16_t g_SelectionPanelNumberScratchUtf16[16]; /* 0052CEB8 g_SelectionP
 extern GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque; /* 0052CED8 g_SelectionPanelBlitOpaque */
 extern GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped; /* 0052CEDC g_SelectionPanelBlitClipped */
 
-/* original 0x0052FF14-0x0052FF30 */
-typedef struct ImageObject_0052FF14 {
-    uint8_t at_gap_0052FF14[28]; /* 0052FF14 gap */
-} ImageObject_0052FF14;
-extern ImageObject_0052FF14 g_ImageObject_0052FF14;
-
-/* original 0x00530080-0x005300A0 */
-typedef struct ImageObject_00530080 {
-    uint8_t at_gap_00530080[32]; /* 00530080 gap */
-} ImageObject_00530080;
-extern ImageObject_00530080 g_ImageObject_00530080;
-
-/* original 0x005300C8-0x005300E0 */
-typedef struct ImageObject_005300C8 {
-    uint8_t at_gap_005300C8[24]; /* 005300C8 gap */
-} ImageObject_005300C8;
-extern ImageObject_005300C8 g_ImageObject_005300C8;
-
-/* original 0x00530818-0x00531080 */
-typedef struct ImageObject_00530818 {
-    uint8_t at_gap_00530818[8]; /* 00530818 gap */
-} ImageObject_00530818;
-extern ImageObject_00530818 g_ImageObject_00530818;
+/* original 0x00530820-0x00531080 */
 extern void **g_InGameLoadedResourcePointers; /* 00530820 g_InGameLoadedResourcePointers */
 extern InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount; /* 00530824 g_InGameLoadedResourcePointerCount */
 extern uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256]; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
@@ -1899,23 +951,7 @@ extern uint32_t g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice *
 extern uint32_t g_InGameMusicNextTrackCountdown; /* 0053105C g_InGameMusicNextTrackCountdown */
 extern InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock; /* 00531060 g_InGameLevelRuntimeGlobalBlock */
 
-/* original 0x00531FF4-0x00532000 */
-typedef struct ImageObject_00531FF4 {
-    uint8_t at_gap_00531FF4[12]; /* 00531FF4 gap */
-} ImageObject_00531FF4;
-extern ImageObject_00531FF4 g_ImageObject_00531FF4;
-
-/* original 0x00532998-0x005329A4 */
-typedef struct ImageObject_00532998 {
-    uint8_t at_gap_00532998[12]; /* 00532998 gap */
-} ImageObject_00532998;
-extern ImageObject_00532998 g_ImageObject_00532998;
-
-/* original 0x0053329C-0x005332C0 */
-typedef struct ImageObject_0053329C {
-    uint8_t at_gap_0053329C[4]; /* 0053329C gap */
-} ImageObject_0053329C;
-extern ImageObject_0053329C g_ImageObject_0053329C;
+/* original 0x005332A0-0x005332C0 */
 extern GridScratchCell *g_GridScratchPrimary; /* 005332A0 g_GridScratchPrimary */
 extern GridScratchCell *g_GridScratchSecondary; /* 005332A4 g_GridScratchSecondary */
 extern GridScratchCell **g_GridPathCostQueueBegin; /* 005332A8 g_GridPathCostQueueBegin */
@@ -1924,12 +960,6 @@ extern GridScratchCell **g_GridPathCostQueuePassBoundary; /* 005332B0 g_GridPath
 extern uint32_t g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
 extern int32_t g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
 
-/* original 0x00533D4C-0x00533D60 */
-typedef struct ImageObject_00533D4C {
-    uint8_t at_gap_00533D4C[20]; /* 00533D4C gap */
-} ImageObject_00533D4C;
-extern ImageObject_00533D4C g_ImageObject_00533D4C;
-
 /* original 0x00533ED0-0x00533EF0 */
 extern uint32_t g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask */
 extern uint32_t g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
@@ -1937,11 +967,7 @@ extern uint32_t g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
 extern uint32_t g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
 extern uint32_t g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
 
-/* original 0x005367CC-0x005368E0 */
-typedef struct ImageObject_005367CC {
-    uint8_t at_gap_005367CC[4]; /* 005367CC gap */
-} ImageObject_005367CC;
-extern ImageObject_005367CC g_ImageObject_005367CC;
+/* original 0x005367D0-0x005368E0 */
 extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs; /* 005367D0 g_EntityPathingPriorityPairs */
 /* 005367D4-005368D4: the 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
@@ -1949,11 +975,7 @@ extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs; /* 005367D0 g_En
 extern EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY]; /* 005367D4 g_EntityPathingPriorityPairStorage */
 extern uint32_t g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
 
-/* original 0x00536F08-0x00536FC0 */
-typedef struct ImageObject_00536F08 {
-    uint8_t at_gap_00536F08[8]; /* 00536F08 gap */
-} ImageObject_00536F08;
-extern ImageObject_00536F08 g_ImageObject_00536F08;
+/* original 0x00536F10-0x00536FC0 */
 /* Indices into g_GridTerrainClassThresholds (one table at 0x536F10-0x536F54 in the original). Water surface
    deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
 enum {
@@ -1988,11 +1010,7 @@ extern AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates; /* 00537410 g_AiWor
 extern uint32_t g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
 extern uint32_t g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
 
-/* original 0x0053795C-0x005379E0 */
-typedef struct ImageObject_0053795C {
-    uint8_t at_gap_0053795C[4]; /* 0053795C gap */
-} ImageObject_0053795C;
-extern ImageObject_0053795C g_ImageObject_0053795C;
+/* original 0x00537960-0x005379E0 */
 extern AiStructureWorkspaceEntry *g_AiWorkspace00Structures; /* 00537960 g_AiWorkspace00Structures */
 extern uint32_t g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
 extern AiRuntimeWorkspaceEntry *g_AiWorkspace01Units; /* 00537968 g_AiWorkspace01Units */
@@ -2022,95 +1040,41 @@ extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count; /* 005379C4 g_Ai
 extern uint32_t g_AiActiveGridMaskClasses[4]; /* 005379C8 g_AiActiveGridMaskClasses */
 extern ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
 
-/* original 0x00539050-0x00539070 */
-typedef struct ImageObject_00539050 {
-    uint8_t at_gap_00539050[16]; /* 00539050 gap */
-} ImageObject_00539050;
-extern ImageObject_00539050 g_ImageObject_00539050;
+/* original 0x00539060-0x00539070 */
 extern uint32_t g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
 
-/* original 0x00539974-0x00539A40 */
-typedef struct ImageObject_00539974 {
-    uint8_t at_gap_00539974[12]; /* 00539974 gap */
-} ImageObject_00539974;
-extern ImageObject_00539974 g_ImageObject_00539974;
+/* original 0x00539980-0x00539A40 */
 extern uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8]; /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
 extern int32_t g_TechnologyCategoryMaximums[8]; /* 005399A0 g_TechnologyCategoryMaximums */
 extern int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum; /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
 extern int32_t g_AiStrategicClassTerrainWeights[5][3]; /* 005399C4 g_AiStrategicClassTerrainWeights */
 extern TechnologyCategoryMasks g_TechnologyCategoryMasks; /* 00539A00 g_TechnologyCategoryMasks */
 
-/* original 0x0053B0CC-0x0053B0E0 */
-typedef struct ImageObject_0053B0CC {
-    uint8_t at_gap_0053B0CC[4]; /* 0053B0CC gap */
-} ImageObject_0053B0CC;
-extern ImageObject_0053B0CC g_ImageObject_0053B0CC;
+/* original 0x0053B0D0-0x0053B0E0 */
 extern ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies; /* 0053B0D0 g_AiWorkspace14CollectedArmies */
 extern uint32_t g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
 
-/* original 0x0053B9CC-0x0053BA00 */
-typedef struct ImageObject_0053B9CC {
-    uint8_t at_gap_0053B9CC[20]; /* 0053B9CC gap */
-} ImageObject_0053B9CC;
-extern ImageObject_0053B9CC g_ImageObject_0053B9CC;
+/* original 0x0053B9E0-0x0053BA00 */
 extern AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6]; /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
 
-/* original 0x0053C154-0x0053C1A0 */
-typedef struct ImageObject_0053C154 {
-    uint8_t at_gap_0053C154[12]; /* 0053C154 gap */
-} ImageObject_0053C154;
-extern ImageObject_0053C154 g_ImageObject_0053C154;
-typedef struct ImageObject_0053C160 {
-    uint32_t at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160[16]; /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
-} ImageObject_0053C160;
-extern ImageObject_0053C160 g_ImageObject_0053C160;
-
-/* original 0x0053C1FC-0x0053C210 */
-typedef struct ImageObject_0053C1FC {
-    uint8_t at_gap_0053C1FC[20]; /* 0053C1FC gap */
-} ImageObject_0053C1FC;
-extern ImageObject_0053C1FC g_ImageObject_0053C1FC;
-
-/* original 0x0053C5DC-0x0053C6C0 */
-typedef struct ImageObject_0053C5DC {
-    uint8_t at_gap_0053C5DC[4]; /* 0053C5DC gap */
-} ImageObject_0053C5DC;
-extern ImageObject_0053C5DC g_ImageObject_0053C5DC;
+/* original 0x0053C5E0-0x0053C6C0 */
 extern AiKnowledgeDataImage *g_AiKnowledgeData; /* 0053C5E0 g_AiKnowledgeData */
 extern uint16_t u_engine_ki_dat_0053c5e4[14]; /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
 extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantB15; /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
 extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantA15; /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
 extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantC15; /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
 
-/* original 0x0053C808-0x0053C810 */
-typedef struct ImageObject_0053C808 {
-    uint8_t at_gap_0053C808[8]; /* 0053C808 gap */
-} ImageObject_0053C808;
-extern ImageObject_0053C808 g_ImageObject_0053C808;
-
-/* original 0x0053C99C-0x0053CA10 */
-typedef struct ImageObject_0053C99C {
-    uint8_t at_gap_0053C99C[4]; /* 0053C99C gap */
-} ImageObject_0053C99C;
-extern ImageObject_0053C99C g_ImageObject_0053C99C;
+/* original 0x0053C9A0-0x0053CA10 */
 extern float *g_WorldMotionSplineMatrixWorkspaces[6]; /* 0053C9A0 g_WorldMotionSplineMatrixWorkspaces */
 extern float *g_WorldMotionSplineCoefficientTables[6]; /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
 extern float g_WorldMotionSplineCachedDerivatives[6]; /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
 extern int32_t g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
 extern float g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
 
-/* original 0x0053D358-0x0053D370 */
-typedef struct ImageObject_0053D358 {
-    uint8_t at_gap_0053D358[8]; /* 0053D358 gap */
-} ImageObject_0053D358;
-extern ImageObject_0053D358 g_ImageObject_0053D358;
+/* original 0x0053D360-0x0053D370 */
 extern TerrainCompositeTextureRuntime *g_TerrainCompositeTexture; /* 0053D360 g_TerrainCompositeTexture */
 
 /* original 0x0053DA68-0x00543B70 */
-typedef struct ImageObject_0053DA68 {
-    uint8_t at_gap_0053DA68[8]; /* 0053DA68 gap */
-} ImageObject_0053DA68;
-extern ImageObject_0053DA68 g_ImageObject_0053DA68;
 extern UiRootCallbacks g_UiRootCallbacks_0053DA70; /* 0053DA70 g_UiRootCallbacks_0053DA70 */
 extern FrontendSessionDiscoveryRecord **g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
 extern FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
@@ -2121,10 +1085,6 @@ extern uint16_t *g_FrontendNetworkBackendNameRows[256]; /* 005434EC g_FrontendNe
 extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x00543E34-0x00543F50 */
-typedef struct ImageObject_00543E34 {
-    uint8_t at_gap_00543E34[12]; /* 00543E34 gap */
-} ImageObject_00543E34;
-extern ImageObject_00543E34 g_ImageObject_00543E34;
 extern UiCommandQueueRecord g_FrontendCommandQueueRecords[16]; /* 00543E40 g_FrontendCommandQueueRecords */
 extern UiCommandQueueRecord *g_FrontendCommandQueueEnd; /* 00543F40 g_FrontendCommandQueueEnd: followed by 12 bytes 0x90 fill (dropped) */
 
@@ -2182,50 +1142,10 @@ extern PckEntryHeader g_LevelPackageFoundEntry; /* 00545EA6 g_LevelPackageFoundE
 extern uint16_t u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
 extern uint16_t u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
 
-/* original 0x00546BB4-0x00546BC0 */
-typedef struct ImageObject_00546BB4 {
-    uint8_t at_gap_00546BB4[12]; /* 00546BB4 gap */
-} ImageObject_00546BB4;
-extern ImageObject_00546BB4 g_ImageObject_00546BB4;
-
-/* original 0x00547660-0x00547680 */
-typedef struct ImageObject_00547660 {
-    uint32_t at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
-} ImageObject_00547660;
-extern ImageObject_00547660 g_ImageObject_00547660;
-
-/* original 0x00547D88-0x00547DB0 */
-typedef struct ImageObject_00547D88 {
-    uint8_t at_gap_00547D88[8]; /* 00547D88 gap */
-} ImageObject_00547D88;
-extern ImageObject_00547D88 g_ImageObject_00547D88;
-typedef struct ImageObject_00547D90 {
-    uint32_t at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90[8]; /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
-} ImageObject_00547D90;
-extern ImageObject_00547D90 g_ImageObject_00547D90;
-
-/* original 0x00547DD8-0x00547DF0 */
-typedef struct ImageObject_00547DD8 {
-    uint8_t at_gap_00547DD8[24]; /* 00547DD8 gap */
-} ImageObject_00547DD8;
-extern ImageObject_00547DD8 g_ImageObject_00547DD8;
-
 /* original 0x005480FC-0x00548130 */
-typedef struct ImageObject_005480FC {
-    uint8_t at_gap_005480FC[4]; /* 005480FC gap */
-} ImageObject_005480FC;
-extern ImageObject_005480FC g_ImageObject_005480FC;
-extern UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[3]; /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 */
-typedef struct ImageObject_00548124 {
-    uint32_t at_g_FrontendCommandDispatchRecords_Terminator[3]; /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
-} ImageObject_00548124;
-extern ImageObject_00548124 g_ImageObject_00548124;
+extern UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4]; /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30: 3 records + the terminator record [3] at 00548124 (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
 
 /* original 0x0054D780-0x0054E230 */
-typedef struct ImageObject_0054D780 {
-    uint8_t at_gap_0054D780[32]; /* 0054D780 gap */
-} ImageObject_0054D780;
-extern ImageObject_0054D780 g_ImageObject_0054D780;
 extern FrontendPacket10000Handshake g_FrontendPacket10000Buffer; /* 0054D7A0 g_FrontendPacket10000Buffer */
 extern FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer; /* 0054D7C0 g_FrontendPacket50001Buffer */
 extern FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer; /* 0054D860 g_FrontendPacket20002Buffer */
@@ -2254,10 +1174,6 @@ extern uint16_t g_FrontendNetworkSpeedLabelUtf16[32]; /* 0054DDF0 g_FrontendNetw
 extern uint16_t g_FrontendNetworkEndpointTextUtf16[512]; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16: local address text from g_NetworkBackendSlot7 */
 
 /* original 0x0054FBB0-0x0055C990 */
-typedef struct ImageObject_0054FBB0 {
-    uint8_t at_gap_0054FBB0[16]; /* 0054FBB0 gap */
-} ImageObject_0054FBB0;
-extern ImageObject_0054FBB0 g_ImageObject_0054FBB0;
 extern UiRootCallbacks g_UiRootCallbacks_0054FBC0; /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
 extern uint16_t *g_InGamePlayerListTextScratchUtf16; /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
@@ -2286,10 +1202,6 @@ extern uint16_t g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownText
 extern InGameUiImage g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
 
 /* original 0x0055EFB0-0x0055F130 */
-typedef struct ImageObject_0055EFB0 {
-    uint8_t at_gap_0055EFB0[16]; /* 0055EFB0 gap */
-} ImageObject_0055EFB0;
-extern ImageObject_0055EFB0 g_ImageObject_0055EFB0;
 extern UiCommandQueueRecord g_InGameCommandQueueRecords[16]; /* 0055EFC0 g_InGameCommandQueueRecords */
 extern UiCommandQueueRecord *g_InGameCommandQueueEnd; /* 0055F0C0 g_InGameCommandQueueEnd */
 extern InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12]; /* 0055F0C4 g_InGameSelectionInsertTripletDwords: drag-selection insert batch, four triplets */
@@ -2298,24 +1210,12 @@ extern int32_t g_InGameSelectionInsertTripletDwordCount; /* 0055F124 g_InGameSel
 extern int32_t g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0055F7B4-0x0055F800 */
-typedef struct ImageObject_0055F7B4 {
-    uint8_t at_gap_0055F7B4[12]; /* 0055F7B4 gap */
-} ImageObject_0055F7B4;
-extern ImageObject_0055F7B4 g_ImageObject_0055F7B4;
 extern uint32_t g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable[16]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
 
 /* original 0x0055F934-0x0055F980 */
-typedef struct ImageObject_0055F934 {
-    uint8_t at_gap_0055F934[12]; /* 0055F934 gap */
-} ImageObject_0055F934;
-extern ImageObject_0055F934 g_ImageObject_0055F934;
 extern uint32_t g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable[16]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
 
 /* original 0x00562498-0x00563BD0 */
-typedef struct ImageObject_00562498 {
-    uint8_t at_gap_00562498[1]; /* 00562498 gap */
-} ImageObject_00562498;
-extern ImageObject_00562498 g_ImageObject_00562498;
 extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
 extern InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
 extern InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
@@ -2458,68 +1358,18 @@ extern uint32_t *g_OldUnitPrimaryTable; /* 00563BC0 g_OldUnitPrimaryTable */
 extern OldUnitRecordCount g_OldUnitRecordCount; /* 00563BC4 g_OldUnitRecordCount: followed by 8 bytes 0x90 fill (dropped) */
 
 /* original 0x005658BC-0x005658E0 */
-typedef struct ImageObject_005658BC {
-    uint8_t at_gap_005658BC[4]; /* 005658BC gap */
-} ImageObject_005658BC;
-extern ImageObject_005658BC g_ImageObject_005658BC;
-extern UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[2]; /* 005658C0 g_EndMovieCommandDispatchRecords */
-typedef struct ImageObject_005658D8 {
-    uint32_t at_g_EndMovieCommandDispatchRecords_Terminator[2]; /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
-} ImageObject_005658D8;
-extern ImageObject_005658D8 g_ImageObject_005658D8;
-
-/* original 0x00565E2C-0x00565E30 */
-typedef struct ImageObject_00565E2C {
-    uint8_t at_gap_00565E2C[4]; /* 00565E2C gap */
-} ImageObject_00565E2C;
-extern ImageObject_00565E2C g_ImageObject_00565E2C;
-
-/* original 0x00566034-0x00566060 */
-typedef struct ImageObject_00566034 {
-    uint8_t at_gap_00566034[12]; /* 00566034 gap */
-} ImageObject_00566034;
-extern ImageObject_00566034 g_ImageObject_00566034;
-typedef struct ImageObject_00566040 {
-    uint32_t at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040[8]; /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
-} ImageObject_00566040;
-extern ImageObject_00566040 g_ImageObject_00566040;
+extern UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[3]; /* 005658C0 g_EndMovieCommandDispatchRecords: 2 records + the terminator record [2] at 005658D8 (command code 0 ends the dispatch scan, which also reads its modifier class 0x90909090; the original's record ended after those 8 bytes, the original code followed at 005658E0, so .continuationEntryAddress of [2] is not original data and never read) */
 
 /* original 0x0056710C-0x005671D0 */
-typedef struct ImageObject_0056710C {
-    uint8_t at_gap_0056710C[4]; /* 0056710C gap */
-} ImageObject_0056710C;
-extern ImageObject_0056710C g_ImageObject_0056710C;
-extern UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[15]; /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 */
-typedef struct ImageObject_005671C4 {
-    uint32_t at_g_EndGameResultsCommandDispatchRecords_Terminator[3]; /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
-} ImageObject_005671C4;
-extern ImageObject_005671C4 g_ImageObject_005671C4;
+extern UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16]; /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30: 15 records + the terminator record [15] at 005671C4 (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
 
 /* original 0x005679AC-0x00567CB0 */
-typedef struct ImageObject_005679AC {
-    uint8_t at_gap_005679AC[4]; /* 005679AC gap */
-} ImageObject_005679AC;
-extern ImageObject_005679AC g_ImageObject_005679AC;
 extern UiCommandDispatchRecord g_InGameCommandDispatchRecords[64]; /* 005679B0 g_InGameCommandDispatchRecords: 63 records + terminator at 00567CA4 */
 
 /* original 0x0056A604-0x0056A610 */
 extern uint8_t g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked (followed by NOP fill up to 0056A610) */
 
-/* original 0x0056D33C-0x0056D380 */
-typedef struct ImageObject_0056D33C {
-    uint8_t at_gap_0056D33C[4]; /* 0056D33C gap */
-} ImageObject_0056D33C;
-extern ImageObject_0056D33C g_ImageObject_0056D33C;
-typedef struct ImageObject_0056D340 {
-    uint32_t at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340[16]; /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
-} ImageObject_0056D340;
-extern ImageObject_0056D340 g_ImageObject_0056D340;
-
 /* original 0x0056D71C-0x0056D840 */
-typedef struct ImageObject_0056D71C {
-    uint8_t at_gap_0056D71C[4]; /* 0056D71C gap */
-} ImageObject_0056D71C;
-extern ImageObject_0056D71C g_ImageObject_0056D71C;
 extern uint32_t g_UiCommandModeG; /* 0056D720 g_UiCommandModeG */
 extern uint32_t g_UiCommandModeC; /* 0056D724 g_UiCommandModeC */
 extern uint32_t g_UiCommandModeD; /* 0056D728 g_UiCommandModeD */
@@ -4027,94 +2877,6 @@ extern ImageObject_0058B400 g_ImageObject_0058B400;
 #pragma pack(pop)
 
 /* Objects the headers do not declare, by their Ghidra label. */
-#define g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 (g_ImageObject_0041B130.at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130)
-#define g_SoundDispatchTable_0041B180 (g_ImageObject_0041B180.at_g_SoundDispatchTable_0041B180)
-#define g_SoundDispatchTable_0041B190 (g_ImageObject_0041B190.at_g_SoundDispatchTable_0041B190)
-#define g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 (g_ImageObject_0041B230.at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230)
-#define g_SoundDispatchTable_0041B280 (g_ImageObject_0041B280.at_g_SoundDispatchTable_0041B280)
-#define g_SoundDispatchTable_0041B290 (g_ImageObject_0041B290.at_g_SoundDispatchTable_0041B290)
-#define g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 (g_ImageObject_0041B340.at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340)
-#define g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 (g_ImageObject_0041B450.at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450)
-#define g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 (g_ImageObject_0041B550.at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550)
-#define g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 (g_ImageObject_0041B650.at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650)
-#define g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 (g_ImageObject_0041B760.at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760)
-#define g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 (g_ImageObject_0041B870.at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870)
-#define g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 (g_ImageObject_0041B9D0.at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0)
-#define g_SoundDispatchTable_0041BA20 (g_ImageObject_0041BA20.at_g_SoundDispatchTable_0041BA20)
-#define g_SoundDispatchTable_0041BA30 (g_ImageObject_0041BA30.at_g_SoundDispatchTable_0041BA30)
-#define g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 (g_ImageObject_0041BB80.at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80)
-#define g_SoundDispatchTable_0041BBD0 (g_ImageObject_0041BBD0.at_g_SoundDispatchTable_0041BBD0)
-#define g_SoundDispatchTable_0041BBE0 (g_ImageObject_0041BBE0.at_g_SoundDispatchTable_0041BBE0)
-#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 (g_ImageObject_0041BCF0.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0)
-#define g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 (g_ImageObject_0041C160.at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160)
-#define g_SoundDispatchTable_0041C220 (g_ImageObject_0041C220.at_g_SoundDispatchTable_0041C220)
-#define g_SoundDispatchTable_0041C260 (g_ImageObject_0041C260.at_g_SoundDispatchTable_0041C260)
-#define g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 (g_ImageObject_0041C950.at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950)
-#define g_TextResourcePage_Load_SwitchTable_0041CB70 (g_ImageObject_0041CB70.at_g_TextResourcePage_Load_SwitchTable_0041CB70)
-#define g_SoundDispatchTable_0041CBC0 (g_ImageObject_0041CBC0.at_g_SoundDispatchTable_0041CBC0)
-#define g_SoundDispatchTable_0041CBD0 (g_ImageObject_0041CBD0.at_g_SoundDispatchTable_0041CBD0)
-#define g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 (g_ImageObject_0041CF80.at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80)
-#define g_SoundDispatchTable_0041CFA0 (g_ImageObject_0041CFA0.at_g_SoundDispatchTable_0041CFA0)
-#define g_SoundDispatchTable_0041CFD0 (g_ImageObject_0041CFD0.at_g_SoundDispatchTable_0041CFD0)
-#define g_SoundDispatchTable_0041CFE0 (g_ImageObject_0041CFE0.at_g_SoundDispatchTable_0041CFE0)
-#define g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 (g_ImageObject_0041D150.at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150)
-#define g_SoundDispatchTable_0041D170 (g_ImageObject_0041D170.at_g_SoundDispatchTable_0041D170)
-#define g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 (g_ImageObject_0041D540.at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540)
-#define g_SoundDispatchTable_0041D560 (g_ImageObject_0041D560.at_g_SoundDispatchTable_0041D560)
-#define g_SoundDispatchTable_0041D590 (g_ImageObject_0041D590.at_g_SoundDispatchTable_0041D590)
-#define g_SoundDispatchTable_0041D5A0 (g_ImageObject_0041D5A0.at_g_SoundDispatchTable_0041D5A0)
-#define g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 (g_ImageObject_0041D890.at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890)
-#define g_SoundDispatchTable_0041D8B0 (g_ImageObject_0041D8B0.at_g_SoundDispatchTable_0041D8B0)
-#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 (g_ImageObject_0041DA50.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50)
-#define g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 (g_ImageObject_0041DBE0.at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0)
-#define g_UiGraphicsAdapterTextButtonVtable (g_ImageObject_00422720.at_g_UiGraphicsAdapterTextButtonVtable)
-#define g_UiNodeVtable_004B1D80 (g_ImageObject_004B1D80.at_g_UiNodeVtable_004B1D80)
-#define g_UiWindowControlVtable (g_ImageObject_004B2740.at_g_UiWindowControlVtable)
-#define g_UiNodeVtable_004B2CE0 (g_ImageObject_004B2CE0.at_g_UiNodeVtable_004B2CE0)
-#define g_UiTitledWindowControlVtable (g_ImageObject_004B33D0.at_g_UiTitledWindowControlVtable)
-#define g_UiImagePanelControlVtable (g_ImageObject_004B3770.at_g_UiImagePanelControlVtable)
-#define g_UiFillPanelControlVtable (g_ImageObject_004B3A50.at_g_UiFillPanelControlVtable)
-#define g_UiHorizontalGaugeControlVtable (g_ImageObject_004B3C20.at_g_UiHorizontalGaugeControlVtable)
-#define g_UiRangeSliderControlVtable (g_ImageObject_004B3EF0.at_g_UiRangeSliderControlVtable)
-#define g_UiLayoutContainerControlVtable (g_ImageObject_004B4650.at_g_UiLayoutContainerControlVtable)
-#define g_UiPanelControlVtable (g_ImageObject_004B4950.at_g_UiPanelControlVtable)
-#define g_UiResizableWindowControlVtable (g_ImageObject_004B4CC0.at_g_UiResizableWindowControlVtable)
-#define g_UiNumericTextEditControlVtable (g_ImageObject_004B58A0.at_g_UiNumericTextEditControlVtable)
-#define g_UiPathTextEditControlVtable (g_ImageObject_004B6800.at_g_UiPathTextEditControlVtable)
-#define g_UiRequiredTextEditControlVtable (g_ImageObject_004B7050.at_g_UiRequiredTextEditControlVtable)
-#define g_UiFocusProxyControlVtable (g_ImageObject_004B9530.at_g_UiFocusProxyControlVtable)
-#define g_UiListOffsetControlVtable (g_ImageObject_004BC410.at_g_UiListOffsetControlVtable)
-#define g_UiNodeVtable_004BC570 (g_ImageObject_004BC570.at_g_UiNodeVtable_004BC570)
-#define g_UiNineSlicePanelControlVtable (g_ImageObject_004BCC30.at_g_UiNineSlicePanelControlVtable)
-#define g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 (g_ImageObject_00513DB0.at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0)
-#define g_UiImageActionControlVtable (g_ImageObject_00514FC0.at_g_UiImageActionControlVtable)
-#define g_UiConditionalActionControlVtable (g_ImageObject_00515290.at_g_UiConditionalActionControlVtable)
-#define g_UiNumericPairTextButtonVtable (g_ImageObject_00515610.at_g_UiNumericPairTextButtonVtable)
-#define g_UiPayloadPairTextButtonVtable (g_ImageObject_00515730.at_g_UiPayloadPairTextButtonVtable)
-#define g_UiFormattedContainerVtable (g_ImageObject_005157E0.at_g_UiFormattedContainerVtable)
-#define g_UiSelectionGeometryControlVtable (g_ImageObject_00515C70.at_g_UiSelectionGeometryControlVtable)
-#define g_UiNodeVtable_005162C0 (g_ImageObject_005162C0.at_g_UiNodeVtable_005162C0)
-#define g_UiNodeVtable_00516310 (g_ImageObject_00516310.at_g_UiNodeVtable_00516310)
-#define g_UiNodeVtable_00516530 (g_ImageObject_00516530.at_g_UiNodeVtable_00516530)
-#define g_UiArmyMetricsPanelVtable (g_ImageObject_00516CC0.at_g_UiArmyMetricsPanelVtable)
-#define g_UiNodeVtable_00516F60 (g_ImageObject_00516F60.at_g_UiNodeVtable_00516F60)
-#define g_UiNodeVtable_00517070 (g_ImageObject_00517070.at_g_UiNodeVtable_00517070)
-#define g_UiNodeVtable_00517DE0 (g_ImageObject_00517DE0.at_g_UiNodeVtable_00517DE0)
-#define g_UiCommandVisibilityWrappedTextVtable (g_ImageObject_00517F10.at_g_UiCommandVisibilityWrappedTextVtable)
-#define g_UiCommandVisibilitySingleLineTextVtable (g_ImageObject_00517FC0.at_g_UiCommandVisibilitySingleLineTextVtable)
-#define g_UiSoftwareTexturePreviewControlVtable (g_ImageObject_00518C90.at_g_UiSoftwareTexturePreviewControlVtable)
-#define g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 (g_ImageObject_00519374.at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374)
-#define g_EffectLifecycleTransitionDispatchTable5 (g_ImageObject_0051EAB0.at_g_EffectLifecycleTransitionDispatchTable5)
-#define g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 (g_ImageObject_005247D0.at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0)
-#define g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 (g_ImageObject_00525A90.at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90)
-#define g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 (g_ImageObject_00526990.at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990)
-#define g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 (g_ImageObject_0053C160.at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160)
-#define g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 (g_ImageObject_00547D90.at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90)
-#define g_FrontendCommandDispatchRecords_Terminator (g_ImageObject_00548124.at_g_FrontendCommandDispatchRecords_Terminator)
-#define g_EndMovieCommandDispatchRecords_Terminator (g_ImageObject_005658D8.at_g_EndMovieCommandDispatchRecords_Terminator)
-#define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageObject_00566040.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
-#define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageObject_005671C4.at_g_EndGameResultsCommandDispatchRecords_Terminator)
-#define g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 (g_ImageObject_0056D340.at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340)
 #define g_InGameUiCommandCursorCodeModeDispatchTable (g_ImageObject_0056F820.at_g_InGameUiCommandCursorCodeModeDispatchTable)
 #define g_InGameUiCommandBeginInteractionModeDispatchTable (g_ImageObject_0056FAA0.at_g_InGameUiCommandBeginInteractionModeDispatchTable)
 #define g_InGameUiCommandUpdateInteractionModeDispatchTable (g_ImageObject_00570410.at_g_InGameUiCommandUpdateInteractionModeDispatchTable)
