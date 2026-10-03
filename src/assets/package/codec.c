@@ -314,9 +314,9 @@ static void PckCodec_EncoderScaleFrequencies(void)
   }
 }
 
-/* Scans all leaf and internal nodes (the two workspaces are contiguous) for the two lightest nodes with nonzero
-   weight. Returns false when fewer than two are left (the second-lowest weight is still UINT32_MAX, tested as
-   negative like the original). */
+/* Scans all leaf and internal nodes (one array in the original layout: leaves first, then internal nodes) for
+   the two lightest nodes with nonzero weight. Returns false when fewer than two are left (the second-lowest
+   weight is still UINT32_MAX, tested as negative like the original). */
 static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
           PckHuffmanNode **outSecondLowestNode,uint32_t *outSecondLowestWeight)
 {
@@ -331,7 +331,7 @@ static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,
   secondLowestNode = NULL;
   lowestWeight = UINT32_MAX;
   secondLowestWeight = UINT32_MAX;
-  scanNode = g_PckHuffmanLeafNodeWorkspace256;
+  scanNode = g_PckHuffmanNodeWorkspace;
   for (nodesLeft = PCK_HUFFMAN_NODE_COUNT; nodesLeft != 0; nodesLeft--) {
     if (scanNode->weight != 0) {
       if (scanNode->weight < lowestWeight) {
@@ -370,9 +370,9 @@ static bool PckCodec_EncoderBuildTree(void)
   uint32_t secondLowestWeight;
 
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
-    g_PckHuffmanLeafNodeWorkspace256[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+    g_PckHuffmanNodeWorkspace[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
   }
-  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
+  nextInternalNode = &g_PckHuffmanNodeWorkspace[PCK_HUFFMAN_SYMBOL_COUNT]; /* first internal node */
   while (PckCodec_EncoderFindTwoLightestNodes(&lowestNode,&lowestWeight,&secondLowestNode,&secondLowestWeight)) {
     nextInternalNode->weight = lowestWeight + secondLowestWeight;
     nextInternalNode->zeroChild = lowestNode;
@@ -383,7 +383,7 @@ static bool PckCodec_EncoderBuildTree(void)
     secondLowestNode->weight = 0;
     nextInternalNode++;
     /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
-    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
+    if (g_PckHuffmanNodeWorkspace + PCK_HUFFMAN_NODE_COUNT <= nextInternalNode) {
       return false;
     }
   }
@@ -418,7 +418,7 @@ static void PckCodec_EncoderAssignCodes(void)
     if (symbolState->frequencyCount != 0) {
       codeLength = 0;
       codeBits = 0;
-      currentNode = g_PckHuffmanLeafNodeWorkspace256 + symbolIndex;
+      currentNode = g_PckHuffmanNodeWorkspace + symbolIndex;
       do {
         ancestorNode = currentNode->parent;
         codeBits = codeBits * 2;
@@ -558,13 +558,13 @@ static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
     g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount = frequencyTable[symbolIndex];
   }
-  workspaceClearCursor = (uint32_t *)g_PckHuffmanLeafNodeWorkspace256;
+  workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
   for (clearDwordCount = 2048; clearDwordCount != 0; clearDwordCount--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;
   }
   for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
-    g_PckHuffmanLeafNodeWorkspace256[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+    g_PckHuffmanNodeWorkspace[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
   }
 }
 
@@ -580,7 +580,7 @@ static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
   uint32_t lowestWeight;
   uint32_t secondLowestWeight;
 
-  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
+  nextInternalNode = &g_PckHuffmanNodeWorkspace[PCK_HUFFMAN_SYMBOL_COUNT]; /* first internal node */
   while (PckCodec_EncoderFindTwoLightestNodes(&lowestNode,&lowestWeight,&secondLowestNode,&secondLowestWeight)) {
     nextInternalNode->weight = lowestWeight + secondLowestWeight;
     nextInternalNode->zeroChild = lowestNode;
@@ -592,7 +592,7 @@ static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
     nextInternalNode++;
     /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
        where the internal node workspace ends. */
-    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
+    if (g_PckHuffmanNodeWorkspace + PCK_HUFFMAN_NODE_COUNT <= nextInternalNode) {
       return NULL;
     }
   }
@@ -669,7 +669,7 @@ bool PckCodec_DecodeHuffmanRle
       codeBits = bitWindow >> 1;
       inputBitOffset = inputBitOffset + 1;
       symbolNode = PckCodec_DecoderReadSymbol(root,&codeBits,&inputBitOffset);
-      *destination = (uint8_t)(symbolNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+      *destination = (uint8_t)(symbolNode - g_PckHuffmanNodeWorkspace) /* symbol = leaf index */;
       destination++;
       inputByte = PckCodec_DecoderSkipWholeBytes(inputByte,&inputBitOffset);
       outputSizeBytes--;
@@ -684,7 +684,7 @@ bool PckCodec_DecodeHuffmanRle
       runLength = (bitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
       /* a run is cut short when the output is full; the counter then keeps its value */
       do {
-        *destination = (uint8_t)(symbolNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+        *destination = (uint8_t)(symbolNode - g_PckHuffmanNodeWorkspace) /* symbol = leaf index */;
         destination++;
         outputSizeBytes--;
         if (outputSizeBytes == 0) break;

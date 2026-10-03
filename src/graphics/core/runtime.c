@@ -1121,24 +1121,21 @@ void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destination
     result = sourceSurface->lpVtbl->Restore(sourceSurface);
   }
   if (result == 0) {
-    /* the scratch DDSURFACEDESC (its first dword is dwSize): cleared, then dwSize set */
-    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDescScratch);
-    g_GraphicsCursorSurfaceDescScratch = sizeof(DDSURFACEDESC_DX6);
+    /* the scratch DDSURFACEDESC: cleared, then dwSize set */
+    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDesc);
+    g_GraphicsCursorSurfaceDesc.dwSize = sizeof(DDSURFACEDESC_DX6);
     result = sourceSurface->lpVtbl->Lock
-                       (sourceSurface,NULL,
-                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_READONLY,
-                        NULL);
+                       (sourceSurface,NULL,&g_GraphicsCursorSurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
   }
   if (result != 0) {
     return;
   }
-  /* g_GraphicsCursorSurfacePixels/PitchBytes are the lpSurface/lPitch fields of the locked descriptor */
-  surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
-  source = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
+  surfacePixels = (uint8_t *)g_GraphicsCursorSurfaceDesc.lpSurface;
+  source = surfacePixels + drawY * (int)g_GraphicsCursorSurfaceDesc.lPitch + drawX * bytesPerPixel;
   for (; copyHeight != 0; copyHeight--) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
     destination = destination + rowPixels * bytesPerPixel;
-    source = source + (int)g_GraphicsCursorSurfacePitchBytes;
+    source = source + (int)g_GraphicsCursorSurfaceDesc.lPitch;
   }
   sourceSurface->lpVtbl->Unlock(sourceSurface,surfacePixels);
 }
@@ -1193,23 +1190,21 @@ void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBu
     result = destinationSurface->lpVtbl->Restore(destinationSurface);
   }
   if (result == 0) {
-    /* the scratch DDSURFACEDESC (its first dword is dwSize): cleared, then dwSize set */
-    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDescScratch);
-    g_GraphicsCursorSurfaceDescScratch = sizeof(DDSURFACEDESC_DX6);
+    /* the scratch DDSURFACEDESC: cleared, then dwSize set */
+    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDesc);
+    g_GraphicsCursorSurfaceDesc.dwSize = sizeof(DDSURFACEDESC_DX6);
     /* write lock, as the original (PUSH 0x21 at 0x0057A176 / 0x0057A266) */
     result = destinationSurface->lpVtbl->Lock
-                       (destinationSurface,NULL,
-                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_WRITEONLY,
-                        NULL);
+                       (destinationSurface,NULL,&g_GraphicsCursorSurfaceDesc,DDLOCK_WAIT | DDLOCK_WRITEONLY,NULL);
   }
   if (result != 0) {
     return;
   }
-  surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
-  destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
+  surfacePixels = (uint8_t *)g_GraphicsCursorSurfaceDesc.lpSurface;
+  destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfaceDesc.lPitch + drawX * bytesPerPixel;
   for (; copyHeight != 0; copyHeight--) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
-    destination = destination + (int)g_GraphicsCursorSurfacePitchBytes;
+    destination = destination + (int)g_GraphicsCursorSurfaceDesc.lPitch;
     source = source + rowPixels * bytesPerPixel;
   }
   destinationSurface->lpVtbl->Unlock(destinationSurface,surfacePixels);

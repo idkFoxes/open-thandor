@@ -740,8 +740,8 @@ static uint32_t ImageCompare_ToOriginal(uint32_t generated, unsigned blocks)
 static void Thandor_SelfTestImageCompare(void)
 {
     const uint8_t *original = (const uint8_t *)Thandor_LoadOriginalCodeCopy(ORIGINAL_TEXT_START, ORIGINAL_TEXT_SIZE);
-    unsigned blocks = sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0];
-    unsigned pointerCount = sizeof g_ThandorImagePointers / sizeof g_ThandorImagePointers[0];
+    unsigned blocks = g_ThandorImageBlockCount;
+    unsigned pointerCount = g_ThandorImagePointerCount;
     unsigned b;
     unsigned p = 0;
     unsigned bytes = 0;

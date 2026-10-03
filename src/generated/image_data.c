@@ -151,8 +151,9 @@ __declspec(align(8)) ImageObject_00403158 g_ImageObject_00403158 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403158 gap */
 };
 
-__declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
-    /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
+/* 00403160 g_UiTransferEncryptSboxes: Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
+__declspec(align(16)) uint32_t g_UiTransferEncryptSboxes[8][16][16] = {
+    /* 00403160 table 0 */
     {
         {13, 10, 0, 1, 15, 11, 5, 12, 4, 6, 14, 2, 8, 3, 9, 7},
         {0, 1, 7, 15, 3, 10, 2, 8, 9, 6, 14, 11, 12, 13, 4, 5},
@@ -170,7 +171,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {9, 6, 7, 8, 15, 0, 2, 11, 1, 3, 4, 14, 12, 10, 5, 13},
         {0, 15, 2, 6, 12, 10, 5, 1, 14, 8, 3, 7, 11, 13, 4, 9},
         {15, 1, 7, 3, 0, 6, 11, 8, 5, 12, 14, 13, 4, 9, 2, 10}},
-    /* 00403560 g_UiTransferEncryptSbox1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403560 table 1 */
     {
         {0, 4, 1, 15, 6, 11, 14, 2, 9, 7, 3, 5, 8, 10, 12, 13},
         {0, 15, 2, 1, 6, 9, 4, 3, 14, 11, 7, 8, 10, 5, 12, 13},
@@ -188,7 +189,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {4, 6, 9, 14, 0, 11, 8, 7, 3, 1, 2, 15, 10, 12, 5, 13},
         {7, 6, 9, 14, 0, 15, 1, 13, 4, 5, 3, 11, 12, 8, 2, 10},
         {14, 13, 7, 12, 4, 15, 5, 10, 9, 1, 11, 8, 0, 6, 2, 3}},
-    /* 00403960 g_UiTransferEncryptSbox2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403960 table 2 */
     {
         {0, 14, 8, 7, 15, 9, 12, 3, 5, 1, 6, 10, 4, 11, 13, 2},
         {0, 1, 14, 8, 5, 12, 6, 4, 2, 10, 3, 15, 7, 13, 11, 9},
@@ -206,7 +207,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {8, 0, 3, 15, 6, 11, 4, 5, 1, 9, 10, 14, 13, 12, 7, 2},
         {1, 11, 3, 9, 8, 0, 10, 14, 7, 15, 12, 13, 5, 6, 2, 4},
         {1, 0, 4, 3, 10, 8, 15, 7, 2, 6, 12, 13, 9, 14, 5, 11}},
-    /* 00403D60 g_UiTransferEncryptSbox3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403D60 table 3 */
     {
         {8, 10, 14, 13, 0, 11, 15, 3, 1, 4, 12, 9, 5, 6, 7, 2},
         {12, 0, 9, 5, 6, 7, 4, 8, 10, 2, 1, 14, 15, 11, 3, 13},
@@ -224,7 +225,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {1, 0, 5, 2, 15, 10, 8, 13, 3, 6, 9, 12, 4, 11, 14, 7},
         {8, 0, 4, 15, 3, 13, 5, 2, 9, 1, 10, 6, 12, 7, 14, 11},
         {0, 5, 2, 15, 10, 9, 14, 4, 1, 12, 13, 6, 7, 3, 8, 11}},
-    /* 00404160 g_UiTransferEncryptSbox4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404160 table 4 */
     {
         {0, 5, 2, 15, 10, 9, 14, 4, 1, 12, 13, 3, 11, 8, 7, 6},
         {0, 5, 2, 6, 12, 15, 7, 8, 9, 14, 4, 1, 11, 10, 3, 13},
@@ -242,7 +243,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {0, 2, 9, 12, 3, 5, 1, 10, 7, 13, 15, 6, 14, 8, 11, 4},
         {0, 2, 9, 13, 6, 12, 14, 7, 15, 10, 5, 4, 3, 11, 8, 1},
         {3, 12, 0, 15, 1, 9, 13, 11, 2, 4, 5, 8, 6, 7, 14, 10}},
-    /* 00404560 g_UiTransferEncryptSbox5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
+    /* 00404560 table 5 (k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it, +0x140) */
     {
         {8, 2, 0, 5, 9, 11, 3, 6, 14, 4, 12, 1, 13, 10, 15, 7},
         {0, 4, 6, 3, 2, 8, 15, 5, 7, 13, 14, 1, 10, 12, 11, 9},
@@ -260,7 +261,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {1, 0, 15, 5, 8, 6, 2, 12, 4, 10, 7, 3, 13, 11, 9, 14},
         {6, 15, 2, 9, 1, 0, 11, 8, 3, 12, 10, 7, 13, 5, 4, 14},
         {12, 11, 4, 14, 10, 0, 5, 1, 8, 7, 9, 3, 6, 15, 13, 2}},
-    /* 00404960 g_UiTransferEncryptSbox6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404960 table 6 */
     {
         {0, 1, 8, 15, 5, 7, 12, 3, 4, 11, 9, 2, 6, 14, 10, 13},
         {15, 11, 12, 6, 1, 0, 8, 14, 2, 5, 9, 3, 4, 7, 13, 10},
@@ -278,7 +279,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {14, 3, 15, 5, 0, 1, 8, 7, 2, 4, 12, 9, 11, 10, 13, 6},
         {3, 8, 6, 13, 15, 2, 0, 9, 12, 10, 11, 5, 4, 7, 1, 14},
         {15, 5, 12, 0, 4, 6, 7, 2, 8, 1, 9, 13, 11, 3, 10, 14}},
-    /* 00404D60 g_UiTransferEncryptSbox7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404D60 table 7 */
     {
         {4, 9, 1, 6, 12, 3, 14, 11, 13, 8, 15, 0, 5, 2, 10, 7},
         {6, 5, 9, 15, 0, 1, 8, 11, 12, 3, 13, 4, 14, 2, 7, 10},
@@ -298,7 +299,7 @@ __declspec(align(16)) ImageObject_00403160 g_ImageObject_00403160 = {
         {1, 0, 11, 13, 4, 8, 15, 5, 3, 10, 6, 2, 14, 9, 12, 7}},
 };
 
-/* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
+/* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
 __declspec(align(16)) uint32_t g_UiTransferDecryptSboxes[8][16][16] = {
     {
         {2, 3, 11, 13, 8, 6, 9, 15, 12, 14, 1, 5, 7, 0, 10, 4},
@@ -444,15 +445,14 @@ __declspec(align(16)) ImageObject_00407510 g_ImageObject_00407510 = {
 /* 00407514 g_PackageLastErrorPath */
 __declspec(align(4)) uint16_t g_PackageLastErrorPath[256] = {0};
 
-__declspec(align(4)) ImageObject_00407714 g_ImageObject_00407714 = {
-    {0}, /* 00407714 g_FatalErrorDetail1Utf16 */
-    0, /* 00407914 g_FatalErrorDetail2Utf16 */
-    {0},
-    {0},
-    0, /* 00407B14 g_FatalErrorDetail3Utf16 */
-    {0},
-    {0},
-};
+/* 00407714 g_FatalErrorDetail1Utf16 */
+__declspec(align(4)) uint16_t g_FatalErrorDetail1Utf16[256] = {0};
+
+/* 00407914 g_FatalErrorDetail2Utf16 */
+__declspec(align(4)) uint16_t g_FatalErrorDetail2Utf16[256] = {0};
+
+/* 00407B14 g_FatalErrorDetail3Utf16 */
+__declspec(align(4)) uint16_t g_FatalErrorDetail3Utf16[256] = {0};
 
 /* 00407D14 g_FatalErrorExitHandler */
 __declspec(align(4)) FatalErrorPassThroughProc *g_FatalErrorExitHandler = 0;
@@ -524,10 +524,8 @@ __declspec(align(4)) ImageObject_004080B4 g_ImageObject_004080B4 = {
 /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
 __declspec(align(16)) PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {0};
 
-__declspec(align(16)) ImageObject_004084C0 g_ImageObject_004084C0 = {
-    {0}, /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
-    {0}, /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
-};
+/* 004084C0 g_PckHuffmanNodeWorkspace: [0..255] leaf nodes (004084C0), [256..511] internal nodes (004094C0) */
+__declspec(align(16)) PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
 
 __declspec(align(4)) ImageObject_0040ABBC g_ImageObject_0040ABBC = {
     {0x00, 0x90, 0x90, 0x90}, /* 0040ABBC gap */
@@ -714,10 +712,11 @@ __declspec(align(16)) uint32_t g_CursorMaxWidth = 0;
 /* 00416824 g_CursorMaxHeight */
 __declspec(align(4)) uint32_t g_CursorMaxHeight = 0;
 
-__declspec(align(8)) ImageObject_00416828 g_ImageObject_00416828 = {
-    0, /* 00416828 g_CursorOverrideX */
-    0, /* 0041682C g_CursorOverrideY */
-};
+/* 00416828 g_CursorOverrideX */
+__declspec(align(8)) UiPixelCoordinate g_CursorOverrideX = 0;
+
+/* 0041682C g_CursorOverrideY */
+__declspec(align(4)) UiPixelCoordinate g_CursorOverrideY = 0;
 
 /* 00416830 g_CursorWheelDelta */
 __declspec(align(16)) UiPointerWheelDelta g_CursorWheelDelta = 0;
@@ -728,10 +727,11 @@ __declspec(align(4)) int32_t g_CursorVisibilityToken = -1;
 /* 00416838 g_CursorButtonState */
 __declspec(align(8)) uint32_t g_CursorButtonState = 0;
 
-__declspec(align(4)) ImageObject_0041683C g_ImageObject_0041683C = {
-    0, /* 0041683C g_CursorLastClickX */
-    0, /* 00416840 g_CursorLastClickY */
-};
+/* 0041683C g_CursorLastClickX */
+__declspec(align(4)) UiPixelCoordinate g_CursorLastClickX = 0;
+
+/* 00416840 g_CursorLastClickY */
+__declspec(align(16)) UiPixelCoordinate g_CursorLastClickY = 0;
 
 /* 00416844 g_PointerFlushEvents */
 __declspec(align(4)) PointerFlushEventsProc *g_PointerFlushEvents = 0;
@@ -876,16 +876,29 @@ __declspec(align(4)) uint32_t g_NetworkBackendInstanceCount = 0;
 /* 0041A548 g_NetworkBackendSessionContext */
 __declspec(align(8)) NetworkSessionContext *g_NetworkBackendSessionContext = 0;
 
-__declspec(align(4)) ImageObject_0041A54C g_ImageObject_0041A54C = {
-    (void *)NetworkBackendFallback_SetSessionContext, /* 0041A54C g_NetworkBackendSlot0 */
-    (void *)NetworkBackendFallback_Cleanup, /* 0041A550 g_NetworkBackendSlot1 */
-    (void *)NetworkBackendFallback_OpenAndBindUdpSocket, /* 0041A554 g_NetworkBackendSlot2 */
-    (void *)NetworkBackendFallback_CloseActiveSocket, /* 0041A558 g_NetworkBackendSlot3 */
-    (void *)NetworkBackendFallback_ReceiveDatagram, /* 0041A55C g_NetworkBackendSlot4 */
-    (void *)NetworkBackendFallback_SendDatagram, /* 0041A560 g_NetworkBackendSlot5 */
-    (void *)NetworkBackendFallback_ParsePeerEndpoint, /* 0041A564 g_NetworkBackendSlot6 */
-    (void *)NetworkBackendFallback_FormatPeerAddress, /* 0041A568 g_NetworkBackendSlot7 */
-};
+/* 0041A54C g_NetworkBackendSlot0 */
+__declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = (void *)NetworkBackendFallback_SetSessionContext;
+
+/* 0041A550 g_NetworkBackendSlot1 */
+__declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = (void *)NetworkBackendFallback_Cleanup;
+
+/* 0041A554 g_NetworkBackendSlot2 */
+__declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = (void *)NetworkBackendFallback_OpenAndBindUdpSocket;
+
+/* 0041A558 g_NetworkBackendSlot3 */
+__declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = (void *)NetworkBackendFallback_CloseActiveSocket;
+
+/* 0041A55C g_NetworkBackendSlot4 */
+__declspec(align(4)) NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = (void *)NetworkBackendFallback_ReceiveDatagram;
+
+/* 0041A560 g_NetworkBackendSlot5 */
+__declspec(align(16)) NetworkBackendSendCallback *g_NetworkBackendSlot5 = (void *)NetworkBackendFallback_SendDatagram;
+
+/* 0041A564 g_NetworkBackendSlot6 */
+__declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = (void *)NetworkBackendFallback_ParsePeerEndpoint;
+
+/* 0041A568 g_NetworkBackendSlot7 */
+__declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = (void *)NetworkBackendFallback_FormatPeerAddress;
 
 __declspec(align(4)) ImageObject_0041A56C g_ImageObject_0041A56C = {
     {0}, /* 0041A56C g_NetworkLocalEndpoint */
@@ -957,11 +970,8 @@ __declspec(align(4)) uint16_t u_error__TXT2STR__unknown_characte_0041afac[62] = 
 /* 0041B028 g_FontTextureSources */
 __declspec(align(8)) GraphicsTextureSourceAsset *g_FontTextureSources[2] = {0};
 
-__declspec(align(16)) ImageObject_0041B030 g_ImageObject_0041B030 = {
-    L"engine\\font.gfx", /* 0041B030 u_engine_font_gfx_0041b030 */
-    L"engine\\fontk.gfx", /* 0041B050 str_0041B050 */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0041B030 u_engine_font_gfx_0041b030, 0041B050 str_0041B050 */
+__declspec(align(16)) uint16_t g_FontTexturePathsUtf16[33] = L"engine\\font.gfx\0engine\\fontk.gfx";
 
 __declspec(align(8)) ImageObject_0041B128 g_ImageObject_0041B128 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B128 gap */
@@ -3231,16 +3241,11 @@ __declspec(align(16)) ImageObject_00422720 g_ImageObject_00422720 = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
 };
 
-__declspec(align(8)) ImageObject_00422768 g_ImageObject_00422768 = {
-    0, /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
-    {0},
-    {0},
-    0, /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90000000,
-        0x90909090},
-    {0x90, 0x90, 0x90},
-};
+/* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
+__declspec(align(8)) uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
+
+/* 00422788 g_GraphicsAdapterFormatScratch1Utf16 (followed by 8 bytes of 0x90 alignment padding, dropped) */
+__declspec(align(8)) uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
 
 __declspec(align(8)) ImageObject_00422978 g_ImageObject_00422978 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00422978 gap */
@@ -3570,14 +3575,9 @@ __declspec(align(4)) ImageObject_00424684 g_ImageObject_00424684 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00424684 gap */
 };
 
-__declspec(align(16)) ImageObject_004246A0 g_ImageObject_004246A0 = {
-    {0}, /* 004246A0 g_FixedSinBeforeZeroQ28: filled at startup by FixedMath_BuildSinCosTables */
-};
-
-__declspec(align(16)) ImageObject_004346A0 g_ImageObject_004346A0 = {
-    {0}, /* 004346A0 g_FixedSinQ28: filled at startup by FixedMath_BuildSinCosTables */
-    {0}, /* 004446A0 g_FixedCosQ28: filled at startup by FixedMath_BuildSinCosTables */
-};
+/* 004246A0 g_FixedSineQ28 (sin before zero, sin from 004346A0, cos from 004446A0): filled at startup
+   by FixedMath_BuildSinCosTables */
+__declspec(align(16)) int32_t g_FixedSineQ28[98304] = {0};
 
 __declspec(align(8)) ImageObject_00485808 g_ImageObject_00485808 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xFF, 0xFF, 0xFF, 0xFF}, /* 00485808 gap */
@@ -3985,27 +3985,17 @@ __declspec(align(4)) RuntimeSpinLockValue g_UiRuntimeRecordRingLock = 0;
 /* 004AE990 g_UiTransferMailbox */
 __declspec(align(16)) UiTransferMailboxState g_UiTransferMailbox = {0};
 
-__declspec(align(8)) ImageObject_004AE9A8 g_ImageObject_004AE9A8 = {
-    /* 004AE9A8 g_UiTransferRoundKeys16: uint32_t[12] packet cipher round keys 0..11 (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 are g_UiTransferRoundKeys16Tail). */
-    {
-        /*  0 */ 0x1234567, 0x13579BDF, 0x76543210, 0xFDB97531, 0x2468ACE, 0x2357BD23, 0xECA86420, 0x32DB7532,
-        /*  8 */ 0xF1E2D3C, 0x4B5A6978, 0xC3D2E1F0, 0x8796A5B4},
-    {0x54686F6D, 0x61732047, 0x6572656B, 0x65212121}, /* 004AE9D8 g_UiTransferRoundKeys16Tail: uint32_t[4] packet cipher round keys 12..15 (bytes read by Ghidra as the text "mohTG sakere!!!e"); the mailbox chunk packet header follows at 0x004AE9E8. */
-    {0}, /* 004AE9E8 s__004ae9d8+0x10 */
-    0, /* 004AE9EC g_UiTransferChunkPacketSequenceToken */
-    {0},
-    0, /* 004AE9F8 g_UiTransferMailboxChunkOffset */
-    0, /* 004AE9FC g_UiTransferMailboxTransferByteCount */
-    {0}, /* 004AEA00 g_UiTransferChunkPayload */
+/* 004AE9A8 g_UiTransferRoundKeys: uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table). Keys 12..15 (0x004AE9D8) were read by Ghidra as the text "mohTG sakere!!!e". */
+__declspec(align(8)) uint32_t g_UiTransferRoundKeys[16] = {
+    /*  0 */ 0x1234567, 0x13579BDF, 0x76543210, 0xFDB97531, 0x2468ACE, 0x2357BD23, 0xECA86420, 0x32DB7532,
+    /*  8 */ 0xF1E2D3C, 0x4B5A6978, 0xC3D2E1F0, 0x8796A5B4, 0x54686F6D, 0x61732047, 0x6572656B, 0x65212121,
 };
 
-__declspec(align(8)) ImageObject_004AEAE8 g_ImageObject_004AEAE8 = {
-    0, /* 004AEAE8 g_UiTransferPingEchoPacket */
-    0, /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
-    {0},
-    0, /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
-    {0},
-};
+/* 004AE9E8 g_UiTransferChunkPacket: mailbox chunk packet (0x10031 request / 0x80030 chunk); payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00). */
+__declspec(align(8)) UiRuntimeRecord g_UiTransferChunkPacket = {0};
+
+/* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033; echoed tick at 0x004AEAF8. */
+__declspec(align(8)) FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
 
 __declspec(align(8)) ImageObject_004AEB08 g_ImageObject_004AEB08 = {
     0, /* 004AEB08 g_UiTransferMailboxTickCounter */
@@ -11269,23 +11259,10 @@ __declspec(align(4)) uint32_t g_FrontendStateTickSpinLock = 0;
 /* 00545730 g_FrontendTimerCountdownTicks */
 __declspec(align(16)) uint32_t g_FrontendTimerCountdownTicks = 0;
 
-__declspec(align(4)) ImageObject_00545734 g_ImageObject_00545734 = {
-    0, /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
-    0, /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
-    0, /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
-    0, /* 00545740 g_FrontendRomTransitionKeyframe0Channel3Q12 */
-    0, /* 00545744 g_FrontendRomTransitionKeyframe0Channel4Q12 */
-    0, /* 00545748 g_FrontendRomTransitionKeyframe0Channel5Q12 */
-    0, /* 0054574C g_FrontendRomTransitionKeyframe0TimeQ12 */
-    {0},
-    0, /* 00545754 g_FrontendRomTransitionKeyframe1Channel0Q12 */
-    0, /* 00545758 g_FrontendRomTransitionKeyframe1Channel1Q12 */
-    0, /* 0054575C g_FrontendRomTransitionKeyframe1Channel2Q12 */
-    0, /* 00545760 g_FrontendRomTransitionKeyframe1Channel3Q12 */
-    0, /* 00545764 g_FrontendRomTransitionKeyframe1Channel4Q12 */
-    0, /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
-    0, /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
-    {0},
+/* 00545734 g_FrontendRomTransitionKeyframes */
+__declspec(align(4)) WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2] = {
+    {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545734 keyframe 0 */
+    {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545754 keyframe 1 */
 };
 
 /* 00545774 g_FrontendCentralRomAsset */
@@ -11463,10 +11440,8 @@ __declspec(align(16)) uint16_t u_texte_level_str_00545bc0[16] = L"texte\\level.s
 /* 00545BE0 u_texte_inhalt_str_00545be0 */
 __declspec(align(16)) uint16_t u_texte_inhalt_str_00545be0[17] = L"texte\\inhalt.str";
 
-__declspec(align(4)) ImageObject_00545C02 g_ImageObject_00545C02 = {
-    {102, 108, 109, 92, 108, 101, 118}, /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: uint16_t[7] L"flm\\lev" without terminator: first half of the mission briefing movie path flm\lev0000.flm, continued by g_FrontendMissionBriefingLevelDigitsUtf16; opened with Movie_Open (ui/frontend/scenario.c) */
-    L"0000.flm", /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16: uint16_t[9] L"0000.flm" plus terminator: tail of the briefing movie path; the four digits are overwritten with the level number (ui/frontend/scenario.c) */
-};
+/* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: the four level digits at index 7 (00545C10) are overwritten with the level number (ui/frontend/scenario.c) */
+__declspec(align(4)) uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = L"flm\\lev0000.flm";
 
 /* 00545C22 g_CreditsTexturePathUtf16 */
 __declspec(align(4)) uint16_t g_CreditsTexturePathUtf16[22] = L"gfx\\panel\\credits.gfx";
@@ -11602,16 +11577,15 @@ __declspec(align(8)) uint32_t g_FrontendExpectedPlayerRuntimeBlockCount = 0;
 __declspec(align(4)) uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
 
 /* 0054DDB0 g_FrontendPlayerListRows */
-__declspec(align(16)) uint32_t g_FrontendPlayerListRows = 0;
-
-__declspec(align(4)) ImageObject_0054DDB4 g_ImageObject_0054DDB4 = {
-    0, /* 0054DDB4 g_FrontendPlayerListRow1 */
-    0, /* 0054DDB8 g_FrontendPlayerListRow2 */
-    0, /* 0054DDBC g_FrontendPlayerListRow3 */
-    0, /* 0054DDC0 g_FrontendPlayerListRow4 */
-    0, /* 0054DDC4 g_FrontendPlayerListRow5 */
-    0, /* 0054DDC8 g_FrontendPlayerListRow6 */
-    0, /* 0054DDCC g_FrontendPlayerListRow7 */
+__declspec(align(16)) uint32_t g_FrontendPlayerListRows[8] = {
+    0, /* 0054DDB0 row 0 */
+    0, /* 0054DDB4 row 1 */
+    0, /* 0054DDB8 row 2 */
+    0, /* 0054DDBC row 3 */
+    0, /* 0054DDC0 row 4 */
+    0, /* 0054DDC4 row 5 */
+    0, /* 0054DDC8 row 6 */
+    0, /* 0054DDCC row 7 */
 };
 
 /* 0054DDD0 g_FrontendNetworkEndpointScratch */
@@ -15641,9 +15615,8 @@ __declspec(align(4)) ImageObject_00562499 g_ImageObject_00562499 = {
     {0x90, 0x90},
 };
 
-__declspec(align(16)) ImageObject_005624A0 g_ImageObject_005624A0 = {
-    /* 005624A0 g_InGameUiActionHandlersPage10 */
-    {
+/* 005624A0 g_InGameUiActionHandlersPage10 */
+__declspec(align(16)) InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10 = {
         .handlers = {
             /*  0 */ (void *)InGameMapAction_RecenterViewFromGridCoordinates,
             /*  1 */ (void *)InGameArmyStock_TakeOrSellSlotArmy,
@@ -15685,9 +15658,10 @@ __declspec(align(16)) ImageObject_005624A0 g_ImageObject_005624A0 = {
             /* 37 */ (void *)InGameResultsScreen_CloseLocally,
             /* 38 */ (void *)InGameCommandState_SelectAndPropagateBinaryMode,
             /* 39 */ (void *)InGameQuitMenu_RestartMission
-        }},
-    /* 00562540 g_InGameUiActionHandlersPage11 */
-    {
+        }};
+
+/* 00562540 g_InGameUiActionHandlersPage11 */
+__declspec(align(16)) InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {
         .handlers = {
             /*  0 */ (void *)InGameCommandModeG_Select0,
             /*  1 */ (void *)InGameCommandModeG_Select1,
@@ -15719,9 +15693,10 @@ __declspec(align(16)) ImageObject_005624A0 g_ImageObject_005624A0 = {
             /* 27 */ (void *)InGameCommandRange_DispatchState1,
             /* 28 */ (void *)InGameCommandModeF_Select0,
             /* 29 */ (void *)InGameCommandModeF_Select1
-        }},
-    /* 005625B8 g_InGameUiActionHandlersPage12 */
-    {
+        }};
+
+/* 005625B8 g_InGameUiActionHandlersPage12 */
+__declspec(align(8)) InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12 = {
         .handlers = {
             /*  0 */ (void *)InGameQuitMenu_OpenAndRefreshButtons,
             /*  1 */ (void *)InGameSettingsPage_CloseViaSharedToggle,
@@ -15751,8 +15726,7 @@ __declspec(align(16)) ImageObject_005624A0 g_ImageObject_005624A0 = {
             /* 25 */ (void *)InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog,
             /* 26 */ (void *)InGameAudioSettings_SetMovieAlternateGain,
             /* 27 */ (void *)InGameGameplaySettings_SetHidePanel
-        }},
-};
+        }};
 
 /* 00562628 g_UiAction100AControlOffsets */
 __declspec(align(8)) int32_t g_UiAction100AControlOffsets[8] = {45584, 45712, 45840, 45968, 46096, 46224, 46352, 46480};
@@ -16097,23 +16071,49 @@ __declspec(align(4)) uint32_t g_MoviePlaybackCurrentFrame = 0;
 /* 00563330 g_DebugOverlayCounterRefreshCountdown: uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
 __declspec(align(16)) uint32_t g_DebugOverlayCounterRefreshCountdown = 20;
 
-__declspec(align(4)) ImageObject_00563334 g_ImageObject_00563334 = {
-    {0}, /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
-    {0}, /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
-    {0}, /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
-    {0}, /* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
-    {0}, /* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
-    {0}, /* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
-    {0}, /* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
-    {0}, /* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
-    {0}, /* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
-    {0}, /* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
-    {0}, /* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
-    {0}, /* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
-    {0}, /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
-    {0}, /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
-    {0},
-};
+/* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16] = {0};
+
+/* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16] = {0};
+
+/* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16] = {0};
+
+/* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16] = {0};
+
+/* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16] = {0};
+
+/* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16] = {0};
+
+/* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16] = {0};
+
+/* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16] = {0};
+
+/* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16] = {0};
+
+/* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {0};
+
+/* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
+
+/* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
+
+/* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {0};
+
+/* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16: 32 units, the last slot owns the unnamed 0x20 bytes up to
+   0x563514. It receives the locale-formatted elapsed time (hours, time separator, minutes, AM/PM designator),
+   which can run past 16 units. */
+__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
 
 /* 00563514 g_InGameReadyStateToggleFlags */
 __declspec(align(4)) uint32_t g_InGameReadyStateToggleFlags = 0;
@@ -16426,10 +16426,11 @@ __declspec(align(4)) FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex = 1;
 /* 0056D750 g_UiCommandModeGArmyAssetId */
 __declspec(align(16)) uint32_t g_UiCommandModeGArmyAssetId = 0;
 
-__declspec(align(4)) ImageObject_0056D754 g_ImageObject_0056D754 = {
-    0, /* 0056D754 g_UiCommandDragReferenceX */
-    0, /* 0056D758 g_UiCommandDragReferenceY */
-};
+/* 0056D754 g_UiCommandDragReferenceX */
+__declspec(align(4)) int32_t g_UiCommandDragReferenceX = 0;
+
+/* 0056D758 g_UiCommandDragReferenceY */
+__declspec(align(8)) int32_t g_UiCommandDragReferenceY = 0;
 
 /* 0056D75C g_UiCommandMode4ArmyAssetId */
 __declspec(align(4)) PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId = ARM_0500_LBAUM_MDL0500;
@@ -16719,11 +16720,11 @@ __declspec(align(16)) uint16_t u_Thandor_00572e10[8] = L"Thandor";
 /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
 __declspec(align(16)) char s_Software_Planet4_Thandor_00572e20[25] = "Software\\Planet4\\Thandor";
 
-__declspec(align(4)) ImageObject_00572E39 g_ImageObject_00572E39 = {
-    67, /* 00572E39 s_InstallRegistryValueNameCD */
-    {68}, /* 00572E3A u_Dscreen00_pcx_00572e3a */
-    L"screen00.pcx", /* 00572E3C g_ScreenshotFileNameUtf16 */
-};
+/* 00572E39 s_InstallRegistryValueNameCD */
+__declspec(align(4)) char g_InstallRegistryValueNameCD[3] = "CD";
+
+/* 00572E3C g_ScreenshotFileNameUtf16 */
+__declspec(align(4)) uint16_t g_ScreenshotFileNameUtf16[13] = L"screen00.pcx";
 
 /* 00572E56 u_daten_pck_00572e56 */
 __declspec(align(4)) uint16_t u_daten_pck_00572e56[10] = L"daten.pck";
@@ -18401,10 +18402,8 @@ __declspec(align(4)) pointer g_FileSystemInitComputerNameCapacityOrConfigCursor 
 /* 00575A98 g_FileSystemConfigRemainingBytes */
 __declspec(align(8)) uint32_t g_FileSystemConfigRemainingBytes = 0;
 
-__declspec(align(4)) ImageObject_00575A9C g_ImageObject_00575A9C = {
-    {0}, /* 00575A9C g_Win32PathScratchA */
-    {0}, /* 00575B9C g_Win32PathScratchB */
-};
+/* 00575A9C g_Win32PathScratch: two 0x100-byte narrow path buffers ([1] at 00575B9C, second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
+__declspec(align(4)) uint8_t g_Win32PathScratch[2][256] = {0};
 
 /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
 __declspec(align(4)) char g_Win32DriveRootPathScratchA[4] = "x:\\";
@@ -18473,10 +18472,11 @@ __declspec(align(8)) uint32_t g_MousePollBusy = 0;
 /* 00576BFC g_MouseDeviceEvent */
 __declspec(align(4)) DIDEVICEOBJECTDATA_DX3 g_MouseDeviceEvent = {0};
 
-__declspec(align(4)) ImageObject_00576C0C g_ImageObject_00576C0C = {
-    0, /* 00576C0C g_MouseX */
-    0, /* 00576C10 g_MouseY */
-};
+/* 00576C0C g_MouseX */
+__declspec(align(4)) UiPixelCoordinate g_MouseX = 0;
+
+/* 00576C10 g_MouseY */
+__declspec(align(16)) UiPixelCoordinate g_MouseY = 0;
 
 /* 00576C14 g_MouseWheelDelta */
 __declspec(align(4)) UiPointerWheelDelta g_MouseWheelDelta = 0;
@@ -18557,17 +18557,8 @@ __declspec(align(16)) ImageObject_00577C80 g_ImageObject_00577C80 = {
         0x90909090},
 };
 
-__declspec(align(16)) ImageObject_00577CF0 g_ImageObject_00577CF0 = {
-    0, /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
-    {0},
-    0, /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
-    {0},
-    0, /* 00577D14 g_GraphicsCursorSurfacePixels */
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x90909090},
-};
+/* 00577CF0 g_GraphicsCursorSurfaceDesc: scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
+__declspec(align(16)) DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc = {0};
 
 __declspec(align(16)) ImageObject_00577D60 g_ImageObject_00577D60 = {
     /* 00577D60 g_Direct3DViewportState */
@@ -18621,15 +18612,17 @@ __declspec(align(4)) int32_t g_CursorCurrentVisibilityToken = 0;
 /* 00577E38 g_CursorAlternateVisibilityToken */
 __declspec(align(8)) int32_t g_CursorAlternateVisibilityToken = 0;
 
-__declspec(align(4)) ImageObject_00577E3C g_ImageObject_00577E3C = {
-    0, /* 00577E3C g_CursorCurrentDrawX */
-    0, /* 00577E40 g_CursorCurrentDrawY */
-};
+/* 00577E3C g_CursorCurrentDrawX */
+__declspec(align(4)) int32_t g_CursorCurrentDrawX = 0;
 
-__declspec(align(4)) ImageObject_00577E44 g_ImageObject_00577E44 = {
-    0, /* 00577E44 g_CursorAlternateDrawX */
-    0, /* 00577E48 g_CursorAlternateDrawY */
-};
+/* 00577E40 g_CursorCurrentDrawY */
+__declspec(align(16)) int32_t g_CursorCurrentDrawY = 0;
+
+/* 00577E44 g_CursorAlternateDrawX */
+__declspec(align(4)) int32_t g_CursorAlternateDrawX = 0;
+
+/* 00577E48 g_CursorAlternateDrawY */
+__declspec(align(8)) int32_t g_CursorAlternateDrawY = 0;
 
 /* 00577E4C g_GraphicsBackendAccessState */
 __declspec(align(4)) int32_t g_GraphicsBackendAccessState = -0x1;
@@ -19100,7 +19093,7 @@ __declspec(align(16)) ImageObject_0058B400 g_ImageObject_0058B400 = {
     {0}, /* 0058B400 g_Arena_4 */
 };
 
-const ThandorImageBlock g_ThandorImageBlocks[1889] = {
+const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00401000, 0x00402000, (const uint8_t *)&g_ImageObject_00401000},
     {0x00402000, 0x00402018, (const uint8_t *)&g_MemoryApi},
     {0x00402018, 0x0040201C, (const uint8_t *)&g_TimerRegisterPeriodic},
@@ -19132,11 +19125,13 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00403080, 0x004030A0, (const uint8_t *)&g_ImageObject_00403080},
     {0x004030A0, 0x004030B0, (const uint8_t *)&g_ImageObject_004030A0},
     {0x00403158, 0x00403160, (const uint8_t *)&g_ImageObject_00403158},
-    {0x00403160, 0x00405160, (const uint8_t *)&g_ImageObject_00403160},
+    {0x00403160, 0x00405160, (const uint8_t *)&g_UiTransferEncryptSboxes},
     {0x00405160, 0x00407160, (const uint8_t *)&g_UiTransferDecryptSboxes},
     {0x00407510, 0x00407514, (const uint8_t *)&g_ImageObject_00407510},
     {0x00407514, 0x00407714, (const uint8_t *)&g_PackageLastErrorPath},
-    {0x00407714, 0x00407D14, (const uint8_t *)&g_ImageObject_00407714},
+    {0x00407714, 0x00407914, (const uint8_t *)&g_FatalErrorDetail1Utf16},
+    {0x00407914, 0x00407B14, (const uint8_t *)&g_FatalErrorDetail2Utf16},
+    {0x00407B14, 0x00407D14, (const uint8_t *)&g_FatalErrorDetail3Utf16},
     {0x00407D14, 0x00407D18, (const uint8_t *)&g_FatalErrorExitHandler},
     {0x00407D18, 0x00407D1C, (const uint8_t *)&g_FatalErrorReportHandler},
     {0x00407D1C, 0x00407D20, (const uint8_t *)&g_FatalErrorFallbackHandler},
@@ -19149,7 +19144,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00407E3C, 0x00407F50, (const uint8_t *)&g_ImageObject_00407E3C},
     {0x004080B4, 0x004080C0, (const uint8_t *)&g_ImageObject_004080B4},
     {0x004080C0, 0x004084C0, (const uint8_t *)&g_PckHuffmanSymbolWorkspace256},
-    {0x004084C0, 0x0040A4C0, (const uint8_t *)&g_ImageObject_004084C0},
+    {0x004084C0, 0x0040A4C0, (const uint8_t *)&g_PckHuffmanNodeWorkspace},
     {0x0040ABBC, 0x0040ABC0, (const uint8_t *)&g_ImageObject_0040ABBC},
     {0x0040ABC0, 0x0040ADC0, (const uint8_t *)&g_InitialWorkingDirectory},
     {0x0040ADC0, 0x0040AFC0, (const uint8_t *)&g_FileSystemCombinedPathScratchUtf16},
@@ -19208,11 +19203,13 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0041681C, 0x00416820, (const uint8_t *)&g_CursorFrameCount},
     {0x00416820, 0x00416824, (const uint8_t *)&g_CursorMaxWidth},
     {0x00416824, 0x00416828, (const uint8_t *)&g_CursorMaxHeight},
-    {0x00416828, 0x00416830, (const uint8_t *)&g_ImageObject_00416828},
+    {0x00416828, 0x0041682C, (const uint8_t *)&g_CursorOverrideX},
+    {0x0041682C, 0x00416830, (const uint8_t *)&g_CursorOverrideY},
     {0x00416830, 0x00416834, (const uint8_t *)&g_CursorWheelDelta},
     {0x00416834, 0x00416838, (const uint8_t *)&g_CursorVisibilityToken},
     {0x00416838, 0x0041683C, (const uint8_t *)&g_CursorButtonState},
-    {0x0041683C, 0x00416844, (const uint8_t *)&g_ImageObject_0041683C},
+    {0x0041683C, 0x00416840, (const uint8_t *)&g_CursorLastClickX},
+    {0x00416840, 0x00416844, (const uint8_t *)&g_CursorLastClickY},
     {0x00416844, 0x00416848, (const uint8_t *)&g_PointerFlushEvents},
     {0x00416848, 0x0041684C, (const uint8_t *)&g_GraphicsCursorSetFrame},
     {0x0041684C, 0x00416850, (const uint8_t *)&g_PointerSetPosition},
@@ -19253,7 +19250,14 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0041A540, 0x0041A544, (const uint8_t *)&g_NetworkBackendInstanceTable},
     {0x0041A544, 0x0041A548, (const uint8_t *)&g_NetworkBackendInstanceCount},
     {0x0041A548, 0x0041A54C, (const uint8_t *)&g_NetworkBackendSessionContext},
-    {0x0041A54C, 0x0041A56C, (const uint8_t *)&g_ImageObject_0041A54C},
+    {0x0041A54C, 0x0041A550, (const uint8_t *)&g_NetworkBackendSlot0},
+    {0x0041A550, 0x0041A554, (const uint8_t *)&g_NetworkBackendSlot1},
+    {0x0041A554, 0x0041A558, (const uint8_t *)&g_NetworkBackendSlot2},
+    {0x0041A558, 0x0041A55C, (const uint8_t *)&g_NetworkBackendSlot3},
+    {0x0041A55C, 0x0041A560, (const uint8_t *)&g_NetworkBackendSlot4},
+    {0x0041A560, 0x0041A564, (const uint8_t *)&g_NetworkBackendSlot5},
+    {0x0041A564, 0x0041A568, (const uint8_t *)&g_NetworkBackendSlot6},
+    {0x0041A568, 0x0041A56C, (const uint8_t *)&g_NetworkBackendSlot7},
     {0x0041A56C, 0x0041A580, (const uint8_t *)&g_ImageObject_0041A56C},
     {0x0041A740, 0x0041A750, (const uint8_t *)&g_ImageObject_0041A740},
     {0x0041A750, 0x0041A768, (const uint8_t *)&g_ImageObject_0041A750},
@@ -19271,7 +19275,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0041AFA8, 0x0041AFAC, (const uint8_t *)&g_ImageObject_0041AFA8},
     {0x0041AFAC, 0x0041B028, (const uint8_t *)&u_error__TXT2STR__unknown_characte_0041afac},
     {0x0041B028, 0x0041B030, (const uint8_t *)&g_FontTextureSources},
-    {0x0041B030, 0x0041B080, (const uint8_t *)&g_ImageObject_0041B030},
+    {0x0041B030, 0x0041B072, (const uint8_t *)&g_FontTexturePathsUtf16},
     {0x0041B128, 0x0041B130, (const uint8_t *)&g_ImageObject_0041B128},
     {0x0041B130, 0x0041B180, (const uint8_t *)&g_ImageObject_0041B130},
     {0x0041B180, 0x0041B190, (const uint8_t *)&g_ImageObject_0041B180},
@@ -19359,7 +19363,8 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00421720, 0x00421F20, (const uint8_t *)&g_SoftwareBlendAlphaFactors},
     {0x00421F20, 0x00422720, (const uint8_t *)&g_SoftwareBlendInverseAlphaFactors},
     {0x00422720, 0x00422768, (const uint8_t *)&g_ImageObject_00422720},
-    {0x00422768, 0x004227B0, (const uint8_t *)&g_ImageObject_00422768},
+    {0x00422768, 0x00422788, (const uint8_t *)&g_GraphicsAdapterFormatScratch0Utf16},
+    {0x00422788, 0x004227A8, (const uint8_t *)&g_GraphicsAdapterFormatScratch1Utf16},
     {0x00422978, 0x004229A0, (const uint8_t *)&g_ImageObject_00422978},
     {0x004229A0, 0x004229B4, (const uint8_t *)&g_UiDisplaySettingsRootCallbacks},
     {0x004229B4, 0x00423588, (const uint8_t *)&g_ImageObject_004229B4},
@@ -19368,8 +19373,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00424324, 0x00424338, (const uint8_t *)&g_UiFourValueDialogRootCallbacks},
     {0x00424338, 0x004244E0, (const uint8_t *)&g_ImageObject_00424338},
     {0x00424684, 0x004246A0, (const uint8_t *)&g_ImageObject_00424684},
-    {0x004246A0, 0x004346A0, (const uint8_t *)&g_ImageObject_004246A0},
-    {0x004346A0, 0x004846A0, (const uint8_t *)&g_ImageObject_004346A0},
+    {0x004246A0, 0x004846A0, (const uint8_t *)&g_FixedSineQ28},
     {0x00485808, 0x00485814, (const uint8_t *)&g_ImageObject_00485808},
     {0x00485814, 0x00485818, (const uint8_t *)&g_TextureDownsampleShift},
     {0x00485818, 0x0048581C, (const uint8_t *)&g_GraphicsSetViewportAndClearDepth},
@@ -19495,8 +19499,9 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x004AE988, 0x004AE98C, (const uint8_t *)&g_UiRuntimePostUnlockCallback},
     {0x004AE98C, 0x004AE990, (const uint8_t *)&g_UiRuntimeRecordRingLock},
     {0x004AE990, 0x004AE9A8, (const uint8_t *)&g_UiTransferMailbox},
-    {0x004AE9A8, 0x004AEAE8, (const uint8_t *)&g_ImageObject_004AE9A8},
-    {0x004AEAE8, 0x004AEB08, (const uint8_t *)&g_ImageObject_004AEAE8},
+    {0x004AE9A8, 0x004AE9E8, (const uint8_t *)&g_UiTransferRoundKeys},
+    {0x004AE9E8, 0x004AEAE8, (const uint8_t *)&g_UiTransferChunkPacket},
+    {0x004AEAE8, 0x004AEB08, (const uint8_t *)&g_UiTransferPingEchoPacket},
     {0x004AEB08, 0x004AEB10, (const uint8_t *)&g_ImageObject_004AEB08},
     {0x004AF198, 0x004AF1A0, (const uint8_t *)&g_ImageObject_004AF198},
     {0x004AF1D4, 0x004AF1E0, (const uint8_t *)&g_ImageObject_004AF1D4},
@@ -20126,7 +20131,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00545728, 0x0054572C, (const uint8_t *)&g_FrontendRomTransitionTargetRecordId},
     {0x0054572C, 0x00545730, (const uint8_t *)&g_FrontendStateTickSpinLock},
     {0x00545730, 0x00545734, (const uint8_t *)&g_FrontendTimerCountdownTicks},
-    {0x00545734, 0x00545774, (const uint8_t *)&g_ImageObject_00545734},
+    {0x00545734, 0x00545774, (const uint8_t *)&g_FrontendRomTransitionKeyframes},
     {0x00545774, 0x00545778, (const uint8_t *)&g_FrontendCentralRomAsset},
     {0x00545778, 0x0054577C, (const uint8_t *)&g_RomRegistrySlots},
     {0x0054577C, 0x00545780, (const uint8_t *)&g_FrontendWorldObjectRecords},
@@ -20153,7 +20158,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00545BA0, 0x00545BC0, (const uint8_t *)&u_texte_menue_str_00545ba0},
     {0x00545BC0, 0x00545BE0, (const uint8_t *)&u_texte_level_str_00545bc0},
     {0x00545BE0, 0x00545C02, (const uint8_t *)&u_texte_inhalt_str_00545be0},
-    {0x00545C02, 0x00545C22, (const uint8_t *)&g_ImageObject_00545C02},
+    {0x00545C02, 0x00545C22, (const uint8_t *)&g_FrontendMissionBriefingMoviePathUtf16},
     {0x00545C22, 0x00545C4E, (const uint8_t *)&g_CreditsTexturePathUtf16},
     {0x00545C4E, 0x00545C72, (const uint8_t *)&u_sound_music00_sam_00545c4e},
     {0x00545C72, 0x00545E72, (const uint8_t *)&g_ImageObject_00545C72},
@@ -20190,8 +20195,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0054DDA0, 0x0054DDA8, (const uint8_t *)&g_ImageObject_0054DDA0},
     {0x0054DDA8, 0x0054DDAC, (const uint8_t *)&g_FrontendExpectedPlayerRuntimeBlockCount},
     {0x0054DDAC, 0x0054DDB0, (const uint8_t *)&g_FrontendHostPublishRoundRobinCounter},
-    {0x0054DDB0, 0x0054DDB4, (const uint8_t *)&g_FrontendPlayerListRows},
-    {0x0054DDB4, 0x0054DDD0, (const uint8_t *)&g_ImageObject_0054DDB4},
+    {0x0054DDB0, 0x0054DDD0, (const uint8_t *)&g_FrontendPlayerListRows},
     {0x0054DDD0, 0x0054DDE0, (const uint8_t *)&g_FrontendNetworkEndpointScratch},
     {0x0054DDE0, 0x0054DDE8, (const uint8_t *)&g_ImageObject_0054DDE0},
     {0x0054DDE8, 0x0054DDF0, (const uint8_t *)&g_ImageObject_0054DDE8},
@@ -20238,7 +20242,9 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0055F960, 0x0055F980, (const uint8_t *)&g_ImageObject_0055F960},
     {0x00562498, 0x00562499, (const uint8_t *)&g_ImageObject_00562498},
     {0x00562499, 0x005624A0, (const uint8_t *)&g_ImageObject_00562499},
-    {0x005624A0, 0x00562628, (const uint8_t *)&g_ImageObject_005624A0},
+    {0x005624A0, 0x00562540, (const uint8_t *)&g_InGameUiActionHandlersPage10},
+    {0x00562540, 0x005625B8, (const uint8_t *)&g_InGameUiActionHandlersPage11},
+    {0x005625B8, 0x00562628, (const uint8_t *)&g_InGameUiActionHandlersPage12},
     {0x00562628, 0x00562648, (const uint8_t *)&g_UiAction100AControlOffsets},
     {0x00562648, 0x0056264C, (const uint8_t *)&g_UiCatalogGroup48ColumnCount},
     {0x0056264C, 0x00562650, (const uint8_t *)&g_UiCatalogGroup42ColumnCount},
@@ -20326,7 +20332,20 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00563328, 0x0056332C, (const uint8_t *)&g_MoviePlaybackScheduleSpan},
     {0x0056332C, 0x00563330, (const uint8_t *)&g_MoviePlaybackCurrentFrame},
     {0x00563330, 0x00563334, (const uint8_t *)&g_DebugOverlayCounterRefreshCountdown},
-    {0x00563334, 0x00563514, (const uint8_t *)&g_ImageObject_00563334},
+    {0x00563334, 0x00563354, (const uint8_t *)&g_FrontendDebugOverlayTextSlot00Utf16},
+    {0x00563354, 0x00563374, (const uint8_t *)&g_FrontendDebugOverlayTextSlot01Utf16},
+    {0x00563374, 0x00563394, (const uint8_t *)&g_FrontendDebugOverlayTextSlot02Utf16},
+    {0x00563394, 0x005633B4, (const uint8_t *)&g_FrontendDebugOverlayTextSlot03Utf16},
+    {0x005633B4, 0x005633D4, (const uint8_t *)&g_FrontendDebugOverlayTextSlot04Utf16},
+    {0x005633D4, 0x005633F4, (const uint8_t *)&g_FrontendDebugOverlayTextSlot05Utf16},
+    {0x005633F4, 0x00563414, (const uint8_t *)&g_FrontendDebugOverlayTextSlot06Utf16},
+    {0x00563414, 0x00563434, (const uint8_t *)&g_FrontendDebugOverlayTextSlot07Utf16},
+    {0x00563434, 0x00563454, (const uint8_t *)&g_FrontendDebugOverlayTextSlot08Utf16},
+    {0x00563454, 0x00563474, (const uint8_t *)&g_FrontendDebugOverlayTextSlot09Utf16},
+    {0x00563474, 0x00563494, (const uint8_t *)&g_FrontendDebugOverlayTextSlot10Utf16},
+    {0x00563494, 0x005634B4, (const uint8_t *)&g_FrontendDebugOverlayTextSlot11Utf16},
+    {0x005634B4, 0x005634D4, (const uint8_t *)&g_FrontendDebugOverlayTextSlot12Utf16},
+    {0x005634D4, 0x00563514, (const uint8_t *)&g_FrontendDebugOverlayTextSlot13Utf16},
     {0x00563514, 0x00563518, (const uint8_t *)&g_InGameReadyStateToggleFlags},
     {0x00563518, 0x005635D8, (const uint8_t *)&g_UiCatalogGroup48Records},
     {0x005635D8, 0x00563680, (const uint8_t *)&g_UiCatalogGroup42Records},
@@ -20387,7 +20406,8 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0056D748, 0x0056D74C, (const uint8_t *)&g_UiCommandTerrainMaskToggleValue},
     {0x0056D74C, 0x0056D750, (const uint8_t *)&g_UiCommandModeGOwnerFactionIndex},
     {0x0056D750, 0x0056D754, (const uint8_t *)&g_UiCommandModeGArmyAssetId},
-    {0x0056D754, 0x0056D75C, (const uint8_t *)&g_ImageObject_0056D754},
+    {0x0056D754, 0x0056D758, (const uint8_t *)&g_UiCommandDragReferenceX},
+    {0x0056D758, 0x0056D75C, (const uint8_t *)&g_UiCommandDragReferenceY},
     {0x0056D75C, 0x0056D760, (const uint8_t *)&g_UiCommandMode4ArmyAssetId},
     {0x0056D760, 0x0056D764, (const uint8_t *)&g_UiCommandCallerMaskHighBit},
     {0x0056D764, 0x0056D77C, (const uint8_t *)&g_UiCommandModeGPrimaryPageIndices},
@@ -20448,7 +20468,8 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00572C10, 0x00572E10, (const uint8_t *)&g_InstallDirectoryScratchUtf16},
     {0x00572E10, 0x00572E20, (const uint8_t *)&u_Thandor_00572e10},
     {0x00572E20, 0x00572E39, (const uint8_t *)&s_Software_Planet4_Thandor_00572e20},
-    {0x00572E39, 0x00572E56, (const uint8_t *)&g_ImageObject_00572E39},
+    {0x00572E39, 0x00572E3C, (const uint8_t *)&g_InstallRegistryValueNameCD},
+    {0x00572E3C, 0x00572E56, (const uint8_t *)&g_ScreenshotFileNameUtf16},
     {0x00572E56, 0x00572E6A, (const uint8_t *)&u_daten_pck_00572e56},
     {0x00572E6A, 0x00572E82, (const uint8_t *)&u_modelle_pck_00572e6a},
     {0x00572E82, 0x00572E9A, (const uint8_t *)&u_graphik_pck_00572e82},
@@ -20835,7 +20856,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00575982, 0x00575A94, (const uint8_t *)&g_ImageObject_00575982},
     {0x00575A94, 0x00575A98, (const uint8_t *)&g_FileSystemInitComputerNameCapacityOrConfigCursor},
     {0x00575A98, 0x00575A9C, (const uint8_t *)&g_FileSystemConfigRemainingBytes},
-    {0x00575A9C, 0x00575C9C, (const uint8_t *)&g_ImageObject_00575A9C},
+    {0x00575A9C, 0x00575C9C, (const uint8_t *)&g_Win32PathScratch},
     {0x00575C9C, 0x00575CA0, (const uint8_t *)&g_Win32DriveRootPathScratchA},
     {0x00575CA0, 0x00575CB0, (const uint8_t *)&g_ImageObject_00575CA0},
     {0x00576720, 0x00576784, (const uint8_t *)&g_ImageObject_00576720},
@@ -20852,7 +20873,8 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00576BF4, 0x00576BF8, (const uint8_t *)&g_MouseDeviceDataCount},
     {0x00576BF8, 0x00576BFC, (const uint8_t *)&g_MousePollBusy},
     {0x00576BFC, 0x00576C0C, (const uint8_t *)&g_MouseDeviceEvent},
-    {0x00576C0C, 0x00576C14, (const uint8_t *)&g_ImageObject_00576C0C},
+    {0x00576C0C, 0x00576C10, (const uint8_t *)&g_MouseX},
+    {0x00576C10, 0x00576C14, (const uint8_t *)&g_MouseY},
     {0x00576C14, 0x00576C18, (const uint8_t *)&g_MouseWheelDelta},
     {0x00576C18, 0x00576C1C, (const uint8_t *)&g_MouseButtonMask},
     {0x00576C1C, 0x00576C20, (const uint8_t *)&g_MouseEventsProcessed},
@@ -20876,7 +20898,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00577C68, 0x00577C70, (const uint8_t *)&g_ImageObject_00577C68},
     {0x00577C70, 0x00577C80, (const uint8_t *)&g_CurrentClearRect},
     {0x00577C80, 0x00577CF0, (const uint8_t *)&g_ImageObject_00577C80},
-    {0x00577CF0, 0x00577D60, (const uint8_t *)&g_ImageObject_00577CF0},
+    {0x00577CF0, 0x00577D5C, (const uint8_t *)&g_GraphicsCursorSurfaceDesc},
     {0x00577D60, 0x00577D90, (const uint8_t *)&g_ImageObject_00577D60},
     {0x00577D90, 0x00577DB0, (const uint8_t *)&g_Direct3DOpaqueTextureFormat},
     {0x00577DB0, 0x00577DD0, (const uint8_t *)&g_Direct3DAlphaTextureFormat},
@@ -20890,8 +20912,10 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x00577E30, 0x00577E34, (const uint8_t *)&g_GraphicsDisplayModeFinalize},
     {0x00577E34, 0x00577E38, (const uint8_t *)&g_CursorCurrentVisibilityToken},
     {0x00577E38, 0x00577E3C, (const uint8_t *)&g_CursorAlternateVisibilityToken},
-    {0x00577E3C, 0x00577E44, (const uint8_t *)&g_ImageObject_00577E3C},
-    {0x00577E44, 0x00577E4C, (const uint8_t *)&g_ImageObject_00577E44},
+    {0x00577E3C, 0x00577E40, (const uint8_t *)&g_CursorCurrentDrawX},
+    {0x00577E40, 0x00577E44, (const uint8_t *)&g_CursorCurrentDrawY},
+    {0x00577E44, 0x00577E48, (const uint8_t *)&g_CursorAlternateDrawX},
+    {0x00577E48, 0x00577E4C, (const uint8_t *)&g_CursorAlternateDrawY},
     {0x00577E4C, 0x00577E50, (const uint8_t *)&g_GraphicsBackendAccessState},
     {0x00577E50, 0x00577EA0, (const uint8_t *)&g_PrimitiveRenderStatePresets},
     {0x00577EA0, 0x00577FC0, (const uint8_t *)&g_ImageObject_00577EA0},
@@ -20992,7 +21016,7 @@ const ThandorImageBlock g_ThandorImageBlocks[1889] = {
     {0x0058B400, 0x0058C000, (const uint8_t *)&g_ImageObject_0058B400},
 };
 
-const ThandorImagePointer g_ThandorImagePointers[2393] = {
+const ThandorImagePointer g_ThandorImagePointers[] = {
     {0x00402628, 0x00402D50},
     {0x00402784, 0x00407470},
     {0x00402788, 0x004074A0},
@@ -23387,3 +23411,6 @@ const ThandorImagePointer g_ThandorImagePointers[2393] = {
     {0x00585714, 0x00587400},
     {0x00585718, 0x0058B400},
 };
+
+const unsigned g_ThandorImageBlockCount = sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0];
+const unsigned g_ThandorImagePointerCount = sizeof g_ThandorImagePointers / sizeof g_ThandorImagePointers[0];

@@ -34,7 +34,9 @@ pixels/). A failed determinism, saveload, multiplayer or maps check is run once 
 (start-ups can stall under the full load; determinism has a rare timing-dependent one-tick shift); the table then
 shows the retry result and the first one. Exit status 1 when any check failed. Only game processes started from the
 copies of this run are stopped at the end. Progress: each finished check prints "[k/N done, m:ss]", and a status
-line with the checks still running follows every minute.
+line with the checks still running follows every minute. Load: the checks start one by one, longest first, each
+only while the machine's CPU load is below 80 % (tools/test/cpu_load.py); the maps check starts with few workers
+and takes over the places of finished checks under the same CPU limit.
 
 The input scripts (tools/test/*.txt, format: src/platform/debug/script.c; lines that do not start with a number are
 comments) use layout 1280x720 in an 800-high window: script y = screen y - 40.
@@ -48,6 +50,8 @@ import sys
 import threading
 import time
 
+import cpu_load
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
@@ -58,7 +62,11 @@ CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplaye
 # effect around tick 68 (the simulation seems to read state the renderer updates between steps; see
 # ot-scratch/findings.md) - a real regression shows up again in the retry and in aihash. Saveload: a system-wide
 # stall of several seconds (seen in several instances at once) leaves a hang.log, which the check counts.
-RETRY_ALONE = ('determinism', 'saveload', 'multiplayer', 'maps')
+RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
+GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
+# start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
+START_ORDER = ['imagecmp', 'maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
+               'textedit']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
              'imagecmp': 0, 'campaign': 5}
 
@@ -317,12 +325,17 @@ def check_imagecmp():
     return ('PASS' if ok else 'FAIL'), last.replace('imagecmp: ', '')
 
 
+def map_jobs_file():
+    return os.path.join(out_dir, 'maps_jobs.txt')
+
+
 def check_maps():
     folder = make_copy('maps', args.new)
     shutil.rmtree(os.path.join(folder, 'soak'), ignore_errors=True)
     code, text = run_tool(os.path.join(out_dir, 'maps.txt'),
                           [os.path.join(HERE, 'run_all_maps.py'), folder, '--only', '*[!0-9]',
-                           '--jobs', str(args.map_jobs), '--minutes', str(args.map_minutes)],
+                           '--jobs', str(args.map_jobs), '--max-jobs', str(args.map_max_jobs),
+                           '--jobs-file', map_jobs_file(), '--minutes', str(args.map_minutes)],
                           3600)
     rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
     bad, ended = [], []
@@ -388,7 +401,8 @@ def main():
     parser.add_argument('--release', default=os.path.join(REPO, 'build-rel', 'thandor.exe'),
                         help='release build for imagecmp (default: build-rel/thandor.exe)')
     parser.add_argument('--map-jobs', type=int, help='parallel missions (default: 16 minus the other instances, '
-                                                       'at least 4)')
+                                                       'at least 4, growing to 16 as the other checks finish; a '
+                                                       'given number stays fixed)')
     parser.add_argument('--map-minutes', type=float, default=2)
     parser.add_argument('--skip', default='', help='comma-separated: ' + ','.join(CHECKS))
     args = parser.parse_args()
@@ -405,18 +419,33 @@ def main():
     if not args.old:
         skip.add('pixels')
     selected = [c for c in CHECKS if c not in skip]
-    if args.map_jobs is None:
-        others = sum(INSTANCES[c] for c in selected if c in INSTANCES)
-        if 'aihash' in selected and not args.old:
+    results = {}
+
+    def other_instances():
+        # game instances of the checks besides maps that have not finished yet
+        others = sum(INSTANCES[c] for c in selected if c in INSTANCES and c not in results)
+        if 'aihash' in selected and 'aihash' not in results and not args.old:
             others -= 1
-        args.map_jobs = max(4, 16 - others)
+        return others
+
+    fixed_map_jobs = args.map_jobs is not None
+    if not fixed_map_jobs:
+        args.map_jobs = max(4, GAME_BUDGET - other_instances())
     args.map_jobs = min(args.map_jobs, 20)  # ports 940..959; 960+ are the determinism instances
+    args.map_max_jobs = args.map_jobs if fixed_map_jobs else min(GAME_BUDGET, 20)
     out_dir = os.path.join(game, 'checks')
     os.makedirs(out_dir, exist_ok=True)
-    print('checks: %s (maps: %d jobs, %g min); output in %s' % (', '.join(selected), args.map_jobs,
-                                                                args.map_minutes, out_dir), flush=True)
 
-    results = {}
+    def update_map_jobs():
+        # the maps check takes over the places of finished checks (run_all_maps.py reads the file)
+        allowed = args.map_jobs if fixed_map_jobs else max(args.map_jobs, GAME_BUDGET - other_instances())
+        with open(map_jobs_file(), 'w') as f:
+            f.write('%d\n' % min(allowed, args.map_max_jobs))
+
+    update_map_jobs()
+    print('checks: %s (maps: %d jobs, up to %d; %g min); output in %s' % (
+        ', '.join(selected), args.map_jobs, args.map_max_jobs, args.map_minutes, out_dir), flush=True)
+
     running = set()
     lock = threading.Lock()
     begin = time.time()
@@ -437,26 +466,42 @@ def main():
             results[name] = (status, details, time.time() - start)
             running.discard(name)
             done = sum(1 for n in selected if n in results)
+            update_map_jobs()
         print('  [%d/%d done, %s] %-12s %-4s %4.0fs  %s' % (done, len(selected), elapsed(), name, status,
                                                             results[name][2], details), flush=True)
+
+    def check_progress(name):
+        # " k/N" from the last "[k/N] ..." line a multi-mission tool (maps, campaign) wrote to its check log so far
+        try:
+            with open(os.path.join(out_dir, name + '.txt'), errors='replace') as f:
+                rows = [l for l in f if l.startswith('[') and '/' in l.split(']', 1)[0]]
+        except OSError:
+            return ''
+        return ' ' + rows[-1][1:].split(']', 1)[0] if rows else ''
 
     def heartbeat(stop):
         # a status line every minute, so a long run shows how far it is
         while not stop.wait(60):
             with lock:
                 done = sum(1 for n in selected if n in results)
-                still = ', '.join(sorted(running))
+                still = ', '.join(n + check_progress(n) for n in sorted(running))
             print('  [%d/%d done, %s] running: %s' % (done, len(selected), elapsed(), still), flush=True)
 
     threads = []
     stop_heartbeat = threading.Event()
     threading.Thread(target=heartbeat, args=(stop_heartbeat,), daemon=True).start()
     try:
-        for name in selected:
+        # longest checks first; each check that starts game instances waits until the CPU load is below
+        # cpu_load.CPU_LIMIT and the previous start has settled, so the machine is not overloaded
+        for name in sorted(selected, key=lambda n: START_ORDER.index(n)):
+            if INSTANCES.get(name, 0):
+                waited = cpu_load.wait_to_start()
+                if waited > 5:
+                    print('  [%s] %s starts after %.0f s waiting for CPU headroom' % (elapsed(), name, waited),
+                          flush=True)
             thread = threading.Thread(target=runner, args=(name,))
             thread.start()
             threads.append(thread)
-            time.sleep(3)  # stagger the starts a little
         for thread in threads:
             thread.join()
     finally:

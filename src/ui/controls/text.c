@@ -1047,20 +1047,20 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
-                 (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_GraphicsAdapterFormatScratch0Utf16,stream);
+                 g_GraphicsAdapterFormatScratch0Utf16);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_GraphicsAdapterFormatScratch0Utf16,stream);
       UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,control);
       return;
     }
     if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME) == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
-                 (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
+                 g_GraphicsAdapterFormatScratch0Utf16);
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].textResourceId,
-                 (uint16_t *)&g_GraphicsAdapterFormatScratch1Utf16);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_GraphicsAdapterFormatScratch0Utf16,stream);
-      RichTextCommandStream_PatchPayloadBySelector(1,&g_GraphicsAdapterFormatScratch1Utf16,stream);
+                 g_GraphicsAdapterFormatScratch1Utf16);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_GraphicsAdapterFormatScratch0Utf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(1,g_GraphicsAdapterFormatScratch1Utf16,stream);
       UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,control);
       return;
     }

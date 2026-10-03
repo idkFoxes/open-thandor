@@ -26,8 +26,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     (void)commandLine;
     (void)showCommand;
     Thandor_InstallCrashHandler();
-    Thandor_Log("open-thandor: generated image data, %u objects",
-                (unsigned)(sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0]));
+    Thandor_Log("open-thandor: generated image data, %u objects", g_ThandorImageBlockCount);
     /* tables the original executable carried precomputed */
     FixedMath_BuildSinCosTables();
     Movie_BuildChromaLumaTable();

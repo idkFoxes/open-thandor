@@ -424,15 +424,15 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     if (capturedFramebuffer != NULL) {
       FileSystem_WriteBufferToPath
                 ((capturedFramebuffer->common).allocationSizeBytes,capturedFramebuffer,
-                 (uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
-      screenshotOnesDigit = u_Dscreen00_pcx_00572e3a[8];
-      screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
-      u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
-      if (L'9' < (uint16_t)u_Dscreen00_pcx_00572e3a[8]) {
-        u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
-        u_Dscreen00_pcx_00572e3a[8] = screenshotOnesDigit - 9; /* '9' + 1 - 10: back to '0' */
-        if (L'9' < (uint16_t)u_Dscreen00_pcx_00572e3a[7]) {
-          u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit - 9;
+                 g_ScreenshotFileNameUtf16);
+      screenshotOnesDigit = g_ScreenshotFileNameUtf16[7];
+      screenshotTensDigit = g_ScreenshotFileNameUtf16[6];
+      g_ScreenshotFileNameUtf16[7] = g_ScreenshotFileNameUtf16[7] + 1;
+      if (L'9' < (uint16_t)g_ScreenshotFileNameUtf16[7]) {
+        g_ScreenshotFileNameUtf16[6] = g_ScreenshotFileNameUtf16[6] + 1;
+        g_ScreenshotFileNameUtf16[7] = screenshotOnesDigit - 9; /* '9' + 1 - 10: back to '0' */
+        if (L'9' < (uint16_t)g_ScreenshotFileNameUtf16[6]) {
+          g_ScreenshotFileNameUtf16[6] = screenshotTensDigit - 9;
         }
       }
     }

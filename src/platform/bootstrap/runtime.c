@@ -646,7 +646,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     return;
   }
   status = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
-             (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
+             (g_InstallRegistryKeyHandle,g_InstallRegistryValueNameCD,0,
               &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
               &g_InstallRegistryValueDataCapacityBytes);
   if ((status == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
@@ -763,7 +763,7 @@ static bool CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet 
 }
 
 
-/* u_Dscreen00_pcx_00572e3a + 1 is "screen00.pcx" ([7] tens digit, [8] ones digit): counts up to the first
+/* g_ScreenshotFileNameUtf16 is "screen00.pcx" ([6] tens digit, [7] ones digit): counts up to the first
    screenshot file that does not exist yet. */
 static void CoreAssets_AdvanceScreenshotName(void)
 
@@ -773,18 +773,18 @@ static void CoreAssets_AdvanceScreenshotName(void)
 
   do {
     do {
-      if (g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1),&screenshotFile) != 0) {
+      if (g_FileSystemOpen(0,g_ScreenshotFileNameUtf16,&screenshotFile) != 0) {
         return;
       }
-      u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
+      g_ScreenshotFileNameUtf16[7] = g_ScreenshotFileNameUtf16[7] + 1;
       g_FileSystemClose(screenshotFile);
-      screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
-    } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < '9' + 1);
-    u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
-    u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] - 10;
-  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < '9' + 1);
+      screenshotTensDigit = g_ScreenshotFileNameUtf16[6];
+    } while ((uint16_t)g_ScreenshotFileNameUtf16[7] < '9' + 1);
+    g_ScreenshotFileNameUtf16[6] = g_ScreenshotFileNameUtf16[6] + 1;
+    g_ScreenshotFileNameUtf16[7] = g_ScreenshotFileNameUtf16[7] - 10;
+  } while ((uint16_t)g_ScreenshotFileNameUtf16[6] < '9' + 1);
   /* all 100 names exist: the tens digit goes back to '0' (the last seen '9' - 9) */
-  u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit - 9;
+  g_ScreenshotFileNameUtf16[6] = screenshotTensDigit - 9;
 }
 
 
@@ -915,14 +915,14 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
     return allocError;
   }
   playerListBase = (uint32_t)allocPayload;
-  g_FrontendPlayerListRow1 = playerListBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow2 = playerListBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow3 = playerListBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow4 = playerListBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow5 = playerListBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow6 = playerListBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRow7 = playerListBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-  g_FrontendPlayerListRows = playerListBase;
+  g_FrontendPlayerListRows[1] = playerListBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[2] = playerListBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[3] = playerListBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[4] = playerListBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[5] = playerListBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[6] = playerListBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[7] = playerListBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows[0] = playerListBase;
   allocError = g_MemoryApi.alloc
                    (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
                     (void **)&g_RomRegistrySlots);

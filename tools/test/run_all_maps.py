@@ -5,7 +5,8 @@ aids OPEN_THANDOR_CAMPAIGN / OPEN_THANDOR_CAMPAIGN_LEVEL (start a campaign at a 
 OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE and OPEN_THANDOR_NET_PORT, plus the input script
 (OPEN_THANDOR_SCRIPT).
 
-usage: run_all_maps.py GAME_DIR [--jobs 10] [--minutes 1] [--only PATTERN] [--shots MS]
+usage: run_all_maps.py GAME_DIR [--jobs 10] [--max-jobs N --jobs-file PATH] [--minutes 1] [--only PATTERN]
+                       [--shots MS]
 
 Order: the tutorial campaign, the other campaigns level by level, then the single games. For each mission:
 start it, drag the computer-opponent slider to "stark", click "Beginnen" until the level runs, press G until the
@@ -13,7 +14,9 @@ game speed is at its maximum, let it run --minutes, quit. A mission fails when i
 LOAD_TIMEOUT seconds, the level ends before --minutes are over (ENDED: lost or won at once; the in-game frames
 stop), the process ends early, or crash.log / hang.log is written.
 
-Each of the --jobs workers runs in its own game folder GAME_DIR_w<k> (hard links to GAME_DIR's files, own
+--jobs workers always run; up to --max-jobs more join as the number in --jobs-file allows, each only while the
+machine's CPU load is below cpu_load.CPU_LIMIT (80 %), one at a time, and a busy machine makes them pause again before
+their next mission. Each worker runs in its own game folder GAME_DIR_w<k> (hard links to GAME_DIR's files, own
 thandor.exe copy, log, save folder and screenshots), windowed at its own screen position. Screenshots and log of
 every run go to GAME_DIR/soak/<nn>_<name>/, the results to GAME_DIR/soak/results.txt (appended as missions
 finish, so progress can be followed); every run folder gets sheet.png, the screenshot chain of that run.
@@ -26,6 +29,8 @@ import shutil
 import subprocess
 import threading
 import time
+
+import cpu_load
 
 # hansolo level 1 (hansolo\s00_tut) is listed in the campaign but its level file is not in the game data;
 # the campaign itself starts at level 2.
@@ -57,6 +62,9 @@ SCRIPT = """0 layout 1280 800
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('game_dir')
 parser.add_argument('--jobs', type=int, default=10)
+parser.add_argument('--max-jobs', type=int, help='workers that may join later (default: --jobs)')
+parser.add_argument('--jobs-file', help='file holding the number of workers allowed right now (read before every '
+                                        'mission; run_checks.py raises it as its other checks finish)')
 parser.add_argument('--minutes', type=float, default=1)
 parser.add_argument('--only', help='fnmatch pattern on the mission label, e.g. "hansolo*"')
 parser.add_argument('--shots', default='5000')
@@ -189,19 +197,35 @@ def run_mission(k, folder, number, label, campaign, level):
             f.write(time.strftime('%H:%M:%S ') + line + '\n')
 
 
+def allowed_jobs():
+    """Workers allowed right now: the number in --jobs-file, else --jobs."""
+    try:
+        with open(args.jobs_file) as f:
+            return max(args.jobs, min(int(f.read().strip()), max_jobs))
+    except (TypeError, OSError, ValueError):
+        return args.jobs
+
+
 def worker(k):
-    folder = make_worker_dir(k)
-    while True:
+    folder = None
+    while not work.empty():
+        if k >= allowed_jobs() or (k >= args.jobs and not cpu_load.try_start()):
+            time.sleep(5)  # a later worker waits for free places and CPU headroom
+            continue
         try:
             number, (label, campaign, level) = work.get_nowait()
         except queue.Empty:
             return
+        if folder is None:
+            folder = make_worker_dir(k)
         run_mission(k, folder, number, label, campaign, level)
 
 
-threads = [threading.Thread(target=worker, args=(k,)) for k in range(args.jobs)]
-for thread in threads:
+max_jobs = max(args.jobs, args.max_jobs or args.jobs)
+threads = [threading.Thread(target=worker, args=(k,)) for k in range(max_jobs)]
+for k, thread in enumerate(threads):
     thread.start()
-    time.sleep(3)  # stagger the starts a little
+    if k < args.jobs:
+        time.sleep(3)  # stagger the starts a little
 for thread in threads:
     thread.join()

@@ -2789,8 +2789,9 @@ void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldG
       if (cellDistance <= spanRadiusQ12 + 1) {
         heightDifference = (sourceHeight + heightDeltaUnits * -FIELD_GRID_EDIT_DRAG_UNIT_Q12) - *accumulatorCursor;
         falloffProduct = (int64_t)
-                (g_FixedCosQ28
-                 [(int)((int64_t)
+                (g_FixedSineQ28
+                 [FIXED_SINE_TABLE_COS +
+                  (int)((int64_t)
                         ((((int64_t)(int)cellDistance & FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK) >> 17) << 32 |
                         (int64_t)(int)cellDistance * FIXED_ANGLE16_HALF_TURN & 0xffffffffU) / (int64_t)(int)(spanRadiusQ12 + 1))
                  ] + Q28_ONE) * (int64_t)heightDifference;
@@ -2894,8 +2895,9 @@ void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,Fi
       cellDistance = FixedMath_Length2(spanCell->worldY - centerY,spanCell->worldX - centerX);
       if (cellDistance <= spanRadiusQ12 + 1) {
         falloffProduct = (int64_t)
-                (g_FixedCosQ28
-                 [(int)((int64_t)
+                (g_FixedSineQ28
+                 [FIXED_SINE_TABLE_COS +
+                  (int)((int64_t)
                         ((((int64_t)(int)cellDistance & FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK) >> 17) << 32 |
                         (int64_t)(int)cellDistance * FIXED_ANGLE16_HALF_TURN & 0xffffffffU) / (int64_t)(int)(spanRadiusQ12 + 1))
                  ] + Q28_ONE) * (int64_t)targetOffset;

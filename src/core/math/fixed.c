@@ -349,7 +349,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
     entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
     do {
       do {
-        *outputCursor = (short)((uint32_t)g_FixedCosQ28[angleIndex16] >> 16); /* Q28 -> Q12 */
+        *outputCursor = (short)((uint32_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + angleIndex16] >> 16); /* Q28 -> Q12 */
         outputCursor++;
         angleIndex16 = (angleIndex16 + angleStep16 * 2) & FIXED_ANGLE16_MASK;
         entriesRemaining--;
@@ -369,7 +369,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
           *outputCursor = COSINE_DERIVED_INV_SQRT2_Q14; /* entry 0 */
         }
         else {
-          *outputCursor = (short)(g_FixedCosQ28[secondAngleIndex16] >> 14); /* Q28 -> Q14 */
+          *outputCursor = (short)(g_FixedSineQ28[FIXED_SINE_TABLE_COS + secondAngleIndex16] >> 14); /* Q28 -> Q14 */
         }
         outputCursor++;
         secondAngleIndex16 = (secondAngleIndex16 + secondAngleStep16) & FIXED_ANGLE16_MASK;
@@ -400,12 +400,13 @@ void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevation
   int azimuthMinusElevationSinQ28;
 
   elevationAngle16 = elevationAngle & FIXED_ANGLE16_MASK;
-  elevationSinQ28 = g_FixedSinQ28[elevationAngle16];
+  elevationSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + elevationAngle16];
   azimuthPlusElevationAngle16 = (elevationAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
   azimuthMinusElevationAngle16 = (azimuthAngle - elevationAngle16) & FIXED_ANGLE16_MASK;
-  azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
-  output->x = (g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) >> 1;
+  azimuthPlusElevationSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthPlusElevationAngle16];
+  azimuthMinusElevationSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthMinusElevationAngle16];
+  output->x = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthPlusElevationAngle16] +
+               g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthMinusElevationAngle16]) >> 1;
   output->y = (azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) >> 1;
   output->z = elevationSinQ28;
 }
@@ -422,8 +423,10 @@ FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
   FixedSinCos result;
 
   /* bits 28..59 of the 64-bit products, i.e. the Q28 factor is divided out */
-  result.cosValue = (int32_t)((int64_t)g_FixedCosQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
-  result.sinValue = (int32_t)((int64_t)g_FixedSinQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
+  result.cosValue =
+       (int32_t)((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + (angle & FIXED_ANGLE16_MASK)] * (int64_t)scale >> 28);
+  result.sinValue =
+       (int32_t)((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + (angle & FIXED_ANGLE16_MASK)] * (int64_t)scale >> 28);
   return result;
 }
 
@@ -437,8 +440,8 @@ FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle)
 {
   FixedSinCos result;
 
-  result.cosValue = g_FixedCosQ28[angle & FIXED_ANGLE16_MASK];
-  result.sinValue = g_FixedSinQ28[angle & FIXED_ANGLE16_MASK];
+  result.cosValue = g_FixedSineQ28[FIXED_SINE_TABLE_COS + (angle & FIXED_ANGLE16_MASK)];
+  result.sinValue = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + (angle & FIXED_ANGLE16_MASK)];
   return result;
 }
 
@@ -683,8 +686,10 @@ FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle1
   FixedPlanarPointQ12 point;
 
   /* bits 28..59 of the 64-bit products */
-  point.xQ12 = (Q12)(baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28));
-  point.yQ12 = (Q12)((uint32_t)((int64_t)g_FixedSinQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28) + baseY);
+  point.xQ12 = (Q12)(baseX + (uint32_t)((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + (angle16 & FIXED_ANGLE16_MASK)] *
+                                        (int64_t)distance >> 28));
+  point.yQ12 = (Q12)((uint32_t)((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + (angle16 & FIXED_ANGLE16_MASK)] *
+                                (int64_t)distance >> 28) + baseY);
   return point;
 }
 
@@ -833,12 +838,15 @@ FixedDirection FixedMath_DirectionFromAnglesScaled(AngleTurn32 elevationAngle,An
   azimuthPlusElevationAngle16 = (elevationAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
   azimuthMinusElevationAngle16 = (azimuthAngle - elevationAngle16) & FIXED_ANGLE16_MASK;
   scaledXProduct =
-       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) *
+       (int64_t)(g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthPlusElevationAngle16] +
+                 g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthMinusElevationAngle16]) *
        (int64_t)scale;
   scaledYProduct =
-       (int64_t)(g_FixedSinQ28[azimuthPlusElevationAngle16] + g_FixedSinQ28[azimuthMinusElevationAngle16]) *
+       (int64_t)(g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthPlusElevationAngle16] +
+                 g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthMinusElevationAngle16]) *
        (int64_t)scale;
-  scaledDirection.z = FIXED_PRODUCT_SHR((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale,28);
+  scaledDirection.z =
+       FIXED_PRODUCT_SHR((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + elevationAngle16] * (int64_t)scale,28);
   scaledDirection.y = FIXED_PRODUCT_SHR(scaledYProduct,29);
   scaledDirection.x = FIXED_PRODUCT_SHR(scaledXProduct,29);
   return scaledDirection;
@@ -861,9 +869,11 @@ FixedDirection FixedMath_DirectionFromAnglesQ28(AngleTurn32 elevationAngle,Angle
   elevationAngle16 = elevationAngle & FIXED_ANGLE16_MASK;
   azimuthPlusElevationAngle16 = (elevationAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
   azimuthMinusElevationAngle16 = (azimuthAngle - elevationAngle16) & FIXED_ANGLE16_MASK;
-  directionQ28.x = (g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) >> 1;
-  directionQ28.y = (g_FixedSinQ28[azimuthPlusElevationAngle16] + g_FixedSinQ28[azimuthMinusElevationAngle16]) >> 1;
-  directionQ28.z = g_FixedSinQ28[elevationAngle16];
+  directionQ28.x = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthPlusElevationAngle16] +
+                    g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthMinusElevationAngle16]) >> 1;
+  directionQ28.y = (g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthPlusElevationAngle16] +
+                    g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthMinusElevationAngle16]) >> 1;
+  directionQ28.z = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + elevationAngle16];
   return directionQ28;
 }
 
@@ -887,13 +897,14 @@ void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevat
   int64_t horizontalComponentScaleProduct;
 
   elevationAngle16 = elevationAngle & FIXED_ANGLE16_MASK;
-  verticalSinQ28 = g_FixedSinQ28[elevationAngle16];
+  verticalSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + elevationAngle16];
   azimuthPlusElevationAngle16 = (elevationAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
   azimuthMinusElevationAngle16 = (azimuthAngle - elevationAngle16) & FIXED_ANGLE16_MASK;
-  azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
+  azimuthPlusElevationSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthPlusElevationAngle16];
+  azimuthMinusElevationSinQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + azimuthMinusElevationAngle16];
   horizontalComponentScaleProduct =
-       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) *
+       (int64_t)(g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthPlusElevationAngle16] +
+                 g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuthMinusElevationAngle16]) *
        (int64_t)scale;
   output->x = FIXED_PRODUCT_SHR(horizontalComponentScaleProduct,29);
   yComponentScaleProduct = (int64_t)(azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) * (int64_t)scale;
@@ -1070,20 +1081,24 @@ void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn3
   rollMinusTwoAzimuth16 = (rollAngleUnmasked + azimuthAngle * -2) & FIXED_ANGLE16_MASK;
   /* half sums/differences of cos/sin(roll) and cos/sin(roll - 2 * azimuth), i.e. products of the
      roll and azimuth sines and cosines */
-  firstHalfTrigTermQ28 = (g_FixedCosQ28[rollAngle16] - g_FixedCosQ28[rollMinusTwoAzimuth16]) >> 1;
-  sinElevationQ28 = g_FixedSinQ28[elevationAngle & FIXED_ANGLE16_MASK];
+  firstHalfTrigTermQ28 = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + rollAngle16] -
+                          g_FixedSineQ28[FIXED_SINE_TABLE_COS + rollMinusTwoAzimuth16]) >> 1;
+  sinElevationQ28 = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + (elevationAngle & FIXED_ANGLE16_MASK)];
   output->basisRow0[0] = firstHalfTrigTermQ28;
-  halfTrigTermQ28 = (g_FixedCosQ28[rollAngle16] + g_FixedCosQ28[rollMinusTwoAzimuth16]) >> 1;
+  halfTrigTermQ28 = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + rollAngle16] +
+                     g_FixedSineQ28[FIXED_SINE_TABLE_COS + rollMinusTwoAzimuth16]) >> 1;
   output->basisRow1[1] =
        FIXED_PRODUCT_SHR((int64_t)firstHalfTrigTermQ28 * (int64_t)sinElevationQ28,28) + halfTrigTermQ28;
   termTimesSinElevation = (int64_t)halfTrigTermQ28 * (int64_t)sinElevationQ28;
   output->basisRow0[0] =
        output->basisRow0[0] +
        FIXED_PRODUCT_SHR(termTimesSinElevation,28);
-  halfTrigTermQ28 = (g_FixedSinQ28[rollAngle16] + g_FixedSinQ28[rollMinusTwoAzimuth16]) >> 1;
+  halfTrigTermQ28 = (g_FixedSineQ28[FIXED_SINE_TABLE_SIN + rollAngle16] +
+                     g_FixedSineQ28[FIXED_SINE_TABLE_SIN + rollMinusTwoAzimuth16]) >> 1;
   output->basisRow1[0] = halfTrigTermQ28;
   firstTermTimesSinElevation = (int64_t)halfTrigTermQ28 * (int64_t)sinElevationQ28;
-  halfTrigTermQ28 = (g_FixedSinQ28[rollMinusTwoAzimuth16] - g_FixedSinQ28[rollAngle16]) >> 1;
+  halfTrigTermQ28 = (g_FixedSineQ28[FIXED_SINE_TABLE_SIN + rollMinusTwoAzimuth16] -
+                     g_FixedSineQ28[FIXED_SINE_TABLE_SIN + rollAngle16]) >> 1;
   secondTermTimesSinElevation = (int64_t)halfTrigTermQ28 * (int64_t)sinElevationQ28;
   output->basisRow0[1] = halfTrigTermQ28 - FIXED_PRODUCT_SHR(firstTermTimesSinElevation,28);
   output->basisRow1[0] =
@@ -1247,9 +1262,9 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
 /* Not in the original: the original executable carries these tables precomputed (0x004246A0,
    98304 dwords). They are one sine over 1.5 turns, from a quarter turn before angle 0:
-   g_FixedSinBeforeZeroQ28 (angles -16384..-1), g_FixedSinQ28 (0..16383) and g_FixedCosQ28
-   (cos(i) = sin(i + quarter turn)); lookups with signed or full-turn angles run on from one
-   table into the next.
+   g_FixedSineQ28 holds angles -16384..-1, then 0..16383 (from FIXED_SINE_TABLE_SIN), then the
+   cosine 0..65535 (from FIXED_SINE_TABLE_COS, cos(i) = sin(i + quarter turn)); lookups with signed
+   or full-turn angles run on from one part into the next.
    Entry i is sin(i * 2pi / 65536) in Q28, rounded half up, computed with pi = 3.141592654; this
    reproduces every entry of the original. Called once at startup. */
 static int32_t FixedMath_SineTableEntry(int index)
@@ -1262,11 +1277,7 @@ void FixedMath_BuildSinCosTables(void)
 {
   int index;
 
-  for (index = 0; index < 16384; index++) {
-    g_FixedSinBeforeZeroQ28[index] = FixedMath_SineTableEntry(index - 16384);
-    g_FixedSinQ28[index] = FixedMath_SineTableEntry(index);
-  }
-  for (index = 0; index < 65536; index++) {
-    g_FixedCosQ28[index] = FixedMath_SineTableEntry(index + 16384);
+  for (index = 0; index < 98304; index++) {
+    g_FixedSineQ28[index] = FixedMath_SineTableEntry(index - FIXED_SINE_TABLE_SIN);
   }
 }

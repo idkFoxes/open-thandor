@@ -1080,9 +1080,9 @@ void UiSelectionGeometryControl_DrawClipped
       (control->textureSource == NULL)) {
     return;
   }
-  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + control->rotationAngle];
   cosTerm = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
-  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + control->rotationAngle];
   sinTerm = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
   /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
      >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
@@ -1216,9 +1216,9 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
   uint32_t stepTermX;
   uint32_t stepTermY;
 
-  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + control->rotationAngle];
   cosTerm = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
-  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + control->rotationAngle];
   sinTerm = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
   /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
      >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */

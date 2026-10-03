@@ -17,8 +17,13 @@
 #define Q12_ONE 0x1000 /* 1.0 in Q12 fixed point (scales, world coordinates) */
 #endif
 #ifndef Q28_ONE
-#define Q28_ONE 0x10000000 /* 1.0 in Q28 fixed point (g_FixedSinQ28/g_FixedCosQ28 values) */
+#define Q28_ONE 0x10000000 /* 1.0 in Q28 fixed point (g_FixedSineQ28 values) */
 #endif
+/* Indices into g_FixedSineQ28 (one sine over 1.5 turns from a quarter turn before angle 0):
+   sin(a) = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + a], cos(a) = g_FixedSineQ28[FIXED_SINE_TABLE_COS + a]
+   (a = -16384..65535 for sin, -32768..65535 for cos). */
+#define FIXED_SINE_TABLE_SIN 0x4000
+#define FIXED_SINE_TABLE_COS 0x8000
 #ifndef Q8_ONE
 #define Q8_ONE 0x100 /* 1.0 in Q8 fixed point (game speed, AI scales and ratios) */
 #endif
@@ -27,13 +32,13 @@
 #endif
 
 /* Engine angles are 16-bit fractions of a full turn (0x10000 = 360 degrees), as used by the
-   g_FixedSinQ28/g_FixedCosQ28 lookups and returned by FixedMath_Atan2Angle16. */
+   g_FixedSineQ28 lookups and returned by FixedMath_Atan2Angle16. */
 #define FIXED_ANGLE16_EIGHTH_TURN 0x2000
 #define FIXED_ANGLE16_QUARTER_TURN 0x4000
 #define FIXED_ANGLE16_HALF_TURN 0x8000
 #define FIXED_ANGLE16_THREE_QUARTER_TURN 0xC000
 #define FIXED_ANGLE16_FULL_TURN 0x10000
-/* Wraps an angle to 16 bits (one full turn) before a g_FixedSinQ28/g_FixedCosQ28 lookup */
+/* Wraps an angle to 16 bits (one full turn) before a g_FixedSineQ28 lookup */
 #define FIXED_ANGLE16_MASK 0xffff
 
 /* The low 32 bits of a signed 64-bit product shifted right by `shift` (0 < shift < 32): the original's
@@ -212,7 +217,7 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low);
 /* 0x004846A0 */
 uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue);
 
-/* Not in the original: fills g_FixedSinBeforeZeroQ28, g_FixedSinQ28 and g_FixedCosQ28 (the original shipped them precomputed). */
+/* Not in the original: fills g_FixedSineQ28 (the original shipped it precomputed). */
 void FixedMath_BuildSinCosTables(void);
 
 #endif /* THANDOR_CORE_MATH_FIXED_H */

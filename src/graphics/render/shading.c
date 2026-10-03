@@ -230,7 +230,8 @@ static bool GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
     sample->terrainRayDistanceQ12 = 0;
     textureShift = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
                           (int64_t)(int)(FIXED_MUL_SHR((int)heightDelta,
-                                                       g_FixedCosQ28[renderContext->lightElevationAngle],
+                                                       g_FixedSineQ28[FIXED_SINE_TABLE_COS +
+                                                                      renderContext->lightElevationAngle],
                                                        Q28_SHIFT + 1))) /
                          (int64_t)modelNode->subtreeBoundingRadiusQ12);
     sample->textureCoordinateOffsetQ20 = sample->textureCoordinateOffsetQ20 - textureShift;

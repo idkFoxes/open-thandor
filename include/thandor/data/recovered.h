@@ -20,10 +20,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    Locale_MapTelephoneCountryCodeToRegionTagPacked (no code reference to the slot found). */
 #define g_LocaleMapTelephoneCountryCodeToRegionTagPacked (*(LocaleRegionTagPacked (**)(LocaleTelephoneCountryCode))&g_ImageObject_004027B0.at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked)
 
-/* ---- core/math/fixed: the quarter turn of the sine table before angle 0 (sin of -16384..-1 in
-   Q28), directly followed by g_FixedSinQ28 and g_FixedCosQ28; signed angle lookups reach it. */
-#define g_FixedSinBeforeZeroQ28 (*(int32_t (*)[16384])&g_ImageObject_004246A0.at_g_FixedSinBeforeZeroQ28)
-
 /* ---- core/error: fatal error texts; their addresses double as the error codes. */
 #define g_ErrorTextHeapAllocationFailed (*(uint16_t (*)[71])&g_ImageObject_00407D84.at_g_ErrorTextHeapAllocationFailed)
 
@@ -46,9 +42,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* ---- graphics/resources/palette: palette bank slots and the remap byte table. */
 #define g_GraphicsPaletteBankSlots (*(uint32_t (*)[0x200])&g_ImageObject_004AD930.at_g_GraphicsPaletteBankSlots)
 #define g_GraphicsPaletteRemapBytes (*(uint8_t (*)[0x100])&g_ImageObject_004AE130.at_g_GraphicsPaletteRemapBytes)
-
-/* ---- network/protocol/transfer: outgoing chunk payload. */
-#define g_UiTransferChunkPayload (*(uint32_t (*)[0x3a])&g_ImageObject_004AE9A8.at_g_UiTransferChunkPayload)
 
 /* ---- graphics/core: scratch for direction-to-angles in an object's local frame. */
 
@@ -81,9 +74,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- ui/ingame: keyboard dispatch records {key code, modifier mask, handler} ending in 0. */
 #define g_InGameKeyboardDispatchRecordsTerminator (*(uint32_t *)&g_ImageObject_0056E5C0.at_g_InGameKeyboardDispatchRecordsTerminator)
-
-/* ---- screenshots: "screen00.pcx" with its two-digit counter at code units 6 and 7. */
-#define g_ScreenshotFileNameUtf16 (*(uint16_t (*)[13])&g_ImageObject_00572E39.at_g_ScreenshotFileNameUtf16)
 
 /* ---- graphics/backend/direct3d: enumerated and selected texture pixel formats. */
 

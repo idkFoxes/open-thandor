@@ -101,8 +101,8 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
     stream = TextResource_Resolve(error);
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
-    RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
-    RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,stream);
+    RichTextCommandStream_PatchPayloadBySelector(2,g_FatalErrorDetail2Utf16,stream);
+    RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,stream);
   }
   g_FatalErrorRichTextStream = (uint32_t)stream;
   /* copy the dialog template image into the allocated root node, one dword per step (REP MOVSD) */
@@ -214,8 +214,8 @@ uint32_t FatalError_Exit(uint32_t valueOrError,bool failed)
   /* payload selectors 0..3 of the message text */
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,messageText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,messageText);
-  RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,messageText);
-  RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,messageText);
+  RichTextCommandStream_PatchPayloadBySelector(2,g_FatalErrorDetail2Utf16,messageText);
+  RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,messageText);
   FatalError_CopyRichTextToNarrow(sizeof g_FatalErrorNarrowBuffer,g_FatalErrorNarrowBuffer,messageText);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);

@@ -1667,34 +1667,33 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
       keyframeChannel5 = transitionRecord[5];
       /* Rebuild the camera spline only when the target keyframe changed. (When channels 0-2 already match
          the original skips storing them; storing the equal values here is equivalent.) */
-      if ((((*transitionRecord != g_FrontendRomTransitionKeyframe1Channel0Q12) ||
-           (transitionRecord[1] != g_FrontendRomTransitionKeyframe1Channel1Q12)) ||
-          (transitionRecord[2] != g_FrontendRomTransitionKeyframe1Channel2Q12)) ||
-         (((keyframeChannel3 != g_FrontendRomTransitionKeyframe1Channel3Q12) ||
-          (keyframeChannel4 != g_FrontendRomTransitionKeyframe1Channel4Q12)) ||
-          (keyframeChannel5 != g_FrontendRomTransitionKeyframe1Channel5Q12))) {
+      if ((((*transitionRecord != g_FrontendRomTransitionKeyframes[1].channel0Q12) ||
+           (transitionRecord[1] != g_FrontendRomTransitionKeyframes[1].channel1Q12)) ||
+          (transitionRecord[2] != g_FrontendRomTransitionKeyframes[1].channel2Q12)) ||
+         (((keyframeChannel3 != g_FrontendRomTransitionKeyframes[1].channel3Q12) ||
+          (keyframeChannel4 != g_FrontendRomTransitionKeyframes[1].channel4Q12)) ||
+          (keyframeChannel5 != g_FrontendRomTransitionKeyframes[1].channel5Q12))) {
         /* fly from the current camera (keyframe 0) to the record's camera (keyframe 1) in 192 ticks of
            FrontendRomTransition_AdvanceElapsedTicks; pending -1 = no record to activate at the end */
-        g_FrontendRomTransitionKeyframe1Channel0Q12 = *transitionRecord;
-        g_FrontendRomTransitionKeyframe1Channel1Q12 = transitionRecord[1];
-        g_FrontendRomTransitionKeyframe1Channel2Q12 = transitionRecord[2];
-        g_FrontendRomTransitionKeyframe0Channel0Q12 = frontendRuntime->hitReferenceWorldXQ12;
-        g_FrontendRomTransitionKeyframe0Channel1Q12 = frontendRuntime->hitReferenceWorldYQ12;
-        g_FrontendRomTransitionKeyframe0Channel2Q12 = frontendRuntime->hitReferenceWorldZQ12;
-        g_FrontendRomTransitionKeyframe0Channel3Q12 = frontendRuntime->projectionScale;
-        g_FrontendRomTransitionKeyframe0Channel4Q12 = frontendRuntime->viewAngle0;
-        g_FrontendRomTransitionKeyframe0Channel5Q12 = frontendRuntime->viewAngle1;
-        g_FrontendRomTransitionKeyframe0TimeQ12 = 0;
-        g_FrontendRomTransitionKeyframe1TimeQ12 = 192;
+        g_FrontendRomTransitionKeyframes[1].channel0Q12 = *transitionRecord;
+        g_FrontendRomTransitionKeyframes[1].channel1Q12 = transitionRecord[1];
+        g_FrontendRomTransitionKeyframes[1].channel2Q12 = transitionRecord[2];
+        g_FrontendRomTransitionKeyframes[0].channel0Q12 = frontendRuntime->hitReferenceWorldXQ12;
+        g_FrontendRomTransitionKeyframes[0].channel1Q12 = frontendRuntime->hitReferenceWorldYQ12;
+        g_FrontendRomTransitionKeyframes[0].channel2Q12 = frontendRuntime->hitReferenceWorldZQ12;
+        g_FrontendRomTransitionKeyframes[0].channel3Q12 = frontendRuntime->projectionScale;
+        g_FrontendRomTransitionKeyframes[0].channel4Q12 = frontendRuntime->viewAngle0;
+        g_FrontendRomTransitionKeyframes[0].channel5Q12 = frontendRuntime->viewAngle1;
+        g_FrontendRomTransitionKeyframes[0].timeQ12 = 0;
+        g_FrontendRomTransitionKeyframes[1].timeQ12 = 192;
         g_FrontendRomTransitionElapsedTicks = 0;
         g_FrontendRomTransitionTargetRecordId = FRONTEND_ROM_TRANSITION_NO_TARGET;
         g_FrontendRomTransitionSplineKeyframeCount = 2;
-        g_FrontendRomTransitionSplineKeyframes = &g_FrontendRomTransitionKeyframe0Channel0Q12;
-        g_FrontendRomTransitionKeyframe1Channel3Q12 = keyframeChannel3;
-        g_FrontendRomTransitionKeyframe1Channel4Q12 = keyframeChannel4;
-        g_FrontendRomTransitionKeyframe1Channel5Q12 = keyframeChannel5;
-        WorldMotionSpline_BuildSixChannelCurves
-                  (2,(WorldMotionSplineKeyframe *)&g_FrontendRomTransitionKeyframe0Channel0Q12);
+        g_FrontendRomTransitionSplineKeyframes = (uint32_t)g_FrontendRomTransitionKeyframes;
+        g_FrontendRomTransitionKeyframes[1].channel3Q12 = keyframeChannel3;
+        g_FrontendRomTransitionKeyframes[1].channel4Q12 = keyframeChannel4;
+        g_FrontendRomTransitionKeyframes[1].channel5Q12 = keyframeChannel5;
+        WorldMotionSpline_BuildSixChannelCurves(2,g_FrontendRomTransitionKeyframes);
       }
       hintValue = transitionRecord[6];
       resultCode = 7;

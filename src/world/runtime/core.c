@@ -112,7 +112,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   if (cycleDuration != 0) {
     /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
     phase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDuration << 16) / cycleDuration;
-    blendIndex = (g_FixedCosQ28[phase] + (uint32_t)Q28_ONE) >> 21;
+    blendIndex = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + phase] + (uint32_t)Q28_ONE) >> 21;
     forwardFactors = g_SoftwareBilinearForwardFactors[blendIndex];
     inverseFactors = g_SoftwareBilinearInverseFactors[blendIndex];
     mixedColor0A = WorldLighting_BlendColors(settings->terrainRampStepColorArgb,
@@ -152,7 +152,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
          WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionOriginYHigh16XLow16,
                                         (uint16_t)settings->alternatePackedFieldRegionOriginYHigh16XLow16,
                                         phaseByte);
-    blendWeight = (g_FixedCosQ28[phase] + (uint32_t)Q28_ONE) >> 21;
+    blendWeight = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + phase] + (uint32_t)Q28_ONE) >> 21;
     inverseBlendWeight = 256 - blendWeight;
     blendedAuxiliaryAzimuth =
          WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionHeightHigh16WidthLow16,
@@ -1128,7 +1128,8 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
                       (worldRuntime->motion.headingAngle,
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
-                        (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
+                        (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS - currentPitchAngle]) /
+                       (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN - currentPitchAngle]));
     groundOffsetY = groundOffsetXY.sinValue;
     worldRuntime->motion.targetPositionXQ12 = groundOffsetXY.cosValue + worldRuntime->motion.positionXQ12;
     worldRuntime->motion.targetPositionYQ12 = groundOffsetY + worldRuntime->motion.positionYQ12;

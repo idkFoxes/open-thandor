@@ -111,7 +111,7 @@ static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 m
   /* attenuation: volume * cos(distance / maximum * quarter turn), the << 14 maps the ratio to
      0..FIXED_ANGLE16_QUARTER_TURN */
   scaledProduct = (int64_t)
-           g_FixedCosQ28[(int)(((uint64_t)distanceQ12 << 14) / (uint64_t)maximumDistanceQ12)] *
+           g_FixedSineQ28[FIXED_SINE_TABLE_COS + (int)(((uint64_t)distanceQ12 << 14) / (uint64_t)maximumDistanceQ12)] *
            (int64_t)(int)volumeQ15;
   attenuatedGainQ15 = FIXED_PRODUCT_SHR(scaledProduct, 28);
   if (!(SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 < (int)attenuatedGainQ15)) {
@@ -120,16 +120,16 @@ static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 m
   /* pan: one channel keeps the full gain, the other gets gain * (1 + cos(2 * azimuth)) / 2 */
   if (azimuth < FIXED_ANGLE16_HALF_TURN) {
     firstQ15 = (uint32_t)((uint64_t)
-                   ((int64_t)(g_FixedCosQ28[azimuth * 2] + Q28_ONE) *
+                   ((int64_t)(g_FixedSineQ28[FIXED_SINE_TABLE_COS + azimuth * 2] + Q28_ONE) *
                    (int64_t)(int)(attenuatedGainQ15 << 3)) >> 32);
     secondQ15 = attenuatedGainQ15;
   }
   else {
     /* the original reads [azimuth * 8 + 0x4046A0] (k_SpatialSoundStereoCosineSecondHalfBaseBias, the folded
-       address g_FixedCosQ28 - 0x8000 * 8); written against g_FixedCosQ28 itself, because with generated
-       image data 0x4046A0 lies in another object and would not reach the cosine table */
+       address of the cosine part of g_FixedSineQ28 - 0x8000 * 8); written against the cosine part itself,
+       because with generated image data 0x4046A0 lies in another object and would not reach the table */
     scaledProduct = (int64_t)
-            (g_FixedCosQ28[(azimuth - FIXED_ANGLE16_HALF_TURN) * 2] + Q28_ONE) *
+            (g_FixedSineQ28[FIXED_SINE_TABLE_COS + (azimuth - FIXED_ANGLE16_HALF_TURN) * 2] + Q28_ONE) *
             (int64_t)(int)attenuatedGainQ15;
     secondQ15 = FIXED_PRODUCT_SHR(scaledProduct,29);
     firstQ15 = attenuatedGainQ15;

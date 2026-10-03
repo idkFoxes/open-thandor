@@ -700,8 +700,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
       UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
                                             INGAME_UI(rt,messageRecipientGroupsTab),
                                             INGAME_UI(rt,messageRecipientPlayersTab));
-      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) +
-                                       (((UiSelectableControl *)recipientTab)->actionId & 0xff) * 4))
+      g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]
                 (recipientTab);
     }
     UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
@@ -765,8 +764,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
                                           INGAME_UI(rt,messageRecipientGroupsTab),
                                           INGAME_UI(rt,messageRecipientPlayersTab));
-    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) +
-                                     (((UiSelectableControl *)recipientTab)->actionId & 0xff) * 4))
+    g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]
               (recipientTab);
     g_KeyboardFlushEvents();
     break;
@@ -817,8 +815,8 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     void *pcxBytes;
     uint32_t pcxByteCount;
     uint32_t pcxError;
-    uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,12);
-    uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,14);
+    uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
+    uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
     if (capture == NULL) {
       break;
     }
@@ -827,7 +825,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
       break;
     }
     FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,
-                                   (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
+                                   g_ScreenshotFileNameUtf16);
     g_MemoryApi.free(pcxBytes);
     g_MemoryApi.free(capture);
     /* advance the two-digit number in the file name */

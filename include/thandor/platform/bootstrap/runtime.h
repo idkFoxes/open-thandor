@@ -20,7 +20,7 @@
 #define OLD_UNIT_PRIMARY_TABLE_BYTES 0x4000 /* g_OldUnitPrimaryTable (oldunit.hex after the record count) */
 #define OLD_UNIT_SECONDARY_TABLE_BYTES 0x100 /* g_OldUnitSecondaryTable (oldunit.hex after the primary table) */
 /* Buffers Game_LoadCoreAssets allocates */
-#define FRONTEND_PLAYER_LIST_ROW_COUNT 8 /* g_FrontendPlayerListRows and g_FrontendPlayerListRow1..7 */
+#define FRONTEND_PLAYER_LIST_ROW_COUNT 8 /* entries of g_FrontendPlayerListRows */
 #define FRONTEND_PLAYER_LIST_ROW_BYTES 0x80 /* one row buffer of the lobby player list */
 #define INGAME_FACTION_STATUS_TEXT_BYTES 0x2000 /* g_InGameFactionStatusTextScratchUtf16 */
 #define INGAME_PLAYER_LIST_TEXT_BYTES 0x160 /* g_InGamePlayerListTextScratchUtf16 */

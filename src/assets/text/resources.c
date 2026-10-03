@@ -54,7 +54,7 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
 
 
 /* Address: 0x0041B080.
-   Loads the two font texture sources from the consecutive UTF-16 paths at u_engine_font_gfx_0041b030, allocates
+   Loads the two font texture sources from the consecutive UTF-16 paths in g_FontTexturePathsUtf16, allocates
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
    override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
 */
@@ -73,7 +73,7 @@ void FontRuntime_Init(void)
   uint32_t allocError;
   void *allocPayload;
 
-  pathUtf16 = u_engine_font_gfx_0041b030;
+  pathUtf16 = g_FontTexturePathsUtf16;
   /* one scan budget for both paths: the original keeps a single REPNE SCASW count across the loop */
   scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
   for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {

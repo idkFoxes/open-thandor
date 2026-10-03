@@ -74,18 +74,8 @@ typedef struct ImageObject_00403158 {
     uint8_t at_gap_00403158[8]; /* 00403158 gap */
 } ImageObject_00403158;
 extern ImageObject_00403158 g_ImageObject_00403158;
-typedef struct ImageObject_00403160 {
-    uint32_t at_g_UiTransferEncryptSbox0[16][16]; /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
-    uint32_t at_g_UiTransferEncryptSbox1[16][16]; /* 00403560 g_UiTransferEncryptSbox1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferEncryptSbox2[16][16]; /* 00403960 g_UiTransferEncryptSbox2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferEncryptSbox3[16][16]; /* 00403D60 g_UiTransferEncryptSbox3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferEncryptSbox4[16][16]; /* 00404160 g_UiTransferEncryptSbox4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferEncryptSbox5[16][16]; /* 00404560 g_UiTransferEncryptSbox5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
-    uint32_t at_g_UiTransferEncryptSbox6[16][16]; /* 00404960 g_UiTransferEncryptSbox6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferEncryptSbox7[16][16]; /* 00404D60 g_UiTransferEncryptSbox7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-} ImageObject_00403160;
-extern ImageObject_00403160 g_ImageObject_00403160;
-extern uint32_t g_UiTransferDecryptSboxes[8][16][16]; /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
+extern uint32_t g_UiTransferEncryptSboxes[8][16][16]; /* 00403160 g_UiTransferEncryptSboxes: Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
+extern uint32_t g_UiTransferDecryptSboxes[8][16][16]; /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
 
 /* original 0x00407510-0x00407F50 */
 typedef struct ImageObject_00407510 {
@@ -93,16 +83,9 @@ typedef struct ImageObject_00407510 {
 } ImageObject_00407510;
 extern ImageObject_00407510 g_ImageObject_00407510;
 extern uint16_t g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
-typedef struct ImageObject_00407714 {
-    uint16_t at_g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
-    uint8_t at_g_FatalErrorDetail2Utf16; /* 00407914 g_FatalErrorDetail2Utf16 */
-    uint32_t at_g_FatalErrorDetail2Utf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_FatalErrorDetail2Utf16_rest_tail[3];
-    uint8_t at_g_FatalErrorDetail3Utf16; /* 00407B14 g_FatalErrorDetail3Utf16 */
-    uint32_t at_g_FatalErrorDetail3Utf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_FatalErrorDetail3Utf16_rest_tail[3];
-} ImageObject_00407714;
-extern ImageObject_00407714 g_ImageObject_00407714;
+extern uint16_t g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
+extern uint16_t g_FatalErrorDetail2Utf16[256]; /* 00407914 g_FatalErrorDetail2Utf16 */
+extern uint16_t g_FatalErrorDetail3Utf16[256]; /* 00407B14 g_FatalErrorDetail3Utf16 */
 extern FatalErrorPassThroughProc *g_FatalErrorExitHandler; /* 00407D14 g_FatalErrorExitHandler */
 extern FatalErrorPassThroughProc *g_FatalErrorReportHandler; /* 00407D18 g_FatalErrorReportHandler */
 extern FatalErrorPassThroughProc *g_FatalErrorFallbackHandler; /* 00407D1C g_FatalErrorFallbackHandler */
@@ -128,11 +111,9 @@ typedef struct ImageObject_004080B4 {
 } ImageObject_004080B4;
 extern ImageObject_004080B4 g_ImageObject_004080B4;
 extern PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
-typedef struct ImageObject_004084C0 {
-    PckHuffmanNode at_g_PckHuffmanLeafNodeWorkspace256[256]; /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
-    PckHuffmanNode at_g_PckHuffmanInternalNodeWorkspace256[256]; /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
-} ImageObject_004084C0;
-extern ImageObject_004084C0 g_ImageObject_004084C0;
+/* 004084C0 Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol, 004084C0),
+   [256..511] internal nodes (004094C0); the tree-building scans run over both halves as one array. */
+extern PckHuffmanNode g_PckHuffmanNodeWorkspace[512];
 
 /* original 0x0040ABBC-0x0040E2B0 */
 typedef struct ImageObject_0040ABBC {
@@ -222,19 +203,13 @@ extern uint32_t g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosi
 extern GraphicsCursorFrameCount g_CursorFrameCount; /* 0041681C g_CursorFrameCount */
 extern uint32_t g_CursorMaxWidth; /* 00416820 g_CursorMaxWidth */
 extern uint32_t g_CursorMaxHeight; /* 00416824 g_CursorMaxHeight */
-typedef struct ImageObject_00416828 {
-    UiPixelCoordinate at_g_CursorOverrideX; /* 00416828 g_CursorOverrideX */
-    UiPixelCoordinate at_g_CursorOverrideY; /* 0041682C g_CursorOverrideY */
-} ImageObject_00416828;
-extern ImageObject_00416828 g_ImageObject_00416828;
+extern UiPixelCoordinate g_CursorOverrideX; /* 00416828 g_CursorOverrideX */
+extern UiPixelCoordinate g_CursorOverrideY; /* 0041682C g_CursorOverrideY */
 extern UiPointerWheelDelta g_CursorWheelDelta; /* 00416830 g_CursorWheelDelta */
 extern int32_t g_CursorVisibilityToken; /* 00416834 g_CursorVisibilityToken */
 extern uint32_t g_CursorButtonState; /* 00416838 g_CursorButtonState */
-typedef struct ImageObject_0041683C {
-    UiPixelCoordinate at_g_CursorLastClickX; /* 0041683C g_CursorLastClickX */
-    UiPixelCoordinate at_g_CursorLastClickY; /* 00416840 g_CursorLastClickY */
-} ImageObject_0041683C;
-extern ImageObject_0041683C g_ImageObject_0041683C;
+extern UiPixelCoordinate g_CursorLastClickX; /* 0041683C g_CursorLastClickX */
+extern UiPixelCoordinate g_CursorLastClickY; /* 00416840 g_CursorLastClickY */
 extern PointerFlushEventsProc *g_PointerFlushEvents; /* 00416844 g_PointerFlushEvents */
 extern GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame; /* 00416848 g_GraphicsCursorSetFrame */
 extern PointerSetPositionProc *g_PointerSetPosition; /* 0041684C g_PointerSetPosition */
@@ -313,17 +288,14 @@ extern ImageObject_0041A53C g_ImageObject_0041A53C;
 extern NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable; /* 0041A540 g_NetworkBackendInstanceTable */
 extern uint32_t g_NetworkBackendInstanceCount; /* 0041A544 g_NetworkBackendInstanceCount */
 extern NetworkSessionContext *g_NetworkBackendSessionContext; /* 0041A548 g_NetworkBackendSessionContext */
-typedef struct ImageObject_0041A54C {
-    NetworkBackendSetSessionCallback * at_g_NetworkBackendSlot0; /* 0041A54C g_NetworkBackendSlot0 */
-    NetworkBackendCleanupCallback * at_g_NetworkBackendSlot1; /* 0041A550 g_NetworkBackendSlot1 */
-    NetworkBackendOpenBindCallback * at_g_NetworkBackendSlot2; /* 0041A554 g_NetworkBackendSlot2 */
-    NetworkBackendCloseCallback * at_g_NetworkBackendSlot3; /* 0041A558 g_NetworkBackendSlot3 */
-    NetworkBackendReceiveCallback * at_g_NetworkBackendSlot4; /* 0041A55C g_NetworkBackendSlot4 */
-    NetworkBackendSendCallback * at_g_NetworkBackendSlot5; /* 0041A560 g_NetworkBackendSlot5 */
-    NetworkBackendParseEndpointCallback * at_g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
-    NetworkBackendFormatAddressCallback * at_g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
-} ImageObject_0041A54C;
-extern ImageObject_0041A54C g_ImageObject_0041A54C;
+extern NetworkBackendSetSessionCallback *g_NetworkBackendSlot0; /* 0041A54C g_NetworkBackendSlot0 */
+extern NetworkBackendCleanupCallback *g_NetworkBackendSlot1; /* 0041A550 g_NetworkBackendSlot1 */
+extern NetworkBackendOpenBindCallback *g_NetworkBackendSlot2; /* 0041A554 g_NetworkBackendSlot2 */
+extern NetworkBackendCloseCallback *g_NetworkBackendSlot3; /* 0041A558 g_NetworkBackendSlot3 */
+extern NetworkBackendReceiveCallback *g_NetworkBackendSlot4; /* 0041A55C g_NetworkBackendSlot4 */
+extern NetworkBackendSendCallback *g_NetworkBackendSlot5; /* 0041A560 g_NetworkBackendSlot5 */
+extern NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
+extern NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
 typedef struct ImageObject_0041A56C {
     UiTransferEndpointDescriptor at_g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
     uint32_t at_g_NetworkLocalEndpoint_rest[1]; /* beyond the declared type */
@@ -373,12 +345,9 @@ typedef struct ImageObject_0041AFA8 {
 extern ImageObject_0041AFA8 g_ImageObject_0041AFA8;
 extern uint16_t u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
 extern GraphicsTextureSourceAsset *g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
-typedef struct ImageObject_0041B030 {
-    uint16_t at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
-    uint16_t at_str_0041B050[17]; /* 0041B050 str_0041B050 */
-    uint8_t at_str_0041B050_padding[14];
-} ImageObject_0041B030;
-extern ImageObject_0041B030 g_ImageObject_0041B030;
+/* 0041B030 the two font texture paths L"engine\\font.gfx" and L"engine\\fontk.gfx", back to back:
+   FontRuntime_Init scans past the first terminator to reach the second */
+extern uint16_t g_FontTexturePathsUtf16[33];
 
 /* original 0x0041B128-0x0041B1B0 */
 typedef struct ImageObject_0041B128 {
@@ -725,15 +694,8 @@ typedef struct ImageObject_00422720 {
     UiNodeVtable at_g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
 } ImageObject_00422720;
 extern ImageObject_00422720 g_ImageObject_00422720;
-typedef struct ImageObject_00422768 {
-    uint8_t at_g_GraphicsAdapterFormatScratch0Utf16; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
-    uint32_t at_g_GraphicsAdapterFormatScratch0Utf16_rest[7]; /* beyond the declared type */
-    uint8_t at_g_GraphicsAdapterFormatScratch0Utf16_rest_tail[3];
-    uint8_t at_g_GraphicsAdapterFormatScratch1Utf16; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
-    uint32_t at_g_GraphicsAdapterFormatScratch1Utf16_rest[9]; /* beyond the declared type */
-    uint8_t at_g_GraphicsAdapterFormatScratch1Utf16_rest_tail[3];
-} ImageObject_00422768;
-extern ImageObject_00422768 g_ImageObject_00422768;
+extern uint16_t g_GraphicsAdapterFormatScratch0Utf16[16]; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
+extern uint16_t g_GraphicsAdapterFormatScratch1Utf16[16]; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
 
 /* original 0x00422978-0x00423600 */
 typedef struct ImageObject_00422978 {
@@ -772,15 +734,10 @@ typedef struct ImageObject_00424684 {
     uint8_t at_gap_00424684[28]; /* 00424684 gap */
 } ImageObject_00424684;
 extern ImageObject_00424684 g_ImageObject_00424684;
-typedef struct ImageObject_004246A0 {
-    uint32_t at_g_FixedSinBeforeZeroQ28[16384]; /* 004246A0 g_FixedSinBeforeZeroQ28 */
-} ImageObject_004246A0;
-extern ImageObject_004246A0 g_ImageObject_004246A0;
-typedef struct ImageObject_004346A0 {
-    uint32_t at_g_FixedSinQ28[16384]; /* 004346A0 g_FixedSinQ28 */
-    uint32_t at_g_FixedCosQ28[65536]; /* 004446A0 g_FixedCosQ28 */
-} ImageObject_004346A0;
-extern ImageObject_004346A0 g_ImageObject_004346A0;
+/* 004246A0 one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1) at
+   004246A0, sin(0..16383) at 004346A0 (FIXED_SINE_TABLE_SIN), cos(0..65535) at 004446A0
+   (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
+extern int32_t g_FixedSineQ28[98304];
 
 /* original 0x00485808-0x00485E40 */
 typedef struct ImageObject_00485808 {
@@ -969,25 +926,9 @@ extern RuntimeSpinLockValue *g_UiRuntimeFrameLock; /* 004AE984 g_UiRuntimeFrameL
 extern UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback; /* 004AE988 g_UiRuntimePostUnlockCallback */
 extern RuntimeSpinLockValue g_UiRuntimeRecordRingLock; /* 004AE98C g_UiRuntimeRecordRingLock */
 extern UiTransferMailboxState g_UiTransferMailbox; /* 004AE990 g_UiTransferMailbox */
-typedef struct ImageObject_004AE9A8 {
-    uint32_t at_g_UiTransferRoundKeys16[12]; /* 004AE9A8 g_UiTransferRoundKeys16: uint32_t[12] packet cipher round keys 0..11 (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 are g_UiTransferRoundKeys16Tail). */
-    uint32_t at_g_UiTransferRoundKeys16Tail[4]; /* 004AE9D8 g_UiTransferRoundKeys16Tail: uint32_t[4] packet cipher round keys 12..15 (bytes read by Ghidra as the text "mohTG sakere!!!e"); the mailbox chunk packet header follows at 0x004AE9E8. */
-    uint32_t at_s__004ae9d8_0x10[1]; /* 004AE9E8 s__004ae9d8+0x10 */
-    uint32_t at_g_UiTransferChunkPacketSequenceToken; /* 004AE9EC g_UiTransferChunkPacketSequenceToken */
-    uint32_t at_g_UiTransferChunkPacketSequenceToken_rest[2]; /* beyond the declared type */
-    UiTransferMailboxByteOffset at_g_UiTransferMailboxChunkOffset; /* 004AE9F8 g_UiTransferMailboxChunkOffset */
-    UiTransferMailboxByteCount at_g_UiTransferMailboxTransferByteCount; /* 004AE9FC g_UiTransferMailboxTransferByteCount */
-    uint32_t at_g_UiTransferChunkPayload[58]; /* 004AEA00 g_UiTransferChunkPayload */
-} ImageObject_004AE9A8;
-extern ImageObject_004AE9A8 g_ImageObject_004AE9A8;
-typedef struct ImageObject_004AEAE8 {
-    uint32_t at_g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket */
-    uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken; /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
-    uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken_rest[2]; /* beyond the declared type */
-    uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick; /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
-    uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick_rest[3]; /* beyond the declared type */
-} ImageObject_004AEAE8;
-extern ImageObject_004AEAE8 g_ImageObject_004AEAE8;
+extern uint32_t g_UiTransferRoundKeys[16]; /* 004AE9A8 g_UiTransferRoundKeys: uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 at 0x004AE9D8 were read by Ghidra as the text "mohTG sakere!!!e"). */
+extern UiRuntimeRecord g_UiTransferChunkPacket; /* 004AE9E8 g_UiTransferChunkPacket: mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (sequence token at 0x004AE9EC), payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00, 58 dwords). */
+extern FrontendPacket10032HostValue g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033 (same layout as the 0x10032 ping): header (sequence token at 0x004AEAEC), echoed tick (0x004AEAF8). */
 typedef struct ImageObject_004AEB08 {
     UiTransferMailboxTickCounter at_g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
     uint32_t at_g_UiTransferMailboxTickCounter_rest[1]; /* beyond the declared type */
@@ -2832,25 +2773,7 @@ extern uint32_t g_FrontendRomTransitionSplineKeyframeCount; /* 00545724 g_Fronte
 extern uint32_t g_FrontendRomTransitionTargetRecordId; /* 00545728 g_FrontendRomTransitionTargetRecordId */
 extern uint32_t g_FrontendStateTickSpinLock; /* 0054572C g_FrontendStateTickSpinLock */
 extern uint32_t g_FrontendTimerCountdownTicks; /* 00545730 g_FrontendTimerCountdownTicks */
-typedef struct ImageObject_00545734 {
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel0Q12; /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel1Q12; /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel2Q12; /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel3Q12; /* 00545740 g_FrontendRomTransitionKeyframe0Channel3Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel4Q12; /* 00545744 g_FrontendRomTransitionKeyframe0Channel4Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0Channel5Q12; /* 00545748 g_FrontendRomTransitionKeyframe0Channel5Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0TimeQ12; /* 0054574C g_FrontendRomTransitionKeyframe0TimeQ12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe0TimeQ12_rest[1]; /* beyond the declared type */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel0Q12; /* 00545754 g_FrontendRomTransitionKeyframe1Channel0Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel1Q12; /* 00545758 g_FrontendRomTransitionKeyframe1Channel1Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel2Q12; /* 0054575C g_FrontendRomTransitionKeyframe1Channel2Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel3Q12; /* 00545760 g_FrontendRomTransitionKeyframe1Channel3Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel4Q12; /* 00545764 g_FrontendRomTransitionKeyframe1Channel4Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1Channel5Q12; /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12; /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
-    uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12_rest[1]; /* beyond the declared type */
-} ImageObject_00545734;
-extern ImageObject_00545734 g_ImageObject_00545734;
+extern WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2]; /* 00545734 g_FrontendRomTransitionKeyframes: two spline keyframes (0 = current camera, 1 = target record's camera), passed as an array to WorldMotionSpline_BuildSixChannelCurves */
 extern uint32_t g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset */
 extern RomRegistrySlot *g_RomRegistrySlots; /* 00545778 g_RomRegistrySlots */
 extern WorldObjectRecord *g_FrontendWorldObjectRecords; /* 0054577C g_FrontendWorldObjectRecords */
@@ -2881,11 +2804,7 @@ extern uint16_t u_gfx_panel_menue_gfx_00545b78[20]; /* 00545B78 u_gfx_panel_menu
 extern uint16_t u_texte_menue_str_00545ba0[16]; /* 00545BA0 u_texte_menue_str_00545ba0 */
 extern uint16_t u_texte_level_str_00545bc0[16]; /* 00545BC0 u_texte_level_str_00545bc0 */
 extern uint16_t u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_00545be0 */
-typedef struct ImageObject_00545C02 {
-    uint16_t at_g_FrontendMissionBriefingMoviePathUtf16[7]; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: uint16_t[7] L"flm\\lev" without terminator: first half of the mission briefing movie path flm\lev0000.flm, continued by g_FrontendMissionBriefingLevelDigitsUtf16; opened with Movie_Open (ui/frontend/scenario.c) */
-    uint16_t at_g_FrontendMissionBriefingLevelDigitsUtf16[9]; /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16: uint16_t[9] L"0000.flm" plus terminator: tail of the briefing movie path; the four digits are overwritten with the level number (ui/frontend/scenario.c) */
-} ImageObject_00545C02;
-extern ImageObject_00545C02 g_ImageObject_00545C02;
+extern uint16_t g_FrontendMissionBriefingMoviePathUtf16[16]; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: L"flm\\lev0000.flm", the mission briefing movie path; the four digits at index 7 (00545C10) are overwritten with the level number; opened with Movie_Open (ui/frontend/scenario.c) */
 extern uint16_t g_CreditsTexturePathUtf16[22]; /* 00545C22 g_CreditsTexturePathUtf16 */
 extern uint16_t u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
 typedef struct ImageObject_00545C72 {
@@ -2974,17 +2893,7 @@ typedef struct ImageObject_0054DDA0 {
 extern ImageObject_0054DDA0 g_ImageObject_0054DDA0;
 extern uint32_t g_FrontendExpectedPlayerRuntimeBlockCount; /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
 extern uint32_t g_FrontendHostPublishRoundRobinCounter; /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
-extern uint32_t g_FrontendPlayerListRows; /* 0054DDB0 g_FrontendPlayerListRows */
-typedef struct ImageObject_0054DDB4 {
-    uint32_t at_g_FrontendPlayerListRow1; /* 0054DDB4 g_FrontendPlayerListRow1 */
-    uint32_t at_g_FrontendPlayerListRow2; /* 0054DDB8 g_FrontendPlayerListRow2 */
-    uint32_t at_g_FrontendPlayerListRow3; /* 0054DDBC g_FrontendPlayerListRow3 */
-    uint32_t at_g_FrontendPlayerListRow4; /* 0054DDC0 g_FrontendPlayerListRow4 */
-    uint32_t at_g_FrontendPlayerListRow5; /* 0054DDC4 g_FrontendPlayerListRow5 */
-    uint32_t at_g_FrontendPlayerListRow6; /* 0054DDC8 g_FrontendPlayerListRow6 */
-    uint32_t at_g_FrontendPlayerListRow7; /* 0054DDCC g_FrontendPlayerListRow7 */
-} ImageObject_0054DDB4;
-extern ImageObject_0054DDB4 g_ImageObject_0054DDB4;
+extern uint32_t g_FrontendPlayerListRows[8]; /* 0054DDB0 g_FrontendPlayerListRows: pointers (as uint32_t) to the eight 0x80-byte lobby player list rows */
 extern UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch; /* 0054DDD0 g_FrontendNetworkEndpointScratch */
 typedef struct ImageObject_0054DDE0 {
     uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
@@ -3162,12 +3071,9 @@ typedef struct ImageObject_00562499 {
     uint8_t at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
 } ImageObject_00562499;
 extern ImageObject_00562499 g_ImageObject_00562499;
-typedef struct ImageObject_005624A0 {
-    InGameUiActionHandlerPage10Prefix40 at_g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
-    InGameUiCommandModeActionHandlerPage11 at_g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
-    InGameUiActionHandlerPage12Prefix28 at_g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
-} ImageObject_005624A0;
-extern ImageObject_005624A0 g_ImageObject_005624A0;
+extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
+extern InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
+extern InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
 extern int32_t g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
 extern uint32_t g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
 extern uint32_t g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
@@ -3266,24 +3172,20 @@ extern uint32_t g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackSched
 extern uint32_t g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
 extern uint32_t g_MoviePlaybackCurrentFrame; /* 0056332C g_MoviePlaybackCurrentFrame */
 extern uint32_t g_DebugOverlayCounterRefreshCountdown; /* 00563330 g_DebugOverlayCounterRefreshCountdown: uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
-typedef struct ImageObject_00563334 {
-    uint16_t at_g_FrontendDebugOverlayTextSlot00Utf16[16]; /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot01Utf16[16]; /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot02Utf16[16]; /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot03Utf16[16]; /* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot04Utf16[16]; /* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot05Utf16[16]; /* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot06Utf16[16]; /* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot07Utf16[16]; /* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot08Utf16[16]; /* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot09Utf16[16]; /* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot10Utf16[16]; /* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot11Utf16[16]; /* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot12Utf16[16]; /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
-    uint16_t at_g_FrontendDebugOverlayTextSlot13Utf16[16]; /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
-    uint32_t at_g_FrontendDebugOverlayTextSlot13Utf16_rest[8]; /* beyond the declared type */
-} ImageObject_00563334;
-extern ImageObject_00563334 g_ImageObject_00563334;
+extern uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16]; /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16]; /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16]; /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16]; /* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16]; /* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16]; /* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16]; /* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16]; /* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16]; /* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16]; /* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16]; /* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16]; /* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16]; /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
+extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16: owns the unnamed 0x20 bytes up to 0x563514 (elapsed time can exceed 16 units) */
 extern uint32_t g_InGameReadyStateToggleFlags; /* 00563514 g_InGameReadyStateToggleFlags */
 extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48]; /* 00563518 g_UiCatalogGroup48Records */
 extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42]; /* 005635D8 g_UiCatalogGroup42Records */
@@ -3430,11 +3332,8 @@ extern uint32_t g_UiCommandSelectionPageBaseIndex; /* 0056D744 g_UiCommandSelect
 extern uint32_t g_UiCommandTerrainMaskToggleValue; /* 0056D748 g_UiCommandTerrainMaskToggleValue */
 extern FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex; /* 0056D74C g_UiCommandModeGOwnerFactionIndex */
 extern uint32_t g_UiCommandModeGArmyAssetId; /* 0056D750 g_UiCommandModeGArmyAssetId */
-typedef struct ImageObject_0056D754 {
-    int32_t at_g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
-    int32_t at_g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
-} ImageObject_0056D754;
-extern ImageObject_0056D754 g_ImageObject_0056D754;
+extern int32_t g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
+extern int32_t g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
 extern PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId; /* 0056D75C g_UiCommandMode4ArmyAssetId */
 extern uint32_t g_UiCommandCallerMaskHighBit; /* 0056D760 g_UiCommandCallerMaskHighBit */
 extern uint32_t g_UiCommandModeGPrimaryPageIndices[6]; /* 0056D764 g_UiCommandModeGPrimaryPageIndices: uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
@@ -3608,12 +3507,9 @@ extern ImageObject_00572B10 g_ImageObject_00572B10;
 extern uint16_t g_InstallDirectoryScratchUtf16[256]; /* 00572C10 g_InstallDirectoryScratchUtf16 */
 extern uint16_t u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
 extern char s_Software_Planet4_Thandor_00572e20[25]; /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
-typedef struct ImageObject_00572E39 {
-    uint8_t at_s_InstallRegistryValueNameCD; /* 00572E39 s_InstallRegistryValueNameCD */
-    uint16_t at_u_Dscreen00_pcx_00572e3a[1]; /* 00572E3A u_Dscreen00_pcx_00572e3a */
-    uint16_t at_g_ScreenshotFileNameUtf16[13]; /* 00572E3C g_ScreenshotFileNameUtf16 */
-} ImageObject_00572E39;
-extern ImageObject_00572E39 g_ImageObject_00572E39;
+extern char g_InstallRegistryValueNameCD[3]; /* 00572E39 s_InstallRegistryValueNameCD: registry value "CD" */
+/* 00572E3C g_ScreenshotFileNameUtf16: "screen00.pcx" with its two-digit counter at code units 6 and 7 */
+extern uint16_t g_ScreenshotFileNameUtf16[13];
 extern uint16_t u_daten_pck_00572e56[10]; /* 00572E56 u_daten_pck_00572e56 */
 extern uint16_t u_modelle_pck_00572e6a[12]; /* 00572E6A u_modelle_pck_00572e6a */
 extern uint16_t u_graphik_pck_00572e82[12]; /* 00572E82 u_graphik_pck_00572e82 */
@@ -4934,11 +4830,7 @@ typedef struct ImageObject_00575982 {
 extern ImageObject_00575982 g_ImageObject_00575982;
 extern pointer g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
 extern uint32_t g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
-typedef struct ImageObject_00575A9C {
-    uint8_t at_g_Win32PathScratchA[256]; /* 00575A9C g_Win32PathScratchA */
-    uint8_t at_g_Win32PathScratchB[256]; /* 00575B9C g_Win32PathScratchB */
-} ImageObject_00575A9C;
-extern ImageObject_00575A9C g_ImageObject_00575A9C;
+extern uint8_t g_Win32PathScratch[2][256]; /* 00575A9C g_Win32PathScratch: two 0x100-byte narrow path buffers ([1] at 00575B9C, second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
 extern char g_Win32DriveRootPathScratchA[4]; /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
 typedef struct ImageObject_00575CA0 {
     char at_g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
@@ -4970,11 +4862,8 @@ extern DIPROPDWORD MouseBufferProperty; /* 00576BE0 MouseBufferProperty */
 extern uint32_t g_MouseDeviceDataCount; /* 00576BF4 g_MouseDeviceDataCount */
 extern uint32_t g_MousePollBusy; /* 00576BF8 g_MousePollBusy */
 extern DIDEVICEOBJECTDATA_DX3 g_MouseDeviceEvent; /* 00576BFC g_MouseDeviceEvent */
-typedef struct ImageObject_00576C0C {
-    UiPixelCoordinate at_g_MouseX; /* 00576C0C g_MouseX */
-    UiPixelCoordinate at_g_MouseY; /* 00576C10 g_MouseY */
-} ImageObject_00576C0C;
-extern ImageObject_00576C0C g_ImageObject_00576C0C;
+extern UiPixelCoordinate g_MouseX; /* 00576C0C g_MouseX */
+extern UiPixelCoordinate g_MouseY; /* 00576C10 g_MouseY */
 extern UiPointerWheelDelta g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
 extern GraphicsCursorButtonState g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
 extern uint32_t g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
@@ -5015,15 +4904,7 @@ typedef struct ImageObject_00577C80 {
     uint32_t at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
 } ImageObject_00577C80;
 extern ImageObject_00577C80 g_ImageObject_00577C80;
-typedef struct ImageObject_00577CF0 {
-    uint32_t at_g_GraphicsCursorSurfaceDescScratch; /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
-    uint32_t at_g_GraphicsCursorSurfaceDescScratch_rest[3]; /* beyond the declared type */
-    int32_t at_g_GraphicsCursorSurfacePitchBytes; /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
-    uint32_t at_g_GraphicsCursorSurfacePitchBytes_rest[4]; /* beyond the declared type */
-    uint8_t * at_g_GraphicsCursorSurfacePixels; /* 00577D14 g_GraphicsCursorSurfacePixels */
-    uint32_t at_g_GraphicsCursorSurfacePixels_rest[18]; /* beyond the declared type */
-} ImageObject_00577CF0;
-extern ImageObject_00577CF0 g_ImageObject_00577CF0;
+extern DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc; /* 00577CF0 g_GraphicsCursorSurfaceDesc: scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
 typedef struct ImageObject_00577D60 {
     D3DVIEWPORT2 at_g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
     uint32_t at_g_Direct3DViewportState_rest[1]; /* beyond the declared type */
@@ -5041,16 +4922,10 @@ extern uint32_t g_BoundTextureHandle; /* 00577E2C g_BoundTextureHandle */
 extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize; /* 00577E30 g_GraphicsDisplayModeFinalize */
 extern int32_t g_CursorCurrentVisibilityToken; /* 00577E34 g_CursorCurrentVisibilityToken */
 extern int32_t g_CursorAlternateVisibilityToken; /* 00577E38 g_CursorAlternateVisibilityToken */
-typedef struct ImageObject_00577E3C {
-    int32_t at_g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
-    int32_t at_g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
-} ImageObject_00577E3C;
-extern ImageObject_00577E3C g_ImageObject_00577E3C;
-typedef struct ImageObject_00577E44 {
-    int32_t at_g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
-    int32_t at_g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
-} ImageObject_00577E44;
-extern ImageObject_00577E44 g_ImageObject_00577E44;
+extern int32_t g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
+extern int32_t g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
+extern int32_t g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
+extern int32_t g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
 extern int32_t g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
 extern GraphicsPrimitiveRenderStatePreset g_PrimitiveRenderStatePresets[5]; /* 00577E50 g_PrimitiveRenderStatePresets */
 typedef struct ImageObject_00577EA0 {
@@ -5415,7 +5290,10 @@ extern ImageObject_0058B400 g_ImageObject_0058B400;
    pointer with its original location and value. */
 typedef struct ThandorImageBlock { uint32_t start; uint32_t end; const uint8_t *data; } ThandorImageBlock;
 typedef struct ThandorImagePointer { uint32_t location; uint32_t originalValue; } ThandorImagePointer;
-extern const ThandorImageBlock g_ThandorImageBlocks[1889];
-extern const ThandorImagePointer g_ThandorImagePointers[2393];
+/* sorted by original start address */
+extern const ThandorImageBlock g_ThandorImageBlocks[];
+extern const unsigned g_ThandorImageBlockCount;
+extern const ThandorImagePointer g_ThandorImagePointers[];
+extern const unsigned g_ThandorImagePointerCount;
 
 #endif
