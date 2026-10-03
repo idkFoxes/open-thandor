@@ -8,9 +8,7 @@
 #include <thandor/gameplay/session/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
-#include <thandor/platform/debug/campaign.h>
-#include <thandor/platform/debug/statehash.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: gameplay/session/runtime. */
 
@@ -46,12 +44,9 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
   if (!started) {
     return InGameRuntime_FailSession(startupError,outError);
   }
-#ifdef THANDOR_TEST_AIDS
-  g_TestAidSessionCount++;
-  DebugStateHash_SessionStart();
-#endif
+  DebugHook_SessionStarted();
   do {
-    g_TestAidInGameFrames++; /* project test aid, not part of the original code */
+    DebugHook_SessionFrameBegin();
     /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
     g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks - 2;
     if ((int)g_InGamePendingSimulationTicks < 0) {
@@ -59,9 +54,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     }
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
-#ifdef THANDOR_TEST_AIDS
-    DebugCampaign_AutoWinTick();
-#endif
+    DebugHook_SessionFrameEnd();
     /* (the original success paths also left 0x0C in EAX, which no caller reads) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
       g_SoundStopAllVoices();
@@ -1333,13 +1326,9 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
     OldUnitRuntime_ResetPendingTables();
   }
   else {
-#ifdef THANDOR_TEST_AIDS
-    DebugCampaign_LogCarryOver(0);
-#endif
+    DebugHook_CampaignCarryOver(0);
     OldUnitRuntime_MergeMasksAndReplayRecords();
-#ifdef THANDOR_TEST_AIDS
-    DebugCampaign_LogCarryOver(1);
-#endif
+    DebugHook_CampaignCarryOver(1);
   }
   if (!GridScratch_AllocateForFieldGrid(world->fieldGrid,&gridScratchError)) {
     *outError = gridScratchError;
@@ -2252,28 +2241,7 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
   InGameScheduledConditionKind kind;
   InGameEndConditionTriggerRecord8 *endTrigger;
 
-#ifdef THANDOR_TEST_AIDS
-  if (g_GameFactionRuntimeImage.tail.simulationTick == 20) {
-    /* dump the level script before its first evaluation: every used condition (16 raw bytes) and trigger */
-    const uint8_t *raw = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
-    int index;
-    for (index = 0; index < 64; index++) {
-      const uint8_t *c = raw + index * 16;
-      if (c[0] != 0) {
-        Thandor_Log("level script: condition %2d: %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | "
-                    "%02x %02x %02x %02x",index,c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],
-                    c[12],c[13],c[14],c[15]);
-      }
-    }
-    for (index = 0; index < 16; index++) {
-      const uint8_t *t = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers[index];
-      if (t[0] != 0) {
-        Thandor_Log("level script: trigger %2d: %02x %02x %02x %02x %02x %02x %02x %02x",index,t[0],t[1],t[2],t[3],
-                    t[4],t[5],t[6],t[7]);
-      }
-    }
-  }
-#endif
+  DebugHook_LevelScriptBeforeEvaluation();
   for (factionIndex = 1; factionIndex < 8; factionIndex++) {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] ==
         FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING) {
@@ -2292,35 +2260,14 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
     }
     condition++;
   }
-#ifdef THANDOR_TEST_AIDS
-  if (g_GameFactionRuntimeImage.tail.simulationTick == 20) {
-    const uint8_t *c = (const uint8_t *)&(levelConditionStorage->schedule).conditions[10];
-    Thandor_Log("level script: after evaluation condition 10: %02x %02x %02x %02x | %02x, storage %p/%p",
-                c[0],c[1],c[2],c[3],c[4],(void *)levelConditionStorage,
-                (void *)g_InGameLevelRuntimeGlobalBlock.conditionStorage);
-  }
-#endif
+  DebugHook_LevelScriptAfterEvaluation(levelConditionStorage);
   endTrigger = (InGameEndConditionTriggerRecord8 *)(levelConditionStorage->schedule).triggers;
   for (triggerIndex = 0; triggerIndex < INGAME_END_CONDITION_TRIGGER_COUNT; triggerIndex++, endTrigger++) {
     if ((endTrigger->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
        (((levelConditionStorage->schedule).conditions[endTrigger->conditionIndex].statusAndKind.raw &
          INGAME_SCHEDULED_CONDITION_SATISFIED) != 0)) {
       endTrigger->stateFlags = endTrigger->stateFlags | INGAME_END_CONDITION_TRIGGER_PROCESSED;
-#ifdef THANDOR_TEST_AIDS
-      {
-        InGameScheduledConditionRecord10 *condition =
-             &(levelConditionStorage->schedule).conditions[endTrigger->conditionIndex];
-        Thandor_Log("level script: end trigger %u fired at tick %u: condition %u kind %u operands %d %d %d, "
-                    "faction %u (local %u, lifecycle %u), end selection %u",
-                    (unsigned)triggerIndex,(unsigned)g_GameFactionRuntimeImage.tail.simulationTick,
-                    (unsigned)endTrigger->conditionIndex,(unsigned)(condition->statusAndKind.kind & ~1u),
-                    ((int *)condition)[1],((int *)condition)[2],((int *)condition)[3],
-                    (unsigned)endTrigger->factionRuntimeIndex,
-                    (unsigned)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex,
-                    (unsigned)g_GameFactionRuntimeImage.tail.factionLifecycleStates[endTrigger->factionRuntimeIndex],
-                    (unsigned)endTrigger->endMovieSelectionIndex);
-      }
-#endif
+      DebugHook_LevelScriptEndTrigger(levelConditionStorage,triggerIndex,endTrigger);
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[endTrigger->factionRuntimeIndex] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
         InGameConditionRuntime_EndTriggerFaction(endTrigger);
@@ -2935,9 +2882,7 @@ static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
   WorldRuntimeContext *worldRuntime;
   WorldOwnerListNode *worldNode;
 
-#ifdef THANDOR_TEST_AIDS
-  g_TestAidInSimulationStep = 1;
-#endif
+  DebugHook_SimulationStepBegin();
   g_GameFactionRuntimeImage.tail.simulationTick++;
   worldRuntime = &inGameRoot->worldRuntime;
   tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
@@ -2949,10 +2894,7 @@ static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
     InGameConditionRuntime_UpdateScheduledRecords();
   }
   InGameTick_RunWorldJob(inGameRoot,tickPhase);
-#ifdef THANDOR_TEST_AIDS
-  g_TestAidInSimulationStep = 0;
-  DebugStateHash_AfterStep();
-#endif
+  DebugHook_SimulationStepEnd();
 }
 
 

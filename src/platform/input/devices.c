@@ -7,22 +7,10 @@
 
 #include <thandor/platform/input/devices.h>
 #include <thandor/thandor.h>
-#ifdef THANDOR_TEST_AIDS
-#include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
-#endif
+#include <thandor/platform/debug/hooks.h>
 #include <intrin.h>
 
 /* Implementation ownership: platform/input/devices. */
-#ifdef THANDOR_TEST_AIDS
-
-/* DirectInput mouse cooperative level: exclusive in the foreground like the original, non-exclusive for the
-   windowed test aid (OPEN_THANDOR_WINDOWED) so the desktop mouse is not grabbed. */
-static TH_LEGACY_DWORD DirectInputMouse_CooperativeLevel(void)
-{
-  return Thandor_TestAidWindowed() ? (DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) : (DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-}
-#endif
 
 /* Address: 0x00417280.
    Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
@@ -153,13 +141,8 @@ bool DirectInputMouse_Init(uint32_t *outError)
   if (directInputResult != 0) {
     return DirectInputMouse_FailSetup(2,outError);
   }
-#ifdef THANDOR_TEST_AIDS
   directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                    (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
-#else
-  directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                    (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-#endif
+                    (g_MouseDevice,g_MainWindow,DebugHook_MouseCooperativeLevel(DISCL_EXCLUSIVE | DISCL_FOREGROUND));
   if (directInputResult != 0) {
     return DirectInputMouse_FailSetup(3,outError);
   }
@@ -279,13 +262,9 @@ void DirectInputMouse_RefreshDeviceIfIdle(void)
       if (createDeviceResult == DI_OK) {
         deviceConfigResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
         if (deviceConfigResult == DI_OK) {
-#ifdef THANDOR_TEST_AIDS
           deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                              (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
-#else
-          deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                              (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-#endif
+                              (g_MouseDevice,g_MainWindow,
+                               DebugHook_MouseCooperativeLevel(DISCL_EXCLUSIVE | DISCL_FOREGROUND));
           if (deviceConfigResult == DI_OK) {
             deviceConfigResult = g_MouseDevice->lpVtbl->SetProperty
                               (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
@@ -466,13 +445,11 @@ void DirectInputMouse_PollBufferedEvents(void)
   int processedCount;
 
   processedCount = 0;
-#ifdef THANDOR_TEST_AIDS
-  /* test aid (not in the original): while an input script (OPEN_THANDOR_SCRIPT) drives the game, the real
-     mouse is ignored so it cannot move the cursor between a scripted move and click */
-  if (Thandor_TestAidScriptActive()) {
+  /* developer tools (not in the original): while an input script (OPEN_THANDOR_SCRIPT) drives the game, the
+     real mouse is ignored so it cannot move the cursor between a scripted move and click */
+  if (DebugHook_IgnoreRealMouse()) {
     return;
   }
-#endif
   /* XCHG: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
   if (THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1) != 0) {
     return;

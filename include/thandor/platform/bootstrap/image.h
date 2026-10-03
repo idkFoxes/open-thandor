@@ -8,8 +8,9 @@
 #define THANDOR_PLATFORM_BOOTSTRAP_IMAGE_H
 
 /*
-Process support of the rebuilt executable: logging, crash and hang reports, small Win32 helpers, and
-for the differential self-tests copies of original machine code from thandor_original.exe.
+Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers. (The
+copies of original machine code for the differential self-tests are developer tools:
+thandor/platform/debug/original_code.h.)
 
 thandor.exe keeps code and data in one writable .text section at fixed addresses. The rebuilt executable
 compiles that data in as ordinary C variables (src/<area>/<module>/data.c); nothing of the original image
@@ -39,8 +40,6 @@ unsigned Thandor_TickCount(void);
 void Thandor_SleepMs(unsigned milliseconds);
 /* Returns nonzero when the UTF-16 path names an existing directory. */
 int Thandor_DirectoryExistsW(const unsigned short *path);
-/* Self-tests: an executable copy of original code bytes (position-independent functions only). */
-void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
 /* Full path of the running executable (ANSI), independent of how it was started. */
 void Thandor_GetExecutablePathA(char *out, unsigned capacity);
 

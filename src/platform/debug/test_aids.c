@@ -5,8 +5,6 @@
  * Project code (not in the original game)
  */
 
-#ifdef THANDOR_TEST_AIDS
-
 /* Own translation unit: uses the real Windows SDK headers, not generated/types.h. */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -156,5 +154,3 @@ void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y)
     *x = origin.x;
     *y = origin.y;
 }
-
-#endif /* THANDOR_TEST_AIDS */

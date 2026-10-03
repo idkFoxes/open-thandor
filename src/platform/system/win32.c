@@ -11,8 +11,7 @@
 #include <thandor/platform/system/win32.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/autoshot.h>
-#include <thandor/platform/debug/script.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: platform/system/win32. */
 
@@ -28,13 +27,13 @@ static void Win32_ShutdownAndExit(void)
    The game's non-blocking message pump (g_Win32PumpMessages): handles every pending message of the main
    window (TranslateMessage only where Win32_ShouldTranslateMessageFlags allows it) and returns once the
    queue is empty. WM_QUIT or a window being destroyed (g_WindowDestroyDepth) shuts the game down and
-   ends the process instead. open-thandor first runs its test aids (autoshot, input script).
+   ends the process instead. With the developer tools open-thandor first runs its automatic screenshots and the
+   input script.
 */
 void Win32_PumpMessages(void)
 
 {
-  DebugAutoShot_Tick();
-  DebugScript_Tick();
+  DebugHook_MessagePump();
 
   while (PeekMessageA((LPMSG)&g_MainMessageStorage.message,g_MainWindow,0,0,PM_REMOVE) != 0) {
     if (g_WindowDestroyDepth != 0 || g_MainMessageStorage.message.message == WM_QUIT) {

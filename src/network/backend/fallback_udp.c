@@ -7,10 +7,7 @@
 
 #include <thandor/network/backend/fallback_udp.h>
 #include <thandor/thandor.h>
-#ifdef THANDOR_TEST_AIDS
-#include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
-#endif
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: network/backend/fallback_udp. */
 
@@ -188,21 +185,15 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 {
   NetworkIpv4AddressNetworkOrder bindAddress;
   uint32_t socketHandle;
+  int bindResult;
 
   socketHandle = g_WinSock_socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
   if (socketHandle == INVALID_SOCKET) {
     return NetworkFallback_FailSocketSetup(INVALID_SOCKET);
   }
   bindAddress = NetworkFallback_ResolveIpOptionAddress();
-#ifdef THANDOR_TEST_AIDS
-  /* test aid (OPEN_THANDOR_NET_PORT, not in the original): a second instance on this machine binds to
-     another port; the local/broadcast descriptor below keeps the game port */
-  g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
-       g_WinSock_htons((uint16_t)Thandor_TestAidNetworkBindPort(localPort));
-#else
   g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
        g_WinSock_htons((uint16_t)localPort);
-#endif
   g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
   g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
   g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
@@ -210,19 +201,19 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
   g_NetworkFallbackBindEndpoint.zeroPadding[2] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[3] = 0;
   /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
-#ifdef THANDOR_TEST_AIDS
-  g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
-       (uint32_t)g_WinSock_htons((uint16_t)localPort) << 16 | NETWORK_ADDRESS_FAMILY_IPV4;
-#else
   g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
        (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
        NETWORK_ADDRESS_FAMILY_IPV4;
-#endif
   g_NetworkFallbackBindEndpoint.zeroPadding[4] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
   g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-  if (g_WinSock_bind(socketHandle,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress)) != 0) {
+  /* developer tools (OPEN_THANDOR_NET_PORT, not in the original): a second instance on this machine binds to
+     another port; the endpoint keeps the game port for the code that reads it later */
+  DebugHook_BeforeUdpBind(&g_NetworkFallbackBindEndpoint,localPort);
+  bindResult = g_WinSock_bind(socketHandle,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
+  DebugHook_AfterUdpBind(&g_NetworkFallbackBindEndpoint,localPort);
+  if (bindResult != 0) {
     return NetworkFallback_FailSocketSetup(socketHandle);
   }
   /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
@@ -288,9 +279,7 @@ bool NetworkFallback_ReceiveDatagram
   if (receivedByteCount < 0) {
     return false;
   }
-#ifdef THANDOR_TEST_AIDS
-  Thandor_TestAidLogDatagram("recv",sourceAddress,receivedByteCount,buffer);
-#endif
+  DebugHook_UdpDatagram("recv",sourceAddress,receivedByteCount,buffer);
   return true;
 }
 
@@ -309,9 +298,7 @@ bool NetworkFallback_SendDatagram
   int winsockErrorCode;
 
   if (g_NetworkFallbackSocket != INVALID_SOCKET) {
-#ifdef THANDOR_TEST_AIDS
-    Thandor_TestAidLogDatagram("send",destinationAddress,byteCount,buffer);
-#endif
+    DebugHook_UdpDatagram("send",destinationAddress,byteCount,buffer);
     sentByteCount =
          g_WinSock_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,sizeof(WinSockAddress));
     if ((int)sentByteCount < 0) {
@@ -355,14 +342,7 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
       ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
     }
   }
-#ifdef THANDOR_TEST_AIDS
-  /* The original copies family and port from g_NetworkFallbackBindEndpoint. The local descriptor holds the
-     same header (family, game port); it is read here so the OPEN_THANDOR_NET_PORT test aid, which binds to
-     another port, still addresses the peer's game port. */
-  bindAddressHeader = g_NetworkLocalEndpoint.addressHeader;
-#else
   bindAddressHeader = g_NetworkFallbackBindEndpoint.addressHeader;
-#endif
   endpointDescriptor16->zeroPadding[0] = 0;
   endpointDescriptor16->zeroPadding[1] = 0;
   endpointDescriptor16->zeroPadding[2] = 0;

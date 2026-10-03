@@ -11,7 +11,7 @@
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/movie_decoder.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: movie/runtime/playback. */
 
@@ -1121,13 +1121,13 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     }
     return true;
   }
-  DebugMovieDecoder_CompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
+  DebugHook_MovieBeforeDecode(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
   consumedBytes = Movie_DecodeFrame4x4Delta
                     (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
-  DebugMovieDecoder_CompareAfter(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
+  DebugHook_MovieAfterDecode(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
   movie->currentFrameIndex = nextFrameIndex;
   movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
-  DebugMovieDecoder_DumpFrame(movie, consumedBytes);
+  DebugHook_MovieFrameDone(movie,consumedBytes);
   if ((movie->openFlags != 0) && (movie->streamState == MOVIE_STREAM_IDLE)) {
     Movie_CompactStreamBuffer(movie);
   }

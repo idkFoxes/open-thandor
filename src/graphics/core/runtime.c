@@ -8,7 +8,7 @@
 #include <thandor/graphics/core/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: graphics/core/runtime. */
 
@@ -56,14 +56,13 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
   if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
     return;
   }
-#ifdef THANDOR_TEST_AIDS
-  /* Windowed test aid (not in the original): the primary surface is the whole desktop, so drawing the cursor
-     at framebuffer coordinates would paint over the desktop's top left corner. GraphicsFramebuffer_Present
-     composes the cursor into the back surface every frame, so the timer refresh is skipped. */
-  if (Thandor_TestAidWindowed()) {
+  /* Windowed mode (developer tools, not in the original): the primary surface is the whole desktop, so drawing
+     the cursor at framebuffer coordinates would paint over the desktop's top left corner.
+     GraphicsFramebuffer_Present composes the cursor into the back surface every frame, so the timer refresh is
+     skipped. */
+  if (DebugHook_Windowed()) {
     return;
   }
-#endif
   /* try-lock: the original swaps 1 into the access state (XCHG) and only draws when it was 0 */
   if (g_CursorSourceAsset != NULL) {
     previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);

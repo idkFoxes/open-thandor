@@ -10,6 +10,7 @@
 #include <string.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/original_code.h>
 #include <thandor/platform/selftest/selftest.h>
 
 /* Self-test data */

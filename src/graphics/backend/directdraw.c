@@ -7,54 +7,9 @@
 
 #include <thandor/graphics/backend/directdraw.h>
 #include <thandor/thandor.h>
-#ifdef THANDOR_TEST_AIDS
-#include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
-#endif
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: graphics/backend/directdraw. */
-#ifdef THANDOR_TEST_AIDS
-
-/* Windowed test aid (OPEN_THANDOR_WINDOWED, not in the original): the few IDirectDrawClipper methods it
-   uses, in vtable order (the generated types only know the clipper as an opaque pointer). */
-typedef struct TestAidDirectDrawClipper TestAidDirectDrawClipper;
-typedef struct TestAidDirectDrawClipperVtbl {
-  void *QueryInterface;
-  void *AddRef;
-  TH_LEGACY_ULONG (__stdcall *Release)(TestAidDirectDrawClipper *);
-  void *GetClipList;
-  void *GetHWnd;
-  void *Initialize;
-  void *IsClipListChanged;
-  void *SetClipList;
-  TH_LEGACY_HRESULT (__stdcall *SetHWnd)(TestAidDirectDrawClipper *, TH_LEGACY_DWORD, void *);
-} TestAidDirectDrawClipperVtbl;
-struct TestAidDirectDrawClipper {
-  TestAidDirectDrawClipperVtbl *lpVtbl;
-};
-
-/* Windowed test aid: sizes the window to the mode and clips the primary surface to it. */
-static TH_LEGACY_HRESULT GraphicsDirectDraw_TestAidAttachWindowClipper(uint32_t width,uint32_t height)
-{
-  TestAidDirectDrawClipper *clipper;
-  TH_LEGACY_HRESULT result;
-
-  Thandor_TestAidSetWindowClientSize(g_MainWindow,width,height);
-  clipper = NULL;
-  result = g_DirectDraw2->lpVtbl->CreateClipper(g_DirectDraw2,0,(TH_LEGACY_LPVOID *)&clipper,NULL);
-  if (result == 0) {
-    result = clipper->lpVtbl->SetHWnd(clipper,0,g_MainWindow);
-    if (result == 0) {
-      result = g_PrimarySurface3->lpVtbl->SetClipper(g_PrimarySurface3,clipper);
-    }
-    clipper->lpVtbl->Release(clipper); /* the primary surface keeps its own reference */
-  }
-  if (result != 0) {
-    Thandor_Log("test aid: windowed mode could not attach a clipper (%08x)", (unsigned)result);
-  }
-  return result;
-}
-#endif
 
 /* Address: 0x00423CF0.
    Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
@@ -272,14 +227,8 @@ static bool GraphicsDirectDraw_CreateDirectDraw(FrontendDisplayAdapterIndex adap
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE,2,errorCode);
   }
-#ifdef THANDOR_TEST_AIDS
-  comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
-                                                      Thandor_TestAidWindowed() ? DDSCL_NORMAL :
-                                                      DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
-#else
-  comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
-                                                      DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
-#endif
+  comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel
+                    (g_DirectDraw2,g_MainWindow,DebugHook_DirectDrawCooperativeLevel(DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE));
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE,3,errorCode);
   }
@@ -307,11 +256,7 @@ static bool GraphicsDirectDraw_CreateSurfaces
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES,*completedStages + 2,errorCode);
   }
-#ifdef THANDOR_TEST_AIDS
-  if (Thandor_TestAidWindowed()) {
-    GraphicsDirectDraw_TestAidAttachWindowClipper(width,height);
-  }
-#endif
+  DebugHook_AfterPrimarySurfaceCreated(width,height);
   Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
   g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
   /* the back buffer is a system-memory offscreen surface */
@@ -473,16 +418,12 @@ bool GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     completedStages = 4;
     g_ActiveGraphicsAdapterIndex = adapterIndex;
   }
-#ifdef THANDOR_TEST_AIDS
-  if (Thandor_TestAidWindowed()) {
-    comResult = 0; /* windowed test aid: the desktop keeps its mode (and colour depth) */
+  if (DebugHook_Windowed()) {
+    comResult = 0; /* windowed mode (developer tools): the desktop keeps its mode and colour depth */
   }
   else {
     comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
   }
-#else
-  comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
-#endif
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE,completedStages,errorCode);
   }
@@ -492,16 +433,7 @@ bool GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
   if (!GraphicsDirectDraw_ReadPrimaryPixelFormat(completedStages,errorCode)) {
     return false;
   }
-#ifdef THANDOR_TEST_AIDS
-  if (Thandor_TestAidWindowed() && (bitsPerPixel != g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount)) {
-    /* windowed test aid: the surfaces have the desktop's depth, and the blitters chosen below, the
-       renderer's queue (bytesPerPixel) and the pixel packing must all follow the surfaces */
-    Thandor_Log("test aid: windowed %ux%u uses the desktop depth of %u bits instead of %u",
-                (unsigned)width,(unsigned)height,(unsigned)g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount,
-                (unsigned)bitsPerPixel);
-    bitsPerPixel = g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount;
-  }
-#endif
+  bitsPerPixel = DebugHook_SurfaceBitsPerPixel(bitsPerPixel,width,height);
   GraphicsDirectDraw_StoreSoftwarePixelFormat();
   GraphicsDirectDraw_PublishFramebuffer(adapterIndex,bitsPerPixel,height,width);
   return g_GraphicsDisplayModeFinalize(adapterIndex,bitsPerPixel,height,width,errorCode);

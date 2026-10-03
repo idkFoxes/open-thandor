@@ -46,7 +46,6 @@
 #include <thandor/network/backend/data.h>
 #include <thandor/network/protocol/data.h>
 #include <thandor/platform/bootstrap/data.h>
-#include <thandor/platform/debug/data.h>
 #include <thandor/platform/filesystem/data.h>
 #include <thandor/platform/input/data.h>
 #include <thandor/platform/system/data.h>

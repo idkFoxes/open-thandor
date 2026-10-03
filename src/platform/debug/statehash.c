@@ -12,8 +12,6 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/statehash.h>
 
-#ifdef THANDOR_TEST_AIDS
-
 /* FNV-1a over 32-bit words; pointers never go in (addresses differ between builds), only pool indices. */
 typedef struct StateHash {
   uint64_t value;
@@ -313,5 +311,3 @@ void DebugStateHash_AfterStep(void)
     ExitProcess(0);
   }
 }
-
-#endif

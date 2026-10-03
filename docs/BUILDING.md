@@ -18,8 +18,8 @@ Next to `thandor.exe` the game currently needs:
 
 - nothing from the original executable: its data (globals, tables, UI templates) is compiled in as C
   variables of the modules (`src/<area>/<module>/data.c`). Only the optional differential self-tests that run
-  copies of original code (`relaxcmp`, `stretchcmp`, the movie decoder compare `OPEN_THANDOR_MOVIECMP=1`) read
-  `thandor_original.exe` next to the executable.
+  copies of original code (`relaxcmp`, `stretchcmp`, the movie decoder compare `OPEN_THANDOR_MOVIECMP=1`; developer
+  tools only) read `thandor_original.exe` next to the executable.
 - the game's `*.PCK` files and `thandor.dat` from the installation,
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.
@@ -28,25 +28,37 @@ The game always draws with its software renderer and presents through DirectDraw
 and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed, and the display settings list
 only DirectDraw adapters. A `THANDOR.cfg` that still names an adapter index past that list starts on adapter 0.
 
-Environment switches for testing:
+## Developer tools (`THANDOR_DEV_TOOLS`)
+
+All test and debug aids of the port - the self-tests, the input scripts, automatic screenshots, the determinism
+state hash, campaign starts and AUTOWIN, the level-script log, the movie player, dump and compare, windowed mode,
+a second instance, the UDP port and datagram log, the watchdog - are compiled in only with the CMake option
+`THANDOR_DEV_TOOLS` (default `OFF`):
+
+```bat
+cmake -S . -B build-test -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTHANDOR_DEV_TOOLS=ON
+cmake --build build-test
+```
+
+or the preset `test` (`cmake --preset test && cmake --build --preset test`). This test build is what
+`tools/test` drives (`run_checks.py` takes `build-test/thandor.exe`). The tools live in `src/platform/debug` and
+`src/platform/selftest`; the game reaches them only through the hooks in
+[`include/thandor/platform/debug/hooks.h`](../include/thandor/platform/debug/hooks.h). With the option `OFF` those
+sources are not compiled, every hook is a macro that expands to nothing (or passes the original value through),
+no `OPEN_THANDOR_*` variable is read and the game runs the original code paths. The old option name
+`THANDOR_TEST_AIDS=ON` is still accepted and switches `THANDOR_DEV_TOOLS` on.
+
+In a build with the developer tools each tool is switched on at run time by its environment variable; without
+the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|path\|stretch\|stretchcmp\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec` and `movieenc` log hashes of the save-game encoder and the FLM encoders/decoder output - compare them between two builds after touching those) |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|stretchcmp\|relaxcmp\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec` and `movieenc` log hashes of the save-game encoder and the FLM encoders/decoder output - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`) |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes frames and audio to `moviedump\`); the player is in [`src/platform/debug/movie_player.c`](../src/platform/debug/movie_player.c) |
-| `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` |
-| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`) |
-
-Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
-
-### Test build (windowed, local multiplayer)
-
-The test aids for running two instances on one machine are compiled in only with
-`-DTHANDOR_TEST_AIDS=ON` (preset `test`: `cmake --preset test && cmake --build --preset test`); the
-default build leaves them out and compiles to the same code as before they existed. With the test build:
-
-| Variable | Effect |
-|---|---|
+| `OPEN_THANDOR_MOVIEDUMP=1` / `OPEN_THANDOR_MOVIECMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) / compare the frame decoder with the original machine code |
+| `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
+| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
+| `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.c`](../src/platform/debug/statehash.c)) |
 | `OPEN_THANDOR_WINDOWED=1` | normal window instead of full-screen exclusive (desktop colour depth, non-exclusive mouse); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
@@ -54,13 +66,21 @@ default build leaves them out and compiles to the same code as before they exist
 | `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games and campaigns when the "Choose game" page opens, then quit |
 | `OPEN_THANDOR_CAMPAIGN=<name>` | start that campaign when the "Choose game" page opens (with `-KARTE="-"` to get there); `OPEN_THANDOR_CAMPAIGN_LEVEL=<n>` starts it at its n-th level, without the units the previous level would carry over |
 | `OPEN_THANDOR_AUTOWIN=<s>` | end a campaign level as won after <s> seconds: fires the level's end trigger that moves the campaign forward (a later level, else the campaign end) after moving local mobile units that stand outside the exit zone into it; `OPEN_THANDOR_AUTOWIN_LEVELS=<k>` limits it to the first k levels of the run |
+| `OPEN_THANDOR_WATCHDOG=<s>` | log the main thread's stack to `thandor.log` every <s> seconds |
 
-In the test build the real mouse is also ignored while `OPEN_THANDOR_SCRIPT` drives the game, and a
-failed `OPEN_THANDOR_AUTOSHOT` capture is logged. `python tools/test/run_multiplayer.py <game dir> 180
---host-script tools/test/mp_host_create.txt --client-script tools/test/mp_client_join.txt` starts a host
-and a client side by side with these switches; copy the test build's `thandor.exe` into the game
-directory first. The test build also logs the level script (its conditions and triggers, and which end
-trigger fired) and how many units a campaign carries over into a level.
+Always on in this build: the level-script log (its conditions and triggers, and which end trigger fired) and how
+many units a campaign carries over into a level. The crash and hang reports (`crash.log`, `hang.log`) are part of
+every build.
+
+Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
+
+### Local multiplayer
+
+`python tools/test/run_multiplayer.py <game dir> 180 --host-script tools/test/mp_host_create.txt --client-script
+tools/test/mp_client_join.txt` starts a host and a client side by side with the windowed, second-instance and
+UDP port switches; copy the test build's `thandor.exe` into the game directory first.
+
+### Automated checks
 
 `python tools/test/run_all_maps.py <game dir> --jobs 10 --minutes 1` starts every campaign level and single
 game (ten at a time, each in its own linked copy of the game directory), sets the computer opponents to

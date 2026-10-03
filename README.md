@@ -74,9 +74,10 @@ cmake --preset release
 cmake --build --preset release
 ```
 
-The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug` and `test` (adds test aids:
-windowed mode, several instances, scripted input, starting any campaign level, winning a level automatically).
-The optional differential self-tests want `thandor_original.exe` next to the exe.
+The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug` and `test`
+(`THANDOR_DEV_TOOLS=ON`, adds the developer tools: self-tests, windowed mode, several instances, scripted input,
+starting any campaign level, winning a level automatically, the determinism state hash; the default build has
+none of them). The optional differential self-tests want `thandor_original.exe` next to the exe.
 CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
 
 To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this

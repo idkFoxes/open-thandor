@@ -15,8 +15,6 @@
 
 #include <thandor/platform/bootstrap/image.h>
 
-#define ORIGINAL_IMAGE_NAME "thandor_original.exe"
-
 static void executable_directory(char *out, size_t capacity)
 {
     char *slash;
@@ -318,7 +316,9 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 
 static HANDLE g_watchedThread;
 
-/* Diagnostics: with OPEN_THANDOR_WATCHDOG=<seconds>, log the main thread's stack at that interval. */
+#ifdef THANDOR_DEV_TOOLS
+/* Diagnostics (developer tools): with OPEN_THANDOR_WATCHDOG=<seconds>, log the main thread's stack at that
+   interval. */
 static DWORD WINAPI watchdog_thread(void *parameter)
 {
     DWORD interval = (DWORD)(uintptr_t)parameter;
@@ -343,6 +343,17 @@ static DWORD WINAPI watchdog_thread(void *parameter)
         fclose(out);
     }
 }
+
+static void start_watchdog(void)
+{
+    char seconds[16];
+    if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
+        CreateThread(NULL, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, NULL);
+    }
+}
+#else
+#define start_watchdog() ((void)0)
+#endif
 
 volatile long g_ThandorFrameHeartbeat;
 
@@ -401,14 +412,11 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
 
 void Thandor_InstallCrashHandler(void)
 {
-    char seconds[16];
     SetUnhandledExceptionFilter(crash_filter);
     DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
                     DUPLICATE_SAME_ACCESS);
     CreateThread(NULL, 0, hang_detector_thread, NULL, 0, NULL);
-    if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
-        CreateThread(NULL, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, NULL);
-    }
+    start_watchdog();
 }
 
 int Thandor_IsReadable(const void *address, unsigned size)
@@ -440,49 +448,6 @@ int Thandor_DirectoryExistsW(const unsigned short *path)
 {
     DWORD attributes = GetFileAttributesW((const wchar_t *)path);
     return (attributes != INVALID_FILE_ATTRIBUTES) && ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
-}
-
-void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size)
-{
-    char path[MAX_PATH];
-    HANDLE file;
-    DWORD fileSize;
-    DWORD read;
-    unsigned char *data;
-    unsigned char *copy = NULL;
-    IMAGE_DOS_HEADER *dos;
-    IMAGE_NT_HEADERS32 *nt;
-    IMAGE_SECTION_HEADER *section;
-    unsigned i;
-
-    executable_directory(path, sizeof path);
-    strcat_s(path, sizeof path, ORIGINAL_IMAGE_NAME);
-    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-    if (file == INVALID_HANDLE_VALUE) {
-        return NULL;
-    }
-    fileSize = GetFileSize(file, NULL);
-    data = (unsigned char *)HeapAlloc(GetProcessHeap(), 0, fileSize);
-    if (data == NULL || !ReadFile(file, data, fileSize, &read, NULL) || read != fileSize) {
-        CloseHandle(file);
-        return NULL;
-    }
-    CloseHandle(file);
-    dos = (IMAGE_DOS_HEADER *)data;
-    nt = (IMAGE_NT_HEADERS32 *)(data + dos->e_lfanew);
-    section = IMAGE_FIRST_SECTION(nt);
-    for (i = 0; i < nt->FileHeader.NumberOfSections; i++, section++) {
-        unsigned rva = address - nt->OptionalHeader.ImageBase;
-        if (rva >= section->VirtualAddress && rva + size <= section->VirtualAddress + section->SizeOfRawData) {
-            copy = (unsigned char *)VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-            if (copy != NULL) {
-                memcpy(copy, data + section->PointerToRawData + (rva - section->VirtualAddress), size);
-            }
-            break;
-        }
-    }
-    HeapFree(GetProcessHeap(), 0, data);
-    return copy;
 }
 
 void Thandor_GetExecutablePathA(char *out, unsigned capacity)

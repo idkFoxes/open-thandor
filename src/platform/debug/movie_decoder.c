@@ -11,6 +11,7 @@
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/original_code.h>
 #include <thandor/platform/debug/movie_decoder.h>
 
 /* Debug tool: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame (consumed bytes, stream state,

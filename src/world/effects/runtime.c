@@ -7,10 +7,7 @@
 
 #include <thandor/world/effects/runtime.h>
 #include <thandor/thandor.h>
-#ifdef THANDOR_TEST_AIDS
-#include <intrin.h>
-#include <thandor/platform/debug/test_aids.h>
-#endif
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: world/effects/runtime. */
 
@@ -222,9 +219,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   char runtimeClassIndex;
   uint32_t soundTableIndex;
 
-#ifdef THANDOR_TEST_AIDS
-  Thandor_TestAidNoteOutsideStep("effect creation", _ReturnAddress());
-#endif
+  DebugHook_NoteOutsideStep("effect creation");
   if (effectDefinition == NULL) {
     /* the original reports success with the pool base */
     return g_EffectRuntimeSlots;

@@ -8,7 +8,8 @@
 #ifndef THANDOR_PLATFORM_DEBUG_TEST_AIDS_H
 #define THANDOR_PLATFORM_DEBUG_TEST_AIDS_H
 
-/* Test aids (THANDOR_TEST_AIDS builds only): scripted-input detection, a local two-instance network test and
+/* Test aids (developer tools, THANDOR_DEV_TOOLS; game code reaches them through thandor/platform/debug/hooks.h):
+   scripted-input detection, a local two-instance network test and
    a windowed mode. Environment switches: OPEN_THANDOR_SCRIPT, OPEN_THANDOR_MULTI_INSTANCE,
    OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG, OPEN_THANDOR_WINDOWED, OPEN_THANDOR_WINDOW_X,
    OPEN_THANDOR_WINDOW_Y. The script test aid counters are defined in platform/debug/script.c. */
@@ -17,9 +18,8 @@
    level has finished loading. */
 extern volatile unsigned g_TestAidInGameFrames;
 /* Test aid (script `clickuntilnextlevel`, OPEN_THANDOR_AUTOWIN): number of in-game sessions started so far
-   (counted by InGameRuntime_RunSessionUntilExit in the test build only). */
+   (counted through DebugHook_SessionStarted). */
 extern volatile unsigned g_TestAidSessionCount;
-#ifdef THANDOR_TEST_AIDS
 /* Test aids for a local two-instance network test (not in the original):
    OPEN_THANDOR_MULTI_INSTANCE=1 lets a second instance start although a game window exists;
    OPEN_THANDOR_NET_PORT=<n> binds this instance's UDP socket to port n instead of the game port. */
@@ -50,6 +50,5 @@ void *Thandor_TestAidCreateWindowedMainWindow(const char *className, const char 
 void Thandor_TestAidSetWindowClientSize(void *window, unsigned width, unsigned height);
 /* Screen position of the window's client origin. */
 void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y);
-#endif
 
 #endif /* THANDOR_PLATFORM_DEBUG_TEST_AIDS_H */

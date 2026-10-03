@@ -25,9 +25,9 @@
     },
     {
       "name": "test",
-      "displayName": "MSVC x86 RelWithDebInfo with test aids (windowed, local multiplayer)",
+      "displayName": "MSVC x86 RelWithDebInfo with the developer tools (test aids, debug switches, self-tests)",
       "inherits": "msvc-x86",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_TEST_AIDS": "ON" }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
     }
   ],
   "buildPresets": [

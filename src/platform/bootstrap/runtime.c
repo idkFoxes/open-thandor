@@ -11,8 +11,7 @@
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/test_aids.h>
-#include <thandor/platform/debug/movie_player.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
@@ -48,11 +47,7 @@ void __cdecl ProcessEntry(void)
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
-#ifdef THANDOR_TEST_AIDS
-  if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || Thandor_TestAidAllowSecondInstance()) {
-#else
-  if (FindWindowA(sz_MainWindowClass,NULL) == NULL) {
-#endif
+  if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || DebugHook_AllowSecondInstance()) {
     g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
     g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
     g_MainMessageStorage.overlay.windowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
@@ -60,20 +55,12 @@ void __cdecl ProcessEntry(void)
       windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
       screenHeight = GetSystemMetrics(SM_CYSCREEN);
       screenWidth = GetSystemMetrics(SM_CXSCREEN);
-#ifdef THANDOR_TEST_AIDS
-      if (Thandor_TestAidWindowed()) {
-        /* test aid (not in the original): a normal window instead of the full-screen topmost popup */
-        g_MainWindow = (HWND)Thandor_TestAidCreateWindowedMainWindow(sz_MainWindowClass,sz_MainWindowTitle,
-                                                                     windowInstance);
-      }
-      else {
+      /* windowed mode (developer tools, not in the original): a normal window instead of the full-screen
+         topmost popup */
+      if (!DebugHook_CreateMainWindow(sz_MainWindowClass,sz_MainWindowTitle,windowInstance)) {
         g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
                                        0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
       }
-#else
-      g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
-                                     0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
-#endif
       if (g_MainWindow != NULL) {
         ShowWindow(g_MainWindow,SW_SHOWNORMAL);
         UpdateWindow(g_MainWindow);
@@ -1117,23 +1104,7 @@ bool Game_PlayIntroMovies(void)
   bool accessFailed;
   MovieRuntime *introMovie;
 
-    {
-    const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
-    const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
-    if ((exportMovies != NULL) && (exportMovies[0] != 0)) {
-      char names[256];
-      char *name;
-      strncpy(names, exportMovies, sizeof names - 1);
-      names[sizeof names - 1] = 0;
-      for (name = strtok(names, ","); name != NULL; name = strtok(NULL, ",")) {
-        DebugMovie_ExportOne(name);
-      }
-      ExitProcess(0);
-    }
-    if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
-      DebugMovie_Run(debugMovie);
-    }
-  }
+  DebugHook_BeforeIntroMovies();
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     g_GraphicsFramebufferFillRectArgb

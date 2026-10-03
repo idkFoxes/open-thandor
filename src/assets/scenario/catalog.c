@@ -7,7 +7,7 @@
 
 #include <thandor/assets/scenario/catalog.h>
 #include <thandor/thandor.h>
-#include <thandor/platform/debug/campaign.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Implementation ownership: assets/scenario/catalog. */
 
@@ -270,12 +270,9 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   /* Rebuild the tab's list, then refresh the description of its selected entry. */
   g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
   g_FrontendScenarioMapOptionHandlerTable[activeTabIndex](0,0,0,0);
-#ifdef THANDOR_TEST_AIDS
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL &&
-      DebugCampaign_ApplyScenarioOptions()) {
+  if (DebugHook_ScenarioPageOpened()) {
     return;
   }
-#endif
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     controlFlags = &(scenarioSelectionPage->scenarioOptionRow1).control.base.nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
@@ -1122,9 +1119,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     checkedValue = FatalError_ExitIfFailed
                         (loadedEntry != NULL ? (uint32_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
     campaignAsset = (CampaignAsset *)checkedValue;
-#ifdef THANDOR_TEST_AIDS
-    DebugCampaign_SelectCampaignLevel((uint8_t *)campaignAsset);
-#endif
+    DebugHook_CampaignLoaded(campaignAsset);
     /* CampaignAsset: the first level becomes the current one; find its record. levelRecordCursor is the
        asset base advanced by whole CampaignLevelRecords, so its levels[0] is the record under the cursor. */
     levelRecordCursor = (uint8_t *)campaignAsset;

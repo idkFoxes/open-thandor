@@ -17,5 +17,8 @@ __declspec(align(16)) int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 /* 00563BBC g_OldUnitSecondaryTable */
 __declspec(align(4)) uint32_t *g_OldUnitSecondaryTable = 0;
 
+/* 00563BC0 g_OldUnitPrimaryTable */
+__declspec(align(16)) uint32_t *g_OldUnitPrimaryTable = 0;
+
 /* 00563BC4 g_OldUnitRecordCount */
 __declspec(align(4)) OldUnitRecordCount g_OldUnitRecordCount = 0;

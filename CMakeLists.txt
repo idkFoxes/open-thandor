@@ -9,10 +9,21 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # before assigning them; the debug runtime checks would stop on each one.
 string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
-# OFF (default): the build matches the original's code. ON: compile in the runtime test aids for a
-# local two-instance multiplayer test and windowed mode (OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE,
-# OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG; see docs/BUILDING.md and tools/test/run_multiplayer.py).
-option(THANDOR_TEST_AIDS "Build the local multiplayer/windowed test aids" OFF)
+# Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,
+# the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/dump/compare, windowed
+# mode, second instance, UDP port and datagram log, watchdog - all switched on at run time by OPEN_THANDOR_*
+# environment variables (docs/BUILDING.md). The game reaches them only through
+# include/thandor/platform/debug/hooks.h. OFF (default): none of it is compiled, the hooks expand to nothing and
+# the game runs the original code paths. ON: the test build (preset "test", build-test) that tools/test drives.
+option(THANDOR_DEV_TOOLS "Build the developer tools (test aids, debug switches, self-tests)" OFF)
+# THANDOR_TEST_AIDS was the old name of this option (ON switches the developer tools on).
+if(DEFINED THANDOR_TEST_AIDS)
+    if(THANDOR_TEST_AIDS)
+        set(THANDOR_DEV_TOOLS ON CACHE BOOL "Build the developer tools (test aids, debug switches, self-tests)" FORCE)
+    endif()
+    message(STATUS "THANDOR_TEST_AIDS is obsolete, use THANDOR_DEV_TOOLS (now ${THANDOR_DEV_TOOLS})")
+    unset(THANDOR_TEST_AIDS CACHE)
+endif()
 
 # The code needs MSVC (inline __asm, __stdcall/__fastcall, MSVC pragmas) targeting 32-bit x86.
 # Use a preset (CMakePresets.json: debug, release, test), which finds MSVC x86 by itself, or
@@ -121,15 +132,6 @@ add_library(thandor_curated STATIC
     src/network/protocol/transfer.c
     src/platform/bootstrap/data.c
     src/platform/bootstrap/runtime.c
-    src/platform/debug/autoshot.c
-    src/platform/debug/campaign.c
-    src/platform/debug/data.c
-    src/platform/debug/font.c
-    src/platform/debug/movie_decoder.c
-    src/platform/debug/movie_player.c
-    src/platform/debug/script.c
-    src/platform/debug/statehash.c
-    src/platform/debug/test_aids.c
     src/platform/filesystem/data.c
     src/platform/filesystem/win32.c
     src/platform/input/data.c
@@ -193,13 +195,26 @@ target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 add_executable(thandor WIN32
     src/platform/bootstrap/main.c
     src/platform/bootstrap/image.c
-    src/platform/selftest/selftests.c
-    src/platform/selftest/relax.c
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
-if(THANDOR_TEST_AIDS)
-    target_compile_definitions(thandor_curated PRIVATE THANDOR_TEST_AIDS=1)
-    target_compile_definitions(thandor PRIVATE THANDOR_TEST_AIDS=1)
+if(THANDOR_DEV_TOOLS)
+    target_sources(thandor_curated PRIVATE
+        src/platform/debug/autoshot.c
+        src/platform/debug/campaign.c
+        src/platform/debug/font.c
+        src/platform/debug/hooks.c
+        src/platform/debug/level_script.c
+        src/platform/debug/movie_decoder.c
+        src/platform/debug/movie_player.c
+        src/platform/debug/original_code.c
+        src/platform/debug/script.c
+        src/platform/debug/statehash.c
+        src/platform/debug/test_aids.c
+        src/platform/debug/windowed.c
+        src/platform/selftest/relax.c
+        src/platform/selftest/selftests.c
+    )
+    target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)
 endif()

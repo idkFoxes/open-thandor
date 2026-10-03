@@ -7,7 +7,6 @@
 
 #include <thandor/platform/debug/campaign.h>
 
-#ifdef THANDOR_TEST_AIDS
 #include <stdlib.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -272,4 +271,3 @@ void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes)
     Thandor_Log("test aid: campaign starts at level %d",atoi(wanted));
   }
 }
-#endif

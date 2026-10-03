@@ -59,12 +59,10 @@ static void DebugAutoShot_Save(const char *prefix, unsigned *number)
 {
   GraphicsCapturedTextureSourceAsset *capture;
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-#ifdef THANDOR_TEST_AIDS
   if (capture == NULL) {
     Thandor_Log("autoshot failed: backend access state %d, frame heartbeat %u",
                 (int)g_GraphicsBackendAccessState, g_ThandorFrameHeartbeat);
   }
-#endif
   if (capture != NULL) {
     GraphicsTextureSourceEntry *entry = &capture->sourceEntry;
     const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture + entry->dataOffset);
