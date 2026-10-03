@@ -1017,6 +1017,42 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
 }
 
 
+/* Not in the original (split out of Movie_AdvanceFrame): stores endCode in *outEndCode when given and
+   returns false, the "no frame" result of Movie_AdvanceFrame. */
+static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
+{
+  if (outEndCode != NULL) {
+    *outEndCode = endCode;
+  }
+  return false;
+}
+
+/* Not in the original (split out of Movie_AdvanceFrame): once the read position of a streamed movie is a
+   whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift (a REP MOVSD
+   in the original) to make room for further refills. */
+static void Movie_CompactStreamBuffer(MovieRuntime *movie)
+{
+  uint32_t readOffset;
+  uint32_t loadedSize;
+  uint32_t dwordsLeft;
+  uint32_t *copySource;
+  uint32_t *copyDestination;
+
+  readOffset = movie->videoStreamOffset;
+  loadedSize = (uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader);
+  if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < readOffset) && (readOffset < loadedSize)) {
+    movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
+    copyDestination = (uint32_t *)((uint8_t *)movie->fileHeader + readOffset - MOVIE_COMPACT_SHIFT_BYTES);
+    movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
+    copySource = (uint32_t *)((uint8_t *)copyDestination + MOVIE_COMPACT_SHIFT_BYTES);
+    for (dwordsLeft = (loadedSize - readOffset) >> 2; dwordsLeft != 0; dwordsLeft--) {
+      *copyDestination = *copySource;
+      copySource++;
+      copyDestination++;
+    }
+  }
+}
+
 /* Address: 0x004A8A60.
    Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
    Asks the worker for more data when the buffer has room, starts the soundtrack with the first frame, and
@@ -1033,97 +1069,73 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 {
   MovieFileHeader *flmHeader;
   MovieFrameIndex previousFrameIndex;
+  MovieFrameIndex nextFrameIndex;
   MovieRuntime *movie;
-  uint32_t byteCountOrStatus;
+  uint32_t bufferedBytes;
   uint32_t consumedBytes;
-  uint32_t nextFrameOrLoadedSize;
-  uint32_t *copySource;
-  uint32_t *copyDestination;
   uint8_t *streamCursor;
   IDirectSoundBuffer *playedVoice;
 
   movie = g_ActiveMovie;
-  byteCountOrStatus = FATAL_ERROR_MOVIE_INVALID;
-  if (g_ActiveMovie != NULL) {
-    if (g_ActiveMovie->streamState == MOVIE_STREAM_READ_FAILED) {
-      /* 0x004A8BDD PUSH EBX; CALL g_FileSystemClose. On this path the function never loads EBX, so the
-         original closes whatever EBX its caller left there -- never the movie stream handle: a UI/runtime
-         object pointer in the frontend/in-game/briefing callers, g_FramebufferHeight in the
-         Game_PlayIntroMovies frame loop (0x00573B2C MOV EBX,ECX), the outer caller's EBX via
-         MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
-         open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
-         CloseHandle on an unrelated value. */
-      g_FileSystemClose(NULL);
-      movie->remainingVideoBytes = 0;
-    }
-    else {
-      if (((g_ActiveMovie->streamState == MOVIE_STREAM_IDLE) && (g_ActiveMovie->workerActive != 0))
-         && (g_ActiveMovie->remainingVideoBytes != 0)) {
-        if ((uint32_t)(g_ActiveMovie->loadedVideoEnd - (uint8_t *)g_ActiveMovie->fileHeader) <
-            MOVIE_REFILL_LIMIT_BYTES) {
-          g_ActiveMovie->streamState = MOVIE_STREAM_FILL_REQUESTED;
-          ReleaseSemaphore(movie->refillSemaphore,1,NULL);
-        }
-      }
-      flmHeader = movie->fileHeader;
-      previousFrameIndex = movie->currentFrameIndex;
-      streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
-      if ((previousFrameIndex == 0) && (movie->audioVoiceSet != NULL)) {
-        /* stored whether or not it plays (NULL on failure) */
-        g_SoundPlayOneShot(movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet,&playedVoice);
-        movie->activeAudioBuffer = playedVoice;
-      }
-      nextFrameOrLoadedSize = previousFrameIndex + 1;
-      byteCountOrStatus = movie->loadedVideoEnd - streamCursor;
-      if (nextFrameOrLoadedSize <= flmHeader->frameCount) {
-        if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < MOVIE_REFILL_CHUNK_BYTES)) {
-          /* Not enough bytes buffered yet: success without decoding. Original quirk: the original returns
-             ESI - 0x220 here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
-             0x004A8B48. Callers keep the value as the movie only after the first-frame call, which cannot
-             get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
-          if (outMovie != NULL) {
-            *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
-          }
-          return true;
-        }
-        DebugMovieDecoder_CompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
-        consumedBytes = Movie_DecodeFrame4x4Delta
-                          (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
-        DebugMovieDecoder_CompareAfter(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
-        movie->currentFrameIndex = nextFrameOrLoadedSize;
-        movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
-        DebugMovieDecoder_DumpFrame(movie, consumedBytes);
-        if ((movie->openFlags != 0) && (movie->streamState == MOVIE_STREAM_IDLE)) {
-          byteCountOrStatus = movie->videoStreamOffset;
-          nextFrameOrLoadedSize = movie->loadedVideoEnd - (uint8_t *)movie->fileHeader;
-          /* once the read position is a whole shift past the header, move the unplayed bytes down by
-             MOVIE_COMPACT_SHIFT_BYTES (a REP MOVSD in the original) to make room for further refills */
-          if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < byteCountOrStatus) &&
-              (byteCountOrStatus < nextFrameOrLoadedSize)) {
-            movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
-            copyDestination =
-                 (uint32_t *)((uint8_t *)movie->fileHeader + byteCountOrStatus - MOVIE_COMPACT_SHIFT_BYTES);
-            movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
-            copySource = (uint32_t *)((uint8_t *)copyDestination + MOVIE_COMPACT_SHIFT_BYTES);
-            for (byteCountOrStatus = (nextFrameOrLoadedSize - byteCountOrStatus) >> 2; byteCountOrStatus != 0;
-                 byteCountOrStatus--) {
-              *copyDestination = *copySource;
-              copySource++;
-              copyDestination++;
-            }
-          }
-        }
-        if (outMovie != NULL) {
-          *outMovie = movie;
-        }
-        return true;
-      }
-    }
+  if (movie == NULL) {
+    return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
-  if (outEndCode != NULL) {
-    *outEndCode = byteCountOrStatus;
+  if (movie->streamState == MOVIE_STREAM_READ_FAILED) {
+    /* 0x004A8BDD PUSH EBX; CALL g_FileSystemClose. On this path the function never loads EBX, so the
+       original closes whatever EBX its caller left there -- never the movie stream handle: a UI/runtime
+       object pointer in the frontend/in-game/briefing callers, g_FramebufferHeight in the
+       Game_PlayIntroMovies frame loop (0x00573B2C MOV EBX,ECX), the outer caller's EBX via
+       MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
+       open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
+       CloseHandle on an unrelated value. */
+    g_FileSystemClose(NULL);
+    movie->remainingVideoBytes = 0;
+    return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
-  return false;
+  if ((movie->streamState == MOVIE_STREAM_IDLE) && (movie->workerActive != 0) &&
+      (movie->remainingVideoBytes != 0) &&
+      ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < MOVIE_REFILL_LIMIT_BYTES)) {
+    movie->streamState = MOVIE_STREAM_FILL_REQUESTED;
+    ReleaseSemaphore(movie->refillSemaphore,1,NULL);
+  }
+  flmHeader = movie->fileHeader;
+  previousFrameIndex = movie->currentFrameIndex;
+  streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
+  if ((previousFrameIndex == 0) && (movie->audioVoiceSet != NULL)) {
+    /* stored whether or not it plays (NULL on failure) */
+    g_SoundPlayOneShot(movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet,&playedVoice);
+    movie->activeAudioBuffer = playedVoice;
+  }
+  nextFrameIndex = previousFrameIndex + 1;
+  bufferedBytes = (uint32_t)(movie->loadedVideoEnd - streamCursor);
+  if (nextFrameIndex > flmHeader->frameCount) {
+    /* past the last frame: the end code is the unplayed byte count */
+    return Movie_ReportAdvanceEnd(outEndCode,bufferedBytes);
+  }
+  if ((movie->remainingVideoBytes != 0) && (bufferedBytes < MOVIE_REFILL_CHUNK_BYTES)) {
+    /* Not enough bytes buffered yet: success without decoding. Original quirk: the original returns
+       ESI - 0x220 here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
+       0x004A8B48. Callers keep the value as the movie only after the first-frame call, which cannot
+       get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
+    if (outMovie != NULL) {
+      *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
+    }
+    return true;
+  }
+  DebugMovieDecoder_CompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
+  consumedBytes = Movie_DecodeFrame4x4Delta
+                    (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
+  DebugMovieDecoder_CompareAfter(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
+  movie->currentFrameIndex = nextFrameIndex;
+  movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
+  DebugMovieDecoder_DumpFrame(movie, consumedBytes);
+  if ((movie->openFlags != 0) && (movie->streamState == MOVIE_STREAM_IDLE)) {
+    Movie_CompactStreamBuffer(movie);
+  }
+  if (outMovie != NULL) {
+    *outMovie = movie;
+  }
+  return true;
 }
 
 
@@ -1154,6 +1166,37 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 }
 
 
+/* Not in the original (split out of Movie_DecodeFrame4x4Delta, which unrolls it twice): draws one 4x4 colour
+   block from its two stream dwords. Table row = chroma code (second dword bits 21-30) * 32 + base luma (first
+   dword bits 0-4). The sixteen 3-bit luma steps, in row order, sit at bits 5-31 of the first dword (steps
+   0-8) and bits 0-20 of the second (steps 9-15). With bit 31 of the second dword set every step counts twice
+   (luma range 0..14 instead of 0..7). */
+static void Movie_DecodeColorBlock(uint32_t *blockTopLeft,MoviePixelDimension widthPixels,uint32_t blockWord0,
+                                   uint32_t blockWord1)
+{
+  uint32_t tableIndex;
+  uint32_t lumaStepScale;
+  uint32_t lumaStep;
+  uint32_t pixelIndex;
+  uint32_t *destinationRow;
+
+  tableIndex = (blockWord1 & MOVIE_COLOR_CHROMA_MASK << 16) >> 16 | blockWord0 & MOVIE_TOKEN_MASK;
+  lumaStepScale = ((int)blockWord1 < 0) ? 2 : 1;
+  destinationRow = blockTopLeft;
+  for (pixelIndex = 0; pixelIndex < 16; pixelIndex++) {
+    if (pixelIndex < 9) {
+      lumaStep = blockWord0 >> (5 + pixelIndex * 3) & 7;
+    }
+    else {
+      lumaStep = blockWord1 >> ((pixelIndex - 9) * 3) & 7;
+    }
+    destinationRow[pixelIndex & 3] = g_MovieChromaLumaToArgb[0][tableIndex + lumaStep * lumaStepScale];
+    if ((pixelIndex & 3) == 3) {
+      destinationRow = destinationRow + widthPixels;
+    }
+  }
+}
+
 /* Address: 0x004A81C0.
    Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order. A colour block
    (token 0..24 = base luma) holds a 10-bit chroma code and sixteen 3-bit luma steps that index
@@ -1166,126 +1209,41 @@ uint32_t Movie_DecodeFrame4x4Delta
 
 {
   uint32_t blockWord0;
-  uint32_t blockWord1;
-  uint32_t pixel1;
-  uint32_t pixel2;
-  uint32_t pixel3;
-  uint32_t tokenOrTableIndex;
-  uint32_t *streamCursor;
-  uint32_t *destinationRow;
+  uint32_t token;
+  uint8_t *streamCursor;
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
   uint32_t skipRemaining;
 
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;
-  streamCursor = (uint32_t *)encodedFrame;
+  streamCursor = encodedFrame;
   blocksLeftInRow = widthPixels >> 2;
   do {
     do {
-      blockWord0 = *streamCursor;
-      if (skipRemaining == 0) {
-        tokenOrTableIndex = blockWord0 & MOVIE_TOKEN_MASK;
-        blockWord1 = streamCursor[1];
-        if (tokenOrTableIndex < MOVIE_TOKEN_SKIP_SHORT) {
-          /* colour block: table row = chroma code (second dword bits 21-30) * 32 + base luma; the luma steps
-             sit at bits 5-31 of the first and bits 0-20 of the second dword. With bit 31 of the second dword
-             set every step counts twice (luma range 0..14 instead of 0..7). */
-          if ((int)blockWord1 < 0) {
-            tokenOrTableIndex = (blockWord1 & MOVIE_COLOR_CHROMA_MASK << 16) >> 16 | *streamCursor & MOVIE_TOKEN_MASK;
-            blockWord0 = *streamCursor;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 11 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 14 & 7) * 2];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7) * 2];
-            destinationArgb[1] = pixel1;
-            destinationArgb[2] = pixel2;
-            destinationArgb[3] = pixel3;
-            destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 20 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 23 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 26 & 7) * 2];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 17 & 7) * 2];
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationRow = destinationRow + widthPixels;
-            blockWord1 = streamCursor[1];
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 3 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7) * 2];
-            /* step (blockWord0 >> 29) * 2, formed directly as a byte offset */
-            *destinationRow = *(uint32_t *)((int)g_MovieChromaLumaToArgb[0] +
-                                (blockWord0 >> 26 & ~7u) + tokenOrTableIndex * 4);
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 12 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 15 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 18 & 7) * 2];
-            streamCursor = streamCursor + 2;
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7) * 2];
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationArgb = destinationRow + widthPixels * -3;
-          }
-          else {
-            tokenOrTableIndex = (blockWord1 & MOVIE_COLOR_CHROMA_MASK << 16) >> 16 | *streamCursor & MOVIE_TOKEN_MASK;
-            blockWord0 = *streamCursor;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 11 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 14 & 7)];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7)];
-            destinationArgb[1] = pixel1;
-            destinationArgb[2] = pixel2;
-            destinationArgb[3] = pixel3;
-            destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 20 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 23 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 26 & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 17 & 7)];
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationRow = destinationRow + widthPixels;
-            blockWord1 = streamCursor[1];
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 3 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 29)];
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 12 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 15 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 18 & 7)];
-            streamCursor = streamCursor + 2;
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7)];
-            destinationRow[1] = pixel1;
-            destinationRow[2] = pixel2;
-            destinationRow[3] = pixel3;
-            destinationArgb = destinationRow + widthPixels * -3;
-          }
+      if (skipRemaining != 0) {
+        skipRemaining--;
+      }
+      else {
+        blockWord0 = *(uint32_t *)streamCursor;
+        token = blockWord0 & MOVIE_TOKEN_MASK;
+        if (token < MOVIE_TOKEN_SKIP_SHORT) {
+          Movie_DecodeColorBlock(destinationArgb,widthPixels,blockWord0,*(uint32_t *)(streamCursor + 4));
+          streamCursor = streamCursor + 8;
         }
         /* skip tokens: this block plus skipRemaining further blocks keep the previous frame */
-        else if (tokenOrTableIndex == MOVIE_TOKEN_SKIP_SHORT) {
-          streamCursor = (uint32_t *)((uint8_t *)streamCursor + 1);
+        else if (token == MOVIE_TOKEN_SKIP_SHORT) {
+          streamCursor = streamCursor + 1;
           skipRemaining = (blockWord0 & 0xff) >> 5;
         }
-        else if (tokenOrTableIndex < MOVIE_TOKEN_SKIP_LONG) {
-          streamCursor = (uint32_t *)((uint8_t *)streamCursor + 2);
+        else if (token < MOVIE_TOKEN_SKIP_LONG) {
+          streamCursor = streamCursor + 2;
           skipRemaining = ((blockWord0 & 0xffff) >> 5) + MOVIE_SKIP_SHORT_MAX_BLOCKS;
         }
         else {
-          streamCursor = streamCursor + 1;
+          streamCursor = streamCursor + 4;
           skipRemaining = (blockWord0 >> 5) + MOVIE_SKIP_MEDIUM_MAX_BLOCKS;
         }
-      }
-      else {
-        skipRemaining--;
       }
       destinationArgb = destinationArgb + 4;
       blocksLeftInRow--;
@@ -1295,7 +1253,7 @@ uint32_t Movie_DecodeFrame4x4Delta
     blockRowsLeft--;
     blocksLeftInRow = widthPixels >> 2;
   } while (blockRowsLeft != 0);
-  return (int)streamCursor + (7 - (int)encodedFrame) & ~7u;
+  return (uint32_t)(streamCursor - encodedFrame + 7) & ~7u;
 }
 
 

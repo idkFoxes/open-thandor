@@ -98,10 +98,13 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 {
   Q12 cellWorldX;
   Q12 cellWorldY;
-  uint32_t primaryCapOrWeight;
-  uint32_t workspace02CapOrWeight;
+  uint32_t primaryDistanceCap;
+  uint32_t primaryWeight;
+  uint32_t workspace02DistanceCap;
+  uint32_t workspace02Weight;
   uint32_t secondaryDistanceCap;
   AiKnowledgeDataImage *knowledgeData;
+  int primaryDistance;
   int primaryTerm;
   uint32_t workspace02Distance;
   uint32_t secondaryDistance;
@@ -133,19 +136,19 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
     siteEntry->cellWorldYQ12 = cellWorldY;
     siteEntry->cell = currentCell;
     knowledgeData = g_AiKnowledgeData;
-    primaryCapOrWeight = (g_AiKnowledgeData->parameters).generalSitePrimaryDistanceCapQ12;
-    primaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-    primaryTerm = primaryCapOrWeight - primaryTerm;
+    primaryDistanceCap = (g_AiKnowledgeData->parameters).generalSitePrimaryDistanceCapQ12;
+    primaryDistance = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    primaryTerm = primaryDistanceCap - primaryDistance;
     if (primaryTerm < 0) {
       primaryTerm = 0;
     }
-    primaryCapOrWeight = (knowledgeData->parameters).generalSitePrimaryDistanceCoefficient;
-    workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCapQ12;
+    primaryWeight = (knowledgeData->parameters).generalSitePrimaryDistanceCoefficient;
+    workspace02DistanceCap = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCapQ12;
     workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
-    if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
-      workspace02Distance = workspace02CapOrWeight;
+    if ((int)workspace02DistanceCap < (int)workspace02Distance) {
+      workspace02Distance = workspace02DistanceCap;
     }
-    workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCoefficient;
+    workspace02Weight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCoefficient;
     secondaryDistanceCap = (knowledgeData->parameters).generalSiteSecondaryDistanceCapQ12;
     secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
     if ((int)secondaryDistanceCap < (int)secondaryDistance) {
@@ -153,7 +156,7 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
     }
     g_AiWorkspace05Count++;
     siteEntry->score =
-         primaryTerm * primaryCapOrWeight + workspace02Distance * workspace02CapOrWeight +
+         primaryTerm * primaryWeight + workspace02Distance * workspace02Weight +
          secondaryDistance * (knowledgeData->parameters).generalSiteSecondaryDistanceCoefficient;
   }
 }
@@ -171,62 +174,160 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 {
   Q12 cellWorldX;
   Q12 cellWorldY;
-  int deltaXOrCapTerm;
-  int workspace02Distance;
+  int deltaX;
+  int deltaY;
   uint32_t remainingCount;
-  int workspace02CapOrScore;
-  int deltaYOrDistanceOrWeight;
-  uint8_t *siteEntryBytes;
+  AiScoredSiteWorkspaceEntry *siteEntry;
+  AiKnowledgeParameters *wrongBaseParameters;
+  int primaryDistanceCap;
+  int primaryDistance;
+  int primaryTerm;
+  int primaryWeight;
+  int workspace02DistanceCap;
+  int workspace02Distance;
+  int secondaryDistanceCap;
+  int secondaryDistance;
+  int score;
 
   remainingCount = g_AiWorkspace06Count;
-  siteEntryBytes = g_AiWorkspace06FlaggedSites;
-  for (; remainingCount != 0;
-       siteEntryBytes = siteEntryBytes + sizeof(AiScoredSiteWorkspaceEntry), remainingCount--) {
-    deltaXOrCapTerm = *(int *)siteEntryBytes - currentCell->worldX;
-    if (deltaXOrCapTerm < 0) {
-      deltaXOrCapTerm = -deltaXOrCapTerm;
+  siteEntry = (AiScoredSiteWorkspaceEntry *)g_AiWorkspace06FlaggedSites;
+  for (; remainingCount != 0; siteEntry++, remainingCount--) {
+    deltaX = siteEntry->cellWorldXQ12 - currentCell->worldX;
+    if (deltaX < 0) {
+      deltaX = -deltaX;
     }
-    deltaYOrDistanceOrWeight = *(int *)(siteEntryBytes + 4) - currentCell->worldY;
-    if (deltaYOrDistanceOrWeight < 0) {
-      deltaYOrDistanceOrWeight = -deltaYOrDistanceOrWeight;
+    deltaY = siteEntry->cellWorldYQ12 - currentCell->worldY;
+    if (deltaY < 0) {
+      deltaY = -deltaY;
     }
-    if ((deltaXOrCapTerm < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
-       (deltaYOrDistanceOrWeight < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) {
+    if ((deltaX < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
+       (deltaY < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) {
       return;
     }
   }
   cellWorldX = currentCell->worldX;
   cellWorldY = currentCell->worldY;
   if (g_AiWorkspace06Count < AI_WORKSPACE06_CAPACITY) {
-    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldXQ12 = cellWorldX;
-    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldYQ12 = cellWorldY;
-    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cell = currentCell;
+    siteEntry->cellWorldXQ12 = cellWorldX;
+    siteEntry->cellWorldYQ12 = cellWorldY;
+    siteEntry->cell = currentCell;
     /* the wrong-base reads (see above): the ki.dat parameter layout applied to the new entry's address */
-    deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCapQ12;
-    deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-    deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
-    if (deltaXOrCapTerm < 0) {
-      deltaXOrCapTerm = 0;
+    wrongBaseParameters = (AiKnowledgeParameters *)siteEntry;
+    primaryDistanceCap = wrongBaseParameters->flaggedSitePrimaryDistanceCapQ12;
+    primaryDistance = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    primaryTerm = primaryDistanceCap - primaryDistance;
+    if (primaryTerm < 0) {
+      primaryTerm = 0;
     }
-    deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCoefficient;
-    workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCapQ12;
+    primaryWeight = wrongBaseParameters->flaggedSitePrimaryDistanceCoefficient;
+    workspace02DistanceCap = wrongBaseParameters->flaggedSiteVisibleHostileDistanceCapQ12;
     workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
-    if (workspace02CapOrScore < workspace02Distance) {
-      workspace02Distance = workspace02CapOrScore;
+    if (workspace02DistanceCap < workspace02Distance) {
+      workspace02Distance = workspace02DistanceCap;
     }
-    workspace02CapOrScore =
-         deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance *
-              (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCoefficient;
-    deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCapQ12;
-    deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-    if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
-      workspace02CapOrScore =
-           workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) *
-                (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCoefficient;
+    score = primaryTerm * primaryWeight +
+            workspace02Distance * (int)wrongBaseParameters->flaggedSiteVisibleHostileDistanceCoefficient;
+    secondaryDistanceCap = wrongBaseParameters->flaggedSiteSecondaryDistanceCapQ12;
+    secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    /* unlike the general site score: (cap - distance) * weight when not negative, not min(distance, cap) */
+    if (-1 < secondaryDistanceCap - secondaryDistance) {
+      score = score + (secondaryDistanceCap - secondaryDistance) *
+                      (int)wrongBaseParameters->flaggedSiteSecondaryDistanceCoefficient;
     }
     g_AiWorkspace06Count++;
-    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
+    siteEntry->score = score;
   }
+}
+
+
+/* True when the cell lies within 2.0 of the 1:5 marker of any class-13 structure in workspace 00. */
+static bool AiSiteCandidate_IsNearClass13StructureMarker(const FieldGridCell *terrainFeatureCell)
+
+{
+  uint32_t remainingCount;
+  AiStructureWorkspaceEntry *workspace00Entry;
+  ModelRuntimeSlot *runtimeSlot;
+  ModelRuntimeNode *modelNodeRuntime;
+  ModelPackedPointRecord *markerRecord;
+  ModelWorldPoint markerPoint;
+  uint32_t markerDistance;
+
+  workspace00Entry = g_AiWorkspace00Structures;
+  for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
+    runtimeSlot = (ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero;
+    if (runtimeSlot != NULL) {
+      modelNodeRuntime = runtimeSlot->rootModelNodeOrSavedOffset.modelNode;
+      if ((runtimeSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
+          (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&markerRecord))) {
+        markerPoint = ModelNodeRuntime_TransformLocalPoint(markerRecord,modelNodeRuntime);
+        markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
+                                  markerPoint.xQ12 - terrainFeatureCell->worldX);
+        if ((int)markerDistance < 2 * Q12_ONE + 1) { /* within 2.0 */
+          return true;
+        }
+      }
+    }
+    workspace00Entry++;
+  }
+  return false;
+}
+
+
+/* Scans the workspace-00 structures for the smallest Manhattan distance to the cell (INT32_MAX when none has a
+   runtime slot). Returns false, leaving *outNearestDistance unset, as soon as a structure of the same asset lies
+   closer than terrainFeatureMinimumAxisSeparationQ12 on both axes. */
+static bool AiSiteCandidate_FindNearestStructureDistance(const FieldGridCell *terrainFeatureCell,
+          PckArmyAssetIdCatalog featureAssetId,int *outNearestDistance)
+
+{
+  uint32_t remainingCount;
+  AiStructureWorkspaceEntry *workspace00Entry;
+  ModelRuntimeNode *structureNode;
+  int deltaX;
+  int deltaY;
+  int nearestDistance;
+
+  nearestDistance = INT32_MAX;
+  workspace00Entry = g_AiWorkspace00Structures;
+  for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
+    if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
+      structureNode =
+           ((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
+      deltaX = structureNode->worldTransform.translation.x - terrainFeatureCell->worldX;
+      if (deltaX < 0) {
+        deltaX = -deltaX;
+      }
+      deltaY = structureNode->worldTransform.translation.y - terrainFeatureCell->worldY;
+      if (deltaY < 0) {
+        deltaY = -deltaY;
+      }
+      if ((featureAssetId == workspace00Entry->armyAssetId) &&
+          (deltaX < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12) &&
+          (deltaY < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12)) {
+        return false;
+      }
+      if (deltaX + deltaY < nearestDistance) {
+        nearestDistance = deltaX + deltaY;
+      }
+    }
+    workspace00Entry++;
+  }
+  *outNearestDistance = nearestDistance;
+  return true;
+}
+
+
+/* Terrain-feature priority: placementClearancePaddingQ12 minus the nearest structure distance, at least 0. */
+static int AiSiteCandidate_TerrainFeaturePriority(int nearestDistance)
+
+{
+  int priority;
+
+  priority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 - nearestDistance;
+  if (priority < 0) {
+    priority = 0;
+  }
+  return priority;
 }
 
 
@@ -243,143 +344,60 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 
 {
   uint32_t remainingFeatureCount;
-  int *runtimeSlot;
-  ModelRuntimeNode *modelNodeRuntime;
-  uint32_t markerDistance;
-  int countOrDeltaX;
-  int entityDeltaX;
+  int deltaX;
+  int deltaY;
   uint32_t duplicateSeparation;
-  int entityOrDeltaY;
   PckArmyAssetIdCatalog featureAssetId;
-  AiStructureWorkspaceEntry *workspace00Entry;
-  ModelPackedPointRecord *markerRecord;
-  ModelWorldPoint markerPoint;
-  int nearestDistanceOrPriority;
+  int nearestDistance;
+  int priority;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  
-  remainingFeatureCount = g_AiWorkspace08Count;
+
   featureAssetId = ARM_0330_BUILDING_MDL0303;
   duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 85 >> 8; /* ~1/3 */
-  countOrDeltaX = g_AiWorkspace00Count;
-  workspace00Entry = g_AiWorkspace00Structures;
   if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
     featureAssetId = ARM_0332_BUILDING_MDL0302;
   }
-  for (; terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX -
-       1) {
-    runtimeSlot = (int *)workspace00Entry->runtimeSlotAddressOrZero;
-    /* runtimeSlot is a ModelRuntimeSlot: [0] the model definition, [1] the model node */
-    if ((runtimeSlot != NULL) &&
-       (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1],
-       ((ModelRuntimeSlot *)runtimeSlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
-       MODEL_RUNTIME_CLASS_13)) {
-      if (ModelLookupTable_FindPackedPoint
-                (1,5,(modelNodeRuntime->modelPayload).modelResource,&markerRecord)) {
-        markerPoint = ModelNodeRuntime_TransformLocalPoint(markerRecord,modelNodeRuntime);
-        markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
-                                  markerPoint.xQ12 - terrainFeatureCell->worldX);
-        if ((int)markerDistance < 2 * Q12_ONE + 1) { /* within 2.0 */
-          return;
-        }
-      }
-    }
-    workspace00Entry++;
+  if (AiSiteCandidate_IsNearClass13StructureMarker(terrainFeatureCell)) {
+    return;
   }
-  for (; remainingFeatureCount != 0; remainingFeatureCount--, terrainFeatureEntry++) {
-    if (featureAssetId == terrainFeatureEntry->armyAssetId) {
-      countOrDeltaX = terrainFeatureEntry->cell->worldX - terrainFeatureCell->worldX;
-      if (countOrDeltaX < 0) {
-        countOrDeltaX = -countOrDeltaX;
+  terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
+  for (remainingFeatureCount = g_AiWorkspace08Count; remainingFeatureCount != 0;
+       remainingFeatureCount--, terrainFeatureEntry++) {
+    if (featureAssetId != terrainFeatureEntry->armyAssetId) {
+      continue;
+    }
+    deltaX = terrainFeatureEntry->cell->worldX - terrainFeatureCell->worldX;
+    if (deltaX < 0) {
+      deltaX = -deltaX;
+    }
+    deltaY = terrainFeatureEntry->cell->worldY - terrainFeatureCell->worldY;
+    if (deltaY < 0) {
+      deltaY = -deltaY;
+    }
+    if ((deltaX < (int)duplicateSeparation) && (deltaY < (int)duplicateSeparation)) {
+      /* a near duplicate: replace it when the new cell has the higher priority, never append */
+      if (!AiSiteCandidate_FindNearestStructureDistance(terrainFeatureCell,featureAssetId,&nearestDistance)) {
+        return;
       }
-      entityOrDeltaY = terrainFeatureEntry->cell->worldY - terrainFeatureCell->worldY;
-      if (entityOrDeltaY < 0) {
-        entityOrDeltaY = -entityOrDeltaY;
+      priority = AiSiteCandidate_TerrainFeaturePriority(nearestDistance);
+      if (priority > terrainFeatureEntry->priority) {
+        terrainFeatureEntry->cell = terrainFeatureCell;
+        terrainFeatureEntry->priority = priority;
       }
-      if ((countOrDeltaX < (int)duplicateSeparation) && (entityOrDeltaY < (int)duplicateSeparation)) {
-        nearestDistanceOrPriority = INT32_MAX;
-        workspace00Entry = g_AiWorkspace00Structures;
-        countOrDeltaX = g_AiWorkspace00Count;
-        do {
-          if (countOrDeltaX == 0) {
-            nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
-                 nearestDistanceOrPriority;
-            if (nearestDistanceOrPriority < 0) {
-              nearestDistanceOrPriority = 0;
-            }
-            if (nearestDistanceOrPriority <= terrainFeatureEntry->priority) {
-              return;
-            }
-            terrainFeatureEntry->cell = terrainFeatureCell;
-            terrainFeatureEntry->priority = nearestDistanceOrPriority;
-            return;
-          }
-          if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
-            entityOrDeltaY =
-                 (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
-            entityDeltaX =
-                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
-            if (entityDeltaX < 0) {
-              entityDeltaX = -entityDeltaX;
-            }
-            entityOrDeltaY =
-                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
-            if (entityOrDeltaY < 0) {
-              entityOrDeltaY = -entityOrDeltaY;
-            }
-            if (((featureAssetId == workspace00Entry->armyAssetId) &&
-                (entityDeltaX < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
-                )) && (entityOrDeltaY < (int)(g_AiKnowledgeData->parameters).
-                                    terrainFeatureMinimumAxisSeparationQ12)) {
-              return;
-            }
-            if (entityDeltaX + entityOrDeltaY < nearestDistanceOrPriority) {
-              nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
-            }
-          }
-          workspace00Entry++;
-          countOrDeltaX--;
-        } while( true );
-      }
+      return;
     }
   }
   if (g_AiWorkspace08Count < AI_WORKSPACE08_CAPACITY) {
+    /* Original quirk: cell and asset are written into the free slot before the structure scan, which may still
+       reject the cell; the slot then stays beyond the count. */
     terrainFeatureEntry->cell = terrainFeatureCell;
     terrainFeatureEntry->armyAssetId = featureAssetId;
-    nearestDistanceOrPriority = INT32_MAX;
-    workspace00Entry = g_AiWorkspace00Structures;
-    for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
-      if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
-        entityOrDeltaY =
-             (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
-        entityDeltaX =
-             ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
-        if (entityDeltaX < 0) {
-          entityDeltaX = -entityDeltaX;
-        }
-        entityOrDeltaY =
-             ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
-        if (entityOrDeltaY < 0) {
-          entityOrDeltaY = -entityOrDeltaY;
-        }
-        if (((featureAssetId == workspace00Entry->armyAssetId) &&
-            (entityDeltaX < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
-            )) && (entityOrDeltaY < (int)(g_AiKnowledgeData->parameters).
-                                terrainFeatureMinimumAxisSeparationQ12)) {
-          return;
-        }
-        if (entityDeltaX + entityOrDeltaY < nearestDistanceOrPriority) {
-          nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
-        }
-      }
-      workspace00Entry++;
+    if (!AiSiteCandidate_FindNearestStructureDistance(terrainFeatureCell,featureAssetId,&nearestDistance)) {
+      return;
     }
-    nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
-         nearestDistanceOrPriority;
-    if (nearestDistanceOrPriority < 0) {
-      nearestDistanceOrPriority = 0;
-    }
+    priority = AiSiteCandidate_TerrainFeaturePriority(nearestDistance);
     g_AiWorkspace08Count++;
-    terrainFeatureEntry->priority = nearestDistanceOrPriority;
+    terrainFeatureEntry->priority = priority;
   }
 }
 
@@ -606,6 +624,27 @@ bool AiPlacement_FindNearestPlaceableBaseSite
 }
 
 
+/* Manhattan distance between an anchor point and a workspace cell, as compared unsigned against
+   specialSiteSeparationQuantumQ12. */
+static uint32_t AiPlacement_AnchorManhattanDistanceToCell(Q12 anchorYQ12,Q12 anchorXQ12,
+          const FieldGridCell *workspaceRecord)
+
+{
+  int deltaX;
+  int deltaY;
+
+  deltaX = anchorXQ12 - workspaceRecord->worldX;
+  if (deltaX < 0) {
+    deltaX = -deltaX;
+  }
+  deltaY = anchorYQ12 - workspaceRecord->worldY;
+  if (deltaY < 0) {
+    deltaY = -deltaY;
+  }
+  return (uint32_t)(deltaX + deltaY);
+}
+
+
 /* Address: 0x00539EF0.
    Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
    workspace-09 anchor (AiPlacement_FindNearestPlaceableBaseSite), creates a temporary ARM_0333 instance
@@ -618,113 +657,42 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 firstAnchorXQ12;
-  int deltaX;
-  Q12 firstAnchorYQ12;
-  int deltaY;
-  ArmyRuntimeSlot *firstInstance;
-  ArmyRuntimeSlot *secondInstance;
-  ArmyRuntimeSlot *thirdInstance;
-  ArmyRuntimeSlot *fourthInstance;
+  ArmyRuntimeSlot *probeInstances[4];
+  uint32_t probeCount;
+  ArmyRuntimeSlot *probeInstance;
   Q12 anchorXQ12;
   Q12 anchorYQ12;
   AiKnowledgeDataImage *knowledgeData;
+  bool rejected;
 
   knowledgeData = g_AiKnowledgeData;
-  if (!AiPlacement_FindNearestPlaceableBaseSite
-         (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
-          &firstAnchorYQ12,&firstAnchorXQ12)) {
-    return true;
-  }
-  /* Y before X, as at every ArmyRuntime_CreateInstanceFromAsset call site */
-  firstInstance = ArmyRuntime_CreateInstanceFromAsset
-                    (1,0,firstAnchorYQ12,firstAnchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
-  if (firstInstance == NULL) {
-    return true;
-  }
-  deltaX = firstAnchorXQ12 - workspaceRecord->worldX;
-  if (deltaX < 0) {
-    deltaX = -deltaX;
-  }
-  deltaY = firstAnchorYQ12 - workspaceRecord->worldY;
-  if (deltaY < 0) {
-    deltaY = -deltaY;
-  }
-  if ((uint32_t)(deltaX + deltaY) <
-      (knowledgeData->parameters).specialSiteSeparationQuantumQ12) goto destroy_first_and_succeed;
-  if (!AiPlacement_FindNearestPlaceableBaseSite
-         (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
-          &anchorYQ12,&anchorXQ12)) goto destroy_first_and_fail;
-  secondInstance = ArmyRuntime_CreateInstanceFromAsset
-                    (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                     worldRuntime,NULL);
-  if (secondInstance == NULL) goto destroy_first_and_fail;
-  deltaX = anchorXQ12 - workspaceRecord->worldX;
-  if (deltaX < 0) {
-    deltaX = -deltaX;
-  }
-  deltaY = anchorYQ12 - workspaceRecord->worldY;
-  if (deltaY < 0) {
-    deltaY = -deltaY;
-  }
-  if ((knowledgeData->parameters).specialSiteSeparationQuantumQ12 <= (uint32_t)(deltaX + deltaY)) {
-    if (AiPlacement_FindNearestPlaceableBaseSite
-          (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
-           &anchorYQ12,&anchorXQ12)) {
-      thirdInstance = ArmyRuntime_CreateInstanceFromAsset
-                        (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                         worldRuntime,NULL);
-      if (thirdInstance != NULL) {
-        deltaX = anchorXQ12 - workspaceRecord->worldX;
-        if (deltaX < 0) {
-          deltaX = -deltaX;
-        }
-        deltaY = anchorYQ12 - workspaceRecord->worldY;
-        if (deltaY < 0) {
-          deltaY = -deltaY;
-        }
-        if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
-destroy_third_second_first_and_succeed:
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance);
-          goto destroy_second_first_and_succeed;
-        }
-        if (AiPlacement_FindNearestPlaceableBaseSite
-              (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,
-               worldRuntime,&anchorYQ12,&anchorXQ12)) {
-          fourthInstance = ArmyRuntime_CreateInstanceFromAsset
-                            (1,0,anchorYQ12,anchorXQ12,factionIndex,
-                             ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
-          if (fourthInstance != NULL) {
-            deltaX = anchorXQ12 - workspaceRecord->worldX;
-            if (deltaX < 0) {
-              deltaX = -deltaX;
-            }
-            deltaY = anchorYQ12 - workspaceRecord->worldY;
-            if (deltaY < 0) {
-              deltaY = -deltaY;
-            }
-            if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
-            {
-              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
-                                                      (GameEntityRuntime *)fourthInstance);
-              goto destroy_third_second_first_and_succeed;
-            }
-            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
-                                                    (GameEntityRuntime *)fourthInstance);
-          }
-        }
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance);
-      }
+  rejected = true;
+  probeCount = 0;
+  while (probeCount < 4) {
+    if (!AiPlacement_FindNearestPlaceableBaseSite
+           (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
+            &anchorYQ12,&anchorXQ12)) {
+      break;
     }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance);
-destroy_first_and_fail:
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance);
-    return true;
+    /* Y before X, as at every ArmyRuntime_CreateInstanceFromAsset call site */
+    probeInstance = ArmyRuntime_CreateInstanceFromAsset
+                      (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
+    if (probeInstance == NULL) {
+      break;
+    }
+    probeInstances[probeCount] = probeInstance;
+    probeCount++;
+    if (AiPlacement_AnchorManhattanDistanceToCell(anchorYQ12,anchorXQ12,workspaceRecord) <
+        (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
+      rejected = false;
+      break;
+    }
   }
-destroy_second_first_and_succeed:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance);
-destroy_first_and_succeed:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance);
-  return false;
+  /* destroy the temporary instances, newest first */
+  while (probeCount != 0) {
+    probeCount--;
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)probeInstances[probeCount]);
+  }
+  return rejected;
 }
 

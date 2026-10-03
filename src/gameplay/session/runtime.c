@@ -860,6 +860,56 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
 }
 
 
+/* Opens the movie of the notification queue head ("flm\movie%03d.flm"). When its first frame is ready, the movie
+   becomes the notification button's texture source and the head's payload the active notification; a payload with
+   a map target makes the button clickable. */
+static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot)
+
+{
+  uint32_t notificationMovieNumber;
+  MovieRuntime *notificationMovie;
+
+  notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)u_flm_movie000_flm_0056314e,NULL,NULL)) {
+    return;
+  }
+  /* movies 100-299 and 700-899 play at the alternate movie gain */
+  if ((99 < notificationMovieNumber) &&
+      ((notificationMovieNumber < 300) || ((699 < notificationMovieNumber) && (notificationMovieNumber < 900)))) {
+    Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
+  }
+  if (!Movie_AdvanceFrame(&notificationMovie,NULL)) {
+    return;
+  }
+  inGameRoot->notificationButtonTextureSource = (uint32_t)notificationMovie;
+  inGameRoot->notificationButtonSubresource = 0;
+  inGameRoot->activeNotificationPayload = inGameRoot->notificationQueue[0].payload;
+  if (inGameRoot->notificationButtonCursorFrame == PAYLOAD_ACTIVE) {
+    inGameRoot->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
+  }
+  g_InGameSessionNotificationTimeoutTicks = 0;
+  if ((inGameRoot->activeNotificationPayload).payloadKind != NOTIFICATION_PAYLOAD_NONE) {
+    inGameRoot->notificationButtonCursorFrame = PAYLOAD_ACTIVE;
+  }
+}
+
+
+/* Pops the notification queue head: moves entries 1-3 forward and clears the last entry. */
+static void InGameNotification_PopQueueHead(InGameRuntimeRoot *inGameRoot)
+
+{
+  int slot;
+
+  for (slot = 0; slot < INGAME_NOTIFICATION_QUEUE_SLOTS - 1; slot++) {
+    inGameRoot->notificationQueue[slot] = inGameRoot->notificationQueue[slot + 1];
+  }
+  memset(&inGameRoot->notificationQueue[INGAME_NOTIFICATION_QUEUE_SLOTS - 1],0,
+         sizeof(inGameRoot->notificationQueue[INGAME_NOTIFICATION_QUEUE_SLOTS - 1]));
+}
+
+
 /* Address: 0x00569920.
    Periodic timer that plays the queued in-game notification movies: while one plays it advances a frame and, at
    the end, closes it and keeps the notification's map target clickable for 0x280 more ticks; otherwise it starts
@@ -869,75 +919,31 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
 void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
 {
-  uint32_t notificationMovieNumber;
   GraphicsTextureSourceAsset *panelTextureSource;
-  int remainingWords;
-  uint32_t *sourceWord;
-  uint32_t *destinationWord;
-  MovieRuntime *notificationMovie;
   InGameRuntimeRoot *inGameRoot;
-  
+
   panelTextureSource = g_InGamePanelTextureSource;
   inGameRoot = g_InGameRuntimeRoot;
-  if (((g_InGameSessionNotificationTimeoutTicks != 0) &&
-      (g_InGameSessionNotificationTimeoutTicks = g_InGameSessionNotificationTimeoutTicks - 1,
-      g_InGameSessionNotificationTimeoutTicks == 0)) &&
-     (g_InGameRuntimeRoot->notificationButtonCursorFrame == PAYLOAD_ACTIVE)) {
-    g_InGameRuntimeRoot->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
-  }
-  /* notificationButtonTextureSource holds the playing movie, or the panel texture source when none plays */
-  if (panelTextureSource == (GraphicsTextureSourceAsset *)inGameRoot->notificationButtonTextureSource) {
-    if (inGameRoot->notificationQueue[0].priority != 0) {
-      notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
-      if (Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)u_flm_movie000_flm_0056314e,NULL,NULL)) {
-        /* movies 100-299 and 700-899 play at the alternate movie gain */
-        if ((99 < notificationMovieNumber) &&
-            ((notificationMovieNumber < 300 || ((699 < notificationMovieNumber && (notificationMovieNumber < 900)))))) {
-          Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
-        }
-        if (Movie_AdvanceFrame(&notificationMovie,NULL)) {
-          inGameRoot->notificationButtonTextureSource = (uint32_t)notificationMovie;
-          inGameRoot->notificationButtonSubresource = 0;
-          /* copy the 0x18-byte payload of the queue head into the active notification */
-          sourceWord = (uint32_t *)&inGameRoot->notificationQueue[0].payload;
-          destinationWord = (uint32_t *)&inGameRoot->activeNotificationPayload;
-          for (remainingWords = 6; remainingWords != 0; remainingWords--) {
-            *destinationWord = *sourceWord;
-            sourceWord++;
-            destinationWord++;
-          }
-          if (inGameRoot->notificationButtonCursorFrame == PAYLOAD_ACTIVE) {
-            inGameRoot->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
-          }
-          g_InGameSessionNotificationTimeoutTicks = 0;
-          if ((inGameRoot->activeNotificationPayload).payloadKind != NOTIFICATION_PAYLOAD_NONE) {
-            inGameRoot->notificationButtonCursorFrame = PAYLOAD_ACTIVE;
-          }
-        }
-      }
-      /* pop the queue head: move entries 1-3 (0x18 dwords) forward and clear the last 0x20-byte entry */
-      sourceWord = (uint32_t *)(inGameRoot->notificationQueue + 1);
-      destinationWord = (uint32_t *)inGameRoot->notificationQueue;
-      for (remainingWords = 24; remainingWords != 0; remainingWords--) {
-        *destinationWord = *sourceWord;
-        sourceWord++;
-        destinationWord++;
-      }
-      for (remainingWords = 8; remainingWords != 0; remainingWords--) {
-        *destinationWord = 0;
-        destinationWord++;
-      }
+  /* the target of the last notification stays clickable until the timeout runs out */
+  if (g_InGameSessionNotificationTimeoutTicks != 0) {
+    g_InGameSessionNotificationTimeoutTicks--;
+    if ((g_InGameSessionNotificationTimeoutTicks == 0) &&
+        (inGameRoot->notificationButtonCursorFrame == PAYLOAD_ACTIVE)) {
+      inGameRoot->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
     }
   }
-  else {
+  /* notificationButtonTextureSource holds the playing movie, or the panel texture source when none plays */
+  if (panelTextureSource != (GraphicsTextureSourceAsset *)inGameRoot->notificationButtonTextureSource) {
     if (!Movie_AdvanceFrame(NULL,NULL)) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 640;
       inGameRoot->notificationButtonTextureSource = (uint32_t)panelTextureSource;
       inGameRoot->notificationButtonSubresource = 37;
     }
+  }
+  else if (inGameRoot->notificationQueue[0].priority != 0) {
+    InGameNotification_StartQueueHeadMovie(inGameRoot);
+    InGameNotification_PopQueueHead(inGameRoot);
   }
   return;
 }
@@ -2764,6 +2770,221 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 }
 
 
+/* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
+   the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
+   be broadcast because a peer has not submitted yet. */
+static bool InGameTick_RunHostOrLocalLockstep(void)
+
+{
+  void *packet;
+  void *packetEndpoint;
+
+  if (g_InGameNetworkTickCountdown != 0) {
+    return false;
+  }
+  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
+    return true;
+  }
+  if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+    /* interval boundary: the batch must be out before it is executed, else wait for the peers */
+    while (g_HostCommandBatchSyncSentThisInterval == 0) {
+      if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
+        if (FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1)) {
+          return false;
+        }
+        break;
+      }
+      FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+    }
+    FrontendTransfer_DispatchStagedCommandRecords();
+    g_HostCommandBatchSyncSentThisInterval = 0;
+  }
+  else {
+    /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
+    while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
+      FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+                ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
+    }
+    if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
+        !FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0)) {
+      g_HostCommandBatchSyncSentThisInterval = 1;
+    }
+  }
+  return true;
+}
+
+
+/* Network lockstep of a simulation step on a client. Returns false when the step has to wait: at an interval
+   boundary until the host's command batch has arrived and was executed, otherwise until the periodic timer has
+   counted down. */
+static bool InGameTick_RunClientLockstep(void)
+
+{
+  void *packet;
+  void *packetEndpoint;
+
+  if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+    /* interval boundary: wait for the host's command batch, then execute it */
+    if (!UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken)) {
+      return false;
+    }
+    while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
+      if (FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet)) {
+        break;
+      }
+    }
+    if (FrontendTransfer_ConsumeProcessedFlag()) {
+      return false;
+    }
+  }
+  else if (g_InGameNetworkTickCountdown != 0) {
+    return false;
+  }
+  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+  return true;
+}
+
+
+/* Runs the terrainStateRefresh callback of every node of the world owner list, starting at firstNode. */
+static void InGameTick_RefreshEntityTerrainStates(WorldRuntimeContext *worldRuntime,ModelRuntimeNode *firstNode)
+
+{
+  ModelRuntimeNode *modelNode;
+
+  for (modelNode = firstNode; modelNode != NULL;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
+      [modelNode->ownerClassId])(worldRuntime,modelNode);
+  }
+}
+
+
+/* The world job of this step, chosen by tickPhase (simulationTick & 7), so each job runs every 8th step. */
+static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPhase)
+
+{
+  WorldRuntimeContext *worldRuntime;
+  WorldOwnerListNode *worldNode;
+  ModelRuntimeNode *firstModelNode;
+
+  worldRuntime = &inGameRoot->worldRuntime;
+  switch(tickPhase) {
+  case 0:
+    InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
+    FrontendRuntime_UpdateCurrentFactionMetricCache();
+    GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10();
+    WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
+    break;
+  case 1:
+    TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(worldRuntime->fieldGrid);
+    break;
+  case 2:
+    AiFactionRuntime_RebuildPlanningCapacityState();
+    break;
+  case 3:
+    /* field-grid clamp; with entities present: their terrain state, then the clamp once more */
+    firstModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+    FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
+    if (firstModelNode != NULL) {
+      InGameTick_RefreshEntityTerrainStates(worldRuntime,firstModelNode);
+      FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
+    }
+    break;
+  case 4:
+    GridInfluence_ClearDistanceBandsAndRefreshEntities(worldRuntime->ownerListHead);
+    break;
+  case 5:
+    TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(worldRuntime->fieldGrid);
+    break;
+  case 6:
+    AiFactionRuntime_RebuildPlanningCapacityState();
+    break;
+  case 7:
+    /* occupancy rebuild: clear the mask bits, let every entity mark its cells, then refresh their terrain state */
+    worldNode = worldRuntime->ownerListHead;
+    FieldGrid_ClearOccupancyMaskBits0To6AllCells(worldRuntime->fieldGrid);
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
+      FieldGrid_SetOccupancyMaskByteBit0AllCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
+    }
+    if (worldNode != NULL) {
+      for (; worldNode != NULL; worldNode = worldNode->nextNode) {
+        (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
+                  (worldRuntime,worldNode);
+      }
+      InGameTick_RefreshEntityTerrainStates(worldRuntime,(ModelRuntimeNode *)worldRuntime->ownerListHead);
+      FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
+      GridScratch_PropagateFieldOccupancyMaskNeighborhood(worldRuntime->fieldGrid);
+    }
+    break;
+  }
+}
+
+
+/* Full simulation step (steps 3-5 of InGameRuntime_UpdateSimulationAndNetworkTick): advances simulationTick, updates
+   every entity, every 20 steps the scripted conditions, then the world job of this step. */
+static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
+
+{
+  uint32_t tickPhase;
+  WorldRuntimeContext *worldRuntime;
+  WorldOwnerListNode *worldNode;
+
+  g_GameFactionRuntimeImage.tail.simulationTick++;
+  worldRuntime = &inGameRoot->worldRuntime;
+  tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
+  /* per-entity update of every model, shot and effect, dispatched by owner class */
+  for (worldNode = worldRuntime->ownerListHead; worldNode != NULL; worldNode = worldNode->nextNode) {
+    (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)[worldNode->ownerClassId])(worldRuntime,worldNode);
+  }
+  if (g_GameFactionRuntimeImage.tail.simulationTick % 20 == 0) {
+    InGameConditionRuntime_UpdateScheduledRecords();
+  }
+  InGameTick_RunWorldJob(inGameRoot,tickPhase);
+#ifdef THANDOR_TEST_AIDS
+  DebugStateHash_AfterStep();
+#endif
+}
+
+
+/* Reduced update while UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE (0x04) is set; it also runs while
+   paused. Every second step it re-seats every model on the terrain, and every 16th step it refreshes either the
+   influence distance bands or the terrain/runtime classification masks. */
+static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
+
+{
+  ModelRuntimeNode *modelNode;
+  ModelDefinition *modelDefinition;
+
+  modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
+  g_GameFactionRuntimeImage.tail.simulationTick++;
+  if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) != 0) {
+    return;
+  }
+  for (; modelNode != NULL; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).runtimeDefinition;
+      g_ArmyPlacementContactKindDispatchTable.callbacks[modelDefinition->placementContactKindIndex]
+                (modelDefinition->placementHeightOffsetQ12,
+                 (modelNode->worldTransform).translation.y,
+                 (modelNode->worldTransform).translation.x,modelNode,
+                 &inGameRoot->worldRuntime);
+      ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
+    }
+  }
+  if ((g_GameFactionRuntimeImage.tail.simulationTick & INGAME_REDUCED_GRID_REFRESH_TICK_MASK) == 0) {
+    if ((g_GameFactionRuntimeImage.tail.simulationTick & 2) == 0) {
+      GridInfluence_ClearDistanceBandsAndRefreshEntities((inGameRoot->worldRuntime).ownerListHead);
+    }
+    else {
+      GridScratch_RebuildTerrainAndRuntimeClassificationMasks(&inGameRoot->worldRuntime);
+    }
+  }
+}
+
+
 /* Address: 0x00565E30.
    One simulation step of the running game: the heart of the game loop. It is not called from a fixed place in
    the frame; the UI runtime calls it as its synchronization hook (UiRuntime_SetSynchronizationHooks) every time
@@ -2803,19 +3024,13 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
 {
-  uint32_t modelDefinition;
-  uint32_t tickPhase;
-  WorldRuntimeContext *worldRuntime;
-  WorldOwnerListNode *worldNode;
-  ModelRuntimeNode *modelNode;
-  bool callResult;
-  void *packet;
-  void *packetEndpoint;
+  bool lockAlreadyHeld;
+  bool stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
+  lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
-  if (callResult) {
+  if (lockAlreadyHeld) {
     return;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
@@ -2827,186 +3042,22 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
     g_InGamePendingSimulationTicks++;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    /* host or single player */
-    if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(&g_InGameStateTickSpinLock);
-      return;
-    }
-    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-      if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-        /* interval boundary: the batch must be out before it is executed, else wait for the peers */
-        while (g_HostCommandBatchSyncSentThisInterval == 0) {
-          if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
-            callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
-            if (callResult) {
-              g_SpinLockRelease(&g_InGameStateTickSpinLock);
-              return;
-            }
-            break;
-          }
-          FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
-        }
-        FrontendTransfer_DispatchStagedCommandRecords();
-        g_HostCommandBatchSyncSentThisInterval = 0;
-      }
-      else {
-        /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
-        while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
-          FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
-        }
-        if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
-           (callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !callResult)) {
-          g_HostCommandBatchSyncSentThisInterval = 1;
-        }
-      }
-    }
+    stepDue = InGameTick_RunHostOrLocalLockstep();
   }
   else {
-    if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      /* client at an interval boundary: wait for the host's command batch, then execute it */
-      callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
-      if (!callResult) {
-        g_SpinLockRelease(&g_InGameStateTickSpinLock);
-        return;
-      }
-      do {
-        if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
-        callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
-      } while (!callResult);
-      callResult = FrontendTransfer_ConsumeProcessedFlag();
-      if (callResult) {
-        g_SpinLockRelease(&g_InGameStateTickSpinLock);
-        return;
-      }
-    }
-    else if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(&g_InGameStateTickSpinLock);
-      return;
-    }
-    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
+    stepDue = InGameTick_RunClientLockstep();
+  }
+  if (!stepDue) {
+    g_SpinLockRelease(&g_InGameStateTickSpinLock);
+    return;
   }
   g_SessionNetworkTickCounter++;
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
-    if ((g_UiCommandRuntimeFlags &
-        (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
-      g_GameFactionRuntimeImage.tail.simulationTick++;
-      worldRuntime = &inGameRoot->worldRuntime;
-      tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
-      /* per-entity update of every model, shot and effect, dispatched by owner class */
-      for (worldNode = (inGameRoot->worldRuntime).ownerListHead;
-          worldNode != NULL; worldNode = worldNode->nextNode) {
-        (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)[worldNode->ownerClassId])
-                  (worldRuntime,worldNode);
-      }
-      if (g_GameFactionRuntimeImage.tail.simulationTick % 20 == 0) {
-        InGameConditionRuntime_UpdateScheduledRecords();
-      }
-      /* the world jobs: one per step, each runs every 8th step */
-      switch(tickPhase) {
-      case 0:
-        InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
-        FrontendRuntime_UpdateCurrentFactionMetricCache();
-        GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10();
-        WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
-        break;
-      case 1:
-        TerrainGrid_RelaxNeighborHeightsForwardWithSignGate
-                  ((inGameRoot->worldRuntime).fieldGrid);
-        break;
-      case 2:
-        AiFactionRuntime_RebuildPlanningCapacityState();
-        break;
-      case 3:
-        modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
-        FieldGrid_ApplyByteClampLookupToCells
-                  ((inGameRoot->worldRuntime).activeFactionRuntimeIndex,
-                   (inGameRoot->worldRuntime).fieldGrid);
-        if (modelNode != NULL) {
-          do {
-            (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
-              [modelNode->ownerClassId])(worldRuntime,modelNode);
-            modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-          } while (modelNode != NULL);
-          FieldGrid_ApplyByteClampLookupToCells
-                    ((inGameRoot->worldRuntime).activeFactionRuntimeIndex,
-                     (inGameRoot->worldRuntime).fieldGrid);
-        }
-        break;
-      case 4:
-        GridInfluence_ClearDistanceBandsAndRefreshEntities
-                  ((inGameRoot->worldRuntime).ownerListHead);
-        break;
-      case 5:
-        TerrainGrid_RelaxNeighborHeightsReverseWithSignGate
-                  ((inGameRoot->worldRuntime).fieldGrid);
-        break;
-      case 6:
-        AiFactionRuntime_RebuildPlanningCapacityState();
-        break;
-      case 7:
-        worldNode = (inGameRoot->worldRuntime).ownerListHead;
-        FieldGrid_ClearOccupancyMaskBits0To6AllCells((inGameRoot->worldRuntime).fieldGrid);
-        if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
-          FieldGrid_SetOccupancyMaskByteBit0AllCells
-                    ((inGameRoot->worldRuntime).activeFactionRuntimeIndex,
-                     (inGameRoot->worldRuntime).fieldGrid);
-        }
-        if (worldNode != NULL) {
-          do {
-            (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
-                      (worldRuntime,worldNode);
-            worldNode = worldNode->nextNode;
-          } while (worldNode != NULL);
-          modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
-          do {
-            (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
-              [modelNode->ownerClassId])(worldRuntime,modelNode);
-            modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-          } while (modelNode != NULL);
-          FieldGrid_ApplyByteClampLookupToCells
-                    ((inGameRoot->worldRuntime).activeFactionRuntimeIndex,
-                     (inGameRoot->worldRuntime).fieldGrid);
-          GridScratch_PropagateFieldOccupancyMaskNeighborhood
-                    ((inGameRoot->worldRuntime).fieldGrid);
-        }
-      }
-#ifdef THANDOR_TEST_AIDS
-      DebugStateHash_AfterStep();
-#endif
-    }
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+    InGameTick_RunReducedUpdate(inGameRoot);
   }
-  else {
-    /* reduced update while flag 0x04 is set (also runs while paused) */
-    modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime).ownerListHead;
-    g_GameFactionRuntimeImage.tail.simulationTick++;
-    if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) == 0) {
-      for (; modelNode != NULL;
-          modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-        if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-          modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset;
-          g_ArmyPlacementContactKindDispatchTable.callbacks
-          [((ModelDefinition *)modelDefinition)->placementContactKindIndex]
-                    (((ModelDefinition *)modelDefinition)->placementHeightOffsetQ12,
-                     (modelNode->worldTransform).translation.y,
-                     (modelNode->worldTransform).translation.x,modelNode,
-                     &inGameRoot->worldRuntime);
-          ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-        }
-      }
-      if ((g_GameFactionRuntimeImage.tail.simulationTick & INGAME_REDUCED_GRID_REFRESH_TICK_MASK) == 0) {
-        if ((g_GameFactionRuntimeImage.tail.simulationTick & 2) == 0) {
-          GridInfluence_ClearDistanceBandsAndRefreshEntities
-                    ((inGameRoot->worldRuntime).ownerListHead);
-        }
-        else {
-          GridScratch_RebuildTerrainAndRuntimeClassificationMasks(&inGameRoot->worldRuntime);
-        }
-      }
-    }
+  else if ((g_UiCommandRuntimeFlags &
+           (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+    InGameTick_RunSimulationStep(inGameRoot);
   }
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;

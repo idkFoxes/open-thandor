@@ -73,6 +73,95 @@ bool ModelRuntimePool_RepairDeferredChild
 }
 
 
+/* Part of ModelRuntime_CullAndRenderHierarchyRecursive: the node passed the four side planes with its own
+   radius; g_ModelCullViewRelativeX/Y/Z hold its view-relative position. Projects it and, when it lies fully in
+   front of the near plane, collects the nearby shading records and draws the mesh group picked by depth.
+   Returns false when the node's depth is not beyond the near plane (the walk then also skips its children). */
+static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+
+{
+  ModelResource *renderView;
+  uint32_t viewDistance;
+  uint32_t boundingRadius;
+  uint32_t meshGroupCount;
+  ModelMeshGroupRelativeOffset *meshGroup;
+  Q12 projectedRadiusScale;
+
+  renderView = modelNodeRuntime->modelPayload.modelResource;
+  viewDistance = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
+  boundingRadius = renderView->boundingRadiusQ12;
+  /* radius / distance in Q28, 1.0 when the view origin is inside the bounding sphere */
+  if ((int)viewDistance < (int)boundingRadius) {
+    projectedRadiusScale = Q28_ONE;
+  }
+  else {
+    /* unsigned DIV */
+    projectedRadiusScale = (Q12)(((uint64_t)boundingRadius << 28) / (uint64_t)viewDistance);
+  }
+  FixedTransform_ApplyPoint
+            ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
+             &modelNodeRuntime->worldTransform.translation,
+             &g_ViewProjectionMatrixFixed);
+  renderView = modelNodeRuntime->modelPayload.modelResource;
+  /* g_ModelCullViewRelativeZ is now the view depth; g_ProjectionScaleFixed is the near plane */
+  if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
+    return false;
+  }
+  if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != renderView->boundingRadiusQ12 &&
+      renderView->boundingRadiusQ12 <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
+    g_GraphicsShadingNearbyRecordCount = 0;
+    GraphicsShadingRuntime_CollectNearbyRecords
+              (renderView->boundingRadiusQ12,g_ModelCullViewRelativeZ,
+               g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
+    renderView = modelNodeRuntime->modelPayload.modelResource;
+    meshGroupCount = renderView->meshGroupCount;
+    meshGroup = &renderView->firstMeshGroupRelativeOffset;
+    /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice that depth
+       (each group starts with the offset to the next) */
+    if ((uint32_t)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ && 1 < meshGroupCount) {
+      meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+      if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)((int)g_ModelCullViewRelativeZ >> 1) &&
+          2 < meshGroupCount) {
+        meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
+      }
+    }
+    ModelRender_DrawMeshGroupsWithTemporaryTransform
+              (projectedRadiusScale,(ModelMeshGroupAddress32)meshGroup,modelNodeRuntime);
+  }
+  return true;
+}
+
+
+/* Part of ModelRuntime_CullAndRenderHierarchyRecursive: culls the node (view-relative position in
+   g_ModelCullViewRelativeX/Y/Z) against the four side planes of the view frustum and draws it when it passes.
+   A plane distance above the subtree radius means the whole subtree is outside: returns false and the walk
+   ends here. Above only the node radius, just the node is culled and the children are still visited. */
+static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+
+{
+  int subtreeRadius;
+  int nodeRadius;
+  int planeIndex;
+  int32_t planeDistance;
+
+  subtreeRadius = modelNodeRuntime->subtreeBoundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
+  nodeRadius = modelNodeRuntime->modelPayload.modelResource->boundingRadiusQ12 +
+               modelNodeRuntime->renderDepthBiasOrState;
+  for (planeIndex = 0; planeIndex < 4; planeIndex++) {
+    planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + planeIndex,
+                                     (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
+    if (subtreeRadius < planeDistance) {
+      return false;
+    }
+    if (nodeRadius < planeDistance) {
+      return true;
+    }
+  }
+  return ModelRuntime_ProjectAndDrawNode(modelNodeRuntime);
+}
+
+
 /* Address: 0x004BDDB0.
    Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it
    against the four side planes of the view frustum and the near plane, and draws it when it lies fully in front
@@ -84,111 +173,28 @@ bool ModelRuntimePool_RepairDeferredChild
 void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  Q12 *boundingRadiusField;
-  ModelResource *renderView;
-  uint32_t radiusOrMeshGroupCount;
-  int32_t planeDistance;
-  uint32_t distanceOrChildrenRemaining;
-  int subtreeRadiusOrChildIndex;
-  ModelMeshGroupRelativeOffset *meshGroup;
-  int nodeRadius;
-  Q12 projectedRadiusScale;
+  uint32_t childrenRemaining;
+  int childIndex;
 
-  if (modelNodeRuntime != NULL) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
-    g_ModelCullViewRelativeX =
-         modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x;
-    g_ModelCullViewRelativeY =
-         modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y;
-    g_ModelCullViewRelativeZ =
-         modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z;
-    renderView = modelNodeRuntime->modelPayload.modelResource;
-    subtreeRadiusOrChildIndex = modelNodeRuntime->subtreeBoundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
-    nodeRadius = renderView->boundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
-    /* plane distance above the subtree radius: the whole subtree is outside; above the node radius: only the
-       node is culled */
-    planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
-                             (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-    if (planeDistance <= subtreeRadiusOrChildIndex) {
-      if (planeDistance <= nodeRadius) {
-        planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
-                                 (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-        if (subtreeRadiusOrChildIndex < planeDistance) {
-          return;
-        }
-        if (planeDistance <= nodeRadius) {
-          planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,
-                                   (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-          if (subtreeRadiusOrChildIndex < planeDistance) {
-            return;
-          }
-          if (planeDistance <= nodeRadius) {
-            planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,
-                                     (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-            if (subtreeRadiusOrChildIndex < planeDistance) {
-              return;
-            }
-            if (planeDistance <= nodeRadius) {
-              distanceOrChildrenRemaining = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
-                                        g_ModelCullViewRelativeX);
-              radiusOrMeshGroupCount = renderView->boundingRadiusQ12;
-              /* radius / distance in Q28, 1.0 when the view origin is inside the bounding sphere */
-              if ((int)distanceOrChildrenRemaining < (int)radiusOrMeshGroupCount) {
-                projectedRadiusScale = Q28_ONE;
-              }
-              else {
-                /* unsigned DIV */
-                projectedRadiusScale =
-                     (Q12)(((uint64_t)radiusOrMeshGroupCount << 28) / (uint64_t)distanceOrChildrenRemaining);
-              }
-              FixedTransform_ApplyPoint
-                        ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
-                         &modelNodeRuntime->worldTransform.translation,
-                         &g_ViewProjectionMatrixFixed);
-              renderView = modelNodeRuntime->modelPayload.modelResource;
-              /* g_ModelCullViewRelativeZ is now the view depth; g_ProjectionScaleFixed is the near plane */
-              if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
-                return;
-              }
-              boundingRadiusField = &renderView->boundingRadiusQ12;
-              if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != *boundingRadiusField &&
-                  *boundingRadiusField <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
-                modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
-                g_GraphicsShadingNearbyRecordCount = 0;
-                GraphicsShadingRuntime_CollectNearbyRecords
-                          (renderView->boundingRadiusQ12,g_ModelCullViewRelativeZ,
-                           g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
-                renderView = modelNodeRuntime->modelPayload.modelResource;
-                radiusOrMeshGroupCount = renderView->meshGroupCount;
-                meshGroup = &renderView->firstMeshGroupRelativeOffset;
-                /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice
-                   that depth (each group starts with the offset to the next) */
-                if ((uint32_t)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ &&
-                    1 < radiusOrMeshGroupCount &&
-                    (meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup),
-                     (uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)((int)g_ModelCullViewRelativeZ >> 1)) &&
-                    2 < radiusOrMeshGroupCount) {
-                  meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup);
-                }
-                ModelRender_DrawMeshGroupsWithTemporaryTransform
-                          (projectedRadiusScale,(ModelMeshGroupAddress32)meshGroup,modelNodeRuntime);
-              }
-            }
-          }
-        }
-      }
-      distanceOrChildrenRemaining = modelNodeRuntime->childCount;
-      if (distanceOrChildrenRemaining != 0) {
-        subtreeRadiusOrChildIndex = 0;
-        do {
-          if (modelNodeRuntime->childNodes[subtreeRadiusOrChildIndex] != NULL) {
-            ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime->childNodes[subtreeRadiusOrChildIndex]);
-          }
-          subtreeRadiusOrChildIndex++;
-          distanceOrChildrenRemaining--;
-        } while (distanceOrChildrenRemaining != 0);
-      }
+  if (modelNodeRuntime == NULL) {
+    return;
+  }
+  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
+  g_ModelCullViewRelativeX =
+       modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x;
+  g_ModelCullViewRelativeY =
+       modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y;
+  g_ModelCullViewRelativeZ =
+       modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z;
+  if (!ModelRuntime_CullAndDrawNode(modelNodeRuntime)) {
+    return;
+  }
+  childIndex = 0;
+  for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
+    if (modelNodeRuntime->childNodes[childIndex] != NULL) {
+      ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime->childNodes[childIndex]);
     }
+    childIndex++;
   }
 }
 
@@ -203,7 +209,8 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
 
 {
   ModelResource *modelResourceView;
-  uint32_t boundsLengthOrChildrenRemaining;
+  uint32_t boundsDiagonalLength;
+  uint32_t childrenRemaining;
   int childIndex;
 
   modelResourceView = modelNode->modelPayload.modelResource; /* read before the NULL test, as in the original */
@@ -216,17 +223,16 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,&g_GraphicsDirectionWorld,
                &g_ViewProjectionMatrixFixed);
-    boundsLengthOrChildrenRemaining =
+    boundsDiagonalLength =
          FixedMath_Length3(modelResourceView->localBoundsZ1Q12 - modelResourceView->localBoundsZ0Q12,
                            modelResourceView->localBoundsY1Q12 - modelResourceView->localBoundsY0Q12,
                            modelResourceView->localBoundsX1Q12 - modelResourceView->localBoundsX0Q12);
     GraphicsShadingRuntime_CollectNearbyRecords
-              ((int)boundsLengthOrChildrenRemaining >> 1,g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
+              ((int)boundsDiagonalLength >> 1,g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
                g_ModelCullViewRelativeX);
     ModelRender_DrawMeshGroupsAlternatePath(modelNode->runtimeStateA0,modelNode);
     childIndex = 0;
-    for (boundsLengthOrChildrenRemaining = modelNode->childCount; boundsLengthOrChildrenRemaining != 0;
-        boundsLengthOrChildrenRemaining--) {
+    for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
       if (modelNode->childNodes[childIndex] != NULL) {
         ModelRuntime_RenderHierarchyRecursiveAlternatePath(modelNode->childNodes[childIndex]);
       }
@@ -258,7 +264,6 @@ bool ModelRuntime_RaycastCandidateListNearest
   DepthBinMask32 rayYBinMask;
   int bestDistanceQ12;
   ModelRuntimeNode *nearestModelNode;
-  bool masksOverlap;
   Q12 hierarchyDistanceQ12;
   ModelRuntimeNode *hierarchyNearestNode;
 
@@ -277,9 +282,8 @@ bool ModelRuntime_RaycastCandidateListNearest
       modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
     if (modelNodeRuntime != excludedNode && modelNodeRuntime->ownerClassId == requiredOwnerId &&
         (modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0 &&
-        (masksOverlap = DepthBinMasks_Overlap
-                           (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
-                            rayYBinMask,rayXBinMask), masksOverlap)) {
+        DepthBinMasks_Overlap(modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
+                              rayYBinMask,rayXBinMask)) {
       hierarchyDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime,&hierarchyNearestNode);
       if (hierarchyDistanceQ12 <= bestDistanceQ12) {
         bestDistanceQ12 = hierarchyDistanceQ12;
@@ -351,22 +355,24 @@ ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry)
 uint32_t __cdecl ModelRuntimePool_Init(void)
 
 {
-  ModelRuntimeSlot *modelRuntimeStorageCursor;
+  ModelRuntimeSlot *modelRuntimePool;
+  uint32_t *poolDword;
   int allocationDwordsRemaining;
   uint32_t allocError;
 
-  allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,(void **)&modelRuntimeStorageCursor);
+  allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,(void **)&modelRuntimePool);
   if (allocError != 0) {
     return allocError;
   }
   /* pool base - 1 */
-  g_ModelRuntimeRebaseDelta = (int)modelRuntimeStorageCursor - 1;
-  g_ModelRuntimeSlots = modelRuntimeStorageCursor;
+  g_ModelRuntimeRebaseDelta = (int)modelRuntimePool - 1;
+  g_ModelRuntimeSlots = modelRuntimePool;
   /* zero the pool dword by dword */
+  poolDword = (uint32_t *)modelRuntimePool;
   for (allocationDwordsRemaining = MODEL_RUNTIME_POOL_BYTES / 4; allocationDwordsRemaining != 0;
        allocationDwordsRemaining--) {
-    modelRuntimeStorageCursor->definitionOrSavedId.definition = NULL;
-    modelRuntimeStorageCursor = (ModelRuntimeSlot *)((uint32_t *)modelRuntimeStorageCursor + 1);
+    *poolDword = 0;
+    poolDword++;
   }
   return 0;
 }
@@ -413,17 +419,85 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
   g_ModelRuntimeSlots = NULL;
   registryEntry = g_ModelDefinitionRegistry;
   for (registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryRemaining != 0; registryRemaining--) {
-    /* the root of the definition's node tree */
-    if (*registryEntry != NULL &&
-        (rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer,
-         rootNode != NULL)) {
-      ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
+    if (*registryEntry != NULL) {
+      /* the root of the definition's node tree */
+      rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer;
+      if (rootNode != NULL) {
+        ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
+      }
     }
     *registryEntry = NULL;
     registryEntry++;
   }
 }
 
+
+
+/* Part of ModelRuntimePool_UnrebaseBeforeSave: zeroes an unused slot's 0x80 dwords, one dword at a time
+   (REP STOSD in the original). */
+static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseView *modelRuntime)
+
+{
+  uint32_t *slotDword;
+  int dwordsRemaining;
+
+  slotDword = (uint32_t *)modelRuntime;
+  for (dwordsRemaining = sizeof(ModelRuntimeSlot) / 4; dwordsRemaining != 0; dwordsRemaining--) {
+    *slotDword = 0;
+    slotDword++;
+  }
+}
+
+
+/* Part of ModelRuntimePool_UnrebaseBeforeSave: turns the pointers of one used slot into saved offsets, replaces
+   the definition by its id, runs the class's modelUnrebase handler and then unrebases the used attachment
+   descriptors (NULL stays 0). */
+static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebaseView *modelRuntime)
+
+{
+  uint32_t ownerArmyOffset;
+  uint32_t linkedModelOffset;
+  uint32_t linkedArmyOffset;
+  uint32_t runtimeClassId;
+  uint32_t attachmentsRemaining;
+  ModelRuntimeAttachmentSavedDescriptor *attachment;
+  ModelRuntimePoolRelativeOffset childRuntimeOffset;
+  ModelNodePoolRelativeOffset parentNodeOffset;
+
+  ownerArmyOffset = modelRuntime->ownerArmyRuntimeSavedOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+  modelRuntime->rootModelNodeSavedOffset =
+       modelRuntime->rootModelNodeSavedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+  modelRuntime->ownerArmyRuntimeSavedOffset = ownerArmyOffset;
+  linkedModelOffset = modelRuntime->linkedModelRuntimeSavedOffset;
+  linkedArmyOffset = modelRuntime->classState.linkedArmyRuntimeSavedOffset;
+  if (linkedModelOffset != 0) {
+    linkedModelOffset = linkedModelOffset - g_ModelRuntimeRebaseDelta;
+  }
+  if (linkedArmyOffset != 0) {
+    linkedArmyOffset = linkedArmyOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+  }
+  modelRuntime->linkedModelRuntimeSavedOffset = linkedModelOffset;
+  modelRuntime->classState.linkedArmyRuntimeSavedOffset = linkedArmyOffset;
+  runtimeClassId = modelRuntime->definitionReferenceOrSavedId.runtimeDefinition->runtimeClassId;
+  modelRuntime->definitionReferenceOrSavedId.savedIdOrOffset =
+       (uint32_t)modelRuntime->definitionReferenceOrSavedId.definition->definitionId;
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[runtimeClassId]
+            ((ModelRuntimeSlot *)modelRuntime);
+  attachment = modelRuntime->attachments;
+  for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
+    childRuntimeOffset = attachment->childModelRuntimeSavedOffset;
+    parentNodeOffset = attachment->parentModelNodeSavedOffset;
+    if (childRuntimeOffset != 0) {
+      childRuntimeOffset = childRuntimeOffset - g_ModelRuntimeRebaseDelta;
+    }
+    if (parentNodeOffset != 0) {
+      parentNodeOffset = parentNodeOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+    }
+    attachment->childModelRuntimeSavedOffset = childRuntimeOffset;
+    attachment->parentModelNodeSavedOffset = parentNodeOffset;
+    attachment++;
+  }
+}
 
 
 /* Address: 0x00528B30.
@@ -437,67 +511,19 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 
 {
-  ModelRuntimeSlotSavedView *linkedModelOffset;
-  ModelRuntimePoolRelativeOffset childRuntimeOffset;
-  uint32_t offsetClassOrCount;
-  int dwordsRemaining;
-  int slotsRemaining;
-  ModelNodePoolRelativeOffset parentNodeOffset;
-  ModelRuntimeSlotUnrebaseView *attachmentCursor;
   ModelRuntimeSlotUnrebaseView *modelRuntime;
+  int slotsRemaining;
 
-  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
   modelRuntime = (ModelRuntimeSlotUnrebaseView *)g_ModelRuntimeSlots;
-  do {
-    while (modelRuntime->rootModelNodeSavedOffset == 0) {
-      /* unused slot: zero its 0x80 dwords, one dword step at a time (REP STOSD in the original) */
-      for (dwordsRemaining = sizeof(ModelRuntimeSlot) / 4; dwordsRemaining != 0; dwordsRemaining--) {
-        modelRuntime->definitionReferenceOrSavedId.definition = NULL;
-        modelRuntime = (ModelRuntimeSlotUnrebaseView *)((uint32_t *)modelRuntime + 1);
-      }
-      slotsRemaining--;
-      if (slotsRemaining == 0) {
-        return;
-      }
+  for (slotsRemaining = MODEL_RUNTIME_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
+    if (modelRuntime->rootModelNodeSavedOffset == 0) {
+      ModelRuntimePool_ZeroUnusedSlotBeforeSave(modelRuntime);
     }
-    offsetClassOrCount = modelRuntime->ownerArmyRuntimeSavedOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-    modelRuntime->rootModelNodeSavedOffset =
-         modelRuntime->rootModelNodeSavedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
-    modelRuntime->ownerArmyRuntimeSavedOffset = offsetClassOrCount;
-    linkedModelOffset = (ModelRuntimeSlotSavedView *)modelRuntime->linkedModelRuntimeSavedOffset;
-    offsetClassOrCount = modelRuntime->classState.linkedArmyRuntimeSavedOffset;
-    if (linkedModelOffset != NULL) {
-      linkedModelOffset = (ModelRuntimeSlotSavedView *)((int)linkedModelOffset - g_ModelRuntimeRebaseDelta);
-    }
-    if (offsetClassOrCount != 0) {
-      offsetClassOrCount = offsetClassOrCount - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-    }
-    modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
-    modelRuntime->classState.linkedArmyRuntimeSavedOffset = offsetClassOrCount;
-    offsetClassOrCount = modelRuntime->definitionReferenceOrSavedId.runtimeDefinition->runtimeClassId;
-    modelRuntime->definitionReferenceOrSavedId.savedIdOrOffset =
-         (uint32_t)modelRuntime->definitionReferenceOrSavedId.definition->definitionId;
-    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
-              ((ModelRuntimeSlot *)modelRuntime);
-    attachmentCursor = modelRuntime;
-    for (offsetClassOrCount = modelRuntime->attachmentCount; offsetClassOrCount != 0; offsetClassOrCount--) {
-      childRuntimeOffset = attachmentCursor->attachments[0].childModelRuntimeSavedOffset;
-      parentNodeOffset = attachmentCursor->attachments[0].parentModelNodeSavedOffset;
-      if (childRuntimeOffset != 0) {
-        childRuntimeOffset = childRuntimeOffset - g_ModelRuntimeRebaseDelta;
-      }
-      if (parentNodeOffset != 0) {
-        parentNodeOffset = parentNodeOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
-      }
-      attachmentCursor->attachments[0].childModelRuntimeSavedOffset = childRuntimeOffset;
-      attachmentCursor->attachments[0].parentModelNodeSavedOffset = parentNodeOffset;
-      /* next attachment descriptor: 0x20 bytes on */
-      attachmentCursor = (ModelRuntimeSlotUnrebaseView *)
-                         ((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
+    else {
+      ModelRuntimePool_UnrebaseUsedSlotBeforeSave(modelRuntime);
     }
     modelRuntime++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
 }
 
 

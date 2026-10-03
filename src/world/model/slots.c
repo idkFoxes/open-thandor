@@ -131,17 +131,17 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  ModelRuntimeArmyLinkOrState *armyLinkCounterField;
   ModelRuntimeNode *rootModelNode;
+  ModelRuntimeNode *rootChild0Node;
   ModelRuntimeNode *rootGrandchildNode;
 
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   modelRuntimeSlot->classLinkState.classState80 = 0;
   modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = NULL;
-  rootGrandchildNode = rootModelNode->childNodes[0];
+  rootChild0Node = rootModelNode->childNodes[0];
   modelRuntimeSlot->classLinkState.classState64 = 0;
   modelRuntimeSlot->classLinkState.classState68 = 0;
-  rootGrandchildNode = rootGrandchildNode->childNodes[0];
+  rootGrandchildNode = rootChild0Node->childNodes[0];
   modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime = NULL;
   modelRuntimeSlot->classLinkState.classState70 = 0;
   modelRuntimeSlot->classLinkState.classState74 = 0;
@@ -149,8 +149,7 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   modelRuntimeSlot->classLinkState.classState7C = 0;
   if (!ModelLookupTable_GetPackedPointPosition
          (0,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
-    modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)(modelRuntimeSlot->classLinkState.modelLinkOrState.classState - 1);
+    modelRuntimeSlot->classLinkState.modelLinkOrState.classState -= 1;
   }
   if (!ModelLookupTable_GetPackedPointPosition
          (1,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
@@ -162,8 +161,7 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   }
   if (!ModelLookupTable_GetPackedPointPosition
          (3,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
-    armyLinkCounterField = &modelRuntimeSlot->classLinkState.armyLinkOrState;
-    armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
+    modelRuntimeSlot->classLinkState.armyLinkOrState.classState -= 1;
   }
   if (!ModelLookupTable_GetPackedPointPosition
          (4,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
@@ -274,24 +272,24 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint8_t *storageLimit;
-  int factionRecordOffset;
-  int storageLimitOffset;
+  GameFactionRuntimeRecord *factionRecord;
+  uint32_t *storageLimitQ4;
   ArmyRuntimeSlot *ownerArmy;
   ModelRuntimeNode *rootModelNode;
 
   ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = NULL;
-  factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
-  storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
+  factionRecord = &g_GameFactionRuntimeImage.records[ownerArmy->factionIndex];
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
-    storageLimitOffset = factionRecordOffset + 20; /* tritiumStorageLimitQ4 */
+    storageLimitQ4 = &factionRecord->tritiumStorageLimitQ4;
+  }
+  else {
+    storageLimitQ4 = &factionRecord->xeniteStorageLimitQ4;
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
-  *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
-  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
-      (3 < rootModelNode->childCount)) && (rootModelNode->childNodes[3] != NULL)) {
+  *storageLimitQ4 += ((ModelDefinition *)modelDefinition)->classParameterC4;
+  if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
+      (3 < rootModelNode->childCount) && (rootModelNode->childNodes[3] != NULL)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
     rootModelNode->childNodes[3] = NULL;
   }
@@ -309,23 +307,23 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint8_t *storageLimit;
-  int factionRecordOffset;
-  int storageLimitOffset;
+  GameFactionRuntimeRecord *factionRecord;
+  uint32_t *storageLimitQ4;
   ArmyRuntimeSlot *ownerArmy;
   ModelRuntimeNode *rootModelNode;
 
   ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-  factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
-  storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
+  factionRecord = &g_GameFactionRuntimeImage.records[ownerArmy->factionIndex];
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
-    storageLimitOffset = factionRecordOffset + 20; /* tritiumStorageLimitQ4 */
+    storageLimitQ4 = &factionRecord->tritiumStorageLimitQ4;
+  }
+  else {
+    storageLimitQ4 = &factionRecord->xeniteStorageLimitQ4;
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
-  *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
-  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
-      (1 < rootModelNode->childCount)) && (rootModelNode->childNodes[1] != NULL)) {
+  *storageLimitQ4 += ((ModelDefinition *)modelDefinition)->classParameterC4;
+  if ((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
+      (1 < rootModelNode->childCount) && (rootModelNode->childNodes[1] != NULL)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
     rootModelNode->childNodes[1] = NULL;
   }
@@ -461,8 +459,7 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   rootModelNode->primaryTextureOffsetV = 0;
   stateClearCursor = &modelRuntimeSlot->classLinkState.classState78;
   for (stateDwordsRemaining = 13; stateDwordsRemaining != 0; stateDwordsRemaining--) {
-    *stateClearCursor = 0;
-    stateClearCursor = stateClearCursor + 1;
+    *stateClearCursor++ = 0;
   }
   return;
 }

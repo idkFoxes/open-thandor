@@ -574,6 +574,40 @@ bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 }
 
 
+/* A miss of ModelNodeRuntime_RaycastHierarchyNearest before the mesh test: stores the scratch value the
+   original left in EDX as the "nearest node" (see the original quirk there). */
+static Q12 ModelNodeRuntime_RaycastMissWithScratchNode
+          (ModelRuntimeNode **outNearestModelNode,int scratchValue)
+
+{
+  ModelRaycastNearestNodeOrScratch4 scratchNode;
+
+  scratchNode.scratchSigned = scratchValue;
+  *outNearestModelNode = scratchNode.nearestModelNode;
+  return MODEL_RAYCAST_NO_HIT_DISTANCE;
+}
+
+
+/* The mesh group ModelNodeRuntime_RaycastHierarchyNearest tests: the last one, or the one before it when the
+   model has a shadow mesh group. */
+static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelResource *resourceView)
+
+{
+  ModelMeshGroupRelativeOffset *meshGroupCursor;
+  ModelMeshGroupCount meshGroupsToSkip;
+
+  meshGroupCursor = &resourceView->firstMeshGroupRelativeOffset;
+  meshGroupsToSkip = resourceView->meshGroupCount - 1;
+  if (resourceView->shadowMeshGroupOffset != 0 && meshGroupsToSkip != 0) {
+    meshGroupsToSkip--;
+  }
+  for (; meshGroupsToSkip != 0; meshGroupsToSkip--) {
+    meshGroupCursor = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroupCursor + *meshGroupCursor);
+  }
+  return meshGroupCursor;
+}
+
+
 /* Address: 0x0050B1D0.
    Ray test of a model hierarchy against the ray in g_ModelRaycastOriginX/Y/Z and
    g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
@@ -592,124 +626,123 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
 {
   int *triangleCountField;
   ModelResource *resourceView;
-  int64_t projectionOrDiscriminant;
-  int64_t projectedDistanceWide;
+  int64_t projectionWide;
+  int64_t discriminant;
+  int projectedDistance;
   uint32_t negatedAngle2;
-  int deltaXOrNodeY;
-  int deltaYOrNodeZ;
+  int deltaX;
+  int deltaY;
+  int deltaZ;
+  int boundingRadius;
+  int nodeX;
+  int nodeY;
+  int nodeZ;
   int trianglesRemaining;
   uint32_t childrenRemaining;
-  int deltaZ;
-  ModelRaycastNearestNodeOrScratch4 edxCarrier;
   ModelPackedGeometryRecordCount meshRecordsRemaining;
-  ModelMeshGroupCount meshGroupsRemaining;
-  int radiusNodeXOrNearest;
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
   ModelRuntimeNode *nearestModelNode;
+  ModelRuntimeNode *childNearestModelNode;
+  Q12 nearestDistanceQ12;
   Q12 triangleDistanceQ12;
   Q12 childDistanceQ12;
 
-  deltaXOrNodeY = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOriginX;
-  deltaYOrNodeZ = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOriginY;
+  /* bounding sphere test: the projection of the node centre onto the ray must lie within the ray's reach
+     (widened by the radius) and the ray must pass the centre closer than the radius */
+  deltaX = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOriginX;
+  deltaY = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOriginY;
   deltaZ = modelNodeRuntime->worldTransform.translation.z - g_ModelRaycastOriginZ;
-  radiusNodeXOrNearest = modelNodeRuntime->subtreeBoundingRadiusQ12;
-  projectionOrDiscriminant = (int64_t)deltaYOrNodeZ * (int64_t)(int)g_ModelRaycastWorldDirectionYQ28 +
-          (int64_t)deltaXOrNodeY * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
+  boundingRadius = modelNodeRuntime->subtreeBoundingRadiusQ12;
+  projectionWide = (int64_t)deltaY * (int64_t)(int)g_ModelRaycastWorldDirectionYQ28 +
+          (int64_t)deltaX * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
           (int64_t)deltaZ * (int64_t)(int)g_ModelRaycastWorldDirectionZQ28;
-  edxCarrier.scratchSigned =
-       FIXED_PRODUCT_SHR(projectionOrDiscriminant,Q28_SHIFT);
-  if ((-radiusNodeXOrNearest <= edxCarrier.scratchSigned) &&
-     (edxCarrier.scratchSigned < g_ModelRaycastMaximumDistance + radiusNodeXOrNearest)) {
-    projectionOrDiscriminant = (int64_t)edxCarrier.scratchSigned;
-    projectedDistanceWide = (int64_t)edxCarrier.scratchSigned;
-    edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaXOrNodeY,deltaXOrNodeY);
-    projectionOrDiscriminant =
-         ((int64_t)radiusNodeXOrNearest * (int64_t)radiusNodeXOrNearest +
-          projectionOrDiscriminant * projectedDistanceWide) -
-            (int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY;
-    if (-1 < projectionOrDiscriminant) {
-      edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaYOrNodeZ,deltaYOrNodeZ);
-      projectionOrDiscriminant = projectionOrDiscriminant - (int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ;
-      if ((-1 < projectionOrDiscriminant) &&
-         (edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaZ,deltaZ)
-         , -1 < (int)(((int)((uint64_t)projectionOrDiscriminant >> 32) - edxCarrier.scratchSigned) -
-                     (uint32_t)((uint32_t)projectionOrDiscriminant < (uint32_t)((int64_t)deltaZ * (int64_t)deltaZ))))) {
-        negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
-        FixedTransform_BuildRotationBasis
-                  (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & FIXED_ANGLE16_MASK,
-                   modelNodeRuntime->modelPayload.worldRotationAngle1,
-                   modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
-                   negatedAngle2 & FIXED_ANGLE16_MASK);
-        resourceView = modelNodeRuntime->modelPayload.modelResource;
-        g_GraphicsTransformScratchMatrix3x4.translation.x = 0;
-        g_GraphicsTransformScratchMatrix3x4.translation.y = 0;
-        g_GraphicsTransformScratchMatrix3x4.translation.z = 0;
-        meshGroupCursor = &resourceView->firstMeshGroupRelativeOffset;
-        radiusNodeXOrNearest = modelNodeRuntime->worldTransform.translation.x;
-        deltaXOrNodeY = modelNodeRuntime->worldTransform.translation.y;
-        meshGroupsRemaining = resourceView->meshGroupCount;
-        deltaYOrNodeZ = modelNodeRuntime->worldTransform.translation.z;
-        /* the mesh group to test: the last one, or the one before it when the model has a shadow mesh group */
-        if (resourceView->shadowMeshGroupOffset == 0 ||
-            (meshGroupsRemaining = meshGroupsRemaining - 1, meshGroupsRemaining != 0)) {
-          while (meshGroupsRemaining = meshGroupsRemaining - 1, meshGroupsRemaining != 0) {
-            meshGroupCursor = (ModelMeshGroupRelativeOffset *)((int)meshGroupCursor + *meshGroupCursor);
-          }
-        }
-        g_ModelRaycastOriginX = g_ModelRaycastOriginX - radiusNodeXOrNearest;
-        g_ModelRaycastOriginY = g_ModelRaycastOriginY - deltaXOrNodeY;
-        g_ModelRaycastOriginZ = g_ModelRaycastOriginZ - deltaYOrNodeZ;
-        FixedTransform_ApplyPoint
-                  ((GraphicsFixedVec3 *)&g_ModelRaycastLocalOriginX,
-                   (GraphicsFixedVec3 *)&g_ModelRaycastOriginX,&g_GraphicsTransformScratchMatrix3x4)
-        ;
-        g_ModelRaycastOriginX = g_ModelRaycastOriginX + radiusNodeXOrNearest;
-        g_ModelRaycastOriginY = g_ModelRaycastOriginY + deltaXOrNodeY;
-        g_ModelRaycastOriginZ = g_ModelRaycastOriginZ + deltaYOrNodeZ;
-        FixedTransform_ApplyPoint
-                  ((GraphicsFixedVec3 *)&g_ModelRaycastLocalDirectionXQ28,
-                   (GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,
-                   &g_GraphicsTransformScratchMatrix3x4);
-        triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
-        radiusNodeXOrNearest = MODEL_RAYCAST_NO_HIT_DISTANCE;
-        for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining--) {
-          /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
-          triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
-          triangle = (ModelRaycastTriangleDescriptor *)
-                     ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
-                      ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
-          for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
-            if (ModelMesh_IntersectTriangleRayDistance(triangle,&triangleDistanceQ12) &&
-                (triangleDistanceQ12 <= radiusNodeXOrNearest)) {
-              radiusNodeXOrNearest = triangleDistanceQ12;
-            }
-            triangle = triangle + 1;
-          }
-        }
-        edxCarrier.nearestModelNode = NULL;
-        nearestModelNode = modelNodeRuntime;
-        for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
-          if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
-            childDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest
-                               (modelNodeRuntime->childNodes[childrenRemaining - 1],
-                                &edxCarrier.nearestModelNode);
-            if ((childDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE) &&
-                (childDistanceQ12 < radiusNodeXOrNearest)) {
-              radiusNodeXOrNearest = childDistanceQ12;
-              nearestModelNode = edxCarrier.nearestModelNode;
-            }
-          }
-        }
-        if (radiusNodeXOrNearest != MODEL_RAYCAST_NO_HIT_DISTANCE) {
-          *outNearestModelNode = nearestModelNode;
-          return radiusNodeXOrNearest;
-        }
+  projectedDistance = FIXED_PRODUCT_SHR(projectionWide,Q28_SHIFT);
+  if ((projectedDistance < -boundingRadius) ||
+      (g_ModelRaycastMaximumDistance + boundingRadius <= projectedDistance)) {
+    return ModelNodeRuntime_RaycastMissWithScratchNode(outNearestModelNode,projectedDistance);
+  }
+  discriminant = ((int64_t)boundingRadius * (int64_t)boundingRadius +
+                  (int64_t)projectedDistance * (int64_t)projectedDistance) -
+                 (int64_t)deltaX * (int64_t)deltaX;
+  if (discriminant < 0) {
+    return ModelNodeRuntime_RaycastMissWithScratchNode(outNearestModelNode,FIXED_MUL_HIGH(deltaX,deltaX));
+  }
+  discriminant = discriminant - (int64_t)deltaY * (int64_t)deltaY;
+  if (discriminant < 0) {
+    return ModelNodeRuntime_RaycastMissWithScratchNode(outNearestModelNode,FIXED_MUL_HIGH(deltaY,deltaY));
+  }
+  if (discriminant - (int64_t)deltaZ * (int64_t)deltaZ < 0) {
+    return ModelNodeRuntime_RaycastMissWithScratchNode(outNearestModelNode,FIXED_MUL_HIGH(deltaZ,deltaZ));
+  }
+
+  /* move the ray into the node's frame */
+  negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
+  FixedTransform_BuildRotationBasis
+            (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & FIXED_ANGLE16_MASK,
+             modelNodeRuntime->modelPayload.worldRotationAngle1,
+             modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
+             negatedAngle2 & FIXED_ANGLE16_MASK);
+  resourceView = modelNodeRuntime->modelPayload.modelResource;
+  g_GraphicsTransformScratchMatrix3x4.translation.x = 0;
+  g_GraphicsTransformScratchMatrix3x4.translation.y = 0;
+  g_GraphicsTransformScratchMatrix3x4.translation.z = 0;
+  nodeX = modelNodeRuntime->worldTransform.translation.x;
+  nodeY = modelNodeRuntime->worldTransform.translation.y;
+  nodeZ = modelNodeRuntime->worldTransform.translation.z;
+  meshGroupCursor = ModelResource_FindRaycastMeshGroup(resourceView);
+  g_ModelRaycastOriginX = g_ModelRaycastOriginX - nodeX;
+  g_ModelRaycastOriginY = g_ModelRaycastOriginY - nodeY;
+  g_ModelRaycastOriginZ = g_ModelRaycastOriginZ - nodeZ;
+  FixedTransform_ApplyPoint
+            ((GraphicsFixedVec3 *)&g_ModelRaycastLocalOriginX,
+             (GraphicsFixedVec3 *)&g_ModelRaycastOriginX,&g_GraphicsTransformScratchMatrix3x4);
+  g_ModelRaycastOriginX = g_ModelRaycastOriginX + nodeX;
+  g_ModelRaycastOriginY = g_ModelRaycastOriginY + nodeY;
+  g_ModelRaycastOriginZ = g_ModelRaycastOriginZ + nodeZ;
+  FixedTransform_ApplyPoint
+            ((GraphicsFixedVec3 *)&g_ModelRaycastLocalDirectionXQ28,
+             (GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,
+             &g_GraphicsTransformScratchMatrix3x4);
+
+  /* every triangle of every mesh of the mesh group */
+  triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
+  nearestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
+  for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining--) {
+    /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
+    triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
+    triangle = (ModelRaycastTriangleDescriptor *)
+               ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
+                ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
+    for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
+      if (ModelMesh_IntersectTriangleRayDistance(triangle,&triangleDistanceQ12) &&
+          (triangleDistanceQ12 <= nearestDistanceQ12)) {
+        nearestDistanceQ12 = triangleDistanceQ12;
+      }
+      triangle = triangle + 1;
+    }
+  }
+
+  /* the children, last slot first */
+  childNearestModelNode = NULL;
+  nearestModelNode = modelNodeRuntime;
+  for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
+    if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
+      childDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest
+                         (modelNodeRuntime->childNodes[childrenRemaining - 1],&childNearestModelNode);
+      if ((childDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE) && (childDistanceQ12 < nearestDistanceQ12)) {
+        nearestDistanceQ12 = childDistanceQ12;
+        nearestModelNode = childNearestModelNode;
       }
     }
   }
-  *outNearestModelNode = edxCarrier.nearestModelNode;
-  return MODEL_RAYCAST_NO_HIT_DISTANCE;
+  if (nearestDistanceQ12 == MODEL_RAYCAST_NO_HIT_DISTANCE) {
+    /* Original quirk: NULL, or whatever the last child test stored */
+    *outNearestModelNode = childNearestModelNode;
+    return MODEL_RAYCAST_NO_HIT_DISTANCE;
+  }
+  *outNearestModelNode = nearestModelNode;
+  return nearestDistanceQ12;
 }
 
 
@@ -795,23 +828,26 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
 void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
 
 {
+  ModelRuntimeSlot *modelRuntimeSlot;
+  ModelRuntimeAttachmentDescriptor *attachment;
   int childrenRemaining;
-  
-  if (modelRuntime != NULL) {
-    childrenRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
-    if (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
-        MODEL_RUNTIME_CLASS_13 &&
-        targetRuntimeId == ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState.classState) {
-      ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState.classState = 0;
-    }
-    for (; childrenRemaining != 0; childrenRemaining--) {
-      ModelRuntimeHierarchy_ClearMatchingTargetRecursive
-                (targetRuntimeId,
-                 (int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
-      modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
-    }
+
+  if (modelRuntime == NULL) {
+    return;
   }
-  return;
+  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  childrenRemaining = modelRuntimeSlot->attachmentCount;
+  if (modelRuntimeSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13 &&
+      targetRuntimeId == modelRuntimeSlot->classLinkState.armyLinkOrState.classState) {
+    modelRuntimeSlot->classLinkState.armyLinkOrState.classState = 0;
+  }
+  /* empty attachment slots are passed on too; the callee returns at once for NULL */
+  attachment = modelRuntimeSlot->attachments;
+  for (; childrenRemaining != 0; childrenRemaining--) {
+    ModelRuntimeHierarchy_ClearMatchingTargetRecursive
+              (targetRuntimeId,(int *)attachment->childModelRuntimeOrSavedOffset);
+    attachment++;
+  }
 }
 
 
@@ -938,6 +974,31 @@ bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
 }
 
 
+/* The first attachment transform record of kind 0 or 1 in the resource's packed lookup table whose selector
+   (bits 4..31) is the given child slot, or NULL when there is none. */
+static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransform
+          (ModelResource *resourceView,uint32_t childIndex)
+
+{
+  ModelAttachmentTransformRecord *attachmentTransform;
+  ModelPackedLookupTableEntryCount transformRecordsRemaining;
+  uint32_t attachmentKind;
+
+  attachmentTransform = (ModelAttachmentTransformRecord *)
+            ((uint8_t *)resourceView + resourceView->packedLookupTableRelativeOffset);
+  for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0;
+      transformRecordsRemaining--) {
+    attachmentKind = attachmentTransform->packedKindAndSelector & 0xf;
+    if ((attachmentKind == 0 || attachmentKind == 1) &&
+        childIndex == attachmentTransform->packedKindAndSelector >> 4) {
+      return attachmentTransform;
+    }
+    attachmentTransform++;
+  }
+  return NULL;
+}
+
+
 /* Address: 0x00528E90.
    Builds the runtime node tree of a model from its serialized MDL node tree: allocates a world node per
    definition node, copies the local rotation and the mesh resource, and places each child at the translation
@@ -956,14 +1017,15 @@ bool ModelNodeRuntime_CreateHierarchyRecursive
   AngleTurn32 rotationAngleA;
   AngleTurn32 rotationAngleB;
   ArmyRuntimeSlot *ownerArmy;
+  ModelDefinition *modelDefinition;
   ModelResource *resourceView;
-  Q12 radiusOrTranslationY;
-  Q12 translationZ;
-  SerializedRelativeByteOffset childDefinitionOffset;
+  Q12 boundingRadiusQ12;
+  Q12 translationYQ12;
+  Q12 translationZQ12;
+  MdlSerializedNodeHeader *childDefinition;
   ModelRuntimeNode *newNode;
-  uint32_t attachmentKindOrSlot;
-  ModelPackedLookupTableEntryCount transformRecordsRemaining;
-  uint32_t definitionOrChildrenRemaining;
+  uint32_t attachmentSlot;
+  uint32_t childrenRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransform;
   ModelRuntimeNode *childNode;
@@ -998,81 +1060,70 @@ bool ModelNodeRuntime_CreateHierarchyRecursive
   ((uint8_t *)&newNode->textureSubresourceBaseIndex)[1] = 0;
   ((uint8_t *)&newNode->textureSubresourceBaseIndex)[2] = 0;
   ((uint8_t *)&newNode->textureSubresourceBaseIndex)[3] = 0;
-  definitionOrChildrenRemaining = modelRuntime->definitionOrSavedId.savedIdOrOffset;
+  modelDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
+  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) != 0) {
+  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS) == 0) {
+  if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS) == 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_SHADING_PASS;
   }
   resourceView = definitionNode->spriteAssetReference.modelResource;
   newNode->modelPayload.paletteAsset = paletteAsset;
-  radiusOrTranslationY = resourceView->boundingRadiusQ12;
+  boundingRadiusQ12 = resourceView->boundingRadiusQ12;
   newNode->modelPayload.textureSet = textureSet;
-  newNode->subtreeBoundingRadiusQ12 = radiusOrTranslationY;
+  newNode->subtreeBoundingRadiusQ12 = boundingRadiusQ12;
   newNode->modelPayload.modelResource = resourceView;
   newNode->shadingRecord = NULL;
   newNode->modelRuntimeLinkOrSavedOffset = NULL;
   newNode->renderDepthBiasOrState = 0;
-  definitionOrChildrenRemaining = definitionNode->childCount;
-  resourceView = definitionNode->spriteAssetReference.modelResource;
+  childrenRemaining = definitionNode->childCount;
   childIndex = 0;
-  newNode->childCount = definitionOrChildrenRemaining;
+  newNode->childCount = childrenRemaining;
   newNode->parentNode = NULL;
-  for (; definitionOrChildrenRemaining != 0; definitionOrChildrenRemaining--) {
-    attachmentTransform = (ModelAttachmentTransformRecord *)
-              ((uint8_t *)resourceView + resourceView->packedLookupTableRelativeOffset);
-    /* the first transform record of kind 0 or 1 whose selector (bits 4..31) is this child slot */
-    for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0;
-        transformRecordsRemaining--) {
-      attachmentKindOrSlot = attachmentTransform->packedKindAndSelector & 0xf;
-      if ((attachmentKindOrSlot == 0 || attachmentKindOrSlot == 1) &&
-          childIndex == attachmentTransform->packedKindAndSelector >> 4) {
-        if (!ModelNodeRuntime_CreateHierarchyRecursive
-                (paletteAsset,textureSet,modelRuntime,
-                 (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex],worldRuntime,
-                 &childNode)) {
-          return false;
-        }
-        newNode->childNodes[childIndex] = childNode;
-        if (childNode == NULL) {
-          /* an attachment point: record where the child model will hang */
-          attachmentKindOrSlot = modelRuntime->attachmentCount;
-          if (attachmentKindOrSlot < MODEL_RUNTIME_ATTACHMENT_CAPACITY) {
-            modelRuntime->attachmentCount++;
-            modelRuntime->attachments[attachmentKindOrSlot].sourceTransform = attachmentTransform;
-            modelRuntime->attachments[attachmentKindOrSlot].childNodeIndex = childIndex;
-            modelRuntime->attachments[attachmentKindOrSlot].parentModelNodeOrSavedOffset = newNode;
-            childDefinitionOffset = definitionNode->childSerializedOffsets[childIndex];
-            modelRuntime->attachments[attachmentKindOrSlot].childModelRuntimeOrSavedOffset = NULL;
-            rotationAngleA = ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle0;
-            rotationAngleB = ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle1;
-            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle2 =
-                 ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle2;
-            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle1 = rotationAngleB;
-            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle0 = rotationAngleA;
-          }
-        }
-        else {
-          childNode->parentNode = newNode;
-          radiusOrTranslationY = attachmentTransform->localTranslationYQ12;
-          translationZ = attachmentTransform->localTranslationZQ12;
-          childNode->modelPayload.localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
-          childNode->modelPayload.localTranslationYQ12 = radiusOrTranslationY;
-          childNode->modelPayload.localTranslationZQ12 = translationZ;
-        }
-        break;
-      }
-      attachmentTransform++;
-    }
-    if (transformRecordsRemaining == 0) {
+  for (; childrenRemaining != 0; childrenRemaining--) {
+    attachmentTransform = ModelResource_FindChildAttachmentTransform(resourceView,childIndex);
+    if (attachmentTransform == NULL) {
       /* no attachment transform for this child */
       newNode->childNodes[childIndex] = NULL;
+    }
+    else {
+      if (!ModelNodeRuntime_CreateHierarchyRecursive
+              (paletteAsset,textureSet,modelRuntime,
+               (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex],worldRuntime,
+               &childNode)) {
+        return false;
+      }
+      newNode->childNodes[childIndex] = childNode;
+      if (childNode == NULL) {
+        /* an attachment point: record where the child model will hang */
+        attachmentSlot = modelRuntime->attachmentCount;
+        if (attachmentSlot < MODEL_RUNTIME_ATTACHMENT_CAPACITY) {
+          modelRuntime->attachmentCount++;
+          modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransform;
+          modelRuntime->attachments[attachmentSlot].childNodeIndex = childIndex;
+          modelRuntime->attachments[attachmentSlot].parentModelNodeOrSavedOffset = newNode;
+          childDefinition = (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex];
+          modelRuntime->attachments[attachmentSlot].childModelRuntimeOrSavedOffset = NULL;
+          rotationAngleA = childDefinition->localRotationAngle0;
+          rotationAngleB = childDefinition->localRotationAngle1;
+          modelRuntime->attachments[attachmentSlot].childLocalRotationAngle2 = childDefinition->localRotationAngle2;
+          modelRuntime->attachments[attachmentSlot].childLocalRotationAngle1 = rotationAngleB;
+          modelRuntime->attachments[attachmentSlot].childLocalRotationAngle0 = rotationAngleA;
+        }
+      }
+      else {
+        childNode->parentNode = newNode;
+        translationYQ12 = attachmentTransform->localTranslationYQ12;
+        translationZQ12 = attachmentTransform->localTranslationZQ12;
+        childNode->modelPayload.localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
+        childNode->modelPayload.localTranslationYQ12 = translationYQ12;
+        childNode->modelPayload.localTranslationZQ12 = translationZQ12;
+      }
     }
     childIndex++;
   }
@@ -1124,61 +1175,61 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 
 {
-  int linkedRuntime;
-  ShotDefinition *definition;
-  uint32_t metricValue;
+  ModelRuntimeSlot *modelRuntimeSlot;
+  ModelDefinition *modelDefinition;
+  ArmyRuntimeSlot *army;
+  ModelRuntimeNode *rootModelNode;
+  ShotDefinition *shotDefinition;
+  ModelRuntimeAttachmentDescriptor *attachment;
+  uint32_t visibilityRadius;
+  uint32_t visibilityHeightOffset;
   uint32_t selectionRange;
-  int armyOrCategoryIndex;
-  int definitionArmyOrRemaining;
-  
-  definitionArmyOrRemaining = *modelRuntime;
-  armyOrCategoryIndex = (int)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-  linkedRuntime = (int)((ModelRuntimeSlot *)modelRuntime)->rootModelNodeOrSavedOffset.modelNode;
+  int targetClassIndex;
+  int childrenRemaining;
+
+  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  modelDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
+  army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   /* a switched-off model counts with the definition's alternative value at +0x1A4 */
-  if ((((ModelRuntimeSlot *)modelRuntime)->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
-    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->visibilityRadius;
+  if ((modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+    visibilityRadius = modelDefinition->visibilityRadius;
   }
   else {
-    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->switchedOffVisibilityRadius;
+    visibilityRadius = modelDefinition->switchedOffVisibilityRadius;
   }
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->occupancyMarkRadius <
-      ((ModelDefinition *)definitionArmyOrRemaining)->occupancyMarkRadius) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->occupancyMarkRadius =
-         ((ModelDefinition *)definitionArmyOrRemaining)->occupancyMarkRadius;
+  if (army->occupancyMarkRadius < modelDefinition->occupancyMarkRadius) {
+    army->occupancyMarkRadius = modelDefinition->occupancyMarkRadius;
   }
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityRadius < metricValue) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityRadius = metricValue;
+  if (army->visibilityRadius < visibilityRadius) {
+    army->visibilityRadius = visibilityRadius;
   }
-  metricValue = (((ModelRuntimeNode *)linkedRuntime)->worldTransform.translation.z -
-                ((ArmyRuntimeSlot *)armyOrCategoryIndex)->modelNodeRuntime->worldTransform.translation.z) +
-                ((ModelDefinition *)definitionArmyOrRemaining)->visibilityHeightOffset;
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityHeightOffset < metricValue) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityHeightOffset = metricValue;
+  visibilityHeightOffset = (rootModelNode->worldTransform.translation.z -
+                            army->modelNodeRuntime->worldTransform.translation.z) +
+                           modelDefinition->visibilityHeightOffset;
+  if (army->visibilityHeightOffset < visibilityHeightOffset) {
+    army->visibilityHeightOffset = visibilityHeightOffset;
   }
   /* the model's shot definition, used when reloadTicks is non-zero */
-  definition = ((ModelDefinition *)definitionArmyOrRemaining)->shotDefinitionReference.definition;
-  if (((ModelDefinition *)definitionArmyOrRemaining)->reloadTicks != 0) {
-    selectionRange = ShotDefinition_ComputeSelectionRange(definition);
-    definitionArmyOrRemaining = (int)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-    armyOrCategoryIndex = 7;
-    if ((int)((ArmyRuntimeSlot *)definitionArmyOrRemaining)->weaponRangeQ12 < (int)selectionRange) {
-      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->weaponRangeQ12 = selectionRange;
+  shotDefinition = modelDefinition->shotDefinitionReference.definition;
+  if (modelDefinition->reloadTicks != 0) {
+    selectionRange = ShotDefinition_ComputeSelectionRange(shotDefinition);
+    army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    if ((int)army->weaponRangeQ12 < (int)selectionRange) {
+      army->weaponRangeQ12 = selectionRange;
     }
-    do {
-      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->targetClassShotDamage[armyOrCategoryIndex] +=
-           definition->targetClassImpactDamageQ12[armyOrCategoryIndex];
-      armyOrCategoryIndex--;
-    } while (-1 < armyOrCategoryIndex);
-  }
-  for (definitionArmyOrRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
-       definitionArmyOrRemaining != 0; definitionArmyOrRemaining--) {
-    if (((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset != NULL) {
-      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics
-                ((int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
+    /* all 8 target classes, last one first */
+    for (targetClassIndex = 7; targetClassIndex >= 0; targetClassIndex--) {
+      army->targetClassShotDamage[targetClassIndex] += shotDefinition->targetClassImpactDamageQ12[targetClassIndex];
     }
-    modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
   }
-  return;
+  attachment = modelRuntimeSlot->attachments;
+  for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
+    if (attachment->childModelRuntimeOrSavedOffset != NULL) {
+      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)attachment->childModelRuntimeOrSavedOffset);
+    }
+    attachment++;
+  }
 }
 
 
@@ -1192,28 +1243,28 @@ Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntim
 {
   ModelRuntimeSlot *childModelRuntime;
   uint32_t attachmentsRemaining;
-  int accumulatedHierarchyScaleQ12;
-  ModelRuntimeSlot *attachmentDescriptorCursor;
-  int scaleSampleCount;
+  int ratioSumQ12;
+  ModelRuntimeAttachmentDescriptor *attachment;
+  int ratioSampleCount;
   Q12 childConditionRatioQ12;
 
-  accumulatedHierarchyScaleQ12 = Q12_ONE;
-  scaleSampleCount = 1;
-  attachmentDescriptorCursor = modelRuntime;
+  /* the sum starts with 1.0 for the node itself */
+  ratioSumQ12 = Q12_ONE;
+  ratioSampleCount = 1;
+  attachment = modelRuntime->attachments;
   for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0;
       attachmentsRemaining--) {
-    childModelRuntime = attachmentDescriptorCursor->attachments[0].childModelRuntimeOrSavedOffset;
+    childModelRuntime = attachment->childModelRuntimeOrSavedOffset;
     if (childModelRuntime != NULL) {
       childConditionRatioQ12 = ModelRuntimeHierarchy_ComputeConditionRatioQ12(childModelRuntime);
-      accumulatedHierarchyScaleQ12 = accumulatedHierarchyScaleQ12 + childConditionRatioQ12;
-      scaleSampleCount++;
+      ratioSumQ12 = ratioSumQ12 + childConditionRatioQ12;
+      ratioSampleCount++;
     }
-    /* steps the cursor by one 0x20-byte attachments[] entry */
-    attachmentDescriptorCursor =
-         (ModelRuntimeSlot *)((uint8_t *)attachmentDescriptorCursor + sizeof(ModelRuntimeAttachmentDescriptor));
+    attachment++;
   }
-  return (Q12)(((int64_t)(int)modelRuntime->health * (int64_t)accumulatedHierarchyScaleQ12) /
-               (int64_t)(scaleSampleCount *
+  /* health * average ratio / maximum health */
+  return (Q12)(((int64_t)(int)modelRuntime->health * (int64_t)ratioSumQ12) /
+               (int64_t)(ratioSampleCount *
                          (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth));
 }
 
@@ -1518,48 +1569,46 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
 void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime)
 
 {
-  PckModelDefinitionIdCatalog modelDefinitionId;
-  int variantsRemaining;
-  int variantCursorOrRemaining;
-  bool variantLocked;
+  ModelRuntimeSlot *modelRuntimeSlot;
+  ModelDefinition *currentDefinition;
+  ModelDefinition *previousDefinition;
   ModelDefinitionRecordPrefix *variantDefinition;
+  ModelRuntimeAttachmentDescriptor *attachment;
+  PckModelDefinitionIdCatalog modelDefinitionId;
+  int variantIndex;
+  int childrenRemaining;
 
-  /* modelRuntime is a ModelRuntimeSlot; [0] its definition */
-  variantCursorOrRemaining = *modelRuntime;
-  variantsRemaining = MODEL_TECHNOLOGY_VARIANT_COUNT;
-  do {
-    /* the cursor steps 4 bytes per variant, so element 0 is the current variant */
-    modelDefinitionId =
-         ((ModelDefinition *)variantCursorOrRemaining)->variantModelDefinitionIds[0];
+  modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
+  currentDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
+  for (variantIndex = 0; variantIndex < MODEL_TECHNOLOGY_VARIANT_COUNT; variantIndex++) {
+    modelDefinitionId = currentDefinition->variantModelDefinitionIds[variantIndex];
+    if (modelDefinitionId == 0) {
+      continue;
+    }
     /* ModelDefinition_IsFactionTechnologyLocked returns true (CF set) when the variant is NOT unlocked */
-    if ((modelDefinitionId != 0) &&
-       (variantLocked = ModelDefinition_IsFactionTechnologyLocked
-                          (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                           modelDefinitionId), !variantLocked)) {
-      /* swap to this variant; armour points scale with the new maximum */
-      /* always found: an unknown id counts as locked */
-      variantDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-      variantCursorOrRemaining = *modelRuntime;
-      *modelRuntime = (int)variantDefinition;
-      ((ModelRuntimeSlot *)modelRuntime)->health =
-           (int)(((int64_t)(int)((ModelRuntimeSlot *)modelRuntime)->health *
-                 (int64_t)(int)((ModelDefinition *)variantDefinition)->maximumHealth) /
-                (int64_t)(int)((ModelDefinition *)variantCursorOrRemaining)->maximumHealth);
-      ArmyRuntime_RebuildDerivedSelectionMetrics
-                (((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-      break;
+    if (ModelDefinition_IsFactionTechnologyLocked
+          (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,modelDefinitionId)) {
+      continue;
     }
-    variantCursorOrRemaining = variantCursorOrRemaining + 4;
-    variantsRemaining--;
-  } while (variantsRemaining != 0);
-  for (variantCursorOrRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
-       variantCursorOrRemaining != 0; variantCursorOrRemaining--) {
-    if (((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset != NULL) {
-      ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-                (factionIndex,(int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
-    }
-    modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
+    /* swap to this variant; armour points scale with the new maximum */
+    /* always found: an unknown id counts as locked */
+    variantDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
+    previousDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
+    modelRuntimeSlot->definitionOrSavedId.definition = variantDefinition;
+    modelRuntimeSlot->health =
+         (int)(((int64_t)(int)modelRuntimeSlot->health *
+               (int64_t)(int)((ModelDefinition *)variantDefinition)->maximumHealth) /
+              (int64_t)(int)previousDefinition->maximumHealth);
+    ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+    break;
   }
-  return;
+  attachment = modelRuntimeSlot->attachments;
+  for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
+    if (attachment->childModelRuntimeOrSavedOffset != NULL) {
+      ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
+                (factionIndex,(int *)attachment->childModelRuntimeOrSavedOffset);
+    }
+    attachment++;
+  }
 }
 

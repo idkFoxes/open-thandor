@@ -25,42 +25,42 @@ void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,Pc
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  int remainingOrCountOrRate;
+  int remaining;
+  int assignedCount;
+  int extractionRate;
   uint32_t weightRange;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  bool testResult;
-  
-  remainingOrCountOrRate = g_AiWorkspace08Count;
+
+  remaining = g_AiWorkspace08Count;
   terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
-  if ((g_AiWorkspace08Count != 0) &&
-     (testResult = AiPrimaryWorkspace_HasUnassignedEntryById(armyAssetId), !testResult)) {
-    do {
-      if ((armyAssetId == terrainFeatureEntry->armyAssetId) &&
-         (testResult = AiPlacement_TestMode4AtWorkspaceRecord
-                            (armyAssetId,terrainFeatureEntry->cell,factionIndex,worldRuntime),
-         !testResult)) {
-        remainingOrCountOrRate = AiPrimaryWorkspace_CountAssignedEntriesById(armyAssetId);
-        weightRange = (uint32_t)(baseWeight * 3) / (remainingOrCountOrRate + 3U);
-        if (armyAssetId != ARM_0330_BUILDING_MDL0303) {
-          remainingOrCountOrRate = g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick <<
-                  4;
-          if (remainingOrCountOrRate != 0) {
-            weightRange = (uint32_t)(((int64_t)(int)weightRange *
-                                  (int64_t)
-                                  (int)(g_GameFactionRuntimeImage.records[factionIndex].
-                                        unpoweredEnergyDemandQ4 * 2 +
-                                       g_GameFactionRuntimeImage.records[factionIndex].
-                                       suppliedEnergyDemandQ4)) / (int64_t)remainingOrCountOrRate);
-          }
-        }
-        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(armyAssetId,weightRange,1);
-        return;
-      }
-      terrainFeatureEntry++;
-      remainingOrCountOrRate--;
-    } while (remainingOrCountOrRate != 0);
+  if (g_AiWorkspace08Count == 0) {
+    return;
   }
-  return;
+  if (AiPrimaryWorkspace_HasUnassignedEntryById(armyAssetId)) {
+    return;
+  }
+  for (; remaining != 0; remaining--, terrainFeatureEntry++) {
+    if (armyAssetId != terrainFeatureEntry->armyAssetId) {
+      continue;
+    }
+    if (AiPlacement_TestMode4AtWorkspaceRecord(armyAssetId,terrainFeatureEntry->cell,factionIndex,worldRuntime)) {
+      continue;
+    }
+    assignedCount = AiPrimaryWorkspace_CountAssignedEntriesById(armyAssetId);
+    weightRange = (uint32_t)(baseWeight * 3) / (assignedCount + 3U);
+    if (armyAssetId != ARM_0330_BUILDING_MDL0303) {
+      extractionRate = g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick << 4;
+      if (extractionRate != 0) {
+        weightRange = (uint32_t)(((int64_t)(int)weightRange *
+                                  (int64_t)(int)(g_GameFactionRuntimeImage.records[factionIndex].
+                                                 unpoweredEnergyDemandQ4 * 2 +
+                                                 g_GameFactionRuntimeImage.records[factionIndex].
+                                                 suppliedEnergyDemandQ4)) / (int64_t)extractionRate);
+      }
+    }
+    AiCandidateWorkspace_AddOrAccumulateWeightedEntry(armyAssetId,weightRange,1);
+    return;
+  }
 }
 
 
@@ -284,11 +284,12 @@ static void AiPlanningRebuild_ScanSiteCell(FactionRuntimeIndex factionIndex,Fiel
   uint32_t neighborhoodMask;
 
   currentCell = cellAbove + gridWidth;
-  /* general site: an occupied, unblocked cell at the edge of the faction's presence or of an active mask class */
+  /* general site: an occupied, unblocked cell at the edge of the faction's presence where also one of the active
+     mask classes is missing around it (both conditions, not either) */
   if (((scratchCell[scratchRowStride].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
       ((FIELD_CELL_OCCUPANCY_BYTE(currentCell,factionIndex) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
-      (AiPlanningRebuild_HasUnoccupiedNeighbour(cellAbove,gridWidth,factionIndex) ||
-       AiPlanningRebuild_LacksActiveMaskClass
+      AiPlanningRebuild_HasUnoccupiedNeighbour(cellAbove,gridWidth,factionIndex) &&
+      (AiPlanningRebuild_LacksActiveMaskClass
                  (scratchCell[scratchRowStride].stateMask |
                   AiPlanningRebuild_ScratchFootprintMask(scratchCell,scratchRowStride,3)))) {
     AiSiteCandidate_AddGeneralCellIfSeparated(currentCell);
@@ -563,54 +564,50 @@ void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,Worl
 
 {
   AiTechnologyCandidateScore candidateScore;
-  int wordIndexOrBestScore;
+  int wordIndex;
+  AiTechnologyCandidateScore bestScore;
   AiTechnologyPlanningCandidateCount candidatesRemaining;
   AiTechnologyPlanningCandidate *candidateCursor;
-  bool hasSpecialAsset;
   uint32_t weightRange;
-  AiCandidateEntryKind entryKind;
   RuntimeToken entityId;
-  
-  hasSpecialAsset = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
-  if (hasSpecialAsset) {
-    /* Category mask for the category score callback: bit 2 / bit 4 when the faction owns any
-       technology of category 2 / 3 (the decompiler kept only the empty loop). */
-    g_AiTechnologyScoreCategoryMask = 0;
-    for (wordIndexOrBestScore = 0; wordIndexOrBestScore < 8; wordIndexOrBestScore++) {
-      uint32_t owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndexOrBestScore];
-      if ((g_TechnologyCategoryMasks.category2[wordIndexOrBestScore] & owned) != 0) {
-        g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 2;
-      }
-      if ((g_TechnologyCategoryMasks.category3[wordIndexOrBestScore] & owned) != 0) {
-        g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 4;
-      }
+
+  if (!AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303)) {
+    return;
+  }
+  /* Category mask for the category score callback: bit 2 / bit 4 when the faction owns any
+     technology of category 2 / 3. */
+  g_AiTechnologyScoreCategoryMask = 0;
+  for (wordIndex = 0; wordIndex < 8; wordIndex++) {
+    uint32_t owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndex];
+    if ((g_TechnologyCategoryMasks.category2[wordIndex] & owned) != 0) {
+      g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 2;
     }
-    wordIndexOrBestScore = 0;
-    if (g_AiWorkspace12Count != 0) {
-      entryKind = 2; /* technology */
-      weightRange = g_AiKnowledgeData->parameters.workspace12BestCandidateBaseWeight;
-      entityId = 0;
-      candidatesRemaining = g_AiWorkspace12Count;
-      candidateCursor = g_AiWorkspace12TechnologyCandidates;
-      do {
-        candidateScore = g_AiTechnologyCandidateScoreCallbackTable[candidateCursor->scoreKind08]
-                          (factionIndex,candidateCursor->technologyId00,worldRuntime);
-        if (wordIndexOrBestScore < candidateScore) {
-          entityId = candidateCursor->technologyId00;
-          wordIndexOrBestScore = candidateScore;
-        }
-        candidateCursor++;
-        candidatesRemaining--;
-      } while (candidatesRemaining != 0);
-      if (wordIndexOrBestScore != 0) {
-        if (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown != 0) {
-          weightRange = weightRange >> 1;
-        }
-        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(entityId,weightRange,entryKind);
-      }
+    if ((g_TechnologyCategoryMasks.category3[wordIndex] & owned) != 0) {
+      g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 4;
     }
   }
-  return;
+  if (g_AiWorkspace12Count == 0) {
+    return;
+  }
+  bestScore = 0;
+  weightRange = g_AiKnowledgeData->parameters.workspace12BestCandidateBaseWeight;
+  entityId = 0;
+  candidateCursor = g_AiWorkspace12TechnologyCandidates;
+  for (candidatesRemaining = g_AiWorkspace12Count; candidatesRemaining != 0; candidatesRemaining--) {
+    candidateScore = g_AiTechnologyCandidateScoreCallbackTable[candidateCursor->scoreKind08]
+                      (factionIndex,candidateCursor->technologyId00,worldRuntime);
+    if (bestScore < candidateScore) {
+      entityId = candidateCursor->technologyId00;
+      bestScore = candidateScore;
+    }
+    candidateCursor++;
+  }
+  if (bestScore != 0) {
+    if (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown != 0) {
+      weightRange = weightRange >> 1;
+    }
+    AiCandidateWorkspace_AddOrAccumulateWeightedEntry(entityId,weightRange,2 /* technology */);
+  }
 }
 
 
@@ -633,27 +630,25 @@ void AiCandidateWorkspace_Clear(void)
 void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImageByteOffset)
 
 {
-  int entryCountOrDwordsRemaining;
+  int entryCount;
+  int dwordsRemaining;
   uint32_t *candidateWorkspaceSourceCursor;
   uint32_t *factionImageDestinationCursor;
-  
+
   candidateWorkspaceSourceCursor = &g_AiWorkspace13Candidates->weightedScoreAndKind;
-  entryCountOrDwordsRemaining = g_AiCandidateWorkspaceEntryCount;
+  entryCount = g_AiCandidateWorkspaceEntryCount;
   if (2 < g_AiCandidateWorkspaceEntryCount) {
-    entryCountOrDwordsRemaining = 3;
+    entryCount = 3;
   }
-  AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount = entryCountOrDwordsRemaining;
+  AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount = entryCount;
   factionImageDestinationCursor =
        &AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntries[0].weightedScoreAndKind;
-  entryCountOrDwordsRemaining = entryCountOrDwordsRemaining * 2; /* two dwords per entry */
-  if (entryCountOrDwordsRemaining != 0) {
-    for (; entryCountOrDwordsRemaining != 0; entryCountOrDwordsRemaining--) {
-      *factionImageDestinationCursor = *candidateWorkspaceSourceCursor;
-      candidateWorkspaceSourceCursor++;
-      factionImageDestinationCursor++;
-    }
+  /* two dwords per entry */
+  for (dwordsRemaining = entryCount * 2; dwordsRemaining != 0; dwordsRemaining--) {
+    *factionImageDestinationCursor = *candidateWorkspaceSourceCursor;
+    candidateWorkspaceSourceCursor++;
+    factionImageDestinationCursor++;
   }
-  return;
 }
 
 
@@ -1053,49 +1048,44 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
   ArmyRuntimeSlot **createdSlotPair;
   int recordsRemaining;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  bool placementRejected;
-  
-  recordsRemaining = g_AiWorkspace08Count;
+
   terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
-  while (recordsRemaining != 0) {
-    if (armyAssetId == terrainFeatureEntry->armyAssetId) {
-      workspaceRecord = terrainFeatureEntry->cell;
-      placementRejected = AiPlacement_TestWorkspaceRecordAtPoint
-                        (armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime);
-      if (!placementRejected) {
-        createdSlotPair = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
-                          (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
-                           workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
-                           worldRuntime,NULL);
-        if (createdSlotPair == NULL) {
-          return;
-        }
-        /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
-           the effect arguments below are its fields under ArmyRuntimeSlot names */
-        modelNodeRuntime = createdSlotPair[1];
-        primarySlot = *createdSlotPair;
-        modelNodeRuntime->movementPosition0Q12 = 0;
-        createdModelRuntime = (primarySlot->modelRuntimeOrSavedOffset).modelRuntime;
-        ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-        ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
-        EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
-                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-                   (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
-                   worldRuntime);
-        AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
-        return;
-      }
+  for (recordsRemaining = g_AiWorkspace08Count; recordsRemaining != 0; recordsRemaining--, terrainFeatureEntry++) {
+    if (armyAssetId != terrainFeatureEntry->armyAssetId) {
+      continue;
     }
-    terrainFeatureEntry++;
-    recordsRemaining--;
+    workspaceRecord = terrainFeatureEntry->cell;
+    if (AiPlacement_TestWorkspaceRecordAtPoint(armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime)) {
+      continue; /* placement rejected */
+    }
+    createdSlotPair = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+                      (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
+                       workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
+                       worldRuntime,NULL);
+    if (createdSlotPair == NULL) {
+      return;
+    }
+    /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
+       the effect arguments below are its fields under ArmyRuntimeSlot names */
+    modelNodeRuntime = createdSlotPair[1];
+    primarySlot = *createdSlotPair;
+    modelNodeRuntime->movementPosition0Q12 = 0;
+    createdModelRuntime = (primarySlot->modelRuntimeOrSavedOffset).modelRuntime;
+    ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
+    ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
+    EffectRuntimePool_CreateInstanceFromDefinition
+              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
+               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
+               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
+               ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
+               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
+               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
+               ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
+               (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
+               worldRuntime);
+    AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
+    return;
   }
-  return;
 }
 
 
@@ -1365,9 +1355,9 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 
 /* Address: 0x00538FD0.
-   Returns false (CF clear) as soon as the point lies strictly inside the square extent of some assigned
+   Returns false as soon as the point lies strictly inside the square extent of some assigned
    primary-workspace (workspace 00) unit: both axis distances to the unit's position below the extent at +0x19C
-   of its definition. True (CF set) when it is outside all of them. Arguments are Y first, then X, as every
+   of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
 bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
@@ -1379,9 +1369,9 @@ bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeSlot *entryModelRuntime;
   
-  workspaceEntriesRemaining = g_AiWorkspace00Count;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
-  while (workspaceEntriesRemaining != 0) {
+  for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
+      workspaceEntriesRemaining--, workspaceEntryCursor++) {
     entryModelRuntime = workspaceEntryCursor->modelRuntime;
     if (entryModelRuntime != NULL) {
       deltaXAbsQ12 = worldX - entryModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform.translation.x;
@@ -1397,8 +1387,6 @@ bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
         return false;
       }
     }
-    workspaceEntryCursor++;
-    workspaceEntriesRemaining--;
   }
   return true;
 }

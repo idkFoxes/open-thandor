@@ -810,6 +810,308 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
 }
 
 
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: recoil after a shot, tilts the
+   model away from the shot direction (actionVector0Q12 + 180 degrees) by recoilTilt. */
+static void TrackedMovement_ApplyRecoilTilt
+          (ModelRuntimeGroundMovementTrackView *modelRuntime,ModelRuntimeNode *rootNode,int recoilTilt)
+
+{
+  FixedAzimuthElevationRoll composedAngles;
+
+  composedAngles = FixedTransform_ComposeEulerAngles
+                     (0,FIXED_ANGLE16_QUARTER_TURN - recoilTilt,
+                      (modelRuntime->ownerArmyRuntime->actionVector0Q12 + FIXED_ANGLE16_HALF_TURN) -
+                      (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK,
+                      (rootNode->modelPayload).worldRotationAngle2,
+                      (rootNode->modelPayload).worldRotationAngle1,
+                      (rootNode->modelPayload).worldRotationAngle0);
+  (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
+  (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
+  (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: not driving this tick.
+   Re-places the model at its current position (while a recoil runs, or always when the field grid flags it)
+   and applies the recoil tilt. actionVector1Q12 counts the remaining recoil ticks, actionVector2Q12 is the
+   tilt per tick. Returns the root node used for the rest of the tick. */
+static ModelRuntimeNode *TrackedMovement_PlaceStationary
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView *modelRuntime)
+
+{
+  ArmyRuntimeSlot *ownerArmy;
+  ModelRuntimeNode *rootNode;
+  int remainingRecoilTicks;
+  int recoilTilt;
+
+  ownerArmy = modelRuntime->ownerArmyRuntime;
+  rootNode = modelRuntime->rootModelNode;
+  remainingRecoilTicks = ownerArmy->actionVector1Q12 - 1;
+  if (remainingRecoilTicks < 0) {
+    if ((worldRuntime->fieldGrid->runtimeStateFlags & 1) != 0) {
+      (*g_ArmyPlacementContactKindDispatchTable.callbacks
+        [modelRuntime->modelDefinition->placementContactKindIndex])
+                (modelRuntime->modelDefinition->placementHeightOffsetQ12,
+                 (rootNode->worldTransform).translation.y,
+                 (rootNode->worldTransform).translation.x,rootNode,worldRuntime);
+    }
+    return rootNode;
+  }
+  recoilTilt = remainingRecoilTicks * ownerArmy->actionVector2Q12;
+  ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
+  (*g_ArmyPlacementContactKindDispatchTable.callbacks
+    [modelRuntime->modelDefinition->placementContactKindIndex])
+            (modelRuntime->modelDefinition->placementHeightOffsetQ12,
+             (rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x
+             ,rootNode,worldRuntime);
+  TrackedMovement_ApplyRecoilTilt(modelRuntime,rootNode,recoilTilt);
+  return rootNode;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: accelerated turning as in
+   ArmyRuntimeClass_UpdateGroundMovement. Turns by the current turn velocity, then accelerates it (clamped to
+   the turn rate limit); a turn in the other direction first resets the velocity, a small remaining error
+   snaps onto the desired heading. Returns the new (unmasked) facing angle. */
+static uint32_t TrackedMovement_TurnTowardsHeading
+          (ModelRuntimeGroundMovementTrackView *modelRuntime,
+          ModelDefinitionGroundMovementTrackView *movementDefinition,uint32_t facingAngle,uint32_t desiredHeading)
+
+{
+  uint32_t turnVelocity;
+  uint32_t headingDifference;
+  int turnVelocityLimit;
+  int acceleratedTurnVelocity;
+
+  turnVelocity = (modelRuntime->movementControl).turnVelocityAngle16;
+  headingDifference = desiredHeading - facingAngle & FIXED_ANGLE16_MASK;
+  if (headingDifference < FIXED_ANGLE16_HALF_TURN) {
+    if ((int)turnVelocity < 0) {
+      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+      return facingAngle;
+    }
+    if (headingDifference <= turnVelocity) {
+      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+      return desiredHeading;
+    }
+    turnVelocityLimit = movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
+    acceleratedTurnVelocity =
+         turnVelocity + movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
+    (modelRuntime->movementControl).turnVelocityAngle16 = turnVelocityLimit;
+    if (acceleratedTurnVelocity < turnVelocityLimit) {
+      (modelRuntime->movementControl).turnVelocityAngle16 = acceleratedTurnVelocity;
+    }
+    return facingAngle + turnVelocity;
+  }
+  if (0 < (int)turnVelocity) {
+    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+    return facingAngle;
+  }
+  if (turnVelocity + FIXED_ANGLE16_FULL_TURN <= headingDifference) {
+    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+    return desiredHeading;
+  }
+  turnVelocityLimit = -movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
+  acceleratedTurnVelocity =
+       turnVelocity - movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
+  (modelRuntime->movementControl).turnVelocityAngle16 = turnVelocityLimit;
+  if (turnVelocityLimit < acceleratedTurnVelocity) {
+    (modelRuntime->movementControl).turnVelocityAngle16 = acceleratedTurnVelocity;
+  }
+  return facingAngle + turnVelocity;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: turns the model towards the
+   waypoint and, if the heading error is small enough, drives towards it (or stops at a blocking army), places
+   it with the placement callback and applies the recoil tilt; otherwise it stops and is placed stationary.
+   Returns the root node used for the rest of the tick. */
+static ModelRuntimeNode *TrackedMovement_SteerAndDrive
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView *modelRuntime,
+          ModelRuntimeNode *rootNode,Q12 waypointWorldXQ12,Q12 waypointWorldYQ12)
+
+{
+  ArmyMovementStateFlags *ownerMovementFlags;
+  ArmyRuntimeSlot *ownerArmy;
+  ModelDefinitionGroundMovementTrackView *movementDefinition;
+  ArmyPlacementContactKindIndex32 placementContactKind;
+  int routeDeltaX;
+  int routeDeltaY;
+  int travelDistance;
+  int remainingRecoilTicks;
+  int recoilTilt;
+  uint32_t facingAngle;
+  uint32_t desiredHeading;
+  uint32_t headingErrorLimit;
+  uint32_t headingError;
+  uint32_t targetDistance;
+  FixedLengthAngle angleAndLength;
+  FixedPlanarPointQ12 nextPosition;
+  ModelRuntimeSlot *blockingModelRuntime;
+  ModelRuntimeNode *blockedRootNode;
+  ModelRuntimeNode *placedRootNode;
+  Q12 heightOffsetQ12;
+
+  routeDeltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
+  routeDeltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
+  if ((routeDeltaX == 0) && (routeDeltaY == 0)) {
+    angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+  }
+  else {
+    angleAndLength = FixedMath_Vector2AngleAndLength(routeDeltaY,routeDeltaX);
+  }
+  desiredHeading = angleAndLength.angle;
+  movementDefinition = modelRuntime->modelDefinition;
+  facingAngle = TrackedMovement_TurnTowardsHeading
+                  (modelRuntime,movementDefinition,(rootNode->modelPayload).worldRotationAngle2,desiredHeading);
+  rootNode = modelRuntime->rootModelNode;
+  facingAngle = facingAngle & FIXED_ANGLE16_MASK;
+  if (facingAngle != (rootNode->modelPayload).worldRotationAngle2) {
+    (rootNode->modelPayload).worldRotationAngle2 = facingAngle;
+    rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+  }
+  /* allowed heading error: the far limit, blended towards the near limit inside the interpolation distance */
+  targetDistance = angleAndLength.length;
+  headingErrorLimit = movementDefinition->farHeadingErrorLimitAngle;
+  headingError = facingAngle - desiredHeading & FIXED_ANGLE16_MASK;
+  if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12) {
+    headingErrorLimit = movementDefinition->nearHeadingErrorLimitAngle +
+             (int)(((int64_t)(int)(headingErrorLimit - movementDefinition->nearHeadingErrorLimitAngle) *
+                   (int64_t)(int)targetDistance) /
+                  (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12);
+  }
+  if ((headingErrorLimit < headingError) && (headingError < FIXED_ANGLE16_FULL_TURN - headingErrorLimit)) {
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+    return TrackedMovement_PlaceStationary(worldRuntime,modelRuntime);
+  }
+  ArmyRuntime_UpdateActivationMetricAndPlayStartSound
+            (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  /* drive forward, or jump onto the route point once it is closer than twice this tick's travel */
+  travelDistance = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
+  if (travelDistance < (int)targetDistance >> 1) {
+    nextPosition = FixedTrig_ProjectPlanarPoint
+                       ((rootNode->worldTransform).translation.x,(rootNode->worldTransform).translation.y,
+                        travelDistance,(rootNode->modelPayload).worldRotationAngle2);
+  }
+  else {
+    ownerArmy = modelRuntime->ownerArmyRuntime;
+    ArmyRuntime_UpdateMovementAndWaypoints
+              (worldRuntime,(ArmyMovementRuntime *)ownerArmy,&waypointWorldXQ12,&waypointWorldYQ12);
+    nextPosition.xQ12 = waypointWorldXQ12;
+    nextPosition.yQ12 = waypointWorldYQ12;
+    ownerMovementFlags = &ownerArmy->movementStateFlags;
+    *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  }
+  placementContactKind = movementDefinition->placementContactKindIndex;
+  rootNode = modelRuntime->rootModelNode;
+  heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
+  blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
+                     (nextPosition.yQ12,nextPosition.xQ12,
+                      (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
+  if (blockingModelRuntime != NULL) {
+    /* stay where we are and let the collision partner react */
+    blockedRootNode = modelRuntime->rootModelNode;
+    ArmyRuntime_HandleCollisionPartner
+              ((ModelRuntimeSlot *)modelRuntime,(blockedRootNode->worldTransform).translation.y,
+               (blockedRootNode->worldTransform).translation.x,blockingModelRuntime,
+               worldRuntime);
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+    nextPosition.xQ12 = (blockedRootNode->worldTransform).translation.x;
+    nextPosition.yQ12 = (blockedRootNode->worldTransform).translation.y;
+    ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
+    *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  }
+  ownerArmy = modelRuntime->ownerArmyRuntime;
+  placedRootNode = modelRuntime->rootModelNode;
+  g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
+            (heightOffsetQ12,nextPosition.yQ12,nextPosition.xQ12,rootNode,worldRuntime);
+  /* recoil after a shot: actionVector1Q12 counts the remaining ticks, actionVector2Q12 is the tilt per tick */
+  remainingRecoilTicks = ownerArmy->actionVector1Q12 - 1;
+  if (remainingRecoilTicks >= 0) {
+    recoilTilt = remainingRecoilTicks * ownerArmy->actionVector2Q12;
+    ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
+    TrackedMovement_ApplyRecoilTilt(modelRuntime,placedRootNode,recoilTilt);
+  }
+  return placedRootNode;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: the signed distance one track
+   side travelled this tick. The side point lies localBoundsY0Q12 to the side of the centre in the direction
+   currentSideHeading now and previousSideHeading at the start of the tick (heading -+ 90 degrees); the
+   distance is negative when that side moved backwards. */
+static uint32_t TrackedMovement_MeasureTrackSideTravel
+          (ModelRuntimeNode *rootNode,ModelResource *nodeModelResource,uint32_t currentSideHeading,
+          uint32_t previousSideHeading,int previousWorldX,int previousWorldY)
+
+{
+  FixedSinCos sinCosOffset;
+  FixedLengthAngle sideTravel;
+  int sidePointX;
+  int sidePointY;
+  uint32_t trackDistance;
+  uint32_t travelHeadingOffset;
+
+  sinCosOffset = FixedMath_SinCosScaled(currentSideHeading,nodeModelResource->localBoundsY0Q12);
+  sidePointX = sinCosOffset.cosValue + (rootNode->worldTransform).translation.x;
+  sidePointY = sinCosOffset.sinValue + (rootNode->worldTransform).translation.y;
+  sinCosOffset = FixedMath_SinCosScaled(previousSideHeading,nodeModelResource->localBoundsY0Q12);
+  sideTravel = FixedMath_Vector2AngleAndLength
+                 (sidePointY - (sinCosOffset.sinValue + previousWorldY),
+                  sidePointX - (sinCosOffset.cosValue + previousWorldX));
+  trackDistance = sideTravel.length;
+  travelHeadingOffset = sideTravel.angle - (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
+  if ((FIXED_ANGLE16_QUARTER_TURN < travelHeadingOffset) &&
+      (travelHeadingOffset < FIXED_ANGLE16_THREE_QUARTER_TURN)) {
+    trackDistance = -trackDistance;
+  }
+  return trackDistance;
+}
+
+/* Wraps a track texture offset back into +-ARMY_TRACK_TEXTURE_U_WRAP. */
+static int TrackedMovement_WrapTrackTextureOffset(int textureOffsetU)
+
+{
+  if (ARMY_TRACK_TEXTURE_U_WRAP + 1 <= textureOffsetU) {
+    return textureOffsetU - ARMY_TRACK_TEXTURE_U_WRAP;
+  }
+  if (textureOffsetU < -ARMY_TRACK_TEXTURE_U_WRAP) {
+    return textureOffsetU + ARMY_TRACK_TEXTURE_U_WRAP;
+  }
+  return textureOffsetU;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation: scrolls the texture of each
+   track side by the signed distance that side travelled since the start of the tick. */
+static void TrackedMovement_ScrollTrackTextures
+          (ModelRuntimeGroundMovementTrackView *modelRuntime,ModelRuntimeNode *rootNode,
+          AngleTurn32 previousRotationAngle,int previousWorldX,int previousWorldY)
+
+{
+  ModelResource *nodeModelResource;
+  uint32_t previousSideHeading;
+  uint32_t currentSideHeading;
+  uint32_t trackDistance;
+  int primaryOffsetU;
+  int secondaryOffsetU;
+
+  nodeModelResource = (rootNode->modelPayload).modelResource;
+  previousSideHeading = previousRotationAngle - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  currentSideHeading = (rootNode->modelPayload).worldRotationAngle2 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  /* side at heading - 90 degrees */
+  trackDistance = TrackedMovement_MeasureTrackSideTravel
+                    (rootNode,nodeModelResource,currentSideHeading,previousSideHeading,previousWorldX,
+                     previousWorldY);
+  rootNode->primaryTextureOffsetU =
+       rootNode->primaryTextureOffsetU + trackDistance * modelRuntime->modelDefinition->trackTextureUScalePerDistance;
+  /* the other side (heading + 90 degrees) */
+  trackDistance = TrackedMovement_MeasureTrackSideTravel
+                    (rootNode,nodeModelResource,currentSideHeading ^ FIXED_ANGLE16_HALF_TURN,
+                     previousSideHeading ^ FIXED_ANGLE16_HALF_TURN,previousWorldX,previousWorldY);
+  primaryOffsetU = rootNode->primaryTextureOffsetU;
+  secondaryOffsetU = trackDistance * modelRuntime->modelDefinition->trackTextureUScalePerDistance +
+                     rootNode->secondaryTextureOffsetU;
+  rootNode->secondaryTextureOffsetU = TrackedMovement_WrapTrackTextureOffset(secondaryOffsetU);
+  rootNode->primaryTextureOffsetU = TrackedMovement_WrapTrackTextureOffset(primaryOffsetU);
+}
+
+
 /* Address: 0x00520140.
    Ground movement of tracked vehicles (runtimeUpdate slot 2 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Moves exactly like
@@ -823,36 +1125,17 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
 
 {
   ArmyMovementStateFlags *ownerMovementFlags;
-  ArmyRuntimeSlot *linkedOrOwnerArmy;
+  ArmyRuntimeSlot *ownerArmy;
   ModelRuntimeSlot *linkedModelRuntime;
   AngleTurn32 previousRotationAngle;
   int previousWorldX;
   int previousWorldY;
   ModelDefinitionGroundMovementTrackView *movementDefinition;
-  ArmyPlacementContactKindIndex32 placementContactKind;
-  ModelResource *nodeModelResource;
   int32_t waterDelta;
-  /* damage, route delta X, next turn velocity, travel distance, recoil tilt, then track point X / offset */
-  int primaryDelta;
-  uint32_t facingAngle;
-  uint32_t trackDistance;
-  uint32_t turnVelocityOrLimit;
-  /* route delta Y, turn velocity limit, then track point Y / offset */
-  int secondaryDelta;
-  uint32_t headingDifference;
-  uint32_t desiredHeading;
+  int waterDamage;
   ModelRuntimeNode *placedRootNode;
-  bool withinLinkRadius;
-  FixedLengthAngle angleAndLength;
-  FixedPlanarPointQ12 nextPosition;
-  FixedSinCos sinCosOffset;
-  ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
-  FixedAzimuthElevationRoll composedAngles;
-  Q12 heightOffsetQ12;
-  WorldRuntimeContext *dispatchWorldRuntime;
-  uint32_t targetDistance;
   ModelRuntimeNode *rootNode;
 
   linkedModelRuntime = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime;
@@ -862,12 +1145,11 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
      within it. */
   if ((linkedModelRuntime != NULL) &&
-      (((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
-        (modelRuntime->modelDefinition->footprintRadius == 0)) ||
-       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                           (modelRuntime->modelDefinition->footprintRadius,
-                            (rootNode->worldTransform).translation.y,
-                            (rootNode->worldTransform).translation.x,linkedModelRuntime), !withinLinkRadius))) {
+      ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
+       (modelRuntime->modelDefinition->footprintRadius == 0) ||
+       !ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                  (modelRuntime->modelDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
+                   (rootNode->worldTransform).translation.x,linkedModelRuntime))) {
     (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
   }
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -875,222 +1157,35 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   previousWorldY = (rootNode->worldTransform).translation.y;
   movementDefinition = modelRuntime->modelDefinition;
   waterDelta = FieldGrid_InterpolateWaterDelta(previousWorldY,previousWorldX,worldRuntime->fieldGrid);
-  if ((movementDefinition->waterDamageThreshold < waterDelta) &&
-     (primaryDelta = waterDelta * movementDefinition->waterDamageMultiplier >> 7, -1 < primaryDelta)) {
-    ArmyRuntime_ApplyDamageAndPropagateToParent(primaryDelta,(ModelRuntimeSlot *)modelRuntime);
+  if (movementDefinition->waterDamageThreshold < waterDelta) {
+    waterDamage = waterDelta * movementDefinition->waterDamageMultiplier >> 7;
+    if (-1 < waterDamage) {
+      ArmyRuntime_ApplyDamageAndPropagateToParent(waterDamage,(ModelRuntimeSlot *)modelRuntime);
+    }
   }
   /* alive and still on its way to a route point */
   if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
       !ArmyRuntime_UpdateMovementAndWaypoints
          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
           &waypointWorldYQ12)) {
-    secondaryDelta = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
-    primaryDelta = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
-    if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
-    }
-    else {
-      angleAndLength = FixedMath_Vector2AngleAndLength(secondaryDelta,primaryDelta);
-    }
-    /* accelerated turning as in ArmyRuntimeClass_UpdateGroundMovement */
-    desiredHeading = angleAndLength.angle;
-    movementDefinition = modelRuntime->modelDefinition;
-    facingAngle = (rootNode->modelPayload).worldRotationAngle2;
-    turnVelocityOrLimit = (modelRuntime->movementControl).turnVelocityAngle16;
-    headingDifference = desiredHeading - facingAngle & FIXED_ANGLE16_MASK;
-    if (headingDifference < FIXED_ANGLE16_HALF_TURN) {
-      if ((int)turnVelocityOrLimit < 0) {
-ResetTurnVelocity:
-        (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-      }
-      else if (turnVelocityOrLimit < headingDifference) {
-        facingAngle = facingAngle + turnVelocityOrLimit;
-        secondaryDelta = movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
-        primaryDelta = turnVelocityOrLimit + movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
-        (modelRuntime->movementControl).turnVelocityAngle16 = secondaryDelta;
-        if (primaryDelta < secondaryDelta) {
-          (modelRuntime->movementControl).turnVelocityAngle16 = primaryDelta;
-        }
-      }
-      else {
-SnapToHeading:
-        (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-        facingAngle = desiredHeading;
-      }
-    }
-    else {
-      if (0 < (int)turnVelocityOrLimit) goto ResetTurnVelocity;
-      if (turnVelocityOrLimit + FIXED_ANGLE16_FULL_TURN <= headingDifference) goto SnapToHeading;
-      facingAngle = facingAngle + turnVelocityOrLimit;
-      secondaryDelta = -movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
-      primaryDelta = turnVelocityOrLimit - movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
-      (modelRuntime->movementControl).turnVelocityAngle16 = secondaryDelta;
-      if (secondaryDelta < primaryDelta) {
-        (modelRuntime->movementControl).turnVelocityAngle16 = primaryDelta;
-      }
-    }
-    rootNode = modelRuntime->rootModelNode;
-    facingAngle = facingAngle & FIXED_ANGLE16_MASK;
-    if (facingAngle != (rootNode->modelPayload).worldRotationAngle2) {
-      (rootNode->modelPayload).worldRotationAngle2 = facingAngle;
-      rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
-    }
-    targetDistance = angleAndLength.length;
-    turnVelocityOrLimit = movementDefinition->farHeadingErrorLimitAngle;
-    facingAngle = facingAngle - desiredHeading & FIXED_ANGLE16_MASK;
-    if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12) {
-      turnVelocityOrLimit = movementDefinition->nearHeadingErrorLimitAngle +
-               (int)(((int64_t)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngle) *
-                     (int64_t)(int)targetDistance) /
-                    (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12);
-    }
-    if ((turnVelocityOrLimit < facingAngle) && (facingAngle < FIXED_ANGLE16_FULL_TURN - turnVelocityOrLimit)) {
-      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      goto PlaceStationary;
-    }
-    ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-              (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-    primaryDelta = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
-    if (primaryDelta < (int)targetDistance >> 1) {
-      nextPosition = FixedTrig_ProjectPlanarPoint
-                         ((rootNode->worldTransform).translation.x,(rootNode->worldTransform).translation.y,
-                          primaryDelta,(rootNode->modelPayload).worldRotationAngle2);
-    }
-    else {
-      linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
-      ArmyRuntime_UpdateMovementAndWaypoints
-                (worldRuntime,(ArmyMovementRuntime *)linkedOrOwnerArmy,&waypointWorldXQ12,&waypointWorldYQ12);
-      nextPosition.xQ12 = waypointWorldXQ12;
-      nextPosition.yQ12 = waypointWorldYQ12;
-      ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
-      *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-    }
-    placementContactKind = movementDefinition->placementContactKindIndex;
-    rootNode = modelRuntime->rootModelNode;
-    heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
-    dispatchWorldRuntime = worldRuntime;
-    blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (nextPosition.yQ12,nextPosition.xQ12,
-                        (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
-    if (blockingModelRuntime != NULL) {
-      placedRootNode = modelRuntime->rootModelNode;
-      ArmyRuntime_HandleCollisionPartner
-                ((ModelRuntimeSlot *)modelRuntime,(placedRootNode->worldTransform).translation.y,
-                 (placedRootNode->worldTransform).translation.x,blockingModelRuntime,
-                 worldRuntime);
-      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      nextPosition.xQ12 = (placedRootNode->worldTransform).translation.x;
-      nextPosition.yQ12 = (placedRootNode->worldTransform).translation.y;
-      ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
-      *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-    }
-    linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
-    placedRootNode = modelRuntime->rootModelNode;
-    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (heightOffsetQ12,nextPosition.yQ12,nextPosition.xQ12,rootNode,dispatchWorldRuntime);
-    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
-    primaryDelta = linkedOrOwnerArmy->actionVector1Q12 - 1;
-    if (primaryDelta < 0) goto FinalizeTick;
-    primaryDelta = primaryDelta * linkedOrOwnerArmy->actionVector2Q12;
-    linkedOrOwnerArmy->actionVector1Q12 = linkedOrOwnerArmy->actionVector1Q12 - 1;
+    placedRootNode = TrackedMovement_SteerAndDrive
+                       (worldRuntime,modelRuntime,rootNode,waypointWorldXQ12,waypointWorldYQ12);
   }
   else {
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-PlaceStationary:
-    linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
-    placedRootNode = modelRuntime->rootModelNode;
-    primaryDelta = linkedOrOwnerArmy->actionVector1Q12 - 1;
-    if (primaryDelta < 0) {
-      if ((worldRuntime->fieldGrid->runtimeStateFlags & 1) != 0) {
-        (*g_ArmyPlacementContactKindDispatchTable.callbacks
-          [modelRuntime->modelDefinition->placementContactKindIndex])
-                  (modelRuntime->modelDefinition->placementHeightOffsetQ12,
-                   (placedRootNode->worldTransform).translation.y,
-                   (placedRootNode->worldTransform).translation.x,placedRootNode,worldRuntime);
-      }
-      goto FinalizeTick;
-    }
-    primaryDelta = primaryDelta * linkedOrOwnerArmy->actionVector2Q12;
-    linkedOrOwnerArmy->actionVector1Q12 = linkedOrOwnerArmy->actionVector1Q12 - 1;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks
-      [modelRuntime->modelDefinition->placementContactKindIndex])
-              (modelRuntime->modelDefinition->placementHeightOffsetQ12,
-               (placedRootNode->worldTransform).translation.y,(placedRootNode->worldTransform).translation.x
-               ,placedRootNode,worldRuntime);
+    placedRootNode = TrackedMovement_PlaceStationary(worldRuntime,modelRuntime);
   }
-  composedAngles = FixedTransform_ComposeEulerAngles
-                     (0,FIXED_ANGLE16_QUARTER_TURN - primaryDelta,
-                      (modelRuntime->ownerArmyRuntime->actionVector0Q12 + FIXED_ANGLE16_HALF_TURN) -
-                      (placedRootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK,
-                      (placedRootNode->modelPayload).worldRotationAngle2,
-                      (placedRootNode->modelPayload).worldRotationAngle1,
-                      (placedRootNode->modelPayload).worldRotationAngle0);
-  (placedRootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
-  (placedRootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
-  (placedRootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
-FinalizeTick:
-  /* Track animation: for each side, the distance between the side point (localBoundsY0Q12 to the side of the
-     centre) now and at the start of the tick, negative when that side moved backwards. The reused locals
-     hold: desiredHeading = previous heading - 90 degrees, facingAngle = current heading - 90 degrees. */
-  nodeModelResource = (placedRootNode->modelPayload).modelResource;
-  desiredHeading = previousRotationAngle - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-  facingAngle = (placedRootNode->modelPayload).worldRotationAngle2 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-  sinCosOffset = FixedMath_SinCosScaled(facingAngle,nodeModelResource->localBoundsY0Q12);
-  primaryDelta = sinCosOffset.cosValue + (placedRootNode->worldTransform).translation.x;
-  secondaryDelta = sinCosOffset.sinValue + (placedRootNode->worldTransform).translation.y;
-  sinCosOffset = FixedMath_SinCosScaled(desiredHeading,nodeModelResource->localBoundsY0Q12);
-  angleAndLength = FixedMath_Vector2AngleAndLength
-                     (secondaryDelta - (sinCosOffset.sinValue + previousWorldY),primaryDelta - (sinCosOffset.cosValue + previousWorldX));
-  trackDistance = angleAndLength.length;
-  turnVelocityOrLimit = angleAndLength.angle - (placedRootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
-  if ((FIXED_ANGLE16_QUARTER_TURN < turnVelocityOrLimit) && (turnVelocityOrLimit < FIXED_ANGLE16_THREE_QUARTER_TURN)) {
-    trackDistance = -trackDistance;
-  }
-  placedRootNode->primaryTextureOffsetU =
-       placedRootNode->primaryTextureOffsetU +
-       trackDistance * modelRuntime->modelDefinition->trackTextureUScalePerDistance;
-  /* the other side (heading + 90 degrees) */
-  sinCosOffset = FixedMath_SinCosScaled(facingAngle ^ FIXED_ANGLE16_HALF_TURN,nodeModelResource->localBoundsY0Q12);
-  primaryDelta = sinCosOffset.cosValue + (placedRootNode->worldTransform).translation.x;
-  secondaryDelta = sinCosOffset.sinValue + (placedRootNode->worldTransform).translation.y;
-  sinCosOffset = FixedMath_SinCosScaled(desiredHeading ^ FIXED_ANGLE16_HALF_TURN,nodeModelResource->localBoundsY0Q12);
-  angleAndLength = FixedMath_Vector2AngleAndLength
-                     (secondaryDelta - (sinCosOffset.sinValue + previousWorldY),primaryDelta - (sinCosOffset.cosValue + previousWorldX));
-  trackDistance = angleAndLength.length;
-  facingAngle = angleAndLength.angle - (placedRootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
-  if ((FIXED_ANGLE16_QUARTER_TURN < facingAngle) && (facingAngle < FIXED_ANGLE16_THREE_QUARTER_TURN)) {
-    trackDistance = -trackDistance;
-  }
-  /* wrap both texture offsets back into +-ARMY_TRACK_TEXTURE_U_WRAP */
-  primaryDelta = placedRootNode->primaryTextureOffsetU;
-  secondaryDelta = trackDistance * modelRuntime->modelDefinition->trackTextureUScalePerDistance +
-           placedRootNode->secondaryTextureOffsetU;
-  if (secondaryDelta < ARMY_TRACK_TEXTURE_U_WRAP + 1) {
-    if (secondaryDelta < -ARMY_TRACK_TEXTURE_U_WRAP) {
-      secondaryDelta = secondaryDelta + ARMY_TRACK_TEXTURE_U_WRAP;
-    }
-  }
-  else {
-    secondaryDelta = secondaryDelta - ARMY_TRACK_TEXTURE_U_WRAP;
-  }
-  if (primaryDelta < ARMY_TRACK_TEXTURE_U_WRAP + 1) {
-    if (primaryDelta < -ARMY_TRACK_TEXTURE_U_WRAP) {
-      primaryDelta = primaryDelta + ARMY_TRACK_TEXTURE_U_WRAP;
-    }
-  }
-  else {
-    primaryDelta = primaryDelta - ARMY_TRACK_TEXTURE_U_WRAP;
-  }
-  placedRootNode->secondaryTextureOffsetU = secondaryDelta;
-  placedRootNode->primaryTextureOffsetU = primaryDelta;
+  /* Track animation */
+  TrackedMovement_ScrollTrackTextures
+            (modelRuntime,placedRootNode,previousRotationAngle,previousWorldX,previousWorldY);
   if (((previousWorldX != (placedRootNode->worldTransform).translation.x) ||
       (previousWorldY != (placedRootNode->worldTransform).translation.y)) ||
      (previousRotationAngle != (placedRootNode->modelPayload).worldRotationAngle2)) {
-    linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
+    ownerArmy = modelRuntime->ownerArmyRuntime;
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
               (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
-    ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
+    ownerMovementFlags = &ownerArmy->movementStateFlags;
     *ownerMovementFlags = *ownerMovementFlags & ~ARMY_MOVEMENT_STATIONARY;
   }
   movementDefinition = modelRuntime->modelDefinition;

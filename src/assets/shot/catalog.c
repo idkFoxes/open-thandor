@@ -97,18 +97,18 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
   ShotDefinition **registryCursor;
 
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || registeredDefinition->definitionId != definitionId) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-      return FATAL_ERROR_SHOT_ID_NOT_FOUND;
+  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    registeredDefinition = *registryCursor;
+    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
+      *outDefinition = registeredDefinition;
+      return 0;
     }
+    registryCursor++;
   }
-  *outDefinition = registeredDefinition;
-  return 0;
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
+  return FATAL_ERROR_SHOT_ID_NOT_FOUND;
 }
 
 
@@ -245,6 +245,94 @@ uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
 }
 
 
+/* Loads the sprite of a freshly registered shot definition: switches the resource path to .spr, loads it and
+   either registers it as owned by the definition or, when a sprite with the same id is already registered,
+   reuses that one and releases the fresh load. Returns 0 or the error code. */
+static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
+{
+  SpriteAssetHeader *loadedSprite;
+  SpriteAssetHeader *existingSprite;
+  uint32_t loadErrorCode;
+  uint32_t spriteRegisterError;
+
+  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16)) {
+    /* Original quirk: the earlier duplicate-id lookup's error code is still in EAX, so a failing .spr
+       extension switch returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
+    return FATAL_ERROR_SHOT_ID_NOT_FOUND;
+  }
+  loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  if (loadedSprite == NULL) {
+    return loadErrorCode;
+  }
+  existingSprite = SpriteAssetRegistry_FindById(loadedSprite->registryHeader.registryId);
+  if (existingSprite == NULL) {
+    definition->ownedNestedResourcePresent++;
+    definition->ownedNestedResource = loadedSprite;
+    spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(loadedSprite);
+    if (spriteRegisterError != 0) {
+      return spriteRegisterError;
+    }
+  }
+  else {
+    definition->ownedNestedResource = existingSprite;
+    Resource_Release(loadedSprite);
+  }
+  return 0;
+}
+
+/* Replaces the effect definition id stored in *effectReference by the registered effect definition.
+   On a failed lookup the field keeps the id and the lookup's error code is returned. */
+static uint32_t ShotDefinition_ResolveEffectReference(EffectDefinition **effectReference)
+{
+  uint32_t effectLookupError;
+  EffectDefinition *resolvedEffect;
+
+  effectLookupError = EffectDefinitionRegistry_FindById
+                    ((PckEffectDefinitionIdCatalog)*effectReference,&resolvedEffect);
+  if (effectLookupError != 0) {
+    return effectLookupError;
+  }
+  *effectReference = resolvedEffect;
+  return 0;
+}
+
+/* Resolves the launch, secondary and primary effects and the 31 terrain-impact and 8 target-class-impact
+   effects of a shot definition (the effect pointer fields hold effect definition ids until then), stopping at
+   the first failing lookup. Returns 0 or that lookup's error code. */
+static uint32_t ShotDefinition_ResolveEffectReferences(ShotDefinition *definition)
+{
+  uint32_t effectLookupError;
+  int referenceIndex;
+
+  effectLookupError = ShotDefinition_ResolveEffectReference(&definition->launchEffectDefinition);
+  if (effectLookupError != 0) {
+    return effectLookupError;
+  }
+  effectLookupError = ShotDefinition_ResolveEffectReference(&definition->secondaryEffectDefinition);
+  if (effectLookupError != 0) {
+    return effectLookupError;
+  }
+  effectLookupError = ShotDefinition_ResolveEffectReference(&definition->primaryEffectDefinition);
+  if (effectLookupError != 0) {
+    return effectLookupError;
+  }
+  for (referenceIndex = 0; referenceIndex < SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; referenceIndex++) {
+    effectLookupError =
+         ShotDefinition_ResolveEffectReference(&definition->terrainImpactEffectDefinitions31[referenceIndex]);
+    if (effectLookupError != 0) {
+      return effectLookupError;
+    }
+  }
+  for (referenceIndex = 0; referenceIndex < SHOT_TARGET_CLASS_IMPACT_COUNT; referenceIndex++) {
+    effectLookupError =
+         ShotDefinition_ResolveEffectReference(&definition->targetClassImpactEffectDefinitions8[referenceIndex]);
+    if (effectLookupError != 0) {
+      return effectLookupError;
+    }
+  }
+  return 0;
+}
+
 /* Address: 0x0052B350.
    Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the
    resource path to .spr; an already registered sprite with the same id is reused and the fresh load released)
@@ -252,104 +340,35 @@ uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
    target-class-impact effects by their registered definitions. Returns 0 on success, otherwise the error code
    of a duplicate id, a full registry or the first failing load or lookup. (The original's success EAX, the
    last resolved effect definition, is still in targetClassImpactEffectDefinitions8[7].)
+   Original quirk: a failing sprite load or effect lookup leaves the definition registered in its slot.
 */
 uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
 
 {
-  ShotDefinition *valueOrError;
-  SpriteAssetHeader *existingSprite;
-  int slotsRemainingOrIndex;
-  int referencesRemaining;
+  int slotsRemaining;
   ShotDefinition **registrySlotCursor;
-  bool extensionFailed;
-  uint32_t loadErrorCode;
-  uint32_t spriteRegisterError;
-  uint32_t effectLookupError;
-  EffectDefinition *resolvedEffect;
+  uint32_t spriteError;
 
-  registrySlotCursor = g_ShotDefinitionRegistry;
-  slotsRemainingOrIndex = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  if (ShotRuntime_FindDefinitionById(definition->definitionId) == NULL) {
-    /* Original quirk: the lookup's error code is still in EAX, so a failing .spr extension switch below
-       returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
-    valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_NOT_FOUND;
-    for (; slotsRemainingOrIndex != 0; slotsRemainingOrIndex--) {
-      if (*registrySlotCursor == NULL) {
-        *registrySlotCursor = definition;
-        extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
-        if (extensionFailed) goto ReturnFailure;
-        valueOrError = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
-        if (valueOrError == NULL) {
-          valueOrError = (ShotDefinition *)loadErrorCode;
-          goto ReturnFailure;
-        }
-        /* the loaded file is a sprite asset */
-        existingSprite =
-             SpriteAssetRegistry_FindById(((SpriteAssetHeader *)valueOrError)->registryHeader.registryId);
-        if (existingSprite == NULL) {
-          definition->ownedNestedResourcePresent++;
-          definition->ownedNestedResource = valueOrError;
-          spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)valueOrError);
-          if (spriteRegisterError != 0) {
-            valueOrError = (ShotDefinition *)spriteRegisterError;
-            goto ReturnFailure;
-          }
-        }
-        else {
-          definition->ownedNestedResource = existingSprite;
-          Resource_Release(valueOrError);
-        }
-        /* the effect pointer fields hold effect definition ids until they are resolved here */
-        effectLookupError = EffectDefinitionRegistry_FindById
-                          ((PckEffectDefinitionIdCatalog)definition->launchEffectDefinition,&resolvedEffect);
-        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
-        definition->launchEffectDefinition = resolvedEffect;
-        effectLookupError = EffectDefinitionRegistry_FindById
-                          ((PckEffectDefinitionIdCatalog)definition->secondaryEffectDefinition,&resolvedEffect);
-        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
-        definition->secondaryEffectDefinition = resolvedEffect;
-        effectLookupError = EffectDefinitionRegistry_FindById
-                          ((PckEffectDefinitionIdCatalog)definition->primaryEffectDefinition,&resolvedEffect);
-        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
-        definition->primaryEffectDefinition = resolvedEffect;
-        slotsRemainingOrIndex = 0;
-        for (referencesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; referencesRemaining != 0;
-             referencesRemaining--) {
-          effectLookupError = EffectDefinitionRegistry_FindById
-                            ((PckEffectDefinitionIdCatalog)
-                             definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex],&resolvedEffect);
-          if (effectLookupError != 0) goto ReturnEffectLookupFailure;
-          definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] = resolvedEffect;
-          slotsRemainingOrIndex++;
-        }
-        slotsRemainingOrIndex = 0;
-        for (referencesRemaining = SHOT_TARGET_CLASS_IMPACT_COUNT; referencesRemaining != 0;
-             referencesRemaining--) {
-          effectLookupError = EffectDefinitionRegistry_FindById
-                            ((PckEffectDefinitionIdCatalog)
-                             definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex],&resolvedEffect);
-          if (effectLookupError != 0) goto ReturnEffectLookupFailure;
-          definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] = resolvedEffect;
-          slotsRemainingOrIndex++;
-        }
-        return 0;
-      }
-      registrySlotCursor++;
-    }
-    /* the registry capacity goes to the error text */
-    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,SHOT_DEFINITION_REGISTRY_SLOT_COUNT,
-                            g_PackageLastErrorPath);
-    valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_REGISTRY_FULL;
-  }
-  else {
+  if (ShotRuntime_FindDefinitionById(definition->definitionId) != NULL) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_DUPLICATE;
+    return FATAL_ERROR_SHOT_ID_DUPLICATE;
   }
-  goto ReturnFailure;
-ReturnEffectLookupFailure:
-  valueOrError = (ShotDefinition *)effectLookupError;
-ReturnFailure:
-  return (uint32_t)valueOrError;
+  registrySlotCursor = g_ShotDefinitionRegistry;
+  for (slotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
+    if (*registrySlotCursor == NULL) {
+      *registrySlotCursor = definition;
+      spriteError = ShotDefinition_LoadSprite(definition);
+      if (spriteError != 0) {
+        return spriteError;
+      }
+      return ShotDefinition_ResolveEffectReferences(definition);
+    }
+    registrySlotCursor++;
+  }
+  /* the registry capacity goes to the error text */
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,SHOT_DEFINITION_REGISTRY_SLOT_COUNT,
+                          g_PackageLastErrorPath);
+  return FATAL_ERROR_SHOT_REGISTRY_FULL;
 }
 

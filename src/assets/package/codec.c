@@ -249,6 +249,237 @@ bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8
 }
 
 
+/* Bitstream writer state of PckCodec_EncodeHuffmanRle. */
+typedef struct PckHuffmanBitWriter {
+  uint32_t *window;              /* dword the tokens are ORed into; advanced byte by byte */
+  PckHuffmanBitOffset bitOffset; /* next free bit in the window's first byte (0..7) */
+  uint32_t packedSizeBytes;      /* table + bytes passed + 0x1F (see PckCodec_EncodeHuffmanRle) */
+  uint32_t freeBytes;            /* output bytes still free; reaching 0 fails */
+} PckHuffmanBitWriter;
+
+/* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
+   An empty source is not guarded: the count loop would run 2^32 times. */
+static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount sourceSizeBytes)
+{
+  uint32_t *workspaceClearCursor;
+  int clearDwordCount;
+
+  workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
+  for (clearDwordCount = PCK_HUFFMAN_WORKSPACE_DWORDS; clearDwordCount != 0; clearDwordCount--) {
+    *workspaceClearCursor = 0;
+    workspaceClearCursor++;
+  }
+  do {
+    g_PckHuffmanSymbolWorkspace256[*source].frequencyCount =
+         g_PckHuffmanSymbolWorkspace256[*source].frequencyCount + 1;
+    sourceSizeBytes--;
+    source++;
+  } while (sourceSizeBytes != 0);
+}
+
+/* Scales the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
+static void PckCodec_EncoderScaleFrequencies(void)
+{
+  uint32_t maxCount;
+  int scaleShift;
+  int symbolIndex;
+  PckHuffmanSymbolState *symbolState;
+
+  maxCount = 0;
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    if (maxCount < g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount) {
+      maxCount = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+    }
+  }
+  scaleShift = 0;
+  for (; 255 < maxCount; maxCount = (maxCount + 1) >> 1) {
+    scaleShift++;
+  }
+  if (scaleShift != 0) {
+    for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+      symbolState = &g_PckHuffmanSymbolWorkspace256[symbolIndex];
+      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)scaleShift & 31)) - 1;
+      symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)scaleShift & 31);
+    }
+  }
+}
+
+/* Scans all leaf and internal nodes (the two workspaces are contiguous) for the two lightest nodes with nonzero
+   weight. Returns false when fewer than two are left (the second-lowest weight is still UINT32_MAX, tested as
+   negative like the original). */
+static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
+          PckHuffmanNode **outSecondLowestNode,uint32_t *outSecondLowestWeight)
+{
+  PckHuffmanNode *scanNode;
+  PckHuffmanNode *lowestNode;
+  PckHuffmanNode *secondLowestNode;
+  uint32_t lowestWeight;
+  uint32_t secondLowestWeight;
+  int nodesLeft;
+
+  lowestNode = NULL;
+  secondLowestNode = NULL;
+  lowestWeight = UINT32_MAX;
+  secondLowestWeight = UINT32_MAX;
+  scanNode = g_PckHuffmanLeafNodeWorkspace256;
+  for (nodesLeft = PCK_HUFFMAN_NODE_COUNT; nodesLeft != 0; nodesLeft--) {
+    if (scanNode->weight != 0) {
+      if (scanNode->weight < lowestWeight) {
+        /* the previous lowest becomes the second-lowest */
+        if (lowestWeight < secondLowestWeight) {
+          secondLowestWeight = lowestWeight;
+          secondLowestNode = lowestNode;
+        }
+        lowestWeight = scanNode->weight;
+        lowestNode = scanNode;
+      }
+      else if (scanNode->weight < secondLowestWeight) {
+        secondLowestWeight = scanNode->weight;
+        secondLowestNode = scanNode;
+      }
+    }
+    scanNode++;
+  }
+  *outLowestNode = lowestNode;
+  *outLowestWeight = lowestWeight;
+  *outSecondLowestNode = secondLowestNode;
+  *outSecondLowestWeight = secondLowestWeight;
+  return (int)secondLowestWeight >= 0;
+}
+
+/* Copies the scaled counts into the leaf weights, then joins the two lightest live nodes under a new internal
+   node until only the root still has a weight; a joined node's weight is cleared, so the root is the only node
+   left with nonzero weight. Returns false when all 256 internal nodes are used up. */
+static bool PckCodec_EncoderBuildTree(void)
+{
+  int symbolIndex;
+  PckHuffmanNodePtr nextInternalNode;
+  PckHuffmanNode *lowestNode;
+  PckHuffmanNode *secondLowestNode;
+  uint32_t lowestWeight;
+  uint32_t secondLowestWeight;
+
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    g_PckHuffmanLeafNodeWorkspace256[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+  }
+  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
+  while (PckCodec_EncoderFindTwoLightestNodes(&lowestNode,&lowestWeight,&secondLowestNode,&secondLowestWeight)) {
+    nextInternalNode->weight = lowestWeight + secondLowestWeight;
+    nextInternalNode->zeroChild = lowestNode;
+    nextInternalNode->oneChild = secondLowestNode;
+    lowestNode->parent = nextInternalNode;
+    secondLowestNode->parent = nextInternalNode;
+    lowestNode->weight = 0;
+    secondLowestNode->weight = 0;
+    nextInternalNode++;
+    /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
+    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/* Writes the frequency table: the low byte of each scaled count. */
+static void PckCodec_EncoderWriteFrequencyTable(uint8_t *destination)
+{
+  int symbolIndex;
+
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES; symbolIndex++) {
+    destination[symbolIndex] = *(uint8_t *)&g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+  }
+}
+
+/* Replaces each used symbol's count with its code: walking from the leaf up to the root collects the code with
+   the root's bit lowest (the order the decoder reads it); each entry becomes code bits 0..23 | code length << 24.
+   Original quirk: with a single distinct byte value the tree has no internal node, the leaf's parent is NULL
+   and the walk dereferences it. */
+static void PckCodec_EncoderAssignCodes(void)
+{
+  uint32_t symbolIndex;
+  PckHuffmanSymbolState *symbolState;
+  PckHuffmanNodePtr currentNode;
+  PckHuffmanNodePtr ancestorNode;
+  uint32_t codeBits;
+  int codeLength;
+
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    symbolState = &g_PckHuffmanSymbolWorkspace256[symbolIndex];
+    if (symbolState->frequencyCount != 0) {
+      codeLength = 0;
+      codeBits = 0;
+      currentNode = g_PckHuffmanLeafNodeWorkspace256 + symbolIndex;
+      do {
+        ancestorNode = currentNode->parent;
+        codeBits = codeBits * 2;
+        codeLength++;
+        if (currentNode == ancestorNode->oneChild) {
+          codeBits++;
+        }
+        currentNode = ancestorNode;
+      } while (ancestorNode->weight == 0);
+      symbolState->frequencyCount = codeBits | codeLength * (1 << PCK_HUFFMAN_CODE_LENGTH_SHIFT);
+    }
+  }
+}
+
+/* ORs one token into the output: tokenHeader in its headerBitCount flag/count bits, then the code of symbol.
+   Then moves the window on by the whole bytes written. Returns false when the output runs full. */
+static bool PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
+          uint8_t symbol)
+{
+  uint32_t symbolCode;
+
+  *output->window = *output->window | tokenHeader << (output->bitOffset & 31);
+  symbolCode = g_PckHuffmanSymbolWorkspace256[symbol].frequencyCount;
+  *output->window = *output->window | (symbolCode & 0xffffff) << (output->bitOffset + headerBitCount & 31);
+  for (output->bitOffset =
+            output->bitOffset + headerBitCount + (char)(symbolCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT);
+       7 < output->bitOffset; output->bitOffset = output->bitOffset - 8) {
+    /* advance the dword write window by one byte */
+    output->window = (uint32_t *)((uint8_t *)output->window + 1);
+    output->packedSizeBytes++;
+    output->freeBytes--;
+    if (output->freeBytes == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/* Encodes the source as run tokens (3..18 equal bytes: flag 1 + (count - 3) in 4 bits = count*2 - 5, then the
+   byte's code) and literal tokens (flag bit 0, then the byte's code). Returns false when the output runs full. */
+static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
+          PckDecodedByteCount sourceBytesLeft)
+{
+  uint8_t symbol;
+  uint32_t runLength;
+
+  do {
+    symbol = *source;
+    if (PCK_HUFFMAN_MIN_RUN_LENGTH <= sourceBytesLeft && symbol == source[1] && symbol == source[2]) {
+      runLength = 0;
+      while (sourceBytesLeft != 0 && *source == symbol && runLength < 18) {
+        runLength++;
+        source++;
+        sourceBytesLeft--;
+      }
+      if (!PckCodec_EncoderEmitToken(output,runLength * 2 - 5,5,symbol)) {
+        return false;
+      }
+    }
+    else {
+      /* the literal flag is a 0 bit, so ORing the header changes nothing */
+      if (!PckCodec_EncoderEmitToken(output,0,1,symbol)) {
+        return false;
+      }
+      source++;
+      sourceBytesLeft--;
+    }
+  } while (sourceBytesLeft != 0);
+  return true;
+}
+
 /* Address: 0x0040A4C0.
    PCK compression method 0 writer. Counts the byte frequencies of the source, scales them to 8 bits, builds a
    Huffman tree from them, writes the 256-byte frequency table and then the bitstream of literal and 3..18-byte
@@ -261,208 +492,48 @@ bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,u
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
-  PckHuffmanNodePtr ancestorNode;
-  /* maximum frequency, then lowest weight while building the tree, then symbol index while building the
-     code table, then the packed output size */
-  uint32_t maxCountOrWeightOrSize;
-  PckHuffmanBitOffset outputBitOffset;
-  /* loop count, frequency scale shift, then code length */
-  int countOrShiftOrCodeLength;
-  PckDecodedByteCount bytesRemaining;
-  /* second-lowest weight, then code bits, dword count, run length and the code table entry */
-  uint32_t secondWeightOrCode;
-  PckHuffmanNode *lowestWeightNode;
-  uint8_t *sourceByteCursor;
-  PckHuffmanSymbolState *symbolState;
-  PckHuffmanNode *scanNode;
-  uint8_t *frequencyByteCursor;
-  uint32_t *workspaceClearCursor;
-  PckHuffmanNode *leafOrSecondLowestNode;
-  PckHuffmanNodePtr currentLeafNode;
+  uint32_t alignedOutputBytes;
   uint32_t *outputClearCursor;
-  uint32_t *outputWriteCursor;
-  PckHuffmanNodePtr nextInternalNode;
-  uint8_t currentSymbolByte;
+  uint32_t clearDwordCount;
+  PckHuffmanBitWriter output;
 
-  workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
-  for (countOrShiftOrCodeLength = PCK_HUFFMAN_WORKSPACE_DWORDS;
-       bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrShiftOrCodeLength != 0;
-       countOrShiftOrCodeLength--) {
-    *workspaceClearCursor = 0;
-    workspaceClearCursor++;
+  PckCodec_EncoderCountFrequencies(source,sourceSizeBytes);
+  PckCodec_EncoderScaleFrequencies();
+  if (!PckCodec_EncoderBuildTree()) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  do {
-    g_PckHuffmanSymbolWorkspace256[*sourceByteCursor].frequencyCount =
-         g_PckHuffmanSymbolWorkspace256[*sourceByteCursor].frequencyCount + 1;
-    bytesRemaining--;
-    sourceByteCursor++;
-  } while (bytesRemaining != 0);
-  /* The symbol table ends where the leaf node workspace begins. */
-  maxCountOrWeightOrSize = 0;
-  symbolState = g_PckHuffmanSymbolWorkspace256;
-  do {
-    if (maxCountOrWeightOrSize < symbolState->frequencyCount) {
-      maxCountOrWeightOrSize = symbolState->frequencyCount;
-    }
-    symbolState++;
-  } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
-  /* Scale the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
-  countOrShiftOrCodeLength = 0;
-  for (; 255 < maxCountOrWeightOrSize; maxCountOrWeightOrSize = (maxCountOrWeightOrSize + 1) >> 1) {
-    countOrShiftOrCodeLength++;
+  if (destinationCapacityBytes < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  if (countOrShiftOrCodeLength != 0) {
-    symbolState = g_PckHuffmanSymbolWorkspace256;
-    do {
-      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)countOrShiftOrCodeLength & 31)) - 1;
-      symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)countOrShiftOrCodeLength & 31);
-      symbolState++;
-    } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
-  }
-  symbolState = g_PckHuffmanSymbolWorkspace256;
-  leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
-  do {
-    leafOrSecondLowestNode->weight = symbolState->frequencyCount;
-    symbolState++;
-    leafOrSecondLowestNode++;
-  } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
-  /* Join the two lightest live nodes under a new internal node until only the root still has a weight;
-     a joined node's weight is cleared, so the root is the only node left with nonzero weight. */
-  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
-  for (;;) {
-    scanNode = g_PckHuffmanLeafNodeWorkspace256;
-    maxCountOrWeightOrSize = UINT32_MAX;
-    countOrShiftOrCodeLength = PCK_HUFFMAN_NODE_COUNT;
-    secondWeightOrCode = UINT32_MAX;
-    do {
-      if (scanNode->weight != 0) {
-        if (scanNode->weight < maxCountOrWeightOrSize) {
-          if (maxCountOrWeightOrSize < secondWeightOrCode) {
-            secondWeightOrCode = maxCountOrWeightOrSize;
-            leafOrSecondLowestNode = lowestWeightNode;
-          }
-          maxCountOrWeightOrSize = scanNode->weight;
-          lowestWeightNode = scanNode;
-        }
-        else if (scanNode->weight < secondWeightOrCode) {
-          secondWeightOrCode = scanNode->weight;
-          leafOrSecondLowestNode = scanNode;
-        }
-      }
-      scanNode++;
-      countOrShiftOrCodeLength--;
-    } while (countOrShiftOrCodeLength != 0);
-    /* Fewer than two weighted nodes left: the tree is complete. */
-    if ((int)secondWeightOrCode < 0) break;
-    nextInternalNode->weight = maxCountOrWeightOrSize + secondWeightOrCode;
-    nextInternalNode->zeroChild = lowestWeightNode;
-    nextInternalNode->oneChild = leafOrSecondLowestNode;
-    lowestWeightNode->parent = nextInternalNode;
-    leafOrSecondLowestNode->parent = nextInternalNode;
-    lowestWeightNode->weight = 0;
-    leafOrSecondLowestNode->weight = 0;
-    nextInternalNode++;
-    /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
-    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) goto fail;
-  }
-  if (destinationCapacityBytes < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) goto fail;
-  /* Frequency table: the low byte of each scaled count. */
-  countOrShiftOrCodeLength = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES;
-  outputWriteCursor = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
-  frequencyByteCursor = (uint8_t *)g_PckHuffmanSymbolWorkspace256;
-  do {
-    *destination = *frequencyByteCursor;
-    frequencyByteCursor = frequencyByteCursor + 4;
-    destination++;
-    countOrShiftOrCodeLength--;
-  } while (countOrShiftOrCodeLength != 0);
-  /* Code table: walking from each used leaf up to the root collects the code with the root's bit lowest
-     (the order the decoder reads it); each entry becomes code bits 0..23 | code length << 24. */
-  symbolState = g_PckHuffmanSymbolWorkspace256;
-  maxCountOrWeightOrSize = 0;
-  do {
-    if (symbolState->frequencyCount != 0) {
-      countOrShiftOrCodeLength = 0;
-      secondWeightOrCode = 0;
-      currentLeafNode = g_PckHuffmanLeafNodeWorkspace256 + maxCountOrWeightOrSize;
-      do {
-        ancestorNode = currentLeafNode->parent;
-        secondWeightOrCode = secondWeightOrCode * 2;
-        countOrShiftOrCodeLength++;
-        if (currentLeafNode == ancestorNode->oneChild) {
-          secondWeightOrCode++;
-        }
-        currentLeafNode = ancestorNode;
-      } while (ancestorNode->weight == 0);
-      symbolState->frequencyCount = secondWeightOrCode | countOrShiftOrCodeLength * (1 << PCK_HUFFMAN_CODE_LENGTH_SHIFT);
-    }
-    maxCountOrWeightOrSize++;
-    symbolState++;
-  } while (maxCountOrWeightOrSize < PCK_HUFFMAN_SYMBOL_COUNT);
+  PckCodec_EncoderWriteFrequencyTable(destination);
+  PckCodec_EncoderAssignCodes();
   /* Zero the dword-aligned output area, since the tokens are ORed into it. */
-  maxCountOrWeightOrSize = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) & PACKAGE_DWORD_ALIGN_MASK;
-  if (maxCountOrWeightOrSize != 0) {
-    outputClearCursor = outputWriteCursor;
-    for (secondWeightOrCode = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) >> 2; secondWeightOrCode != 0; secondWeightOrCode--) {
-      *outputClearCursor = 0;
-      outputClearCursor++;
-    }
-    /* From here destinationCapacityBytes counts the output bytes still free. */
-    destinationCapacityBytes = maxCountOrWeightOrSize - 4;
-    /* SUB [capacity],4 / JBE fail (0x0040A69F): exactly 4 free bytes also fail */
-    if (4 < maxCountOrWeightOrSize) {
-      outputBitOffset = 0;
-      /* table + 0x1F, so the final AND with ~0xF rounds up and adds at least 16 bytes of slack */
-      maxCountOrWeightOrSize = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 31;
-      do {
-        for (;;) {
-          currentSymbolByte = *source;
-          if (sourceSizeBytes < PCK_HUFFMAN_MIN_RUN_LENGTH || currentSymbolByte != source[1] ||
-              currentSymbolByte != source[2]) break;
-          /* Run token: count up to 18 equal bytes, emit flag 1 + (count - 3) in 4 bits = count*2 - 5,
-             then the byte's code. */
-          secondWeightOrCode = 0;
-          do {
-            if (currentSymbolByte != *source || 17 < secondWeightOrCode) break;
-            secondWeightOrCode++;
-            source++;
-            sourceSizeBytes--;
-          } while (sourceSizeBytes != 0);
-          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode * 2 - 5) << (outputBitOffset & 31);
-          secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 31);
-          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT); 7 < outputBitOffset;
-              outputBitOffset = outputBitOffset - 8) {
-            /* advance the dword write window by one byte */
-            outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
-            maxCountOrWeightOrSize++;
-            destinationCapacityBytes--;
-            if (destinationCapacityBytes == 0) goto fail;
-          }
-          if (sourceSizeBytes == 0) goto finish;
-        }
-        /* Literal token: flag bit 0, then the byte's code. */
-        secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-        *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 31);
-        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT); 7 < outputBitOffset;
-            outputBitOffset = outputBitOffset - 8) {
-          outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
-          maxCountOrWeightOrSize++;
-          destinationCapacityBytes--;
-          if (destinationCapacityBytes == 0) goto fail;
-        }
-        source++;
-        sourceSizeBytes--;
-      } while (sourceSizeBytes != 0);
-finish:
-      if (outputBitOffset != 0) {
-        maxCountOrWeightOrSize++;
-      }
-      return PckCodec_Succeed(outByteCount,maxCountOrWeightOrSize & 0xfffffff0);
-    }
+  alignedOutputBytes = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) & PACKAGE_DWORD_ALIGN_MASK;
+  if (alignedOutputBytes == 0) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-fail:
-  return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  outputClearCursor = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
+  for (clearDwordCount = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) >> 2; clearDwordCount != 0;
+       clearDwordCount--) {
+    *outputClearCursor = 0;
+    outputClearCursor++;
+  }
+  /* SUB [capacity],4 / JBE fail (0x0040A69F): exactly 4 free bytes also fail */
+  if (alignedOutputBytes <= 4) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
+  output.window = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
+  output.bitOffset = 0;
+  /* table + 0x1F, so the final AND with ~0xF rounds up and adds at least 16 bytes of slack */
+  output.packedSizeBytes = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 31;
+  output.freeBytes = alignedOutputBytes - 4;
+  if (!PckCodec_EncoderWriteTokens(&output,source,sourceSizeBytes)) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
+  if (output.bitOffset != 0) {
+    output.packedSizeBytes++;
+  }
+  return PckCodec_Succeed(outByteCount,output.packedSizeBytes & 0xfffffff0);
 }
 
 
