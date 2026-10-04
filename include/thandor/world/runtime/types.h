@@ -15,6 +15,6 @@
 
 typedef struct WorldOwnerListNode WorldOwnerListNode;
 
-typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwnerListNode * node);
+using WorldRuntimeNodeTraversalCallback = void (void * callbackContext, WorldOwnerListNode * node);
 
 #endif /* THANDOR_WORLD_RUNTIME_TYPES_H */

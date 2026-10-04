@@ -18,7 +18,7 @@
    looked at without capturing the desktop. */
 static void DebugAutoShot_Save(const char *prefix, unsigned *number);
 
-void DebugAutoShot_Tick(void)
+void DebugAutoShot_Tick()
 {
   static int interval = -1;
   static unsigned last;
@@ -43,7 +43,7 @@ void DebugAutoShot_Tick(void)
   DebugAutoShot_Save("shot", &number);
 }
 
-void DebugAutoShot_SaveNow(void)
+void DebugAutoShot_SaveNow()
 {
   static unsigned number;
   if (g_GraphicsFramebufferCaptureRegion == nullptr || g_FramebufferWidth == 0) {

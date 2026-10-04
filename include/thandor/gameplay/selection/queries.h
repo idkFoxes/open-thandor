@@ -20,27 +20,27 @@
 
 Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
-Bool8 SelectionInfo_HasAnyEntry(void);
+Bool8 SelectionInfo_HasAnyEntry();
 
 Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
 Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
 
-Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void);
+Bool8 SelectionInfo_TestAnyActiveOrSingleClass13();
 
 Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
-Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void);
+Bool8 SelectionInfo_TestNoEntryHasWeaponDamage();
 
-Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
+Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
 
-GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
+GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry();
 
 Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
-uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void);
+uint32_t SelectionInfo_CollectAttachmentEffectVariantMask();
 
-uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void);
+uint32_t __cdecl SelectionInfo_CollectCapabilityFlags();
 
 extern SelectionInfoEntitySlots *g_SelectionInfoEntitySlots;
 

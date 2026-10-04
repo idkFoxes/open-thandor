@@ -69,7 +69,7 @@ static Bool8 UiPointer_ReleaseCapture
    users of the primary stream (ambient sound/music choice, button animation phases, the field's cell
    animation phases and material variants at level load, sequence tokens) can differ between machines.
 */
-void UiPointer_DispatchPendingEvents(void)
+void UiPointer_DispatchPendingEvents()
 
 {
   UiNodeBase *control;
@@ -209,7 +209,7 @@ static Bool8 UiKeyboard_PassToFollowingFocusTargets
    to the top root's keyboard fallback. While a node has captured the pointer (a mouse button is held), keys
    are discarded.
 */
-void UiKeyboard_DispatchPendingEvents(void)
+void UiKeyboard_DispatchPendingEvents()
 
 {
   Bool8 dispatchToRoot;
@@ -521,7 +521,7 @@ static UiNodeBase *UiKeyboardFocus_NextInPreOrderWrapping(UiNodeBase *node)
    wrapping around through the topmost ancestor and skipping suppressed nodes. Nothing changes when there is
    no focus or no other focus target.
 */
-void UiKeyboardFocus_MoveNext(void)
+void UiKeyboardFocus_MoveNext()
 
 {
   UiNodeBase *node;

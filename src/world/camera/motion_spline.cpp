@@ -259,7 +259,7 @@ void WorldMotionSpline_BuildSixChannelCurves
 /* Zeroes the six derivatives cached by the world-motion spline evaluators, so a finished or newly built
    spline reports no motion.
 */
-void WorldMotionSpline_ClearCachedDerivatives(void)
+void WorldMotionSpline_ClearCachedDerivatives()
 
 {
   int derivativesRemaining;

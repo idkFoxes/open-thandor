@@ -36,7 +36,7 @@ GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = nullptr
 /* g_GraphicsFramebufferBeginAccess hook: the in-memory software framebuffer (the SDL3 backend's) needs no lock,
    so it only reports success (returns false). The original locked its DirectDraw back surface here.
 */
-Bool8 GraphicsFramebuffer_BeginAccessStub(void)
+Bool8 GraphicsFramebuffer_BeginAccessStub()
 
 {
   return false;
@@ -46,7 +46,7 @@ Bool8 GraphicsFramebuffer_BeginAccessStub(void)
 /* Default g_GraphicsFramebufferEndAccess hook, the counterpart of GraphicsFramebuffer_BeginAccessStub: nothing
    to unlock.
 */
-void GraphicsFramebuffer_EndAccessStub(void)
+void GraphicsFramebuffer_EndAccessStub()
 
 {
   return;

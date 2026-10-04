@@ -44,7 +44,7 @@ typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
 typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix;
 typedef struct UiRootCallbacks UiRootCallbacks;
 
-typedef uint32_t GraphicsSubresourceIndex;
+using GraphicsSubresourceIndex = uint32_t;
 
 union WidePathBuffer256 {
     uint16_t codeUnits[256]; 
@@ -62,7 +62,7 @@ enum {
     UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY=512,
     UI_TEXT_EDIT_PLAY_INTERACTION_SOUND=1024
 };
-typedef int UiTextEditStateFlags;
+using UiTextEditStateFlags = int;
 
 enum {
     UI_SCROLL_HORIZONTAL_BAR_AT_TOP=1,
@@ -81,7 +81,7 @@ enum {
     UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE=134217728,
     UI_SCROLL_VERTICAL_INCREMENT_ACTIVE=268435456
 };
-typedef int UiScrollableStateFlags;
+using UiScrollableStateFlags = int;
 
 enum {
     UI_NODE_PREFERRED_FOCUS_TARGET=2,
@@ -93,12 +93,12 @@ enum {
     UI_NODE_TOOLTIP_ELIGIBLE=256,
     UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16=512
 };
-typedef int UiNodeFlags;
+using UiNodeFlags = int;
 
 enum {
     UI_TIMED_LIST_ACTION_DELAY_PENDING=2
 };
-typedef int UiTimedListStateFlags;
+using UiTimedListStateFlags = int;
 
 enum {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
@@ -106,7 +106,7 @@ enum {
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
     UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION=8192
 };
-typedef int UiSelectableStateFlags;
+using UiSelectableStateFlags = int;
 
 enum {
     UI_TEXT_LIST_TYPE_SEARCH_ENABLED=1,
@@ -114,7 +114,7 @@ enum {
     UI_TEXT_LIST_SELECTION_CONFIRMED=4,
     UI_TEXT_LIST_PLAY_SELECTION_SOUND=8
 };
-typedef int UiTextListStateFlags;
+using UiTextListStateFlags = int;
 
 enum {
     UI_REQUIRED_TEXT_VALUE_VALID=1,
@@ -128,21 +128,21 @@ enum {
     UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND=1024,
     UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION=2048
 };
-typedef int UiRequiredTextEditStateFlags;
+using UiRequiredTextEditStateFlags = int;
 
 enum {
     UI_LIST_DEFERRED_ACTION_PENDING=2,
     UI_LIST_SELECTION_CONFIRMED=4,
     UI_LIST_PLAY_SELECTION_SOUND=8
 };
-typedef int UiListStateFlags;
+using UiListStateFlags = int;
 
 enum {
     UI_TIMED_LIST_RECORD_EXPANDABLE=1,
     UI_TIMED_LIST_RECORD_EXPANDED=2,
     UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY=2147483648
 };
-typedef int UiTimedListRecordFlags;
+using UiTimedListRecordFlags = int;
 
 enum {
     UI_NUMERIC_TEXT_VALUE_VALID=1,
@@ -157,40 +157,40 @@ enum {
     UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY=512,
     UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND=1024
 };
-typedef int UiNumericTextEditStateFlags;
+using UiNumericTextEditStateFlags = int;
 
-typedef int UiPointerWheelDelta;
+using UiPointerWheelDelta = int;
 
 typedef struct UiGridDimensions {
     uint32_t columnCount;
     uint32_t rowCount;
 } UiGridDimensions;
 
-typedef uint32_t UiTextCodeUnitIndex;
+using UiTextCodeUnitIndex = uint32_t;
 
-typedef uint32_t UiTextCodeUnitCount;
+using UiTextCodeUnitCount = uint32_t;
 
-typedef uint32_t GraphicsCursorFrameIndex;
+using GraphicsCursorFrameIndex = uint32_t;
 
-typedef int UiNumericValue32;
+using UiNumericValue32 = int;
 
-typedef uint32_t UiPageCount;
+using UiPageCount = uint32_t;
 
-typedef int UiSerializedRelocationDelta;
+using UiSerializedRelocationDelta = int;
 
-typedef int UiPixelCoordinate;
+using UiPixelCoordinate = int;
 
-typedef uint32_t UiKeyboardStateMask;
+using UiKeyboardStateMask = uint32_t;
 
-typedef uint32_t UiKeyboardEventCode;
+using UiKeyboardEventCode = uint32_t;
 
-typedef uint32_t UiNodeFlagMask;
+using UiNodeFlagMask = uint32_t;
 
-typedef int UiActionId;
+using UiActionId = int;
 
-typedef uint32_t UiAnchorFractionQ31;
+using UiAnchorFractionQ31 = uint32_t;
 
-typedef uint32_t UiPixelOffset;
+using UiPixelOffset = uint32_t;
 
 struct UiNodeBase {
     Ptr32<struct UiNodeBase> nextSibling; 
@@ -273,11 +273,11 @@ struct UiPageStackControl {
     Ptr32<struct UiNodeBase> pages; 
 };
 
-typedef uint32_t GraphicsSubresourceEndIndex;
+using GraphicsSubresourceEndIndex = uint32_t;
 
-typedef uint32_t UiTextResourceId;
+using UiTextResourceId = uint32_t;
 
-typedef uint32_t UiListRowCount;
+using UiListRowCount = uint32_t;
 
 /* The first 0x64 bytes of a UiListControl (g_UiListControlVtable); pages embed it with the column tail in
    the following reserved bytes, and methods that need columnCount/columns view it as UiListControl. */
@@ -291,28 +291,28 @@ struct UiPointerListControl {
     Ptr32<Ptr32<void>> selectedRowSlot; 
 };
 
-typedef uint32_t UiPackedTextStyle;
+using UiPackedTextStyle = uint32_t;
 
-typedef uint32_t UiPageIndex;
+using UiPageIndex = uint32_t;
 
-typedef uint32_t UiPointerButtonMask;
+using UiPointerButtonMask = uint32_t;
 
-typedef uint32_t UiFrameCount;
+using UiFrameCount = uint32_t;
 
-typedef int SerializedImageRelocationDelta;
+using SerializedImageRelocationDelta = int;
 
-typedef uint32_t UiFrameDelayFrames;
+using UiFrameDelayFrames = uint32_t;
 
-typedef uint32_t UiPointerListFieldByteOffset;
+using UiPointerListFieldByteOffset = uint32_t;
 
-typedef uint32_t GraphicsSubresourceOffset;
+using GraphicsSubresourceOffset = uint32_t;
 
 typedef struct UiScrollableViewportSize {
     UiPixelExtent width;
     UiPixelExtent height;
 } UiScrollableViewportSize;
 
-typedef uint32_t UiControlCount;
+using UiControlCount = uint32_t;
 
 struct UiTextEditControl {
     struct UiNodeBase base; 
@@ -424,7 +424,7 @@ struct UiScrollableControl {
 enum {
     UI_ROOT_DISABLE_POINTER_HIT_TEST=256 
 };
-typedef int UiRootFlags;
+using UiRootFlags = int;
 
 struct UiRootNode {
     struct UiNodeBase base;
@@ -579,7 +579,7 @@ enum /* UiPointerCaptureButton, stored in 1 byte(s) */ {
     UI_POINTER_CAPTURE_RIGHT=2,
     UI_POINTER_CAPTURE_NONE=255
 };
-typedef uint8_t UiPointerCaptureButton;
+using UiPointerCaptureButton = uint8_t;
 
 struct UiRequiredTextEditControl {
     struct UiNodeBase base; 
@@ -764,6 +764,6 @@ typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
 struct UiRootStackActionHandlerPage2 {
     Ptr32<void (void *)> handlers[2];
 };
-typedef int UiRootPointerMissPolicyCallback(UiRootNode * root);
+using UiRootPointerMissPolicyCallback = int (UiRootNode * root);
 
 #endif /* THANDOR_UI_CONTROLS_TYPES_H */

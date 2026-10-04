@@ -119,14 +119,14 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
   return true;
 }
 
-void SdlPlatform_InstallTimersAndPump(void)
+void SdlPlatform_InstallTimersAndPump()
 {
   g_TimerRegisterPeriodic = SdlTimer_RegisterPeriodic;
   g_TimerUnregisterPeriodic = SdlTimer_UnregisterPeriodic;
   g_Win32PumpMessages = SdlPlatform_PumpEvents;
 }
 
-void SdlPlatform_PumpEvents(void)
+void SdlPlatform_PumpEvents()
 {
   /* developer tools: automatic screenshots and the input script, before the queue is read */
   DebugHook_MessagePump();
@@ -172,7 +172,7 @@ void SdlPlatform_PumpEvents(void)
   }
 }
 
-void SdlPlatform_Quit(void)
+void SdlPlatform_Quit()
 {
   DestroyMainWindow();
   SDL_Quit();

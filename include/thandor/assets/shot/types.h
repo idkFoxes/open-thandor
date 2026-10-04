@@ -30,21 +30,21 @@ enum {
     SHOT_TRAJECTORY_FIXED_RANGE=2,
     SHOT_TRAJECTORY_LEAD_ADJUSTED=3
 };
-typedef int ShotTrajectoryMode;
+using ShotTrajectoryMode = int;
 
-typedef uint32_t ShotProjectileLifetimeTicks;
+using ShotProjectileLifetimeTicks = uint32_t;
 
-typedef AngleTurn16Stored32 ShotModelSpinStepTurn16;
+using ShotModelSpinStepTurn16 = AngleTurn16Stored32;
 
-typedef uint32_t ShotFrameAdvanceThresholdQ4;
+using ShotFrameAdvanceThresholdQ4 = uint32_t;
 
-typedef uint32_t ShotAnimationFrameCount;
+using ShotAnimationFrameCount = uint32_t;
 
-typedef uint32_t ShotSecondaryEffectIntervalTicks;
+using ShotSecondaryEffectIntervalTicks = uint32_t;
 
-typedef uint32_t ShotTrajectoryRampDurationTicks;
+using ShotTrajectoryRampDurationTicks = uint32_t;
 
-typedef uint32_t ShotFixedRangeTransitionAgeTicks;
+using ShotFixedRangeTransitionAgeTicks = uint32_t;
 
 struct ShotDefinition {
     ShotTrajectoryMode trajectoryMode; // Shot trajectory selector; enum is partial.

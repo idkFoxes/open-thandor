@@ -70,13 +70,19 @@ def header_prefixes(prefixes):
 
 
 def header_regex(prefixes):
-    """A --header-filter regex matching files below the prefixes (either slash, any case)."""
+    """A --header-filter regex matching files below the prefixes (either slash, any case).
+
+    clang-tidy's regex is POSIX ERE (llvm::Regex): an inline flag like (?i) makes it match no header at all, so
+    the case insensitivity is spelled out as [xX] classes."""
+    def nocase(piece):
+        return "".join(f"[{c.lower()}{c.upper()}]" if c.isalpha() else re.escape(c) for c in piece)
+
     parts = []
     for prefix in prefixes:
         rel = os.path.relpath(prefix, ROOT).replace("\\", "/")
-        pieces = [re.escape(p) for p in rel.split("/")]
+        pieces = [nocase(p) for p in rel.split("/")]
         parts.append(r"[\\/]".join(pieces) + (r"$" if rel.endswith(".h") else r"([\\/]|$)"))
-    return r"(?i).*[\\/](" + "|".join(parts) + ")"
+    return r".*[\\/](" + "|".join(parts) + ")"
 
 
 def run_one(args, tool, path, index, fixes_dir, hfilter):

@@ -32,7 +32,7 @@
 
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
 
-void InGameRuntime_UpdateCursorGridAndViewScaleCache(void);
+void InGameRuntime_UpdateCursorGridAndViewScaleCache();
 
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot);
 

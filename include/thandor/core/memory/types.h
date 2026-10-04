@@ -24,9 +24,9 @@ enum {
     ARENA_BLOCK_ALLOCATED=1515870810,
     ARENA_BLOCK_FREE=2779096485
 };
-typedef int ArenaBlockStateMagic;
+using ArenaBlockStateMagic = int;
 
-typedef uint32_t ArenaPayloadByteCount;
+using ArenaPayloadByteCount = uint32_t;
 
 struct ArenaBlockHeader {
     uint32_t payloadSize; 
@@ -48,7 +48,7 @@ enum {
     SPIN_LOCK_UNLOCKED=0,
     SPIN_LOCK_LOCKED=4294967295
 };
-typedef int RuntimeSpinLockValue;
+using RuntimeSpinLockValue = int;
 
 struct MemoryApiTable {
     /* Every status-returning entry returns 0 on success or an engine error code (FATAL_ERROR_*,
@@ -57,13 +57,13 @@ struct MemoryApiTable {
     uint32_t (*free)(void *memory); // ArenaHeap_Free
     uint32_t (*allocLargestFreeBlock)(void **outAllocation, uint32_t *outBlockSize); // ArenaHeap_AllocLargestFreeBlock
     uint32_t (*shrinkInPlace)(uint32_t newSize, void *memory); // ArenaHeap_ShrinkInPlace
-    uint32_t (*queryFreeBytes)(void); // ArenaHeap_QueryFreeBytes
+    uint32_t (*queryFreeBytes)(); // ArenaHeap_QueryFreeBytes
     uint32_t (*reserveLinear)(uint32_t bytes, void **outBase); // ArenaHeap_ReserveLinear; *outBase = previous linear cursor
 };
-typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue);
-typedef void SpinLockReleaseCallbackProc(void);
-typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
-typedef void SpinLockReleaseProc(RuntimeSpinLockValue * lockValue);
-typedef Bool8 SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * lockValue);
+using SpinLockAcquireProc = void (RuntimeSpinLockValue * lockValue);
+using SpinLockReleaseCallbackProc = void ();
+using SpinLockReleaseAndInvokeProc = void (SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
+using SpinLockReleaseProc = void (RuntimeSpinLockValue * lockValue);
+using SpinLockTryAcquireFlagsProc = Bool8 (RuntimeSpinLockValue * lockValue);
 
 #endif /* THANDOR_CORE_MEMORY_TYPES_H */

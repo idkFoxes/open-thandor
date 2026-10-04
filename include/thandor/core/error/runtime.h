@@ -130,7 +130,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl ErrorSystem_Init(void);
+void __cdecl ErrorSystem_Init();
 
 uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed);
 [[noreturn]] void FatalError_ShowAndExit(uintptr_t error);

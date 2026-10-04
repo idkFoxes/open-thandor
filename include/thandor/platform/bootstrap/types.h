@@ -29,7 +29,7 @@ struct HINSTANCE__ {
     int unused;
 };
 
-typedef uint32_t CommandLineOptionLengthBytes;
+using CommandLineOptionLengthBytes = uint32_t;
 #pragma pack(push, 1) /* packed layout: no alignment padding */
 struct LevelArchivePathTemplate18 {
     uint16_t prefixCodeUnits[5]; 
@@ -72,6 +72,6 @@ struct CommandLineWideArguments {
     uint16_t argument2[256]; 
     uint16_t argument3[256]; 
 };
-typedef uint8_t * CommandLineFindOptionProc(uint32_t length, char * option);
+using CommandLineFindOptionProc = uint8_t * (uint32_t length, char * option);
 
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_TYPES_H */

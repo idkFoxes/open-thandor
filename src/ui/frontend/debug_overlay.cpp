@@ -52,7 +52,7 @@ uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
    draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
    the menu camera's position and orientation, the cursor override position and the free arena bytes.
 */
-void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
+void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates()
 
 {
   uint32_t freeArenaBytes;

@@ -94,7 +94,7 @@ void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpin
    roughly the reverse order of their initialisation, frees the memory arena last and drops the process
    back from real-time to normal priority.
 */
-void Runtime_Shutdown(void)
+void Runtime_Shutdown()
 
 {
   HANDLE process;

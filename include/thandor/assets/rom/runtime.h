@@ -74,7 +74,7 @@ typedef struct RomRecord {
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
-void FrontendRomRegistry_ClearAndReleaseNestedResources(void);
+void FrontendRomRegistry_ClearAndReleaseNestedResources();
 
 RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue);
 

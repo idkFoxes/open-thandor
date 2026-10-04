@@ -350,7 +350,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
 /* Returns the frame size of the active movie, so callers can place and scale the movie texture. Both are
    zero when no movie is open.
 */
-MovieFrameDimensions Movie_GetFrameDimensions(void)
+MovieFrameDimensions Movie_GetFrameDimensions()
 
 {
   MovieFrameDimensions dimensions;
@@ -438,7 +438,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
    FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState when the movie of a frontend page has ended (when the
    page enables movie playback), which makes it loop.
 */
-void Movie_Rewind(void)
+void Movie_Rewind()
 
 {
   MovieRuntime *activeMovie;
@@ -460,7 +460,7 @@ void Movie_Rewind(void)
    spins), then the semaphore is closed. Frees the FLM buffer, the soundtrack voice set, a still-open own
    stream handle and the MovieRuntime.
 */
-void Movie_Close(void)
+void Movie_Close()
 
 {
   MovieRuntime *movie;
@@ -502,7 +502,7 @@ void Movie_Close(void)
    g_IntroMoviePendingTicks. The intro loop consumes the count and decodes at most three pending frames per
    iteration, which keeps the movie in time on slow machines.
 */
-void IntroMovie_TimerTick(void)
+void IntroMovie_TimerTick()
 
 {
   g_IntroMoviePendingTicks++;

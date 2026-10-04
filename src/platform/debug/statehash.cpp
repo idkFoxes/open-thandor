@@ -50,7 +50,7 @@ static int32_t DebugStateHash_ArmyIndex(const void *army)
   return (int32_t)(((const uint8_t *)army - (const uint8_t *)g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
 }
 
-void DebugStateHash_SessionInitializing(void)
+void DebugStateHash_SessionInitializing()
 {
   const char *steps = getenv("OPEN_THANDOR_STATEHASH");
   const char *seed = getenv("OPEN_THANDOR_STATEHASH_SEED");
@@ -78,7 +78,7 @@ void DebugStateHash_SessionInitializing(void)
   }
 }
 
-void DebugStateHash_SessionStart(void)
+void DebugStateHash_SessionStart()
 {
   const char *steps = getenv("OPEN_THANDOR_STATEHASH");
   const char *seed = getenv("OPEN_THANDOR_STATEHASH_SEED");
@@ -255,7 +255,7 @@ static void DebugStateHash_ApplySpeedAtFixedTick(unsigned tick)
   s_speedStepTicks = 0;
 }
 
-void DebugStateHash_AfterStep(void)
+void DebugStateHash_AfterStep()
 {
   StateHash hash = {0xcbf29ce484222325ull};
   WorldOwnerListNode *node;

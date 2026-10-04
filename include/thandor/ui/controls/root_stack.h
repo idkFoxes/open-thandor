@@ -17,7 +17,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-Bool8 UiRootStack_PopUntilWindowTextureBoundary(void);
+Bool8 UiRootStack_PopUntilWindowTextureBoundary();
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
    previousRoot link holds it. */
@@ -29,9 +29,9 @@ Bool8 UiRootStack_Pop(UiRootNode *root);
 
 Bool8 UiRootStack_BringToFront(UiRootNode *root);
 
-void UiRootStack_Relayout(void);
+void UiRootStack_Relayout();
 
-void UiRootStack_InvalidateAll(void);
+void UiRootStack_InvalidateAll();
 
 extern uint32_t g_UiInvalidationSuppressed;
 extern UiRootNode *g_UiRootNode;

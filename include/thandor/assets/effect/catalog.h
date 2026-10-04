@@ -20,7 +20,7 @@
 
 Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 
-uint32_t EffectDefinitions_ResolveCrossReferences(void);
+uint32_t EffectDefinitions_ResolveCrossReferences();
 
 Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
 

@@ -42,7 +42,7 @@ static GraphicsTextureSourceAsset *FontTextureSource_Get(uint32_t fontIndex)
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
    override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
 */
-void FontRuntime_Init(void)
+void FontRuntime_Init()
 
 {
   wchar_t pathChar;

@@ -92,7 +92,7 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
 /* Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
    SdlAudio_Init installs SdlAudio_StopAllVoices): there are no voices, so it does nothing.
 */
-void SoundBackendDisabled_StopAllVoices(void)
+void SoundBackendDisabled_StopAllVoices()
 
 {
 }

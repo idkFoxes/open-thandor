@@ -74,7 +74,7 @@ static void InGameNotification_PopQueueHead(InGameRuntimeRoot *inGameRoot)
    the movie of the queue head ("flm\movie%03d.flm"), makes its payload the active notification and pops the
    four-entry queue.
 */
-void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
+void InGameRuntime_ProcessQueuedSessionNotificationTimer()
 
 {
   GraphicsTextureSourceAsset *panelTextureSource;

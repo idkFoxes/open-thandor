@@ -27,19 +27,19 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
 
 Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
-void GridScratch_ReleaseBuffers(void);
+void GridScratch_ReleaseBuffers();
 
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
 Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
-void __cdecl GridScratch_CopyPrimaryToSecondary(void);
+void __cdecl GridScratch_CopyPrimaryToSecondary();
 
-void GridScratch_SwapPrimarySecondary(void);
+void GridScratch_SwapPrimarySecondary();
 
 void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-void GridScratch_ResetTraversalFlagsAndCosts(void);
+void GridScratch_ResetTraversalFlagsAndCosts();
 
 #endif /* THANDOR_WORLD_PATHING_SCRATCH_GRID_H */

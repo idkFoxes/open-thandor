@@ -170,7 +170,7 @@ Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *ou
    references (commandTargetArmyRuntime, assignedTargetArmyRuntime) are saved as pointer - (pool base - 1), so 0
    stays NULL.
 */
-void ArmyRuntimePool_RebaseAfterLoad(void)
+void ArmyRuntimePool_RebaseAfterLoad()
 
 {
   uint32_t savedAssignedTargetOffset;
@@ -227,7 +227,7 @@ static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,Fact
    registry pointers (an unknown id empties that list) and converts the 256 saved runtime-group member offsets
    into pointers again (offset + g_ArmyRuntimeRebaseBaseMinusOne; 0 stays NULL).
 */
-void GameFactionRuntime_RebaseLoadedArmyReferences(void)
+void GameFactionRuntime_RebaseLoadedArmyReferences()
 
 {
   int factionIndex;

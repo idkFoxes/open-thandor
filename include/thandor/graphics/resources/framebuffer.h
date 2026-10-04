@@ -23,9 +23,9 @@
 #define GRAPHICS_CAPTURE_PIXELS_OFFSET 0x220
 /* Functions are grouped by semantic ownership. */
 
-Bool8 GraphicsFramebuffer_BeginAccessStub(void);
+Bool8 GraphicsFramebuffer_BeginAccessStub();
 
-void GraphicsFramebuffer_EndAccessStub(void);
+void GraphicsFramebuffer_EndAccessStub();
 
 void GraphicsFramebuffer_InitCaptureAsset
           (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,

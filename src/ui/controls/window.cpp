@@ -861,7 +861,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
    (texte\winclass.str as text page 1), installs the root-stack actions as action-handler page 0 and starts
    with an empty root stack. A missing file is fatal.
 */
-void UiWindowResources_Init(void)
+void UiWindowResources_Init()
 
 {
   GraphicsTextureSourceAsset *loadedTexture;

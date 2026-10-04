@@ -20,11 +20,11 @@ typedef struct SelectionPointerArray32 SelectionPointerArray32, *PSelectionPoint
 typedef struct SelectionPlayerRuntimeBlock SelectionPlayerRuntimeBlock, *PSelectionPlayerRuntimeBlock;
 typedef struct GameEntityRuntime GameEntityRuntime;
 
-typedef uint32_t SelectionMarkerCoordinateValue32;
+using SelectionMarkerCoordinateValue32 = uint32_t;
 
-typedef int SelectionMarkerIndex;
+using SelectionMarkerIndex = int;
 
-typedef uint32_t SelectionMarkerLaneMask;
+using SelectionMarkerLaneMask = uint32_t;
 
 struct SelectionInfoEntitySlots {
     Ptr32<struct GameEntityRuntime> entries[32]; 
@@ -64,6 +64,6 @@ struct SelectionPlayerRuntimeBlock {
     };
 };
 
-typedef uint32_t SelectionPlayerPairKey;
+using SelectionPlayerPairKey = uint32_t;
 
 #endif /* THANDOR_GAMEPLAY_SELECTION_TYPES_H */

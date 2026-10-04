@@ -19,21 +19,21 @@
 #define LOCALE_PRIMARY_LANGUAGE_MASK 0x1ff
 /* Functions are grouped by semantic ownership. */
 
-void Locale_Init(void);
+void Locale_Init();
 
 uint32_t Locale_FormatDateFieldsUtf16 (LocaleCalendarYearStack32 year,LocaleCalendarMonthStack32 month, LocaleCalendarDayStack32 day,uint16_t *destination);
 
 uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination);
 
-uint32_t Locale_GetPackedCurrentDate(void);
+uint32_t Locale_GetPackedCurrentDate();
 
 uint32_t Locale_FormatTimeFieldsUtf16 (LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,uint16_t *destination);
 
 uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination);
 
-uint32_t Locale_GetPackedCurrentTime(void);
+uint32_t Locale_GetPackedCurrentTime();
 
-uint32_t Locale_GetDefaultTelephoneCountryCode(void);
+uint32_t Locale_GetDefaultTelephoneCountryCode();
 
 void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination);
 

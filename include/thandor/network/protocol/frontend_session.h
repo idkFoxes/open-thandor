@@ -41,7 +41,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 
 Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg);
 
-void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void);
+void FrontendNetwork_TickDisconnectTimeoutAndResetSession();
 
 Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet);

@@ -51,7 +51,7 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
    FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID. Returns 0 on success, otherwise that error code (the original's
    success return value, the last index checked, was read by no caller).
 */
-uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
+uint32_t ShotDefinitions_ValidateTerrainMaterialReferences()
 
 {
   TerrainMaterialIndex materialIndex;

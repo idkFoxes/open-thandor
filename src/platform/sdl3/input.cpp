@@ -488,7 +488,7 @@ Bool8 SdlInput_Init(uint32_t *outError)
   return true;
 }
 
-void SdlInput_Shutdown(void)
+void SdlInput_Shutdown()
 {
   g_TimerUnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
   if (MainWindow() != nullptr) {
@@ -529,7 +529,7 @@ void SdlInput_SetPosition(int32_t positionY,int32_t positionX)
   }
 }
 
-void SdlInput_FlushEvents(void)
+void SdlInput_FlushEvents()
 {
   g_CursorOverrideX = g_MouseX;
   g_CursorOverrideY = g_MouseY;

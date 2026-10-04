@@ -19,6 +19,6 @@ struct SoundCoefficientBlock {
     short coefficients[256]; 
 };
 
-typedef uint64_t MmxPackedValue64;
+using MmxPackedValue64 = uint64_t;
 
 #endif /* THANDOR_AUDIO_CODEC_TYPES_H */

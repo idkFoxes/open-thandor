@@ -101,7 +101,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
    both 16-bit angles advance by their rates, and the scaled sine/cosine of angle A and one component of
    angle B are stored, computed from the angles before this step.
 */
-void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
+void TerrainDirectionTable_AdvanceAndRebuildVectors()
 
 {
   uint32_t previousPackedAngles;
@@ -380,7 +380,7 @@ static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t al
    At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
    256-entry factor tables (as in the original).
 */
-void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting()
 
 {
   SoftwareBgraWordLanes forwardFactors;

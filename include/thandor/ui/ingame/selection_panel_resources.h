@@ -19,7 +19,7 @@
 
 Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
-void SelectionInfoPanel_ShutdownResources(void);
+void SelectionInfoPanel_ShutdownResources();
 
 extern GraphicsTextureSourceAsset *g_SelectionPanelTextureSource;
 extern GraphicsTextureSourceAsset *g_InfoPanelTextureSource;

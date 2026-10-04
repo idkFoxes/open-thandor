@@ -16,7 +16,7 @@
 
 typedef struct GraphicsCapturedTextureSourceAsset GraphicsCapturedTextureSourceAsset, *PGraphicsCapturedTextureSourceAsset;
 
-typedef uint32_t TimerFrequencyHz;
+using TimerFrequencyHz = uint32_t;
 
 struct GraphicsCapturedTextureSourceAsset {
     struct GeneratedAssetCommonPrefix common; 

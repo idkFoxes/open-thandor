@@ -178,7 +178,7 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
 
 /* Host, while clients are still missing: resends the previous command batch to every client that has not
    submitted its command yet and COMMAND_WAIT to those that have. */
-static void FrontendTransfer_ResendBatchOrWaitToClients(void)
+static void FrontendTransfer_ResendBatchOrWaitToClients()
 {
   FrontendPlayerRuntimeBlockCount peersRemaining;
   UiTransferEndpointDescriptor *peerEndpointCursor;
@@ -274,7 +274,7 @@ Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanS
    with the oldest queued command, or an empty record when none is queued. The sender context counts the
    submissions.
 */
-void FrontendTransfer_SendCommandSubmit(void)
+void FrontendTransfer_SendCommandSubmit()
 
 {
   g_FrontendPacket10021Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_SUBMIT;
@@ -365,7 +365,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
    8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
    is resolved to its C function and the record validated by CommandDispatch_ExecuteRecord.
 */
-void FrontendTransfer_DispatchStagedCommandRecords(void)
+void FrontendTransfer_DispatchStagedCommandRecords()
 
 {
   uint32_t remainingCount;
@@ -385,7 +385,7 @@ void FrontendTransfer_DispatchStagedCommandRecords(void)
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
-Bool8 FrontendTransfer_ConsumeProcessedFlag(void)
+Bool8 FrontendTransfer_ConsumeProcessedFlag()
 
 {
   int previousFlag;

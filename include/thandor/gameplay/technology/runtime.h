@@ -39,7 +39,7 @@ Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fa
 
 void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity);
 
-void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void);
+void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
 
 extern TechnologyAsset *g_TechnologyAsset;
 

@@ -120,7 +120,7 @@ void SoftwareRasterAux_Mode10 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 
 void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet);
 
-void SoftwareRenderer_AdvanceDepthEpoch(void);
+void SoftwareRenderer_AdvanceDepthEpoch();
 
 void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet);
 

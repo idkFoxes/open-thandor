@@ -51,7 +51,7 @@ static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = {'g', 'f', 'x', '\\', 'p', 'a'
 /* Menu sounds of Frontend_Init: counts the two digits of "sound\menue01.sam" from 01 up to 99 into the
    voice-set table slots 1..99 and stops at the first file that does not exist. Returns 0, or the voice-set
    creation error. */
-static uint32_t FrontendInit_LoadMenuSounds(void)
+static uint32_t FrontendInit_LoadMenuSounds()
 {
   DirectSoundVoiceSet **voiceSetSlot;
   SoundSampleAsset *loadedSample;
@@ -87,7 +87,7 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
 /* Menu music: loads sound\music00.sam and plays it looping at the saved music gain (g_FrontendMusicVoiceSet /
    g_FrontendMusicActiveBuffer). Failures leave the menu silent. Used by Frontend_Init (when music is enabled)
    and by FrontendAudioSettings_SetMusicEnabled (when music is switched on). */
-void FrontendMusic_StartMenuMusic(void)
+void FrontendMusic_StartMenuMusic()
 {
   uint32_t musicGain;
   SoundSampleAsset *loadedSample;
@@ -139,7 +139,7 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
    generic callback field types, hence the casts. */
 static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerContext *pointerContext)
 {
-  typedef uint32_t FrontendModelPointerResolvedActionProc
+  using FrontendModelPointerResolvedActionProc = uint32_t
           (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
 
   pointerContext->keyboardFallback =
@@ -494,7 +494,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
    frontend root, releases the ROM registry, world objects, central ROM, textures, palette, menu sounds and
    music, and flushes pending input.
 */
-void FrontendRuntime_ShutdownAndReleaseResources(void)
+void FrontendRuntime_ShutdownAndReleaseResources()
 
 {
   UiRootNode *root;

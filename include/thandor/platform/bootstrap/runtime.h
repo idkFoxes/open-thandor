@@ -62,12 +62,12 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl ProcessEntry(void);
+void __cdecl ProcessEntry();
 
 /* 0, or the allocator's error code */
-uint32_t GameData_ResetDefaults(void);
+uint32_t GameData_ResetDefaults();
 
-Bool8 GameData_LoadExternalTables(void);
+Bool8 GameData_LoadExternalTables();
 
 /* 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
 uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
@@ -75,38 +75,38 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 /* the loaded module, or NULL (callers report FATAL_ERROR_DLL_LOAD_FAILED) */
 HINSTANCE DynDLL_Load(char *moduleName);
 
-void DynDLL_UnloadAll(void);
+void DynDLL_UnloadAll();
 
-uint32_t __cdecl CPU_DetectFeatures(void);
+uint32_t __cdecl CPU_DetectFeatures();
 
-void __cdecl Game_Run(void);
+void __cdecl Game_Run();
 
 /* 0, or the error code of the first failing step */
-uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void);
+uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering();
 
-uint32_t __cdecl Game_LoadCoreAssets(void);
+uint32_t __cdecl Game_LoadCoreAssets();
 
-Bool8 Game_PlayIntroMovies(void);
+Bool8 Game_PlayIntroMovies();
 
 /* 0, or a FATAL_ERROR_* code */
-uint32_t DynAPI_Bootstrap(void);
+uint32_t DynAPI_Bootstrap();
 
 uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
-void CommandLine_Parse(void);
+void CommandLine_Parse();
 
 /*
 g_BootstrapApiBindings is resolved at startup from {name, module} pairs; each slot then
 holds the __stdcall entry of that Win32 API. Calls must use these types: calling a slot through a
 cdecl function type would leave the stack unbalanced after every call.
 */
-typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
-typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */
-typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(uintptr_t key, char *subKey, uint32_t options, uint32_t access,
+using BootstrapLoadLibraryAProc = HINSTANCE (__stdcall *)(char *moduleName);                 /* [0] */
+using BootstrapFreeLibraryProc = BOOL (__stdcall *)(HINSTANCE module);                        /* [1] */
+using BootstrapRegOpenKeyExAProc = long (__stdcall *)(uintptr_t key, char *subKey, uint32_t options, uint32_t access,
                                                      uintptr_t *result);                       /* [2] */
-typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uintptr_t key, void *valueName, uint32_t *reserved,
+using BootstrapRegQueryValueExAProc = long (__stdcall *)(uintptr_t key, void *valueName, uint32_t *reserved,
                                                         void *type, void *data, void *size); /* [3] */
-typedef long (__stdcall *BootstrapRegCloseKeyProc)(uintptr_t key);                               /* [4] */
+using BootstrapRegCloseKeyProc = long (__stdcall *)(uintptr_t key);                               /* [4] */
 
 extern WidePathBuffer256 g_LooseMoviePathPrefix;
 extern uint16_t g_DatenHexPathUtf16[10];
@@ -117,9 +117,9 @@ extern UPtr32 g_FrontendPlayerListRows[8]; /* pointers (as uintptr_t) to the eig
 extern uint32_t g_IntroMoviePendingTicks;
 extern uint16_t g_ScreenshotFileNameUtf16[13]; /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
 
-void Screenshot_AdvanceFileName(void);
+void Screenshot_AdvanceFileName();
 
-void Screenshot_SaveFramebufferAsPcx(void);
+void Screenshot_SaveFramebufferAsPcx();
 
 extern DynamicApiBinding g_BootstrapApiBindings[6]; /* 5 bindings + the all-zero terminator [5] that ends the DynAPI_Bootstrap scan */
 extern HWND g_MainWindow;

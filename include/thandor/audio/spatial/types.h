@@ -17,11 +17,11 @@ typedef struct SpatialSoundSlot SpatialSoundSlot, *PSpatialSoundSlot;
 typedef struct DirectSoundVoiceSet DirectSoundVoiceSet;
 typedef struct IDirectSoundBuffer IDirectSoundBuffer;
 
-typedef uint32_t SpatialSoundGainQ15;
+using SpatialSoundGainQ15 = uint32_t;
 
-typedef uint32_t SpatialSoundMaximumDistanceQ12;
+using SpatialSoundMaximumDistanceQ12 = uint32_t;
 
-typedef uint32_t AudioMixerGainQ15;
+using AudioMixerGainQ15 = uint32_t;
 
 /* Runtime only (native pointers): the sound code reads voiceSet through DirectSoundVoiceSet ** slot pointers. */
 struct SpatialSoundSlot {

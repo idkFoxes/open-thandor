@@ -33,7 +33,7 @@ static uint8_t SoftwareTexture_CrossFadeByte(uint8_t a, uint8_t b, uint8_t facto
 
 /* Fills g_SoftwarePixelIntensityToNativeColorLut256 with native grey pixels of the current
    framebuffer format. The table runs from white down to black: entry i is intensity 255 - i. */
-static void SoftwareTexture_BuildIntensityLut(void)
+static void SoftwareTexture_BuildIntensityLut()
 {
     const SoftwarePixelFormatConfig *format = &g_SoftwarePixelFormatConfig;
     uint32_t entry;

@@ -24,7 +24,7 @@ typedef struct ModelPackedPointRecord ModelPackedPointRecord, *PModelPackedPoint
 
 /* One-byte boolean of the original: any byte value, only its low byte counts (assigning 0x100 gives
    false). Kept distinct from C/C++ bool, which normalizes to 0/1. */
-typedef uint8_t Bool8;
+using Bool8 = uint8_t;
 
 /* x86 calling-convention markers. Portable source views treat them as annotations. */
 #ifndef _MSC_VER
@@ -44,16 +44,16 @@ typedef uint8_t Bool8;
 typedef unsigned short wchar_t;
 #endif
 
-typedef int FactionRuntimeIndex;
+using FactionRuntimeIndex = int;
 
-typedef int Q12;
+using Q12 = int;
 
 enum {
     WORLD_OWNER_RUNTIME_MODEL=0,
     WORLD_OWNER_RUNTIME_SHOT=1,
     WORLD_OWNER_RUNTIME_EFFECT=2
 };
-typedef int WorldOwnerRuntimeClassId;
+using WorldOwnerRuntimeClassId = int;
 
 enum {
     MODEL_RUNTIME_CLASS_00=0,
@@ -81,7 +81,7 @@ enum {
     MODEL_RUNTIME_CLASS_22=22,
     MODEL_RUNTIME_CLASS_23=23
 };
-typedef int ModelRuntimeClassId;
+using ModelRuntimeClassId = int;
 
 enum {
     ARM_0001_UNIT_MDL0100=1,
@@ -411,9 +411,9 @@ enum {
     ARM_0854_ROHSTOFF_MDL0854=854,
     ARM_0855_ROHSTOFF_MDL0855=855
 };
-typedef int PckArmyAssetIdCatalog;
+using PckArmyAssetIdCatalog = int;
 
-typedef uint32_t PackedArgb32;
+using PackedArgb32 = uint32_t;
 
 enum {
     EFF_0001_EGRXA0=1,
@@ -557,13 +557,13 @@ enum {
     EFF_0241_ERCKB0=241,
     EFF_0242_ERCKC0=242
 };
-typedef int PckEffectDefinitionIdCatalog;
+using PckEffectDefinitionIdCatalog = int;
 
-typedef uint32_t AngleTurn32;
+using AngleTurn32 = uint32_t;
 
-typedef int GraphicsWorldCoordinateQ12;
+using GraphicsWorldCoordinateQ12 = int;
 
-typedef uint32_t UQ12;
+using UQ12 = uint32_t;
 
 enum {
     ASSET_MAGIC_TEC=6514036,
@@ -582,11 +582,11 @@ enum {
     ASSET_MAGIC_LEV=7759212,
     ASSET_MAGIC_GFX=7890535
 };
-typedef int AssetMagic;
+using AssetMagic = int;
 
-typedef uint32_t FieldGridDimension;
+using FieldGridDimension = uint32_t;
 
-typedef uint32_t AssetFormatVersion;
+using AssetFormatVersion = uint32_t;
 
 enum { 
     FIELD_CELL_MATERIAL_ID_MASK=255,
@@ -603,9 +603,9 @@ enum {
     FIELD_CELL_FLUID_RECEIVER_EXCLUDED=536870912,
     FIELD_CELL_FLUID_SOURCE_EXCLUDED=1073741824
 };
-typedef int FieldCellPackedFlagsAndMaterial;
+using FieldCellPackedFlagsAndMaterial = int;
 
-typedef uint32_t AssetRelativeOffset;
+using AssetRelativeOffset = uint32_t;
 
 struct GraphicsFixedVec3 {
     GraphicsWorldCoordinateQ12 x; 
@@ -620,21 +620,21 @@ struct GraphicsFixedMatrix3x4 {
     struct GraphicsFixedVec3 translation; 
 };
 
-typedef intptr_t ModelDefinitionHierarchyNodeAddress32; /* address of a definition hierarchy node, pointer-sized (5f) */
+using ModelDefinitionHierarchyNodeAddress32 = intptr_t; /* address of a definition hierarchy node, pointer-sized (5f) */
 
 enum {
     FILESYSTEM_ENUMERATE_FILES=0,
     FILESYSTEM_ENUMERATE_VOLUME_LABEL=1,
     FILESYSTEM_ENUMERATE_DIRECTORIES=2
 };
-typedef int FileSystemEnumerationMode;
+using FileSystemEnumerationMode = int;
 
 enum {
     FILESYSTEM_SEEK_BEGIN=0,
     FILESYSTEM_SEEK_CURRENT=1,
     FILESYSTEM_SEEK_END=2
 };
-typedef int FileSystemSeekOrigin;
+using FileSystemSeekOrigin = int;
 
 enum {
     SESSION_NETWORK_ROLE_LOCAL=0,
@@ -642,7 +642,7 @@ enum {
     SESSION_NETWORK_ROLE_HOST=2,
     SESSION_NETWORK_ROLE_NETWORKED_MASK=3
 };
-typedef int SessionNetworkRoleFlags;
+using SessionNetworkRoleFlags = int;
 
 /* struct IDirectSoundBuffer stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
    voice object behind it (the original's DirectSound buffer). */
@@ -651,15 +651,15 @@ struct DirectSoundVoiceSet {
     struct IDirectSoundBuffer *voices[8]; 
 };
 
-typedef uint16_t SoftwareColorLaneUnsigned16;
+using SoftwareColorLaneUnsigned16 = uint16_t;
 
-typedef uint32_t InGameSimulationStepBatchTicks;
+using InGameSimulationStepBatchTicks = uint32_t;
 
-typedef int FixedMathScale32;
+using FixedMathScale32 = int;
 
-typedef uint16_t SoftwareColorLaneFixed16;
+using SoftwareColorLaneFixed16 = uint16_t;
 
-typedef uint32_t AssetDecodedBlockCount;
+using AssetDecodedBlockCount = uint32_t;
 
 struct SoundSampleAsset {
     AssetMagic magic;
@@ -680,7 +680,7 @@ enum {
     WIDE_FORMAT_WRITE_TERMINATOR=64,
     WIDE_FORMAT_GROUP_THOUSANDS=128
 };
-typedef int WideNumberFormatFlags;
+using WideNumberFormatFlags = int;
 
 struct SoftwareBgraWordLanes {
     SoftwareColorLaneUnsigned16 blue; 
@@ -696,7 +696,7 @@ struct SoftwareRgbWordLanes {
     short zero; 
 };
 
-typedef uint32_t UQ8;
+using UQ8 = uint32_t;
 
 struct ModelPackedPointRecord {
     uint32_t packedLookupKey; 

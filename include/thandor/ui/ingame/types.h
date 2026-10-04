@@ -63,19 +63,19 @@ typedef struct SelectionPlayerPairRecord SelectionPlayerPairRecord;
 typedef struct WorldObjectRecord WorldObjectRecord;
 typedef struct WorldRuntimeNode WorldRuntimeNode;
 
-typedef uint32_t ModelDepthBinMask;
+using ModelDepthBinMask = uint32_t;
 
-typedef uint32_t WorldRuntimeFlags;
+using WorldRuntimeFlags = uint32_t;
 
-typedef uint32_t WorldObjectRecordCount;
+using WorldObjectRecordCount = uint32_t;
 
-typedef uint32_t WorldWorkspaceElementCount;
+using WorldWorkspaceElementCount = uint32_t;
 
-typedef uint32_t WorldRuntimeControlFlags;
+using WorldRuntimeControlFlags = uint32_t;
 
-typedef uint32_t WorldInteractionFlags;
+using WorldInteractionFlags = uint32_t;
 
-typedef uint32_t WorldFieldDimension;
+using WorldFieldDimension = uint32_t;
 
 struct WorldRuntimeSelectionState {
     PlayerRuntimeId activePlayerRuntimeId; // Selection-player runtime used to index the local selection block table.
@@ -156,20 +156,20 @@ enum {
     EncodedLowercaseC=196707,
     EncodedLowercaseS=196723
 };
-typedef int InGameCameraCommandKeyCode;
+using InGameCameraCommandKeyCode = int;
 
 enum {
     INGAME_TARGETING_OBSERVED_IDLE=0,
     INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE=7,
     INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE=27
 };
-typedef int InGameTargetingObservedActionState;
+using InGameTargetingObservedActionState = int;
 
 enum {
     NOTIFICATION_INTERACTION_NONE=0,
     PAYLOAD_ACTIVE=7
 };
-typedef int InGameNotificationInteractionState;
+using InGameNotificationInteractionState = int;
 
 enum {
     UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK=12,
@@ -177,7 +177,7 @@ enum {
     UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK=262144,
     UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON=2147483648
 };
-typedef int UiCommandActivationStateFlags;
+using UiCommandActivationStateFlags = int;
 
 enum {
     NOTIFICATION_PAYLOAD_NONE=0,
@@ -185,19 +185,19 @@ enum {
     TECHNOLOGY_UNLOCK_POSITION=2,
     FACTION_IMPACT_ANCHOR=3
 };
-typedef int InGameNotificationPayloadKind;
+using InGameNotificationPayloadKind = int;
 
-typedef uint32_t ArmyBuildXeniteCostQ4;
+using ArmyBuildXeniteCostQ4 = uint32_t;
 
-typedef int SelectionPanelCellIndex;
+using SelectionPanelCellIndex = int;
 
-typedef uint16_t UiTechnologyValueTextBuffer16Utf16[16];
+using UiTechnologyValueTextBuffer16Utf16 = uint16_t[16];
 
-typedef uint32_t InGameNotificationPriority;
+using InGameNotificationPriority = uint32_t;
 
-typedef uint32_t UiCommandModeIndex;
+using UiCommandModeIndex = uint32_t;
 
-typedef uint32_t InGameNotificationMovieId;
+using InGameNotificationMovieId = uint32_t;
 
 typedef struct UiNodeBase *InGamePersistentSettingsPageSourceNodePtr; /* interior pointer: points at InGamePersistentSettingsPage3508.sourceNode; the containing InGamePersistentSettingsPage3508 is found by subtracting the field offset */
 
@@ -221,7 +221,7 @@ struct WorldRuntimeContext {
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
     Ptr32<uint32_t> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
-    Ptr32<void (void)> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
+    Ptr32<void ()> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
     Ptr32<struct WorldOwnerListNode> ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
     struct WorldLightingState lighting; // Terrain-lighting configuration.
@@ -248,41 +248,41 @@ struct InGamePersistentSettingsPage3508 {
     struct UiNumericTextControl movieAlternateAudioGainControl; 
 };
 
-typedef int SelectionPanelSegmentCount;
+using SelectionPanelSegmentCount = int;
 
-typedef int PlayerOrFactionRuntimeId32;
+using PlayerOrFactionRuntimeId32 = int;
 
-typedef uint32_t FactionArmyContributionValue;
+using FactionArmyContributionValue = uint32_t;
 
-typedef intptr_t InGameSaveGamePageControlAddress32; /* address of the save page's delete button node, pointer-sized (5f) */
+using InGameSaveGamePageControlAddress32 = intptr_t; /* address of the save page's delete button node, pointer-sized (5f) */
 
-typedef uint32_t InGamePointerCallbackValue2;
+using InGamePointerCallbackValue2 = uint32_t;
 
-typedef uint32_t InGamePointerCallbackValue3;
+using InGamePointerCallbackValue3 = uint32_t;
 
-typedef uint32_t InGamePointerCallbackValue0;
+using InGamePointerCallbackValue0 = uint32_t;
 
-typedef uint32_t InGamePointerCallbackValue1;
+using InGamePointerCallbackValue1 = uint32_t;
 
-typedef int UiPointerRegionCode;
+using UiPointerRegionCode = int;
 
-typedef uint16_t UiSelectionDetailTextBuffer64Utf16[64];
+using UiSelectionDetailTextBuffer64Utf16 = uint16_t[64];
 
-typedef uint32_t ArmyBuildDurationQ5;
+using ArmyBuildDurationQ5 = uint32_t;
 
-typedef uint32_t UiCommandRuntimeFlagMask;
+using UiCommandRuntimeFlagMask = uint32_t;
 
-typedef int ModelLinkedDefinitionListAddress32;
+using ModelLinkedDefinitionListAddress32 = int;
 
-typedef int SelectionPanelNumericValue32;
+using SelectionPanelNumericValue32 = int;
 
-typedef uint32_t ContinuationEntryAddress32;
+using ContinuationEntryAddress32 = uint32_t;
 
-typedef uint32_t MusicTrackClassId;
+using MusicTrackClassId = uint32_t;
 
-typedef intptr_t InGameCommandPanelSourceAddress32; /* address of the command panel source node, pointer-sized (5f) */
+using InGameCommandPanelSourceAddress32 = intptr_t; /* address of the command panel source node, pointer-sized (5f) */
 
-typedef uint32_t InGameCommandPayloadTripletValue32;
+using InGameCommandPayloadTripletValue32 = uint32_t;
 
 typedef struct InGameCommandTextEditControlCC *InGameCommandTextEntryPageTextEditPtr; /* interior pointer: points at InGameCommandTextEntryPage2320.commandTextEdit; the containing InGameCommandTextEntryPage2320 is found by subtracting the field offset */
 
@@ -640,7 +640,7 @@ struct WorldRuntimeExtendedMapControlView {
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
     Ptr32<uint32_t> tickSpinLock;
-    Ptr32<void (void)> simulationAndNetworkTickCallback;
+    Ptr32<void ()> simulationAndNetworkTickCallback;
     Ptr32<struct WorldRuntimeNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;
     struct WorldLightingState lighting;

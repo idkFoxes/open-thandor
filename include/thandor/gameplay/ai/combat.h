@@ -23,7 +23,7 @@
 
 void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
-void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void);
+void AiUnitGroup_AssignCollectedEntitiesToBestTarget();
 
 ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime,

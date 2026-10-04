@@ -49,6 +49,6 @@ uint32_t Movie_DecodeFrame4x4Delta
           const uint8_t *encodedFrame,const uint8_t *encodedEnd);
 
 /* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */
-void Movie_BuildChromaLumaTable(void);
+void Movie_BuildChromaLumaTable();
 
 #endif /* THANDOR_MOVIE_RUNTIME_FLM_DECODER_H */

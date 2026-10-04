@@ -39,7 +39,7 @@ static Bool8 FrontendScenarioTransfer_DecodeFieldGrid
 
 /* Frees g_FrontendLoadedLevelAsset and the field grid attached to it: the level's path offset field holds
    the loaded field grid once one was attached (values above 0xFFFF are pointers). */
-void FrontendScenarioTransfer_ReleaseLoadedLevelAsset(void)
+void FrontendScenarioTransfer_ReleaseLoadedLevelAsset()
 {
   if ((g_FrontendLoadedLevelAsset != nullptr) &&
      (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
@@ -165,7 +165,7 @@ static void FrontendScenarioTransfer_SetFieldGridPathOfLevel(FrontendLoadedLevel
 
 /* SCENARIO_TRANSFER_CATALOG, packet: unpacked size, packed catalog. Replaces g_ScenarioCatalog and reports
    which received level records (up to 96) the previous catalog did not contain. */
-static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
+static void FrontendScenarioTransfer_ProcessReceivedCatalog()
 {
   /* The three command payload dwords double as a 96-bit mask of levels that are new in the
      received catalog: the original sets bit n in the payload dwords 3..1 directly, and those dwords are
@@ -241,7 +241,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
 }
 
 /* SCENARIO_TRANSFER_LEVEL, packet: unpacked size, packed level asset; replaces g_FrontendLoadedLevelAsset. */
-static void FrontendScenarioTransfer_ProcessReceivedLevel(void)
+static void FrontendScenarioTransfer_ProcessReceivedLevel()
 {
   uint32_t *receivedDwords;
   uint32_t receivedByteCount;
@@ -280,7 +280,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevel(void)
 
 /* SCENARIO_TRANSFER_FIELD_GRID, packet: unpacked size, packed field grid; it is attached to the already
    loaded level. */
-static void FrontendScenarioTransfer_ProcessReceivedFieldGrid(void)
+static void FrontendScenarioTransfer_ProcessReceivedFieldGrid()
 {
   uint32_t *receivedDwords;
   uint32_t receivedByteCount;
@@ -321,7 +321,7 @@ static void FrontendScenarioTransfer_ProcessReceivedFieldGrid(void)
 /* SCENARIO_TRANSFER_CAMPAIGN_BUNDLE, packet: ScenarioCampaignBundleHeader (unpacked sizes of level, campaign
    and field grid, then their packed sizes), then the three packed streams. Afterwards the campaign starts at
    its first level: its record gives level\<name>.lev in g_FrontendScenarioPathScratchUtf16. */
-static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
+static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
 {
   uint32_t *receivedDwords;
   uint32_t receivedByteCount;
@@ -417,7 +417,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
 
 /* SCENARIO_TRANSFER_LEVEL_BUNDLE, packet: ScenarioLevelBundleHeader (unpacked sizes of level and field grid,
    their packed sizes), then the two packed streams. */
-static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
+static void FrontendScenarioTransfer_ProcessReceivedLevelBundle()
 {
   uint32_t *receivedDwords;
   uint32_t receivedByteCount;
@@ -475,7 +475,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
    frees the mailbox buffer and reports the new state to the host through the frontend command queue (or
    directly when no network session runs). Every packet starts with the unpacked size(s), then the packed data.
 */
-void FrontendScenarioTransfer_ProcessReceivedAsset(void)
+void FrontendScenarioTransfer_ProcessReceivedAsset()
 
 {
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&

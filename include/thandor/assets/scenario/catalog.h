@@ -60,7 +60,7 @@ typedef struct CampaignAsset {
 
 /* Functions are grouped by semantic ownership. */
 
-void ScenarioCatalog_Rebuild(void);
+void ScenarioCatalog_Rebuild();
 
 void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
                                                  uint32_t unusedArg3);

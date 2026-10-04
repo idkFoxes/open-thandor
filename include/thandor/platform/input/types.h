@@ -18,11 +18,11 @@
 typedef struct KeyboardInputEvent KeyboardInputEvent, *PKeyboardInputEvent;
 typedef struct KeyboardAsciiCaseTransformCallbackTable3 KeyboardAsciiCaseTransformCallbackTable3, *PKeyboardAsciiCaseTransformCallbackTable3;
 
-typedef uint32_t KeyboardVirtualKeyCode;
+using KeyboardVirtualKeyCode = uint32_t;
 
-typedef uint32_t KeyboardEventRingIndex;
+using KeyboardEventRingIndex = uint32_t;
 
-typedef uint32_t KeyboardCharacterCode;
+using KeyboardCharacterCode = uint32_t;
 
 struct KeyboardInputEvent {
     UiKeyboardEventCode keyCode;
@@ -34,9 +34,9 @@ struct KeyboardAsciiCaseTransformCallbackTable3 {
     Ptr32<uint32_t (uint32_t)> toUpper; 
     Ptr32<uint32_t (uint32_t)> toLower; 
 };
-typedef void KeyboardFlushEventsProc(void);
-typedef Bool8 KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask);
-typedef void PointerFlushEventsProc(void);
-typedef void PointerSetPositionProc(int32_t positionY, int32_t positionX);
+using KeyboardFlushEventsProc = void ();
+using KeyboardReadEventProc = Bool8 (uint32_t *outKeyCode, uint32_t *outStateMask);
+using PointerFlushEventsProc = void ();
+using PointerSetPositionProc = void (int32_t positionY, int32_t positionX);
 
 #endif /* THANDOR_PLATFORM_INPUT_TYPES_H */

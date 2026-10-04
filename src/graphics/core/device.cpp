@@ -30,7 +30,7 @@ static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSou
    no longer read (only the original's hardware texture upload used it); it is still allocated, like the texture
    slots, so the arena layout and with it the texture-set addresses that GraphicsPrimitiveQueue_RadixSortForRendering
    sorts opaque packets by stay as they were. Returns 0 or the allocator's error code. */
-uint32_t Graphics_AllocateTables(void)
+uint32_t Graphics_AllocateTables()
 
 {
   int remainingDwords;
@@ -78,7 +78,7 @@ uint32_t Graphics_AllocateTables(void)
 /* Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer and frees the software
    cursor buffers (SdlVideo_Shutdown then releases the framebuffer and the window).
 */
-void Graphics_Shutdown(void)
+void Graphics_Shutdown()
 
 {
   /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */

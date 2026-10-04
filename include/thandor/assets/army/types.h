@@ -20,13 +20,13 @@ typedef struct ArmyAssetRecord ArmyAssetRecord, *PArmyAssetRecord;
 typedef struct ArmyAssetHeader ArmyAssetHeader, *PArmyAssetHeader;
 typedef struct GeneratedAssetRecordCountHeader GeneratedAssetRecordCountHeader, *PGeneratedAssetRecordCountHeader;
 
-typedef uint32_t AssetRecordByteCount;
+using AssetRecordByteCount = uint32_t;
 
-typedef uint32_t AssetRecordCount;
+using AssetRecordCount = uint32_t;
 
-typedef uint32_t ArmySelectionDetailTemplateVariantIndex;
+using ArmySelectionDetailTemplateVariantIndex = uint32_t;
 
-typedef uint32_t EnergyDemandQ4;
+using EnergyDemandQ4 = uint32_t;
 
 struct ArmyAssetRecordPrefix {
     AssetRecordByteCount byteSize; 
@@ -56,7 +56,7 @@ struct ArmyAssetRecord {
     uint8_t reserved07C_07F[4]; 
 };
 
-typedef uint32_t ArmyAssetId;
+using ArmyAssetId = uint32_t;
 
 struct GeneratedAssetRecordCountHeader {
     struct GeneratedAssetCommonPrefix common;

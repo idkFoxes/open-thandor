@@ -178,7 +178,7 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
    maximumHealth and its Q24 reciprocal, the largest movementSpeed of models with a non-zero accelerationPerTick
    (used by the AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */
-void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
+void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks()
 
 {
   ModelDefinition *definitionRecord;

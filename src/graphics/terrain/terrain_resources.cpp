@@ -153,7 +153,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
 
 /* Random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F) per step, random
    start angles; the angle components are cleared. */
-static void TerrainDirectionTable_RandomizeRecords(void)
+static void TerrainDirectionTable_RandomizeRecords()
 
 {
   TerrainDirectionRecord *directionRecord;
@@ -279,7 +279,7 @@ Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
    texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded
    resource, past its header, so that offset is undone before Resource_Release).
 */
-void TerrainVisualResources_Shutdown(void)
+void TerrainVisualResources_Shutdown()
 
 {
   int materialTextureSetsRemaining;

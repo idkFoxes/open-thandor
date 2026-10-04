@@ -15,7 +15,7 @@
 /* Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
    periodic clock while no resource registration is in progress.
 */
-void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
+void __cdecl InGameRuntime_PeriodicCountdownAndClockTick()
 
 {
   if (g_InGameNetworkTickCountdown != 0) {
@@ -31,7 +31,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
    g_SessionNetworkTickInterval directly; an interval of 0 is treated as 1 here (every step a boundary) so a
    bad value cannot divide by zero. The join ack only accepts the original's even 2..14, so valid sessions
    compute exactly the original remainder. */
-static Bool8 InGameTick_IsNetworkIntervalBoundary(void)
+static Bool8 InGameTick_IsNetworkIntervalBoundary()
 {
   uint32_t tickInterval;
 
@@ -45,7 +45,7 @@ static Bool8 InGameTick_IsNetworkIntervalBoundary(void)
 /* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
    the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
    be broadcast because a peer has not submitted yet. */
-static Bool8 InGameTick_RunHostOrLocalLockstep(void)
+static Bool8 InGameTick_RunHostOrLocalLockstep()
 
 {
   void *packet;
@@ -90,7 +90,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep(void)
 /* Network lockstep of a simulation step on a client. Returns false when the step has to wait: at an interval
    boundary until the host's command batch has arrived and was executed, otherwise until the periodic timer has
    counted down. */
-static Bool8 InGameTick_RunClientLockstep(void)
+static Bool8 InGameTick_RunClientLockstep()
 
 {
   void *packet;
@@ -285,7 +285,7 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
    re-seats every model on the terrain every second step (g_ArmyPlacementContactKindDispatchTable) and refreshes
    the influence / classification grids every 16th step.
 */
-void InGameRuntime_UpdateSimulationAndNetworkTick(void)
+void InGameRuntime_UpdateSimulationAndNetworkTick()
 
 {
   Bool8 lockAlreadyHeld;

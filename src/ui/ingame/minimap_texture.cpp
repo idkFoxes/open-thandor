@@ -107,7 +107,7 @@ Bool8 TerrainCompositeTexture_Create(uint32_t *outError)
 /* Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
    g_TerrainCompositeTexture and the in-game root keep the stale pointer.
 */
-void TerrainCompositeTexture_Destroy(void)
+void TerrainCompositeTexture_Destroy()
 
 {
   GraphicsTextureSourceAsset *allocationBase;
@@ -122,7 +122,7 @@ void TerrainCompositeTexture_Destroy(void)
    dry cells get their material's panel colour shaded by terrain height, flooded cells the water colour
    (palette entry 0) shaded by water depth, both through g_PackedLightingLookupTable.
 */
-void TerrainCompositeTexture_FillPlane1(void)
+void TerrainCompositeTexture_FillPlane1()
 
 {
   AssetDimension textureWidth;
@@ -197,7 +197,7 @@ void TerrainCompositeTexture_FillPlane1(void)
    plain soil cells get their panel colours shaded by terrain height, and water is blended 50/50 over
    flooded cells.
 */
-void TerrainCompositeTexture_FillPlane2(void)
+void TerrainCompositeTexture_FillPlane2()
 
 {
   AssetDimension textureWidth;
@@ -319,7 +319,7 @@ void TerrainCompositeTexture_FillPlane2(void)
    colorIndex, or variant 0 (white) for units in the local selection, so the selection stands out (blended 50/50 for
    a tint alpha below 0xFF).
 */
-void TerrainCompositeTexture_RebuildPlane0(void)
+void TerrainCompositeTexture_RebuildPlane0()
 
 {
   uint8_t visibilityFlags;

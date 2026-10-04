@@ -25,15 +25,15 @@ typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
 typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
-typedef Bool8 GraphicsCursorSetFrameProc(uint32_t frameIndex);
-typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+using GraphicsCursorSetFrameProc = Bool8 (uint32_t frameIndex);
+using GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+using GraphicsTextureSourceBlitSourceAlphaPaletteBankProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 
-typedef uint32_t TH_LEGACY_DWORD;
+using TH_LEGACY_DWORD = uint32_t;
 
-typedef uint16_t TH_LEGACY_WORD;
+using TH_LEGACY_WORD = uint16_t;
 
-typedef uint8_t TH_LEGACY_BYTE;
+using TH_LEGACY_BYTE = uint8_t;
 
 struct TH_LEGACY_GUID {
     TH_LEGACY_DWORD Data1;
@@ -61,7 +61,7 @@ enum {
     MIDDLE_RIGHT=6,
     LEFT_MIDDLE_RIGHT=7
 };
-typedef int GraphicsCursorButtonState;
+using GraphicsCursorButtonState = int;
 
 enum {
     MOTION_OR_WHEEL=0,
@@ -72,19 +72,19 @@ enum {
     MIDDLE_RELEASE=6,
     RIGHT_RELEASE=7
 };
-typedef int GraphicsCursorEventType;
+using GraphicsCursorEventType = int;
 
-typedef uint32_t GraphicsCursorClockValue;
+using GraphicsCursorClockValue = uint32_t;
 
-typedef uint32_t GraphicsCursorFrameCount;
+using GraphicsCursorFrameCount = uint32_t;
 
-typedef uint32_t GraphicsBitsPerPixel;
+using GraphicsBitsPerPixel = uint32_t;
 
-typedef uint32_t UiNumericCursorFrameIndex;
+using UiNumericCursorFrameIndex = uint32_t;
 
-typedef uint8_t ColorChannelByte;
+using ColorChannelByte = uint8_t;
 
-typedef uint8_t PaletteEntryFlagsByte;
+using PaletteEntryFlagsByte = uint8_t;
 
 struct GraphicsCursorInputEvent18 {
     GraphicsCursorEventType eventType;
@@ -120,6 +120,6 @@ struct CursorPointerEvent {
     UiPixelCoordinate pointerY;
     UiPointerWheelDelta wheelDelta;
 };
-typedef Bool8 GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent);
+using GraphicsCursorConsumeEventProc = Bool8 (CursorPointerEvent *outEvent);
 
 #endif /* THANDOR_GRAPHICS_CORE_TYPES_H */

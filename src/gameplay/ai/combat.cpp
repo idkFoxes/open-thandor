@@ -96,7 +96,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
    class is the runtimeClassId of the target model's definition, not its type field.
 */
-void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
+void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
 
 {
   uint32_t collectedCount;

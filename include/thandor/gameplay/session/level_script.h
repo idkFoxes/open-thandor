@@ -59,7 +59,7 @@ BitStack InGameScheduledCondition_EvaluatePostfixExpression
   return bitStack;
 }
 
-void InGameConditionRuntime_UpdateScheduledRecords(void);
+void InGameConditionRuntime_UpdateScheduledRecords();
 
 extern uint16_t g_SessionEndMoviePathUtf16[17];
 extern uint16_t g_FlmEnde0001FlmPathUtf16[17];

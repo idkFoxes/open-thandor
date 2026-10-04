@@ -156,7 +156,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
    fills it from g_FatalErrorUiRootTemplateImage) and, if that worked, switches FatalError_ReportIfFailed
    from FatalError_Exit to the in-game dialog. Without the allocation errors keep ending the process.
 */
-void ErrorRuntime_InstallUiHandlerAndAllocateState(void)
+void ErrorRuntime_InstallUiHandlerAndAllocateState()
 
 {
   void *allocPayload;

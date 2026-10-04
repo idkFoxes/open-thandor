@@ -567,7 +567,7 @@ static TechnologyId GameFactionRuntime_FindFirstTechnologyOnlyIn(const uint32_t 
    other faction has are swapped (each side unlocks the other's). A pair where either side has nothing the
    other lacks exchanges nothing. Afterwards the other-player command entries are rebuilt.
 */
-void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
+void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10()
 
 {
   uint32_t sourceFactionIndex;

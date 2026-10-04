@@ -58,11 +58,11 @@ extern SoftwareFramebufferAccess *g_CursorSavedBackground;
 
 extern SoftwareFramebufferAccess *g_CursorCompositeBuffer;
 
-void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
+void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer();
 
 Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
-GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void);
+GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex();
 
 Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 

@@ -18,8 +18,8 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 
 #include <stdint.h>
 
-typedef int Q12;
-typedef unsigned int UQ12;
+using Q12 = int;
+using UQ12 = unsigned int;
 
 /* Compile-time checks, in C and C++. */
 #ifdef __cplusplus
@@ -34,7 +34,7 @@ typedef unsigned int UQ12;
    replaced by exactly typed entries when the tables become classes. */
 #include <thandor/core/ptr32.h> /* ThandorAnyFn, ThandorAnyPtr, Ptr32 */
 #ifdef __cplusplus
-#define THANDOR_FN(f) (ThandorAnyFn{(void (*)(void))(f)})
+#define THANDOR_FN(f) (ThandorAnyFn{(void (*)())(f)})
 #define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
 #else
 #define THANDOR_FN(f) ((void *)(f))

@@ -35,7 +35,7 @@ typedef struct AiStructureWorkspaceEntry AiStructureWorkspaceEntry, *PAiStructur
 typedef struct FieldGridCell FieldGridCell;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 
-typedef uint32_t AiPlanningPhaseIndex;
+using AiPlanningPhaseIndex = uint32_t;
 
 enum {
     TEC_000_BASIC_TECHNOLOGY=0,
@@ -295,19 +295,19 @@ enum {
     TEC_254_RESERVED=254,
     TEC_255_RESERVED=255
 };
-typedef int PckTechnologyIdCatalog;
+using PckTechnologyIdCatalog = int;
 
-typedef int AiCandidateScore32;
+using AiCandidateScore32 = int;
 
-typedef int FactionRuntimeRecordByteOffset;
+using FactionRuntimeRecordByteOffset = int;
 
-typedef uint32_t ArmyPlacementContext;
+using ArmyPlacementContext = uint32_t;
 
-typedef uint32_t FactionImageByteOffset;
+using FactionImageByteOffset = uint32_t;
 
-typedef int AiSourceClassCount;
+using AiSourceClassCount = int;
 
-typedef uint32_t AiCandidateEntryKind;
+using AiCandidateEntryKind = uint32_t;
 
 struct AiKnowledgeParameters {
     uint32_t resource136DeficitScoreNumerator; 
@@ -438,7 +438,7 @@ struct AiArmyScoreWeights {
     int baseScore; 
 };
 
-typedef int AiTechnologyCandidateScore;
+using AiTechnologyCandidateScore = int;
 
 enum {
     AI_TECHNOLOGY_SCORE_DEFAULT_ZERO=0,
@@ -448,7 +448,7 @@ enum {
     AI_TECHNOLOGY_SCORE_BASE_VALUE_KIND4=4,
     AI_TECHNOLOGY_SCORE_CATEGORY_COMPATIBLE=5
 };
-typedef int AiTechnologyCandidateScoreKind;
+using AiTechnologyCandidateScoreKind = int;
 
 struct AiTechnologyPlanningCandidate {
     PckTechnologyIdCatalog technologyId00; 
@@ -457,9 +457,9 @@ struct AiTechnologyPlanningCandidate {
     uint32_t reserved0C; 
 };
 
-typedef uint32_t AiTechnologyPlanningCandidateCount;
+using AiTechnologyPlanningCandidateCount = uint32_t;
 
-typedef uint32_t AiTechnologyCategoryMask;
+using AiTechnologyCategoryMask = uint32_t;
 
 struct MdlDefinitionSemanticPrefix {
     AssetRecordByteCount byteSize; 
@@ -514,9 +514,9 @@ struct AiStructureWorkspaceEntry {
     PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
 };
 
-typedef uint32_t AiCommandGenerationRightShiftBits;
+using AiCommandGenerationRightShiftBits = uint32_t;
 
 /* Function-signature types used for function pointers, callbacks and method tables. */
-typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime);
+using AiTechnologyCandidateScoreCallback = AiTechnologyCandidateScore (FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime);
 
 #endif /* THANDOR_GAMEPLAY_AI_TYPES_H */

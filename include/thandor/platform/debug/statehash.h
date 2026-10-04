@@ -20,11 +20,11 @@
 /* Before the session is built (InGameRuntime_RunSessionUntilExit): seeds both random streams and selects the
    secondary one, before the first simulation steps, which already run during the initialisation; reads the game
    speed of OPEN_THANDOR_STATEHASH_SPEED, which the step hook applies after a fixed simulation tick. */
-void DebugStateHash_SessionInitializing(void);
+void DebugStateHash_SessionInitializing();
 /* After the session is initialised, before its first frame (InGameRuntime_RunSessionUntilExit): starts recording;
    the steps run during the initialisation are not recorded. */
-void DebugStateHash_SessionStart(void);
+void DebugStateHash_SessionStart();
 /* After every complete simulation step (InGameRuntime_UpdateSimulationAndNetworkTick, step lock held). */
-void DebugStateHash_AfterStep(void);
+void DebugStateHash_AfterStep();
 
 #endif /* THANDOR_PLATFORM_DEBUG_STATEHASH_H */

@@ -26,7 +26,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void FontRuntime_Init(void);
+void FontRuntime_Init();
 
 uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 

@@ -496,7 +496,7 @@ static int RasterTest_Blits(RasterTestState *state, RasterTestAsset *asset)
     return RASTER_BLIT_COUNT;
 }
 
-void Thandor_SelfTestRaster(void)
+void Thandor_SelfTestRaster()
 {
     /* power-of-two textures for the handlers: direct and paletted (banks 0..2), 1x1 to 256x256 */
     static const RasterTestImage textureImages[] = {

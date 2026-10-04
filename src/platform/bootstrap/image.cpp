@@ -121,7 +121,7 @@ static int symbol_table_name(char *out, size_t capacity, DWORD64 address)
     return 1;
 }
 
-static void symbol_table_drop(void)
+static void symbol_table_drop()
 {
     if (g_SymbolTableEntries != nullptr) {
         VirtualFree(g_SymbolTableEntries, 0, MEM_RELEASE);
@@ -134,7 +134,7 @@ static void symbol_table_drop(void)
     g_SymbolTableCount = 0;
 }
 
-static void symbol_table_load(void)
+static void symbol_table_load()
 {
     char path[MAX_PATH];
     HANDLE file;
@@ -535,7 +535,7 @@ static DWORD WINAPI watchdog_thread(void *parameter)
     }
 }
 
-static void start_watchdog(void)
+static void start_watchdog()
 {
     char seconds[16];
     if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
@@ -601,7 +601,7 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
     }
 }
 
-void Thandor_InstallCrashHandler(void)
+void Thandor_InstallCrashHandler()
 {
     symbol_table_load();
     SetUnhandledExceptionFilter(crash_filter);
@@ -626,7 +626,7 @@ int Thandor_IsReadable(const void *address, unsigned size)
     return 1;
 }
 
-unsigned Thandor_TickCount(void)
+unsigned Thandor_TickCount()
 {
     return GetTickCount();
 }

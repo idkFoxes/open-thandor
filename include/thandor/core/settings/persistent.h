@@ -88,9 +88,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void PersistentSettings_Flush(void);
+void PersistentSettings_Flush();
 
-void PersistentSettings_Load(void);
+void PersistentSettings_Load();
 
 uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes);

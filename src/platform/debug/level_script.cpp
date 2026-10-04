@@ -17,7 +17,7 @@
 /* the conditions and triggers are logged at this simulation tick, the first evaluation */
 #define LEVEL_SCRIPT_LOG_TICK 20
 
-void DebugHook_LevelScriptBeforeEvaluation(void)
+void DebugHook_LevelScriptBeforeEvaluation()
 {
   const uint8_t *raw;
   int index;

@@ -217,7 +217,7 @@ Bool8 PlayVoiceSet(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, Di
 
 } // namespace
 
-uint32_t SdlAudio_Init(void)
+uint32_t SdlAudio_Init()
 {
   if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
     /* no audio device: the game runs silent, as DirectSound_Init without a device */
@@ -263,7 +263,7 @@ uint32_t SdlAudio_Init(void)
   return 0;
 }
 
-void SdlAudio_Shutdown(void)
+void SdlAudio_Shutdown()
 {
   if (s_mixer) {
     s_mixer->stream.reset(); /* closes the device; the callback has ended */
@@ -402,7 +402,7 @@ void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGai
   }
 }
 
-void SdlAudio_StopAllVoices(void)
+void SdlAudio_StopAllVoices()
 {
   /* every voice of every voice set in the registry */
   if (!s_mixer || (s_registry == nullptr)) {

@@ -132,36 +132,36 @@ struct ModelWorldPoint {
     uint32_t yQ12;
     uint32_t zQ12;
 };
-typedef uint32_t ArmyPlacementContactKindIndex32;
-typedef int WeaponAimCountdownTicks;
+using ArmyPlacementContactKindIndex32 = uint32_t;
+using WeaponAimCountdownTicks = int;
 
-typedef uint32_t ArmyMovementStateFlags;
+using ArmyMovementStateFlags = uint32_t;
 
-typedef uint32_t ArmyCommandModeFlags;
+using ArmyCommandModeFlags = uint32_t;
 
-typedef uint32_t ArmyCommandGeneration;
+using ArmyCommandGeneration = uint32_t;
 
-typedef uint32_t ArmyRuntimeFlags;
+using ArmyRuntimeFlags = uint32_t;
 
-typedef uint32_t ArmyRuntimeTimer;
+using ArmyRuntimeTimer = uint32_t;
 
-typedef int ArmySelectionMetric;
+using ArmySelectionMetric = int;
 
-typedef int AngleTurn16Stored32;
+using AngleTurn16Stored32 = int;
 
-typedef uint32_t ModelRuntimeFlags;
+using ModelRuntimeFlags = uint32_t;
 
-typedef int ModelTextureSubresourceIndex;
+using ModelTextureSubresourceIndex = int;
 
-typedef int ModelTextureOffsetTexel;
+using ModelTextureOffsetTexel = int;
 
-typedef int ArmyTurnVelocityAngle16;
+using ArmyTurnVelocityAngle16 = int;
 
 enum {
     ARMY_TERRAIN_CONTACT_ACQUIRE_OR_INITIALIZE_CONTACT_SLOT=0,
     ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE=1
 };
-typedef int ArmyTerrainContactDispatchMode;
+using ArmyTerrainContactDispatchMode = int;
 
 enum {
     SHT_0000_SLRAY0=0,
@@ -301,40 +301,40 @@ enum {
     SHT_3032_SRMIB0=3032,
     SHT_3033_SIIOB0=3033
 };
-typedef int PckShotDefinitionIdCatalog;
+using PckShotDefinitionIdCatalog = int;
 
-typedef uint32_t GameEntityCommandFlags;
+using GameEntityCommandFlags = uint32_t;
 
-typedef uint32_t RuntimeToken;
+using RuntimeToken = uint32_t;
 
-typedef uint32_t GameEntityRuntimeFlags;
+using GameEntityRuntimeFlags = uint32_t;
 
-typedef int GameEntityCommandState;
+using GameEntityCommandState = int;
 
-typedef uint32_t OwnedNestedResourceFlag;
+using OwnedNestedResourceFlag = uint32_t;
 
-typedef uint32_t ModelMeshGroupCount;
+using ModelMeshGroupCount = uint32_t;
 
-typedef uint32_t ModelPackedLookupTableRelativeOffset;
+using ModelPackedLookupTableRelativeOffset = uint32_t;
 
-typedef uint32_t ModelPackedLookupTableEntryCount;
+using ModelPackedLookupTableEntryCount = uint32_t;
 
-typedef uint32_t ModelMeshGroupRelativeOffset;
+using ModelMeshGroupRelativeOffset = uint32_t;
 
-typedef uint32_t ModelPackedGeometryRecordCount;
+using ModelPackedGeometryRecordCount = uint32_t;
 
 enum {
     MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST=4
 };
-typedef int ModelResourceHitTestFlags;
+using ModelResourceHitTestFlags = int;
 
-typedef uint32_t GameEntityCommandTargetFlags;
+using GameEntityCommandTargetFlags = uint32_t;
 
-typedef uint32_t TechnologyResearchDurationQ5;
+using TechnologyResearchDurationQ5 = uint32_t;
 
-typedef uint32_t TechnologyEnergyCostQ4;
+using TechnologyEnergyCostQ4 = uint32_t;
 
-typedef uint32_t TechnologyXeniteCostQ4;
+using TechnologyXeniteCostQ4 = uint32_t;
 
 enum {
     EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN=0,
@@ -343,11 +343,11 @@ enum {
     EFFECT_TRANSITION_NO_ADDITIONAL_ACTION=3,
     EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT=4
 };
-typedef int EffectLifecycleTransitionKind;
+using EffectLifecycleTransitionKind = int;
 
-typedef uint32_t PlayerRuntimeId;
+using PlayerRuntimeId = uint32_t;
 
-typedef uint32_t ModelChildNodeIndex;
+using ModelChildNodeIndex = uint32_t;
 
 enum {
     MDL_0100_UNTERBAU1=100,
@@ -729,7 +729,7 @@ enum {
     MDL_2328_BUILDING3=2328,
     MDL_2329_BUILDING3=2329
 };
-typedef int PckModelDefinitionIdCatalog;
+using PckModelDefinitionIdCatalog = int;
 
 struct ModelResource {
     uint8_t reserved00_AF[176]; 
@@ -1128,7 +1128,7 @@ union EffectDefinitionReferenceOrSavedId {
     uint32_t raw; 
 };
 
-typedef uint32_t AssetRegistryId;
+using AssetRegistryId = uint32_t;
 
 union SpriteAssetReferenceOrSavedId {
     Ptr32<struct SpriteAssetHeader> spriteAsset; // Live relocated sprite pointer.
@@ -1137,39 +1137,39 @@ union SpriteAssetReferenceOrSavedId {
     Ptr32<struct ModelResource> modelResource; // typed model/render view of relocated sprite asset pointer
 };
 
-typedef intptr_t ArmyGraphicsAssetAddress32; /* address of a faction graphics texture source asset, pointer-sized (5f) */
+using ArmyGraphicsAssetAddress32 = intptr_t; /* address of a faction graphics texture source asset, pointer-sized (5f) */
 
-typedef uint32_t SprAttachmentSelectorOrdinal;
+using SprAttachmentSelectorOrdinal = uint32_t;
 
-typedef uint32_t ArmyPlacementDispatchArg2;
+using ArmyPlacementDispatchArg2 = uint32_t;
 
-typedef uint32_t ArmyPlacementDispatchArg3;
+using ArmyPlacementDispatchArg3 = uint32_t;
 
-typedef uint32_t ArmyPlacementDispatchArg0;
+using ArmyPlacementDispatchArg0 = uint32_t;
 
-typedef uint32_t MdlNodeFlags;
+using MdlNodeFlags = uint32_t;
 
-typedef uint32_t FactionProgressAmountQ4;
+using FactionProgressAmountQ4 = uint32_t;
 
-typedef uint32_t PlacementFactionIndex;
+using PlacementFactionIndex = uint32_t;
 
-typedef uint32_t PlacedArmyToken;
+using PlacedArmyToken = uint32_t;
 
-typedef uint32_t ArmyPlacementDispatchArg7;
+using ArmyPlacementDispatchArg7 = uint32_t;
 
-typedef Q12 ArmyPlacementClearancePaddingQ12;
+using ArmyPlacementClearancePaddingQ12 = Q12;
 
-typedef uint32_t ArmyPlacementMode;
+using ArmyPlacementMode = uint32_t;
 
-typedef uint32_t ArmyMoveAuxiliaryValue0;
+using ArmyMoveAuxiliaryValue0 = uint32_t;
 
-typedef uint32_t ArmyMoveAuxiliaryValue1;
+using ArmyMoveAuxiliaryValue1 = uint32_t;
 
-typedef int ImpactDamageValue32;
+using ImpactDamageValue32 = int;
 
-typedef int PlayerStateLookupValue1;
+using PlayerStateLookupValue1 = int;
 
-typedef int PlayerStateLookupValue0;
+using PlayerStateLookupValue0 = int;
 
 /* cos(angle) and sin(angle), scaled (FixedMath_SinCosScaled) or in Q28 (FixedMath_SinCosQ28). */
 typedef struct FixedSinCos {
@@ -1177,27 +1177,27 @@ typedef struct FixedSinCos {
     int32_t sinValue;
 } FixedSinCos;
 
-typedef intptr_t FixedVectorStateAddress32; /* address of a ModelRuntimeNode, pointer-sized (5f) */
+using FixedVectorStateAddress32 = intptr_t; /* address of a ModelRuntimeNode, pointer-sized (5f) */
 
-typedef uint32_t WorldMotionValue74;
+using WorldMotionValue74 = uint32_t;
 
-typedef uint32_t WorldMotionValue70;
+using WorldMotionValue70 = uint32_t;
 
-typedef uint32_t ShotTargetModelReference; /* ModelRuntimeSlot * of the shot's target (0 = none), stored in ShotRuntimeSlot +0x14 */
+using ShotTargetModelReference = uint32_t; /* ModelRuntimeSlot * of the shot's target (0 = none), stored in ShotRuntimeSlot +0x14 */
 
-typedef uint32_t SoundAssetIndex;
+using SoundAssetIndex = uint32_t;
 
-typedef uint32_t MdlChildCount;
+using MdlChildCount = uint32_t;
 
-typedef int FixedVectorStepMultiplier32;
+using FixedVectorStepMultiplier32 = int;
 
-typedef uint32_t ArmyPlacementCollisionFilterFlags;
+using ArmyPlacementCollisionFilterFlags = uint32_t;
 
-typedef uint32_t ModelAttachmentOrdinal;
+using ModelAttachmentOrdinal = uint32_t;
 
-typedef uint32_t ArmyPlacementCandidateCount;
+using ArmyPlacementCandidateCount = uint32_t;
 
-typedef int DamageAmount32;
+using DamageAmount32 = int;
 
 struct MdlSerializedNodeHeader {
     AssetRecordByteCount nodeByteSize;
@@ -1350,9 +1350,9 @@ struct ArmyGraphicsBinding {
     Ptr32<struct GraphicsPaletteAsset> paletteAsset; 
 };
 
-typedef uint32_t ArmyWaypointCount;
+using ArmyWaypointCount = uint32_t;
 
-typedef uint32_t ArmyMovementRetryCountdown;
+using ArmyMovementRetryCountdown = uint32_t;
 
 struct WorldPointXYQ12 {
     Q12 worldXQ12; 
@@ -1445,7 +1445,7 @@ struct RuntimeMaintenanceCallbackPhasesTyped {
     struct RuntimeMaintenanceAudioRefreshCallbacks audioRefresh; 
 };
 
-typedef uint32_t MdlReloadTicks;
+using MdlReloadTicks = uint32_t;
 
 struct ArmyPlacementContactCallbackTable5 {
     Ptr32<void (Q12, Q12, Q12, struct ModelRuntimeNode *, struct WorldRuntimeContext *)> callbacks[5]; 
@@ -3129,6 +3129,6 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments[6]; // Six fixed 0x20-byte attachment descriptors.
 };
-typedef Bool8 TerrainClassOverlayCallback(uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid);
+using TerrainClassOverlayCallback = Bool8 (uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_TYPES_H */

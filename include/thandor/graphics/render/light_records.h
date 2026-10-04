@@ -30,7 +30,7 @@ extern uintptr_t g_GraphicsIntensityClampTableBase;
 
 extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount;
 
-uint32_t GraphicsIntensityClampTable_Initialize(void);
+uint32_t GraphicsIntensityClampTable_Initialize();
 
 MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator);
@@ -40,18 +40,18 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
-void GraphicsShadingRuntime_ClearRecordTable(void);
+void GraphicsShadingRuntime_ClearRecordTable();
 
-void GraphicsShadingRuntime_RebuildCompactLightingRecords(void);
+void GraphicsShadingRuntime_RebuildCompactLightingRecords();
 
 void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
 /* Not in the original: fills g_ShadingIntensityScaleMmx (the original shipped it precomputed). */
-void GraphicsShading_BuildIntensityScaleTable(void);
+void GraphicsShading_BuildIntensityScaleTable();
 
 /* Not in the original: fills g_PackedLightingLookupTable (the original shipped it precomputed). */
-void GraphicsLighting_BuildPackedLookupTable(void);
+void GraphicsLighting_BuildPackedLookupTable();
 
 extern SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256];
 

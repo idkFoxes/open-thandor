@@ -24,11 +24,11 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void UiPointer_DispatchPendingEvents(void);
+void UiPointer_DispatchPendingEvents();
 
 void UiKeyboardFocus_ReleaseNode(UiNodeBase *node);
 
-void UiKeyboard_DispatchPendingEvents(void);
+void UiKeyboard_DispatchPendingEvents();
 
 void UiKeyboardFocus_SelectInitial(UiNodeBase *root);
 
@@ -47,7 +47,7 @@ void UiPointer_DispatchRightPress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
-void UiKeyboardFocus_MoveNext(void);
+void UiKeyboardFocus_MoveNext();
 
 void UiPointer_DispatchMotionAndWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);

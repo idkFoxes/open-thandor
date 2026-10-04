@@ -46,7 +46,7 @@ uint16_t g_SaveSvePatternUtf16[11] = {'s', 'a', 'v', 'e', '\\', '*', '.', 's', '
 
 /* Number of further records (SCENARIO_CATALOG_RECORD_STRIDE each, as g_ScenarioCatalogUsedBytes counts them) that
    still fit into the catalog. */
-static uint32_t ScenarioCatalog_FreeRecordSlots(void)
+static uint32_t ScenarioCatalog_FreeRecordSlots()
 {
   if (g_ScenarioCatalogUsedBytes >= SCENARIO_CATALOG_USABLE_BYTES) {
     return 0;
@@ -133,7 +133,7 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
    campagne00..99.dat (records merged by name), followed by the header record of every save\*.sve.
    The catalog is also what a network host sends to its clients.
 */
-void ScenarioCatalog_Rebuild(void)
+void ScenarioCatalog_Rebuild()
 
 {
   ScenarioCatalogHeader *catalog;

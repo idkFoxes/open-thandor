@@ -155,7 +155,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
 }
 
 /* True while two active factions (1..7) are still not allied (relation state below 8): the game goes on. */
-static Bool8 InGameConditionRuntime_HasUnalliedActiveFactionPair(void)
+static Bool8 InGameConditionRuntime_HasUnalliedActiveFactionPair()
 {
   uint32_t factionIndex;
   uint32_t otherFactionIndex;
@@ -271,7 +271,7 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
    Expression tokens: 0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes that condition's result bit
    (see InGameScheduledCondition_EvaluatePostfixExpression).
 */
-void InGameConditionRuntime_UpdateScheduledRecords(void)
+void InGameConditionRuntime_UpdateScheduledRecords()
 
 {
   InGameLevelConditionStorage *levelConditionStorage;
