@@ -54,8 +54,6 @@ WinSock_gethostbynameProc *g_WinSock_gethostbyname = nullptr;
 
 WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError = nullptr;
 
-static NetworkSessionContext *g_NetworkBackendSessionContext = nullptr;
-
 static WinSock_WSACleanupProc *g_WinSock_WSACleanup = nullptr;
 
 static WinSock_WSAStartupProc *g_WinSock_WSAStartup = nullptr;
@@ -172,13 +170,12 @@ void Network_Shutdown()
 }
 
 /* Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
-   accepts any backendIndex and always returns 0 (success). The original stores a leftover value unrelated to
-   the index in g_NetworkBackendSessionContext. Like the previous C version (which received the
-   index in its sessionContext parameter), this stores the index; nothing reads the global.
+   accepts any backendIndex and always returns 0 (success). The original also stored a leftover value in a
+   global (g_NetworkBackendSessionContext) that nothing read.
 */
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex)
 
 {
-  g_NetworkBackendSessionContext = (NetworkSessionContext *)(uintptr_t)backendIndex;
+  (void)backendIndex;
   return 0;
 }

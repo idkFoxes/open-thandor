@@ -17,9 +17,9 @@
 
 THANDOR_ALIGN(4) CommandLineFindOptionProc *g_CommandLineFindOption = nullptr;
 
+/* UTF-16 copies of the three positional arguments, filled by CommandLine_Parse; nothing reads them (left
+   for the command-line rework) */
 static CommandLineWideArguments g_CommandLineWideArguments = {0};
-
-static uint32_t g_CpuFeatureFlags = 0;
 
 static uint16_t g_TexteTechnoStrPathUtf16[17] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'e', 'c', 'h', 'n', 'o', '.', 's', 't', 'r', 0}; /* L"texte\\techno.str" */
 
@@ -36,16 +36,6 @@ static uint16_t g_TexteInhaltStrPathUtf16[17] = {'t', 'e', 'x', 't', 'e', '\\', 
 static uint16_t g_TexteHelpStrPathUtf16[15] = {'t', 'e', 'x', 't', 'e', '\\', 'h', 'e', 'l', 'p', '.', 's', 't', 'r', 0}; /* L"texte\\help.str" */
 
 static uint16_t g_TexteTastaturStrPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'a', 's', 't', 'a', 't', 'u', 'r', '.', 's', 't', 'r', 0}; /* L"texte\\tastatur.str" */
-
-static uintptr_t g_DataPackageHandle = 0;
-
-static uintptr_t g_ModelPackageHandle = 0;
-
-static uintptr_t g_GraphicsPackageHandle = 0;
-
-static uintptr_t g_MoviePackageHandle = 0;
-
-static uintptr_t g_LevelPackageHandle = 0;
 
 /* HKEY (pointer-sized on x64) */
 static uintptr_t g_InstallRegistryKeyHandle = 0;
@@ -199,9 +189,7 @@ static void ProcessEntry_RunGame()
   FileSystem_Init();
   Locale_Init();
   ErrorSystem_Init();
-  if (g_CpuFeatureFlags == 0) {
-    FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
-  }
+  /* the original refused to run here without MMX (FATAL_ERROR_CPU_WITHOUT_MMX); every x64 CPU has it */
   bootstrapError = DynAPI_Bootstrap();
   checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
   /* the original's TimerSystem_Init installed the WinMM timers and the Win32 message pump here (it cannot fail);
@@ -511,22 +499,6 @@ void DynDLL_UnloadAll()
 }
 
 
-/* Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it
-   (FATAL_ERROR_CPU_WITHOUT_MMX). The constant return value 5 has no known use.
-*/
-uint32_t __cdecl CPU_DetectFeatures()
-
-{
-  intptr_t cpuidVersionInfo;
-
-  cpuidVersionInfo = cpuid_Version_info(CPUID_LEAF_VERSION_INFO);
-  /* offset 8 of the CPUID result is EDX */
-  if ((*(uint32_t *)(cpuidVersionInfo + 8) & CPUID_EDX_MMX) != 0) {
-    g_CpuFeatureFlags = g_CpuFeatureFlags | CPU_FEATURE_MMX;
-  }
-  return 5;
-}
-
 /* Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and
    rendering, loads the core assets and plays the intro movies (each failure is fatal). It then switches
    from the 640x480 start mode to the saved display mode, runs the frontend main loop and
@@ -702,24 +674,16 @@ static void CoreAssets_MountPackages()
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP;
   } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  if (Package_Mount((uint16_t *)g_DatenPckPathUtf16,&packageHandle)) {
-    g_DataPackageHandle = packageHandle;
-  }
-  if (Package_Mount((uint16_t *)g_ModellePckPathUtf16,&packageHandle)) {
-    g_ModelPackageHandle = packageHandle;
-  }
-  if (Package_Mount((uint16_t *)g_GraphikPckPathUtf16,&packageHandle)) {
-    g_GraphicsPackageHandle = packageHandle;
-  }
+  /* the original also kept the handles of the data, model, graphics, movie and level packages in globals
+     that nothing read; only the sound package handle is used (level sound listing) */
+  Package_Mount((uint16_t *)g_DatenPckPathUtf16,&packageHandle);
+  Package_Mount((uint16_t *)g_ModellePckPathUtf16,&packageHandle);
+  Package_Mount((uint16_t *)g_GraphikPckPathUtf16,&packageHandle);
   if (Package_Mount((uint16_t *)g_SoundPckPathUtf16,&packageHandle)) {
     g_SoundPackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)g_FilmePckPathUtf16,&packageHandle)) {
-    g_MoviePackageHandle = packageHandle;
-  }
-  if (Package_Mount((uint16_t *)g_LevelPckPathUtf16,&packageHandle)) {
-    g_LevelPackageHandle = packageHandle;
-  }
+  Package_Mount((uint16_t *)g_FilmePckPathUtf16,&packageHandle);
+  Package_Mount((uint16_t *)g_LevelPckPathUtf16,&packageHandle);
 }
 
 
@@ -1090,7 +1054,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
    level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
    screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
    buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
-   reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
+   reads and writes PCX itself instead.) Returns 0, or the error code of the first failing step (the caller
    treats non-zero as failure).
 */
 uint32_t __cdecl Game_LoadCoreAssets()
@@ -1132,7 +1096,7 @@ uint32_t __cdecl Game_LoadCoreAssets()
     return aiInitError;
   }
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
-     written in C, graphics/resources/pcx_read.cpp and pcx_write.cpp. */
+     written by graphics/resources/pcx_read.cpp and pcx_write.cpp. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
                      ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == nullptr) {
@@ -1236,7 +1200,7 @@ Bool8 Game_PlayIntroMovies()
   }
   if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == nullptr) {
     /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
-    while (Movie_Open(1,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
+    while (Movie_Open(MOVIE_OPEN_STREAM,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
       if (!Movie_AdvanceFrame(&introMovie,nullptr)) {
         Movie_Close();
         return true;

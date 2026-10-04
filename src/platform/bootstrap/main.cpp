@@ -10,7 +10,7 @@
 
 /*
 The original image has no C runtime: its PE entry point is ProcessEntry, which
-ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the code uses memcpy),
+ends in ExitProcess. The rebuilt executable links the C/C++ runtime of its compiler (MinGW GCC or MSVC),
 has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
 */
 

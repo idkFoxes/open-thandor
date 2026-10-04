@@ -36,7 +36,8 @@
                             campaign level change); the times of the following lines count from then
      <ms> ingame            wait until the level has loaded and the game runs; the times of the
                             following lines count from that moment
-   <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
+   <ms> counts from the first message pump. Pointer events go into the same ring the SDL3 input backend fills
+   (g_CursorInputEvents). */
 volatile unsigned g_TestAidInGameFrames;
 volatile unsigned g_TestAidSessionCount;
 

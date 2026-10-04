@@ -147,11 +147,6 @@ static void Thandor_SelfTestStretch()
     }
 }
 
-/* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
-   but FILME.PCK) and writes each aligned dword in the original image range 0x401000-0x58C000 to
-   scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
-   original code or data addresses. With OPEN_THANDOR_DUMPTEXT=<dir> it also writes every decoded
-   text page (*.str, *.txt) to <dir>\<package>_<entry path>. */
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
 static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 {
@@ -741,7 +736,7 @@ static void Thandor_SelfTestNumberFormat()
             value = edges[i % 18];
         }
         else {
-            /* two draws: the shift count first (the order the C build evaluated them in) */
+            /* two draws: the shift count first (the order the earlier C port evaluated them in) */
             uint32_t shift = SelfTest_FixedRandom(&seed) % 31;
             value = (int32_t)SelfTest_FixedRandom(&seed) >> shift;
         }
@@ -879,6 +874,12 @@ static void Thandor_SelfTestSettings()
     }
 }
 
+/* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
+   but FILME.PCK) and writes each aligned dword in the original image range
+   [ORIGINAL_TEXT_START, ORIGINAL_TEXT_END) or in the first SCANADDR_REBUILT_IMAGE_SPAN bytes of the rebuilt
+   image to scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
+   original code or data addresses. With OPEN_THANDOR_DUMPTEXT=<dir> it also writes every decoded
+   text page (*.str, *.txt) to <dir>\<package>_<entry path>. */
 static void Thandor_SelfTestScanAddresses()
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;

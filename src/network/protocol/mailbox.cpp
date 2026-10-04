@@ -207,8 +207,8 @@ static void UiTransferMailbox_ServeChunkRequest
   }
   /* original quirk: extends the sender's receive scratch slot instead of the player record, see the timer's
      comment */
-  senderEndpointSlot->transferTimeoutTicks =
-       senderEndpointSlot->transferTimeoutTicks + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
+  senderEndpointSlot->chunkTimeoutScratchNeverRead =
+       senderEndpointSlot->chunkTimeoutScratchNeverRead + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
   UI_TRANSFER_CHUNK_PACKET_OFFSET = *(UiTransferMailboxByteOffset *)ringRecord->payload;
   playerRecord->transferProgressBytes = UI_TRANSFER_CHUNK_PAYLOAD_BYTES;
   UI_TRANSFER_CHUNK_PACKET_BYTE_COUNT = g_UiTransferMailbox.outgoingByteCount;
@@ -283,7 +283,7 @@ static void UiTransferMailbox_StorePingRoundTrip
    so a count above 8 XORs past the slot and a count of 0 wraps the counter and reads on until it faults. Here
    such packets are rejected (UiTransferMailbox_DecryptAndVerifyRecord); valid packets are not affected.
    Original quirk: on a host chunk request (0x10031) the timeout extension goes to
-   senderEndpointSlot->transferTimeoutTicks (the sender's slot of the auxiliary endpoint buffer), not to the
+   senderEndpointSlot->chunkTimeoutScratchNeverRead (the sender's slot of the auxiliary endpoint buffer), not to the
    requesting player's heartbeatExpiryTicks (the same offset in the player record), which was probably meant; the
    scratch dword is never read, so the host's heartbeat countdown is not extended by chunk requests. The client
    branch (0x80030) extends g_SessionTransferTimeoutTicks as intended.
