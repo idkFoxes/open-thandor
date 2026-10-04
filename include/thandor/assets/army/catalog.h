@@ -39,7 +39,7 @@ typedef struct ArmyModelTreeNode {
 
 /* Functions are grouped by semantic ownership. */
 
-uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
+uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount);
 
 Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
 
