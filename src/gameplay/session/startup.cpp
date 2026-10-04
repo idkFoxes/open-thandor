@@ -145,9 +145,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   if (inGameRoot != nullptr) {
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
-    /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
-              (world,(WorldRuntimeNodeTraversalCallback *)WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
+              (world,THANDOR_SLOT(WorldRuntimeNode_ReleaseShutdownBindingsCallback),world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi).previousRoot != nullptr) {
       UiRootStack_Pop(&inGameRoot->rootUi);

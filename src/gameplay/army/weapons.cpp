@@ -273,9 +273,8 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
       (rootNode->modelPayload).meshGroupMask |= 1;
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = nullptr;
       (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = nullptr;
-      /* signature differs: the callback's context is ModelRuntimeTimedTargetProjectileView *, the slot's void * */
       WorldRuntime_ForEachOwnerListNode
-                (modelRuntime,(WorldRuntimeNodeTraversalCallback *)ArmyRuntimeClass_SelectProjectileTargetNode,
+                (modelRuntime,THANDOR_SLOT(ArmyRuntimeClass_SelectProjectileTargetNode),
                  worldRuntime);
       selectedTarget = (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime;
       if (((modelRuntime->timedTargetLinkState).matchingActiveShotRuntime ==

@@ -759,14 +759,13 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  /* signature differs: the callbacks' context is WorldRuntimeContext *, the slot's void * */
   WorldRuntime_ForEachOwnerListNode
             (worldRuntime,
-             (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
+             THANDOR_SLOT(ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback),
              worldRuntime);
   WorldRuntime_ForEachOwnerListNode
             (worldRuntime,
-             (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+             THANDOR_SLOT(ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback),
              worldRuntime);
   FieldGrid_ClassifyCellFlagsToRuntimeByte(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
   MoviePlayback_AdvanceScheduledFrameAndTick();

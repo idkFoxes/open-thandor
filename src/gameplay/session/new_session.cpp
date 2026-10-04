@@ -244,9 +244,7 @@ static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *o
     return false;
   }
   /* world input and command callbacks, camera limits, and the step hook for the world runtime */
-  /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
-  inGameRoot->worldOverlayCallback =
-       (void (*)(uint32_t, WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+  inGameRoot->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
   (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
        InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
   (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -259,9 +257,8 @@ static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *o
        InGameWorldInput_UpdateDragSelectionAndCamera;
   (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
        InGameWorldInput_CommitPointerAction;
-  /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
   (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-       (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
+       THANDOR_SLOT(InGameUiRuntime_ResetNotificationButtonCursor);
   (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
        InGameUiRuntime_DispatchWorldContextActionCallback;
   (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
