@@ -1,16 +1,16 @@
 # Thandor: The Invasion
 
-Got this game back then and can't forget it, so this project rebuilds it in C to fix things, replace the AI,
+Got this game back then and can't forget it, so this project rebuilds it in C++ to fix things, replace the AI,
 change the graphics API, fix sound and so on. I hope some of you want to join this effort too.
 
 ## Current state
 
-**All of `thandor.exe` is reimplemented in readable C.** The build runs on its own: no original machine code is
-executed and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in as
-ordinary C variables of the modules; only the game's data files (`*.PCK`, `thandor.dat`, movies) come from an
-installation.
+**All of `thandor.exe` is reimplemented in readable C++ (C++20), as a 64-bit program on SDL3.** No original machine
+code is executed and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in
+as ordinary variables of the modules; only the game's data files (`*.PCK`, `thandor.dat`, movies) come from an
+installation. Save games of the original game load, and the game writes them in the original format.
 
-- 1,919 original functions in about 130,000 lines of C, 50 modules.
+- 1,919 original functions in about 160,000 lines (198 source files, 52 modules).
 - Every function has a header comment (what it does, who calls it); names, constants and structure types are
   readable throughout, control flow is structured (no `goto`, no endless loops left from the decompilation).
 - The code no longer refers to the original binary: the original addresses of all functions and data are kept in
@@ -29,19 +29,20 @@ installation.
 
 ### Where it is going
 
-The current step turns the reimplementation into a maintainable code base:
+Done so far in the current step (turning the reimplementation into a maintainable code base): clean-up and one
+switch for all developer tools, the original addresses out of the code, the module data next to its code, the
+port to C++, 64-bit only (the original structure layouts are kept with 32-bit pointer fields, `Ptr32`, so save
+games, levels and the network protocol stay compatible), the SDL3 platform layer and an optional GPU rasterizer
+on SDL_GPU. The large multi-job files of the UI, graphics and world code are split into one file per job.
 
-1. Clean-up: dead code, review findings, one switch for all developer tools (done).
-2. Original addresses out of the code (in progress: the address list is done, comments are being rewritten).
-3. Restructuring: code moves to the module it belongs to, large files are split, duplicates merged, the module
-   `data.c` files and the big `types.h` dissolve into the modules' own headers.
-4. Clang, then a stepwise port to C++ following the
-   [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
-5. 64-bit only, with explicit file formats (save games, levels and the network protocol stay compatible) and a
-   platform layer (64-bit only and the SDL3 platform layer are done).
+Next:
 
-After that the platform layer gets an SDL3 backend: first the software renderer's image shown through SDL, later a
-hardware renderer on SDL_GPU.
+1. Restructuring of the remaining areas (gameplay, assets, core, network), merging duplicated code, and splitting
+   the big `types.h` into the modules' own headers.
+2. Clang (clang-cl) as a second compiler.
+3. Idiomatic C++ step by step, following the
+   [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines): classes where they simplify,
+   `enum class`, RAII.
 
 ### How correctness is kept
 
@@ -90,7 +91,7 @@ described in [docs/BUILDING.md](docs/BUILDING.md).
 Public headers under [`include/thandor`](include/thandor), implementations under [`src`](src), grouped by area
 (`assets`, `audio`, `core`, `gameplay`, `graphics`, `movie`, `network`, `platform`, `ui`, `world`).
 
-- [Module tree](docs/MODULE_TREE.md) - every module with its `.c` and `.h` files.
+- [Module tree](docs/MODULE_TREE.md) - every module with its `.cpp` and `.h` files.
 - [Source file guide](docs/SOURCE_FILE_GUIDE.md) - what each source/header pair owns, its callers and dependencies.
 - [Types](include/thandor/generated/types.h) - the game structures, still shared by all modules (to be split up).
 - File formats: [levels](docs/level_format.md), [field grids](docs/field_grid_format.md).
@@ -98,7 +99,7 @@ Public headers under [`include/thandor`](include/thandor), implementations under
 ## Contributors
 
 - **idkFoxes** - reverse engineering of the game and the original decompilation this project grew from.
-- **Crankerer** - compilable build, the C reimplementation and its verification
+- **Crankerer** - compilable build, the C/C++ reimplementation and its verification
   (branch [`build/msvc-x86`](https://github.com/idkFoxes/open-thandor/tree/build/msvc-x86)).
 
 Contributions are welcome.
