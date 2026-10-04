@@ -107,6 +107,11 @@ void SetGpuUiScale(int scale) noexcept;
    triangles, else smooth); kept for the session, ignored in compare mode and without a device. A starting device
    chooses its own (ChooseRasterization: OPEN_THANDOR_GPU_RASTER, else [graphics] gpu_rasterization). */
 void SetGpuRasterizationExact(bool exact) noexcept;
+/* VSync of the GPU renderers' swapchain: on = vsync present mode and a waiting swapchain acquire (the frame loop runs
+   at the display's refresh rate); off = mailbox, else immediate, and a non-waiting acquire (a frame without a free
+   swapchain image is dropped). Applied to a claimed window at once and at every later window claim (also of a
+   device started later). video.cpp sets it from the vsync setting (SdlVideo_SetVsync). */
+void SetGpuVsync(bool on) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);

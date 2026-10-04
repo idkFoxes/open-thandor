@@ -100,9 +100,21 @@ void SdlVideo_SetGpuRasterization(uint32_t rasterization);
 uint32_t SdlVideo_SavedUiScale();
 void SdlVideo_SaveUiScale(uint32_t scale);
 bool SdlVideo_UiScaleChangePending();
-/* Presentation pacing (step 9, s9-vsync-limit): VSync on/off and the frame limit in frames per second (0 = off). */
+/* Frame pacing of the presents (render rate only, the game's timers are untouched; but as in the original a
+   simulation step runs at the first frame after its timer countdown, so a limit below 60 slows the game: 30 fps
+   gives about 14 instead of 20 steps per second).
+   VSync: [graphics] vsync = on|off in thandor.ini (PERSISTENT_SETTING_VSYNC, default on), OPEN_THANDOR_VSYNC=0|1
+   wins at start. On: the GPU renderers present in vsync mode and wait for a free swapchain image, the software
+   renderer's SDL_Renderer presents with vsync. Off: the GPU renderers present in mailbox mode (else immediate) and
+   drop a frame rather than wait.
+   Frame limit: [graphics] frame_limit = 0|30|60|120|144 (PERSISTENT_SETTING_FRAME_LIMIT, frames per second, 0 = no
+   limit, default 0; other values up to PERSISTENT_FRAME_LIMIT_MAX work too), OPEN_THANDOR_FRAME_LIMIT=n wins at
+   start. SdlVideo_Present waits (high-resolution sleep) so that at most that many frames per second are presented.
+   Get returns the value in effect (the environment's when it was set); Set applies it immediately (also during a
+   frame loop) and saves it in the persistent settings (written to thandor.ini at the next flush). A frame limit
+   above PERSISTENT_FRAME_LIMIT_MAX is taken as 0. */
 bool SdlVideo_GetVsync();
-void SdlVideo_SetVsync(bool enabled);
+void SdlVideo_SetVsync(bool on);
 uint32_t SdlVideo_GetFrameLimit();
 void SdlVideo_SetFrameLimit(uint32_t fps);
 /* g_GraphicsFramebufferCaptureRegion: the memory framebuffer as a one-image ARGB8888 'gfx' asset. */

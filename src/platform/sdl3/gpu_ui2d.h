@@ -42,7 +42,9 @@ constexpr uint32_t GPU_UI_VERTEX_FLAG_PALETTED = 1u;
      OPAQUE           the texel's colour, no blend
      FILL             FillRectArgb: the tint, no texture (page may be null); alpha 0 skipped, 0xFF written
      MINIMAP          opaque, the page sampled bilinearly with the software minimap sampler's weight ramp (Draw2D
-                      ROTATED_BILINEAR; the page needs a border of black texels around the image) */
+                      ROTATED_BILINEAR; the page needs a border of black texels around the image)
+     OPAQUE_LINEAR    (work package 5: movie frames, credits) as OPAQUE, but sampled with a linear filter, for
+                      the bilinear stretches (Draw2D's IMAGE_BILINEAR items) */
 enum GpuUiBlend : uint8_t {
   GPU_UI_BLEND_SRC_ALPHA_SKIP0 = 0,
   GPU_UI_BLEND_HALF_RGB = 1,
@@ -50,7 +52,8 @@ enum GpuUiBlend : uint8_t {
   GPU_UI_BLEND_OPAQUE = 3,
   GPU_UI_BLEND_FILL = 4,
   GPU_UI_BLEND_MINIMAP = 5,
-  GPU_UI_BLEND_COUNT = 6
+  GPU_UI_BLEND_OPAQUE_LINEAR = 6,
+  GPU_UI_BLEND_COUNT = 7
 };
 
 /* Creates the shaders (SPIR-V or DXBC, whichever the device takes), the nearest and the linear sampler and one
@@ -65,7 +68,7 @@ void GpuUi2D_Shutdown(SDL_GPUDevice *device);
 bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vertices, uint32_t count);
 /* Draws count vertices from firstVertex of the uploaded ones (a triangle list, count a multiple of 3) inside
    renderPass into a target of targetW x targetH pixels: sets the viewport to the whole target and the scissor (target
-   pixels), binds the blend mode's pipeline and page (clamped; nearest sampling, linear for GPU_UI_BLEND_MINIMAP;
+   pixels), binds the blend mode's pipeline and page (clamped; nearest sampling, linear for GPU_UI_BLEND_MINIMAP and _OPAQUE_LINEAR;
    ignored for GPU_UI_BLEND_FILL), pushes
    the target scale as vertex uniform data and draws in one call. Does nothing without GpuUi2D_Init and an upload, for
    an unknown blend mode or a missing page. */

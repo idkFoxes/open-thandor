@@ -210,6 +210,10 @@ model_detail = 262144
 gpu_rasterization = smooth
 ; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)
 ui_scale = auto
+; vsync: on (default; frames wait for the display's refresh, no tearing) or off
+vsync = on
+; frame rate limit in frames per second: 0 (default, no limit), 30, 60, 120, 144 (below 60 the game runs slower, its steps wait for drawn frames)
+frame_limit = 0
 
 [sound]
 ; sound effects (default true)
@@ -317,6 +321,21 @@ software renderer always runs at N = 1. There is no choice on the display settin
 variable only); `thandor.log` names the scale (`display mode 1280x720x32, window, renderer Vulkan, UI scale 2
 (auto)`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the frame at N x and
 point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the caller sets it.
+
+**VSync and frame limit** (all renderers; the render rate only - the game's timers are untouched, see below for the
+steps): `[graphics] vsync = on|off` (default `on`; `OPEN_THANDOR_VSYNC=0|1` wins) - on, Vulkan / DirectX 12
+present in vsync mode and wait for a free swapchain image, the software renderer's SDL_Renderer presents with vsync;
+off, the GPU renderers present in mailbox mode (else immediate) and drop a frame rather than wait.
+`[graphics] frame_limit = 0|30|60|120|144` (frames per second, `0` = no limit, default; `OPEN_THANDOR_FRAME_LIMIT=n`
+wins) makes every present wait (high-resolution sleep, no busy loop) so that at most that many frames per second
+are shown. Both are kept in the settings image (`PERSISTENT_SETTING_VSYNC` 0xC0, 0 = on, and
+`PERSISTENT_SETTING_FRAME_LIMIT` 0xC4) and can be changed at run time (`SdlVideo_SetVsync` /
+`SdlVideo_SetFrameLimit` in `include/thandor/platform/sdl3/platform.h`, applied at once). `thandor.log` names them
+(`frame pacing: vsync on (settings), frame limit 0 fps = off (settings)`, the GPU renderers' `present mode`). The
+original couples the simulation to the drawn frames: a step runs at the first frame after its 80 Hz timer countdown
+(4 ticks) and the countdown restarts there, so a low cap slows the game - measured on mittelpunkt: uncapped, 60 fps
+and vsync (144 Hz) 19.8 steps per second, 30 fps 14.2. The test tools set
+`OPEN_THANDOR_VSYNC=0` and `OPEN_THANDOR_FRAME_LIMIT=0` unless the caller sets them, so tests run uncapped.
 
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 

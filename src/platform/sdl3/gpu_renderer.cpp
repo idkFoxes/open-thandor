@@ -77,6 +77,7 @@
 #include <cmath>
 #include <cstring>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <thandor/thandor.h>
@@ -347,6 +348,11 @@ GpuState s_gpu;
    vertices and scissors: the 2D quads' corners x N (AppendUiQuad, AppendRotatedQuad), the 3D vertices' clip-space
    positions from the logical size (so the GPU rasterizes the world at N x), the 3D scissors x N (ScaledScissor). */
 int s_uiScale = 1;
+
+/* VSync (SetGpuVsync; outside s_gpu, which a device restart resets): true = the swapchain presents in vsync mode and
+   the swapchain texture is acquired waiting (the frame loop runs at the display's refresh rate); false = mailbox
+   (else immediate) and a non-waiting acquire. */
+bool s_vsync = true;
 
 /* A logical-pixel rectangle as target pixels of a target made for scale. */
 SDL_Rect ScaledScissor(const SDL_Rect &logical, int scale) noexcept
@@ -1456,6 +1462,11 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
       region.page = nullptr;
     }
   }
+  else if (item->op == DRAW2D_OP_IMAGE_BILINEAR) {
+    /* work package 5: the movie frame's texels or the credits' grey levels, streamed for this frame (copied into
+       the staging buffer now: a movie frame is rewritten by the next decode) */
+    region = GpuUiTextures_UploadRegion(item->pixels, item->src[2], item->src[3], item->pitchBytes);
+  }
   else if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
     region.page = nullptr;
   }
@@ -1542,6 +1553,35 @@ void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion 
   s_gpu.uiBatches.back().vertexCount += 6;
 }
 
+/* The texture coordinates of an IMAGE_BILINEAR item (work package 5): region (the streamed image, w x h texels)
+   mapped over dst as the software scalers do (SoftwareTextureSource_StretchDirectColorBilinear32,
+   SoftwareTexture_BilinearBlendScaleSubresources): destination pixel i samples texel position i * step / 256 with
+   the truncated 8.8 step (w - 1) * 256 / (dstWidth - 1) (0 for a single row), texel centres at j + 0.5. That is
+   linear in x, so the quad's corners get the positions at the destination's edges (pixel centre x = i + 0.5):
+   (x - 0.5) * step / 256 + 0.5, which AppendUiQuad interpolates and cuts to the clip. The truncated step makes the
+   image end short of its last texel, as in software (2 texels for 320 -> 640). At UI scale N > 1 AppendUiQuad
+   scales the corners; the texture position stays linear in the logical position, so the target pixels in between
+   sample the weights in between. */
+GpuUiTexRegion BilinearRegion(const GpuUiTexRegion &region, const int32_t *dst) noexcept
+{
+  const auto edge = [](float base, float size, int texels, int destination) {
+    const uint64_t step =
+        (destination > 1) ? (static_cast<uint64_t>(texels - 1) << 8) / static_cast<uint64_t>(destination - 1) : 0;
+    const float scale = static_cast<float>(step) / 256.0f;
+    const float texel = size / static_cast<float>(texels);
+    return std::pair<float, float>{base + (0.5f - 0.5f * scale) * texel,
+                                   base + ((static_cast<float>(destination) - 0.5f) * scale + 0.5f) * texel};
+  };
+  GpuUiTexRegion mapped = region;
+  const auto [u0, u1] = edge(region.u0, region.u1 - region.u0, region.w, dst[2] - dst[0]);
+  const auto [v0, v1] = edge(region.v0, region.v1 - region.v0, region.h, dst[3] - dst[1]);
+  mapped.u0 = u0;
+  mapped.u1 = u1;
+  mapped.v0 = v0;
+  mapped.v1 = v1;
+  return mapped;
+}
+
 /* Appends the quad of a ROTATED_BILINEAR item (the minimap) to the batch of (region's page, MINIMAP): its
    clipped rectangle, each corner with the texture position the software sampler's Q12 walk gives there. Pixel
    (dst[0] + i, dst[1] + j) samples start + i * pixelStep + j * rowStep, texel (c, r) at (c << 12, r << 12); the GPU
@@ -1613,6 +1653,17 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
       }
       s_gpu.frameTimes.imageRegions++;
       AppendUiQuad(item.dst, item.clip, &region, ARGB8888_OPAQUE_WHITE, 0, GPU_UI_BLEND_OPAQUE);
+      break;
+    }
+    case DRAW2D_OP_IMAGE_BILINEAR: {
+      if ((index >= s_gpu.spriteRegions.size()) || (s_gpu.spriteRegions[index].page == nullptr) ||
+          (s_gpu.spriteRegions[index].w != item.src[2]) || (s_gpu.spriteRegions[index].h != item.src[3]) ||
+          (item.dst[2] - item.dst[0] < 2) || (item.dst[3] <= item.dst[1])) {
+        break;
+      }
+      s_gpu.frameTimes.imageRegions++;
+      const GpuUiTexRegion mapped = BilinearRegion(s_gpu.spriteRegions[index], item.dst);
+      AppendUiQuad(item.dst, item.clip, &mapped, ARGB8888_OPAQUE_WHITE, 0, GPU_UI_BLEND_OPAQUE_LINEAR);
       break;
     }
     case DRAW2D_OP_ROTATED_BILINEAR:
@@ -1777,17 +1828,30 @@ void ReleaseDevice() noexcept
   s_gpu = GpuState{};
 }
 
-/* The swapchain's present mode: mailbox (no tearing, never waits) where the driver has it, else vsync; the
-   swapchain texture is acquired without waiting, so a frame is dropped rather than the game held up. */
+/* The swapchain's present mode. VSync on (s_vsync): vsync, and the swapchain texture is acquired waiting, so the
+   frame loop is paced by the display. VSync off: mailbox (no tearing, never waits) where the driver has it, else
+   immediate, else vsync; the swapchain texture is then acquired without waiting, so a frame is dropped rather than
+   the game held up. Applied at every window claim and by SetGpuVsync. */
 void ChoosePresentMode() noexcept
 {
   SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
-  if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
-    presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+  if (!s_vsync) {
+    if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+      presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+    }
+    else if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+      presentMode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+    }
   }
   if (!SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode)) {
     Thandor_Log("SDL_GPU: swapchain parameters not set (%s)", SDL_GetError());
+    return;
   }
+  static const char *const kPresentModeNames[] = {"vsync", "immediate", "mailbox"};
+  const auto modeIndex = static_cast<size_t>(presentMode);
+  Thandor_Log("SDL_GPU: present mode %s (vsync %s)",
+              (modeIndex < SDL_arraysize(kPresentModeNames)) ? kPresentModeNames[modeIndex] : "?",
+              s_vsync ? "on" : "off");
 }
 
 /* True when the device really holds the window's swapchain: SDL_GetGPUSwapchainTextureFormat fails only for an
@@ -1876,14 +1940,17 @@ void CheckSwapchainSize() noexcept
 }
 
 /* The swapchain texture for this frame's command buffer, nullptr when there is none: an unclaimed window (minimized
-   at the start), a minimized window, or a frame the non-waiting acquire drops (mailbox, all images in flight).
+   at the start), a minimized window, or a frame the non-waiting acquire (VSync off) drops (mailbox, all images in
+   flight). With VSync on the acquire waits for a free swapchain image instead.
    None of these is an error; the frame is drawn and submitted without the present. */
 SDL_GPUTexture *AcquireSwapchain(SDL_GPUCommandBuffer *commands, Uint32 *width, Uint32 *height) noexcept
 {
   RetryWindowClaim();
   CheckSwapchainSize();
   SDL_GPUTexture *swapchain = nullptr;
-  if (s_gpu.windowClaimed && !SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)) {
+  if (s_gpu.windowClaimed &&
+      !(s_vsync ? SDL_WaitAndAcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)
+                : SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height))) {
     if (!s_gpu.presentFailureLogged) {
       Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
       s_gpu.presentFailureLogged = true;
@@ -2046,6 +2113,17 @@ void SetGpuRasterizationExact(bool exact) noexcept
   }
   s_gpu.rasterization = exact ? GPU_RASTERIZATION_EXACT : GPU_RASTERIZATION_SMOOTH;
   Thandor_Log("SDL_GPU renderer: %s rasterization from the next scene on", RasterizationName(s_gpu.rasterization));
+}
+
+void SetGpuVsync(bool on) noexcept
+{
+  if (s_vsync == on) {
+    return;
+  }
+  s_vsync = on;
+  if ((s_gpu.device != nullptr) && s_gpu.windowClaimed) {
+    ChoosePresentMode();
+  }
 }
 
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept

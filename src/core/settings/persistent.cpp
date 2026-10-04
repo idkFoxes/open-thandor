@@ -81,6 +81,7 @@ static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", 
 static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
+static const char *const s_IniVsyncNames[] = {"on", "off"};
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 
@@ -117,6 +118,11 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the "
    "display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)", 0, 0,
    INI_ENUM(s_IniUiScaleNames)},
+  {PERSISTENT_SETTING_VSYNC, INI_KIND_ENUM, "graphics", "vsync",
+   "vsync: on (default; frames wait for the display's refresh, no tearing) or off", 0, 0, INI_ENUM(s_IniVsyncNames)},
+  {PERSISTENT_SETTING_FRAME_LIMIT, INI_KIND_UINT, "graphics", "frame_limit",
+   "frame rate limit in frames per second: 0 (default, no limit), 30, 60, 120, 144 (below 60 the game runs "
+   "slower, its steps wait for drawn frames)", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
@@ -156,8 +162,6 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
