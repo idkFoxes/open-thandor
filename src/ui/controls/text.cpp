@@ -8,6 +8,29 @@
 #include <thandor/ui/controls/text.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable = {
+    .relocate = THANDOR_FN(UiSingleLineTextControl_RelocateChild),
+    .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+    .drawClipped = THANDOR_FN(UiCommandVisibilitySingleLineText_DrawWhenAllowed),
+    .layout = THANDOR_FN(UiContainer_LayoutChildren),
+    .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+    .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+    .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+    .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+    .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+    .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+    .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
+    .hitTest = THANDOR_FN(FrontendResultsTable_HitTestAlwaysNone),
+    .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+    .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+    .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+    .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+    .tick = THANDOR_FN(UiNode_DefaultTick),
+    .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+};
+
 /* Implementation ownership: ui/controls/text. */
 
 /* The label's rich-text command stream: the text itself, or the resolved text resource. */

@@ -8,6 +8,11 @@
 #include <thandor/ui/controls/slider.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+static const int32_t g_UiRangeSliderDragScale = 1;
+
 /* Implementation ownership: ui/controls/slider. */
 
 /* Thumb offset along the track for UiRangeSliderControl_DrawTrackAndThumb: value (clamped to
@@ -229,3 +234,161 @@ UiNodeVtable g_UiRangeSliderControlVtable = {
         .unsuppressActionId = THANDOR_FN(UiRangeSliderControl_UnsuppressIfActionId),
         .tick = THANDOR_FN(UiNode_DefaultTick),
         .pointerWheel = THANDOR_FN(UiRangeSliderControl_HandlePointerWheel)};
+
+/* keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
+   value by stepValue, with Ctrl straight to the minimum/maximum; each step plays the click sound, queues
+   actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
+   them on. Returns false when the key was consumed.
+*/
+Bool8 UiRangeSliderControl_HandleKeyboard
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
+
+{
+  int32_t adjustedSliderValue;
+  UiKeyboardEventCode decreaseKey;
+  UiKeyboardEventCode increaseKey;
+
+  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+  }
+  if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
+    decreaseKey = KEYBOARD_KEY_CODE_LEFT;
+    increaseKey = KEYBOARD_KEY_CODE_RIGHT;
+  }
+  else {
+    decreaseKey = KEYBOARD_KEY_CODE_DOWN;
+    increaseKey = KEYBOARD_KEY_CODE_UP;
+  }
+  if (keyCode == decreaseKey) {
+    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+      adjustedSliderValue = control->minimumValue;
+    }
+    else {
+      adjustedSliderValue = control->value - control->stepValue;
+      if (adjustedSliderValue < control->minimumValue) {
+        adjustedSliderValue = control->minimumValue;
+      }
+    }
+  }
+  else if (keyCode == increaseKey) {
+    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+      adjustedSliderValue = control->maximumValue;
+    }
+    else {
+      adjustedSliderValue = control->value + control->stepValue;
+      if (control->maximumValue < adjustedSliderValue) {
+        adjustedSliderValue = control->maximumValue;
+      }
+    }
+  }
+  else {
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+  }
+  control->value = adjustedSliderValue;
+  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
+  }
+  UiActionQueue_Enqueue(control->actionId,&control->base);
+  UiNode_InvalidateRoot(&control->base);
+  return false;
+}
+
+/* nonRightDrag slot of g_UiRangeSliderControlVtable. While the thumb is dragged, maps the pointer position
+   (thumb centre) along the track onto minimumValue..maximumValue, rounded to nearest and mirrored for
+   reversed sliders, then queues actionId and redraws.
+*/
+void UiRangeSliderControl_UpdateValueFromPointer
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiRangeSliderControl *control)
+
+{
+  uint64_t scaledOffset;
+  uint32_t pointerOffset;
+  int32_t sliderValue;
+  uint32_t trackLength;
+  GraphicsTextureLogicalSize thumbSize;
+
+  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) != 0) {
+    if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                        g_UiWindowTextureSource);
+      trackLength = control->base.layoutWidth - thumbSize.logicalWidthPixels;
+      if (trackLength == 0) {
+        trackLength = 1;
+      }
+      pointerOffset = (pointerX - ((int)thumbSize.logicalWidthPixels >> 1)) - control->base.left;
+      if ((int)pointerOffset < 0) {
+        pointerOffset = 0;
+      }
+      scaledOffset = (uint64_t)pointerOffset *
+              (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
+      /* offset * range / trackLength, plus one when the remainder is more than half the track */
+      sliderValue = control->minimumValue +
+               (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) +
+               (int)(scaledOffset / trackLength);
+      if (control->maximumValue < sliderValue) {
+        sliderValue = control->maximumValue;
+      }
+      if ((control->sliderFlags & UI_RANGE_SLIDER_REVERSED) != 0) {
+        sliderValue = control->maximumValue - (sliderValue - control->minimumValue);
+      }
+      control->value = sliderValue;
+      UiActionQueue_Enqueue(control->actionId,&control->base);
+      UiNode_InvalidateRoot(&control->base);
+      return;
+    }
+    thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_THUMB,
+                                                      g_UiWindowTextureSource);
+    trackLength = control->base.layoutHeight - thumbSize.logicalHeightPixels;
+    if (trackLength == 0) {
+      trackLength = 1;
+    }
+    pointerOffset = (control->base.bottom - pointerY) - ((int)thumbSize.logicalHeightPixels >> 1);
+    if ((int)pointerOffset < 0) {
+      pointerOffset = 0;
+    }
+    scaledOffset = (uint64_t)pointerOffset *
+            (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
+    sliderValue = control->minimumValue +
+             (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) +
+             (int)(scaledOffset / trackLength);
+    if (control->maximumValue < sliderValue) {
+      sliderValue = control->maximumValue;
+    }
+    if ((control->sliderFlags & UI_RANGE_SLIDER_REVERSED) != 0) {
+      sliderValue = control->maximumValue - (sliderValue - control->minimumValue);
+    }
+    control->value = sliderValue;
+    UiActionQueue_Enqueue(control->actionId,&control->base);
+    UiNode_InvalidateRoot(&control->base);
+  }
+  return;
+}
+
+/* pointerWheel slot of g_UiRangeSliderControlVtable. Unless the thumb is being dragged, each wheel notch
+   moves the value by stepValue * g_UiRangeSliderDragScale, clamped to the range; then actionId is queued
+   and the slider redrawn.
+*/
+void UiRangeSliderControl_HandlePointerWheel
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiRangeSliderControl *control)
+
+{
+  int32_t adjustedSliderValue;
+
+  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0 && (control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 &&
+      wheelDelta != 0) {
+    adjustedSliderValue =
+         control->value + wheelDelta * g_UiRangeSliderDragScale * control->stepValue;
+    if (adjustedSliderValue < control->minimumValue) {
+      adjustedSliderValue = control->minimumValue;
+    }
+    if (control->maximumValue < adjustedSliderValue) {
+      adjustedSliderValue = control->maximumValue;
+    }
+    control->value = adjustedSliderValue;
+    UiActionQueue_Enqueue(control->actionId,&control->base);
+    UiNode_InvalidateRoot(&control->base);
+  }
+  return;
+}

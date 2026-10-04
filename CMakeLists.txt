@@ -108,10 +108,12 @@ add_library(thandor_curated STATIC
     src/platform/system/win32.cpp
     src/ui/controls/buttons.cpp
     src/ui/controls/container.cpp
+    src/ui/controls/focus_proxy.cpp
     src/ui/controls/gauge.cpp
     src/ui/controls/image.cpp
     src/ui/controls/input.cpp
     src/ui/controls/lists.cpp
+    src/ui/controls/minimap.cpp
     src/ui/controls/panels.cpp
     src/ui/controls/root_stack.cpp
     src/ui/controls/scrollable.cpp

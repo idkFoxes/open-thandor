@@ -10,10 +10,12 @@
 
 #include <thandor/ui/controls/buttons.h>
 #include <thandor/ui/controls/container.h>
+#include <thandor/ui/controls/focus_proxy.h>
 #include <thandor/ui/controls/gauge.h>
 #include <thandor/ui/controls/image.h>
 #include <thandor/ui/controls/input.h>
 #include <thandor/ui/controls/lists.h>
+#include <thandor/ui/controls/minimap.h>
 #include <thandor/ui/controls/panels.h>
 #include <thandor/ui/controls/root_stack.h>
 #include <thandor/ui/controls/scrollable.h>

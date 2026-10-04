@@ -8,6 +8,10 @@
 #include <thandor/ui/controls/image.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+UiImageControl * g_UiImageControlHoverTarget = 0;
+
 /* Implementation ownership: ui/controls/image. */
 
 /* layout of g_UiImageControlVtable (image toggles of the in-game resource panel): lays out the children
@@ -356,3 +360,50 @@ UiNodeVtable g_UiImageControlVtable = {
         .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
         .tick = THANDOR_FN(UiImageControl_TickHover),
         .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+
+/* pointerMove slot of g_UiImageControlVtable. Over an opaque pixel of the image the arrow
+   is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
+   the cursor; without one, UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE while no image control is hovered.
+*/
+GraphicsCursorFrameIndex UiImageControl_PointerMove
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
+
+{
+  UiImageControl *hitControl;
+  GraphicsCursorFrameIndex cursorFrame;
+  Bool8 overOpaquePixel;
+
+  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+      overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
+                        (pointerY,pointerX,(control->selectable).base.top,
+                         (control->selectable).base.left,control->normalSubresource,
+                         control->textureSource);
+      if (overOpaquePixel) {
+        return GRAPHICS_CURSOR_FRAME_ARROW;
+      }
+    }
+    else {
+      overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
+                        (pointerY,pointerX,(control->selectable).base.top,
+                         (control->selectable).base.left,control->alternateSubresource,
+                         control->textureSource);
+      if (overOpaquePixel) {
+        return GRAPHICS_CURSOR_FRAME_ARROW;
+      }
+    }
+    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
+      hitControl = (UiImageControl *)
+                   UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
+      if (hitControl != control) {
+        cursorFrame = (*((hitControl->selectable).base.vtable)->pointerMove)
+                          (pointerY,pointerX,(UiNodeBase *)hitControl);
+        return cursorFrame;
+      }
+      if (g_UiImageControlHoverTarget == NULL) {
+        return UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE;
+      }
+    }
+  }
+  return GRAPHICS_CURSOR_FRAME_ARROW;
+}

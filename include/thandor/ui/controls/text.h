@@ -38,4 +38,6 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 
 extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable;
 
+extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable;
+
 #endif /* THANDOR_UI_CONTROLS_TEXT_H */
