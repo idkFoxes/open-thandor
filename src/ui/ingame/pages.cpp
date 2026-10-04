@@ -364,3 +364,96 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
        (GraphicsSubresourceIndex)selectedIndexValue;
   return;
 }
+
+/* UI action 0x101D (quitMenuAbortMissionButton; g_InGameUiActionHandlersPage10[29]): closes the game menu
+   and lets the local player leave the session (command 0x150 without flags). A local game runs the handler
+   directly, a network game queues the command so every peer executes it.
+*/
+void InGameQuitMenu_AbortMission(UiNodeBase *source)
+
+{
+
+  while (source->parent != UI_NODE_NONE) {
+    source = source->parent;
+  }
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
+  }
+  return;
+}
+
+/* UI action 0x101E (INGAME_ACTION_QUIT_SURRENDER, quitMenuSurrenderButton; g_InGameUiActionHandlersPage10[30]):
+   closes the game menu and gives up, command 0x150 with INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER destroys every army
+   of the local faction. Local games call the handler directly, network games queue the command.
+*/
+void InGameQuitMenu_Surrender(UiNodeBase *source)
+
+{
+
+  while (source->parent != UI_NODE_NONE) {
+    source = source->parent;
+  }
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    InGameCommand_HandlePlayerDeparture
+              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
+  }
+  return;
+}
+
+/* UI action 0x1021 (missionHelpBriefingTab; g_InGameUiActionHandlersPage10[33]): selects tab 0 of the mission help
+   window exclusively among its three tab buttons and shows page 0 (the mission briefing) of its page stack.
+*/
+void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
+
+{
+  /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpMouseTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
+  return;
+}
+
+/* UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
+   window exclusively among its three tab buttons and shows page 1 (the keyboard help) of its page stack.
+*/
+void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
+
+{
+  /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpMouseTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
+  return;
+}
+
+/* UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
+   window exclusively among its three tab buttons and shows page 2 (the mouse help) of its page stack.
+*/
+void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
+
+{
+  /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpBriefingTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
+  return;
+}

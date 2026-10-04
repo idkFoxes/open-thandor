@@ -107,4 +107,14 @@ void InGameResultsScreen_CloseLocally(UiNodeBase *source);
 
 void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source);
 
+void InGameQuitMenu_AbortMission(UiNodeBase *source);
+
+void InGameQuitMenu_Surrender(UiNodeBase *source);
+
+void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode);
+
+void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode);
+
+void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode);
+
 #endif /* THANDOR_UI_INGAME_PAGES_H */

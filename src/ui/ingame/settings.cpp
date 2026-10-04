@@ -28,57 +28,6 @@ void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
   return;
 }
 
-
-/* UI action 0x101D (quitMenuAbortMissionButton; g_InGameUiActionHandlersPage10[29]): closes the game menu
-   and lets the local player leave the session (command 0x150 without flags). A local game runs the handler
-   directly, a network game queues the command so every peer executes it.
-*/
-void InGameQuitMenu_AbortMission(UiNodeBase *source)
-
-{
-
-  while (source->parent != UI_NODE_NONE) {
-    source = source->parent;
-  }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
-  }
-  return;
-}
-
-
-/* UI action 0x101E (INGAME_ACTION_QUIT_SURRENDER, quitMenuSurrenderButton; g_InGameUiActionHandlersPage10[30]):
-   closes the game menu and gives up, command 0x150 with INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER destroys every army
-   of the local faction. Local games call the handler directly, network games queue the command.
-*/
-void InGameQuitMenu_Surrender(UiNodeBase *source)
-
-{
-
-  while (source->parent != UI_NODE_NONE) {
-    source = source->parent;
-  }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_HandlePlayerDeparture
-              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
-  }
-  return;
-}
-
-
 /* UI action 0x1201 (gameMenuCloseButton; g_InGameUiActionHandlersPage12[1]): closes the game menu by
    releasing the inGameMenuButton toggle and running its toggle handler, which also resumes a paused game.
 */
@@ -93,7 +42,6 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   return;
 }
-
 
 /* UI action 0x1218 (the Back buttons of the save, quit, graphics and sound pages;
    g_InGameUiActionHandlersPage12[24]): selects the inGameMenuButton toggle again and runs its toggle handler,
@@ -110,7 +58,6 @@ void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   return;
 }
-
 
 /* In-game command handler (keys G / Alt+G): changes the player's simulation step batch by stepDelta, kept within
    1..INGAME_SIMULATION_STEP_TICKS_MAX, and sets g_InGameSimulationStepTicks to the smallest batch of all players,
@@ -142,55 +89,6 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
   }
   return;
 }
-
-
-/* UI action 0x1021 (missionHelpBriefingTab; g_InGameUiActionHandlersPage10[33]): selects tab 0 of the mission help
-   window exclusively among its three tab buttons and shows page 0 (the mission briefing) of its page stack.
-*/
-void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
-
-{
-  /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
-  UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
-      sourceNode);
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
-  return;
-}
-
-
-/* UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
-   window exclusively among its three tab buttons and shows page 1 (the keyboard help) of its page stack.
-*/
-void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
-
-{
-  /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
-  UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpMouseTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
-      sourceNode);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
-  return;
-}
-
-
-/* UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
-   window exclusively among its three tab buttons and shows page 2 (the mouse help) of its page stack.
-*/
-void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
-
-{
-  /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
-  UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpBriefingTab),
-      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
-      sourceNode);
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
-  return;
-}
-
 
 /* UI action 0x1216 (rightButtonNoScrollCheckbox; g_InGameUiActionHandlersPage12[22]): stores
    PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN and applies it at once. Although the checkbox text reads "right
@@ -238,7 +136,6 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
   return;
 }
 
-
 /* UI action 0x1217 (scrollSpeedSlider; g_InGameUiActionHandlersPage12[23]): stores the slider value as
    PERSISTENT_SETTING_CAMERA_SCROLL_STEP; the camera reads the setting whenever it scrolls.
 */
@@ -248,7 +145,6 @@ void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
   PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   return;
 }
-
 
 /* UI action 0x1212 (autoZoomOffCheckbox; g_InGameUiActionHandlersPage12[18]): stores
    PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF. Switching automatic zoom off also resets the minimap to its
@@ -276,7 +172,6 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x1213 (autoRotationOffCheckbox; g_InGameUiActionHandlersPage12[19]): stores
    PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF. Switching automatic rotation off also turns the minimap back
    to its default angle.
@@ -302,7 +197,6 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
   PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   return;
 }
-
 
 /* UI action 0x1214 (INGAME_ACTION_LINK_ROTATION_ZOOM, linkRotationZoomCheckbox;
    g_InGameUiActionHandlersPage12[20]): stores PERSISTENT_LINK_OPTION_ROTATION_ZOOM and mirrors it to the world
@@ -338,7 +232,6 @@ void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x1215 (INGAME_ACTION_LINK_ROTATION_TILT, linkRotationTiltCheckbox;
    g_InGameUiActionHandlersPage12[21]): stores PERSISTENT_LINK_OPTION_ROTATION_TILT and mirrors it to the world
    view; the zoom link checkbox is disabled while this is on, as the two links exclude each other.
@@ -373,7 +266,6 @@ void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x121B (hidePanelCheckbox; g_InGameUiActionHandlersPage12[27]): stores
    PERSISTENT_LINK_OPTION_HIDE_PANEL and mirrors it to the world view's WORLD_RUNTIME_FLAG_HIDE_PANEL. The name
    follows the checkbox label; the world view tests the flag together with the left mouse button.
@@ -405,7 +297,6 @@ void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
   PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   return;
 }
-
 
 /* UI action 0x1202 (gameMenuGraphicsButton; g_InGameUiActionHandlersPage12[2]): opens the graphics settings
    window (page 6) and loads its controls from the persistent settings: shading on/off, the shading level
@@ -494,7 +385,6 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
   return;
 }
 
-
 /* UI action 0x1203 (gameMenuAudioButton; g_InGameUiActionHandlersPage12[3]): opens the sound settings window
    (page 7) and loads the three sound switches and four volume sliders from the persistent settings. The
    effects and movie sliders only work with effects on, the music slider only with music on, and reverse
@@ -549,7 +439,6 @@ void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNo
   return;
 }
 
-
 /* UI action 0x1204 (shadingEnabledCheckbox; g_InGameUiActionHandlersPage12[4]): stores the shading switch,
    mirrors it to the world view's WORLD_RUNTIME_FLAG_SHADING_ENABLED and enables the shading level buttons
    only while shading is on.
@@ -576,7 +465,6 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
   PersistentSettings_Write(selectedState & 1,PERSISTENT_SETTING_SHADING_ENABLED);
   return;
 }
-
 
 /* UI action 0x1205 (INGAME_ACTION_SHADING_LEVEL, the six shading level buttons;
    g_InGameUiActionHandlersPage12[5]): rebuilds the generated shading texture for the button's grid size and
@@ -653,7 +541,6 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x1206 (modelDetailSlider; g_InGameUiActionHandlersPage12[6]): stores the model detail slider
    value and makes it the model LOD depth threshold (Q8) at once.
 */
@@ -667,7 +554,6 @@ void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
   g_ModelLodDepthThresholdQ8 = value;
   return;
 }
-
 
 /* UI action 0x1207 (INGAME_ACTION_TEXTURE_QUALITY, the three texture quality buttons;
    g_InGameUiActionHandlersPage12[7]): selects the pressed button, stores its level and rebuilds every
@@ -706,7 +592,6 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   return;
 }
-
 
 /* UI action 0x1208 (effectsEnabledCheckbox; g_InGameUiActionHandlersPage12[8]): stores the effects switch,
    stops the playing effect voice when switched off, enables or disables the dependent sliders and loads the
@@ -773,7 +658,6 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x1209 (musicEnabledCheckbox; g_InGameUiActionHandlersPage12[9]): stores the music switch and
    enables or disables the dependent sliders. Switching music off stops the playing track and sets the
    music countdown to 1, so the next track is chosen right away when music comes back on.
@@ -826,7 +710,6 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x120A (reverseStereoCheckbox; g_InGameUiActionHandlersPage12[10]): stores the reverse stereo
    switch and sets g_ReverseStereoMask to all ones (swap the channels) or zero.
 */
@@ -852,7 +735,6 @@ void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
   return;
 }
 
-
 /* UI action 0x120B (effectsVolumeSlider; g_InGameUiActionHandlersPage12[11]): stores the effects volume,
    makes it the UI and effects gain and applies it to the playing effect voice so the change is audible.
 */
@@ -869,7 +751,6 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
   return;
 }
 
-
 /* UI action 0x120C (movieVolumeSlider; g_InGameUiActionHandlersPage12[12]): stores the movie volume and
    makes it the default movie gain.
 */
@@ -883,7 +764,6 @@ void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
   g_MovieDefaultAudioGainQ15 = value;
   return;
 }
-
 
 /* UI action 0x120D (musicVolumeSlider; g_InGameUiActionHandlersPage12[13]): stores the music volume and
    applies it to the playing music voice.
@@ -899,7 +779,6 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
   return;
 }
 
-
 /* UI action 0x121A (messageMovieVolumeSlider; g_InGameUiActionHandlersPage12[26]): stores the volume of the
    message movies and makes it the alternate movie gain used by timed movie playback.
 */
@@ -913,7 +792,6 @@ void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
   g_MovieAlternateAudioGainQ15 = value;
   return;
 }
-
 
 /* UI action 0x1003 (game menu button): opening shows the game menu window (page 3) with the gameplay options
    loaded from the persistent settings, blocks the world input and pauses a local game; network games cannot
@@ -990,9 +868,6 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   }
   return;
 }
-
-
-/* Class vtables. */
 
 InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12 = {
         .handlers = {

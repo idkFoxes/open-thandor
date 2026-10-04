@@ -30,13 +30,10 @@
 /* Minimap view values restored when automatic zoom / rotation is switched off */
 #define INGAME_MINIMAP_DEFAULT_SCALE_Q12 0x800 /* 0.5 */
 #define INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE 0x2000
+
 /* Functions are grouped by semantic ownership. */
 
 void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source);
-
-void InGameQuitMenu_AbortMission(UiNodeBase *source);
-
-void InGameQuitMenu_Surrender(UiNodeBase *source);
 
 void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source);
 
@@ -45,12 +42,6 @@ void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source);
 void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
           (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           int stepDelta);
-
-void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode);
-
-void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode);
-
-void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode);
 
 void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control);
 
