@@ -36,8 +36,4 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
 void UiWrappedTextControl_RelocateAndApplyDeferredOffset
           (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control);
 
-extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable;
-
-extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable;
-
 #endif /* THANDOR_UI_CONTROLS_TEXT_H */

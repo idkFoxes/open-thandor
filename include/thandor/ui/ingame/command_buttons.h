@@ -42,4 +42,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
 extern UiNodeVtable g_UiCommandSpriteButtonWithDetailsVtable;
 extern UiNodeVtable g_UiCommandSpriteButtonControlVtable;
 
+extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable;
+extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable;
+
 #endif /* THANDOR_UI_INGAME_COMMAND_BUTTONS_H */
