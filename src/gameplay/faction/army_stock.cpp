@@ -14,56 +14,6 @@ GameFactionRuntimeImage g_GameFactionRuntimeImage = {.tail = {.factionLifecycleS
 
 /* Implementation ownership: gameplay/faction/army_stock. */
 
-/* Turns the *assetCount saved army-asset ids of one list back into registry pointers, in place. The first
-   unknown id empties the list (*assetCount = 0); the entries already converted stay pointers. */
-static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,FactionArmyAssetCount *assetCount)
-{
-  FactionArmyAssetCount assetsRemaining;
-  uint32_t *assetIdCursor;
-  ArmyAssetRecordPrefix *resolvedAsset;
-
-  assetIdCursor = assetIds;
-  for (assetsRemaining = *assetCount; assetsRemaining != 0; assetsRemaining--) {
-    if (ArmyAssetRegistry_FindById(*assetIdCursor,&resolvedAsset) != 0) {
-      *assetCount = 0;
-      return;
-    }
-    *assetIdCursor = (uint32_t)resolvedAsset; /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds (daten.hex) */
-    assetIdCursor++;
-  }
-}
-
-/* After loading a save: turns the army-asset ids of both army-asset lists of all eight faction records back into
-   registry pointers (an unknown id empties that list) and converts the 256 saved runtime-group member offsets
-   into pointers again (offset + g_ArmyRuntimeRebaseBaseMinusOne; 0 stays NULL).
-*/
-void GameFactionRuntime_RebaseLoadedArmyReferences(void)
-
-{
-  int factionIndex;
-  int groupSlotIndex;
-  GameFactionRuntimeRecord *factionRecord;
-  ArmyRuntimeSlot *savedSlotOffset;
-  ArmyRuntimeSlot *rebasedSlot;
-
-  for (factionIndex = 0; factionIndex < 8; factionIndex++) {
-    factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
-    GameFactionRuntime_ResolveLoadedArmyAssetIds(factionRecord->secondaryArmyAssetPointersOrIds,
-                                                 &factionRecord->secondaryArmyAssetCount);
-    GameFactionRuntime_ResolveLoadedArmyAssetIds(factionRecord->primaryArmyAssetPointersOrIds,
-                                                 &factionRecord->primaryArmyAssetCount);
-    for (groupSlotIndex = 0; groupSlotIndex < 256; groupSlotIndex++) {
-      /* the slot holds the saved offset */
-      savedSlotOffset = factionRecord->runtimeGroupMembers8x32[groupSlotIndex];
-      rebasedSlot = NULL;
-      if (savedSlotOffset != NULL) {
-        rebasedSlot = (ArmyRuntimeSlot *)((int)savedSlotOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 (daten.hex) */
-      }
-      factionRecord->runtimeGroupMembers8x32[groupSlotIndex] = rebasedSlot;
-    }
-  }
-}
-
 /* Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
    tables that still points to it, so no group keeps a dangling pointer to the freed army slot.
 */

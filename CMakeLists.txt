@@ -47,7 +47,6 @@ add_library(thandor_curated STATIC
     src/assets/package/codec.cpp
     src/assets/package/resource_loader.cpp
     src/assets/package/runtime.cpp
-    src/assets/resource/savegame_prepare.cpp
     src/assets/rom/menu_room.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp

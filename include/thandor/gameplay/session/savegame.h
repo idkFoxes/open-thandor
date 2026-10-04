@@ -50,4 +50,33 @@ extern uint16_t g_LightHexPathUtf16[10];
 extern uint16_t g_WidgetHexPathUtf16[11];
 extern uint16_t g_ArmyHexPathUtf16[9];
 
+Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
+
+ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
+
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void);
+
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void);
+
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void);
+
+void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
+
+extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
+extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
+
+void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void);
+
+void ArmyRuntimePool_RebaseAfterLoad(void);
+
+void GameFactionRuntime_RebaseLoadedArmyReferences(void);
+
+RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
+
+void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
+
+RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
+
+void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
+
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

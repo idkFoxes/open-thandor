@@ -14,11 +14,6 @@ static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
 
 /* Implementation ownership: world/runtime/core. */
 
-
-
-
-
-
 /* Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
    ignored.
 */
@@ -32,8 +27,6 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
   }
   return;
 }
-
-
 
 /* Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
    WORLD_HEIGHT_NO_FIELD_GRID when the world has no field grid.
@@ -50,7 +43,6 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
   }
   return topSurfaceHeightQ12;
 }
-
 
 /* Drag selection test: projects the node's world position to the screen and returns true when that pixel
    lies inside the rectangle spanned by the pointer press position and the current pointer position of
@@ -98,12 +90,6 @@ Bool8 WorldRuntimeNode_IsPositionInsideBounds
   return false;
 }
 
-
-
-
-
-
-
 /* Attaches a caller-owned workspace of count pointer-sized words to the world runtime and zeroes it.
 */
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uintptr_t *array,WorldRuntimeContext *world)
@@ -117,64 +103,6 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
   }
   return;
 }
-
-
-
-
-
-
-/* Pre-serializer provider of the light.hex save segment (called by
-   InGameSaveGame_WritePackage): returns the shading runtime records and their byte
-   size 0x4000, and inverts serializationToggleDword of record 0 so the saved image carries the
-   inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
-*/
-RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void)
-
-{
-  RuntimeHexSegmentImage segment;
-
-  g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
-       ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  segment.image = (uint32_t *)g_GraphicsShadingRuntimeRecords;
-  segment.byteSize = sizeof(g_GraphicsShadingRuntimeRecords);
-  return segment;
-}
-
-/* Post-serializer hook of the light.hex save segment: inverts serializationToggleDword of shading record 0
-   back (RuntimeHexSegment_GetLightImageAndToggleFlag inverted it before), so the saved image carries the
-   inverted value while the live one is unchanged. The caller keeps the serializer flags.
-*/
-void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
-
-{
-  g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
-       ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  return;
-}
-
-/* Pre-serializer provider of the field.hex save segment (called by
-   InGameSaveGame_WritePackage): returns the attached field grid (fieldGridAsset) and its whole
-   allocation size (common.allocationSizeBytes), so the field image is saved as one block.
-*/
-RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext)
-
-{
-  RuntimeHexSegmentImage segment;
-
-  segment.image = (uint32_t *)fieldImageContext->fieldGridAsset;
-  segment.byteSize = (uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
-  return segment;
-}
-
-/* Post-serializer hook of the field.hex save segment (called by InGameSaveGame_WritePackage):
-   does nothing; the field image needs no restoring after saving. The caller keeps the serializer flags.
-*/
-void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext)
-
-{
-  return;
-}
-
 
 /* Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
    faction: for each such owner-list node whose model has an overlay base (supportRadius of its
@@ -231,7 +159,6 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
 }
 
-
 /* Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
    that class has nothing to update, so this does nothing.
 */
@@ -241,7 +168,6 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass5
 {
   return;
 }
-
 
 /* Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
    that class has nothing to update, so this does nothing.
@@ -253,7 +179,6 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass6
   return;
 }
 
-
 /* Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
    except 13 and 21): those classes keep no pointers that need unrebasing, so this does nothing.
 */
@@ -262,7 +187,6 @@ void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
 {
   return;
 }
-
 
 /* Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
    every class except 14-16 and 21): those classes hold no faction capacity or placement reservation to release,
@@ -285,7 +209,6 @@ Bool8 UnifiedRuntimeDefault_TwoArgSuccess
   return false;
 }
 
-
 /* Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
    15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
    have none, so this does nothing.
@@ -295,10 +218,3 @@ void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRu
 {
   return;
 }
-
-
-
-
-
-
-

@@ -44,6 +44,7 @@
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
 /* Height returned by WorldRuntime_InterpolateTopSurfaceHeightOrSentinel when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
+
 /* Functions are grouped by semantic ownership. */
 
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world);
@@ -54,14 +55,6 @@ Bool8 WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
 
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uintptr_t *array,WorldRuntimeContext *world);
-
-RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
-
-void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
-
-RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
-
-void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
 
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
 

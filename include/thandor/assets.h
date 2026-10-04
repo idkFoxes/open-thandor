@@ -12,7 +12,6 @@
 #include <thandor/assets/effect.h>
 #include <thandor/assets/model.h>
 #include <thandor/assets/package.h>
-#include <thandor/assets/resource.h>
 #include <thandor/assets/rom.h>
 #include <thandor/assets/scenario.h>
 #include <thandor/assets/shot.h>
