@@ -45,13 +45,7 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,selectedRowIndex);
-    }
+    FrontendCommand_Issue<ScenarioCatalog_SelectSavedGameAndShowDescription>(0,0,selectedRowIndex);
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
@@ -73,14 +67,7 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_SelectLevelAndShowDescription
-                (g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,selectedRowIndex);
-    }
+    FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,selectedRowIndex);
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
@@ -102,14 +89,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_SelectCampaignAndShowDescription
-                (g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_CAMPAIGN,0,0,selectedRowIndex);
-    }
+    FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,selectedRowIndex);
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
@@ -213,22 +193,8 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
       Resource_Release(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
       g_FrontendLoadedCampaignAsset = 0;
       /* Select the mission and load it: directly, or in a network session through the command queue. */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        ScenarioCatalog_SelectLevelAndShowDescription
-                  (g_LocalPlayerRuntimeId,0,0,selectionIndex);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,selectionIndex);
-      }
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendScenarioSession_LoadOrRequestLevelAsset
-                  (g_LocalPlayerRuntimeId,0,0,selectionIndex);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_LEVEL,0,0,selectionIndex);
-      }
+      FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,selectionIndex);
+      FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectionIndex);
       return true;
     }
     selectionIndex++;
@@ -340,20 +306,8 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,savedGameDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RebuildSaveRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SHOW_SAVED_GAMES,0,0,0);
-  }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,0);
-  }
+  FrontendCommand_Issue<ScenarioCatalog_RebuildSaveRecordListPage>(0,0,0);
+  FrontendCommand_Issue<ScenarioCatalog_SelectSavedGameAndShowDescription>(0,0,0);
   return;
 }
 
@@ -372,20 +326,8 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,missionDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SHOW_SINGLE_GAMES,0,0,0);
-  }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_SelectLevelAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,0);
-  }
+  FrontendCommand_Issue<ScenarioCatalog_RebuildLevelRecordListPage>(0,0,0);
+  FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,0);
   return;
 }
 
@@ -403,20 +345,8 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,campaignDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SHOW_CAMPAIGNS,0,0,0);
-  }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_SelectCampaignAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_CAMPAIGN,0,0,0);
-  }
+  FrontendCommand_Issue<ScenarioCatalog_RebuildCampaignRecordListPage>(0,0,0);
+  FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,0);
   return;
 }
 
@@ -739,14 +669,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList),
                          nullptr);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendScenarioSession_LoadOrRequestLevelAsset(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
-        ;
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_LEVEL,0,0,selectedRowIndex);
-      }
+      FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestLevelAsset>(0,0,selectedRowIndex);
       return;
     }
     Resource_Release((void *)g_FrontendLoadedCampaignAsset);
@@ -754,14 +677,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                       ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList),
                        nullptr);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
-      ;
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_CAMPAIGN,0,0,selectedRowIndex);
-    }
+    FrontendCommand_Issue<FrontendScenarioSession_LoadOrRequestCampaignBundle>(0,0,selectedRowIndex);
     return;
   }
   scenarioPathPointerTable =
@@ -783,13 +699,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
              (uint16_t *)scenarioPathPointerTable[selectedRowIndex],
              (uint16_t *)g_SaveDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_FrontendScenarioPathScratchUtf16);
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,2);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,2);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,2);
   return;
 }
 
