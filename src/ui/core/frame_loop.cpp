@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-uint32_t g_UiPendingFrameTicks = 0;
+std::atomic<uint32_t> g_UiPendingFrameTicks{0};
 
 /* Implementation ownership: ui/core/frame_loop. */
 
@@ -92,8 +92,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   do {
     g_Win32PumpMessages();
   } while ((stopMessageCode != 0) && (g_UiPendingFrameTicks == 0));
-  ticksToRun = g_UiPendingFrameTicks;
-  g_UiPendingFrameTicks = 0;
+  ticksToRun = g_UiPendingFrameTicks.exchange(0); /* read and clear in one step: no timer tick is lost */
   for (; ticksToRun != 0; ticksToRun--) {
     frontRoot = g_UiRootNode;
     if (frontRoot != UI_ROOT_STACK_END) {

@@ -365,7 +365,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
 
-  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  const SpinLockGuard tickLock((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -395,8 +395,6 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       playerRecord++;
     }
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
-  return;
 }
 
 /* Fills diplomacy row slotIndex for faction factionIndex (its record factionRecord): remembers the faction for

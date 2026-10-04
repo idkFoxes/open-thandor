@@ -35,6 +35,7 @@ struct TimerRegistration {
   Uint64 periodNs = 0;
   Uint64 nextDueNs = 0; /* only touched by the timer thread after the start */
   std::atomic<bool> active{true};
+  std::atomic<bool> running{false}; /* the callback is executing on the timer thread */
 };
 
 struct TimerSlot {
@@ -45,20 +46,42 @@ struct TimerSlot {
 std::mutex s_timerMutex;
 std::array<TimerSlot, kTimerSlotCount> s_timerSlots;
 std::vector<std::unique_ptr<TimerRegistration>> s_registrations;
+thread_local bool t_inTimerDispatch = false; /* true on the timer thread while a callback runs */
 
 Uint64 SDLCALL TimerDispatch(void *userdata, SDL_TimerID /*timerId*/, Uint64 /*interval*/)
 {
   auto &registration = *static_cast<TimerRegistration *>(userdata);
+  /* running is raised before active is checked (both sequentially consistent): a stopping thread that has
+     cleared active either is seen here, or sees running and waits for the callback to end */
+  registration.running.store(true);
   if (!registration.active.load()) {
+    registration.running.store(false);
     return 0; /* stopped: SDL removes the timer */
   }
+  t_inTimerDispatch = true;
   registration.callback();
+  t_inTimerDispatch = false;
+  registration.running.store(false);
   registration.nextDueNs += registration.periodNs;
   const Uint64 now = SDL_GetTicksNS();
   if (registration.nextDueNs + registration.periodNs < now) {
     registration.nextDueNs = now + registration.periodNs; /* far behind (e.g. a debugger stop): no burst */
   }
   return (registration.nextDueNs > now) ? registration.nextDueNs - now : 1;
+}
+
+/* Waits until a stopped registration's callback is no longer running, so the caller may free the data it
+   touches. SDL_RemoveTimer does not wait for a callback in progress. Called without s_timerMutex held (a
+   callback may register or unregister timers itself). On the timer thread no other callback runs at the same
+   time (SDL has one timer thread), and a callback stopping its own timer must not wait for itself. */
+void WaitWhileCallbackRunning(const TimerRegistration *registration)
+{
+  if ((registration == nullptr) || t_inTimerDispatch) {
+    return;
+  }
+  while (registration->running.load()) {
+    SDL_Delay(0);
+  }
 }
 
 } // namespace
@@ -91,26 +114,41 @@ void SdlTimer_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *c
 
 void SdlTimer_UnregisterPeriodic(TimerCallbackProc *callback)
 {
-  const std::scoped_lock lock(s_timerMutex);
-  for (TimerSlot &slot : s_timerSlots) {
-    if ((slot.registration != nullptr) && (slot.registration->callback == callback)) {
-      slot.registration->active.store(false);
-      SDL_RemoveTimer(slot.timerId);
-      slot = TimerSlot{};
-      return;
+  TimerRegistration *stopped = nullptr;
+  {
+    const std::scoped_lock lock(s_timerMutex);
+    for (TimerSlot &slot : s_timerSlots) {
+      if ((slot.registration != nullptr) && (slot.registration->callback == callback)) {
+        stopped = slot.registration;
+        stopped->active.store(false);
+        SDL_RemoveTimer(slot.timerId);
+        slot = TimerSlot{};
+        break;
+      }
     }
   }
+  /* the callers free the callback's data right after this returns (e.g. UiRuntime_Shutdown, the record ring) */
+  WaitWhileCallbackRunning(stopped);
 }
 
 void SdlTimer_Shutdown(void)
 {
-  const std::scoped_lock lock(s_timerMutex);
-  for (TimerSlot &slot : s_timerSlots) {
-    if (slot.registration != nullptr) {
-      slot.registration->active.store(false);
-      SDL_RemoveTimer(slot.timerId);
-      slot = TimerSlot{};
+  std::array<TimerRegistration *, kTimerSlotCount> stopped{};
+  {
+    const std::scoped_lock lock(s_timerMutex);
+    for (std::size_t slotIndex = 0; slotIndex < kTimerSlotCount; slotIndex++) {
+      TimerSlot &slot = s_timerSlots[slotIndex];
+      if (slot.registration != nullptr) {
+        stopped[slotIndex] = slot.registration;
+        slot.registration->active.store(false);
+        SDL_RemoveTimer(slot.timerId);
+        slot = TimerSlot{};
+      }
     }
   }
-  /* s_registrations stays: a callback may still be finishing on the timer thread */
+  /* the arena is freed after this (Runtime_Shutdown): no callback may still be inside it */
+  for (const TimerRegistration *registration : stopped) {
+    WaitWhileCallbackRunning(registration);
+  }
+  /* s_registrations stays allocated anyway: SDL may still be about to dispatch a removed timer */
 }

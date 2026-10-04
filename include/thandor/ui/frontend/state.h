@@ -13,6 +13,8 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
+#include <atomic>
+
 /* Submodule: ui/frontend/state. */
 
 /* Functions are grouped by semantic ownership. */
@@ -29,7 +31,7 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 void Frontend_StateTick(void);
 
 extern uint32_t g_FrontendNetworkTickCounter;
-extern uint32_t g_FrontendTimerCountdownTicks;
+extern std::atomic<uint32_t> g_FrontendTimerCountdownTicks; /* counted down by the 80 Hz timer thread */
 
 /* First code unit of a level title: rich-text style code, normal or highlighted (a level that some other player
    of the session does not have). */

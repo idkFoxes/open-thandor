@@ -16,6 +16,8 @@
 #include <thandor/core/contracts.h>
 #include <thandor/assets/rom/runtime.h>
 
+#include <atomic>
+
 /* Submodule: ui/frontend/menu_room_scene. */
 
 /* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
@@ -56,10 +58,10 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 
 extern uint32_t g_FrontendRomTransitionPageAction;
 extern uintptr_t g_FrontendActiveRomRecord;
-extern uint32_t g_FrontendRomTransitionElapsedTicks;
+extern std::atomic<uint32_t> g_FrontendRomTransitionElapsedTicks; /* advanced by the 256 Hz timer thread */
 extern uintptr_t g_FrontendRomTransitionSplineKeyframes;
 extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
-extern uint32_t g_FrontendRomTransitionTargetRecordId;
+extern std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId; /* read by the 256 Hz timer thread */
 
 extern DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
 

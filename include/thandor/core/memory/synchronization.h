@@ -30,4 +30,24 @@ extern SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire;
 extern SpinLockReleaseProc *g_SpinLockRelease;
 extern SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke;
 
+/* Scoped spin lock: takes the lock through g_SpinLockAcquire on construction and drops it through
+   g_SpinLockRelease when the scope ends (a null lock does nothing, as with the slots themselves). Only for
+   sites whose acquire and release already pair up in one scope. */
+class SpinLockGuard {
+public:
+  explicit SpinLockGuard(RuntimeSpinLockValue *lockValue) : m_lockValue(lockValue)
+  {
+    g_SpinLockAcquire(m_lockValue);
+  }
+  ~SpinLockGuard()
+  {
+    g_SpinLockRelease(m_lockValue);
+  }
+  SpinLockGuard(const SpinLockGuard &) = delete;
+  SpinLockGuard &operator=(const SpinLockGuard &) = delete;
+
+private:
+  RuntimeSpinLockValue *m_lockValue;
+};
+
 #endif /* THANDOR_CORE_MEMORY_SYNCHRONIZATION_H */

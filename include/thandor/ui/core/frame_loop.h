@@ -12,6 +12,8 @@
 #include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
+#include <atomic>
+
 /* Submodule: ui/core/frame_loop. */
 
 /* Functions are grouped by semantic ownership. */
@@ -26,6 +28,6 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode);
 
 void UiFrame_Draw(void);
 
-extern uint32_t g_UiPendingFrameTicks;
+extern std::atomic<uint32_t> g_UiPendingFrameTicks; /* incremented by the 20 Hz frame-tick timer thread */
 
 #endif /* THANDOR_UI_CORE_FRAME_LOOP_H */
