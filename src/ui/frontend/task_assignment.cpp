@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/task_assignment.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -18,6 +19,24 @@ FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets
     .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}};
 
 /* Implementation ownership: ui/frontend/task_assignment. */
+
+/* Faction assignment indices of player records are 1..7 (row index + 1). The original indexes the row tables
+   with index - 1 (and the roster texts with the index) without a check; bounded here because the records are
+   filled from peers' commands in a network game. An index outside 1..7 is skipped (logged once). */
+static bool FrontendTaskAssignmentPage_IsValidFactionIndex(FrontendFactionAssignmentIndex factionIndex)
+
+{
+  static int s_loggedInvalidFactionIndex;
+
+  if (factionIndex >= 1 && factionIndex <= 7) {
+    return true;
+  }
+  if (s_loggedInvalidFactionIndex == 0) {
+    s_loggedInvalidFactionIndex = 1;
+    Thandor_Log("faction setup: player faction index %d out of range, skipped",factionIndex);
+  }
+  return false;
+}
 
 /* Opens the "Choose faction" page (FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) for the loaded level. The seven
    roster rows are set up from the level: assignable factions get an active mode button ("Computer"), the other
@@ -280,24 +299,23 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
 
 {
   uint32_t *controlFlags;
-  uint16_t scannedChar;
   uint32_t controlOffset;
-  uint32_t lastPlayerFactionIndex;
-  FrontendLoadedLevelAsset *loadedLevelAsset;
+  FrontendFactionAssignmentIndex rosterFactionIndex;
   FrontendFactionAssignmentIndex localFactionIndex;
   FrontendPlayerRuntimeBlockCount remainingSearchCount;
   int row;
   int remainingDwords;
-  int remainingCodeUnits;
+  int nameCodeUnits;
+  int nameUnitIndex;
   int localPlayerFaction;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerNameUtf16 *playerName;
-  FrontendPlayerNameUtf16 *nameCharCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeRecord *otherPlayerRecord;
   FrontendTaskAssignmentFactionTextRow *textRowCursor;
   uint16_t *rosterTextCursor;
-  uint16_t *rosterScanCursor;
+  uint16_t *rosterRowStart;
+  uint16_t *rosterRowEnd;
   uint32_t controlClearMask;
   uint32_t controlSetMask;
   
@@ -396,19 +414,20 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
                                                    g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[row - 1]);
     }
   }
-  loadedLevelAsset = g_FrontendLoadedLevelAsset;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
-    lastPlayerFactionIndex = playerRecord->factionAssignment.factionAssignmentIndex;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[lastPlayerFactionIndex - 1]))->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
+    if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
+      ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1]))->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
+    }
     remainingPlayers--;
     playerRecord++;
   } while (remainingPlayers != 0);
-  /* Not a client: update the mode buttons, then hide those of factions taken by players. Original quirk: the
-     original ORs the last player's faction index and ANDs the address of g_FrontendLoadedLevelAsset here
-     (both left over from the loop above), where the set/clear masks were probably meant; kept as in the
-     original. */
+  /* Not a client: update the mode buttons, then hide those of factions taken by players. The original ORs
+     the last player's faction index and ANDs the (low 32 bits of the) address of g_FrontendLoadedLevelAsset
+     here (both left over in registers from the loop above) where the page's set/clear masks were meant (as
+     FrontendTaskAssignmentPage_ShowRowControl applies them: shown, or kept hidden once the local player has
+     confirmed); the masks are applied here because the original makes the flags depend on the heap layout. */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     for (row = 7; row != 0; row--) {
       if ((((UiSingleLineTextControl *)THANDOR_UI_AT(taskAssignmentRoot,
@@ -416,16 +435,18 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
            UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0) {
         controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[row - 1];
         controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
-        *controlFlags = *controlFlags | lastPlayerFactionIndex;
+        *controlFlags = *controlFlags | controlSetMask;
         controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
-        *controlFlags = *controlFlags & (uint32_t)(uintptr_t)loadedLevelAsset; /* the quirk: low address bits */
+        *controlFlags = *controlFlags & controlClearMask;
       }
     }
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
-      controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->nodeFlags;
-      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+      if (FrontendTaskAssignmentPage_IsValidFactionIndex(playerRecord->factionAssignment.factionAssignmentIndex)) {
+        controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[playerRecord->factionAssignment.factionAssignmentIndex - 1])->nodeFlags;
+        *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+      }
       remainingPlayers--;
       playerRecord++;
     } while (remainingPlayers != 0);
@@ -447,53 +468,64 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   FRONTEND_UI(taskAssignmentRoot,rosterParticipantHeader)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
-  /* Append every player's name to the roster row of its faction; playerName walks the player records. */
+  /* Append every player's name to the roster row of its faction; playerName walks the player records.
+     A name is written as the style code (0x8001 highlighted while consensusValue is 0, else 0x8000) and up to
+     20 code units of the name (copied past its terminator); then, highlighted, 0x8000 over the last copied
+     unit and a 0, else a 0 over the last copied unit. A further name follows the row's first terminator after
+     ", ". The original copies 20 units, but all units left in the row when no more than 21 are left (21 of
+     them read past the name), and writes the closing codes after them: with two names of 16 or more code units on one faction it writes up
+     to 2 code units past the 40-unit row, and a third name then finds no terminator and copies about 2^32
+     units. Bounded here because the names come from peers: the copied units are cut so that the closing
+     codes stay in the row, and a name without room for one unit is left out (without ", "). Rows that fit
+     get the same text as in the original. */
   do {
-    rosterTextCursor = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows
-                      [FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.factionAssignmentIndex].textUtf16;
-    remainingCodeUnits = 40; /* code units left in the row */
-    if (*(int *)rosterTextCursor != 0) {
-      /* The faction row already names a player: find its end and append ", " while room is left. */
-      do {
-        rosterScanCursor = rosterTextCursor;
-        if (remainingCodeUnits == 0) break;
-        remainingCodeUnits--;
-        rosterScanCursor = rosterTextCursor + 1;
-        scannedChar = *rosterTextCursor;
-        rosterTextCursor = rosterScanCursor;
-      } while (scannedChar != 0);
-      rosterTextCursor = rosterScanCursor + 1;
-      remainingCodeUnits--;
-      if (remainingCodeUnits != 0) {
-        rosterScanCursor[-1] = ',';
-        rosterScanCursor[0] = ' ';
+    rosterFactionIndex = FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.factionAssignmentIndex;
+    if (FrontendTaskAssignmentPage_IsValidFactionIndex(rosterFactionIndex)) {
+      rosterRowStart = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows
+                       [rosterFactionIndex].textUtf16;
+      rosterRowEnd = rosterRowStart + 40;
+      rosterTextCursor = rosterRowStart;
+      if (rosterTextCursor[0] != 0 || rosterTextCursor[1] != 0) {
+        /* The faction row already names a player: find its end; ", " follows there. */
+        while (rosterTextCursor < rosterRowEnd && *rosterTextCursor != 0) {
+          rosterTextCursor++;
+        }
+        if (2 <= rosterRowEnd - rosterTextCursor) {
+          rosterTextCursor += 2;
+        }
+        else {
+          rosterTextCursor = rosterRowEnd; /* no room: the name is left out below */
+        }
       }
-    }
-    if (remainingCodeUnits != 0) {
-      if (21 < remainingCodeUnits) {
-        remainingCodeUnits = 20; /* at most the 20 code units of a player name */
+      /* code units left for the name between the style code and the closing code(s) */
+      nameCodeUnits = (int)(rosterRowEnd - rosterTextCursor) -
+                      (FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.consensusValue == 0 ? 2 : 1);
+      if (20 < nameCodeUnits) {
+        nameCodeUnits = 20; /* at most the 20 code units of a player name */
       }
-      if (FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.consensusValue == 0) {
+      if (0 < nameCodeUnits) {
+        if (rosterTextCursor != rosterRowStart) {
+          rosterTextCursor[-2] = ',';
+          rosterTextCursor[-1] = ' ';
+        }
         /* consensusValue 0: the name between rich-text codes 0x8001 and 0x8000, else after 0x8000 */
-        *rosterTextCursor = FRONTEND_TEXT_STYLE_HIGHLIGHTED;
-        nameCharCursor = playerName;
-        for (; remainingCodeUnits != 0; remainingCodeUnits--) {
-          rosterTextCursor[1] = nameCharCursor->textUtf16[0];
-          nameCharCursor = (FrontendPlayerNameUtf16 *)(nameCharCursor->textUtf16 + 1);
-          rosterTextCursor++;
+        if (FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.consensusValue == 0) {
+          rosterTextCursor[0] = FRONTEND_TEXT_STYLE_HIGHLIGHTED;
         }
-        rosterTextCursor[0] = FRONTEND_TEXT_STYLE_NORMAL;
-        rosterTextCursor[1] = 0;
-      }
-      else {
-        *rosterTextCursor = FRONTEND_TEXT_STYLE_NORMAL;
-        nameCharCursor = playerName;
-        for (; remainingCodeUnits != 0; remainingCodeUnits--) {
-          rosterTextCursor[1] = nameCharCursor->textUtf16[0];
-          nameCharCursor = (FrontendPlayerNameUtf16 *)(nameCharCursor->textUtf16 + 1);
-          rosterTextCursor++;
+        else {
+          rosterTextCursor[0] = FRONTEND_TEXT_STYLE_NORMAL;
         }
-        *rosterTextCursor = 0;
+        for (nameUnitIndex = 0; nameUnitIndex < nameCodeUnits; nameUnitIndex++) {
+          rosterTextCursor[nameUnitIndex + 1] = playerName->textUtf16[nameUnitIndex];
+        }
+        rosterTextCursor += nameCodeUnits;
+        if (FRONTEND_PLAYER_RECORD_OF_NAME(playerName)->factionAssignment.consensusValue == 0) {
+          rosterTextCursor[0] = FRONTEND_TEXT_STYLE_NORMAL;
+          rosterTextCursor[1] = 0;
+        }
+        else {
+          rosterTextCursor[0] = 0;
+        }
       }
     }
     remainingPlayers--;
@@ -527,6 +559,9 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   do {
     if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
       localPlayerFaction = playerRecord->factionAssignment.factionAssignmentIndex;
+      if (!FrontendTaskAssignmentPage_IsValidFactionIndex(localPlayerFaction)) {
+        return;
+      }
       otherPlayerRecord = g_FrontendPlayerRuntimeBlocks;
       while ((localPlayerFaction != otherPlayerRecord->factionAssignment.factionAssignmentIndex ||
              ((int)(playerRecord->factionAssignment).readyOrWaitState <=

@@ -312,9 +312,13 @@ void FrontendSession_PeriodicTick(void)
   Bool8 callResult;
   void *packet;
   void *packetEndpoint;
+  uint32_t networkTickInterval;
 
   callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
+  /* The original divides by g_SessionNetworkTickInterval as it is; 0 is taken as 1 here because the
+     interval comes from the host's join ack (the result is the same for any other value). */
+  networkTickInterval = g_SessionNetworkTickInterval != 0 ? g_SessionNetworkTickInterval : 1;
   if (callResult) {
     return;
   }
@@ -325,10 +329,10 @@ void FrontendSession_PeriodicTick(void)
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-      if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+      if (g_SessionNetworkTickCounter % networkTickInterval == 0) {
         FrontendTransfer_DispatchStagedCommandRecords();
       }
-      else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
+      else if ((g_SessionNetworkTickCounter % networkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
         while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
@@ -345,7 +349,7 @@ void FrontendSession_PeriodicTick(void)
     }
   }
   else {
-    if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+    if (g_SessionNetworkTickCounter % networkTickInterval == 0) {
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) {

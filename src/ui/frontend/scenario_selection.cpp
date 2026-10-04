@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/scenario_selection.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
@@ -18,6 +19,19 @@ static ScenarioCatalogRefreshSelectedRecordCallback *const g_FrontendScenarioMap
     /* 2 */ ScenarioCatalog_SelectCampaignAndShowDescription};
 
 /* Implementation ownership: ui/frontend/scenario_selection. */
+
+/* Logs (once) a list row index that is not below the list's row count. */
+static void FrontendScenarioSelection_LogRejectedRowIndex(UiListRowIndex rowIndex)
+
+{
+  static int s_loggedRejectedRowIndex;
+
+  if (s_loggedRejectedRowIndex == 0) {
+    s_loggedRejectedRowIndex = 1;
+    Thandor_Log("scenario selection: row index %u out of range, ignored",(unsigned)rowIndex);
+  }
+  return;
+}
 
 /* Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):
    a changed selection shows the saved game's description, locally or on every peer through the frontend
@@ -636,6 +650,12 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != NULL) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
+    /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
+       the index can come from a peer's frontend command. */
+    if (selectionIndex >= control->rowCount) {
+      FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
+      return;
+    }
     saveRecord = rowPointers[selectionIndex];
     if (saveRecord->campaignTitleTextId < 0) {
       resourceId = saveRecord->levelTitleTextId;
@@ -678,6 +698,12 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != NULL) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
+    /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
+       the index can come from a peer's frontend command. */
+    if (selectionIndex >= control->rowCount) {
+      FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
+      return;
+    }
     ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,campaignDescriptionText))->text =
          (uint16_t *)(uintptr_t)(((ScenarioCatalogDisplayRecord *)rowPointers[selectionIndex])->
                         titleTextResourceId +
@@ -745,6 +771,13 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                     ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList),
                      NULL);
+  /* The original uses the row even when the saved-games list has no selected row (or no rows); bounded here
+     because the row pointer table would be read outside its rows. */
+  if (selectedRowIndex >=
+      ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList))->rowCount) {
+    FrontendScenarioSelection_LogRejectedRowIndex(selectedRowIndex);
+    return;
+  }
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              (uint16_t *)scenarioPathPointerTable[selectedRowIndex],
@@ -779,6 +812,12 @@ void ScenarioCatalog_SelectLevelAndShowDescription
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != NULL) {
     UiPointerList_SelectColumnListIndex(selectionIndex,listControl);
+    /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
+       the index can come from a peer's frontend command. */
+    if (selectionIndex >= listControl->rowCount) {
+      FrontendScenarioSelection_LogRejectedRowIndex(selectionIndex);
+      return;
+    }
     ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,missionDescriptionText))->text =
          (uint16_t *)(uintptr_t)(((ScenarioCatalogDisplayRecord *)rowPointers[selectionIndex])->
                         scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +
