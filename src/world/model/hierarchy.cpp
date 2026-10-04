@@ -7,6 +7,7 @@
 
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -618,6 +619,20 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
   newNode->modelRuntimeLinkOrSavedOffset = NULL;
   newNode->renderDepthBiasOrState = 0;
   childrenRemaining = definitionNode->childCount;
+  if (childrenRemaining > sizeof(definitionNode->childSerializedOffsets) /
+                          sizeof(definitionNode->childSerializedOffsets[0])) {
+    /* The original takes childCount unchecked and writes childNodes[] past the 13 slots of the world record
+       (and reads the child offsets past the serialized header's six); bounded here because a node with a sprite
+       and more than six children cannot be valid: registration (ModelDefinition_ResolveNodeSprites) would have
+       relocated its sprite reference as a seventh child offset. Extra children are dropped. */
+    static Bool8 s_loggedChildCountOutOfRange = false;
+    if (!s_loggedChildCountOutOfRange) {
+      s_loggedChildCountOutOfRange = true;
+      Thandor_Log("model: MDL node with %u children, only the first 6 are created",childrenRemaining);
+    }
+    childrenRemaining = sizeof(definitionNode->childSerializedOffsets) /
+                        sizeof(definitionNode->childSerializedOffsets[0]);
+  }
   childIndex = 0;
   newNode->childCount = childrenRemaining;
   newNode->parentNode = NULL;

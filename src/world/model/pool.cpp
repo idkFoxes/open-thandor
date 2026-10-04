@@ -174,6 +174,15 @@ static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseVi
   }
 }
 
+/* True when the definition's runtimeClassId selects a column of the 24-class handler matrix
+   (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes). */
+static Bool8 ModelDefinition_HasHandledRuntimeClass(const ModelDefinition *definition)
+{
+  return (uint32_t)definition->runtimeClassId <
+         sizeof(g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize) /
+         sizeof(g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize[0]);
+}
+
 /* Part of ModelRuntimePool_UnrebaseBeforeSave: turns the pointers of one used slot into saved offsets, replaces
    the definition by its id, runs the class's modelUnrebase handler and then unrebases the used attachment
    descriptors (NULL stays 0). */
@@ -335,6 +344,15 @@ void ModelRuntimePool_RebaseAfterLoad(void)
       modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
       continue;
     }
+    if (!ModelDefinition_HasHandledRuntimeClass((ModelDefinition *)registeredDefinition)) {
+      /* The original indexes the handler matrix unchecked; bounded here because no instance of such a
+         definition can have been created (ModelRuntimePool_CreateInstanceByDefinitionId): dropped like an
+         unregistered one. */
+      Thandor_Log("model: saved instance of a definition with runtime class %d outside 0..23, dropped",
+                  ((ModelDefinition *)registeredDefinition)->runtimeClassId);
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+      continue;
+    }
     modelRuntime->definitionOrSavedId.definition = registeredDefinition;
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair
       [((ModelDefinition *)registeredDefinition)->runtimeClassId](modelRuntime);
@@ -466,6 +484,15 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
 
   definitionView = (ModelDefinition *)ModelDefinitionRegistry_LookupById(modelDefinitionId);
   if (definitionView == NULL) {
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
+    return FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  }
+  if (!ModelDefinition_HasHandledRuntimeClass(definitionView)) {
+    /* The original indexes the 24-class handler matrix with runtimeClassId unchecked; bounded here because
+       a definition with another class has no handlers: it is treated like a missing definition. */
+    Thandor_Log("model: definition %d has runtime class %d outside 0..23, not created",
+                (int)modelDefinitionId,definitionView->runtimeClassId);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
     return FATAL_ERROR_MODEL_DEFINITION_MISSING;

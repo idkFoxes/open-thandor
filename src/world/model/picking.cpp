@@ -161,16 +161,16 @@ Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
   return false;
 }
 
-/* A miss of ModelNodeRuntime_RaycastHierarchyNearest before the mesh test: stores the leftover scratch value
-   of the original (scratchValue) as the "nearest node" (see the original quirk there). */
+/* A miss of ModelNodeRuntime_RaycastHierarchyNearest before the mesh test. The original leaves its scratch
+   value (scratchValue: a projected distance or a product high word) in the "nearest node" output; stored as
+   NULL here because an integer is no node pointer, and every caller uses the node only after a hit
+   (gameplay/army/combat.cpp, world/shots/flight.cpp), so the result is the same. */
 static Q12 ModelNodeRuntime_RaycastMissWithScratchNode
           (ModelRuntimeNode **outNearestModelNode,int scratchValue)
 
 {
-  ModelRaycastNearestNodeOrScratch4 scratchNode;
-
-  scratchNode.scratchSigned = scratchValue;
-  *outNearestModelNode = scratchNode.nearestModelNode;
+  (void)scratchValue;
+  *outNearestModelNode = NULL;
   return MODEL_RAYCAST_NO_HIT_DISTANCE;
 }
 
@@ -200,9 +200,8 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
    node's mesh group, then the children are tested. Returns the nearest hit distance and stores the nearest
    node in *outNearestModelNode; returns MODEL_RAYCAST_NO_HIT_DISTANCE when nothing was hit (a hit never has
    that distance).
-   Original quirk: on a miss *outNearestModelNode still receives a leftover scratch value of the original (a
-   product high word, NULL, or what the last child test left there); ModelRuntime_RaycastCandidateListNearest
-   can pick it up.
+   On a miss *outNearestModelNode receives NULL (the original: a leftover scratch value, see
+   ModelNodeRuntime_RaycastMissWithScratchNode); ModelRuntime_RaycastCandidateListNearest can pick it up.
 */
 Q12 ModelNodeRuntime_RaycastHierarchyNearest
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode)
@@ -274,7 +273,13 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   nodeX = modelNodeRuntime->worldTransform.translation.x;
   nodeY = modelNodeRuntime->worldTransform.translation.y;
   nodeZ = modelNodeRuntime->worldTransform.translation.z;
-  meshGroupCursor = ModelResource_FindRaycastMeshGroup(resourceView);
+  /* The original walks meshGroupCount - 1 groups unchecked, i.e. 0xFFFFFFFF of them for a node without mesh
+     groups (reachable: the sphere test above uses the subtree radius); bounded here because such a node has no
+     triangles: its mesh test is skipped. */
+  meshGroupCursor = NULL;
+  if (resourceView->meshGroupCount != 0) {
+    meshGroupCursor = ModelResource_FindRaycastMeshGroup(resourceView);
+  }
   g_ModelRaycastOrigin.x = g_ModelRaycastOrigin.x - nodeX;
   g_ModelRaycastOrigin.y = g_ModelRaycastOrigin.y - nodeY;
   g_ModelRaycastOrigin.z = g_ModelRaycastOrigin.z - nodeZ;
@@ -288,9 +293,14 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
              &g_GraphicsTransformScratchMatrix3x4);
 
   /* every triangle of every mesh of the mesh group */
-  triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
   nearestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
-  for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining--) {
+  triangle = NULL;
+  meshRecordsRemaining = 0;
+  if (meshGroupCursor != NULL) {
+    triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
+    meshRecordsRemaining = meshGroupCursor[1];
+  }
+  for (; meshRecordsRemaining != 0; meshRecordsRemaining--) {
     /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
     triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
     triangle = (ModelRaycastTriangleDescriptor *)
@@ -319,7 +329,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
     }
   }
   if (nearestDistanceQ12 == MODEL_RAYCAST_NO_HIT_DISTANCE) {
-    /* Original quirk: NULL, or whatever the last child test stored */
+    /* NULL, or what the last child test stored (also NULL on its miss) */
     *outNearestModelNode = childNearestModelNode;
     return MODEL_RAYCAST_NO_HIT_DISTANCE;
   }
@@ -332,8 +342,8 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
    ray-transparent models (MODEL_NODE_FLAG_RAY_TRANSPARENT) and pre-filtering by the depth bin masks of the X and Y
    ranges the ray can reach. Returns true when a model was hit. *outNearestDistanceQ12 always receives the
    nearest distance (MODEL_RAYCAST_NO_HIT_DISTANCE on a miss) and *outNearestModelNode the nearest hit node.
-   Original quirk: on a miss *outNearestModelNode is NULL or a leftover scratch value of the last missing
-   hierarchy test; callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
+   On a miss *outNearestModelNode is NULL (the original: NULL or a leftover scratch value of the last missing
+   hierarchy test); callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
    updates (src/world/shots/maintenance.c).
 */
 Bool8 ModelRuntime_RaycastCandidateListNearest

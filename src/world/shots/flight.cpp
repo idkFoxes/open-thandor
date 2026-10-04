@@ -8,6 +8,7 @@
 #include <thandor/world/shots/flight.h>
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: world/shots/flight. */
 
@@ -289,7 +290,19 @@ static void ShotModel_CastHitRays
                       modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
                       &surfaceDistanceQ12,&hits->terrainMaterialIndex);
   hits->terrainHitDistance = surfaceDistanceQ12;
-  if ((surfaceHit) &&
+  if ((surfaceHit) && (hits->terrainMaterialIndex >= SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT)) {
+    /* The original indexes the 31-entry material arrays with the cell's 8-bit material id and reads the
+       following ShotDefinition fields for ids 31..255; bounded here because valid maps use ids 0..25 only:
+       such a material counts as one without impact effect. */
+    static Bool8 s_loggedMaterialOutOfRange = false;
+    if (!s_loggedMaterialOutOfRange) {
+      s_loggedMaterialOutOfRange = true;
+      Thandor_Log("shot: terrain material %u out of range, no impact effect",hits->terrainMaterialIndex);
+    }
+    hits->terrainMaterialIndex = 0;
+    hits->terrainHitDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
+  }
+  else if ((surfaceHit) &&
      (shotRuntime->definitionOrSavedId.definition->terrainImpactEffectDefinitions31[hits->terrainMaterialIndex]
       == NULL)) {
     hits->terrainHitDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
@@ -697,7 +710,9 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode)
 
 {
-  ShotRayHits hits;
+  /* zero-initialised: the original's locals were garbage here; ShotModel_CastHitRays writes every field it
+     reads later (targetClassIndex only on an army hit, and it is used only after one) */
+  ShotRayHits hits = {};
   ShotDefinition *shotDefinition;
   ShotRuntimeSlot *shotRuntime;
   ModelRuntimeNode *modelNodeRuntime;
