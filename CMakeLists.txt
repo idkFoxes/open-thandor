@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
-project(open_thandor C CXX)
+project(open_thandor CXX)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # The recovered code stores pointers in 32-bit fields (pointer32, (int)ptr casts).
 # Decompiled code reads Ghidra's placeholders for unknown register halves (extraout_var, ...)
 # before assigning them; the debug runtime checks would stop on each one.
-string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,

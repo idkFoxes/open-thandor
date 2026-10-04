@@ -21,38 +21,19 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 using Q12 = int;
 using UQ12 = unsigned int;
 
-/* Compile-time checks, in C and C++. */
-#ifdef __cplusplus
+/* Compile-time check. */
 #define THANDOR_STATIC_ASSERT(condition, message) static_assert(condition, message)
-#else
-#define THANDOR_STATIC_ASSERT(condition, message) _Static_assert(condition, message)
-#endif
 
 /* THANDOR_FN(function) / THANDOR_PTR(pointer): an untyped function or object address for a table entry or
    argument whose exact pointer type is given by its target (vtable slots, callback tables, handler tables).
-   In C this is exactly (void *)(x); in C++ the value converts to the pointer type it is assigned to. To be
-   replaced by exactly typed entries when the tables become classes. */
+   The value converts to the pointer type it is assigned to. To be replaced by exactly typed entries when the
+   tables become classes. */
 #include <thandor/core/ptr32.h> /* ThandorAnyFn, ThandorAnyPtr, Ptr32 */
-#ifdef __cplusplus
 #define THANDOR_FN(f) (ThandorAnyFn{(void (*)())(f)})
 #define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
-#else
-#define THANDOR_FN(f) ((void *)(f))
-#define THANDOR_PTR(p) ((void *)(p))
-#endif
 
-/* A temporary of type T from a braced initializer, in C and C++: THANDOR_COMPOUND(T){a, b}. */
-#ifdef __cplusplus
+/* A temporary of type T from a braced initializer: THANDOR_COMPOUND(T){a, b}. */
 #define THANDOR_COMPOUND(T) T
-#else
-#define THANDOR_COMPOUND(T) (T)
-#endif
-
-/* The original's one-byte booleans are Bool8 (core/types.h); true/false are 1/0 for them in C. */
-#if !defined(__cplusplus) && !defined(true)
-#define true 1
-#define false 0
-#endif
 
 /* THANDOR_ALLOWS_OVERREAD: on a function that reads past the end of its source on purpose, as the original
    does, where the extra bytes never reach a result (a copy of twice the length into a scratch buffer). The
