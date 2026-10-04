@@ -553,7 +553,7 @@ static void InGameWorldInput_CommitCommandModeRelease
   if ((modifierModeMask & variantMask) == 0) {
     return;
   }
-  modeHandler = (InGamePointerModeHandler *)g_InGamePointerModeHandlers[modifierModeMask & variantMask];
+  modeHandler = g_InGamePointerModeHandlers[modifierModeMask & variantMask];
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     /* The original pushes the same four arguments as the networked command below, with the local player
        id in place of the command id. */

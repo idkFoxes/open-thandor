@@ -268,8 +268,7 @@ void __cdecl UiActionQueue_DispatchPending()
     }
     actionHandler(actionSource);
   }
-  g_SpinLockReleaseAndInvoke
-            ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
+  g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
 

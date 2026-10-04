@@ -125,8 +125,7 @@ void UiPointer_DispatchPendingEvents()
       break;
     }
   }
-  g_SpinLockReleaseAndInvoke
-            ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
+  g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
 
@@ -235,8 +234,7 @@ void UiKeyboard_DispatchPendingEvents()
       g_UiRootNode->callbacks->keyboardFallback(keyboardStateMask,keyCode,g_UiRootNode);
     }
   }
-  g_SpinLockReleaseAndInvoke
-            ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
+  g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
 
