@@ -48,15 +48,12 @@ extern UiNodeVtable g_UiImageControlVtable;
    press and cleared by the right-button re-dispatch. A press sets / clears the PRESS_STATE_BITS (bits 0, 1,
    9 and 11) at once. */
 #define UI_IMAGE_CONTROL_POINTER_SOUND 0x20
-
 #define UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED 0x100
 
 #define UI_IMAGE_CONTROL_PRESSED_ON_IMAGE 0x200
-
 #define UI_IMAGE_CONTROL_OPEN 0x400
 
 #define UI_IMAGE_CONTROL_PRESS_STARTED 0x800
-
 #define UI_IMAGE_CONTROL_PRESS_STATE_BITS 0xA03
 
 /* Cursor frame an image control in persistent-activation mode shows over a transparent pixel with no child

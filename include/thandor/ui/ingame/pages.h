@@ -76,7 +76,6 @@ extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
 
                                                           (InGameChatInput_SendLineOrCheckCheatPhrase) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
-
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED 0x80000 /* set with every cheat toggle by the chat phrase;
 
                                                                 no reader found */
@@ -87,12 +86,10 @@ extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
 /* g_UiCommandRuntimeFlags bits of windows that pause a local game while open (mission help:
    InGameMissionHelpPage_Toggle, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */
 #define UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE 0x4000 /* an open window paused the game */
-
 #define UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW 0x400 /* the game was already paused when it opened */
 
 /* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */
 #define INGAME_ACTION_QUIT_SURRENDER 0x101E /* command 150 mode 1: destroys the local faction's armies */
-
 #define INGAME_ACTION_QUIT_RESTART_MISSION 0x1027 /* command 150 mode 2 (label unverified) */
 
 void InGameResultsScreen_ContinueOrMarkReady(void *source);
