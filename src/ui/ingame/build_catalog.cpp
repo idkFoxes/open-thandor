@@ -47,28 +47,12 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         == 0) {
       factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_RegisterArmyAssetPointers
-                  (g_LocalPlayerRuntimeId,1,assetId,factionIndex);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayload)factionIndex);
-      }
+      InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
       factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-                  (g_LocalPlayerRuntimeId,1,assetId,factionIndex);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayload)factionIndex);
-      }
+      InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
   }
   return;
@@ -103,28 +87,12 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
         == 0) {
       factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_RegisterArmyAssetPointers
-                  (g_LocalPlayerRuntimeId,1,assetId,factionIndex);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayload)factionIndex);
-      }
+      InGameCommand_Issue<GameFactionRuntime_RegisterArmyAssetPointers>(1,assetId,factionIndex);
     }
     else {
       factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-                  (g_LocalPlayerRuntimeId,1,assetId,factionIndex);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayload)factionIndex);
-      }
+      InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
   }
   return;

@@ -163,14 +163,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
       InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
       /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
       modelOffset = (int)((intptr_t)definitionRecord - (intptr_t)g_ModelRuntimeRebaseDelta);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
-                  (g_LocalPlayerRuntimeId,0,0,modelOffset);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_ASSIGN_ARMY_TOKEN,0,0,modelOffset);
-      }
+      InGameCommand_Issue<FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch>(0,0,modelOffset);
     }
   }
   return;
@@ -228,15 +221,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      UiCommandRuntimeFlags_ApplyClearSetToggleMasks
-                (g_LocalPlayerRuntimeId,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand
-                (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
-    }
+    InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
            SESSION_NETWORK_ROLE_LOCAL) {
@@ -255,15 +240,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 void InGameEndMovie_Skip(void *source)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    UiCommandRuntimeFlags_ApplyClearSetToggleMasks
-              (g_LocalPlayerRuntimeId,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
-  }
+  InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
   return;
 }
 
@@ -281,15 +258,7 @@ void InGameQuitMenu_RestartMission(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_HandlePlayerDeparture
-              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
-  }
+  InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
   return;
 }
 
@@ -378,13 +347,7 @@ void InGameQuitMenu_AbortMission(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
-  }
+  InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
   return;
 }
 
@@ -401,15 +364,7 @@ void InGameQuitMenu_Surrender(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand_HandlePlayerDeparture
-              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
-  }
+  InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
   return;
 }
 

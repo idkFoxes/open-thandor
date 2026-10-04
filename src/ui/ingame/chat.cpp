@@ -82,35 +82,14 @@ static void InGameChatInput_SendPayloadText(CommandPayload recipientMask)
 {
   uint32_t tripleIndex;
 
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerTextCommand_SetPackedState(g_LocalPlayerRuntimeId,0,0,recipientMask);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_SET_RECIPIENTS,0,0,recipientMask);
-  }
+  InGameCommand_Issue<FrontendPlayerTextCommand_SetPackedState>(0,0,recipientMask);
   for (tripleIndex = 0; tripleIndex < 4; tripleIndex++) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerTextCommand_AppendTripleClamped
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload3);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand
-                (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload3);
-    }
+    InGameCommand_Issue<FrontendPlayerTextCommand_AppendTripleClamped>
+              (g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload1,
+               g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload2,
+               g_UiSevenSlotCommandPayloadText.triples[tripleIndex].payload3);
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerTextCommand_PublishConditionalRichText(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_PUBLISH,0,0,0);
-  }
+  InGameCommand_Issue<FrontendPlayerTextCommand_PublishConditionalRichText>(0,0,0);
 }
 
 /* UI action 0x1024 (g_InGameUiActionHandlersPage10[36]): Enter in the in-game chat line. In a local game the
