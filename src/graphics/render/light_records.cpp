@@ -91,7 +91,7 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
    GraphicsShadingRuntime_RebuildCompactLightingRecords) whose sphere contains worldPointQ12 to the packed
    light accumulator (four 16-bit lanes), with unsigned saturation, and returns the new accumulator. The
    strength comes from g_PackedLightingLookupTable indexed by (radius^2 - distance^2) / radius^2, so it falls
-   off towards the sphere edge. Used by the terrain vertex shading in src/world/terrain/projection.c.
+   off towards the sphere edge. Used by the terrain vertex shading in src/graphics/terrain/terrain_render.cpp.
 */
 MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator)
@@ -197,7 +197,7 @@ void GraphicsShadingRuntime_ClearRecordTable(void)
   return;
 }
 
-/* Once per rendered world frame (frontend world render in src/ui/frontend/runtime.c): copies every active
+/* Once per rendered world frame (frontend world render in src/ui/frontend/menu_room.cpp): copies every active
    runtime light record (colour set) into the compact table with its position transformed into view space,
    and publishes the count, so the per-vertex and per-model light queries only walk the live lights.
 */
@@ -235,8 +235,8 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
 
 /* Copies every compact light record whose sphere overlaps the query sphere (distance^2 <= (queryRadius +
    lightRadius)^2, compared in 64 bits) into g_GraphicsShadingNearbyRecords and publishes
-   g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model.c) only tests
-   the lights near the model. Called per model node by the hierarchy renderers in src/world/model/runtime.c.
+   g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model_lighting.cpp) only tests
+   the lights near the model. Called per model node by the hierarchy renderers in src/graphics/render/model_draw.cpp.
 */
 void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)

@@ -317,8 +317,8 @@ static Bool8 SelectionPanelMetrics_DrawKindFrame
    and bars or segment rows on the left and right edge, all from the SELECTION_PANEL_CELL_* layout. What the bars
    show depends on the entity kind (runtimeLinkOrKind08) and its definition class; entities of other factions
    only get the empty frame. Called by SelectionOverlay_RenderSelectedArmyMetrics,
-   SelectionOverlay_RenderArmyMetricsForEntity (gameplay/selection/overlay.c) and
-   UiArmyMetricsPanel_DrawTextureMetricsAndChildren (ui/controls/text.c).
+   SelectionOverlay_RenderArmyMetricsForEntity (ui/ingame/selection_overlay.cpp) and
+   UiArmyMetricsPanel_DrawTextureMetricsAndChildren (ui/controls/panels.cpp).
 */
 void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

@@ -27,7 +27,7 @@ static int32_t g_UiAction1012ControlOffsets[7] = {23116, 23240, 23364, 23488, 23
 
 static int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 20276, 20364, 20452};
 
-/* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
+/* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
 static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};

@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-/* uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
+/* uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); energy distribution */
 static const uint32_t g_FactionEnergyAllocationPriorityByModelClass[24] = {
     /*  0 */ 0, 0, 0, 0, 256, 768, 1024, 1280, 1536, 1792, 512, 4608, 0, 2048, 4096, 0,
     /* 16 */ 0, 0, 0, 0, 0, 0, 2048, 256};

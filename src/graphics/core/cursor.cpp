@@ -21,7 +21,7 @@ int32_t g_CursorCurrentVisibilityToken = 0;
 
 SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = nullptr;
 
-/* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
+/* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0). */
 static uint32_t g_GraphicsCursorAnimationCountdown = 2;
 
 static uint32_t g_CursorButtonReleaseClock[3] = {0};

@@ -297,7 +297,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
 }
 
 /* In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
-   ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
+   ui/ingame/editor_keyboard.cpp with steps of +-0x400): turns the terrain light and relights the field region. The
    elevation (the root's lightElevationAngle) is kept between -0x4000 (straight down) and -0x1000, the
    azimuth (lightAzimuthAngle) wraps around.
 */

@@ -414,7 +414,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
 /* Puts the two feet of an articulated walker at rest beside its root: both feet (current position and step
    target) lateralOffsetQ12 to the left and right of the root at the terrain height under the root, all
    headings equal to the root heading, and both ground normals pointing straight up. Called by
-   ArmyPlacementContact_InitializeArticulatedSuspension (gameplay/army/placement.c, placement contact kind 3)
+   ArmyPlacementContact_InitializeArticulatedSuspension (gameplay/army/placement_contact.cpp, placement contact kind 3)
    before ArmyArticulatedRuntime_UpdateSuspensionHierarchy.
 
    Walker state in ArmyArticulatedRuntimeSlotView (the generated field names do not fit):

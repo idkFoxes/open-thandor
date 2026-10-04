@@ -67,7 +67,7 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
 /* Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
    destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
    framebuffer (32 bit), as grey levels. Called by
-   UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/text.c).
+   UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/panels.cpp).
    1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
       factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
    2. g_SoftwarePixelIntensityToNativeColorLut256 is rebuilt for the current pixel format.

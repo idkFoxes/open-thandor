@@ -13,7 +13,7 @@
 /* Module data. */
 
 /* the notification movie path; the three digits at [9] are overwritten with
-   the movie number before it is opened (gameplay/session/runtime.c) */
+   the movie number before it is opened */
 /* L"flm\\movie000.flm" */
 static uint16_t g_FlmMovie000FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'm', 'o', 'v', 'i', 'e', '0', '0', '0', '.', 'f', 'l', 'm', 0};
 

@@ -343,8 +343,8 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
    ranges the ray can reach. Returns true when a model was hit. *outNearestDistanceQ12 always receives the
    nearest distance (MODEL_RAYCAST_NO_HIT_DISTANCE on a miss) and *outNearestModelNode the nearest hit node.
    On a miss *outNearestModelNode is NULL (the original: NULL or a leftover scratch value of the last missing
-   hierarchy test); callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
-   updates (src/world/shots/maintenance.c).
+   hierarchy test); callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.cpp) and the shot
+   updates (src/world/shots/flight.cpp).
 */
 Bool8 ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12

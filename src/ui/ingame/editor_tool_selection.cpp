@@ -17,7 +17,7 @@ static uint32_t g_UiCommandSelectionPageBaseIndex = 0;
 
 static int32_t g_UiMappedCommandControlOffsets[12] = {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916};
 
-/* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+/* uint32_t render-state flag word copied into terrain packets (graphics/terrain/terrain_render.cpp); the mode-G handlers below set/clear the masked G-colour variant bit */
 uint32_t g_UiCommandModeGColorVariantFlags = 0x10000;
 
 uint32_t g_UiCommandModeE = 0;
@@ -31,7 +31,7 @@ uint32_t g_UiCommandModeF = 0;
 /* Implementation ownership: ui/ingame/editor_tool_selection. */
 
 /* Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
-   g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/runtime.c). Selects the tab, shows
+   g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Selects the tab, shows
    the tool's pages and switches the world view to the height tool overlays: surface point, terrain point, grid
    vertex and secondary surface markers, with the unmasked terrain colour ramp.
 */
@@ -54,7 +54,7 @@ void InGameCommandModeG_Select0(UiSelectableControl *source)
 }
 
 /* Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1],
-   g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/runtime.c). Like G0, but without the
+   g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Like G0, but without the
    secondary surface markers.
 */
 void InGameCommandModeG_Select1(UiSelectableControl *source)
@@ -76,7 +76,7 @@ void InGameCommandModeG_Select1(UiSelectableControl *source)
 }
 
 /* Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2],
-   g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the surface point,
+   g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Shows the surface point,
    grid vertex and secondary surface markers and is the only mode with the masked terrain colours
    (UiCommandModeG_ApplyMaskedColorVariant).
 */
@@ -99,7 +99,7 @@ void InGameCommandModeG_Select2(UiSelectableControl *source)
 }
 
 /* Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5],
-   g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the army metrics
+   g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Shows the army metrics
    and grid vertex markers and puts the army asset g_UiCommandModeGArmyAssetId into the selection detail panel;
    an unknown asset id is fatal.
 */
@@ -130,7 +130,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
 }
 
 /* Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6],
-   g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/runtime.c). Same overlays as G3
+   g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Same overlays as G3
    (army metrics and grid vertex markers) without the detail panel update.
 */
 void InGameCommandModeG_Select4(UiSelectableControl *source)
@@ -152,7 +152,7 @@ void InGameCommandModeG_Select4(UiSelectableControl *source)
 }
 
 /* Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4],
-   g_UiCommandModeGHandlers[5]; also called by ui/ingame/runtime.c). Shows the surface point, army metrics, grid
+   g_UiCommandModeGHandlers[5]; also called by ui/ingame/editor_keyboard.cpp). Shows the surface point, army metrics, grid
    vertex and region markers; the region markers draw the variant chosen by mode F, so g_UiCommandModeF is copied
    into the world runtime (fieldRegion.regionToolMode) as well.
 */
@@ -211,7 +211,7 @@ void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context)
 }
 
 /* Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects heightToolOption0 among the four height tool buttons and sets g_UiCommandModeC = 0.
+   ui/ingame/editor_keyboard.cpp): selects heightToolOption0 among the four height tool buttons and sets g_UiCommandModeC = 0.
 */
 void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 
@@ -226,7 +226,7 @@ void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 }
 
 /* Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects heightToolOption1 among the four height tool buttons and sets g_UiCommandModeC = 1.
+   ui/ingame/editor_keyboard.cpp): selects heightToolOption1 among the four height tool buttons and sets g_UiCommandModeC = 1.
 */
 void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 
@@ -241,7 +241,7 @@ void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 }
 
 /* Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects heightToolOption2 among the four height tool buttons and sets g_UiCommandModeC = 2.
+   ui/ingame/editor_keyboard.cpp): selects heightToolOption2 among the four height tool buttons and sets g_UiCommandModeC = 2.
 */
 void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 
@@ -256,7 +256,7 @@ void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 }
 
 /* Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects heightToolOption3 among the four height tool buttons and sets g_UiCommandModeC = 3.
+   ui/ingame/editor_keyboard.cpp): selects heightToolOption3 among the four height tool buttons and sets g_UiCommandModeC = 3.
 */
 void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 
@@ -271,7 +271,7 @@ void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 }
 
 /* Material tool option 0 (action 0x110C, g_InGameUiActionHandlersPage11[12]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects materialToolOption0 among the four material tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects materialToolOption0 among the four material tool buttons and sets
    g_UiCommandModeD = 0.
 */
 void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
@@ -287,7 +287,7 @@ void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 }
 
 /* Material tool option 1 (action 0x110D, g_InGameUiActionHandlersPage11[13]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects materialToolOption1 among the four material tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects materialToolOption1 among the four material tool buttons and sets
    g_UiCommandModeD = 1.
 */
 void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
@@ -303,7 +303,7 @@ void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 }
 
 /* Material tool option 2 (action 0x110E, g_InGameUiActionHandlersPage11[14]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects materialToolOption2 among the four material tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects materialToolOption2 among the four material tool buttons and sets
    g_UiCommandModeD = 2.
 */
 void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
@@ -319,7 +319,7 @@ void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 }
 
 /* Material tool option 3 (action 0x110F, g_InGameUiActionHandlersPage11[15]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects materialToolOption3 among the four material tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects materialToolOption3 among the four material tool buttons and sets
    g_UiCommandModeD = 3.
 */
 void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
@@ -335,7 +335,7 @@ void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 }
 
 /* Unit placement option 0 (action 0x1111, g_InGameUiActionHandlersPage11[17]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects unitPlacementOption0 among the three unit placement buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects unitPlacementOption0 among the three unit placement buttons and sets
    g_UiCommandModeA = 0.
 */
 void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
@@ -350,7 +350,7 @@ void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 }
 
 /* Unit placement option 1 (action 0x1112, g_InGameUiActionHandlersPage11[18]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects unitPlacementOption1 among the three unit placement buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects unitPlacementOption1 among the three unit placement buttons and sets
    g_UiCommandModeA = 1.
 */
 void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
@@ -365,7 +365,7 @@ void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 }
 
 /* Unit placement option 2 (action 0x1113, g_InGameUiActionHandlersPage11[19]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects unitPlacementOption2 among the three unit placement buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects unitPlacementOption2 among the three unit placement buttons and sets
    g_UiCommandModeA = 2.
 */
 void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
@@ -380,7 +380,7 @@ void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 }
 
 /* Object placement option 0 (action 0x1114, g_InGameUiActionHandlersPage11[20]; also the editor hotkeys
-   in ui/ingame/runtime.c): selects objectPlacementOption0 among the three object placement buttons and sets
+   in ui/ingame/editor_keyboard.cpp): selects objectPlacementOption0 among the three object placement buttons and sets
    g_UiCommandModeB = 0.
 */
 void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
@@ -395,7 +395,7 @@ void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 }
 
 /* Object placement option 1 (action 0x1115, g_InGameUiActionHandlersPage11[21]; also the editor hotkeys
-   in ui/ingame/runtime.c): selects objectPlacementOption1 among the three object placement buttons and sets
+   in ui/ingame/editor_keyboard.cpp): selects objectPlacementOption1 among the three object placement buttons and sets
    g_UiCommandModeB = 1.
 */
 void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
@@ -410,7 +410,7 @@ void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 }
 
 /* Object placement option 2 (action 0x1116, g_InGameUiActionHandlersPage11[22]; also the editor hotkeys
-   in ui/ingame/runtime.c): selects objectPlacementOption2 among the three object placement buttons and sets
+   in ui/ingame/editor_keyboard.cpp): selects objectPlacementOption2 among the three object placement buttons and sets
    g_UiCommandModeB = 2.
 */
 void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
@@ -425,7 +425,7 @@ void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 }
 
 /* Smoothing tool option 0 (action 0x1117, g_InGameUiActionHandlersPage11[23]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects smoothingToolOption0 and sets g_UiCommandModeE = 0. Unlike options 1 and 2 its
+   ui/ingame/editor_keyboard.cpp): selects smoothingToolOption0 and sets g_UiCommandModeE = 0. Unlike options 1 and 2 its
    exclusive group also contains smoothingRelaxLandButton.
 */
 void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
@@ -441,7 +441,7 @@ void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 }
 
 /* Smoothing tool option 1 (action 0x1118, g_InGameUiActionHandlersPage11[24]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects smoothingToolOption1 among the three smoothing tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects smoothingToolOption1 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 1.
 */
 void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
@@ -456,7 +456,7 @@ void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 }
 
 /* Smoothing tool option 2 (action 0x1119, g_InGameUiActionHandlersPage11[25]; also the editor hotkeys in
-   ui/ingame/runtime.c): selects smoothingToolOption2 among the three smoothing tool buttons and sets
+   ui/ingame/editor_keyboard.cpp): selects smoothingToolOption2 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 2.
 */
 void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
@@ -471,7 +471,7 @@ void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 }
 
 /* Smoothing page button smoothingRelaxGatedButton (action 0x111A, g_InGameUiActionHandlersPage11[26]; also
-   an editor hotkey in ui/ingame/runtime.c): runs 128 sign-gated terrain relaxation passes over the field, in a
+   an editor hotkey in ui/ingame/editor_keyboard.cpp): runs 128 sign-gated terrain relaxation passes over the field, in a
    network game through command 0x3200 on every machine.
 */
 void InGameCommandRange_DispatchState0(UiNodeBase *source)
@@ -490,7 +490,7 @@ void InGameCommandRange_DispatchState0(UiNodeBase *source)
 }
 
 /* Smoothing page button smoothingRelaxLandButton (action 0x111B, g_InGameUiActionHandlersPage11[27]; also
-   an editor hotkey in ui/ingame/runtime.c): like InGameCommandRange_DispatchState0 with the ungated land tool
+   an editor hotkey in ui/ingame/editor_keyboard.cpp): like InGameCommandRange_DispatchState0 with the ungated land tool
    relaxation mode.
 */
 void InGameCommandRange_DispatchState1(UiNodeBase *source)
@@ -579,7 +579,7 @@ static GraphicsTextureSourceAsset *TerrainMaterial_SwatchTexture(uint32_t materi
 }
 
 /* Selects terrain material absoluteIndex for the material tool (InGameCommandMatrix_SelectMappedControl and the
-   editor hotkeys/initialisation in ui/ingame/runtime.c): shows its texture in materialToolSelectedSwatch,
+   editor hotkeys/initialisation in ui/ingame/editor_keyboard.cpp): shows its texture in materialToolSelectedSwatch,
    scrolls the twelve-swatch page in rows of three until the material is visible, fills the twelve swatches from
    g_TerrainMaterialTextureSets (empty entries show nothing) and selects the material's swatch.
 */

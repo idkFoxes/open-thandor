@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed.h>); filled at startup by
+/* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed_trig.h>); filled at startup by
    FixedMath_BuildSinCosTables */
 int32_t g_FixedSineQ28[98304] = {0};
 

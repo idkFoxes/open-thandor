@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+/* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued. */
 const UiFrameDelayFrames g_UiListActivationPulseFrames = 8;
 
 const uint32_t g_UiListTextStyle = 0;
@@ -249,7 +249,7 @@ void UiPointerList_SortByDwordPairFieldDescending
 
 /* Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
    sort, then selects the previously selected entry again and scrolls it into view. Equal keys are swapped
-   too, so the sort is not stable. Called by the scenario catalog (src/assets/scenario/catalog.c, field 0x50).
+   too, so the sort is not stable. Called by the scenario selection (src/ui/frontend/scenario_selection.cpp, field 0x50).
 */
 void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
@@ -586,7 +586,7 @@ static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointer
 /* Sorts the rows of a pointer list in ascending order of the rich text found fieldOffset bytes into each row
    record (expanded, ASCII case-insensitive), with an exchange sort that moves the smallest remaining row to
    the front in each pass. The previously selected record stays selected and is scrolled into view. Called
-   by the scenario catalogue (assets/scenario/catalog.c, field offset 0x74).
+   by the scenario selection (ui/frontend/scenario_selection.cpp, field offset 0x74).
 */
 void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)

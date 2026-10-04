@@ -12,27 +12,27 @@
 
 static const ArmyCommandGeneration g_AiCommandGenerationCandidateBase = 32;
 
-/* ArmyCommandGeneration (uint32_t) 0x200 assigned to an army's commandGeneration by the AI combat code (gameplay/ai/combat.c) */
+/* ArmyCommandGeneration (uint32_t) 0x200 assigned to an army's commandGeneration by the AI combat code */
 static const ArmyCommandGeneration g_AiCommandGenerationRetainedTarget = 512;
 
-/* uint32_t[24] AI combat target base score per target runtime class (gameplay/ai/combat.c) */
+/* uint32_t[24] AI combat target base score per target runtime class */
 static const uint32_t g_AiCombatTargetClassBaseScores[24] = {
     /*  0 */ 0, 2048, 4096, 4096, 512, 0, 0, 0, 0, 0, 384, 256, 0, 128, 1024, 896,
     /* 16 */ 768, 4096, 6144, 4096, 256, 4096, 192, 64};
 
-/* int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
+/* int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score */
 static const int32_t g_AiCombatTargetRadialClearanceWeight = 1536;
 
-/* int32_t weight 0x12000 for the candidate class counter term of the AI combat target score, divided by the Q12 hierarchy scale unity (gameplay/ai/combat.c) */
+/* int32_t weight 0x12000 for the candidate class counter term of the AI combat target score, divided by the Q12 hierarchy scale unity */
 static const int32_t g_AiCombatTargetCandidateCounterCountWeight = 73728;
 
-/* int32_t weight 0x20000 for the source class counter term of the AI combat target score (gameplay/ai/combat.c) */
+/* int32_t weight 0x20000 for the source class counter term of the AI combat target score */
 static const int32_t g_AiCombatTargetSourceCounterCountWeight = 131072;
 
-/* int32_t weight 0x1100 for the hierarchy scale deficit (1.0 - condition ratio) term of the AI combat target score (gameplay/ai/combat.c) */
+/* int32_t weight 0x1100 for the hierarchy scale deficit (1.0 - condition ratio) term of the AI combat target score */
 static const int32_t g_AiCombatTargetScaleDeficitWeight = 4352;
 
-/* int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score (gameplay/ai/combat.c) */
+/* int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score */
 static const int32_t g_AiCombatTargetClassBaseScoreMultiplier = 2048;
 
 static AiCommandGenerationRightShiftBits g_AiCombatTargetSelectedCommandGenerationRightShiftBits = 0;

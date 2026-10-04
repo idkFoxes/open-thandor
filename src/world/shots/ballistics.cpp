@@ -14,8 +14,8 @@
    targetPoint. Ballistic shots solve the projectile equation (gravity = ballisticDivisorQ12) and take the high arc,
    the low arc only when the height difference is below 1.0; fixed-range shots always go straight up (0, 0x4000);
    all others aim directly, raised by the definition's elevation offset and capped at straight up. The callers
-   pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.c,
-   movement.c, runtime.c) and the shot launch in world/shots/runtime.c.
+   pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.cpp,
+   turrets.cpp) and the shot launch in world/shots/pool.cpp.
 */
 ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
@@ -103,7 +103,7 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
 
 /* Returns the shot speed used to lead a moving target: the launch speed (launchSpeedQ12) for unguided shots
    that do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (guidanceTurnLimitAngle16
-   non-zero) shots. Called directly by the target aim-point computation in gameplay/army/runtime.c.
+   non-zero) shots. Called directly by the target aim-point computation in gameplay/army/weapons.cpp.
 */
 Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 
@@ -120,7 +120,7 @@ Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 
 /* Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, guidanceTurnLimitAngle16
    zero): about two thirds (0xAB / 256) of the ramp-up ticks (trajectoryRampDurationTicks), during which the shot is still accelerating; 0 for all
-   other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
+   other shots. The aim-point computation in gameplay/army/weapons.cpp multiplies it by the target's speed.
 */
 uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
 

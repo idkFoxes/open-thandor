@@ -484,7 +484,7 @@ static void GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(GraphicsPro
 }
 
 /* Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000,
-   called per candidate model from the frontend world render in src/ui/frontend/runtime.c). While the
+   called per candidate model from the frontend world render in src/ui/frontend/menu_room.cpp). While the
    generated shadow textures still have a free tile, a model inside the view frustum gets twelve sample
    points (corners and edge midpoints of its light-space bounds plus four inner points); each point is moved
    along the light direction (renderContext angles) onto the terrain, and the 14 reserved projected point blocks
@@ -702,7 +702,7 @@ void GraphicsShadingRuntime_Shutdown(void)
 }
 
 
-/* Starts a shadow pass (frontend world render in src/ui/frontend/runtime.c, before the per-model
+/* Starts a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp, before the per-model
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls): puts the tile cursor on the first
    tile of subresource 0 (the pixel cursor at the tile centre), clears the tile/subresource counters and the
    "all tiles used" count, and zeroes the 8-bit pixels of every generated shadow texture.
@@ -747,7 +747,7 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 }
 
 
-/* Ends a shadow pass (frontend world render in src/ui/frontend/runtime.c): uploads the alpha of every
+/* Ends a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp): uploads the alpha of every
    generated shadow texture the pass filled, i.e. all subresources before the current one plus the current
    one when it has at least one used tile (and not every tile ran out).
 */
