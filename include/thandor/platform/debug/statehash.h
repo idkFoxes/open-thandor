@@ -18,7 +18,8 @@
    Driven by tools/test/run_determinism.py. */
 
 /* Before the session is built (InGameRuntime_RunSessionUntilExit): seeds both random streams and selects the
-   secondary one, before the first simulation steps, which already run during the initialisation. */
+   secondary one, before the first simulation steps, which already run during the initialisation; reads the game
+   speed of OPEN_THANDOR_STATEHASH_SPEED, which the step hook applies after a fixed simulation tick. */
 void DebugStateHash_SessionInitializing(void);
 /* After the session is initialised, before its first frame (InGameRuntime_RunSessionUntilExit): starts recording;
    the steps run during the initialisation are not recorded. */

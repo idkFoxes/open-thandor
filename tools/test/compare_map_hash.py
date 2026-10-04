@@ -1,5 +1,5 @@
-"""Plays a stock map with strong computer opponents under the state hash (fixed seed, game speed 5 from the first
-step via OPEN_THANDOR_STATEHASH_SPEED) in several game dirs at once and compares the per-step hashes. This covers
+"""Plays a stock map with strong computer opponents under the state hash (fixed seed, game speed 5 from simulation
+tick 3 on via OPEN_THANDOR_STATEHASH_SPEED) in several game dirs at once and compares the per-step hashes. This covers
 the computer opponents, which the arena scenarios of run_determinism.py do not. Each dir needs the test build as
 thandor.exe (with its SDL3.dll); put an older build into one of them to compare two versions (the first dir is the reference).
 
