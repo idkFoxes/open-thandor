@@ -492,7 +492,7 @@ def update_addresses(files):
         hit = table.get(name)
         if hit:
             new = hit[0].rel
-        elif old.startswith("(removed"):
+        elif old.startswith(("(removed", "(merged into")):
             new = old
         else:
             new = "(removed)"
