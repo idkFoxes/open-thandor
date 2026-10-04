@@ -1210,7 +1210,7 @@ No file comment; function families: `InGameSession_*` (10), `InGameRuntime_*` (5
 - [`InGameSession_InitShadingAndMirrorViewOptions`](../../src/gameplay/session/startup.cpp#L394) - Sets the simulation step to 1, sets up the shading texture from the persistent settings and mirrors the shading and mouse/panel link options into the world runtime flags.
 - [`InGameSession_AllocateGridScratchAndRebuildDerived`](../../src/gameplay/session/startup.cpp#L424) - Allocates the grid scratch for the world's field grid and rebuilds the derived terrain classification, influence and technology data.
 - [`InGameSession_RebuildUiGrids`](../../src/gameplay/session/startup.cpp#L440) - Rebuilds the build, special build, army stock and other-player command grids of the in-game root.
-- [`InGameSession_ReportReadyAndWaitForPlayers`](../../src/gameplay/session/startup.cpp#L452) - Reports this player as loaded (INGAME_COMMAND_PLAYER_READY), releases the step spin lock taken before the world was finished and shows the player-status screen while keeping the lockstep running ...
+- [`InGameSession_ReportReadyAndWaitForPlayers`](../../src/gameplay/session/startup.cpp#L452) - Reports this player as loaded (in-game command 0x550), releases the step spin lock taken before the world was finished and shows the player-status screen while keeping the lockstep running until ...
 - 4 more: `InGameRuntime_RunSessionUntilExit`, `InGameSession_SetWorldRuntimeFlag`, `InGameRuntime_ShutdownAndReleaseResources`, `InGameRuntime_ReleaseFactionScratchBuffers`
 
 **Data** (1 shared, 2 file-local): `g_InGamePendingSimulationTicks`.
