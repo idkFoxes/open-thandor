@@ -20,35 +20,6 @@ uint16_t g_FlmEnde0001FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e
 
 /* Implementation ownership: gameplay/session/level_script. */
 
-/* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition: the tokens after its kind byte run on a bit stack.
-   0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes the satisfied bit of the condition with that index.
-   Returns the bit stack; bit 0 is the result. */
-static uint32_t InGameScheduledCondition_EvaluatePostfixExpression(InGameLevelConditionStorage *levelConditionStorage,
-                                                                   const uint8_t *expression)
-{
-  uint32_t bitStack;
-  uint8_t token;
-
-  bitStack = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
-  for (; *expression != INGAME_CONDITION_TOKEN_END; expression++) {
-    token = *expression;
-    if (token == INGAME_CONDITION_TOKEN_OR) {
-      bitStack = bitStack >> 1 | bitStack & 1;
-    }
-    else if (token == INGAME_CONDITION_TOKEN_AND) {
-      bitStack = bitStack >> 1 & (bitStack | ~1u);
-    }
-    else if (token == INGAME_CONDITION_TOKEN_NOT) {
-      bitStack = bitStack ^ 1;
-    }
-    else {
-      bitStack = ((levelConditionStorage->schedule).conditions[token].statusAndKind.raw &
-                  INGAME_SCHEDULED_CONDITION_SATISFIED) + bitStack * 2;
-    }
-  }
-  return bitStack;
-}
-
 /* Evaluates one scheduled condition of the level script (its satisfied bit is already cleared in the record).
    COUNTDOWN_ELAPSED also counts its operand 1 down by the step ticks and clamps it at 0 once elapsed.
    Unknown kinds (and unused records) never hold. */
@@ -176,9 +147,8 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     }
     return true;
   case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-    return (InGameScheduledCondition_EvaluatePostfixExpression(levelConditionStorage,
-                                                               &condition->statusAndKind.kindAndExpression[1]) &
-            1) != 0;
+    return (InGameScheduledCondition_EvaluatePostfixExpression<uint32_t>
+              (levelConditionStorage,&condition->statusAndKind.kindAndExpression[1]) & 1) != 0;
   default:
     return false;
   }

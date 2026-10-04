@@ -26,6 +26,39 @@
 
 /* Functions are grouped by semantic ownership. */
 
+/* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition: the tokens after its kind byte run on a bit stack.
+   0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes the satisfied bit of the condition with that index.
+   Returns the bit stack; bit 0 is the result. The original has two copies that differ only in the width of the
+   bit stack: the level script (InGameScheduledCondition_Holds) uses an unsigned stack, the relation prediction
+   (GameFactionRelations_PredictConditionHolds) a signed int one (arithmetic shift on pops). BitStack keeps that
+   difference; it only shows with more than 31 pending operands. */
+template <typename BitStack>
+BitStack InGameScheduledCondition_EvaluatePostfixExpression
+          (InGameLevelConditionStorage *levelConditionStorage,const uint8_t *expression)
+{
+  BitStack bitStack;
+  uint8_t token;
+
+  bitStack = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
+  for (; *expression != INGAME_CONDITION_TOKEN_END; expression++) {
+    token = *expression;
+    if (token == INGAME_CONDITION_TOKEN_OR) {
+      bitStack = bitStack >> 1 | bitStack & 1;
+    }
+    else if (token == INGAME_CONDITION_TOKEN_AND) {
+      bitStack = bitStack >> 1 & (bitStack | ~1u);
+    }
+    else if (token == INGAME_CONDITION_TOKEN_NOT) {
+      bitStack = bitStack ^ 1;
+    }
+    else {
+      bitStack = ((levelConditionStorage->schedule).conditions[token].statusAndKind.raw &
+                  INGAME_SCHEDULED_CONDITION_SATISFIED) + bitStack * 2;
+    }
+  }
+  return bitStack;
+}
+
 void InGameConditionRuntime_UpdateScheduledRecords(void);
 
 extern uint16_t g_SessionEndMoviePathUtf16[17];
