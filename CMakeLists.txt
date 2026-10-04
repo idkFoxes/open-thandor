@@ -82,6 +82,7 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/runtime.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/runtime.cpp
+    src/gameplay/session/savegame.cpp
     src/gameplay/technology/runtime.cpp
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
@@ -119,9 +120,17 @@ add_library(thandor_curated STATIC
     src/ui/frontend/scenario.cpp
     src/ui/frontend/session.cpp
     src/ui/frontend/settings.cpp
+    src/ui/ingame/chat.cpp
     src/ui/ingame/commands.cpp
-    src/ui/ingame/runtime.cpp
+    src/ui/ingame/editor_keyboard.cpp
+    src/ui/ingame/editor_tools.cpp
+    src/ui/ingame/hud.cpp
+    src/ui/ingame/key_commands.cpp
+    src/ui/ingame/layout.cpp
+    src/ui/ingame/music_choice.cpp
+    src/ui/ingame/pages.cpp
     src/ui/ingame/savegame_page.cpp
+    src/ui/ingame/selection_detail.cpp
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
     src/ui/support/runtime.cpp
