@@ -623,3 +623,76 @@ uint32_t CommandDispatch_CodeOfHandler(uint32_t codeBase,const void *handler)
   }
   return 0xFFFFFFFFu;
 }
+
+
+/* Rebuild helper (no original counterpart), declared in commands.h: InGameCommand_Issue for a handler chosen
+   at run time. */
+void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload payload1,CommandPayload payload2,
+          CommandPayload payload3)
+
+{
+  static Bool8 s_loggedMissing;
+  uint32_t code;
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+    return;
+  }
+  code = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,(const void *)handler);
+  if (code == 0xFFFFFFFFu) {
+    if (s_loggedMissing == 0) {
+      s_loggedMissing = 1;
+      Thandor_Log("network: handler %p is not in the in-game command table, command dropped",(const void *)handler);
+    }
+    return;
+  }
+  InGameCommandQueue_AppendLocalPlayerCommand((UiActionId)code,payload1,payload2,payload3);
+}
+
+/* Startup check (no original counterpart): the issue helpers queue the code CommandDispatch_CodeOfHandler
+   derives from the tables, so every handler must map back to its own entry's code (a handler listed twice
+   would queue the first code), and the pilot sites of InGameCommand_Issue must derive the constants they
+   queued before. Logs each mismatch; runs once during static initialisation (the tables are in this file). */
+static Bool8 CommandDispatch_CheckDerivedCodes(void)
+
+{
+  static const struct {
+    uint32_t code;
+    const void *handler;
+  } s_pilotCodes[] = {
+      {INGAME_COMMAND_CONSUME_PENDING_ARMY,(const void *)&GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid},
+      {INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,(const void *)&GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer},
+      {INGAME_COMMAND_SELL_ARMY,(const void *)&GameFactionRuntime_SellArmyAssetAndRefundSevenEighths},
+  };
+  static const uint32_t s_codeBases[2] = {FRONTEND_COMMAND_CODE_BASE,INGAME_COMMAND_CODE_BASE};
+  const CommandTableEntry *table;
+  uint32_t count;
+  uint32_t index;
+  uint32_t baseIndex;
+  uint32_t derived;
+  Bool8 allMatch;
+
+  allMatch = true;
+  for (baseIndex = 0; baseIndex < 2; baseIndex++) {
+    table = CommandDispatch_TableForBase(s_codeBases[baseIndex],&count);
+    for (index = 0; index < count; index++) {
+      derived = CommandDispatch_CodeOfHandler(s_codeBases[baseIndex],table[index].handler);
+      if (derived != table[index].code) {
+        allMatch = false;
+        Thandor_Log("network: command 0x%X (base 0x%08X) derives code 0x%X from its handler",table[index].code,
+                    s_codeBases[baseIndex],derived);
+      }
+    }
+  }
+  for (index = 0; index < COMMAND_TABLE_COUNT(s_pilotCodes); index++) {
+    derived = CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,s_pilotCodes[index].handler);
+    if (derived != s_pilotCodes[index].code) {
+      allMatch = false;
+      Thandor_Log("network: in-game command 0x%X derives code 0x%X from its handler",s_pilotCodes[index].code,
+                  derived);
+    }
+  }
+  return allMatch;
+}
+
+static const Bool8 g_CommandDerivedCodesMatch = CommandDispatch_CheckDerivedCodes();
