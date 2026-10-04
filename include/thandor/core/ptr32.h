@@ -61,6 +61,9 @@ template <class T> struct Ptr32 {
     Ptr32(T *pointer) : value(thandor_ptr32_pack((const void *)pointer)) {}
     Ptr32(ThandorAnyPtr pointer) : value(thandor_ptr32_pack(pointer.ptr)) {}
     Ptr32(ThandorAnyFn function) : value(thandor_ptr32_pack((const void *)function.fn)) {}
+    /* field = THANDOR_SLOT(function), also as an element of an array initialiser (an exact match, so MSVC does not
+       weigh it against Ptr32(T *) over the slot's function-pointer conversion) */
+    template <auto Fn> Ptr32(ThandorSlot<Fn>) : Ptr32(ThandorSlot<Fn>::template pick<T>()) {}
     Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack((const void *)pointer); return *this; }
     Ptr32 &operator=(ThandorAnyPtr pointer) { value = thandor_ptr32_pack(pointer.ptr); return *this; }
     Ptr32 &operator=(ThandorAnyFn function) { value = thandor_ptr32_pack((const void *)function.fn); return *this; }
