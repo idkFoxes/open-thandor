@@ -67,8 +67,8 @@ Each of these must move behind a new slot.
 **A2. Results graph**
 - Code: `FrontendResultsGraph_*Column`, `ui/frontend/results.cpp:269`, `:328`, `:384`. Called per one-pixel column from `FrontendResultsTable_DrawColumnSequenceByType` (:214-248).
 - What it does: draws stacked faction segments with opaque colours that are pre-packed through the LUT.
-- Quirk: it always writes 16-bit words, even on a 32-bit framebuffer (results.cpp:312).
-- GPU version: one fill per segment, or the graph as a texture. Decide first whether to keep the 32-bit bug in the software reference; it is visible.
+- The original always wrote 16-bit words, even on a 32-bit framebuffer; with 16-bit colour dropped this is fixed to proper 32-bit pixels (decided 2026-10-04).
+- GPU version: one fill per segment, or the graph as a texture.
 
 **A3. Credits cross-fade**
 - Code: `SoftwareTexture_BilinearBlendScaleSubresources`, `graphics/backend/software_texture_scale.cpp:82-173`.
@@ -237,7 +237,7 @@ Compare with thresholds, not identity.
 - Modulated text: ±1.
 - Bilinear stretch and minimap weights: ±2 to 3. The minimap's odd-column skip and edge rules are lost.
 - LUT handling: only visible when brightness/contrast differ from the defaults.
-- Results graph: if the GPU path draws correct 32-bit colours, it differs from the software reference until the software quirk is fixed or kept on purpose.
+- Results graph: none expected (the software path writes proper 32-bit pixels since the 16-bit quirk was dropped).
 
 ### 6.2 Risks
 
@@ -320,7 +320,7 @@ These findings arrived after sections 1-5 were written. Where they disagree with
 
 **Results graph**
 - The faction colours are packed through the LUT (results.cpp:216-227).
-- The graph writes 16-bit words even at 32 bpp (results.cpp:312). Confirm this quirk on screen before porting it.
+- The original wrote 16-bit words even at 32 bpp; dropped together with 16-bit colour (decided 2026-10-04).
 
 **Frame ordering (frame-loop inventory, which finished late)**
 - **Who drives frames:** menu frames are driven by `ui/frontend/main_loop.cpp:27-43`, in-game frames by `gameplay/session/startup.cpp:59-103`. Both call `UiRootStack_InvalidateAll` and then `UiFrame_ProcessAndPresent` every frame.
