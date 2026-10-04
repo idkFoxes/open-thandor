@@ -1693,13 +1693,13 @@
 0x00522660  function  ArmyArticulatedRuntime_InitializeRightTerrainContact              src/gameplay/army/walker.cpp
 0x00522770  function  ArmyArticulatedRuntime_UpdateSelectedTerrainContact               src/gameplay/army/walker.cpp
 0x00522A90  function  ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming       src/gameplay/army/model_slots.cpp
-0x00522B70  function  ArmyRuntimeClass_NoOpUpdate                                       src/gameplay/army/class_dispatch.cpp
+0x00522B70  function  ArmyRuntimeClass_NoOpUpdate                                       (merged into UnifiedRuntimeDefault_TwoArgNoOpD)
 0x00522B90  function  ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform             src/gameplay/army/model_slots.cpp
 0x00522C00  function  ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation           src/gameplay/army/drive_banking.cpp
 0x00523240  function  ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds                    (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00523340  function  ArmyRuntimeCommand_UpdateTargetFollowingState                     src/gameplay/army/move_orders.cpp
-0x005233F0  function  ArmyRuntimeClass_NoOpTickUpdateForClass5                          src/gameplay/army/class_dispatch.cpp
-0x00523400  function  ArmyRuntimeClass_NoOpTickUpdateForClass6                          src/gameplay/army/class_dispatch.cpp
+0x005233F0  function  ArmyRuntimeClass_NoOpTickUpdate                                   src/gameplay/army/class_dispatch.cpp
+0x00523400  function  ArmyRuntimeClass_NoOpTickUpdateForClass6                          (merged into ArmyRuntimeClass_NoOpTickUpdate)
 0x00523410  function  ArmyRuntimeClass_UpdateSingleBarrelTurret                         src/gameplay/army/turrets.cpp
 0x00523690  function  ArmyRuntimeClass_UpdateTwinBarrelTurret                           src/gameplay/army/turrets.cpp
 0x00523980  function  ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments               src/gameplay/army/combat.cpp
