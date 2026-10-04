@@ -66,7 +66,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-               Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+               Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
                worldRuntime);
     AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
     return;
@@ -114,7 +114,7 @@ Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
         /* The original then compares the selected definition's placementContactKindIndex with 1 (ignoring the
            selector's status), but both outcomes call the same placement handler. */
         (void)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,armyAsset->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                          (factionIndex,armyAsset->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
@@ -176,7 +176,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.z,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.y,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.x,
-             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
   return true;
@@ -256,7 +256,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 32-bit format field: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
 }
@@ -368,7 +368,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     return;
   }
   modelDefinition = ModelDefinitionRegistry_FindById
-                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == nullptr) {
     return;
   }
@@ -438,7 +438,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
   (*relationCounter)++;
   for (; remainingAssets != 0; remainingAssets--) {
-    if (armyAsset == Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*assetPointerCursor)) break; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+    if (armyAsset == Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*assetPointerCursor)) break; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
     assetPointerCursor++;
   }
   if (remainingAssets == 0) {

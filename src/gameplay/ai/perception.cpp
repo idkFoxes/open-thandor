@@ -101,7 +101,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
+    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 32-bit format field: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     AiPlanningRebuild_AddUnassignedStructureEntry(assetId);
     AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace04RequestedAssets,&g_AiWorkspace04Count,
                                       AI_WORKSPACE04_CAPACITY,nullptr,assetId);
@@ -110,7 +110,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
+    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 32-bit format field: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     if (assetId < ARM_0300_BUILDING_MDL0301) {
       AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,nullptr,
                                         assetId);
@@ -451,9 +451,10 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
      >= 340); 07: the targets from 02 with their positions; 12: the technologies of the own structures'
      research slots that are currently available.
    Capacities: 00 128, 01 64, 02 128, 03 512, 04 8, 07 64, 11 1024 entries.
+   unusedFactionIndex is never read (the only caller passes factionIndex twice).
 */
 void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
-          FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
+          FactionRuntimeIndex unusedFactionIndex,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
 {

@@ -25,7 +25,7 @@
 /* Functions are grouped by semantic ownership. */
 
 void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
-          FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
+          FactionRuntimeIndex unusedFactionIndex,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_GAMEPLAY_AI_PERCEPTION_H */

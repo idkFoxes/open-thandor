@@ -35,6 +35,10 @@ static const int32_t g_AiCombatTargetScaleDeficitWeight = 4352;
 /* int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score */
 static const int32_t g_AiCombatTargetClassBaseScoreMultiplier = 2048;
 
+/* Shift of the best candidate so far (copied from g_AiCombatTargetCurrentCommandGenerationRightShiftBits when
+   AiCombatTarget_SelectBestCandidate takes a new best). Original quirk: it is only written when a candidate is
+   taken, so a call that selects nothing keeps the value of an earlier call (possibly another army or faction);
+   it is neither saved nor reset, so a loaded game sees what the previous session left (0 after program start). */
 static AiCommandGenerationRightShiftBits g_AiCombatTargetSelectedCommandGenerationRightShiftBits = 0;
 
 static AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
@@ -66,6 +70,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
        (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) == 0)))) {
     selectedTargetArmyRuntime =
          AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime,&sourceClassCount);
+    /* Original quirk: without a selected target this is still the shift of an earlier call (see the static). */
     selectedCommandGenerationRightShiftBits =
          g_AiCombatTargetSelectedCommandGenerationRightShiftBits;
     candidateCommandGenerationBase = g_AiCommandGenerationCandidateBase;
@@ -74,7 +79,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     }
     /* signed test of the returned sum: count > 0 */
     else if ((selectedTargetArmyRuntime == nullptr) && (0 < sourceClassCount)) {
-      ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
+      ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
       }
@@ -176,7 +181,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {
     collectedArmy = collectedArmies[collectedIndex];
     ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedArmy);
-    collectedArmy->assignedTargetArmyRuntime = Thandor_PointerToU32(targetRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
+    collectedArmy->assignedTargetArmyRuntime = Thandor_PointerToU32(targetRuntime); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime */
     collectedArmy->commandModeFlags = collectedArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | 1;
     collectedArmy->movementStateFlags = collectedArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
@@ -193,7 +198,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget()
    AiCombatTarget_EvaluateCandidateScore within depth-bin masks around the source (radius weaponRangeQ12 plus
    4.0). Returns the best army (or NULL) and stores the sum in *outSourceClassCount.
    Only called by AiCombatDecision_UpdateTargetAssignment.
-   Original quirk: a zero sum stores a stack leftover instead of the sum (see the body); the C stores the
+   Original quirk: a zero sum stores a stack leftover instead of the sum (see the body); this code stores the
    positive constant AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER, since every traced original path leaves a positive
    value there and the caller only tests the sign.
 */
@@ -233,7 +238,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
      frame leaves worldRuntime there, otherwise the class handler's frame leaves e.g. the movement length (a
      local) or a pushed pointer / return address. The value is class and state dependent, but every traced path
      leaves a positive one (the movement length is 0 only when the unit stands exactly on its movement point),
-     and the caller only tests the count > 0. The C formerly returned the most common of them, the world
+     and the caller only tests the count > 0. An earlier version of this code returned the most common of them, the world
      runtime pointer (positive: /LARGEADDRESSAWARE:NO); since the only use of the value is that sign test (the
      zero-sum path finds no candidate, and AiCombatDecision_UpdateTargetAssignment reads sourceClassCount nowhere
      else), any positive constant gives the same decisions and stays positive on 64-bit. */
