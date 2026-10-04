@@ -131,8 +131,8 @@ add_library(thandor_curated STATIC
     src/ui/support/runtime.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp
-    src/world/effects/maintenance.cpp
-    src/world/effects/runtime.cpp
+    src/world/effects/lifecycle.cpp
+    src/world/effects/pool.cpp
     src/world/model/gameplay_rules.cpp
     src/world/model/hierarchy.cpp
     src/world/model/picking.cpp
@@ -145,8 +145,8 @@ add_library(thandor_curated STATIC
     src/world/pathing/scratch_grid.cpp
     src/world/runtime/core.cpp
     src/world/runtime/entity_registry.cpp
-    src/world/shots/maintenance.cpp
-    src/world/shots/runtime.cpp
+    src/world/shots/flight.cpp
+    src/world/shots/pool.cpp
     src/world/terrain/editing.cpp
     src/world/terrain/field_deformation.cpp
     src/world/terrain/field_edit_commands.cpp

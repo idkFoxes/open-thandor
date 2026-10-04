@@ -1,7 +1,7 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/effects/runtime.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/effects/pool.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
@@ -17,7 +17,7 @@ GraphicsPaletteAsset *g_EffectPalette = 0;
 
 EffectRuntimeSlot *g_EffectRuntimeSlots = 0;
 
-/* Implementation ownership: world/effects/runtime. */
+/* Implementation ownership: world/effects/pool. */
 
 /* Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
    catalog to reject duplicate ids). Returns the registered definition (never NULL), or NULL on a miss; a miss

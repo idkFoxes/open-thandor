@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/shots/maintenance.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/shots/flight.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/world/shots/maintenance.h>
+#include <thandor/world/shots/flight.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/shots/maintenance. */
+/* Implementation ownership: world/shots/flight. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
 static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)

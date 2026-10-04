@@ -1,7 +1,7 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/shots/runtime.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/shots/pool.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
@@ -18,7 +18,7 @@ ShotRuntimeSlot *g_ShotRuntimeSlots = 0;
 
 uint8_t *g_ShotRuntimeRebaseBaseMinusOne = 0;
 
-/* Implementation ownership: world/shots/runtime. */
+/* Implementation ownership: world/shots/pool. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
 static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)

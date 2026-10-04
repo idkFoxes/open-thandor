@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/effects/maintenance.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/effects/lifecycle.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/world/effects/maintenance.h>
+#include <thandor/world/effects/lifecycle.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/effects/maintenance. */
+/* Implementation ownership: world/effects/lifecycle. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.
    With shift 4 each colour channel becomes a Q12 factor (0xFF -> 0x0FFF) for the PMULHW tint modulation. */
