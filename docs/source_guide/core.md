@@ -100,16 +100,16 @@ Helpers that reproduce what the original's x86 code does, expressed in portable 
 
 **Functions** (12 public):
 
-- [`thandor_atomic_exchange`](../../include/thandor/core/x86_emulation.h#L39) - THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and ...
-- [`thandor_mmx_pmulhw`](../../include/thandor/core/x86_emulation.h#L66)
-- [`thandor_mmx_pmaddwd`](../../include/thandor/core/x86_emulation.h#L75)
-- [`thandor_mmx_paddusb`](../../include/thandor/core/x86_emulation.h#L84)
-- [`thandor_mmx_paddusw`](../../include/thandor/core/x86_emulation.h#L93)
-- [`thandor_mmx_paddsw`](../../include/thandor/core/x86_emulation.h#L103)
-- [`thandor_mmx_psraw`](../../include/thandor/core/x86_emulation.h#L115)
-- [`thandor_mmx_rgb`](../../include/thandor/core/x86_emulation.h#L126) - Operands are integers or the 8-byte lane structs some MMX values are typed as.
-- [`thandor_mmx_bgra`](../../include/thandor/core/x86_emulation.h#L127)
-- [`thandor_mmx_q`](../../include/thandor/core/x86_emulation.h#L128)
+- [`thandor_atomic_exchange`](../../include/thandor/core/x86_emulation.h#L34) - THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and ...
+- [`thandor_mmx_pmulhw`](../../include/thandor/core/x86_emulation.h#L61)
+- [`thandor_mmx_pmaddwd`](../../include/thandor/core/x86_emulation.h#L70)
+- [`thandor_mmx_paddusb`](../../include/thandor/core/x86_emulation.h#L79)
+- [`thandor_mmx_paddusw`](../../include/thandor/core/x86_emulation.h#L88)
+- [`thandor_mmx_paddsw`](../../include/thandor/core/x86_emulation.h#L98)
+- [`thandor_mmx_psraw`](../../include/thandor/core/x86_emulation.h#L110)
+- [`thandor_mmx_rgb`](../../include/thandor/core/x86_emulation.h#L121) - Operands are integers or the 8-byte lane structs some MMX values are typed as.
+- [`thandor_mmx_bgra`](../../include/thandor/core/x86_emulation.h#L122)
+- [`thandor_mmx_q`](../../include/thandor/core/x86_emulation.h#L123)
 - 2 more: `thandor_mmx_q`, `thandor_mmx_q`
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).

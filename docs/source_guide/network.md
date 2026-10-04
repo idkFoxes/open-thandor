@@ -223,13 +223,13 @@ No file comment; function families: `UiTransferMailbox_*` (11), `UiTransfer_*` (
 
 **Functions** (7 public, 5 file-local):
 
-- [`UiTransferMailbox_ServiceAndRetransmitTimer`](../../src/network/protocol/mailbox.cpp#L291) - Network receive timer (125 Hz, so one tick is 8 ms).
-- [`UiTransferMailbox_ClearReceivedState`](../../src/network/protocol/mailbox.cpp#L359) - Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a new transfer can be received; the outgoing buffer is left alone.
-- [`UiTransferMailbox_GetReceivedBuffer`](../../src/network/protocol/mailbox.cpp#L374) - Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in outByteCount once an allocation exists and no bytes are outstanding.
-- [`UiTransferMailbox_RandomizeSequenceToken`](../../src/network/protocol/mailbox.cpp#L390) - Gives this machine a new random session identity before it opens or looks for a session: XORs a random 16-bit value into the low word of the transfer sequence token.
-- [`UiTransferMailbox_MarkUnavailable`](../../src/network/protocol/mailbox.cpp#L403) - Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor ...
-- [`UiTransferMailbox_SetOutgoingBuffer`](../../src/network/protocol/mailbox.cpp#L416) - Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it).
-- [`UiTransfer_StagePacketAndSend`](../../src/network/protocol/mailbox.cpp#L430) - Sends one packet to endpoint; every packet of the game goes through here.
+- [`UiTransferMailbox_ServiceAndRetransmitTimer`](../../src/network/protocol/mailbox.cpp#L289) - Network receive timer (125 Hz, so one tick is 8 ms).
+- [`UiTransferMailbox_ClearReceivedState`](../../src/network/protocol/mailbox.cpp#L357) - Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a new transfer can be received; the outgoing buffer is left alone.
+- [`UiTransferMailbox_GetReceivedBuffer`](../../src/network/protocol/mailbox.cpp#L372) - Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in outByteCount once an allocation exists and no bytes are outstanding.
+- [`UiTransferMailbox_RandomizeSequenceToken`](../../src/network/protocol/mailbox.cpp#L388) - Gives this machine a new random session identity before it opens or looks for a session: XORs a random 16-bit value into the low word of the transfer sequence token.
+- [`UiTransferMailbox_MarkUnavailable`](../../src/network/protocol/mailbox.cpp#L401) - Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor ...
+- [`UiTransferMailbox_SetOutgoingBuffer`](../../src/network/protocol/mailbox.cpp#L414) - Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it).
+- [`UiTransfer_StagePacketAndSend`](../../src/network/protocol/mailbox.cpp#L428) - Sends one packet to endpoint; every packet of the game goes through here.
 
 **Data** (6 shared, 2 file-local): `g_UiTransferMailboxTickCounter`, `g_UiRuntimeRecordWriteIndex`, `g_UiTransferUnitCursor`, `g_UiTransferSequenceToken`, `g_UiTransferSenderContext`, `g_UiTransferMailbox`.
 
