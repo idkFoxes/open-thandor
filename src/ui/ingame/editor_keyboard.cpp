@@ -144,23 +144,10 @@ static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardSta
           int deltaAzimuth)
 {
   if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      TerrainLighting_AdjustDirectionAndRecomputeField(g_LocalPlayerRuntimeId,0,deltaElevation,deltaAzimuth);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_LIGHT,0,deltaElevation,deltaAzimuth);
-    }
+    InGameCommand_Issue<TerrainLighting_AdjustDirectionAndRecomputeField>(0,deltaElevation,deltaAzimuth);
   }
   if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      WorldRuntime_TurnAuxiliaryAnglesClamped(g_LocalPlayerRuntimeId,0,deltaElevation,deltaAzimuth);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES,0,deltaElevation,
-                                                  deltaAzimuth);
-    }
+    InGameCommand_Issue<WorldRuntime_TurnAuxiliaryAnglesClamped>(0,deltaElevation,deltaAzimuth);
   }
 }
 
@@ -214,43 +201,17 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case 0x56e6a0: /* F2: save the map */
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameUiCommand_SaveFieldAndLevelAssetImages(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SAVE_MAP,0,0,0);
-    }
+    InGameCommand_Issue<InGameUiCommand_SaveFieldAndLevelAssetImages>(0,0,0);
     break;
   case 0x56e6e0: /* Alt+E: leave the editor */
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,
-                                                                  EDITOR_ACTIVE_STATE_LEAVE);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_ACTIVE_STATE,0,0,
-                                                  EDITOR_ACTIVE_STATE_LEAVE);
-    }
+    InGameCommand_Issue<InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState>(0,0,EDITOR_ACTIVE_STATE_LEAVE);
     break;
   case 0x56e720: /* U / Alt+U: commit the height or material edits */
     if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_HEIGHT) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS,0,0,0);
-      }
+      InGameCommand_Issue<TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting>(0,0,0);
     }
     else if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_CommitFlagsAndMaterialDeltas(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COMMIT_MATERIALS,0,0,0);
-      }
+      InGameCommand_Issue<TerrainEditBuffer_CommitFlagsAndMaterialDeltas>(0,0,0);
     }
     break;
   case 0x56e7c0: /* Left: previous material / army; Ctrl: turn the light, Shift: move the field origin */
@@ -451,22 +412,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     Screenshot_SaveFramebufferAsPcx();
     break;
   case 0x56f1c0: /* Alt+Q: leave the editor and the session */
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,
-                                                                  EDITOR_ACTIVE_STATE_LEAVE);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_ACTIVE_STATE,0,0,
-                                                  EDITOR_ACTIVE_STATE_LEAVE);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
-    }
+    InGameCommand_Issue<InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState>(0,0,EDITOR_ACTIVE_STATE_LEAVE);
+    InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
   }
   return;
 }

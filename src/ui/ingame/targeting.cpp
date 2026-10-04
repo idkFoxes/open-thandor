@@ -62,13 +62,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
       }
       modelToken = ArmyRuntime_Token(ownerArmy);
       armyToken = (int)((uintptr_t)ownerNode->runtimePayload - g_ModelRuntimeRebaseDelta);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
-                  (g_LocalPlayerRuntimeId,0,armyToken,modelToken);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_MODEL_AND_ARMY,0,armyToken,modelToken);
-      }
+      InGameCommand_Issue<FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel>(0,armyToken,modelToken);
       root->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
       return;
     }

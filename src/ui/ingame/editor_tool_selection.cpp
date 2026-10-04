@@ -477,15 +477,8 @@ void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 void InGameCommandRange_DispatchState0(UiNodeBase *source)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    TerrainGrid_RunDirectionalRelaxationPasses
-              (g_LocalPlayerRuntimeId,0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_SIGN_GATED);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_TERRAIN_RELAXATION,0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_SIGN_GATED);
-  }
+  InGameCommand_Issue<TerrainGrid_RunDirectionalRelaxationPasses>
+            (0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_SIGN_GATED);
   return;
 }
 
@@ -496,15 +489,8 @@ void InGameCommandRange_DispatchState0(UiNodeBase *source)
 void InGameCommandRange_DispatchState1(UiNodeBase *source)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    TerrainGrid_RunDirectionalRelaxationPasses
-              (g_LocalPlayerRuntimeId,0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_TERRAIN_RELAXATION,0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
-  }
+  InGameCommand_Issue<TerrainGrid_RunDirectionalRelaxationPasses>
+            (0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
   return;
 }
 
