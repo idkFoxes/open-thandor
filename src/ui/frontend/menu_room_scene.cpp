@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/menu_room_scene.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -65,7 +66,14 @@ void FrontendRomActionTable_ExecuteRecord
         (pageAction != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE || g_NetworkBackendInstanceCount != 0))) {
     return;
   }
-  if (entry->activationSoundIndex != 0 && suppressActivationSound == 0 &&
+  /* The original indexed g_FrontendMenuSoundVoiceSets and keyframes with the entry's values unchecked; bounded
+     here because both come from the ROM action table: a sound index beyond the 100 slots plays nothing and a
+     flight with more than 14 keyframes is not started (each logged). */
+  if (entry->activationSoundIndex >= sizeof(g_FrontendMenuSoundVoiceSets) / sizeof(g_FrontendMenuSoundVoiceSets[0])) {
+    Thandor_Log("FrontendRomActionTable_ExecuteRecord: entry %u sound index %u out of range",recordIndex,
+                entry->activationSoundIndex);
+  }
+  else if (entry->activationSoundIndex != 0 && suppressActivationSound == 0 &&
       g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex] != nullptr) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -84,6 +92,11 @@ void FrontendRomActionTable_ExecuteRecord
     return;
   }
   if ((int)entry->keyframeCount <= 1) {
+    return;
+  }
+  if (entry->keyframeCount > sizeof(entry->keyframes) / sizeof(entry->keyframes[0])) {
+    Thandor_Log("FrontendRomActionTable_ExecuteRecord: entry %u keyframe count %u out of range",recordIndex,
+                entry->keyframeCount);
     return;
   }
   lastKeyframeIndex = entry->keyframeCount - 1;

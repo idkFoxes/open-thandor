@@ -275,6 +275,14 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel(void)
       return false;
     }
   }
+  /* The original indexed successorLevelIds with the level's end selection unchecked; bounded here because the
+     selection comes from the level's end trigger (a byte): a selection beyond the table is logged and treated
+     like a negative successor id. */
+  if (g_EndMovieSelectionIndex >= sizeof(levelRecordView->levels[0].successorLevelIds) / sizeof(int32_t)) {
+    Thandor_Log("FrontendMainLoop_SelectCampaignSuccessorLevel: end selection %u out of range",
+                g_EndMovieSelectionIndex);
+    return false;
+  }
   successorLevelId = levelRecordView->levels[0].successorLevelIds[(int)g_EndMovieSelectionIndex];
   if (successorLevelId < 0) {
     return false;
