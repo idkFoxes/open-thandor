@@ -40,9 +40,9 @@ void FrontendRomActionTable_ExecuteRecord
 
 Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
 
-void FrontendRomTransition_ProcessPendingRecord(void);
+void FrontendRomTransition_ProcessPendingRecord();
 
-void FrontendRomTransition_RequestStop(void);
+void FrontendRomTransition_RequestStop();
 
 uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 

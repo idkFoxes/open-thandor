@@ -122,7 +122,7 @@ void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFl
    texture and the four panel texture packages, and resets the sprite registry and pending input so the frontend
    starts clean.
 */
-void InGameRuntime_ShutdownAndReleaseResources(void)
+void InGameRuntime_ShutdownAndReleaseResources()
 
 {
   WorldRuntimeContext *world;
@@ -179,7 +179,7 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
 /* Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
    pointers.
 */
-void InGameRuntime_ReleaseFactionScratchBuffers(void)
+void InGameRuntime_ReleaseFactionScratchBuffers()
 
 {
   int remainingFactions;

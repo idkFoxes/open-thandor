@@ -218,7 +218,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 /* Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
    fieldRegion.clearTransientStateCallback of the world runtime while the editor is active.
 */
-void UiCommandRuntime_CallbackNoOp(void)
+void UiCommandRuntime_CallbackNoOp()
 
 {
   return;

@@ -328,7 +328,7 @@ static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount
 }
 
 /* Scales the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
-static void PckCodec_EncoderScaleFrequencies(void)
+static void PckCodec_EncoderScaleFrequencies()
 {
   uint32_t maxCount;
   int scaleShift;
@@ -359,7 +359,7 @@ static void PckCodec_EncoderScaleFrequencies(void)
    PckCodec_EncoderAssignCodes (NULL parent); fixed here because a uniform save entry or level transfer would
    crash the writer. The dummy symbol is never emitted; the stream is a valid two-symbol stream that the
    original decoder reads too. Sources with two or more distinct bytes are untouched. */
-static void PckCodec_EncoderEnsureTwoSymbols(void)
+static void PckCodec_EncoderEnsureTwoSymbols()
 {
   int symbolIndex;
   int usedSymbol;
@@ -424,7 +424,7 @@ static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode
 /* Copies the scaled counts into the leaf weights, then joins the two lightest live nodes under a new internal
    node until only the root still has a weight; a joined node's weight is cleared, so the root is the only node
    left with nonzero weight. Returns false when all 256 internal nodes are used up. */
-static Bool8 PckCodec_EncoderBuildTree(void)
+static Bool8 PckCodec_EncoderBuildTree()
 {
   int symbolIndex;
   PckHuffmanNodePtr nextInternalNode;
@@ -468,7 +468,7 @@ static void PckCodec_EncoderWriteFrequencyTable(uint8_t *destination)
    the root's bit lowest (the order the decoder reads it); each entry becomes code bits 0..23 | code length << 24.
    With a single distinct byte value the original tree has no internal node and the walk dereferences the
    leaf's NULL parent; PckCodec_EncoderEnsureTwoSymbols prevents that. */
-static void PckCodec_EncoderAssignCodes(void)
+static void PckCodec_EncoderAssignCodes()
 {
   uint32_t symbolIndex;
   PckHuffmanSymbolState *symbolState;
@@ -642,7 +642,7 @@ static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
    last internal node created), or NULL when all 256 internal nodes are used up. Leaves have no zeroChild.
    Original quirk: with fewer than two weighted symbols no internal node is created and the "root" is the node
    just before the internal node workspace (the last leaf); PckCodec_DecodeHuffmanRle rejects that root. */
-static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
+static PckHuffmanNode *PckCodec_DecoderBuildTree()
 {
   PckHuffmanNodePtr nextInternalNode;
   PckHuffmanNode *lowestNode;

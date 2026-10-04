@@ -42,11 +42,11 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source);
 
 void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime);
 
-void FrontendSession_PeriodicTick(void);
+void FrontendSession_PeriodicTick();
 
-void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void);
+void FrontendHostSession_TickPeerTimeoutsAndDropPlayers();
 
-void FrontendClientSession_TickHostTimeout(void);
+void FrontendClientSession_TickHostTimeout();
 
 void FrontendSession_ApplyGameSpeedAndReturnToMainPage
           (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,

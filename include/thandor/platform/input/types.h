@@ -34,9 +34,9 @@ struct KeyboardAsciiCaseTransformCallbackTable3 {
     Ptr32<uint32_t (uint32_t)> toUpper; 
     Ptr32<uint32_t (uint32_t)> toLower; 
 };
-typedef void KeyboardFlushEventsProc(void);
+typedef void KeyboardFlushEventsProc();
 typedef Bool8 KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask);
-typedef void PointerFlushEventsProc(void);
+typedef void PointerFlushEventsProc();
 typedef void PointerSetPositionProc(int32_t positionY, int32_t positionX);
 
 #endif /* THANDOR_PLATFORM_INPUT_TYPES_H */

@@ -24,7 +24,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void InGameSelectionDetailPanel_Rebuild(void);
+void InGameSelectionDetailPanel_Rebuild();
 
 extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16;
 extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16;

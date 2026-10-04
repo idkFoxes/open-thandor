@@ -136,7 +136,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-void UiWindowResources_Init(void);
+void UiWindowResources_Init();
 
 void UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,

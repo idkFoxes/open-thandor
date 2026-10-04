@@ -678,7 +678,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
    last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image to thandor.dat)
    with every key that was loaded or written. The save result is not checked.
 */
-void PersistentSettings_Flush(void)
+void PersistentSettings_Flush()
 
 {
   static char iniText[PERSISTENT_SETTINGS_INI_MAX_BYTES];
@@ -755,7 +755,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
    at its path it is looked up in the executable directory. Without any settings file the image stays empty
    (all defaults). open-thandor: the image is then passed to PersistentSettings_NormalizeColorDepth.
 */
-static void PersistentSettings_LoadImage(void)
+static void PersistentSettings_LoadImage()
 
 {
   uint32_t *clearCursor;
@@ -832,7 +832,7 @@ static void PersistentSettings_LoadImage(void)
 
 /* open-thandor: the game runs in 32-bit colour only. A colour depth other than 32 from an older thandor.ini or
    thandor.dat (the original's 16) is read as 32 and written as 32 by the next PersistentSettings_Flush. */
-static void PersistentSettings_NormalizeColorDepth(void)
+static void PersistentSettings_NormalizeColorDepth()
 {
   if ((g_PersistentSettings.image == nullptr) ||
       !PersistentSettings_IsPresent(PERSISTENT_SETTING_BITS_PER_PIXEL, 4) ||
@@ -846,7 +846,7 @@ static void PersistentSettings_NormalizeColorDepth(void)
   g_PersistentSettings.dirtyWriteCount++; /* the next Flush writes it */
 }
 
-void PersistentSettings_Load(void)
+void PersistentSettings_Load()
 {
   PersistentSettings_LoadImage();
   PersistentSettings_NormalizeColorDepth();

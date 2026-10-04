@@ -57,7 +57,7 @@ GraphicsBeginSceneProc *g_GraphicsBeginScene = THANDOR_FN(SoftwareGraphicsDispat
    zero), g_SoftwareBilinearPackedInterpolationWeights256 as {inverse, forward, 0, 0}. Entry 256 of the bilinear
    tables keeps the original quirk values (forward 0x4000, inverse 0, see there). This reproduces every entry of
    the original tables. Called once at startup. */
-void SoftwareRenderer_BuildFactorTables(void)
+void SoftwareRenderer_BuildFactorTables()
 {
   int fraction;
   uint16_t forward;
@@ -103,7 +103,7 @@ void SoftwareRenderer_BuildFactorTables(void)
 /* Software backend of g_GraphicsBeginScene: the software renderer needs no scene setup, so it only reports
    success.
 */
-void SoftwareGraphicsDispatch_SuccessNoOp(void)
+void SoftwareGraphicsDispatch_SuccessNoOp()
 
 {
   return;
@@ -111,7 +111,7 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void)
 
 /* Software backend of g_GraphicsEndScene: nothing to finish.
 */
-void SoftwareGraphicsDispatch_NoOp(void)
+void SoftwareGraphicsDispatch_NoOp()
 
 {
   return;

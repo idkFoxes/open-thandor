@@ -610,7 +610,7 @@ struct FrontendPointerSceneRuntimeView {
     Ptr32<struct GraphicsPrimitiveQueue> activePrimitiveQueue;
     uint32_t runtimeControlFlags;
     Ptr32<RuntimeSpinLockValue> renderSpinLock;
-    Ptr32<void (void)> renderSpinLockReleaseCallback;
+    Ptr32<void ()> renderSpinLockReleaseCallback;
     Ptr32<struct ModelRuntimeNode> candidateModelListHead;
     uint32_t activePlayerRuntimeId;
     Ptr32<struct ModelRuntimeNode> selectedModelNode;

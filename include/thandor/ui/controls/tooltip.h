@@ -35,7 +35,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void UiTooltip_TickCountdown(void);
+void UiTooltip_TickCountdown();
 
 void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
               UiPixelCoordinate clipLeft);

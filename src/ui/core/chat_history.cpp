@@ -111,7 +111,7 @@ void RecentTextHistory_Insert(uint16_t *text)
    one); the text itself stays. Used when the message lines are clicked away (InGameRecentText_TrimHistoryToThree,
    FrontendRecentText_TrimAndSortTopFive).
 */
-void RecentTextHistory_RemoveOldest(void)
+void RecentTextHistory_RemoveOldest()
 
 {
   uint32_t oldestSerial;

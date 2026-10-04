@@ -118,7 +118,7 @@ static void InGameEditorKeyboard_SelectMaterialForward(int stepCount,UiRootNode 
 
 /* Makes the unit placement army (g_UiCommandModeGArmyAssetId) the hovered record and rebuilds the detail
    panel; a failed lookup is fatal. */
-static void InGameEditorKeyboard_HoverUnitPlacementArmy(void)
+static void InGameEditorKeyboard_HoverUnitPlacementArmy()
 {
   uint32_t armyLookupError;
   ArmyAssetRecordPrefix *foundArmyAsset;

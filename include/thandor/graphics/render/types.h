@@ -304,7 +304,7 @@ struct FrontendModelPointerContext {
     Ptr32<struct GraphicsPrimitiveQueue> activePrimitiveQueue; // Primitive queue captured from GraphicsPrimitiveQueue_ResetGlobal for all model/terrain passes.
     uint32_t runtimeControlFlags; // WorldRuntimeContext.runtimeControlFlags of the in-game world view; unused by the frontend paths.
     Ptr32<RuntimeSpinLockValue> renderSpinLock; // Spin lock acquired around graphics queue construction.
-    Ptr32<void (void)> renderSpinLockReleaseCallback; // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
+    Ptr32<void ()> renderSpinLockReleaseCallback; // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
     Ptr32<struct ModelRuntimeNode> candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
     uint32_t activePlayerRuntimeId; // WorldRuntimeContext.selection.activePlayerRuntimeId of the in-game world view; not consumed by the frontend selection paths.
     Ptr32<struct ModelRuntimeNode> selectedModelNode; // Model-node half of the model selector's result.

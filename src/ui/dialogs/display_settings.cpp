@@ -555,7 +555,7 @@ void UiDisplayModeCandidates_InsertSortedUnique
    Reopened by UiDisplayModeAction_RevertAndReopenSettings. The original also reports a failed
    allocation; that caller ignores it.
 */
-void UiDisplaySettings_OpenAndPopulateModeSelection(void)
+void UiDisplaySettings_OpenAndPopulateModeSelection()
 
 {
   uint32_t framebufferWidth;

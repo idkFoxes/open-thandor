@@ -977,7 +977,7 @@ void SoftwareRasterAux_Mode12
    when the epoch underflows or reaches zero is the width*height depth buffer really cleared (0xFFFFFFFF) and the
    epoch reset to 0xFF000000.
 */
-void SoftwareRenderer_AdvanceDepthEpoch(void)
+void SoftwareRenderer_AdvanceDepthEpoch()
 
 {
   int pixelsRemaining;

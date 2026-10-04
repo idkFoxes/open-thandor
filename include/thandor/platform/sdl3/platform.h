@@ -30,12 +30,12 @@
 Bool8 SdlPlatform_CreateMainWindow(const char *title);
 /* Where the original's TimerSystem_Init ran: installs the SDL timers in g_TimerRegisterPeriodic/g_TimerUnregisterPeriodic and
    SdlPlatform_PumpEvents in g_Win32PumpMessages. */
-void SdlPlatform_InstallTimersAndPump(void);
+void SdlPlatform_InstallTimersAndPump();
 /* g_Win32PumpMessages: runs the developer tools' pump hook, then handles every pending SDL event (keyboard,
    text, mouse, focus); a quit request shuts the game down and ends the process. */
-void SdlPlatform_PumpEvents(void);
+void SdlPlatform_PumpEvents();
 /* End of ProcessEntry, after Runtime_Shutdown: stops SDL. */
-void SdlPlatform_Quit(void);
+void SdlPlatform_Quit();
 
 /* --- periodic timers (src/platform/sdl3/timer.cpp) --- */
 
@@ -45,7 +45,7 @@ void SdlTimer_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *c
 /* g_TimerUnregisterPeriodic: stops the first timer registered with callback. */
 void SdlTimer_UnregisterPeriodic(TimerCallbackProc *callback);
 /* Runtime_Shutdown: stops every timer. */
-void SdlTimer_Shutdown(void);
+void SdlTimer_Shutdown();
 
 /* --- video (src/platform/sdl3/video.cpp) --- */
 
@@ -54,10 +54,10 @@ void SdlTimer_Shutdown(void);
    probed once; with OPEN_THANDOR_GPU / -GPU / -SOFTWARE only the forced one) and for each of them the display
    modes (640x480 up to the desktop size, 16 and 32 bits per pixel), and installs SdlVideo_ApplyDisplayMode as the
    base display-mode step. Returns 0 or the error code. */
-uint32_t SdlVideo_Init(void);
+uint32_t SdlVideo_Init();
 /* Runtime_Shutdown, after Graphics_Shutdown: releases the framebuffer, the renderer (SDL_GPU device or
    SDL_Renderer) and the window. */
-void SdlVideo_Shutdown(void);
+void SdlVideo_Shutdown();
 /* Base step of g_GraphicsSetDisplayMode: switches to the adapter's renderer when it is not the running one (a
    GPU renderer that cannot start falls back Vulkan -> Direct3D 12 -> software, logged), applies the display mode
    kind (window, borderless fullscreen, exclusive fullscreen), a w x h memory framebuffer in XRGB8888 (32-bit
@@ -73,7 +73,7 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer);
    index): the adapter index of the saved renderer (or of the one forced by OPEN_THANDOR_GPU / -GPU / -SOFTWARE; an
    unavailable one gives the first adapter), and saving the renderer of an adapter (not while one is forced). The
    original's PERSISTENT_SETTING_ADAPTER_INDEX gets 0, the one display adapter. */
-uint32_t SdlVideo_SavedAdapterIndex(void);
+uint32_t SdlVideo_SavedAdapterIndex();
 void SdlVideo_SaveAdapterIndex(uint32_t adapterIndex);
 /* The second label part of an adapter (shown in brackets after its name): "GPU" or "CPU". */
 uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex);
@@ -81,9 +81,9 @@ uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex);
    it, the one in use, and the one the next SdlVideo_ApplyDisplayMode applies. The developer tools' window
    (OPEN_THANDOR_WINDOWED) stays a window and saves nothing: a chosen kind is logged and only kept for the
    session (the settings page then sees it as the saved one). */
-uint32_t SdlVideo_SavedDisplayModeKind(void);
+uint32_t SdlVideo_SavedDisplayModeKind();
 void SdlVideo_SaveDisplayModeKind(uint32_t kind);
-uint32_t SdlVideo_DisplayModeKind(void);
+uint32_t SdlVideo_DisplayModeKind();
 void SdlVideo_SetDisplayModeKind(uint32_t kind);
 /* g_GraphicsFramebufferCaptureRegion: the memory framebuffer as a one-image ARGB8888 'gfx' asset. */
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
@@ -96,23 +96,23 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
    and seeds the lock-key bits. Returns false with the error in *outError. */
 Bool8 SdlInput_Init(uint32_t *outError);
 /* Runtime_Shutdown: stops the cursor timer and gives the system cursor back. */
-void SdlInput_Shutdown(void);
+void SdlInput_Shutdown();
 /* g_GraphicsSetDisplayMode hook: frees and recreates the cursor buffers around the chained mode switch. */
 Bool8 SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                               uint32_t *errorCode);
 /* g_PointerSetPosition */
 void SdlInput_SetPosition(int32_t positionY,int32_t positionX);
 /* g_PointerFlushEvents */
-void SdlInput_FlushEvents(void);
+void SdlInput_FlushEvents();
 
 /* --- audio (src/platform/sdl3/audio.cpp) --- */
 
 /* In place of the original's DirectSound_Init: opens a 22050 Hz 16-bit stereo SDL audio stream with the mixer and installs the
    g_Sound* slots. Without an audio device the silent backend stays (returns 0, as the original's DirectSound_Init). Returns 0 or
    the allocator's error code. */
-uint32_t SdlAudio_Init(void);
+uint32_t SdlAudio_Init();
 /* Runtime_Shutdown: closes the audio stream and frees the voice-set registry. */
-void SdlAudio_Shutdown(void);
+void SdlAudio_Shutdown();
 uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 void SdlAudio_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,DirectSoundVoiceSet *voiceSet,
@@ -123,6 +123,6 @@ void SdlAudio_StopVoice(IDirectSoundBuffer *voice);
 /* Inverted like the original's DirectSound_IsVoicePlaying: false while the voice plays, true when it is NULL or stopped. */
 Bool8 SdlAudio_IsVoicePlaying(IDirectSoundBuffer *voice);
 void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,IDirectSoundBuffer *voice);
-void SdlAudio_StopAllVoices(void);
+void SdlAudio_StopAllVoices();
 
 #endif /* THANDOR_PLATFORM_SDL3_PLATFORM_H */

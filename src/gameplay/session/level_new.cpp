@@ -513,7 +513,7 @@ static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplat
 
 /* Resets the in-game effect and music voice state and loads the four level effect and four music samples of
    the tail. */
-void NewLevel_LoadLevelSamples(void)
+void NewLevel_LoadLevelSamples()
 
 {
   struct LevelWorldSettings *worldSettings;
@@ -671,7 +671,7 @@ static void NewLevel_ApplyGroupRelations(uint32_t groupMasks,FactionRelationStat
 
 /* Initial relations: every pair inside one 8-bit faction group of relationState4FactionGroupMasks gets state 4/4,
    of relationState8FactionGroupMasks state 8/8; also copies the relation UI flags. */
-static void NewLevel_ApplyInitialRelations(void)
+static void NewLevel_ApplyInitialRelations()
 
 {
   struct LevelWorldSettings *worldSettings;

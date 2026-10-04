@@ -59,7 +59,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 
 void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl *control);
 
-void UiCommandRuntime_CallbackNoOp(void);
+void UiCommandRuntime_CallbackNoOp();
 
 void InGameCommand_HandlePlayerDeparture
           (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,

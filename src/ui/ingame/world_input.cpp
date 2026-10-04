@@ -407,7 +407,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
 
 /* Drag selection: sends the remove batch, then the insert batch, three values per command. The counters end
    at or below zero (they are cleared again before the next collection). */
-static void InGameWorldInput_FlushDragSelectionBatches(void)
+static void InGameWorldInput_FlushDragSelectionBatches()
 
 {
   CommandPayload *tripletCursor;

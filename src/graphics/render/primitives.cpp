@@ -172,7 +172,7 @@ uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacit
    the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails; returns the queue.
    Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
 */
-GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void)
+GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal()
 
 {
   GraphicsPrimitiveQueue *globalQueue;

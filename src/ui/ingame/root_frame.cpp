@@ -431,7 +431,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
         copies its heading and a zoom value derived from the committed distance
    (distance * 3/128) into the in-game root's view cache.
 */
-void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
+void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 
 {
   UQ12 committedDistance;

@@ -45,7 +45,7 @@ LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = null
    AM/PM designators) in g_LocaleSystemState for the date and number formatters.
    Numeric fields are parsed from the GetLocaleInfoA text; string fields are widened to UTF-16.
 */
-void Locale_Init(void)
+void Locale_Init()
 
 {
   CPU_DetectFeatures();
@@ -229,7 +229,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
 /* Returns today's local date packed as (year << 16) | (month << 8) | day, so packed dates compare in
    calendar order.
 */
-uint32_t Locale_GetPackedCurrentDate(void)
+uint32_t Locale_GetPackedCurrentDate()
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -365,7 +365,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 
 /* Returns the current local time packed as (hour << 16) | (minute << 8) | second.
 */
-uint32_t Locale_GetPackedCurrentTime(void)
+uint32_t Locale_GetPackedCurrentTime()
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -378,7 +378,7 @@ uint32_t Locale_GetPackedCurrentTime(void)
 /* Guesses the player's telephone country code from the Windows user language: English 44, German 49,
    French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 */
-uint32_t Locale_GetDefaultTelephoneCountryCode(void)
+uint32_t Locale_GetDefaultTelephoneCountryCode()
 
 {
   LCID userLocaleId;

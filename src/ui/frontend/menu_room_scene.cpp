@@ -155,7 +155,7 @@ Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
    (not negative), activates that ROM record. The elapsed ticks are advanced by the frontend timer callback
    FrontendRomTransition_AdvanceElapsedTicks; the body runs under the frontend tick spin lock.
 */
-void FrontendRomTransition_ProcessPendingRecord(void)
+void FrontendRomTransition_ProcessPendingRecord()
 
 {
   RomRecordId pendingRecordId;
@@ -186,7 +186,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
 /* Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next
    FrontendRomTransition_ProcessPendingRecord finds the spline finished and activates the target record.
 */
-void FrontendRomTransition_RequestStop(void)
+void FrontendRomTransition_RequestStop()
 
 {
   if (g_FrontendRomTransitionTargetRecordId != 0) {

@@ -96,7 +96,7 @@ Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *ou
    texture set and palette, releases the nested resource owned by each registered effect definition and clears
    the definition registry.
 */
-void EffectRuntime_ShutdownGraphicsResources(void)
+void EffectRuntime_ShutdownGraphicsResources()
 
 {
   int registrySlotsRemaining;
@@ -130,7 +130,7 @@ void EffectRuntime_ShutdownGraphicsResources(void)
    and the owner as a model runtime or an army depending on the completion action) and replaces the saved
    definition id by the registered definition; an effect whose definition is no longer registered is dropped.
 */
-void EffectRuntime_RebaseSlotsAfterLoad(void)
+void EffectRuntime_RebaseSlotsAfterLoad()
 
 {
   EffectRuntimeCompletionAction slotCompletionAction;

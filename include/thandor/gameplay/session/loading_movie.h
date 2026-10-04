@@ -15,7 +15,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void MoviePlayback_AdvanceScheduledFrameAndTick(void);
+void MoviePlayback_AdvanceScheduledFrameAndTick();
 
 void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
 

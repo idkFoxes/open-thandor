@@ -35,7 +35,7 @@ static ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLi
    ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block. Returns the raw HeapAlloc
    pointer; if the heap cannot be created or allocated the game exits with the heap error message.
 */
-void * __cdecl ArenaHeap_Init(void)
+void * __cdecl ArenaHeap_Init()
 
 {
   HANDLE heap;
@@ -69,7 +69,7 @@ void * __cdecl ArenaHeap_Init(void)
 
 /* Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
 */
-void ArenaHeap_Shutdown(void)
+void ArenaHeap_Shutdown()
 
 {
   HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
@@ -142,7 +142,7 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
 /* Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or
    ARENA_HEAP_CORRUPT when the block chain is corrupt.
 */
-uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
+uint32_t __cdecl ArenaHeap_QueryFreeBytes()
 
 {
   uint32_t freePayloadBytes;

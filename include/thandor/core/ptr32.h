@@ -32,7 +32,7 @@ references to it.
 #ifdef __cplusplus
 /* THANDOR_FN(function) / THANDOR_PTR(pointer) values (core/contracts.h). */
 struct ThandorAnyFn {
-    void (*fn)(void);
+    void (*fn)();
     template <class F> operator F *() const { return (F *)fn; }
 };
 struct ThandorAnyPtr {

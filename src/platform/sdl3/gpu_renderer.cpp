@@ -1306,7 +1306,7 @@ void GpuRenderer_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY, GraphicsS
   g_PrimitiveDrawCallCount += GraphicsPrimitiveQueue_GetCount(queue);
 }
 
-void GpuRenderer_EndScene(void)
+void GpuRenderer_EndScene()
 {
   if (!s_gpu.sceneOpen) {
     return;

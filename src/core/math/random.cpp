@@ -19,7 +19,7 @@ RandomGeneratorState g_RandomGeneratorState = {.next = THANDOR_FN(Random_NextPri
    twice and returns (first step << 14) ^ (second step >> 2), mixing both steps so the weak low bits of
    the LCG do not show up directly.
 */
-uint32_t Random_NextPrimary(void)
+uint32_t Random_NextPrimary()
 
 {
   uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's 32-bit arithmetic */
@@ -34,7 +34,7 @@ uint32_t Random_NextPrimary(void)
    and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream can be
    kept in step across machines independently of the primary one.
 */
-uint32_t Random_NextSecondary(void)
+uint32_t Random_NextSecondary()
 
 {
   uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's 32-bit arithmetic */
@@ -61,7 +61,7 @@ void Random_SetBothSeeds(RandomSeed seed)
 /* Returns the current secondary seed (without stepping it); the host sends it in the player snapshot
    packet so that joining machines can continue the same stream.
 */
-uint32_t __cdecl Random_GetSecondarySeed(void)
+uint32_t __cdecl Random_GetSecondarySeed()
 
 {
   return g_RandomGeneratorState.secondarySeed;
@@ -70,7 +70,7 @@ uint32_t __cdecl Random_GetSecondarySeed(void)
 /* Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed;
    used together with Random_SetBothSeeds when a session starts.
 */
-void Random_SelectSecondaryStream(void)
+void Random_SelectSecondaryStream()
 
 {
   g_RandomGeneratorState.next = Random_NextSecondary;
@@ -80,7 +80,7 @@ void Random_SelectSecondaryStream(void)
 /* Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching
    either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
 */
-void __cdecl Random_SelectPrimaryStream(void)
+void __cdecl Random_SelectPrimaryStream()
 
 {
   g_RandomGeneratorState.next = Random_NextPrimary;

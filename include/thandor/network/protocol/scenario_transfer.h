@@ -44,9 +44,9 @@ typedef struct ScenarioLevelBundleHeader {
 
 /* Functions are grouped by semantic ownership. */
 
-void FrontendScenarioTransfer_ProcessReceivedAsset(void);
+void FrontendScenarioTransfer_ProcessReceivedAsset();
 
-void FrontendScenarioTransfer_ReleaseLoadedLevelAsset(void);
+void FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
 
 extern uint32_t g_FrontendScenarioTransferState;
 

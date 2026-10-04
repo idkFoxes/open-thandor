@@ -34,7 +34,7 @@ typedef unsigned int UQ12;
    replaced by exactly typed entries when the tables become classes. */
 #include <thandor/core/ptr32.h> /* ThandorAnyFn, ThandorAnyPtr, Ptr32 */
 #ifdef __cplusplus
-#define THANDOR_FN(f) (ThandorAnyFn{(void (*)(void))(f)})
+#define THANDOR_FN(f) (ThandorAnyFn{(void (*)())(f)})
 #define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
 #else
 #define THANDOR_FN(f) ((void *)(f))

@@ -190,7 +190,7 @@ static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *wor
   return true;
 }
 
-static Bool8 InGameWorldOverlay_CommandTargetMarkersFull(void)
+static Bool8 InGameWorldOverlay_CommandTargetMarkersFull()
 
 {
   return OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount;

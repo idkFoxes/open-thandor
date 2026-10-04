@@ -403,7 +403,7 @@ static int32_t FixedMath_SineTableEntry(int index)
   return (int32_t)floor(sin(index * (3.141592654 / 32768.0)) * 268435456.0 + 0.5);
 }
 
-void FixedMath_BuildSinCosTables(void)
+void FixedMath_BuildSinCosTables()
 {
   int index;
 

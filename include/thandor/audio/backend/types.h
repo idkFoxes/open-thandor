@@ -22,7 +22,7 @@ typedef Bool8 SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChan
 typedef void SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * voiceSet);
 typedef void SoundStopVoiceProc(IDirectSoundBuffer * voice);
 typedef Bool8 SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
-typedef void SoundStopAllVoicesProc(void);
+typedef void SoundStopAllVoicesProc();
 typedef void SoundSetVoiceGainsProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, IDirectSoundBuffer * voice);
 
 #endif /* THANDOR_AUDIO_BACKEND_TYPES_H */

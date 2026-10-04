@@ -19,16 +19,16 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl FrontendRuntime_TimerCountdownTick(void);
+void __cdecl FrontendRuntime_TimerCountdownTick();
 
-void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
+void __cdecl FrontendRomTransition_AdvanceElapsedTicks();
 
 Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
-void Frontend_StateTick(void);
+void Frontend_StateTick();
 
 extern uint32_t g_FrontendNetworkTickCounter;
 extern std::atomic<uint32_t> g_FrontendTimerCountdownTicks; /* counted down by the 80 Hz timer thread */

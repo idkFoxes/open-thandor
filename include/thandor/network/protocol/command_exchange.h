@@ -32,14 +32,14 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
 
 Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
-void FrontendTransfer_SendCommandSubmit(void);
+void FrontendTransfer_SendCommandSubmit();
 
 void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet);
 
-void FrontendTransfer_DispatchStagedCommandRecords(void);
+void FrontendTransfer_DispatchStagedCommandRecords();
 
-Bool8 FrontendTransfer_ConsumeProcessedFlag(void);
+Bool8 FrontendTransfer_ConsumeProcessedFlag();
 
 void FrontendTransfer_CopyCommandRecord
           (FrontendCommandPacketRecord *destination,const FrontendCommandPacketRecord *source);

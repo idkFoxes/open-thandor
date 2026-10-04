@@ -220,7 +220,7 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    the announcements go out in reverse removal order (each removed playerRuntimeId is stacked during the scan
    and taken back one per round); both are kept from the original.
 */
-void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
+void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers()
 
 {
   FrontendPlayerRuntimeBlockCount sendRemaining;
@@ -348,7 +348,7 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken
 
 
 /* True when every client (player blocks 1..n-1; block 0 is the host) has a non-zero readyOrWaitState. */
-static Bool8 FrontendPlayerRuntime_AreAllClientsReady(void)
+static Bool8 FrontendPlayerRuntime_AreAllClientsReady()
 
 {
   FrontendPlayerRuntimeBlockCount remainingClients;
@@ -543,7 +543,7 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
    1..active count as active and clears the slots above, then hands the players the assignable factions
    round-robin (player n gets faction (n mod assignable count) + 1) and clears their ready and consensus state.
 */
-void FrontendPlayerRuntime_InitializeFactionAssignments(void)
+void FrontendPlayerRuntime_InitializeFactionAssignments()
 
 {
   FrontendLoadedLevelAsset *loadedLevel;
@@ -668,7 +668,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
    players report FRONTEND_CAPABILITY_CD, i.e. run the game from the CD; otherwise hides it. Called whenever a
    player joins or a heartbeat updates the capabilities.
 */
-void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void)
+void FrontendPlayerRuntime_UpdateStartButtonByCdShare()
 
 {
   int cdPlayerCount;
@@ -755,7 +755,7 @@ void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntime
 
 /* True when every player block (0..n-1, the host included) has a non-zero readyOrWaitState. Assumes at least
    one block (do/while as in the original). */
-static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported(void)
+static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported()
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -775,7 +775,7 @@ static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported(void)
 
 
 /* Ends the in-game session's start pause, if it is still waiting for the players. */
-static void FrontendPlayerRuntime_EndInGameStartPause(void)
+static void FrontendPlayerRuntime_EndInGameStartPause()
 
 {
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
@@ -1193,7 +1193,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
 
 
 /* Ends Frontend_Init's wait for the players, if it is still waiting (and restarts the network tick counter). */
-static void FrontendPlayerRuntime_EndFrontendPlayerWait(void)
+static void FrontendPlayerRuntime_EndFrontendPlayerWait()
 
 {
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {

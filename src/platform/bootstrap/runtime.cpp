@@ -180,7 +180,7 @@ HWND g_MainWindow = nullptr;
    fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line. The
    platform backend is SDL3 (src/platform/sdl3), in place of the original's DirectDraw, DirectInput and DirectSound.
 */
-static void ProcessEntry_RunGame(void)
+static void ProcessEntry_RunGame()
 
 {
   uint32_t networkResult;
@@ -244,7 +244,7 @@ static void ProcessEntry_RunGame(void)
 /* Process entry: raises the process to real-time priority, creates the full-screen main window (only
    one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
 */
-void __cdecl ProcessEntry(void)
+void __cdecl ProcessEntry()
 
 {
   HANDLE processHandle;
@@ -272,7 +272,7 @@ void __cdecl ProcessEntry(void)
    fresh zeroed one. Returns 0, or the allocator's (non-zero) error code when the stat table cannot be
    allocated (the old one then stays).
 */
-uint32_t GameData_ResetDefaults(void)
+uint32_t GameData_ResetDefaults()
 
 {
   FactionCapabilityFlags *capabilityFlagsSlot;
@@ -351,7 +351,7 @@ uint32_t GameData_ResetDefaults(void)
    old-unit tables; without oldunit.hex both tables and the count are cleared. Returns true (failure) when
    daten.hex or stat.hex cannot be loaded, false otherwise.
 */
-Bool8 GameData_LoadExternalTables(void)
+Bool8 GameData_LoadExternalTables()
 
 {
   void *previousStatTable;
@@ -482,7 +482,7 @@ HINSTANCE DynDLL_Load(char *moduleName)
 /* Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
    before the call so a module is never freed twice. The count is left unchanged.
 */
-void DynDLL_UnloadAll(void)
+void DynDLL_UnloadAll()
 
 {
   uint32_t modulesRemaining;
@@ -506,7 +506,7 @@ void DynDLL_UnloadAll(void)
 /* Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it
    (FATAL_ERROR_CPU_WITHOUT_MMX). The constant return value 5 has no known use.
 */
-uint32_t __cdecl CPU_DetectFeatures(void)
+uint32_t __cdecl CPU_DetectFeatures()
 
 {
   intptr_t cpuidVersionInfo;
@@ -524,7 +524,7 @@ uint32_t __cdecl CPU_DetectFeatures(void)
    from the 640x480 start mode to the saved display mode, runs the frontend main loop and
    finally closes and cleans up the network backend.
 */
-void __cdecl Game_Run(void)
+void __cdecl Game_Run()
 
 {
   uint32_t renderingInitError;
@@ -576,7 +576,7 @@ void __cdecl Game_Run(void)
    Stops at the first step that fails and returns its (non-zero) error code; returns 0 when all succeed.
    The original returned g_PrimitiveQueueStorage on success; its only caller (Game_Run) discards it.
 */
-uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
+uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering()
 
 {
   uint32_t poolError;
@@ -603,7 +603,7 @@ uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first. Only done with the
    arena heap allocator. The 32-bit setup of 1999 wrote the key, so the 64-bit build reads the 32-bit registry view
    (WOW6432Node) like the original did. */
-static void CoreAssets_ReadCdPathFromRegistry(void)
+static void CoreAssets_ReadCdPathFromRegistry()
 
 {
   int status;
@@ -639,7 +639,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
    game directory, so the CD is no longer needed. Movie_Open looks under g_LooseMoviePathPrefix before the
    packages, which only hold still-image stand-ins for these movies; point the prefix at the game directory
    when that folder exists. */
-static void CoreAssets_UseLocalMovieFolder(void)
+static void CoreAssets_UseLocalMovieFolder()
 
 {
   static const uint16_t flmLeaf[4] = {'f','l','m',0};
@@ -665,7 +665,7 @@ static void CoreAssets_UseLocalMovieFolder(void)
 
 
 /* Mounts patchNN.pck, levelNN.pck and the fixed core packages, keeping the core package handles. */
-static void CoreAssets_MountPackages(void)
+static void CoreAssets_MountPackages()
 
 {
   uintptr_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
@@ -741,7 +741,7 @@ static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet
 
 /* g_ScreenshotFileNameUtf16 is "screen00.pcx" ([6] tens digit, [7] ones digit): counts up to the first
    screenshot file that does not exist yet. */
-static void CoreAssets_AdvanceScreenshotName(void)
+static void CoreAssets_AdvanceScreenshotName()
 
 {
   wchar_t screenshotTensDigit;
@@ -766,7 +766,7 @@ static void CoreAssets_AdvanceScreenshotName(void)
 
 /* Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones
    digit) after a screenshot was written, wrapping from 99 to 00. */
-void Screenshot_AdvanceFileName(void)
+void Screenshot_AdvanceFileName()
 
 {
   uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
@@ -785,7 +785,7 @@ void Screenshot_AdvanceFileName(void)
 /* Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer,
    writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter. A failed capture or encoding
    writes nothing and keeps the name. */
-void Screenshot_SaveFramebufferAsPcx(void)
+void Screenshot_SaveFramebufferAsPcx()
 
 {
   GraphicsCapturedTextureSourceAsset *capture;
@@ -810,7 +810,7 @@ void Screenshot_SaveFramebufferAsPcx(void)
 
 /* Binds placeholders 0..13 of the world view info texts to the debug-overlay text slots and installs the
    in-game and frontend UI action handler pages. */
-static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)
+static void CoreAssets_BindDebugOverlayTextsAndUiPages()
 
 {
   TextResourceId resourceId;
@@ -863,7 +863,7 @@ static Bool8 CoreAssets_LoadTextPages(uintptr_t *error)
 
 /* Applies the saved sound options: the effect and movie gains (all 0 with sound effects off), the
    reverse-stereo mask and the model LOD depth threshold. */
-static void CoreAssets_ApplySoundSettings(void)
+static void CoreAssets_ApplySoundSettings()
 
 {
   uint32_t soundOptions;
@@ -902,7 +902,7 @@ static void CoreAssets_ApplySoundSettings(void)
 /* Allocates the fixed runtime buffers (text history, old-unit tables, frontend lists, spline workspaces,
    player records, scratch slices) and sets up the pointers into them. Returns 0, or the error code of the
    first failing allocation. */
-static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
+static uint32_t CoreAssets_AllocateRuntimeBuffers()
 
 {
   uint16_t *textBuffer;
@@ -1085,7 +1085,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
    reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
    treats non-zero as failure).
 */
-uint32_t __cdecl Game_LoadCoreAssets(void)
+uint32_t __cdecl Game_LoadCoreAssets()
 
 {
   uint32_t aiInitError;
@@ -1138,7 +1138,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
 /* Pumps the window messages and checks for a skip request: a key press (Escape also moves the movie number
    to 8, so the caller's increment reaches intro9, normally absent, which ends the intros) or a mouse-button
    release. The mouse event is only read when no key event was pending. */
-static Bool8 IntroMovie_PollSkipRequest(void)
+static Bool8 IntroMovie_PollSkipRequest()
 
 {
   uint32_t keyCode;
@@ -1202,7 +1202,7 @@ static Bool8 IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
    a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
    Returns true only when the first frame of an opened movie cannot be decoded.
 */
-Bool8 Game_PlayIntroMovies(void)
+Bool8 Game_PlayIntroMovies()
 
 {
   uint32_t playbackRateHz;
@@ -1256,7 +1256,7 @@ Bool8 Game_PlayIntroMovies(void)
    every entry is bound. (The original returned the last resolved procedure on success; ProcessEntry only
    passes it through the fatal-error handler, which ignores it.)
 */
-uint32_t DynAPI_Bootstrap(void)
+uint32_t DynAPI_Bootstrap()
 
 {
   void **resolvedProcedure;
@@ -1360,7 +1360,7 @@ static uint8_t CommandLine_UppercaseAscii(uint8_t character)
 
 
 /* First positional argument slot still empty, NULL when all three are used. */
-static char *CommandLine_FindFreeArgumentSlot(void)
+static char *CommandLine_FindFreeArgumentSlot()
 
 {
   if (g_CommandLine.argument1[0] == '\0') {
@@ -1542,7 +1542,7 @@ static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
    optionBuffer (quoted parts kept verbatim with their quotes). Everything else is uppercased (ASCII a-z
    only). The 256-byte buffers are not bounds-checked. The arguments are also stored as UTF-16.
 */
-void CommandLine_Parse(void)
+void CommandLine_Parse()
 
 {
   uint8_t *commandLineCursor;

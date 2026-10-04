@@ -27,13 +27,13 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void * __cdecl ArenaHeap_Init(void);
+void * __cdecl ArenaHeap_Init();
 
-void ArenaHeap_Shutdown(void);
+void ArenaHeap_Shutdown();
 
 uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload);
 
-uint32_t __cdecl ArenaHeap_QueryFreeBytes(void);
+uint32_t __cdecl ArenaHeap_QueryFreeBytes();
 
 uint32_t ArenaHeap_Free(void *memory);
 

@@ -22,7 +22,7 @@ static uint32_t s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;
 
 /* Not in the original: the pending adapter (renderer) and display mode kind as saved (SdlVideo_SavedAdapterIndex,
    SdlVideo_SavedDisplayModeKind; the renderer is not kept in the original's adapter index). */
-static void FrontendDisplaySettingsPage_ReadSavedRendererAndKind(void)
+static void FrontendDisplaySettingsPage_ReadSavedRendererAndKind()
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex =
        SdlVideo_SavedAdapterIndex();

@@ -54,7 +54,7 @@ Bool8 NewLevel_LoadAssetList
            LevelAssetRecordCount remainingRecordCount,PackedFileExtensionCode32 extensionCode,
            NewLevelPrepareAssetFn prepareAsset,Ptr32<void> **loadedResourceCursor,uint32_t *outError);
 
-void NewLevel_LoadLevelSamples(void);
+void NewLevel_LoadLevelSamples();
 
 extern uint32_t g_InGameLevelTitleTextResourceIndex;
 extern uint32_t g_InGameLevelCampaignAssociationIndex;

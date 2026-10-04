@@ -55,7 +55,7 @@ FixedVectorAngles FixedMath_VectorToAngles
 uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
 /* Not in the original: fills g_FixedSineQ28 (the original shipped it precomputed). */
-void FixedMath_BuildSinCosTables(void);
+void FixedMath_BuildSinCosTables();
 
 /* one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1), then
    sin(0..16383) (FIXED_SINE_TABLE_SIN), then cos(0..65535) (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */

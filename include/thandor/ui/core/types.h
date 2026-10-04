@@ -84,6 +84,6 @@ struct PcxPreview64 {
     struct PcxRgb24 palette[256]; 
     uint8_t pixels[4096]; 
 };
-typedef void UiRuntimePostUnlockCallbackProc(void);
+typedef void UiRuntimePostUnlockCallbackProc();
 
 #endif /* THANDOR_UI_CORE_TYPES_H */

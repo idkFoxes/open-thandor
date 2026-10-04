@@ -24,7 +24,7 @@ uint32_t g_FrontendPendingPageActionDepth = 0;
 /* Frontend_MainLoop: presents UI frames until a page action is pending, then flushes the input and counts the
    action depth. Returns false instead when no action is pending and the UI root stack is empty (the player
    quit the game). */
-static Bool8 FrontendMainLoop_PresentFramesUntilPageAction(void)
+static Bool8 FrontendMainLoop_PresentFramesUntilPageAction()
 {
   do {
     if (g_UiRootNode != UI_ROOT_STACK_END) {
@@ -107,7 +107,7 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
    already has the catalogue, marks it, rebuilds the catalogue and either offers it to the clients (host: the
    catalogue is compressed into its own buffer right behind the used bytes, prefixed with the uncompressed size)
    or starts waiting for the host's (client). */
-static void FrontendMainLoop_ExchangeScenarioCatalog(void)
+static void FrontendMainLoop_ExchangeScenarioCatalog()
 {
   FrontendPlayerRuntimeRecord *localPlayerBlock;
   FrontendRoleStateFlags *localRoleStateFlags;
@@ -150,7 +150,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog(void)
    first wait until every player's snapshot is published; a client takes the snapshot table the host sends
    meanwhile. Then wait for the scenario catalogue exchange (the host sends its catalogue, a client receives it)
    before the page opens. */
-static void FrontendMainLoop_PollScenarioSelectionPage(void)
+static void FrontendMainLoop_PollScenarioSelectionPage()
 {
   FrontendPlayerRuntimeRecord *playerBlock;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
@@ -216,7 +216,7 @@ static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags sta
 
 /* Frontend_MainLoop, task assignment and mission briefing pages: the host releases its outgoing transfer before
    the page opens. */
-static void FrontendMainLoop_ReleaseHostTransfer(void)
+static void FrontendMainLoop_ReleaseHostTransfer()
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
@@ -255,7 +255,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
    campaign asset is released); a negative successor id or a current level without a record leaves it loaded.
    The record cursors start at the asset base and advance by one CampaignLevelRecord, so level record i is
    ((CampaignAsset *)cursor)->levels[0]. */
-static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel(void)
+static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel()
 {
   CampaignAsset *campaign;
   CampaignAsset *levelRecordView;
@@ -356,7 +356,7 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
 /* Frontend_MainLoop, host and local game: replaces the loaded level by the one at
    g_FrontendScenarioPathScratchUtf16, loads its field grid (the level's path with the extension "fld", under the
    executable directory), offers both to the clients when hosting and assigns the factions. */
-static void FrontendMainLoop_LoadSelectedLevel(void)
+static void FrontendMainLoop_LoadSelectedLevel()
 {
   void *loadedPackageEntry;
   uint32_t packageLoadErrorCode;

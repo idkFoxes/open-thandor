@@ -17,11 +17,11 @@
 /* Functions are grouped by semantic ownership. */
 
 /* Builds the bilinear and alpha blend factor tables (the original carried them precomputed); once at startup. */
-void SoftwareRenderer_BuildFactorTables(void);
+void SoftwareRenderer_BuildFactorTables();
 
-void SoftwareGraphicsDispatch_SuccessNoOp(void);
+void SoftwareGraphicsDispatch_SuccessNoOp();
 
-void SoftwareGraphicsDispatch_NoOp(void);
+void SoftwareGraphicsDispatch_NoOp();
 
 extern GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth;
 extern GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue;

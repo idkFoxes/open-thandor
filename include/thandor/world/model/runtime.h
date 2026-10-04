@@ -56,13 +56,13 @@ Bool8 ModelRuntimePool_RepairDeferredChild
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
           ModelRuntimeSlot **outChildModelRuntime);
 
-uint32_t __cdecl ModelRuntimePool_Init(void);
+uint32_t __cdecl ModelRuntimePool_Init();
 
-void ModelRuntimePool_ShutdownAndReleaseDefinitions(void);
+void ModelRuntimePool_ShutdownAndReleaseDefinitions();
 
-void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void);
+void __cdecl ModelRuntimePool_UnrebaseBeforeSave();
 
-void ModelRuntimePool_RebaseAfterLoad(void);
+void ModelRuntimePool_RebaseAfterLoad();
 
 void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 

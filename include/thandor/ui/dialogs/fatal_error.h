@@ -24,6 +24,6 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
 uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed);
 
-void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
+void ErrorRuntime_InstallUiHandlerAndAllocateState();
 
 #endif /* THANDOR_UI_DIALOGS_FATAL_ERROR_H */

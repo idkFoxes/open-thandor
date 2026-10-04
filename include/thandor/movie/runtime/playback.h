@@ -35,17 +35,17 @@
 
 Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
-MovieFrameDimensions Movie_GetFrameDimensions(void);
+MovieFrameDimensions Movie_GetFrameDimensions();
 
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
 
 uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
-void Movie_Rewind(void);
+void Movie_Rewind();
 
-void Movie_Close(void);
+void Movie_Close();
 
-void IntroMovie_TimerTick(void);
+void IntroMovie_TimerTick();
 
 Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 

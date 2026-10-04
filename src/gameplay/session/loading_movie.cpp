@@ -24,7 +24,7 @@ uint32_t g_MoviePlaybackCurrentFrame = 0;
    up to it, presenting at least every 8th frame on the way, then runs the regular simulation and network tick
    so the session keeps going under the movie.
 */
-void MoviePlayback_AdvanceScheduledFrameAndTick(void)
+void MoviePlayback_AdvanceScheduledFrameAndTick()
 
 {
   uint32_t targetFrame;

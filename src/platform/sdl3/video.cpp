@@ -540,7 +540,7 @@ bool AbsoluteMouse() noexcept
 
 using namespace thandor::sdl3;
 
-uint32_t SdlVideo_Init(void)
+uint32_t SdlVideo_Init()
 {
   const uint32_t allocError = Graphics_AllocateTables();
   if (allocError != 0) {
@@ -568,7 +568,7 @@ uint32_t SdlVideo_Init(void)
   return 0;
 }
 
-void SdlVideo_Shutdown(void)
+void SdlVideo_Shutdown()
 {
   g_GraphicsBackendAccessState = -1; /* nothing presents any more */
   g_DisplayFramebufferAccess.pixels = nullptr;
@@ -582,7 +582,7 @@ void SdlVideo_Shutdown(void)
   thandor::sdl3::DestroyMainWindow();
 }
 
-uint32_t SdlVideo_SavedAdapterIndex(void)
+uint32_t SdlVideo_SavedAdapterIndex()
 {
   uint32_t renderer = s_renderer.forced;
   if (renderer == kNoRenderer) {
@@ -608,7 +608,7 @@ uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex)
   return s_cpuDetailUtf16;
 }
 
-uint32_t SdlVideo_SavedDisplayModeKind(void)
+uint32_t SdlVideo_SavedDisplayModeKind()
 {
   if (Windowed() && (s_renderer.windowedChosenKind < PERSISTENT_DISPLAY_MODE_COUNT)) {
     return s_renderer.windowedChosenKind; /* not saved, but the settings page treats it as applied */
@@ -633,7 +633,7 @@ void SdlVideo_SaveDisplayModeKind(uint32_t kind)
   PersistentSettings_Write(kind, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
 }
 
-uint32_t SdlVideo_DisplayModeKind(void)
+uint32_t SdlVideo_DisplayModeKind()
 {
   return Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.kind;
 }

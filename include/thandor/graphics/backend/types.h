@@ -133,9 +133,9 @@ struct SoftwareRasterScanState {
     struct SoftwareRasterTextureAddressState textureAddress; 
     int32_t scanlineY; 
 };
-typedef void GraphicsBeginSceneProc(void);
+typedef void GraphicsBeginSceneProc();
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);
-typedef void GraphicsEndSceneProc(void);
+typedef void GraphicsEndSceneProc();
 typedef void GraphicsSetViewportProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);
 typedef void SoftwareBuildPixelPackTablesProc(int32_t colorScaleQ16, int32_t colorBiasQ16);
 typedef void SoftwareDrawQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);

@@ -26,12 +26,12 @@
 
 /* --- process --- */
 
-int DebugHook_RunSelfTest(void)
+int DebugHook_RunSelfTest()
 {
   return SelfTest_Run(getenv("OPEN_THANDOR_SELFTEST"));
 }
 
-void DebugHook_MessagePump(void)
+void DebugHook_MessagePump()
 {
   DebugAutoShot_Tick();
   DebugScript_Tick();
@@ -39,7 +39,7 @@ void DebugHook_MessagePump(void)
 
 /* OPEN_THANDOR_MOVIEEXPORT=<name>[,<name>...] exports those movies and exits; OPEN_THANDOR_MOVIE=<name>|all plays
    them in the debug movie player (which exits the process when done). */
-void DebugHook_BeforeIntroMovies(void)
+void DebugHook_BeforeIntroMovies()
 {
   const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
   const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
@@ -57,7 +57,7 @@ void DebugHook_BeforeIntroMovies(void)
   }
 }
 
-int DebugHook_AllowSecondInstance(void)
+int DebugHook_AllowSecondInstance()
 {
   return Thandor_TestAidAllowSecondInstance();
 }
@@ -69,14 +69,14 @@ unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass)
 
 /* --- windowed mode --- */
 
-int DebugHook_Windowed(void)
+int DebugHook_Windowed()
 {
   return Thandor_TestAidWindowed();
 }
 
 /* --- input --- */
 
-int DebugHook_IgnoreRealMouse(void)
+int DebugHook_IgnoreRealMouse()
 {
   return Thandor_TestAidScriptActive();
 }
@@ -117,7 +117,7 @@ void DebugHook_MovieFrameDone(MovieRuntime *movie, uint32_t consumedBytes)
 
 /* --- campaign and scenario selection --- */
 
-int DebugHook_ScenarioPageOpened(void)
+int DebugHook_ScenarioPageOpened()
 {
   /* local games only */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -138,39 +138,39 @@ void DebugHook_CampaignCarryOver(int afterMerge)
 
 /* --- in-game session --- */
 
-void DebugHook_SessionInitializing(void)
+void DebugHook_SessionInitializing()
 {
   DebugStateHash_SessionInitializing();
 }
 
-void DebugHook_SessionStarted(void)
+void DebugHook_SessionStarted()
 {
   g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
 }
 
-void DebugHook_SessionFrameBegin(void)
+void DebugHook_SessionFrameBegin()
 {
   g_TestAidInGameFrames = g_TestAidInGameFrames + 1;
 }
 
-void DebugHook_SessionFrameEnd(void)
+void DebugHook_SessionFrameEnd()
 {
   DebugCampaign_AutoWinTick();
 }
 
-void DebugHook_SimulationStepBegin(void)
+void DebugHook_SimulationStepBegin()
 {
   g_TestAidInSimulationStep = 1;
 }
 
-void DebugHook_SimulationStepEnd(void)
+void DebugHook_SimulationStepEnd()
 {
   g_TestAidInSimulationStep = 0;
   DebugStateHash_AfterStep();
 }
 
-int DebugHook_SuppressTransientMarkers(void)
+int DebugHook_SuppressTransientMarkers()
 {
   return Thandor_TestAidStateHashActive();
 }

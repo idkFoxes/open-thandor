@@ -35,6 +35,6 @@ Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
 
-void SoundBackendDisabled_StopAllVoices(void);
+void SoundBackendDisabled_StopAllVoices();
 
 #endif /* THANDOR_AUDIO_BACKEND_NULL_BACKEND_H */

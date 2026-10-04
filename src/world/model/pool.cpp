@@ -83,7 +83,7 @@ Bool8 ModelRuntimePool_RepairDeferredChild
    its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error
    (FATAL_ERROR_ARENA_EXHAUSTED / ARENA_HEAP_CORRUPT, never 0 from the arena).
 */
-uint32_t __cdecl ModelRuntimePool_Init(void)
+uint32_t __cdecl ModelRuntimePool_Init()
 
 {
   ModelRuntimeSlot *modelRuntimePool;
@@ -136,7 +136,7 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(MdlSerializedNodeHea
    registered model definition's node tree (see ModelRuntimePool_ReleaseDefinitionNodeResources) and clears
    the definition registry.
 */
-void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
+void ModelRuntimePool_ShutdownAndReleaseDefinitions()
 
 {
   int registryRemaining;
@@ -243,7 +243,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
    the class's modelUnrebase handler. Unused slots are zeroed. The original also returns the pool and its size
    0x400000 for the save. Counterpart of ModelRuntimePool_RebaseAfterLoad.
 */
-void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
+void __cdecl ModelRuntimePool_UnrebaseBeforeSave()
 
 {
   ModelRuntimeSlotUnrebaseView *modelRuntime;
@@ -296,7 +296,7 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
    runs the class's load-repair callback and rebuilds the attachment descriptors from the definition. A slot
    whose definition is no longer registered is dropped.
 */
-void ModelRuntimePool_RebaseAfterLoad(void)
+void ModelRuntimePool_RebaseAfterLoad()
 
 {
   int slotIndex;

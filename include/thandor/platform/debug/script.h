@@ -14,6 +14,6 @@
    in thandor/platform/debug/test_aids.h). */
 
 /* Called from the message pump (SdlPlatform_PumpEvents); runs the script lines that are due. */
-void DebugScript_Tick(void);
+void DebugScript_Tick();
 
 #endif /* THANDOR_PLATFORM_DEBUG_SCRIPT_H */

@@ -54,7 +54,7 @@ SoftwareFramebufferAccess *g_CursorCompositeBuffer = nullptr;
    game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor
    frame (wrapping to the first one). The cursor itself is drawn by the present (SdlVideo_Present).
 */
-void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
+void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer()
 
 {
   GraphicsCursorFrameRecord *frameRecords;
@@ -105,7 +105,7 @@ Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 /* The software cursor frame selected by GraphicsCursor_SetFrameIndex (for backends that compose the cursor
    themselves, such as the SDL3 backend). */
-GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void)
+GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex()
 
 {
   return g_CursorFrameIndex;

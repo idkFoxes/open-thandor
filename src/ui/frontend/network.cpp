@@ -73,7 +73,7 @@ static uint32_t FrontendNetworkSetupPage_OpenBackend(UiListRowIndex backendIndex
 
 /* -NAME="player name": fills the player name edit and the local player name.
    Original quirk: when more text follows the closing quote, the quote is left overwritten with a terminator. */
-static void FrontendNetworkSetupPage_ApplyNameOption(void)
+static void FrontendNetworkSetupPage_ApplyNameOption()
 {
   uint8_t *option;
   uint8_t *closingQuote;
@@ -100,7 +100,7 @@ static void FrontendNetworkSetupPage_ApplyNameOption(void)
 /* -CLIENT="host address": when the backend can parse the address, joins that host directly (without picking a
    session from the list) and shows the address in the host address edit.
    Original quirk: unlike -NAME and -SPIEL, the closing quote is never restored (it stays a terminator). */
-static void FrontendNetworkSetupPage_ApplyClientOption(void)
+static void FrontendNetworkSetupPage_ApplyClientOption()
 {
   uint8_t *option;
   uint8_t *closingQuote;

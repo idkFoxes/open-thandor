@@ -51,7 +51,7 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
 
 /* Fills the whole framebuffer with opaque black and presents it (skipped when the buffer cannot be
    accessed). */
-static void FrontendEndMovie_ClearAndPresentBlackFrame(void)
+static void FrontendEndMovie_ClearAndPresentBlackFrame()
 {
   if (!g_GraphicsFramebufferBeginAccess()) {
     g_GraphicsFramebufferFillRectArgb
@@ -152,7 +152,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
    button sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED. Without an in-game root or end movie path, or when the
    movie cannot be opened, it only installs the results-screen callbacks.
 */
-void Frontend_PlaySelectedEndMovie(void)
+void Frontend_PlaySelectedEndMovie()
 
 {
   UiRootCallbacks *rootCallbacks;

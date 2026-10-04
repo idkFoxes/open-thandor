@@ -43,7 +43,7 @@ static Bool8 InGameNewSession_Fail(uint32_t error,uint32_t *outError)
    sync pending, fresh timeout, faction and name), and starts the periodic step timer and the UI synchronization
    hooks.
 */
-static void InGameNewSession_ResetSessionState(void)
+static void InGameNewSession_ResetSessionState()
 
 {
   uint32_t *clearCursor;
@@ -470,7 +470,7 @@ static void InGameNewSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inG
 
 /* Starts the session notification timer and queues the level's five intro notification movies (consecutive ids
    from the first one; none when it is 0). */
-static void InGameNewSession_QueueIntroNotifications(void)
+static void InGameNewSession_QueueIntroNotifications()
 
 {
   InGameNotificationMovieId firstMovieId;

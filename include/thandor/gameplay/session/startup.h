@@ -21,9 +21,9 @@
 Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError);
 
-void InGameRuntime_ShutdownAndReleaseResources(void);
+void InGameRuntime_ShutdownAndReleaseResources();
 
-void InGameRuntime_ReleaseFactionScratchBuffers(void);
+void InGameRuntime_ReleaseFactionScratchBuffers();
 
 uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument);
 

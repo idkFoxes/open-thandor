@@ -221,7 +221,7 @@ struct WorldRuntimeContext {
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
     Ptr32<uint32_t> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
-    Ptr32<void (void)> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
+    Ptr32<void ()> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
     Ptr32<struct WorldOwnerListNode> ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
     struct WorldLightingState lighting; // Terrain-lighting configuration.
@@ -640,7 +640,7 @@ struct WorldRuntimeExtendedMapControlView {
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
     Ptr32<uint32_t> tickSpinLock;
-    Ptr32<void (void)> simulationAndNetworkTickCallback;
+    Ptr32<void ()> simulationAndNetworkTickCallback;
     Ptr32<struct WorldRuntimeNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;
     struct WorldLightingState lighting;

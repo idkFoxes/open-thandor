@@ -266,7 +266,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
    with a 0x50001 session advertisement. Returns the result of UiTransfer_StagePacketAndSend.
 */
-Bool8 UiTransfer_SendDiscoveryProbe(void)
+Bool8 UiTransfer_SendDiscoveryProbe()
 
 {
   Bool8 sendCarry;
@@ -283,7 +283,7 @@ Bool8 UiTransfer_SendDiscoveryProbe(void)
    g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). Returns the
    result of UiTransfer_StagePacketAndSend.
 */
-Bool8 UiTransfer_SendPlayerDescriptor(void)
+Bool8 UiTransfer_SendPlayerDescriptor()
 
 {
   int dwordCount;
@@ -353,7 +353,7 @@ static void FrontendTransfer_SendSessionAdvertisement
 }
 
 /* Smallest player runtime id below 0xFF that no current player uses (0xFF when all are taken). */
-static uint32_t FrontendTransfer_FindLowestFreePlayerRuntimeId(void)
+static uint32_t FrontendTransfer_FindLowestFreePlayerRuntimeId()
 {
   uint32_t candidateId;
   int playersRemaining;
@@ -476,7 +476,7 @@ static void FrontendTransfer_StoreCapabilityHeartbeat
 /* Host: adds its own next queued command (slot 0) to the commands collected from the players, compacts the
    non-empty slots into one lobby command batch (clearing them; the player id stays), sends it to every player
    but the host (record 0) and executes it. Nothing is sent when no slot holds a command. */
-static void FrontendTransfer_BroadcastAndExecuteLobbyCommands(void)
+static void FrontendTransfer_BroadcastAndExecuteLobbyCommands()
 {
   uint32_t commandCount;
   int slotsRemaining;
@@ -663,7 +663,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
 /* Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat
    value of 0x40, which the host stores in this player's record.
 */
-void FrontendTransfer_SendCapabilityHeartbeat(void)
+void FrontendTransfer_SendCapabilityHeartbeat()
 
 {
   g_FrontendPacket10006Buffer.header.packedTypeAndUnitCount =
@@ -810,7 +810,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true when no batch arrived, so Frontend_StateTick ends its tick early.
 */
-Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
+Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick()
 
 {
   int previousFlag;
@@ -824,7 +824,7 @@ Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
    queued lobby command in packet 0x10011 (a new sender sequence number each time) and, while player snapshots
    are still missing, requests the next one with packet 0x10004.
 */
-void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void)
+void FrontendTransfer_SendLobbyCommandAndSnapshotRequest()
 
 {
   FrontendPlayerRuntimeBlockCount nextPlayerIndex;

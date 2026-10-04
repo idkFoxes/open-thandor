@@ -55,7 +55,7 @@ typedef uint32_t RandomSeed;
 typedef uint32_t WorldMotionSplineChannelByteOffset;
 
 struct RandomGeneratorState {
-    Ptr32<uint32_t (void)> next; 
+    Ptr32<uint32_t ()> next; 
     RandomSeed primarySeed; 
     RandomSeed secondarySeed; 
 };

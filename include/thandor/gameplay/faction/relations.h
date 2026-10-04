@@ -101,7 +101,7 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
 void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
-void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void);
+void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10();
 
 Bool8 GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);

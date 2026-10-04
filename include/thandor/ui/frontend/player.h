@@ -57,7 +57,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source);
 
 void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode);
 
-void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void);
+void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers();
 
 Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (uintptr_t assignmentToken,PlayerRuntimeId excludedPlayerId); /* the building's address */
@@ -84,13 +84,13 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
           FrontendScenarioAvailabilityMask1 scenarioAvailabilityMask1,
           FrontendScenarioAvailabilityMask0 scenarioAvailabilityMask0);
 
-void FrontendPlayerRuntime_InitializeFactionAssignments(void);
+void FrontendPlayerRuntime_InitializeFactionAssignments();
 
 void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source);
 
 void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source);
 
-void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void);
+void FrontendPlayerRuntime_UpdateStartButtonByCdShare();
 
 void FrontendPlayerRuntime_SetSlowRenderingFlagById
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,

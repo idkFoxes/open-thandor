@@ -231,23 +231,23 @@ typedef long *LPLONG;
 
 typedef struct _FILETIME *LPFILETIME;
 
-typedef int (*FARPROC)(void);
+typedef int (*FARPROC)();
 
 typedef WORD *LPWORD;
 
 typedef void *LPCVOID;
-typedef uint32_t __cdecl CpuDetectFeaturesProc(void);
+typedef uint32_t __cdecl CpuDetectFeaturesProc();
 typedef void LocaleCopyDefaultComputerLabelUtf16Proc(uint16_t * destination);
 typedef uint32_t LocaleFormatCurrentDateUtf16Proc(uint16_t * destination);
 typedef uint32_t LocaleFormatCurrentTimeUtf16Proc(uint16_t * destination);
 typedef uint32_t LocaleFormatDateFieldsUtf16Proc(uint32_t year, uint32_t month, uint32_t day, uint16_t * destination);
 typedef uint32_t LocaleFormatTimeFieldsUtf16Proc(uint32_t hour, uint32_t minute, uint16_t * destination);
-typedef uint32_t LocaleGetPackedCurrentDateProc(void);
-typedef uint32_t LocaleGetPackedCurrentTimeProc(void);
-typedef uint32_t LocaleGetTelephoneCountryCodeProc(void);
-typedef void __cdecl TimerCallbackProc(void);
+typedef uint32_t LocaleGetPackedCurrentDateProc();
+typedef uint32_t LocaleGetPackedCurrentTimeProc();
+typedef uint32_t LocaleGetTelephoneCountryCodeProc();
+typedef void __cdecl TimerCallbackProc();
 typedef void TimerRegisterPeriodicProc(uint32_t frequencyHz, TimerCallbackProc * callback);
 typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * callback);
-typedef void __cdecl Win32PumpMessagesProc(void);
+typedef void __cdecl Win32PumpMessagesProc();
 
 #endif /* THANDOR_PLATFORM_SYSTEM_TYPES_H */

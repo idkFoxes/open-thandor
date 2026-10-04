@@ -170,7 +170,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 
 /* While some client's command record is missing: re-sends the last command batch to every client whose record
    is also still missing and 0x10012 (wait) to the clients that already sent theirs. */
-static void FrontendNetwork_ResendBatchOrWaitToClients(void)
+static void FrontendNetwork_ResendBatchOrWaitToClients()
 
 {
   FrontendPlayerRuntimeRecord *clientRecord;
@@ -192,7 +192,7 @@ static void FrontendNetwork_ResendBatchOrWaitToClients(void)
 /* Packs every non-empty 0x20-byte command record (command code in bits 8..31, player id in the low byte) into
    the batch buffer and returns the number of packed records. With nothing pending the first record (the host's
    own) is sent as a batch of one. */
-static uint32_t FrontendNetwork_BuildCommandBatch(void)
+static uint32_t FrontendNetwork_BuildCommandBatch()
 
 {
   const FrontendCommandPacketRecord *commandRecord;
@@ -235,7 +235,7 @@ static void FrontendNetwork_ExecuteCommandBatch(uint32_t commandCount)
 /* Packs the flags dword (plus the payload when complete) of every player's snapshot into the package scratch
    buffer, PCK-encodes the block, hands a copy (size dword + encoded bytes) to the outgoing transfer mailbox and
    queues FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE. Only called with more than one player. */
-static void FrontendNetwork_PublishSnapshots(void)
+static void FrontendNetwork_PublishSnapshots()
 
 {
   const FrontendPlayerRuntimeRecord *playerRecord;
@@ -294,7 +294,7 @@ static void FrontendNetwork_PublishSnapshots(void)
 
 /* Snapshot exchange: each time the countdown runs out, re-request the missing chunk of the first incomplete
    snapshot, or (all complete) mark the host's publication ready and publish all snapshots. */
-static void FrontendNetwork_TickSnapshotExchange(void)
+static void FrontendNetwork_TickSnapshotExchange()
 
 {
   FrontendPlayerRuntimeRecord *transferPlayer;
@@ -375,7 +375,7 @@ Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
    first page if it was still waiting for players, the TEXT_ID_NETWORK_HOST_LOST notice with the host's name
    is shown and the player list collapses to the local player alone.
 */
-void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
+void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
 
 {
   int frontendRootBase;

@@ -131,7 +131,7 @@ void SdlTimer_UnregisterPeriodic(TimerCallbackProc *callback)
   WaitWhileCallbackRunning(stopped);
 }
 
-void SdlTimer_Shutdown(void)
+void SdlTimer_Shutdown()
 {
   std::array<TimerRegistration *, kTimerSlotCount> stopped{};
   {

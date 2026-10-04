@@ -196,7 +196,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
    formats the camera pose, the selection point, free memory and the elapsed game time, and builds the faction
    status lines (name, player roster with pause/speed/slow marks, a counter) for the active factions 1..7.
 */
-void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
+void InGameHud_UpdateStatusCountersAndSessionPrompts()
 
 {
   uint64_t elapsedMinutes;
@@ -621,7 +621,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
    (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
    extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
 */
-void InGameHud_UpdateCurrentFactionMetricCache(void)
+void InGameHud_UpdateCurrentFactionMetricCache()
 
 {
   XeniteAmountQ4 xeniteStorageLimit;

@@ -57,11 +57,11 @@ struct MemoryApiTable {
     uint32_t (*free)(void *memory); // ArenaHeap_Free
     uint32_t (*allocLargestFreeBlock)(void **outAllocation, uint32_t *outBlockSize); // ArenaHeap_AllocLargestFreeBlock
     uint32_t (*shrinkInPlace)(uint32_t newSize, void *memory); // ArenaHeap_ShrinkInPlace
-    uint32_t (*queryFreeBytes)(void); // ArenaHeap_QueryFreeBytes
+    uint32_t (*queryFreeBytes)(); // ArenaHeap_QueryFreeBytes
     uint32_t (*reserveLinear)(uint32_t bytes, void **outBase); // ArenaHeap_ReserveLinear; *outBase = previous linear cursor
 };
 typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue);
-typedef void SpinLockReleaseCallbackProc(void);
+typedef void SpinLockReleaseCallbackProc();
 typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
 typedef void SpinLockReleaseProc(RuntimeSpinLockValue * lockValue);
 typedef Bool8 SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * lockValue);

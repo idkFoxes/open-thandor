@@ -46,8 +46,8 @@ struct GraphicsTextureLogicalSize {
 };
 typedef void GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * framebuffer);
 typedef GraphicsCapturedTextureSourceAsset *GraphicsFramebufferCaptureRegionProc(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
-typedef Bool8 GraphicsFramebufferBeginAccessProc(void);
-typedef void GraphicsFramebufferEndAccessProc(void);
+typedef Bool8 GraphicsFramebufferBeginAccessProc();
+typedef void GraphicsFramebufferEndAccessProc();
 typedef GraphicsTextureLogicalSize GraphicsTextureSourceGetLogicalSizeProc(uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 typedef void GraphicsFramebufferFillRectArgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t rectMaxY, int32_t rectMaxX, int32_t rectMinY, int32_t rectMinX, uint32_t argb8888, SoftwareFramebufferAccess * framebuffer);
 typedef GraphicsTextureSourceAsset * GraphicsTextureSourceResolveAllocationBaseProc(GraphicsTextureSourceAsset * sourceAsset);
@@ -242,7 +242,7 @@ struct GraphicsTextureSourceHeaderView {
 };
 typedef GraphicsPaletteAsset * GraphicsPaletteAssetLoadPackageProc(uint16_t * pathUtf16, uint32_t * outErrorCode);
 typedef GraphicsPaletteAsset * GraphicsPaletteAssetValidateProc(GraphicsPaletteAsset * paletteAsset, uint32_t * outErrorCode);
-typedef void __cdecl GraphicsTextureRebuildAllProc(void);
+typedef void __cdecl GraphicsTextureRebuildAllProc();
 typedef GraphicsTextureSet * GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset * sourceAsset, uint32_t * outErrorCode);
 typedef GraphicsTextureSourceAsset * GraphicsTextureSetDestroyProc(GraphicsTextureSet * set);
 typedef GraphicsTextureSet * GraphicsTextureSetLoadPackageProc(uint16_t * pathUtf16, uint32_t * outErrorCode);

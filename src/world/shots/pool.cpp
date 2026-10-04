@@ -76,7 +76,7 @@ Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outE
    shot texture set and palette, releases the nested resource each shot definition owns and empties the shot
    definition registry.
 */
-void ShotRuntime_ShutdownGraphicsResources(void)
+void ShotRuntime_ShutdownGraphicsResources()
 
 {
   int registrySlotsRemaining;
@@ -133,7 +133,7 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
    rebased and the saved definition id is replaced by the registered ShotDefinition. A shot whose id is no
    longer registered is dropped (model node cleared).
 */
-void ShotRuntime_RebaseSlotsAfterLoad(void)
+void ShotRuntime_RebaseSlotsAfterLoad()
 
 {
   ShotSecondaryEffectCountdownTicks *firstSlotCountdown;

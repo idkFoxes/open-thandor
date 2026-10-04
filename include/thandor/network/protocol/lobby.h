@@ -58,9 +58,9 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
 void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
-Bool8 UiTransfer_SendDiscoveryProbe(void);
+Bool8 UiTransfer_SendDiscoveryProbe();
 
-Bool8 UiTransfer_SendPlayerDescriptor(void);
+Bool8 UiTransfer_SendPlayerDescriptor();
 
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -68,7 +68,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
 
 void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRuntimeAddress32 frontendRuntime);
 
-void FrontendTransfer_SendCapabilityHeartbeat(void);
+void FrontendTransfer_SendCapabilityHeartbeat();
 
 void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -76,9 +76,9 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
 
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
-Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick(void);
+Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick();
 
-void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void);
+void FrontendTransfer_SendLobbyCommandAndSnapshotRequest();
 
 void FrontendTransfer_ExecuteLobbyCommandRecords
           (const FrontendCommandPacketRecord *commandRecord,uint32_t commandCount);

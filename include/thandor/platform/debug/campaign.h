@@ -18,14 +18,14 @@
    the first k sessions). The level start also logs the units a campaign carries over. */
 
 /* Once per frame from InGameRuntime_RunSessionUntilExit: OPEN_THANDOR_AUTOWIN. */
-void DebugCampaign_AutoWinTick(void);
+void DebugCampaign_AutoWinTick();
 
 /* Level start carry-over log, called before (afterMerge 0) and after (1) OldUnitRuntime_MergeMasksAndReplayRecords. */
 void DebugCampaign_LogCarryOver(int afterMerge);
 
 /* "Choose game" page of a local game: OPEN_THANDOR_LIST_SCENARIOS / OPEN_THANDOR_CAMPAIGN. Nonzero when a campaign
    was started. */
-int DebugCampaign_ApplyScenarioOptions(void);
+int DebugCampaign_ApplyScenarioOptions();
 
 /* Just loaded campaign: logs its levels, OPEN_THANDOR_CAMPAIGN_LEVEL picks the first one. */
 void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes);

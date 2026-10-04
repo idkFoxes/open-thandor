@@ -43,6 +43,6 @@
 int SelfTest_Run(const char *name);
 
 /* OPEN_THANDOR_SELFTEST=raster (raster_selftest.cpp), called by SelfTest_Run. */
-void Thandor_SelfTestRaster(void);
+void Thandor_SelfTestRaster();
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

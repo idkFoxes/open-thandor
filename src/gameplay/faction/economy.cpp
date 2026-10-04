@@ -31,7 +31,7 @@ typedef struct FactionEnergyConsumerEntry {
 /* Economy step 1, per faction: reset the step's energy demand and extraction rates, decay the faction's row of
    the pair-pressure matrix by 7/8, count the notification/anchor cooldowns down (anchorCooldown1/2 are the
    energy notification cooldowns) and advance the relation transition tick. */
-static void InGameFactionEconomy_ResetAndDecayFactionState(void)
+static void InGameFactionEconomy_ResetAndDecayFactionState()
 {
   GameFactionRuntimeRecord *factionRecord;
   uint32_t *pairPressureRow;
@@ -144,7 +144,7 @@ static void InGameFactionEconomy_PayResourceRegions
 }
 
 /* Caps the Xenite and Tritium stocks of all factions at their storage limits. */
-static void InGameFactionEconomy_CapStocksAtStorageLimits(void)
+static void InGameFactionEconomy_CapStocksAtStorageLimits()
 {
   GameFactionRuntimeRecord *factionRecord;
   int factionIndex;
@@ -333,7 +333,7 @@ static void InGameFactionEconomy_AllocateFactionEnergy
 
 /* Stat table row simulationTick / 128 (0x1000 rows of 7 factions x 2 dwords): the metrics
    combinedProgressScore/activeArmyContribution of factions 1..7, clamped at zero. */
-static void InGameFactionEconomy_StoreStatTableSample(void)
+static void InGameFactionEconomy_StoreStatTableSample()
 {
   GameFactionRuntimeRecord *statFactionRecord;
   WorldRuntimeContext *worldRuntime;
@@ -380,7 +380,7 @@ static void InGameFactionEconomy_StoreStatTableSample(void)
       (g_GameStatTableImage, shown by the results screen).
    All amounts are Q4 fixed point.
 */
-void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
+void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState()
 
 {
   FieldGridAsset *fieldGrid;

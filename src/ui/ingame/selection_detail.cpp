@@ -332,7 +332,7 @@ static void InGameSelectionDetailPanel_ShowHoverRecord
    entity plus the name of its linked army asset (definition classes 0x0B/0x0D/0x16), and enables the technology button only when a technology is
    available; page 3 shows the hovered record's armour, costs, build time, energy, name and weapons.
 */
-void InGameSelectionDetailPanel_Rebuild(void)
+void InGameSelectionDetailPanel_Rebuild()
 
 {
   UiCommandRuntimeRecordPrefix *hoverRecord;

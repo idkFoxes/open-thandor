@@ -46,15 +46,15 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void UiTransferMailbox_ServiceAndRetransmitTimer(void);
+void UiTransferMailbox_ServiceAndRetransmitTimer();
 
-void UiTransferMailbox_ClearReceivedState(void);
+void UiTransferMailbox_ClearReceivedState();
 
 void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount); /* NULL while nothing complete */
 
-void UiTransferMailbox_RandomizeSequenceToken(void);
+void UiTransferMailbox_RandomizeSequenceToken();
 
-void UiTransferMailbox_MarkUnavailable(void);
+void UiTransferMailbox_MarkUnavailable();
 
 void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation);
 

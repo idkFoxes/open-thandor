@@ -36,7 +36,7 @@
 
 void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl);
 
-void InGameHud_UpdateStatusCountersAndSessionPrompts(void);
+void InGameHud_UpdateStatusCountersAndSessionPrompts();
 
 void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot);
 
@@ -44,7 +44,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node);
 
 void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control);
 
-void InGameHud_UpdateCurrentFactionMetricCache(void);
+void InGameHud_UpdateCurrentFactionMetricCache();
 
 extern uint16_t *g_InGamePlayerListTextScratchUtf16;
 extern InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8];

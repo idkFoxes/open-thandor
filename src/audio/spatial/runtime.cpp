@@ -262,7 +262,7 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 /* Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
    sounds whose gains are set again this frame keep playing when SpatialSoundPool_ApplyDesiredGains runs.
 */
-void SpatialSoundPool_ClearDesiredGains(void)
+void SpatialSoundPool_ClearDesiredGains()
 
 {
   int slotsRemaining;
@@ -285,7 +285,7 @@ void SpatialSoundPool_ClearDesiredGains(void)
 /* End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
    is not playing, stops the voice when both gains are 0, and otherwise updates the voice's gains.
 */
-void SpatialSoundPool_ApplyDesiredGains(void)
+void SpatialSoundPool_ApplyDesiredGains()
 
 {
   IDirectSoundBuffer *existingVoice;

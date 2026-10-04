@@ -24,7 +24,7 @@ OldUnitRecordCount g_OldUnitRecordCount = 0;
    moved by the scenario's per-faction offset. OldUnitRuntime_MergeMasksAndReplayRecords applies both in the
    next mission. Without a matching scenario both tables are cleared.
 */
-void OldUnitRuntime_RebuildScenarioReplayTables(void)
+void OldUnitRuntime_RebuildScenarioReplayTables()
 
 {
   WorldOwnerListNode *ownerNode;
@@ -147,7 +147,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
    (0x20-byte primary records: asset id, faction, position, rotation) in the world, then rebuilds terrain
    occupancy and the cell classification for the active faction.
 */
-void OldUnitRuntime_MergeMasksAndReplayRecords(void)
+void OldUnitRuntime_MergeMasksAndReplayRecords()
 
 {
   InGameRuntimeRoot *runtimeRoot;
@@ -211,7 +211,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
 /* Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
    OldUnitRuntime_MergeMasksAndReplayRecords has nothing to apply.
 */
-void OldUnitRuntime_ResetPendingTables(void)
+void OldUnitRuntime_ResetPendingTables()
 
 {
   int tableEntriesRemaining;
@@ -228,7 +228,7 @@ void OldUnitRuntime_ResetPendingTables(void)
 
 /* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
    dword zero. */
-Bool8 InGameSaveGame_OldUnitTablesAreEmpty(void)
+Bool8 InGameSaveGame_OldUnitTablesAreEmpty()
 
 {
   int index;

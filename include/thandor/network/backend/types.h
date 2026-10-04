@@ -99,16 +99,16 @@ struct NetworkBackendInstanceDescriptorPrefix {
 };
 
 typedef uint32_t NetworkSocketHandle32;
-typedef void NetworkBackendCleanupCallback(void);
-typedef void NetworkBackendCloseCallback(void);
+typedef void NetworkBackendCleanupCallback();
+typedef void NetworkBackendCloseCallback();
 typedef void NetworkBackendFormatAddressCallback(char * outputText, WinSockAddress * socketAddress);
 typedef uint32_t NetworkBackendOpenBindCallback(uint32_t localPort); /* 0 or a FATAL_ERROR_NETWORK_* code */
 typedef Bool8 NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor * endpoint, char * endpointText);
 typedef Bool8 NetworkBackendReceiveCallback(WinSockAddress * sourceAddress, uint32_t byteCount, uint8_t * buffer); /* true when a datagram was received */
 typedef Bool8 NetworkBackendSendCallback(WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success */
 typedef uint32_t NetworkBackendSetSessionCallback(uint32_t backendIndex); /* 0 or a FATAL_ERROR_NETWORK_* code */
-typedef int __stdcall WinSock_WSACleanupProc(void);
-typedef int __stdcall WinSock_WSAGetLastErrorProc(void);
+typedef int __stdcall WinSock_WSACleanupProc();
+typedef int __stdcall WinSock_WSAGetLastErrorProc();
 typedef int __stdcall WinSock_WSAStartupProc(uint16_t requestedVersion, WinSockData11 * startupData);
 typedef int __stdcall WinSock_bindProc(uint32_t socket, WinSockAddress * address, int addressLength);
 typedef int __stdcall WinSock_closesocketProc(uint32_t socket);

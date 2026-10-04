@@ -115,7 +115,7 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 void UiDisplayModeCandidates_InsertSortedUnique
           (DisplayModeScratchWord *candidates,uint32_t candidateCount,DisplayModeScratchWord value);
 
-void UiDisplaySettings_OpenAndPopulateModeSelection(void);
+void UiDisplaySettings_OpenAndPopulateModeSelection();
 
 void UiDisplayModeSelection_RefreshEnumeratedOptions
           (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits selectedBitsPerPixel,

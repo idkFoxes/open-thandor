@@ -21,7 +21,7 @@ UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
-Bool8 UiRootStack_PopUntilWindowTextureBoundary(void)
+Bool8 UiRootStack_PopUntilWindowTextureBoundary()
 
 {
   Bool8 popStopped;
@@ -168,7 +168,7 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
    at least one open root; with none it is a no-op here because the do-while would dereference
    UI_ROOT_STACK_END.
 */
-void UiRootStack_Relayout(void)
+void UiRootStack_Relayout()
 
 {
   int64_t edgeAnchorPixelProductQ31;
@@ -205,7 +205,7 @@ void UiRootStack_Relayout(void)
 /* Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
    root stack, top to bottom. Does nothing while invalidation is suppressed.
 */
-void UiRootStack_InvalidateAll(void)
+void UiRootStack_InvalidateAll()
 
 {
   UiRootNode *root;

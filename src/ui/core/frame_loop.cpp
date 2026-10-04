@@ -18,7 +18,7 @@ std::atomic<uint32_t> g_UiPendingFrameTicks{0};
    not hold the UI frame lock, e.g. modal loops and the fatal-error box: the lock is released for the frame
    and taken again afterwards only when it was held on entry.
 */
-void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
+void __cdecl UiFrame_ProcessAndPresentWithLockTransition()
 
 {
   Bool8 lockWasHeld;
@@ -50,7 +50,7 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
    dispatches queued UI actions, draws and presents. Unlike UiFrame_ProcessAndPresentWithLockTransition it does
    not touch the UI frame lock itself.
 */
-void UiFrame_ProcessAndPresent(void)
+void UiFrame_ProcessAndPresent()
 
 {
   UiKeyboard_DispatchPendingEvents();
@@ -65,7 +65,7 @@ void UiFrame_ProcessAndPresent(void)
 /* Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
    (or resumes after a movie, session or error box) neither reacts to stale input nor catches up on old ticks.
 */
-void UiFrame_FlushInputAndResetPendingTicks(void)
+void UiFrame_FlushInputAndResetPendingTicks()
 
 {
   g_KeyboardFlushEvents();
@@ -121,7 +121,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
 /* Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
    the framebuffer, and the tooltip on top.
 */
-void UiFrame_Draw(void)
+void UiFrame_Draw()
 
 {
   /* Collects every root while walking previousRoot down from the front root, then draws them
