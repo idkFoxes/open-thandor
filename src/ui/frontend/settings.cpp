@@ -475,7 +475,7 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
-  UiNodeBase *selectedQualityControl;
+  UiNodeBase *selectedQualityControl = NULL; /* control is one of the three buttons */
   FrontendTextureQualityGroup *textureQualityGroup;
 
   /* The parent is the frontend template's textureQualityGroup. */

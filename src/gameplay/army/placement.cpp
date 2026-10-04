@@ -460,7 +460,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   WorldOwnerListNode *ownerNode;
   Bool8 blocked;
   TerrainPlacementResult terrainTest;
-  int nearestClearanceQ12;
+  int nearestClearanceQ12 = 0; /* set together with nearestDistanceSquared */
 
   nearestDistanceSquared = INT64_MAX;
   contactKindIndex = modelDefinition->placementContactKindIndex;

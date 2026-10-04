@@ -213,7 +213,7 @@ void UiRuntime_Shutdown(void)
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = NULL;
-    g_UiRuntimeRecordEndpointSlots = NULL;
+    g_UiRuntimeRecordEndpointSlots = 0;
     g_UiTransferDataBuffer = NULL;
     g_UiTransferEndpointBuffer = NULL;
     g_MemoryApi.free(g_UiDirtyRectEntries);

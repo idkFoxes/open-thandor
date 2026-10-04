@@ -145,13 +145,13 @@ void DebugHook_SessionInitializing(void)
 
 void DebugHook_SessionStarted(void)
 {
-  g_TestAidSessionCount++;
+  g_TestAidSessionCount = g_TestAidSessionCount + 1;
   DebugStateHash_SessionStart();
 }
 
 void DebugHook_SessionFrameBegin(void)
 {
-  g_TestAidInGameFrames++;
+  g_TestAidInGameFrames = g_TestAidInGameFrames + 1;
 }
 
 void DebugHook_SessionFrameEnd(void)

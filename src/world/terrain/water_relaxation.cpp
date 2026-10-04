@@ -292,7 +292,6 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
   intptr_t cellAfterSourceAddress;
   intptr_t upperRowCellAddress;
   int *neighborWaterDelta;
-  FieldGridDimension gridWidth;
   
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
