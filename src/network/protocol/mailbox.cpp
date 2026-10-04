@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/mailbox.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -121,6 +122,18 @@ static void UiTransferMailbox_ReceiveChunk
     return;
   }
   if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
+    /* The original allocated the peer's total size unchecked; bounded here because every sender builds its
+       transfer in the package scratch buffer (the scenario catalog is smaller), so a larger total is malformed.
+       Logged once: it repeats for every such chunk while the transfer is still requested. */
+    if (totalByteCount > PACKAGE_SCRATCH_BUFFER_BYTES) {
+      static Bool8 s_loggedOversizedTransfer = false;
+      if (!s_loggedOversizedTransfer) {
+        s_loggedOversizedTransfer = true;
+        Thandor_Log("UiTransferMailbox_ReceiveChunk: rejected transfer of %u bytes (maximum %u)",totalByteCount,
+                    (uint32_t)PACKAGE_SCRATCH_BUFFER_BYTES);
+      }
+      return;
+    }
     if (g_MemoryApi.alloc(totalByteCount,&receivedAllocation) != 0) {
       return;
     }
