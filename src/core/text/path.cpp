@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: core/text/path. */
-
 /* Replaces the extension of the final path component with the packed code (one character per byte, first
    character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
    loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Returns false (success).

@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/panels. */
-
 /* panelFlags of UiImagePanelControl (also the base of UiArmyMetricsPanel). */
 #define UI_IMAGE_PANEL_CENTER_X 0x01
 #define UI_IMAGE_PANEL_ALIGN_RIGHT 0x02
@@ -37,8 +35,6 @@
 #define UI_GAUGE_FRAME_TRACK 1
 #define UI_GAUGE_FRAME_END_CAP 2
 #define UI_GAUGE_FRAME_MARKER 21
-
-/* Functions are grouped by semantic ownership. */
 
 void UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

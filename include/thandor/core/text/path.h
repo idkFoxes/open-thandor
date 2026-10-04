@@ -12,7 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/text/path. */
 /* Engine path buffers hold at most 256 UTF-16 code units (0x200 bytes) including the terminator, e.g.
    g_FileSystemCombinedPathScratchUtf16 and g_ExecutableDirectoryUtf16. */
 #define WIDE_PATH_MAX_CODE_UNITS 0x100
@@ -44,8 +43,6 @@
 #define UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP ((10 << 16) - 1)
 /* Two UTF-16 code units read as one little-endian dword (first in the low half), e.g. for comparing a name */
 #define UTF16_CHAR_PAIR(first,second) ((second) << 16 | (first))
-
-/* Functions are grouped by semantic ownership. */
 
 /* pathCapacity: code units of the buffer holding path */
 Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,

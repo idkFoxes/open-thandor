@@ -62,8 +62,6 @@ const uint32_t g_UiCommandModeGSecondaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
 /* uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
 const uint32_t g_UiCommandModeGTertiaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
 
-/* Implementation ownership: ui/ingame/editor_tools. */
-
 /* Map editor pointer callback (installed as both selection.resolveContextAction*Callback of the world
    runtime by InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState): returns the cursor frame for the
    active editor tab and tool. For placing, a temporary army instance is created at the pointer and tested

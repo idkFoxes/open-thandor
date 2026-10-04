@@ -18,8 +18,6 @@ float *g_WorldMotionSplineMatrixWorkspaces[6] = {};
 
 float *g_WorldMotionSplineCoefficientTables[6] = {};
 
-/* Implementation ownership: world/camera/motion_spline. */
-
 /* Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
    the cubic segment before it and applies channels 0..2 as the position and 3..5 as magnitude/yaw/pitch
    to worldRuntime, caching the six derivatives. Returns true while the spline runs; past the last

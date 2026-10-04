@@ -12,10 +12,6 @@
 #include <thandor/core/contracts.h>
 #include <thandor/core/text/path.h>
 
-/* Submodule: gameplay/session/scenario_load. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendScenarioAction_StartFieldGridLoad(void *source);
 
 void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId);

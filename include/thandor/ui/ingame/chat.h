@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/chat. */
-
 /* Labels of the message window's recipient check boxes, one per active faction (selector 0 = faction name) */
 #define TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE 0x216D
 
@@ -22,8 +20,6 @@
 #define INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE 0x100
 #define INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE 0x8000
 #define INGAME_CHAT_RECIPIENT_EVERYONE 0xffffff00u
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
 

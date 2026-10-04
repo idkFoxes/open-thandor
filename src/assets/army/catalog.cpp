@@ -16,8 +16,6 @@ ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {};
 /* Fixed name for the fatal-error box when an ARM asset is invalid (the asset's own path is not known here). */
 static uint16_t s_ArmyAssetErrorName[] = {'*', '.', 'a', 'r', 'm', 0}; /* L"*.arm" */
 
-/* Implementation ownership: assets/army/catalog. */
-
 /* Checks that a loaded asset (assetByteCount bytes) is an 'arm' file of converter version 0x20008 and registers
    every army record in it (the variable-size records follow the 0x200-byte header, each starting with its byte
    size). A wrong header, or a record that is shorter than its prefix or does not fit into the asset, stores

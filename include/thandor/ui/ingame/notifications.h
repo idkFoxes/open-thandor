@@ -10,10 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/notifications. */
-
-/* Functions are grouped by semantic ownership. */
-
 void InGameRuntime_ProcessQueuedSessionNotificationTimer();
 
 extern uint32_t g_InGameSessionNotificationTimeoutTicks;

@@ -12,10 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/dialogs/fatal_error. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
 int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);

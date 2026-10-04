@@ -13,16 +13,12 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/lists. */
-
 /* UiListControl.listStateFlags: bits 24..31 count down the frames until a deferred list action is queued (tick
    callbacks). */
 #define UI_LIST_COUNTDOWN_SHIFT 24
 #define UI_LIST_COUNTDOWN_ONE 0x1000000
 #define UI_LIST_COUNTDOWN_MASK 0xff000000
 #define UI_LIST_FLAGS_MASK 0xffffff
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);

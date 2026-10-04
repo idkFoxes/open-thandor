@@ -12,11 +12,8 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/effect/catalog. */
-
 /* Slots of g_EffectDefinitionRegistry (256 pointers; a null slot is free). */
 #define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
-/* Functions are grouped by semantic ownership. */
 
 Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 

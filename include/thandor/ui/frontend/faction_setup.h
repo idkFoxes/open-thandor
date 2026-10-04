@@ -13,10 +13,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/faction_setup. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl);
 
 void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl);

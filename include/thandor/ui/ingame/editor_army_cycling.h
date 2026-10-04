@@ -12,12 +12,8 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/editor_army_cycling. */
-
 /* The placement lists search ids 0..0xFFF and wrap around at 0x1000. */
 #define ARMY_ASSET_EDITOR_ID_LIMIT 0x1000
-
-/* Functions are grouped by semantic ownership. */
 
 ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId);
 

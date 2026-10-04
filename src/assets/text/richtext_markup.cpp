@@ -35,8 +35,6 @@ typedef struct RichTextMarkupParser {
   int32_t *tagKeys;
 } RichTextMarkupParser;
 
-/* Implementation ownership: assets/text/richtext_markup. */
-
 /* Appends one code unit to the output; false when no more than 2 bytes are left. */
 static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
 {

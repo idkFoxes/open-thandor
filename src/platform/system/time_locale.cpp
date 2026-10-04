@@ -34,8 +34,6 @@ LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16 = nullptr;
 
 LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = nullptr;
 
-/* Implementation ownership: platform/system/time_locale. */
-
 /* Installs the date/time/locale services in their function pointers and
    caches the user's locale settings (language id, number separators, date/time separators and order,
    AM/PM designators) in g_LocaleSystemState for the date and number formatters.

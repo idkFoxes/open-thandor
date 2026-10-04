@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct EntityPathingPriorityPair EntityPathingPriorityPair, *PEntityPathingPriorityPair;
 typedef struct GridScratchCell GridScratchCell, *PGridScratchCell;
 typedef struct GridPathBestUnreachableCell GridPathBestUnreachableCell, *PGridPathBestUnreachableCell;

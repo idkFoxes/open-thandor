@@ -13,8 +13,6 @@
 /* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider */
 static const int32_t g_UiRangeSliderDragScale = 1;
 
-/* Implementation ownership: ui/controls/slider. */
-
 /* Thumb offset along the track for UiRangeSliderControl_DrawTrackAndThumb: value (clamped to
    minimumValue..maximumValue) scaled from the range onto freeTrackLength, rounded to the nearest pixel;
    measured from the other end when invert is set. */

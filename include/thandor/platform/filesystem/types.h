@@ -13,8 +13,6 @@
 #include <thandor/core/types.h>
 #include <thandor/platform/system/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct _WIN32_FIND_DATAA _WIN32_FIND_DATAA, *P_WIN32_FIND_DATAA;
 typedef struct _FILETIME _FILETIME, *P_FILETIME;
 

@@ -12,8 +12,6 @@
 
 const ArmyCommandGeneration g_ArmyCommandGenerationStandard = 1024;
 
-/* Implementation ownership: gameplay/army/move_orders. */
-
 /* Makes targetRuntime the army's command target: a running movement (movement flag 0x20) is reset first, then
    the army starts a route to the target's current world position under the standard command generation.
    A null target clears the command instead.

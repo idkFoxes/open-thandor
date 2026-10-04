@@ -17,7 +17,7 @@ Asset loading, catalogs and resource formats.
 
 Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAsset_PrepareRecords`
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - Bits of an army record's flags (ArmyAssetRecord.flags) that pick the map-editor placement lists: unit placement (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and ...
 - [`types.h`](source_guide/assets.md#file-assets-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-effect"></a>
@@ -139,7 +139,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 
 Module header: [`error.h`](../include/thandor/core/error.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-core-error-runtime) · [full](../CHANGELOG_FULL.md#module-core-error-runtime)
 
-- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `ErrorSystem_Init`, `FatalError_Exit`, `FatalError_ShowAndExit`
+- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors)
 - [`types.h`](source_guide/core.md#file-core-error-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-math"></a>
@@ -219,7 +219,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyGroundMovement_ApplyRecoilTilt`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
-- [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
+- [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed by the model definition's class id (runtimeClassId): modelClassInitialize (run by ...
 - [`model_views.h`](source_guide/gameplay.md#file-gameplay-army-model-views) - The class-specific views of the model runtime, model definition and model node as overlays of the memory they view (core/slot.h THANDOR_SLOT_OVERLAY), so the class dispatch tables ...
 - [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - no file comment; main functions `ArmyRuntime_UpdateMovementAndWaypoints`, `ArmyRuntime_StartRoutedMoveCommand`, `ArmyRuntime_ResetMovementStateFromModel`
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
@@ -337,9 +337,9 @@ Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Chang
 - [`palette.cpp / palette.h`](source_guide/graphics.md#file-graphics-resources-palette) - no file comment; main functions `GraphicsPaletteAsset_LoadPackage`, `GraphicsPaletteAsset_ReleasePackage`, `GraphicsPaletteAsset_Clone`
 - [`palette_optimizer.cpp / palette_optimizer.h`](source_guide/graphics.md#file-graphics-resources-palette-optimizer) - Palette optimiser and combiner (converter/editor code, no caller in the game): folds and packs the used colours of the palette banks, merges and removes banks and combines assets, remapping the ...
 - [`pcx.h`](source_guide/graphics.md#file-graphics-resources-pcx) - PCX reading and writing in C.
-- [`pcx_read.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-read) - no file comment; main functions `Pcx_DecodeIndexed8`, `Pcx_FreeIndexed8`
-- [`pcx_write.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-write) - no file comment; main functions `Pcx_EncodeCapture`
-- [`texture.h`](source_guide/graphics.md#file-graphics-resources-texture)
+- [`pcx_read.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-read) - Replaces export 2 of engine\pcx.fnc (module offset 0x3B0, header check at 0x320).
+- [`pcx_write.cpp`](source_guide/graphics.md#file-graphics-resources-pcx-write) - PCX encoder, replacing export 3 (module offset 0x980) of engine\pcx.fnc together with its helper at module offset 0x850 (canvas build).
+- [`texture.h`](source_guide/graphics.md#file-graphics-resources-texture) - Subresource table of a 'gfx' texture source: one 32-byte record per subresource at asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE).
 - [`texture_decompose.cpp / texture_decompose.h`](source_guide/graphics.md#file-graphics-resources-texture-decompose) - Subresource decomposition of a texture source: cuts the ARGB or indexed pixels of every subresource into rectangular regions (asset conversion).
 - [`texture_set.cpp / texture_set.h`](source_guide/graphics.md#file-graphics-resources-texture-set) - Texture sets: creation and destruction through the device slots, package load/release, the set metadata and the texture slot registry.
 - [`texture_source.cpp`](source_guide/graphics.md#file-graphics-resources-texture-source) - no file comment; main functions `GraphicsTextureSource_ValidateAsset`, `GraphicsTextureSource_ConvertPaletteEntries`, `GraphicsTextureSource_GetLogicalSize`
@@ -364,8 +364,8 @@ FLM movie playback and encoding.
 
 Module header: [`runtime.h`](../include/thandor/movie/runtime.h) · Changelog: `playback` [dev](../CHANGELOG.md#module-movie-runtime-playback) · [full](../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
-- [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - no file comment; main functions `Movie_DecodeFrame4x4Delta`, `Movie_BuildChromaLumaTable`
-- [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - no file comment; main functions `Movie_EncodeFrame4x4Keyframe`, `Movie_EncodeFrame4x4Delta`, `Movie_EncodeFlmBufferFromFrameProvider`
+- [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - The decoder treats every token &gt;= MOVIE_TOKEN_SKIP_LONG as a long skip, so the unused tokens 0x1C..0x1F (never written by the encoder) decode like 0x1B.
+- [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - Encoder-only constants (the decoder does not need them).
 - [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - no file comment; main functions `Movie_Close`, `Movie_AdvanceFrame`, `Movie_Open`
 - [`types.h`](source_guide/movie.md#file-movie-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -392,7 +392,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 - [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommand_Issue`, `FrontendCommand_Issue`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`
 - [`frontend_session.cpp / frontend_session.h`](source_guide/network.md#file-network-protocol-frontend-session) - no file comment; main functions `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`, `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
-- [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - no file comment; main functions `Lockstep_PackBatch`, `Lockstep_SendBatchToClients`, `Lockstep_ExecuteRecords`
+- [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - Host side of the lockstep command exchange, shared by the in-game exchange (command_exchange) and the frontend/lobby exchange (frontend_session, lobby).
 - [`mailbox.cpp / mailbox.h`](source_guide/network.md#file-network-protocol-mailbox) - no file comment; main functions `UiTransfer_StagePacketAndSend`, `UiTransferMailbox_SetOutgoingBuffer`, `UiTransferMailbox_ClearReceivedState`
 - [`scenario_transfer.cpp / scenario_transfer.h`](source_guide/network.md#file-network-protocol-scenario-transfer) - no file comment; main functions `FrontendScenarioTransfer_ReleaseLoadedLevelAsset`, `FrontendScenarioTransfer_ProcessReceivedAsset`, `DwordBlock64Array_ContainsExactRecord`
 - [`types.h`](source_guide/network.md#file-network-protocol-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -411,7 +411,7 @@ Start-up, SDL3 platform layer, file system, system services and developer tools.
 
 Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-platform-bootstrap-runtime) · [full](../CHANGELOG_FULL.md#module-platform-bootstrap-runtime)
 
-- [`image.cpp / image.h`](source_guide/platform.md#file-platform-bootstrap-image) - Own translation unit: uses the real Windows SDK headers, not the game's type headers.
+- [`image.cpp / image.h`](source_guide/platform.md#file-platform-bootstrap-image) - Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers.
 - [`main.cpp`](source_guide/platform.md#file-platform-bootstrap-main) - The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess.
 - [`runtime.cpp / runtime.h`](source_guide/platform.md#file-platform-bootstrap-runtime) - no file comment; main functions `Screenshot_SaveFramebufferAsPcx`, `ProcessEntry`, `GameData_ResetDefaults`
 - [`types.h`](source_guide/platform.md#file-platform-bootstrap-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -421,14 +421,14 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 
 - [`autoshot.cpp / autoshot.h`](source_guide/platform.md#file-platform-debug-autoshot) - Automatic screenshots (test aid).
 - [`campaign.cpp / campaign.h`](source_guide/platform.md#file-platform-debug-campaign) - Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor/platform/debug/hooks.h from the scenario catalog and the in-game session runtime.
-- [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - 5x7 debug font: each entry is the character followed by its 7 rows of 5 pixels, top row first; in a row the leftmost pixel is bit 4.
+- [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - Built-in 5x7 debug font, drawn straight into the framebuffer (debug tools only).
 - [`hooks.cpp / hooks.h`](source_guide/platform.md#file-platform-debug-hooks) - The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option THANDOR_DEV_TOOLS.
 - [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/level_script.cpp).
 - [`movie_decoder.cpp / movie_decoder.h`](source_guide/platform.md#file-platform-debug-movie-decoder) - Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to ...
 - [`movie_player.cpp / movie_player.h`](source_guide/platform.md#file-platform-debug-movie-player) - Debug tool: movie test player.
 - [`script.cpp / script.h`](source_guide/platform.md#file-platform-debug-script) - Scripted input (test aid).
 - [`statehash.cpp / statehash.h`](source_guide/platform.md#file-platform-debug-statehash) - Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
-- [`test_aids.cpp / test_aids.h`](source_guide/platform.md#file-platform-debug-test-aids) - Own translation unit: uses the real Windows SDK headers, not the game's type headers.
+- [`test_aids.cpp / test_aids.h`](source_guide/platform.md#file-platform-debug-test-aids) - Test aids (developer tools, THANDOR_DEV_TOOLS; game code reaches them through thandor/platform/debug/hooks.h): scripted-input detection, a local two-instance network test and a windowed mode.
 - [`types.h`](source_guide/platform.md#file-platform-debug-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-filesystem"></a>
@@ -506,7 +506,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
 - [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_SuppressIfActionId`, `UiSelectableControl_UnsuppressIfActionId`
-- [`settings_option.h`](source_guide/ui.md#file-ui-controls-settings-option) - no file comment; main functions `PersistentOption_ApplyCheckbox`, `PersistentOption_ApplyCheckbox`, `PersistentOption_StoreSlider`
+- [`settings_option.h`](source_guide/ui.md#file-ui-controls-settings-option) - Shared bodies of the frontend and in-game settings handlers that store a checkbox as one bit of a persistent option word or a slider value as a persistent setting.
 - [`slider.cpp / slider.h`](source_guide/ui.md#file-ui-controls-slider) - no file comment; main functions `UiRangeSliderControl_DrawTrackAndThumb`, `UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag`
 - [`text.cpp / text.h`](source_guide/ui.md#file-ui-controls-text) - no file comment; main functions `UiSingleLineTextControl_DrawClipped`, `UiWrappedTextControl_DrawClipped`, `UiWrappedTextControl_RelocateAndApplyDeferredOffset`
 - [`text_buttons.cpp / text_buttons.h`](source_guide/ui.md#file-ui-controls-text-buttons) - no file comment; main functions `UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease`, `UiFramedTextButtonControl_NonRightDrag`
@@ -558,7 +558,7 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`mission_briefing.cpp / mission_briefing.h`](source_guide/ui.md#file-ui-frontend-mission-briefing) - no file comment; main functions `FrontendMissionBriefingPage_Initialize`
 - [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkGamePage_Show`, `FrontendNetworkGamePage_ClearSessionList`, `FrontendNetworkSetupPage_InitializeBackendMode`
 - [`node_views.h`](source_guide/ui.md#file-ui-frontend-node-views) - The frontend UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
-- [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *) (calling through the slot type directly would be undefined behaviour).
+- [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
 - [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`, `FrontendPlayerRuntime_InitializeFactionAssignments`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
 - [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
@@ -604,7 +604,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`selection_panel_resources.cpp / selection_panel_resources.h`](source_guide/ui.md#file-ui-ingame-selection-panel-resources) - no file comment; main functions `SelectionInfoPanel_InitResources`, `SelectionInfoPanel_ShutdownResources`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-ingame-settings) - no file comment; main functions `InGameSettingsPage_ToggleAndSynchronizeControls`, `InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks`, `InGameSettingsAction_CloseAlternatePanel`
 - [`targeting.cpp / targeting.h`](source_guide/ui.md#file-ui-ingame-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
-- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - no file comment; main functions `InGameTechnologyPanel_ResetAndSelectCurrentArea`, `InGameTechnologyAreaTab_SelectAndRebuild`, `InGameTechnologyResearch_StartSelected`
+- [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, INGAME_UI(root, technologyAreaTabN_prefix)) is declared with the template in ui/ingame/types.h.
 - [`types.h`](source_guide/ui.md#file-ui-ingame-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-ingame-ui-template)
 - [`world_input.cpp / world_input.h`](source_guide/ui.md#file-ui-ingame-world-input) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`

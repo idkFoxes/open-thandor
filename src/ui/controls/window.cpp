@@ -33,8 +33,6 @@ static uint16_t g_UiWindowClassTextPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\
 
 static uint16_t g_UiWindowTexturePathUtf16[15] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'w', 'i', 'n', '.', 'g', 'f', 'x', 0}; /* L"engine\\win.gfx" */
 
-/* Implementation ownership: ui/controls/window. */
-
 /* Draws a framed icon-and-text button (drawClipped slot of g_UiWindowControlVtable): the normal, selected or
    disabled win.gfx frame, the text centred in the right three quarters (with the focus mark while focused),
    and the icon, vertically centred and ending at the quarter line, over its shadow copy shifted by the normal

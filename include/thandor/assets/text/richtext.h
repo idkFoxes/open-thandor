@@ -14,8 +14,6 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/text/richtext. */
-
 /* Rich-text command streams (the engine's UTF-16 text in 'str' assets): a zero code unit ends the stream, a
    positive code unit is a glyph (the font's subresource index, i.e. the character), and a code unit with bit 15
    set is a command whose low five bits are the opcode. Some commands carry payload code units; the
@@ -66,8 +64,6 @@
 
 /* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */
 #define RICHTEXT_NESTING_LIMIT 64
-
-/* Functions are grouped by semantic ownership. */
 
 void RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream);

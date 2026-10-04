@@ -12,8 +12,6 @@
 
 static SpriteAssetHeader *g_SpriteAssetRegistryHead = nullptr;
 
-/* Implementation ownership: assets/sprite/catalog. */
-
 /* Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),
    so the next load of any sprite registers and relocates it afresh.
 */

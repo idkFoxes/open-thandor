@@ -29,8 +29,6 @@ GraphicsPaletteAsset *g_TerrainPrimaryPalette = nullptr;
 
 GraphicsPaletteAsset *g_TerrainSecondaryPalette = nullptr;
 
-/* Implementation ownership: graphics/terrain/terrain_resources. */
-
 
 
 /* The suffix slot of a secondary resource path: its terminator, or its 256th character when there is none

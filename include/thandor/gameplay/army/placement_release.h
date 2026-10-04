@@ -12,10 +12,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/placement_release. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 

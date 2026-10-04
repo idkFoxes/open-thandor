@@ -11,8 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/text. */
-
 /* labelFlags of UiSingleLineTextControl and UiWrappedTextControl. */
 #define UI_LABEL_CENTER_X 0x01
 #define UI_LABEL_ALIGN_RIGHT 0x02
@@ -23,8 +21,6 @@
 #define UI_LABEL_KEEP_WRAP_WIDTH 0x40 /* wrapped label: wrapWidth does not follow layoutWidth */
 #define UI_LABEL_OWN_STYLE_FONT 0x100 /* the font byte of styleOverride replaces g_UiTextStyleNormal's */
 #define UI_LABEL_OWN_STYLE_PALETTE 0x200 /* the palette byte of styleOverride replaces g_UiTextStyleNormal's */
-
-/* Functions are grouped by semantic ownership. */
 
 void UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

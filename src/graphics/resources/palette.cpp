@@ -22,8 +22,6 @@ GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallba
     .clone = THANDOR_SLOT(GraphicsPaletteAsset_Clone),
     .releaseClone = THANDOR_SLOT(GraphicsPaletteAsset_ReleaseClone)};
 
-/* Implementation ownership: graphics/resources/palette. */
-
 
 /* Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through
    g_GraphicsPaletteAssetValidate; an invalid asset is released again. Returns the asset (never NULL), or NULL

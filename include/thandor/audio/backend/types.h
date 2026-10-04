@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 /* Voice-set creation: 0 on success (*outVoiceSet written), else an error code (*outVoiceSet untouched). */
 using SoundCreateSampleVoiceSetProc = uint32_t (SoundSampleAsset * sampleAsset, DirectSoundVoiceSet * * outVoiceSet);
 /* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to

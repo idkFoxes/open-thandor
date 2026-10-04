@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/world_input. */
-
 /* pickedHeightQ12 of the world pointer callbacks when the pointer is not over the field. */
 #define WORLD_POINTER_NO_HIT 0x7FFFFFFF
 /* Cursor frames returned by InGameWorldInput_ResolveContextActionAndCursor (besides GRAPHICS_CURSOR_FRAME_*). */
@@ -40,8 +38,6 @@
 /* g_InGamePointerInteractionStateFlags bits. */
 #define WORLD_POINTER_STATE_OVER_OWN_ARMY 0x1 /* command mode: the pointer rests on an own army (click selects it) */
 #define WORLD_POINTER_STATE_SELECTION_CAPTURE 0x2 /* selection mode: the pointer was captured on press */
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t InGameWorldInput_ResolveContextActionAndCursor
                 (InGamePointerCallbackValue0 pickedHeightQ12,InGamePointerCallbackValue1 pointerWorldXQ12

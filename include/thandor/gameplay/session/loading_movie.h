@@ -11,10 +11,6 @@
 #include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/loading_movie. */
-
-/* Functions are grouped by semantic ownership. */
-
 void MoviePlayback_AdvanceScheduledFrameAndTick();
 
 void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);

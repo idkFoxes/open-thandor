@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/ingame/music_choice. */
-
 /* Scores how well one of the level's music tracks (by sample number) fits the situation of the active faction:
    sums three army definition values over the faction's armies (definitionClassValue78 weighted 3 for armies
    with bit 0 of commandModeFlags) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,

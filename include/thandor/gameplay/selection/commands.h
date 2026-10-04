@@ -14,10 +14,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/selection/commands. */
-
-/* Functions are grouped by semantic ownership. */
-
 void InGameSelection_SelectAllOwnAircraftPads
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 

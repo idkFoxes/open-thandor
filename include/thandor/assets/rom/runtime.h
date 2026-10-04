@@ -14,8 +14,6 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/rom/runtime. */
-
 /* Frontend ROM action table (a RomRecord, g_FrontendActiveRomRecord): the 0x200-byte RomRecord header with the
    entry count in entryCount, followed by 0x200-byte FrontendRomActionEntry entries. */
 #define FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE 0x200
@@ -69,8 +67,6 @@ typedef struct RomRecord {
 
 /* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
 #define ROM_REGISTRY_SLOT_COUNT 256
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 

@@ -12,10 +12,6 @@
 #include <thandor/gameplay/selection/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/loaded_session. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
 
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks;

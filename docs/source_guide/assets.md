@@ -14,20 +14,20 @@ Module header: [`army.h`](../../include/thandor/assets/army.h) · Changelog: `ca
 
 [Source](../../src/assets/army/catalog.cpp) · [Header](../../include/thandor/assets/army/catalog.h)
 
-No file comment; function families: `ArmyAssetRegistry_*` (7), `ArmyAssetHierarchy_*` (4), `ArmyAssetRecord_*` (3), `ArmyAsset_*` (1).
+Bits of an army record's flags (ArmyAssetRecord.flags) that pick the map-editor placement lists: unit placement (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and 0x0200 clear, object placement (mode 4, g_UiCommandMode4ArmyAssetId) records with both set (ArmyAssetRegistry_HasNo*WithId).
 
 **Functions** (12 public, 3 file-local):
 
-- [`ArmyAsset_PrepareRecords`](../../src/assets/army/catalog.cpp#L29) - Checks that a loaded asset (assetByteCount bytes) is an 'arm' file of converter version 0x20008 and registers every army record in it (the variable-size records follow the 0x200-byte header, each ...
-- [`ArmyAssetRegistry_FindEnabledById`](../../src/assets/army/catalog.cpp#L69) - Checks whether an army asset id is registered and enabled: returns false only when the record exists and bit 0 (ARMY_ASSET_FLAG_ENABLED) of its flags is set, true when it is missing or disabled.
-- [`ArmyAssetRecord_HasFactionUnlockedLinkedDefinition`](../../src/assets/army/catalog.cpp#L85) - Checks the 16 army-asset ids linked from an army record (linkedArmyAssetIds) and returns true as soon as one names a registered, enabled asset whose technology is fully unlocked for the faction ...
-- [`ArmyAssetHierarchy_SumFactionUnlockedArmour`](../../src/assets/army/catalog.cpp#L137) - Sums the armour (ModelDefinition.maximumHealth) over an army record's whole model tree, taking at each node the linked definition the faction has unlocked, so the in-game detail display shows the ...
-- [`ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4`](../../src/assets/army/catalog.cpp#L172) - Sums the displayed energy value (ModelDefinition.energyLoadQ4, Q4) over an army record's model tree, taking at each node the linked definition the faction has unlocked; children only count below ...
-- [`ArmyAssetRegistry_FindRecordById`](../../src/assets/army/catalog.cpp#L265) - The first registered army asset record with this id in the 768-slot army registry, or NULL when there is none.
-- [`ArmyAssetRegistry_FindById`](../../src/assets/army/catalog.cpp#L287) - Looks an army asset up by its registry id in the 768-slot army registry.
-- [`ArmyAssetRegistry_HasNoUnitWithId`](../../src/assets/army/catalog.cpp#L307) - Returns 0 when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags clear; 1 otherwise.
-- [`ArmyAssetRegistry_HasNoObjectWithId`](../../src/assets/army/catalog.cpp#L327) - Returns 0 when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags set; 1 otherwise.
-- [`ArmyAssetRegistry_HasNoPlaceableUnitWithId`](../../src/assets/army/catalog.cpp#L347) - Returns 0 when some registered army record with this id is a placeable unit (flags with 0x0100 set and 0x0200 clear); 1 otherwise.
+- [`ArmyAsset_PrepareRecords`](../../src/assets/army/catalog.cpp#L27) - Checks that a loaded asset (assetByteCount bytes) is an 'arm' file of converter version 0x20008 and registers every army record in it (the variable-size records follow the 0x200-byte header, each ...
+- [`ArmyAssetRegistry_FindEnabledById`](../../src/assets/army/catalog.cpp#L67) - Checks whether an army asset id is registered and enabled: returns false only when the record exists and bit 0 (ARMY_ASSET_FLAG_ENABLED) of its flags is set, true when it is missing or disabled.
+- [`ArmyAssetRecord_HasFactionUnlockedLinkedDefinition`](../../src/assets/army/catalog.cpp#L83) - Checks the 16 army-asset ids linked from an army record (linkedArmyAssetIds) and returns true as soon as one names a registered, enabled asset whose technology is fully unlocked for the faction ...
+- [`ArmyAssetHierarchy_SumFactionUnlockedArmour`](../../src/assets/army/catalog.cpp#L135) - Sums the armour (ModelDefinition.maximumHealth) over an army record's whole model tree, taking at each node the linked definition the faction has unlocked, so the in-game detail display shows the ...
+- [`ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4`](../../src/assets/army/catalog.cpp#L170) - Sums the displayed energy value (ModelDefinition.energyLoadQ4, Q4) over an army record's model tree, taking at each node the linked definition the faction has unlocked; children only count below ...
+- [`ArmyAssetRegistry_FindRecordById`](../../src/assets/army/catalog.cpp#L263) - The first registered army asset record with this id in the 768-slot army registry, or NULL when there is none.
+- [`ArmyAssetRegistry_FindById`](../../src/assets/army/catalog.cpp#L285) - Looks an army asset up by its registry id in the 768-slot army registry.
+- [`ArmyAssetRegistry_HasNoUnitWithId`](../../src/assets/army/catalog.cpp#L305) - Returns 0 when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags clear; 1 otherwise.
+- [`ArmyAssetRegistry_HasNoObjectWithId`](../../src/assets/army/catalog.cpp#L325) - Returns 0 when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags set; 1 otherwise.
+- [`ArmyAssetRegistry_HasNoPlaceableUnitWithId`](../../src/assets/army/catalog.cpp#L345) - Returns 0 when some registered army record with this id is a placeable unit (flags with 0x0100 set and 0x0200 clear); 1 otherwise.
 - 2 more: `ArmyAssetRecord_RegisterAndRelocate`, `ArmyAssetRegistry_HasNoPlaceableObjectWithId`
 
 **Data** (1 shared, 1 file-local): `g_ArmyAssetRecordRegistry`.
@@ -61,11 +61,11 @@ No file comment; function families: `EffectDefinitionRegistry_*` (2), `EffectAss
 
 **Functions** (5 public):
 
-- [`EffectAsset_PrepareEntries`](../../src/assets/effect/catalog.cpp#L28) - Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version 0x40007, then hands each 0xC0-byte record after the 0x200-byte header to ...
-- [`EffectDefinitions_ResolveCrossReferences`](../../src/assets/effect/catalog.cpp#L63) - Runs once all effect and shot assets are registered: replaces the linked effect and linked shot ids stored in every registered effect definition by pointers to those definitions.
-- [`EffectDefinition_RegisterAndLoadSprite`](../../src/assets/effect/catalog.cpp#L107) - Registers one 0xC0-byte effect definition in the first free registry slot, switches its resource path to .spr and loads the sprite asset, reusing an already registered sprite with the same id (the ...
-- [`EffectDefinitionRegistry_LookupById`](../../src/assets/effect/catalog.cpp#L168) - The first registered effect definition with this id in the 256-slot registry, or NULL.
-- [`EffectDefinitionRegistry_FindById`](../../src/assets/effect/catalog.cpp#L192) - Looks up a registered effect definition by id, used to turn serialized effect ids into pointers.
+- [`EffectAsset_PrepareEntries`](../../src/assets/effect/catalog.cpp#L26) - Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version 0x40007, then hands each 0xC0-byte record after the 0x200-byte header to ...
+- [`EffectDefinitions_ResolveCrossReferences`](../../src/assets/effect/catalog.cpp#L61) - Runs once all effect and shot assets are registered: replaces the linked effect and linked shot ids stored in every registered effect definition by pointers to those definitions.
+- [`EffectDefinition_RegisterAndLoadSprite`](../../src/assets/effect/catalog.cpp#L105) - Registers one 0xC0-byte effect definition in the first free registry slot, switches its resource path to .spr and loads the sprite asset, reusing an already registered sprite with the same id (the ...
+- [`EffectDefinitionRegistry_LookupById`](../../src/assets/effect/catalog.cpp#L166) - The first registered effect definition with this id in the 256-slot registry, or NULL.
+- [`EffectDefinitionRegistry_FindById`](../../src/assets/effect/catalog.cpp#L190) - Looks up a registered effect definition by id, used to turn serialized effect ids into pointers.
 
 **Data** (1 shared, 1 file-local): `g_EffectDefinitionRegistry`.
 
@@ -96,14 +96,14 @@ No file comment; function families: `ModelDefinition_*` (5), `ModelDefinitionReg
 
 **Functions** (8 public, 4 file-local):
 
-- [`ModelAsset_PrepareRecords`](../../src/assets/model/definitions.cpp#L24) - Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size model-definition records (starting at +0x200, each prefixed with its byte size) and resolves ...
-- [`ModelLookupTable_GetPackedPointPosition`](../../src/assets/model/definitions.cpp#L55) - Looks up the model's packed point table (packedLookupTableEntryCount entries of ModelPackedPointRecord at packedLookupTableRelativeOffset) for the key (keyIndex &lt;&lt; 4) \| keyClass.
-- [`ModelLookupTable_FindPackedPoint`](../../src/assets/model/definitions.cpp#L88) - Looks up the model's packed point table (packedLookupTableEntryCount, packedLookupTableRelativeOffset) for the key (keyIndex &lt;&lt; 4) \| keyClass.
-- [`ModelDefinitionRegistry_FindBuildCostsById`](../../src/assets/model/definitions.cpp#L115) - Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three fields buildEnergyLoadQ4 (*outEnergyLoadQ4), buildTicks (*outBuildTicks) and xeniteValueQ4 ...
-- [`ModelDefinitionRegistry_FindByRuntimeClassId`](../../src/assets/model/definitions.cpp#L145) - Returns the first registered model definition whose runtime class id (requiredTechnologyBit) equals runtimeClassId, or NULL.
-- [`ModelDefinition_RegisterAndResolveReferences`](../../src/assets/model/definitions.cpp#L354) - Registers one MDL model definition in the first free slot of the 768-slot registry and turns its serialized references into runtime pointers: the node tree is relocated by the asset base and its ...
-- [`ModelDefinitionRegistry_LookupById`](../../src/assets/model/definitions.cpp#L398) - First registered model definition with the given id in the 768-slot registry, or NULL.
-- [`ModelDefinitionRegistry_FindById`](../../src/assets/model/definitions.cpp#L418) - Looks a model definition up by id in the 768-slot registry.
+- [`ModelAsset_PrepareRecords`](../../src/assets/model/definitions.cpp#L22) - Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size model-definition records (starting at +0x200, each prefixed with its byte size) and resolves ...
+- [`ModelLookupTable_GetPackedPointPosition`](../../src/assets/model/definitions.cpp#L53) - Looks up the model's packed point table (packedLookupTableEntryCount entries of ModelPackedPointRecord at packedLookupTableRelativeOffset) for the key (keyIndex &lt;&lt; 4) \| keyClass.
+- [`ModelLookupTable_FindPackedPoint`](../../src/assets/model/definitions.cpp#L86) - Looks up the model's packed point table (packedLookupTableEntryCount, packedLookupTableRelativeOffset) for the key (keyIndex &lt;&lt; 4) \| keyClass.
+- [`ModelDefinitionRegistry_FindBuildCostsById`](../../src/assets/model/definitions.cpp#L113) - Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three fields buildEnergyLoadQ4 (*outEnergyLoadQ4), buildTicks (*outBuildTicks) and xeniteValueQ4 ...
+- [`ModelDefinitionRegistry_FindByRuntimeClassId`](../../src/assets/model/definitions.cpp#L143) - Returns the first registered model definition whose runtime class id (requiredTechnologyBit) equals runtimeClassId, or NULL.
+- [`ModelDefinition_RegisterAndResolveReferences`](../../src/assets/model/definitions.cpp#L352) - Registers one MDL model definition in the first free slot of the 768-slot registry and turns its serialized references into runtime pointers: the node tree is relocated by the asset base and its ...
+- [`ModelDefinitionRegistry_LookupById`](../../src/assets/model/definitions.cpp#L396) - First registered model definition with the given id in the 768-slot registry, or NULL.
+- [`ModelDefinitionRegistry_FindById`](../../src/assets/model/definitions.cpp#L416) - Looks a model definition up by id in the 768-slot registry.
 
 **Data** (1 shared, 0 file-local): `g_ModelDefinitionRegistry`.
 
@@ -136,8 +136,8 @@ No file comment; function families: `Package_*` (4).
 
 **Functions** (2 public, 2 file-local):
 
-- [`Package_UpsertEntry`](../../src/assets/package/archive_write.cpp#L24) - Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry ...
-- [`Package_DeleteEntry`](../../src/assets/package/archive_write.cpp#L177) - Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as deleted): the archive header loses one entry and its size, everything behind the entry is moved ...
+- [`Package_UpsertEntry`](../../src/assets/package/archive_write.cpp#L22) - Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry ...
+- [`Package_DeleteEntry`](../../src/assets/package/archive_write.cpp#L175) - Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as deleted): the archive header loses one entry and its size, everything behind the entry is moved ...
 
 **Called from** (2 files): [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_WritePackageContents`, `InGameSaveGame_WriteRuntimeEntries`); [`gameplay/session/campaign_carryover`](gameplay.md#file-gameplay-session-campaign-carryover) (`InGameSaveGame_WriteOldUnitEntry`).
 
@@ -154,12 +154,12 @@ No file comment; function families: `PckCodec_*` (25).
 
 **Functions** (6 public, 19 file-local):
 
-- [`PckCodec_EncodeFieldGrid`](../../src/assets/package/codec.cpp#L46) - PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each 0x80-byte cell (the rest is runtime state that the decoder regenerates), then packs that ...
-- [`PckCodec_DecodeFieldGrid`](../../src/assets/package/codec.cpp#L193) - PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image, restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and ...
-- [`PckCodec_EncodeStored`](../../src/assets/package/codec.cpp#L242) - PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable.
-- [`PckCodec_DecodeStored`](../../src/assets/package/codec.cpp#L270) - PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable.
-- [`PckCodec_EncodeHuffmanRle`](../../src/assets/package/codec.cpp#L561) - PCK compression method 0 writer.
-- [`PckCodec_DecodeHuffmanRle`](../../src/assets/package/codec.cpp#L711) - PCK compression method 0 reader.
+- [`PckCodec_EncodeFieldGrid`](../../src/assets/package/codec.cpp#L44) - PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each 0x80-byte cell (the rest is runtime state that the decoder regenerates), then packs that ...
+- [`PckCodec_DecodeFieldGrid`](../../src/assets/package/codec.cpp#L191) - PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image, restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and ...
+- [`PckCodec_EncodeStored`](../../src/assets/package/codec.cpp#L240) - PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable.
+- [`PckCodec_DecodeStored`](../../src/assets/package/codec.cpp#L268) - PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable.
+- [`PckCodec_EncodeHuffmanRle`](../../src/assets/package/codec.cpp#L559) - PCK compression method 0 writer.
+- [`PckCodec_DecodeHuffmanRle`](../../src/assets/package/codec.cpp#L709) - PCK compression method 0 reader.
 
 **Data** (2 shared, 2 file-local): `g_PckEncoderTable`, `g_PckDecoderTable`.
 
@@ -178,8 +178,8 @@ No file comment; function families: `Resource_*` (2).
 
 **Functions** (2 public):
 
-- [`Resource_Load`](../../src/assets/package/resource_loader.cpp#L20) - Loads a whole resource into a fresh arena buffer.
-- [`Resource_Release`](../../src/assets/package/resource_loader.cpp#L35) - Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap.
+- [`Resource_Load`](../../src/assets/package/resource_loader.cpp#L18) - Loads a whole resource into a fresh arena buffer.
+- [`Resource_Release`](../../src/assets/package/resource_loader.cpp#L33) - Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap.
 
 **Called from** (30 files): [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`FrontendInit_LoadMenuSounds`, `FrontendMusic_StartMenuMusic` +1); [`assets/rom/runtime`](#file-assets-rom-runtime) (`RomSerializedNodeTree_ReleaseSprites`, `RomSerializedNode_LoadSprite`); [`assets/scenario/catalog`](#file-assets-scenario-catalog) (`ScenarioCatalog_MergeAddOnFiles`, `ScenarioCatalog_Rebuild`); [`assets/text/resources`](#file-assets-text-resources) (`TextResourcePage_Load`, `TextResourcePage_RejectAsset`); [`gameplay/session/level`](gameplay.md#file-gameplay-session-level) (`InGameLevelRuntime_ShutdownLoadedAssetResources`, `LevelPackage_ValidateAndMount`); [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new) (`NewLevel_LoadLevelSample`, `NewLevel_LoadSpatialSounds`); [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameLoadedSession_Fail`, `InGameRuntime_InitializeLoadedSession`); [`graphics/resources/palette`](graphics.md#file-graphics-resources-palette) (`GraphicsPaletteAsset_LoadPackage`, `GraphicsPaletteAsset_ReleasePackage`); [`graphics/resources/texture_set`](graphics.md#file-graphics-resources-texture-set) (`GraphicsTextureSet_LoadPackage`, `GraphicsTextureSet_ReleasePackage`); [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source) (`GraphicsTextureSource_LoadPackageAsset`, `GraphicsTextureSource_ReleasePackageAsset`); 20 more: [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`assets/effect/catalog`](#file-assets-effect-catalog), [`assets/model/definitions`](#file-assets-model-definitions), [`assets/shot/catalog`](#file-assets-shot-catalog), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool), [`gameplay/session/level_saved`](gameplay.md#file-gameplay-session-level-saved), [`graphics/terrain/terrain_resources`](graphics.md#file-graphics-terrain-terrain-resources), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/input/devices`](platform.md#file-platform-input-devices), [`ui/core/pcx_preview`](ui.md#file-ui-core-pcx-preview), [`ui/frontend/session`](ui.md#file-ui-frontend-session), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/commands`](ui.md#file-ui-ingame-commands), [`ui/ingame/selection_panel_resources`](ui.md#file-ui-ingame-selection-panel-resources), [`world/effects/pool`](world.md#file-world-effects-pool), [`world/model/pool`](world.md#file-world-model-pool), [`world/shots/pool`](world.md#file-world-shots-pool).
 
@@ -194,16 +194,16 @@ No file comment; function families: `Package_*` (20).
 
 **Functions** (14 public, 6 file-local):
 
-- [`Package_CopyEntryPathDwords`](../../src/assets/package/runtime.cpp#L32) - Package_UpsertEntry: fills the PCK_ENTRY_PATH_UNITS code-unit path field (PckEntryHeader.path) at nameDestination with path: its code units up to and including the terminator (at most the whole ...
-- [`Package_LoadEntryIntoBuffer`](../../src/assets/package/runtime.cpp#L56) - Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise from the loose file (PACKAGE_LOAD_* flags in the top two bits of the capacity select ...
-- [`Package_MountLowPriority`](../../src/assets/package/runtime.cpp#L197) - Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this archive loses against every other one.
-- [`Package_LoadEntryWithSize`](../../src/assets/package/runtime.cpp#L224) - Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as a loose file (first relative to the executable directory, then as given; ...
-- [`Package_LoadEntry`](../../src/assets/package/runtime.cpp#L271) - Loads an asset into a newly allocated buffer (Package_LoadEntryWithSize without the byte count).
-- [`Package_Mount`](../../src/assets/package/runtime.cpp#L299) - Mounts the package archive path (next to the executable first, then as given) in the first free mount slot and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array.
-- [`Package_FindEntry`](../../src/assets/package/runtime.cpp#L402) - Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches): copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and ...
-- [`Package_Unmount`](../../src/assets/package/runtime.cpp#L446) - Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
-- [`Package_SetLastErrorPath`](../../src/assets/package/runtime.cpp#L548) - Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load: its code units up to and including the terminator, at most 0x100 (a longer path is cut and terminated in the last ...
-- [`Package_FindEntryInMount`](../../src/assets/package/runtime.cpp#L572) - Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in lower case) in the package mounted as fileHandle and returns its entry header.
+- [`Package_CopyEntryPathDwords`](../../src/assets/package/runtime.cpp#L30) - Package_UpsertEntry: fills the PCK_ENTRY_PATH_UNITS code-unit path field (PckEntryHeader.path) at nameDestination with path: its code units up to and including the terminator (at most the whole ...
+- [`Package_LoadEntryIntoBuffer`](../../src/assets/package/runtime.cpp#L54) - Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise from the loose file (PACKAGE_LOAD_* flags in the top two bits of the capacity select ...
+- [`Package_MountLowPriority`](../../src/assets/package/runtime.cpp#L195) - Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this archive loses against every other one.
+- [`Package_LoadEntryWithSize`](../../src/assets/package/runtime.cpp#L222) - Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as a loose file (first relative to the executable directory, then as given; ...
+- [`Package_LoadEntry`](../../src/assets/package/runtime.cpp#L269) - Loads an asset into a newly allocated buffer (Package_LoadEntryWithSize without the byte count).
+- [`Package_Mount`](../../src/assets/package/runtime.cpp#L297) - Mounts the package archive path (next to the executable first, then as given) in the first free mount slot and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array.
+- [`Package_FindEntry`](../../src/assets/package/runtime.cpp#L400) - Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches): copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and ...
+- [`Package_Unmount`](../../src/assets/package/runtime.cpp#L444) - Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
+- [`Package_SetLastErrorPath`](../../src/assets/package/runtime.cpp#L546) - Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load: its code units up to and including the terminator, at most 0x100 (a longer path is cut and terminated in the last ...
+- [`Package_FindEntryInMount`](../../src/assets/package/runtime.cpp#L570) - Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in lower case) in the package mounted as fileHandle and returns its entry header.
 - 4 more: `Package_WildcardPathMatches`, `Package_DecodeEntryInto`, `Package_FindEntryAcrossMounts`, `Package_ReadDirectory`
 
 **Data** (2 shared, 1 file-local): `g_PackageScratchBuffer`, `g_PackageLastErrorPath`.
@@ -237,14 +237,14 @@ No file comment; function families: `RomRegistry_*` (3), `RomSerializedNodeTree_
 
 **Functions** (8 public, 3 file-local):
 
-- [`RomAsset_PrepareRecords`](../../src/assets/rom/runtime.cpp#L26) - Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size records (from +0x200, each advanced by its leading byteSize) with ...
-- [`FrontendRomRegistry_ClearAndReleaseNestedResources`](../../src/assets/rom/runtime.cpp#L94) - Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
-- [`RomRegistry_FindRecordBySlotValue`](../../src/assets/rom/runtime.cpp#L118) - Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or NULL when no slot does.
-- [`RomRecordTable_FindRecordById`](../../src/assets/rom/runtime.cpp#L137) - Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries) whose record id matches, or NULL.
-- [`RomRecordTable_FindIndexById`](../../src/assets/rom/runtime.cpp#L157) - Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of the table has the record id.
-- [`RomAssetRecord_RegisterAndRelocate`](../../src/assets/rom/runtime.cpp#L265) - Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree: child offsets become pointers, and every node's ".spr" sprite is loaded, or an already ...
-- [`RomRegistry_FindSlotValueByRecordId`](../../src/assets/rom/runtime.cpp#L295) - Looks up the runtime root node registered for the ROM record with the given id: returns true and stores it (NULL while the record's tree is not built) in *outRootNode, or returns false when no ...
-- [`RomRegistry_FindRecordById`](../../src/assets/rom/runtime.cpp#L318) - Returns the registered ROM record with this record id, or NULL when no registry slot holds one (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED; ...
+- [`RomAsset_PrepareRecords`](../../src/assets/rom/runtime.cpp#L24) - Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size records (from +0x200, each advanced by its leading byteSize) with ...
+- [`FrontendRomRegistry_ClearAndReleaseNestedResources`](../../src/assets/rom/runtime.cpp#L92) - Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
+- [`RomRegistry_FindRecordBySlotValue`](../../src/assets/rom/runtime.cpp#L116) - Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or NULL when no slot does.
+- [`RomRecordTable_FindRecordById`](../../src/assets/rom/runtime.cpp#L135) - Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries) whose record id matches, or NULL.
+- [`RomRecordTable_FindIndexById`](../../src/assets/rom/runtime.cpp#L155) - Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of the table has the record id.
+- [`RomAssetRecord_RegisterAndRelocate`](../../src/assets/rom/runtime.cpp#L263) - Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree: child offsets become pointers, and every node's ".spr" sprite is loaded, or an already ...
+- [`RomRegistry_FindSlotValueByRecordId`](../../src/assets/rom/runtime.cpp#L293) - Looks up the runtime root node registered for the ROM record with the given id: returns true and stores it (NULL while the record's tree is not built) in *outRootNode, or returns false when no ...
+- [`RomRegistry_FindRecordById`](../../src/assets/rom/runtime.cpp#L316) - Returns the registered ROM record with this record id, or NULL when no registry slot holds one (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED; ...
 
 **Data** (2 shared, 0 file-local): `g_RomRegistrySlots`, `g_EngineZentraleRomPathUtf16`.
 
@@ -277,9 +277,9 @@ No file comment; function families: `ScenarioCatalog_*` (8).
 
 **Functions** (3 public, 5 file-local):
 
-- [`ScenarioCatalog_Rebuild`](../../src/assets/scenario/catalog.cpp#L129) - Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat and the campaigns of level\campagne.dat, each updated by the add-on files level00..99.dat / ...
-- [`ScenarioCatalog_RequestRomTransitionStopCallback`](../../src/assets/scenario/catalog.cpp#L268) - Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments, all ignored): skips the running menu-room camera flight via ...
-- [`ScenarioCatalog_MergeRecordsByName`](../../src/assets/scenario/catalog.cpp#L298) - Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte UTF-16 identifier: a match is overwritten, a new identifier is appended.
+- [`ScenarioCatalog_Rebuild`](../../src/assets/scenario/catalog.cpp#L127) - Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat and the campaigns of level\campagne.dat, each updated by the add-on files level00..99.dat / ...
+- [`ScenarioCatalog_RequestRomTransitionStopCallback`](../../src/assets/scenario/catalog.cpp#L266) - Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments, all ignored): skips the running menu-room camera flight via ...
+- [`ScenarioCatalog_MergeRecordsByName`](../../src/assets/scenario/catalog.cpp#L296) - Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte UTF-16 identifier: a match is overwritten, a new identifier is appended.
 
 **Data** (3 shared, 4 file-local): `g_ScenarioCatalog`, `g_ScenarioCatalogUsedBytes`, `g_SaveSvePatternUtf16`.
 
@@ -312,11 +312,11 @@ No file comment; function families: `ShotDefinition_*` (4), `ShotDefinitionRegis
 
 **Functions** (5 public, 3 file-local):
 
-- [`ShotAsset_PrepareEntries`](../../src/assets/shot/catalog.cpp#L29) - Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version 0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to ...
-- [`ShotDefinitions_ValidateTerrainMaterialReferences`](../../src/assets/shot/catalog.cpp#L60) - Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices of every registered shot definition is negative (no material) or names a loaded material.
-- [`ShotDefinitionRegistry_LookupById`](../../src/assets/shot/catalog.cpp#L95) - The first registered shot definition with this id in the 256-slot registry, or NULL.
-- [`ShotDefinitionRegistry_FindByIdWithError`](../../src/assets/shot/catalog.cpp#L118) - Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition.
-- [`ShotDefinition_RegisterAndResolveReferences`](../../src/assets/shot/catalog.cpp#L231) - Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the resource path to .spr; an already registered sprite with the same id is reused and the fresh ...
+- [`ShotAsset_PrepareEntries`](../../src/assets/shot/catalog.cpp#L27) - Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version 0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to ...
+- [`ShotDefinitions_ValidateTerrainMaterialReferences`](../../src/assets/shot/catalog.cpp#L58) - Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices of every registered shot definition is negative (no material) or names a loaded material.
+- [`ShotDefinitionRegistry_LookupById`](../../src/assets/shot/catalog.cpp#L93) - The first registered shot definition with this id in the 256-slot registry, or NULL.
+- [`ShotDefinitionRegistry_FindByIdWithError`](../../src/assets/shot/catalog.cpp#L116) - Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition.
+- [`ShotDefinition_RegisterAndResolveReferences`](../../src/assets/shot/catalog.cpp#L229) - Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the resource path to .spr; an already registered sprite with the same id is reused and the fresh ...
 
 **Data** (1 shared, 1 file-local): `g_ShotDefinitionRegistry`.
 
@@ -349,10 +349,10 @@ No file comment; function families: `SpriteAssetRegistry_*` (2), `SpriteAsset_*`
 
 **Functions** (4 public):
 
-- [`SpriteAssetRegistry_Reset`](../../src/assets/sprite/catalog.cpp#L20) - Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks), so the next load of any sprite registers and relocates it afresh.
-- [`SpriteAssetRegistry_FindById`](../../src/assets/sprite/catalog.cpp#L30) - Finds an already registered sprite asset by its id (registryHeader.registryId), walking the registry list from the most recently registered one; NULL when no asset has that id.
-- [`SpriteAsset_RegisterAndRelocatePointers`](../../src/assets/sprite/catalog.cpp#L49) - Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and turns the three serialized offsets of every 0x40-byte pointer record (in every block of every ...
-- [`SpriteAsset_CopyAndDerelocateImage`](../../src/assets/sprite/catalog.cpp#L102) - Inverse of SpriteAsset_RegisterAndRelocatePointers: copies the relocated sprite asset (allocationSizeBytes long) to serializedDestination and turns the copy back into its serialized form, so it can ...
+- [`SpriteAssetRegistry_Reset`](../../src/assets/sprite/catalog.cpp#L18) - Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks), so the next load of any sprite registers and relocates it afresh.
+- [`SpriteAssetRegistry_FindById`](../../src/assets/sprite/catalog.cpp#L28) - Finds an already registered sprite asset by its id (registryHeader.registryId), walking the registry list from the most recently registered one; NULL when no asset has that id.
+- [`SpriteAsset_RegisterAndRelocatePointers`](../../src/assets/sprite/catalog.cpp#L47) - Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and turns the three serialized offsets of every 0x40-byte pointer record (in every block of every ...
+- [`SpriteAsset_CopyAndDerelocateImage`](../../src/assets/sprite/catalog.cpp#L100) - Inverse of SpriteAsset_RegisterAndRelocatePointers: copies the relocated sprite asset (allocationSizeBytes long) to serializedDestination and turns the copy back into its serialized form, so it can ...
 
 **Data** (0 shared, 1 file-local): `g_SpriteAssetRegistryHead`.
 
@@ -383,11 +383,11 @@ No file comment; function families: `TextResourcePage_*` (3), `TextResourceAsset
 
 **Functions** (5 public, 5 file-local):
 
-- [`TextResourcePage_LoadCompatibilityAliases`](../../src/assets/text/resources.cpp#L42) - Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title, description and 14 further description lines reachable under the global ids the frontend uses for ...
-- [`TextResourcePage_Load`](../../src/assets/text/resources.cpp#L182) - Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country, else the Great Britain block, else the first one, binds it, and prepares every string's ...
-- [`TextResourceOverride_Register`](../../src/assets/text/resources.cpp#L309) - Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the pair in the first override entry whose id is zero.
-- [`TextResource_TryResolve`](../../src/assets/text/resources.cpp#L335) - Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime override table is searched, then the bound locale block of the id's page (compact or extended ...
-- [`TextResource_Resolve`](../../src/assets/text/resources.cpp#L399) - Returns the text of a resource id (see TextResource_TryResolve); a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33, which callers use like any other text pointer.
+- [`TextResourcePage_LoadCompatibilityAliases`](../../src/assets/text/resources.cpp#L40) - Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title, description and 14 further description lines reachable under the global ids the frontend uses for ...
+- [`TextResourcePage_Load`](../../src/assets/text/resources.cpp#L180) - Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country, else the Great Britain block, else the first one, binds it, and prepares every string's ...
+- [`TextResourceOverride_Register`](../../src/assets/text/resources.cpp#L307) - Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the pair in the first override entry whose id is zero.
+- [`TextResource_TryResolve`](../../src/assets/text/resources.cpp#L333) - Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime override table is searched, then the bound locale block of the id's page (compact or extended ...
+- [`TextResource_Resolve`](../../src/assets/text/resources.cpp#L397) - Returns the text of a resource id (see TextResource_TryResolve); a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33, which callers use like any other text pointer.
 
 **Data** (1 shared, 8 file-local): `g_TextResourceOverrides`.
 
@@ -406,12 +406,12 @@ No file comment; function families: `RichTextCommandStream_*` (6), `FatalError_*
 
 **Functions** (6 public, 2 file-local):
 
-- [`RichTextCommandStream_PatchPayloadBySelector`](../../src/assets/text/richtext.cpp#L24) - Walks one command stream (without following nested streams) and points every nested-stream command (0x18/0x19) whose selector matches at replacementPayload, so a text can have its placeholders bound ...
-- [`RichTextCommandStream_BindTextureSource`](../../src/assets/text/richtext.cpp#L61) - Walks one command stream (without following nested streams) and sets the texture source of every inline image command to textureSource, so a text's icons can be bound to the texture they are drawn ...
-- [`RichTextCommandStream_CopyToNarrow`](../../src/assets/text/richtext.cpp#L101) - Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes): follows nested streams, turns the fixed-space and line-break commands into ' ' and CR ...
-- [`RichTextCommandStream_CopyExpanded`](../../src/assets/text/richtext.cpp#L194) - Copies a rich-text command stream into a bounded buffer with every nested stream (0x18/0x19) inlined, so the copy no longer depends on the streams it referenced.
-- [`RichTextCommandStream_FlattenNestedToRuntimeBuffer`](../../src/assets/text/richtext.cpp#L308) - Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and drawing code can walk one flat stream: glyphs and most commands are copied, literal colours ...
-- [`FatalError_CopyRichTextToNarrow`](../../src/assets/text/richtext.cpp#L420) - Converts a rich-text command stream into plain narrow text for the fatal-error MessageBoxA: glyphs below 0x100 are copied as bytes, fixed spaces become ' ', line breaks CR LF, nested streams are ...
+- [`RichTextCommandStream_PatchPayloadBySelector`](../../src/assets/text/richtext.cpp#L22) - Walks one command stream (without following nested streams) and points every nested-stream command (0x18/0x19) whose selector matches at replacementPayload, so a text can have its placeholders bound ...
+- [`RichTextCommandStream_BindTextureSource`](../../src/assets/text/richtext.cpp#L59) - Walks one command stream (without following nested streams) and sets the texture source of every inline image command to textureSource, so a text's icons can be bound to the texture they are drawn ...
+- [`RichTextCommandStream_CopyToNarrow`](../../src/assets/text/richtext.cpp#L99) - Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes): follows nested streams, turns the fixed-space and line-break commands into ' ' and CR ...
+- [`RichTextCommandStream_CopyExpanded`](../../src/assets/text/richtext.cpp#L192) - Copies a rich-text command stream into a bounded buffer with every nested stream (0x18/0x19) inlined, so the copy no longer depends on the streams it referenced.
+- [`RichTextCommandStream_FlattenNestedToRuntimeBuffer`](../../src/assets/text/richtext.cpp#L306) - Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and drawing code can walk one flat stream: glyphs and most commands are copied, literal colours ...
+- [`FatalError_CopyRichTextToNarrow`](../../src/assets/text/richtext.cpp#L418) - Converts a rich-text command stream into plain narrow text for the fatal-error MessageBoxA: glyphs below 0x100 are copied as bytes, fixed spaces become ' ', line breaks CR LF, nested streams are ...
 
 **Data** (2 shared, 0 file-local): `g_RichTextRuntimeBufferUsedWords`, `g_FontRuntimeBuffer`.
 
@@ -430,7 +430,7 @@ No file comment; function families: `RichTextMarkup_*` (10).
 
 **Functions** (1 public, 9 file-local):
 
-- [`RichTextMarkup_ParseAndBuildStringAsset`](../../src/assets/text/richtext_markup.cpp#L313) - Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/): compiles text markup into a 'str' string asset.
+- [`RichTextMarkup_ParseAndBuildStringAsset`](../../src/assets/text/richtext_markup.cpp#L311) - Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/): compiles text markup into a 'str' string asset.
 
 **Data** (0 shared, 1 file-local): `g_Txt2strUnknownCharacterErrorUtf16`.
 

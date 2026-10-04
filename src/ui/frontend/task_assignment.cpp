@@ -18,8 +18,6 @@ FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets
     .selectionRows = {.offsets = {5252, 5348, 5444, 5540, 5636, 5732, 5828}},
     .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}};
 
-/* Implementation ownership: ui/frontend/task_assignment. */
-
 /* Faction assignment indices of player records are 1..7 (row index + 1). The original indexes the row tables
    with index - 1 (and the roster texts with the index) without a check; bounded here because the records are
    filled from peers' commands in a network game. An index outside 1..7 is skipped (logged once). */

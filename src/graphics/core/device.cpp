@@ -19,8 +19,6 @@ int32_t g_GraphicsBackendAccessState = -0x1;
 /* allocated by Graphics_AllocateTables but no longer read (see there) */
 static DirectDrawPaletteEntry *g_TexturePaletteEntries = nullptr;
 
-/* Implementation ownership: graphics/core/device. */
-
 /* The first step of the original's Graphics_Init, called by SdlVideo_Init: allocates and clears the texture-slot
    and palette tables and allocates the empty adapter and display-mode tables, in this order. The palette table is
    no longer read (only the original's hardware texture upload used it); it is still allocated, like the texture

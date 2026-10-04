@@ -14,10 +14,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/lifecycle. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);

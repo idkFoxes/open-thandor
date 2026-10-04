@@ -12,10 +12,6 @@
 #include <thandor/world/effects/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/effects/lifecycle. */
-
-/* Functions are grouped by semantic ownership. */
-
 void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode);
 

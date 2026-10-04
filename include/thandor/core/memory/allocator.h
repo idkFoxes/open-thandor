@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/memory/allocator. */
-
 /* Arena heap layout (ArenaHeap_Init): one private Win32 heap block holding a 32-byte aligned chain of
    ArenaBlockHeader blocks, ended by ARENA_BLOCK_LIST_END in next/previous. */
 #define ARENA_HEAP_PAYLOAD_BYTES 0x6000000 /* 96 MiB, payload of the initial single free block */
@@ -24,8 +22,6 @@
 /* A free block is split only when it exceeds the aligned request by more than this (room for a header
    and a 32-byte payload); smaller remainders stay with the allocation. */
 #define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
-
-/* Functions are grouped by semantic ownership. */
 
 void * __cdecl ArenaHeap_Init();
 

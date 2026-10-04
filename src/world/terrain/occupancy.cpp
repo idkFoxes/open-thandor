@@ -24,8 +24,6 @@ static const uint64_t g_TerrainOccupancyMmxCurrentWeights = 0x40000400400004ull;
 
 static const uint64_t g_FieldGridOccupancyMmxHighBitMask = 0x8080808080808080ull;
 
-/* Implementation ownership: world/terrain/occupancy. */
-
 /* Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
    radius of a world point: the centre cell here, the rest through the six hexagon sectors of hex_scan.h (formerly
    12 functions TerrainOccupancyBit2_MarkWedge0..5 and _MarkDirection0..5). Part of the occupancy rebuild that runs

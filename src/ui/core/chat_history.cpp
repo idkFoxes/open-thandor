@@ -18,8 +18,6 @@ static RecentTextSerialCounter g_RecentTextSerialCounter = 1;
 
 static uint32_t g_RecentTextEntrySerials[8] = {0};
 
-/* Implementation ownership: ui/core/chat_history. */
-
 /* Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:
    sorts the slots by serial, newest first, and lists them until an empty slot, an expired one (older than
    RECENT_TEXT_HISTORY_LIFETIME) or maxEntries is reached. In the last two cases the remaining slots are

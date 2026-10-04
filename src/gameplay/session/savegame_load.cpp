@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/session/savegame_load. */
-
 /* Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
    load and after writing a savegame: the 1-based offsets become runtime-object, shading-record, army/shot/effect
    slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also

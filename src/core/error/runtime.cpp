@@ -30,8 +30,6 @@ FatalErrorPassThroughProc *g_FatalErrorReportHandler = nullptr;
 uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'I', 'O', ':', ' ', 'i', 'n', 'i', 't', 'i', 'a',
                                                   'l', 'i', 'z', 'a', 't', 'i', 'o', 'n', ' ', 'f', 'a', 'i', 'l', 'e', 'd', '!'};
 
-/* Implementation ownership: core/error/runtime. */
-
 /* Points both fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
    loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
    the built-in I/O error message; otherwise FatalError_Exit returns at once because failed is false.

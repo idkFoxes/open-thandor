@@ -18,8 +18,6 @@ static ScenarioCatalogRefreshSelectedRecordCallback *const g_FrontendScenarioMap
     /* 1 */ ScenarioCatalog_SelectLevelAndShowDescription,
     /* 2 */ ScenarioCatalog_SelectCampaignAndShowDescription};
 
-/* Implementation ownership: ui/frontend/scenario_selection. */
-
 /* Logs (once) a list row index that is not below the list's row count. */
 static void FrontendScenarioSelection_LogRejectedRowIndex(UiListRowIndex rowIndex)
 

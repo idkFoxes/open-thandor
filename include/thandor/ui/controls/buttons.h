@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/buttons. */
-
 /* UiSpriteButtonControl stateFlags bits beyond UiSelectableStateFlags (UiSpriteButtonControl_* functions):
    ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);
    ACTION_AFTER_ANIMATION defers the action of an activation until the animation reaches its last frame;
@@ -57,8 +55,6 @@
 #define UI_TEXT_BOX_WIDE_WIDTH 416
 #define UI_TEXT_BOX_WIDE_HEIGHT 58
 #define UI_TEXT_BOX_WIDE_MAX_LINES 4
-
-/* Functions are grouped by semantic ownership. */
 
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);
 

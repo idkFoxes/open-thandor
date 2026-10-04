@@ -30,8 +30,6 @@ FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};
 
 static bool s_loggedSnapshotChunkOffset = false;
 
-/* Implementation ownership: network/protocol/command_exchange. */
-
 /* Copies one 0x20-byte command packet record dword by dword. */
 void FrontendTransfer_CopyCommandRecord
           (FrontendCommandPacketRecord *destination,const FrontendCommandPacketRecord *source)

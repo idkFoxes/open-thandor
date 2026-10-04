@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/frontend/chat. */
-
 /* Adds a chat line to the shared recent-text history and rebuilds the frontend chat history box from its five
    newest entries.
 */

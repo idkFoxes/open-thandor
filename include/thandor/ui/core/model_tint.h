@@ -12,10 +12,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/core/model_tint. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
 
 /* ModelRuntimeNode_GetStateTintArgb results */

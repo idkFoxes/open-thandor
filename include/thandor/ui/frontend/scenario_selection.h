@@ -12,8 +12,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/scenario_selection. */
-
 /* A level's description text is 0x230010 + 0x10 * its title index (record +0x70), registered by
    TextResourcePage_LoadCompatibilityAliases. 0x215D fills a scenario description box while no row is selected. */
 #define TEXT_ID_LEVEL_DESCRIPTION_BASE 0x230010
@@ -37,8 +35,6 @@
 #define SCENARIO_SELECTION_TAB_SAVED_GAMES 0
 #define SCENARIO_SELECTION_TAB_SINGLE_GAMES 1
 #define SCENARIO_SELECTION_TAB_CAMPAIGNS 2
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl);
 

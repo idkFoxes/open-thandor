@@ -13,10 +13,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/math/fixed_transform. */
-
-/* Functions are grouped by semantic ownership. */
-
 FixedAzimuthElevationRoll FixedTransform_ComposeEulerAngles
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2);

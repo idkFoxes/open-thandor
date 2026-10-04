@@ -8,8 +8,6 @@
 #include <thandor/assets/package/resource_loader.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: assets/package/resource_loader. */
-
 /* Loads a whole resource into a fresh arena buffer. A mounted package entry is decoded into the buffer;
    otherwise the loose file is read, first from the executable's directory, then from the path as given.
    Returns true with the buffer in *outBuffer and its byte count in *outByteCount. On failure returns false

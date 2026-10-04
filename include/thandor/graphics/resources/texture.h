@@ -14,8 +14,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/resources/texture. */
-
 /* Subresource table of a 'gfx' texture source: one 32-byte record per subresource at
    asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The pixel data offset is relative to
    the asset start as well. */
@@ -37,8 +35,6 @@
 #define GFX_SUBRESOURCE_PIXEL_HEIGHT 0x1C   /* stored rows */
 /* Pixels of an asset with a single subresource record directly after the header (offscreen renders) */
 #define GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET (GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE)
-
-/* Functions are grouped by semantic ownership. */
 
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);

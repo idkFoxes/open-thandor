@@ -30,8 +30,6 @@ static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {0};
 
 static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {0};
 
-/* Implementation ownership: ui/controls/text_buttons. */
-
 /* Draws a graphics-adapter option button (drawClipped slot of g_UiGraphicsAdapterTextButtonVtable): patches
    rich-text payloads 0 and 1 of its text and draws it as a text button. The values are the two dwords stored
    just before the node (control[-1].packedTextStyle at -8 is the adapter index or first number,

@@ -19,8 +19,6 @@ ShotRuntimeSlot *g_ShotRuntimeSlots = nullptr;
 
 uint8_t *g_ShotRuntimeRebaseBaseMinusOne = nullptr;
 
-/* Implementation ownership: world/shots/pool. */
-
 /* Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
    allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
    offsets. The movie playback is advanced between the steps so that a running movie keeps going. Returns true

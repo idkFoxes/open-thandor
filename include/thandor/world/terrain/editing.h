@@ -14,16 +14,12 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/terrain/editing. */
-
 /* Cells that stop TerrainRegionCollection_CollectConnectedCellsRecursive: the map-edge ring and cells already
    collected (FieldGridCell.flagsAndMaterial; = 0x88016000). */
 #define TERRAIN_REGION_STOP_FLAGS (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)
 /* Capacity of g_TerrainRegionCollectionEntries (8-byte records: extraction descriptor, model offset); further
    extractors of a region are cleared but not recorded (TerrainRegionCollection_RecordConnectedCell). */
 #define TERRAIN_REGION_COLLECTION_CAPACITY 2048
-
-/* Functions are grouped by semantic ownership. */
 
 void TerrainRegionCollection_CollectConnectedCellsRecursive
           (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,

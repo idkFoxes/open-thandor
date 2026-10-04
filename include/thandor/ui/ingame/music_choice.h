@@ -11,10 +11,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/music_choice. */
-
-/* Functions are grouped by semantic ownership. */
-
 uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_UI_INGAME_MUSIC_CHOICE_H */

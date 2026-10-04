@@ -20,8 +20,6 @@ static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {0};
 
 static UiCommandQueueRecord *g_InGameCommandQueueEnd = THANDOR_PTR(&g_InGameCommandQueueRecords);
 
-/* Implementation ownership: network/protocol/commands. */
-
 /* Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte
    record of (commandCode << 8 | local player id) and three payload dwords. The queue holds 16 records;
    further commands are dropped. The lobby chat command (0x1540) is sent this way.

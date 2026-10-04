@@ -15,9 +15,6 @@
 #include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/faction/relations. */
-/* Functions are grouped by semantic ownership. */
-
 /* Records in a player's marked-cell list (SelectionPlayerRuntimeBlock.markedCells[4096]); the
    PlayerPairList_* functions ignore a list whose count has reached this value. */
 #define PLAYER_PAIR_LIST_CAPACITY 4096

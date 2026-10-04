@@ -12,8 +12,6 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/model. */
-
 /* Rows of g_ModelLightingMmxMultiplierRows (one table in the original). Both vertex
    lighting paths index it with a signed row relative to a base row, so negative indices read the rows before it. */
 #define MODEL_LIGHTING_MMX_ROW_COUNT 819
@@ -76,7 +74,6 @@ typedef struct ModelMeshHeader {
     uint32_t flags;          /* +0x10 MODEL_MESH_SOFT_SHADOW */
     uint8_t unknown14_1F[12];
 } ModelMeshHeader;
-/* Functions are grouped by semantic ownership. */
 
 PackedArgb32 ModelRender_ComputeVertexIntensityDefaultPath (PackedArgb32 vertexPackedColor,int *vertexPositionQ12, GraphicsDistanceAttenuationTableAddress32 distanceAttenuationTable, PackedArgb32 scenePackedColor0,PackedArgb32 scenePackedColor1, GraphicsFixedVec3 *lightDirectionQ12,PackedArgb32 materialPackedColor, GraphicsFixedVec3 *surfaceNormalQ12);
 

@@ -15,8 +15,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: platform/input/devices. */
-
 /* Lock-key bits of g_KeyboardStateMask, seeded from the system's lock-key state (SdlInput_Init at startup and
    again when the window regains the focus). */
 #define KEYBOARD_STATE_NUM_LOCK 0x10000
@@ -83,7 +81,6 @@
 #define CURSOR_INPUT_EVENT_RING_SIZE 256
 /* SdlInput_Init: rate of the cursor-animation timer (the original also polled its DirectInput mouse at 64 Hz) */
 #define CURSOR_ANIMATION_TIMER_HZ 20
-/* Functions are grouped by semantic ownership. */
 
 Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 

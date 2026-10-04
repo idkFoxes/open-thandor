@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/factory. */
-
 /* Takes the first queued secondary asset whose flags match the factory definition's buildable mask
    (classParameterC4) and which the faction can pay for: the Xenite is paid, the build interval and the asset's
    Energy load (held while building) are stored in the factory, and the factory starts building. */

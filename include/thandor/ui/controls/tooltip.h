@@ -11,8 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/tooltip. */
-
 /* UiTooltip_Draw: the one-line tooltip box from g_UiWindowTextureSource, and the dimming of the whole screen
    while no root is open (black at half alpha). */
 #define UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT 0xBC
@@ -30,8 +28,6 @@
 #define CP1252_SUPERSCRIPT_THREE 0xb3
 #define CP1252_MICRO_SIGN 0xb5
 #define CP1252_EURO_SIGN 0x80
-
-/* Functions are grouped by semantic ownership. */
 
 void UiTooltip_TickCountdown();
 

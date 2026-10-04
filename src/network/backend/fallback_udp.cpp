@@ -29,8 +29,6 @@ static uint8_t g_NetworkEndpointTextScratchA[256] = {0};
    g_CommandLineFindOption gets the length 3 and never reads past it */
 static char s_CommandLineOptionIp[3] = {'I', 'P', '='};
 
-/* Implementation ownership: network/backend/fallback_udp. */
-
 /* Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
    installs the WinSock backend: every backend index fails, returning FATAL_ERROR_NETWORK_UNAVAILABLE.
 */

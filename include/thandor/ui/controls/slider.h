@@ -12,10 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/slider. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiRangeSliderControl_DrawTrackAndThumb
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiRangeSliderControl *control);

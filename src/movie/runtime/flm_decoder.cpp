@@ -26,8 +26,6 @@
    kept; the padding bounds the last row, whose spill reads the zero padding here. */
 static uint32_t g_MovieChromaLumaToArgb[MOVIE_CHROMA_CODES * MOVIE_CHROMA_LUMA_ROW + MOVIE_CHROMA_LUMA_PADDING] = {0};
 
-/* Implementation ownership: movie/runtime/flm_decoder. */
-
 /* Not in the original (split out of Movie_DecodeFrame4x4Delta, which unrolls it twice): draws one 4x4 colour
    block from its two stream dwords. Table row = chroma code (second dword bits 21-30) * 32 + base luma (first
    dword bits 0-4). The sixteen 3-bit luma steps, in row order, sit at bits 5-31 of the first dword (steps

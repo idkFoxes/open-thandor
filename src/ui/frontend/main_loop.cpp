@@ -19,8 +19,6 @@ uint32_t g_EndMovieSelectionIndex = 0;
 
 uint32_t g_FrontendPendingPageActionDepth = 0;
 
-/* Implementation ownership: ui/frontend/main_loop. */
-
 /* Frontend_MainLoop: presents UI frames until a page action is pending, then flushes the input and counts the
    action depth. Returns false instead when no action is pending and the UI root stack is empty (the player
    quit the game). */

@@ -58,8 +58,6 @@ uint32_t g_UiCommandModeGArmyAssetId = 0;
 
 PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId = ARM_0500_LBAUM_MDL0500;
 
-/* Implementation ownership: ui/ingame/editor_keyboard. */
-
 /* Selects the stepCount-th material before the current one that has a texture set, wrapping around
    (1: the previous material, MATERIAL_SWATCH_ROW_LENGTH: one swatch row up). */
 static void InGameEditorKeyboard_SelectMaterialBackward(int stepCount,UiRootNode *uiRoot)

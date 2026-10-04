@@ -12,8 +12,6 @@
 
 GameFactionRuntimeImage g_GameFactionRuntimeImage = {.tail = {.factionLifecycleStates = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}}};
 
-/* Implementation ownership: gameplay/faction/army_stock. */
-
 /* Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
    tables that still points to it, so no group keeps a dangling pointer to the freed army slot.
 */

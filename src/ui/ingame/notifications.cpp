@@ -19,8 +19,6 @@ static uint16_t g_FlmMovie000FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'm', 'o', 
 
 uint32_t g_InGameSessionNotificationTimeoutTicks = 0;
 
-/* Implementation ownership: ui/ingame/notifications. */
-
 /* Opens the movie of the notification queue head ("flm\movie%03d.flm"). When its first frame is ready, the movie
    becomes the notification button's texture source and the head's payload the active notification; a payload with
    a map target makes the button clickable. */

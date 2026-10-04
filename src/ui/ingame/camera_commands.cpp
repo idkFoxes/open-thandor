@@ -103,8 +103,6 @@ uint32_t g_LevelCameraBookmark7PositionMagnitudeQ12 = 0;
 
 uint32_t g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 = 0;
 
-/* Implementation ownership: ui/ingame/camera_commands. */
-
 /* Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
    the world view's dispatchCommandCallback by the activating path of
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState, in place of

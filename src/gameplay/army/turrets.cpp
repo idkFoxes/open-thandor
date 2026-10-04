@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/turrets.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/turrets. */
-
 /* Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called per
    model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The root node yaws, its first
    child pitches, and that child's first child is the barrel: while reloading it spins by the definition's step

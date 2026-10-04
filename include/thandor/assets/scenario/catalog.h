@@ -13,8 +13,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/scenario/catalog. */
-
 /* Scenario catalog (g_ScenarioCatalog): ScenarioCatalogHeader followed by the level, campaign and save
    records (0x100 bytes each). Every counted record advances the following section offsets and
    g_ScenarioCatalogUsedBytes by 0x104, although the records are packed 0x100 apart. */
@@ -57,8 +55,6 @@ typedef struct CampaignAsset {
     uint8_t reservedC8_1FF[0x138];
     CampaignLevelRecord levels[1];       /* +0x200, levelRecordCount records */
 } CampaignAsset;
-
-/* Functions are grouped by semantic ownership. */
 
 void ScenarioCatalog_Rebuild();
 

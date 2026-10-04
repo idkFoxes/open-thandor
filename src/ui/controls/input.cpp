@@ -15,8 +15,6 @@ UiNodeBase *g_UiPointerCaptureTarget = UI_NODE_NONE;
 
 UiPointerCaptureButton g_UiPointerCaptureButton = 255;
 
-/* Implementation ownership: ui/controls/input. */
-
 /* Diagnostics (open-thandor only): a UI link that is neither UI_NODE_NONE nor a readable node ends the
    walk as UI_NODE_NONE instead of crashing the focus traversal; the first 20 such links are logged. */
 static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link) {

@@ -13,8 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/move_orders. */
-
 /* ArmyRuntimeSlot/ArmyMovementRuntime.movementStateFlags bits, as set and tested by the move-command starters
    and ArmyRuntime_UpdateMovementAndWaypoints. */
 #define ARMY_MOVEMENT_ACTIVE 0x1            /* a move target is set (movementWorld*Q12 / fallbackPosition) */
@@ -41,8 +39,6 @@
 /* ArmyRuntime_StartClampedMoveCommand: a target-following move is routed to a point at most 2.0 (Q12)
    away from the current final target (movementTargetWorld*Q12) */
 #define ARMY_MOVEMENT_FOLLOW_MAX_STEP_Q12 0x2000
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,ArmyRuntimeSlot *armyRuntime);
 

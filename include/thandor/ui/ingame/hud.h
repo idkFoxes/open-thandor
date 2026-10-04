@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/hud. */
-
 /* Diplomacy panel texts (InGameOtherPlayerCommand_RebuildTargetEntries, see the diplomacyRow* labels in
    InGameUiImage): the player number is 0x2190 + faction index, the relation label 0x21A3 + the 4-bit
    relation state of the faction record's packedRelationStates. */
@@ -31,8 +29,6 @@
    selector 0 = player name */
 #define TEXT_ID_PLAYER_STATUS_STATE_ZERO 0xFF05
 #define TEXT_ID_PLAYER_STATUS_STATE_SET 0xFF06
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl);
 

@@ -27,8 +27,6 @@ static WideNumberFormatState g_WideNumberFormatState = {
     .zeroPadding = {48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48},
     .digitAlphabet = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70}};
 
-/* Implementation ownership: core/text/string. */
-
 /* Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the
    length written in bytes (without the NUL that WIDE_FORMAT_WRITE_TERMINATOR adds). Decimal mode prints
    value / denominator with optional sign, padding to integerDigitLimit, one group separator before the last

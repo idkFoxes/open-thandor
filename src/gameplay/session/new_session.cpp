@@ -26,8 +26,6 @@ uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {0}; /* SpatialSoundSlot poin
 
 static uint8_t g_InGameSessionStartedNetworked = 0;
 
-/* Implementation ownership: gameplay/session/new_session. */
-
 /* Failure exit of InGameRuntime_InitializeNewSession: closes the level movie (also when it was not opened yet),
    stores the error in *outError and returns false. */
 static Bool8 InGameNewSession_Fail(uint32_t error,uint32_t *outError)

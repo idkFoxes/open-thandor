@@ -14,8 +14,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/core/runtime. */
-
 /* Capacity of g_GraphicsAdapters (Graphics_AllocateTables allocates 16 records of 0x80 bytes) and of
    g_GraphicsDisplayModes (the mode list stops at 256 modes). */
 #define GRAPHICS_ADAPTER_CAPACITY 16
@@ -45,8 +43,6 @@
 /* A dword count derived from its byte count ((count * 4) >> 2, as the original's dword fill/copy loops count): the
    top two bits drop */
 #define DWORD_COUNT_MASK 0x3fffffff
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t Graphics_AllocateTables();
 

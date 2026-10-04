@@ -15,8 +15,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/model/runtime. */
-
 /* g_ModelRuntimeSlots: a 0x400000-byte pool of 0x200-byte ModelRuntimeSlot entries (ModelRuntimePool_Init) */
 #define MODEL_RUNTIME_SLOT_COUNT 0x2000
 #define MODEL_RUNTIME_POOL_BYTES 0x400000 /* MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot) */
@@ -47,8 +45,6 @@
 #define MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN 0x20 /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
                                                          also skips the field grid height stamp for it */
 #define MODEL_DEFINITION_FLAG_NO_SHADING_PASS 0x40   /* clear -> MODEL_NODE_FLAG_SHADING_PASS */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,

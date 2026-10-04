@@ -11,7 +11,6 @@
 #include <thandor/core/settings/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/settings/persistent. */
 /* Byte offsets of the dwords in the persistent settings image (PersistentSettings_Read/Write/WriteBlock), the
    layout of the original thandor.dat; open-thandor saves them as named keys in thandor.ini (persistent.cpp).
    Named as they are found. */
@@ -85,8 +84,6 @@
 #define PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP 0x20
 #define PERSISTENT_DEFAULT_BITS_PER_PIXEL 32 /* the only colour depth (the original's default was 16) */
 #define PERSISTENT_DEFAULT_ADAPTER_INDEX 0
-
-/* Functions are grouped by semantic ownership. */
 
 void PersistentSettings_Flush();
 

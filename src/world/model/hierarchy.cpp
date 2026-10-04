@@ -27,8 +27,6 @@ static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {0};
 
 GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {0};
 
-/* Implementation ownership: world/model/hierarchy. */
-
 /* Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
    hierarchy (called by the army terrainStateRefresh maintenance phase in gameplay/army/class_dispatch.cpp). Targets:
    flag 4 white and opaque; else flag 8 with 0x10 white and transparent, flag 8 alone grey 0x87 and opaque,

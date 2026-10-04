@@ -11,10 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/image. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiImageControl_LayoutChildrenToParent(UiImageControl *control);
 
 void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,

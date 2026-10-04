@@ -18,8 +18,6 @@ uint16_t g_SessionEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', '
 /* L"flm\\ende0001.flm" */
 uint16_t g_FlmEnde0001FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '1', '.', 'f', 'l', 'm', 0};
 
-/* Implementation ownership: gameplay/session/level_script. */
-
 /* Evaluates one scheduled condition of the level script (its satisfied bit is already cleared in the record).
    COUNTDOWN_ELAPSED also counts its operand 1 down by the step ticks and clamps it at 0 once elapsed.
    Unknown kinds (and unused records) never hold. */

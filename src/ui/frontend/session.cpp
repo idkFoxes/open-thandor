@@ -15,8 +15,6 @@ FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = nullptr;
 
 FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};
 
-/* Implementation ownership: ui/frontend/session. */
-
 /* Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,
    resets the scenario initialisation count and returns to the main page with ROM action record 2. Called
    directly by FrontendSessionAction_ReleaseCampaignAndReturnToMainPage in a local game, through the command queue

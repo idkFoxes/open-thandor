@@ -18,8 +18,6 @@ static const int32_t g_TerrainHeightBandMinimumDelta = -1024;
 /* int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans (0x3000) */
 static const int32_t g_TerrainAuxHeightMinimum = 12288;
 
-/* Implementation ownership: world/terrain/placement_tests. */
-
 /* Cell tests of the hexagon walks (the map-edge test is done by TerrainHexScan_EndsAt); true = the cell fails. */
 
 /* Height band: a flooded cell (waterSurfaceDelta > 0) or a height outside

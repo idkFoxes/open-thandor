@@ -10,8 +10,6 @@
 
 #include <cstddef>
 
-/* Implementation ownership: network/protocol/lockstep. */
-
 /* The original reads a client's commandSyncPending as the first dword of the endpoint descriptor behind the
    record's endpoint; the named field is used here, which needs it right behind the endpoint. */
 static_assert(offsetof(FrontendPlayerRuntimeRecord,commandSyncPending) ==

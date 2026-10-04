@@ -12,12 +12,8 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/drive_ground. */
-
 /* Tracked vehicles: the track texture U offsets are kept within +-one texture width (Q20) */
 #define ARMY_TRACK_TEXTURE_U_WRAP 0x100000
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyGroundMovement_ApplyRecoilTilt (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,int recoilTilt);
 

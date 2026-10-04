@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/class_updates. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass14UpdateView *modelRuntime);
 

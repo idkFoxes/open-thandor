@@ -8,8 +8,6 @@
 #include <thandor/graphics/render/light_transitions.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: graphics/render/light_transitions. */
-
 /* Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration
    makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light. A
    light still fading in keeps its current fraction; a zero duration switches the light off at once.

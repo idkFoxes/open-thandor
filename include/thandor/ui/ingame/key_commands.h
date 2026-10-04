@@ -13,16 +13,12 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/key_commands. */
-
 /* Slots of the in-game notification queue (notificationQueue, InGameNotificationQueue_InsertPriorityRecord) */
 #define INGAME_NOTIFICATION_QUEUE_SLOTS 4
 
 /* Notification target button: cursor frame after a jump (the next click cancels), and the panel subresource shown
    when no notification movie plays */
 #define INGAME_NOTIFICATION_CURSOR_CANCEL 0x1B
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);

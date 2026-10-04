@@ -11,10 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/gauge. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control);

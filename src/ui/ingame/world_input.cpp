@@ -46,8 +46,6 @@ int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 
 static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
 
-/* Implementation ownership: ui/ingame/world_input. */
-
 /* Hover cursor of InGameWorldInput_ResolveContextActionAndCursor when the selection has an entry with
    nonnegative weapon damage (an attack is possible); entry is NULL without a candidate army. */
 static uint32_t InGameWorldInput_ResolveWeaponTargetCursor(GameEntityRuntime *entry,int ownerIndex)

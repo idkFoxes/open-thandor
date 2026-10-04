@@ -14,8 +14,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/terrain/terrain_render. */
-
 /* FieldGridCell.flagsAndMaterial bits of TerrainProjectedVertex_TransformProjectAndShade (a field cell is
    also its TerrainProjectedVertexWorkRecord): set when point A (projectedPointA, the terrain point) or point B
    (projectedPointB, the offset secondary point) is not beyond the near plane and got no screen position. */
@@ -68,7 +66,6 @@
   (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1)
 #define TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS \
   (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_2)
-/* Functions are grouped by semantic ownership. */
 
 void TerrainProjectedGrid_TransformShadeAndQueue
           (FieldGridAsset *fieldGrid,FrontendModelPointerContext *renderContext);

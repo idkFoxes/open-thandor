@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/text/font. */
-
 /* FontRuntime_Init: terminator-scan limit in code units for stepping over the two consecutive font paths at
    g_FontTexturePathsUtf16 (0x42 bytes); shared by both scans. */
 #define FONT_TEXTURE_PATHS_SCAN_UNITS 0x21
@@ -23,8 +21,6 @@
 #ifndef TEXT_SHADOW_COLOR_ARGB
 #define TEXT_SHADOW_COLOR_ARGB 0x7F000000
 #endif
-
-/* Functions are grouped by semantic ownership. */
 
 void FontRuntime_Init();
 

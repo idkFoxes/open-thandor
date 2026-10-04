@@ -13,8 +13,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/dialogs/display_settings. */
-
 /* Action ids of the display settings dialog (g_UiDisplaySettingsRootTemplate); action 0x200 + n runs
    g_UiDisplayModeSelectionActionHandlers20[n]. UiDisplayModeSelection_RefreshEnumeratedOptions suppresses
    the option buttons whose mode was not enumerated. */
@@ -95,8 +93,6 @@ typedef struct UiFourValueDialogCountdownText {
    it sends when the pointer moves from one child to another (the new child's press, the old child's drag and
    release), so that no pixel test of theirs hits. */
 #define UI_POINTER_FAR_OUTSIDE 0x70000000
-
-/* Functions are grouped by semantic ownership. */
 
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
 

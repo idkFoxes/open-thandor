@@ -13,8 +13,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/settings. */
-
 /* The graphics settings page's shading level box as laid out in the frontend template (shadingLevelGroup and
    the six grid/depth choices that follow it). 0x2C4 bytes. */
 typedef struct FrontendShadingLevelGroup {
@@ -30,8 +28,6 @@ typedef struct FrontendTextureQualityGroup {
     UiTextButtonControl medium; /* +0xB4 */
     UiTextButtonControl high;   /* +0x114 */
 } FrontendTextureQualityGroup;
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control);
 

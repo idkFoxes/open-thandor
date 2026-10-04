@@ -12,8 +12,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/scenario_transfer. */
-
 /* g_FrontendScenarioTransferState: which asset a network client expects next in the transfer mailbox
    (handled by FrontendScenarioTransfer_ProcessReceivedAsset). */
 #define SCENARIO_TRANSFER_NONE 0
@@ -41,8 +39,6 @@ typedef struct ScenarioLevelBundleHeader {
     uint32_t levelEncodedBytes;          /* +0x08 */
     uint32_t fieldGridEncodedBytes;      /* +0x0C */
 } ScenarioLevelBundleHeader;
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendScenarioTransfer_ProcessReceivedAsset();
 

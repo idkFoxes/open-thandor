@@ -15,8 +15,6 @@
 #include <thandor/gameplay/technology/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/technology/runtime. */
-
 /* GameEntityRuntime.common.runtimeFlags research bits. Technology_IsAvailableForFaction treats an army with
    RESEARCH_RUNNING whose researchTechnologyId holds the technology as already researching it;
    Technology_ApplyRecordToEntity stores the technology in common.commandState (the same slot) and sets
@@ -27,7 +25,6 @@
 #define TECHNOLOGY_RECORD_COUNT 256
 /* 1.0 in Q24: dividend of g_TechnologyCategoryMaximumReciprocalQ24Table8 (1 / category maximum) */
 #define TECHNOLOGY_RECIPROCAL_Q24_ONE 0x1000000u
-/* Functions are grouped by semantic ownership. */
 
 void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,

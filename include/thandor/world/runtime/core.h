@@ -13,8 +13,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/runtime/core. */
-
 /* WorldRuntimeContext.runtimeFlags bits (world/runtime/core, world/camera):
    UNLIMITED_CAMERA skips the camera distance and pitch limits; FIELD_GRID_DIRTY is cleared whenever the
    camera state or the field grid is (re)set (WorldRuntime_ClearFieldGridDirtyFlag); SECONDARY_SURFACE_ONLY
@@ -46,8 +44,6 @@
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
 /* Height returned by WorldRuntime_InterpolateTopSurfaceHeightOrSentinel when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
-
-/* Functions are grouped by semantic ownership. */
 
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world);
 

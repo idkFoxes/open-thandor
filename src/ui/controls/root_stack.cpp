@@ -14,8 +14,6 @@ uint32_t g_UiInvalidationSuppressed = 0;
 
 UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
 
-/* Implementation ownership: ui/controls/root_stack. */
-
 /* Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
    its close stops the loop and is reported by returning true. The original also stops at the dword after
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every

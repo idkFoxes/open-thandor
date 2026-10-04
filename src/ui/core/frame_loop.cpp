@@ -12,8 +12,6 @@
 
 std::atomic<uint32_t> g_UiPendingFrameTicks{0};
 
-/* Implementation ownership: ui/core/frame_loop. */
-
 /* Runs one complete UI frame (events, frame ticks, queued actions, draw, present) from code that may or may
    not hold the UI frame lock, e.g. modal loops and the fatal-error box: the lock is released for the frame
    and taken again afterwards only when it was held on entry.

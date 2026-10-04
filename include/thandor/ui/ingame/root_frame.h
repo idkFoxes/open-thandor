@@ -14,8 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/root_frame. */
-
 /* Keyboard camera (InGameUiRoot_UpdateFrame): pitch and heading step per frame (angle16) and zoom step */
 #define INGAME_CAMERA_KEY_ANGLE_STEP 0x400
 #define INGAME_CAMERA_KEY_DISTANCE_STEP_Q12 0x800
@@ -27,8 +25,6 @@
 #define INGAME_PLACEMENT_OVERLAY_ARGB 0xFF808080
 /* Ambient effect sounds and music: a random delay of 1..64 frames ((Random & mask) + 1) before the next one */
 #define INGAME_AMBIENT_SOUND_DELAY_MASK 0x3F
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
 

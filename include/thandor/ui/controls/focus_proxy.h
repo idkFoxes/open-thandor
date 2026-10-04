@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/focus_proxy. */
-
 /* labelFlags of a UiSingleLineTextControl behind g_UiFocusProxyControlVtable (UiSingleLineTextControl_*
    forwarding handlers), next to the UI_LABEL_* bits in text.h. */
 #define UI_LABEL_TEXT_NEEDS_RELOCATION 0x20 /* text is still a serialized offset */
@@ -21,8 +19,6 @@
 #define UI_LABEL_SWALLOW_CHARACTERS 0x8000 /* typed characters with bit 0x10 or 0x20 are consumed, not forwarded */
 /* Character-code bits UI_LABEL_SWALLOW_CHARACTERS tests (0x10 | 0x20) */
 #define UI_LABEL_SWALLOWED_CHARACTER_BITS 0x30
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);

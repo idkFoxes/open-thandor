@@ -12,14 +12,10 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/package/archive_write. */
-
 /* Byte offset into g_PackageScratchBuffer while Package_UpsertEntry/Package_DeleteEntry rewrite an archive:
    the archive header is read to offset 0, the entry header being appended follows it at
    PCK_ENTRY_HEADER_BYTES. */
 #define PCK_ARCHIVE_SIZE offsetof(PckArchiveHeader,archiveSize)
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);

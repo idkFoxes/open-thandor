@@ -8,8 +8,6 @@
 #include <thandor/core/math/geometry.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: core/math/geometry. */
-
 /* Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns
    jointAngle0 = the angle between s2 and s1 and jointAngle1 = that angle plus the one between s2 and s0 (the
    bend at the joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the

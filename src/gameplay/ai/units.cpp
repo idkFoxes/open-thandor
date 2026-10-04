@@ -12,8 +12,6 @@
 
 uint32_t g_AiCollectedEntityCount = 0;
 
-/* Implementation ownership: gameplay/ai/units. */
-
 /* Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
    (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state, the entity's common.commandFlags) wait
    for their behaviour cooldown (common.aiCommandCooldownTicks), skips units with ARMY_MOVEMENT_LOCKED, and

@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/ingame/pages. */
-
 /* UI action 0x101F (mission help toggle button): opening shows the mission help window (page 8) with the
    active faction's help text for this level, re-measures its three text panels and blocks the world input; a local
    game is paused meanwhile. Closing hides the window, re-enables the world input and resumes the game unless it

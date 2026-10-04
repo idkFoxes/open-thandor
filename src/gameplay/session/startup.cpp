@@ -18,8 +18,6 @@ static void *g_InGameFactionScratchBufferSetB8[8] = {};
 
 int32_t g_InGamePendingSimulationTicks = 0;
 
-/* Implementation ownership: gameplay/session/startup. */
-
 /* Failure exit of InGameRuntime_RunSessionUntilExit: releases what the session set up and reports the error. */
 static Bool8 InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
 

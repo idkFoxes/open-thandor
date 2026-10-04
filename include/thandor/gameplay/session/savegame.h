@@ -13,8 +13,6 @@
 #include <thandor/gameplay/session/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/savegame. */
-
 /* InGameSavePackageHeader.campaignIndex without a campaign */
 #define INGAME_SAVE_NO_CAMPAIGN 0xffffffffu
 
@@ -32,8 +30,6 @@ typedef struct InGameSavePackageHeader {
     uint32_t packedTime; /* +0x1F4 */
     uint8_t reserved1F8_1FF[8];
 } InGameSavePackageHeader;
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 

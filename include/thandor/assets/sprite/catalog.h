@@ -11,9 +11,6 @@
 #include <thandor/assets/sprite/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/sprite/catalog. */
-/* Functions are grouped by semantic ownership. */
-
 void SpriteAssetRegistry_Reset();
 
 SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId);

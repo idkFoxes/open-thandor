@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/audio.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/audio. */
-
 /* Feeds the world sound slot soundSlotIndex (0 = none; out of range or no slot table = none) with the position of
    modelNode, using the positioned-sound distance and gain of definition, when TerrainGrid_TestProjectedCellMaskBits01
    reports occupancy bit 0 or 1 of the active faction at the model's cell. Shared by the class sound updates below. */

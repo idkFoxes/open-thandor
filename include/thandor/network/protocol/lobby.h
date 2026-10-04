@@ -12,8 +12,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/lobby. */
-
 /* Frontend (lobby / session start) command batch from the host: unit count = command records, handled by
    FrontendTransfer_HandleHostSessionAndCommandBatchPackets and FrontendTransfer_HandleGameplayCommandAndRosterPackets. */
 #define FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE 0x10
@@ -46,8 +44,6 @@
 #define TEXT_ID_SESSION_HOST_TEMPLATE 0x211B         /* selector 0 = game name, selector 1 = host player name */
 #define TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE 0x211C /* selector 0 = players, selector 1 = player limit */
 #define TEXT_ID_NETWORK_PLAYER_ARRIVED 0xFF03        /* selector 0 = player name */
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,

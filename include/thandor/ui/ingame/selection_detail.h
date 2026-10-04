@@ -11,8 +11,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/selection_detail. */
-
 /* Selection detail panel text templates (patched by InGameUiRuntime_InitializeControlTreeResources, chosen by
    InGameSelectionDetailPanel_Rebuild): 0x18002C.. single selection + the asset's template variant, 0x18003C..
    the same while researching, 0x180045.. hover/placement stats; 0x18004E fills an unused weapon slot. Model
@@ -21,8 +19,6 @@
 #define TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE 0x18003C
 #define TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE 0x180045
 #define TEXT_ID_SELECTION_DETAIL_NO_WEAPON 0x18004E
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameSelectionDetailPanel_Rebuild();
 

@@ -13,13 +13,9 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/layout. */
-
 /* Index of the display-size digit in "gfx\panel\panel0.gfx" and "gfx\panel\diagram0.gfx" */
 #define INGAME_PANEL_GFX_PATH_VARIANT_DIGIT 15
 #define INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT 17
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
 

@@ -11,13 +11,9 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/light_transitions. */
-
 /* Bit 31 as an unsigned int: (uint32_t)value < INTERPOLATION_SIGN_BIT tests a signed value for >= 0 (the
    original's unsigned compare) */
 #define INTERPOLATION_SIGN_BIT 0x80000000
-
-/* Functions are grouped by semantic ownership. */
 
 void InterpolationState_SetNegatedTargetAndRescaleProgress
           (GraphicsTransitionTickCount fadeOutTicks,GraphicsShadingRuntimeRecord *shadingRecord);

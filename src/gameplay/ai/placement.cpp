@@ -12,8 +12,6 @@
 
 AiKnowledgeDataImage *g_AiKnowledgeData = nullptr;
 
-/* Implementation ownership: gameplay/ai/placement. */
-
 /* Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must
    report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
    at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. True means rejected.

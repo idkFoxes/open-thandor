@@ -16,8 +16,6 @@ uint32_t *g_OldUnitPrimaryTable = nullptr;
 
 OldUnitRecordCount g_OldUnitRecordCount = 0;
 
-/* Implementation ownership: gameplay/session/campaign_carryover. */
-
 /* Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
    for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
    the old-unit secondary table and every unit standing inside its faction's exit zone as a primary record,

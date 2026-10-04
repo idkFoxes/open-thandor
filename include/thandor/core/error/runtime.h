@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/error/runtime. */
-
 /* The two fatal-error handlers, installed by ErrorSystem_Init. Both take a value and a failure flag and
    return the value unchanged; with the flag set they first treat the value as an error code or message
    and handle it (so callers can wrap a computation: x = FatalError_ExitIfFailed(value, failed)).
@@ -127,8 +125,6 @@
 /* The fatal-error handlers take an error code (a text id of the error page, below 0x100) or a pointer to a
    rich-text message; a value with no bits above the low byte is a code */
 #define FATAL_ERROR_IS_CODE(errorOrValue) (((uintptr_t)(errorOrValue) & ~(uintptr_t)0xff) == 0)
-
-/* Functions are grouped by semantic ownership. */
 
 void __cdecl ErrorSystem_Init();
 

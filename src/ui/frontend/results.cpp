@@ -55,8 +55,6 @@ static uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
 
 static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
 
-/* Implementation ownership: ui/frontend/results. */
-
 /* drawClipped of g_FrontendResultsTableVtable, the three results charts (resultsChart1..3) of the end-of-game
    results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
    other, advancing by each type's width (types 0 and 1 are empty spacers). The "columns" advance downwards

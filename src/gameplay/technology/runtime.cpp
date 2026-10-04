@@ -20,8 +20,6 @@ static uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8] = {0};
 
 TechnologyAsset *g_TechnologyAsset = nullptr;
 
-/* Implementation ownership: gameplay/technology/runtime. */
-
 /* Unlocks a technology for a faction (once): sets its bit in the faction's 256-bit technology mask, announces it
    to the local player (at the given map position, if any), recursively unlocks the technology it depends on,
    applies the technology's model variants to the faction's models on the map and, for the local faction, rebuilds

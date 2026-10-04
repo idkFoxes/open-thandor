@@ -13,8 +13,6 @@
 
 static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {0};
 
-/* Implementation ownership: ui/ingame/selection_overlay. */
-
 /* Draws the metric bars (SelectionPanel_RenderArmyRuntimeMetrics) over every selected entity whose model node
    carries flag 4, or flag 8 without 0x10, at the screen bounds of its projected model hierarchy; entities whose
    bounds come out empty are skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when

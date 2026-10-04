@@ -34,8 +34,6 @@ uint32_t g_GridInfluenceSquaredThreshold[8] = {
     0, /* [7] */
 };
 
-/* Implementation ownership: world/pathing/influence. */
-
 /* gridInfluenceAdd handler of the runtime classes 4, 10..16, 20 and 22
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd): stamps the low distance bands around the
    model's current position, unless its definition has no influence radius.

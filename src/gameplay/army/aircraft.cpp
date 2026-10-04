@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/aircraft. */
-
 /* Poses the aircraft body (the root's first child) on its vertical arc: the arc position (classState7C) gives the
    height above heightBaseQ12 (arcCoefficient * ticks * position^2) and the pitch, then the arc position advances
    by one movement step for this batch of ticks. Returns that step. */

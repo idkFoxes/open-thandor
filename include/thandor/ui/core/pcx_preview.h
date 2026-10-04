@@ -12,13 +12,9 @@
 #include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/core/pcx_preview. */
-
 /* Extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h): ".pcx",
    the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
 #define WIDE_PATH_EXTENSION_PCX 0x786370
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 

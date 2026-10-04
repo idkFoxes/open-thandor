@@ -13,13 +13,9 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/camera/camera_input. */
-
 /* Hard lower limit (0.25 in Q12) of the camera distance and position magnitude set by the WorldMotion_Adjust*
    functions, applied after the configurable limits. */
 #define WORLD_MOTION_MINIMUM_DISTANCE_Q12 0x400
-
-/* Functions are grouped by semantic ownership. */
 
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime);

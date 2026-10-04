@@ -8,8 +8,6 @@
 #include <thandor/gameplay/ai/perception.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/ai/perception. */
-
 /* Appends (modelRuntime, assetId) to a runtime-entry workspace (01 to 04) unless it is full. */
 static void AiPlanningRebuild_AddRuntimeEntry(AiRuntimeWorkspaceEntry *entries,uint32_t *entryCount,
           uint32_t capacity,ModelRuntimeSlot *modelRuntime,PckArmyAssetIdCatalog assetId)

@@ -13,8 +13,6 @@
 
 ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {};
 
-/* Implementation ownership: assets/model/definitions. */
-
 /* Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
    references against the asset base. Returns true on success; returns false with the error code in *outError

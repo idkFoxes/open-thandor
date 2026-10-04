@@ -25,8 +25,6 @@ static uint16_t g_LevelLevPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*'
 
 static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 's', 't', 'r', 0}; /* L"level\\*.str" */
 
-/* Implementation ownership: gameplay/session/level. */
-
 /* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at
    header pathOffsets.endingMovieBasePathOffset, with its extension set to "flm") in *outMoviePath and writes
    the matching end movie number into "flm\ende0000.flm" from the 5th and 6th characters of that path

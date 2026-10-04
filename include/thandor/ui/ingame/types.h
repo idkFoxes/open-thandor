@@ -18,8 +18,6 @@
 #include <thandor/ui/text/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct WorldRuntimeContext WorldRuntimeContext, *PWorldRuntimeContext;
 typedef struct WorldRuntimeInteractionState WorldRuntimeInteractionState, *PWorldRuntimeInteractionState;
 typedef struct WorldMotionState WorldMotionState, *PWorldMotionState;

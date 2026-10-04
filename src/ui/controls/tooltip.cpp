@@ -16,8 +16,6 @@ static const UiFrameDelayFrames g_UiTooltipDelayFrames = 12;
 
 static const uint32_t g_UiTooltipTextStyle = 0;
 
-/* Implementation ownership: ui/controls/tooltip. */
-
 /* Per-frame tooltip delay: while the pointer rests on an enabled control (no button held), counts the
    delay down and prepares the tooltip text when it expires. While a node has captured the pointer or the
    hovered control is disabled, re-evaluates the hover target at the last pointer position instead.

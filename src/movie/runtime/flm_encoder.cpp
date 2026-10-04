@@ -17,8 +17,6 @@
 
 static const uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels = 0xF0F0F000F0F0F0ull;
 
-/* Implementation ownership: movie/runtime/flm_encoder. */
-
 /* Block-average helpers for the 4x4 block encoders (not in the original, which did this inline in SIMD code;
    the helpers are inlined into Movie_EncodeFrame4x4Keyframe/Delta). The average of a 4x4 block keeps four
    16-bit channel sums, one per pixel byte: every pixel adds (byte * 0x101) >> 6 to the sum of each of its four

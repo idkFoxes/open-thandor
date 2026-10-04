@@ -19,8 +19,6 @@
 #include <thandor/world/effects/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct ShotDefinition ShotDefinition, *PShotDefinition;
 typedef struct ShotAssetHeader ShotAssetHeader, *PShotAssetHeader;
 

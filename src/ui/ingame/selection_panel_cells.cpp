@@ -15,8 +15,6 @@ static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
 
 static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
 
-/* Implementation ownership: ui/ingame/selection_panel_cells. */
-
 /* The SELECTION_PANEL_CELL_SIZE-byte record of cellIndex in select.dat (fields SELECTION_PANEL_CELL_*). */
 static uint8_t *SelectionPanel_GetCellRecord(SelectionPanelCellIndex cellIndex)
 

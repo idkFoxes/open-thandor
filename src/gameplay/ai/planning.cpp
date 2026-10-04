@@ -19,8 +19,6 @@ static const int32_t g_AiStrategicClassTerrainWeights[5][3] = {
     {0, 0, 256},
     {0, 0, 0}};
 
-/* Implementation ownership: gameplay/ai/planning. */
-
 /* Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
    terrain contribution by the game speed, then rebuilds the per-faction AI pressure table: each of the eight
    pressure channels decays to about 3/4, every runtime model adds 0x100 to the channel of its definition

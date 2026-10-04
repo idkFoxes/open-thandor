@@ -11,8 +11,6 @@
 #include <thandor/audio/backend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: audio/backend/runtime. */
-
 /* Voice sets (DirectSoundVoiceSet, the original's layout, kept as the arena block the game holds): every loaded
    sound has up to eight voices, and all sets are listed in a 256-entry registry (SdlAudio_Init allocates it). */
 #define DIRECTSOUND_VOICES_PER_SET 8

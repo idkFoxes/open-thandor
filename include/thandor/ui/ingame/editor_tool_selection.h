@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/editor_tool_selection. */
-
 /* Action id of resultsSecondaryExitButton (suppressed in local games) */
 #define INGAME_ACTION_RESULTS_SECONDARY_EXIT 0x1025
 #define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
@@ -40,8 +38,6 @@
 #define UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED 0x1000
 #define UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED 0x7FFFFFFF
 #define UI_COMMAND_MODE_G_COLOR_LIMIT_RAW 0x00FFFFFF
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameCommandModeG_Select0(UiSelectableControl *source);
 

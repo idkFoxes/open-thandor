@@ -13,10 +13,6 @@
 #include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/root_stack. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 UiRootStack_PopUntilWindowTextureBoundary();
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's

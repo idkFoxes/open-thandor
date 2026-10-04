@@ -445,7 +445,7 @@ determinism checks afterwards.
 
 | File | Notes |
 |---|---|
-| `include/thandor/<area>/<module>/types.h` | The game structures, UI template layouts and function pointer types of the module (once exported from the decompilation as one `generated/types.h`, split by `tools/dev/split_types.py`). The common ones (Bool8, fixed-point scalars, angles, vectors, ids) are in `include/thandor/core/types.h`. |
+| `include/thandor/<area>/<module>/types.h` | The game structures, UI template layouts and function pointer types of the module (once exported from the decompilation as one `generated/types.h` and split per module). The common ones (Bool8, fixed-point scalars, angles, vectors, ids) are in `include/thandor/core/types.h`. |
 | `src/<area>/<module>/*.cpp` | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
 | `include/thandor/generated/imports.h` | KERNEL32/USER32/... import prototypes (replaced by the SDK headers in the 64-bit step). |
 | `include/thandor/core/x86_emulation.h` | What the original's x86 code does, in portable C: `THANDOR_CONTAINER_OF`, atomic exchange, x87 rounding, CPUID, the MMX lane operations. |

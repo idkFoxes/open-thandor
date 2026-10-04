@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: audio/codec/sam. */
-
 /* A .sam block: 256 transform coefficients <-> 256 PCM samples per channel. */
 #define SAM_BLOCK_SAMPLE_COUNT 256
 /* The MMX cosine transforms compute 4 outputs (one qword, four 256-entry cosine rows) per loop pass. */
@@ -30,8 +28,6 @@
 
 /* Two 32-bit lanes as one 64-bit value: highLane in bits 32-63, lowLane in bits 0-31. */
 #define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))
-
-/* Functions are grouped by semantic ownership. */
 
 void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoefficientBlock *coefficientBlock);
 

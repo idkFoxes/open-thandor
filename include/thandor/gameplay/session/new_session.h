@@ -12,8 +12,6 @@
 #include <thandor/gameplay/session/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/new_session. */
-
 /* Timer rate of InGameRuntime_PeriodicCountdownAndClockTick (g_TimerRegisterPeriodic takes a frequency). */
 #define INGAME_PERIODIC_TIMER_HZ 80
 /* Reload value of g_InGameNetworkTickCountdown: the periodic timer counts it down, and a simulation step only
@@ -28,8 +26,6 @@
 /* Camera pitch clamp of a session (WorldRuntimeContext.motion, angle16 as unsigned dwords): -0x3C00 and -0x1800 */
 #define INGAME_CAMERA_MINIMUM_PITCH_ANGLE16 0xFFFFC400
 #define INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16 0xFFFFE800
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError);

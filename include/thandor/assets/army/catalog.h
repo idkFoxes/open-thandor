@@ -13,8 +13,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/army/catalog. */
-
 /* Pointer slots in g_ArmyAssetRecordRegistry (the global is declared as an array of 768). */
 #define ARMY_ASSET_REGISTRY_SLOT_COUNT 768
 /* Length of ArmyAssetRecord.linkedArmyAssetIds (ArmyAssetRecord_HasFactionUnlockedLinkedDefinition). */
@@ -36,8 +34,6 @@ typedef struct ArmyModelTreeNode {
     Ptr32<struct ArmyModelTreeNode> children[5]; /* +0x0C */
     PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
 } ArmyModelTreeNode;
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount);
 

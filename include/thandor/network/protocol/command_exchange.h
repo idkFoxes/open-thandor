@@ -14,8 +14,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/command_exchange. */
-
 #define FRONTEND_PACKET_COMMAND_BATCH_TYPE 0x20             /* host -> clients; unit count = command records */
 #define FRONTEND_PACKET_COMMAND_SUBMIT FRONTEND_PACKET_10021_COMMAND_SUBMIT   /* client -> host: its next command record */
 #define FRONTEND_PACKET_COMMAND_WAIT FRONTEND_PACKET_10022_COMMAND_WAIT     /* host -> client: command received, batch pending */
@@ -23,8 +21,6 @@
 
 /* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
 #define FRONTEND_PEER_TIMEOUT_TICKS 0x100
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,

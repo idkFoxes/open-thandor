@@ -29,8 +29,6 @@ static void FrontendDisplaySettingsPage_ReadSavedRendererAndKind()
   s_pendingDisplayModeKind = SdlVideo_SavedDisplayModeKind();
 }
 
-/* Implementation ownership: ui/frontend/display_settings. */
-
 /* Adapter row adapterIndex of the display settings page: driver description and device name (the SDL3 backend's
    adapters are its renderers: "Vulkan", "DirectX 12", "Software" with "GPU" / "CPU"). */
 static void FrontendDisplaySettingsPage_FillAdapterRow

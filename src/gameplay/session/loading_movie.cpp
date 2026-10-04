@@ -17,8 +17,6 @@
 
 uint32_t g_MoviePlaybackCurrentFrame = 0;
 
-/* Implementation ownership: gameplay/session/loading_movie. */
-
 /* Per-tick callback of a movie played inside a session: counts the tick, works out which frame the movie
    should show by now (8 frames per g_MoviePlaybackScheduleSpan ticks, offset by the base frame group), catches
    up to it, presenting at least every 8th frame on the way, then runs the regular simulation and network tick

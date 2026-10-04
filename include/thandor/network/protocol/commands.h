@@ -17,8 +17,6 @@
 #include <thandor/ui/ingame/editor_tools.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Submodule: network/protocol/commands. */
-
 /* In-game command codes are handler addresses relative to InGameCommandQueue_AppendLocalPlayerCommand
    (whose original address is INGAME_COMMAND_CODE_BASE); a command is executed by calling
    INGAME_COMMAND_CODE_BASE + code. Single player calls the named handler directly instead of queueing the code. */
@@ -130,7 +128,6 @@
 /* Received commands are executed only when codeBase + code lies below these original addresses. */
 #define FRONTEND_COMMAND_HANDLER_REGION_END 0x005456F0 /* g_FrontendRootNode in the original image */
 #define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd: the 0x90 filler bytes before g_InGameUiActionHandlersPage10 in the original image */
-/* Functions are grouped by semantic ownership. */
 
 void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
           CommandPayload payload2,CommandPayload payload3);

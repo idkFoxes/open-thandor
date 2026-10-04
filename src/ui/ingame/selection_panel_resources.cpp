@@ -34,8 +34,6 @@ void *g_SelectionPanelData = nullptr;
 
 void *g_InfoPanelData = nullptr;
 
-/* Implementation ownership: ui/ingame/selection_panel_resources. */
-
 /* Empties the 32 selection entries of all eight player blocks. */
 static void SelectionInfoPanel_ClearAllPlayerSelections()
 

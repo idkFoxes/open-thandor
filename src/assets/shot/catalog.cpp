@@ -17,8 +17,6 @@ ShotDefinition *g_ShotDefinitionRegistry[256] = {};
    here). */
 static uint16_t s_ShotAssetErrorName[] = {'*', '.', 's', 'h', 't', 0}; /* L"*.sht" */
 
-/* Implementation ownership: assets/shot/catalog. */
-
 /* Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version
    0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
    ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves

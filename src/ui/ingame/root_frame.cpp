@@ -29,8 +29,6 @@ uint16_t g_InGameCountdownTextUtf16[8] = {0};
 /* The largest countdown that fits g_InGameCountdownTextUtf16: "9999:59" plus the terminator. */
 #define INGAME_COUNTDOWN_MAX_SECONDS (9999u * 60u + 59u)
 
-/* Implementation ownership: ui/ingame/root_frame. */
-
 /* Placement overlay: grey the field and mark where the pending army asset fits; refreshed every 8th simulation
    tick, removed once the placement ends. */
 static void InGameUiRoot_UpdatePlacementOverlay(InGameRuntimeRootFrameView *inGameRoot)

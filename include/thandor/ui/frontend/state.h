@@ -15,10 +15,6 @@
 
 #include <atomic>
 
-/* Submodule: ui/frontend/state. */
-
-/* Functions are grouped by semantic ownership. */
-
 void __cdecl FrontendRuntime_TimerCountdownTick();
 
 void __cdecl FrontendRomTransition_AdvanceElapsedTicks();

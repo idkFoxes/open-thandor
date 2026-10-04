@@ -13,8 +13,6 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/render/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct TerrainMaterialSuffixEntry TerrainMaterialSuffixEntry, *PTerrainMaterialSuffixEntry;
 typedef struct TerrainProjectedVertexWorkRecord TerrainProjectedVertexWorkRecord, *PTerrainProjectedVertexWorkRecord;
 typedef struct TriangleBarycentricWeightsQ12 TriangleBarycentricWeightsQ12, *PTriangleBarycentricWeightsQ12;

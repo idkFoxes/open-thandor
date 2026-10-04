@@ -18,8 +18,6 @@
 
 #include <atomic>
 
-/* Submodule: ui/frontend/menu_room_scene. */
-
 /* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
 #define FRONTEND_ROM_TRANSITION_SKIP_TICKS 0x10000000
 
@@ -31,8 +29,6 @@
    RomRuntime_UpdateRecordVisibilityAndDescriptors; read by the frontend menu-room hit test) */
 #define ROM_NODE_FLAG_ACTION_TARGET 0x20 /* linked from an entry of the active record */
 #define ROM_NODE_FLAG_HIDDEN 0x40 /* neither the active record nor in its visibleRecordMask */
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendRomActionTable_ExecuteRecord
           (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,

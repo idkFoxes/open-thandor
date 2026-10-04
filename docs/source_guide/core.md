@@ -126,13 +126,13 @@ Module header: [`error.h`](../../include/thandor/core/error.h) · Changelog: `ru
 
 [Source](../../src/core/error/runtime.cpp) · [Header](../../include/thandor/core/error/runtime.h)
 
-No file comment; function families: `FatalError_*` (2), `ErrorSystem_*` (1).
+0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors)
 
 **Functions** (3 public):
 
-- [`ErrorSystem_Init`](../../src/core/error/runtime.cpp#L39) - Points both fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and loads the error texts (texte\error.str) as text page 0.
-- [`FatalError_Exit`](../../src/core/error/runtime.cpp#L53) - The fatal-error handler: without failed it returns valueOrError unchanged; with failed it is FatalError_ShowAndExit(valueOrError) and does not return.
-- [`FatalError_ShowAndExit`](../../src/core/error/runtime.cpp#L67) - The failing half of FatalError_Exit: builds the error message (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills in the last path and the three detail ...
+- [`ErrorSystem_Init`](../../src/core/error/runtime.cpp#L37) - Points both fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and loads the error texts (texte\error.str) as text page 0.
+- [`FatalError_Exit`](../../src/core/error/runtime.cpp#L51) - The fatal-error handler: without failed it returns valueOrError unchanged; with failed it is FatalError_ShowAndExit(valueOrError) and does not return.
+- [`FatalError_ShowAndExit`](../../src/core/error/runtime.cpp#L65) - The failing half of FatalError_Exit: builds the error message (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills in the last path and the three detail ...
 
 **Data** (6 shared, 2 file-local): `g_FatalErrorDetail1Utf16`, `g_FatalErrorDetail2Utf16`, `g_FatalErrorDetail3Utf16`, `g_FatalErrorExitHandler`, `g_FatalErrorReportHandler`, `g_ErrorTextIoInitializationFailed`.
 
@@ -172,16 +172,16 @@ No file comment; function families: `FixedTransform_*` (12).
 
 **Functions** (11 public, 1 file-local):
 
-- [`FixedTransform_ComposeEulerAngles`](../../src/core/math/fixed_transform.cpp#L29) - Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and ...
-- [`FixedTransform_RotateVectorByEulerAngles`](../../src/core/math/fixed_transform.cpp#L53) - Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns the rotated vector (the original pushed the components z first).
-- [`FixedTransform_RotateScaledDirection`](../../src/core/math/fixed_transform.cpp#L78) - Wrapper around FixedTransform_RotateScaledDirectionCore; the original only repacked the result, so it returns the same rotated direction.
-- [`FixedTransform_ApplyDirection`](../../src/core/math/fixed_transform.cpp#L92) - Rotates a direction by the transform's 3x3 Q28 basis (output = basis * direction, each dot product summed in 64 bits and shifted right by 28); the translation is ignored, so the direction keeps its ...
-- [`FixedTransform_ApplyTransposeDirection`](../../src/core/math/fixed_transform.cpp#L124) - Multiplies a direction by the transpose of the transform's 3x3 Q28 basis (for a rotation this is the inverse rotation, i.e. world to local), summing in 64 bits and shifting right by 28; the ...
-- [`FixedTransform_InvertRigidQ28`](../../src/core/math/fixed_transform.cpp#L179) - Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit difference of products shifted right by 28), which is the inverse because a rotation has ...
-- [`FixedTransform_ExtractEulerAngles`](../../src/core/math/fixed_transform.cpp#L275) - Inverse of FixedTransform_BuildRotationBasis: recovers the angles from a rotation basis, elevation and azimuth from the third column and the roll from the upper 2x2 block.
-- [`FixedTransform_Compose`](../../src/core/math/fixed_transform.cpp#L308) - Concatenates two rigid transforms: output = outerTransform * innerTransform, i.e. a point is moved by innerTransform first and then by outerTransform.
-- [`FixedTransform_ApplyPoint`](../../src/core/math/fixed_transform.cpp#L383) - Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28 dot product summed in 64 bits and shifted back by 28, so the point keeps its own scale.
-- [`FixedTransform_BuildRotationBasis`](../../src/core/math/fixed_transform.cpp#L415) - Builds the Q28 rotation basis of an orientation given as roll, elevation and azimuth angle16s: the third column is the forward direction (elevation, azimuth), the rest follows from the roll about it.
+- [`FixedTransform_ComposeEulerAngles`](../../src/core/math/fixed_transform.cpp#L27) - Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and ...
+- [`FixedTransform_RotateVectorByEulerAngles`](../../src/core/math/fixed_transform.cpp#L51) - Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns the rotated vector (the original pushed the components z first).
+- [`FixedTransform_RotateScaledDirection`](../../src/core/math/fixed_transform.cpp#L76) - Wrapper around FixedTransform_RotateScaledDirectionCore; the original only repacked the result, so it returns the same rotated direction.
+- [`FixedTransform_ApplyDirection`](../../src/core/math/fixed_transform.cpp#L90) - Rotates a direction by the transform's 3x3 Q28 basis (output = basis * direction, each dot product summed in 64 bits and shifted right by 28); the translation is ignored, so the direction keeps its ...
+- [`FixedTransform_ApplyTransposeDirection`](../../src/core/math/fixed_transform.cpp#L122) - Multiplies a direction by the transpose of the transform's 3x3 Q28 basis (for a rotation this is the inverse rotation, i.e. world to local), summing in 64 bits and shifting right by 28; the ...
+- [`FixedTransform_InvertRigidQ28`](../../src/core/math/fixed_transform.cpp#L177) - Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit difference of products shifted right by 28), which is the inverse because a rotation has ...
+- [`FixedTransform_ExtractEulerAngles`](../../src/core/math/fixed_transform.cpp#L273) - Inverse of FixedTransform_BuildRotationBasis: recovers the angles from a rotation basis, elevation and azimuth from the third column and the roll from the upper 2x2 block.
+- [`FixedTransform_Compose`](../../src/core/math/fixed_transform.cpp#L306) - Concatenates two rigid transforms: output = outerTransform * innerTransform, i.e. a point is moved by innerTransform first and then by outerTransform.
+- [`FixedTransform_ApplyPoint`](../../src/core/math/fixed_transform.cpp#L381) - Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28 dot product summed in 64 bits and shifted back by 28, so the point keeps its own scale.
+- [`FixedTransform_BuildRotationBasis`](../../src/core/math/fixed_transform.cpp#L413) - Builds the Q28 rotation basis of an orientation given as roll, elevation and azimuth angle16s: the third column is the forward direction (elevation, azimuth), the rest follows from the roll about it.
 - 1 more: `FixedTransform_RotateScaledDirectionCore`
 
 **Data** (1 shared, 3 file-local): `g_ModelTransformOutput`.
@@ -201,16 +201,16 @@ No file comment; function families: `FixedMath_*` (13), `FixedTrig_*` (1).
 
 **Functions** (13 public, 1 file-local):
 
-- [`FixedMath_VectorToAnglesAndLength`](../../src/core/math/fixed_trig.cpp#L25) - Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane and the azimuth within that plane (masked to 16 bits); squares are summed in 64 bits so ...
-- [`FixedMath_Vector2AngleAndLength`](../../src/core/math/fixed_trig.cpp#L86) - Angle and length of a 2D vector: angle = atan2(component0, component1) as a 16-bit angle (65536 = full turn), length = floor(sqrt(component0^2 + component1^2)).
-- [`FixedMath_WriteDirectionQ28`](../../src/core/math/fixed_trig.cpp#L105) - Writes the Q28 unit direction for an elevation and an azimuth angle (16-bit turns, 65536 = full circle): x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el).
-- [`FixedMath_SinCosScaled`](../../src/core/math/fixed_trig.cpp#L131) - Returns cos(angle) * scale and sin(angle) * scale for a 16-bit angle (65536 = full turn), using the Q28 tables, so the results keep the scale's fixed-point format.
-- [`FixedTrig_ProjectPlanarPoint`](../../src/core/math/fixed_trig.cpp#L149) - Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) * distance and y = baseY + sin(angle) * distance (Q28 table products shifted right by 28).
-- [`FixedMath_VectorToAnglesVec3`](../../src/core/math/fixed_trig.cpp#L166) - Direction angles of a vector without its length: elevation = atan2(z, \|(x, y)\|) and azimuth = atan2(y, x) as 16-bit angles (the horizontal length is summed in 64 bits).
-- [`FixedMath_DirectionFromAnglesScaled`](../../src/core/math/fixed_trig.cpp#L193) - Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale: x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale.
-- [`FixedMath_WriteDirectionScaled`](../../src/core/math/fixed_trig.cpp#L249) - Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the output has the scale's fixed-point format.
-- [`FixedMath_VectorToAngles`](../../src/core/math/fixed_trig.cpp#L282) - Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): elevation atan2(z, sqrt(x*x + y*y)) and azimuth atan2(y, x).
-- [`FixedMath_Atan2Angle16`](../../src/core/math/fixed_trig.cpp#L305) - atan2(y, x) as an engine angle (1/65536 turns, not masked to 16 bits).
+- [`FixedMath_VectorToAnglesAndLength`](../../src/core/math/fixed_trig.cpp#L23) - Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane and the azimuth within that plane (masked to 16 bits); squares are summed in 64 bits so ...
+- [`FixedMath_Vector2AngleAndLength`](../../src/core/math/fixed_trig.cpp#L84) - Angle and length of a 2D vector: angle = atan2(component0, component1) as a 16-bit angle (65536 = full turn), length = floor(sqrt(component0^2 + component1^2)).
+- [`FixedMath_WriteDirectionQ28`](../../src/core/math/fixed_trig.cpp#L103) - Writes the Q28 unit direction for an elevation and an azimuth angle (16-bit turns, 65536 = full circle): x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el).
+- [`FixedMath_SinCosScaled`](../../src/core/math/fixed_trig.cpp#L129) - Returns cos(angle) * scale and sin(angle) * scale for a 16-bit angle (65536 = full turn), using the Q28 tables, so the results keep the scale's fixed-point format.
+- [`FixedTrig_ProjectPlanarPoint`](../../src/core/math/fixed_trig.cpp#L147) - Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) * distance and y = baseY + sin(angle) * distance (Q28 table products shifted right by 28).
+- [`FixedMath_VectorToAnglesVec3`](../../src/core/math/fixed_trig.cpp#L164) - Direction angles of a vector without its length: elevation = atan2(z, \|(x, y)\|) and azimuth = atan2(y, x) as 16-bit angles (the horizontal length is summed in 64 bits).
+- [`FixedMath_DirectionFromAnglesScaled`](../../src/core/math/fixed_trig.cpp#L191) - Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale: x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale.
+- [`FixedMath_WriteDirectionScaled`](../../src/core/math/fixed_trig.cpp#L247) - Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the output has the scale's fixed-point format.
+- [`FixedMath_VectorToAngles`](../../src/core/math/fixed_trig.cpp#L280) - Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): elevation atan2(z, sqrt(x*x + y*y)) and azimuth atan2(y, x).
+- [`FixedMath_Atan2Angle16`](../../src/core/math/fixed_trig.cpp#L303) - atan2(y, x) as an engine angle (1/65536 turns, not masked to 16 bits).
 - 3 more: `FixedMath_VectorToAnglesAndLengthVec3`, `FixedMath_DirectionFromAnglesQ28`, `FixedMath_BuildSinCosTables`
 
 **Data** (1 shared, 0 file-local): `g_FixedSineQ28`.
@@ -230,15 +230,15 @@ No file comment; function families: `FixedMath_*` (5), `FixedVec3_*` (4).
 
 **Functions** (9 public):
 
-- [`FixedMath_Length3`](../../src/core/math/fixed_vector.cpp#L17) - Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12 world coordinates cannot overflow, and the result has the same fixed-point scale as the ...
-- [`FixedVec3_NormalizeQ28`](../../src/core/math/fixed_vector.cpp#L31) - Writes input / \|input\| as a Q28 unit vector (output may alias input).
-- [`FixedVec3_DotQ12`](../../src/core/math/fixed_vector.cpp#L61) - Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12, so the result is Q12.
-- [`FixedVec3_DotQ28`](../../src/core/math/fixed_vector.cpp#L75) - Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or a direction) the result keeps the other vector's scale.
-- [`FixedVec3_CrossQ12`](../../src/core/math/fixed_vector.cpp#L90) - Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
-- [`FixedMath_LengthVec3`](../../src/core/math/fixed_vector.cpp#L118) - Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components cannot overflow.
-- [`FixedMath_Length2`](../../src/core/math/fixed_vector.cpp#L134) - Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12 components cannot overflow.
-- [`FixedMath_SqrtQ12Approx`](../../src/core/math/fixed_vector.cpp#L151) - Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an even amount so its top bit lands on bit 27 or 28, a cubic polynomial in the normalized value ...
-- [`FixedMath_UInt64Sqrt`](../../src/core/math/fixed_vector.cpp#L177) - Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
+- [`FixedMath_Length3`](../../src/core/math/fixed_vector.cpp#L15) - Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12 world coordinates cannot overflow, and the result has the same fixed-point scale as the ...
+- [`FixedVec3_NormalizeQ28`](../../src/core/math/fixed_vector.cpp#L29) - Writes input / \|input\| as a Q28 unit vector (output may alias input).
+- [`FixedVec3_DotQ12`](../../src/core/math/fixed_vector.cpp#L59) - Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12, so the result is Q12.
+- [`FixedVec3_DotQ28`](../../src/core/math/fixed_vector.cpp#L73) - Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or a direction) the result keeps the other vector's scale.
+- [`FixedVec3_CrossQ12`](../../src/core/math/fixed_vector.cpp#L88) - Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
+- [`FixedMath_LengthVec3`](../../src/core/math/fixed_vector.cpp#L116) - Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components cannot overflow.
+- [`FixedMath_Length2`](../../src/core/math/fixed_vector.cpp#L132) - Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12 components cannot overflow.
+- [`FixedMath_SqrtQ12Approx`](../../src/core/math/fixed_vector.cpp#L149) - Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an even amount so its top bit lands on bit 27 or 28, a cubic polynomial in the normalized value ...
+- [`FixedMath_UInt64Sqrt`](../../src/core/math/fixed_vector.cpp#L175) - Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
 
 **Called from** (21 files): [`gameplay/army/walker`](gameplay.md#file-gameplay-army-walker) (`ArmyArticulatedRuntime_InitializeLeftTerrainContact`, `ArmyArticulatedRuntime_InitializeRightTerrainContact` +8); [`graphics/render/model_draw`](graphics.md#file-graphics-render-model-draw) (`ModelRuntime_CullAndDrawNode`, `ModelRuntime_ProjectAndDrawNode` +1); [`graphics/render/model_lighting`](graphics.md#file-graphics-render-model-lighting) (`ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`, `ModelRender_ComputeVertexIntensityDefaultPath` +1); [`gameplay/army/placement`](gameplay.md#file-gameplay-army-placement) (`ArmyPlacementCandidate_TestModelAnchorDistance`, `ArmyPlacement_CanPlaceBuilding`); [`gameplay/army/weapons`](gameplay.md#file-gameplay-army-weapons) (`ArmyRuntime_ResolveShotAimPoint`, `ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate`); [`world/camera/camera`](world.md#file-world-camera-camera) (`WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface`, `WorldRuntime_SetCameraPositionKeepingTarget`); [`world/terrain/field_edit_commands`](world.md#file-world-terrain-field-edit-commands) (`FieldGrid_ProcessHorizontalSpan`, `FieldGrid_ProcessVerticalSpan`); [`world/terrain/field_raycast`](world.md#file-world-terrain-field-raycast) (`TerrainTriangle_IntersectRayCorner0Triangle`, `TerrainTriangle_IntersectRayCorner3Triangle`); [`core/math/fixed_trig`](#file-core-math-fixed-trig) (`FixedMath_Vector2AngleAndLength`); [`gameplay/ai/combat`](gameplay.md#file-gameplay-ai-combat) (`AiCombatTarget_EvaluateCandidateScore`); 11 more: [`gameplay/ai/placement`](gameplay.md#file-gameplay-ai-placement), [`gameplay/army/factory`](gameplay.md#file-gameplay-army-factory), [`gameplay/session/campaign_carryover`](gameplay.md#file-gameplay-session-campaign-carryover), [`graphics/render/model_submit`](graphics.md#file-graphics-render-model-submit), [`graphics/render/projection`](graphics.md#file-graphics-render-projection), [`graphics/render/shadow_texture`](graphics.md#file-graphics-render-shadow-texture), [`platform/debug/campaign`](platform.md#file-platform-debug-campaign), [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests), [`world/effects/lifecycle`](world.md#file-world-effects-lifecycle), [`world/model/hierarchy`](world.md#file-world-model-hierarchy), [`world/model/picking`](world.md#file-world-model-picking).
 
@@ -253,7 +253,7 @@ No file comment; function families: `FixedGeometry_*` (1).
 
 **Functions** (1 public):
 
-- [`FixedGeometry_SolveTriangleJointAngles`](../../src/core/math/geometry.cpp#L19) - Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns jointAngle0 = the angle between s2 and s1 and jointAngle1 = that angle plus the one between s2 ...
+- [`FixedGeometry_SolveTriangleJointAngles`](../../src/core/math/geometry.cpp#L17) - Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns jointAngle0 = the angle between s2 and s1 and jointAngle1 = that angle plus the one between s2 ...
 
 **Called from** (2 files): [`gameplay/army/walker`](gameplay.md#file-gameplay-army-walker) (`ArmyArticulatedRuntime_UpdateSuspensionHierarchy`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestFixedMath`).
 
@@ -268,12 +268,12 @@ No file comment; function families: `Random_*` (6).
 
 **Functions** (6 public):
 
-- [`Random_NextPrimary`](../../src/core/math/random.cpp#L22) - Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed twice and returns (first step &lt;&lt; 14) ^ (second step &gt;&gt; 2), mixing both steps so the weak low bits ...
-- [`Random_NextSecondary`](../../src/core/math/random.cpp#L37) - Secondary random stream (selected by Random_SelectSecondaryStream for sessions): the same two LCG steps and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream ...
-- [`Random_SetBothSeeds`](../../src/core/math/random.cpp#L53) - Sets the primary and the secondary seed to the same value without changing the active stream.
-- [`Random_GetSecondarySeed`](../../src/core/math/random.cpp#L64) - Returns the current secondary seed (without stepping it); the host sends it in the player snapshot packet so that joining machines can continue the same stream.
-- [`Random_SelectSecondaryStream`](../../src/core/math/random.cpp#L73) - Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed; used together with Random_SetBothSeeds when a session starts.
-- [`Random_SelectPrimaryStream`](../../src/core/math/random.cpp#L83) - Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
+- [`Random_NextPrimary`](../../src/core/math/random.cpp#L20) - Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed twice and returns (first step &lt;&lt; 14) ^ (second step &gt;&gt; 2), mixing both steps so the weak low bits ...
+- [`Random_NextSecondary`](../../src/core/math/random.cpp#L35) - Secondary random stream (selected by Random_SelectSecondaryStream for sessions): the same two LCG steps and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream ...
+- [`Random_SetBothSeeds`](../../src/core/math/random.cpp#L51) - Sets the primary and the secondary seed to the same value without changing the active stream.
+- [`Random_GetSecondarySeed`](../../src/core/math/random.cpp#L62) - Returns the current secondary seed (without stepping it); the host sends it in the player snapshot packet so that joining machines can continue the same stream.
+- [`Random_SelectSecondaryStream`](../../src/core/math/random.cpp#L71) - Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed; used together with Random_SetBothSeeds when a session starts.
+- [`Random_SelectPrimaryStream`](../../src/core/math/random.cpp#L81) - Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
 
 **Data** (1 shared, 0 file-local): `g_RandomGeneratorState`.
 
@@ -290,12 +290,12 @@ No file comment; function families: `CubicSpline_*` (6).
 
 **Functions** (6 public):
 
-- [`CubicSpline_SolveCoefficientSystem`](../../src/core/math/spline.cpp#L22) - Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs ...
-- [`CubicSpline_BuildNaturalCoefficientSystem`](../../src/core/math/spline.cpp#L67) - Builds the equation system of a piecewise cubic spline through one channel of the keyframes (times and values Q12, converted to float seconds/units): segment s has the unknowns a + b*t + c*t^2 + ...
-- [`CubicSpline_ForwardEliminateColumn`](../../src/core/math/spline.cpp#L205) - One LU-decomposition step of CubicSpline_SolveCoefficientSystem, in place on the 32x32 matrix M: M[row][column] = (M[row][column] - sum over k = 0..lastPriorIndex of M[row][k] * M[k][column]) / pivot.
-- [`CubicSpline_BackSubstituteRow`](../../src/core/math/spline.cpp#L237) - One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M: b[target] = (b[target] - sum over k = firstSolvedIndex..lastSolvedIndex of M[target][k] * ...
-- [`CubicSpline_EvaluateValueQ12`](../../src/core/math/spline.cpp#L261) - Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t + c*t^2 + d*t^3 are evaluated (Horner) at t = time / 4096 and the result is rounded back to Q12.
-- [`CubicSpline_EvaluateDerivativeQ12`](../../src/core/math/spline.cpp#L280) - First derivative b + 2c*t + 3d*t^2 of one spline segment at a Q12 time.
+- [`CubicSpline_SolveCoefficientSystem`](../../src/core/math/spline.cpp#L20) - Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs ...
+- [`CubicSpline_BuildNaturalCoefficientSystem`](../../src/core/math/spline.cpp#L65) - Builds the equation system of a piecewise cubic spline through one channel of the keyframes (times and values Q12, converted to float seconds/units): segment s has the unknowns a + b*t + c*t^2 + ...
+- [`CubicSpline_ForwardEliminateColumn`](../../src/core/math/spline.cpp#L203) - One LU-decomposition step of CubicSpline_SolveCoefficientSystem, in place on the 32x32 matrix M: M[row][column] = (M[row][column] - sum over k = 0..lastPriorIndex of M[row][k] * M[k][column]) / pivot.
+- [`CubicSpline_BackSubstituteRow`](../../src/core/math/spline.cpp#L235) - One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M: b[target] = (b[target] - sum over k = firstSolvedIndex..lastSolvedIndex of M[target][k] * ...
+- [`CubicSpline_EvaluateValueQ12`](../../src/core/math/spline.cpp#L259) - Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t + c*t^2 + d*t^3 are evaluated (Horner) at t = time / 4096 and the result is rounded back to Q12.
+- [`CubicSpline_EvaluateDerivativeQ12`](../../src/core/math/spline.cpp#L278) - First derivative b + 2c*t + 3d*t^2 of one spline segment at a Q12 time.
 
 **Data** (0 shared, 1 file-local): `g_Q12FloatScale4096`.
 
@@ -328,13 +328,13 @@ No file comment; function families: `ArenaHeap_*` (7).
 
 **Functions** (7 public):
 
-- [`ArenaHeap_Init`](../../src/core/memory/allocator.cpp#L32) - Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block.
-- [`ArenaHeap_Shutdown`](../../src/core/memory/allocator.cpp#L65) - Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
-- [`ArenaHeap_Alloc`](../../src/core/memory/allocator.cpp#L78) - The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32 bytes, splitting off the rest of the block as a new free block when it is large enough.
-- [`ArenaHeap_QueryFreeBytes`](../../src/core/memory/allocator.cpp#L138) - Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or ARENA_HEAP_CORRUPT when the block chain is corrupt.
-- [`ArenaHeap_Free`](../../src/core/memory/allocator.cpp#L163) - The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block, then merges a free preceding block with it.
-- [`ArenaHeap_AllocLargestFreeBlock`](../../src/core/memory/allocator.cpp#L209) - Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0 with its payload pointer in *outAllocation and its size in *outBlockSize, for callers that ...
-- [`ArenaHeap_ShrinkInPlace`](../../src/core/memory/allocator.cpp#L245) - Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block, merged with a free following block (g_MemoryApi.shrinkInPlace).
+- [`ArenaHeap_Init`](../../src/core/memory/allocator.cpp#L30) - Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block.
+- [`ArenaHeap_Shutdown`](../../src/core/memory/allocator.cpp#L63) - Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
+- [`ArenaHeap_Alloc`](../../src/core/memory/allocator.cpp#L76) - The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32 bytes, splitting off the rest of the block as a new free block when it is large enough.
+- [`ArenaHeap_QueryFreeBytes`](../../src/core/memory/allocator.cpp#L136) - Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or ARENA_HEAP_CORRUPT when the block chain is corrupt.
+- [`ArenaHeap_Free`](../../src/core/memory/allocator.cpp#L161) - The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block, then merges a free preceding block with it.
+- [`ArenaHeap_AllocLargestFreeBlock`](../../src/core/memory/allocator.cpp#L207) - Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0 with its payload pointer in *outAllocation and its size in *outBlockSize, for callers that ...
+- [`ArenaHeap_ShrinkInPlace`](../../src/core/memory/allocator.cpp#L243) - Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block, merged with a free following block (g_MemoryApi.shrinkInPlace).
 
 **Data** (1 shared, 2 file-local): `g_MemoryApi`.
 
@@ -351,11 +351,11 @@ No file comment; function families: `SpinLock_*` (4), `Runtime_*` (1).
 
 **Functions** (5 public):
 
-- [`SpinLock_Acquire`](../../src/core/memory/synchronization.cpp#L30) - Busy-waits until the lock is taken: atomically swaps -1 into it (acquire ordering) until the previous value was zero.
-- [`SpinLock_TryAcquireFlags`](../../src/core/memory/synchronization.cpp#L48) - Tries once to take the lock by atomically swapping -1 into it (acquire ordering).
-- [`SpinLock_Release`](../../src/core/memory/synchronization.cpp#L66) - Releases the lock with an atomic store of zero (release ordering); a null lock is ignored.
-- [`SpinLock_ReleaseAndInvoke`](../../src/core/memory/synchronization.cpp#L80) - Releases the lock (atomic release store of zero) and then calls the argument-less callback, if any, so deferred work can run once the lock is free.
-- [`Runtime_Shutdown`](../../src/core/memory/synchronization.cpp#L97) - Shuts the game down at the end of ProcessEntry: saves the settings, then closes the subsystems in roughly the reverse order of their initialisation, frees the memory arena last and drops the process ...
+- [`SpinLock_Acquire`](../../src/core/memory/synchronization.cpp#L28) - Busy-waits until the lock is taken: atomically swaps -1 into it (acquire ordering) until the previous value was zero.
+- [`SpinLock_TryAcquireFlags`](../../src/core/memory/synchronization.cpp#L46) - Tries once to take the lock by atomically swapping -1 into it (acquire ordering).
+- [`SpinLock_Release`](../../src/core/memory/synchronization.cpp#L64) - Releases the lock with an atomic store of zero (release ordering); a null lock is ignored.
+- [`SpinLock_ReleaseAndInvoke`](../../src/core/memory/synchronization.cpp#L78) - Releases the lock (atomic release store of zero) and then calls the argument-less callback, if any, so deferred work can run once the lock is free.
+- [`Runtime_Shutdown`](../../src/core/memory/synchronization.cpp#L95) - Shuts the game down at the end of ProcessEntry: saves the settings, then closes the subsystems in roughly the reverse order of their initialisation, frees the memory arena last and drops the process ...
 
 **Data** (4 shared, 0 file-local): `g_SpinLockAcquire`, `g_SpinLockTryAcquire`, `g_SpinLockRelease`, `g_SpinLockReleaseAndInvoke`.
 
@@ -390,12 +390,12 @@ open-thandor: the settings live in a readable thandor.ini instead of the origina
 
 - [`PersistentSettings_FormatIni`](../../src/core/settings/persistent.cpp#L278) - Writes the ini text of every key whose dword is in presentMask; returns the text length (no NUL counted).
 - [`PersistentSettings_ParseIni`](../../src/core/settings/persistent.cpp#L540) - Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set.
-- [`PersistentSettings_Flush`](../../src/core/settings/persistent.cpp#L681) - Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image ...
-- [`PersistentSettings_Load`](../../src/core/settings/persistent.cpp#L849)
-- [`PersistentSettings_Read`](../../src/core/settings/persistent.cpp#L859) - Returns the setting dword at settingsOffsetBytes, or defaultValue when it was not loaded (no settings file, no such key in thandor.ini, or beyond the end of a short thandor.dat).
-- [`PersistentSettings_GetRegionOrFallback`](../../src/core/settings/persistent.cpp#L873) - Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when the whole region was not loaded.
-- [`PersistentSettings_WriteBlock`](../../src/core/settings/persistent.cpp#L889) - Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it dirty, even when nothing changed.
-- [`PersistentSettings_Write`](../../src/core/settings/persistent.cpp#L917) - Stores one setting dword in the image and marks it dirty, but only when the value actually changes (it is saved with the next change either way).
+- [`PersistentSettings_Flush`](../../src/core/settings/persistent.cpp#L679) - Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image ...
+- [`PersistentSettings_Load`](../../src/core/settings/persistent.cpp#L847)
+- [`PersistentSettings_Read`](../../src/core/settings/persistent.cpp#L857) - Returns the setting dword at settingsOffsetBytes, or defaultValue when it was not loaded (no settings file, no such key in thandor.ini, or beyond the end of a short thandor.dat).
+- [`PersistentSettings_GetRegionOrFallback`](../../src/core/settings/persistent.cpp#L871) - Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when the whole region was not loaded.
+- [`PersistentSettings_WriteBlock`](../../src/core/settings/persistent.cpp#L887) - Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it dirty, even when nothing changed.
+- [`PersistentSettings_Write`](../../src/core/settings/persistent.cpp#L915) - Stores one setting dword in the image and marks it dirty, but only when the value actually changes (it is saved with the next change either way).
 
 **Data** (1 shared, 10 file-local): `g_LocaleCountryCodeOverride`.
 
@@ -428,11 +428,11 @@ No file comment; function families: `WidePath_*` (5).
 
 **Functions** (5 public):
 
-- [`WidePath_SetExtensionCode`](../../src/core/text/path.cpp#L25) - Replaces the extension of the final path component with the packed code (one character per byte, first character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none.
-- [`WidePath_CombineDirectoryAndLeaf`](../../include/thandor/core/text/path.h#L62) - Combines into a destination array; its size bounds the result (see WidePath_CombineDirectoryAndLeafBounded).
-- [`WidePath_SplitParentAndLeaf`](../../src/core/text/path.cpp#L74) - Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the file name, parentOut the directory without the trailing backslash.
-- [`WidePath_CombineDirectoryAndLeafBounded`](../../src/core/text/path.cpp#L133) - Builds "directory\leaf" in destination: copies the directory without its terminator, adds a backslash unless it already ends in one (nothing for an empty directory), then copies the leaf with its ...
-- [`WidePath_ParseTrailingNumberBeforeExtension`](../../src/core/text/path.cpp#L227) - Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12): reads digits backwards from the fifth code unit before the terminator until a non-digit.
+- [`WidePath_SetExtensionCode`](../../src/core/text/path.cpp#L23) - Replaces the extension of the final path component with the packed code (one character per byte, first character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none.
+- [`WidePath_CombineDirectoryAndLeaf`](../../include/thandor/core/text/path.h#L59) - Combines into a destination array; its size bounds the result (see WidePath_CombineDirectoryAndLeafBounded).
+- [`WidePath_SplitParentAndLeaf`](../../src/core/text/path.cpp#L72) - Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the file name, parentOut the directory without the trailing backslash.
+- [`WidePath_CombineDirectoryAndLeafBounded`](../../src/core/text/path.cpp#L131) - Builds "directory\leaf" in destination: copies the directory without its terminator, adds a backslash unless it already ends in one (nothing for an empty directory), then copies the leaf with its ...
+- [`WidePath_ParseTrailingNumberBeforeExtension`](../../src/core/text/path.cpp#L225) - Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12): reads digits backwards from the fifth code unit before the terminator until a non-digit.
 
 **Called from** (27 files): [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new) (`NewLevel_LoadAssetList`, `NewLevel_LoadSpatialSounds` +1); [`gameplay/session/scenario_load`](gameplay.md#file-gameplay-session-scenario-load) (`FrontendScenarioSession_LoadFieldGridOfLevel`, `FrontendScenarioSession_LoadOrRequestCampaignBundle` +1); [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (`FileSystem_Init`, `FileSystem_LoadWholeFileNearExecutable` +1); [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page) (`InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog`, `InGameSaveGamePage_RebuildCatalog` +1); [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_LoadEntryIntoBuffer`, `Package_MountIntoSlot`); [`core/settings/persistent`](#file-core-settings-persistent) (`PersistentSettings_LoadImage`, `PersistentSettings_LoadIni`); [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_OpenNewPackage`, `InGameSaveGame_WritePackageHeader`); [`graphics/terrain/terrain_resources`](graphics.md#file-graphics-terrain-terrain-resources) (`TerrainVisualResources_LoadMaterialTextureSets`, `TerrainVisualResources_LoadTablesAndPalettes`); [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer) (`FrontendScenarioTransfer_ProcessReceivedCampaignBundle`, `FrontendScenarioTransfer_SetFieldGridPathOfLevel`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_ReadCdPathFromRegistry`, `CoreAssets_UseLocalMovieFolder`); 17 more: [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`assets/effect/catalog`](assets.md#file-assets-effect-catalog), [`assets/model/definitions`](assets.md#file-assets-model-definitions), [`assets/rom/runtime`](assets.md#file-assets-rom-runtime), [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog), [`assets/shot/catalog`](assets.md#file-assets-shot-catalog), [`gameplay/army/pool`](gameplay.md#file-gameplay-army-pool), [`gameplay/session/level`](gameplay.md#file-gameplay-session-level), [`gameplay/session/level_saved`](gameplay.md#file-gameplay-session-level-saved), [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests), [`ui/core/pcx_preview`](ui.md#file-ui-core-pcx-preview), [`ui/frontend/mission_briefing`](ui.md#file-ui-frontend-mission-briefing), [`world/effects/pool`](world.md#file-world-effects-pool), [`world/shots/pool`](world.md#file-world-shots-pool).
 
@@ -449,11 +449,11 @@ No file comment; function families: `WideNumber_*` (1), `Utf16String_*` (1), `Te
 
 **Functions** (5 public):
 
-- [`WideNumber_FormatUtf16`](../../src/core/text/string.cpp#L38) - Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the length written in bytes (without the NUL that WIDE_FORMAT_WRITE_TERMINATOR adds).
-- [`Utf16String_CompareAsciiCaseInsensitiveFlags`](../../src/core/text/string.cpp#L166) - Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater.
-- [`Text_CopyNarrowToUtf16`](../../src/core/text/string.cpp#L205) - Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes bytes.
-- [`Utf16_CopyAndReturnByteLength`](../../src/core/text/string.cpp#L242) - Copies a NUL-terminated UTF-16 string including its terminator and returns its length in bytes, without the terminator.
-- [`WideText_CopyCodeUnits`](../../src/core/text/string.cpp#L264) - Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
+- [`WideNumber_FormatUtf16`](../../src/core/text/string.cpp#L36) - Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the length written in bytes (without the NUL that WIDE_FORMAT_WRITE_TERMINATOR adds).
+- [`Utf16String_CompareAsciiCaseInsensitiveFlags`](../../src/core/text/string.cpp#L164) - Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater.
+- [`Text_CopyNarrowToUtf16`](../../src/core/text/string.cpp#L203) - Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes bytes.
+- [`Utf16_CopyAndReturnByteLength`](../../src/core/text/string.cpp#L240) - Copies a NUL-terminated UTF-16 string including its terminator and returns its length in bytes, without the terminator.
+- [`WideText_CopyCodeUnits`](../../src/core/text/string.cpp#L262) - Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
 
 **Data** (1 shared, 1 file-local): `g_WideNumberFormatUtf16`.
 

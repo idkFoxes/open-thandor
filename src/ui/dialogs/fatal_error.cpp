@@ -47,8 +47,6 @@ static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             0x0000000C, 0x00000001, 0x00000100},
 };
 
-/* Implementation ownership: ui/dialogs/fatal_error. */
-
 /* method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).

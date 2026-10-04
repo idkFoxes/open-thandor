@@ -43,8 +43,6 @@ static AiCommandGenerationRightShiftBits g_AiCombatTargetSelectedCommandGenerati
 
 static AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
 
-/* Implementation ownership: gameplay/ai/combat. */
-
 /* Source class count AiCombatTarget_SelectBestCandidate reports for a zero class counter sum, in place of the
    original's positive stack leftover (see the quirk there). */
 #define AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER 1

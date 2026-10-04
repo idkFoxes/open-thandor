@@ -8,8 +8,6 @@
 #include <thandor/world/shots/ballistics.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/shots/ballistics. */
-
 /* Computes the heading and elevation (Angle16) at which a shot of this definition must leave launchPoint to reach
    targetPoint. Ballistic shots solve the projectile equation (gravity = ballisticDivisorQ12) and take the high arc,
    the low arc only when the height difference is below 1.0; fixed-range shots always go straight up (0, 0x4000);

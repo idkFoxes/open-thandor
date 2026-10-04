@@ -23,8 +23,6 @@ short *g_CosineDerivedLookupAllocation = nullptr;
 
 short *g_CosineDerivedLookupSecondTable = nullptr;
 
-/* Implementation ownership: audio/codec/sam. */
-
 /* Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256
    coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping 256-tap dot
    product x32, doubled with saturation), written as 256 mono 16-bit samples (0x200 bytes). Nothing in the

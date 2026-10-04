@@ -13,8 +13,6 @@
 
 RandomGeneratorState g_RandomGeneratorState = {.next = THANDOR_SLOT(Random_NextPrimary), .primarySeed = 0x198F};
 
-/* Implementation ownership: core/math/random. */
-
 /* Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed
    twice and returns (first step << 14) ^ (second step >> 2), mixing both steps so the weak low bits of
    the LCG do not show up directly.

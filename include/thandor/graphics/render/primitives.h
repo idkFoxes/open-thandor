@@ -13,8 +13,6 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/primitives. */
-
 /* DepthInterval_BuildBinMask: world coordinates (Q12) are hashed into 32 wrapping bins of 1 << 14 units
    (4.0 world units) per axis */
 #define SPATIAL_BIN_SHIFT 14
@@ -46,7 +44,6 @@
 #define GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE 0xb0000000
 #define GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS 0x30000000
 #define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
-/* Functions are grouped by semantic ownership. */
 
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 

@@ -15,8 +15,6 @@
    FixedMath_BuildSinCosTables */
 int32_t g_FixedSineQ28[98304] = {0};
 
-/* Implementation ownership: core/math/fixed_trig. */
-
 /* Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane
    and the azimuth within that plane (masked to 16 bits); squares are summed in 64 bits so Q12 components
    cannot overflow.

@@ -303,8 +303,6 @@ const uint32_t g_UiTransferRoundKeys[16] = {
     /*  8 */ 0xF1E2D3C, 0x4B5A6978, 0xC3D2E1F0, 0x8796A5B4, 0x54686F6D, 0x61732047, 0x6572656B, 0x65212121,
 };
 
-/* Implementation ownership: network/protocol/cipher. */
-
 /* Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
    previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the eight
    nibble substitution tables g_UiTransferEncryptSboxes. UiTransfer_DecryptPacketBlocks is the

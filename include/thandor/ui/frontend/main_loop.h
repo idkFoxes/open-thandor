@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/main_loop. */
-
 /* Bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags: per-player progress through the
    network menu handshake, set locally or from the peer's packets (ui/frontend/player, assets/scenario/catalog). */
 #define FRONTEND_PLAYER_STATE_SCENARIO_CATALOG 0x01 /* scenario catalogue exchanged */
@@ -24,8 +22,6 @@
 /* set by FrontendScenarioSession_LoadOrRequestLevelAsset for players whose catalog level mask has the selected
    level, i.e. who can load it from their own disk instead of receiving it */
 #define FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY 0x10
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
 

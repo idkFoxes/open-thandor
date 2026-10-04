@@ -13,15 +13,11 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/math/fixed_trig. */
-
 /* FixedMath_Atan2Angle16: odd polynomial atan(t) ~ t * (C1 - t^2 * (C3 - t^2 * C5)) in angle16 units, each
    step a FIXED_MUL_HIGH; C1 = 20861 = 2 * 65536 / (2 * pi) */
 #define FIXED_ATAN_ANGLE16_C1 0x517d
 #define FIXED_ATAN_ANGLE16_C3 0x6ca6
 #define FIXED_ATAN_ANGLE16_C5 0x104c2
-
-/* Functions are grouped by semantic ownership. */
 
 FixedLengthAzimuthElevation
 FixedMath_VectorToAnglesAndLength(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);

@@ -41,8 +41,6 @@ uint8_t *g_EffectRuntimeRebaseBaseMinusOne = nullptr;
 
 uint8_t *g_RuntimeObjectRebaseBaseMinusOne = nullptr;
 
-/* Implementation ownership: gameplay/session/savegame. */
-
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
    Returns true when the package is open in *packageHandle. */
 static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)

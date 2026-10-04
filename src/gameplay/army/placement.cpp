@@ -13,8 +13,6 @@
 
 ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;
 
-/* Implementation ownership: gameplay/army/placement. */
-
 /* Placement test for models with a second footprint: runs the common candidate test
    (ArmyPlacement_CanPlaceBuilding), then rotates the model's (1,5) anchor point by the
    placement heading and requires ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of free room there, both from other

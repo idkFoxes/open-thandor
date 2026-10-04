@@ -11,8 +11,6 @@
 #include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: movie/runtime/flm_decoder. */
-
 /* FLM frame tokens (low 5 bits of the next stream dword, Movie_DecodeFrame4x4Delta / Movie_EncodeFrame4x4*):
    0..24 start an 8-byte colour block with that base luma; the skip tokens keep blocks of the previous frame,
    the count (minus its bias) sits in the bits above the token */
@@ -36,8 +34,6 @@
 #define MOVIE_COLOR_CHROMA_MASK 0x7fe0
 /* Bit 31 of a colour block's second dword: every luma step counts twice (4-bit levels 0..15 halved) */
 #define MOVIE_BLOCK_DOUBLE_STEPS 0x80000000
-
-/* Functions are grouped by semantic ownership. */
 
 /* Decodes one frame from encodedFrame, reading nothing at or after encodedEnd (see flm_decoder.cpp). */
 uint32_t Movie_DecodeFrame4x4Delta

@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/network/backend/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct FrontendPacket50001SessionAdvertisement FrontendPacket50001SessionAdvertisement, *PFrontendPacket50001SessionAdvertisement;
 typedef struct UiTransferEndpointDescriptor UiTransferEndpointDescriptor, *PUiTransferEndpointDescriptor;
 typedef struct UiTransferPacketHeader UiTransferPacketHeader, *PUiTransferPacketHeader;

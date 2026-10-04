@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/controls/container. */
-
 /* Shows page pageIndex of a page stack (tabbed dialog pages): the visible page is the stack's only child
    (firstChild), so switching replaces that link, moving the keyboard focus out of the old page and into the
    new one, and redraws. Out-of-range indices and the already shown page are ignored.

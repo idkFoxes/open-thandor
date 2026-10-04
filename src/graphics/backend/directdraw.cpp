@@ -25,8 +25,6 @@ GraphicsAdapterRecord *g_GraphicsAdapters = nullptr;
 
 uint32_t g_GraphicsAdapterCount = 0;
 
-/* Implementation ownership: graphics/backend/directdraw. */
-
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
    (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true
    when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/dialogs/display_settings.cpp) to offer only

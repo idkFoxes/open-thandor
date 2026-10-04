@@ -12,8 +12,6 @@
 
 UiImageControl * g_UiImageControlHoverTarget = nullptr;
 
-/* Implementation ownership: ui/controls/image. */
-
 /* layout of g_UiImageControlVtable (image toggles of the in-game resource panel): lays out the children
    relative to the parent's rectangle instead of the control's own by swapping the parent's edges in for
    the call; afterwards the own rectangle is restored and its size stored as layoutWidth/layoutHeight.

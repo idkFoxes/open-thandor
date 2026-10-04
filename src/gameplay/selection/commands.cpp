@@ -13,8 +13,6 @@
 /* indexed by player runtime id (0..254) */
 SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256] = {};
 
-/* Implementation ownership: gameplay/selection/commands. */
-
 /* In-game command handler (code 0x8F0, key A): replaces the player's selection with every world model of
    definition class 0x16 that the player owns, then rebuilds the selection panels when the player is the local
    one.

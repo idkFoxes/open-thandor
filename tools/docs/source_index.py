@@ -305,9 +305,17 @@ class SourceFile:
             if self.text[line_start:start].strip():
                 continue  # trailing comment of a code line
             after = self.text[end:end + 400]
-            # attached comments are followed directly (no blank line) by code that is not an #include
+            # attached comments are followed directly (no blank line) by code or a directive that is not an
+            # #include; a comment followed after a blank line by a function belongs to that function
             m = re.match(r"[ \t]*\r?\n([ \t]*\r?\n)?\s*(\S.*)?", after)
             if m and m.group(1) is None and m.group(2) and not m.group(2).startswith(("#", "/*", "//")):
+                continue
+            if m and m.group(2) and not m.group(2).startswith(("#", "/*", "//", "typedef", "struct", "enum",
+                                                                 "union", "class")) \
+                    and "(" in re.split(r"[;{=]", after[m.start(2):], maxsplit=1)[0]:
+                continue
+            if m and m.group(1) is None and m.group(2) and m.group(2).startswith("#") \
+                    and not m.group(2).startswith("#include"):
                 continue
             if len(text) < 30:
                 continue

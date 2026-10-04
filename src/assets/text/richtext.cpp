@@ -15,8 +15,6 @@ uint32_t g_RichTextRuntimeBufferUsedWords = 0;
 
 uint8_t *g_FontRuntimeBuffer = nullptr;
 
-/* Implementation ownership: assets/text/richtext. */
-
 /* Walks one command stream (without following nested streams) and points every nested-stream command
    (0x18/0x19) whose selector matches at replacementPayload, so a text can have its placeholders bound to
    concrete sub-streams at run time.

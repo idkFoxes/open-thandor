@@ -33,8 +33,6 @@ enum {
   TECHNOLOGY_COST_TEXT_XENITE = RICHTEXT_RECORD_UNITS_LITERAL_COLOR
 };
 
-/* Implementation ownership: ui/ingame/technology. */
-
 /* Handler of the seven technology area tabs, actions INGAME_ACTION_TECHNOLOGY_AREA_TAB1..7 (0x1014..0x101A,
    slots 20..26 of g_InGameUiActionHandlersPage10): a tab that is now selected deselects the other six, then the
    technology window is rebuilt for the chosen area (or the general text when the tab was deselected).

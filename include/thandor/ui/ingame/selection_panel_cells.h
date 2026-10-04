@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/selection_panel_cells. */
-
 /* Selection/info panel layout (g_SelectionPanelData, loaded from select.dat or info.dat by
    SelectionInfoPanel_InitResources): a dword header followed by 16-byte cell records. The offsets below are
    relative to g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE. */
@@ -41,8 +39,6 @@
 #define SELECTION_PANEL_CELL_HIERARCHY_METER 0x12   /* top left: active/total hierarchy metric */
 #define SELECTION_PANEL_CELL_TOP_BAR 0x16
 #define SELECTION_PANEL_CELL_BOTTOM_BAR 0x19        /* hierarchy scale ratio */
-
-/* Functions are grouped by semantic ownership. */
 
 SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

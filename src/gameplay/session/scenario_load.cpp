@@ -25,8 +25,6 @@ FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
 uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
 
-/* Implementation ownership: gameplay/session/scenario_load. */
-
 /* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
    peer through the frontend command queue.

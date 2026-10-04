@@ -10,8 +10,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/class_dispatch. */
-
 /* Army entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table): re-registers the owning army's terrain occupancy flags and refreshes the state tint of the model.
 */

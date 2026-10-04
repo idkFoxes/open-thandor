@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/assets/scenario/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct HINSTANCE__ HINSTANCE__, *PHINSTANCE__;
 typedef struct LevelArchivePathTemplate18 LevelArchivePathTemplate18, *PLevelArchivePathTemplate18;
 typedef struct PatchArchivePathTemplate18 PatchArchivePathTemplate18, *PPatchArchivePathTemplate18;

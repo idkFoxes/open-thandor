@@ -10,10 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/end_movie. */
-
-/* Functions are grouped by semantic ownership. */
-
 void Frontend_PlaySelectedEndMovie();
 
 extern uint32_t g_EndMoviePendingTicks;

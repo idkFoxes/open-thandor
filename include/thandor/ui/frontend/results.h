@@ -13,8 +13,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/results. */
-
 /* Text resource ids of the results table (FrontendResultsTable_Draw*Column): column headers, and the template
    the numeric columns patch their value into (selector 0). The faction-field columns take their header
    (0x21B6..0x21BF) and value template (0x21C1..0x21C3) from FrontendResultsTable_DrawColumnSequenceByType. */
@@ -55,7 +53,6 @@
    dwords */
 #define FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(highUnit, lowUnit) \
           (((uint8_t)(lowUnit) & FACTION_COLOUR_TEXT_DIGIT_MASK) << 24 | (uint32_t)(uint8_t)(highUnit) << 28)
-/* Functions are grouped by semantic ownership. */
 
 void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,int clipTop,int clipLeft,
           FrontendResultsColumnSequenceControl *control);

@@ -13,8 +13,6 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct MovieRuntime MovieRuntime, *PMovieRuntime;
 typedef struct MovieFileHeader MovieFileHeader, *PMovieFileHeader;
 typedef struct FrameProviderResult FrameProviderResult, *PFrameProviderResult;

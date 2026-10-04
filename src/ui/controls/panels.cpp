@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/controls/panels. */
-
 /* Draws an image panel (drawClipped slot of g_UiImagePanelControlVtable): its texture aligned in the layout
    box by panelFlags (centre/right/bottom), optionally over a drop shadow, or stretched over the whole box,
    clipped to the panel; then the children. A panel without a texture or a suppressed one draws nothing, not

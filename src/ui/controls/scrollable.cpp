@@ -17,8 +17,6 @@ static const int32_t g_UiScrollWheelDefaultStep = 14;
 /* int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control. */
 static const int32_t g_UiScrollWheelListStep = 15;
 
-/* Implementation ownership: ui/controls/scrollable. */
-
 /* Left-button press on a scroll frame (g_UiScrollableControlVtable nonRightPress): finds the scrollbar part
    under the pointer and starts that interaction. An arrow is held (auto-repeat in
    UiScrollableControl_TickAutoScroll), a thumb is grabbed for dragging, a track click pages by half a view

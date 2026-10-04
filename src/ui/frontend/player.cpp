@@ -25,8 +25,6 @@ static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {0};
 
 static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {0};
 
-/* Implementation ownership: ui/frontend/player. */
-
 /* Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:
    when the typed line is valid, converts it to 0x30 narrow bytes and sends it to every player as
    FRONTEND_COMMAND_CHAT_BEGIN, four FRONTEND_COMMAND_CHAT_APPEND (12 bytes each) and

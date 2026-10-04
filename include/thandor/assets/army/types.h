@@ -13,8 +13,6 @@
 #include <thandor/core/types.h>
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct ArmyAssetRecordPrefix ArmyAssetRecordPrefix, *PArmyAssetRecordPrefix;
 typedef struct ArmyAssetRecord ArmyAssetRecord, *PArmyAssetRecord;
 typedef struct ArmyAssetHeader ArmyAssetHeader, *PArmyAssetHeader;

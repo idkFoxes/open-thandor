@@ -16,10 +16,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/weapons. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyRuntime_SetNonzeroActionVector
           (Q12 actionVector0,Q12 actionVector2,Q12 actionVector1,ArmyRuntimeSlot *armyRuntime);
 

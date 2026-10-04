@@ -16,8 +16,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/player. */
-
 /* Selection groups (keys 1..8): each faction record holds 8 groups of 32 army pointers (runtimeGroupMembers8x32),
    a player's selection holds 32 entries. transferModeFlags of
    FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: */
@@ -45,7 +43,6 @@
 /* The player record whose playerName field name points at (loops that walk the records by their names). */
 #define FRONTEND_PLAYER_RECORD_OF_NAME(name) \
   ((FrontendPlayerRuntimeRecord *)((uint8_t *)(name) - offsetof(FrontendPlayerRuntimeRecord,playerName)))
-/* Functions are grouped by semantic ownership. */
 
 void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl);
 

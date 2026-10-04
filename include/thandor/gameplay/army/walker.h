@@ -14,8 +14,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/walker. */
-
 /* ArmyRuntime_UpdateMovementAndWaypoints: the route end (fallbackPosition) counts as reached within
    +-0x40 exclusive, the final target (movementTarget*) within +-1.0 (Q12) inclusive on both axes */
 #define ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 0x40
@@ -55,8 +53,6 @@
 /* angle16 difference * this >> 16 sign-extends it to the shortest signed turn (-0x8000..0x7fff); the
    multiplication form is kept because a shift compiles differently */
 #define ARMY_ANGLE16_SIGN_EXTEND_SCALE 0x10000
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateArticulatedMovement (WorldRuntimeContext *worldRuntime, ModelRuntimeArticulatedMovementDefinitionView *modelRuntime);
 

@@ -159,8 +159,6 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
         /* 90 */ UI_SLOT(FrontendDisplaySettingsAction_SelectDisplayModeKind)
     }};
 
-/* Implementation ownership: ui/frontend/page_actions. */
-
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of
    the in-game variant of the mission briefing: does nothing.
 */

@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/army_stock. */
-
 /* g_UiCommandRuntimeFlags bits of the world view overlays (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
    no writer with a constant mask, so they can only come from command 0x310 */
 #define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS 0x8000 /* skips every selection overlay of the world view */
@@ -28,8 +26,6 @@
 #define ARMY_STOCK_MAX_COLUMNS 4
 #define INGAME_CURSOR_FRAME_ARMY_STOCK 10 /* pointer over an army stock slot */
 #define INGAME_CURSOR_FRAME_ARMY_STOCK_SELL 12 /* the same with Ctrl held: a click sells the army */
-
-/* Functions are grouped by semantic ownership. */
 
 GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control);

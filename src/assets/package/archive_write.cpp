@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: assets/package/archive_write. */
-
 /* Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
    archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry header and
    its payload are appended at the end of the file. compressionMethod indexes g_PckEncoderTable, except
