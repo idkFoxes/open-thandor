@@ -126,9 +126,10 @@ Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t
    without a terminator in its first WIDE_PATH_MAX_CODE_UNITS units writes nothing; such a leaf leaves the
    directory part unterminated. The destination may be the directory itself (appending in place).
    The original does not check the destination size (it writes up to 2 * 256 units); bounded here because
-   ui/controls/tree_list.cpp combines nested directory labels into 256-unit buffers: a result that does not
-   fit in destinationCapacity code units is cut off and terminated (logged once). Callers go through the
-   WidePath_CombineDirectoryAndLeaf template (path.h), which passes the destination array's size.
+   the original tree-list control (since removed) combined nested directory labels into 256-unit buffers:
+   a result that does not fit in destinationCapacity code units is cut off and terminated (logged once).
+   Callers go through the WidePath_CombineDirectoryAndLeaf template (path.h), which passes the
+   destination array's size.
 */
 void WidePath_CombineDirectoryAndLeafBounded
           (uint16_t *destination,size_t destinationCapacity,uint16_t *leaf,uint16_t *directory)
