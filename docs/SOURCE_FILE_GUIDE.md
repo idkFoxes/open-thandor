@@ -138,7 +138,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 
 Module header: [`error.h`](../include/thandor/core/error.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-core-error-runtime) · [full](../CHANGELOG_FULL.md#module-core-error-runtime)
 
-- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `FatalError_Exit`, `ErrorSystem_Init`
+- [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `ErrorSystem_Init`, `FatalError_Exit`, `FatalError_ShowAndExit`
 - [`types.h`](source_guide/core.md#file-core-error-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-math"></a>
