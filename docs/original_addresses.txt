@@ -1641,7 +1641,7 @@
 0x0051DA60  function  ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction          src/gameplay/technology/runtime.cpp
 0x0051DB00  function  ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology           src/gameplay/technology/runtime.cpp
 0x0051DB80  function  ModelRuntimeHierarchy_ApplyFactionTechnologyVariants              src/gameplay/army/model_rules.cpp
-0x0051DBA0  function  ArmyRuntime_TestWorldPointAllowedDefault                          src/gameplay/army/aircraft.cpp
+0x0051DBA0  function  ArmyRuntime_TestWorldPointAllowedDefault                          (removed, unused)
 0x0051DBC0  data      g_EffectTextureSet                                                src/world/effects/pool.cpp
 0x0051DBC4  data      g_EffectPalette                                                   src/world/effects/pool.cpp
 0x0051DBC8  data      g_EffectRuntimeSlots                                              src/world/effects/pool.cpp

@@ -54,6 +54,4 @@ void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRun
 
 void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode (WorldRuntimeContext *worldRuntime, ModelRuntimeLinkedChildSpawnAndBuildView *modelRuntime);
 
-Bool8 ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12);
-
 #endif /* THANDOR_GAMEPLAY_ARMY_AIRCRAFT_H */
