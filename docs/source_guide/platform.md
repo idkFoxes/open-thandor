@@ -43,7 +43,7 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 
 **Data** (1 shared, 6 file-local): `g_ThandorFrameHeartbeat`.
 
-**Called from** (29 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +10); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +2); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_UseLocalMovieFolder`, `Game_Run` +1); [`platform/debug/autoshot`](#file-platform-debug-autoshot) (`DebugAutoShot_Save`, `DebugAutoShot_SaveNow` +1); [`platform/debug/level_script`](#file-platform-debug-level-script) (`DebugHook_LevelScriptAfterEvaluation`, `DebugHook_LevelScriptBeforeEvaluation` +1); [`platform/debug/movie_player`](#file-platform-debug-movie-player) (`DebugMovie_ExportOne`, `DebugMovie_PlayOne` +1); [`platform/debug/test_aids`](#file-platform-debug-test-aids) (`Thandor_TestAidLogDatagram`, `Thandor_TestAidNetworkBindPort` +1); 19 more: [`assets/text/resources`](assets.md#file-assets-text-resources), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`assets/package/runtime`](assets.md#file-assets-package-runtime), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/ptr32`](core.md#file-core-ptr32), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/commands`](network.md#file-network-protocol-commands), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands).
+**Called from** (31 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +11); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +2); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_UseLocalMovieFolder`, `Game_Run` +1); [`platform/debug/autoshot`](#file-platform-debug-autoshot) (`DebugAutoShot_Save`, `DebugAutoShot_SaveNow` +1); [`platform/debug/level_script`](#file-platform-debug-level-script) (`DebugHook_LevelScriptAfterEvaluation`, `DebugHook_LevelScriptBeforeEvaluation` +1); [`platform/debug/movie_player`](#file-platform-debug-movie-player) (`DebugMovie_ExportOne`, `DebugMovie_PlayOne` +1); [`platform/debug/test_aids`](#file-platform-debug-test-aids) (`Thandor_TestAidLogDatagram`, `Thandor_TestAidNetworkBindPort` +1); 21 more: [`assets/text/resources`](assets.md#file-assets-text-resources), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`assets/package/runtime`](assets.md#file-assets-package-runtime), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/ptr32`](core.md#file-core-ptr32), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/commands`](network.md#file-network-protocol-commands), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands).
 
 **Includes:** `windows.h`, `dbghelp.h`, `stdarg.h`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/core/ptr32.h`.
 
@@ -256,7 +256,7 @@ Scripted input (test aid). Reads OPEN_THANDOR_SCRIPT=&lt;file&gt; and replays it
 
 **Functions** (1 public, 1 file-local):
 
-- [`DebugScript_Tick`](../../src/platform/debug/script.cpp#L65)
+- [`DebugScript_Tick`](../../src/platform/debug/script.cpp#L67)
 
 **Data** (2 shared, 0 file-local): `g_TestAidInGameFrames`, `g_TestAidSessionCount`.
 
@@ -408,7 +408,7 @@ The types of the module (structs, unions, enums and scalar typedefs in the origi
 <a id="module-platform-sdl3"></a>
 ### `platform/sdl3`
 
-Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`gpu_shader_fragment`](#file-platform-sdl3-gpu-shader-fragment), [`gpu_shader_fragment_alpha_test`](#file-platform-sdl3-gpu-shader-fragment-alpha-test), [`gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv), [`gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv), [`gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex), [`gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video)
+Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`gpu_shader_fragment`](#file-platform-sdl3-gpu-shader-fragment), [`gpu_shader_fragment_alpha_test`](#file-platform-sdl3-gpu-shader-fragment-alpha-test), [`gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv), [`gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv), [`gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex), [`gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video), [`window_icon`](#file-platform-sdl3-window-icon)
 
 <a id="file-platform-sdl3-audio"></a>
 #### `audio.cpp`
@@ -555,22 +555,22 @@ SDL3 backend: the main window and the event pump (g_Win32PumpMessages); video.cp
 
 **Functions** (8 public, 2 file-local):
 
-- [`MainWindow`](../../src/platform/sdl3/platform.cpp#L52)
-- [`Windowed`](../../src/platform/sdl3/platform.cpp#L57)
-- [`VulkanWindow`](../../src/platform/sdl3/platform.cpp#L62)
-- [`DestroyMainWindow`](../../src/platform/sdl3/platform.cpp#L67)
-- [`SdlPlatform_CreateMainWindow`](../../src/platform/sdl3/platform.cpp#L77)
-- [`SdlPlatform_InstallTimersAndPump`](../../src/platform/sdl3/platform.cpp#L119)
-- [`SdlPlatform_PumpEvents`](../../src/platform/sdl3/platform.cpp#L126)
-- [`SdlPlatform_Quit`](../../src/platform/sdl3/platform.cpp#L172)
+- [`MainWindow`](../../src/platform/sdl3/platform.cpp#L53)
+- [`Windowed`](../../src/platform/sdl3/platform.cpp#L58)
+- [`VulkanWindow`](../../src/platform/sdl3/platform.cpp#L63)
+- [`DestroyMainWindow`](../../src/platform/sdl3/platform.cpp#L68)
+- [`SdlPlatform_CreateMainWindow`](../../src/platform/sdl3/platform.cpp#L78)
+- [`SdlPlatform_InstallTimersAndPump`](../../src/platform/sdl3/platform.cpp#L122)
+- [`SdlPlatform_PumpEvents`](../../src/platform/sdl3/platform.cpp#L129)
+- [`SdlPlatform_Quit`](../../src/platform/sdl3/platform.cpp#L175)
 
 **Data** (0 shared, 3 file-local): `s_window`, `s_windowed`, `s_vulkanWindow`.
 
 **Called from** (3 files): [`platform/sdl3/video`](#file-platform-sdl3-video) (`AbsoluteMouse`, `ApplyDisplayModeKind` +9); [`platform/sdl3/input`](#file-platform-sdl3-input) (`SdlInput_SetPosition`, `SdlInput_Shutdown` +1); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`ProcessEntry`, `ProcessEntry_RunGame`).
 
-**Depends on** (8 files, names used): [`platform/sdl3/input`](#file-platform-sdl3-input) (6), [`platform/debug/hooks`](#file-platform-debug-hooks) (2), [`platform/sdl3/timer`](#file-platform-sdl3-timer) (2), [`platform/system/time_locale`](#file-platform-system-time-locale) (2), [`platform/system/win32`](#file-platform-system-win32) (2), [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1).
+**Depends on** (9 files, names used): [`platform/sdl3/input`](#file-platform-sdl3-input) (6), [`platform/debug/hooks`](#file-platform-debug-hooks) (2), [`platform/sdl3/timer`](#file-platform-sdl3-timer) (2), [`platform/system/time_locale`](#file-platform-system-time-locale) (2), [`platform/system/win32`](#file-platform-system-win32) (2), [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (1).
 
-**Includes:** `thandor/platform/sdl3/sdl_objects.h`, `SDL3/SDL_hints.h`, `SDL3/SDL_init.h`, `SDL3/SDL_keyboard.h`, `SDL3/SDL_properties.h`, `SDL3/SDL_stdinc.h`, `SDL3/SDL_version.h`, `cstdlib`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
+**Includes:** `thandor/platform/sdl3/sdl_objects.h`, `thandor/platform/sdl3/window_icon.h`, `SDL3/SDL_hints.h`, `SDL3/SDL_init.h`, `SDL3/SDL_keyboard.h`, `SDL3/SDL_properties.h`, `SDL3/SDL_stdinc.h`, `SDL3/SDL_version.h`, `cstdlib`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
 <a id="file-platform-sdl3-sdl-objects"></a>
 #### `sdl_objects.h`
@@ -640,6 +640,28 @@ SDL3 backend: video. The software renderer draws into a plain memory framebuffer
 
 **Includes:** `thandor/platform/sdl3/sdl_objects.h`, `SDL3/SDL_hints.h`, `SDL3/SDL_pixels.h`, `SDL3/SDL_render.h`, `algorithm`, `cmath`, `cstddef`, `cstring`, `span`, `utility`, `vector`, `thandor/platform/bootstrap/image.h`, `thandor/platform/system/win32.h`.
 
+<a id="file-platform-sdl3-window-icon"></a>
+#### `window_icon.cpp / window_icon.h`
+
+[Source](../../src/platform/sdl3/window_icon.cpp) · [Header](../../include/thandor/platform/sdl3/window_icon.h)
+
+SDL3 backend: the window and taskbar icon from thandor.ico (see thandor/platform/sdl3/window_icon.h). ICO layout (all values little-endian): a 6-byte header (reserved 0, type 1 = icon, image count), then one 16-byte directory entry per image (width, height, colour count, reserved, planes, bits per pixel, data size, data offset), then the image data.
+
+**Functions** (4 public, 6 file-local):
+
+- [`DecodeIcoFile`](../../src/platform/sdl3/window_icon.cpp#L188)
+- [`IconPrimaryImageIndex`](../../src/platform/sdl3/window_icon.cpp#L223)
+- [`IconAlternateImageIndices`](../../src/platform/sdl3/window_icon.cpp#L256)
+- [`SetWindowIconFromGameDirectory`](../../src/platform/sdl3/window_icon.cpp#L280)
+
+**Data** (0 shared, 9 file-local): `kIcoHeaderBytes`, `kIcoEntryBytes`, `kIcoTypeIcon`, `kBitmapInfoHeaderBytes`, `kBitmapCompressionRgb`, `kMaximumIconSide`, `kNominalIconSide`, `kPngSignature` and 1 more.
+
+**Called from** (2 files): [`platform/sdl3/platform`](#file-platform-sdl3-platform) (`SdlPlatform_CreateMainWindow`); [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`Thandor_SelfTestIcon`).
+
+**Depends on** (1 files, names used): [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
+
+**Includes:** `SDL3/SDL_filesystem.h`, `SDL3/SDL_iostream.h`, `SDL3/SDL_stdinc.h`, `SDL3/SDL_surface.h`, `SDL3/SDL_video.h`, `algorithm`, `cstring`, `string`, `thandor/platform/bootstrap/image.h`.
+
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
 
@@ -657,17 +679,17 @@ Self-tests and data tools, started from WinMain (after the precomputed tables ar
 
 [Source](../../src/platform/selftest/selftests.cpp)
 
-No file comment; function families: `Thandor_*` (11), `SelfTest_*` (9).
+No file comment; function families: `Thandor_*` (12), `SelfTest_*` (9), `IconTest_*` (4).
 
-**Functions** (1 public, 19 file-local):
+**Functions** (1 public, 24 file-local):
 
-- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L749) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
+- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L923) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_RunSelfTest`).
 
-**Depends on** (16 files, names used): [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (3), [`assets/package/codec`](assets.md#file-assets-package-codec) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
+**Depends on** (17 files, names used): [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (3), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (3), [`assets/package/codec`](assets.md#file-assets-package-codec) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
 
-**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`.
+**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `thandor/platform/sdl3/window_icon.h`, `vector`.
 
 <a id="module-platform-system"></a>
 ### `platform/system`

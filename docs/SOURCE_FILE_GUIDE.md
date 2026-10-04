@@ -461,6 +461,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 - [`timer.cpp`](source_guide/platform.md#file-platform-sdl3-timer) - SDL3 backend: the periodic timers of g_TimerRegisterPeriodic / g_TimerUnregisterPeriodic on SDL timers instead of WinMM's timeSetEvent.
 - [`types.h`](source_guide/platform.md#file-platform-sdl3-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`video.cpp`](source_guide/platform.md#file-platform-sdl3-video) - SDL3 backend: video.
+- [`window_icon.cpp / window_icon.h`](source_guide/platform.md#file-platform-sdl3-window-icon) - SDL3 backend: the window and taskbar icon from thandor.ico (see thandor/platform/sdl3/window_icon.h).
 
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
@@ -497,7 +498,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren`
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
-- [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_KeyboardEvent`, `UiSelectableControl_SuppressIfActionId`
+- [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_SuppressIfActionId`, `UiSelectableControl_UnsuppressIfActionId`
 - [`slider.cpp / slider.h`](source_guide/ui.md#file-ui-controls-slider) - no file comment; main functions `UiRangeSliderControl_DrawTrackAndThumb`, `UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag`
 - [`text.cpp / text.h`](source_guide/ui.md#file-ui-controls-text) - no file comment; main functions `UiSingleLineTextControl_DrawClipped`, `UiWrappedTextControl_DrawClipped`, `UiWrappedTextControl_RelocateAndApplyDeferredOffset`
 - [`text_buttons.cpp / text_buttons.h`](source_guide/ui.md#file-ui-controls-text-buttons) - no file comment; main functions `UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease`, `UiFramedTextButtonControl_NonRightDrag`
@@ -524,7 +525,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
-- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplayModeCandidates_InsertSortedUnique`, `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateResolutionSelection`
+- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateResolutionSelection`, `UiDisplayModeAction_UpdateAdapterSelection`
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
