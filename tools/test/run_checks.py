@@ -51,6 +51,7 @@ comments) use layout 1280x720 in an 800-high window: script y = screen y - 40.
 import argparse
 import glob
 import os
+import random
 import shutil
 import subprocess
 import sys
@@ -344,7 +345,7 @@ def check_maps():
                           [os.path.join(HERE, 'run_all_maps.py'), folder,
                            '--jobs', str(args.map_jobs), '--max-jobs', str(args.map_max_jobs),
                            '--jobs-file', map_jobs_file(), '--minutes', str(args.map_minutes)] +
-                          ([] if args.all_maps else ['--missions', ','.join(QUICK_MAPS)]),
+                          ([] if args.all_maps else ['--missions', ','.join(args.maps_list)]),
                           3600)
     rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
     bad, ended = [], []
@@ -424,6 +425,9 @@ def main():
     parser.add_argument('--full-campaign', action='store_true',
                         help='campaign check over all 33 levels (12 parts) instead of the 5-level quick set')
     parser.add_argument('--skip', default='', help='comma-separated: ' + ','.join(CHECKS))
+    parser.add_argument('--sample', type=int, metavar='N',
+                        help='spot check: determinism plus N-1 other checks picked at random, the maps check (if '
+                             'picked) with 3 random missions of QUICK_MAPS; the pick is printed')
     args = parser.parse_args()
     INSTANCES['campaign'] = CAMPAIGN_PARTS['segments' if args.full_campaign else 'quick']
     game = os.path.abspath(args.game_dir)
@@ -433,6 +437,14 @@ def main():
     unknown = skip - set(CHECKS)
     if unknown:
         parser.error('unknown check(s): ' + ', '.join(sorted(unknown)))
+    args.maps_list = QUICK_MAPS
+    if args.sample:
+        others = [c for c in CHECKS if c != 'determinism' and c not in skip and (c != 'pixels' or args.old)]
+        picked = ['determinism'] + random.sample(others, min(max(args.sample - 1, 0), len(others)))
+        skip |= set(CHECKS) - set(picked)
+        args.maps_list = random.sample(QUICK_MAPS, 3)
+        print('spot check: ' + ', '.join(c for c in CHECKS if c in picked) +
+              (' (maps: %s)' % ', '.join(args.maps_list) if 'maps' in picked else ''), flush=True)
     if args.old and not os.path.exists(args.old):
         parser.error('--old not found: ' + args.old)
     if not args.old:
