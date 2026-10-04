@@ -9,6 +9,7 @@
 #define THANDOR_UI_INGAME_H
 
 #include <thandor/ui/ingame/types.h>
+#include <thandor/ui/ingame/node_views.h>
 #include <thandor/ui/ingame/army_stock.h>
 #include <thandor/ui/ingame/build_catalog.h>
 #include <thandor/ui/ingame/camera_commands.h>

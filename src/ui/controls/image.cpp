@@ -352,13 +352,13 @@ UiNodeVtable g_UiImageControlVtable = {
         .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
         .nonRightDrag = THANDOR_FN(UiImageControl_NonRightDrag),
         .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiImageControl_PointerMove),
+        .pointerMove = UI_SLOT(UiImageControl_PointerMove),
         .hitTest = THANDOR_FN(UiImageControl_HitTestOpaque),
         .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
         .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
         .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
         .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiImageControl_TickHover),
+        .tick = UI_SLOT(UiImageControl_TickHover),
         .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
 
 /* pointerMove slot of g_UiImageControlVtable. Over an opaque pixel of the image the arrow

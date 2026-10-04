@@ -14,6 +14,7 @@
 #include <thandor/core/math.h>
 #include <thandor/core/memory.h>
 #include <thandor/core/settings.h>
+#include <thandor/core/slot.h>
 #include <thandor/core/text.h>
 
 #endif /* THANDOR_CORE_H */
