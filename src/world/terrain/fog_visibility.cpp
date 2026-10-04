@@ -29,13 +29,12 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
   uint8_t mappedLightingIndex;
   FieldGridDimension gridWidth;
 
+  /* for loops instead of the original's do-while (0 width or height: no pass instead of 2^32) */
   gridWidth = fieldGrid->gridWidth;
-  rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
   clampLookup = g_TerrainByteClampLookup;
-  columnsRemaining = gridWidth;
-  do {
-    do {
+  for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
+    for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
       /* The lookup is 64-KiB aligned: the original puts the occupancy byte and the lighting index into the
          pointer's low word, i.e. indexes the table with (occupancy << 8) | lighting index. */
       mappedLightingIndex =
@@ -43,11 +42,8 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
                        (uint32_t)currentCell->visibilityLightingIndex];
       currentCell->visibilityLightingIndex = mappedLightingIndex;
       currentCell = currentCell + 1;
-      columnsRemaining = columnsRemaining - 1;
-    } while (columnsRemaining != 0);
-    rowsRemaining = rowsRemaining - 1;
-    columnsRemaining = gridWidth;
-  } while (rowsRemaining != 0);
+    }
+  }
   return;
 }
 
@@ -61,12 +57,12 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
 {
   uint8_t lightingIndex;
   uint8_t occupancyByte;
-  int cellsRemaining;
+  uint32_t cellsRemaining;
   FieldGridCell *currentCell;
 
-  cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
+  /* for loop instead of the original's do-while (0 cells: no pass instead of 2^32) */
   currentCell = fieldGrid->cells;
-  do {
+  for (cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight; cellsRemaining != 0; cellsRemaining--) {
     occupancyByte = ((uint8_t *)&currentCell->occupancyMask)[factionSlot];
     if ((occupancyByte & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) != 0) {
       lightingIndex = FIELD_CELL_LIGHTING_VISIBLE;
@@ -79,8 +75,7 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
     }
     currentCell->visibilityLightingIndex = lightingIndex;
     currentCell++;
-    cellsRemaining--;
-  } while (cellsRemaining != 0);
+  }
 }
 
 /* Fills one 256-byte row of g_TerrainByteClampLookup: for every runtime byte 0..0xFF the byte moved one

@@ -383,7 +383,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
   WidePath_CombineDirectoryAndLeaf
             (g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
-  fieldGrid = (FieldGridAsset *)Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
+  fieldGrid = FieldGrid_LoadValidated(fieldGridPath,&packageLoadErrorCode); /* the original: Package_LoadEntry, no size check */
   if (fieldGrid == NULL) {
     /* The original did not check the field grid load and used the error code as the grid (a host then read
        through it); handled here like a failed level load because the grid is required: a fatal error with the

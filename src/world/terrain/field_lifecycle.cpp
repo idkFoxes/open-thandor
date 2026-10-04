@@ -229,3 +229,63 @@ Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint3
   }
   return true;
 }
+
+/* Checks a field grid image right after it was loaded (level file or the host's level transfer) or before the
+   terrain loader uses it; loadedByteCount bytes are valid at fieldGrid. The original trusts the image; bounded
+   here because the dimensions come from level files and from the network: the header must have been loaded,
+   the asset's own size (common.allocationSizeBytes, which the savegame and the level transfer copy) must not
+   exceed loadedByteCount, both sides need at least FIELD_GRID_MIN_SIDE_CELLS cells (the map-edge ring that
+   stops the cell walkers, around an interior), and header + width * height cells must fit the asset size.
+   Every stock grid passes: all are exactly header + cells long, with 8k + 3 (59..139) cells per side. Logs
+   one line and returns false otherwise.
+*/
+Bool8 FieldGrid_ValidateLoadedImage(const FieldGridAsset *fieldGrid,uint32_t loadedByteCount)
+
+{
+  uint64_t requiredBytes;
+
+  if (loadedByteCount < FIELD_GRID_HEADER_BYTES) {
+    Thandor_Log("FieldGrid_ValidateLoadedImage: rejected field grid of %u bytes (no header)",loadedByteCount);
+    return false;
+  }
+  requiredBytes = FIELD_GRID_HEADER_BYTES +
+                  (uint64_t)fieldGrid->gridWidth * fieldGrid->gridHeight * sizeof(FieldGridCell);
+  if (((fieldGrid->common).allocationSizeBytes > loadedByteCount) ||
+      (fieldGrid->gridWidth < FIELD_GRID_MIN_SIDE_CELLS) || (fieldGrid->gridHeight < FIELD_GRID_MIN_SIDE_CELLS) ||
+      (requiredBytes > (fieldGrid->common).allocationSizeBytes)) {
+    Thandor_Log("FieldGrid_ValidateLoadedImage: rejected field grid %ux%u (asset size %u, loaded %u bytes)",
+                fieldGrid->gridWidth,fieldGrid->gridHeight,(fieldGrid->common).allocationSizeBytes,
+                loadedByteCount);
+    return false;
+  }
+  return true;
+}
+
+/* Package_LoadEntry for a field grid (.fld): additionally validates the loaded image
+   (FieldGrid_ValidateLoadedImage). A rejected image is freed and reported like a failed load, with
+   FATAL_ERROR_FIELD_ASSET_INVALID in *outErrorCode. Valid grids load exactly as with Package_LoadEntry.
+*/
+FieldGridAsset *FieldGrid_LoadValidated(uint16_t *path,uint32_t *outErrorCode)
+
+{
+  void *loadedEntry;
+  uint32_t loadedByteCount;
+  uint32_t loadErrorCode;
+
+  loadedEntry = Package_LoadEntryWithSize(path,&loadedByteCount,&loadErrorCode);
+  if (loadedEntry == NULL) {
+    Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",(wchar_t *)path,loadErrorCode);
+    if (outErrorCode != NULL) {
+      *outErrorCode = loadErrorCode;
+    }
+    return NULL;
+  }
+  if (!FieldGrid_ValidateLoadedImage((FieldGridAsset *)loadedEntry,loadedByteCount)) {
+    g_MemoryApi.free(loadedEntry);
+    if (outErrorCode != NULL) {
+      *outErrorCode = FATAL_ERROR_FIELD_ASSET_INVALID;
+    }
+    return NULL;
+  }
+  return (FieldGridAsset *)loadedEntry;
+}

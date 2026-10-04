@@ -96,7 +96,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
     }
     if ((otherPlayersRemaining != 0) &&
         (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0)) {
-      loadedEntry = Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
+      loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
       checkedValue = FatalError_ExitIfFailed
                           (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
       (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
@@ -110,7 +110,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
     }
     return;
   }
-  loadedEntry = Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
+  loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
   checkedValue = FatalError_ExitIfFailed
                       (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
   sourceGrid = (FieldGridAsset *)checkedValue;
@@ -269,7 +269,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
               (g_LevelResourcePathScratchUtf16,(uint16_t *)fieldGridPath,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     /* the original does not check this load for failure */
-    sourceGrid = (FieldGridAsset *)Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
+    sourceGrid = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
     if (sourceGrid == NULL) {
       /* Original quirk: the error code is used as the grid */
       sourceGrid = (FieldGridAsset *)(uintptr_t)loadErrorCode;
