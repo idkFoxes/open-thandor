@@ -61,7 +61,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 
 Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
-THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path);
+void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path);
 
 extern uint8_t *g_PackageScratchBuffer;
 
