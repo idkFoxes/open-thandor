@@ -43,12 +43,6 @@
 #define MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN 0x20 /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
                                                          also skips the field grid height stamp for it */
 #define MODEL_DEFINITION_FLAG_NO_SHADING_PASS 0x40   /* clear -> MODEL_NODE_FLAG_SHADING_PASS */
-/* Aim tolerance of ModelNodeRuntime_SmoothYaw/PitchTowardTarget: outsideTolerance beyond +-0x3FF */
-#define MODEL_AIM_TOLERANCE_ANGLE16 0x3ff
-/* ModelDefinition.variantModelDefinitionIds[] entries (ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive) */
-#define MODEL_TECHNOLOGY_VARIANT_COUNT 6
-/* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
-#define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
 
 /* Functions are grouped by semantic ownership. */
 
@@ -57,23 +51,6 @@ Bool8 ModelRuntimePool_RepairDeferredChild
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
           ModelRuntimeSlot **outChildModelRuntime);
-
-void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime);
-
-void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
-
-Bool8 ModelRuntime_RaycastCandidateListNearest
-          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
-          ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
-          ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
-          ModelRuntimeNode **outNearestModelNode);
-
-Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
-
-int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime);
-
-ModelHierarchyEnergyDemand
-ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry);
 
 uint32_t __cdecl ModelRuntimePool_Init(void);
 
@@ -95,8 +72,6 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot **outModelRuntime);
 
-extern int32_t g_ModelLodDepthThresholdQ8;
-extern GraphicsFixedVec3 g_ModelCullViewRelative;
 extern ModelRuntimeSlot *g_ModelRuntimeSlots;
 extern intptr_t g_ModelRuntimeRebaseDelta; /* model runtime pool base - 1 */
 

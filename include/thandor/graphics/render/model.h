@@ -127,4 +127,6 @@ extern GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch;
 extern GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3;
 extern GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3;
 
+extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4;
+
 #endif /* THANDOR_GRAPHICS_RENDER_MODEL_H */

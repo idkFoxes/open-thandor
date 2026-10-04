@@ -870,6 +870,8 @@ static GraphicsFixedVec3 g_ModelViewDirectionWorld = {0};
 
 static GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal = {0};
 
+GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4 = {0};
+
 /* Implementation ownership: graphics/render/model. */
 
 
@@ -2108,4 +2110,3 @@ void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
             (&g_ModelAuxiliaryForwardDirectionLocal,nodeWorldTransform,
              &g_AuxiliaryForwardDirectionFixed);
 }
-

@@ -88,6 +88,7 @@ add_library(thandor_curated STATIC
     src/graphics/backend/software.cpp
     src/graphics/core/runtime.cpp
     src/graphics/render/model.cpp
+    src/graphics/render/model_draw.cpp
     src/graphics/render/primitives.cpp
     src/graphics/render/projection.cpp
     src/graphics/render/shading.cpp
@@ -132,8 +133,10 @@ add_library(thandor_curated STATIC
     src/world/camera/camera_input.cpp
     src/world/effects/maintenance.cpp
     src/world/effects/runtime.cpp
+    src/world/model/gameplay_rules.cpp
     src/world/model/hierarchy.cpp
-    src/world/model/runtime.cpp
+    src/world/model/picking.cpp
+    src/world/model/pool.cpp
     src/world/model/slots.cpp
     src/world/pathing/grid.cpp
     src/world/pathing/influence.cpp
