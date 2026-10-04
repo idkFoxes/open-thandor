@@ -771,7 +771,7 @@ Shared state and set-up of the hexagonal radius scans around a world point (sigh
 
 **Data** (4 shared, 0 file-local): `g_TerrainScanRowStrideBytes`, `g_TerrainScanStepLimit`, `g_TerrainScanSharedSelectorValue`, `g_TerrainScanReferenceHeight`.
 
-**Called from** (6 files): [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestDirection0`, `TerrainAuxHeightThreshold_TestDirection1` +25); [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_ApplyDirection0` +12); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`, `TerrainOccupancyBit2_MarkDirection0` +11); [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_ScanDirection0` +11); [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`).
+**Called from** (6 files): [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_ApplyDirection0` +12); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`, `TerrainOccupancyBit2_MarkDirection0` +11); [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_ScanDirection0` +11); [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightBand_CellFails` +2); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
@@ -825,27 +825,20 @@ Terrain overlay marking around a world point (variants A and B): marks the cells
 
 [Source](../../src/world/terrain/placement_tests.cpp) · [Header](../../include/thandor/world/terrain/placement_tests.h)
 
-No file comment; function families: `TerrainHeightBand_*` (14), `TerrainAuxHeightThreshold_*` (13), `TerrainScan_*` (1).
+No file comment; function families: `TerrainHeightBand_*` (2), `TerrainAuxHeightThreshold_*` (2), `TerrainScan_*` (1).
 
-**Functions** (26 public, 2 file-local):
+**Functions** (2 public, 3 file-local):
 
-- [`TerrainHeightBand_TestAroundWorldPoint`](../../src/world/terrain/placement_tests.cpp#L91) - Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10 .placementTests[0, 2..4], also called directly by the army placement code): maps the world point ...
-- [`TerrainAuxHeightThreshold_TestAroundWorldPoint`](../../src/world/terrain/placement_tests.cpp#L146) - Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10 .placementTests[1], also called directly by the army placement code): maps the world ...
-- [`TerrainHeightBand_TestWedge0`](../../src/world/terrain/placement_tests.cpp#L232) - Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the sector's diagonal, tests each diagonal cell and the cell between it and the next one, and ...
-- [`TerrainHeightBand_TestWedge1`](../../src/world/terrain/placement_tests.cpp#L269) - Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of directions 1 and 2.
-- [`TerrainHeightBand_TestWedge2`](../../src/world/terrain/placement_tests.cpp#L307) - Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of directions 2 and 3.
-- [`TerrainHeightBand_TestWedge3`](../../src/world/terrain/placement_tests.cpp#L341) - Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of directions 3 and 4.
-- [`TerrainHeightBand_TestWedge4`](../../src/world/terrain/placement_tests.cpp#L400) - Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of directions 4 and 5.
-- [`TerrainHeightBand_TestWedge5`](../../src/world/terrain/placement_tests.cpp#L440) - Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of directions 5 and 0.
-- [`TerrainAuxHeightThreshold_TestWedge0`](../../src/world/terrain/placement_tests.cpp#L477) - Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint): walks the sector's diagonal, tests each diagonal cell and the cell between it and the next ...
-- [`TerrainAuxHeightThreshold_TestWedge1`](../../src/world/terrain/placement_tests.cpp#L526) - Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests of directions 1 and 2.
-- 16 more: `TerrainAuxHeightThreshold_TestWedge2`, `TerrainAuxHeightThreshold_TestWedge3`, `TerrainAuxHeightThreshold_TestWedge4`, `TerrainAuxHeightThreshold_TestWedge5`, `TerrainHeightBand_TestDirection0`, `TerrainHeightBand_TestDirection1`, `TerrainHeightBand_TestDirection2`, `TerrainHeightBand_TestDirection3`, `TerrainHeightBand_TestDirection4`, `TerrainHeightBand_TestDirection5`, `TerrainAuxHeightThreshold_TestDirection0`, `TerrainAuxHeightThreshold_TestDirection1`, `TerrainAuxHeightThreshold_TestDirection2`, `TerrainAuxHeightThreshold_TestDirection3`, `TerrainAuxHeightThreshold_TestDirection4`, `TerrainAuxHeightThreshold_TestDirection5`
+- [`TerrainHeightBand_TestAroundWorldPoint`](../../src/world/terrain/placement_tests.cpp#L121) - Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10 .placementTests[0, 2..4], also called directly by the army placement code): maps the world point ...
+- [`TerrainAuxHeightThreshold_TestAroundWorldPoint`](../../src/world/terrain/placement_tests.cpp#L163) - Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10 .placementTests[1], also called directly by the army placement code): maps the world ...
 
 **Data** (1 shared, 3 file-local): `g_TerrainClassPlacementAndOverlayCallbacks10`.
 
 **Called from** (3 files): [`gameplay/army/placement`](gameplay.md#file-gameplay-army-placement) (`ArmyPlacement_CanPlaceAnchoredModel`, `ArmyPlacement_CanPlaceBuilding` +2); [`gameplay/army/collision`](gameplay.md#file-gameplay-army-collision) (`ArmyPlacementCollision_TestCurrentRuntime`); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`HexscanTest_RunDriver`).
 
-**Depends on** (3 files, names used): [`world/terrain/hex_scan`](#file-world-terrain-hex-scan) (3), [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (2), [`world/terrain/field_sampling`](#file-world-terrain-field-sampling) (1).
+**Depends on** (3 files, names used): [`world/terrain/hex_scan`](#file-world-terrain-hex-scan) (5), [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (2), [`world/terrain/field_sampling`](#file-world-terrain-field-sampling) (1).
+
+**Includes:** `thandor/world/terrain/hex_scan.h`.
 
 <a id="file-world-terrain-sight"></a>
 #### `sight.cpp / sight.h`
