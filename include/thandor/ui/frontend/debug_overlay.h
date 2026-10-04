@@ -32,4 +32,8 @@ extern uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16];
 extern uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16];
 extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* owns the unnamed 0x20 bytes after its first 16 units in the original (elapsed time can exceed 16 units) */
 
+extern uint32_t g_RenderedFrameCountSinceDebugRefresh;
+extern uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16];
+
 #endif /* THANDOR_UI_FRONTEND_DEBUG_OVERLAY_H */

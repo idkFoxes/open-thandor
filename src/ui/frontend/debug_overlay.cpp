@@ -40,6 +40,12 @@ __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
 /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
 uint32_t g_DebugOverlayCounterRefreshCountdown = 20;
 
+uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
+
+uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
+
+uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
+
 /* Implementation ownership: ui/frontend/debug_overlay. */
 
 /* Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the

@@ -128,7 +128,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
   switch(tickPhase) {
   case 0:
     InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
-    FrontendRuntime_UpdateCurrentFactionMetricCache();
+    InGameHud_UpdateCurrentFactionMetricCache();
     GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10();
     WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
     break;

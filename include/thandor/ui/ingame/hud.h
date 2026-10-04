@@ -43,19 +43,15 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node);
 
 void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control);
 
-extern uint32_t g_RenderedFrameCountSinceDebugRefresh;
+void InGameHud_UpdateCurrentFactionMetricCache(void);
 
 extern uint16_t *g_InGamePlayerListTextScratchUtf16;
 extern InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8];
 extern uint16_t g_EmptyFrontendPlayerNameUtf16[1];
 
-extern uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16];
 extern uint32_t g_InGameReadyStateToggleFlags;
 
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16;
-
-void FrontendRuntime_UpdateCurrentFactionMetricCache(void);
 
 extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* decimal xenite amount, bound to a template text control */
 
