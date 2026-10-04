@@ -8,6 +8,7 @@
 #include <thandor/ui/ingame/key_commands.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/core/key_dispatch.h>
 
 /* Module data. */
 
@@ -105,33 +106,6 @@ enum InGameKeyCommandContinuation {
 
 /* Implementation ownership: ui/ingame/key_commands. */
 
-/* True when the held modifiers fit a key command record's modifier class: no class means no modifier may be
-   held; otherwise Shift must be held exactly when the class has Shift, and Ctrl/Alt must be held exactly as
-   the class asks (neither, Ctrl only, Alt only, or both). */
-static Bool8 InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateMask modifierFlags)
-
-{
-  if (classFlags == 0) {
-    return (modifierFlags & KEYBOARD_STATE_ANY_MODIFIER) == 0;
-  }
-  if ((classFlags & KEYBOARD_STATE_SHIFT) != 0) {
-    if ((modifierFlags & KEYBOARD_STATE_SHIFT) == 0) return false;
-  }
-  else if ((modifierFlags & KEYBOARD_STATE_SHIFT) != 0) {
-    return false;
-  }
-  if ((classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0) {
-    return (modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0;
-  }
-  if ((classFlags & KEYBOARD_STATE_ALT) == 0) {
-    return ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) == 0);
-  }
-  if ((classFlags & KEYBOARD_STATE_CTRL) == 0) {
-    return ((modifierFlags & KEYBOARD_STATE_CTRL) == 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0);
-  }
-  return ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0);
-}
-
 /* In-game key commands (the world view's dispatchCommandCallback): the first record of
    g_InGameCommandDispatchRecords whose key code matches and whose modifier class
    (Shift / Ctrl / Alt, left or right) equals the held modifiers selects the command. Selection commands are
@@ -164,19 +138,16 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
 {
   /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case
      label of the switch below. world is the world view (worldRuntime). */
-  UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords; /* ends at the terminator record [63] */
+  UiCommandDispatchRecord *record; /* g_InGameCommandDispatchRecords ends at the terminator record [63] */
   uint32_t target;
   Bool8 localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
   Bool8 commandsBlocked =
        (g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0;
 
-  while ((record->commandCode != 0) &&
-         ((record->commandCode != commandCode) ||
-          !InGameKeyCommand_ModifiersMatch(record->modifierClassFlags,modifierFlags))) {
-    record++;
-  }
-  if (record->commandCode == 0) {
+  record = UiCommandDispatch_Find(g_InGameCommandDispatchRecords,commandCode,modifierFlags,
+                                  UiKeyModifierRule::ExactWithShift);
+  if (record == nullptr) {
     return true; /* not a world view key: the pointer context passes it on (Esc reaches the root's hotkeys) */
   }
   target = (uint32_t)record->continuationEntryAddress;
