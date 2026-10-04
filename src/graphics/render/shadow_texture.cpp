@@ -617,6 +617,10 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
                    GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
   allocError = g_MemoryApi.alloc(assetByteCount,(void **)&asset);
   if (allocError != 0) {
+    /* the original leaked the scratch grid here; freed and cleared so a later shutdown does not see it */
+    g_MemoryApi.free(gridScratch);
+    g_GraphicsShadingGridScratch = NULL;
+    g_GraphicsShadingGridScratchInterior = NULL;
     return allocError;
   }
   g_GraphicsShadingGeneratedAsset = asset;
@@ -668,7 +672,13 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
   createdTextureSet = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset,&textureSetError);
   if (createdTextureSet == NULL) {
+    /* The original kept the freed asset in g_GraphicsShadingGeneratedAsset (GraphicsShadingRuntime_Shutdown then
+       freed it a second time) and the scratch grid allocated; both are freed and cleared here. */
     g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
+    g_GraphicsShadingGeneratedAsset = NULL;
+    g_MemoryApi.free(gridScratch);
+    g_GraphicsShadingGridScratch = NULL;
+    g_GraphicsShadingGridScratchInterior = NULL;
     return textureSetError;
   }
   g_GraphicsShadingTextureSet = createdTextureSet;

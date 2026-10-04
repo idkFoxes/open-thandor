@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/resources/palette.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -118,15 +119,24 @@ void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 }
 
 
-/* Returns paletteAsset when it starts with the 'pal' signature, otherwise NULL with
+/* Returns paletteAsset when it starts with the 'pal' signature and its paletteBankCount entries (8 bytes each,
+   from GRAPHICS_PALETTE_BANKS_OFFSET) lie inside allocationSizeBytes, otherwise NULL with
    FATAL_ERROR_PALETTE_ASSET_INVALID in *outErrorCode (outErrorCode may be NULL). Installed as
    g_GraphicsPaletteAssetValidate.
+   The original only checked the signature; the entry range is checked here because the model and terrain
+   packets index the entries by paletteBankCount and a malformed asset made them read past it.
 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset,uint32_t *outErrorCode)
 
 {
   if (paletteAsset->magic == ASSET_MAGIC_PAL) {
-    return paletteAsset;
+    if (paletteAsset->allocationSizeBytes >= GRAPHICS_PALETTE_BANKS_OFFSET &&
+        (uint64_t)paletteAsset->paletteBankCount * sizeof(GraphicsPaletteAssetEntry) <=
+            paletteAsset->allocationSizeBytes - GRAPHICS_PALETTE_BANKS_OFFSET) {
+      return paletteAsset;
+    }
+    Thandor_Log("GraphicsPaletteAsset_Validate: rejected pal asset (%u bytes, %u entries)",
+                paletteAsset->allocationSizeBytes,paletteAsset->paletteBankCount);
   }
   if (outErrorCode != NULL) {
     *outErrorCode = FATAL_ERROR_PALETTE_ASSET_INVALID;

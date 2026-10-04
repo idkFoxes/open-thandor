@@ -12,9 +12,14 @@
 
 /* Module data. */
 
+/* Entries of g_TerrainProjectedRowSpans, and the most grid rows TerrainProjectedGrid_TransformShadeAndQueue draws
+   (the clip pass empties rows up to gridHeight + 1; 257 is the limit the table was sized for). */
+#define TERRAIN_PROJECTED_ROW_SPAN_COUNT 260
+#define TERRAIN_PROJECTED_GRID_MAX_ROWS 257
+
 /* per-row visible column spans of the terrain projection; entries 0..258 start zeroed, entry 259 keeps the
    0x90 fill bytes the original image held there */
-static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260] = {
+static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_SPAN_COUNT] = {
     /*   0 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /*  10 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /*  20 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
@@ -73,7 +78,20 @@ void TerrainProjectedGrid_TransformShadeAndQueue
   TerrainProjectedVertexWorkRecord *vertexCursor;
   TerrainProjectedRowSpan *rowSpan;
   int spanPairsLeft;
+  static Bool8 loggedGridRejected;
 
+  /* The original trusted the FLD grid size; a grid that does not fit the span table (rows 0..256 plus the
+     emptied rows past the grid) or has fewer than two rows or no columns is not drawn here, because the span
+     loops below then ran outside g_TerrainProjectedRowSpans or wrapped around. */
+  if (fieldGrid->gridHeight < 2 || fieldGrid->gridHeight > TERRAIN_PROJECTED_GRID_MAX_ROWS ||
+      fieldGrid->gridWidth == 0) {
+    if (!loggedGridRejected) {
+      loggedGridRejected = true;
+      Thandor_Log("TerrainProjectedGrid_TransformShadeAndQueue: grid %ux%u not drawn",
+                  fieldGrid->gridWidth,fieldGrid->gridHeight);
+    }
+    return;
+  }
   if ((renderContext->contextFlags & TERRAIN_RENDER_REUSE_PROJECTION) == 0) {
     rowSpan = g_TerrainProjectedRowSpans;
     gridWidth = fieldGrid->gridWidth;
@@ -634,7 +652,9 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
   uint32_t columnEdgeQ12;
   int cutoffRow;
   int rowsFromCutoff;
-  int rowsToEmpty;
+  int firstRowToEmpty;
+  int endRowToEmpty;
+  int rowIndex;
   FieldGridDimension rowsRemaining;
   TerrainProjectedRowSpan *rowSpan;
 
@@ -649,22 +669,33 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
       if (planeNormal->y < 0) {
         rowsFromCutoff = fieldGrid->gridHeight - cutoffRow;
         if (rowsFromCutoff != 0 && cutoffRow <= (int)fieldGrid->gridHeight) {
-          rowsToEmpty = rowsFromCutoff - 1;
-          /* rows cutoffRow + 3 on are emptied, so the last two emptied rows lie past the grid (the table has 260) */
-          for (rowSpan = g_TerrainProjectedRowSpans + cutoffRow + 3; rowsToEmpty != 0; rowsToEmpty--) {
-            rowSpan->firstColumn = 0;
-            rowSpan->endColumnExclusive = 0;
-            rowSpan = rowSpan + 1;
+          /* rows cutoffRow + 3 .. gridHeight + 1 are emptied, so the last two emptied rows lie past the grid.
+             The original wrote before the table for a camera more than three rows south of the grid (cutoffRow
+             <= -4); the range is clamped to the table here because those writes hit other data. */
+          firstRowToEmpty = cutoffRow + 3;
+          endRowToEmpty = cutoffRow + 3 + (rowsFromCutoff - 1);
+          if (firstRowToEmpty < 0) {
+            firstRowToEmpty = 0;
+          }
+          if (endRowToEmpty > TERRAIN_PROJECTED_ROW_SPAN_COUNT) {
+            endRowToEmpty = TERRAIN_PROJECTED_ROW_SPAN_COUNT;
+          }
+          for (rowIndex = firstRowToEmpty; rowIndex < endRowToEmpty; rowIndex++) {
+            g_TerrainProjectedRowSpans[rowIndex].firstColumn = 0;
+            g_TerrainProjectedRowSpans[rowIndex].endColumnExclusive = 0;
           }
         }
       }
       else if (-1 < cutoffRow) {
-        /* rows 0..cutoffRow-1 are emptied */
-        rowSpan = g_TerrainProjectedRowSpans;
-        for (rowsToEmpty = cutoffRow; rowsToEmpty != 0; rowsToEmpty--) {
-          rowSpan->firstColumn = 0;
-          rowSpan->endColumnExclusive = 0;
-          rowSpan = rowSpan + 1;
+        /* rows 0..cutoffRow-1 are emptied; the original ran past the table for a camera far north of the grid
+           (cutoffRow > 260), clamped to the table here */
+        endRowToEmpty = cutoffRow;
+        if (endRowToEmpty > TERRAIN_PROJECTED_ROW_SPAN_COUNT) {
+          endRowToEmpty = TERRAIN_PROJECTED_ROW_SPAN_COUNT;
+        }
+        for (rowIndex = 0; rowIndex < endRowToEmpty; rowIndex++) {
+          g_TerrainProjectedRowSpans[rowIndex].firstColumn = 0;
+          g_TerrainProjectedRowSpans[rowIndex].endColumnExclusive = 0;
         }
       }
     }
@@ -786,7 +817,8 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   newPacket->vertices[1].textureV = terrainPacketRecord[3];
   newPacket->vertices[2].textureV = terrainPacketRecord[5];
   paletteModulationColor = 0;
-  if (g_TerrainPrimaryPalette != NULL) {
+  /* the palette index is bounded here (the original read past the palette for an index past its entries) */
+  if (g_TerrainPrimaryPalette != NULL && terrainPacketRecord[7] < g_TerrainPrimaryPalette->paletteBankCount) {
     paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
             alternateModulationColorArgb;
   }
@@ -837,7 +869,20 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
+  static Bool8 loggedMissingMaterial;
 
+  /* The original dereferenced the material's texture set unchecked; a packet whose material index is out of
+     range or names an optional material that was not loaded (a NULL entry) is skipped here, as if the queue
+     were full, because the original crashed on it. */
+  if (terrainPacketRecord[6] >= sizeof(g_TerrainMaterialTextureSets) / sizeof(g_TerrainMaterialTextureSets[0]) ||
+      g_TerrainMaterialTextureSets[terrainPacketRecord[6]] == NULL) {
+    if (!loggedMissingMaterial) {
+      loggedMissingMaterial = true;
+      Thandor_Log("GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle: skipped packets of missing material %u",
+                  terrainPacketRecord[6]);
+    }
+    return NULL;
+  }
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndex = primitiveQueue->count;
   if (packetIndex + 1 >= primitiveQueue->capacity) {
@@ -856,7 +901,8 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   newPacket->vertices[1].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[3];
   newPacket->vertices[2].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[5];
   paletteModulationColor = 0;
-  if (g_TerrainSecondaryPalette != NULL) {
+  /* the palette index is bounded here (the original read past the palette for an index past its entries) */
+  if (g_TerrainSecondaryPalette != NULL && terrainPacketRecord[7] < g_TerrainSecondaryPalette->paletteBankCount) {
     paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
             alternateModulationColorArgb;
   }

@@ -104,6 +104,13 @@ Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMax
    neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
    g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
    pixel pairs (an odd last column is left out).
+   The original divided by zero for a destination 1 pixel wide or high, wrote outside the framebuffer for a
+   destination that does not fit, and read the right and lower neighbours one texel or row past the image at the
+   last column and row. Bounded here because those were crashes and reads past the asset: a destination narrower
+   than 2 pixels (nothing is drawn: no pixel pair) and one whose pixels would leave the framebuffer memory are
+   skipped, a height of 1 uses step 0, and the neighbour past the last column or row is the texel itself. That
+   neighbour's weight is always 0 there (the source position is then exactly the last texel), so every pixel is
+   unchanged.
 */
 void SoftwareTextureSource_StretchDirectColorBilinear32
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
@@ -131,6 +138,8 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   uint32_t fy;
   uint32_t row;
   uint32_t pair;
+  int64_t firstPixelIndex;
+  int64_t endPixelIndex;
 
   /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
   if (((uint32_t)sourceAsset->common.magic != ASSET_MAGIC_GFX) ||
@@ -144,35 +153,51 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
     return;
   }
   pitchPixels = framebuffer->width;
-  destinationRow = (uint32_t *)framebuffer->pixels +
-                   (int32_t)(destinationY * pitchPixels + destinationX);
   sourceWidth = entry->pixelWidth;
   sourceHeight = entry->pixelHeight;
+  if (destinationWidth < 2 || destinationHeight == 0 || sourceWidth == 0 || sourceHeight == 0) {
+    return;
+  }
+  /* the written pixels, first to one past the last, must lie in the framebuffer's width * height pixels */
+  firstPixelIndex = (int64_t)destinationY * pitchPixels + destinationX;
+  endPixelIndex = firstPixelIndex + (int64_t)(destinationHeight - 1) * pitchPixels + (destinationWidth & ~1u);
+  if (firstPixelIndex < 0 || endPixelIndex > (int64_t)pitchPixels * framebuffer->height) {
+    return;
+  }
+  destinationRow = (uint32_t *)framebuffer->pixels +
+                   (int32_t)(destinationY * pitchPixels + destinationX);
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 256) / (destinationWidth - 1);
-  stepY = ((sourceHeight - 1) * 256) / (destinationHeight - 1);
+  stepY = 0;
+  if (destinationHeight > 1) {
+    stepY = ((sourceHeight - 1) * 256) / (destinationHeight - 1);
+  }
   sourceBase = asset + entry->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
     uint32_t fx = 0;
     uint32_t *out = destinationRow;
+    /* byte offset of the lower neighbour row (the row itself past the last row) */
+    uint32_t lowerRowOffset = ((fy >> 8) + 1 < sourceHeight) ? sourceWidth * 4 : 0;
     for (pair = destinationWidth >> 1; pair != 0; pair--) {
       uint32_t pixels[2];
       int half;
       for (half = 0; half < 2; half++) {
         uint32_t x = fx >> 8;
         const uint8_t *p00 = sourceRow + x * 4;
-        const uint8_t *p10 = sourceRow + sourceWidth * 4 + x * 4;
+        const uint8_t *p10 = sourceRow + lowerRowOffset + x * 4;
+        /* lane offset of the right neighbour (the texel itself past the last column) */
+        uint32_t right = (x + 1 < sourceWidth) ? 4 : 0;
         uint32_t wx = fx & 0xff;
         uint32_t wy = fy & 0xff;
         uint32_t pixel = 0;
         int lane;
         for (lane = 0; lane < 4; lane++) {
           int a = ((p00[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int b = ((p00[lane + right] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int d = ((p10[lane + right] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           short top = (short)(((a * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((b * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
           short bottom = (short)(((c * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((d * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
           short mixed = (short)(((top * firstWeights[(int32_t)(wy * 4 + lane)]) >> 16) +

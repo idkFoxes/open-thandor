@@ -155,8 +155,10 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
   uint32_t childrenRemaining;
   int childIndex;
 
-  modelResourceView = modelNode->modelPayload.modelResource; /* read before the NULL test, as in the original */
+  /* The original read the resource before the NULL test; read after it here, so the compiler cannot drop the
+     test (a dereference before it lets it assume a non-NULL node) */
   if (modelNode != NULL) {
+    modelResourceView = modelNode->modelPayload.modelResource;
     modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
     /* g_GraphicsDirectionWorld only serves as scratch vector here */
     g_GraphicsDirectionWorld.x = (modelResourceView->localBoundsX0Q12 + modelResourceView->localBoundsX1Q12) >> 1;
