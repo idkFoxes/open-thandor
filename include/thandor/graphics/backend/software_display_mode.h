@@ -36,8 +36,6 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width,uint32_t *outError);
 
-void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer);
-
 void SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16);
 

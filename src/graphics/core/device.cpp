@@ -71,13 +71,14 @@ uint32_t Graphics_AllocateTables()
 }
 
 
-/* Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer and frees the software
-   cursor buffers (SdlVideo_Shutdown then releases the framebuffer and the window).
+/* Tears the graphics backend down at exit (Runtime_Shutdown): marks the backend as not accessible (SdlVideo_Present
+   then presents nothing) and frees the software cursor buffers (SdlVideo_Shutdown then releases the framebuffer
+   and the window).
 */
 void Graphics_Shutdown()
 
 {
-  /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */
+  /* nonzero: SdlVideo_Present skips the frame */
   g_GraphicsBackendAccessState = -1;
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);

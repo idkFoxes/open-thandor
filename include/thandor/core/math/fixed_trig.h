@@ -35,8 +35,6 @@ void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevation
 
 FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale);
 
-FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle);
-
 FixedPlanarPointQ12 FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle16);
 
 FixedElevationAzimuth FixedMath_VectorToAnglesVec3(GraphicsFixedVec3 *vector);

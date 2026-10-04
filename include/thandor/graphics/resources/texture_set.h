@@ -29,8 +29,6 @@ extern GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet;
 
 extern GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet;
 
-extern GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures;
-
 GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
 GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
@@ -40,8 +38,6 @@ GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t
 void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
 
 void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
-
-void __cdecl GraphicsTexture_RebuildNoOp();
 
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 

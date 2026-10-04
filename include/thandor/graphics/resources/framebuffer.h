@@ -31,10 +31,6 @@ void GraphicsFramebuffer_InitCaptureAsset
           (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,
           GraphicsPixelDimension captureWidth,GraphicsPixelDimension captureHeight);
 
-uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
-          (uint32_t pixel,GraphicsPackedPixelMask channelMask,GraphicsPixelChannelBitShift channelShift,
-          GraphicsPixelChannelBitCount channelBitCount);
-
 extern SoftwareFramebufferAccess *g_FramebufferAccess;
 extern uint32_t g_FramebufferRowStrideBytes;
 extern uint32_t g_FramebufferHeight;

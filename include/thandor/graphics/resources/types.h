@@ -110,7 +110,7 @@ struct AssetBuildTimestampSet {
 
 struct GeneratedAssetBuildMetadata {
     struct AssetBuildTimestampSet timestamps;
-    uint8_t assetAnchor28[8]; // Asset +0x28, zero in every asset. Only its address is used, as an anchor for asset-relative offsets (assetAnchor28 + offset - 0x28 = asset + offset) where the plain (uint8_t *)asset + offset form compiles differently (GFX_ANCHORED_ASSET_BYTES).
+    uint8_t assetAnchor28[8]; // Asset +0x28, zero in every asset; not read.
     struct AssetProducerSourceNames names;
 };
 
@@ -240,7 +240,6 @@ struct GraphicsTextureSourceHeaderView {
 };
 using GraphicsPaletteAssetLoadPackageProc = GraphicsPaletteAsset * (uint16_t * pathUtf16, uint32_t * outErrorCode);
 using GraphicsPaletteAssetValidateProc = GraphicsPaletteAsset * (GraphicsPaletteAsset * paletteAsset, uint32_t * outErrorCode);
-using GraphicsTextureRebuildAllProc = void __cdecl ();
 using GraphicsTextureSetCreateProc = GraphicsTextureSet * (GraphicsTextureSourceAsset * sourceAsset, uint32_t * outErrorCode);
 using GraphicsTextureSetDestroyProc = GraphicsTextureSourceAsset * (GraphicsTextureSet * set);
 using GraphicsTextureSetLoadPackageProc = GraphicsTextureSet * (uint16_t * pathUtf16, uint32_t * outErrorCode);

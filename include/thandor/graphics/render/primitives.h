@@ -31,7 +31,7 @@
    marks a textured packet, bits 12..14 the blend mode. */
 #define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
 #define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
-/* bits 12..17: raster handler index; the software queue renderers shift by 10 to get its byte offset */
+/* bits 12..17: raster handler index; the software queue renderers shift by 12 and index their handler table */
 #define GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK 0x3f000
 /* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
 #define GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED 0x8000
