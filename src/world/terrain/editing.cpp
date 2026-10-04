@@ -7,6 +7,7 @@
 
 #include <thandor/world/terrain/editing.h>
 #include <thandor/thandor.h>
+#include <thandor/world/terrain/field_edit_commands.h>
 
 /* Module data. */
 
@@ -88,7 +89,6 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
           Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *playerBlock;
   FieldGridAsset *fieldGridAsset;
   TerrainMaterialIndex referenceMaterial;
   int remainingCount;
@@ -96,9 +96,14 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   int gridY;
   uint32_t *editPlaneCursor;
 
-  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  editPlaneCursor = FieldGridEdit_PlayerMaterialPlane(playerIndex);
+  if (editPlaneCursor == NULL) {
+    return;
+  }
+  /* The original keeps the whole command value; bounded here to the material byte because it comes from any
+     network peer and a larger value would carry into the cell flags (the edge ring) during the fill. */
+  replacementMaterialByte &= FIELD_CELL_MATERIAL_ID_MASK;
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  editPlaneCursor = playerBlock->terrainMaterialEditPlane;
   for (remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; remainingCount != 0;
        remainingCount--) {
     *editPlaneCursor = 0;
@@ -117,7 +122,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
     g_TerrainMaterialEditFieldGrid = (uintptr_t)fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)FieldGridEdit_PlayerMaterialPlane(playerIndex);
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterial;
     TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY,gridX);
   }
@@ -134,16 +139,20 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
           Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *playerBlock;
   FieldGridAsset *fieldGridAsset;
   int remainingCount;
   int gridX;
   int gridY;
   uint32_t *editPlaneCursor;
 
-  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  editPlaneCursor = FieldGridEdit_PlayerMaterialPlane(playerIndex);
+  if (editPlaneCursor == NULL) {
+    return;
+  }
+  /* The original keeps the whole command value; bounded here to the material byte because it comes from any
+     network peer and a larger value would carry into the cell flags (the edge ring) during the fill. */
+  referenceMaterialByte &= FIELD_CELL_MATERIAL_ID_MASK;
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  editPlaneCursor = playerBlock->terrainMaterialEditPlane;
   for (remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; remainingCount != 0;
        remainingCount--) {
     *editPlaneCursor = 0;
@@ -161,7 +170,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
     g_TerrainMaterialEditFieldGrid = (uintptr_t)fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)FieldGridEdit_PlayerMaterialPlane(playerIndex);
     TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY,gridX);
   }
 }
@@ -186,8 +195,11 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   FieldGridCell *fieldCell;
   int *heightDeltaCursor;
 
+  heightDeltaCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (heightDeltaCursor == NULL) {
+    return;
+  }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   widthCells = fieldGridAsset->gridWidth;
   remainingCount = widthCells * fieldGridAsset->gridHeight;
   fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -257,9 +269,11 @@ void TerrainEditBuffer_CopyCellMaterialBytes
   FieldGridCell *fieldCell;
   TerrainMaterialIndex *materialCursor;
 
+  materialCursor = (TerrainMaterialIndex *)FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
+  if (materialCursor == NULL) {
+    return;
+  }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  materialCursor = (TerrainMaterialIndex *)
-           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {
@@ -286,8 +300,11 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
 
+  materialDeltaCursor = FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
+  if (materialDeltaCursor == NULL) {
+    return;
+  }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {
@@ -314,16 +331,25 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
 
+  materialDeltaCursor = FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
+  if (materialDeltaCursor == NULL) {
+    return;
+  }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
-  /* The original ORs 1 into the dword 0x14C bytes before the field grid asset instead of
-     its runtimeStateFlags, so the surface is not marked dirty here; kept as in the original. */
-  *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) =
-       *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) | 1;
+  /* Original quirk: the original ORs 1 into the dword 0x14C bytes before the FieldGridAsset (meant as
+     runtimeStateFlags, FIELD_GRID_RUNTIME_SURFACE_DIRTY), i.e. into the previous arena block, so the surface is
+     not marked dirty here. That stray write is left out: it corrupts whatever block precedes the grid, and the
+     command is editor-only (no determinism check runs the editor). The surface stays not marked dirty, as in the
+     original. */
   fieldCell = fieldGridAsset->cells;
   do {
-    fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial + *materialDeltaCursor;
+    /* The original adds the delta to the whole dword; the edge-ring bits are kept here because the plane
+       can hold any values when the commands come out of order from a network peer (valid deltas only
+       change the material byte). */
+    fieldCell->flagsAndMaterial =
+         (((uint32_t)fieldCell->flagsAndMaterial + *materialDeltaCursor) & ~FIELD_CELL_GRID_EDGE_MASK) |
+         ((uint32_t)fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK);
     *materialDeltaCursor = -*materialDeltaCursor;
     fieldCell = fieldCell + 1;
     materialDeltaCursor = materialDeltaCursor + 1;
@@ -347,8 +373,11 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
   FieldGridCell *fieldCell;
   int *heightCursor;
 
+  heightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (heightCursor == NULL) {
+    return;
+  }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  heightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {

@@ -12,6 +12,79 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* The selection block of the player a map-editor command names, or NULL (logged once) when there is none.
+   The original indexes g_SelectionPlayerRuntimeBlockPointers with the command's player id and dereferences
+   the entry unchecked; bounded here because editor commands arrive from any network peer. */
+static SelectionPlayerRuntimeBlock *FieldGridEdit_PlayerBlock(PlayerRuntimeId playerRuntimeId)
+{
+  static Bool8 s_missingBlockLogged = false;
+  SelectionPlayerRuntimeBlock *playerBlock;
+
+  playerBlock = NULL;
+  if (playerRuntimeId <
+      sizeof(g_SelectionPlayerRuntimeBlockPointers) / sizeof(g_SelectionPlayerRuntimeBlockPointers[0])) {
+    playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  }
+  if ((playerBlock == NULL) && !s_missingBlockLogged) {
+    s_missingBlockLogged = true;
+    Thandor_Log("terrain editor: command for player %u without a selection block, ignored",
+                (unsigned)playerRuntimeId);
+  }
+  return playerBlock;
+}
+
+/* The player's terrain height scratch plane (SelectionPlayerRuntimeBlock.terrainHeightScratchPlane) for a
+   map-editor command, or NULL (logged once). The original writes through the field unchecked; it is never
+   assigned in this code base, so the editor commands that use it do nothing instead of writing through NULL. */
+int *FieldGridEdit_PlayerHeightPlane(PlayerRuntimeId playerRuntimeId)
+{
+  static Bool8 s_missingPlaneLogged = false;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  int *heightPlane;
+
+  playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
+  if (playerBlock == NULL) {
+    return NULL;
+  }
+  heightPlane = playerBlock->terrainHeightScratchPlane;
+  if ((heightPlane == NULL) && !s_missingPlaneLogged) {
+    s_missingPlaneLogged = true;
+    Thandor_Log("terrain editor: player %u has no terrain height plane, height edit ignored",
+                (unsigned)playerRuntimeId);
+  }
+  return heightPlane;
+}
+
+/* The same for the player's material edit plane (SelectionPlayerRuntimeBlock.terrainMaterialEditPlane). */
+uint32_t *FieldGridEdit_PlayerMaterialPlane(PlayerRuntimeId playerRuntimeId)
+{
+  static Bool8 s_missingPlaneLogged = false;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  uint32_t *materialPlane;
+
+  playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
+  if (playerBlock == NULL) {
+    return NULL;
+  }
+  materialPlane = playerBlock->terrainMaterialEditPlane;
+  if ((materialPlane == NULL) && !s_missingPlaneLogged) {
+    s_missingPlaneLogged = true;
+    Thandor_Log("terrain editor: player %u has no material edit plane, material edit ignored",
+                (unsigned)playerRuntimeId);
+  }
+  return materialPlane;
+}
+
+/* Whether the Q12 grid row/column lies on a cell of the grid, so cells[row * width + column] is inside the
+   array. Checked on the flat index (as the original computes it), so every in-array position stays as it was. */
+static Bool8 FieldGrid_IsCellIndexInGrid(Q12 gridRowQ12,Q12 gridColumnQ12,const FieldGridAsset *fieldGrid)
+{
+  int64_t cellIndex;
+
+  cellIndex = (int64_t)(gridRowQ12 >> Q12_SHIFT) * (int64_t)fieldGrid->gridWidth + (gridColumnQ12 >> Q12_SHIFT);
+  return (0 <= cellIndex) && (cellIndex < (int64_t)fieldGrid->gridWidth * (int64_t)fieldGrid->gridHeight);
+}
+
 /* Shared by FieldGrid_ApplyPositiveCellDeltas and FieldGrid_ApplyNegativeCellDeltas after a cell's height changed:
    unless the cell lies on the grid edge, refreshes the normals and light of the cell and its six neighbours (the
    left and right one only while their scratch entry is 0). scratchEntry is the cell's entry in the scratch plane. */
@@ -83,8 +156,11 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   Bool8 containsAnchorPair;
   int *accumulatorPlane;
 
+  accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (accumulatorPlane == NULL) {
+    return;
+  }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  accumulatorPlane = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   rowLength = fieldGrid->gridWidth;
   cellCount = rowLength * fieldGrid->gridHeight;
   rowStrideBytes = rowLength * sizeof(FieldGridCell);
@@ -112,8 +188,8 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
                fieldGrid);
   }
   else {
-    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
-    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
+    pairRecord = FieldGridEdit_PlayerBlock(playerRuntimeId)->markedCells;
+    for (remainingPairCount = FieldGridEdit_PlayerBlock(playerRuntimeId)->markedCellCount;
         remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ProcessHorizontalSpan
                 (anchorRowQ12,anchorColumnQ12,(int)packedDragDeltaXY16 >> 16,
@@ -168,8 +244,11 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   Bool8 containsAnchorPair;
   int *accumulatorPlane;
 
+  accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (accumulatorPlane == NULL) {
+    return;
+  }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  accumulatorPlane = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   rowLength = fieldGrid->gridWidth;
   cellCount = rowLength * fieldGrid->gridHeight;
   rowStrideBytes = rowLength * sizeof(FieldGridCell);
@@ -196,8 +275,8 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
                anchorColumnQ12,accumulatorPlane,fieldGrid);
   }
   else {
-    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
-    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
+    pairRecord = FieldGridEdit_PlayerBlock(playerRuntimeId)->markedCells;
+    for (remainingPairCount = FieldGridEdit_PlayerBlock(playerRuntimeId)->markedCellCount;
         remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ProcessVerticalSpan
                 ((int)packedDragDeltaXY16 >> 16,(int)(short)packedDragDeltaXY16,pairRecord->pairValue,
@@ -245,7 +324,10 @@ void FieldGrid_RebuildLocalInfluenceState
   int *scratchHeightCursor;
   Bool8 containsAnchorPair;
   
-  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  if (FieldGridEdit_PlayerHeightPlane(playerRuntimeId) == NULL) {
+    return;
+  }
+  playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   containsAnchorPair = SelectionPlayerPairList_ContainsPair(gridRowQ12,gridColumnQ12,playerRuntimeId);
   if (containsAnchorPair) {
@@ -320,7 +402,10 @@ void FieldGrid_ApplyLocalCellUpdate
   SelectionPlayerPairRecord *pairRecord;
   Bool8 containsAnchorPair;
   
-  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
+  if (playerBlock == NULL) {
+    return;
+  }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   containsAnchorPair = SelectionPlayerPairList_ContainsPair(gridRowQ12,gridColumnQ12,playerRuntimeId);
   if (containsAnchorPair) {
@@ -370,7 +455,9 @@ void FieldGrid_SetCellFluidReceiverExcluded
   FieldGridRuntimeFlags *runtimeFlagsField;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_RECEIVER_EXCLUDED,setMask,gridRowQ12,gridColumnQ12,fieldGrid);
+  /* The original ORs setMask in unmasked; bounded here to the one flag because setMask comes with the command */
+  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_RECEIVER_EXCLUDED,setMask & FIELD_CELL_FLUID_RECEIVER_EXCLUDED,
+                                  gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
 }
@@ -388,7 +475,9 @@ void FieldGrid_SetCellFluidSourceExcluded
   FieldGridRuntimeFlags *runtimeFlagsField;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_SOURCE_EXCLUDED,setMask,gridRowQ12,gridColumnQ12,fieldGrid);
+  /* The original ORs setMask in unmasked; bounded here to the one flag because setMask comes with the command */
+  FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_SOURCE_EXCLUDED,setMask & FIELD_CELL_FLUID_SOURCE_EXCLUDED,
+                                  gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
 }
@@ -411,6 +500,16 @@ void FieldGrid_SetCellResourceSupportFlag
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   setMask = FIELD_CELL_XENITE_SUPPORT << ((uint8_t)materialBitIndex & 31);
+  /* The original takes any bit index 0..31 (others than 0 and 1 replace an unrelated flag, e.g. the edge
+     ring); bounded here to the two support flags because the index comes with the command. */
+  if ((setMask & ~(FieldGridRegionMask)FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0) {
+    static Bool8 s_bitIndexLogged = false;
+    if (!s_bitIndexLogged) {
+      s_bitIndexLogged = true;
+      Thandor_Log("terrain editor: resource flag bit index %d outside 0..1, ignored",(int)materialBitIndex);
+    }
+    return;
+  }
   preserveMask = setMask ^ 0xffffffff;
   if (materialBitIndex < 0) {
     setMask = 0;
@@ -435,9 +534,11 @@ void FieldGrid_ClearPlayerScratchPlane
   int *scratchHeightCursor;
   FieldGridAsset *fieldGrid;
   
+  scratchHeightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (scratchHeightCursor == NULL) {
+    return;
+  }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  scratchHeightCursor =
-       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   for (cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight; cellsRemaining != 0;
       cellsRemaining--) {
     *scratchHeightCursor = 0;
@@ -460,9 +561,11 @@ void FieldGrid_ResetLocalInfluenceState
   int *scratchHeightCursor;
   FieldGridAsset *fieldGrid;
   
+  scratchHeightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
+  if (scratchHeightCursor == NULL) {
+    return;
+  }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
-  scratchHeightCursor =
-       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
   do {
@@ -495,6 +598,12 @@ void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits
     rowStrideBytes = rowLength * sizeof(FieldGridCell);
     cell = fieldGrid->cells + columnIndex + (int32_t)(rowIndex * rowLength);
     cell->waterSurfaceDelta = cell->waterSurfaceDelta + heightDeltaUnits * -FIELD_GRID_EDIT_DRAG_UNIT_Q12; /* 64 per unit */
+    /* The original also refreshes an edge-ring cell and its neighbours, which lie outside the grid there;
+       bounded here because the cell comes with the editor command (any network peer): the water change stays,
+       the refresh is skipped as in FieldGridCell_RefreshChangedCellAndNeighbours. */
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return;
+    }
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
     FieldGridCell_ComputeDirectionalLightColor(cell);
     if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
@@ -589,6 +698,12 @@ void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldG
     maxRow = fieldGrid->gridHeight - 1;
   }
   if (maxColumn < minColumn || maxRow < minRow) {
+    return;
+  }
+  /* The original reads the centre and source cells unchecked; bounded here because both positions come with
+     the editor command (any network peer): an index outside the cell array leaves the plane unchanged. */
+  if (!FieldGrid_IsCellIndexInGrid(centerRowQ12,centerColumnQ12,fieldGrid) ||
+      !FieldGrid_IsCellIndexInGrid(sourceRowQ12,sourceColumnQ12,fieldGrid)) {
     return;
   }
   spanColumnCount = (maxColumn - minColumn) + 1;
@@ -698,6 +813,11 @@ void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,Fi
   if (maxColumn < minColumn || maxRow < minRow) {
     return;
   }
+  /* The original reads the centre cell unchecked; bounded here because the position comes with the editor
+     command (any network peer): an index outside the cell array leaves the plane unchanged. */
+  if (!FieldGrid_IsCellIndexInGrid(centerRowQ12,centerColumnQ12,fieldGrid)) {
+    return;
+  }
   spanColumnCount = (maxColumn - minColumn) + 1;
   firstCellIndex = minRow * fieldGrid->gridWidth + minColumn;
   rowLength = fieldGrid->gridWidth;
@@ -755,8 +875,11 @@ void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValu
   if ((-1 < gridRowIndex) && (-1 < gridColumnIndex) && (gridRowIndex < (int)fieldGrid->gridHeight) &&
       (gridColumnIndex < (int)fieldGrid->gridWidth)) {
     cellIndex = gridRowIndex * fieldGrid->gridWidth + gridColumnIndex;
+    /* The original ORs transitionValue in unmasked; bounded here to the material byte because the value comes
+       with the editor command (any network peer) and must not set flags such as the edge ring. */
     fieldGrid->cells[cellIndex].flagsAndMaterial =
-         fieldGrid->cells[cellIndex].flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK | transitionValue;
+         (fieldGrid->cells[cellIndex].flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK) |
+         (transitionValue & FIELD_CELL_MATERIAL_ID_MASK);
   }
 }
 
@@ -808,13 +931,17 @@ void FieldGrid_ApplyMaskedRegionCore
   int gridRowIndex;
   int gridColumnIndex;
   int cellIndex;
+  uint32_t oldFlags;
 
   gridRowIndex = gridRowQ12 >> Q12_SHIFT;
   gridColumnIndex = gridColumnQ12 >> Q12_SHIFT;
   if ((-1 < gridRowIndex) && (-1 < gridColumnIndex) && (gridRowIndex < (int)fieldGrid->gridHeight) &&
       (gridColumnIndex < (int)fieldGrid->gridWidth)) {
     cellIndex = gridRowIndex * fieldGrid->gridWidth + gridColumnIndex;
+    /* The original lets the masks change any bit; the edge-ring bits are kept here because the neighbour loops
+       rely on them to stay inside the grid (the callers only touch fluid and resource flags). */
+    oldFlags = (uint32_t)fieldGrid->cells[cellIndex].flagsAndMaterial;
     fieldGrid->cells[cellIndex].flagsAndMaterial =
-         preserveMask & fieldGrid->cells[cellIndex].flagsAndMaterial | setMask;
+         (((preserveMask & oldFlags) | setMask) & ~FIELD_CELL_GRID_EDGE_MASK) | (oldFlags & FIELD_CELL_GRID_EDGE_MASK);
   }
 }

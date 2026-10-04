@@ -13,6 +13,12 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
+/* The terrain height scratch plane / material edit plane of the player a map-editor command names, or NULL
+   (logged once) when the player has no selection block or the plane is not set; the commands then do nothing. */
+int *FieldGridEdit_PlayerHeightPlane(PlayerRuntimeId playerRuntimeId);
+
+uint32_t *FieldGridEdit_PlayerMaterialPlane(PlayerRuntimeId playerRuntimeId);
+
 void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 

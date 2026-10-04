@@ -22,9 +22,6 @@
 /* Capacity of g_TerrainRegionCollectionEntries (8-byte records: extraction descriptor, model offset); further
    extractors of a region are cleared but not recorded (TerrainRegionCollection_RecordConnectedCell). */
 #define TERRAIN_REGION_COLLECTION_CAPACITY 2048
-/* Bytes before the FieldGridAsset of the dword the material edit sets its dirty bit in (original quirk; the
-   intended target is FieldGridAsset.runtimeStateFlags) */
-#define TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET 0x14c
 
 /* Functions are grouped by semantic ownership. */
 
