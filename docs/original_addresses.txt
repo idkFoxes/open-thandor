@@ -1159,18 +1159,18 @@
 0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             src/world/terrain/sight.cpp
 0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             src/world/terrain/sight.cpp
 0x00506CD0  function  TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint          src/world/terrain/sight.cpp
-0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               src/world/terrain/occupancy.cpp
-0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               src/world/terrain/occupancy.cpp
-0x00506F50  function  TerrainOccupancyBit2_MarkDirection2                               src/world/terrain/occupancy.cpp
-0x00506FA0  function  TerrainOccupancyBit2_MarkDirection3                               src/world/terrain/occupancy.cpp
-0x00506FF0  function  TerrainOccupancyBit2_MarkDirection4                               src/world/terrain/occupancy.cpp
-0x00507050  function  TerrainOccupancyBit2_MarkDirection5                               src/world/terrain/occupancy.cpp
-0x005070A0  function  TerrainOccupancyBit2_MarkWedge0                                   src/world/terrain/occupancy.cpp
-0x00507140  function  TerrainOccupancyBit2_MarkWedge1                                   src/world/terrain/occupancy.cpp
-0x005071E0  function  TerrainOccupancyBit2_MarkWedge2                                   src/world/terrain/occupancy.cpp
-0x00507280  function  TerrainOccupancyBit2_MarkWedge3                                   src/world/terrain/occupancy.cpp
-0x00507320  function  TerrainOccupancyBit2_MarkWedge4                                   src/world/terrain/occupancy.cpp
-0x005073C0  function  TerrainOccupancyBit2_MarkWedge5                                   src/world/terrain/occupancy.cpp
+0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               (merged into TerrainHexScan_Leg)
+0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               (merged into TerrainHexScan_Leg)
+0x00506F50  function  TerrainOccupancyBit2_MarkDirection2                               (merged into TerrainHexScan_Leg)
+0x00506FA0  function  TerrainOccupancyBit2_MarkDirection3                               (merged into TerrainHexScan_Leg)
+0x00506FF0  function  TerrainOccupancyBit2_MarkDirection4                               (merged into TerrainHexScan_Leg)
+0x00507050  function  TerrainOccupancyBit2_MarkDirection5                               (merged into TerrainHexScan_Leg)
+0x005070A0  function  TerrainOccupancyBit2_MarkWedge0                                   (merged into TerrainHexScan_Sector)
+0x00507140  function  TerrainOccupancyBit2_MarkWedge1                                   (merged into TerrainHexScan_Sector)
+0x005071E0  function  TerrainOccupancyBit2_MarkWedge2                                   (merged into TerrainHexScan_Sector)
+0x00507280  function  TerrainOccupancyBit2_MarkWedge3                                   (merged into TerrainHexScan_Sector)
+0x00507320  function  TerrainOccupancyBit2_MarkWedge4                                   (merged into TerrainHexScan_Sector)
+0x005073C0  function  TerrainOccupancyBit2_MarkWedge5                                   (merged into TerrainHexScan_Sector)
 0x00507460  function  TerrainOccupancyBit2_MarkAroundWorldPoint                         src/world/terrain/occupancy.cpp
 0x00507580  function  TerrainGrid_TestProjectedCellMaskBits01                           src/world/terrain/occupancy.cpp
 0x00507610  function  TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint             src/world/terrain/occupancy.cpp
@@ -2789,7 +2789,7 @@
 0x0056D77C  data      g_UiCommandModeGSecondaryPageIndices                              src/ui/ingame/editor_tools.cpp
 0x0056D794  data      g_UiCommandModeGTertiaryPageIndices                               src/ui/ingame/editor_tools.cpp
 0x0056D7AC  data      g_UiCommandModeGControlOffsets                                    src/ui/ingame/editor_tools.cpp
-0x0056D7C4  data      g_UiCommandModeGHandlers                                          src/ui/ingame/editor_tool_selection.cpp
+0x0056D7C4  data      g_UiCommandModeGHandlers                                          (removed)
 0x0056D7DC  data      g_UiMappedCommandControlOffsets                                   src/ui/ingame/editor_tool_selection.cpp
 0x0056D80C  data      g_UiCommandSelectionAnchorWorldXQ12                               src/ui/ingame/editor_tools.cpp
 0x0056D810  data      g_UiCommandSelectionAnchorWorldYQ12                               src/ui/ingame/editor_tools.cpp
