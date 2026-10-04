@@ -112,6 +112,7 @@ add_library(thandor_curated STATIC
     src/gameplay/army/weapons.cpp
     src/gameplay/faction/army_stock.cpp
     src/gameplay/faction/carryover.cpp
+    src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
     src/gameplay/input/camera_commands.cpp
@@ -126,8 +127,11 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/level.cpp
+    src/gameplay/session/level_script.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
+    src/gameplay/session/startup.cpp
+    src/gameplay/session/tick.cpp
     src/gameplay/technology/runtime.cpp
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
@@ -230,15 +234,19 @@ add_library(thandor_curated STATIC
     src/ui/ingame/editor_keyboard.cpp
     src/ui/ingame/editor_tool_selection.cpp
     src/ui/ingame/editor_tools.cpp
+    src/ui/ingame/hotkeys.cpp
     src/ui/ingame/hud.cpp
     src/ui/ingame/key_commands.cpp
     src/ui/ingame/layout.cpp
     src/ui/ingame/music_choice.cpp
+    src/ui/ingame/notifications.cpp
     src/ui/ingame/pages.cpp
+    src/ui/ingame/root_frame.cpp
     src/ui/ingame/savegame_page.cpp
     src/ui/ingame/selection_detail.cpp
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
+    src/ui/ingame/ui_template.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp
     src/world/effects/lifecycle.cpp

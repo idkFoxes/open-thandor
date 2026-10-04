@@ -10,6 +10,7 @@
 
 #include <thandor/gameplay/faction/army_stock.h>
 #include <thandor/gameplay/faction/carryover.h>
+#include <thandor/gameplay/faction/economy.h>
 #include <thandor/gameplay/faction/relations.h>
 #include <thandor/gameplay/faction/runtime.h>
 

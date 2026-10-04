@@ -18,6 +18,12 @@ static uint32_t g_TerrainMaterialEditReferenceMaterialByte = 0;
 
 static uint32_t g_TerrainMaterialEditReplacementMaterialByte = 0;
 
+TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount = 0;
+
+TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount = 0;
+
+uintptr_t g_TerrainRegionCollectionEntries = 0;
+
 /* Implementation ownership: world/terrain/editing. */
 
 /* Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks

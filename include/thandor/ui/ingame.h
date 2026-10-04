@@ -17,14 +17,18 @@
 #include <thandor/ui/ingame/editor_keyboard.h>
 #include <thandor/ui/ingame/editor_tool_selection.h>
 #include <thandor/ui/ingame/editor_tools.h>
+#include <thandor/ui/ingame/hotkeys.h>
 #include <thandor/ui/ingame/hud.h>
 #include <thandor/ui/ingame/key_commands.h>
 #include <thandor/ui/ingame/layout.h>
 #include <thandor/ui/ingame/music_choice.h>
+#include <thandor/ui/ingame/notifications.h>
 #include <thandor/ui/ingame/pages.h>
+#include <thandor/ui/ingame/root_frame.h>
 #include <thandor/ui/ingame/savegame_page.h>
 #include <thandor/ui/ingame/selection_detail.h>
 #include <thandor/ui/ingame/settings.h>
 #include <thandor/ui/ingame/technology.h>
+#include <thandor/ui/ingame/ui_template.h>
 
 #endif /* THANDOR_UI_INGAME_H */

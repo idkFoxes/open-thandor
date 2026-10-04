@@ -266,3 +266,112 @@ Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath)
   g_InGameResourceRegistrationBusyCount--;
   return !written;
 }
+
+/* Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
+   load and after writing a savegame: the 1-based offsets become runtime-object, shading-record, army/shot/effect
+   slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also
+   restores the tail record pointer and the local player's faction assignment.
+*/
+void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
+
+{
+  ResourceRegistrationRecord *registrationRecord;
+  ResourceRegistrationRecord *tailRecord;
+  uint32_t remainingRecords;
+  uint32_t nestedCount;
+  uint32_t nestedIndex;
+  uint8_t *primaryPointer;
+  uint8_t *secondaryPointer;
+  uint8_t *nestedBasePointer;
+  uint8_t *auxiliaryPointer;
+  void *tailNestedPointer;
+  GraphicsTextureSet *selectedTextureSet;
+  GraphicsPaletteAsset *selectedPalette;
+  SpriteAssetHeader *resolvedSprite;
+  ArmyRuntimeSlot *payloadSlot;
+
+  registrationRecord = runtimeImage->records;
+  remainingRecords = runtimeImage->recordCount;
+  /* Original quirk: the record loop tests its count only after the first record, so an image with recordCount 0
+     would walk 2^32 records. */
+  do {
+    if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
+      primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
+      nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
+      /* 1-based offsets from the runtime-object base; 0 stays NULL */
+      if (primaryPointer != NULL) {
+        primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      }
+      if (secondaryPointer != NULL) {
+        secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      }
+      if (nestedBasePointer != NULL) {
+        nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      }
+      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer = secondaryPointer;
+      (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
+      (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
+      auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      nestedCount = registrationRecord->nestedCount;
+      if (auxiliaryPointer != NULL) {
+        /* 1-based offset from the shading records; 0 is null */
+        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      }
+      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      /* the nested pointers are 1-based offsets from the runtime-object base as well */
+      for (nestedIndex = 0; nestedIndex < nestedCount; nestedIndex++) {
+        if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != NULL) {
+          registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer =
+               (uint8_t *)((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
+                       (int)g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        }
+      }
+      payloadSlot = (registrationRecord->runtimePayload).armyRuntime;
+      switch(registrationRecord->domainIndex) {
+      case RESOURCE_DOMAIN_ARMY_RUNTIME:
+        /* textureSet holds the army graphics binding index until here */
+        payloadSlot = (ArmyRuntimeSlot *)
+                     ((int)payloadSlot + g_ModelRuntimeRebaseDelta); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        registrationRecord->paletteAsset = selectedPalette;
+        break;
+      case RESOURCE_DOMAIN_SHOT_RUNTIME:
+        payloadSlot = (ArmyRuntimeSlot *)
+                     (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        registrationRecord->textureSet = g_ShotTextureSet;
+        registrationRecord->paletteAsset = g_ShotPalette;
+        break;
+      case RESOURCE_DOMAIN_EFFECT_RUNTIME:
+        payloadSlot = (ArmyRuntimeSlot *)
+                     (g_EffectRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        selectedTextureSet = g_EffectTextureSet;
+        selectedPalette = g_EffectPalette;
+        /* effects flagged 2 in their model runtime use the army graphics of binding 0 */
+        if ((((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->effectModelFlags
+            & 2) != 0) {
+          selectedTextureSet = g_ArmyGraphicsBindings[0].textureSet;
+          selectedPalette = g_ArmyGraphicsBindings[0].paletteAsset;
+        }
+        registrationRecord->textureSet = selectedTextureSet;
+        registrationRecord->paletteAsset = selectedPalette;
+      }
+      (registrationRecord->runtimePayload).armyRuntime = payloadSlot;
+      resolvedSprite = SpriteAssetRegistry_FindById((SpriteAssetId)registrationRecord->spriteAsset); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      registrationRecord->spriteAsset = resolvedSprite;
+    }
+    registrationRecord++;
+    remainingRecords--;
+  } while (remainingRecords != 0);
+  /* the last nested slot of the last record is the saved tail record */
+  tailNestedPointer = runtimeImage->records[runtimeImage->recordCount - 1].nestedPointersOrSavedOffsets
+           [12].runtimePointer;
+  tailRecord = NULL;
+  if (tailNestedPointer != NULL) {
+    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+  }
+  runtimeImage->tailRecord = tailRecord;
+  (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
+}

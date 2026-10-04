@@ -39,4 +39,6 @@ extern uint16_t g_CampagneHexPathUtf16[13];
 extern uint16_t g_OldunitHexPathUtf16[12];
 extern uint8_t g_InGameResourceRegistrationBusyCount;
 
+void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
+
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

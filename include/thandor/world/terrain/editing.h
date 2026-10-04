@@ -65,4 +65,8 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement
 void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX);
 
+extern TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount;
+extern TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount;
+extern uintptr_t g_TerrainRegionCollectionEntries;
+
 #endif /* THANDOR_WORLD_TERRAIN_EDITING_H */
