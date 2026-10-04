@@ -82,6 +82,11 @@ state hash; the default build has none of them) and `gpu-test` (`test` plus the 
 `THANDOR_RENDERER_SDL_GPU=ON`). CLion and Visual Studio pick the presets up from
 [`CMakePresets.json`](CMakePresets.json).
 
+The second compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2) with SDL3 from
+`vcpkg install sdl3:x64-mingw-dynamic`: presets `mingw-release`, `mingw-test` (`build-mingw-test`) and
+`mingw-gpu-test`, with `g++` on the `PATH` or `MINGW_ROOT` set ([`cmake/mingw-x64.cmake`](cmake/mingw-x64.cmake));
+see [docs/BUILDING.md](docs/BUILDING.md#mingw-w64-gcc).
+
 To play, copy `thandor.exe` and `SDL3.dll` into a **copy** of an installed Thandor directory (the game data is not
 part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are
 described in [docs/BUILDING.md](docs/BUILDING.md).
