@@ -21,7 +21,7 @@ static GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal = {0};
 /* sound position in the listener's frame */
 static GraphicsFixedVec3 g_SpatialSoundRelative = {0};
 
-static SpatialSoundSlot *g_SpatialSoundSlots = 0;
+static SpatialSoundSlot *g_SpatialSoundSlots = nullptr;
 
 AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
 
@@ -172,12 +172,12 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
   uint32_t rightGainQ15;
 
   volumeQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
-  if ((voiceSetRef == NULL) || (volumeQ15 == 0)) {
+  if ((voiceSetRef == nullptr) || (volumeQ15 == 0)) {
     return;
   }
   /* the one-shot plays the first-half-reduced gain on the left channel */
   if (SpatialSound_ComputePositionedGains(maximumDistanceQ12,volumeQ15,worldPosition,&leftGainQ15,&rightGainQ15)) {
-    g_SoundPlayOneShot(leftGainQ15,rightGainQ15,*voiceSetRef,NULL);
+    g_SoundPlayOneShot(leftGainQ15,rightGainQ15,*voiceSetRef,nullptr);
   }
 }
 
@@ -198,7 +198,7 @@ void SpatialSound_UpdateDesiredPositionedGains
   uint32_t rightGainQ15;
 
   volumeQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
-  if ((slot == NULL) || (volumeQ15 == 0)) {
+  if ((slot == nullptr) || (volumeQ15 == 0)) {
     return;
   }
   /* Original quirk: the channels are mapped the other way round than in SpatialSound_PlayPositionedOneShot
@@ -225,23 +225,23 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
   SpatialSoundSlot *slotCursor;
 
   if (g_SoundCreateSampleVoiceSet(sampleAsset,&voiceSet) != 0) {
-    return NULL;
+    return nullptr;
   }
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
   do {
-    if (slotCursor->voiceSet == NULL) {
+    if (slotCursor->voiceSet == nullptr) {
       slotCursor->voiceSet = voiceSet;
       slotCursor->desiredLeftGainQ15 = 0;
       slotCursor->desiredRightGainQ15 = 0;
-      slotCursor->activeVoice = NULL;
+      slotCursor->activeVoice = nullptr;
       return slotCursor;
     }
     slotCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
   g_SoundReleaseSampleVoiceSet(voiceSet);
-  return NULL;
+  return nullptr;
 }
 
 
@@ -251,7 +251,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 
 {
-  if (slot != NULL) {
+  if (slot != nullptr) {
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
     memset(slot,0,sizeof(SpatialSoundSlot));
   }
@@ -271,7 +271,7 @@ void SpatialSoundPool_ClearDesiredGains(void)
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
   do {
-    if (slotCursor->voiceSet != NULL) {
+    if (slotCursor->voiceSet != nullptr) {
       slotCursor->desiredLeftGainQ15 = 0;
       slotCursor->desiredRightGainQ15 = 0;
     }
@@ -296,9 +296,9 @@ void SpatialSoundPool_ApplyDesiredGains(void)
   slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
   do {
-    if (slotCursor->voiceSet != NULL) {
+    if (slotCursor->voiceSet != nullptr) {
       existingVoice = slotCursor->activeVoice;
-      if (existingVoice == NULL) {
+      if (existingVoice == nullptr) {
         if (slotCursor->desiredLeftGainQ15 != 0 || slotCursor->desiredRightGainQ15 != 0) {
           /* the voice is stored whether or not it plays (NULL on failure) */
           g_SoundPlayLooping
@@ -309,7 +309,7 @@ void SpatialSoundPool_ApplyDesiredGains(void)
       }
       else if (slotCursor->desiredLeftGainQ15 == 0 && slotCursor->desiredRightGainQ15 == 0) {
         g_SoundStopVoice(existingVoice);
-        slotCursor->activeVoice = NULL;
+        slotCursor->activeVoice = nullptr;
       }
       else {
         g_SoundSetVoiceGains(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice);

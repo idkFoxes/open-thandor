@@ -122,7 +122,7 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
   header->heightPixels = frameHeightPixels;
   header->frameCount = 0;
   header->audioTrackCount = 0;
-  providerResult = frameProvider(NULL);
+  providerResult = frameProvider(nullptr);
   if (providerResult.noFrame) {
     return false;
   }
@@ -132,7 +132,7 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
   firstFramePixels = MOVIE_FRAME_PIXELS(firstFrame);
   byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
   outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
-  providerResult = frameProvider(NULL);
+  providerResult = frameProvider(nullptr);
   while (!providerResult.noFrame) {
     frame = providerResult.frameOrError;
     frameCount++;
@@ -140,7 +140,7 @@ Bool8 Movie_EncodeFlmBufferFromFrameProvider
                       (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,MOVIE_FRAME_PIXELS(frame));
     outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
     frameProvider(frame); /* release */
-    providerResult = frameProvider(NULL);
+    providerResult = frameProvider(nullptr);
   }
   frameProvider(firstFrame); /* release */
   byteCount = (uint32_t)((uint8_t *)outputCursor - (uint8_t *)outputBuffer);

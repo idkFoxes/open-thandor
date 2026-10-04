@@ -19,9 +19,9 @@ const uint64_t g_SoundDecodeMmxWordLaneMask2 = 0xFFFF00000000ull;
 const uint64_t g_SoundDecodeMmxWordLaneMask3 = 0xFFFF000000000000ull;
 
 /* the two cosine matrices of the .sam codec, set by CosineDerivedLookupTables_Init */
-short *g_CosineDerivedLookupAllocation = 0;
+short *g_CosineDerivedLookupAllocation = nullptr;
 
-short *g_CosineDerivedLookupSecondTable = 0;
+short *g_CosineDerivedLookupSecondTable = nullptr;
 
 /* Implementation ownership: audio/codec/sam. */
 
