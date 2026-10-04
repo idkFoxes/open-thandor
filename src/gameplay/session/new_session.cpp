@@ -56,15 +56,7 @@ static void InGameNewSession_ResetSessionState()
   uint32_t *nameSource;
   uint32_t *nameDestination;
 
-  g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
-  g_SessionNetworkTickCounter = 1;
-  g_HostCommandBatchSyncSentThisInterval = 0;
-  g_GameFactionRuntimeImage.tail.simulationTick = 1;
-  g_GameFactionRuntimeImage.tail.presentationTick = 0;
-  g_InGameSessionNotificationTimeoutTicks = 0;
-  g_InGameReadyStateToggleFlags = 0;
-  g_EndGameResultsCurrentMusicTrackId = 0;
-  g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
+  InGameSession_ResetTickState();
   g_InGameSessionStartedNetworked =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
        SESSION_NETWORK_ROLE_LOCAL;
@@ -128,11 +120,7 @@ static void InGameNewSession_ResetSessionState()
     frontendPlayer++;
   } while (remainingPlayers != 0);
   g_SessionTransferTimeoutTicks = 1024;
-  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
-  g_InGameStateTickSpinLock = 0;
-  g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
-  UiRuntime_SetSynchronizationHooks
-            (InGameRuntime_UpdateSimulationAndNetworkTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
+  InGameSession_InstallStepTimerAndHooks();
 }
 
 /* Whether the session name keeps titleChar: the characters Windows forbids in file names and '.' are dropped. */
@@ -187,98 +175,6 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
   }
 }
 
-/* Allocates the zeroed world object pool, the selection info panel resources of the local player and the in-game
-   root (a copy of g_InGameRuntimeDefaultImageTemplate with its control tree, world callbacks and camera limits) and
-   pushes the root onto the UI root stack. Returns true with the root in *outRoot; on failure returns false with
-   the error in *outError.
-*/
-static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *outError)
-
-{
-  void *objectPool;
-  InGameRuntimeRoot *inGameRoot;
-  SelectionPlayerRuntimeBlock *localPlayerBlock;
-  uint32_t *clearCursor;
-  uint32_t *copyCursor;
-  uint32_t *templateCursor;
-  int remainingCount;
-  uint32_t allocationError;
-  uint32_t stepError;
-
-  /* 4 MB pool for the world objects (INGAME_WORLD_OBJECT_RECORD_COUNT records), zeroed */
-  allocationError = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),&objectPool);
-  if (allocationError != 0) {
-    *outError = allocationError;
-    return false;
-  }
-  g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)objectPool - 1;
-  g_InGameWorldObjectRecords = (WorldObjectRecord *)objectPool;
-  clearCursor = (uint32_t *)objectPool;
-  for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0;
-       remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
-  if (!SelectionInfoPanel_InitResources
-                     ((SelectionInfoEntitySlots *)
-                      g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&stepError)) {
-    *outError = stepError;
-    return false;
-  }
-  allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
-  if (allocationError != 0) {
-    *outError = allocationError;
-    return false;
-  }
-  templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
-  g_InGameRuntimeRoot = inGameRoot;
-  /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
-  copyCursor = (uint32_t *)inGameRoot;
-  for (remainingCount = sizeof(InGameRuntimeRoot) / 4; remainingCount != 0; remainingCount--) {
-    *copyCursor = *templateCursor;
-    templateCursor++;
-    copyCursor++;
-  }
-  if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
-    *outError = stepError;
-    return false;
-  }
-  /* world input and command callbacks, camera limits, and the step hook for the world runtime */
-  /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
-  inGameRoot->worldOverlayCallback =
-       (void (*)(uint32_t, WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
-  (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
-       InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
-  (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
-       InGameWorldInput_ResolveContextActionAndCursor;
-  (inGameRoot->worldRuntime).selection.resolveContextActionSecondaryCallback =
-       InGameWorldInput_ResolveContextActionAndCursor;
-  (inGameRoot->worldRuntime).selection.beginPointerCaptureCallback =
-       InGameWorldInput_BeginPointerCapture;
-  (inGameRoot->worldRuntime).selection.updateDragSelectionCallback =
-       InGameWorldInput_UpdateDragSelectionAndCamera;
-  (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
-       InGameWorldInput_CommitPointerAction;
-  /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
-  (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-       (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
-  (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
-       InGameUiRuntime_DispatchWorldContextActionCallback;
-  (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
-  (inGameRoot->worldRuntime).maximumCameraDistanceQ12 = 19 * Q12_ONE;
-  (inGameRoot->worldRuntime).motion.minimumPitchAngle = INGAME_CAMERA_MINIMUM_PITCH_ANGLE16;
-  (inGameRoot->worldRuntime).motion.maximumPitchAngle = INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16;
-  (inGameRoot->worldRuntime).tickSpinLock = &g_InGameStateTickSpinLock;
-  (inGameRoot->worldRuntime).simulationAndNetworkTickCallback =
-       InGameRuntime_UpdateSimulationAndNetworkTick;
-  localPlayerBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-  inGameRoot->localPlayerMarkedCellCount = 0;
-  inGameRoot->localPlayerMarkedCells = localPlayerBlock->markedCells;
-  UiRootStack_Push(&g_InGameUiRootCallbacks,(UiRootNode *)inGameRoot);
-  *outRoot = inGameRoot;
-  return true;
-}
-
 /* Opens the level movie that plays while loading and shows its first frames, attaches the world arrays with the
    local player's faction, resets the game data defaults and loads the level resources, clears the notification
    queue and creates the terrain texture. Returns true on success; on failure returns false with the error in
@@ -289,38 +185,15 @@ static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint
 
 {
   WorldRuntimeContext *world;
-  uint16_t *loadingMoviePath;
-  MovieRuntime *firstFrameMovie;
-  uint32_t movieEndCode;
   PlayerRuntimeId localPlayerId;
   uint32_t localFactionIndex;
   uint32_t resetDefaultsError;
-  uint32_t *clearCursor;
-  int remainingCount;
   uint32_t stepError;
 
   world = &inGameRoot->worldRuntime;
-  if (!LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header,&loadingMoviePath,&stepError)) {
-    *outError = stepError;
+  if (!InGameSession_OpenLoadingMovieAndAttachObjects(levelMoviePath,&levelAsset->header,inGameRoot,outError)) {
     return false;
   }
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,nullptr,&stepError)) {
-    *outError = stepError;
-    return false;
-  }
-  if (!Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
-    *outError = movieEndCode;
-    return false;
-  }
-  inGameRoot->levelMovieRuntime = firstFrameMovie;
-  g_MoviePlaybackBaseFrameGroup = 0;
-  g_MoviePlaybackScheduleCounter = 0;
-  g_MoviePlaybackScheduleSpan = 0;
-  g_MoviePlaybackCurrentFrame = 0;
-  MoviePlayback_AdvanceToFrameAndPresent(0);
-  MoviePlayback_AdvanceToFrameAndPresent(1);
-  RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory);
-  WorldRuntime_AttachObjectArray(INGAME_WORLD_OBJECT_RECORD_COUNT,g_InGameWorldObjectRecords,world);
   localPlayerId = g_LocalPlayerRuntimeId;
   localFactionIndex = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->factionIndex;
   levelAsset->playerSlots[6].aiClassOrMode = localFactionIndex;
@@ -337,17 +210,7 @@ static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint
     *outError = stepError;
     return false;
   }
-  /* clear the four notification queue records (0x80 bytes) */
-  clearCursor = (uint32_t *)inGameRoot->notificationQueue;
-  for (remainingCount = 32; remainingCount != 0; remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
-  if (!TerrainCompositeTexture_Create(&stepError)) {
-    *outError = stepError;
-    return false;
-  }
-  return true;
+  return InGameSession_ClearNotificationsAndCreateTerrainTexture(inGameRoot,outError);
 }
 
 /* Takes the step spin lock and finishes the world while the step is held off: sets up the shading texture,
@@ -361,33 +224,12 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
 
 {
   WorldRuntimeContext *world;
-  uint32_t textureDimension;
-  uint32_t gridHalfSize;
-  uint32_t subresourceCount;
-  uint32_t linkOptionFlags;
   uint32_t mapMouseOptionFlags;
   uint32_t subsystemFailureError;
-  uint32_t gridScratchError;
 
   world = &inGameRoot->worldRuntime;
   g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
-  g_InGameSimulationStepTicks = 1;
-  textureDimension =
-       PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
-  gridHalfSize = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
-  subresourceCount =
-       PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
-  GraphicsShadingRuntime_InitializeGeneratedTexture(subresourceCount,gridHalfSize,textureDimension);
-  /* mirror the shading and mouse/panel options into the world runtime flags */
-  InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_SHADING_ENABLED,PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED) != 0);
-  linkOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0);
-  InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
-  InGameSession_SetWorldRuntimeFlag
-            (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
+  InGameSession_InitShadingAndMirrorViewOptions(world);
   mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   /* Original quirk: the (unreachable) failure of the optional subsystem below reports the map/mouse option flags
      as its error code, or the address of the resource bar page stack when bit 2 of them is set (left-over
@@ -414,58 +256,18 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
     OldUnitRuntime_MergeMasksAndReplayRecords();
     DebugHook_CampaignCarryOver(1);
   }
-  if (!GridScratch_AllocateForFieldGrid(world->fieldGrid,&gridScratchError)) {
-    *outError = gridScratchError;
+  if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
     return false;
   }
-  GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
-  GridInfluence_ClearDistanceBandsAndRefreshEntities(world->ownerListHead);
-  TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | 8;
   }
   else {
     inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~8u;
   }
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
-  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
+  InGameSession_RebuildUiGrids(inGameRoot);
   WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
   return true;
-}
-
-/* Reports this player as loaded, releases the step spin lock taken by InGameNewSession_FinishWorldUnderTickLock and
-   shows the player-status screen while keeping the lockstep running until every player is ready; then closes the
-   level movie and switches to the game page.
-*/
-static void InGameNewSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
-
-{
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
-  }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
-  UiFrame_FlushInputAndResetPendingTicks();
-  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  g_CursorVisibilityToken++;
-  InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-  do {
-    UiNode_InvalidateRoot(&inGameRoot->playerStatusNode);
-    InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-    UiFrame_Update(0);
-    UiFrame_Draw();
-    g_GraphicsFramebufferPresent(g_FramebufferAccess);
-    InGameRuntime_UpdateSimulationAndNetworkTick();
-  } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
-  inGameRoot->levelMovieRuntime = nullptr;
-  inGameRoot->playerStatusLineCount = 0;
-  UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
-  Movie_Close();
-  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
 }
 
 /* Starts the session notification timer and queues the level's five intro notification movies (consecutive ids
@@ -504,7 +306,9 @@ Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uin
 
   InGameNewSession_ResetSessionState();
   InGameNewSession_BuildSessionName((levelAsset->header).titleTextResourceIndex);
-  if (!InGameNewSession_CreateRoot(&inGameRoot,&stepError)) {
+  if (!InGameSession_CreateRoot
+         ((SelectionInfoEntitySlots *)g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&inGameRoot,
+          &stepError)) {
     return InGameNewSession_Fail(stepError,outError);
   }
   if (!InGameNewSession_LoadWorld(levelAsset,levelMoviePath,inGameRoot,&stepError)) {
@@ -513,7 +317,9 @@ Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uin
   if (!InGameNewSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {
     return InGameNewSession_Fail(stepError,outError);
   }
-  InGameNewSession_ReportReadyAndWaitForPlayers(inGameRoot);
+  /* the spin lock taken by InGameNewSession_FinishWorldUnderTickLock is released here */
+  InGameSession_ReportReadyAndWaitForPlayers(inGameRoot);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   InGameNewSession_QueueIntroNotifications();
   return true;
 }
