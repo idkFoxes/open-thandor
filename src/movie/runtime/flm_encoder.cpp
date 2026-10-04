@@ -19,21 +19,20 @@ static const uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels = 0xF0F0F000F0F0F0ull
 
 /* Implementation ownership: movie/runtime/flm_encoder. */
 
-/* MMX lane helpers for the 4x4 block encoders (not in the original, which does this inline with MMX
-   instructions; the helpers are inlined into Movie_EncodeFrame4x4Keyframe/Delta). Per 4-pixel row the original
-   loads each pixel (MOVD), duplicates each byte into a word (PUNPCKLBW with itself), shifts the words right by
-   6 (PSRLW) and adds them into an accumulator (PADDW) -- four 16-bit channel sums, one lane per pixel byte,
-   wrapping at 16 bits. After four rows PSRLW by 6, PACKUSWB and MOVD pack the four averages back into one
+/* Block-average helpers for the 4x4 block encoders (not in the original, which did this inline in SIMD code;
+   the helpers are inlined into Movie_EncodeFrame4x4Keyframe/Delta). The average of a 4x4 block keeps four
+   16-bit channel sums, one per pixel byte: every pixel adds (byte * 0x101) >> 6 to the sum of each of its four
+   bytes, wrapping at 16 bits. After the 16 pixels each sum >> 6 (at most 0xFF) is one byte of the average
    pixel. */
 
-/* One byte lane of one pixel after PUNPCKLBW with itself and PSRLW by 6. */
+/* One byte of one pixel scaled for the channel sum: (byte * 0x101) >> 6. */
 static __inline uint16_t Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
 {
   uint8_t value = (uint8_t)(pixel >> (lane * 8));
   return (uint16_t)((((uint16_t)value << 8) | value) >> 6);
 }
 
-/* PADDW of one 4-pixel row into the four 16-bit channel sums. */
+/* Adds one 4-pixel row to the four 16-bit channel sums (each wrapping at 16 bits). */
 static __inline uint64_t
 Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pixel1,PackedRgb24 pixel2,
                           PackedRgb24 pixel3)
@@ -50,9 +49,8 @@ Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pi
   return result;
 }
 
-/* PSRLW by 6, PACKUSWB, MOVD: the four channel averages as one pixel. The saturation to 0xFF can
-   never trigger (16 lanes of at most 0x3FF, shifted right by 6), so PACKUSWB's signed input view does not
-   matter either. */
+/* The four channel averages as one pixel: each sum >> 6, clamped to 0xFF (the clamp never triggers:
+   16 terms of at most 0x3FF, shifted right by 6). */
 static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 {
   PackedRgb24 color = 0;

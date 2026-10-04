@@ -28,7 +28,7 @@
 
 #define COSINE_DERIVED_INV_SQRT2_Q14 11585 /* 1/sqrt(2) in Q14: entry 0 of each row of the second table */
 
-/* Two 32-bit MMX lanes as one qword (high lane in the upper half), as PUNPCKLDQ builds them. */
+/* Two 32-bit lanes as one 64-bit value: highLane in bits 32-63, lowLane in bits 0-31. */
 #define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))
 
 /* Functions are grouped by semantic ownership. */
