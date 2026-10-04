@@ -362,14 +362,14 @@ open-thandor: the settings live in a readable thandor.ini instead of the origina
 
 **Functions** (8 public, 16 file-local):
 
-- [`PersistentSettings_FormatIni`](../../src/core/settings/persistent.cpp#L273) - Writes the ini text of every key whose dword is in presentMask; returns the text length (no NUL counted).
-- [`PersistentSettings_ParseIni`](../../src/core/settings/persistent.cpp#L535) - Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set.
-- [`PersistentSettings_Flush`](../../src/core/settings/persistent.cpp#L676) - Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image ...
-- [`PersistentSettings_Load`](../../src/core/settings/persistent.cpp#L844)
-- [`PersistentSettings_Read`](../../src/core/settings/persistent.cpp#L854) - Returns the setting dword at settingsOffsetBytes, or defaultValue when it was not loaded (no settings file, no such key in thandor.ini, or beyond the end of a short thandor.dat).
-- [`PersistentSettings_GetRegionOrFallback`](../../src/core/settings/persistent.cpp#L868) - Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when the whole region was not loaded.
-- [`PersistentSettings_WriteBlock`](../../src/core/settings/persistent.cpp#L884) - Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it dirty, even when nothing changed.
-- [`PersistentSettings_Write`](../../src/core/settings/persistent.cpp#L912) - Stores one setting dword in the image and marks it dirty, but only when the value actually changes (it is saved with the next change either way).
+- [`PersistentSettings_FormatIni`](../../src/core/settings/persistent.cpp#L275) - Writes the ini text of every key whose dword is in presentMask; returns the text length (no NUL counted).
+- [`PersistentSettings_ParseIni`](../../src/core/settings/persistent.cpp#L537) - Parses ini text into image (which the caller zeroed); returns the mask of the dwords the text set.
+- [`PersistentSettings_Flush`](../../src/core/settings/persistent.cpp#L678) - Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image ...
+- [`PersistentSettings_Load`](../../src/core/settings/persistent.cpp#L846)
+- [`PersistentSettings_Read`](../../src/core/settings/persistent.cpp#L856) - Returns the setting dword at settingsOffsetBytes, or defaultValue when it was not loaded (no settings file, no such key in thandor.ini, or beyond the end of a short thandor.dat).
+- [`PersistentSettings_GetRegionOrFallback`](../../src/core/settings/persistent.cpp#L870) - Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when the whole region was not loaded.
+- [`PersistentSettings_WriteBlock`](../../src/core/settings/persistent.cpp#L886) - Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it dirty, even when nothing changed.
+- [`PersistentSettings_Write`](../../src/core/settings/persistent.cpp#L914) - Stores one setting dword in the image and marks it dirty, but only when the value actually changes (it is saved with the next change either way).
 
 **Data** (1 shared, 9 file-local): `g_LocaleCountryCodeOverride`.
 

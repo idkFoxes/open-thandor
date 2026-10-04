@@ -34,12 +34,12 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 - [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L121)
 - [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L144)
 - [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L165) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
-- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L438)
-- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L447)
-- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L462)
-- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L467)
-- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L472)
-- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L478)
+- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L442)
+- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L451)
+- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L466)
+- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L471)
+- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L476)
+- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L482)
 
 **Data** (1 shared, 1 file-local): `g_ThandorFrameHeartbeat`.
 
@@ -81,8 +81,8 @@ No file comment; function families: `CommandLine_*` (10), `CoreAssets_*` (9), `G
 - [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L484) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
 - [`CPU_DetectFeatures`](../../src/platform/bootstrap/runtime.cpp#L508) - Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it (FATAL_ERROR_CPU_WITHOUT_MMX).
 - [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L526) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
-- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L762) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
-- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L781) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
+- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L766) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
+- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L785) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
 - 6 more: `GameRuntime_InitializeSpatialAudioAndRendering`, `Game_LoadCoreAssets`, `Game_PlayIntroMovies`, `DynAPI_Bootstrap`, `CommandLine_FindOption`, `CommandLine_Parse`
 
 **Data** (11 shared, 53 file-local): `g_CommandLineFindOption`, `g_LooseMoviePathPrefix`, `g_DatenHexPathUtf16`, `g_StatHexPathUtf16`, `g_GameStatTableImage`, `g_GameDataAuxState`, `g_FrontendPlayerListRows`, `g_IntroMoviePendingTicks` and 3 more.
@@ -342,18 +342,18 @@ The types of the module (structs, unions, enums and scalar typedefs in the origi
 
 No file comment; function families: `Win32File_*` (16), `FileSystem_*` (7), `Win32Drive_*` (5), `Win32FileSystem_*` (4).
 
-**Functions** (30 public, 3 file-local):
+**Functions** (30 public, 4 file-local):
 
-- [`FileSystem_BuildEnumerationStringTable`](../../src/platform/filesystem/win32.cpp#L152) - Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, ...
-- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L202) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
-- [`Win32File_GetLastWriteDosDate`](../../src/platform/filesystem/win32.cpp#L320) - Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in the low word) in *outDosDateTime and returns 0.
-- [`Win32File_GetLastWriteTimeHigh`](../../src/platform/filesystem/win32.cpp#L353) - Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes per step) in *outLastWriteTimeHigh and returns 0.
-- [`Win32Drive_GetVolumeSerialNumber`](../../src/platform/filesystem/win32.cpp#L382) - Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of ...
-- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L413) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
-- [`Win32Drive_CheckMediaReady`](../../src/platform/filesystem/win32.cpp#L427) - Reports whether a drive has usable media: returns false (ready) for fixed, network and other drives, true (not ready) for removable and CD-ROM drives.
-- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L443) - The whole-file load of FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath (see there), also used for loose files by Package_LoadEntry and Resource_Load (assets/package).
-- [`FileSystem_LoadWholeFile`](../../src/platform/filesystem/win32.cpp#L496) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
-- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L517) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
+- [`FileSystem_BuildEnumerationStringTable`](../../src/platform/filesystem/win32.cpp#L163) - Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, ...
+- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L213) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
+- [`Win32File_GetLastWriteDosDate`](../../src/platform/filesystem/win32.cpp#L333) - Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in the low word) in *outDosDateTime and returns 0.
+- [`Win32File_GetLastWriteTimeHigh`](../../src/platform/filesystem/win32.cpp#L366) - Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes per step) in *outLastWriteTimeHigh and returns 0.
+- [`Win32Drive_GetVolumeSerialNumber`](../../src/platform/filesystem/win32.cpp#L395) - Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of ...
+- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L426) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
+- [`Win32Drive_CheckMediaReady`](../../src/platform/filesystem/win32.cpp#L440) - Reports whether a drive has usable media: returns false (ready) for fixed, network and other drives, true (not ready) for removable and CD-ROM drives.
+- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L456) - The whole-file load of FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath (see there), also used for loose files by Package_LoadEntry and Resource_Load (assets/package).
+- [`FileSystem_LoadWholeFile`](../../src/platform/filesystem/win32.cpp#L509) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
+- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L530) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
 - 20 more: `FileSystem_LoadWholeFileAlternatePath`, `Win32File_WriteExactOrFlush`, `Win32File_GetPosition`, `Win32File_Seek`, `Win32File_Delete`, `Win32File_Move`, `Win32File_Copy`, `Win32File_CreateDirectoryRecursive`, `Win32File_RemoveDirectory`, `Win32Drive_GetFreeAndTotalBytes`, `Win32Drive_EnumerateLetters`, `Win32Path_ValidateDos83`, `Win32FileSystem_EnumerateDirectoryOrVolumeEntries`, `Win32File_ReadExact`, `Win32File_GetSize`, `Win32File_GetCurrentDirectory`, `Win32File_SetCurrentDirectory`, `Win32Drive_GetEngineTypeCode`, `Win32File_Open`, `Win32File_Close`
 
 **Data** (17 shared, 20 file-local): `g_ExecutableDirectoryUtf16`, `g_FileSystemCombinedPathScratchUtf16`, `g_FileSystemOpen`, `g_FileSystemClose`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `g_FileSystemGetSize`, `g_FileSystemSeek` and 9 more.
