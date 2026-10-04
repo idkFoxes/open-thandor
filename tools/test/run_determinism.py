@@ -25,6 +25,7 @@ import subprocess
 import sys
 import threading
 import time
+from game_env import game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
@@ -58,7 +59,7 @@ def run_once(folder, k, scenario, args, results):
     output = os.path.join(folder, 'statehash.txt')
     if os.path.exists(output):
         os.remove(output)
-    env = dict(os.environ, OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_WINDOWED='1',
+    env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 4) * 320), OPEN_THANDOR_WINDOW_Y=str((k // 4) * 260),
                OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(960 + k),
                OPEN_THANDOR_STATEHASH=str(args.steps), OPEN_THANDOR_STATEHASH_SEED=str(args.seed))

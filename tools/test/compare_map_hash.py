@@ -13,6 +13,7 @@ import subprocess
 import sys
 import threading
 import time
+from game_env import game_env
 
 MAP, STEPS, DIRS = sys.argv[1], int(sys.argv[2]), [os.path.abspath(d) for d in sys.argv[3:]]
 SCRIPT = "0 layout 1280 800\n6000 drag 785 496 900 496\n7000 drag 785 496 900 496\n10000 clickuntilingame 839 539 3000\n0 ingame\n1800000 quit\n"
@@ -25,7 +26,7 @@ def run(k, folder):
     out = os.path.join(folder, 'statehash.txt')
     if os.path.exists(out):
         os.remove(out)
-    env = dict(os.environ, OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_WINDOWED='1', OPEN_THANDOR_WINDOW_X=str(k * 330),
+    env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_WINDOWED='1', OPEN_THANDOR_WINDOW_X=str(k * 330),
                OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(980 + k),
                OPEN_THANDOR_STATEHASH=str(STEPS), OPEN_THANDOR_STATEHASH_SEED='12345', OPEN_THANDOR_STATEHASH_SPEED='5')
     exe = os.path.join(folder, 'thandor.exe')
