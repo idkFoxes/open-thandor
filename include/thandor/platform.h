@@ -13,5 +13,8 @@
 #include <thandor/platform/input.h>
 #include <thandor/platform/system.h>
 #include <thandor/platform/win32_constants.h>
+#ifdef THANDOR_PLATFORM_SDL3
+#include <thandor/platform/sdl3/platform.h>
+#endif
 
 #endif /* THANDOR_PLATFORM_H */

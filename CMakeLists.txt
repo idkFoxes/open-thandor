@@ -155,6 +155,30 @@ target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 # (/LARGEADDRESSAWARE:NO) so those pointers fit until the formats get explicit (de)serialisation.
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
+# Platform backend. OFF (default): DirectDraw, DirectInput, DirectSound, WinMM timers and the Win32 message pump, as
+# the original. ON: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the software
+# renderer is the same). SDL3 comes from find_package(SDL3), e.g. vcpkg: -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x86-windows.
+option(THANDOR_PLATFORM_SDL3 "Use SDL3 for window, input, timers, video presentation and audio" OFF)
+if(THANDOR_PLATFORM_SDL3)
+    # vcpkg ships Release and Debug only: RelWithDebInfo and MinSizeRel use the Release library
+    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release RelWithDebInfo)
+    set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release MinSizeRel)
+    find_package(SDL3 CONFIG REQUIRED)
+    target_sources(thandor_curated PRIVATE
+        src/platform/sdl3/audio.cpp
+        src/platform/sdl3/input.cpp
+        src/platform/sdl3/platform.cpp
+        src/platform/sdl3/timer.cpp
+        src/platform/sdl3/video.cpp
+    )
+    target_compile_definitions(thandor_curated PUBLIC THANDOR_PLATFORM_SDL3=1)
+    target_link_libraries(thandor_curated PUBLIC SDL3::SDL3)
+    # SDL3.dll next to thandor.exe
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:thandor>
+        VERBATIM)
+endif()
+
 if(THANDOR_DEV_TOOLS)
     target_sources(thandor_curated PRIVATE
         src/platform/debug/autoshot.cpp

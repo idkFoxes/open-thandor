@@ -69,6 +69,8 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
 Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
+GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void);
+
 Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 
 GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
@@ -96,6 +98,8 @@ void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSc
 void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
 
 void Graphics_RebuildFrustumPlanes(void);
+
+uint32_t Graphics_AllocateTables(void);
 
 uint32_t __cdecl Graphics_Init(void);
 

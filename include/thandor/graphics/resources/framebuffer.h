@@ -29,6 +29,14 @@ void GraphicsFramebuffer_EndAccessStub(void);
 
 void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
+void GraphicsFramebuffer_InitCaptureAsset
+          (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,
+          GraphicsPixelDimension captureWidth,GraphicsPixelDimension captureHeight);
+
+uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
+          (uint32_t pixel,GraphicsPackedPixelMask channelMask,GraphicsPixelChannelBitShift channelShift,
+          GraphicsPixelChannelBitCount channelBitCount);
+
 GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);

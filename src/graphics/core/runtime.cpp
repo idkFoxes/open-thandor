@@ -154,6 +154,11 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
   if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
     return;
   }
+#ifdef THANDOR_PLATFORM_SDL3
+  /* SDL3 backend: there is no primary surface to draw on from this (timer) thread; SdlVideo_Present composes
+     the cursor into every presented frame. */
+  return;
+#endif
   /* Windowed mode (developer tools, not in the original): the primary surface is the whole desktop, so drawing
      the cursor at framebuffer coordinates would paint over the desktop's top left corner.
      GraphicsFramebuffer_Present composes the cursor into the back surface every frame, so the timer refresh is
@@ -187,6 +192,15 @@ Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
     return true;
   }
   return false;
+}
+
+
+/* The software cursor frame selected by GraphicsCursor_SetFrameIndex (for backends that compose the cursor
+   themselves, such as the SDL3 backend). */
+GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void)
+
+{
+  return g_CursorFrameIndex;
 }
 
 
@@ -536,30 +550,16 @@ void Graphics_RebuildFrustumPlanes(void)
 }
 
 
-/* Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the DirectDraw adapters
-   (every one is a software renderer device) and their display modes and installs the DirectDraw surface
-   backend in the g_Graphics* slots. The display-mode hook installed before (the software renderer's) is kept
-   as g_GraphicsDisplayModeFinalize. Returns 0 on success, otherwise the error code of the failing step (never
-   0). The palette table is no longer read (only the original's hardware texture upload used it); it is still
-   allocated, like the texture slots, so the arena layout and with it the texture-set addresses that
-   GraphicsPrimitiveQueue_RadixSortForRendering sorts opaque packets by stay as they were.
-*/
-uint32_t __cdecl Graphics_Init(void)
+/* Graphics_Init's first step, shared with the SDL3 backend (SdlVideo_Init): allocates and clears the texture-slot
+   and palette tables and allocates the empty adapter and display-mode tables, in this order (the arena layout
+   the texture-set sort depends on). Returns 0 or the allocator's error code. */
+uint32_t Graphics_AllocateTables(void)
 
 {
-  TH_LEGACY_HRESULT hresult;
-  SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
-  uint32_t remainingAdapters;
   void *allocation;
   uint32_t *zeroCursor;
-  uint32_t displayAdapterIndex;
-  GraphicsAdapterRecord *adapter;
-  struct TH_LEGACY_GUID *driverGuid;
-  HINSTANCE ddrawModule;
   uint32_t allocError;
-  uint32_t resolveError;
-  IDirectDraw *directDraw;
 
   allocError = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *),&allocation);
   if (allocError != 0) {
@@ -593,6 +593,36 @@ uint32_t __cdecl Graphics_Init(void)
   }
   g_GraphicsDisplayModeCount = 0;
   g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocation;
+  return 0;
+}
+
+
+/* Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the DirectDraw adapters
+   (every one is a software renderer device) and their display modes and installs the DirectDraw surface
+   backend in the g_Graphics* slots. The display-mode hook installed before (the software renderer's) is kept
+   as g_GraphicsDisplayModeFinalize. Returns 0 on success, otherwise the error code of the failing step (never
+   0). The palette table is no longer read (only the original's hardware texture upload used it); it is still
+   allocated, like the texture slots, so the arena layout and with it the texture-set addresses that
+   GraphicsPrimitiveQueue_RadixSortForRendering sorts opaque packets by stay as they were.
+*/
+uint32_t __cdecl Graphics_Init(void)
+
+{
+  TH_LEGACY_HRESULT hresult;
+  SoftwareDisplayModeHookProc *displayModeHook;
+  uint32_t remainingAdapters;
+  uint32_t displayAdapterIndex;
+  GraphicsAdapterRecord *adapter;
+  struct TH_LEGACY_GUID *driverGuid;
+  HINSTANCE ddrawModule;
+  uint32_t allocError;
+  uint32_t resolveError;
+  IDirectDraw *directDraw;
+
+  allocError = Graphics_AllocateTables();
+  if (allocError != 0) {
+    return allocError;
+  }
   ddrawModule = DynDLL_Load(sz_DDRAW);
   if (ddrawModule == NULL) {
     return FATAL_ERROR_DLL_LOAD_FAILED;

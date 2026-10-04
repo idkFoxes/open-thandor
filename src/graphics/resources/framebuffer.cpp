@@ -102,7 +102,7 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 /* Clears a freshly allocated capture asset (dword by dword, as the original) and fills its 'gfx'
    header and its single source entry for a captureWidth x captureHeight ARGB8888 image. */
-static void GraphicsFramebuffer_InitCaptureAsset
+void GraphicsFramebuffer_InitCaptureAsset
           (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,
           GraphicsPixelDimension captureWidth,GraphicsPixelDimension captureHeight)
 
@@ -171,7 +171,7 @@ static Bool8 GraphicsFramebuffer_LockBackSurfaceForCapture(void)
 
 /* Expands one channel of a packed pixel to 8 bits: isolates it with its mask, shifts it down to bit 0 and
    then up so its top bit lands on bit 7 (the low bits stay zero, no replication). */
-static uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
+uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
           (uint32_t pixel,GraphicsPackedPixelMask channelMask,GraphicsPixelChannelBitShift channelShift,
           GraphicsPixelChannelBitCount channelBitCount)
 

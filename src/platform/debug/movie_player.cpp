@@ -151,6 +151,7 @@ void DebugMovie_ExportOne(const char *name)
   }
   width = g_ActiveMovie->fileHeader->widthPixels;
   height = g_ActiveMovie->fileHeader->heightPixels;
+#ifndef THANDOR_PLATFORM_SDL3 /* the SDL3 audio backend keeps no DirectSound buffer to read the soundtrack from */
   if (g_ActiveMovie->audioVoiceSet != NULL && g_ActiveMovie->audioVoiceSet->voices[0] != NULL) {
     IDirectSoundBuffer *buffer = g_ActiveMovie->audioVoiceSet->voices[0];
     WAVEFORMATEX format;
@@ -182,6 +183,7 @@ void DebugMovie_ExportOne(const char *name)
                   format.nChannels, format.wBitsPerSample, bytes1 + bytes2);
     }
   }
+#endif
   sprintf(fileName, "moviedump\\%s.rgb", name);
   video = fopen(fileName, "wb");
   for (;;) {

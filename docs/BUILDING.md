@@ -28,6 +28,23 @@ The game always draws with its software renderer and presents through DirectDraw
 and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed, and the display settings list
 only DirectDraw adapters. A `THANDOR.cfg` that still names an adapter index past that list starts on adapter 0.
 
+## SDL3 platform backend (`THANDOR_PLATFORM_SDL3`)
+
+With the CMake option `THANDOR_PLATFORM_SDL3` (default `OFF`) the game uses SDL3 instead of Win32, DirectDraw,
+DirectInput, WinMM timers and DirectSound for the window, the event pump, keyboard and mouse, the periodic timers,
+the video presentation and the audio (`src/platform/sdl3`, interface
+[`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)). The software renderer
+is unchanged: it draws into a memory framebuffer (RGB565 or XRGB8888) that is presented letterboxed through an
+SDL renderer, fullscreen on the desktop (or in a window with the developer tools' `OPEN_THANDOR_WINDOWED=1`).
+The display settings list one adapter, "SDL", with the modes from 640x480 up to the desktop size in 16 and
+32 bits. SDL3 is found with `find_package(SDL3)`, e.g. from vcpkg; `SDL3.dll` is copied next to `thandor.exe`:
+
+```bat
+cmake -S . -B build-sdl -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+      -DTHANDOR_PLATFORM_SDL3=ON -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x86-windows
+cmake --build build-sdl
+```
+
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 
 All test and debug aids of the port - the self-tests, the input scripts, automatic screenshots, the determinism
