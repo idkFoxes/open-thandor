@@ -19,8 +19,6 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct ArmyRuntimeSlot ArmyRuntimeSlot, *PArmyRuntimeSlot;
@@ -749,7 +747,7 @@ struct ModelResource {
     union {
         uint8_t reservedEC_1FF[276];
         struct {
-            int shadowMeshGroupOffset; /* +0xEC resource-relative offset of the mesh group the shadow pass draws, 0 = none */
+            int shadowMeshGroupOffset; /* resource-relative offset of the mesh group the shadow pass draws, 0 = none */
             uint8_t reservedF0_1FF[272];
         };
     };
@@ -838,7 +836,7 @@ struct GameEntityDamageState2C {
     union GameEntityDamageCounterOrTerminalReference4 counterOrTerminalReference; // Movement countdown/state or terminal entity reference selected by the active path.
     int remainingIntegrity; // Impact-subtracted integrity clamped against definition maximum.
     uint8_t reserved0C_1B[16]; // Unresolved damage/relation bytes.
-    uint32_t factionVisibilityBits1C; /* +0x1C (entity +0x50): two bits per faction, bit 1 = visible to that faction */
+    uint32_t factionVisibilityBits1C; /* at entity +0x50: two bits per faction, bit 1 = visible to that faction */
     uint8_t reserved20_23[4];
     Q12 trackedCoordinate0Q12; // First verified tracked coordinate mirrored from pathCoordinate0Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
     Q12 trackedCoordinate1Q12; // Second verified tracked coordinate mirrored from pathCoordinate1Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
@@ -865,7 +863,7 @@ struct GameEntityRuntimeCommon {
     Q12 trackedCoordinate0Q12; // First verified tracked coordinate mirrored with path/model coordinate 0.
     Q12 trackedCoordinate1Q12; // Second verified tracked coordinate mirrored with path/model coordinate 1.
     uint8_t reserved80_8B[12]; // Same bytes as ArmyRuntimeSlot.aiSiteScoreWeight .. aiSecondaryWorkspaceScoreWeight.
-    int aiCommandCooldownTicks; // +0x8C same dword as ArmyRuntimeSlot.aiUnitState: set to AI_UNIT_COMMANDED_STATE (8) on an AI order, counted down per AI tick of busy units.
+    int aiCommandCooldownTicks; // same dword as ArmyRuntimeSlot.aiUnitState: set to AI_UNIT_COMMANDED_STATE (8) on an AI order, counted down per AI tick of busy units.
     uint8_t reserved90_9F[16]; // Same bytes as ArmyRuntimeSlot.occupancyMarkRadius .. depthBinClass.
     RuntimeToken runtimeIdentityOrArmyAssetId; // Runtime identity or army asset identifier.
     uint8_t reservedA4_B7[20]; // Unresolved prefix retained.
@@ -945,7 +943,7 @@ struct ModelRuntimeSlotClassState {
     uint32_t classStateAC; // Class-discriminated runtime state.
     int32_t classStateB0; // Class-discriminated signed runtime state.
     int32_t classStateB4; // Class-discriminated signed runtime state.
-    uint32_t behaviorState; // +0xB8 class state machine or flags: ARMY_FACTORY_STATE_* (factories), ARMY_AIRCRAFT_STATE_* (aircraft), bit 0 = army linked (class 23 deployment), bits 1/2/4 (class 17 banking)
+    uint32_t behaviorState; // class state machine or flags: ARMY_FACTORY_STATE_* (factories), ARMY_AIRCRAFT_STATE_* (aircraft), bit 0 = army linked (class 23 deployment), bits 1/2/4 (class 17 banking)
     uint32_t classStateBC; // Class-discriminated; class 13: bit 0 = exit point (+0x78/+0x7C) not stored yet.
     uint32_t classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; verified selector input in class-14 placement/runtime paths.
     uint8_t reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
@@ -1015,68 +1013,68 @@ union ModelRuntimeSlotReferenceOrSavedOffset {
 
 struct ArmyRuntimeSlot {
     union ModelRuntimeSlotReferenceOrSavedOffset modelRuntimeOrSavedOffset; // Live ModelRuntimeSlot reference; serialized save image stores the model-pool-relative offset. Verified by the create/save/rebase paths.
-    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime;
     Ptr32<struct GameEntityRuntime> linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
-    FactionRuntimeIndex factionIndex; // Committed V218d army runtime field.
+    FactionRuntimeIndex factionIndex;
     struct ArmyRuntimeMovementControlState movementControl; // Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
-    ArmyMovementStateFlags movementStateFlags; // Committed V218d army runtime field.
-    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Committed V218d army runtime field.
-    Q12 commandCoordinate0Q12; // Committed V218d army runtime field.
-    Q12 commandCoordinate1Q12; // Committed V218d army runtime field.
-    Q12 commandCoordinate2Q12; // Committed V218d army runtime field.
-    ArmyCommandModeFlags commandModeFlags; // Committed V218d army runtime field.
-    ArmyCommandGeneration commandGeneration; // Committed V218d army runtime field.
-    Q12 actionVector0Q12; // Committed V218d army runtime field.
-    Q12 actionVector1Q12; // Committed V218d army runtime field.
-    Q12 actionVector2Q12; // Committed V218d army runtime field.
-    uint32_t runtimeState40; // Committed V218d army runtime field.
-    uint32_t visibilityRadius; // +0x44 largest ModelDefinition.visibilityRadius of the army's models; radius of its terrain occlusion (visibility) mask
-    uint32_t visibilityHeightOffset; // +0x48 largest model height + ModelDefinition.visibilityHeightOffset above the root node (visibility reference height)
+    ArmyMovementStateFlags movementStateFlags;
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime;
+    Q12 commandCoordinate0Q12;
+    Q12 commandCoordinate1Q12;
+    Q12 commandCoordinate2Q12;
+    ArmyCommandModeFlags commandModeFlags;
+    ArmyCommandGeneration commandGeneration;
+    Q12 actionVector0Q12;
+    Q12 actionVector1Q12;
+    Q12 actionVector2Q12;
+    uint32_t runtimeState40;
+    uint32_t visibilityRadius; // largest ModelDefinition.visibilityRadius of the army's models; radius of its terrain occlusion (visibility) mask
+    uint32_t visibilityHeightOffset; // largest model height + ModelDefinition.visibilityHeightOffset above the root node (visibility reference height)
     uint32_t weaponRangeQ12; // Largest shot selection range of the army's weapons (ArmyRuntime_RebuildDerivedSelectionMetrics).
     FieldGridRegionMask terrainOccupancyMask0; // First mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     FieldGridRegionMask terrainOccupancyMask1; // Second mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
-    Q12 movementPosition0Q12; // Committed V218d army runtime field.
-    Q12 movementPosition1Q12; // Committed V218d army runtime field.
-    uint32_t classState60; // +0x60..+0x68: no army code reads these (the former users were model runtimes typed as ArmyRuntimeSlot)
+    Q12 movementPosition0Q12;
+    Q12 movementPosition1Q12;
+    uint32_t classState60; // no army code reads these (the former users were model runtimes typed as ArmyRuntimeSlot)
     uint32_t classState64;
     uint32_t classState68;
-    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
-    Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
-    Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
-    Q12 movementTarget0Q12; // Committed V218d army runtime field.
-    Q12 movementTarget1Q12; // Committed V218d army runtime field.
-    uint32_t aiSiteScoreWeight; // +0x80 AI weight of general (workspace 05) sites, copied from the army asset record
-    uint32_t aiFactionAnchorScoreWeight; // +0x84 AI weight of the faction anchor points, copied from the army asset record
-    uint32_t aiSecondaryWorkspaceScoreWeight; // +0x88 AI weight of secondary workspace sites, copied from the army asset record
-    uint32_t aiUnitState; // +0x8C AI command state (AI_UNIT_COMMANDED_STATE when the AI gave an order), 0 on creation
-    uint32_t occupancyMarkRadius; // +0x90 largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
-    uint32_t aiUnitFlags; // +0x94 AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
-    uint32_t assignedTargetArmyRuntime; // +0x98 ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
-    ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
-    PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
-    uint32_t movementRetryCountdown; // +0xA4 ArmyMovementRuntime.retryCountdown; counted down by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
-    uint32_t runtimeStateA8; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset;
+    Q12 fallbackWorldYQ12;
+    Q12 fallbackWorldXQ12;
+    Q12 movementTarget0Q12;
+    Q12 movementTarget1Q12;
+    uint32_t aiSiteScoreWeight; // AI weight of general (workspace 05) sites, copied from the army asset record
+    uint32_t aiFactionAnchorScoreWeight; // AI weight of the faction anchor points, copied from the army asset record
+    uint32_t aiSecondaryWorkspaceScoreWeight; // AI weight of secondary workspace sites, copied from the army asset record
+    uint32_t aiUnitState; // AI command state (AI_UNIT_COMMANDED_STATE when the AI gave an order), 0 on creation
+    uint32_t occupancyMarkRadius; // largest ModelDefinition.occupancyMarkRadius; radius of occupancy bit 1 around the army
+    uint32_t aiUnitFlags; // AI unit flags (AI_UNIT_STATE94_GROUP_ASSIGNED)
+    uint32_t assignedTargetArmyRuntime; // ArmyRuntimeSlot * given as target by the AI or the player's selection; pool offset in saves
+    ModelRuntimeClassId depthBinClass;
+    PckArmyAssetIdCatalog armyAssetId;
+    uint32_t movementRetryCountdown; // ArmyMovementRuntime.retryCountdown; counted down by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
+    uint32_t runtimeStateA8;
     struct ArmyRuntimeArticulatedContactState articulatedContact; // Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState linkedChildOverloadedState; // Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters linkedChildSpawnParameters; // Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Three independently decremented pending child counters.
-    uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
-    ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
-    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; // Committed V218d army runtime field.
-    ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
-    uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12];
+    ArmyRuntimeFlags runtimeFlags;
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime;
+    ArmyRuntimeTimer runtimeTimer;
+    uint8_t reservedF8_FF[8];
     union {
         struct {
-            int stateOrTechnologyId; // Committed V218d army runtime field.
-            uint32_t runtimeState104; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric3; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric4; // Committed V218d army runtime field.
-            ArmySelectionMetric selectionMetric5; // Committed V218d army runtime field.
+            int stateOrTechnologyId;
+            uint32_t runtimeState104;
+            ArmySelectionMetric selectionMetric0;
+            ArmySelectionMetric selectionMetric1;
+            ArmySelectionMetric selectionMetric2;
+            ArmySelectionMetric selectionMetric3;
+            ArmySelectionMetric selectionMetric4;
+            ArmySelectionMetric selectionMetric5;
         };
-        int targetClassShotDamage[8]; /* +0x100 per target class (definition targetClassIndex): summed shot damage of the army's weapons */
+        int targetClassShotDamage[8]; /* per target class (definition targetClassIndex): summed shot damage of the army's weapons */
     };
 };
 
@@ -1086,37 +1084,37 @@ struct ModelRuntimeSlot {
     union ArmyRuntimeReferenceOrSavedOffset ownerArmyRuntimeOrSavedOffset;
     uint32_t attachmentCount;
     union {
-        uint8_t classPrefixState[40]; /* +0x10..+0x37 class-specific state, cleared by the constructor (weapon aim turn velocities and firing countdowns, ground movement control, class 13 timing at +0x10) */
+        uint8_t classPrefixState[40]; /* class-specific state, cleared by the constructor (weapon aim turn velocities and firing countdowns, ground movement control, class 13 timing at +0x10) */
         struct {
             uint8_t reserved10_2F[32];
-            uint32_t effectModelFlags; /* +0x30 bit 1 (value 2): an effect model drawn with the army graphics of binding 0 */
+            uint32_t effectModelFlags; /* bit 1 (value 2): an effect model drawn with the army graphics of binding 0 */
             uint8_t reserved34_37[4];
         };
         struct { /* moving classes 1, 2, 17, 18, 19 (ground, tracked, banking, water movement;
                     ModelRuntimeGroundMovementSteeringView / ModelRuntimeGroundMovementTrackView) */
-            struct ArmyRuntimeMovementControlState movementControl; /* +0x10 advance per tick (Q12), +0x14 signed turn velocity */
+            struct ArmyRuntimeMovementControlState movementControl; /* advance per tick (Q12) and signed turn velocity */
         };
         struct { /* turret classes 5..8 (ModelRuntimeWeaponAimStateView) */
             uint8_t turretReserved10_13[4];
-            ArmyTurnVelocityAngle16 yawTurnVelocityAngle16; /* +0x14 signed yaw turn velocity */
-            ArmyTurnVelocityAngle16 pitchTurnVelocityAngle16; /* +0x18 signed pitch turn velocity */
+            ArmyTurnVelocityAngle16 yawTurnVelocityAngle16; /* signed yaw turn velocity */
+            ArmyTurnVelocityAngle16 pitchTurnVelocityAngle16; /* signed pitch turn velocity */
         };
     };
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset;
-    uint32_t health; /* +0x3C current health; starts at ModelDefinition.maximumHealth */
+    uint32_t health; /* current health; starts at ModelDefinition.maximumHealth */
     /* +0x40 destruction effect channels: once health is gone, channel i spawns the definition's effect
        (+0x80 + 8 * i) at the model points with key i << 4 | 3 when its timer (from +0x84 + 8 * i) is 0
        (ArmyRuntime_ProcessReadyAttachmentChannels) */
     uint32_t destructionEffectTimers[8];
     struct ModelRuntimeClassLinkState classLinkState;
     struct ModelRuntimeSlotClassState classState;
-    uint32_t researchTechnologyId; /* +0x100 technology (TechnologyId) being researched */
-    int researchDurationTicks; /* +0x104 */
-    int researchElapsedTicks; /* +0x108 */
-    int researchEnergyLoadQ4; /* +0x10C Energy held while researching */
-    int researchXeniteCostQ4; /* +0x110 Xenite still to pay before research starts */
-    int damageEffectCooldownTicks; /* +0x114 ticks to the next damage smoke/fire effect (ArmyRuntime_EmitDamageThresholdEffect) */
-    int damageEffectPointIndex; /* +0x118 next damage emitter point of the model; -1 wraps to the first; constructor-cleared */
+    uint32_t researchTechnologyId; /* technology (TechnologyId) being researched */
+    int researchDurationTicks;
+    int researchElapsedTicks;
+    int researchEnergyLoadQ4; /* Energy held while researching */
+    int researchXeniteCostQ4; /* Xenite still to pay before research starts */
+    int damageEffectCooldownTicks; /* ticks to the next damage smoke/fire effect (ArmyRuntime_EmitDamageThresholdEffect) */
+    int damageEffectPointIndex; /* next damage emitter point of the model; -1 wraps to the first; constructor-cleared */
     uint32_t classState11C;
     uint8_t reserved120_13F[32];
     struct ModelRuntimeAttachmentDescriptor attachments[6];
@@ -1493,32 +1491,32 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
 };
 
 struct ArmyRuntimeClassUpdate21DefinitionView {
-    uint8_t opaqueGap0000_000B[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_000B[12]; // Not yet named.
     Q12 movementStepQ12;
-    uint8_t opaqueGap0010_0013[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0010_0013[4]; // Not yet named.
     int arcCoefficient;
-    uint8_t opaqueGap0018_002B[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0018_002B[20]; // Not yet named.
     PckEffectDefinitionIdCatalog modelPointEffectId;
     int modelPointStep;
-    uint8_t opaqueGap0034_0047[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0034_0047[20]; // Not yet named.
     uint32_t worldPointAllowedContext;
-    uint8_t opaqueGap004C_0053[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap004C_0053[8]; // Not yet named.
     Q12 placementHeightOffsetQ12; // ModelDefinition.placementHeightOffsetQ12
-    uint8_t opaqueGap0058_005F[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0058_005F[8]; // Not yet named.
     Q12 maximumHealth;
     Ptr32<void> rootNode;
-    uint8_t opaqueGap0068_00BF[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0068_00BF[88]; // Not yet named.
     uint32_t phaseInitial;
     uint32_t phaseDuration;
     int travelStepCount;
     int verticalArcCoefficient;
-    uint8_t opaqueGap00D0_00DB[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap00D0_00DB[12]; // Not yet named.
     DepthIntervalRadius32 footprintRadius;
-    uint8_t opaqueGap00E0_018F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap00E0_018F[176]; // Not yet named.
     Ptr32<struct EffectDefinition> removalEffect;
-    uint8_t opaqueGap0194_026B[216]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0194_026B[216]; // Not yet named.
     SoundAssetIndex terrainSoundAssetIndex;
-    uint8_t opaqueGap0270_0277[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0270_0277[8]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Shared placement-contact callback dispatch index; value vocabulary 0..4 documented by the placement callback table.
 };
 
@@ -1530,10 +1528,10 @@ struct ModelRuntimePlacementValidationView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -1564,7 +1562,7 @@ struct ArmyWeaponDefinitionView {
     FixedMathScale32 backwardStepScale; // Scale supplied to FixedVector_StepBackwardAlongOwnDirection for the class-7/8 articulated weapon recoil step.
     Q12 postLaunchVector0Q12; // Q12 value passed to the post-launch action-vector update.
     Q12 postLaunchVector1Q12; // Q12 value passed to the post-launch action-vector update.
-    uint8_t opaqueGap0048_0063[28]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0048_0063[28]; // Not yet named.
     Ptr32<struct MdlSerializedNodeHeader> rootNode; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferences rebases ModelDefinition.rootNodeOffsetOrPointer.
 };
 
@@ -1572,7 +1570,7 @@ struct RuntimeCollisionQueryView {
     Ptr32<struct ModelDefinition> modelDefinition; // Common collision-query layout: the first field is dereferenced directly for ModelDefinition.footprintRadius.
     Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Common collision-query layout: the second field supplies model-node depth bins.
     uint8_t reserved0008_00EF[232];
-    Ptr32<void> linkedRuntime; // +0xF0: the model runtime this unit is linked to (ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset), excluded from the collision test.
+    Ptr32<void> linkedRuntime; // the model runtime this unit is linked to (ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset), excluded from the collision test.
 };
 
 struct ModelRuntimeUpdateView {
@@ -1583,10 +1581,10 @@ struct ModelRuntimeUpdateView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -1602,11 +1600,11 @@ struct ModelDefinitionClass14PlacementView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
     PckModelDefinitionIdCatalog definitionId;
-    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved00C_023[24]; // Not yet named.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
@@ -1615,8 +1613,8 @@ struct ModelDefinitionClass14PlacementView {
     uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field20_0x6c;
@@ -1654,7 +1652,7 @@ struct ModelDefinitionClass14PlacementView {
     uint8_t field52_0xc5;
     uint8_t field53_0xc6;
     uint8_t field54_0xc7;
-    int claimedCellTag; /* +0xC8 stored << 24 into the resource cell the extractor claims */
+    int claimedCellTag; /* stored << 24 into the resource cell the extractor claims */
     uint8_t field59_0xcc;
     uint8_t field60_0xcd;
     uint8_t field61_0xce;
@@ -1672,30 +1670,30 @@ struct ModelDefinitionClass14PlacementView {
     uint8_t field73_0xda;
     uint8_t field74_0xdb;
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -1708,10 +1706,10 @@ struct ModelRuntimePlacementClass14View {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -1731,10 +1729,10 @@ struct ModelRuntimeClass14UpdateView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -1790,7 +1788,7 @@ struct ModelDefinitionVerticalDeploymentView {
     Q12 deploymentTravelLimitQ12; // Class-23 deployment travel threshold used to select endpoint transitions and sounds.
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
@@ -1799,8 +1797,8 @@ struct ModelDefinitionVerticalDeploymentView {
     uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field40_0x6c;
@@ -1833,28 +1831,28 @@ struct ModelDefinitionVerticalDeploymentView {
     uint32_t destructionEffectDelayTicks6;
     union EffectDefinitionReferenceOrSavedId destructionEffect7;
     uint32_t destructionEffectDelayTicks7;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0C0_0DB[28]; // Not yet named.
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
@@ -1879,10 +1877,10 @@ struct ModelRuntimeTimedEffectsUpdateView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -1898,11 +1896,11 @@ struct ModelDefinitionTimedEffectsUpdateView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
     PckModelDefinitionIdCatalog definitionId;
-    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved00C_023[24]; // Not yet named.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field10_0x50;
@@ -1911,8 +1909,8 @@ struct ModelDefinitionTimedEffectsUpdateView {
     uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field20_0x6c;
@@ -1945,23 +1943,23 @@ struct ModelDefinitionTimedEffectsUpdateView {
     uint32_t destructionEffectDelayTicks6;
     union EffectDefinitionReferenceOrSavedId destructionEffect7;
     uint32_t destructionEffectDelayTicks7;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0C0_0DB[28]; // Not yet named.
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
     uint8_t field69_0x1c0;
@@ -2110,11 +2108,11 @@ struct ModelDefinitionTimedEffectsUpdateView {
     uint8_t field212_0x252;
     uint8_t field213_0x253;
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -2147,7 +2145,7 @@ struct ModelDefinitionLinkedChildStateView {
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
@@ -2156,8 +2154,8 @@ struct ModelDefinitionLinkedChildStateView {
     uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field40_0x6c;
@@ -2210,26 +2208,26 @@ struct ModelDefinitionLinkedChildStateView {
     uint8_t field87_0xda;
     uint8_t field88_0xdb;
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
@@ -2279,7 +2277,7 @@ struct ModelDefinitionDestroyEffectsView {
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
@@ -2288,8 +2286,8 @@ struct ModelDefinitionDestroyEffectsView {
     uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field40_0x6c;
@@ -2322,32 +2320,32 @@ struct ModelDefinitionDestroyEffectsView {
     uint32_t destructionEffectDelayTicks6;
     union EffectDefinitionReferenceOrSavedId destructionEffect7;
     uint32_t destructionEffectDelayTicks7;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0C0_0DB[28]; // Not yet named.
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -2360,10 +2358,10 @@ struct ModelRuntimeDestroyEffectsView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2384,10 +2382,10 @@ struct ModelRuntimeGroundMovementTrackView {
     uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2418,7 +2416,7 @@ struct ModelDefinitionGroundMovementTrackView {
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field21_0x50;
@@ -2427,8 +2425,8 @@ struct ModelDefinitionGroundMovementTrackView {
     uint8_t field24_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field31_0x6c;
@@ -2481,30 +2479,30 @@ struct ModelDefinitionGroundMovementTrackView {
     uint8_t field78_0xda;
     uint8_t field79_0xdb;
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
     int waterDamageMultiplier; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -2533,7 +2531,7 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeLinkedChildBuildState linkedChildBuildState; // Class-local secondary-Army build and completed-slot counters.
     PckArmyAssetIdCatalog completedSecondaryArmyAssetIds[13]; // Thirteen dword slots from +0x78 through +0xAB. The definition slot-capacity bounds the reverse scan; +0xAC is independent state.
     uint32_t secondaryArmyAssetBuildState; // Two-state secondary-Army selection/build-completion state (0 idle/select, 1 building).
@@ -2549,7 +2547,7 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
     uint32_t energyLoadQ4; // Accumulator adjusted by the selected secondary Army asset's ArmyAssetRecord.energyLoadQ4 while active.
     uint32_t healthRegenerationDelayTicks;
     uint32_t dismantleTickCountdown;
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2570,10 +2568,10 @@ struct ModelRuntimeGroundMovementSteeringView {
     uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2607,7 +2605,7 @@ struct ModelDefinitionGroundMovementSteeringView {
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field24_0x50;
@@ -2616,8 +2614,8 @@ struct ModelDefinitionGroundMovementSteeringView {
     uint8_t field27_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field34_0x6c;
@@ -2670,30 +2668,30 @@ struct ModelDefinitionGroundMovementSteeringView {
     uint8_t field81_0xda;
     uint8_t field82_0xdb;
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
     int waterDamageMultiplier; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -2719,7 +2717,7 @@ struct ModelDefinitionTimedTargetProjectileView {
     AssetRecordByteCount byteSize;
     uint32_t flags;
     PckModelDefinitionIdCatalog definitionId;
-    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved00C_023[24]; // Not yet named.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
@@ -2732,8 +2730,8 @@ struct ModelDefinitionTimedTargetProjectileView {
     uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field20_0x6c;
@@ -2766,32 +2764,32 @@ struct ModelDefinitionTimedTargetProjectileView {
     uint32_t destructionEffectDelayTicks6;
     union EffectDefinitionReferenceOrSavedId destructionEffect7;
     uint32_t destructionEffectDelayTicks7;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0C0_0DB[28]; // Not yet named.
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
-    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Not yet named.
     uint32_t waterDamageThreshold;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -2804,10 +2802,10 @@ struct ModelRuntimeTimedTargetProjectileView {
     struct ModelRuntimeTimedTargetState timedTargetState; // Timed-target reload and ShotDefinition state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeTimedTargetLinkState timedTargetLinkState; // Traversal outputs and adjacent class-link state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2835,11 +2833,11 @@ struct ModelRuntimeWeaponAimStateView {
     uint8_t reserved30_37[8]; // Unresolved tail of the class-local aim/firing state prefix.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     uint32_t attachmentReloadTicks[8]; // Eight class-9 attachment countdowns at +0x60..+0x7C.
     uint32_t sharedInterShotTicks; // Class-9 shared inter-shot countdown at +0x80.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2871,10 +2869,10 @@ struct ModelRuntimeVerticalDeploymentView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeVerticalDeploymentLinkState deploymentState; // Class-23 vertical-deployment scalar travel and collision retry state.
     struct ModelRuntimeSlotClassState classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -2971,7 +2969,7 @@ struct ModelDefinitionArticulatedMovementView {
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId shotDefinitionReference;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved030_047[24]; // Not yet named.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     uint8_t field30_0x50;
@@ -2980,8 +2978,8 @@ struct ModelDefinitionArticulatedMovementView {
     uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId waterEmitterEffectDefinitionReference;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    uint32_t maximumHealth; /* +0x60 maximum health */
+    uint8_t reserved05C_05F[4]; // Not yet named.
+    uint32_t maximumHealth; /* maximum health */
     uint32_t rootNodeOffsetOrPointer;
     uint32_t modelFlags;
     uint8_t field40_0x6c;
@@ -3014,32 +3012,32 @@ struct ModelDefinitionArticulatedMovementView {
     uint32_t destructionEffectDelayTicks6;
     union EffectDefinitionReferenceOrSavedId destructionEffect7;
     uint32_t destructionEffectDelayTicks7;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0C0_0DB[28]; // Not yet named.
     uint32_t footprintRadius;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_167[136]; // Not yet named.
     union ShotDefinitionReferenceOrSavedId emitterShotDefinitionReference;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId emitterEffectDefinitionReference;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Not yet named.
     uint32_t buildEnergyLoadQ4;
-    uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
+    uint32_t energyLoadQ4; /* Energy demand (copied to the model runtime's energyLoadQ4) */
     union EffectDefinitionReferenceOrSavedId removalEffectDefinitionReference;
     int waterDamageMultiplier; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Not yet named.
     uint32_t footprintRadiusCopy; // Grid-derived runtime value selected through footprintRadiusClass; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1A4_1A7[4]; // Not yet named.
     uint32_t placementFlags;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1B7[12]; // Not yet named.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Not yet named.
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Not yet named.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
     uint32_t traversalSecondaryThreshold;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved26C_277[12]; // Not yet named.
     ArmyPlacementContactKindIndex32 placementContactKindIndex; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t occupancyMarkRadius;
 };
@@ -3052,10 +3050,10 @@ struct ModelRuntimeClass21UpdateView {
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
     uint32_t health; // Current health; starts at ModelDefinition.maximumHealth.
-    uint32_t destructionEffectTimers[8]; // +0x40 destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
+    uint32_t destructionEffectTimers[8]; // destruction effect channel timers, copied from ModelDefinition.destructionEffectDelayTicks0..7
     struct ModelRuntimeClassLinkState classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeClass21State class21State; // Class-21 trajectory/state-machine fields.
-    uint32_t researchTechnologyId; /* +0x100 see ModelRuntimeSlot */
+    uint32_t researchTechnologyId; /* see ModelRuntimeSlot */
     int researchDurationTicks;
     int researchElapsedTicks;
     int researchEnergyLoadQ4;
@@ -3072,32 +3070,32 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
     Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
-    struct ArmyRuntimeMovementControlState movementControl; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
-    ArmyMovementStateFlags movementStateFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 commandCoordinate0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 commandCoordinate1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 commandCoordinate2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmyCommandModeFlags commandModeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmyCommandGeneration commandGeneration; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 actionVector0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 actionVector1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 actionVector2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint32_t runtimeState40; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint32_t runtimeState44; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint32_t runtimeState48; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint32_t runtimeState4C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint8_t reserved50_57[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 movementPosition0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 movementPosition1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    struct ArmyRuntimeMovementControlState movementControl; // Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
+    ArmyMovementStateFlags movementStateFlags;
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime;
+    Q12 commandCoordinate0Q12;
+    Q12 commandCoordinate1Q12;
+    Q12 commandCoordinate2Q12;
+    ArmyCommandModeFlags commandModeFlags;
+    ArmyCommandGeneration commandGeneration;
+    Q12 actionVector0Q12;
+    Q12 actionVector1Q12;
+    Q12 actionVector2Q12;
+    uint32_t runtimeState40;
+    uint32_t runtimeState44;
+    uint32_t runtimeState48;
+    uint32_t runtimeState4C;
+    uint8_t reserved50_57[8];
+    Q12 movementPosition0Q12;
+    Q12 movementPosition1Q12;
     uint32_t stepStartHeading; // Class-3 walker: body heading at step start
     uint32_t stepEndHeading; // Class-3 walker: body heading at step end
     uint32_t leftFootGroundNormal; // Class-3 walker: left foot ground normal now (packed elevation << 16 | azimuth); target in fallbackWorldYQ12
-    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 fallbackWorldYQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 fallbackWorldXQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 movementTarget0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Q12 movementTarget1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset;
+    Q12 fallbackWorldYQ12;
+    Q12 fallbackWorldXQ12;
+    Q12 movementTarget0Q12;
+    Q12 movementTarget1Q12;
     uint32_t leftFootYQ12; // Class-3 walker: left foot Y (X is movementTarget0Q12)
     uint32_t rightFootYQ12; // Class-3 walker: right foot Y (X is movementTarget1Q12)
     uint32_t leftFootZQ12; // Class-3 walker: left foot Z
@@ -3109,23 +3107,23 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     int leftStepTargetZQ12; // Class-3 walker: left foot step target Z
     uint32_t rightStepTargetZQ12; // Class-3 walker: right foot step target Z
     uint32_t leftStepProgressQ12; // Class-3 walker: left step progress (0x1000 = step done); the right one is articulatedContact.terrainContactMode
-    struct ArmyRuntimeArticulatedContactState articulatedContact; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Terrain-contact and articulated movement state.
-    struct ArmyRuntimeLinkedChildOverloadedState linkedChildOverloadedState; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Mixed coordinate, command, heading, spawn, and state-history overlay.
-    struct ArmyRuntimeLinkedChildSpawnParameters linkedChildSpawnParameters; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Third linked-child spawn parameter triplet.
-    struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
-    uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    Ptr32<struct ModelRuntimeSlot> linkedModelRuntime; // +0xF0 ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset: the linked model runtime (e.g. a class-23 platform the walker docked on).
-    ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    uint32_t runtimeState104; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric0; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric1; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric2; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric3; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric5; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    struct ArmyRuntimeArticulatedContactState articulatedContact; // Terrain-contact and articulated movement state.
+    struct ArmyRuntimeLinkedChildOverloadedState linkedChildOverloadedState; // Mixed coordinate, command, heading, spawn, and state-history overlay.
+    struct ArmyRuntimeLinkedChildSpawnParameters linkedChildSpawnParameters; // Third linked-child spawn parameter triplet.
+    struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Three independently decremented pending child counters.
+    uint8_t reservedE0_EB[12];
+    ArmyRuntimeFlags runtimeFlags;
+    Ptr32<struct ModelRuntimeSlot> linkedModelRuntime; // ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset: the linked model runtime (e.g. a class-23 platform the walker docked on).
+    ArmyRuntimeTimer runtimeTimer;
+    uint8_t reservedF8_FF[8];
+    int stateOrTechnologyId;
+    uint32_t runtimeState104;
+    ArmySelectionMetric selectionMetric0;
+    ArmySelectionMetric selectionMetric1;
+    ArmySelectionMetric selectionMetric2;
+    ArmySelectionMetric selectionMetric3;
+    ArmySelectionMetric selectionMetric4;
+    ArmySelectionMetric selectionMetric5;
     uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments[6]; // Six fixed 0x20-byte attachment descriptors.
 };
