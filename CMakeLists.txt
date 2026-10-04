@@ -140,11 +140,11 @@ add_library(thandor_curated STATIC
     src/ui/frontend/lifecycle.cpp
     src/ui/frontend/main_loop.cpp
     src/ui/frontend/menu_room.cpp
+    src/ui/frontend/mission_briefing.cpp
     src/ui/frontend/network.cpp
     src/ui/frontend/page_actions.cpp
     src/ui/frontend/player.cpp
     src/ui/frontend/results.cpp
-    src/ui/frontend/scenario.cpp
     src/ui/frontend/session.cpp
     src/ui/frontend/settings.cpp
     src/ui/frontend/state.cpp

@@ -305,3 +305,133 @@ void Frontend_StateTick(void)
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   return;
 }
+
+/* Title marker of one level on the game selection page: highlighted when one of the other players (records
+   1..) has the level's bit clear in scenarioAvailabilityMask0..2[maskWordIndex], else normal. */
+static uint16_t FrontendScenarioList_LevelAvailabilityMarker(uint32_t maskWordIndex,uint32_t levelMaskBit)
+{
+  FrontendPlayerRuntimeRecord *player;
+  FrontendPlayerRuntimeBlockCount playersRemaining;
+
+  player = g_FrontendPlayerRuntimeBlocks;
+  playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  while (--playersRemaining != 0) {
+    player++;
+    if (((&player->scenarioAvailabilityMask0)[maskWordIndex] & levelMaskBit) == 0) {
+      return FRONTEND_TEXT_STYLE_HIGHLIGHTED;
+    }
+  }
+  return FRONTEND_TEXT_STYLE_NORMAL;
+}
+
+/* Frame update of the frontend root: the frameUpdate callback of g_FrontendUiRootCallbacks, which Frontend_Init
+   pushes on the UI root stack. Sorts the chat history, runs the timeout tick of the current network state,
+   plays the briefing movie in a loop and the movie view's mask pattern, shows the chat line only in network
+   games, updates the 3D menu room and the cursor from the hovered control, and on the game selection page
+   (single games tab) marks each level title that some other player does not have.
+*/
+
+void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext)
+
+{
+  FrontendNetworkListsRuntimeView *frontendRoot;
+  uint32_t networkState;
+  UiNodeBase *hoveredNode;
+  ScenarioCatalogDisplayRecord *levelRecord;
+  GraphicsCursorFrameIndex cursorFrame;
+  uint32_t levelMaskBit;
+  ScenarioCatalogRecordCount levelsRemaining;
+  uint32_t maskWordIndex;
+  uint32_t activePageIndex;
+  uint16_t *markerText;
+  uint32_t selectedTabIndex;
+  uint16_t availabilityMarker;
+  
+  networkState = g_FrontendNetworkState;
+  frontendRoot = (FrontendNetworkListsRuntimeView *)g_FrontendRootNode;
+  RecentTextHistory_SortAndBuildPointerList
+            (5,(RecentTextHistoryPointerList *)&((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount);
+  switch(networkState) {
+  case FRONTEND_NETWORK_STATE_BROWSING:
+    FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
+    break;
+  case FRONTEND_NETWORK_STATE_HOSTING:
+    FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(frontendRoot);
+    break;
+  case FRONTEND_NETWORK_STATE_JOINED:
+    FrontendTransfer_TickRequestTimeoutAndResetPage(frontendRoot);
+    break;
+  case FRONTEND_NETWORK_STATE_HOST_STARTING:
+    FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers();
+    break;
+  case FRONTEND_NETWORK_STATE_CLIENT_STARTING:
+    FrontendNetwork_TickDisconnectTimeoutAndResetSession();
+  }
+  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+    /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
+    if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != NULL) &&
+       !Movie_AdvanceFrame(NULL,NULL)) {
+      Movie_Rewind();
+    }
+    if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != NULL) {
+      SoftwareMaskBuffer_AdvancePatternByPercentTick
+                ((SoftwareMaskRuntimeView *)FRONTEND_UI(frontendRoot,moviePlaybackView));
+    }
+  }
+  /* bottom bar: empty page in a local game, the chat input line in a network game */
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
+  }
+  else {
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
+  }
+  (*g_FrontendModelPointerContextVtable.pointerMove)
+            (g_CursorOverrideY,g_CursorOverrideX,FRONTEND_UI(frontendRoot,menuRoomModelView));
+  hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
+                    (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
+  if (hoveredNode == UI_NODE_NONE) {
+    g_GraphicsCursorSetFrame(0);
+  }
+  else {
+    cursorFrame = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
+    g_GraphicsCursorSetFrame(cursorFrame);
+  }
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+    g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
+  }
+  activePageIndex = UiPageStack_ActivePageIndex
+                     ((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  if (activePageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
+    selectedTabIndex = UiSelectableGroup_SelectedIndex(3,
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
+    /* none selected gives 3, never the single-games tab */
+    if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != NULL)) {
+      levelsRemaining = g_ScenarioCatalog->levelRecordCount;
+      levelRecord = (ScenarioCatalogDisplayRecord *)
+                    ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
+      /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
+         code 0x8001 (highlighted) when one of the other players (records 1..) lacks it, else 0x8000.
+         The three mask words cover at most 96 levels; further levels are left unmarked. */
+      levelMaskBit = 1;
+      maskWordIndex = 0;
+      while (levelsRemaining != 0) {
+        availabilityMarker = FrontendScenarioList_LevelAvailabilityMarker(maskWordIndex,levelMaskBit);
+        markerText = TextResource_Resolve(levelRecord->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
+        *markerText = availabilityMarker;
+        levelRecord++;
+        levelMaskBit = levelMaskBit * 2;
+        if (levelMaskBit == 0) {
+          maskWordIndex = maskWordIndex + 1;
+          levelMaskBit = 1;
+          if (2 < maskWordIndex) {
+            break;
+          }
+        }
+        levelsRemaining = levelsRemaining - 1;
+      }
+    }
+  }
+}

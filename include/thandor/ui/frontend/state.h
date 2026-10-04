@@ -29,4 +29,12 @@ void Frontend_StateTick(void);
 extern uint32_t g_FrontendNetworkTickCounter;
 extern uint32_t g_FrontendTimerCountdownTicks;
 
+/* First code unit of a level title: rich-text style code, normal or highlighted (a level that some other player
+   of the session does not have). */
+#define FRONTEND_TEXT_STYLE_NORMAL 0x8000
+
+#define FRONTEND_TEXT_STYLE_HIGHLIGHTED 0x8001
+
+void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext);
+
 #endif /* THANDOR_UI_FRONTEND_STATE_H */

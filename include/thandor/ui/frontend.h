@@ -18,11 +18,11 @@
 #include <thandor/ui/frontend/lifecycle.h>
 #include <thandor/ui/frontend/main_loop.h>
 #include <thandor/ui/frontend/menu_room.h>
+#include <thandor/ui/frontend/mission_briefing.h>
 #include <thandor/ui/frontend/network.h>
 #include <thandor/ui/frontend/page_actions.h>
 #include <thandor/ui/frontend/player.h>
 #include <thandor/ui/frontend/results.h>
-#include <thandor/ui/frontend/scenario.h>
 #include <thandor/ui/frontend/session.h>
 #include <thandor/ui/frontend/settings.h>
 #include <thandor/ui/frontend/state.h>
