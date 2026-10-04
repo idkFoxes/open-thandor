@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/protocol/frontend_session.h>
+#include <thandor/network/protocol/lockstep.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -168,69 +169,16 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
   }
 }
 
-/* While some client's command record is missing: re-sends the last command batch to every client whose record
-   is also still missing and 0x10012 (wait) to the clients that already sent theirs. */
-static void FrontendNetwork_ResendBatchOrWaitToClients()
-
-{
-  FrontendPlayerRuntimeRecord *clientRecord;
-  FrontendPlayerRuntimeBlockCount remainingClients;
-
-  clientRecord = &g_FrontendPlayerRuntimeBlocks[1];
-  for (remainingClients = g_FrontendPlayerRuntimeBlockCount - 1; remainingClients != 0; remainingClients--) {
-    if (clientRecord->commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
-      UiTransfer_StagePacketAndSend(&clientRecord->endpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
-    }
-    else {
-      g_FrontendPacket10012Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10012_WAIT;
-      UiTransfer_StagePacketAndSend(&clientRecord->endpoint,&g_FrontendPacket10012Buffer.header);
-    }
-    clientRecord++;
-  }
-}
-
-/* Packs every non-empty 0x20-byte command record (command code in bits 8..31, player id in the low byte) into
-   the batch buffer and returns the number of packed records. With nothing pending the first record (the host's
-   own) is sent as a batch of one. */
-static uint32_t FrontendNetwork_BuildCommandBatch()
-
-{
-  const FrontendCommandPacketRecord *commandRecord;
-  FrontendCommandPacketRecord *batchRecord;
-  FrontendPlayerRuntimeBlockCount remainingPlayers;
-  uint32_t commandCount;
-
-  commandCount = 0;
-  commandRecord = g_FrontendPlayerCommandRecords;
-  batchRecord = g_FrontendCommandBatchPacketBuffer;
-  for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers--) {
-    if ((commandRecord->command.packedCommandAndPlayerId & 0xffffff00) != 0) {
-      *batchRecord = *commandRecord;
-      batchRecord++;
-      commandCount++;
-    }
-    commandRecord++;
-  }
-  if (commandCount == 0) {
-    *batchRecord = g_FrontendPlayerCommandRecords[0];
-    commandCount = 1;
-  }
-  return commandCount;
-}
-
-/* Executes the first commandCount records of the command batch locally. */
-static void FrontendNetwork_ExecuteCommandBatch(uint32_t commandCount)
-
-{
-  const FrontendCommandPacketRecord *commandRecord;
-
-  commandRecord = g_FrontendCommandBatchPacketBuffer;
-  for (; commandCount != 0; commandCount--) {
-    /* the handler (FRONTEND_COMMAND_CODE_BASE + code) must lie in the code section */
-    CommandDispatch_ExecuteRecord(FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,&commandRecord->command);
-    commandRecord++;
-  }
-}
+/* Lockstep channel of the frontend session (host side; resends while waiting are not gated). */
+static const LockstepHostChannel g_FrontendLockstepChannel = {
+  g_FrontendPlayerCommandRecords,
+  g_FrontendCommandBatchPacketBuffer,
+  FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE,
+  &g_FrontendPacket10012Buffer.header,
+  FRONTEND_PACKET_10012_WAIT,
+  FRONTEND_COMMAND_CODE_BASE,
+  FRONTEND_COMMAND_HANDLER_REGION_END
+};
 
 /* Packs the flags dword (plus the payload when complete) of every player's snapshot into the package scratch
    buffer, PCK-encodes the block, hands a copy (size dword + encoded bytes) to the outgoing transfer mailbox and
@@ -335,35 +283,22 @@ static void FrontendNetwork_TickSnapshotExchange()
 Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 
 {
-  FrontendPlayerRuntimeRecord *clientRecord;
-  FrontendPlayerRuntimeRecord *playerRecordEnd;
-  FrontendPlayerRuntimeBlockCount remainingClients;
   uint32_t commandCount;
 
   /* wait until every client has sent its command record for this tick */
-  playerRecordEnd = g_FrontendPlayerRuntimeBlocks + g_FrontendPlayerRuntimeBlockCount;
-  for (clientRecord = &g_FrontendPlayerRuntimeBlocks[1]; clientRecord < playerRecordEnd; clientRecord++) {
-    if (clientRecord->commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
-      FrontendNetwork_ResendBatchOrWaitToClients();
-      return true;
-    }
+  if (!Lockstep_AllClientsSubmitted()) {
+    Lockstep_ResendBatchOrWait(g_FrontendLockstepChannel);
+    return true;
   }
-  for (clientRecord = &g_FrontendPlayerRuntimeBlocks[1]; clientRecord < playerRecordEnd; clientRecord++) {
-    clientRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_CLEAR;
-  }
+  Lockstep_ClearClientSubmissions();
 
   g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
   FrontendCommandQueue_DequeueFirstIntoRecord(g_FrontendPlayerCommandRecords);
-  commandCount = FrontendNetwork_BuildCommandBatch();
-  g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
-       commandCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE;
-  clientRecord = &g_FrontendPlayerRuntimeBlocks[1];
-  for (remainingClients = g_FrontendPlayerRuntimeBlockCount - 1; remainingClients != 0; remainingClients--) {
-    UiTransfer_StagePacketAndSend(&clientRecord->endpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
-    clientRecord++;
-  }
+  commandCount =
+       Lockstep_PackBatch(g_FrontendLockstepChannel,g_FrontendPlayerRuntimeBlockCount,LockstepEmpty::SendHostRecord);
+  Lockstep_SendBatchToClients(g_FrontendLockstepChannel,g_FrontendPlayerRuntimeBlockCount);
   /* execute the batch locally as well */
-  FrontendNetwork_ExecuteCommandBatch(commandCount);
+  Lockstep_ExecuteRecords(g_FrontendLockstepChannel,commandCount);
   FrontendNetwork_TickSnapshotExchange();
   return false;
 }
