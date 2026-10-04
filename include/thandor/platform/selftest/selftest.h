@@ -29,6 +29,9 @@
      raster         golden hashes of the software renderer (raster_selftest.cpp): every entry of the 32-bit and
                     auxiliary triangle handler tables and every blit/fill/copy path draws seeded random
                     primitives with synthetic textures into a synthetic framebuffer, one hash line per group
+     hexscan        golden hashes of the hexagonal radius scans in src/world/terrain (hexscan_selftest.cpp): the
+                    overlay A/B, occupancy, flatten, height-band, auxiliary placement and sight drivers at seeded
+                    points on a synthetic field grid, one hash line per driver
      tables         hashes of the tables computed at startup (sine table built with sin(), .sam cosine
                     matrices, lighting/shading/software factor tables), to compare builds or compilers
      sam            the .sam decoder on LCG bytes and an encoder round trip of a synthetic waveform, one hash
@@ -44,5 +47,8 @@ int SelfTest_Run(const char *name);
 
 /* OPEN_THANDOR_SELFTEST=raster (raster_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestRaster(void);
+
+/* OPEN_THANDOR_SELFTEST=hexscan (hexscan_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestHexScan(void);
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

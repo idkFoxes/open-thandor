@@ -1211,6 +1211,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestRaster();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "hexscan") == 0) {
+        Thandor_SelfTestHexScan();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;
