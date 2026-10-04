@@ -25,10 +25,6 @@
 #define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
 /* Functions are grouped by semantic ownership. */
 
-Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t textureSourceBase);
-
-Bool8 GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
-
 GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
 void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset);
@@ -40,25 +36,6 @@ void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
 GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset,uint32_t *outErrorCode);
 
 GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
-
-GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
-          (GraphicsPaletteTextureSourceAsset *appendedAsset,
-          GraphicsPaletteTextureSourceAsset *baseAsset);
-
-void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
-          (GraphicsPaletteIndex sourcePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
-          GraphicsTextureSourceHeaderView *textureSource);
-
-void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
-          (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
-          GraphicsTextureSourceHeaderView *textureSource);
-
-uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
-          (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
-          GraphicsTextureSourceHeaderView *textureSource);
-
-void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-          (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderView *textureSource);
 
 extern GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3;
 

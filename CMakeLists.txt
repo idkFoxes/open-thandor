@@ -103,6 +103,7 @@ add_library(thandor_curated STATIC
     src/graphics/render/shadow_texture.cpp
     src/graphics/resources/framebuffer.cpp
     src/graphics/resources/palette.cpp
+    src/graphics/resources/palette_optimizer.cpp
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
     src/graphics/resources/texture_decompose.cpp
