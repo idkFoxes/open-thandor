@@ -129,8 +129,8 @@ No file comment; function families: `CommandDispatch_*` (12), `InGameCommandQueu
 - [`CommandDispatch_CachedCodeOf`](../../include/thandor/network/protocol/commands.h#L164) - Rebuild helper: the command code of Handler in the table of CodeBase, looked up once and cached (one cache per handler).
 - [`InGameCommand_Issue`](../../include/thandor/network/protocol/commands.h#L183) - Rebuild helper ("call locally or queue", the pattern of every command site in the original): a local session calls Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3) directly; a networked ...
 - [`FrontendCommand_Issue`](../../include/thandor/network/protocol/commands.h#L203) - The same for a lobby (frontend) command: Handler's code in the frontend command table, queued with FrontendCommandQueue_EnqueueLocalPlayerCommand.
-- [`CommandDispatch_ExecuteRecord`](../../src/network/protocol/commands.cpp#L590) - Rebuild helper (no original counterpart): executes one received command record of codeBase.
-- [`InGameCommand_IssueHandler`](../../src/network/protocol/commands.cpp#L630) - Rebuild helper (no original counterpart), declared in commands.h: InGameCommand_Issue for a handler chosen at run time.
+- [`CommandDispatch_ExecuteRecord`](../../src/network/protocol/commands.cpp#L595) - Rebuild helper (no original counterpart): executes one received command record of codeBase.
+- [`InGameCommand_IssueHandler`](../../src/network/protocol/commands.cpp#L635) - Rebuild helper (no original counterpart), declared in commands.h: InGameCommand_Issue for a handler chosen at run time.
 - 2 more: `CommandDispatch_ResolveHandler`, `CommandDispatch_CodeOfHandler`
 
 **Data** (0 shared, 9 file-local): `g_FrontendCommandQueueRecords`, `g_FrontendCommandQueueEnd`, `g_InGameCommandQueueRecords`, `g_InGameCommandQueueEnd`, `g_FrontendCommandTable`, `g_InGameCommandTable`, `g_FrontendCommandValidation`, `g_InGameCommandValidation` and 1 more.
