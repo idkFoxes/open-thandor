@@ -681,3 +681,121 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   return;
 }
 
+/* Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;
+   a negative value repairs and goes to the entity its runtime link points at). A destroyed entity passes the
+   overkill on to its parent model's army, or, without a parent, is turned to the impact angle (definition class 0
+   with placementContactKindIndex 0) and counted in the score counters: a loss for its faction, a kill for
+   sourceFactionIndex (the heavier counters D/F instead of C/E for classes handled by
+   ArmyRuntime_ClassCommandHandlerGroupA). Repair beyond the definition maximum (maximumHealth) is clamped and the
+   excess handed to the first linked army that is not at full integrity.
+*/
+void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
+          (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
+          ImpactDamageValue32 impactValue,GameEntityRuntime *targetEntityRuntime)
+
+{
+  int *integrityField;
+  GameEntityRuntimeFlags *runtimeFlagsField;
+  FactionRelationCounter *relationCounter;
+  ModelRuntimeSlot *attachedModelRuntime;
+  GameEntityRuntime *attachmentCursor;
+  void *definitionRecord;
+  int maximumIntegrity;
+  int previousIntegrity;
+  int overkillIntegrity;
+  int repairExcess;
+  int victimFactionIndex;
+  int victimClassId;
+  int attachmentsRemaining;
+  ModelRuntimeNode *parentNode;
+
+  if (impactValue < 0) {
+    targetEntityRuntime = THANDOR_PTR32_AT(GameEntityRuntime, (targetEntityRuntime->common).ownership.runtimeLink);
+  }
+  (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state08 = 0;
+  (targetEntityRuntime->common).pathingAndImpactState.impactReaction.reactionCode09 = 2;
+  (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state0A = 0;
+  (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state0B = 0;
+  if (0 < (targetEntityRuntime->common).damageState.remainingIntegrity) {
+    maximumIntegrity =
+         ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
+         maximumHealth;
+    integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+    previousIntegrity = *integrityField;
+    *integrityField = *integrityField - impactValue;
+    /* the impact used up the remaining integrity: the entity is destroyed */
+    if (previousIntegrity <= impactValue) {
+      overkillIntegrity = (targetEntityRuntime->common).damageState.remainingIntegrity;
+      runtimeFlagsField = &(targetEntityRuntime->common).runtimeFlags;
+      *runtimeFlagsField = *runtimeFlagsField | 8;
+      parentNode = ((targetEntityRuntime->common).ownership.modelNode)->parentNode;
+      (targetEntityRuntime->common).damageState.counterOrTerminalReference.terminalEntity =
+           targetEntityRuntime;
+      (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
+      if (parentNode == NULL) {
+        definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
+        if ((((ModelDefinition *)definitionRecord)->runtimeClassId == 0) &&
+           (((ModelDefinition *)definitionRecord)->placementContactKindIndex == 0)) {
+          (((targetEntityRuntime->common).ownership.modelNode)->modelPayload).worldRotationAngle0 =
+               impactAngle;
+        }
+        if (impactValue != 0) {
+          /* The original's branch here tests a CPU flag that is left over from a multiplication (measured on
+             an AMD Zen 3: unchanged), so it still holds the impactValue == 0 test, whose own branch already left
+             for zero; the branch is never taken and the counters are always updated. The C follows that. */
+          victimFactionIndex =
+               ((ArmyRuntimeSlot *)(targetEntityRuntime->common).ownership.runtimeLink)->factionIndex;
+          victimClassId =
+               ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
+               runtimeClassId;
+          relationCounter = &g_GameFactionRuntimeImage.records[victimFactionIndex].relationCounterC;
+          *relationCounter = *relationCounter + 1;
+          relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
+          *relationCounter = *relationCounter + 1;
+          if (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[victimClassId] ==
+              ArmyRuntime_ClassCommandHandlerGroupA) {
+            relationCounter = &g_GameFactionRuntimeImage.records[victimFactionIndex].relationCounterD;
+            *relationCounter = *relationCounter + 1;
+            relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterF;
+            *relationCounter = *relationCounter + 1;
+            relationCounter = &g_GameFactionRuntimeImage.records[victimFactionIndex].relationCounterC;
+            *relationCounter = *relationCounter - 1;
+            relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
+            *relationCounter = *relationCounter - 1;
+          }
+        }
+      }
+      else {
+        /* the overkill goes on to the parent's army */
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-overkillIntegrity,
+                                                    (parentNode->runtimePayload).modelRuntime);
+      }
+    }
+    else {
+      integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+      repairExcess = maximumIntegrity - *integrityField;
+      if (repairExcess == 0 || maximumIntegrity < *integrityField) {
+        /* repaired to or beyond the maximum: clamp, the (negative) excess repairs a linked army */
+        integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+        *integrityField = *integrityField + repairExcess;
+        /* common.ownership.ownerIndex is the model runtime's attachmentCount here, the attached child model
+           runtimes are its attachments[] with a stride of 0x20 (attachmentCursor advances by those 0x20 bytes) */
+        attachedModelRuntime = (targetEntityRuntime->classPayload).impactOwnerLinks.attachment0ChildModelRuntime;
+        attachmentCursor = targetEntityRuntime;
+        for (attachmentsRemaining = (targetEntityRuntime->common).ownership.ownerIndex; attachmentsRemaining != 0;
+             attachmentsRemaining--) {
+          /* the child's health against its definition's maximumHealth: not at full health */
+          if ((attachedModelRuntime != NULL) &&
+             (attachedModelRuntime->health !=
+              attachedModelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth)) {
+            ArmyRuntime_ApplyDamageAndPropagateToParent(repairExcess,attachedModelRuntime);
+            return;
+          }
+          attachedModelRuntime = (attachmentCursor->classPayload).impactOwnerLinks.attachment1ChildModelRuntime;
+          attachmentCursor =
+               (GameEntityRuntime *)&(attachmentCursor->common).commandTarget.targetWorldXQ12;
+        }
+      }
+    }
+  }
+}

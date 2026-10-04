@@ -1262,3 +1262,60 @@ ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
         /* 3 */ THANDOR_FN(ArmyPlacementContact_InitializeArticulatedSuspension),
         /* 4 */ THANDOR_FN(ArmyPlacementContact_ApplyTopSurfaceHeight)
     }};
+
+/* In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
+   InGameUiCommand_BeginInteractionByMode): creates army armyAssetId at the clicked position for the faction set
+   by PlayerRuntime_SetPlacementFaction and keeps it as the player's placed army (placedArmyToken, as an offset from
+   g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
+*/
+void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+          PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId)
+
+{
+  SelectionPlayerRuntimeBlock *playerBlock;
+  ArmyRuntimeSlot *createdRuntime;
+
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  createdRuntime = ArmyRuntime_CreateInstanceFromAsset
+                    (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,worldXQ12,worldYQ12,playerBlock->placementFactionIndex,
+                     armyAssetId,
+                     &g_InGameRuntimeRoot->worldRuntime,NULL);
+  if (createdRuntime != NULL) {
+    playerBlock->placedArmyToken =
+         (uint32_t)((uintptr_t)createdRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+    return;
+  }
+  playerBlock->placedArmyToken = 0;
+}
+
+/* In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
+   INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (placementFactionIndex) that the player's next placed
+   army belongs to.
+*/
+void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlacementFactionIndex placementFactionIndex)
+
+{
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placementFactionIndex = placementFactionIndex;
+}
+
+/* In-game command INGAME_COMMAND_PLACEMENT_SET_ARMY (clicking an existing army in placement sub-mode 2, from
+   InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (placedArmyToken); armyToken is its
+   offset from g_ArmyRuntimeRebaseBaseMinusOne.
+*/
+void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlacedArmyToken armyToken)
+
+{
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken = armyToken;
+}
+
+/* In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
+   InGameUiCommand_EndInteractionByMode): forgets the player's placed army (placedArmyToken).
+*/
+void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          uint32_t unusedZero2)
+
+{
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken = 0;
+}

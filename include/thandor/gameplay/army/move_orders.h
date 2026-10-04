@@ -106,4 +106,8 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
 void ArmyRuntime_ApplyTargetPositionCommand
           (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime);
 
+void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime);
+
+Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_MOVE_ORDERS_H */

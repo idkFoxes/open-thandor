@@ -766,3 +766,85 @@ void ArmyRuntime_ApplyTargetPositionCommand
   armyRuntime->commandGeneration = commandGeneration;
   return;
 }
+
+/* Stops an entity where it stands (used by the stop command on the selection): clears the command flags
+   0x01, 0x08, 0x10 and 0x20 and sets the path target and both tracked coordinate pairs to the current
+   x/y position of its model.
+*/
+void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime)
+
+{
+  GameEntityCommandFlags *commandFlagsField;
+  ModelRuntimeNode *ownerModelNode;
+  GraphicsWorldCoordinateQ12 modelX;
+  GraphicsWorldCoordinateQ12 modelY;
+
+  ownerModelNode = (entityRuntime->common).ownership.modelNode;
+  commandFlagsField = &(entityRuntime->common).commandFlags;
+  *commandFlagsField = *commandFlagsField &
+                      ~(uint32_t)(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED |
+                                  ARMY_MOVEMENT_ROUTE_POINT_REACHED | ARMY_MOVEMENT_TARGET_FOLLOWING);
+  modelX = (ownerModelNode->worldTransform).translation.x;
+  modelY = (ownerModelNode->worldTransform).translation.y;
+  (entityRuntime->common).pathCoordinate0Q12 = modelX;
+  (entityRuntime->common).pathCoordinate1Q12 = modelY;
+  (entityRuntime->common).trackedCoordinate0Q12 = modelX;
+  (entityRuntime->common).trackedCoordinate1Q12 = modelY;
+  (entityRuntime->common).damageState.trackedCoordinate0Q12 = modelX;
+  (entityRuntime->common).damageState.trackedCoordinate1Q12 = modelY;
+  return;
+}
+
+/* Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
+   1 aims at a target entity (its model position, raised by the definition's aimHeightOffsetQ12; class 0x15
+   aims at its first child node), flag 2 at a fixed world position. A target entity that the owner's faction can
+   no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or
+   returns false when there is none.
+*/
+Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
+
+{
+  GameEntityRuntime *commandTargetEntity;
+  uint32_t visibilityMask;
+  ModelRuntimeSlot *targetModelRuntime;
+  ModelRuntimeNode *targetModelNode;
+
+  /* Original quirk: on failure the original leaves the position undefined (left-over intermediate values), and
+     one caller still copies the Z value into a local. The port writes zeros instead, so *outPosition is always
+     written. */
+  outPosition->xQ12 = 0;
+  outPosition->yQ12 = 0;
+  outPosition->zQ12 = 0;
+  if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
+    if (((targetState->common).commandTarget.targetFlags & 2) == 0) {
+      return false;
+    }
+    outPosition->xQ12 = (targetState->common).commandTarget.targetWorldXQ12;
+    outPosition->yQ12 = (targetState->common).commandTarget.targetWorldYQ12;
+    outPosition->zQ12 = (targetState->common).commandTarget.targetWorldZQ12;
+    return true;
+  }
+  commandTargetEntity = (targetState->common).commandTarget.targetEntity;
+  if (commandTargetEntity == NULL) {
+    return false;
+  }
+  /* two bits per faction; the upper one = the target is visible to that faction */
+  visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 31);
+  targetModelRuntime = (ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord;
+  if (((commandTargetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) == 0) {
+    /* the owner's faction lost sight of the target: drop it */
+    (targetState->common).commandTarget.targetEntity = NULL;
+    (targetState->common).commandTarget.targetFlags = 0;
+    return false;
+  }
+  targetModelNode = (commandTargetEntity->common).ownership.modelNode;
+  if (targetModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+    targetModelNode = targetModelNode->childNodes[0];
+  }
+  outPosition->xQ12 = (targetModelNode->worldTransform).translation.x;
+  outPosition->yQ12 = (targetModelNode->worldTransform).translation.y;
+  outPosition->zQ12 =
+       (targetModelNode->worldTransform).translation.z +
+       targetModelRuntime->definitionOrSavedId.runtimeDefinition->aimHeightOffsetQ12;
+  return true;
+}

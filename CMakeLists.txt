@@ -86,6 +86,8 @@ add_library(thandor_curated STATIC
     src/gameplay/army/turrets.cpp
     src/gameplay/army/walker.cpp
     src/gameplay/army/weapons.cpp
+    src/gameplay/faction/army_stock.cpp
+    src/gameplay/faction/carryover.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
     src/gameplay/input/world.cpp

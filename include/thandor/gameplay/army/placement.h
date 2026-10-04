@@ -141,4 +141,16 @@ extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTabl
 
 extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount;
 
+void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+          PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId);
+
+void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlacementFactionIndex placementFactionIndex);
+
+void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlacedArmyToken armyToken);
+
+void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          uint32_t unusedZero2);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */

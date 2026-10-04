@@ -84,4 +84,28 @@ void PlayerPairList_RemoveFirstMatch
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
           SelectionPlayerPairValue worldXQ12);
 
+/* GameFactionRuntime_IsRecentTimedRelationState: a pending relation state (2, 5, 9) does not advance again
+   within this many simulation ticks of the pair's last change. */
+#define FACTION_RELATION_CHANGE_COOLDOWN_TICKS 600
+
+/* Faction merge (relation state 11) without a clear survivor: this random bit clear = the second faction survives */
+#define FACTION_MERGE_RANDOM_DIRECTION_BIT 0x2000
+
+void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+          FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
+
+void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+          FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
+
+void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void);
+
+Bool8 GameFactionRuntime_IsRecentTimedRelationState
+          (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
+
+void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeBase activeFactionCodeForFirst,
+          FactionNotificationCodeBase activeFactionCodeForSecond,
+          FactionRelationStateNibble stateFirstTowardSecond,
+          FactionRelationStateNibble stateSecondTowardFirst,FactionRuntimeIndex firstFactionIndex,
+          FactionRuntimeIndex secondFactionIndex);
+
 #endif /* THANDOR_GAMEPLAY_FACTION_RELATIONS_H */

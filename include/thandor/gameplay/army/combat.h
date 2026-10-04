@@ -47,4 +47,8 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
 
 void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
+void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
+          (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
+          ImpactDamageValue32 impactValue,GameEntityRuntime *targetEntityRuntime);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_COMBAT_H */
