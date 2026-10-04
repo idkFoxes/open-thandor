@@ -47,11 +47,23 @@
 
 /* Functions are grouped by semantic ownership. */
 
-Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
+/* pathCapacity: code units of the buffer holding path */
+Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,
+                                size_t pathCapacity = WIDE_PATH_MAX_CODE_UNITS);
 
 Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
 
-void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory);
+/* destinationCapacity: code units of the destination buffer */
+void WidePath_CombineDirectoryAndLeafBounded
+          (uint16_t *destination,size_t destinationCapacity,uint16_t *leaf,uint16_t *directory);
+
+/* Combines into a destination array; its size bounds the result (see WidePath_CombineDirectoryAndLeafBounded). */
+template <size_t DestinationCapacity>
+inline void WidePath_CombineDirectoryAndLeaf
+          (uint16_t (&destination)[DestinationCapacity],uint16_t *leaf,uint16_t *directory)
+{
+  WidePath_CombineDirectoryAndLeafBounded(destination,DestinationCapacity,leaf,directory);
+}
 
 uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path);
 

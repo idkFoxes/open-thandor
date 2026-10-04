@@ -7,6 +7,7 @@
 
 #include <thandor/core/math/spline.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -80,6 +81,18 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   WorldMotionSplineKeyframe *keyframeCursor;
   float *floatCursor;
 
+  /* The original requires 2 <= keyframeCount <= 9 unchecked (1 or 0 makes the do-while loops below run ~2^32
+     times, 10 or more needs more than the 32 rows); clamped here because both write outside the 32x32
+     workspace. The only caller (world/camera/motion_spline.cpp) passes 2. */
+  if (keyframeCount < 2 || keyframeCount > (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4) {
+    static Bool8 s_KeyframeCountLogged = false;
+    if (!s_KeyframeCountLogged) {
+      s_KeyframeCountLogged = true;
+      Thandor_Log("spline: keyframe count %d out of 2..%d, clamped",(int)keyframeCount,
+                  (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4);
+    }
+    keyframeCount = (keyframeCount < 2) ? 2 : (CUBIC_SPLINE_MATRIX_ORDER + 4) / 4;
+  }
   /* In the matrix loops floatCursor points at the top-left of segment s's 4x4 diagonal block and steps one
      block (4 rows and 4 columns) per segment; indices below are written as row * order + column. */
   firstChannelValue = (int *)((uint8_t *)&keyframes->channel0Q12 + channelByteOffset);

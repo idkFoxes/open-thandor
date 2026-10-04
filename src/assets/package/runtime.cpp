@@ -93,7 +93,7 @@ Bool8 Package_LoadEntryIntoBuffer
     }
     else {
       WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+                (g_FileSystemCombinedPathScratchUtf16,path,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
       statusCode = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
       if (statusCode != 0) {
@@ -148,7 +148,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
   uint32_t errorCode;
 
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+            (g_FileSystemCombinedPathScratchUtf16,path,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   openError = g_FileSystemOpen
                     (FILESYSTEM_OPEN_WRITE_ACCESS,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);

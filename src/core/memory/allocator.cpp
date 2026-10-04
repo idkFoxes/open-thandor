@@ -263,6 +263,11 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   /* the ArenaBlockHeader lies directly below the payload */
   block = (ArenaBlockHeader *)memory - 1;
   alignedBytes = (newSize + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK;
+  /* The original rounded in 32 bits, so a newSize above 0xFFFFFFE0 wrapped to 0 and shrank the block to 0
+     bytes; bounded here like ArenaHeap_Alloc: such a size is larger than any block and rejected below. */
+  if (newSize > ARENA_HEAP_PAYLOAD_BYTES) {
+    alignedBytes = UINT32_MAX;
+  }
   if (block->stateMagic != ARENA_BLOCK_ALLOCATED || alignedBytes > block->payloadSize) {
     return ARENA_HEAP_CORRUPT;
   }

@@ -205,10 +205,12 @@ int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *l
 uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
+  uint16_t *destinationStart;
   uint32_t remainingCapacityBytes;
   Bool8 capacityExhausted;
   uint8_t sourceByte;
 
+  destinationStart = destination;
   remainingCapacityBytes = capacityBytes;
   do {
     sourceByte = *source;
@@ -216,7 +218,14 @@ uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *
     capacityExhausted = remainingCapacityBytes < 2;
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
-      destination[-1] = 0;
+      /* The original writes destination[-1] here, before the buffer when nothing was copied yet
+         (capacityBytes <= 2); bounded here because of that: an empty result when there is room for it. */
+      if (destination != destinationStart) {
+        destination[-1] = 0;
+      }
+      else if (capacityBytes >= 2) {
+        destination[0] = 0;
+      }
       return 0;
     }
     *destination = (uint16_t)sourceByte;

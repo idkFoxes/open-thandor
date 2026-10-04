@@ -173,8 +173,9 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
     uint16_t *spritePath = (uint16_t *)(node + 1);
     SpriteAssetHeader *loadedSprite;
     SpriteAssetHeader *registered;
-    /* ".spr". The original checks this call for failure, but WidePath_SetExtensionCode never fails, so that
-       branch is dead. On an error the original abandons the whole tree walk at once; returning up the
+    /* ".spr". The original checks this call for failure, but in the original WidePath_SetExtensionCode never
+       fails, so that branch is dead (open-thandor: it fails only for a path longer than
+       WIDE_PATH_MAX_CODE_UNITS units and then leaves it unchanged). On an error the original abandons the whole tree walk at once; returning up the
        recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
     loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(spritePath,error);

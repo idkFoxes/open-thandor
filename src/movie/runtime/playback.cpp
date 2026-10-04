@@ -140,7 +140,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   looseFileOpened = false;
   if (((movieOpenFlags & MOVIE_OPEN_PACKAGE_ONLY) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
+              (g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
     looseFileOpened = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
   }
   if (!looseFileOpened) {
@@ -155,7 +155,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
     }
     else {
       WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+                (g_FileSystemCombinedPathScratchUtf16,path,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
       openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
       if (openError != 0) {

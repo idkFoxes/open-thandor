@@ -128,7 +128,8 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
     return false;
   }
   *registrySlotCursor = definition;
-  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16)) {
+  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16,
+                                sizeof definition->resourcePathUtf16 / sizeof(uint16_t))) {
     /* Original quirk: a failure to set the .spr extension reports FATAL_ERROR_EFFECT_ID_NOT_FOUND (the
        definition stays registered) */
     *outError = FATAL_ERROR_EFFECT_ID_NOT_FOUND;
