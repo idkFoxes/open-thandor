@@ -637,50 +637,28 @@ void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,Fie
 }
 
 /* Clears the rebuilt bits 0..6 of every faction byte of every cell's occupancyMask, keeping bit 7. Head of
-   tick-wheel case 7, before the per-class occupancy-rebuild callbacks repopulate the mask. The MMX original
-   handles eight cells per step and then exactly three more per row, i.e. it assumes a row width of 8n + 3.
+   tick-wheel case 7, before the per-class occupancy-rebuild callbacks repopulate the mask.
+   The original (MMX) handles eight cells per step and then exactly three more per row, i.e. it assumes a row
+   width of 8k + 3 (k >= 1); bounded here because the width comes from the level data: a width below 8
+   underflowed the block counter (about 2^32 blocks), any other width wrote past the cells or left some
+   uncleared. For 8k + 3 the original visits row by row k blocks of 8 cells and then the 3 cells right after
+   them, and the next row starts right behind those (blockBase + 11), i.e. exactly the width * height cells in
+   address order, each masked once with the same value - which is what this plain loop does.
 */
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
 
 {
-  FieldGridOccupancyBlockCount eightCellBlocksPerRow;
-  FieldGridOccupancyBlockCount cellBlocksRemaining;
-  FieldGridOccupancyBlockCount blocksRemaining;
-  FieldGridDimension rowsRemaining;
-  FieldGridCell *blockBaseCell;
+  uint32_t cellsRemaining;
   uint64_t occupancyHighBitMask;
-  FieldGridCell *currentEightCellBlock;
+  FieldGridCell *currentCell;
 
   /* FIELD_CELL_OCCUPANCY_PERSISTENT_BIT in all eight bytes (0x8080808080808080) */
   occupancyHighBitMask = g_FieldGridOccupancyMmxHighBitMask;
-  rowsRemaining = fieldGrid->gridHeight;
-  eightCellBlocksPerRow = fieldGrid->gridWidth >> 3;
-  cellBlocksRemaining = eightCellBlocksPerRow;
-  currentEightCellBlock = fieldGrid->cells;
-  do {
-    do {
-      blockBaseCell = currentEightCellBlock;
-      blockBaseCell->occupancyMask = blockBaseCell->occupancyMask & occupancyHighBitMask;
-      blockBaseCell[1].occupancyMask = blockBaseCell[1].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[2].occupancyMask = blockBaseCell[2].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[3].occupancyMask = blockBaseCell[3].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[4].occupancyMask = blockBaseCell[4].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[5].occupancyMask = blockBaseCell[5].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[6].occupancyMask = blockBaseCell[6].occupancyMask & occupancyHighBitMask;
-      blockBaseCell[7].occupancyMask = blockBaseCell[7].occupancyMask & occupancyHighBitMask;
-      /* kept as a separate temporary, as in the original */
-      blocksRemaining = cellBlocksRemaining - 1;
-      cellBlocksRemaining = blocksRemaining;
-      currentEightCellBlock = blockBaseCell + 8;
-    } while (blocksRemaining != 0);
-    /* the three trailing cells of the row, right after the last block */
-    blockBaseCell[8].occupancyMask = blockBaseCell[8].occupancyMask & occupancyHighBitMask;
-    blockBaseCell[9].occupancyMask = blockBaseCell[9].occupancyMask & occupancyHighBitMask;
-    blockBaseCell[10].occupancyMask = blockBaseCell[10].occupancyMask & occupancyHighBitMask;
-    rowsRemaining--;
-    cellBlocksRemaining = eightCellBlocksPerRow;
-    currentEightCellBlock = blockBaseCell + 11;
-  } while (rowsRemaining != 0);
+  currentCell = fieldGrid->cells;
+  for (cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight; cellsRemaining != 0; cellsRemaining--) {
+    currentCell->occupancyMask = currentCell->occupancyMask & occupancyHighBitMask;
+    currentCell++;
+  }
   return;
 }
 
@@ -697,21 +675,18 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
   FieldGridCell *currentCell;
   FieldGridDimension gridWidth;
 
+  /* The original's do-while loops run 2^32 times for a 0 width or height; for loops here (the same cells
+     otherwise). */
   gridWidth = fieldGrid->gridWidth;
-  rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  columnsRemaining = gridWidth;
-  do {
-    do {
+  for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
+    for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
       ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
            ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] |
            FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
-      columnsRemaining--;
-    } while (columnsRemaining != 0);
-    rowsRemaining--;
-    columnsRemaining = gridWidth;
-  } while (rowsRemaining != 0);
+    }
+  }
   return;
 }
 
@@ -727,21 +702,17 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
   FieldGridCell *currentCell;
   FieldGridDimension gridWidth;
 
+  /* for loops instead of the original's do-while (0 width or height: no pass instead of 2^32) */
   gridWidth = fieldGrid->gridWidth;
-  rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  columnsRemaining = gridWidth;
-  do {
-    do {
+  for (rowsRemaining = fieldGrid->gridHeight; rowsRemaining != 0; rowsRemaining--) {
+    for (columnsRemaining = gridWidth; columnsRemaining != 0; columnsRemaining--) {
       ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] =
            ((uint8_t *)&currentCell->occupancyMask)[occupancyMaskByteIndex] &
            (uint8_t)~FIELD_CELL_OCCUPANCY_BIT0;
       currentCell++;
-      columnsRemaining--;
-    } while (columnsRemaining != 0);
-    rowsRemaining--;
-    columnsRemaining = gridWidth;
-  } while (rowsRemaining != 0);
+    }
+  }
 }
 
 /* Rounds a world point to the nearest field-grid cell and tests occupancy bits 0/1 of the active faction there.
@@ -758,6 +729,10 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
   uint8_t occupancyByte;
 
   activeFieldGrid = worldRuntime->fieldGrid;
+  /* The original has no field grid check here; added like the siblings (no grid: treated as outside) */
+  if (activeFieldGrid == NULL) {
+    return true;
+  }
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 = FIXED_MUL_SHR(worldYQ12, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
   gridColumnIndex = (int)((FIXED_MUL_SHR(worldXQ12, FIELD_GRID_WORLD_X_TO_COLUMN_Q20, Q20_SHIFT) - gridHalfRowCoordinateQ12) +

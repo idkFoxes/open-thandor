@@ -71,7 +71,8 @@
                                                      converter version 0x20000 */
 /* Terrain visuals (world/terrain/visuals.c) */
 #define FATAL_ERROR_FIELD_ASSET_INVALID 0x38 /* TerrainVisualResources_Load*: the field grid is not an 'fld' asset of
-                                                converter version 0x60006 */
+                                                converter version 0x60006, or its dimensions do not fit
+                                                (FieldGrid_ValidateLoadedImage, also for loaded/received grids) */
 /* Model definitions (assets/model/definitions.c) */
 #define FATAL_ERROR_MODEL_ASSET_INVALID 0x3D /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
                                                 0x8000A */

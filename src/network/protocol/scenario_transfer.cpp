@@ -26,6 +26,20 @@ static uintptr_t FrontendScenarioTransfer_AllocateOrExit(uint32_t byteCount)
                                  allocationError != 0);
 }
 
+/* Decodes a received field grid (PckCodec_DecodeFieldGrid) into its decodedBytes buffer and validates it
+   (FieldGrid_ValidateLoadedImage). The original ignores the decoder's result and trusts the grid; bounded here
+   because it comes from the network host: a failed decode or a rejected grid ends the game with
+   FATAL_ERROR_FIELD_ASSET_INVALID, like a failed allocation of the transfer. */
+static void FrontendScenarioTransfer_DecodeFieldGridOrExit
+          (uint32_t decodedBytes,FieldGridAsset *destinationGrid,uint32_t encodedBytes,uint8_t *encodedGrid)
+{
+  Bool8 gridValid;
+
+  gridValid = PckCodec_DecodeFieldGrid(decodedBytes,destinationGrid,encodedBytes,encodedGrid,NULL,NULL) &&
+              FieldGrid_ValidateLoadedImage(destinationGrid,decodedBytes);
+  FatalError_ExitIfFailed(FATAL_ERROR_FIELD_ASSET_INVALID,!gridValid);
+}
+
 /* Frees g_FrontendLoadedLevelAsset and the field grid attached to it: the level's path offset field holds
    the loaded field grid once one was attached (values above 0xFFFF are pointers). */
 void FrontendScenarioTransfer_ReleaseLoadedLevelAsset(void)
@@ -165,9 +179,8 @@ static void FrontendScenarioTransfer_ProcessReceivedFieldGrid(void)
   payloadSizeBytes = *receivedDwords;
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(payloadSizeBytes);
   (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid
-            (payloadSizeBytes,(FieldGridAsset *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),
-             NULL,NULL);
+  FrontendScenarioTransfer_DecodeFieldGridOrExit
+            (payloadSizeBytes,(FieldGridAsset *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelReceivedById(g_LocalPlayerRuntimeId,0,0,0);
@@ -215,8 +228,8 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
   FrontendScenarioTransfer_SetFieldGridPathOfLevel(g_FrontendLoadedLevelAsset);
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(bundle->fieldGridDecodedBytes);
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid(bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,
-                           bundle->fieldGridEncodedBytes,fieldGridStream,NULL,NULL);
+  FrontendScenarioTransfer_DecodeFieldGridOrExit(bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,
+                                                 bundle->fieldGridEncodedBytes,fieldGridStream);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);
@@ -269,9 +282,9 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
   FrontendScenarioTransfer_SetFieldGridPathOfLevel(levelAsset);
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(bundle->fieldGridDecodedBytes);
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid
+  FrontendScenarioTransfer_DecodeFieldGridOrExit
             (bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,bundle->fieldGridEncodedBytes,
-             (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes,NULL,NULL);
+             (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);

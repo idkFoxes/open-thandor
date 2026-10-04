@@ -190,8 +190,8 @@ static void TerrainDirectionTable_RandomizeRecords(void)
   }
 }
 
-/* Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
-   texture sets <secondary>a..z.gfx (those flagged in field->fieldFlags are required, the others optional),
+/* Loads the terrain graphics of a field (fld asset with valid dimensions, FieldGrid_ValidateLoadedImage, else
+   FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material texture sets <secondary>a..z.gfx (those flagged in field->fieldFlags are required, the others optional),
    <primary>.dat/.gfx/.pal and <secondary>.pal/.dat, then initialises the field's runtime cells and the
    animated direction table. Advances the loading movie between steps. Returns true on success; on failure
    returns false and stores the error (field check or failed resource load) in *outError (untouched on success).
@@ -204,8 +204,10 @@ Bool8 TerrainVisualResources_LoadPrimary
   TerrainMaterialSuffixEntry *pathSuffixEntry;
 
   pathSuffixEntry = TerrainVisualResources_FindPathSuffixEntry(secondaryResourcePath);
+  /* The original checks only magic and converter; the dimensions bounded here as well (level data) */
   if (((field->common).magic != ASSET_MAGIC_FLD) ||
-      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006)) {
+      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006) ||
+      !FieldGrid_ValidateLoadedImage(field,(field->common).allocationSizeBytes)) {
     *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
     return false;
   }
@@ -241,8 +243,10 @@ Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
   int cellsRemaining;
 
   pathSuffixEntry = TerrainVisualResources_FindPathSuffixEntry(secondaryResourcePath);
+  /* The original checks only magic and converter; the dimensions bounded here as well (level data) */
   if (((field->common).magic != ASSET_MAGIC_FLD) ||
-      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006)) {
+      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006) ||
+      !FieldGrid_ValidateLoadedImage(field,(field->common).allocationSizeBytes)) {
     *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
     return false;
   }
