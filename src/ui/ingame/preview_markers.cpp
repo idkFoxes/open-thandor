@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/preview_markers.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
@@ -393,8 +394,15 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                      surfaceHeightQ12,worldYQ12,worldXQ12,(EffectDefinition *)effectDefinition,
                      (WorldRuntimeContext *)inGameRuntime);
   if (createdEffect == NULL) {
-    /* Original quirk: no failure check; the original stores and dereferences its failure value */
-    createdEffect = (EffectRuntimeSlot *)FATAL_ERROR_GENERAL_FAILURE;
+    /* The original has no failure check and stores and dereferences its failure value
+       (FATAL_ERROR_GENERAL_FAILURE); bounded here because a full effect or world object pool would crash:
+       no marker is placed. */
+    static bool s_markerCreationFailureLogged = false;
+    if (!s_markerCreationFailureLogged) {
+      s_markerCreationFailureLogged = true;
+      Thandor_Log("preview markers: effect or object pool full, command-target marker skipped");
+    }
+    return;
   }
   g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect;
   markerModelNode = createdEffect->modelNodeOrSavedOffset.modelNode;
