@@ -22,97 +22,6 @@ static uint32_t g_InGameCommandPointerCaptureY = 0;
 /* uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
 static const uint32_t g_InGamePointerModeCommandIds[8] = {26, 38, 39, 40, 41, 42, 43, 44};
 
-static const InGameCameraCommandDispatchTable g_InGameCameraCommandDispatchRecords16 = {
-    .records = {
-        /*  0 */ {.keyCode = EncodedDigit1, .continuationEntryAddress = 0x56F360},
-        /*  1 */ {.keyCode = EncodedDigit2, .continuationEntryAddress = 0x56F3B0},
-        /*  2 */ {.keyCode = EncodedDigit3, .continuationEntryAddress = 0x56F400},
-        /*  3 */ {.keyCode = EncodedDigit4, .continuationEntryAddress = 0x56F450},
-        /*  4 */ {.keyCode = EncodedDigit5, .continuationEntryAddress = 0x56F4A0},
-        /*  5 */ {.keyCode = EncodedDigit6, .continuationEntryAddress = 0x56F4F0},
-        /*  6 */ {.keyCode = EncodedDigit7, .continuationEntryAddress = 0x56F540},
-        /*  7 */ {.keyCode = EncodedLowercaseS, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F7D0},
-        /*  8 */ {.keyCode = EncodedDigit1, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F590},
-        /*  9 */ {.keyCode = EncodedDigit2, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F5E0},
-        /* 10 */ {.keyCode = EncodedDigit3, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F630},
-        /* 11 */ {.keyCode = EncodedDigit4, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F680},
-        /* 12 */ {.keyCode = EncodedDigit5, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F6D0},
-        /* 13 */ {.keyCode = EncodedDigit6, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F720},
-        /* 14 */ {.keyCode = EncodedDigit7, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F770},
-        /* 15 */ {.keyCode = EncodedLowercaseC, .requiredModifierMask = 0xC, .continuationEntryAddress = 0x56F7E0}
-    },
-    .alignmentPadding = {144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144}};
-
-uint32_t g_LevelCameraBookmark1PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark1PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark1PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark1PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark2PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark2PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark2PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark2PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark3PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark3PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark3PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark3PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark4PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark4PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark4PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark4PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark5PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark5PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark5PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark5PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark6PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark6PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark6PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark6PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 = 0;
-
-uint32_t g_LevelCameraBookmark7PositionXQ12 = 0;
-
-uint32_t g_LevelCameraBookmark7PositionYQ12 = 0;
-
-uint32_t g_LevelCameraBookmark7PositionZQ12 = 0;
-
-uint32_t g_LevelCameraBookmark7PositionMagnitudeQ12 = 0;
-
-uint32_t g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 = 0;
-
 InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12] = {0};
 
 InGameCommandPayloadTripletValue32 g_InGameSelectionRemoveTripletDwords[12] = {0};
@@ -137,91 +46,6 @@ int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 
 /* Implementation ownership: gameplay/input/world. */
 
-/* "Go to" action of the active in-game notification. In state 27 it only cancels (restores the camera, see
-   InGameTargetingContext_CancelAndRestoreState). In state 7 it saves the camera state (unless bit 0x10 of the
-   world runtimeFlags is set) and then, by payload kind: TECHNOLOGY_UNLOCK_POSITION selects the own model standing at
-   the payload position (locally or as INGAME_COMMAND_SELECT_MODEL_AND_ARMY) and ends the interaction;
-   FACTION_IMPACT_ANCHOR remembers the position and, like ARMY_CREATED, moves the camera onto the terrain point
-   there and switches the interaction to state 27. Payload kinds 1, 2, 3 are handled, the rest
-   do nothing.
-*/
-void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext)
-
-{
-  InGameTargetingRootTraversalView *root;
-  InGameNotificationPayloadKind payloadKind;
-  WorldOwnerListNode *ownerNode;
-  ArmyRuntimeSlot *ownerArmy;
-  CommandPayload modelToken;
-  CommandPayload armyToken;
-  FixedVectorQ12 nearestTerrainPoint;
-
-  if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
-    InGameTargetingContext_CancelAndRestoreState(targetingContext);
-    return;
-  }
-  if (targetingContext->actionState != INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE) {
-    return;
-  }
-  /* walk up to the in-game root node */
-  root = targetingContext;
-  while (root->base.parent != UI_NODE_NONE) {
-    root = (InGameTargetingRootTraversalView *)root->base.parent;
-  }
-  payloadKind = root->activeNotificationPayload.payloadKind;
-  if ((root->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
-    WorldRuntime_CaptureMotionStateToSnapshot(&root->worldRuntime);
-  }
-  switch(payloadKind) {
-  case TECHNOLOGY_UNLOCK_POSITION:
-    /* own model at exactly the payload position. Note: "modelToken" holds the rebased army offset and
-       "armyToken" the rebased model offset (names follow the callee's parameter order). */
-    for (ownerNode = root->worldRuntime.ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
-      if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) ||
-          (ownerNode->worldXQ12 != root->activeNotificationPayload.worldXQ12)) {
-        continue;
-      }
-      ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-      if ((ownerNode->worldYQ12 != root->activeNotificationPayload.worldYQ12) ||
-          (root->worldRuntime.activeFactionRuntimeIndex != ownerArmy->factionIndex)) {
-        continue;
-      }
-      modelToken = (int)((uintptr_t)ownerArmy - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
-      armyToken = (int)((uintptr_t)ownerNode->runtimePayload - g_ModelRuntimeRebaseDelta);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
-                  (g_LocalPlayerRuntimeId,0,armyToken,modelToken);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_MODEL_AND_ARMY,0,armyToken,modelToken);
-      }
-      root->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
-      return;
-    }
-    break;
-  case FACTION_IMPACT_ANCHOR:
-    root->targetingWorldXQ12 = root->activeNotificationPayload.worldXQ12;
-    root->targetingWorldYQ12 = root->activeNotificationPayload.worldYQ12;
-    /* falls through */
-  case ARMY_CREATED:
-    FieldGrid_GetNearestTerrainPoint
-              (root->activeNotificationPayload.worldYQ12,root->activeNotificationPayload.worldXQ12,
-               root->worldRuntime.fieldGrid,&nearestTerrainPoint);
-    WorldRuntime_PointCameraAtTarget
-              (root->worldRuntime.motion.pitchAngle,root->activeNotificationPayload.headingAngle,
-               root->worldRuntime.motion.targetDistanceQ12,nearestTerrainPoint.zQ12,
-               root->activeNotificationPayload.worldYQ12,root->activeNotificationPayload.worldXQ12,
-               &root->worldRuntime);
-    root->worldRuntime.runtimeFlags = root->worldRuntime.runtimeFlags & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-    root->notificationButtonCursorFrame = 27; /* next click cancels */
-    break;
-  default:
-    break;
-  }
-  return;
-}
-
-
 /* Hover cursor of InGameWorldInput_ResolveContextActionAndCursor when the selection has an entry with
    nonnegative weapon damage (an attack is possible); entry is NULL without a candidate army. */
 static uint32_t InGameWorldInput_ResolveWeaponTargetCursor(GameEntityRuntime *entry,int ownerIndex)
@@ -241,7 +65,6 @@ static uint32_t InGameWorldInput_ResolveWeaponTargetCursor(GameEntityRuntime *en
   }
   return GRAPHICS_CURSOR_FRAME_ARROW;
 }
-
 
 /* Hover cursor of InGameWorldInput_ResolveContextActionAndCursor when no attack is possible: decided by the
    candidate army's faction capability bit and hierarchy condition ratio; entry is NULL without a candidate. */
@@ -265,7 +88,6 @@ static uint32_t InGameWorldInput_ResolveCandidateConditionCursor(GameEntityRunti
   }
   return (ownerIndex != (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_FOREIGN_ARMY : WORLD_CURSOR_OWN_ARMY;
 }
-
 
 /* Hover callback of the world view: picks the cursor frame for the pointer position (placement valid/blocked,
    command-mode preview, own/foreign army, move or target) and records the hovered army as the selected entity,
@@ -413,7 +235,6 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   return InGameWorldInput_ResolveWeaponTargetCursor(entry,ownerIndex);
 }
 
-
 /* Pointer-press callback of the world view: restores a saved camera, remembers the press position for the
    placement or command-mode heading drag, marks a selection-mode capture, or in command mode selects an own
    army under the pointer right away. The release is handled by InGameWorldInput_CommitPointerAction.
@@ -480,7 +301,6 @@ void InGameWorldInput_BeginPointerCapture
   return;
 }
 
-
 /* Selection-mode capture of InGameWorldInput_UpdateDragSelectionAndCamera: once the pointer travelled more than
    WORLD_DRAG_SELECTION_THRESHOLD pixels from the press on either axis, starts the drag selection and clears the
    selection. */
@@ -513,7 +333,6 @@ static void InGameWorldInput_BeginDragSelectionIfMoved(WorldRuntimeContext *inGa
   return;
 }
 
-
 /* Stores one rebased army offset in a 12-dword drag-selection batch and counts it.
    Original quirk: the count stops at 11, so every further value overwrites the twelfth slot; the flush still
    sends that slot as part of the fourth triplet. */
@@ -531,7 +350,6 @@ static void InGameWorldInput_AppendDragSelectionBatchValue
   }
   return;
 }
-
 
 /* Drag selection: clears both batches, then sorts every own model's army into the insert batch (inside the
    rectangle, not yet selected, not already queued for insertion) or the remove batch (outside, selected, not
@@ -585,7 +403,6 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
   return;
 }
 
-
 /* Drag selection: sends the remove batch, then the insert batch, three values per command. The counters end
    at or below zero (they are cleared again before the next collection). */
 static void InGameWorldInput_FlushDragSelectionBatches(void)
@@ -629,7 +446,6 @@ static void InGameWorldInput_FlushDragSelectionBatches(void)
   return;
 }
 
-
 /* Placement / command mode heading drag: without button bit 4 the horizontal pointer travel since the capture
    turns the heading by 0x40 per pixel (of the 0x10000 full circle) and the pointer is snapped back to the
    capture position; with it, the capture position follows the pointer. */
@@ -653,7 +469,6 @@ static void InGameWorldInput_RotateHeadingByPointerTravel
   }
   return;
 }
-
 
 /* Pointer-move callback while the pointer is captured. In selection mode a press that moved more than 23 pixels
    becomes a drag selection: every own army inside the rectangle is inserted, every one outside removed (in
@@ -699,7 +514,6 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
   InGameWorldInput_FlushDragSelectionBatches();
   return;
 }
-
 
 /* Command-mode release of InGameWorldInput_CommitPointerAction: when the press captured the pointer over the
    ground (not over an own army, no selection capture), issues the command that the modifier keys pick from the
@@ -759,7 +573,6 @@ static void InGameWorldInput_CommitCommandModeRelease
   return;
 }
 
-
 /* Selection-mode click: adds the candidate army to the selection (INGAME_COMMAND_SELECT_ARMY). */
 static void InGameWorldInput_SelectCandidateArmy(GameEntityRuntime *entry)
 
@@ -774,7 +587,6 @@ static void InGameWorldInput_SelectCandidateArmy(GameEntityRuntime *entry)
   }
   return;
 }
-
 
 /* Selection-mode click on an own candidate army: selects it alone, or replaces the selection with it when the
    press set WORLD_RUNTIME_FLAG_REPLACE_SELECTION (see BeginPointerCapture). A foreign army is ignored. */
@@ -805,7 +617,6 @@ static void InGameWorldInput_SelectOwnCandidateArmy
   return;
 }
 
-
 /* Selection-mode click on a candidate while no selected entry has a nonnegative weapon damage: a candidate whose
    faction capability bit is clear is ignored, one whose hierarchy condition ratio is not Q12_ONE is added to
    the selection, otherwise an own army is selected alone (InGameWorldInput_SelectOwnCandidateArmy). */
@@ -828,7 +639,6 @@ static void InGameWorldInput_CommitCandidateConditionClick
   InGameWorldInput_SelectOwnCandidateArmy(inGameRuntime,ownerIndex,entry);
   return;
 }
-
 
 /* Shift/Alt-click (with or without Ctrl) on a candidate: toggles an own army in the selection
    (SelectionInfo_IsEntryAbsent is true when the entry is absent), selects a foreign one alone. */
@@ -871,7 +681,6 @@ static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntim
   }
   return;
 }
-
 
 /* Selection-mode release of InGameWorldInput_CommitPointerAction: resolves the army under the pointer and turns
    the click into select / add / remove, move, position, target-position or target-army commands. */
@@ -983,7 +792,6 @@ static void InGameWorldInput_CommitSelectionModeRelease
   return;
 }
 
-
 /* Release handling of InGameWorldInput_CommitPointerAction except the final end of the selection-mode capture,
    which the caller does on every path. */
 static void InGameWorldInput_DispatchPointerRelease
@@ -1025,7 +833,6 @@ static void InGameWorldInput_DispatchPointerRelease
   return;
 }
 
-
 /* Pointer-release callback of the world view: places the pending army, issues the command-mode command chosen by
    the modifier keys, ends a drag selection, or (selection mode) turns the click into select / add / remove,
    move, target-position or target-army commands. Every action goes through the command queue in network games
@@ -1042,223 +849,3 @@ void InGameWorldInput_CommitPointerAction
   g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_SELECTION_CAPTURE;
   return;
 }
-
-
-/* Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
-   the world view's dispatchCommandCallback by the activating path of
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState, in place of
-   InGameUiRuntime_DispatchCommandByCodeAndModifierFlags. The first g_InGameCameraCommandDispatchRecords16 record
-   with this key and a matching modifier selects the command:
-     1..7      move the camera to level camera bookmark n
-     Alt+1..7  store the current camera as bookmark n
-     Alt+S     toggle WORLD_RUNTIME_FLAG_SHADING_ENABLED
-     Ctrl+C    toggle WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA
-   Returns true when no record matches and false after a command; the world view's pointer
-   context (FrontendModelPointerContext_KeyboardEvent) passes unmatched keys on.
-*/
-Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
-          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime)
-
-{
-  InGameCameraCommandKeyCode recordKeyCode;
-  uint32_t requiredModifiers;
-  uint32_t bookmark1PackedAngles;
-  uint32_t bookmark2PackedAngles;
-  uint32_t bookmark3PackedAngles;
-  uint32_t bookmark4PackedAngles;
-  uint32_t bookmark5PackedAngles;
-  uint32_t bookmark6PackedAngles;
-  uint32_t bookmark7PackedAngles;
-  const InGameCameraCommandDispatchTable *currentRecord;
-  const InGameCameraCommandDispatchTable *nextRecord;
-  
-  bookmark7PackedAngles = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
-  bookmark6PackedAngles = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
-  bookmark5PackedAngles = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
-  bookmark4PackedAngles = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
-  bookmark3PackedAngles = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
-  bookmark2PackedAngles = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
-  bookmark1PackedAngles = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
-  /* First record with this key whose modifier requirement matches: a record without required modifiers only
-     matches when neither Ctrl nor Alt is held (Shift is ignored). The key-code 0 record terminates the table. */
-  nextRecord = &g_InGameCameraCommandDispatchRecords16;
-  for (currentRecord = nextRecord;
-       recordKeyCode = currentRecord->records[0].keyCode,
-       requiredModifiers = currentRecord->records[0].requiredModifierMask, recordKeyCode != 0;
-       currentRecord = nextRecord) {
-    nextRecord = (const InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
-    if ((recordKeyCode != commandCode) ||
-        !((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
-                                   : ((modifierFlags & requiredModifiers) != 0))) continue;
-    /* Matching record: run its command and stop. The original jumps to the record's continuation address; the
-       cases are those addresses. */
-    switch(currentRecord->records[0].continuationEntryAddress) {
-    case 0x56f360: /* 1..7: recall bookmark n */
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
-                 g_LevelCameraBookmark1PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark1PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f3b0:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
-                 g_LevelCameraBookmark2PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark2PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f400:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
-                 g_LevelCameraBookmark3PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark3PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f450:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
-                 g_LevelCameraBookmark4PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark4PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f4a0:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
-                 g_LevelCameraBookmark5PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark5PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f4f0:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
-                 g_LevelCameraBookmark6PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark6PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f540:
-      WorldRuntime_SetCameraPositionKeepingTarget
-                (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
-                 g_LevelCameraBookmark7PositionXQ12,worldRuntime);
-      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & FIXED_ANGLE16_MASK,
-                 g_LevelCameraBookmark7PositionMagnitudeQ12,
-                 worldRuntime);
-      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-      break;
-    case 0x56f590: /* Alt+1..7: store the camera as bookmark n (heading low word, pitch high word) */
-      g_LevelCameraBookmark1PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark1PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark1PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark1PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f5e0:
-      g_LevelCameraBookmark2PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark2PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark2PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark2PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f630:
-      g_LevelCameraBookmark3PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark3PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark3PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark3PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f680:
-      g_LevelCameraBookmark4PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark4PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark4PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark4PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f6d0:
-      g_LevelCameraBookmark5PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark5PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark5PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark5PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f720:
-      g_LevelCameraBookmark6PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark6PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark6PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark6PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f770:
-      g_LevelCameraBookmark7PositionXQ12 = (worldRuntime->motion).positionXQ12;
-      g_LevelCameraBookmark7PositionYQ12 = (worldRuntime->motion).positionYQ12;
-      g_LevelCameraBookmark7PositionZQ12 = (worldRuntime->motion).positionZQ12;
-      g_LevelCameraBookmark7PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-      g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
-           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-      break;
-    case 0x56f7d0: /* Alt+S */
-      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_SHADING_ENABLED;
-      break;
-    case 0x56f7e0: /* Ctrl+C */
-      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
-    }
-    return false;
-  }
-  return true; /* no camera key: the pointer context passes it on */
-}
-
-
-/* Ends a notification "go to" (state 27): resets the state to idle, walks up to the in-game root, clears bit 0x10
-   of its world runtimeFlags and restores the camera saved by InGameTargetingContext_AdvanceOrResolveTarget.
-   Also the queued UI action handler for INGAME_PAGE10[14] (0x100E).
-*/
-void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext)
-
-{
-  WorldRuntimeFlags *runtimeFlagsField;
-  UiNodeBase *parentCursor;
-
-  if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
-    targetingContext->actionState = INGAME_TARGETING_OBSERVED_IDLE;
-    parentCursor = targetingContext->base.parent;
-    while (parentCursor != UI_NODE_NONE) {
-      targetingContext = (InGameTargetingRootTraversalView *)targetingContext->base.parent;
-      parentCursor = targetingContext->base.parent;
-    }
-    runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-    WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime);
-  }
-  return;
-}
-

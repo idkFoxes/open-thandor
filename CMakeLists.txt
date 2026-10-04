@@ -93,6 +93,8 @@ add_library(thandor_curated STATIC
     src/gameplay/faction/carryover.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
+    src/gameplay/input/camera_commands.cpp
+    src/gameplay/input/targeting.cpp
     src/gameplay/input/world.cpp
     src/gameplay/selection/commands.cpp
     src/gameplay/selection/overlay.cpp
