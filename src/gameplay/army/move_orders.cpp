@@ -709,3 +709,60 @@ Bool8 ArmyRuntime_UpdateMovementAndWaypoints
   *outWorldXQ12 = (Q12)distanceX;
   return belowThreshold;
 }
+
+/* Gives the army a new target army (NULL clears the command). A move started by target following is
+   ended first; the command is stamped with the standard generation, or generation 0 when cleared.
+*/
+void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeSlot *armyRuntime)
+
+{
+  ArmyCommandGeneration standardGeneration;
+
+  standardGeneration = g_ArmyCommandGenerationStandard;
+  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
+    if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+    }
+    else {
+      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+    }
+  }
+  if (targetArmyRuntime == NULL) {
+    armyRuntime->commandModeFlags = 0;
+    armyRuntime->commandGeneration = 0;
+  }
+  else {
+    armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_ARMY;
+    armyRuntime->commandGeneration = standardGeneration;
+  }
+  armyRuntime->commandTargetArmyRuntime = targetArmyRuntime;
+  return;
+}
+
+/* Gives the army a target position command (commandCoordinate0-2Q12): ends a move started by target
+   following, drops any target army and stamps the standard command generation.
+*/
+void ArmyRuntime_ApplyTargetPositionCommand
+          (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime)
+
+{
+  ArmyCommandGeneration commandGeneration;
+
+  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
+    if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+    }
+    else {
+      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+    }
+  }
+  armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_POSITION;
+  armyRuntime->commandCoordinate0Q12 = coordinate0Q12;
+  armyRuntime->commandCoordinate1Q12 = coordinate1Q12;
+  armyRuntime->commandCoordinate2Q12 = coordinate2Q12;
+  commandGeneration = g_ArmyCommandGenerationStandard;
+  armyRuntime->commandTargetArmyRuntime = NULL;
+  armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_TARGET_FOLLOWING;
+  armyRuntime->commandGeneration = commandGeneration;
+  return;
+}

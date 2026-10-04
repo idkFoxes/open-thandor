@@ -70,15 +70,22 @@ add_library(thandor_curated STATIC
     src/gameplay/ai/technology.cpp
     src/gameplay/ai/units.cpp
     src/gameplay/ai/workspaces.cpp
+    src/gameplay/army/aircraft.cpp
     src/gameplay/army/audio.cpp
+    src/gameplay/army/class_dispatch.cpp
+    src/gameplay/army/class_updates.cpp
     src/gameplay/army/combat.cpp
     src/gameplay/army/drive_banking.cpp
+    src/gameplay/army/drive_common.cpp
     src/gameplay/army/drive_ground.cpp
+    src/gameplay/army/factory.cpp
     src/gameplay/army/move_orders.cpp
     src/gameplay/army/placement.cpp
-    src/gameplay/army/runtime.cpp
+    src/gameplay/army/pool.cpp
+    src/gameplay/army/preview.cpp
     src/gameplay/army/turrets.cpp
     src/gameplay/army/walker.cpp
+    src/gameplay/army/weapons.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
     src/gameplay/input/world.cpp

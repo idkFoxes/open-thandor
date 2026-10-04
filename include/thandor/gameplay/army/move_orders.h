@@ -85,4 +85,25 @@ Bool8 ArmyRuntime_UpdateMovementAndWaypoints
 
 extern const ArmyCommandGeneration g_ArmyCommandGenerationStandard;
 
+/* ArmyRuntimeSlot.commandModeFlags: what the current command targets (ArmyRuntime_ResolveCommandTarget,
+   ArmyRuntime_ApplyTargetPositionCommand, ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) */
+#define ARMY_COMMAND_MODE_TARGET_ARMY 0x1     /* commandTargetArmyRuntime */
+
+#define ARMY_COMMAND_MODE_TARGET_POSITION 0x2 /* commandCoordinate0-2Q12 */
+
+#define ARMY_COMMAND_MODE_INTERRUPTED 0x4     /* a target command was cancelled; commandGeneration re-stamped */
+
+#define ARMY_COMMAND_MODE_AI_COMBAT_TARGET 0x8 /* target picked by the AI combat target selection: target-following
+
+                                                  moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
+#define ARMY_COMMAND_MODE_SELECTION_ORDER 0x10 /* target/position order given to the selection (set with INTERRUPTED);
+
+                                                  cleared by move commands and SelectionRuntime_CancelTargets */
+#define ARMY_COMMAND_MODE_UNUSED_400 0x400    /* cleared by ArmyRuntime_AppendWaypointOrStartMove; never set or tested */
+
+void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeSlot *armyRuntime);
+
+void ArmyRuntime_ApplyTargetPositionCommand
+          (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_MOVE_ORDERS_H */
