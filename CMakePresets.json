@@ -39,12 +39,35 @@
         "THANDOR_DEV_TOOLS": "ON",
         "THANDOR_RENDERER_SDL_GPU": "ON"
       }
+    },
+    {
+      "name": "mingw-x64",
+      "hidden": true,
+      "description": "MinGW-w64 GCC 64-bit x64 with SDL3 (cmake/mingw-x64.cmake finds MINGW_ROOT, g++ on the PATH or C:/mingw64); SDL3 from CMAKE_PREFIX_PATH or $env{VCPKG_ROOT}/installed/x64-mingw-dynamic",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/mingw-x64.cmake",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "mingw-release",
+      "displayName": "MinGW-w64 GCC x64 RelWithDebInfo",
+      "inherits": "mingw-x64",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "mingw-test",
+      "displayName": "MinGW-w64 GCC x64 RelWithDebInfo with the developer tools (test aids, debug switches, self-tests)",
+      "inherits": "mingw-x64",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
     }
   ],
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
     { "name": "release", "configurePreset": "release" },
     { "name": "test", "configurePreset": "test" },
-    { "name": "gpu-test", "configurePreset": "gpu-test" }
+    { "name": "gpu-test", "configurePreset": "gpu-test" },
+    { "name": "mingw-release", "configurePreset": "mingw-release" },
+    { "name": "mingw-test", "configurePreset": "mingw-test" }
   ]
 }

@@ -28,13 +28,26 @@ if(DEFINED THANDOR_TEST_AIDS)
     unset(THANDOR_TEST_AIDS CACHE)
 endif()
 
-# The code needs MSVC (__stdcall, MSVC pragmas and intrinsics) for 64-bit x64 and SDL3. Use a preset
-# (CMakePresets.json: release, debug, test), which finds MSVC x64 by itself (cmake/msvc-x64.cmake), or configure from a
-# vcvars64 prompt. In CLion: Settings > Build > CMake, enable the presets and disable the default MinGW profile.
-if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "open-thandor must be built with MSVC for 64-bit x64 (32-bit x86 is no longer supported): "
-                        "use a CMake preset (cmake --preset release) or a vcvars64 prompt. Found: "
-                        "${CMAKE_CXX_COMPILER_ID}, ${CMAKE_SIZEOF_VOID_P}-byte pointers.")
+# Compilers: MSVC (presets release, debug, test, gpu-test; cmake/msvc-x64.cmake finds MSVC x64 without vcvars) or
+# MinGW-w64 GCC (presets mingw-release, mingw-test; cmake/mingw-x64.cmake), both for 64-bit x64 Windows with SDL3.
+# In CLion: Settings > Build > CMake, enable the presets.
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT WIN32 OR NOT (MSVC OR (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
+    message(FATAL_ERROR "open-thandor must be built with MSVC or MinGW-w64 GCC for 64-bit x64 Windows (32-bit x86 is "
+                        "no longer supported): use a CMake preset (cmake --preset release, cmake --preset "
+                        "mingw-release) or a vcvars64 prompt. Found: ${CMAKE_CXX_COMPILER_ID}, "
+                        "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # The same results as MSVC: no type-based alias analysis (the code reinterprets memory freely), signed overflow
+    # wraps, no fused multiply-add (MSVC x64 /fp:precise does not contract), MSVC struct and bit-field layout
+    # (-mms-bitfields, the MinGW default; layout_checks.cpp proves the layouts). char is signed in both.
+    # -fpermissive: the recovered code casts pointers to 32-bit integers in places ((int)pointer, MSVC warnings
+    # C4311/C4312), which g++ rejects otherwise; the cast truncates exactly as in the MSVC build and stays a warning.
+    # -Wall without the style warnings the decompiled code triggers by the hundreds (parentheses, sign compare,
+    # '/*' in comments).
+    add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields -fpermissive
+                        -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
 endif()
 
 add_library(thandor_curated STATIC
@@ -295,14 +308,27 @@ add_executable(thandor WIN32
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.
-target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+if(MSVC)
+    target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+else()
+    # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
+    # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
+    target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
+                        -Wl,--disable-high-entropy-va -Wl,--disable-large-address-aware
+                        -static -static-libgcc -static-libstdc++ -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+endif()
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
 # renderer draws the frames). SDL3 comes from find_package(SDL3): pass its install prefix in CMAKE_PREFIX_PATH (vcpkg:
-# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows), or set the environment variable VCPKG_ROOT, whose
-# installed/x64-windows is searched as well.
+# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows, MinGW: .../x64-mingw-dynamic), or set the environment variable
+# VCPKG_ROOT, whose installed/x64-windows (MinGW: installed/x64-mingw-dynamic) is searched as well.
+if(MSVC)
+    set(THANDOR_VCPKG_TRIPLET x64-windows)
+else()
+    set(THANDOR_VCPKG_TRIPLET x64-mingw-dynamic)
+endif()
 if(DEFINED ENV{VCPKG_ROOT})
-    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows" THANDOR_VCPKG_PREFIX)
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/${THANDOR_VCPKG_TRIPLET}" THANDOR_VCPKG_PREFIX)
     list(APPEND CMAKE_PREFIX_PATH "${THANDOR_VCPKG_PREFIX}")
 endif()
 # vcpkg ships Release and Debug only: RelWithDebInfo and MinSizeRel use the Release library
