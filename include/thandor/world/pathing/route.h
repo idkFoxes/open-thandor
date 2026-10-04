@@ -38,4 +38,8 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
+void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
+
+void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
+
 #endif /* THANDOR_WORLD_PATHING_ROUTE_H */

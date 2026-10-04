@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/model/mesh_raycast.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/model/mesh_raycast.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/assets/model/mesh_raycast.h>
+#include <thandor/world/model/mesh_raycast.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -16,7 +16,7 @@ GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
 /* Q28 ray direction in the tested node's frame */
 GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
 
-/* Implementation ownership: assets/model/mesh_raycast. */
+/* Implementation ownership: world/model/mesh_raycast. */
 
 /* Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
    limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane

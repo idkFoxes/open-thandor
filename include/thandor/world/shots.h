@@ -8,6 +8,7 @@
 #ifndef THANDOR_WORLD_SHOTS_H
 #define THANDOR_WORLD_SHOTS_H
 
+#include <thandor/world/shots/ballistics.h>
 #include <thandor/world/shots/flight.h>
 #include <thandor/world/shots/runtime.h>
 

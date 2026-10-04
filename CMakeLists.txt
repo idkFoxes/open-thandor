@@ -41,7 +41,6 @@ add_library(thandor_curated STATIC
     src/assets/army/catalog.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
-    src/assets/model/mesh_raycast.cpp
     src/assets/package/archive_write.cpp
     src/assets/package/codec.cpp
     src/assets/package/resource_loader.cpp
@@ -64,8 +63,6 @@ add_library(thandor_curated STATIC
     src/core/math/fixed_trig.cpp
     src/core/math/fixed_vector.cpp
     src/core/math/geometry.cpp
-    src/core/math/interpolation.cpp
-    src/core/math/motion_spline.cpp
     src/core/math/random.cpp
     src/core/math/spline.cpp
     src/core/memory/allocator.cpp
@@ -130,6 +127,7 @@ add_library(thandor_curated STATIC
     src/graphics/core/cursor.cpp
     src/graphics/core/device.cpp
     src/graphics/render/light_records.cpp
+    src/graphics/render/light_transitions.cpp
     src/graphics/render/model_draw.cpp
     src/graphics/render/model_lighting.cpp
     src/graphics/render/model_submit.cpp
@@ -250,10 +248,12 @@ add_library(thandor_curated STATIC
     src/ui/text/richtext_render.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp
+    src/world/camera/motion_spline.cpp
     src/world/effects/lifecycle.cpp
     src/world/effects/pool.cpp
     src/world/model/gameplay_rules.cpp
     src/world/model/hierarchy.cpp
+    src/world/model/mesh_raycast.cpp
     src/world/model/picking.cpp
     src/world/model/pool.cpp
     src/world/model/slots.cpp
@@ -264,6 +264,7 @@ add_library(thandor_curated STATIC
     src/world/pathing/scratch_grid.cpp
     src/world/runtime/core.cpp
     src/world/runtime/entity_registry.cpp
+    src/world/shots/ballistics.cpp
     src/world/shots/flight.cpp
     src/world/shots/pool.cpp
     src/world/terrain/editing.cpp

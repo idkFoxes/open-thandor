@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/math/interpolation.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/render/light_transitions.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/core/math/interpolation.h>
+#include <thandor/graphics/render/light_transitions.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: core/math/interpolation. */
+/* Implementation ownership: graphics/render/light_transitions. */
 
 /* Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration
    makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light. A

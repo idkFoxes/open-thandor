@@ -101,4 +101,17 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           GraphicsProjectedVertexSource *vertex0Projected,
           FrontendModelPointerContext *renderContext);
 
+/* Weight 1.0 of Triangle2D_ComputeBarycentricWeightsQ12Packed's internal Q16 weights (returned >> 4 as Q12) */
+#define TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16 0x10000
+
+TriangleBarycentricWeightsQ12
+Triangle2D_ComputeBarycentricWeightsQ12Packed
+          (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
+          GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
+          GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
+          GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX);
+
+/* Second result of Triangle2D_ComputeBarycentricWeightsQ12Packed: the point is outside the triangle. */
+extern Bool8 g_Triangle2DBarycentricOutside;
+
 #endif /* THANDOR_GRAPHICS_TERRAIN_TERRAIN_RENDER_H */

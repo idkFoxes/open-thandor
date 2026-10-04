@@ -9,6 +9,7 @@
 #define THANDOR_GRAPHICS_RENDER_H
 
 #include <thandor/graphics/render/light_records.h>
+#include <thandor/graphics/render/light_transitions.h>
 #include <thandor/graphics/render/model.h>
 #include <thandor/graphics/render/model_draw.h>
 #include <thandor/graphics/render/model_submit.h>

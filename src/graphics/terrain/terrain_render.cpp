@@ -42,6 +42,8 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260] = {
     /* 250 */ {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
     /* 259 */ {.firstColumn = (int)0x90909090, .endColumnExclusive = (int)0x90909090}};
 
+Bool8 g_Triangle2DBarycentricOutside;
+
 /* Implementation ownership: graphics/terrain/terrain_render. */
 
 /* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b of value
@@ -897,4 +899,70 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   newPacket->renderFlags = g_UiCommandModeGColorVariantFlags;
   newPacket->textureEntry = materialTextureSet->entries;
   return newPacket;
+}
+
+/* Computes the barycentric weights of a screen point for vertices A and B of a projected triangle
+   (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped
+   terrain triangle is queued. Returns both weights in Q12 packed in one struct and publishes "point outside
+   the triangle" (a second result in the original) in g_Triangle2DBarycentricOutside.
+   Called directly by the terrain projection code (TerrainProjectedTriangle_ClipInterpolateAndQueueTextured).
+*/
+TriangleBarycentricWeightsQ12
+Triangle2D_ComputeBarycentricWeightsQ12Packed
+          (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
+          GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
+          GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
+          GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX)
+
+{
+  /* "Point outside the triangle" is published in g_Triangle2DBarycentricOutside. Weights are Q16
+     internally and returned >> 4. */
+  int64_t denominator;
+  int64_t numerator;
+  int denominatorShifted;
+  int denominatorHigh;
+  int weightA;
+  int weightB;
+  TriangleBarycentricWeightsQ12 result;
+
+  g_Triangle2DBarycentricOutside = true;
+  result.weightVertexA_Q12 = 0;
+  result.weightVertexB_Q12 = 0;
+  if ((pointX > vertexCX && pointX > vertexBX && pointX > vertexAX) ||
+      (pointX < vertexCX && pointX < vertexBX && pointX < vertexAX) ||
+      (pointY > vertexCY && pointY > vertexBY && pointY > vertexAY) ||
+      (pointY < vertexCY && pointY < vertexBY && pointY < vertexAY)) {
+    return result;
+  }
+  denominator = (int64_t)vertexCX * (vertexAY - vertexBY) + (int64_t)vertexBX * (vertexCY - vertexAY) +
+                (int64_t)vertexAX * (vertexBY - vertexCY);
+  denominatorHigh = (int)(denominator >> 32);
+  denominatorShifted = (int)(denominator >> 16);
+  if (denominatorShifted == 0) {
+    return result;
+  }
+  numerator = (int64_t)(pointY - vertexBY) * vertexCX + (int64_t)(vertexCY - pointY) * vertexBX +
+              (int64_t)(vertexBY - vertexCY) * pointX;
+  if (denominatorHigh >= 0 ? (int)(numerator >> 32) > denominatorHigh
+                           : (int)(numerator >> 32) < denominatorHigh) {
+    return result;
+  }
+  weightA = (int)(numerator / denominatorShifted);
+  if (weightA < 0 || weightA > TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16) {
+    return result;
+  }
+  numerator = (int64_t)(vertexAY - pointY) * vertexCX + (int64_t)(vertexCY - vertexAY) * pointX +
+              (int64_t)(pointY - vertexCY) * vertexAX;
+  if (denominatorHigh >= 0 ? (int)(numerator >> 32) > denominatorHigh
+                           : (int)(numerator >> 32) < denominatorHigh) {
+    return result;
+  }
+  weightB = (int)(numerator / denominatorShifted);
+  if (weightB < 0 || weightA + weightB > TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16) {
+    return result;
+  }
+  result.weightVertexB_Q12 = weightB >> 4;
+  result.weightVertexA_Q12 = weightA >> 4;
+  g_Triangle2DBarycentricOutside = false;
+  return result;
 }

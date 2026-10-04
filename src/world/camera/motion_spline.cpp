@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/math/motion_spline.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/camera/motion_spline.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/core/math/motion_spline.h>
+#include <thandor/world/camera/motion_spline.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -18,7 +18,7 @@ float *g_WorldMotionSplineMatrixWorkspaces[6] = {0};
 
 float *g_WorldMotionSplineCoefficientTables[6] = {0};
 
-/* Implementation ownership: core/math/motion_spline. */
+/* Implementation ownership: world/camera/motion_spline. */
 
 /* Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
    the cubic segment before it and applies channels 0..2 as the position and 3..5 as magnitude/yaw/pitch

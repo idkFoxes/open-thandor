@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/core/math/motion_spline.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/world/camera/motion_spline.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_CORE_MATH_MOTION_SPLINE_H
-#define THANDOR_CORE_MATH_MOTION_SPLINE_H
+#ifndef THANDOR_WORLD_CAMERA_MOTION_SPLINE_H
+#define THANDOR_WORLD_CAMERA_MOTION_SPLINE_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/math/motion_spline. */
+/* Submodule: world/camera/motion_spline. */
 
 /* Channels of a world-motion keyframe (position/origin x, y, z, magnitude/distance, yaw, pitch) */
 #define WORLD_MOTION_SPLINE_CHANNEL_COUNT 6
@@ -34,4 +34,4 @@ void WorldMotionSpline_ClearCachedDerivatives(void);
 extern float *g_WorldMotionSplineMatrixWorkspaces[6];
 extern float *g_WorldMotionSplineCoefficientTables[6];
 
-#endif /* THANDOR_CORE_MATH_MOTION_SPLINE_H */
+#endif /* THANDOR_WORLD_CAMERA_MOTION_SPLINE_H */
