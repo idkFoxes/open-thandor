@@ -8,6 +8,7 @@
 #include <thandor/ui/frontend/state.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/core/key_dispatch.h>
 
 /* Module data. */
 
@@ -15,12 +16,25 @@ uint32_t g_FrontendNetworkTickCounter = 0;
 
 std::atomic<uint32_t> g_FrontendTimerCountdownTicks{0};
 
+/* The modifier classes of the frontend hotkey table. The original matcher sends a Shift-only class (0x03) into
+   its Ctrl branch (Shift+Ctrl required); UiKeyModifierRule::ExactWithShift wants Shift alone there. No record
+   uses a Shift-only class, so both agree on this table (OPEN_THANDOR_SELFTEST=keymatch, case R2'). */
+static constexpr uint32_t FRONTEND_HOTKEY_CLASS_ALT = 0x30;
+static constexpr uint32_t FRONTEND_HOTKEY_CLASS_CTRL = 0xC;
+static constexpr bool FrontendHotkey_ClassIsNotShiftOnly(uint32_t classFlags)
+{
+  return ((classFlags & KEYBOARD_STATE_SHIFT) == 0) || ((classFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0);
+}
+static_assert(FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_ALT) &&
+              FrontendHotkey_ClassIsNotShiftOnly(FRONTEND_HOTKEY_CLASS_CTRL),
+              "a Shift-only class would differ between the original frontend matcher and ExactWithShift");
+
 /* 3 command records and the terminator record
    (commandCode 0) that ends the dispatcher's scan */
 static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
-    /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
-    /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
-    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x548140},
+    /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .continuationEntryAddress = 0x548190},
+    /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_ALT, .continuationEntryAddress = 0x548190},
+    /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .continuationEntryAddress = 0x548140},
     /* 3 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
 /* Implementation ownership: ui/frontend/state. */
@@ -67,40 +81,14 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
      of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
   UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
   uint8_t *root = (uint8_t *)g_FrontendRootNode;
-  uint32_t target = 0;
+  uint32_t target;
 
   (void)frontendRuntime;
-  for (;; record++) {
-    uint32_t flags = record->modifierClassFlags; /* the modifier classes the entry requires */
-    if (record->commandCode == 0) {
-      return true;
-    }
-    if (record->commandCode != commandCode) {
-      continue;
-    }
-    if (flags == 0) {
-      if ((modifierFlags & KEYBOARD_STATE_ANY_MODIFIER) != 0) continue;
-    }
-    else {
-      if ((flags & KEYBOARD_STATE_SHIFT) != 0) {
-        if ((modifierFlags & KEYBOARD_STATE_SHIFT) == 0) continue;
-      }
-      else if ((modifierFlags & KEYBOARD_STATE_SHIFT) != 0) {
-        continue;
-      }
-      if ((flags & KEYBOARD_STATE_ALT) == 0) {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
-      }
-      else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-      }
-      else {
-        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-      }
-    }
-    target = (uint32_t)record->continuationEntryAddress;
-    break;
+  record = UiCommandDispatch_Find(record,commandCode,modifierFlags,UiKeyModifierRule::ExactWithShift);
+  if (record == nullptr) {
+    return true;
   }
+  target = (uint32_t)record->continuationEntryAddress;
   switch (target) {
   case 0x548140:
     if (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)) ==
