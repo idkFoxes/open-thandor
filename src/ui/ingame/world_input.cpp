@@ -286,7 +286,7 @@ void InGameWorldInput_BeginPointerCapture
     candidateArmy = ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12) &&
         !GameFactionRuntime_TestCapabilityBitClear(candidateArmy->factionIndex,ownerIndex)) {
-      modelToken = (int)((uintptr_t)candidateArmy - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+      modelToken = ArmyRuntime_Token(candidateArmy);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,modelToken);
         return;
@@ -386,7 +386,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
         (ownerIndex != (entry->common).ownership.ownerIndex)) {
       continue;
     }
-    payloadValue = (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+    payloadValue = ArmyRuntime_Token(entry);
     if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,(WorldRuntimeExtendedMapControlView *)inGameRuntime)) {
       if (SelectionInfo_IsEntryAbsent(entry) &&
           !InGameCommandQueue_ContainsTripletValue
@@ -581,11 +581,11 @@ static void InGameWorldInput_SelectCandidateArmy(GameEntityRuntime *entry)
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     InGamePlayerSelection_SelectArmyRuntimeIndex
-              (g_LocalPlayerRuntimeId,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+              (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_SELECT_ARMY,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+              (INGAME_COMMAND_SELECT_ARMY,0,0,ArmyRuntime_Token(entry));
   }
   return;
 }
@@ -601,7 +601,7 @@ static void InGameWorldInput_SelectOwnCandidateArmy
   if (ownerIndex != (entry->common).ownership.ownerIndex) {
     return;
   }
-  armyRuntimeIndex = (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+  armyRuntimeIndex = ArmyRuntime_Token(entry);
   if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_REPLACE_SELECTION) == 0) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(g_LocalPlayerRuntimeId,0,0,armyRuntimeIndex);
@@ -654,32 +654,32 @@ static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntim
     if (entryAbsent) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                  (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
                   (INGAME_COMMAND_SELECTION_INSERT,0,0,
-                   (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                   ArmyRuntime_Token(entry));
       }
     }
     else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                (g_LocalPlayerRuntimeId,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
     }
     else {
       InGameCommandQueue_AppendLocalPlayerCommand
                 (INGAME_COMMAND_SELECTION_REMOVE,0,0,
-                 (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                 ArmyRuntime_Token(entry));
     }
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-              (g_LocalPlayerRuntimeId,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+              (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
               (INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,
-               (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+               ArmyRuntime_Token(entry));
   }
   return;
 }
@@ -712,12 +712,12 @@ static void InGameWorldInput_CommitSelectionModeRelease
     if (entry != NULL) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-                  (g_LocalPlayerRuntimeId,0,0,(int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                  (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
                   (INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,
-                   (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne));
+                   ArmyRuntime_Token(entry));
       }
     }
     return;

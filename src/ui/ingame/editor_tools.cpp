@@ -171,9 +171,8 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     }
     /* an army is picked up: test it instead (the next cursor frame when the test accepts) */
     callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback
-                      ((Ptr32<ArmyRuntimeSlot> *)
-                       (localSelectionBlock->placedArmyToken +
-                       (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),worldRuntime);
+                      ((Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_FromToken((int32_t)localSelectionBlock->placedArmyToken),
+                       worldRuntime);
     if (callbackAccepted) {
       return cursorCode + 1;
     }
@@ -397,9 +396,8 @@ static void InGameEditorPointer_BeginPlacementTool
   }
   if (ownerNodeUnderPointer != NULL) {
     if (placementSubMode == 1) {
-      armyToken = (int)((uintptr_t)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
-                  ownerArmyRuntimeOrSavedOffset.armyRuntime -
-                  (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+      armyToken = ArmyRuntime_Token
+                  (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,armyToken);
@@ -410,9 +408,8 @@ static void InGameEditorPointer_BeginPlacementTool
     }
     g_UiCommandDragStartScreenX = mapControl->pointerPressX;
     g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-    armyToken = (int)((uintptr_t)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
-                ownerArmyRuntimeOrSavedOffset.armyRuntime -
-                (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+    armyToken = ArmyRuntime_Token
+                (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       PlayerRuntime_SetPlacementArmy(g_LocalPlayerRuntimeId,0,0,armyToken);
@@ -565,7 +562,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     entry = ((ModelRuntimeSlot *)runtimeNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0 ||
         ownerFactionIndex != (entry->common).ownership.ownerIndex) continue;
-    payloadValue = (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+    payloadValue = ArmyRuntime_Token(entry);
     if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,mapControl)) {
       isEntryAbsent = SelectionInfo_IsEntryAbsent(entry);
       tripletDwordCount = g_InGameSelectionInsertTripletDwordCount;
@@ -1063,6 +1060,84 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
   return;
 }
 
+/* Slot adapters for the callbacks installed below whose own signature differs from the slot's (calling through
+   the slot type directly would be undefined behaviour). Each passes its arguments on unchanged: the uint32_t
+   slot values become the handlers' int-typed codes and Q12/screen coordinates bit for bit, the world runtime
+   is the same object under the handler's view type. */
+
+static uint32_t EditorSlot_ResolveCursorCodeByMode
+          (uint32_t pointerRegionCode,uint32_t pointerWorldXQ12,uint32_t pointerWorldYQ12,uint32_t reservedArg3,
+          WorldOwnerListNode *ownerNodeUnderPointer,WorldRuntimeContext *worldRuntime)
+
+{
+  return InGameUiCommand_ResolveCursorCodeByMode
+                   ((UiPointerRegionCode)pointerRegionCode,(Q12)pointerWorldXQ12,(Q12)pointerWorldYQ12,
+                    reservedArg3,ownerNodeUnderPointer,worldRuntime);
+}
+
+static void EditorSlot_BeginInteractionByMode
+          (uint32_t pointerRegionCode,uint32_t pointerX,uint32_t pointerY,uint32_t reservedArg3,
+          WorldOwnerListNode *ownerNodeUnderPointer,WorldRuntimeContext *worldRuntime)
+
+{
+  InGameUiCommand_BeginInteractionByMode
+            ((UiPointerRegionCode)pointerRegionCode,(Q12)pointerX,(Q12)pointerY,reservedArg3,
+             ownerNodeUnderPointer,(WorldRuntimeExtendedMapControlView *)worldRuntime);
+}
+
+/* The handler's fifth parameter (optionalContext, unused) receives the node pointer's low 32 bits. */
+static void EditorSlot_UpdateInteractionByMode
+          (uint32_t pointerRegionCode,uint32_t pointerX,uint32_t pointerY,uint32_t reservedArg3,
+          WorldOwnerListNode *ownerNodeUnderPointer,WorldRuntimeContext *worldRuntime)
+
+{
+  InGameUiCommand_UpdateInteractionByMode
+            ((UiPointerRegionCode)pointerRegionCode,(GraphicsScreenCoordinate)pointerX,
+             (GraphicsScreenCoordinate)pointerY,reservedArg3,(int)(intptr_t)ownerNodeUnderPointer,
+             (WorldRuntimeExtendedMapControlView *)worldRuntime);
+}
+
+static void EditorSlot_ClearTransientStateNoOp(WorldRuntimeContext *worldRuntime)
+
+{
+  (void)worldRuntime;
+  UiCommandRuntime_CallbackNoOp();
+}
+
+/* The editor keyboard fallback returns nothing; UiKeyboard_DispatchPendingEvents ignores the slot's result. */
+static Bool8 EditorSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
+
+{
+  InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
+            (keyboardStateMask,(uint32_t)keyCode,uiRoot);
+  return false;
+}
+
+static void EditorSlot_RebuildTerrainOccupancyAndVisualState(void *callbackContext,WorldOwnerListNode *node)
+
+{
+  ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback((WorldRuntimeContext *)callbackContext,node);
+}
+
+static void EditorSlot_WorldOverlay(uint32_t releaseMode,WorldRuntimeContext *worldRuntime)
+
+{
+  InGameWorldOverlay_RebuildOrReleaseTransientMarkers((GraphicsBooleanState)releaseMode,worldRuntime);
+}
+
+static void EditorSlot_ResetNotificationButtonCursor(WorldRuntimeContext *worldRuntime)
+
+{
+  InGameUiRuntime_ResetNotificationButtonCursor(worldRuntime);
+}
+
+static Bool8 EditorSlot_HotkeysKeyboardFallback
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,UiRootNode *uiRoot)
+
+{
+  return InGameHotkeys_DispatchCommandByFlags(modifierFlags,commandCode,(InGameRuntimeRootFrameView *)uiRoot);
+}
+
 /* In-game command INGAME_COMMAND_EDITOR_ACTIVE_STATE: enters or (EDITOR_ACTIVE_STATE_LEAVE) leaves the map
    editor. Entering pauses the game, switches the side panel, resource bar and game panels to the editor
    pages, installs the editor callbacks (InGameUiCommand_*ByMode, camera keys, editor hotkeys) on the world
@@ -1120,30 +1195,17 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       root->worldOverlayCallback = NULL;
       (root->worldRuntime).selection.dispatchCommandCallback =
            InGameCameraCommand_DispatchByCodeAndModifierFlags;
-      /* signature differs: the mode handlers take UiPointerRegionCode/Q12/screen coordinates, an int and
-         WorldRuntimeExtendedMapControlView * where the slots take uint32_t and WorldRuntimeContext *; the no-op
-         takes no argument; the keyboard fallback returns void and takes uint32_t codes */
-      (root->worldRuntime).selection.resolveContextActionPrimaryCallback =
-           (uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
-           InGameUiCommand_ResolveCursorCodeByMode;
-      (root->worldRuntime).selection.resolveContextActionSecondaryCallback =
-           (uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
-           InGameUiCommand_ResolveCursorCodeByMode;
-      (root->worldRuntime).selection.beginPointerCaptureCallback =
-           (void (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
-           InGameUiCommand_BeginInteractionByMode;
-      (root->worldRuntime).selection.updateDragSelectionCallback =
-           (void (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
-           InGameUiCommand_UpdateInteractionByMode;
+      /* the mode handlers, the no-op and the keyboard fallback go in through the EditorSlot_ adapters above */
+      (root->worldRuntime).selection.resolveContextActionPrimaryCallback = EditorSlot_ResolveCursorCodeByMode;
+      (root->worldRuntime).selection.resolveContextActionSecondaryCallback = EditorSlot_ResolveCursorCodeByMode;
+      (root->worldRuntime).selection.beginPointerCaptureCallback = EditorSlot_BeginInteractionByMode;
+      (root->worldRuntime).selection.updateDragSelectionCallback = EditorSlot_UpdateInteractionByMode;
       (root->worldRuntime).selection.commitPointerActionCallback =
            InGameUiCommand_EndInteractionByMode;
-      (root->worldRuntime).fieldRegion.clearTransientStateCallback =
-           (void (*)(WorldRuntimeContext *))UiCommandRuntime_CallbackNoOp;
+      (root->worldRuntime).fieldRegion.clearTransientStateCallback = EditorSlot_ClearTransientStateNoOp;
       (root->worldRuntime).selection.dispatchWorldContextActionCallback =
            InGameUiCommand_ResetInteractionByMode;
-      g_InGameUiRootCallbacks.keyboardFallback =
-           (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))
-           InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags;
+      g_InGameUiRootCallbacks.keyboardFallback = EditorSlot_KeyboardFallback;
       /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
       (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[editorMode])
                 ((UiSelectableControl *)
@@ -1180,8 +1242,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                  (root->worldRuntime).fieldGrid);
       WorldRuntime_ForEachOwnerListNode
                 (&root->worldRuntime,
-                 /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
-                 (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+                 EditorSlot_RebuildTerrainOccupancyAndVisualState,
                  &root->worldRuntime);
       FieldGrid_ClassifyCellFlagsToRuntimeByte
                 ((root->worldRuntime).activeFactionRuntimeIndex,
@@ -1218,9 +1279,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
     UiCommandModeG_HideSurfacePointMarker(&root->worldRuntime);
-    /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
-    root->worldOverlayCallback =
-         (void (*)(uint32_t,WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+    root->worldOverlayCallback = EditorSlot_WorldOverlay;
     (root->worldRuntime).selection.dispatchCommandCallback =
          InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
     (root->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -1233,16 +1292,12 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
          InGameWorldInput_UpdateDragSelectionAndCamera;
     (root->worldRuntime).selection.commitPointerActionCallback =
          InGameWorldInput_CommitPointerAction;
-    /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
-    (root->worldRuntime).fieldRegion.clearTransientStateCallback =
-         (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
+    (root->worldRuntime).fieldRegion.clearTransientStateCallback = EditorSlot_ResetNotificationButtonCursor;
     (root->worldRuntime).selection.dispatchWorldContextActionCallback =
          InGameUiRuntime_DispatchWorldContextActionCallback;
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
-    /* signature differs: the fallback takes InGameRuntimeRootFrameView *, the slot UiRootNode * */
-    g_InGameUiRootCallbacks.keyboardFallback =
-         (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))InGameHotkeys_DispatchCommandByFlags;
+    g_InGameUiRootCallbacks.keyboardFallback = EditorSlot_HotkeysKeyboardFallback;
     /* free the cached preview textures of all army asset records */
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];
@@ -1258,8 +1313,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     }
     WorldRuntime_ForEachOwnerListNode
               (&root->worldRuntime,
-               /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
-               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+               EditorSlot_RebuildTerrainOccupancyAndVisualState,
                &root->worldRuntime);
     node = &root->worldRuntime;
     FieldGrid_ClassifyCellFlagsToRuntimeByte
