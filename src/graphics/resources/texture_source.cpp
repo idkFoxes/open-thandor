@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/resources/texture.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -127,11 +128,66 @@ Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Grap
 
 
 
+/* Checks a 'gfx' texture source header against its allocation size (common.allocationSizeBytes): the palette
+   banks, the subresource table and every record's pixels (pixelWidth * pixelHeight bytes, 4 per pixel for
+   direct colour) lie inside it, and every paletted record names an existing bank. Returns false (and logs one
+   line) for a NULL, non-'gfx' or malformed asset. Every stock asset and every asset the game builds in memory
+   passes.
+   The original used the header unchecked; checked here because a malformed package entry made the palette
+   conversion, the blits, the rasterizer and the hit test read or write outside the asset. */
+Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sourceAsset)
+
+{
+  const GraphicsTextureSourceEntry *entry;
+  uint64_t byteSize;
+  uint64_t pixelBytes;
+  uint32_t paletteBankCount;
+  uint32_t subresourceCount;
+  uint32_t entryIndex;
+
+  if (sourceAsset == NULL || (sourceAsset->common).magic != ASSET_MAGIC_GFX) {
+    return false;
+  }
+  byteSize = (sourceAsset->common).allocationSizeBytes;
+  paletteBankCount = (sourceAsset->tableDescriptor).paletteBankCount;
+  subresourceCount = (sourceAsset->tableDescriptor).subresourceCount;
+  if (byteSize < GFX_ASSET_HEADER_SIZE ||
+      GFX_ASSET_HEADER_SIZE + (uint64_t)paletteBankCount * GFX_PALETTE_BANK_SIZE > byteSize ||
+      (uint64_t)(sourceAsset->tableDescriptor).subresourceTableOffset +
+              (uint64_t)subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE > byteSize) {
+    Thandor_Log("GraphicsTextureSource_ValidateAsset: rejected gfx header (%u bytes, %u banks, %u images at 0x%X)",
+                (uint32_t)byteSize,paletteBankCount,subresourceCount,
+                (sourceAsset->tableDescriptor).subresourceTableOffset);
+    return false;
+  }
+  entry = (const GraphicsTextureSourceEntry *)
+          ((const uint8_t *)sourceAsset + (sourceAsset->tableDescriptor).subresourceTableOffset);
+  for (entryIndex = 0; entryIndex < subresourceCount; entryIndex++, entry++) {
+    pixelBytes = (uint64_t)entry->pixelWidth * entry->pixelHeight;
+    if (entry->paletteIndex == -1) {
+      pixelBytes = pixelBytes * 4;
+    }
+    else if ((uint32_t)entry->paletteIndex >= paletteBankCount) {
+      pixelBytes = UINT64_MAX;
+    }
+    if (pixelBytes > byteSize || (uint64_t)entry->dataOffset + pixelBytes > byteSize) {
+      Thandor_Log("GraphicsTextureSource_ValidateAsset: rejected image %u (palette %d of %u, %ux%u at 0x%X, %u bytes)",
+                  entryIndex,entry->paletteIndex,paletteBankCount,entry->pixelWidth,entry->pixelHeight,
+                  entry->dataOffset,(uint32_t)byteSize);
+      return false;
+    }
+  }
+  return true;
+}
+
+
 /* Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset;
-   used for the UI, text and selection-panel graphics): the package entry is loaded and its palettes are converted
-   to the current framebuffer format. Returns the texture source (never NULL: the conversion rejects NULL).
-   If the conversion fails the entry is released again; on failure returns NULL and stores the load or
-   conversion error in *outError (when outError is not NULL).
+   used for the UI, text and selection-panel graphics): the package entry is loaded, its header is checked
+   (GraphicsTextureSource_ValidateAsset) and its palettes are converted to the current framebuffer format.
+   Returns the texture source (never NULL: the conversion rejects NULL).
+   If the check or the conversion fails the entry is released again; on failure returns NULL and stores the
+   load or conversion error (FATAL_ERROR_GFX_ASSET_INVALID for a malformed header) in *outError (when outError
+   is not NULL).
 */
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError)
 
@@ -141,7 +197,10 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
 
   loadedSource = (GraphicsPaletteTextureSourceAsset *)Package_LoadEntry(pathUtf16,&loadError);
   if (loadedSource != NULL) {
-    loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
+    loadError = FATAL_ERROR_GFX_ASSET_INVALID;
+    if (GraphicsTextureSource_ValidateAsset((GraphicsTextureSourceAsset *)loadedSource)) {
+      loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
+    }
     if (loadError == 0) {
       return (GraphicsTextureSourceAsset *)loadedSource;
     }

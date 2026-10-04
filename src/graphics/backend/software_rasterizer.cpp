@@ -56,6 +56,24 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
   return;
 }
 
+/* Raster handler of a packet from one of the two 64-entry tables (index: bits 12..17 of the render flags), or
+   NULL for one of the empty entries. The original called the empty entries (address 0) unchecked; such packets
+   are skipped here, which only differs where the original crashed. Logs the first one. */
+static SoftwareRasterHandler *SoftwareRenderer_SelectHandler(SoftwareRasterHandler **handlers,
+                                                             const GraphicsPrimitivePacket *packet)
+{
+  static Bool8 loggedEmptyHandler;
+  SoftwareRasterHandler *handler;
+
+  handler = handlers[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12];
+  if (handler == NULL && !loggedEmptyHandler) {
+    loggedEmptyHandler = true;
+    Thandor_Log("SoftwareRenderer: skipped packets with render flags 0x%08X (no raster handler)",
+                (uint32_t)packet->renderFlags);
+  }
+  return handler;
+}
+
 /* Queue renderer for the 32-bit framebuffer (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
    prepares every packet of the queue and draws it with the raster handler its render flags select.
 */
@@ -65,14 +83,16 @@ void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
 
 {
   GraphicsPrimitivePacket *packet;
+  SoftwareRasterHandler *handler;
 
   packet = GraphicsPrimitiveQueue_Begin(queue);
   while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    /* the handler index is bits 12..17 of the flags */
-    (*g_SoftwareRasterHandlers32Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
-    g_PrimitiveDrawCallCount++;
+    handler = SoftwareRenderer_SelectHandler(g_SoftwareRasterHandlers32Bit,packet);
+    if (handler != NULL) {
+      (*handler)(clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
+      g_PrimitiveDrawCallCount++;
+    }
     packet = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
@@ -89,6 +109,7 @@ void SoftwareRenderer_DrawQueueAuxiliary
 
 {
   GraphicsPrimitivePacket *packet;
+  SoftwareRasterHandler *handler;
 
   g_SoftwareAuxiliaryTargetBase = targetBase;
   packet = GraphicsPrimitiveQueue_Begin(queue);
@@ -97,10 +118,11 @@ void SoftwareRenderer_DrawQueueAuxiliary
     if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 113)))) {
-      /* the handler index is bits 12..17 of the flags */
-      (*g_SoftwareRasterHandlersAuxiliary[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
-                (clipMaxY,clipMaxX,0,0,packet);
-      g_PrimitiveDrawCallCount++;
+      handler = SoftwareRenderer_SelectHandler(g_SoftwareRasterHandlersAuxiliary,packet);
+      if (handler != NULL) {
+        (*handler)(clipMaxY,clipMaxX,0,0,packet);
+        g_PrimitiveDrawCallCount++;
+      }
     }
     packet = GraphicsPrimitiveQueue_Next(queue);
   }

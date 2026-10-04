@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/resources/tiled_blit.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -22,6 +23,26 @@ static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBli
 GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfSourceRgb);
 
 GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = THANDOR_FN(GraphicsTextureSource_BlitTiledSourceAlpha);
+
+/* The tile stepping below never ends for a zero (or, as int, negative) logical size, which
+   g_GraphicsTextureSourceGetLogicalSize returns for an invalid asset or index; the original looped forever there.
+   Such a call can draw nothing (every call that ends draws no tile), so the blits return early instead. Logs
+   once. */
+static Bool8 TiledBlit_TileSizeUsable(uint32_t tileWidth,uint32_t tileHeight)
+
+{
+  static Bool8 loggedEmptyTile;
+
+  if ((int)tileWidth > 0 && (int)tileHeight > 0) {
+    return true;
+  }
+  if (!loggedEmptyTile) {
+    loggedEmptyTile = true;
+    Thandor_Log("GraphicsTextureSource_BlitTiled: skipped a tile of %ux%u (invalid asset or subresource)",
+                tileWidth,tileHeight);
+  }
+  return false;
+}
 
 /* Fills a rectangle with copies of one subresource laid out on its logical-size grid anchored at the tile
    origin, drawing each copy with g_GraphicsTextureSourceBlitSourceAlpha (installed as
@@ -46,6 +67,9 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
+  if (!TiledBlit_TileSizeUsable(tileWidth,tileHeight)) {
+    return;
+  }
   if (repeatEndX == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndX = tileOriginX + tileWidth;
   }
@@ -114,6 +138,9 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
+  if (!TiledBlit_TileSizeUsable(tileWidth,tileHeight)) {
+    return;
+  }
   if (repeatEndX == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndX = tileOriginX + tileWidth;
   }
@@ -182,6 +209,9 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
+  if (!TiledBlit_TileSizeUsable(tileWidth,tileHeight)) {
+    return;
+  }
   if (repeatEndX == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndX = tileOriginX + tileWidth;
   }
@@ -251,6 +281,9 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
+  if (!TiledBlit_TileSizeUsable(tileWidth,tileHeight)) {
+    return;
+  }
   if (repeatEndX == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndX = tileOriginX + tileWidth;
   }

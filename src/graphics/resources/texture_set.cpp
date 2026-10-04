@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/resources/texture_set.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -53,7 +54,8 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
   }
   entriesRemaining = (allocatedSet->sourceAsset->tableDescriptor).subresourceCount;
   entryCursor = allocatedSet->entries;
-  do {
+  /* the original's do-while ran once for a count of 0; AllocateMetadata rejects that count now */
+  while (entriesRemaining != 0) {
     textureAllocationError = g_MemoryApi.alloc(sizeof(GraphicsTextureResource),(void **)&newTexture);
     if (textureAllocationError == 0) {
       entryCursor->texture = newTexture;
@@ -65,7 +67,7 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
     }
     entryCursor++;
     entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return allocatedSet;
 }
 
@@ -88,7 +90,8 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
   if (set != NULL) {
     entriesRemaining = set->subresourceCount;
     entryCursor = set->entries;
-    do {
+    /* a while loop: the original's do-while ran once for a set without entries */
+    while (entriesRemaining != 0) {
       texture = entryCursor->texture;
       if (texture != NULL) {
         /* find the texture's slot; if it is not registered the scan ends on (and clears) the last slot */
@@ -105,7 +108,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
       }
       entryCursor++;
       entriesRemaining--;
-    } while (entriesRemaining != 0);
+    }
     releasedSourceAsset = GraphicsTextureSet_FreeMetadata(set);
   }
   return releasedSourceAsset;
@@ -172,9 +175,10 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
 
 /* GraphicsTextureSet_AllocateMetadata: fills set->entries from the asset's source entries (rows
    GFX_SUBRESOURCE_RECORD_SIZE bytes apart, starting at firstSourceEntry), entryCount of them; at least one
-   entry is always processed, as in the original. Each entry gets no texture yet, its image index, the source
-   asset and entry, and log2 of the width and height (31 for a zero size). Returns false at the first image
-   whose width or height is not a power of two (that entry is left partly written). */
+   entry is always processed, as in the original (GraphicsTextureSet_AllocateMetadata rejects a count of 0).
+   Each entry gets no texture yet, its image index, the source asset and entry, and log2 of the width and
+   height (31 for a zero size). Returns false at the first image whose width or height is not a power of two
+   (that entry is left partly written). */
 static Bool8 GraphicsTextureSet_FillEntries
           (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,uint8_t *firstSourceEntry,
            GraphicsAssetAllocationByteSize entryCount)
@@ -224,7 +228,8 @@ static Bool8 GraphicsTextureSet_FillEntries
 /* Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
    set (an 8-byte header with the source asset and image count, then one 0x20-byte GraphicsTextureSetEntry
    per image) and fills each entry with the image index, source entry and log2 of its width and height.
-   Returns the set (never NULL), or NULL with the conversion/arena error or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO
+   Returns the set (never NULL), or NULL with the conversion/arena error, FATAL_ERROR_GFX_ASSET_INVALID (malformed
+   header or no images, see GraphicsTextureSource_ValidateAsset) or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO
    in *outErrorCode (outErrorCode may be NULL; on the size error the set is not freed, as in the original).
 */
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode)
@@ -236,7 +241,18 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
   GraphicsAssetAllocationByteSize entryCount;
 
   convertedSource = (GraphicsPaletteTextureSourceAsset *)sourceAsset;
-  errorCode = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
+  /* The original converted and filled at least one entry for any header; a malformed header or an asset
+     without images is rejected here because the conversion and the fill loop then ran outside the asset and the
+     set allocation. */
+  errorCode = FATAL_ERROR_GFX_ASSET_INVALID;
+  if (GraphicsTextureSource_ValidateAsset(sourceAsset)) {
+    if (convertedSource->subresourceCount != 0) {
+      errorCode = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
+    }
+    else {
+      Thandor_Log("GraphicsTextureSet_AllocateMetadata: rejected gfx asset without images");
+    }
+  }
   if (errorCode == 0) {
     entryCount = convertedSource->subresourceCount;
     errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + GRAPHICS_TEXTURE_SET_HEADER_BYTES,(void **)&set);
