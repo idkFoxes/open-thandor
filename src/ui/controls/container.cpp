@@ -491,3 +491,44 @@ UiNodeVtable g_UiLayoutContainerControlVtable = {
         .unsuppressActionId = THANDOR_FN(UiLayoutContainerControl_UnsuppressActionIdRecursive),
         .tick = THANDOR_FN(UiNode_DefaultTick),
         .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+
+/* Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
+   unsuppressActionId method clears UI_NODE_SUPPRESSED when the action matches (containers recurse).
+*/
+void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+
+{
+  for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
+    firstNode->vtable->unsuppressActionId(actionId,firstNode);
+  }
+  return;
+}
+
+/* Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
+   node's suppressActionId method sets UI_NODE_SUPPRESSED when the action matches (containers recurse).
+*/
+void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+
+{
+  for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
+    firstNode->vtable->suppressActionId(actionId,firstNode);
+  }
+  return;
+}
+
+/* Looks up the page stack's shown page (its first child) in its page array and returns the page's index;
+   when the shown page is none of the stack's pages it returns pageCount (1 for an empty stack).
+*/
+uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack)
+
+{
+  uint32_t pageIndex;
+
+  /* Page 0 is always compared, even when pageCount is 0 (do/while as in the original). */
+  pageIndex = 0;
+  do {
+    if ((stack->base).firstChild == (&stack->pages)[pageIndex]) break;
+    pageIndex++;
+  } while (pageIndex < stack->pageCount);
+  return pageIndex;
+}

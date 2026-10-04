@@ -240,3 +240,40 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   return;
 }
+
+/* Relocation of a wrapped text control loaded from a serialized UI tree (relocate of
+   g_UiListOffsetControlVtable and g_UiCommandVisibilityWrappedTextVtable): relocates the children and, when
+   UI_LABEL_TEXT_NEEDS_RELOCATION marks the text pointer as a serialized offset, turns it into a pointer once.
+*/
+void UiWrappedTextControl_RelocateAndApplyDeferredOffset
+          (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control)
+
+{
+  UiContainer_RelocateChildren(relocationDelta,&control->base);
+  if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
+    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
+    control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
+  }
+  return;
+}
+
+UiNodeVtable g_UiCommandVisibilityWrappedTextVtable = {
+    .relocate = THANDOR_FN(UiWrappedTextControl_RelocateAndApplyDeferredOffset),
+    .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+    .drawClipped = THANDOR_FN(UiCommandVisibilityWrappedText_DrawWhenAllowed),
+    .layout = THANDOR_FN(UiContainer_LayoutChildren),
+    .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+    .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+    .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+    .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+    .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+    .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+    .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
+    .hitTest = THANDOR_FN(FrontendResultsTable_HitTestAlwaysNone),
+    .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+    .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+    .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+    .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+    .tick = THANDOR_FN(UiNode_DefaultTick),
+    .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+};

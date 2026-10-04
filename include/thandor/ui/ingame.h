@@ -8,6 +8,7 @@
 #ifndef THANDOR_UI_INGAME_H
 #define THANDOR_UI_INGAME_H
 
+#include <thandor/ui/ingame/catalog_entry.h>
 #include <thandor/ui/ingame/chat.h>
 #include <thandor/ui/ingame/commands.h>
 #include <thandor/ui/ingame/editor_keyboard.h>

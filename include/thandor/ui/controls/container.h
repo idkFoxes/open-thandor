@@ -68,4 +68,10 @@ void UiContainer_LayoutChildren(UiNodeBase *control);
 
 extern UiNodeVtable g_UiLayoutContainerControlVtable;
 
+void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
+
+void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
+
+uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack);
+
 #endif /* THANDOR_UI_CONTROLS_CONTAINER_H */
