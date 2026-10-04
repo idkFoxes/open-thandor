@@ -620,8 +620,12 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
               &g_InstallRegistryValueType,g_InstallRegistryValueDataA,
               &g_InstallRegistryValueDataCapacityBytes);
   if ((status == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
+    /* open-thandor: the directory is cut short enough that "<CD>\Thandor" fits the 0x100-unit
+       g_LooseMoviePathPrefix (a CD path of 0xF8 characters or more ran past it; the copy keeps at most
+       capacity / 2 - 2 characters, here 0xF7) */
     Text_CopyNarrowToUtf16
-              (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,g_InstallRegistryValueDataA);
+              (sizeof g_InstallDirectoryScratchUtf16 - (sizeof g_ThandorWindowTitleUtf16 - sizeof(uint16_t)),
+               g_InstallDirectoryScratchUtf16,g_InstallRegistryValueDataA);
     WidePath_CombineDirectoryAndLeaf
               (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)g_ThandorWindowTitleUtf16,g_InstallDirectoryScratchUtf16);
   }
@@ -637,7 +641,7 @@ static void CoreAssets_UseLocalMovieFolder(void)
 
 {
   static const uint16_t flmLeaf[4] = {'f','l','m',0};
-  static uint16_t localFlmPath[256];
+  static uint16_t localFlmPath[THANDOR_PATH_CAPACITY]; /* <exe dir>\flm: up to 0x104 units */
   char narrow[256];
   int k;
 

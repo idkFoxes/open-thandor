@@ -11,6 +11,7 @@
 #include <thandor/core/types.h>
 #include <thandor/platform/filesystem/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/core/text/path.h>
 
 /* Submodule: platform/filesystem/win32. */
 
@@ -120,7 +121,7 @@ extern uint16_t g_DefaultComputerLabelUtf16[32];
 
 extern FileSystemGetPositionProc *g_FileSystemGetPosition;
 
-extern uint16_t g_FileSystemCombinedPathScratchUtf16[256];
+extern uint16_t g_FileSystemCombinedPathScratchUtf16[THANDOR_PATH_CAPACITY];
 extern FileSystemOpenProc *g_FileSystemOpen;
 extern FileSystemCloseProc *g_FileSystemClose;
 extern FileSystemReadExactProc *g_FileSystemReadExact;

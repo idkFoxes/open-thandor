@@ -11,6 +11,7 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/core/text/path.h>
 
 /* Submodule: ui/ingame/savegame_page. */
 
@@ -35,6 +36,6 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton);
 void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl);
 
 extern uint16_t g_SaveDirectoryUtf16[5];
-extern uint16_t g_ScenarioCatalogPathScratchUtf16[256];
+extern uint16_t g_ScenarioCatalogPathScratchUtf16[THANDOR_PATH_CAPACITY];
 
 #endif /* THANDOR_UI_INGAME_SAVEGAME_PAGE_H */
