@@ -113,20 +113,16 @@ uint32_t g_MouseEventsProcessed = 0;
 
 /* Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the
    game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor
-   frame (wrapping to the first one); when the frame changed or mouse events moved the cursor, and the graphics
-   backend is not in use, the cursor is redrawn directly on the primary surface.
+   frame (wrapping to the first one). The cursor itself is drawn by the present (SdlVideo_Present).
 */
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
 {
   GraphicsCursorFrameRecord *frameRecords;
   GraphicsCursorFrameIndex activeFrameIndex;
-  int32_t previousAccessState;
   GraphicsSubresourceIndex nextIdleSubresource;
   GraphicsSubresourceIndex nextActiveSubresource;
-  Bool8 frameAdvanced;
 
-  frameAdvanced = false;
   activeFrameIndex = g_CursorFrameIndex;
   frameRecords = g_CursorFrameRecords;
   if (g_CursorVisibilityToken < 0) {
@@ -147,36 +143,11 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
     if (nextIdleSubresource != g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex) {
       g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex = nextIdleSubresource;
       frameRecords[activeFrameIndex].activeSubresourceIndex = nextActiveSubresource;
-      frameAdvanced = true;
     }
   }
-  /* Recompose the cursor when its animation frame changed or the mouse moved. */
-  if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
-    return;
-  }
-#ifdef THANDOR_PLATFORM_SDL3
-  /* SDL3 backend: there is no primary surface to draw on from this (timer) thread; SdlVideo_Present composes
-     the cursor into every presented frame. */
-  return;
-#endif
-  /* Windowed mode (developer tools, not in the original): the primary surface is the whole desktop, so drawing
-     the cursor at framebuffer coordinates would paint over the desktop's top left corner.
-     GraphicsFramebuffer_Present composes the cursor into the back surface every frame, so the timer refresh is
-     skipped. */
-  if (DebugHook_Windowed()) {
-    return;
-  }
-  /* try-lock: the original atomically swaps 1 into the access state and only draws when it was 0 */
-  if (g_CursorSourceAsset != NULL) {
-    previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
-    if (previousAccessState == 0) {
-      g_MouseEventsProcessed = 0;
-      GraphicsCursor_RestoreAfterPresent(g_PrimarySurface3);
-      GraphicsCursor_ComposeBeforePresent(g_PrimarySurface3);
-      g_GraphicsBackendAccessState--;
-    }
-  }
-  return;
+  /* The original redraws the cursor on the primary surface here when its frame changed or the mouse moved. The
+     SDL3 backend has no primary surface to draw on from this (timer) thread: SdlVideo_Present composes the cursor
+     into every presented frame. */
 }
 
 

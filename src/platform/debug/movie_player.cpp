@@ -120,9 +120,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
 }
 
 /* Debug tool: OPEN_THANDOR_MOVIEEXPORT=<name>[,<name>...] decodes flm\<name>.flm frame by frame (as fast
-   as the stream allows) and writes moviedump\<name>.rgb (32-bit BGRA frames, top-down), moviedump\<name>.wav
-   (the chosen audio track as the DirectSound buffer holds it) and moviedump\<name>.txt (width height
-   frames rate). The process exits afterwards. */
+   as the stream allows) and writes moviedump\<name>.rgb (32-bit BGRA frames, top-down) and moviedump\<name>.txt
+   (width height frames rate); the soundtrack is not exported. The process exits afterwards. */
 void DebugMovie_ExportOne(const char *name)
 {
   uint16_t path[64];
@@ -151,39 +150,7 @@ void DebugMovie_ExportOne(const char *name)
   }
   width = g_ActiveMovie->fileHeader->widthPixels;
   height = g_ActiveMovie->fileHeader->heightPixels;
-#ifndef THANDOR_PLATFORM_SDL3 /* the SDL3 audio backend keeps no DirectSound buffer to read the soundtrack from */
-  if (g_ActiveMovie->audioVoiceSet != NULL && g_ActiveMovie->audioVoiceSet->voices[0] != NULL) {
-    IDirectSoundBuffer *buffer = g_ActiveMovie->audioVoiceSet->voices[0];
-    WAVEFORMATEX format;
-    uint32_t formatBytes = 0;
-    void *part1 = NULL;
-    void *part2 = NULL;
-    uint32_t bytes1 = 0;
-    uint32_t bytes2 = 0;
-    memset(&format, 0, sizeof format);
-    buffer->lpVtbl->GetFormat(buffer, &format, sizeof format, &formatBytes);
-    if (buffer->lpVtbl->Lock(buffer, 0, 0, &part1, &bytes1, &part2, &bytes2, DSBLOCK_ENTIREBUFFER) == 0) {
-      FILE *wav;
-      sprintf(fileName, "moviedump\\%s.wav", name);
-      wav = fopen(fileName, "wb");
-      if (wav != NULL) {
-        uint32_t dataBytes = bytes1 + bytes2;
-        uint32_t riffBytes = 36 + dataBytes;
-        uint32_t fmtBytes = 16;
-        fwrite("RIFF", 1, 4, wav); fwrite(&riffBytes, 4, 1, wav);
-        fwrite("WAVEfmt ", 1, 8, wav); fwrite(&fmtBytes, 4, 1, wav);
-        fwrite(&format, 1, 16, wav);
-        fwrite("data", 1, 4, wav); fwrite(&dataBytes, 4, 1, wav);
-        fwrite(part1, 1, bytes1, wav);
-        if (part2 != NULL) fwrite(part2, 1, bytes2, wav);
-        fclose(wav);
-      }
-      buffer->lpVtbl->Unlock(buffer, part1, bytes1, part2, bytes2);
-      Thandor_Log("movie export %s: audio %u Hz, %u ch, %u bit, %u bytes", name, format.nSamplesPerSec,
-                  format.nChannels, format.wBitsPerSample, bytes1 + bytes2);
-    }
-  }
-#endif
+  /* the soundtrack is not exported: the SDL3 audio backend keeps no sound buffer to read it from */
   sprintf(fileName, "moviedump\\%s.rgb", name);
   video = fopen(fileName, "wb");
   for (;;) {

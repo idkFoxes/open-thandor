@@ -197,7 +197,7 @@ Win32MainMessageStorage g_MainMessageStorage = {
 /* ProcessEntry once the main window exists: initialises every subsystem, sets the initial 640x480 display
    mode from the saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
    fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line. The
-   platform backends are DirectDraw, DirectInput and DirectSound, or SDL3 with THANDOR_PLATFORM_SDL3.
+   platform backend is SDL3 (src/platform/sdl3), in place of the original's DirectDraw, DirectInput and DirectSound.
 */
 static void ProcessEntry_RunGame(void)
 
@@ -225,31 +225,16 @@ static void ProcessEntry_RunGame(void)
   checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
   /* TimerSystem_Init only installs the timer procs and always succeeds */
   TimerSystem_Init();
-#ifdef THANDOR_PLATFORM_SDL3
   /* SDL timers and the SDL event pump replace the WinMM timers and the Win32 message pump */
   SdlPlatform_InstallTimersAndPump();
-#endif
   checkedValue = FatalError_ExitIfFailed(checkedValue,false);
-#ifdef THANDOR_PLATFORM_SDL3
   graphicsError = SdlVideo_Init();
-#else
-  graphicsError = Graphics_Init();
-#endif
   FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
-#ifdef THANDOR_PLATFORM_SDL3
   if (!SdlInput_Init(&mouseInitError)) {
-#else
-  if (!DirectInputMouse_Init(&mouseInitError)) {
-#endif
     FatalError_ExitIfFailed(mouseInitError,true);
   }
-#ifdef THANDOR_PLATFORM_SDL3
   soundError = SdlAudio_Init();
   Thandor_Log("SdlAudio_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
-#else
-  soundError = DirectSound_Init();
-  Thandor_Log("DirectSound_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
-#endif
   if (soundError != 0) {
     /* without a sound device the game only stops when -SOUND demands sound */
     if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
@@ -285,11 +270,6 @@ void __cdecl ProcessEntry(void)
 {
   HANDLE processHandle;
   HANDLE threadHandle;
-#ifndef THANDOR_PLATFORM_SDL3
-  HINSTANCE windowInstance;
-  int screenHeight;
-  int screenWidth;
-#endif
 
   g_hInstance = GetModuleHandleA(NULL);
   processHandle = GetCurrentProcess();
@@ -297,38 +277,13 @@ void __cdecl ProcessEntry(void)
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
-#ifdef THANDOR_PLATFORM_SDL3
-  /* SDL3: the window has SDL's class, so the running instance is found by its title */
+  /* the window has SDL's class, so the running instance is found by its title */
   if ((FindWindowA(NULL,sz_MainWindowTitle) == NULL) || DebugHook_AllowSecondInstance()) {
     if (SdlPlatform_CreateMainWindow(sz_MainWindowTitle)) {
       ProcessEntry_RunGame();
       SdlPlatform_Quit();
     }
   }
-#else
-  if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || DebugHook_AllowSecondInstance()) {
-    g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
-    g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
-    g_MainMessageStorage.overlay.windowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
-    if (RegisterClassA((WNDCLASSA *)&g_MainMessageStorage.overlay.windowClass) != 0) { /* the original tests only the 16-bit ATOM */
-      windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
-      screenHeight = GetSystemMetrics(SM_CYSCREEN);
-      screenWidth = GetSystemMetrics(SM_CXSCREEN);
-      /* windowed mode (developer tools, not in the original): a normal window instead of the full-screen
-         topmost popup */
-      if (!DebugHook_CreateMainWindow(sz_MainWindowClass,sz_MainWindowTitle,windowInstance)) {
-        g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
-                                       0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
-      }
-      if (g_MainWindow != NULL) {
-        ShowWindow(g_MainWindow,SW_SHOWNORMAL);
-        UpdateWindow(g_MainWindow);
-        ProcessEntry_RunGame();
-        DestroyWindow(g_MainWindow);
-      }
-    }
-  }
-#endif
   ExitProcess(0);
 }
 

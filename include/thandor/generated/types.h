@@ -4719,8 +4719,6 @@ typedef uint32_t KeyboardVirtualKeyCode;
 
 typedef int GraphicsPlaneNormalFixed;
 
-typedef uint32_t UiFrameRefreshCountdownFrames;
-
 typedef uint32_t UInt64Half32;
 
 typedef uint16_t SoftwareColorLaneUnsigned16;

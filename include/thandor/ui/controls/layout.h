@@ -108,8 +108,6 @@
 /* UiTitledWindowControl.titleFlags and UiHorizontalGaugeControl.gaugeFlags bits. */
 #define UI_TITLED_WINDOW_CENTERED_TITLE 0x1
 #define UI_HORIZONTAL_GAUGE_SHOW_PERCENT 0x1
-/* UiFrame_Update calls between two DirectInputMouse_RefreshDeviceIfIdle calls (g_DirectInputMouseRefreshCountdown). */
-#define UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL 48
 
 void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

@@ -46,8 +46,6 @@ static uint16_t g_UiWindowTexturePathUtf16[15] = {'e', 'n', 'g', 'i', 'n', 'e', 
 
 static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 
-static UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown = 16;
-
 /* Implementation ownership: ui/controls/layout. */
 
 /* drawClipped of g_UiPanelControlVtable: draws the panel's optional tiled background (UI_ROOT_TILED_BACKGROUND)
@@ -1728,13 +1726,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
     }
     UiTooltip_TickCountdown();
   }
-  g_DirectInputMouseRefreshCountdown--;
-  if (g_DirectInputMouseRefreshCountdown == 0) {
-    g_DirectInputMouseRefreshCountdown = UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL;
-#ifndef THANDOR_PLATFORM_SDL3 /* the SDL3 backend has no DirectInput device to refresh */
-    DirectInputMouse_RefreshDeviceIfIdle();
-#endif
-  }
+  /* the original refreshes its DirectInput mouse here every 48th call; the SDL3 backend has no device to refresh */
   g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
