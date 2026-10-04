@@ -19,9 +19,11 @@ functions those slots hold is chosen by the backend:
 - DRAW2D_BACKEND_GPU_RECORD: a draw whose destination is the display framebuffer (&g_DisplayFramebufferAccess)
   appends a Draw2DItem to the frame's list instead of writing pixels; any other destination (the cursor
   composite buffer, offscreen buffers, the raster self-test) still goes to the software function. The
-  special cases (minimap, results columns, grey-scale image and the bilinear stretch) are drawn by their
-  software function into a CPU scratch image that the item points to (DRAW2D_OP_IMAGE_REGION, the MVP's
-  streaming fallback).
+  minimap is drawn by its software function into a CPU scratch image that the item points to
+  (DRAW2D_OP_IMAGE_REGION, the MVP's streaming fallback). Work package 5: the results graph columns become
+  FILL items (one per segment), the bilinear stretch (movie frames) and the credits grey-scale image become
+  DRAW2D_OP_IMAGE_BILINEAR items (a CPU image - the movie frame's texels, the CPU cross-fade as grey levels -
+  that the GPU stretches with a linear sampler).
 
 The list holds items in call order (no reordering). Draw2D_BeginFrame empties it and releases the scratch
 images of the previous frame; the pixel pointers of IMAGE_REGION items stay valid until the next
@@ -47,6 +49,9 @@ enum Draw2DOp : uint8_t {
     DRAW2D_OP_FILL = 1,         /* dst filled with tintArgb, through clip */
     DRAW2D_OP_IMAGE_REGION = 2, /* CPU image (pixels, pitchBytes) of src size drawn at dst, through clip */
     DRAW2D_OP_EXTERNAL_3D = 3,  /* the 3D scene ends here: it covers clip (= dst) */
+    /* (work package 5, movie frames and credits) CPU image (pixels, pitchBytes) of src size stretched
+       bilinearly over dst, drawn through clip (4 is left to the minimap's op, built in parallel) */
+    DRAW2D_OP_IMAGE_BILINEAR = 5,
 };
 
 enum Draw2DBlend : uint8_t {
@@ -74,7 +79,14 @@ enum Draw2DBlend : uint8_t {
      SRC_ALPHA_SKIP0; tintArgb the ARGB8888 colour.
    - IMAGE_REGION: pixels/pitchBytes describe src[2] x src[3] pixels (src[0] = src[1] = 0) in framebuffer
      format (XRGB8888 after the brightness/contrast tables), shown 1:1 at dst; clip = dst; blend OPAQUE.
-   - EXTERNAL_3D: dst = clip = the scene's clip rectangle; nothing else is set. */
+   - EXTERNAL_3D: dst = clip = the scene's clip rectangle; nothing else is set.
+   - IMAGE_BILINEAR: pixels/pitchBytes describe src[2] x src[3] ARGB8888 pixels (src[0] = src[1] = 0, alpha not
+     meaningful); dst is the whole destination of the software scaler (both sides at least 2 pixels), clip the
+     part it writes (the stretch leaves an odd last column out) cut to the display; blend OPAQUE. The texel
+     position of destination pixel (i, j) is the software scalers' (i * stepX / 256, j * stepY / 256) with the
+     truncated 8.8 steps step = (srcSize - 1) * 256 / (dstSize - 1), so the GPU samples the same texels (only the
+     weights' rounding differs). The pixels are read when the item is recorded (g_Draw2DSpriteRecorded) and stay
+     valid until the next Draw2D_BeginFrame. */
 struct Draw2DItem {
     uint8_t op;    /* Draw2DOp */
     uint8_t blend; /* Draw2DBlend */
@@ -142,9 +154,10 @@ const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount);
 /* Ends the frame's recording (the list stays readable until the next Draw2D_BeginFrame). */
 void Draw2D_EndFrame();
 
-/* GPU backend hook (nullptr when unused): called right after a SPRITE item is appended, with its index in the
-   frame list. The GPU backend reads the asset here (texture cache lookup, which converts the texels into its
-   staging buffer at once), because the simulation may release or rewrite the asset before the flush (6.4). */
+/* GPU backend hook (nullptr when unused): called right after a SPRITE or IMAGE_BILINEAR item is appended, with
+   its index in the frame list. The GPU backend reads the asset or pixels here (texture cache lookup or streaming
+   upload, which copy the texels into its staging buffer at once), because the simulation may release or rewrite
+   the asset (a movie frame: every frame) before the flush (6.4). */
 using Draw2DSpriteRecordedProc = void (uint32_t itemIndex, const Draw2DItem *item);
 extern Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded;
 

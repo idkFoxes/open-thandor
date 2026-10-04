@@ -28,18 +28,16 @@ std::vector<Draw2DItem> s_items;
 std::vector<std::vector<uint32_t>> s_scratch;
 std::size_t s_scratchUsed = 0;
 
-/* The open results graph region: consecutive columns of the same span are appended to one IMAGE_REGION item
-   (pitchPixels wide) instead of one item per column. */
-struct ColumnRegion {
+/* The last results graph column: its FILL items (one per drawn segment) are the last `count` items from
+   `firstItem`. The next column at nextX widens them by one pixel when its segments match (same rows and colours)
+   instead of appending new ones. */
+struct ColumnRun {
     bool open;
-    std::size_t itemIndex;
-    uint32_t *pixels;
-    int32_t left;
-    int32_t top;
-    int32_t height;
-    int32_t pitchPixels;
+    std::size_t firstItem;
+    std::size_t count;
+    int32_t nextX;
 };
-ColumnRegion s_columnRegion = {};
+ColumnRun s_columnRun = {};
 
 bool IsDisplay(const SoftwareFramebufferAccess *framebuffer)
 {
@@ -249,8 +247,36 @@ void RecordFillRectArgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, in
     SetRect(item->clip, rectMinX, rectMinY, rectMaxX, rectMaxY);
 }
 
-/* The bilinear stretch: drawn by the software function into a scratch image that is (destinationWidth & ~1)
-   pixels wide (the stretch writes pixel pairs), when the software function would draw at all. */
+/* An IMAGE_BILINEAR item: width x height pixels (pitchBytes apart) stretched over the destination
+   (destinationLeft, destinationTop, destinationWidth x destinationHeight), of which the left drawnWidth columns
+   are written; clipped to the display. Hands the item to the GPU backend at once (it uploads the pixels). */
+void RecordImageBilinear(int32_t destinationLeft, int32_t destinationTop, int32_t destinationWidth,
+                         int32_t destinationHeight, int32_t drawnWidth, const uint32_t *pixels, int32_t width,
+                         int32_t height, int32_t pitchBytes)
+{
+    int32_t left = destinationLeft;
+    int32_t top = destinationTop;
+    int32_t right = destinationLeft + drawnWidth;
+    int32_t bottom = destinationTop + destinationHeight;
+    if (!ClipToDisplay(INT32_MAX, INT32_MAX, INT32_MIN, INT32_MIN, &left, &top, &right, &bottom)) {
+        return;
+    }
+    Draw2DItem *item = AppendItem(DRAW2D_OP_IMAGE_BILINEAR, DRAW2D_BLEND_OPAQUE);
+    SetRect(item->dst, destinationLeft, destinationTop, destinationLeft + destinationWidth,
+            destinationTop + destinationHeight);
+    SetRect(item->src, 0, 0, width, height);
+    SetRect(item->clip, left, top, right, bottom);
+    item->pixels = pixels;
+    item->pitchBytes = pitchBytes;
+    if (g_Draw2DSpriteRecorded != nullptr) {
+        g_Draw2DSpriteRecorded((uint32_t)(s_items.size() - 1), item);
+    }
+}
+
+/* The bilinear stretch (movie frames, briefing images): an IMAGE_BILINEAR item over the subresource's ARGB8888
+   texels, when the software function would draw at all. The software stretch writes pixel pairs, so an odd last
+   column keeps what was there before; the item's clip leaves it out as well (a column drawn there would differ
+   from the software frame, e.g. next to the end movie's letterbox bars). */
 void RecordStretchDirectColorBilinear(uint32_t destinationHeight, uint32_t destinationWidth, int32_t destinationY,
                                       int32_t destinationX, uint32_t subresourceIndex,
                                       GraphicsTextureSourceAsset *sourceAsset, SoftwareFramebufferAccess *framebuffer)
@@ -272,13 +298,14 @@ void RecordStretchDirectColorBilinear(uint32_t destinationHeight, uint32_t desti
     if (first < 0 || end > pitch * g_DisplayFramebufferAccess.height) {
         return;
     }
-    const int32_t width = (int32_t)(destinationWidth & ~1u);
-    const int32_t height = (int32_t)destinationHeight;
-    uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    SoftwareFramebufferAccess scratch = ScratchFramebuffer(pixels, width, height);
-    SoftwareTextureSource_StretchDirectColorBilinear32(destinationHeight, destinationWidth, 0, 0, subresourceIndex,
-                                                       sourceAsset, &scratch);
-    RecordImageRegion(destinationX, destinationY, width, height, pixels, width * 4);
+    if (destinationWidth > (uint32_t)INT32_MAX || destinationHeight > (uint32_t)INT32_MAX ||
+        entry->pixelWidth > (uint32_t)INT32_MAX / 4 || entry->pixelHeight > (uint32_t)INT32_MAX) {
+        return;
+    }
+    const uint32_t *texels = (const uint32_t *)((const uint8_t *)sourceAsset + entry->dataOffset);
+    RecordImageBilinear(destinationX, destinationY, (int32_t)destinationWidth, (int32_t)destinationHeight,
+                        (int32_t)(destinationWidth & ~1u), texels, (int32_t)entry->pixelWidth,
+                        (int32_t)entry->pixelHeight, (int32_t)entry->pixelWidth * 4);
 }
 
 void RecordMinimapDraw(int32_t destY, int32_t destX, int32_t height, int32_t width, uint32_t startU, uint32_t startV,
@@ -300,6 +327,9 @@ void RecordMinimapDraw(int32_t destY, int32_t destX, int32_t height, int32_t wid
     RecordImageRegion(destX, destY, width, height, pixels, width * 4);
 }
 
+/* A results graph column: one opaque FILL per drawn segment, in the packed colour (a framebuffer pixel, already
+   through the pack tables, so it is written as it is). Neighbouring columns with the same segments widen the
+   previous column's fills instead of adding new ones. */
 void RecordFillColumnSegments(int32_t topY, int32_t drawX, uint32_t segmentCount, const int32_t *segmentHeights,
                               const uint32_t *packedColors, SoftwareFramebufferAccess *framebuffer)
 {
@@ -309,48 +339,72 @@ void RecordFillColumnSegments(int32_t topY, int32_t drawX, uint32_t segmentCount
         return;
     }
     int64_t total = 0;
+    std::size_t drawn = 0;
     for (uint32_t segment = 0; segment < segmentCount; segment++) {
         if (segmentHeights[segment] < 0) {
             return; /* the software loop would run away; never happens with a valid span */
         }
         total += segmentHeights[segment];
+        drawn += segmentHeights[segment] != 0 ? 1 : 0;
     }
-    if (total <= 0 || total > INT32_MAX / 4) {
+    if (total <= 0 || (int64_t)topY + total > INT32_MAX) {
         return;
     }
-    const int32_t height = (int32_t)total;
-    ColumnRegion &region = s_columnRegion;
-    if (region.open && region.itemIndex + 1 == s_items.size() && region.top == topY && region.height == height &&
-        s_items[region.itemIndex].dst[2] == drawX && drawX - region.left < region.pitchPixels) {
-        SoftwareFramebufferAccess scratch = ScratchFramebuffer(region.pixels, region.pitchPixels, height);
-        SoftwareFramebuffer_FillColumnSegments32(0, drawX - region.left, segmentCount, segmentHeights, packedColors,
-                                                 &scratch);
-        Draw2DItem &item = s_items[region.itemIndex];
-        item.dst[2]++;
-        item.src[2]++;
-        item.clip[0] = item.dst[0] < 0 ? 0 : item.dst[0];
-        item.clip[2] = item.dst[2] > (int32_t)g_DisplayFramebufferAccess.width ? (int32_t)g_DisplayFramebufferAccess.width
-                                                                                : item.dst[2];
-        return;
+    const int32_t displayWidth = (int32_t)g_DisplayFramebufferAccess.width;
+    const int32_t displayHeight = (int32_t)g_DisplayFramebufferAccess.height;
+    /* widen the previous column's fills when every drawn segment matches one of them (rows and colour) */
+    ColumnRun &run = s_columnRun;
+    if (run.open && run.nextX == drawX && run.count == drawn && run.firstItem + run.count == s_items.size() &&
+        drawX >= 0 && drawX < displayWidth) {
+        bool matches = true;
+        std::size_t index = run.firstItem;
+        int32_t y = topY;
+        for (uint32_t segment = 0; segment < segmentCount && matches; segment++) {
+            const int32_t height = segmentHeights[segment];
+            if (height == 0) {
+                continue;
+            }
+            const Draw2DItem &item = s_items[index++];
+            const int32_t top = y < 0 ? 0 : y;
+            const int32_t bottom = y + height > displayHeight ? displayHeight : y + height;
+            matches = item.dst[1] == top && item.dst[3] == bottom && item.dst[2] == drawX &&
+                      item.tintArgb == (packedColors[segment] | ARGB8888_ALPHA_MASK);
+            y += height;
+        }
+        if (matches) {
+            for (std::size_t item = run.firstItem; item < run.firstItem + run.count; item++) {
+                s_items[item].dst[2] = drawX + 1;
+                s_items[item].clip[2] = drawX + 1;
+            }
+            run.nextX = drawX + 1;
+            return;
+        }
     }
-    region.open = false;
-    int32_t pitchPixels = (int32_t)g_DisplayFramebufferAccess.width - drawX;
-    if (pitchPixels < 1) {
-        pitchPixels = 1;
+    run.open = false;
+    const std::size_t firstItem = s_items.size();
+    int32_t y = topY;
+    for (uint32_t segment = 0; segment < segmentCount; segment++) {
+        const int32_t height = segmentHeights[segment];
+        if (height == 0) {
+            continue;
+        }
+        int32_t left = drawX;
+        int32_t top = y;
+        int32_t right = drawX + 1;
+        int32_t bottom = y + height;
+        y += height;
+        if (!ClipToDisplay(INT32_MAX, INT32_MAX, INT32_MIN, INT32_MIN, &left, &top, &right, &bottom)) {
+            return; /* off the display (never for a valid graph): no run to widen */
+        }
+        Draw2DItem *item = AppendItem(DRAW2D_OP_FILL, DRAW2D_BLEND_OPAQUE);
+        item->tintArgb = packedColors[segment] | ARGB8888_ALPHA_MASK;
+        SetRect(item->dst, left, top, right, bottom);
+        SetRect(item->clip, left, top, right, bottom);
     }
-    uint32_t *pixels = AcquireScratch((std::size_t)pitchPixels * (std::size_t)height);
-    SoftwareFramebufferAccess scratch = ScratchFramebuffer(pixels, pitchPixels, height);
-    SoftwareFramebuffer_FillColumnSegments32(0, 0, segmentCount, segmentHeights, packedColors, &scratch);
-    if (RecordImageRegion(drawX, topY, 1, height, pixels, pitchPixels * 4) == nullptr) {
-        return;
-    }
-    region.open = true;
-    region.itemIndex = s_items.size() - 1;
-    region.pixels = pixels;
-    region.left = drawX;
-    region.top = topY;
-    region.height = height;
-    region.pitchPixels = pitchPixels;
+    run.open = true;
+    run.firstItem = firstItem;
+    run.count = s_items.size() - firstItem;
+    run.nextX = drawX + 1;
 }
 
 /* The software function's early outs (nothing is drawn): the image region is recorded only when it draws. */
@@ -376,23 +430,35 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
     if (!IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) ||
         !GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
                              (const GraphicsTextureSourceAsset *)graphicsTextureAsset) ||
-        destinationWidth == 0 || destinationHeight == 0) {
-        /* other destinations, and the cases the software function handles by itself */
+        destinationWidth < 2 || destinationHeight < 2 || destinationWidth > 16384 || destinationHeight > 16384) {
+        /* other destinations, and the cases the software function handles by itself (sizes 0 and 1 loop or divide
+           by zero there) */
         SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, destinationTop,
                                                        destinationLeft, blendedSourcePixels, blendFactorPixels,
                                                        sourceSubresourceIndexA, sourceSubresourceIndexB,
                                                        graphicsTextureAsset, framebufferAccess);
         return;
     }
-    const int32_t width = (int32_t)destinationWidth;
-    const int32_t height = (int32_t)destinationHeight;
+    /* The cross-fade into blendedSourcePixels stays on the CPU (the control keeps that state between ticks; the
+       factor is a per-pixel mask, credits_mask.cpp); its grey levels are uploaded once and scaled on the GPU. The
+       software scale shows intensity 255 - sample (g_SoftwarePixelIntensityToNativeColorLut256 runs from white to
+       black), so the texels are inverted here: the GPU's bilinear sample of 255 - b is 255 - (sample of b), up to
+       the weights' rounding. */
+    const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
+    SoftwareTexture_CrossFadeSubresources(blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
+                                          sourceSubresourceIndexB, asset);
+    const GraphicsTextureSourceEntry *entryB =
+        (const GraphicsTextureSourceEntry *)((const uint8_t *)asset + asset->tableDescriptor.subresourceTableOffset) +
+        sourceSubresourceIndexB;
+    const int32_t width = (int32_t)entryB->pixelWidth;
+    const int32_t height = (int32_t)entryB->pixelHeight;
     uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    SoftwareFramebufferAccess scratch = ScratchFramebuffer(pixels, width, height);
-    /* the cross-fade into blendedSourcePixels happens here as well (the control keeps that state) */
-    SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, 0, 0, blendedSourcePixels,
-                                                   blendFactorPixels, sourceSubresourceIndexA,
-                                                   sourceSubresourceIndexB, graphicsTextureAsset, (int *)&scratch);
-    RecordImageRegion(destinationLeft, destinationTop, width, height, pixels, width * 4);
+    const uint8_t *blended = (const uint8_t *)blendedSourcePixels;
+    for (std::size_t index = 0; index < (std::size_t)width * (std::size_t)height; index++) {
+        pixels[index] = ARGB8888_ALPHA_MASK | (uint32_t)(255 - blended[index]) * 0x010101u;
+    }
+    RecordImageBilinear(destinationLeft, destinationTop, (int32_t)destinationWidth, (int32_t)destinationHeight,
+                        (int32_t)destinationWidth, pixels, width, height, width * 4);
 }
 
 } // namespace
@@ -436,7 +502,7 @@ void Draw2D_BeginFrame()
 {
     s_items.clear();
     s_scratchUsed = 0;
-    s_columnRegion.open = false;
+    s_columnRun.open = false;
 }
 
 const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount)
@@ -447,7 +513,7 @@ const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount)
 
 void Draw2D_EndFrame()
 {
-    s_columnRegion.open = false;
+    s_columnRun.open = false;
 }
 
 void Draw2D_MarkExternal3D(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX)

@@ -72,6 +72,7 @@
 #include <cmath>
 #include <cstring>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <thandor/thandor.h>
@@ -1448,7 +1449,12 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
     s_gpu.spriteRegions.resize(static_cast<size_t>(itemIndex) + 1);
   }
   GpuUiTexRegion region{nullptr, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0};
-  if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
+  if (item->op == DRAW2D_OP_IMAGE_BILINEAR) {
+    /* work package 5: the movie frame's texels or the credits' grey levels, streamed for this frame (copied into
+       the staging buffer now: a movie frame is rewritten by the next decode) */
+    region = GpuUiTextures_UploadRegion(item->pixels, item->src[2], item->src[3], item->pitchBytes);
+  }
+  else if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
     region.page = nullptr;
   }
   s_gpu.spriteRegions[itemIndex] = region;
@@ -1530,6 +1536,33 @@ void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion 
   s_gpu.uiBatches.back().vertexCount += 6;
 }
 
+/* The texture coordinates of an IMAGE_BILINEAR item (work package 5): region (the streamed image, w x h texels)
+   mapped over dst as the software scalers do (SoftwareTextureSource_StretchDirectColorBilinear32,
+   SoftwareTexture_BilinearBlendScaleSubresources): destination pixel i samples texel position i * step / 256 with
+   the truncated 8.8 step (w - 1) * 256 / (dstWidth - 1) (0 for a single row), texel centres at j + 0.5. That is
+   linear in x, so the quad's corners get the positions at the destination's edges (pixel centre x = i + 0.5):
+   (x - 0.5) * step / 256 + 0.5, which AppendUiQuad interpolates and cuts to the clip. The truncated step makes the
+   image end short of its last texel, as in software (2 texels for 320 -> 640). */
+GpuUiTexRegion BilinearRegion(const GpuUiTexRegion &region, const int32_t *dst) noexcept
+{
+  const auto edge = [](float base, float size, int texels, int destination) {
+    const uint64_t step =
+        (destination > 1) ? (static_cast<uint64_t>(texels - 1) << 8) / static_cast<uint64_t>(destination - 1) : 0;
+    const float scale = static_cast<float>(step) / 256.0f;
+    const float texel = size / static_cast<float>(texels);
+    return std::pair<float, float>{base + (0.5f - 0.5f * scale) * texel,
+                                   base + ((static_cast<float>(destination) - 0.5f) * scale + 0.5f) * texel};
+  };
+  GpuUiTexRegion mapped = region;
+  const auto [u0, u1] = edge(region.u0, region.u1 - region.u0, region.w, dst[2] - dst[0]);
+  const auto [v0, v1] = edge(region.v0, region.v1 - region.v0, region.h, dst[3] - dst[1]);
+  mapped.u0 = u0;
+  mapped.u1 = u1;
+  mapped.v0 = v0;
+  mapped.v1 = v1;
+  return mapped;
+}
+
 /* Turns the frame's draw list into quads and batches (and the IMAGE_REGION pixels into streaming uploads). */
 void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
 {
@@ -1559,6 +1592,17 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
       }
       s_gpu.frameTimes.imageRegions++;
       AppendUiQuad(item.dst, item.clip, &region, ARGB8888_OPAQUE_WHITE, 0, GPU_UI_BLEND_OPAQUE);
+      break;
+    }
+    case DRAW2D_OP_IMAGE_BILINEAR: {
+      if ((index >= s_gpu.spriteRegions.size()) || (s_gpu.spriteRegions[index].page == nullptr) ||
+          (s_gpu.spriteRegions[index].w != item.src[2]) || (s_gpu.spriteRegions[index].h != item.src[3]) ||
+          (item.dst[2] - item.dst[0] < 2) || (item.dst[3] <= item.dst[1])) {
+        break;
+      }
+      s_gpu.frameTimes.imageRegions++;
+      const GpuUiTexRegion mapped = BilinearRegion(s_gpu.spriteRegions[index], item.dst);
+      AppendUiQuad(item.dst, item.clip, &mapped, ARGB8888_OPAQUE_WHITE, 0, GPU_UI_BLEND_OPAQUE_LINEAR);
       break;
     }
     case DRAW2D_OP_EXTERNAL_3D:

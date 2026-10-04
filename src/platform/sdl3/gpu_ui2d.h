@@ -40,18 +40,21 @@ constexpr uint32_t GPU_UI_VERTEX_FLAG_PALETTED = 1u;
      MODULATED        BlitModulatedSourceAlpha: each channel (alpha too) (c * tint) >> 8, then as SRC_ALPHA_SKIP0
                       (the alpha is at most 0xFE, so it always blends)
      OPAQUE           the texel's colour, no blend
-     FILL             FillRectArgb: the tint, no texture (page may be null); alpha 0 skipped, 0xFF written */
+     FILL             FillRectArgb: the tint, no texture (page may be null); alpha 0 skipped, 0xFF written
+     OPAQUE_LINEAR    (work package 5: movie frames, credits) as OPAQUE, but sampled with a linear filter, for
+                      the bilinear stretches (Draw2D's IMAGE_BILINEAR items) */
 enum GpuUiBlend : uint8_t {
   GPU_UI_BLEND_SRC_ALPHA_SKIP0 = 0,
   GPU_UI_BLEND_HALF_RGB = 1,
   GPU_UI_BLEND_MODULATED = 2,
   GPU_UI_BLEND_OPAQUE = 3,
   GPU_UI_BLEND_FILL = 4,
-  GPU_UI_BLEND_COUNT = 5
+  GPU_UI_BLEND_OPAQUE_LINEAR = 5,
+  GPU_UI_BLEND_COUNT = 6
 };
 
-/* Creates the shaders (SPIR-V or DXBC, whichever the device takes), the nearest sampler and one pipeline per blend
-   mode for colour targets of the given format. False (logged) on failure; everything created is released again. */
+/* Creates the shaders (SPIR-V or DXBC, whichever the device takes), the nearest and linear samplers and one pipeline
+   per blend mode for colour targets of the given format. False (logged) on failure; everything created is released again. */
 bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target);
 /* Releases what GpuUi2D_Init created (safe without it). */
 void GpuUi2D_Shutdown(SDL_GPUDevice *device);
@@ -62,7 +65,8 @@ void GpuUi2D_Shutdown(SDL_GPUDevice *device);
 bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vertices, uint32_t count);
 /* Draws count vertices from firstVertex of the uploaded ones (a triangle list, count a multiple of 3) inside
    renderPass into a target of targetW x targetH pixels: sets the viewport to the whole target and the scissor (target
-   pixels), binds the blend mode's pipeline and page (nearest sampling, clamped; ignored for GPU_UI_BLEND_FILL), pushes
+   pixels), binds the blend mode's pipeline and page (nearest sampling, linear for GPU_UI_BLEND_OPAQUE_LINEAR, clamped;
+   ignored for GPU_UI_BLEND_FILL), pushes
    the target scale as vertex uniform data and draws in one call. Does nothing without GpuUi2D_Init and an upload, for
    an unknown blend mode or a missing page. */
 void GpuUi2D_Draw(SDL_GPURenderPass *renderPass, SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *page,

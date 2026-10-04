@@ -64,12 +64,45 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
     return intensity > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : intensity;
 }
 
+/* Step 1 of SoftwareTexture_BilinearBlendScaleSubresources, on its own for the GPU draw list (graphics/core/draw2d.cpp
+   draws the scale on the GPU): blendedSourcePixels = per-pixel cross-fade of subresource B to A through the factor
+   image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte), over B's pixel count rounded down
+   to a multiple of 8 (do-while: fewer than 8 pixels run 2^32 times, as in the original). The caller checks the
+   asset and that both entries are paletted. */
+void SoftwareTexture_CrossFadeSubresources
+          (uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
+          GraphicsSubresourceIndex sourceSubresourceIndexA,GraphicsSubresourceIndex sourceSubresourceIndexB,
+          const GraphicsTextureSourceAsset *asset)
+{
+  const short *unity = (const short *)&g_SoftwareBlendUnityWordLanesQ14;
+  const GraphicsTextureSourceEntry *entries = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
+                                                 asset->tableDescriptor.subresourceTableOffset);
+  const GraphicsTextureSourceEntry *entryA = &entries[sourceSubresourceIndexA];
+  const GraphicsTextureSourceEntry *entryB = &entries[sourceSubresourceIndexB];
+  const uint8_t *sourceA = (const uint8_t *)asset + entryA->dataOffset;
+  const uint8_t *sourceB = (const uint8_t *)asset + entryB->dataOffset;
+  const uint8_t *factor = (const uint8_t *)blendFactorPixels;
+  uint8_t *blended = (uint8_t *)blendedSourcePixels;
+  uint32_t blocks = (entryB->pixelHeight * entryB->pixelWidth) >> 3;
+  int lane;
+
+  do {
+    for (lane = 0; lane < 8; lane++) {
+      blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
+    }
+    sourceA += 8;
+    sourceB += 8;
+    factor += 8;
+    blended += 8;
+  } while (--blocks != 0);
+}
+
 /* Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
    destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
    framebuffer (32 bit), as grey levels. Called by
    UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/panels.cpp).
    1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
-      factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
+      factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeSubresources).
    2. g_SoftwarePixelIntensityToNativeColorLut256 is rebuilt for the current pixel format.
    3. Each destination pixel is a bilinear sample of the blended image (8.8 fixed-point steps
       (size - 1) * 256 / (destinationSize - 1)), looked up in that table.
@@ -89,23 +122,16 @@ void SoftwareTexture_BilinearBlendScaleSubresources
 {
   const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
   const SoftwareFramebufferAccess *framebuffer = (const SoftwareFramebufferAccess *)framebufferAccess;
-  const short *unity = (const short *)&g_SoftwareBlendUnityWordLanesQ14;
   const GraphicsTextureSourceEntry *entries;
   const GraphicsTextureSourceEntry *entryA;
   const GraphicsTextureSourceEntry *entryB;
-  const uint8_t *sourceA;
-  const uint8_t *sourceB;
-  const uint8_t *factor;
-  uint8_t *blended;
   uint8_t *destinationRow;
   uint32_t sourceWidth;
   uint32_t sourceHeight;
-  uint32_t blocks;
   uint32_t stepX;
   uint32_t stepY;
   uint32_t yFixed;
   uint32_t rowsLeft;
-  int lane;
 
   if (asset == nullptr || asset->common.magic != ASSET_MAGIC_GFX ||
       sourceSubresourceIndexB >= asset->tableDescriptor.subresourceCount ||
@@ -123,20 +149,8 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   sourceHeight = entryB->pixelHeight;
 
   /* 1. cross-fade B -> A */
-  sourceA = (const uint8_t *)asset + entryA->dataOffset;
-  sourceB = (const uint8_t *)asset + entryB->dataOffset;
-  factor = (const uint8_t *)blendFactorPixels;
-  blended = (uint8_t *)blendedSourcePixels;
-  blocks = (sourceHeight * sourceWidth) >> 3;
-  do {
-    for (lane = 0; lane < 8; lane++) {
-      blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
-    }
-    sourceA += 8;
-    sourceB += 8;
-    factor += 8;
-    blended += 8;
-  } while (--blocks != 0);
+  SoftwareTexture_CrossFadeSubresources(blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
+                                        sourceSubresourceIndexB, asset);
 
   /* 2. grey levels of the current pixel format */
   SoftwareTexture_BuildIntensityLut();

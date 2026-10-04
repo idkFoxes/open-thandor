@@ -11,6 +11,7 @@
      SRC_ALPHA_SKIP0, HALF_RGB, MODULATED, FILL  colour SRC_ALPHA / ONE_MINUS_SRC_ALPHA, alpha ONE /
                                                  ONE_MINUS_SRC_ALPHA (as the 3D renderer's alpha pipeline)
      OPAQUE                                      no blend
+     OPAQUE_LINEAR                               no blend; the OPAQUE fragment shader with the linear sampler
    The shaders discard the skipped texels (alpha 0), so the blend only sees visible ones; an alpha of 0xFF blends
    with factor 1 and writes the source exactly, which is the software blits' opaque write (without the brightness
    LUT, see the plan, 5.3).
@@ -67,6 +68,7 @@ struct TargetUniform {
 struct Ui2dState {
   SDL_GPUDevice *device = nullptr;
   SDL_GPUSampler *sampler = nullptr;
+  SDL_GPUSampler *linearSampler = nullptr; /* GPU_UI_BLEND_OPAQUE_LINEAR (work package 5) */
   SDL_GPUGraphicsPipeline *pipelines[GPU_UI_BLEND_COUNT] = {};
   SDL_GPUBuffer *vertexBuffer = nullptr; /* the frame's vertices (GpuUi2D_Upload) */
   Uint32 vertexBufferBytes = 0;
@@ -150,6 +152,7 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
       {THANDOR_SHADER_BLOBS(Ui2dModulatedMain), "Ui2dModulatedMain", 1},
       {THANDOR_SHADER_BLOBS(Ui2dOpaqueMain), "Ui2dOpaqueMain", 1},
       {THANDOR_SHADER_BLOBS(Ui2dFillMain), "Ui2dFillMain", 0},
+      {THANDOR_SHADER_BLOBS(Ui2dOpaqueMain), "Ui2dOpaqueMain", 1},
   };
   SDL_GPUShader *vertexShader = CreateShader(device, format, THANDOR_SHADER_BLOBS(Ui2dVertexMain), "Ui2dVertexMain",
                                              SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
@@ -164,6 +167,9 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
   samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   samplerInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   s_ui2d.sampler = SDL_CreateGPUSampler(device, &samplerInfo);
+  samplerInfo.min_filter = SDL_GPU_FILTER_LINEAR;
+  samplerInfo.mag_filter = SDL_GPU_FILTER_LINEAR;
+  s_ui2d.linearSampler = SDL_CreateGPUSampler(device, &samplerInfo);
 
   SDL_GPUVertexBufferDescription bufferDescription;
   SDL_zero(bufferDescription);
@@ -177,7 +183,7 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
       {3, 0, SDL_GPU_VERTEXELEMENTFORMAT_UINT, offsetof(GpuUiVertex, flags)},
   };
 
-  bool created = (vertexShader != nullptr) && (s_ui2d.sampler != nullptr);
+  bool created = (vertexShader != nullptr) && (s_ui2d.sampler != nullptr) && (s_ui2d.linearSampler != nullptr);
   for (int blend = 0; created && (blend < GPU_UI_BLEND_COUNT); blend++) {
     const FragmentShader &fragment = fragmentShaders[blend];
     SDL_GPUShader *fragmentShader = CreateShader(device, format, fragment.blobs, fragment.entryPoint,
@@ -190,7 +196,7 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
     SDL_zero(colorTarget);
     colorTarget.format = target;
     SDL_GPUColorTargetBlendState &blendState = colorTarget.blend_state;
-    if (blend != GPU_UI_BLEND_OPAQUE) {
+    if ((blend != GPU_UI_BLEND_OPAQUE) && (blend != GPU_UI_BLEND_OPAQUE_LINEAR)) {
       blendState.enable_blend = true;
       blendState.color_blend_op = SDL_GPU_BLENDOP_ADD;
       blendState.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
@@ -240,6 +246,7 @@ void GpuUi2D_Shutdown(SDL_GPUDevice *device)
     pipeline = nullptr;
   }
   SDL_ReleaseGPUSampler(device, s_ui2d.sampler);
+  SDL_ReleaseGPUSampler(device, s_ui2d.linearSampler);
   SDL_ReleaseGPUBuffer(device, s_ui2d.vertexBuffer);
   SDL_ReleaseGPUTransferBuffer(device, s_ui2d.transfer);
   s_ui2d = Ui2dState{};
@@ -327,7 +334,8 @@ void GpuUi2D_Draw(SDL_GPURenderPass *renderPass, SDL_GPUCommandBuffer *commandBu
   SDL_SetGPUScissor(renderPass, &clipped);
   SDL_BindGPUGraphicsPipeline(renderPass, s_ui2d.pipelines[blend]);
   if (blend != GPU_UI_BLEND_FILL) {
-    const SDL_GPUTextureSamplerBinding binding{page, s_ui2d.sampler};
+    const SDL_GPUTextureSamplerBinding binding{
+        page, (blend == GPU_UI_BLEND_OPAQUE_LINEAR) ? s_ui2d.linearSampler : s_ui2d.sampler};
     SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
   }
   const TargetUniform targetUniform{2.0f / (float)targetW, 2.0f / (float)targetH, {0.0f, 0.0f}};
