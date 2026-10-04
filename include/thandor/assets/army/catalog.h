@@ -24,10 +24,6 @@
 #define ARMY_ASSET_FLAG_ENABLED 0x1
 #define ARMY_ASSET_FLAG_EDITOR_PLACEABLE 0x100
 #define ARMY_ASSET_FLAG_EDITOR_OBJECT 0x200
-/* The placement lists search ids 0..0xFFF and wrap around at 0x1000. */
-#define ARMY_ASSET_EDITOR_ID_LIMIT 0x1000
-/* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
-#define ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID 400
 
 /* A node of an army record's model tree (root at ArmyAssetRecordPrefix.rootNodeOffsetOrPointer, which is
    also the ModelLinkedDefinitionListAddress32 of ModelDefinition_SelectFactionUnlockedLinkedDefinition).
@@ -38,23 +34,8 @@ typedef struct ArmyModelTreeNode {
     Ptr32<struct ArmyModelTreeNode> children[5]; /* +0x0C */
     PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
 } ArmyModelTreeNode;
+
 /* Functions are grouped by semantic ownership. */
-
-ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId);
-
-ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId);
-
-ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId);
 
 uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
 
@@ -64,22 +45,14 @@ Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord);
 
-void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress);
-
 uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-ArmyAssetId ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId);
-
-ArmyAssetId ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId);
-
 /* 0 on success, otherwise a FATAL_ERROR_* code */
 uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase);
-
-uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
 
 /* 0 and the record in *outRecord, or FATAL_ERROR_ARMY_ID_NOT_FOUND (then *outRecord holds that code
    cast to a pointer, see the definition) */

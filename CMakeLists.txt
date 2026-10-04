@@ -39,6 +39,7 @@ endif()
 
 add_library(thandor_curated STATIC
     src/assets/army/catalog.cpp
+    src/assets/army/editor_cycling.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
     src/assets/model/mesh_raycast.cpp

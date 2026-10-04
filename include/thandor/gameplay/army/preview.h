@@ -37,4 +37,11 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
 
 extern const uint32_t g_InGamePointerModePreviewArmyIds[8]; /* uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
 
+/* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
+#define ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID 400
+
+void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress);
+
+uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_PREVIEW_H */

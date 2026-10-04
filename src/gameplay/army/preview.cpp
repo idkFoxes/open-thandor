@@ -298,3 +298,76 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   g_MemoryApi.shrinkInPlace(allocationSize,previewTexture);
   return (GraphicsTextureResource *)previewTexture;
 }
+
+/* Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
+   unit- and object-placement selections into their image panels on the in-game UI root. Needed because the
+   previews are drawn in the unit-placement owner faction's colours: called from the in-game keyboard dispatch
+   table g_InGameKeyboardDispatchRecords (commands 0x10012 / 0x1001A) after
+   g_UiCommandModeGOwnerFactionIndex was cycled.
+*/
+void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
+
+{
+  uintptr_t resolvedTexture;
+  int registrySlotsRemaining;
+  ArmyAssetRecordPrefix **registryCursor;
+  ArmyAssetRecord *registeredRecord;
+
+  registryCursor = g_ArmyAssetRecordRegistry;
+  for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    registeredRecord = (ArmyAssetRecord *)*registryCursor;
+    if (registeredRecord != NULL) {
+      g_MemoryApi.free((void *)registeredRecord->previewTexture); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+      registeredRecord->previewTexture = 0;
+    }
+    registryCursor++;
+  }
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
+  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
+       (GraphicsTextureSourceAsset *)resolvedTexture;
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
+  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
+       (GraphicsTextureSourceAsset *)resolvedTexture;
+  return;
+}
+
+/* Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
+   cached in the record (previewTexture); on the first request it is rendered in the unit-placement
+   owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
+   Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
+   ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected.
+*/
+uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
+
+{
+  ArmyAssetRecord *registeredRecord;
+  int slotIndex;
+  GraphicsTextureResource *previewTexture;
+  FactionRuntimeIndex factionIndex;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    registeredRecord = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
+      continue;
+    }
+    if (registeredRecord->previewTexture != 0) {
+      return registeredRecord->previewTexture;
+    }
+    factionIndex = g_UiCommandModeGOwnerFactionIndex;
+    if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
+      factionIndex = 0;
+    }
+    previewTexture = ArmyRuntime_RenderPreviewTexture
+                      (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
+                       INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
+                       factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
+    if (previewTexture == NULL) {
+      return 0;
+    }
+    registeredRecord->previewTexture = (uint32_t)previewTexture; /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+    return (uintptr_t)previewTexture;
+  }
+  return 0; /* unknown id */
+}
