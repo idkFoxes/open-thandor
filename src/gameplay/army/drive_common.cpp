@@ -25,7 +25,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
   int previousAdvance;
   ModelDefinition *definition;
   AngleTurn32 rotationAngle1;
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   uint32_t headingDelta;
   uint32_t speedLimit;
   uint32_t currentAdvance;
@@ -65,7 +65,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
     startSoundSlotIndex = definition->moveStartSoundSlotIndex;
     if ((startSoundSlotIndex != 0) &&
        ((startSoundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != nullptr)))) {
-      voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[startSoundSlotIndex];
+      voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[startSoundSlotIndex];
       worldPosition = &(rootNode->worldTransform).translation;
       if (voiceSetRef != nullptr) {
         cellMasked = TerrainGrid_TestProjectedCellMaskBits01

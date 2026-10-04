@@ -207,7 +207,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   int scaleEndQ12;
   EffectShadingCountdownTicks shadingStartTicks;
   EffectShadingCountdownTicks shadingStopTicks;
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   EffectModelRuntimeNode *effectModelNode;
   uint32_t randomValue;
   uint32_t completionCountdownTicks;
@@ -333,7 +333,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->tintArgb = 0xffffff;
   if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
       worldRuntime->dwordArray != nullptr) {
-    voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex];
+    voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex];
     if (voiceSetRef != nullptr) {
       worldPosition = &effectModelNode->worldTransform.translation;
       projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01

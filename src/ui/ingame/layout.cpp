@@ -81,7 +81,7 @@ int32_t g_InGamePanelTextureSubresource31Height = 0;
 
 int32_t g_InGamePanelTextureSubresource34Height = 0;
 
-DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {};
+SoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {};
 
 /* Implementation ownership: ui/ingame/layout. */
 
@@ -935,7 +935,7 @@ static void InGameUiRuntime_SizeTechnologyWindow(UiRootNode *inGameRoot,Graphics
 static void InGameUiRuntime_AssignClickSounds(UiRootNode *inGameRoot)
 
 {
-  DirectSoundVoiceSet *buttonVoiceSet;
+  SoundVoiceSet *buttonVoiceSet;
 
   buttonVoiceSet = g_UiButtonSoundVoiceSets7[0];
   ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8))->pointerActivationSound = g_UiButtonSoundVoiceSets7[0];

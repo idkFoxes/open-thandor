@@ -660,7 +660,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   if (renderer == kNoRenderer) {
     Thandor_Log("no renderer could start");
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR, 0, 10, 1, 0, g_PackageLastErrorPath);
-    *errorCode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
+    *errorCode = FATAL_ERROR_DISPLAY_CREATE_SURFACES;
     return false;
   }
   for (uint32_t index = 0; index < s_renderer.adapterCount; index++) {
@@ -682,7 +682,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
     if (!texture) {
       Thandor_Log("SDL_CreateTexture %ux%u failed: %s", width, height, SDL_GetError());
       g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR, 0, 10, 1, 0, g_PackageLastErrorPath);
-      *errorCode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
+      *errorCode = FATAL_ERROR_DISPLAY_CREATE_SURFACES;
       return false;
     }
     SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_LINEAR);
@@ -720,7 +720,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
 
   /* the framebuffer, the blitters and the active adapter as in the original; then this backend's
      present, captures and permanent pixels */
-  GraphicsDirectDraw_PublishFramebuffer(adapterIndex, bitsPerPixel, height, width);
+  GraphicsDisplay_PublishFramebuffer(adapterIndex, bitsPerPixel, height, width);
   g_DisplayFramebufferAccess.pixels = reinterpret_cast<uint8_t *>(s_video.framebuffer.data());
   g_FramebufferRowStrideBytes = static_cast<uint32_t>(s_video.pitchBytes);
   g_GraphicsFramebufferPresent = SdlVideo_Present;

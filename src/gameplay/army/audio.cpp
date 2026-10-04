@@ -246,7 +246,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
           SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext)
 
 {
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   FieldGridDimension gridWidthCells;
   uint32_t activeFactionIndex;
   int cellColumn;
@@ -259,7 +259,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
       (soundAssetIndex >= worldContext->dwordArrayCount)) {
     return;
   }
-  voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
+  voiceSetRef = (SoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
   if (voiceSetRef == nullptr) {
     return;
   }
@@ -306,7 +306,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
 {
   ModelDefinition *definition;
   ModelRuntimeNode *rootNode;
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   Bool8 cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
@@ -315,7 +315,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
   if (voiceSetRef == nullptr) {
     return;
   }

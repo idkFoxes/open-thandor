@@ -5,7 +5,7 @@
  * Project code (not in the original game)
  */
 
-/* SDL3 backend: the main window and the event pump (g_Win32PumpMessages); video.cpp presents into the window. The pump does what
+/* SDL3 backend: the main window and the event pump (g_PlatformPumpEvents); video.cpp presents into the window. The pump does what
    the original's Win32_PumpMessages and MainWindowProc do: the developer tools' pump hook first, then
    keys, characters, mouse and focus changes, and a quit request ends the game. */
 
@@ -123,7 +123,7 @@ void SdlPlatform_InstallTimersAndPump()
 {
   g_TimerRegisterPeriodic = SdlTimer_RegisterPeriodic;
   g_TimerUnregisterPeriodic = SdlTimer_UnregisterPeriodic;
-  g_Win32PumpMessages = SdlPlatform_PumpEvents;
+  g_PlatformPumpEvents = SdlPlatform_PumpEvents;
 }
 
 void SdlPlatform_PumpEvents()

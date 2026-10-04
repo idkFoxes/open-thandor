@@ -207,7 +207,7 @@ struct UiNumericTextControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
+    Ptr32<struct SoundVoiceSet> activationSound; 
     uint16_t textBuffer[16]; 
     UiNumericValue32 minimumValue; 
     UiNumericValue32 maximumValue; 
@@ -227,7 +227,7 @@ typedef struct UiSoundSelectableControl UiSoundSelectableControl;
 struct UiSoundSelectableControl {
     struct UiSelectableControl selectable;
     uint32_t subclassFields[2];
-    Ptr32<struct DirectSoundVoiceSet> activationSound;
+    Ptr32<struct SoundVoiceSet> activationSound;
 };
 
 struct UiNodeVtable {
@@ -307,7 +307,7 @@ struct UiTextEditControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
+    Ptr32<struct SoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
 };
 
@@ -319,7 +319,7 @@ struct UiTextListControl {
     UiPixelExtent rowHeight; 
     UiActionId actionId; 
     Ptr32<Ptr32<uint16_t>> selectedRowSlot; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
+    Ptr32<struct SoundVoiceSet> activationSound; 
 };
 
 /* One column of a UiListControl: the rich-text string at rowRecord + rowTextOffset is drawn in a column
@@ -343,7 +343,7 @@ struct UiListControl {
     UiActionId actionId;
     Ptr32<Ptr32<void>> selectedRowSlot;
     uint32_t columnCount;
-    Ptr32<struct DirectSoundVoiceSet> activationSound;
+    Ptr32<struct SoundVoiceSet> activationSound;
     struct UiListColumn columns[1];
 };
 
@@ -417,7 +417,7 @@ struct UiTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct SoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
@@ -454,7 +454,7 @@ struct UiSpriteButtonControl {
     GraphicsSubresourceEndIndex normalSubresourceEndExclusive; 
     GraphicsSubresourceEndIndex selectedSubresourceEndExclusive; 
     GraphicsSubresourceOffset animationFrameOffset; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct SoundVoiceSet> activationSound; // Click sound played on activation; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
     Ptr32<struct GraphicsTextureSourceAsset> alternateTextureSource;
 };
 
@@ -462,10 +462,10 @@ struct UiImageControl {
     struct UiSelectableControl selectable; 
     Ptr32<struct GraphicsTextureSourceAsset> textureSource; 
     GraphicsSubresourceIndex normalSubresource; 
-    Ptr32<struct DirectSoundVoiceSet> keyboardActivationSound; // Sound of a keyboard activation (read through UiSoundSelectableControl.activationSound).
+    Ptr32<struct SoundVoiceSet> keyboardActivationSound; // Sound of a keyboard activation (read through UiSoundSelectableControl.activationSound).
     GraphicsSubresourceIndex alternateSubresource;
     Ptr32<struct UiNodeBase> activeChild;
-    Ptr32<struct DirectSoundVoiceSet> pointerActivationSound; // Sound played when the image opens/closes on a click; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct SoundVoiceSet> pointerActivationSound; // Sound played when the image opens/closes on a click; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
@@ -499,7 +499,7 @@ struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct SoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 typedef struct UiWindowControl UiWindowControl;
@@ -537,7 +537,7 @@ struct UiRequiredTextEditControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
+    Ptr32<struct SoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
 };
 
@@ -589,7 +589,7 @@ struct UiRangeSliderControl {
     int32_t value; // Current value, kept within minimumValue..maximumValue.
     int32_t stepValue; // Increment per arrow key; per wheel notch it is scaled by g_UiRangeSliderDragScale.
     UiActionId actionId; // Enqueued on every value change; also the id matched by suppress/unsuppress.
-    Ptr32<struct DirectSoundVoiceSet> clickSound; // Set at runtime; may be null.
+    Ptr32<struct SoundVoiceSet> clickSound; // Set at runtime; may be null.
 };
 
 /* Horizontal progress gauge drawing a framed fill for value within minimumValue..maximumValue, optionally with a

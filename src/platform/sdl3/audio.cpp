@@ -11,7 +11,7 @@
    is added while fewer than eight exist), one-shot or looping; a stopped voice keeps its position and resumes there,
    one that played to its end starts again from the beginning. The two Q15 channel gains become DirectSound's
    volume and pan through the same attenuation table (1/100 dB) and are applied as DirectSound applies them.
-   Voice sets and voices are opaque handles for the game: a voice set is an arena block of the DirectSoundVoiceSet
+   Voice sets and voices are opaque handles for the game: a voice set is an arena block of the SoundVoiceSet
    size (the arena layout stays as with DirectSound), a voice is a pointer to the backend's own voice object.
    The mixer is locked against the game's threads (main and timer threads) with a mutex. */
 
@@ -38,7 +38,7 @@ namespace {
 constexpr int kSampleRate = 22050;
 constexpr int kChannels = 2;
 constexpr std::size_t kSamplesPerDecodedBlock = SOUND_SAMPLE_DECODED_BLOCK_BYTES / sizeof(int16_t);
-constexpr std::size_t kVoicesPerSet = DIRECTSOUND_VOICES_PER_SET;
+constexpr std::size_t kVoicesPerSet = SOUND_VOICES_PER_SET;
 
 /* One decoded sample: interleaved 16-bit stereo PCM. */
 struct Sample {
@@ -56,34 +56,34 @@ struct Voice {
 };
 
 struct VoiceSet {
-  DirectSoundVoiceSet *handle = nullptr; /* the arena block the game holds */
+  SoundVoiceSet *handle = nullptr; /* the arena block the game holds */
   std::shared_ptr<const Sample> sample;
   std::array<std::unique_ptr<Voice>, kVoicesPerSet> voices;
 };
 
 /* The game's voice handle for a voice, and back. */
-IDirectSoundBuffer *HandleOf(Voice *voice) noexcept
+SoundVoice *HandleOf(Voice *voice) noexcept
 {
-  return reinterpret_cast<IDirectSoundBuffer *>(voice);
+  return reinterpret_cast<SoundVoice *>(voice);
 }
 
 class Mixer {
 public:
   std::mutex mutex;
   thandor::sdl3::AudioStreamPtr stream;
-  std::unordered_map<DirectSoundVoiceSet *, std::unique_ptr<VoiceSet>> voiceSets;
+  std::unordered_map<SoundVoiceSet *, std::unique_ptr<VoiceSet>> voiceSets;
   std::unordered_set<const Voice *> liveVoices;
   std::vector<float> accumulator;
   std::vector<int16_t> output;
 
   /* The live voice behind a game handle; nullptr for NULL, stale or foreign handles. Needs the mutex. */
-  Voice *VoiceOf(IDirectSoundBuffer *handle)
+  Voice *VoiceOf(SoundVoice *handle)
   {
     auto *voice = reinterpret_cast<Voice *>(handle);
     return liveVoices.contains(voice) ? voice : nullptr;
   }
 
-  VoiceSet *VoiceSetOf(DirectSoundVoiceSet *handle)
+  VoiceSet *VoiceSetOf(SoundVoiceSet *handle)
   {
     const auto found = voiceSets.find(handle);
     return (found != voiceSets.end()) ? found->second.get() : nullptr;
@@ -134,7 +134,7 @@ private:
 
 std::unique_ptr<Mixer> s_mixer;
 /* the 256-entry voice-set registry in the arena, as DirectSound_Init allocates it */
-DirectSoundVoiceSet **s_registry = nullptr;
+SoundVoiceSet **s_registry = nullptr;
 
 void SDLCALL MixCallback(void * /*userdata*/, SDL_AudioStream *stream, int additionalAmount, int /*totalAmount*/)
 {
@@ -158,8 +158,8 @@ float LinearGain(int32_t attenuation) noexcept
    DirectSound then attenuates the left channel by a positive pan and the right one by a negative pan. */
 void ApplyChannelGains(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, Voice &voice) noexcept
 {
-  const int32_t leftAttenuation = g_DirectSoundGainAttenuation[std::min<uint32_t>(leftChannelGainQ15 >> 8, 128)];
-  const int32_t rightAttenuation = g_DirectSoundGainAttenuation[std::min<uint32_t>(rightChannelGainQ15 >> 8, 128)];
+  const int32_t leftAttenuation = g_SoundGainAttenuation[std::min<uint32_t>(leftChannelGainQ15 >> 8, 128)];
+  const int32_t rightAttenuation = g_SoundGainAttenuation[std::min<uint32_t>(rightChannelGainQ15 >> 8, 128)];
   const int32_t volume = (rightChannelGainQ15 < leftChannelGainQ15) ? leftAttenuation : rightAttenuation;
   const int32_t pan = leftAttenuation - rightAttenuation;
   voice.leftGain = LinearGain(volume - std::max(pan, int32_t{0}));
@@ -173,8 +173,8 @@ uint32_t FailVoiceSet(int32_t failedStage, uint32_t errorCode) noexcept
   return errorCode;
 }
 
-Bool8 PlayVoiceSet(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet *handle,
-                   bool looping, IDirectSoundBuffer **outVoice)
+Bool8 PlayVoiceSet(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, SoundVoiceSet *handle,
+                   bool looping, SoundVoice **outVoice)
 {
   if (outVoice != nullptr) {
     *outVoice = nullptr;
@@ -233,7 +233,7 @@ uint32_t SdlAudio_Init()
   }
   void *registryPayload = nullptr;
   const uint32_t registryAllocError =
-      g_MemoryApi.alloc(DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY * sizeof(DirectSoundVoiceSet *), &registryPayload);
+      g_MemoryApi.alloc(SOUND_VOICE_SET_REGISTRY_CAPACITY * sizeof(SoundVoiceSet *), &registryPayload);
   if (registryAllocError != 0) {
     return registryAllocError;
   }
@@ -247,8 +247,8 @@ uint32_t SdlAudio_Init()
     g_MemoryApi.free(registryPayload);
     return 0; /* the mixer stream closes with `mixer` */
   }
-  s_registry = static_cast<DirectSoundVoiceSet **>(registryPayload);
-  std::fill_n(s_registry, DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY, nullptr);
+  s_registry = static_cast<SoundVoiceSet **>(registryPayload);
+  std::fill_n(s_registry, SOUND_VOICE_SET_REGISTRY_CAPACITY, nullptr);
   SDL_AudioStream *stream = mixer->stream.get();
   s_mixer = std::move(mixer);
   g_SoundCreateSampleVoiceSet = SdlAudio_CreateSampleVoiceSet;
@@ -257,7 +257,7 @@ uint32_t SdlAudio_Init()
   g_SoundPlayLooping = SdlAudio_PlayLooping;
   g_SoundStopVoice = SdlAudio_StopVoice;
   g_SoundStopAllVoices = SdlAudio_StopAllVoices;
-  g_SoundIsVoicePlaying = SdlAudio_IsVoicePlaying;
+  g_SoundIsVoiceFinished = SdlAudio_IsVoiceFinished;
   g_SoundSetVoiceGains = SdlAudio_SetVoiceGains;
   SDL_ResumeAudioStreamDevice(stream);
   return 0;
@@ -278,18 +278,18 @@ void SdlAudio_Shutdown()
   g_SoundPlayLooping = SoundBackendDisabled_PlayLooping;
   g_SoundStopVoice = SoundBackendDisabled_StopVoice;
   g_SoundStopAllVoices = SoundBackendDisabled_StopAllVoices;
-  g_SoundIsVoicePlaying = SoundBackendDisabled_IsVoicePlaying;
+  g_SoundIsVoiceFinished = SoundBackendDisabled_IsVoiceFinished;
   g_SoundSetVoiceGains = SoundBackendDisabled_SetVoiceGains;
 }
 
-uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
+uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet)
 {
   if ((sampleAsset->magic != ASSET_MAGIC_SAM) || (sampleAsset->formatVersion != SOUND_SAMPLE_FORMAT_VERSION)) {
-    return FailVoiceSet(DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
+    return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_SOUND_SAMPLE_INVALID);
   }
   const std::size_t blockCount = sampleAsset->decodedBlockCount;
   if (blockCount == 0) {
-    return FailVoiceSet(DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_DIRECTSOUND_SETUP); /* empty buffer */
+    return FailVoiceSet(SOUND_VOICE_STAGE_CREATE_BUFFER, FATAL_ERROR_AUDIO_SETUP); /* empty buffer */
   }
   /* decode every packed block (they follow the 0x200-byte header) */
   auto sample = std::make_shared<Sample>();
@@ -303,11 +303,11 @@ uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSound
     encodedBlock += encodedBlockSize;
   }
   void *voiceSetPayload = nullptr;
-  const uint32_t voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet), &voiceSetPayload);
+  const uint32_t voiceSetAllocError = g_MemoryApi.alloc(sizeof(SoundVoiceSet), &voiceSetPayload);
   if (voiceSetAllocError != 0) {
-    return FailVoiceSet(DIRECTSOUND_VOICE_STAGE_FILL, voiceSetAllocError);
+    return FailVoiceSet(SOUND_VOICE_STAGE_FILL, voiceSetAllocError);
   }
-  auto *handle = static_cast<DirectSoundVoiceSet *>(voiceSetPayload);
+  auto *handle = static_cast<SoundVoiceSet *>(voiceSetPayload);
   std::fill(std::begin(handle->voices), std::end(handle->voices), nullptr);
   auto voiceSet = std::make_unique<VoiceSet>();
   voiceSet->handle = handle;
@@ -322,7 +322,7 @@ uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSound
   }
   /* the first free registry slot (a full registry is not an error) */
   if (s_registry != nullptr) {
-    const std::span<DirectSoundVoiceSet *> registry(s_registry, DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY);
+    const std::span<SoundVoiceSet *> registry(s_registry, SOUND_VOICE_SET_REGISTRY_CAPACITY);
     const auto freeSlot = std::find(registry.begin(), registry.end(), nullptr);
     if (freeSlot != registry.end()) {
       *freeSlot = handle;
@@ -332,7 +332,7 @@ uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSound
   return 0;
 }
 
-void SdlAudio_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
+void SdlAudio_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet)
 {
   if ((voiceSet == nullptr) || !s_mixer) {
     return;
@@ -350,7 +350,7 @@ void SdlAudio_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
   }
   g_MemoryApi.free(voiceSet);
   if (s_registry != nullptr) {
-    const std::span<DirectSoundVoiceSet *> registry(s_registry, DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY);
+    const std::span<SoundVoiceSet *> registry(s_registry, SOUND_VOICE_SET_REGISTRY_CAPACITY);
     const auto slot = std::find(registry.begin(), registry.end(), voiceSet);
     if (slot != registry.end()) {
       *slot = nullptr;
@@ -358,19 +358,19 @@ void SdlAudio_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
   }
 }
 
-Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,DirectSoundVoiceSet *voiceSet,
-                           IDirectSoundBuffer **outVoice)
+Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+                           SoundVoice **outVoice)
 {
   return PlayVoiceSet(leftChannelGainQ15, rightChannelGainQ15, voiceSet, false, outVoice);
 }
 
-Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,DirectSoundVoiceSet *voiceSet,
-                           IDirectSoundBuffer **outVoice)
+Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+                           SoundVoice **outVoice)
 {
   return PlayVoiceSet(leftChannelGainQ15, rightChannelGainQ15, voiceSet, true, outVoice);
 }
 
-void SdlAudio_StopVoice(IDirectSoundBuffer *voice)
+void SdlAudio_StopVoice(SoundVoice *voice)
 {
   if (!s_mixer) {
     return;
@@ -381,7 +381,7 @@ void SdlAudio_StopVoice(IDirectSoundBuffer *voice)
   }
 }
 
-Bool8 SdlAudio_IsVoicePlaying(IDirectSoundBuffer *voice)
+Bool8 SdlAudio_IsVoiceFinished(SoundVoice *voice)
 {
   if (!s_mixer) {
     return true;
@@ -391,7 +391,7 @@ Bool8 SdlAudio_IsVoicePlaying(IDirectSoundBuffer *voice)
   return (queried == nullptr) || !queried->playing;
 }
 
-void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,IDirectSoundBuffer *voice)
+void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoice *voice)
 {
   if (!s_mixer) {
     return;
@@ -409,7 +409,7 @@ void SdlAudio_StopAllVoices()
     return;
   }
   const std::scoped_lock lock(s_mixer->mutex);
-  for (DirectSoundVoiceSet *handle : std::span<DirectSoundVoiceSet *>(s_registry, DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY)) {
+  for (SoundVoiceSet *handle : std::span<SoundVoiceSet *>(s_registry, SOUND_VOICE_SET_REGISTRY_CAPACITY)) {
     if (VoiceSet *voiceSet = (handle != nullptr) ? s_mixer->VoiceSetOf(handle) : nullptr) {
       for (const auto &voice : voiceSet->voices) {
         if (voice) {

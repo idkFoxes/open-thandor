@@ -28,7 +28,7 @@ void SpatialSound_RebuildListenerTransformFromPose
           GraphicsWorldCoordinateQ12 originY,GraphicsWorldCoordinateQ12 originX);
 
 void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
-          GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef);
+          GraphicsFixedVec3 *worldPosition,SoundVoiceSet **voiceSetRef);
 
 void SpatialSound_UpdateDesiredPositionedGains
           (SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,

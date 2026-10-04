@@ -251,7 +251,7 @@ table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTE
 The window, the event pump, keyboard and mouse, the periodic timers, the video presentation and the audio run on
 SDL3 (`src/platform/sdl3`, interface
 [`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)); the game reaches them
-through the original's function slots (`g_Win32PumpMessages`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
+through the original's function slots (`g_PlatformPumpEvents`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
 `g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game draws its frames with its software renderer
 into a memory framebuffer (XRGB8888; the game runs in 32-bit colour only, the original's 16-bit modes were
 removed); the 3D view can be rasterized on the GPU instead (below). The window icon is the game's `thandor.ico`:

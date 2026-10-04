@@ -22,7 +22,7 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
   ModelDefinitionGroundMovementSteeringView *movementDefinition;
   uint32_t childCount;
   uint32_t soundIndex;
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   GraphicsFixedVec3 *worldPosition;
   uint32_t *classStateWord;
 
@@ -50,7 +50,7 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
   if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+  voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
   if (voiceSetRef == nullptr) {
     return;
   }

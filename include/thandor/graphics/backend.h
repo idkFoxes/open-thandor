@@ -9,7 +9,7 @@
 #define THANDOR_GRAPHICS_BACKEND_H
 
 #include <thandor/graphics/backend/types.h>
-#include <thandor/graphics/backend/directdraw.h>
+#include <thandor/graphics/backend/display_modes.h>
 #include <thandor/graphics/backend/software.h>
 #include <thandor/graphics/backend/software_blit.h>
 #include <thandor/graphics/backend/software_display_mode.h>

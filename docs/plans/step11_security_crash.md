@@ -63,7 +63,7 @@ The ground rules of [step 8](step8_idiomatic_cpp.md#ground-rules) apply unchange
 | P32 | Model submit base index + child walk | graphics/render/model_submit.cpp | `index + base < count`; NULL check; child walk as index loop |
 | P33 | Model lighting div0 / divisor / punning | graphics/render/model_lighting.cpp | scale 0 -> row 0; 64-bit divisor and clamped table index; shift instead of pointer pun |
 | P34 | Shadow extent div0 + light record UB | graphics/render/shadow_texture.cpp, light_transitions.cpp, light_records.cpp | extent 0 skips the shadow; punning as P33; memset instead of dword walk |
-| P35 | Display-mode lookup, Clone error, PCX size | graphics/backend/directdraw.cpp, graphics/resources/palette.cpp, texture_source.cpp, pcx_read.cpp | count 0 = not found; Clone returns nullptr + error; PCX size plausibility |
+| P35 | Display-mode lookup, Clone error, PCX size | graphics/backend/display_modes.cpp, graphics/resources/palette.cpp, texture_source.cpp, pcx_read.cpp | count 0 = not found; Clone returns nullptr + error; PCX size plausibility |
 
 ### UI
 

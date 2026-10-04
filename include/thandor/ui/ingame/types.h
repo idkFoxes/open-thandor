@@ -295,7 +295,7 @@ struct InGameCommandTextEditControlCC {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
+    Ptr32<struct SoundVoiceSet> activationSound; 
     uint16_t textBuffer[48]; 
 };
 
@@ -559,22 +559,22 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved4B2C_4D0B[480];
     struct UiNodeBase diplomacyPanel; // layout container node
     uint8_t reserved4D58_4D73[28];
-    Ptr32<struct DirectSoundVoiceSet> diplomacyPanelSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct SoundVoiceSet> diplomacyPanelSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase diplomacyFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved4DC4_5DB3[4080];
     struct UiNodeBase buildCatalogPanel; // layout container node of the 48-entry build catalog
     uint8_t reserved5E00_5E1B[28];
-    Ptr32<struct DirectSoundVoiceSet> buildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct SoundVoiceSet> buildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase buildCatalogFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved5E6C_767F[6164];
     struct UiNodeBase specialBuildCatalogPanel; // layout container node of the 42-entry special build catalog
     uint8_t reserved76CC_76E7[28];
-    Ptr32<struct DirectSoundVoiceSet> specialBuildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct SoundVoiceSet> specialBuildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase specialBuildCatalogFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved7738_8C4B[5396];
     struct UiNodeBase armyStockPanel; // layout container node of the 24-slot army stock grid
     uint8_t reserved8C98_8CB3[28];
-    Ptr32<struct DirectSoundVoiceSet> armyStockSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct SoundVoiceSet> armyStockSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase armyStockFrame; // embedded UI node prefix; rebuild updates layout offsets and node flags
     uint8_t reserved8D04_9A6B[3432];
     FieldGridCoordinates minimapOriginGridPosition;

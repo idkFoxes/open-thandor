@@ -78,7 +78,7 @@ static Bool8 Movie_IsHeaderValid(const MovieFileHeader *header,uint32_t entryByt
    loaded sample is freed on both the success and the failure path, as in the original. */
 static uint32_t
 Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle,
-                               DirectSoundVoiceSet **outVoiceSet)
+                               SoundVoiceSet **outVoiceSet)
 
 {
   uint32_t audioTrackCount;
@@ -90,7 +90,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   uint32_t seekError;
   uint32_t allocError;
   uint32_t loadError;
-  DirectSoundVoiceSet *voiceSet;
+  SoundVoiceSet *voiceSet;
 
   *outVoiceSet = nullptr;
   audioTrackCount = header->audioTrackCount;
@@ -179,7 +179,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   uint32_t openError;
   uint32_t allocError;
   void *allocPayload;
-  DirectSoundVoiceSet *audioVoiceSet;
+  SoundVoiceSet *audioVoiceSet;
   PckEntryHeader *packageEntry;
   EngineFileHandle packageFileHandle;
   MovieStreamByteCount remainingByteCount;
@@ -567,7 +567,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   uint32_t bufferedBytes;
   uint32_t consumedBytes;
   uint8_t *streamCursor;
-  IDirectSoundBuffer *playedVoice;
+  SoundVoice *playedVoice;
 
   movie = g_ActiveMovie;
   if (movie == nullptr) {

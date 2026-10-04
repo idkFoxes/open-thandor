@@ -7,23 +7,23 @@ Renderer backends, framebuffer, textures, palettes and the render pipeline. Gene
 <a id="module-graphics-backend"></a>
 ### `graphics/backend`
 
-Module header: [`backend.h`](../../include/thandor/graphics/backend.h) · Changelog: `direct3d` [full](../../CHANGELOG_FULL.md#module-graphics-backend-direct3d); `directdraw` [full](../../CHANGELOG_FULL.md#module-graphics-backend-directdraw); `glide` [dev](../../CHANGELOG.md#module-graphics-backend-glide) · [full](../../CHANGELOG_FULL.md#module-graphics-backend-glide); `software` [full](../../CHANGELOG_FULL.md#module-graphics-backend-software) · Files: [`directdraw`](#file-graphics-backend-directdraw), [`software`](#file-graphics-backend-software), [`software_blit`](#file-graphics-backend-software-blit), [`software_blit_helpers`](#file-graphics-backend-software-blit-helpers), [`software_display_mode`](#file-graphics-backend-software-display-mode), [`software_raster`](#file-graphics-backend-software-raster), [`software_rasterizer`](#file-graphics-backend-software-rasterizer), [`software_texture_scale`](#file-graphics-backend-software-texture-scale), [`types`](#file-graphics-backend-types)
+Module header: [`backend.h`](../../include/thandor/graphics/backend.h) · Changelog: `direct3d` [full](../../CHANGELOG_FULL.md#module-graphics-backend-direct3d); `directdraw` [full](../../CHANGELOG_FULL.md#module-graphics-backend-directdraw); `glide` [dev](../../CHANGELOG.md#module-graphics-backend-glide) · [full](../../CHANGELOG_FULL.md#module-graphics-backend-glide); `software` [full](../../CHANGELOG_FULL.md#module-graphics-backend-software) · Files: [`display_modes`](#file-graphics-backend-display-modes), [`software`](#file-graphics-backend-software), [`software_blit`](#file-graphics-backend-software-blit), [`software_blit_helpers`](#file-graphics-backend-software-blit-helpers), [`software_display_mode`](#file-graphics-backend-software-display-mode), [`software_raster`](#file-graphics-backend-software-raster), [`software_rasterizer`](#file-graphics-backend-software-rasterizer), [`software_texture_scale`](#file-graphics-backend-software-texture-scale), [`types`](#file-graphics-backend-types)
 
-<a id="file-graphics-backend-directdraw"></a>
-#### `directdraw.cpp / directdraw.h`
+<a id="file-graphics-backend-display-modes"></a>
+#### `display_modes.cpp / display_modes.h`
 
-[Source](../../src/graphics/backend/directdraw.cpp) · [Header](../../include/thandor/graphics/backend/directdraw.h)
+[Source](../../src/graphics/backend/display_modes.cpp) · [Header](../../include/thandor/graphics/backend/display_modes.h)
 
 The display-mode and adapter tables (the framebuffer publication of a mode switch is in graphics/core/device). The original's DirectDraw adapter/mode enumeration and surface code is replaced by the SDL3 backend (platform/sdl3/video).
 
 **Functions** (2 public):
 
-- [`GraphicsDisplayMode_IsEnumerated`](../../src/graphics/backend/directdraw.cpp#L35) - Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true when not.
-- [`DisplayModeTable_ContainsExactMode`](../../src/graphics/backend/directdraw.cpp#L60) - Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: returns false when the mode was enumerated.
+- [`GraphicsDisplayMode_IsEnumerated`](../../src/graphics/backend/display_modes.cpp#L35) - Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true when not.
+- [`DisplayModeTable_ContainsExactMode`](../../src/graphics/backend/display_modes.cpp#L60) - Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: returns false when the mode was enumerated.
 
 **Data** (5 shared, 0 file-local): `g_ActiveGraphicsAdapterIndex`, `g_GraphicsDisplayModes`, `g_GraphicsDisplayModeCount`, `g_GraphicsAdapters`, `g_GraphicsAdapterCount`.
 
-**Called from** (6 files): [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings) (`FrontendDisplaySettingsAction_OpenPageAndListModes`, `FrontendDisplaySettingsPage_BuildResolutionRows` +3); [`ui/dialogs/display_settings`](ui.md#file-ui-dialogs-display-settings) (`UiDisplayModeAction_ApplyPendingMode`, `UiDisplayModeSelection_RefreshEnumeratedOptions` +1); [`graphics/core/device`](#file-graphics-core-device) (`GraphicsDirectDraw_PublishFramebuffer`, `Graphics_AllocateTables`); [`platform/sdl3/video`](platform.md#file-platform-sdl3-video) (`ListDisplayModes`, `SdlVideo_Init`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`Game_Run`); [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons) (`UiGraphicsAdapterTextButton_DrawFormattedAdapterText`).
+**Called from** (6 files): [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings) (`FrontendDisplaySettingsAction_OpenPageAndListModes`, `FrontendDisplaySettingsPage_BuildResolutionRows` +3); [`ui/dialogs/display_settings`](ui.md#file-ui-dialogs-display-settings) (`UiDisplayModeAction_ApplyPendingMode`, `UiDisplayModeSelection_RefreshEnumeratedOptions` +1); [`graphics/core/device`](#file-graphics-core-device) (`GraphicsDisplay_PublishFramebuffer`, `Graphics_AllocateTables`); [`platform/sdl3/video`](platform.md#file-platform-sdl3-video) (`ListDisplayModes`, `SdlVideo_Init`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`Game_Run`); [`ui/controls/text_buttons`](ui.md#file-ui-controls-text-buttons) (`UiGraphicsAdapterTextButton_DrawFormattedAdapterText`).
 
 <a id="file-graphics-backend-software"></a>
 #### `software.cpp / software.h`
@@ -62,7 +62,7 @@ Software blits into the 32-bit framebuffer: texture source blits (alpha, half, b
 
 **Data** (0 shared, 1 file-local): `g_SoftwareBilinearPackedByteClampMask`.
 
-**Called from** (3 files): [`graphics/core/device`](#file-graphics-core-device) (`GraphicsDirectDraw_PublishFramebuffer`); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`Thandor_SelfTestRaster`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestStretch`).
+**Called from** (3 files): [`graphics/core/device`](#file-graphics-core-device) (`GraphicsDisplay_PublishFramebuffer`); [`platform/selftest/raster_selftest`](platform.md#file-platform-selftest-raster-selftest) (`Thandor_SelfTestRaster`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestStretch`).
 
 **Depends on** (2 files, names used): [`graphics/backend/software_blit_helpers`](#file-graphics-backend-software-blit-helpers) (12), [`graphics/backend/software`](#file-graphics-backend-software) (2).
 
@@ -236,19 +236,19 @@ The mouse cursor: frame animation (the cursor timer) and the input event ring wi
 
 [Source](../../src/graphics/core/device.cpp)
 
-No file comment; function families: `Graphics_*` (2), `GraphicsDirectDraw_*` (1).
+No file comment; function families: `Graphics_*` (2), `GraphicsDisplay_*` (1).
 
 **Functions** (3 public):
 
 - [`Graphics_AllocateTables`](../../src/graphics/core/device.cpp#L29) - The first step of the original's Graphics_Init, called by SdlVideo_Init: allocates and clears the texture-slot and palette tables and allocates the empty adapter and display-mode tables, in this ...
 - [`Graphics_Shutdown`](../../src/graphics/core/device.cpp#L78) - Tears the graphics backend down at exit (Runtime_Shutdown): marks the backend as not accessible (SdlVideo_Present then presents nothing) and frees the software cursor buffers (SdlVideo_Shutdown then ...
-- [`GraphicsDirectDraw_PublishFramebuffer`](../../src/graphics/core/device.cpp#L96) - Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.
+- [`GraphicsDisplay_PublishFramebuffer`](../../src/graphics/core/device.cpp#L96) - Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.
 
 **Data** (2 shared, 1 file-local): `g_GraphicsDisplayModeFinalize`, `g_GraphicsBackendAccessState`.
 
 **Called from** (5 files): [`platform/sdl3/video`](platform.md#file-platform-sdl3-video) (`SdlVideo_ApplyDisplayMode`, `SdlVideo_Init` +2); [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (`Runtime_Shutdown`); [`platform/debug/autoshot`](platform.md#file-platform-debug-autoshot) (`DebugAutoShot_Save`); [`platform/input/devices`](platform.md#file-platform-input-devices) (`GraphicsCursor_FreeBuffers`); [`platform/sdl3/input`](platform.md#file-platform-sdl3-input) (`SdlInput_SetDisplayMode`).
 
-**Depends on** (7 files, names used): [`graphics/backend/directdraw`](#file-graphics-backend-directdraw) (5), [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (5), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (5), [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (4), [`graphics/core/cursor`](#file-graphics-core-cursor) (3), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`graphics/resources/texture_set`](#file-graphics-resources-texture-set) (1).
+**Depends on** (7 files, names used): [`graphics/backend/display_modes`](#file-graphics-backend-display-modes) (5), [`graphics/backend/software_blit`](#file-graphics-backend-software-blit) (5), [`graphics/resources/framebuffer`](#file-graphics-resources-framebuffer) (5), [`graphics/resources/texture_source`](#file-graphics-resources-texture-source) (4), [`graphics/core/cursor`](#file-graphics-core-cursor) (3), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`graphics/resources/texture_set`](#file-graphics-resources-texture-set) (1).
 
 **Includes:** `thandor/graphics/core/runtime.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 

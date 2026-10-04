@@ -36,9 +36,9 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache();
 
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot);
 
-extern IDirectSoundBuffer *g_InGameActiveEffectVoice;
+extern SoundVoice *g_InGameActiveEffectVoice;
 extern uint32_t g_InGameEffectsEnabled;
-extern IDirectSoundBuffer *g_InGameActiveMusicVoice;
+extern SoundVoice *g_InGameActiveMusicVoice;
 extern uint32_t g_InGameMusicNextTrackCountdown;
 extern uint16_t g_InGameCountdownTextUtf16[8];
 

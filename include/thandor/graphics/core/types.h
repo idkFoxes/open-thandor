@@ -19,7 +19,7 @@ typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
 typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
 typedef struct GraphicsCursorInputEvent18 GraphicsCursorInputEvent18, *PGraphicsCursorInputEvent18;
 typedef struct GraphicsCursorFrameRecord GraphicsCursorFrameRecord, *PGraphicsCursorFrameRecord;
-typedef struct DirectDrawPaletteEntry DirectDrawPaletteEntry, *PDirectDrawPaletteEntry;
+typedef struct GraphicsPaletteEntry GraphicsPaletteEntry, *PGraphicsPaletteEntry;
 typedef struct CursorPointerEvent CursorPointerEvent, *PCursorPointerEvent;
 typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
 typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
@@ -104,7 +104,7 @@ struct GraphicsCursorFrameRecord {
     GraphicsSubresourceIndex activeSubresourceIndex; 
 };
 
-struct DirectDrawPaletteEntry {
+struct GraphicsPaletteEntry {
     ColorChannelByte red; 
     ColorChannelByte green; 
     ColorChannelByte blue; 

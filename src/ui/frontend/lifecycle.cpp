@@ -21,7 +21,7 @@ GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = nullptr;
 
 uint32_t g_FrontendStateTickSpinLock = 0;
 
-DirectSoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
+SoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
 
 uint16_t g_FrontendMusic00SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\music00.sam" */
 
@@ -53,9 +53,9 @@ static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = {'g', 'f', 'x', '\\', 'p', 'a'
    creation error. */
 static uint32_t FrontendInit_LoadMenuSounds()
 {
-  DirectSoundVoiceSet **voiceSetSlot;
+  SoundVoiceSet **voiceSetSlot;
   SoundSampleAsset *loadedSample;
-  DirectSoundVoiceSet *menuVoiceSet;
+  SoundVoiceSet *menuVoiceSet;
   uint32_t voiceSetError;
 
   g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
@@ -91,8 +91,8 @@ void FrontendMusic_StartMenuMusic()
 {
   uint32_t musicGain;
   SoundSampleAsset *loadedSample;
-  DirectSoundVoiceSet *musicVoiceSet;
-  IDirectSoundBuffer *musicBuffer;
+  SoundVoiceSet *musicVoiceSet;
+  SoundVoice *musicBuffer;
 
   musicBuffer = g_FrontendMusicActiveBuffer;
   if (Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,nullptr,nullptr)) {
@@ -401,8 +401,8 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState)
 
 {
-  DirectSoundVoiceSet *buttonVoiceSet;
-  DirectSoundVoiceSet *buttonVoiceSet5;
+  SoundVoiceSet *buttonVoiceSet;
+  SoundVoiceSet *buttonVoiceSet5;
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
 
@@ -536,7 +536,7 @@ void FrontendRuntime_ShutdownAndReleaseResources()
 {
   UiRootNode *root;
   int voiceSetsRemaining;
-  DirectSoundVoiceSet **voiceSetCursor;
+  SoundVoiceSet **voiceSetCursor;
 
   UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);

@@ -63,6 +63,6 @@ extern uintptr_t g_FrontendRomTransitionSplineKeyframes;
 extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
 extern std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId; /* read by the 256 Hz timer thread */
 
-extern DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
+extern SoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
 
 #endif /* THANDOR_UI_FRONTEND_MENU_ROOM_SCENE_H */

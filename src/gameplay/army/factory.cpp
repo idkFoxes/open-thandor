@@ -71,8 +71,8 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
 {
   uint32_t soundIndex;
   ModelRuntimeNode *rootNode;
-  DirectSoundVoiceSet **soundVoiceSet;
-  DirectSoundVoiceSet *quirkVoiceSet;
+  SoundVoiceSet **soundVoiceSet;
+  SoundVoiceSet *quirkVoiceSet;
   GraphicsFixedVec3 *translationVec;
 
   soundIndex = factoryDefinition->primarySoundIndex;
@@ -82,7 +82,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   rootNode = modelRuntime->rootModelNode;
   /* Original quirk: the voice set is read from rootNode + index * 4, not from
      worldRuntime->dwordArray, which is only tested for NULL. */
-  soundVoiceSet = THANDOR_PTR32_AT(DirectSoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
+  soundVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
   translationVec = &(rootNode->worldTransform).translation;
   if (soundVoiceSet == nullptr) {
     return;
@@ -90,7 +90,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   if (!TerrainGrid_TestProjectedCellMaskBits01((rootNode->worldTransform).translation.y,translationVec->x,
                                                worldRuntime)) {
     /* the dword it points at is taken as the voice set (a 32-bit slot of the node's memory, as in the original) */
-    quirkVoiceSet = THANDOR_PTR32_AT(DirectSoundVoiceSet, soundVoiceSet);
+    quirkVoiceSet = THANDOR_PTR32_AT(SoundVoiceSet, soundVoiceSet);
     SpatialSound_PlayPositionedOneShot
               (factoryDefinition->positionedSoundMaximumDistanceQ12,factoryDefinition->positionedSoundGainQ15,
                translationVec,&quirkVoiceSet);

@@ -31,7 +31,7 @@ extern int32_t g_InGamePanelTextureSubresource26Height;
 extern int32_t g_InGamePanelTextureSubresource31Height;
 extern int32_t g_InGamePanelTextureSubresource34Height;
 
-extern DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7];
+extern SoundVoiceSet *g_UiButtonSoundVoiceSets7[7];
 
 extern GraphicsTextureSourceAsset *g_InGamePanelTextureSource;
 

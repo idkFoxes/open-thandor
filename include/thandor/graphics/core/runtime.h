@@ -55,7 +55,7 @@ void Graphics_Shutdown();
 extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize;
 extern int32_t g_GraphicsBackendAccessState;
 
-void GraphicsDirectDraw_PublishFramebuffer
+void GraphicsDisplay_PublishFramebuffer
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width);
 

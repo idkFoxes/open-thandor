@@ -16,24 +16,24 @@
 
 /* Functions are grouped by semantic ownership. */
 
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet);
 
-void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
+void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
 
 Bool8 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
+          SoundVoiceSet *voiceSet,SoundVoice **outVoice);
 
 Bool8 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
+          SoundVoiceSet *voiceSet,SoundVoice **outVoice);
 
-void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
+void SoundBackendDisabled_StopVoice(SoundVoice *voice);
 
-Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
+Bool8 SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice);
 
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          IDirectSoundBuffer *voice);
+          SoundVoice *voice);
 
 void SoundBackendDisabled_StopAllVoices();
 

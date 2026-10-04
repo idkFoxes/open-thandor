@@ -455,13 +455,13 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
 static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefinitionLinkedChildStateView *padDefinition,
           ModelRuntimeNode *padNode,SoundAssetIndex soundAssetIndex)
 {
-  DirectSoundVoiceSet **soundVoiceSet;
+  SoundVoiceSet **soundVoiceSet;
 
   if ((soundAssetIndex == 0) || (worldRuntime->dwordArrayCount <= soundAssetIndex) ||
      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  soundVoiceSet = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
   if (soundVoiceSet == nullptr) {
     return;
   }

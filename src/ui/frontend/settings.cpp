@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-IDirectSoundBuffer *g_FrontendMusicActiveBuffer = nullptr;
+SoundVoice *g_FrontendMusicActiveBuffer = nullptr;
 
 /* Implementation ownership: ui/frontend/settings. */
 

@@ -90,7 +90,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
      message pump does not change it): pump until a frame tick is pending, or once when stopMessageCode
      is 0 (every caller passes 0). The pending tick count is then consumed (reset to 0). */
   do {
-    g_Win32PumpMessages();
+    g_PlatformPumpEvents();
   } while ((stopMessageCode != 0) && (g_UiPendingFrameTicks == 0));
   ticksToRun = g_UiPendingFrameTicks.exchange(0); /* read and clear in one step: no timer tick is lost */
   for (; ticksToRun != 0; ticksToRun--) {

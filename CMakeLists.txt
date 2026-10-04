@@ -134,7 +134,7 @@ add_executable(thandor WIN32
     src/gameplay/session/startup.cpp
     src/gameplay/session/tick.cpp
     src/gameplay/technology/runtime.cpp
-    src/graphics/backend/directdraw.cpp
+    src/graphics/backend/display_modes.cpp
     src/graphics/backend/software.cpp
     src/graphics/backend/software_blit.cpp
     src/graphics/backend/software_display_mode.cpp

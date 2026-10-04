@@ -17,7 +17,7 @@ sections 1-5. Paths are relative to `src/` unless they say otherwise.
 - **Placement and clipping:** it draws one subresource of a "gfx" texture source at `draw + entry.origin`, clipped first to the framebuffer and then to the clip rectangle.
   - Setup: `Blit_SetupSubresource` in `graphics/backend/software_blit_helpers.h:205`.
   - Clipping: `Blit_ClipRect` in `software_blit_helpers.h:172`.
-- **Slot selection:** the slots for each colour depth are installed by `GraphicsDirectDraw_PublishFramebuffer` (`graphics/core/device.cpp:95-132`).
+- **Slot selection:** the slots for each colour depth are installed by `GraphicsDisplay_PublishFramebuffer` (`graphics/core/device.cpp:95-132`).
 - **Destination:** the destination is a `SoftwareFramebufferAccess*` argument. It is not always the display framebuffer; for example, the cursor is drawn into a composite buffer (`platform/sdl3/video.cpp:248`).
 
 ### 1.2 Live slots
