@@ -20,7 +20,7 @@ THANDOR_ALIGN(4) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
 
 THANDOR_ALIGN(16) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 
-MovieRuntime *g_ActiveMovie = 0;
+MovieRuntime *g_ActiveMovie = nullptr;
 
 /* Implementation ownership: movie/runtime/playback. */
 
@@ -92,7 +92,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   uint32_t loadError;
   DirectSoundVoiceSet *voiceSet;
 
-  *outVoiceSet = NULL;
+  *outVoiceSet = nullptr;
   audioTrackCount = header->audioTrackCount;
   if ((audioTrackCount == 0) || (MOVIE_MAX_AUDIO_TRACKS < audioTrackCount)) {
     return 0;
@@ -138,7 +138,7 @@ static Bool8 Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPac
   if (isSharedPackageHandle == 0) {
     g_FileSystemClose(handle);
   }
-  if (outError != NULL) {
+  if (outError != nullptr) {
     *outError = error;
   }
   return false;
@@ -196,7 +196,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
     packageEntry = Package_FindEntryAcrossMounts(path,&packageFileHandle);
-    if ((packageEntry != NULL) &&
+    if ((packageEntry != nullptr) &&
        (g_FileSystemSeek
             (FILESYSTEM_SEEK_BEGIN,packageEntry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
              THANDOR_PTR((uintptr_t)packageFileHandle)) == 0)) {
@@ -215,7 +215,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
         openError = g_FileSystemOpen(0,path,&handle);
         if (openError != 0) {
           /* Nothing is open yet: no close. */
-          if (outError != NULL) {
+          if (outError != nullptr) {
             *outError = openError;
           }
           return false;
@@ -289,7 +289,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   movie->textureCommon.formatVersion = 1;
   movie->textureCommon.converterVersion = 0;
   movie->audioVoiceSet = audioVoiceSet;
-  movie->activeAudioBuffer = NULL;
+  movie->activeAudioBuffer = nullptr;
   frameWidth = header->widthPixels;
   frameHeight = header->heightPixels;
   packedTime = g_LocaleGetPackedCurrentTime();
@@ -327,21 +327,21 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
   movie->audioGainQ15 = defaultAudioGain;
   movie->workerActive = 0;
   movie->streamState = MOVIE_STREAM_IDLE;
-  movie->refillSemaphore = NULL;
+  movie->refillSemaphore = nullptr;
   if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
     movie->workerActive++;
-    movie->refillSemaphore = CreateSemaphoreA(NULL,0,1,NULL);
+    movie->refillSemaphore = CreateSemaphoreA(nullptr,0,1,nullptr);
     /* The original passes the address of its remainingByteCount local as lpThreadId. */
-    workerThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,NULL,0,
+    workerThread = CreateThread(nullptr,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,nullptr,0,
                                 &remainingByteCount);
-    if (workerThread == NULL) {
+    if (workerThread == nullptr) {
       movie->workerActive--;
     }
     else {
       CloseHandle(workerThread);
     }
   }
-  if (outPlaybackRateHz != NULL) {
+  if (outPlaybackRateHz != nullptr) {
     *outPlaybackRateHz = header->frameIntervalMilliseconds;
   }
   return true;
@@ -357,7 +357,7 @@ MovieFrameDimensions Movie_GetFrameDimensions(void)
 
   dimensions.width = 0;
   dimensions.height = 0;
-  if (g_ActiveMovie != NULL) {
+  if (g_ActiveMovie != nullptr) {
     dimensions.width = (g_ActiveMovie->sourceEntry).pixelWidth;
     dimensions.height = (g_ActiveMovie->sourceEntry).pixelHeight;
   }
@@ -370,7 +370,7 @@ MovieFrameDimensions Movie_GetFrameDimensions(void)
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 
 {
-  if (g_ActiveMovie != NULL) {
+  if (g_ActiveMovie != nullptr) {
     g_ActiveMovie->audioGainQ15 = gainQ15;
   }
   return;
@@ -392,11 +392,11 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
   /* The original keeps the movie in a local: it re-reads g_ActiveMovie only at the loop top, after the
      wait and at the exit. */
-  while ((movie = g_ActiveMovie) != NULL) {
+  while ((movie = g_ActiveMovie) != nullptr) {
     refillSemaphore = movie->refillSemaphore;
     MsgWaitForMultipleObjects(1,&refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
-    if ((movie == NULL) || (Movie_StreamState(movie).load() == MOVIE_STREAM_SHUTDOWN) ||
+    if ((movie == nullptr) || (Movie_StreamState(movie).load() == MOVIE_STREAM_SHUTDOWN) ||
         (Movie_WorkerActive(movie).load() == 0) || (movie->remainingVideoBytes == 0)) break;
     if (Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE) continue;
     byteCount = movie->remainingVideoBytes;
@@ -427,7 +427,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
     expectedState = MOVIE_STREAM_FILL_REQUESTED;
     if (!Movie_StreamState(movie).compare_exchange_strong(expectedState,MOVIE_STREAM_IDLE)) break;
   }
-  if (g_ActiveMovie != NULL) {
+  if (g_ActiveMovie != nullptr) {
     Movie_WorkerActive(g_ActiveMovie).store(0);
   }
   return 0;
@@ -444,12 +444,12 @@ void Movie_Rewind(void)
   MovieRuntime *activeMovie;
   
   activeMovie = g_ActiveMovie;
-  if (g_ActiveMovie != NULL) {
+  if (g_ActiveMovie != nullptr) {
     g_ActiveMovie->currentFrameIndex = 0;
     activeMovie->videoStreamOffset = MOVIE_FILE_HEADER_BYTES; /* the first frame follows the header */
-    if (activeMovie->activeAudioBuffer != NULL) {
+    if (activeMovie->activeAudioBuffer != nullptr) {
       g_SoundStopVoice(activeMovie->activeAudioBuffer);
-      activeMovie->activeAudioBuffer = NULL;
+      activeMovie->activeAudioBuffer = nullptr;
     }
   }
   return;
@@ -468,7 +468,7 @@ void Movie_Close(void)
   HANDLE hProcess;
 
   movie = g_ActiveMovie;
-  if (g_ActiveMovie != NULL) {
+  if (g_ActiveMovie != nullptr) {
     if (g_MemoryApi.alloc == ArenaHeap_Alloc) {
       Movie_StreamState(g_ActiveMovie).store(MOVIE_STREAM_SHUTDOWN);
       currentProcessHandle = GetCurrentProcess();
@@ -478,16 +478,16 @@ void Movie_Close(void)
       while (Movie_WorkerActive(movie).load() != 0) {
         Thandor_SleepMs(0);
       }
-      if (movie->refillSemaphore != NULL) {
+      if (movie->refillSemaphore != nullptr) {
         CloseHandle(movie->refillSemaphore);
-        movie->refillSemaphore = NULL;
+        movie->refillSemaphore = nullptr;
       }
       hProcess = GetCurrentProcess();
       SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
     }
-    g_ActiveMovie = NULL;
+    g_ActiveMovie = nullptr;
     g_MemoryApi.free(movie->fileHeader);
-    if (movie->audioVoiceSet != NULL) {
+    if (movie->audioVoiceSet != nullptr) {
       g_SoundReleaseSampleVoiceSet(movie->audioVoiceSet);
     }
     if ((movie->remainingVideoBytes != 0) && (movie->streamHandleIsSharedPackage == 0)) {
@@ -513,7 +513,7 @@ void IntroMovie_TimerTick(void)
    returns false, the "no frame" result of Movie_AdvanceFrame. */
 static Bool8 Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 {
-  if (outEndCode != NULL) {
+  if (outEndCode != nullptr) {
     *outEndCode = endCode;
   }
   return false;
@@ -568,7 +568,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   IDirectSoundBuffer *playedVoice;
 
   movie = g_ActiveMovie;
-  if (movie == NULL) {
+  if (movie == nullptr) {
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
   if (Movie_StreamState(movie).load() == MOVIE_STREAM_READ_FAILED) {
@@ -578,7 +578,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
        outer caller's value via MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
        open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
        CloseHandle on an unrelated value. */
-    g_FileSystemClose(NULL);
+    g_FileSystemClose(nullptr);
     movie->remainingVideoBytes = 0;
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
@@ -587,12 +587,12 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
       ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < MOVIE_REFILL_LIMIT_BYTES)) {
     /* only the worker leaves FILL_REQUESTED, so IDLE cannot change between the check and this store */
     Movie_StreamState(movie).store(MOVIE_STREAM_FILL_REQUESTED);
-    ReleaseSemaphore(movie->refillSemaphore,1,NULL);
+    ReleaseSemaphore(movie->refillSemaphore,1,nullptr);
   }
   flmHeader = movie->fileHeader;
   previousFrameIndex = movie->currentFrameIndex;
   streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
-  if ((previousFrameIndex == 0) && (movie->audioVoiceSet != NULL)) {
+  if ((previousFrameIndex == 0) && (movie->audioVoiceSet != nullptr)) {
     /* stored whether or not it plays (NULL on failure) */
     g_SoundPlayOneShot(movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet,&playedVoice);
     movie->activeAudioBuffer = playedVoice;
@@ -608,7 +608,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
        the movie pointer minus MOVIE_RUNTIME_PIXELS_OFFSET here, because its working pointer is only
        advanced to the pixels further down. Callers keep the value as the movie only after the first-frame call, which cannot
        get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
-    if (outMovie != NULL) {
+    if (outMovie != nullptr) {
       *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
     }
     return true;
@@ -624,7 +624,7 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   if ((movie->openFlags != 0) && (Movie_StreamState(movie).load() == MOVIE_STREAM_IDLE)) {
     Movie_CompactStreamBuffer(movie);
   }
-  if (outMovie != NULL) {
+  if (outMovie != nullptr) {
     *outMovie = movie;
   }
   return true;
