@@ -93,13 +93,19 @@ bool SdlVideo_GpuRendererActive();
 uint32_t SdlVideo_GpuRasterization();
 void SdlVideo_SetGpuRasterization(uint32_t rasterization);
 /* The GPU renderers' UI scale ([graphics] ui_scale: PERSISTENT_UI_SCALE_AUTO or 1..PERSISTENT_UI_SCALE_MAX): the
-   saved one, and saving one. A saved scale takes effect at the next display mode switch (the advanced settings
-   page sets the mode in use again at once); the display modes are listed again for it at once (a fixed scale lists
-   the display's sizes divided by it). UiScaleChangePending: the scale asked for (OPEN_THANDOR_UI_SCALE wins)
-   differs from the one the running display mode was set up with. */
+   saved one, and saving one. The scale divides the display mode (the physical window / fullscreen size, which it
+   never changes) into the logical UI resolution g_FramebufferWidth x g_FramebufferHeight. A saved scale takes
+   effect at the next display mode switch (the advanced settings page sets the mode in use again at once).
+   UiScaleChangePending: the scale the running display mode would get now (OPEN_THANDOR_UI_SCALE wins; auto and the
+   640x480 floor resolved) differs from the one it was set up with. AppliedUiScale: that one (1 for the software
+   renderer). DisplayModeWidth / Height: the running display mode's physical size (the framebuffer size times
+   the scale, before rounding down) - the size to pass to g_GraphicsSetDisplayMode to set the mode in use again. */
 uint32_t SdlVideo_SavedUiScale();
 void SdlVideo_SaveUiScale(uint32_t scale);
 bool SdlVideo_UiScaleChangePending();
+uint32_t SdlVideo_AppliedUiScale();
+uint32_t SdlVideo_DisplayModeWidth();
+uint32_t SdlVideo_DisplayModeHeight();
 /* Frame pacing of the presents (render rate only, the game's timers are untouched; but as in the original a
    simulation step runs at the first frame after its timer countdown, so a limit below 60 slows the game: 30 fps
    gives about 14 instead of 20 steps per second).

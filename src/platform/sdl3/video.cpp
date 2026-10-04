@@ -32,13 +32,15 @@
    ("Vollbildfenster"), or a normal window in the mode's size ("Fenster"); the frame is letterboxed in all three. The developer tools' window (OPEN_THANDOR_WINDOWED) is
    always a window at OPEN_THANDOR_WINDOW_X/Y.
 
-   UI scale (step 9 WP8, GPU renderers only): the display mode is the logical UI resolution (g_FramebufferWidth /
-   Height: layout, hit tests, mouse, captures); the GPU draws the frame at N x that size (SetGpuUiScale) and the
-   window or the exclusive fullscreen mode gets N x the mode's size. N comes from OPEN_THANDOR_UI_SCALE=auto|1..8
-   (wins) or [graphics] ui_scale (auto, 1, 2, 3): auto is the largest whole N at which N x the mode fits the display
-   (fullscreen kinds: the desktop size; a window: the display's usable area), a number is taken as it is. With a
-   fixed N > 1 the GPU adapters list the display's sizes divided by N; auto and 1 list the display's sizes. The
-   software renderer always runs at N = 1.
+   UI scale (step 9 WP8, GPU renderers only): the display mode is the physical size - the window's size or the
+   exclusive fullscreen mode, the same at every scale - and the mode list holds the display's sizes whatever the
+   scale. The game's logical UI resolution (g_FramebufferWidth / Height: layout, hit tests, mouse, captures) is the
+   mode divided by N, rounded down; the GPU draws the frame at N x that (SetGpuUiScale), so 2D and 3D are drawn at
+   the physical resolution, and presents it centred (PresentRect: a remainder of the division, less than N pixels,
+   stays black at the edges; the UI is never stretched). N comes from OPEN_THANDOR_UI_SCALE=auto|1..8 (wins) or
+   [graphics] ui_scale (auto, 1, 2, 3): auto is the largest whole N at which the logical size is still at least
+   1280x720 (1 below 2560x1440, 2 at 2560x1440, 3 at 3840x2160); a fixed N that would make the logical size smaller
+   than 640x480 is lowered until it does not (logged). The software renderer always runs at N = 1.
 
    Frame pacing (render rate only; the game's timers are not touched, but a simulation step waits for a drawn
    frame, so a frame limit below 60 slows the game): VSync ([graphics] vsync on|off, PERSISTENT_SETTING_VSYNC,
@@ -71,6 +73,9 @@ namespace {
 
 constexpr int kMinimumModeWidth = 640;
 constexpr int kMinimumModeHeight = 480;
+/* UI scale auto: the largest N that keeps the logical size at least this large */
+constexpr int kAutoUiScaleMinimumWidth = 1280;
+constexpr int kAutoUiScaleMinimumHeight = 720;
 constexpr uint32_t kNoRenderer = 0xFFFFFFFFu;
 
 /* The framebuffer, its texture (software renderer) and the cursor rectangle drawn into it at the last present. */
@@ -100,8 +105,9 @@ struct RendererState {
   bool shown = false;
   int windowWidth = 0; /* the size last given to the normal window */
   int windowHeight = 0;
-  bool modesListedWithSettings = false;
-  int appliedUiScaleRequest = -1; /* RequestedUiScale at the last display mode switch (-1: none yet) */
+  int appliedUiScale = 1; /* the UI scale N of the running display mode (1: software renderer, none yet) */
+  int modeWidth = 0;      /* the running display mode (physical size; the framebuffer is it divided by N) */
+  int modeHeight = 0;
 };
 RendererState s_renderer;
 
@@ -178,13 +184,11 @@ int RequestedUiScale() noexcept
 }
 
 /* The display modes: every distinct fullscreen size of the primary display from 640x480 up to the desktop size
-   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer) - except that with a
-   fixed UI scale N > 1 (RequestedUiScale) the GPU renderers list those sizes divided by N (logical sizes from
-   640x480 on, 640x480 always). */
+   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer). They are physical
+   sizes at every UI scale (the scale divides the framebuffer, not the mode; UiScaleFor). */
 void ListDisplayModes()
 {
   g_GraphicsDisplayModeCount = 0;
-  const int requestedScale = RequestedUiScale();
   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
   const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display);
   const int desktopWidth = (desktop != nullptr) ? std::max(desktop->w, kMinimumModeWidth) : kMinimumModeWidth;
@@ -204,20 +208,8 @@ void ListDisplayModes()
   sizes.emplace_back(desktopWidth, desktopHeight);
   std::sort(sizes.begin(), sizes.end());
   sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
-  std::vector<std::pair<int, int>> scaledSizes{{kMinimumModeWidth, kMinimumModeHeight}};
-  if (requestedScale > 1) {
-    for (const auto &[width, height] : sizes) {
-      if ((width / requestedScale >= kMinimumModeWidth) && (height / requestedScale >= kMinimumModeHeight)) {
-        scaledSizes.emplace_back(width / requestedScale, height / requestedScale);
-      }
-    }
-    std::sort(scaledSizes.begin(), scaledSizes.end());
-    scaledSizes.erase(std::unique(scaledSizes.begin(), scaledSizes.end()), scaledSizes.end());
-  }
   for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
-    const bool scaled = (requestedScale > 1) && (adapterIndex < s_renderer.adapterCount) &&
-                        (s_renderer.adapters[adapterIndex] != PERSISTENT_RENDERER_SOFTWARE);
-    for (const auto &[width, height] : scaled ? scaledSizes : sizes) {
+    for (const auto &[width, height] : sizes) {
       if (g_GraphicsDisplayModeCount >= GRAPHICS_DISPLAY_MODE_CAPACITY) {
         return;
       }
@@ -545,36 +537,29 @@ bool CreateSdlRenderer() noexcept
   return true;
 }
 
-/* The UI scale of a renderer for a width x height display mode shown as kind: 1 for the software renderer, else
-   the requested one, and for auto the largest whole N at which N x the mode fits the output (fullscreen kinds:
-   the desktop size; a window: the display's usable area). */
-int UiScaleFor(uint32_t renderer, uint32_t kind, int width, int height) noexcept
+/* The UI scale N of a renderer for a width x height (physical) display mode: 1 for the software renderer; auto:
+   the largest whole N (up to kMaxGpuUiScale) at which width / N x height / N is at least
+   kAutoUiScaleMinimumWidth x kAutoUiScaleMinimumHeight, else 1; a fixed N is lowered (logged) until width / N x
+   height / N is at least the smallest mode, 640x480. */
+int UiScaleFor(uint32_t renderer, int width, int height) noexcept
 {
-  if ((renderer == PERSISTENT_RENDERER_SOFTWARE) || (width <= 0) || (height <= 0)) {
+  if ((renderer == PERSISTENT_RENDERER_SOFTWARE) || (renderer == kNoRenderer) || (width <= 0) || (height <= 0)) {
     return 1;
   }
   const int requested = RequestedUiScale();
-  if (requested != PERSISTENT_UI_SCALE_AUTO) {
-    return requested;
+  if (requested == PERSISTENT_UI_SCALE_AUTO) {
+    int scale = 1;
+    while ((scale < thandor::sdl3::kMaxGpuUiScale) && (width / (scale + 1) >= kAutoUiScaleMinimumWidth) &&
+           (height / (scale + 1) >= kAutoUiScaleMinimumHeight)) {
+      scale++;
+    }
+    return scale;
   }
-  SDL_Window *window = thandor::sdl3::MainWindow();
-  SDL_DisplayID display = SDL_GetDisplayForWindow(window);
-  if (display == 0) {
-    display = SDL_GetPrimaryDisplay();
+  int scale = requested;
+  while ((scale > 1) && ((width / scale < kMinimumModeWidth) || (height / scale < kMinimumModeHeight))) {
+    scale--;
   }
-  int outputWidth = 0;
-  int outputHeight = 0;
-  SDL_Rect usable;
-  if ((thandor::sdl3::Windowed() || (kind == PERSISTENT_DISPLAY_MODE_WINDOW)) &&
-      SDL_GetDisplayUsableBounds(display, &usable)) {
-    outputWidth = usable.w;
-    outputHeight = usable.h;
-  }
-  else if (const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display)) {
-    outputWidth = desktop->w;
-    outputHeight = desktop->h;
-  }
-  return std::clamp(std::min(outputWidth / width, outputHeight / height), 1, thandor::sdl3::kMaxGpuUiScale);
+  return scale;
 }
 
 /* Stops the running renderer and starts this one; false (logged) when it cannot start. */
@@ -620,7 +605,7 @@ uint32_t SwitchRenderer(uint32_t requested) noexcept
 
 /* --- window ----------------------------------------------------------------------------------------------- */
 
-/* Applies the display mode kind for a width x height output (the framebuffer size x the UI scale). */
+/* Applies the display mode kind for a width x height output (the display mode's physical size). */
 void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
 {
   SDL_Window *window = thandor::sdl3::MainWindow();
@@ -672,6 +657,22 @@ void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
 
 namespace thandor::sdl3 {
 
+SDL_FRect PresentRect(float outerWidth, float outerHeight, float innerWidth, float innerHeight, int scale) noexcept
+{
+  const auto spare = static_cast<float>(std::max(scale, 1));
+  if ((outerWidth >= innerWidth) && (outerHeight >= innerHeight) && (outerWidth - innerWidth < spare) &&
+      (outerHeight - innerHeight < spare)) {
+    return SDL_FRect{std::floor((outerWidth - innerWidth) / 2.0f), std::floor((outerHeight - innerHeight) / 2.0f),
+                     innerWidth, innerHeight};
+  }
+  return LetterboxRect(outerWidth, outerHeight, innerWidth, innerHeight);
+}
+
+int AppliedUiScale() noexcept
+{
+  return s_renderer.appliedUiScale;
+}
+
 SDL_FRect LetterboxRect(float outerWidth, float outerHeight, float innerWidth, float innerHeight) noexcept
 {
   if ((outerWidth <= 0.0f) || (outerHeight <= 0.0f) || (innerWidth <= 0.0f) || (innerHeight <= 0.0f)) {
@@ -684,14 +685,17 @@ SDL_FRect LetterboxRect(float outerWidth, float outerHeight, float innerWidth, f
 }
 
 namespace {
-/* The framebuffer's rectangle in window coordinates. */
+/* The framebuffer's rectangle in window coordinates: where the present puts the frame (N x the framebuffer at UI
+   scale N, PresentRect). */
 SDL_FRect FramebufferInWindow() noexcept
 {
   int windowWidth = 0;
   int windowHeight = 0;
   SDL_GetWindowSize(MainWindow(), &windowWidth, &windowHeight);
-  return LetterboxRect(static_cast<float>(windowWidth), static_cast<float>(windowHeight),
-                       static_cast<float>(g_FramebufferWidth), static_cast<float>(g_FramebufferHeight));
+  const int scale = s_renderer.appliedUiScale;
+  return PresentRect(static_cast<float>(windowWidth), static_cast<float>(windowHeight),
+                     static_cast<float>(g_FramebufferWidth * static_cast<uint32_t>(scale)),
+                     static_cast<float>(g_FramebufferHeight * static_cast<uint32_t>(scale)), scale);
 }
 } // namespace
 
@@ -854,17 +858,29 @@ void SdlVideo_SaveUiScale(uint32_t scale)
   if ((scale > PERSISTENT_UI_SCALE_MAX) || (scale == SdlVideo_SavedUiScale())) {
     return;
   }
-  const int requestedBefore = RequestedUiScale();
   PersistentSettings_WriteChosen(scale, PERSISTENT_SETTING_UI_SCALE);
   Thandor_Log("UI scale %u (0 = auto) saved", scale);
-  if (RequestedUiScale() != requestedBefore) {
-    ListDisplayModes(); /* a fixed scale lists the display's sizes divided by it */
-  }
 }
 
 bool SdlVideo_UiScaleChangePending()
 {
-  return (s_renderer.appliedUiScaleRequest >= 0) && (RequestedUiScale() != s_renderer.appliedUiScaleRequest);
+  return (s_renderer.modeWidth > 0) &&
+         (UiScaleFor(s_renderer.active, s_renderer.modeWidth, s_renderer.modeHeight) != s_renderer.appliedUiScale);
+}
+
+uint32_t SdlVideo_AppliedUiScale()
+{
+  return static_cast<uint32_t>(s_renderer.appliedUiScale);
+}
+
+uint32_t SdlVideo_DisplayModeWidth()
+{
+  return (s_renderer.modeWidth > 0) ? static_cast<uint32_t>(s_renderer.modeWidth) : g_FramebufferWidth;
+}
+
+uint32_t SdlVideo_DisplayModeHeight()
+{
+  return (s_renderer.modeHeight > 0) ? static_cast<uint32_t>(s_renderer.modeHeight) : g_FramebufferHeight;
 }
 
 uint32_t SdlVideo_DisplayModeKind()
@@ -931,11 +947,6 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
     LoadFramePacing();
     ApplyVsync(); /* before the renderer starts below */
   }
-  if (!s_renderer.modesListedWithSettings) {
-    /* the UI scale setting is known now: list the display modes again (SdlVideo_Init ran before the load) */
-    ListDisplayModes();
-    s_renderer.modesListedWithSettings = true;
-  }
   if (adapterIndex >= s_renderer.adapterCount) {
     adapterIndex = 0;
   }
@@ -957,12 +968,25 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   constexpr int bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
   constexpr SDL_PixelFormat pixelFormat = SDL_PIXELFORMAT_XRGB8888;
   const uint32_t kind = Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind;
-  const int uiScale = UiScaleFor(renderer, kind, static_cast<int>(width), static_cast<int>(height));
-  s_renderer.appliedUiScaleRequest = RequestedUiScale();
+  /* width x height is the physical size (window / fullscreen mode); the framebuffer is it divided by the UI scale */
+  const int uiScale = UiScaleFor(renderer, static_cast<int>(width), static_cast<int>(height));
+  const int requestedScale = RequestedUiScale();
+  if ((requestedScale != PERSISTENT_UI_SCALE_AUTO) && (uiScale != requestedScale)) {
+    Thandor_Log("UI scale %d would make %ux%u smaller than %dx%d, scale %d instead", requestedScale,
+                width / static_cast<uint32_t>(requestedScale), height / static_cast<uint32_t>(requestedScale),
+                kMinimumModeWidth, kMinimumModeHeight, uiScale);
+  }
+  const uint32_t modeWidth = width;
+  const uint32_t modeHeight = height;
+  width /= static_cast<uint32_t>(uiScale);
+  height /= static_cast<uint32_t>(uiScale);
 #ifdef THANDOR_RENDERER_SDL_GPU
   SetGpuUiScale(uiScale);
 #endif
-  ApplyDisplayModeKind(kind, static_cast<int>(width) * uiScale, static_cast<int>(height) * uiScale);
+  ApplyDisplayModeKind(kind, static_cast<int>(modeWidth), static_cast<int>(modeHeight));
+  s_renderer.appliedUiScale = uiScale;
+  s_renderer.modeWidth = static_cast<int>(modeWidth);
+  s_renderer.modeHeight = static_cast<int>(modeHeight);
   if (renderer == PERSISTENT_RENDERER_SOFTWARE) {
     SDL_Renderer *sdlRenderer = s_renderer.sdlRenderer.get();
     thandor::sdl3::TexturePtr texture(SDL_CreateTexture(sdlRenderer, pixelFormat, SDL_TEXTUREACCESS_STREAMING,
@@ -985,9 +1009,13 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   s_video.height = static_cast<int>(height);
   s_video.pitchBytes = static_cast<int>(width) * bytesPerPixel;
   s_video.framebuffer.assign(static_cast<std::size_t>(s_video.pitchBytes) * height, std::byte{0});
-  Thandor_Log("display mode %ux%ux%u, %s, renderer %s, UI scale %d (%s)", width, height, bitsPerPixel,
-              DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer), uiScale,
-              (RequestedUiScale() == PERSISTENT_UI_SCALE_AUTO) ? "auto" : "fixed");
+  int windowWidth = 0;
+  int windowHeight = 0;
+  SDL_GetWindowSizeInPixels(MainWindow(), &windowWidth, &windowHeight);
+  Thandor_Log("display mode %ux%ux%u, %s, renderer %s, UI scale %d (%s): UI %ux%u, window %dx%d", modeWidth, modeHeight,
+              bitsPerPixel, DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer), uiScale,
+              (requestedScale == PERSISTENT_UI_SCALE_AUTO) ? "auto" : "fixed", width, height, windowWidth,
+              windowHeight);
   if (!s_renderer.shown) {
     SDL_ShowWindow(MainWindow());
     s_renderer.shown = true;

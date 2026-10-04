@@ -115,8 +115,8 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
    "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
   {PERSISTENT_SETTING_UI_SCALE, INI_KIND_ENUM, "graphics", "ui_scale",
-   "Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the "
-   "display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)", 0, 0,
+   "Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor that keeps the UI at least 1280x720) "
+   "or 1, 2, 3; the UI resolution is the display mode divided by it, the window / fullscreen size stays the mode", 0, 0,
    INI_ENUM(s_IniUiScaleNames)},
   {PERSISTENT_SETTING_VSYNC, INI_KIND_ENUM, "graphics", "vsync",
    "vsync: on (default; frames wait for the display's refresh, no tearing) or off", 0, 0, INI_ENUM(s_IniVsyncNames)},

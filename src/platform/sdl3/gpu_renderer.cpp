@@ -2296,10 +2296,13 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
         shown = s_gpu.presentTarget;
       }
     }
-    /* letterboxed: the largest rectangle of the framebuffer's aspect, centred, black around it */
+    /* centred unscaled when the swapchain is the display mode (at UI scale N the frame target is N x the
+       framebuffer, up to N - 1 pixels smaller than the mode), else letterboxed: the largest rectangle of the
+       framebuffer's aspect, centred, black around it */
     const SDL_FRect box =
-        LetterboxRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
-                      static_cast<float>(s_gpu.frameTargetWidth), static_cast<float>(s_gpu.frameTargetHeight));
+        PresentRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
+                    static_cast<float>(s_gpu.frameTargetWidth), static_cast<float>(s_gpu.frameTargetHeight),
+                    s_gpu.frameScale);
     SDL_GPUBlitInfo blit;
     SDL_zero(blit);
     blit.source.texture = shown;
@@ -2511,9 +2514,10 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
   Uint32 swapchainHeight = 0;
   SDL_GPUTexture *swapchain = AcquireSwapchain(commands, &swapchainWidth, &swapchainHeight);
   if (swapchain != nullptr) {
-    /* letterboxed: the largest rectangle of the framebuffer's aspect, centred, black around it */
-    const SDL_FRect box = LetterboxRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
-                                        static_cast<float>(frameWidth), static_cast<float>(frameHeight));
+    /* where the frame target would go (PresentRect for N x the framebuffer), else letterboxed */
+    const SDL_FRect box = PresentRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
+                                      static_cast<float>(frameWidth * s_uiScale),
+                                      static_cast<float>(frameHeight * s_uiScale), s_uiScale);
     SDL_GPUBlitInfo blit;
     SDL_zero(blit);
     blit.source.texture = s_gpu.frameTexture;

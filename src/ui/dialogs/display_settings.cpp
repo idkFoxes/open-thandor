@@ -437,7 +437,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   currentBitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   pendingAdapterIndex = applyButton->selectedAdapterIndex;
   UiRootStack_Pop(root);
-  if (pendingWidth == g_FramebufferWidth && pendingHeight == g_FramebufferHeight &&
+  /* not in the original: the mode's size, not the framebuffer's (a GPU UI scale divides it) */
+  if (pendingWidth == SdlVideo_DisplayModeWidth() && pendingHeight == SdlVideo_DisplayModeHeight() &&
       pendingBitsPerPixel == currentBitsPerPixel && pendingAdapterIndex == g_ActiveGraphicsAdapterIndex) {
     return;
   }
@@ -445,8 +446,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   UiFrame_ProcessAndPresentWithLockTransition();
   /* the current mode, read before the switch changes it */
   currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
-  currentHeight = g_FramebufferHeight;
-  currentWidth = g_FramebufferWidth;
+  currentHeight = SdlVideo_DisplayModeHeight();
+  currentWidth = SdlVideo_DisplayModeWidth();
   if (!g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingHeight,pendingWidth,
                                 &pendingModeError)) {
     if (!g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,currentHeight,currentWidth,
@@ -578,8 +579,9 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
     copyCursor = copyCursor + 1;
   }
   activeAdapterIndex = g_ActiveGraphicsAdapterIndex;
-  framebufferHeight = g_FramebufferHeight;
-  framebufferWidth = g_FramebufferWidth;
+  /* not in the original: the mode's size, not the framebuffer's (a GPU UI scale divides it) */
+  framebufferHeight = SdlVideo_DisplayModeHeight();
+  framebufferWidth = SdlVideo_DisplayModeWidth();
   colorDepthBits = PERSISTENT_DEFAULT_BITS_PER_PIXEL; /* the original: the pixel format's RGB bits */
   /* applyButton tail: the selected mode tuple and the original one start out equal */
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
@@ -661,7 +663,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
   DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (g_ActiveGraphicsAdapterIndex,colorDepthBits,g_FramebufferHeight,g_FramebufferWidth,(UiNodeBase *)root);
+            (g_ActiveGraphicsAdapterIndex,colorDepthBits,framebufferHeight,framebufferWidth,(UiNodeBase *)root);
   UiRootStack_InvalidateAll();
 }
 
