@@ -9,7 +9,5 @@
 #define THANDOR_ASSETS_SCENARIO_H
 
 #include <thandor/assets/scenario/catalog.h>
-#include <thandor/assets/scenario/frontend_selection.h>
-#include <thandor/assets/scenario/session_load.h>
 
 #endif /* THANDOR_ASSETS_SCENARIO_H */

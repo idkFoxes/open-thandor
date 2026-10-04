@@ -552,3 +552,42 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   } while (remainingSlots != 0);
   return metricSum >> 5;
 }
+
+/* EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the
+   army asset named by classParameterC0. The new model keeps the owner's armour points (ModelRuntimeSlot.health) in proportion,
+   rescaled by the two definitions' maximumHealth (presumably the full armour), and the owner is destroyed. */
+void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEntityRuntime *ownerEntity)
+
+{
+  ModelRuntimeSlot *ownerModelSlot;
+  ModelRuntimeNode *ownerModelNode;
+  ModelDefinition *ownerDefinition;
+  ArmyRuntimeSlot *createdArmy;
+  ModelRuntimeSlot *createdModelSlot;
+
+  if (ownerEntity == NULL) {
+    return;
+  }
+  ownerModelSlot = (ModelRuntimeSlot *)ownerEntity->common.ownership.definitionOrClassRecord;
+  ownerModelNode = ownerEntity->common.ownership.modelNode;
+  ownerDefinition = ownerModelSlot->definitionOrSavedId.runtimeDefinition;
+  if (ownerDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_18) {
+    return;
+  }
+  createdArmy = ArmyRuntime_CreateInstanceFromAsset
+                     (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
+                      ownerModelNode->modelPayload.worldRotationAngle2,
+                      ownerModelNode->worldTransform.translation.y,
+                      ownerModelNode->worldTransform.translation.x,
+                      ownerEntity->common.ownership.ownerIndex,
+                      (PckArmyAssetIdCatalog)ownerDefinition->classParameterC0,
+                      worldRuntime,NULL);
+  if (createdArmy != NULL) {
+    createdModelSlot = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
+    createdModelSlot->health =
+         (int)(((int64_t)(int)ownerModelSlot->health *
+                (int64_t)(int)createdModelSlot->definitionOrSavedId.runtimeDefinition->maximumHealth) /
+               (int64_t)(int)ownerDefinition->maximumHealth);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,ownerEntity);
+  }
+}

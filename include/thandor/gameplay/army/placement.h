@@ -101,4 +101,6 @@ extern Q12 g_ArmyPlacementValidatedWorldYQ12;
 
 extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount;
 
+void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */

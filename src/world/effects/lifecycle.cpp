@@ -84,7 +84,6 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   }
 }
 
-
 /* Effect entry of the occupancyRebuild phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table, from InGameRuntime_UpdateSimulationAndNetworkTick): effects take no part in the occupancy rebuild, so this
    does nothing.
@@ -95,7 +94,6 @@ void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRun
   return;
 }
 
-
 /* Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
    from the every-8th-frame spatial sound pass in InGameUiRoot_UpdateFrame): effects add no
    spatial sound, so this does nothing.
@@ -105,7 +103,6 @@ void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime
 {
   return;
 }
-
 
 /* Ends the effect: releases its shading record over the definition's release time and unlinks the model node. */
 static void EffectLifecycle_ReleaseShadingAndUnlink
@@ -290,45 +287,6 @@ static void EffectLifecycle_CountDownLinkedShot
                (localPoint.xQ12 - modelNode->worldTransform.translation.x) * 2 +
                modelNode->worldTransform.translation.x,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                effectDefinition->linkedShotDefinition,worldRuntime);
-  }
-}
-
-/* EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the
-   army asset named by classParameterC0. The new model keeps the owner's armour points (ModelRuntimeSlot.health) in proportion,
-   rescaled by the two definitions' maximumHealth (presumably the full armour), and the owner is destroyed. */
-static void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEntityRuntime *ownerEntity)
-
-{
-  ModelRuntimeSlot *ownerModelSlot;
-  ModelRuntimeNode *ownerModelNode;
-  ModelDefinition *ownerDefinition;
-  ArmyRuntimeSlot *createdArmy;
-  ModelRuntimeSlot *createdModelSlot;
-
-  if (ownerEntity == NULL) {
-    return;
-  }
-  ownerModelSlot = (ModelRuntimeSlot *)ownerEntity->common.ownership.definitionOrClassRecord;
-  ownerModelNode = ownerEntity->common.ownership.modelNode;
-  ownerDefinition = ownerModelSlot->definitionOrSavedId.runtimeDefinition;
-  if (ownerDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_18) {
-    return;
-  }
-  createdArmy = ArmyRuntime_CreateInstanceFromAsset
-                     (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
-                      ownerModelNode->modelPayload.worldRotationAngle2,
-                      ownerModelNode->worldTransform.translation.y,
-                      ownerModelNode->worldTransform.translation.x,
-                      ownerEntity->common.ownership.ownerIndex,
-                      (PckArmyAssetIdCatalog)ownerDefinition->classParameterC0,
-                      worldRuntime,NULL);
-  if (createdArmy != NULL) {
-    createdModelSlot = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
-    createdModelSlot->health =
-         (int)(((int64_t)(int)ownerModelSlot->health *
-                (int64_t)(int)createdModelSlot->definitionOrSavedId.runtimeDefinition->maximumHealth) /
-               (int64_t)(int)ownerDefinition->maximumHealth);
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,ownerEntity);
   }
 }
 
@@ -534,4 +492,3 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     remainingStepTicks--;
   } while (remainingStepTicks != 0);
 }
-

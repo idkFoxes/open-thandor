@@ -32,17 +32,11 @@ static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 
 
 static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
 
-uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
-
 uint16_t *g_InGamePlayerListTextScratchUtf16 = 0;
 
 InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
 
 uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {0};
-
-uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
-
-uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
 
 uint32_t g_InGameReadyStateToggleFlags = 0;
 
@@ -574,7 +568,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
    (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
    extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
 */
-void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
+void InGameHud_UpdateCurrentFactionMetricCache(void)
 
 {
   XeniteAmountQ4 xeniteStorageLimit;

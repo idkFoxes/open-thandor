@@ -44,40 +44,13 @@
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
 /* Height returned by WorldRuntime_InterpolateTopSurfaceHeightOrSentinel when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
+
 /* Functions are grouped by semantic ownership. */
 
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world);
 
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
-Bool8 WorldRuntimeNode_IsPositionInsideBounds
-          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
-
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uintptr_t *array,WorldRuntimeContext *world);
-
-RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
-
-void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
-
-RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
-
-void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
-
-void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
-
-void ArmyRuntimeClass_NoOpTickUpdateForClass5
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
-
-void ArmyRuntimeClass_NoOpTickUpdateForClass6
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
-
-void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
-
-void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
-
-Bool8 UnifiedRuntimeDefault_TwoArgSuccess
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
-
-void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 #endif /* THANDOR_WORLD_RUNTIME_CORE_H */

@@ -30,67 +30,6 @@ static const UQ12 g_WorldMotionAlternateMaximumDistanceQ12 = 131072;
 
 /* Implementation ownership: world/camera/camera_input. */
 
-/* Edge scrolling: while the cursor presses against a screen edge (g_CursorOverflow*), moves the camera by the
-   configured scroll step in that direction and returns the matching scroll-arrow cursor frame
-   (WORLD_CURSOR_SCROLL_*), or 0 when no edge is touched.
-*/
-uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
-
-{
-  uint32_t edgeScrollStep;
-  uint32_t rightStep;
-  uint32_t bottomStep;
-  uint32_t screenDeltaRight;
-  uint32_t screenDeltaDown;
-
-  edgeScrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  rightStep = 0;
-  if (g_CursorOverflowRight != 0) {
-    rightStep = edgeScrollStep;
-  }
-  bottomStep = 0;
-  if (g_CursorOverflowBottom != 0) {
-    bottomStep = edgeScrollStep;
-  }
-  /* delta = right/bottom step - left/top overflow; a negative result becomes -step */
-  screenDeltaRight = rightStep - g_CursorOverflowLeft;
-  if ((int)screenDeltaRight < 0) {
-    screenDeltaRight = 0u - edgeScrollStep;
-  }
-  screenDeltaDown = bottomStep - g_CursorOverflowTop;
-  if ((int)screenDeltaDown < 0) {
-    screenDeltaDown = 0u - edgeScrollStep;
-  }
-  WorldRuntime_TranslateCameraByScreenDelta(screenDeltaDown,screenDeltaRight,worldRuntime);
-  WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-  if (screenDeltaRight == 0) {
-    if (screenDeltaDown == 0) {
-      return 0;
-    }
-    if ((int)screenDeltaDown < 0) {
-      return WORLD_CURSOR_SCROLL_UP;
-    }
-    return WORLD_CURSOR_SCROLL_DOWN;
-  }
-  if ((int)screenDeltaRight < 0) {
-    if (screenDeltaDown == 0) {
-      return WORLD_CURSOR_SCROLL_LEFT;
-    }
-    if ((int)screenDeltaDown < 0) {
-      return WORLD_CURSOR_SCROLL_UP_LEFT;
-    }
-    return WORLD_CURSOR_SCROLL_DOWN_LEFT;
-  }
-  if (screenDeltaDown == 0) {
-    return WORLD_CURSOR_SCROLL_RIGHT;
-  }
-  if ((int)screenDeltaDown < 0) {
-    return WORLD_CURSOR_SCROLL_UP_RIGHT;
-  }
-  return WORLD_CURSOR_SCROLL_DOWN_RIGHT;
-}
-
-
 /* Camera drag sideways (right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/runtime.c): moves camera position and target together by screenDelta scaled with
    k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at elevationAngle.
@@ -113,7 +52,6 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
-
 
 /* Camera drag up/down (left+right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/runtime.c): moves camera position and target together by the scaled screenDelta along the camera's
@@ -146,7 +84,6 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
   return;
 }
 
-
 /* Camera drag forward/back (right-button drag of the model pointer context in camera scheme 0x8000, together with
    the sideways move; ui/frontend/runtime.c): moves camera position and target together by the scaled
    screenDelta against the viewing direction (negated pitch, heading plus half a turn).
@@ -171,7 +108,6 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
   return;
 }
 
-
 /* Orbits the camera around its target (right-button drag of the model pointer context in camera schemes 0x100 and
    0x200, ui/frontend/runtime.c): turns the heading by headingDeltaInput * g_WorldMotionHeadingInputScale and puts
    the camera back at targetDistanceQ12 from the unchanged target.
@@ -195,7 +131,6 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
   return;
 }
 
-
 /* Turns the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/runtime.c): changes only the heading, in the opposite sense of
    WorldMotion_AdjustHeadingAndRecomputePosition; position and target stay.
@@ -209,7 +144,6 @@ void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,World
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
-
 
 /* Camera zoom (mouse wheel and camera drags of the model pointer context, ui/frontend/runtime.c): changes
    the camera distance by distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12, clamps it to the world's camera
@@ -256,7 +190,6 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   return;
 }
 
-
 /* Ctrl + left+right-button drag of the model pointer context in camera scheme 0x8000 (ui/frontend/runtime.c):
    changes positionMagnitudeQ12 against magnitudeDeltaInput with the same clamps as
    WorldMotion_AdjustDistanceClampAndRecomputePosition, without moving the camera.
@@ -293,7 +226,6 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
-
 
 /* Camera tilt around its target (Ctrl + mouse wheel and camera drags of the model pointer context,
    ui/frontend/runtime.c): changes the pitch by pitchDeltaInput * g_WorldMotionPitchInputScale, clamps it like
@@ -342,7 +274,6 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
   return;
 }
 
-
 /* Tilts the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/runtime.c): changes only the pitch, in the opposite sense of
    WorldMotion_AdjustPitchClampAndRecomputePosition and with the same clamps; position and target stay.
@@ -382,7 +313,6 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
   return;
 }
 
-
 /* Scrolls the camera by a screen-space delta (arrow keys, edge scrolling): screenDeltaDown moves along the
    camera heading, screenDeltaRight along the heading plus a quarter turn, both scaled with the camera distance so
    a scroll step covers the same screen distance at any zoom. Camera position and target move together.
@@ -413,4 +343,3 @@ void WorldRuntime_TranslateCameraByScreenDelta
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
-

@@ -26,10 +26,6 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
-
-void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
-
 void * __cdecl ArenaHeap_Init(void);
 
 void ArenaHeap_Shutdown(void);

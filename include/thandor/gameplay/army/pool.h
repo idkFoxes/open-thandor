@@ -48,15 +48,17 @@
 #define ARMY_DEPTH_BIN_STRUCTURE_BIT 0x10
 #define ARMY_DEPTH_BIN_CLASS_STRUCTURE 0x90   /* persistent bit 7 | ARMY_DEPTH_BIN_STRUCTURE_BIT */
 
+/* Faction graphics ('gfx') texture source asset layout used by ArmyGraphics_CopyFrontendPlayerPaletteAndTexture */
+#define ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE 0x71 /* image replaced by the frontend player's picture */
+#define ARMY_GRAPHICS_PALETTE_TABLE_OFFSET 0x200    /* first palette, from the asset start */
+#define ARMY_GRAPHICS_PALETTE_BYTES 0x800           /* 256 entries of 8 bytes */
+#define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
+
 /* Functions are grouped by semantic ownership. */
 
 Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 
 void ArmyRuntime_ShutdownPoolAndGraphics(void);
-
-void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void);
-
-void ArmyRuntimePool_RebaseAfterLoad(void);
 
 void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime);
 
@@ -67,19 +69,13 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
 
 void ArmyRuntime_InitializeTerrainOccupancyFlags (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
+void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
+          ArmyGraphicsAssetAddress32 armyGraphicsAsset);
+
 extern ArmyRuntimeSlot *g_ArmyRuntimeSlots;
 extern ArmyGraphicsBinding g_ArmyGraphicsBindings[8];
 extern const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24]; /* uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
 
 extern void *g_ArmyRuntimeRebaseBaseMinusOne;
-
-/* Faction graphics ('gfx') texture source asset layout used by ArmyGraphics_CopyFrontendPlayerPaletteAndTexture */
-#define ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE 0x71 /* image replaced by the frontend player's picture */
-#define ARMY_GRAPHICS_PALETTE_TABLE_OFFSET 0x200    /* first palette, from the asset start */
-#define ARMY_GRAPHICS_PALETTE_BYTES 0x800           /* 256 entries of 8 bytes */
-#define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
-
-void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
-          ArmyGraphicsAssetAddress32 armyGraphicsAsset);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_POOL_H */

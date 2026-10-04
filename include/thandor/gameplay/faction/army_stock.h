@@ -19,8 +19,6 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void GameFactionRuntime_RebaseLoadedArmyReferences(void);
-
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 
 Bool8 FactionRuntime_IsArmyAssetNotPending

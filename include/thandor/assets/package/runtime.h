@@ -30,8 +30,6 @@
 
 /* Functions are grouped by semantic ownership. */
 
-Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
-
 Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);

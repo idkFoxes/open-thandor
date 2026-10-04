@@ -763,3 +763,80 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
   } while ((*scratchRecord & GRID_SCRATCH_BLOCKED) == 0);
   return visitedCount;
 }
+
+/* Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly
+   appended last entity/priority pair moves up the max-heap, swapping with its parent while its priority is
+   larger.
+*/
+void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
+
+{
+  EntityPathingPriorityPair *parentHeapPair;
+  uint32_t parentSearchIndex;
+  EntityPathingPriorityPair *currentHeapPair;
+  int childPriority;
+  GameEntityRuntime *childEntity;
+
+  /* parentSearchIndex is the current index - 1: its half is the parent index */
+  parentSearchIndex = heapSize - 2;
+  currentHeapPair = heapBase + heapSize - 1;
+  if (1 < heapSize) {
+    do {
+      parentHeapPair = heapBase + (parentSearchIndex >> 1);
+      childPriority = currentHeapPair->priority;
+      if (childPriority <= parentHeapPair->priority) {
+        return;
+      }
+      currentHeapPair->priority = parentHeapPair->priority;
+      parentHeapPair->priority = childPriority;
+      childEntity = currentHeapPair->entity;
+      currentHeapPair->entity = parentHeapPair->entity;
+      parentHeapPair->entity = childEntity;
+      parentSearchIndex = (parentSearchIndex >> 1) - 1;
+      currentHeapPair = parentHeapPair;
+    } while (-1 < (int)parentSearchIndex);
+  }
+}
+
+/* Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
+   swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
+   larger-priority child while that child is larger.
+*/
+void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
+
+{
+  int selectedChildPriority;
+  uint32_t leftChildIndex;
+  uint32_t selectedChildIndex;
+  GameEntityRuntime *selectedChildEntity;
+  EntityPathingPriorityPair *currentHeapPair;
+  int32_t displacedParentPriority;
+  GameEntityRuntime *displacedParentEntity;
+
+  currentHeapPair = heapBase;
+  /* children of index i are 2i + 1 and 2i + 2; the index comparisons are unsigned (heapSize - 1U) */
+  leftChildIndex = 1;
+  while (leftChildIndex <= heapSize - 1U) {
+    selectedChildIndex = leftChildIndex;
+    selectedChildPriority = heapBase[selectedChildIndex].priority;
+    selectedChildEntity = heapBase[selectedChildIndex].entity;
+    if ((leftChildIndex < heapSize - 1U) &&
+       (selectedChildPriority < heapBase[leftChildIndex + 1].priority)) {
+      selectedChildIndex = leftChildIndex + 1;
+      selectedChildPriority = heapBase[selectedChildIndex].priority;
+      selectedChildEntity = heapBase[selectedChildIndex].entity;
+    }
+    if (selectedChildPriority <= currentHeapPair->priority) {
+      return;
+    }
+    /* swap parent and child */
+    displacedParentPriority = currentHeapPair->priority;
+    currentHeapPair->priority = selectedChildPriority;
+    displacedParentEntity = currentHeapPair->entity;
+    currentHeapPair->entity = selectedChildEntity;
+    heapBase[selectedChildIndex].priority = displacedParentPriority;
+    heapBase[selectedChildIndex].entity = displacedParentEntity;
+    currentHeapPair = heapBase + selectedChildIndex;
+    leftChildIndex = selectedChildIndex * 2 + 1;
+  }
+}

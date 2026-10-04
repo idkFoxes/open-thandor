@@ -10,5 +10,6 @@
 
 #include <thandor/world/camera/camera.h>
 #include <thandor/world/camera/camera_input.h>
+#include <thandor/world/camera/motion_spline.h>
 
 #endif /* THANDOR_WORLD_CAMERA_H */

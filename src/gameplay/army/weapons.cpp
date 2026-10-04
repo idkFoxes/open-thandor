@@ -713,3 +713,47 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
+
+/* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
+   of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a projectile from shotDefinition
+   at the point's world position, aimed at the target shifted by the point's X/Y offset from the node, so that
+   side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
+   src/gameplay/army/runtime.c).
+*/
+void ModelRuntime_EmitProjectilesFromAttachmentPoints
+          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
+          Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
+          MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime)
+
+{
+  int modelPointRecordsRemaining;
+  ModelPackedPointRecord *localPointRecord;
+  ModelWorldPoint launchPointWorld;
+  AssetRecordByteCount modelPointTableBase;
+
+  ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+  /* sprite asset: +0xE4 offset of the point records, +0xE8 their count */
+  /* 5f-format: MdlSerializedNodeHeader.spriteAssetReference (ModelResource address in a 32-bit slot) */
+  modelPointTableBase = definitionNode->spriteAssetReference.savedId;
+  localPointRecord =
+       (ModelPackedPointRecord *)
+       (modelPointTableBase +
+       ((ModelResource *)modelPointTableBase)->packedLookupTableRelativeOffset);
+  for (modelPointRecordsRemaining =
+           ((ModelResource *)modelPointTableBase)->packedLookupTableEntryCount;
+      modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
+  {
+    if ((localPointRecord->packedLookupKey & 0xf) == MODEL_POINT_CLASS_SHOT) {
+      launchPointWorld = ModelNodeRuntime_TransformLocalPoint(localPointRecord,modelNodeRuntime);
+      ShotRuntimePool_CreateProjectileFromDefinition
+                (targetModelReference,
+                 (ArmyRuntimeSlot *)
+                 modelNodeRuntime->runtimePayload.armyRuntime->linkedEntityRuntime,
+                 targetWorldZQ12,
+                 (launchPointWorld.yQ12 - modelNodeRuntime->worldTransform.translation.y) + targetWorldYQ12,
+                 (launchPointWorld.xQ12 - modelNodeRuntime->worldTransform.translation.x) + targetWorldXQ12,
+                 launchPointWorld.zQ12,launchPointWorld.yQ12,launchPointWorld.xQ12,shotDefinition,worldRuntime);
+    }
+    localPointRecord++;
+  }
+}

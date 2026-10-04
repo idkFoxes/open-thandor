@@ -23,6 +23,7 @@
 #ifndef TERRAIN_MATERIAL_COUNT
 #define TERRAIN_MATERIAL_COUNT 26
 #endif
+
 /* Functions are grouped by semantic ownership. */
 
 uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset);
@@ -31,16 +32,6 @@ uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void);
 
 uint32_t ShotDefinitionRegistry_FindByIdWithError
           (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition);
-
-ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
-          (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
-          ShotDefinition *definition);
-
-uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
-
-Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition);
-
-uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition);
 
 uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);
 

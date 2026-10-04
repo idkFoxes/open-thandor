@@ -44,4 +44,6 @@ Bool8 ArmyRuntime_TestArmyNearFactoryExit
 
 uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
+void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEntityRuntime *ownerEntity);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_FACTORY_H */

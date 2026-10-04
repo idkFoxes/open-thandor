@@ -9,6 +9,5 @@
 #define THANDOR_ASSETS_MODEL_H
 
 #include <thandor/assets/model/definitions.h>
-#include <thandor/assets/model/mesh_raycast.h>
 
 #endif /* THANDOR_ASSETS_MODEL_H */

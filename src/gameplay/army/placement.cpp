@@ -641,3 +641,58 @@ void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t u
 {
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken = 0;
 }
+
+/* Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
+   faction: for each such owner-list node whose model has an overlay base (supportRadius of its
+   definition), the overlay callback of the definition's terrain class runs at the node's position on the field
+   grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
+*/
+void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime)
+
+{
+  uint32_t overlayBaseOffset;
+  TerrainClassOverlayCallback *overlayCallback;
+  int modelOverlayBase;
+  ModelDefinitionRecordPrefix *definitionRecord;
+  WorldOwnerListNode *ownerNode;
+  uint32_t overlayExtent;
+  ModelRuntimeSlot *modelRuntime;
+
+  if (sourceRuntime == NULL) {
+    return;
+  }
+  /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+  definitionRecord = ModelDefinitionRegistry_FindById
+                    (((AiLinkedDefinitionListView *)
+                      ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
+  if (definitionRecord == NULL) {
+    return;
+  }
+  overlayExtent = UINT32_MAX;
+  ownerNode = worldRuntime->ownerListHead;
+  overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
+  if (ownerNode == NULL) {
+    return;
+  }
+  if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
+    overlayExtent =
+         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 31);
+  }
+  overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
+           [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
+  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    if (worldRuntime->activeFactionRuntimeIndex !=
+        modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) {
+      continue;
+    }
+    modelOverlayBase = modelRuntime->definitionOrSavedId.runtimeDefinition->supportRadius;
+    if (modelOverlayBase != 0) {
+      overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,
+                      ownerNode->worldXQ12,worldRuntime->fieldGrid);
+    }
+  }
+}

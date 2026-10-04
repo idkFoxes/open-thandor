@@ -13,5 +13,6 @@
 #include <thandor/ui/dialogs.h>
 #include <thandor/ui/frontend.h>
 #include <thandor/ui/ingame.h>
+#include <thandor/ui/text.h>
 
 #endif /* THANDOR_UI_H */
