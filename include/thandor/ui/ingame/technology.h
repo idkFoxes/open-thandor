@@ -35,36 +35,22 @@
 /* Technology slots of a model definition (researchTechnologyIds[1..28]), dealt out over the seven area tabs */
 #define TECHNOLOGY_DEFINITION_SLOT_COUNT 28
 #define TECHNOLOGY_AREA_TAB_COUNT 7
-/* Build catalog (InGameBuildCatalog_RebuildGrid) and special build catalog (InGameSpecialBuildCatalog_RebuildGrid) */
-#define BUILD_CATALOG_ENTRY_COUNT 48
-#define BUILD_CATALOG_MAX_COLUMNS 8
-#define SPECIAL_BUILD_CATALOG_ENTRY_COUNT 42
-#define SPECIAL_BUILD_CATALOG_MAX_COLUMNS 6
-/* assetFlags14 bits of a catalog record */
-#define BUILD_CATALOG_ASSET_FLAG_BUILDABLE 0x1
-#define BUILD_CATALOG_ASSET_FLAG_CAPABILITY_8 0x8    /* capability every model of runtime class 22 provides */
-#define BUILD_CATALOG_ASSET_FLAG_SPECIAL 0x10        /* offered in the special build catalog */
-#define BUILD_CATALOG_ASSET_CAPABILITY_MASK 0xEE     /* all capability bits of the normal build catalog */
+
 /* UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, INGAME_UI(root,
    technologyAreaTabN_prefix)) is generated with the template: thandor/generated/ui_templates.h. */
 /* The UiTechnologyAreaTabPrefix in front of a technology area tab the code has only as a node pointer. */
 #define TECHNOLOGY_AREA_TAB_PREFIX(tab) UI_TEMPLATE_NODE_PREFIX(UiTechnologyAreaTabPrefix,tab)
+
 /* Functions are grouped by semantic ownership. */
 
 void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl);
 
 void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot);
 
-void InGameBuildCatalog_RebuildGrid(UiNodeBase *node);
-
-void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node);
-
 void InGameTechnologyResearch_StartSelected(void *source);
 
 void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot);
 
 extern PckTechnologyIdCatalog g_InGameSelectedTechnologyId; /* followed by 28 bytes 0x90 fill (dropped) */
-extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48];
-extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42];
 
 #endif /* THANDOR_UI_INGAME_TECHNOLOGY_H */
