@@ -1146,18 +1146,18 @@
 0x005063A4  data      g_TerrainScanStepLimit                                            src/world/terrain/hex_scan.cpp
 0x005063A8  data      g_TerrainScanSharedSelectorValue                                  src/world/terrain/hex_scan.cpp
 0x005063AC  data      g_TerrainScanReferenceHeight                                      src/world/terrain/hex_scan.cpp
-0x005063B0  function  TerrainProjectedOcclusion_ScanDirection0                          src/world/terrain/sight.cpp
-0x00506430  function  TerrainProjectedOcclusion_ScanDirection1                          src/world/terrain/sight.cpp
-0x005064C0  function  TerrainProjectedOcclusion_ScanDirection2                          src/world/terrain/sight.cpp
-0x00506540  function  TerrainProjectedOcclusion_ScanDirection3                          src/world/terrain/sight.cpp
-0x005065C0  function  TerrainProjectedOcclusion_ScanDirection4                          src/world/terrain/sight.cpp
-0x00506650  function  TerrainProjectedOcclusion_ScanDirection5                          src/world/terrain/sight.cpp
-0x005066D0  function  TerrainProjectedOcclusion_TraceWedge0                             src/world/terrain/sight.cpp
-0x005067D0  function  TerrainProjectedOcclusion_TraceWedge1                             src/world/terrain/sight.cpp
-0x005068D0  function  TerrainProjectedOcclusion_TraceWedge2                             src/world/terrain/sight.cpp
-0x005069D0  function  TerrainProjectedOcclusion_TraceWedge3                             src/world/terrain/sight.cpp
-0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             src/world/terrain/sight.cpp
-0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             src/world/terrain/sight.cpp
+0x005063B0  function  TerrainProjectedOcclusion_ScanDirection0                          (merged into TerrainHexScan_Leg)
+0x00506430  function  TerrainProjectedOcclusion_ScanDirection1                          (merged into TerrainHexScan_Leg)
+0x005064C0  function  TerrainProjectedOcclusion_ScanDirection2                          (merged into TerrainHexScan_Leg)
+0x00506540  function  TerrainProjectedOcclusion_ScanDirection3                          (merged into TerrainHexScan_Leg)
+0x005065C0  function  TerrainProjectedOcclusion_ScanDirection4                          (merged into TerrainHexScan_Leg)
+0x00506650  function  TerrainProjectedOcclusion_ScanDirection5                          (merged into TerrainHexScan_Leg)
+0x005066D0  function  TerrainProjectedOcclusion_TraceWedge0                             (merged into TerrainHexScan_Sector)
+0x005067D0  function  TerrainProjectedOcclusion_TraceWedge1                             (merged into TerrainHexScan_Sector)
+0x005068D0  function  TerrainProjectedOcclusion_TraceWedge2                             (merged into TerrainHexScan_Sector)
+0x005069D0  function  TerrainProjectedOcclusion_TraceWedge3                             (merged into TerrainHexScan_Sector)
+0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             (merged into TerrainHexScan_Sector)
+0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             (merged into TerrainHexScan_Sector)
 0x00506CD0  function  TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint          src/world/terrain/sight.cpp
 0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               (merged into TerrainHexScan_Leg)
 0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               (merged into TerrainHexScan_Leg)
