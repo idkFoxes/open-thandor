@@ -75,6 +75,7 @@ struct Entry {
 };
 
 struct PendingUpload {
+  SDL_GPUTexture *dedicated; /* a dedicated texture (GpuUiTextures_DedicatedImage), else nullptr */
   bool stream;
   uint32_t page;
   uint32_t x, y, width, height; /* destination, padding included */
@@ -87,11 +88,22 @@ struct PendingFree {
   Rect rect;
 };
 
+/* A dedicated texture (GpuUiTextures_DedicatedImage). */
+struct Dedicated {
+  const void *key;
+  uint32_t generation;
+  uint32_t width;  /* image size (the texture has the border around it) */
+  uint32_t height;
+  SDL_GPUTexture *texture;
+  uint32_t lastUsedFrame;
+};
+
 struct State {
   bool active = false;
   SDL_GPUDevice *device = nullptr;
   std::vector<Page> pages;
   std::vector<Page> streamPages;
+  std::vector<Dedicated> dedicated;
   std::map<Key, Entry> entries;
   std::vector<uint32_t> staging;
   std::vector<PendingUpload> uploads;
@@ -289,7 +301,7 @@ uint32_t *StageUpload(bool stream, uint32_t page, uint32_t x, uint32_t y, uint32
   const uint32_t rowPixels = (paddedWidth + kPitchPixels - 1) / kPitchPixels * kPitchPixels;
   const size_t offset = (s_ui.staging.size() + kPlacementPixels - 1) / kPlacementPixels * kPlacementPixels;
   s_ui.staging.resize(offset + static_cast<size_t>(rowPixels) * paddedHeight);
-  s_ui.uploads.push_back(PendingUpload{stream, page, x, y, paddedWidth, paddedHeight, offset, rowPixels});
+  s_ui.uploads.push_back(PendingUpload{nullptr, stream, page, x, y, paddedWidth, paddedHeight, offset, rowPixels});
   s_ui.stats.uploads++;
   s_ui.stats.uploadedTexels += static_cast<uint64_t>(paddedWidth) * paddedHeight;
   return s_ui.staging.data() + offset;
@@ -396,6 +408,14 @@ void EndFrame() noexcept
     ClearPacking(page);
     page.cycledThisFrame = false;
   }
+  for (size_t index = s_ui.dedicated.size(); index-- > 0;) {
+    if (s_ui.frame - s_ui.dedicated[index].lastUsedFrame > kStreamIdleFrames) {
+      if (s_ui.device != nullptr) {
+        SDL_ReleaseGPUTexture(s_ui.device, s_ui.dedicated[index].texture);
+      }
+      s_ui.dedicated.erase(s_ui.dedicated.begin() + static_cast<ptrdiff_t>(index));
+    }
+  }
   if ((s_ui.device != nullptr) && (s_ui.pages.size() > GPU_UI_SOFT_PAGE_LIMIT)) {
     ResetCache();
   }
@@ -407,7 +427,8 @@ void EndFrame() noexcept
 void HashStagedUploads() noexcept
 {
   for (const PendingUpload &upload : s_ui.uploads) {
-    const uint32_t header[6] = {upload.stream ? 1u : 0u, upload.page, upload.x, upload.y, upload.width, upload.height};
+    const uint32_t kind = (upload.dedicated != nullptr) ? 2u : (upload.stream ? 1u : 0u);
+    const uint32_t header[6] = {kind, upload.page, upload.x, upload.y, upload.width, upload.height};
     uint32_t hash = HashBytes(reinterpret_cast<const uint8_t *>(header), sizeof header, s_ui.stats.contentHash);
     for (uint32_t row = 0; row < upload.height; row++) {
       hash = HashBytes(reinterpret_cast<const uint8_t *>(s_ui.staging.data() + upload.stagingOffset +
@@ -471,10 +492,14 @@ void GpuUiTextures_Shutdown(SDL_GPUDevice *device)
     for (Page &page : s_ui.streamPages) {
       SDL_ReleaseGPUTexture(s_ui.device, page.texture);
     }
+    for (Dedicated &dedicated : s_ui.dedicated) {
+      SDL_ReleaseGPUTexture(s_ui.device, dedicated.texture);
+    }
     SDL_ReleaseGPUTransferBuffer(s_ui.device, s_ui.transfer);
   }
   s_ui.pages.clear();
   s_ui.streamPages.clear();
+  s_ui.dedicated.clear();
   s_ui.entries.clear();
   s_ui.staging.clear();
   s_ui.staging.shrink_to_fit();
@@ -583,12 +608,32 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands)
       for (auto &cached : s_ui.entries) {
         cached.second.hash ^= 0xFFFFFFFFu;
       }
+      for (Dedicated &dedicated : s_ui.dedicated) {
+        dedicated.generation ^= 0x80000000u; /* upload again on the next use */
+      }
     }
     else {
       std::memcpy(mapped, s_ui.staging.data(), byteCount);
       SDL_UnmapGPUTransferBuffer(s_ui.device, s_ui.transfer);
       SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
       for (const PendingUpload &upload : s_ui.uploads) {
+        if (upload.dedicated != nullptr) {
+          /* the whole texture is rewritten: cycle it, so the previous frame's draws need not finish first */
+          SDL_GPUTextureTransferInfo source;
+          SDL_zero(source);
+          source.transfer_buffer = s_ui.transfer;
+          source.offset = static_cast<Uint32>(upload.stagingOffset * sizeof(uint32_t));
+          source.pixels_per_row = upload.rowPixels;
+          source.rows_per_layer = upload.height;
+          SDL_GPUTextureRegion destination;
+          SDL_zero(destination);
+          destination.texture = upload.dedicated;
+          destination.w = upload.width;
+          destination.h = upload.height;
+          destination.d = 1;
+          SDL_UploadToGPUTexture(copyPass, &source, &destination, true);
+          continue;
+        }
         Page &page = upload.stream ? s_ui.streamPages[upload.page] : s_ui.pages[upload.page];
         SDL_GPUTextureTransferInfo source;
         SDL_zero(source);
@@ -656,6 +701,66 @@ GpuUiTexRegion GpuUiTextures_UploadRegion(const uint32_t *pixels, int w, int h, 
   }
   FillPadding(staged, width, height, rowPixels);
   return RegionOf(page, rect, width, height);
+}
+
+bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const uint32_t *pixels, int w, int h,
+                                  int pitch, GpuUiTexRegion *out)
+{
+  if (!s_ui.active || (key == nullptr) || (pixels == nullptr) || (out == nullptr) || (w <= 0) || (h <= 0) ||
+      (w > 16384) || (h > 16384) || (pitch < w * 4)) {
+    return false;
+  }
+  const uint32_t width = static_cast<uint32_t>(w);
+  const uint32_t height = static_cast<uint32_t>(h);
+  size_t index = 0;
+  while ((index < s_ui.dedicated.size()) && (s_ui.dedicated[index].key != key)) {
+    index++;
+  }
+  if (index == s_ui.dedicated.size()) {
+    s_ui.dedicated.push_back(Dedicated{key, generation, 0, 0, nullptr, s_ui.frame});
+  }
+  Dedicated &dedicated = s_ui.dedicated[index];
+  bool stale = (dedicated.generation != generation);
+  if ((dedicated.width != width) || (dedicated.height != height)) {
+    if (s_ui.device != nullptr) {
+      SDL_ReleaseGPUTexture(s_ui.device, dedicated.texture); /* lives on until the frames using it are done */
+    }
+    dedicated.texture = nullptr;
+    dedicated.width = width;
+    dedicated.height = height;
+    if (s_ui.device != nullptr) {
+      dedicated.texture = CreatePageTexture(width + 2 * kPadding, height + 2 * kPadding);
+      if (dedicated.texture == nullptr) {
+        s_ui.dedicated.erase(s_ui.dedicated.begin() + static_cast<ptrdiff_t>(index));
+        return false;
+      }
+    }
+    stale = true;
+  }
+  dedicated.lastUsedFrame = s_ui.frame;
+  if (stale) {
+    dedicated.generation = generation;
+    uint32_t *staged = StageUpload(false, 0, 0, 0, width, height);
+    PendingUpload &upload = s_ui.uploads.back();
+    upload.dedicated = dedicated.texture;
+    const uint32_t rowPixels = upload.rowPixels;
+    const auto *source = reinterpret_cast<const uint8_t *>(pixels);
+    std::memset(staged, 0, static_cast<size_t>(rowPixels) * (height + 2 * kPadding) * sizeof(uint32_t));
+    for (uint32_t row = 0; row < height; row++) {
+      std::memcpy(staged + static_cast<size_t>(row + kPadding) * rowPixels + kPadding,
+                  source + static_cast<size_t>(row) * static_cast<size_t>(pitch), static_cast<size_t>(width) * 4);
+    }
+  }
+  const float textureWidth = static_cast<float>(width + 2 * kPadding);
+  const float textureHeight = static_cast<float>(height + 2 * kPadding);
+  out->page = dedicated.texture;
+  out->u0 = static_cast<float>(kPadding) / textureWidth;
+  out->v0 = static_cast<float>(kPadding) / textureHeight;
+  out->u1 = static_cast<float>(kPadding + width) / textureWidth;
+  out->v1 = static_cast<float>(kPadding + height) / textureHeight;
+  out->w = w;
+  out->h = h;
+  return true;
 }
 
 void GpuUiTextures_Evict(const GraphicsTextureSourceAsset *asset)

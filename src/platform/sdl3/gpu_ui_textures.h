@@ -81,6 +81,15 @@ void GpuUiTextures_FlushUploads(SDL_GPUCommandBuffer *commands);
    The alpha bytes are uploaded as given. Returns page nullptr and w = h = 0 when it fails. */
 GpuUiTexRegion GpuUiTextures_UploadRegion(const uint32_t *pixels, int w, int h, int pitch);
 
+/* A dedicated texture for a mutable CPU image that is sampled with linear filtering (the minimap, step 9 WP5):
+   w x h pixels 0xAARRGGBB (rows pitch BYTES apart) inside a 1-texel border of 0, so samples beyond the image fade
+   to black like the software sampler's "texels outside count as 0". One texture per key; its pixels are staged
+   only when generation, w or h differ from its last upload (the caller bumps generation whenever it rewrites the
+   pixels), so an unchanged image costs nothing. The returned region covers the inner w x h and stays usable until
+   the key's next call that changes it; a texture unused for a while is released. False when it fails. */
+bool GpuUiTextures_DedicatedImage(const void *key, uint32_t generation, const uint32_t *pixels, int w, int h,
+                                  int pitch, GpuUiTexRegion *out);
+
 /* Forgets every entry of asset (installed as g_GraphicsTextureSourceReleaseObserver by Init). */
 void GpuUiTextures_Evict(const GraphicsTextureSourceAsset *asset);
 

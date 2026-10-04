@@ -1400,7 +1400,20 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
     s_gpu.spriteRegions.resize(static_cast<size_t>(itemIndex) + 1);
   }
   GpuUiTexRegion region{nullptr, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0};
-  if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
+  if (item->op == DRAW2D_OP_ROTATED_BILINEAR) {
+    /* the minimap: subresource 0 (direct colour, checked by the recorder) in a texture of its own with a black
+       border, uploaded again only when the texture was rebuilt (its content generation) */
+    const auto *entry = reinterpret_cast<const GraphicsTextureSourceEntry *>(
+        reinterpret_cast<const uint8_t *>(item->asset) + item->asset->tableDescriptor.subresourceTableOffset);
+    const auto *pixels =
+        reinterpret_cast<const uint32_t *>(reinterpret_cast<const uint8_t *>(item->asset) + entry->dataOffset);
+    const int width = static_cast<int>(entry->pixelWidth);
+    if (!GpuUiTextures_DedicatedImage(item->asset, item->contentGeneration, pixels, width,
+                                      static_cast<int>(entry->pixelHeight), width * 4, &region)) {
+      region.page = nullptr;
+    }
+  }
+  else if (!GpuUiTextures_Lookup(item->asset, item->subresource, item->paletteBank, &region)) {
     region.page = nullptr;
   }
   s_gpu.spriteRegions[itemIndex] = region;
@@ -1482,6 +1495,46 @@ void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion 
   s_gpu.uiBatches.back().vertexCount += 6;
 }
 
+/* Appends the quad of a ROTATED_BILINEAR item (the minimap) to the batch of (region's page, MINIMAP): its
+   clipped rectangle, each corner with the texture position the software sampler's Q12 walk gives there. Pixel
+   (dst[0] + i, dst[1] + j) samples start + i * pixelStep + j * rowStep, texel (c, r) at (c << 12, r << 12); the GPU
+   samples pixel centres, so a corner at offset (x, y) from dst's corner maps to start + (x - 0.5) * pixelStep +
+   (y - 0.5) * rowStep, and texel c's centre is u0 + (c + 0.5) * du in the region. */
+void AppendRotatedQuad(const Draw2DItem &item, const GpuUiTexRegion &region) noexcept
+{
+  const int32_t x0 = std::max(item.dst[0], item.clip[0]);
+  const int32_t y0 = std::max(item.dst[1], item.clip[1]);
+  const int32_t x1 = std::min(item.dst[2], item.clip[2]);
+  const int32_t y1 = std::min(item.dst[3], item.clip[3]);
+  if ((x1 <= x0) || (y1 <= y0) || (region.w <= 0) || (region.h <= 0)) {
+    return;
+  }
+  const double du = static_cast<double>(region.u1 - region.u0) / region.w;
+  const double dv = static_cast<double>(region.v1 - region.v0) / region.h;
+  constexpr double kQ12 = 1.0 / 4096.0;
+  auto corner = [&](int32_t x, int32_t y) noexcept {
+    const double offsetX = static_cast<double>(x - item.dst[0]) - 0.5;
+    const double offsetY = static_cast<double>(y - item.dst[1]) - 0.5;
+    const double texelU = (item.q12[0] + offsetX * item.q12[2] + offsetY * item.q12[4]) * kQ12;
+    const double texelV = (item.q12[1] + offsetX * item.q12[3] + offsetY * item.q12[5]) * kQ12;
+    return GpuUiVertex{static_cast<float>(x), static_cast<float>(y),
+                       static_cast<float>(region.u0 + (texelU + 0.5) * du),
+                       static_cast<float>(region.v0 + (texelV + 0.5) * dv), ARGB8888_OPAQUE_WHITE, 0u};
+  };
+  if (s_gpu.uiBatches.empty() || s_gpu.uiBatches.back().scene || (s_gpu.uiBatches.back().page != region.page) ||
+      (s_gpu.uiBatches.back().blend != GPU_UI_BLEND_MINIMAP)) {
+    s_gpu.uiBatches.push_back(UiBatch{region.page, GPU_UI_BLEND_MINIMAP, false,
+                                      static_cast<uint32_t>(s_gpu.uiVertices.size()), 0, {}});
+  }
+  const GpuUiVertex topLeft = corner(x0, y0);
+  const GpuUiVertex topRight = corner(x1, y0);
+  const GpuUiVertex bottomLeft = corner(x0, y1);
+  const GpuUiVertex bottomRight = corner(x1, y1);
+  const GpuUiVertex corners[6] = {topLeft, topRight, bottomLeft, topRight, bottomRight, bottomLeft};
+  s_gpu.uiVertices.insert(s_gpu.uiVertices.end(), std::begin(corners), std::end(corners));
+  s_gpu.uiBatches.back().vertexCount += 6;
+}
+
 /* Turns the frame's draw list into quads and batches (and the IMAGE_REGION pixels into streaming uploads). */
 void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
 {
@@ -1513,6 +1566,11 @@ void BuildUiBatches(const Draw2DItem *items, uint32_t count) noexcept
       AppendUiQuad(item.dst, item.clip, &region, ARGB8888_OPAQUE_WHITE, 0, GPU_UI_BLEND_OPAQUE);
       break;
     }
+    case DRAW2D_OP_ROTATED_BILINEAR:
+      if ((index < s_gpu.spriteRegions.size()) && (s_gpu.spriteRegions[index].page != nullptr)) {
+        AppendRotatedQuad(item, s_gpu.spriteRegions[index]);
+      }
+      break;
     case DRAW2D_OP_EXTERNAL_3D:
       s_gpu.uiBatches.push_back(UiBatch{nullptr, 0, true, static_cast<uint32_t>(s_gpu.uiVertices.size()), 0,
                                         SDL_Rect{item.clip[0], item.clip[1], item.clip[2] - item.clip[0],

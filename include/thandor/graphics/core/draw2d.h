@@ -19,7 +19,8 @@ functions those slots hold is chosen by the backend:
 - DRAW2D_BACKEND_GPU_RECORD: a draw whose destination is the display framebuffer (&g_DisplayFramebufferAccess)
   appends a Draw2DItem to the frame's list instead of writing pixels; any other destination (the cursor
   composite buffer, offscreen buffers, the raster self-test) still goes to the software function. The
-  special cases (minimap, results columns, grey-scale image and the bilinear stretch) are drawn by their
+  minimap is recorded as a DRAW2D_OP_ROTATED_BILINEAR item (the GPU samples the minimap texture itself, step 9
+  WP5); the other special cases (results columns, grey-scale image and the bilinear stretch) are drawn by their
   software function into a CPU scratch image that the item points to (DRAW2D_OP_IMAGE_REGION, the MVP's
   streaming fallback).
 - DRAW2D_BACKEND_COMPARE (the developer tools' OPEN_THANDOR_GPU=compare): every draw does both - the software
@@ -52,6 +53,7 @@ enum Draw2DOp : uint8_t {
     DRAW2D_OP_FILL = 1,         /* dst filled with tintArgb, through clip */
     DRAW2D_OP_IMAGE_REGION = 2, /* CPU image (pixels, pitchBytes) of src size drawn at dst, through clip */
     DRAW2D_OP_EXTERNAL_3D = 3,  /* the 3D scene ends here: it covers clip (= dst) */
+    DRAW2D_OP_ROTATED_BILINEAR = 4, /* subresource 0 of asset sampled bilinearly along the Q12 steps (minimap) */
 };
 
 enum Draw2DBlend : uint8_t {
@@ -79,7 +81,12 @@ enum Draw2DBlend : uint8_t {
      SRC_ALPHA_SKIP0; tintArgb the ARGB8888 colour.
    - IMAGE_REGION: pixels/pitchBytes describe src[2] x src[3] pixels (src[0] = src[1] = 0) in framebuffer
      format (XRGB8888 after the brightness/contrast tables), shown 1:1 at dst; clip = dst; blend OPAQUE.
-   - EXTERNAL_3D: dst = clip = the scene's clip rectangle; nothing else is set. */
+   - EXTERNAL_3D: dst = clip = the scene's clip rectangle; nothing else is set.
+   - ROTATED_BILINEAR (g_GraphicsMinimapDraw): dst = clip = the filled rectangle; asset the texture (subresource
+     0, ARGB8888 texels; texels outside it count as 0); blend OPAQUE; q12 = {startU, startV, pixelStepU,
+     pixelStepV, rowStepU, rowStepV} as the slot got them (pixel dst[0] + i, dst[1] + j samples the Q12 texel
+     position start + i * pixelStep + j * rowStep, texel (c, r) sitting at (c << 12, r << 12));
+     contentGeneration = g_Draw2DMinimapContentGeneration at the call. */
 struct Draw2DItem {
     uint8_t op;    /* Draw2DOp */
     uint8_t blend; /* Draw2DBlend */
@@ -92,6 +99,8 @@ struct Draw2DItem {
     uint32_t tintArgb;
     const uint32_t *pixels; /* IMAGE_REGION only */
     int32_t pitchBytes;     /* IMAGE_REGION only */
+    int32_t q12[6];             /* ROTATED_BILINEAR only */
+    uint32_t contentGeneration; /* ROTATED_BILINEAR only */
 };
 
 /* ---- New slots for the former direct pixel writes (software implementations in graphics/backend) ---- */
@@ -124,6 +133,12 @@ using GraphicsGreyScaleImageProc = void (GraphicsPixelDimension destinationHeigh
                                          int *framebufferAccess);
 
 extern GraphicsMinimapDrawProc *g_GraphicsMinimapDraw;
+
+/* Bumped whenever the pixels of the minimap texture (subresource 0 of the texture g_GraphicsMinimapDraw gets) are
+   rewritten (TerrainCompositeTexture_RebuildPlane0, which also runs when the texture is created). The GPU backend
+   uploads its copy of the texture only when this, the asset pointer or the size changed (a dirty flag instead of
+   hashing the image every frame). */
+extern uint32_t g_Draw2DMinimapContentGeneration;
 extern GraphicsFillColumnSegmentsProc *g_GraphicsFillColumnSegments;
 extern GraphicsGreyScaleImageProc *g_GraphicsGreyScaleImage;
 
@@ -147,9 +162,10 @@ const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount);
 /* Ends the frame's recording (the list stays readable until the next Draw2D_BeginFrame). */
 void Draw2D_EndFrame();
 
-/* GPU backend hook (nullptr when unused): called right after a SPRITE item is appended, with its index in the
-   frame list. The GPU backend reads the asset here (texture cache lookup, which converts the texels into its
-   staging buffer at once), because the simulation may release or rewrite the asset before the flush (6.4). */
+/* GPU backend hook (nullptr when unused): called right after a SPRITE or ROTATED_BILINEAR item is appended, with
+   its index in the frame list. The GPU backend reads the asset here (texture cache lookup, which converts the
+   texels into its staging buffer at once), because the simulation may release or rewrite the asset before the
+   flush (6.4). */
 using Draw2DSpriteRecordedProc = void (uint32_t itemIndex, const Draw2DItem *item);
 extern Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded;
 
