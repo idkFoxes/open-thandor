@@ -91,9 +91,11 @@ add_library(thandor_curated STATIC
     src/graphics/backend/software_display_mode.cpp
     src/graphics/backend/software_rasterizer.cpp
     src/graphics/backend/software_texture_scale.cpp
-    src/graphics/core/runtime.cpp
+    src/graphics/core/cursor.cpp
+    src/graphics/core/device.cpp
     src/graphics/render/model.cpp
     src/graphics/render/model_draw.cpp
+    src/graphics/render/offscreen.cpp
     src/graphics/render/primitives.cpp
     src/graphics/render/projection.cpp
     src/graphics/render/shading.cpp

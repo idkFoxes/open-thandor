@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/render/model.h>
 #include <thandor/graphics/render/model_draw.h>
+#include <thandor/graphics/render/offscreen.h>
 #include <thandor/graphics/render/primitives.h>
 #include <thandor/graphics/render/projection.h>
 #include <thandor/graphics/render/shading.h>

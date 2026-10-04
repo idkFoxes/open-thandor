@@ -20,26 +20,6 @@
 /* g_ActiveGraphicsAdapterIndex before the first display mode is set (and while the backend is being recreated). */
 #define GRAPHICS_ADAPTER_INDEX_NONE (-1)
 
-/* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
-#define GRAPHICS_CURSOR_FRAME_ARROW 0
-#define GRAPHICS_CURSOR_FRAME_BUSY 6 /* shown while something loads (credits, session start, savegame list) */
-/* Move and resize cursors of the resizable windows (UiResizableWindowControl_QueryResizeCursorCode, named
-   after the Win32 IDC_SIZE* cursors they stand for) */
-#define GRAPHICS_CURSOR_FRAME_MOVE 1
-#define GRAPHICS_CURSOR_FRAME_SIZE_NWSE 2 /* top-left and bottom-right corner */
-#define GRAPHICS_CURSOR_FRAME_SIZE_NESW 3 /* top-right and bottom-left corner */
-#define GRAPHICS_CURSOR_FRAME_SIZE_NS 4 /* top and bottom edge */
-#define GRAPHICS_CURSOR_FRAME_SIZE_WE 5 /* left and right edge */
-
-/* GraphicsCursor_ConsumeNextInputEvent: bit 31 of a press's returned button state marks a double click (the
-   same bit as UI_POINTER_BUTTON_REPEAT_CLICK): the press comes less than 16 clock ticks after the release of
-   the same button and within +-4 pixels of the previous press. */
-#define GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK 0x80000000u
-#define GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS 16u
-#define GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE 4
-/* Entries of the g_CursorInputEvents ring (read by GraphicsCursor_ConsumeNextInputEvent). */
-#define GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY 256
-
 /* Pixel formats shared by the graphics backends, textures and movies. ARGB8888 is the engine's 32-bit colour
    (gfx assets, palette entries, vertex colours): alpha in the top byte, blue in the low byte. */
 #define ARGB8888_ALPHA_MASK 0xff000000
@@ -65,83 +45,15 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
-
-Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
-
-GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void);
-
-Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
-
-GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
-
-void Graphics_SetProjectionClipRect
-          (GraphicsScreenCoordinate maxY,GraphicsScreenCoordinate maxX,GraphicsScreenCoordinate minY
-          ,GraphicsScreenCoordinate minX);
-
-void Graphics_SetViewProjectionParameters
-          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
-          GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
-          GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
-          GraphicsWorldCoordinateQ12 originX);
-
-void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
-          GraphicsScreenCoordinate top,GraphicsScreenCoordinate left);
-
-void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
-
-void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
-          GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
-          GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
-          GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0);
-
-void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
-
-void Graphics_RebuildFrustumPlanes(void);
-
 uint32_t Graphics_AllocateTables(void);
 
 uint32_t __cdecl Graphics_Init(void);
 
 void Graphics_Shutdown(void);
 
-void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);
-
-void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface);
-
-void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface);
-
-void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface);
-
-extern GraphicsCursorInputEvent18 g_CursorInputEvents[256];
-extern uint32_t g_CursorInputReadIndex;
-extern uint32_t g_CursorInputClockValue;
-extern GraphicsTextureSourceAsset *g_CursorSourceAsset;
-extern GraphicsCursorFrameRecord *g_CursorFrameRecords;
-extern GraphicsCursorFrameCount g_CursorFrameCount;
-extern GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent;
-extern GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed;
-extern GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4];
-extern GraphicsSceneBounds8 g_SceneBoundsFixed;
-extern SoftwareFramebufferAccess *g_CursorSavedBackground;
-extern SoftwareFramebufferAccess *g_CursorCompositeBuffer;
 extern DirectDrawCreate *pDirectDrawCreate;
-extern uint32_t g_MouseEventsProcessed;
-
-extern SoftwareFramebufferAccess *g_CursorAlternateSavedBackground;
 
 extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize;
-extern int32_t g_CursorCurrentVisibilityToken;
 extern int32_t g_GraphicsBackendAccessState;
-
-extern int32_t g_ProjectionScaleFixed;
-extern GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed;
-extern GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed;
-
-extern GraphicsFixedVec3 g_ViewOriginFixed;
-
-extern GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame;
 
 #endif /* THANDOR_GRAPHICS_CORE_RUNTIME_H */
