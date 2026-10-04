@@ -536,24 +536,24 @@ UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *
 }
 
 UiNodeVtable g_UiListOffsetControlVtable = {
-        .relocate = THANDOR_FN(UiWrappedTextControl_RelocateAndApplyDeferredOffset),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiWrappedTextControl_DrawClipped),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .relocate = UI_SLOT(UiWrappedTextControl_RelocateAndApplyDeferredOffset),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiWrappedTextControl_DrawClipped),
+        .layout = UI_SLOT(UiContainer_LayoutChildren),
+        .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
+        .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 /* Tail of UiPointerList_SortByExpandedTextFieldAscending: selects the row that now holds selectedRecord (the first row if it
    is gone) and scrolls that row into view. */

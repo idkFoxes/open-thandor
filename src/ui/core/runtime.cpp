@@ -277,7 +277,7 @@ void __cdecl UiActionQueue_DispatchPending()
 /* Default method04 vtable slot of the UI node classes: does nothing. Installed statically in 40
    UiNodeVtable tables; no caller of the slot is known yet.
 */
-void UiNode_DefaultMethod04_NoOp(void *node)
+void UiNode_DefaultMethod04_NoOp(UiNodeBase *node)
 
 {
   return;
