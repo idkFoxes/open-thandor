@@ -41,8 +41,8 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
         runtimeClassId != MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER &&
         runtimeClassId != MODEL_RUNTIME_CLASS_19_WATER_SURFACE) {
       /* Original quirk: the original returns the definition pointer here, so every other class "scores"
-         with its record address. */
-      return (AiTechnologyCandidateScore)candidateDefinition;
+         with its record address (on x64 its low 32 bits). */
+      return (AiTechnologyCandidateScore)(intptr_t)candidateDefinition;
     }
     rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
     if (rejected) {

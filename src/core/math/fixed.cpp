@@ -324,7 +324,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
 
   allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),(void **)&outputCursor);
   if (allocError != 0) {
-    outputCursor = (short *)allocError;
+    outputCursor = (short *)(uintptr_t)allocError;
   }
   else {
     g_CosineDerivedLookupAllocation = outputCursor;

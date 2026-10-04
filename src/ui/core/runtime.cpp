@@ -12,7 +12,7 @@
 
 UiRuntimeRecord *g_UiRuntimeRecordRing = 0;
 
-uint32_t g_UiRuntimeRecordEndpointSlots = 0;
+uintptr_t g_UiRuntimeRecordEndpointSlots = 0;
 
 uint8_t *g_UiTransferDataBuffer = 0;
 
@@ -158,7 +158,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
 
   allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),(void **)&root);
   if (allocError != 0) {
-    root = (UiRootNode *)allocError;
+    root = (UiRootNode *)(uintptr_t)allocError;
   }
   else {
     /* copy the 0x1A4-byte template, one dword per step */
@@ -286,33 +286,33 @@ void UiRuntime_Initialize(void)
 {
   uint32_t allocError;
   void *allocPayload;
-  uint32_t checkedValue;
+  uintptr_t checkedValue;
 
   g_TimerRegisterPeriodic(20,UiRuntime_IncrementPeriodicTickCounter);
   g_UiRuntimeInitializationCount++;
   FontRuntime_Init();
   UiWindowResources_Init();
   allocError = g_MemoryApi.alloc(UI_DIRTY_RECT_CAPACITY * sizeof(UiDirtyRectEntry),&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedValue;
   allocError = g_MemoryApi.alloc(UI_ACTION_QUEUE_BYTES,&allocPayload); /* 16 queued actions of 8 bytes */
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiActionQueueEntries = (UiActionQueueEntry *)checkedValue;
   /* from here on FatalError_ReportIfFailed shows errors in an in-game dialog */
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   g_TimerRegisterPeriodic(125,UiTransferMailbox_ServiceAndRetransmitTimer);
   /* the sender-endpoint slots, parallel to the ring */
   allocError = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE,&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiRuntimeRecordEndpointSlots = checkedValue;
   allocError = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * sizeof(UiRuntimeRecord),&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedValue;
   allocError = g_MemoryApi.alloc(UI_TRANSFER_ENDPOINT_BUFFER_BYTES,&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedValue;
   allocError = g_MemoryApi.alloc(UI_TRANSFER_DATA_BUFFER_BYTES,&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiTransferDataBuffer = (uint8_t *)checkedValue;
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;

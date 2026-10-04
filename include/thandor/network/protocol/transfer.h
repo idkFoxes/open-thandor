@@ -160,7 +160,7 @@ extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint;
 extern uint32_t g_FrontendSessionToken;
 extern SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks;
 extern uint32_t g_FrontendTransferResponsePending;
-extern uint32_t g_FrontendLocalPlayerPcxPreview;
+extern uintptr_t g_FrontendLocalPlayerPcxPreview;
 extern uint32_t g_FrontendPendingSessionPlayerCount; /* followed by an all-zero dword no code reaches (dropped) */
 extern uint32_t g_FrontendExpectedPlayerRuntimeBlockCount;
 extern FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8];

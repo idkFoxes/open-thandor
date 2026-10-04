@@ -770,7 +770,7 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
       allocError = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES,&newAuxiliaryBuffer);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
       if (allocError == 0) {
-        g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
+        g_GridPathCostQueueEnd = (GridScratchCell **)((uintptr_t)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
         g_GridPathCostQueueBegin = (GridScratchCell **)newAuxiliaryBuffer;
         g_MemoryApi.free(previousCostQueueBuffer);
         return true;
@@ -1473,7 +1473,7 @@ Bool8 GridPathCost_BacktrackBestHexRoute
   }
   *outRouteStateMask = callerBlockingMask;
   if (currentCell->pathCost != 0) {
-    selectedCellIndex = (uint32_t)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
+    selectedCellIndex = (uint32_t)((uintptr_t)currentCell - (uintptr_t)g_GridScratchPrimary) >> 3;
     *outRow = selectedCellIndex / g_GridScratchWidth;
     *outColumn = selectedCellIndex % g_GridScratchWidth;
     return false;

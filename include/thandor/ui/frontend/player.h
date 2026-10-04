@@ -48,16 +48,16 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
           (FrontendPlayerIndex playerIndex,uint32_t reservedZero,RuntimeToken armyToken,
           RuntimeToken modelToken);
 
-void FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source);
+void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source);
 
 void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode);
 
 void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void);
 
 Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
-          (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId);
+          (uintptr_t assignmentToken,PlayerRuntimeId excludedPlayerId); /* the building's address */
 
-void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken);
+void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken); /* the building's address */
 
 void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);

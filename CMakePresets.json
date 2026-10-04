@@ -12,6 +12,27 @@
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     },
     {
+      "name": "msvc-x64",
+      "hidden": true,
+      "description": "MSVC 64-bit x64, found without vcvars (cmake/msvc-x64.cmake)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build-msvc-${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/msvc-x64.cmake",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "x64-release",
+      "displayName": "MSVC x64 RelWithDebInfo",
+      "inherits": "msvc-x64",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "x64-test",
+      "displayName": "MSVC x64 RelWithDebInfo with the developer tools",
+      "inherits": "msvc-x64",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
+    },
+    {
       "name": "debug",
       "displayName": "MSVC x86 Debug",
       "inherits": "msvc-x86",
@@ -33,6 +54,8 @@
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
     { "name": "release", "configurePreset": "release" },
-    { "name": "test", "configurePreset": "test" }
+    { "name": "test", "configurePreset": "test" },
+    { "name": "x64-release", "configurePreset": "x64-release" },
+    { "name": "x64-test", "configurePreset": "x64-test" }
   ]
 }

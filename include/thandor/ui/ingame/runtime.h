@@ -133,7 +133,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
 
 Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
-void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
+void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl);
 
 Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
 
@@ -249,9 +249,9 @@ extern GraphicsTextureSourceAsset *g_InGamePanelTextureSource;
 
 extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37]; /* 36 records + the terminator record [36] (key code 0, which ends the dispatch scan; its other two dwords are 0x90 fill); followed by 4 bytes 0x90 fill (dropped) */
 
-extern uint32_t g_InGameDiagramTextureSource;
-extern uint32_t g_InGameTechnologyTextureSource;
-extern uint32_t g_InGameWindowTextureSource;
+extern GraphicsTextureSourceAsset *g_InGameDiagramTextureSource;
+extern GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource;
+extern GraphicsTextureSourceAsset *g_InGameWindowTextureSource;
 
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16;
 

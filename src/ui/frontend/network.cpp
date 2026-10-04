@@ -331,7 +331,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
      (bottomBarStatusText's text resource id, mirrored into the in-game template's worldViewCyclingInfoText,
      and the 0x40-code-unit hostAddressEdit text). */
   FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
-       (TextResourceId)((UiSingleLineTextControl *)FRONTEND_UI(root,bottomBarStatusText))->text;
+       (TextResourceId)(uintptr_t)((UiSingleLineTextControl *)FRONTEND_UI(root,bottomBarStatusText))->text;
   sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textBuffer;
   destinationCursor =
        (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(&g_FrontendRootInitializationTemplate,hostAddressEdit))

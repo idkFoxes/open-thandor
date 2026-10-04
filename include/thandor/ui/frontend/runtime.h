@@ -291,11 +291,11 @@ void FrontendRuntime_ShutdownAndReleaseResources(void);
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
 extern FrontendUiImage g_FrontendRootInitializationTemplate;
-extern uint32_t g_FrontendRootNode;
+extern uintptr_t g_FrontendRootNode; /* the FrontendUiImage copy (address) */
 extern uint32_t g_FrontendPendingPageAction;
 extern uint32_t g_FrontendRuntimeFlags;
-extern uint32_t g_FrontendCentralTextureSet;
-extern uint32_t g_FrontendCentralPaletteAsset;
+extern uintptr_t g_FrontendCentralTextureSet;
+extern uintptr_t g_FrontendCentralPaletteAsset;
 extern GraphicsTextureSourceAsset *g_FrontendMenuTextureSource;
 extern uint32_t g_FrontendNetworkTickCounter;
 extern uint32_t g_FrontendStateTickSpinLock;

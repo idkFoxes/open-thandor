@@ -153,7 +153,7 @@ UiNodeBase * UiImageControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
 
 void UiDisplayModeSelection_RefreshEnumeratedOptions
-          (FrontendDisplayAdapterIndex adapterIndex,UiNodeBase *selectedModeValue,
+          (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits selectedBitsPerPixel,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot);
 

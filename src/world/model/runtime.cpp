@@ -19,7 +19,7 @@ GraphicsFixedVec3 g_ModelCullViewRelative = {0};
 
 ModelRuntimeSlot *g_ModelRuntimeSlots = 0;
 
-int g_ModelRuntimeRebaseDelta = 0;
+intptr_t g_ModelRuntimeRebaseDelta = 0;
 
 /* Diagnostics: set by the offscreen preview renderer while it submits models. */
 
@@ -358,7 +358,7 @@ uint32_t __cdecl ModelRuntimePool_Init(void)
     return allocError;
   }
   /* pool base - 1 */
-  g_ModelRuntimeRebaseDelta = (int)modelRuntimePool - 1;
+  g_ModelRuntimeRebaseDelta = (intptr_t)modelRuntimePool - 1;
   g_ModelRuntimeSlots = modelRuntimePool;
   /* zero the pool dword by dword */
   poolDword = (uint32_t *)modelRuntimePool;
@@ -413,6 +413,7 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
   for (registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryRemaining != 0; registryRemaining--) {
     if (*registryEntry != NULL) {
       /* the root of the definition's node tree */
+      /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
       rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer;
       if (rootNode != NULL) {
         ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
@@ -455,6 +456,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   ModelRuntimePoolRelativeOffset childRuntimeOffset;
   ModelNodePoolRelativeOffset parentNodeOffset;
 
+  /* 5f-format: ModelRuntimeSlot.ownerArmyRuntimeOrSavedOffset/rootModelNodeOrSavedOffset/linkedModelRuntimeOrSavedOffset/classState.linkedArmyRuntimeOrSavedOffset/attachments (unrebase before save) */
   ownerArmyOffset = modelRuntime->ownerArmyRuntimeSavedOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
   modelRuntime->rootModelNodeSavedOffset =
        modelRuntime->rootModelNodeSavedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
@@ -462,9 +464,10 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   linkedModelOffset = modelRuntime->linkedModelRuntimeSavedOffset;
   linkedArmyOffset = modelRuntime->classState.linkedArmyRuntimeSavedOffset;
   if (linkedModelOffset != 0) {
-    linkedModelOffset = linkedModelOffset - g_ModelRuntimeRebaseDelta;
+    linkedModelOffset = (uint32_t)(linkedModelOffset - g_ModelRuntimeRebaseDelta);
   }
   if (linkedArmyOffset != 0) {
+    /* 5f-format: ModelRuntimeSlot.classState.linkedArmyRuntimeOrSavedOffset */
     linkedArmyOffset = linkedArmyOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
   }
   modelRuntime->linkedModelRuntimeSavedOffset = linkedModelOffset;
@@ -479,9 +482,10 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
     childRuntimeOffset = attachment->childModelRuntimeSavedOffset;
     parentNodeOffset = attachment->parentModelNodeSavedOffset;
     if (childRuntimeOffset != 0) {
-      childRuntimeOffset = childRuntimeOffset - g_ModelRuntimeRebaseDelta;
+      childRuntimeOffset = (ModelRuntimePoolRelativeOffset)(childRuntimeOffset - g_ModelRuntimeRebaseDelta);
     }
     if (parentNodeOffset != 0) {
+      /* 5f-format: ModelRuntimeSlot.attachments[].parentModelNodeOrSavedOffset */
       parentNodeOffset = parentNodeOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
     }
     attachment->childModelRuntimeSavedOffset = childRuntimeOffset;
@@ -554,6 +558,7 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
     }
     rebasedParentNode = NULL;
     if (savedParentNode != NULL) {
+      /* 5f-format: ModelRuntimeSlot.attachments[].parentModelNodeOrSavedOffset */
       rebasedParentNode = (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)savedParentNode);
     }
     attachment->childModelRuntimeOrSavedOffset = rebasedChildRuntime;
@@ -588,6 +593,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
        (classState.linkedArmyRuntimeOrSavedOffset) get g_ArmyRuntimeRebaseBaseMinusOne, the root node and
        attachment parent nodes g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime and attachment children
        g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
+    /* 5f-format: ModelRuntimeSlot.ownerArmyRuntimeOrSavedOffset/rootModelNodeOrSavedOffset (rebase after load) */
     rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
                                            (int)g_ArmyRuntimeRebaseBaseMinusOne);
     modelRuntime->rootModelNodeOrSavedOffset.modelNode =
@@ -602,6 +608,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     }
     rebasedLinkedArmy = NULL;
     if (savedLinkedArmy != NULL) {
+      /* 5f-format: ModelRuntimeSlot.classState.linkedArmyRuntimeOrSavedOffset */
       rebasedLinkedArmy = (ArmyRuntimeSlot *)((int)savedLinkedArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
     }
     modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = rebasedLinkedRuntime;
@@ -620,6 +627,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     if (modelRuntime->attachmentCount != 0) {
       ModelRuntime_RebaseAttachmentsAfterLoad(modelRuntime);
       modelRuntime->attachmentCount = 0;
+      /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
       ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                 (modelRuntime,
                  (MdlSerializedNodeHeader *)
@@ -647,7 +655,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   Q12 translationX;
   Q12 translationY;
   AngleTurn32 orientationAngle;
-  int ownerDefinition;
+  ModelDefinition *ownerDefinition;
   uint32_t runtimeClassId;
   uint32_t attachmentsRemaining;
   ModelRuntimeAttachmentDescriptor *attachment;
@@ -656,7 +664,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 
   modelDefinition = modelRuntime->definitionOrSavedId.definition;
   runtimeClassId = ((ModelDefinition *)modelDefinition)->runtimeClassId;
-  FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
+  FrontendPlayerRuntime_ClearAssignmentTokenFromAll((uintptr_t)modelRuntime);
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[runtimeClassId]
             (modelDefinition,modelRuntime);
   attachment = modelRuntime->attachments;
@@ -684,14 +692,14 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       ownerRecord = (int *)entityRuntime->common.ownership.definitionOrClassRecord;
       entityRuntime->common.ownership.definitionOrClassRecord = NULL;
       UNLOCK();
-      ownerDefinition = *ownerRecord;
+      ownerDefinition = ((ModelRuntimeSlot *)ownerRecord)->definitionOrSavedId.runtimeDefinition;
       /* ownerRecord is the owner's root ModelRuntimeSlot */
       if ((((ModelRuntimeSlot *)ownerRecord)->classState.stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0 &&
-         (((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId != -1)) {
+         (ownerDefinition->destroyedReplacementArmyAssetId != -1)) {
         /* the third parameter of ArmyRuntime_CreateInstanceFromAsset takes y, as at its other callers */
         ArmyRuntime_CreateInstanceFromAsset
                   (0,orientationAngle,translationY,translationX,0,
-                   ((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId,
+                   ownerDefinition->destroyedReplacementArmyAssetId,
                    worldRuntime,NULL);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
@@ -730,6 +738,7 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
 
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   /* sprite asset: +0xE4 offset of the point records, +0xE8 their count */
+  /* 5f-format: MdlSerializedNodeHeader.spriteAssetReference (ModelResource address in a 32-bit slot) */
   modelPointTableBase = definitionNode->spriteAssetReference.savedId;
   localPointRecord =
        (ModelPackedPointRecord *)
@@ -829,6 +838,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime->classState.dismantleTickCountdown = 0;
   modelRuntime->damageEffectPointIndex = 0;
   modelFlags = definitionView->modelFlags;
+  /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
   if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
     if (!ModelNodeRuntime_CreateHierarchyRecursive
             (paletteAsset,textureSet,modelRuntime,

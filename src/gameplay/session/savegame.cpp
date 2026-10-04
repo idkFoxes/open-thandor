@@ -31,7 +31,7 @@ static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descripti
     levelTitleId = record->levelTitleTextId;
     fieldText = TextResource_Resolve(levelTitleId);
     *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-    descriptionBox->text = (uint16_t *)levelTitleId;
+    descriptionBox->text = (uint16_t *)(uintptr_t)levelTitleId; /* a text id in the pointer field */
   }
   else {
     templateText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
@@ -160,7 +160,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   UiListRowCount listRowCount;
   void **rowSlots;
   ScenarioCatalogSaveRecord *selectedRecord;
-  ScenarioCatalogByteOffset *rowSlot;
+  void **rowSlot;
   uint32_t *record;
   uint8_t *enumRecord;
   ScenarioCatalogSaveRecord *saveRecord;
@@ -182,7 +182,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocError = g_MemoryApi.alloc((rowCount + 1) * 260,(void **)&rowSlot);
+  allocError = g_MemoryApi.alloc((uint32_t)((rowCount + 1) * (sizeof(void *) + 256)),(void **)&rowSlot);
   if (allocError != 0) {
     return;
   }
@@ -190,7 +190,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   g_ScenarioCatalog = (ScenarioCatalogHeader *)rowSlot;
   enumRecord = g_PackageScratchBuffer; /* each enumeration record starts with the file name */
   for (remainingCount = rowCount; remainingCount != 0; remainingCount--) {
-    *rowSlot = (ScenarioCatalogByteOffset)record;
+    *rowSlot = record;
     *record = 0;
     WidePath_CombineDirectoryAndLeaf
               (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
@@ -216,7 +216,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     enumRecord += FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
   /* the trailing "new savegame" row: a cleared record holding text 0x2151 */
-  *rowSlot = (ScenarioCatalogByteOffset)record;
+  *rowSlot = record;
   for (clearIndex = 0; clearIndex < 64; clearIndex++) {
     record[clearIndex] = 0;
   }
@@ -331,12 +331,13 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       scanEnd = charCursor;
       if (remainingLength == 0) break;
       remainingLength--;
-      scanEnd = (int32_t *)((int)charCursor + 2);
+      scanEnd = (int32_t *)((uintptr_t)charCursor + 2);
       matched = (short)*charCursor == 0;
       charCursor = scanEnd;
     } while (!matched);
     if (matched) {
-      nameLength = (uint32_t)-((int)(int32_t *)((UiTextEditControl *)nameControl)->textBuffer - (int)scanEnd) >> 1;
+      nameLength =
+           (uint32_t)-((intptr_t)((UiTextEditControl *)nameControl)->textBuffer - (intptr_t)scanEnd) >> 1;
       matched = nameLength == 0;
       scanRemaining = nameLength;
       charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
@@ -344,7 +345,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
         if (scanRemaining == 0) break;
         scanRemaining--;
         matched = (short)*charCursor == '*';
-        charCursor = (int32_t *)((int)charCursor + 2);
+        charCursor = (int32_t *)((uintptr_t)charCursor + 2);
       } while (!matched);
       if (!matched) {
         scanRemaining = nameLength;
@@ -353,7 +354,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
           if (scanRemaining == 0) break;
           scanRemaining--;
           matched = (short)*charCursor == '.';
-          charCursor = (int32_t *)((int)charCursor + 2);
+          charCursor = (int32_t *)((uintptr_t)charCursor + 2);
         } while (!matched);
         if (!matched) {
           scanRemaining = nameLength;
@@ -362,7 +363,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
             if (scanRemaining == 0) break;
             scanRemaining--;
             matched = (short)*charCursor == '\\';
-            charCursor = (int32_t *)((int)charCursor + 2);
+            charCursor = (int32_t *)((uintptr_t)charCursor + 2);
           } while (!matched);
           if (!matched) {
             scanRemaining = nameLength;
@@ -371,7 +372,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
               if (scanRemaining == 0) break;
               scanRemaining--;
               matched = (short)*charCursor == '?';
-              charCursor = (int32_t *)((int)charCursor + 2);
+              charCursor = (int32_t *)((uintptr_t)charCursor + 2);
             } while (!matched);
             if (!matched) {
               scanRemaining = nameLength;
@@ -380,7 +381,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                 if (scanRemaining == 0) break;
                 scanRemaining--;
                 matched = (short)*charCursor == '<';
-                charCursor = (int32_t *)((int)charCursor + 2);
+                charCursor = (int32_t *)((uintptr_t)charCursor + 2);
               } while (!matched);
               if (!matched) {
                 scanRemaining = nameLength;
@@ -389,7 +390,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                   if (scanRemaining == 0) break;
                   scanRemaining--;
                   matched = (short)*charCursor == '>';
-                  charCursor = (int32_t *)((int)charCursor + 2);
+                  charCursor = (int32_t *)((uintptr_t)charCursor + 2);
                 } while (!matched);
                 if (!matched) {
                   scanRemaining = nameLength;
@@ -398,7 +399,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                     if (scanRemaining == 0) break;
                     scanRemaining--;
                     matched = (short)*charCursor == ':';
-                    charCursor = (int32_t *)((int)charCursor + 2);
+                    charCursor = (int32_t *)((uintptr_t)charCursor + 2);
                   } while (!matched);
                   if (!matched) {
                     scanRemaining = nameLength;
@@ -407,7 +408,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                       if (scanRemaining == 0) break;
                       scanRemaining--;
                       matched = (short)*charCursor == '"';
-                      charCursor = (int32_t *)((int)charCursor + 2);
+                      charCursor = (int32_t *)((uintptr_t)charCursor + 2);
                     } while (!matched);
                     if (!matched) {
                       scanRemaining = nameLength;
@@ -416,7 +417,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                         if (scanRemaining == 0) break;
                         scanRemaining--;
                         matched = (short)*charCursor == '|';
-                        charCursor = (int32_t *)((int)charCursor + 2);
+                        charCursor = (int32_t *)((uintptr_t)charCursor + 2);
                       } while (!matched);
                       if (!matched) {
                         charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
@@ -424,7 +425,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                           if (nameLength == 0) break;
                           nameLength--;
                           matched = (short)*charCursor == '/';
-                          charCursor = (int32_t *)((int)charCursor + 2);
+                          charCursor = (int32_t *)((uintptr_t)charCursor + 2);
                         } while (!matched);
                         if (!matched) {
                           UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);

@@ -842,7 +842,7 @@ typedef uint32_t DWORD;
 
 typedef DWORD LCTYPE;
 
-typedef uint32_t ULONG_PTR;
+typedef uintptr_t ULONG_PTR; /* pointer-sized, as in the Windows SDK */
 
 typedef void *HANDLE;
 
@@ -967,11 +967,11 @@ typedef struct HWND__ *HWND;
 
 typedef uint32_t UINT;
 
-typedef uint32_t UINT_PTR;
+typedef uintptr_t UINT_PTR;
 
 typedef UINT_PTR WPARAM;
 
-typedef long LONG_PTR;
+typedef intptr_t LONG_PTR;
 
 typedef LONG_PTR LPARAM;
 
@@ -3554,7 +3554,7 @@ union FrontendUiScratch {
 
 typedef int FieldGridCellCoordinate;
 
-typedef int ModelDefinitionHierarchyNodeAddress32;
+typedef intptr_t ModelDefinitionHierarchyNodeAddress32; /* address of a definition hierarchy node, pointer-sized (5f) */
 
 struct GridPathBacktrackRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
@@ -4278,7 +4278,7 @@ typedef uint32_t ArmyBuildXeniteCostQ4;
 
 typedef int WorldMotionSplineKeyframeCount;
 
-typedef int ArmyGraphicsAssetAddress32;
+typedef intptr_t ArmyGraphicsAssetAddress32; /* address of a faction graphics texture source asset, pointer-sized (5f) */
 
 typedef int UiPointerWheelDelta;
 
@@ -4300,7 +4300,7 @@ typedef uint32_t UiTransferXorChecksum;
 
 typedef uint32_t RichTextMarkupCapacityCodeUnits;
 
-typedef uint32_t RomRegistrySlotValue;
+typedef uintptr_t RomRegistrySlotValue; /* a model node address (5f) */
 
 typedef int GraphicsSceneExtentFixed;
 
@@ -4431,7 +4431,7 @@ struct WorldRuntimeContext {
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount; // Attached world-object count.
     struct WorldFieldRegionState fieldRegion; // Field-region dimensions and retained prefix.
-    uint32_t *dwordArray; // Attached dword workspace.
+    uintptr_t *dwordArray; // Attached workspace: SpatialSoundSlot pointers by sound index (pointer-sized, runtime only).
     WorldWorkspaceElementCount dwordArrayCount; // Attached workspace element count.
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
@@ -4802,7 +4802,7 @@ typedef uint32_t CubicSplineMatrixIndex;
 
 typedef uint32_t MovieSharedStreamHandleFlag;
 
-typedef int ModelMeshGroupAddress32;
+typedef intptr_t ModelMeshGroupAddress32; /* address of a mesh group / record, pointer-sized (5f) */
 
 typedef uint32_t GraphicsAssetAllocationByteSize;
 
@@ -4820,7 +4820,7 @@ typedef uint32_t ArmySelectionDetailTemplateVariantIndex;
 
 typedef uint32_t UiPackedTextStyle;
 
-typedef int InGameSaveGamePageControlAddress32;
+typedef intptr_t InGameSaveGamePageControlAddress32; /* address of the save page's delete button node, pointer-sized (5f) */
 
 typedef uint32_t ArmyPlacementDispatchArg7;
 
@@ -4897,7 +4897,7 @@ typedef uint32_t ScenarioCatalogSourceByteCount;
 
 typedef uint32_t SessionTransferTimeoutTicks;
 
-typedef int GraphicsDistanceAttenuationTableAddress32;
+typedef intptr_t GraphicsDistanceAttenuationTableAddress32; /* pointer-sized (5f) */
 
 typedef uint32_t GraphicsIntegerScale;
 
@@ -5050,7 +5050,7 @@ struct FrontendPersistentSettingsPage {
 
 typedef uint32_t UiCommandRuntimeFlagMask;
 
-typedef int FixedVectorStateAddress32;
+typedef intptr_t FixedVectorStateAddress32; /* address of a ModelRuntimeNode, pointer-sized (5f) */
 
 typedef uint32_t WorldMotionValue74;
 
@@ -5074,7 +5074,7 @@ typedef uint32_t GameSpeedPercent;
 
 typedef uint32_t WinSockFdSetCount;
 
-typedef uint32_t EngineFileHandle;
+typedef uintptr_t EngineFileHandle; /* Win32 HANDLE (pointer-sized, 5f) */
 
 typedef uint32_t NetworkBackendSessionReturnValue32;
 
@@ -5183,7 +5183,7 @@ typedef uint32_t ArmyPlacementContext;
 
 typedef int SerializedImageRelocationDelta;
 
-typedef int FrontendScenarioSelectionControlAddress32;
+typedef intptr_t FrontendScenarioSelectionControlAddress32; /* address of the gameSelectStartButton node (5f) */
 
 typedef uint32_t ScenarioCatalogRecordCount;
 
@@ -5373,7 +5373,7 @@ struct PckHuffmanNode {
 
 typedef uint32_t UiControlCount;
 
-typedef int InGameCommandPanelSourceAddress32;
+typedef intptr_t InGameCommandPanelSourceAddress32; /* address of the command panel source node, pointer-sized (5f) */
 
 typedef int NetworkTimeoutSeconds;
 
@@ -5609,13 +5609,14 @@ struct TerrainDirectionRecord {
     uint32_t reserved1C;
 };
 
-/* One 16-byte entry of a timed-list tree. A record block is an array of these: element 0 is the block
+/* One 16-byte entry (32-bit build) of a timed-list tree. A record block is an array of these: element 0 is the block
    header (count = number of rows that follow, parentBlockOrIcon = parent block, link = parent row record,
    flags has UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY), elements 1..count are rows (payload00 = label text,
-   parentBlockOrIcon = icon subresource, link = child block when flags 1|2 say expanded). */
+   parentBlockOrIcon = icon subresource, link = child block when flags 1|2 say expanded).
+   Runtime only: the two value-or-pointer words are pointer-sized. */
 struct UiTimedListTreeRecord {
-    uint32_t countOrLabelText;
-    uint32_t parentBlockOrIcon;
+    uintptr_t countOrLabelText;
+    uintptr_t parentBlockOrIcon;
     struct UiTimedListTreeRecord *childBlockOrParentRecord;
     UiTimedListRecordFlags flags;
 };
@@ -6196,7 +6197,7 @@ struct InGameRuntimeRoot {
     struct TerrainCompositeTextureRuntime *minimapTextureSource; // Minimap textureSource: the terrain composite texture.
     uint8_t reserved9A80_9B4B[204];
     InGameNotificationInteractionState notificationButtonCursorFrame; // UiImageActionControl.cursorFrame of the notification target button (+0x9AFC): 7 while a notification target can be jumped to, 0x1B after the jump (next click cancels), 0 idle.
-    uint32_t notificationButtonTextureSource; // Its textureSource: the playing notification movie, or the panel texture when none plays.
+    uintptr_t notificationButtonTextureSource; // Its textureSource: the playing notification movie, or the panel texture when none plays.
     uint32_t notificationButtonSubresource; // Its subresource: 0 for a movie frame, 0x25 (idle panel image) after playback closes.
     uint8_t reserved9B58_9E3F[744];
     struct InGameNotificationPayload activeNotificationPayload; // Payload promoted from the head queue record when its movie opens.
@@ -7227,9 +7228,9 @@ struct SelectionPlayerRuntimeBlock {
     uint32_t *terrainMaterialEditPlane;
     uint32_t placementFactionIndex; // +0x8090: faction of the next army placed in the editor (PlayerRuntime_SetPlacementFaction).
     uint32_t placedArmyToken; // +0x8094: army placed/picked in the editor, as an offset from g_ArmyRuntimeRebaseBaseMinusOne; moved and turned by the placement commands.
-    uint32_t pendingPlacementArmyAsset; // +0x8098: ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
+    uintptr_t pendingPlacementArmyAsset; // +0x8098: ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
     uint32_t chatRecipientMaskAndWriteOffset; // +0x809C: chat recipient mask (bits 8+faction, 16+player) and, in the low byte, the write offset in chatStagingText.
-    uint32_t technologyPageBuilding; // +0x80A0: building (ModelRuntimeSlot *) whose technology page the player has open.
+    uintptr_t technologyPageBuilding; // +0x80A0: building (ModelRuntimeSlot *) whose technology page the player has open.
     uint32_t heldResearchUnpaidFlag; // +0x80A4: its ARMY_MODEL_STATE_RESEARCH_UNPAID bit, taken away while the page is open.
     uint32_t sessionFlags;
     InGameSimulationStepBatchTicks simulationStepTicks; 
@@ -8445,7 +8446,7 @@ struct GraphicsPrimitivePacket {
     PackedArgb32 modulationColor; 
     struct GraphicsTextureSetEntry *textureEntry; 
     GraphicsPrimitiveDispatchFlags renderFlags; 
-    uint8_t reserved6C_7F[20]; 
+    uint8_t reserved6C_7F[28 - 2 * sizeof(void *)]; /* the packet stays 0x80 bytes on x64 (5f) */
 };
 
 union GraphicsPrimitiveRadixBucket {
@@ -8460,6 +8461,8 @@ struct GraphicsPrimitiveQueueNode {
     struct GraphicsPrimitiveQueueNode *previous; 
 };
 
+/* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 - an MDL mesh triangle record (0x40-byte stride) whose
+   vertex addresses are 32-bit slots in the loaded file image; with 8-byte pointers this layout no longer matches */
 struct GraphicsTriangleInput {
     struct GraphicsProjectedVertexSource *vertex0; 
     GraphicsPrimitiveTextureCoordinateFixed textureU0; 
@@ -8507,7 +8510,7 @@ struct SoftwareMaskRuntimeView {
     uint32_t incomingSubresource; /* UiSoftwareTexturePreviewControl.incomingSubresource */
     uint32_t actionId; /* UiSoftwareTexturePreviewControl.actionId */
     uint8_t *maskPixels;
-    uint32_t blendedSourcePixels; /* second work buffer (UiSoftwareTexturePreviewControl.blendedSourcePixels) */
+    uintptr_t blendedSourcePixels; /* second work buffer (UiSoftwareTexturePreviewControl.blendedSourcePixels) */
     int tickCounter; 
 };
 
@@ -9125,7 +9128,7 @@ struct ArenaBlockHeader {
     ArenaBlockStateMagic stateMagic; 
     struct ArenaBlockHeader *next; 
     struct ArenaBlockHeader *previous; 
-    uint8_t alignmentPadding[16];
+    uint8_t alignmentPadding[24 - 2 * sizeof(void *)]; /* header stays 0x20 bytes on x64 (5f) */
 };
 
 struct TimerCallbackTable {
@@ -10153,16 +10156,6 @@ struct FrontendCreditsUiStateView {
     struct SoftwareMaskRuntimeView creditsMaskRuntime; // credits texture/mask work state
 };
 
-struct GeneratedTextureRenderContextView {
-    uint8_t reserved00_53[84]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
-    struct FieldGridAsset *fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
-    uint8_t reserved58_B7[96]; // Unresolved context fields.
-    AngleTurn32 lightAzimuthAngle; // Azimuth of the shadow-casting light direction (second FixedMath_DirectionFromAnglesScaled argument).
-    AngleTurn32 lightElevationAngle; // Elevation of the shadow-casting light direction (first argument).
-    uint8_t reservedC0_C7[8]; // Unresolved context fields.
-    uint32_t *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
-};
-
 struct CursorPointerEvent {
     uint32_t eventType; // GraphicsCursorEventType of the consumed event
     GraphicsCursorButtonState buttonState; // button state, bit 31 set for a double click
@@ -10455,6 +10448,20 @@ struct FrontendModelPointerContext {
     uint32_t reserved178; // Trailing dword; never accessed.
 };
 
+/* GraphicsShadingGeneratedTexture_* view of the FrontendModelPointerContext it is called with; the spans follow
+   that struct's offsets (0x54, 0xB8, 0xC8 on 32-bit), so the view stays right where pointers are wider (5f). */
+struct GeneratedTextureRenderContextView {
+    uint8_t reserved00_53[__builtin_offsetof(struct FrontendModelPointerContext, fieldGrid)]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
+    struct FieldGridAsset *fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
+    uint8_t reserved58_B7[__builtin_offsetof(struct FrontendModelPointerContext, auxiliaryOrientationAngle0) -
+                          __builtin_offsetof(struct FrontendModelPointerContext, fieldGrid) - sizeof(struct FieldGridAsset *)]; // Unresolved context fields.
+    AngleTurn32 lightAzimuthAngle; // Azimuth of the shadow-casting light direction (second FixedMath_DirectionFromAnglesScaled argument).
+    AngleTurn32 lightElevationAngle; // Elevation of the shadow-casting light direction (first argument).
+    uint8_t reservedC0_C7[__builtin_offsetof(struct FrontendModelPointerContext, activePrimitiveQueue) -
+                          __builtin_offsetof(struct FrontendModelPointerContext, auxiliaryOrientationAngle1) - sizeof(AngleTurn32)]; // Unresolved context fields.
+    struct GraphicsPrimitiveQueue *projectedPointBlockPool; // FrontendModelPointerContext.activePrimitiveQueue: the queue whose packet pool the reserve/rollback helpers take blocks from.
+};
+
 /* ArmyModelTreeNode (assets/army/catalog.h) with its children read as ModelLinkedDefinitionListAddress32. */
 struct ArmyModelTreeNodeAddressView {
     uint8_t unresolved00_07[8];
@@ -10480,7 +10487,7 @@ struct WorldRuntimeExtendedMapControlView {
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount;
     struct WorldFieldRegionState fieldRegion;
-    uint32_t *dwordArray;
+    uintptr_t *dwordArray;
     WorldWorkspaceElementCount dwordArrayCount;
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
@@ -10932,7 +10939,7 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 };
 
 struct AiStructureWorkspaceEntry {
-    AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot address (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime), kept as an integer like the original's consumers use it.
+    struct ModelRuntimeSlot *runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime); runtime-only AI workspace.
     PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
 };
 

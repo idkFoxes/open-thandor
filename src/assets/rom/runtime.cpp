@@ -12,11 +12,11 @@
 
 uint32_t g_FrontendRomTransitionPageAction = 0;
 
-uint32_t g_FrontendActiveRomRecord = 0;
+uintptr_t g_FrontendActiveRomRecord = 0;
 
 uint32_t g_FrontendRomTransitionElapsedTicks = 0;
 
-uint32_t g_FrontendRomTransitionSplineKeyframes = 0;
+uintptr_t g_FrontendRomTransitionSplineKeyframes = 0;
 
 uint32_t g_FrontendRomTransitionSplineKeyframeCount = 0;
 
@@ -174,7 +174,7 @@ Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
     if (slotRecord != NULL) {
       modelNodeRuntime = RomRuntime_BuildNodeTreeRecursive
                         (((RomRecord *)slotRecord)->nodeTintArgb,
-                         (RomSerializedNodeHeader *)slotRecord->rootNodeOffsetOrPointer,worldRuntime);
+                         (RomSerializedNodeHeader *)slotRecord->rootNodeOffsetOrPointer,worldRuntime); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       if (modelNodeRuntime == NULL) {
         return true;
       }
@@ -263,7 +263,7 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->record != NULL) {
-      rootNode = (RomSerializedNodeHeader *)slotCursor->record->rootNodeOffsetOrPointer;
+      rootNode = (RomSerializedNodeHeader *)slotCursor->record->rootNodeOffsetOrPointer; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       if (rootNode != NULL) {
         RomSerializedNodeTree_ReleaseSprites(rootNode);
       }
@@ -391,7 +391,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
   if (activeRecord == NULL) {
     return FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
   }
-  g_FrontendActiveRomRecord = (uint32_t)activeRecord;
+  g_FrontendActiveRomRecord = (uintptr_t)activeRecord;
   /* mark the records linked from the entries (header + 0x200 * i) */
   entryCursor = (uint8_t *)activeRecord + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE;
   for (entriesRemaining = ((RomRecord *)activeRecord)->entryCount; entriesRemaining != 0; entriesRemaining--) {
@@ -548,10 +548,10 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
     }
     if (depth != 0) {
       child = (uint32_t *)&frames[depth - 1].node->childReferences[frames[depth - 1].nextChild];
-      *child = *child + (uint32_t)assetBase;
+      *child = *child + (uint32_t)assetBase; /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
       frames[depth - 1].nextChild++;
       frames[depth - 1].remaining--;
-      node = (RomSerializedNodeHeader *)*child;
+      node = (RomSerializedNodeHeader *)*child; /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
     }
   } while (depth != 0);
   return 0;
@@ -578,7 +578,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
         return 0;
       }
       /* asset start + serialized offset */
-      record->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)assetBase + record->rootNodeOffsetOrPointer);
+      record->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)assetBase + record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       return RomSerializedNodeTree_LoadSpritesAndRelocate
                        ((RomSerializedNodeHeader *)((uint8_t *)assetBase + rootNodeOffset),assetBase);
     }
@@ -657,16 +657,16 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   *((uint8_t *)&newNode->textureSubresourceBaseIndex + 2) = 0;
   *((uint8_t *)&newNode->textureSubresourceBaseIndex + 3) = 0;
   newNode->tintArgb = stateTintArgb;
-  centralTextureSet = (GraphicsTextureSet *)g_FrontendCentralTextureSet;
+  centralTextureSet = (GraphicsTextureSet *)(uintptr_t)g_FrontendCentralTextureSet;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
-  newNode->modelPayload.paletteAsset = (GraphicsPaletteAsset *)g_FrontendCentralPaletteAsset;
+  newNode->modelPayload.paletteAsset = (GraphicsPaletteAsset *)(uintptr_t)g_FrontendCentralPaletteAsset;
   boundingRadius = spriteModelResource->boundingRadiusQ12;
   newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;
   newNode->modelPayload.modelResource = spriteModelResource;
   newNode->shadingRecord = NULL;
   newNode->modelRuntimeLinkOrSavedOffset = NULL;
-  newNode->runtimeStateA0 = (uint32_t)&spriteModelResource->firstMeshGroupRelativeOffset;
+  newNode->runtimeStateA0 = (uint32_t)&spriteModelResource->firstMeshGroupRelativeOffset; /* 5f-format: ModelRuntimeNode.runtimeStateA0 (saved model runtime pool) */
   childSlotsRemaining = romNodeRecord->childCount;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
   childIndex = 0;
@@ -706,7 +706,7 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
   g_FrontendRomTransitionElapsedTicks = 0;
   g_FrontendRomTransitionSplineKeyframeCount = entry->keyframeCount;
   g_FrontendRomTransitionTargetRecordId = transitionEnabled;
-  g_FrontendRomTransitionSplineKeyframes = (uint32_t)entry->keyframes;
+  g_FrontendRomTransitionSplineKeyframes = (uintptr_t)entry->keyframes;
   WorldMotionSpline_BuildSixChannelCurves
             (g_FrontendRomTransitionSplineKeyframeCount,
              (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes);
@@ -751,7 +751,7 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
   ModelResource *rootSprite;
 
   if (entryIndex < ((RomRecord *)record)->lightCount) {
-    rootSprite = ((RomSerializedNodeHeader *)record->rootNodeOffsetOrPointer)->spriteAssetReference.modelResource;
+    rootSprite = ((RomSerializedNodeHeader *)record->rootNodeOffsetOrPointer)->spriteAssetReference.modelResource; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
     light = &((RomRecord *)record)->lights[entryIndex];
     descriptorCursor =
          (uint32_t *)((uint8_t *)rootSprite + (int)rootSprite->packedLookupTableRelativeOffset);

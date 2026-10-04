@@ -95,7 +95,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
       restartSpeed = (modelRuntime->linkedChildSpawnParameters).parameter0;
       modelRuntime->stepStartHeading = modelRuntime->stepEndHeading;
       modelRuntime->linkedArmyRuntimeOrSavedOffset =
-           (ArmyRuntimeSlot *)modelRuntime->fallbackWorldXQ12;
+           (ArmyRuntimeSlot *)modelRuntime->fallbackWorldXQ12; /* 5f-format: ArmyRuntimeSlot.linkedArmyRuntimeOrSavedOffset (Q12 overlay) */
       (modelRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = footHeading;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = restartSpeed;
       ArmyArticulatedRuntime_UpdateContactChildAndEffects
@@ -624,7 +624,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
                        (MdlSerializedNodeHeader *)
-                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])->
+                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
                        childSerializedOffsets[0],worldRuntime);
           }
         }
@@ -804,7 +804,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
                        (MdlSerializedNodeHeader *)
-                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])->
+                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
                        childSerializedOffsets[muzzlePointIndex],worldRuntime);
           }
         }
@@ -1894,7 +1894,7 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
+  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               24) != 0) {
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
@@ -1939,7 +1939,7 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
   WorldRuntimeContext *worldRuntime;
   PathingDestination resolvedDestination;
 
-  if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
+  if (*(int *)((uintptr_t)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               24) != 0) {
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
@@ -3149,7 +3149,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   rightHeading = (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue;
   rightStartHeading = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
   rightBlendAngles = ArticulatedWalker_BlendGroundNormal
-                       (articulatedRuntime->fallbackWorldXQ12,(int)articulatedRuntime->linkedArmyRuntimeOrSavedOffset,
+                       (articulatedRuntime->fallbackWorldXQ12,(int)articulatedRuntime->linkedArmyRuntimeOrSavedOffset, /* 5f-format: ArmyRuntimeSlot.linkedArmyRuntimeOrSavedOffset (Q12 overlay) */
                         rightBlendQ12,Q12_ONE - (articulatedRuntime->articulatedContact).terrainContactMode);
   movementDefinition = articulatedRuntime->definitionOrAsset;
   /* body heading = start heading + (end - start) * (left progress + right progress) */

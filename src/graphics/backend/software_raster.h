@@ -337,6 +337,8 @@ static const uint32_t g_SoftwareBlendOverreadOriginalDwords[512] = {
     /* 00422EE0 */ 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028, 0x00000400, 0x00000207, 0x00000107, 0x00000000,
     /* 00422F00 */ 0x00000000, 0x00000000, 0x00000000, 0x000005C0, 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000};
 
+/* 5f-format: overread g_SoftwareBlendOverreadRanges - original 32-bit addresses and the original 32-bit dwords
+   (pointers as their image values); the ranges read live hold no pointers, so the values are the same on x64 */
 /* What lies at an original address in the range a blend factor row can be read from. */
 typedef struct RasterOriginalRange {
     uint32_t start; /* original address */

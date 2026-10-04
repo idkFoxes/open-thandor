@@ -285,7 +285,7 @@ static uint32_t ShotDefinition_ResolveEffectReference(EffectDefinition **effectR
   EffectDefinition *resolvedEffect;
 
   effectLookupError = EffectDefinitionRegistry_FindById
-                    ((PckEffectDefinitionIdCatalog)*effectReference,&resolvedEffect);
+                    ((PckEffectDefinitionIdCatalog)*effectReference,&resolvedEffect); /* 5f-format: ShotDefinition effect references (id on disk, pointer after resolve) */
   if (effectLookupError != 0) {
     return effectLookupError;
   }

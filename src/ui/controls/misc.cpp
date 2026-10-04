@@ -214,7 +214,9 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .layoutWidth = -1, .layoutHeight = -1},
     .colorBiasValueText_fields = {.label = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM}}
 };
+#if !defined(_WIN64)
 THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsUiImage size");
+#endif
 
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {
@@ -268,7 +270,7 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
     g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (applyButton->selectedAdapterIndex,
-               (UiNodeBase *)applyButton->selectedBitsPerPixel,
+               (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
                applyButton->selectedHeight,
                applyButton->selectedWidth,&root->base);
     UiDisplaySettingsRoot_FormatColorReadouts(root);
@@ -293,7 +295,7 @@ void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
             ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
-             (UiNodeBase *)DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,
+             (FrontendColorDepthBits)DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,
              (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
              (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
   return;
@@ -314,7 +316,7 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
             ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
-             (struct UiNodeBase *)applyButton->selectedBitsPerPixel,
+             (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).resolutionHeight,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,displaySettingsRoot);
   return;
@@ -336,7 +338,7 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
             (DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,
-             (struct UiNodeBase *)applyButton->selectedBitsPerPixel,
+             (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
              (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
   return;
@@ -1217,11 +1219,10 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   DISPLAY_SETTINGS_UI(root,adapterOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2];
   DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
   DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
-  /* the bit depth travels in a UiNodeBase * parameter slot of that function */
   redGreenBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
   UiDisplayModeSelection_RefreshEnumeratedOptions
             (g_ActiveGraphicsAdapterIndex,
-             (UiNodeBase *)(redGreenBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight,
+             (FrontendColorDepthBits)(redGreenBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight,
              g_FramebufferWidth,(UiNodeBase *)root);
   UiRootStack_InvalidateAll();
   return;
@@ -1275,10 +1276,9 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
    enumerated (GraphicsDisplayMode_IsEnumerated) is suppressed, the others are enabled; the buttons matching
    the selection are selected in their groups; the tuple is stored as the selected one, and the apply button
    is suppressed while it and the colour bias/scale equal the values the dialog opened with.
-   The bit depth arrives in the pointer-typed selectedModeValue parameter.
 */
 void UiDisplayModeSelection_RefreshEnumeratedOptions
-          (FrontendDisplayAdapterIndex adapterIndex,UiNodeBase *selectedModeValue,
+          (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits selectedBitsPerPixel,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot)
 
@@ -1298,7 +1298,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       offsetof(DisplaySettingsUiImage,adapterOption4),offsetof(DisplaySettingsUiImage,adapterOption5)};
   uint8_t *root = (uint8_t *)displaySettingsRoot;
   UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
-  uint32_t bitsPerPixel = (uint32_t)(uintptr_t)selectedModeValue;
+  uint32_t bitsPerPixel = selectedBitsPerPixel;
   void *selected = NULL;
   Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;

@@ -110,7 +110,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightSumColumn,
+            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightSumColumn, /* 5f-format: InGameUiImage.resultsChart1_fields (UI template pointer dword) */
             0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000007, 0x00000002, 0x00000006, 0x00000003,
             0x00000004, 0x00000005},
         { /* +0484 resultsChart2 g_FrontendResultsTableVtable */
@@ -121,7 +121,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane0Column,
+            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane0Column, /* 5f-format: InGameUiImage.resultsChart2_fields (UI template pointer dword) */
             0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x00000008, 0x00000009, 0x0000000A,
             0x0000000B, 0x00000003},
         { /* +0500 resultsChart3 g_FrontendResultsTableVtable */
@@ -132,7 +132,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane1Column,
+            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane1Column, /* 5f-format: InGameUiImage.resultsChart3_fields (UI template pointer dword) */
             0x00000008, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x0000000C, 0x0000000D, 0x0000000E,
             0x0000000F, 0x00000010, 0x00000011, 0x00000004},
         { /* +0584 resultsTabMilitary g_UiFramedTextButtonControlVtable */
@@ -223,14 +223,14 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000, (uint32_t)&g_InGamePlayerStatusTextSlots,
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x80),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x100),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x180),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x200),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x280),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x300),
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x380)},
+            0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000, (uint32_t)&g_InGamePlayerStatusTextSlots, /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x80), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x100), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x180), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x200), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x280), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x300), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x380)}, /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
         { /* +0960 messageHistoryPanel g_UiConditionalActionControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4530), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9DC),
             .vtable = THANDOR_PTR(&g_UiConditionalActionControlVtable),
@@ -1580,7 +1580,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)&g_InGameCountdownTextUtf16},
+            0x00000015, 0x00000000, (uint32_t)&g_InGameCountdownTextUtf16}, /* 5f-format: InGameUiImage.countdownText_fields (UI template pointer dword) */
         { /* +4530 resourceBarModeStack g_UiLayoutContainerControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4644), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9DC),
             .vtable = THANDOR_PTR(&g_UiLayoutContainerControlVtable),
@@ -1703,7 +1703,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000312, 0x00000000, (uint32_t)&g_FrontendCurrentFactionPrimaryResourceTextUtf16,
+            0x00000312, 0x00000000, (uint32_t)&g_FrontendCurrentFactionPrimaryResourceTextUtf16, /* 5f-format: InGameUiImage.xeniteAmountText_fields (UI template pointer dword) */
             0x01010000, 0x00180014},
         { /* +4BA4 editorModeTabTerrainHeight g_UiSpriteButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4C1C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x45E8),
@@ -2001,7 +2001,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow1PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5824 diplomacyRow2PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5AC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4E2C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2010,7 +2010,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow2PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5880 diplomacyRow3PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5B44), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4E84),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2019,7 +2019,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow3PlayerNameLabel_fields (UI template pointer dword) */
         { /* +58DC diplomacyRow4PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5BC0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4EDC),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2028,7 +2028,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow4PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5938 diplomacyRow5PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5C3C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4F34),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2037,7 +2037,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow5PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5994 diplomacyRow6PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5CB8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4F8C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2046,7 +2046,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow6PlayerNameLabel_fields (UI template pointer dword) */
         { /* +59F0 diplomacyRow7PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5D34), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4FE4),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2055,7 +2055,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16},
+            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow7PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5A4C diplomacyRow1RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4DD4),
             .vtable = THANDOR_PTR(&g_UiCommandSpriteButtonWithDetailsVtable),
@@ -3857,15 +3857,15 @@ TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount = 0;
 
 TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount = 0;
 
-uint32_t g_TerrainRegionCollectionEntries = 0;
+uintptr_t g_TerrainRegionCollectionEntries = 0;
 
 SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = 0;
 
-uint32_t g_InGameActiveEffectVoice = 0;
+IDirectSoundBuffer *g_InGameActiveEffectVoice = 0;
 
 uint32_t g_InGameEffectsEnabled = 0;
 
-uint32_t g_InGameActiveMusicVoice = 0;
+IDirectSoundBuffer *g_InGameActiveMusicVoice = 0;
 
 uint32_t g_InGameMusicNextTrackCountdown = 0;
 
@@ -3903,7 +3903,7 @@ static uint32_t g_EndGameResultsCurrentMusicTrackId = 0;
 
 static WorldObjectRecord *g_InGameWorldObjectRecords = 0;
 
-static uint32_t g_InGameWorldRuntimeDwordArray256[256] = {0};
+static uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {0}; /* SpatialSoundSlot pointers (WorldRuntimeContext.dwordArray) */
 
 /* 15 command records and the terminator
    record (commandCode 0) that ends the dispatcher's scan */
@@ -4137,7 +4137,7 @@ static void InGameUiRoot_UpdateEffectSounds
       if (g_SoundPlayOneShot
                     (effectsGain,effectsGain,
                      g_InGameLevelEffectVoiceSets[randomValue & 3],&playedVoice)) {
-        g_InGameActiveEffectVoice = (uint32_t)playedVoice;
+        g_InGameActiveEffectVoice = playedVoice;
       }
     }
   }
@@ -4194,7 +4194,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     if (g_SoundPlayOneShot
                   (musicGain,musicGain,g_InGameLevelMusicVoiceSets[bestTrackIndex],
                    &playedVoice)) {
-      g_InGameActiveMusicVoice = (uint32_t)playedVoice;
+      g_InGameActiveMusicVoice = playedVoice;
     }
   }
 }
@@ -4437,36 +4437,36 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
      would walk 2^32 records. */
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
-      primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
+      primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
       nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
       /* 1-based offsets from the runtime-object base; 0 stays NULL */
       if (primaryPointer != NULL) {
-        primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
+        primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       if (secondaryPointer != NULL) {
-        secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
+        secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       if (nestedBasePointer != NULL) {
-        nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
+        nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer;
+      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer = secondaryPointer;
       (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
-      auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
+      auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       nestedCount = registrationRecord->nestedCount;
       if (auxiliaryPointer != NULL) {
         /* 1-based offset from the shading records; 0 is null */
-        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
+        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer;
+      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       /* the nested pointers are 1-based offsets from the runtime-object base as well */
       for (nestedIndex = 0; nestedIndex < nestedCount; nestedIndex++) {
         if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != NULL) {
           registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer =
                (uint8_t *)((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
-                       (int)g_RuntimeObjectRebaseBaseMinusOne);
+                       (int)g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         }
       }
       payloadSlot = (registrationRecord->runtimePayload).armyRuntime;
@@ -4474,20 +4474,20 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
         /* textureSet holds the army graphics binding index until here */
         payloadSlot = (ArmyRuntimeSlot *)
-                     ((int)payloadSlot + g_ModelRuntimeRebaseDelta);
-        selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset;
-        registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet;
+                     ((int)payloadSlot + g_ModelRuntimeRebaseDelta); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->paletteAsset = selectedPalette;
         break;
       case RESOURCE_DOMAIN_SHOT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot);
+                     (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->textureSet = g_ShotTextureSet;
         registrationRecord->paletteAsset = g_ShotPalette;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_EffectRuntimeRebaseBaseMinusOne + (int)payloadSlot);
+                     (g_EffectRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
         /* effects flagged 2 in their model runtime use the army graphics of binding 0 */
@@ -4500,7 +4500,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
         registrationRecord->paletteAsset = selectedPalette;
       }
       (registrationRecord->runtimePayload).armyRuntime = payloadSlot;
-      resolvedSprite = SpriteAssetRegistry_FindById((SpriteAssetId)registrationRecord->spriteAsset);
+      resolvedSprite = SpriteAssetRegistry_FindById((SpriteAssetId)registrationRecord->spriteAsset); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       registrationRecord->spriteAsset = resolvedSprite;
     }
     registrationRecord++;
@@ -4511,7 +4511,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
            [12].runtimePointer;
   tailRecord = NULL;
   if (tailNestedPointer != NULL) {
-    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer);
+    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
   }
   runtimeImage->tailRecord = tailRecord;
   (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
@@ -4790,7 +4790,7 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
   if (!Movie_AdvanceFrame(&notificationMovie,NULL)) {
     return;
   }
-  inGameRoot->notificationButtonTextureSource = (uint32_t)notificationMovie;
+  inGameRoot->notificationButtonTextureSource = (uintptr_t)notificationMovie;
   inGameRoot->notificationButtonSubresource = 0;
   inGameRoot->activeNotificationPayload = inGameRoot->notificationQueue[0].payload;
   if (inGameRoot->notificationButtonCursorFrame == PAYLOAD_ACTIVE) {
@@ -4843,7 +4843,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
     if (!Movie_AdvanceFrame(NULL,NULL)) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 640;
-      inGameRoot->notificationButtonTextureSource = (uint32_t)panelTextureSource;
+      inGameRoot->notificationButtonTextureSource = (uintptr_t)panelTextureSource;
       inGameRoot->notificationButtonSubresource = 37;
     }
   }
@@ -5228,13 +5228,13 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
   subsystemFailureError = mapMouseOptionFlags;
   if ((mapMouseOptionFlags & 4) != 0) {
     UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
-    subsystemFailureError = (uint32_t)&inGameRoot->resourceBarModePageStack;
+    subsystemFailureError = (uint32_t)(uintptr_t)&inGameRoot->resourceBarModePageStack; /* low 32 bits on x64 */
     UiPageStack_SetActiveIndex(0,&inGameRoot->resourceBarModePageStack);
     UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);
     inGameRoot->worldViewAreaRightOffset = 0;
     UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
   }
-  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uint32_t)world->fieldGrid) != 0) {
+  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uintptr_t)world->fieldGrid) != 0) {
     *outError = subsystemFailureError;
     return false;
   }
@@ -5359,13 +5359,13 @@ Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uin
    unmounts the save package (levelAsset is NULL and saveHandle 0 when they were not loaded yet), stores the error
    in *outError and returns false.
 */
-static Bool8 InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,uint32_t saveHandle,uint32_t error,
+static Bool8 InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,EngineFileHandle saveHandle,uint32_t error,
                                      uint32_t *outError)
 
 {
   Movie_Close();
   Resource_Release(levelAsset);
-  Package_Unmount((EngineFileHandle)saveHandle);
+  Package_Unmount(saveHandle);
   *outError = error;
   return false;
 }
@@ -5376,7 +5376,7 @@ static Bool8 InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,uint3
    characters), without its four-character file extension and cut to 31 characters. Without a terminator the name
    stays empty.
 */
-static void InGameLoadedSession_ReadSessionName(uint32_t saveHandle)
+static void InGameLoadedSession_ReadSessionName(EngineFileHandle saveHandle)
 
 {
   uint8_t *headerBuffer;
@@ -5619,7 +5619,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
     *outError = packageLoadErrorCode;
     return false;
   }
-  (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid;
+  (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   if (!InGameLevelRuntime_LoadResourcesAfterExternalTables(levelImage,world,&stepError)) {
     *outError = stepError;
     return false;
@@ -5678,7 +5678,7 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
             (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
   InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
-  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uint32_t)world->fieldGrid) != 0) {
+  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uintptr_t)world->fieldGrid) != 0) {
     /* Original quirk: this (unreachable) failure reports the mouse/panel option flags as its error code. */
     *outError = linkOptionFlags;
     return false;
@@ -5705,8 +5705,8 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
 Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
 
 {
-  uint32_t mountResult; /* the save package's handle, or the mount error code */
-  uint32_t saveHandle;
+  uintptr_t mountResult; /* the save package's handle, or the mount error code */
+  EngineFileHandle saveHandle;
   void *campaignAsset;
   FrontendLoadedLevelAsset *levelImage;
   uint32_t packageLoadErrorCode;
@@ -5715,13 +5715,13 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
 
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (!Package_Mount(savePackagePath,&mountResult)) {
-    return InGameLoadedSession_Fail(NULL,0,mountResult,outError);
+    return InGameLoadedSession_Fail(NULL,0,(uint32_t)mountResult,outError);
   }
   saveHandle = mountResult;
   InGameLoadedSession_ReadSessionName(saveHandle);
   campaignAsset = Package_LoadEntry((uint16_t *)g_CampagneHexPathUtf16,NULL);
   if (campaignAsset != NULL) {
-    g_FrontendLoadedCampaignAsset = (uint32_t)campaignAsset;
+    g_FrontendLoadedCampaignAsset = (uintptr_t)campaignAsset;
   }
   levelImage = (FrontendLoadedLevelAsset *)Package_LoadEntry((uint16_t *)g_LevelHexPathUtf16,&packageLoadErrorCode);
   if (levelImage == NULL) {
@@ -5765,7 +5765,7 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
   Movie_Close();
   Resource_Release(levelImage);
-  Package_Unmount((EngineFileHandle)saveHandle);
+  Package_Unmount(saveHandle);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
   return true;
@@ -6339,10 +6339,11 @@ static void InGameFactionEconomy_CapStocksAtStorageLimits(void)
 static void InGameFactionEconomy_FillEnergyConsumer(FactionEnergyConsumerEntry *consumer,int *modelRuntime)
 {
   consumer->modelRuntime = (uint32_t)(uintptr_t)modelRuntime;
-  consumer->factionIndex = ((ArmyRuntimeSlot *)modelRuntime[2])->factionIndex;
+  consumer->factionIndex = ((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
   consumer->demandQ4 = modelRuntime[61];
   consumer->priority =
-       g_FactionEnergyAllocationPriorityByModelClass[((ModelDefinition *)*modelRuntime)->runtimeClassId];
+       g_FactionEnergyAllocationPriorityByModelClass
+       [((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId];
 }
 
 /* Collects the powered models (energy demand classState.energyLoadQ4 != 0, not dismantling) and, for models
@@ -6370,10 +6371,11 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       consumerCount++;
     }
     if ((consumerCount < 256) &&
-       ((((ModelDefinition *)*modelRuntime)->modelFlags & MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
+       ((((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->modelFlags &
+         MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
-        attachedRuntime = (int *)attachmentSlot[80];
+        attachedRuntime = (int *)attachmentSlot[80]; /* 5f-format: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
         if (((attachedRuntime != NULL) && (attachedRuntime[61] != 0)) && (consumerCount < 256)) {
           InGameFactionEconomy_FillEnergyConsumer(&consumers[consumerCount],attachedRuntime);
           consumerCount++;
@@ -6457,7 +6459,7 @@ static void InGameFactionEconomy_AllocateFactionEnergy
   /* fixed demand: 1 energy (0x10 Q4) per army asset, 5 (0x50) when its definitionClassValue74 is set */
   armyAssetDemand = 0;
   for (assetIndex = 0; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
-    if (((ArmyAssetRecord *)factionRecord->primaryArmyAssetPointersOrIds[assetIndex])->definitionClassValue74 == 0) {
+    if (((ArmyAssetRecord *)factionRecord->primaryArmyAssetPointersOrIds[assetIndex])->definitionClassValue74 == 0) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       armyAssetDemand = armyAssetDemand + 16;
     }
     else {
@@ -6626,7 +6628,7 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
   INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       (TextResourceId)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text;
+       (TextResourceId)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
   FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
        INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId);
   return;
@@ -6928,7 +6930,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 /* Optional initialisation step of new and loaded sessions; it always succeeds (returns 0), so the callers' failure
    branches never run.
 */
-uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)
+uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument)
 
 {
   return 0;

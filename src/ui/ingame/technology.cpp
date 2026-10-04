@@ -378,8 +378,8 @@ void InGameTechnologyResearch_StartSelected(void *source)
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(inGameRoot,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != NULL) {
-    modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
-                  g_ModelRuntimeRebaseDelta;
+    modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
+                        (intptr_t)g_ModelRuntimeRebaseDelta);
     doubledTechnologyId = 0;
     if (UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,NULL,TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(inGameRoot,technologyAreaTab7),
@@ -465,7 +465,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in armyRecord) */
     ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId,&armyRecord);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
-         (GraphicsTextureSourceAsset *)armyRecord[1].rootNodeOffsetOrPointer;
+         (GraphicsTextureSourceAsset *)armyRecord[1].rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord +0x1C (dword read as texture source) */
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB1,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB2,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB3,&inGameRoot->base);
@@ -590,7 +590,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
         UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
       }
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)descriptionTextId;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)(uintptr_t)descriptionTextId;
     }
   }
   return;

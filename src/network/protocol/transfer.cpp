@@ -361,7 +361,7 @@ SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks = 0;
 
 uint32_t g_FrontendTransferResponsePending = 0;
 
-uint32_t g_FrontendLocalPlayerPcxPreview = 0;
+uintptr_t g_FrontendLocalPlayerPcxPreview = 0;
 
 uint32_t g_FrontendPendingSessionPlayerCount = 0;
 
@@ -623,7 +623,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
      for packets that are not handled here. */
   while (g_NetworkBackendSlot4
                   ((WinSockAddress *)
-                   (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
+                   (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + (uintptr_t)g_UiRuntimeRecordEndpointSlots),256,
                    (uint8_t *)(g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex))) {
     slotIndex = g_UiRuntimeRecordWriteIndex;
     nextSlotIndex = slotIndex + 1;
@@ -632,7 +632,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
       continue;
     }
     senderEndpointSlot =
-         (UiTransferSenderEndpointSlot *)(slotIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots);
+         (UiTransferSenderEndpointSlot *)(slotIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + (uintptr_t)g_UiRuntimeRecordEndpointSlots);
     if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_80030_MAILBOX_CHUNK) {
       UiTransferMailbox_ReceiveChunk(ringRecord,senderEndpointSlot);
     }

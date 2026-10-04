@@ -176,8 +176,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
                                           modelRuntime,assetId);
       }
       else if (g_AiWorkspace00Count < AI_WORKSPACE00_CAPACITY) {
-        g_AiWorkspace00Structures[g_AiWorkspace00Count].runtimeSlotAddressOrZero =
-             (AiWorkspaceRuntimeSlotAddress32)modelRuntime;
+        g_AiWorkspace00Structures[g_AiWorkspace00Count].runtimeSlotAddressOrZero = modelRuntime;
         g_AiWorkspace00Structures[g_AiWorkspace00Count].armyAssetId = assetId;
         g_AiWorkspace00Count++;
         if (assetId == ARM_0300_BUILDING_MDL0301) {
@@ -221,7 +220,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8);
+    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     AiPlanningRebuild_AddUnassignedStructureEntry(assetId);
     AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace04RequestedAssets,&g_AiWorkspace04Count,
                                       AI_WORKSPACE04_CAPACITY,NULL,assetId);
@@ -230,7 +229,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8);
+    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     if (assetId < ARM_0300_BUILDING_MDL0301) {
       AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,NULL,
                                         assetId);
@@ -258,7 +257,7 @@ static void AiPlanningRebuild_AddAssetsInProduction(void)
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
     slotWords = (int *)structureEntry->runtimeSlotAddressOrZero;
     if (slotWords != NULL) {
-      slotDefinition = (ModelDefinition *)*slotWords;
+      slotDefinition = ((ModelRuntimeSlot *)slotWords)->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) {
         if (slotWords[46] == 1) {
           AiPlanningRebuild_AddUnassignedStructureEntry(slotWords[24]);
@@ -455,8 +454,8 @@ static uint32_t AiPlanningRebuild_CollectProductionMask(void)
   productionMask = 0;
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    if ((int *)structureEntry->runtimeSlotAddressOrZero != NULL) {
-      slotDefinition = (ModelDefinition *)*(int *)structureEntry->runtimeSlotAddressOrZero;
+    if (structureEntry->runtimeSlotAddressOrZero != NULL) {
+      slotDefinition = structureEntry->runtimeSlotAddressOrZero->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
         productionMask = productionMask | slotDefinition->classParameterC4;
       }
@@ -1080,7 +1079,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-               (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
+               (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
                worldRuntime);
     AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
     return;

@@ -226,7 +226,9 @@ static void Thandor_SelfTestStretchCompare(void)
                 header, (SoftwareFramebufferAccess *)fbMine);
             original32(dstH, dstW, 0, 4, 0, asset, fbTheirs);
         }
+#if defined(_M_IX86)
         __asm emms
+#endif
         for (i = 0; i < total && mine[i] == theirs[i]; i++) {
         }
         if (i < total) {

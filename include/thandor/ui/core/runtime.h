@@ -114,7 +114,7 @@ extern RuntimeSpinLockValue *g_UiRuntimeFrameLock;
 extern UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback;
 
 extern UiRuntimeRecord *g_UiRuntimeRecordRing;
-extern uint32_t g_UiRuntimeRecordEndpointSlots;
+extern uintptr_t g_UiRuntimeRecordEndpointSlots;
 extern uint8_t *g_UiTransferDataBuffer;
 extern UiTransferEndpointDescriptor *g_UiTransferEndpointBuffer;
 extern RuntimeSpinLockValue g_UiRuntimeRecordRingLock;

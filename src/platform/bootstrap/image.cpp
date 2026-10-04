@@ -15,6 +15,22 @@
 
 #include <thandor/platform/bootstrap/image.h>
 
+/* Instruction, frame and stack pointer of a CONTEXT and the StackWalk64 machine type of this build. The
+   crash logs were written for x86; the x64 build logs the same through Rip/Rbp/Rsp (5f). */
+#if defined(_M_IX86)
+#define CRASH_MACHINE_TYPE IMAGE_FILE_MACHINE_I386
+#define CONTEXT_PC(context) ((context).Eip)
+#define CONTEXT_FP(context) ((context).Ebp)
+#define CONTEXT_SP(context) ((context).Esp)
+#elif defined(_M_X64)
+#define CRASH_MACHINE_TYPE IMAGE_FILE_MACHINE_AMD64
+#define CONTEXT_PC(context) ((context).Rip)
+#define CONTEXT_FP(context) ((context).Rbp)
+#define CONTEXT_SP(context) ((context).Rsp)
+#else
+#error "crash handler: unsupported architecture"
+#endif
+
 static void executable_directory(char *out, size_t capacity)
 {
     char *slash;
@@ -59,11 +75,11 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
         initialized = 1;
     }
     memset(&frame, 0, sizeof frame);
-    frame.AddrPC.Offset = context.Eip;
+    frame.AddrPC.Offset = CONTEXT_PC(context);
     frame.AddrPC.Mode = AddrModeFlat;
-    frame.AddrFrame.Offset = context.Ebp;
+    frame.AddrFrame.Offset = CONTEXT_FP(context);
     frame.AddrFrame.Mode = AddrModeFlat;
-    frame.AddrStack.Offset = context.Esp;
+    frame.AddrStack.Offset = CONTEXT_SP(context);
     frame.AddrStack.Mode = AddrModeFlat;
     for (depth = 0; depth < 48; depth++) {
         char buffer[sizeof(SYMBOL_INFO) + 256];
@@ -71,7 +87,7 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
         IMAGEHLP_LINE64 line;
         DWORD64 displacement = 0;
         DWORD lineDisplacement = 0;
-        if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &frame, &context, NULL,
+        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context, NULL,
                          SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
             break;
         }
@@ -126,10 +142,11 @@ void Thandor_LogStack(const char *reason, unsigned value)
         return;
     }
     fprintf(out, "%s 0x%08X\n", reason, value);
-    /* RtlCaptureContext reads the caller's return address through EBP, which the optimized
-       build does not keep as a frame pointer (EBP may be 0). Capture ESP/EBP/EIP directly. */
     memset(&context, 0, sizeof context);
     context.ContextFlags = CONTEXT_CONTROL;
+#if defined(_M_IX86)
+    /* RtlCaptureContext reads the caller's return address through EBP, which the optimized
+       build does not keep as a frame pointer (EBP may be 0). Capture ESP/EBP/EIP directly. */
     {
         DWORD espValue;
         DWORD ebpValue;
@@ -146,6 +163,10 @@ void Thandor_LogStack(const char *reason, unsigned value)
         context.Ebp = ebpValue;
         context.Eip = eipValue;
     }
+#else
+    /* x64: the stack walk unwinds through the unwind tables, not a frame pointer */
+    RtlCaptureContext(&context);
+#endif
     log_stack_thread(out, &context, GetCurrentThread());
     fclose(out);
 }
@@ -161,7 +182,7 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     HANDLE file;
     DWORD written;
     const CONTEXT *c = info->ContextRecord;
-    const DWORD *stack = (const DWORD *)(uintptr_t)c->Esp;
+    const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(*c);
     SYSTEMTIME now;
     int i;
     int n;
@@ -187,8 +208,15 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
                   (DWORD)info->ExceptionRecord->ExceptionInformation[0],
                   (DWORD)info->ExceptionRecord->ExceptionInformation[1]);
     WriteFile(file, line, n, &written, NULL);
+#if defined(_M_IX86)
     n = wsprintfA(line, "eip=%08lX eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\r\n",
                   c->Eip, c->Eax, c->Ebx, c->Ecx, c->Edx, c->Esi, c->Edi, c->Ebp, c->Esp);
+#else
+    /* x64: each register as high and low dword (wsprintf has no 64-bit format) */
+    n = wsprintfA(line, "rip=%08lX%08lX rax=%08lX%08lX rbp=%08lX%08lX rsp=%08lX%08lX\r\n",
+                  (DWORD)(c->Rip >> 32), (DWORD)c->Rip, (DWORD)(c->Rax >> 32), (DWORD)c->Rax,
+                  (DWORD)(c->Rbp >> 32), (DWORD)c->Rbp, (DWORD)(c->Rsp >> 32), (DWORD)c->Rsp);
+#endif
     WriteFile(file, line, n, &written, NULL);
     for (i = 0; i < 512; i += 8) {
         if (!Thandor_IsReadable(stack + i, 32)) {
@@ -232,13 +260,19 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
                 info->ExceptionRecord->ExceptionInformation[0] == 1 ? "write" : "read",
                 info->ExceptionRecord->ExceptionInformation[1]);
     }
+#if defined(_M_IX86)
     fprintf(out, "eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\n\n",
             context.Eax, context.Ebx, context.Ecx, context.Edx, context.Esi, context.Edi, context.Ebp,
             context.Esp);
+#else
+    fprintf(out, "rax=%016llX rbx=%016llX rcx=%016llX rdx=%016llX\nrsi=%016llX rdi=%016llX rbp=%016llX rsp=%016llX\n\n",
+            context.Rax, context.Rbx, context.Rcx, context.Rdx, context.Rsi, context.Rdi, context.Rbp,
+            context.Rsp);
+#endif
     fflush(out);
     /* Raw stack words first: the stack walk below can fault on a corrupted stack. */
     {
-        const DWORD *stack = (const DWORD *)(uintptr_t)context.Esp;
+        const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(context);
         int i;
         fprintf(out, "stack:");
         for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
@@ -252,7 +286,7 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     SymInitialize(process, NULL, TRUE);
     /* Code addresses among the raw stack words (return addresses of the frames). */
     {
-        const DWORD *stack = (const DWORD *)(uintptr_t)context.Esp;
+        const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(context);
         int i;
         for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
             if (stack[i] >= REBUILT_IMAGE_CODE_START && stack[i] < REBUILT_IMAGE_BASE + CRASH_LOG_REBUILT_IMAGE_SPAN) {
@@ -265,11 +299,11 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     }
     __try {
     memset(&frame, 0, sizeof frame);
-    frame.AddrPC.Offset = context.Eip;
+    frame.AddrPC.Offset = CONTEXT_PC(context);
     frame.AddrPC.Mode = AddrModeFlat;
-    frame.AddrFrame.Offset = context.Ebp;
+    frame.AddrFrame.Offset = CONTEXT_FP(context);
     frame.AddrFrame.Mode = AddrModeFlat;
-    frame.AddrStack.Offset = context.Esp;
+    frame.AddrStack.Offset = CONTEXT_SP(context);
     frame.AddrStack.Mode = AddrModeFlat;
     for (depth = 0; depth < 64; depth++) {
         char buffer[sizeof(SYMBOL_INFO) + 256];
@@ -277,7 +311,7 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
         IMAGEHLP_LINE64 line;
         DWORD64 displacement = 0;
         DWORD lineDisplacement = 0;
-        if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &frame, &context, NULL,
+        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context, NULL,
                          SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
             break;
         }
@@ -336,7 +370,7 @@ static DWORD WINAPI watchdog_thread(void *parameter)
         memset(&context, 0, sizeof context);
         context.ContextFlags = CONTEXT_FULL;
         if (GetThreadContext(g_watchedThread, &context)) {
-            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName((void *)(uintptr_t)context.Eip));
+            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName((void *)(uintptr_t)CONTEXT_PC(context)));
             log_stack_thread(out, &context, g_watchedThread);
         }
         ResumeThread(g_watchedThread);
@@ -400,7 +434,7 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
             context.ContextFlags = CONTEXT_FULL;
             if (GetThreadContext(g_watchedThread, &context)) {
                 fprintf(out, "sample %d: main thread at %s\n", reported + 1,
-                        Thandor_SymbolName((void *)(uintptr_t)context.Eip));
+                        Thandor_SymbolName((void *)(uintptr_t)CONTEXT_PC(context)));
                 log_stack_thread(out, &context, g_watchedThread);
             }
             ResumeThread(g_watchedThread);

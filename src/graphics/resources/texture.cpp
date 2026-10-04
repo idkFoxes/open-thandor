@@ -1009,7 +1009,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   state->edgeTransparent = (edgeEntry->argb8888 & ARGB8888_ALPHA_MASK) == 0;
   edgeEntry->argb8888 = edgeEntry->argb8888 & ARGB8888_RGB_MASK;
   /* packed sprites are padded to whole dwords */
-  state->packedPixels = (uint8_t *)((uint32_t)workPixels & ~3u);
+  state->packedPixels = (uint8_t *)((uintptr_t)workPixels & ~(uintptr_t)3);
   state->packedPixelBytes = 0;
   if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,3)) {
     return FATAL_ERROR_GENERAL_FAILURE;
@@ -1175,7 +1175,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   allocationSizeBytes = (sourceAsset->common).allocationSizeBytes;
   cloneAllocationError = g_MemoryApi.alloc(allocationSizeBytes,(void **)&clonedAsset);
   if (cloneAllocationError != 0) {
-    return (GraphicsTextureSourceAsset *)cloneAllocationError;
+    return (GraphicsTextureSourceAsset *)(uintptr_t)cloneAllocationError;
   }
   /* copy the whole allocation dword by dword (a trailing partial dword is not copied) */
   sourceDword = (const uint32_t *)sourceAsset;
@@ -1189,7 +1189,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
     return (GraphicsTextureSourceAsset *)clonedAsset;
   }
   /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
-  return (GraphicsTextureSourceAsset *)g_MemoryApi.free(clonedAsset);
+  return (GraphicsTextureSourceAsset *)(uintptr_t)g_MemoryApi.free(clonedAsset);
 }
 
 
@@ -1215,8 +1215,8 @@ uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourc
       /* the red and green shifts yield byte offsets into the dword tables (channel value * 4) */
       paletteEntryCursor->framebufferPixel =
            (argb8888 & ARGB8888_ALPHA_MASK) +
-           *(int *)((int)g_SoftwarePixelPackTables->red + ((argb8888 & ARGB8888_RED_MASK) >> 14)) +
-           *(int *)((int)g_SoftwarePixelPackTables->green + ((argb8888 & ARGB8888_GREEN_MASK) >> 6)) +
+           *(int *)((uintptr_t)g_SoftwarePixelPackTables->red + ((argb8888 & ARGB8888_RED_MASK) >> 14)) +
+           *(int *)((uintptr_t)g_SoftwarePixelPackTables->green + ((argb8888 & ARGB8888_GREEN_MASK) >> 6)) +
            g_SoftwarePixelPackTables->blue[argb8888 & ARGB8888_BLUE_MASK];
       paletteEntryCursor++;
     }

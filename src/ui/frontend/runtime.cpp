@@ -553,7 +553,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x50)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x50)}, /* 5f-format: FrontendUiImage.factionRow1ParticipantsLabel_fields (UI template text pointer) */
         { /* +1780 factionRow2ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x17DC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -562,7 +562,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xA0)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xA0)}, /* 5f-format: FrontendUiImage.factionRow2ParticipantsLabel_fields (UI template text pointer) */
         { /* +17DC factionRow3ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1838), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -571,7 +571,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xF0)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0xF0)}, /* 5f-format: FrontendUiImage.factionRow3ParticipantsLabel_fields (UI template text pointer) */
         { /* +1838 factionRow4ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1894), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -580,7 +580,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x140)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x140)}, /* 5f-format: FrontendUiImage.factionRow4ParticipantsLabel_fields (UI template text pointer) */
         { /* +1894 factionRow5ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x18F0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -589,7 +589,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x190)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x190)}, /* 5f-format: FrontendUiImage.factionRow5ParticipantsLabel_fields (UI template text pointer) */
         { /* +18F0 factionRow6ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x194C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -598,7 +598,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x1E0)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x1E0)}, /* 5f-format: FrontendUiImage.factionRow6ParticipantsLabel_fields (UI template text pointer) */
         { /* +194C factionRow7ParticipantsLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x19A8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -607,7 +607,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x230)},
+            0x00000015, 0x00000000, (uint32_t)((uint8_t *)&g_FrontendUiDisplayModeAndTaskAssignmentScratch + 0x230)}, /* 5f-format: FrontendUiImage.factionRow7ParticipantsLabel_fields (UI template text pointer) */
         { /* +19A8 rosterFactionHeader g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1A08), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC6C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -1885,7 +1885,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkPlayerCountTextUtf16},
+            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkPlayerCountTextUtf16}, /* 5f-format: FrontendUiImage.maxPlayersValueText_fields (UI template text pointer) */
         { /* +51AC networkSpeedSlider g_UiRangeSliderControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5214), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4EDC),
             .vtable = THANDOR_PTR(&g_UiRangeSliderControlVtable),
@@ -1903,7 +1903,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkSpeedLabelUtf16},
+            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkSpeedLabelUtf16}, /* 5f-format: FrontendUiImage.networkSpeedValueText_fields (UI template text pointer) */
         { /* +5270 maxPlayersLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x52CC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4EDC),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2059,15 +2059,15 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             0x00000008, 0x00000000, 0x00002117},
 };
 
-uint32_t g_FrontendRootNode = 0;
+uintptr_t g_FrontendRootNode = 0;
 
 uint32_t g_FrontendPendingPageAction = 0;
 
 uint32_t g_FrontendRuntimeFlags = 0;
 
-uint32_t g_FrontendCentralTextureSet = 0;
+uintptr_t g_FrontendCentralTextureSet = 0;
 
-uint32_t g_FrontendCentralPaletteAsset = 0;
+uintptr_t g_FrontendCentralPaletteAsset = 0;
 
 GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = 0;
 
@@ -2135,7 +2135,7 @@ static WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, /* keyframe 1 */
 };
 
-static uint32_t g_FrontendCentralRomAsset = 0;
+static uintptr_t g_FrontendCentralRomAsset = 0;
 
 static WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
 
@@ -2457,7 +2457,7 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
        (uint32_t)(encodedImages - (uint8_t *)bundleHeader) + levelEncodedBytes + fieldGridEncodedBytes;
   allocError = g_MemoryApi.alloc(transferByteCount,&allocPayload);
   transferAllocation =
-       (uint32_t *)FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+       (uint32_t *)FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   transferDwordCursor = transferAllocation;
   transferSourceDwords = (uint32_t *)bundleHeader;
   for (remainingDwords = transferByteCount >> 2; remainingDwords != 0; remainingDwords--) {
@@ -2475,7 +2475,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
 {
   void *loadedPackageEntry;
   uint32_t packageLoadErrorCode;
-  uint32_t checkedValue;
+  uintptr_t checkedValue;
   uint16_t *fieldGridPath;
   FieldGridAsset *fieldGrid;
   FrontendLoadedLevelAsset *loadedLevelAsset;
@@ -2484,13 +2484,13 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
      level before */
   if ((g_FrontendLoadedLevelAsset != NULL) &&
      (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)) {
-    Resource_Release((void *)g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
+    Resource_Release((void *)g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = NULL;
   loadedPackageEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
   checkedValue = FatalError_ExitIfFailed
-                      (loadedPackageEntry != NULL ? (uint32_t)loadedPackageEntry : packageLoadErrorCode,
+                      (loadedPackageEntry != NULL ? (uintptr_t)loadedPackageEntry : packageLoadErrorCode,
                        loadedPackageEntry == NULL);
   g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
   fieldGridPath = (uint16_t *)((uint8_t *)g_FrontendLoadedLevelAsset +
@@ -2501,13 +2501,13 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   fieldGrid = (FieldGridAsset *)Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
   if (fieldGrid == NULL) {
     /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
-    fieldGrid = (FieldGridAsset *)packageLoadErrorCode;
+    fieldGrid = (FieldGridAsset *)(uintptr_t)packageLoadErrorCode;
   }
   loadedLevelAsset = g_FrontendLoadedLevelAsset;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     FrontendMainLoop_OfferLevelToClients(loadedLevelAsset,fieldGrid);
   }
-  loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid;
+  loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   FrontendPlayerRuntime_InitializeFactionAssignments();
 }
 
@@ -2887,7 +2887,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
   
   rowIndex = 0;
   do {
-    if ((int)factionControl - g_FrontendRootNode ==
+    if ((int)((uintptr_t)factionControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -2916,7 +2916,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
   
   rowIndex = 0;
   do {
-    if ((int)playerControl - g_FrontendRootNode ==
+    if ((int)((uintptr_t)playerControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -2945,7 +2945,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
   
   rowIndex = 0;
   do {
-    if ((int)selectionRowControl - g_FrontendRootNode ==
+    if ((int)((uintptr_t)selectionRowControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -3813,7 +3813,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
         g_FrontendRomTransitionElapsedTicks = 0;
         g_FrontendRomTransitionTargetRecordId = FRONTEND_ROM_TRANSITION_NO_TARGET;
         g_FrontendRomTransitionSplineKeyframeCount = 2;
-        g_FrontendRomTransitionSplineKeyframes = (uint32_t)g_FrontendRomTransitionKeyframes;
+        g_FrontendRomTransitionSplineKeyframes = (uintptr_t)g_FrontendRomTransitionKeyframes;
         g_FrontendRomTransitionKeyframes[1].channel3Q12 = keyframeChannel3;
         g_FrontendRomTransitionKeyframes[1].channel4Q12 = keyframeChannel4;
         g_FrontendRomTransitionKeyframes[1].channel5Q12 = keyframeChannel5;
@@ -4067,14 +4067,14 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
 
 {
   FrontendModelPointerContextFlags *compactLayoutFlags;
-  int parentNodeAddress;
+  uintptr_t parentNodeAddress;
   FrontendRootPageState *frontendRootPage;
-  
-  parentNodeAddress = (int)sourceNode->parent;
+
+  parentNodeAddress = (uintptr_t)sourceNode->parent;
   frontendRootPage = (FrontendRootPageState *)sourceNode;
   while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
     frontendRootPage = (FrontendRootPageState *)(frontendRootPage->rootNode).parent;
-    parentNodeAddress = (int)(frontendRootPage->rootNode).parent;
+    parentNodeAddress = (uintptr_t)(frontendRootPage->rootNode).parent;
   }
   if (sourceNode == &frontendRootPage->returnToMainActionControl) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4221,7 +4221,7 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
   int controlOffsetFromParent;
   FrontendDisplayAdapterIndex adapterIndex;
 
-  controlOffsetFromParent = (int)sourceNode - (int)sourceNode->parent;
+  controlOffsetFromParent = (int)((uintptr_t)sourceNode - (uintptr_t)sourceNode->parent);
   /* any button other than options 1..4 selects adapter 4 */
   if (controlOffsetFromParent == FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption1)) {
     adapterIndex = 0;
@@ -4747,14 +4747,14 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = centralResourceErrorCode;
     return false;
   }
-  g_FrontendCentralTextureSet = (uint32_t)centralTextureSet;
+  g_FrontendCentralTextureSet = (uintptr_t)centralTextureSet;
   centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)g_GfxTexturenZentralePalPathUtf16,
                                                           &centralResourceErrorCode);
   if (centralPaletteAsset == NULL) {
     *outError = centralResourceErrorCode;
     return false;
   }
-  g_FrontendCentralPaletteAsset = (uint32_t)centralPaletteAsset;
+  g_FrontendCentralPaletteAsset = (uintptr_t)centralPaletteAsset;
   RichTextCommandStream_PatchPayloadBySelector
             (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
   error = FrontendInit_LoadMenuSounds();
@@ -4767,7 +4767,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = romLoadErrorCode;
     return false;
   }
-  g_FrontendCentralRomAsset = (uint32_t)centralRomAsset;
+  g_FrontendCentralRomAsset = (uintptr_t)centralRomAsset;
   error = RomAsset_PrepareRecords((RomAssetHeader *)centralRomAsset);
   if (error != 0) {
     *outError = error;
@@ -4794,7 +4794,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   frontendUiState = (FrontendRootResourceSlots *)allocPayload;
   worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(frontendUiState,menuRoomModelView);
   templateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
-  g_FrontendRootNode = (uint32_t)frontendUiState;
+  g_FrontendRootNode = (uintptr_t)frontendUiState;
   rootDwords = (uint32_t *)frontendUiState;
   for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
     *rootDwords = *templateDwords;
@@ -4871,7 +4871,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 void Frontend_StateTick(void)
 
 {
-  uint32_t frontendRoot; /* passed to the packet handlers */
+  uintptr_t frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
   Bool8 callResult;
   void *packet;

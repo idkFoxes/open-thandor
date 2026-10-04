@@ -39,7 +39,7 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
   }
   /* Original quirk: the error text gets the last registry slot's pointer, not the requested id */
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registryDefinition,g_PackageLastErrorPath);
   return NULL;
 }
 
@@ -157,9 +157,11 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
         ownerModelNode = (ModelRuntimeNode *)((uint8_t *)ownerModelNode + g_ModelRuntimeRebaseDelta);
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
+        /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
         ownerModelNode = (ModelRuntimeNode *)((int)g_ArmyRuntimeRebaseBaseMinusOne + (int)ownerModelNode);
       }
     }
+    /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */
     effectSlot->modelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
     effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
@@ -167,6 +169,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
     registryDefinition = NULL;
     for (registryIndex = 0; registryIndex < EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
       registryDefinition = g_EffectDefinitionRegistry[registryIndex];
+      /* 5f-format: EffectRuntimeSlot.definitionOrSavedId */
       if (registryDefinition != NULL &&
           effectSlot->definitionOrSavedId.definition == (EffectDefinition *)registryDefinition->definitionId) {
         break;

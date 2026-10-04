@@ -101,7 +101,9 @@ void DebugMovieDecoder_CompareBefore(MovieRuntime *movie, uint32_t height, uint3
     memcpy(s_MovieCompareShadow, movie->argbPixels, width * height * 4);
   }
   s_MovieCompareConsumed = original(height, width, s_MovieCompareShadow, encoded);
+#if defined(_M_IX86)
   __asm emms
+#endif
 }
 
 void DebugMovieDecoder_CompareAfter(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed)

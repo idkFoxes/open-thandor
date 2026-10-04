@@ -336,9 +336,9 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
     if ((packageEntry != NULL) &&
        (g_FileSystemSeek
             (FILESYSTEM_SEEK_BEGIN,packageEntry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
-             THANDOR_PTR(packageFileHandle)) == 0)) {
+             THANDOR_PTR((uintptr_t)packageFileHandle)) == 0)) {
       isSharedPackageHandle++;
-      handle = THANDOR_PTR(packageFileHandle);
+      handle = THANDOR_PTR((uintptr_t)packageFileHandle);
     }
     else {
       WidePath_CombineDirectoryAndLeaf

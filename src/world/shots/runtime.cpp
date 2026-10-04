@@ -248,7 +248,7 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
   }
   /* Original quirk: the original formats registryDefinition, i.e. the last registry slot, not the missing id */
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registryDefinition,g_PackageLastErrorPath);
   return NULL;
 }
 
@@ -281,13 +281,16 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
     savedOwnerArmy = shotSlot->ownerAndTrajectory.ownerArmyRuntime;
     if (shotSlot->modelNodeOrSavedOffset.modelNode != NULL) {
       if (rebasedRuntimeState != NULL) {
+        /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
         rebasedRuntimeState = (void *)((int)rebasedRuntimeState + g_ModelRuntimeRebaseDelta);
       }
       rebasedOwnerArmy = NULL;
       if (savedOwnerArmy != NULL) {
+        /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime (saved offset) */
         rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)savedOwnerArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
+      /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
       shotSlot->modelNodeOrSavedOffset.modelNode =
            (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
       shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer = rebasedRuntimeState;
@@ -298,6 +301,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
       for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
            registrySlotsRemaining--) {
         registryDefinition = *registryCursor;
+        /* 5f-format: ShotRuntimeSlot.definitionOrSavedId */
         if (registryDefinition != NULL &&
             shotSlot->definitionOrSavedId.definition == (ShotDefinition *)registryDefinition->definitionId) {
           break;

@@ -18,9 +18,11 @@
 #define SPATIAL_BIN_SHIFT 14
 
 /* Primitive queue pool layout (GraphicsPrimitiveQueue_AllocateGlobalPool/ResetGlobal): a 0x20-byte header, then
-   per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself. */
-#define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES 0x20
-#define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET 0xA0
+   per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself
+   (on x64 the header and nodes are wider; the packet stays 0x80 bytes). */
+#define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES ((uint32_t)offsetof(GraphicsPrimitiveQueue, primaryNodes))
+#define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET \
+    ((uint32_t)(2 * sizeof(GraphicsPrimitiveQueueNode) + sizeof(GraphicsPrimitivePacket)))
 /* GraphicsPrimitiveQueue_RadixSortForRendering ends the sorted traversal list with this node pointer */
 #define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)(intptr_t)-1) /* 0xffffffff in the original */
 /* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16

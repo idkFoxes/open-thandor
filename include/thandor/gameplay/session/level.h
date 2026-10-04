@@ -56,7 +56,7 @@ extern InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock;
 extern uint32_t g_MoviePlaybackBaseFrameGroup;
 extern uint32_t g_MoviePlaybackScheduleCounter;
 extern uint32_t g_MoviePlaybackScheduleSpan;
-extern uint32_t g_SoundPackageHandle;
+extern EngineFileHandle g_SoundPackageHandle;
 
 extern uint16_t g_ArmyHexPathUtf16[9];
 

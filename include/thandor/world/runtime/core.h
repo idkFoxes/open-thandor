@@ -94,7 +94,7 @@ WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world);
 
 WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world);
 
-void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world);
+void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uintptr_t *array,WorldRuntimeContext *world);
 
 WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 

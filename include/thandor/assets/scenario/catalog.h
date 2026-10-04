@@ -173,7 +173,7 @@ extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset;
 extern uint32_t g_FrontendScenarioTransferState;
 extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* level/campaign/save path (level\<name>.lev etc.) built for Package_LoadEntry */
 
-extern uint32_t g_FrontendLoadedCampaignAsset;
+extern uintptr_t g_FrontendLoadedCampaignAsset;
 
 extern uint16_t g_UnreferencedLevelPatternUtf16[12]; /* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
 extern uint16_t g_UnreferencedCampaignPatternUtf16[12]; /* UTF-16 L"level\\*.cgn"; no code reference found */

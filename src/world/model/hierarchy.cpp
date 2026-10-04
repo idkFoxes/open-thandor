@@ -747,7 +747,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
    of every model of class 13 (ModelDefinition.runtimeClassId) that points at targetRuntimeId, so no model keeps
    aiming at a destroyed object.
 */
-void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
+void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,int *modelRuntime)
 
 {
   ModelRuntimeSlot *modelRuntimeSlot;
@@ -760,8 +760,9 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
   modelRuntimeSlot = (ModelRuntimeSlot *)modelRuntime;
   childrenRemaining = modelRuntimeSlot->attachmentCount;
   if (modelRuntimeSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13 &&
-      targetRuntimeId == modelRuntimeSlot->classLinkState.armyLinkOrState.classState) {
-    modelRuntimeSlot->classLinkState.armyLinkOrState.classState = 0;
+      targetRuntimeId == modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime) {
+    /* class 13 links its army here (the classState view of the same pointer in the original) */
+    modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime = NULL;
   }
   /* empty attachment slots are passed on too; the callee returns at once for NULL */
   attachment = modelRuntimeSlot->attachments;
@@ -865,6 +866,7 @@ Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
       if (((attachmentKind == 0) || (attachmentKind == 1)) &&
          (childIndex == attachmentTransformCursor->packedKindAndSelector >> 4)) {
+        /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets (relocated to 32-bit addresses) */
         childWalked =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntime,
@@ -1008,6 +1010,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
       newNode->childNodes[childIndex] = NULL;
     }
     else {
+      /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets (relocated to 32-bit addresses) */
       if (!ModelNodeRuntime_CreateHierarchyRecursive
               (paletteAsset,textureSet,modelRuntime,
                (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex],worldRuntime,
@@ -1023,6 +1026,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
           modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransform;
           modelRuntime->attachments[attachmentSlot].childNodeIndex = childIndex;
           modelRuntime->attachments[attachmentSlot].parentModelNodeOrSavedOffset = newNode;
+          /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
           childDefinition = (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex];
           modelRuntime->attachments[attachmentSlot].childModelRuntimeOrSavedOffset = NULL;
           rotationAngleA = childDefinition->localRotationAngle0;

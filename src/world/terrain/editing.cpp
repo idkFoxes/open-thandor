@@ -10,9 +10,9 @@
 
 /* Module data. */
 
-static uint32_t g_TerrainMaterialEditFieldGrid = 0;
+static uintptr_t g_TerrainMaterialEditFieldGrid = 0;
 
-static uint32_t g_TerrainMaterialEditDeltaBuffer = 0;
+static uintptr_t g_TerrainMaterialEditDeltaBuffer = 0;
 
 static uint32_t g_TerrainMaterialEditReferenceMaterialByte = 0;
 
@@ -110,8 +110,8 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   if (referenceMaterial != replacementMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
-    g_TerrainMaterialEditFieldGrid = (uint32_t)fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = (uint32_t)playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditFieldGrid = (uintptr_t)fieldGridAsset;
+    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)playerBlock->terrainMaterialEditPlane;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterial;
     TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY,gridX);
   }
@@ -154,8 +154,8 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
       FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
-    g_TerrainMaterialEditFieldGrid = (uint32_t)fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = (uint32_t)playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditFieldGrid = (uintptr_t)fieldGridAsset;
+    g_TerrainMaterialEditDeltaBuffer = (uintptr_t)playerBlock->terrainMaterialEditPlane;
     TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY,gridX);
   }
 }
@@ -366,7 +366,7 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
   ArmyRuntimeSavedOffset savedArmyOffset;
   uint32_t extractionDescriptor;
   TerrainRegionCollectionCount storedCount;
-  int entriesBase;
+  uintptr_t entriesBase;
 
   storedCount = g_TerrainRegionCollectionStoredCount;
   g_TerrainRegionCollectionVisitedCount++;
@@ -378,11 +378,11 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
     LOCK();
     savedArmyOffset = cell->armyRuntimeSavedOffset;
     cell->armyRuntimeSavedOffset = 0;
-    entriesBase = g_TerrainRegionCollectionEntries;
+    entriesBase = (uintptr_t)g_TerrainRegionCollectionEntries;
     UNLOCK();
     if (storedCount < TERRAIN_REGION_COLLECTION_CAPACITY) {
       g_TerrainRegionCollectionStoredCount++;
-      *(uint32_t *)(g_TerrainRegionCollectionEntries + storedCount * 8) = extractionDescriptor;
+      *(uint32_t *)((uintptr_t)g_TerrainRegionCollectionEntries + storedCount * 8) = extractionDescriptor;
       *(ArmyRuntimeSavedOffset *)(entriesBase + 4 + storedCount * 8) = savedArmyOffset;
     }
   }

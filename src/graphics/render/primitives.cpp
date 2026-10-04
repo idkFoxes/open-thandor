@@ -30,7 +30,8 @@ static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePacket *packet)
 {
   if ((packet->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
-    return ((uint32_t)packet->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
+    /* the texture entry address (its low 32 bits on x64) groups the opaque packets by texture */
+    return ((uint32_t)(uintptr_t)packet->textureEntry | GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE) -
            (packet->renderFlags & GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS);
   }
   return (packet->vertices[0].depth + packet->vertices[1].depth + packet->vertices[2].depth) &

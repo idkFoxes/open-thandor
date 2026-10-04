@@ -16,7 +16,7 @@
 typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime);
 typedef uint8_t * CommandLineFindOptionProc(uint32_t length, char * option);
 typedef uint32_t __cdecl CpuDetectFeaturesProc(void);
-typedef uint32_t FatalErrorPassThroughProc(uint32_t valueOrError, Bool8 failed);
+typedef uintptr_t FatalErrorPassThroughProc(uintptr_t valueOrError, Bool8 failed); /* value or pointer (5f) */
 typedef void FileSystemCloseProc(void * handle);
 typedef uint32_t FileSystemCopyProc(uint16_t * destinationPath, uint16_t * sourcePath);
 typedef uint32_t FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags, uint16_t * path);

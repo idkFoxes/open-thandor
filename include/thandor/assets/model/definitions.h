@@ -25,7 +25,7 @@
 /* Functions are grouped by semantic ownership. */
 
 ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
-          (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList);
 
 void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
@@ -51,7 +51,7 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
 
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
-          (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList);
 
 Bool8 ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);

@@ -31,9 +31,29 @@ THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly
 location shared with the WinMM timer thread (TimerSystem_RegisterPeriodic callbacks): stores value and
 returns the previous contents as uint32_t, in one atomic step. Compiles to XCHG. Sites whose memory only
 one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
+A pointer-sized location (a pointer or uintptr_t/handle slot, 8 bytes on x64) is swapped as a whole and the
+previous contents come back as uintptr_t; on 32-bit every location is 4 bytes and takes the original path.
 */
+#ifdef __cplusplus
+template <typename T, typename V>
+static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
+{
+#if defined(_WIN64)
+    if constexpr (sizeof(T) == 8) {
+        return (uintptr_t)_InterlockedExchangePointer((void *volatile *)(ptr), (void *)(uintptr_t)(value));
+    }
+    else
+#endif
+    {
+        static_assert(sizeof(T) == 4, "THANDOR_ATOMIC_EXCHANGE needs a 4-byte or pointer-sized location");
+        return (uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value));
+    }
+}
+#define THANDOR_ATOMIC_EXCHANGE(ptr, value) thandor_atomic_exchange((ptr), (value))
+#else
 #define THANDOR_ATOMIC_EXCHANGE(ptr, value) \
     ((uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value)))
+#endif
 
 /* ROUND(x): x87 FRNDINT in the default round-to-nearest-even mode. */
 #define ROUND(x) rint(x)
@@ -42,7 +62,7 @@ one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
 cpuid_Version_info(leaf): runs CPUID for leaf. Returns the address of a static array holding the result
 as {EAX, EBX, EDX, ECX} (the CPUID output order); callers read feature bits from offset 8 (EDX).
 */
-static __inline int cpuid_Version_info(int leaf)
+static __inline intptr_t cpuid_Version_info(int leaf)
 {
     static unsigned int regs[4];
     int r[4];
@@ -51,7 +71,7 @@ static __inline int cpuid_Version_info(int leaf)
     regs[1] = (unsigned int)r[1];
     regs[2] = (unsigned int)r[3];
     regs[3] = (unsigned int)r[2];
-    return (int)(uintptr_t)regs;
+    return (intptr_t)regs;
 }
 
 /*

@@ -62,7 +62,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode);
 
-void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime);
+void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,int *modelRuntime);
 
 void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,ArmyRuntimeSlot *armyRuntime);
 

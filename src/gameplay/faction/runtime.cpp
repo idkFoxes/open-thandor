@@ -136,7 +136,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
   int levelRecordsRemaining;
   int factionsRemaining;
   int wordIndex;
-  int scenarioRecord;
+  uintptr_t scenarioRecord;
   uint32_t *technologyMasks;
   uint32_t *secondaryTableCursor;
   uint32_t *primaryRecord;
@@ -255,7 +255,7 @@ static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,Fact
       *assetCount = 0;
       return;
     }
-    *assetIdCursor = (uint32_t)resolvedAsset;
+    *assetIdCursor = (uint32_t)resolvedAsset; /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds (daten.hex) */
     assetIdCursor++;
   }
 }
@@ -285,7 +285,7 @@ void GameFactionRuntime_RebaseLoadedArmyReferences(void)
       savedSlotOffset = factionRecord->runtimeGroupMembers8x32[groupSlotIndex];
       rebasedSlot = NULL;
       if (savedSlotOffset != NULL) {
-        rebasedSlot = (ArmyRuntimeSlot *)((int)savedSlotOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+        rebasedSlot = (ArmyRuntimeSlot *)((int)savedSlotOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 (daten.hex) */
       }
       factionRecord->runtimeGroupMembers8x32[groupSlotIndex] = rebasedSlot;
     }
@@ -421,7 +421,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
    cooldown was below 50 and the hit is far from the old anchor or the cooldown had run out, and the shown faction
    owns the hit army (ownershipRecord[1] = root model node, [2] = owning army). */
 static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks *cooldown,
-          GraphicsWorldCoordinateQ12 *anchorY,GraphicsWorldCoordinateQ12 *anchorX,const int *ownershipRecord,
+          GraphicsWorldCoordinateQ12 *anchorY,GraphicsWorldCoordinateQ12 *anchorX,const ModelRuntimeSlot *ownershipRecord,
           WorldRuntimeContext *worldRuntime,InGameNotificationPriority priority,
           InGameNotificationMovieId notificationMovieId)
 {
@@ -434,7 +434,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
   int distanceX;
   Bool8 notify;
 
-  hitModelNode = (ModelRuntimeNode *)ownershipRecord[1];
+  hitModelNode = ownershipRecord->rootModelNodeOrSavedOffset.modelNode;
   previousCooldown = *cooldown;
   distanceY = *anchorY - hitModelNode->worldTransform.translation.x;
   if (distanceY < 0) {
@@ -452,7 +452,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
   *anchorY = hitX;
   *anchorX = hitY;
   if (notify) {
-    owningArmy = (ArmyRuntimeSlot *)ownershipRecord[2];
+    owningArmy = ownershipRecord->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (worldRuntime->activeFactionRuntimeIndex == owningArmy->factionIndex) {
       InGameNotificationQueue_InsertPriorityRecord
                 (FACTION_IMPACT_ANCHOR,0,(worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
@@ -476,15 +476,15 @@ void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
 {
   /* the root model runtime of the hit model's army: [0] definition, [1] root model node, [2] owning army
      (with its factionIndex) */
-  int *ownershipRecord;
+  ModelRuntimeSlot *ownershipRecord;
   int ownerFactionIndex;
   GameFactionRuntimeRecord *ownerRecord;
 
   ownershipRecord =
-       (int *)hitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
+       hitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
   ownerFactionIndex = hitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
   ownerRecord = &g_GameFactionRuntimeImage.records[ownerFactionIndex];
-  if (((ModelRuntimeSlot *)ownershipRecord)->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
+  if (ownershipRecord->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
     GameFactionRuntime_MoveImpactAlertAnchor(&ownerRecord->primaryAnchorCooldown,&ownerRecord->primaryAnchorYQ12,
                                              &ownerRecord->primaryAnchorXQ12,ownershipRecord,worldRuntime,8,300);
   }
@@ -643,7 +643,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
   for (assetIndex = 0; assetIndex < g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        assetIndex++) {
     if (armyAssetRecord ==
-        (ArmyAssetRecordPrefix *)g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds[assetIndex]) {
+        (ArmyAssetRecordPrefix *)g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds[assetIndex]) { /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
       return false;
     }
   }
@@ -658,7 +658,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
         ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) ||
          (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
         (modelPayload[46] == 1)) {
-      activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[24];
+      activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[24]; /* 5f-format: ModelRuntimeSlot class state word 24 (asset in production) */
       if (armyAssetRecord == activeAssetRecord) {
         return false;
       }
@@ -893,7 +893,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
     if (factionRecord->secondaryArmyAssetCount >= FACTION_ARMY_ASSET_LIST_CAPACITY) {
       return;
     }
-    factionRecord->secondaryArmyAssetPointersOrIds[factionRecord->secondaryArmyAssetCount] = (uint32_t)resolvedAsset;
+    factionRecord->secondaryArmyAssetPointersOrIds[factionRecord->secondaryArmyAssetCount] = (uint32_t)resolvedAsset; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     factionRecord->secondaryArmyAssetCount++;
     repetitionCount--;
   } while (repetitionCount != 0);
@@ -963,7 +963,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   writeIndex = 0;
   assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
   while (assetsRemaining != 0) {
-    if (((uint32_t)armyDefinition == queuedAssets[readIndex]) && (0 < (int)requestedCount)) {
+    if (((uint32_t)armyDefinition == queuedAssets[readIndex]) && (0 < (int)requestedCount)) { /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
       readIndex++;
       secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
       *secondaryCount = *secondaryCount - 1;
@@ -1024,7 +1024,7 @@ static Bool8 GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRe
 
   primaryAssets = factionRecord->primaryArmyAssetPointersOrIds;
   for (assetIndex = 0; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
-    if (armyDefinition == (const ArmyAssetRecordPrefix *)primaryAssets[assetIndex]) {
+    if (armyDefinition == (const ArmyAssetRecordPrefix *)primaryAssets[assetIndex]) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       /* close the gap */
       for (; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
         primaryAssets[assetIndex] = primaryAssets[assetIndex + 1];
@@ -1056,7 +1056,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     return;
   }
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  playerBlock->pendingPlacementArmyAsset = (uint32_t)armyDefinition;
+  playerBlock->pendingPlacementArmyAsset = (uintptr_t)armyDefinition;
   if (!GameFactionRuntime_RemoveFirstPrimaryArmyAsset(&g_GameFactionRuntimeImage.records[factionIndex],
                                                       armyDefinition)) {
     playerBlock->pendingPlacementArmyAsset = 0;
@@ -1070,7 +1070,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     return;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
-  g_InGamePendingPlacementArmyAsset = (int32_t)armyDefinition;
+  g_InGamePendingPlacementArmyAsset = (intptr_t)armyDefinition;
   g_InGamePlacementSurfaceHeightQ12OrSentinel = INT32_MAX; /* no surface picked yet */
 }
 
@@ -1085,7 +1085,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
           ,FactionRuntimeIndex factionIndex)
 
 {
-  uint32_t pendingAsset;
+  uintptr_t pendingAsset;
   uint32_t assetCount;
   InGameRuntimeRoot *runtimeRoot;
 
@@ -1100,7 +1100,8 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   assetCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
   if (assetCount < FACTION_ARMY_ASSET_LIST_CAPACITY) {
     /* primaryArmyAssetPointersOrIds[assetCount] */
-    g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[assetCount] = pendingAsset;
+    g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[assetCount] =
+         (uint32_t)pendingAsset; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount++;
   }
   if (factionIndex == runtimeRoot->worldRuntime.activeFactionRuntimeIndex) {
@@ -1160,8 +1161,8 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
                      armyAssetId,
                      &g_InGameRuntimeRoot->worldRuntime,NULL);
   if (createdRuntime != NULL) {
-    playerBlock->placedArmyToken = (uint32_t)createdRuntime -
-         (int)g_ArmyRuntimeRebaseBaseMinusOne;
+    playerBlock->placedArmyToken =
+         (uint32_t)((uintptr_t)createdRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     return;
   }
   playerBlock->placedArmyToken = 0;

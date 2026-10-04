@@ -596,7 +596,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   root->callbacks = callbacks;
   (root->base).nextSibling = UI_NODE_NONE;
   /* the serialized tree links are offsets from the root: relocate by the root's address */
-  UiSerializedTree_Relocate((SerializedImageRelocationDelta)root,&root->base);
+  UiSerializedTree_Relocate((SerializedImageRelocationDelta)root,&root->base); /* 5f-format: UI template tree links (32-bit offsets relocated by the root address) */
   oldFrontRoot = g_UiRootNode;
   LOCK();
   g_UiRootNode = root;
@@ -1279,16 +1279,16 @@ void UiWindowResources_Init(void)
 {
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;
-  uint32_t checkedValue;
-  uint32_t pageLoadError;
+  uintptr_t checkedValue;
+  uintptr_t pageLoadError;
   Bool8 pageLoaded;
 
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16,&textureLoadError);
-  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uintptr_t)loadedTexture : textureLoadError,
                                           loadedTexture == NULL);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16,&textureLoadError);
-  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uintptr_t)loadedTexture : textureLoadError,
                                           loadedTexture == NULL);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
   /* the out value is the error code on failure; on success it is only passed through unused */

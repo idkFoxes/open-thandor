@@ -492,10 +492,10 @@ void TerrainVisualResources_Shutdown(void)
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
   if (g_TerrainSoilPacketTablePayload != NULL) {
-    Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release((void *)((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   if (surfacePacketTablePayload != NULL) {
-    Resource_Release((void *)((int)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
+    Resource_Release((void *)((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   g_TerrainPrimaryTextureSet = NULL;
   g_TerrainSecondaryPalette = NULL;

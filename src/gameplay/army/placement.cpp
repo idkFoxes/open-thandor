@@ -53,7 +53,7 @@ Bool8 ArmyPlacement_CanPlaceAnchoredModel
      Original quirk: the found flag is not checked; without a (1,5) point the record just past the
      point table is read. */
   ModelLookupTable_FindPackedPoint
-            (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)->
+            (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
                  spriteAssetReference.modelResource,&anchorRecord);
   offsetLengthAngle = FixedMath_Vector2AngleAndLength
                     ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
@@ -637,7 +637,7 @@ void ArmyPlacement_ReleaseClassStateReservation
       }
       slotAssetIds[slotIndex] = 0;
       armyLinkState = &(linkedModelSlot->classLinkState).armyLinkOrState;
-      armyLinkState->armyRuntime = (ArmyRuntimeSlot *)(armyLinkState->classState - 1);
+      armyLinkState->armyRuntime = (ArmyRuntimeSlot *)(armyLinkState->classState - 1); /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState */
       classCounter = &(linkedModelSlot->classLinkState).classState70;
       *classCounter = *classCounter - 1;
       return;
@@ -790,7 +790,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
   }
   /* the model definition of the army asset's root node */
   modelDefinition = ModelDefinitionRegistry_FindById
-                    (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]);
+                    (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == NULL) {
     return false;
   }
@@ -892,7 +892,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   ModelRuntimeSlot *candidateRuntime;
   uint32_t modelClassId;
   WorldOwnerListNode *candidateNode;
-  char *queryRadiusQ12;
+  intptr_t queryRadiusQ12;
   Bool8 candidateIsRuntime;
   Bool8 hit;
   WorldOwnerListNode *ownerNode;
@@ -903,14 +903,14 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   candidateIsRuntime = candidateRuntimeOrRadiusQ12 >= (IMAGE_DOS_HEADER *)0x400000;
   candidateRuntime = (ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12;
   if (!candidateIsRuntime) {
-    queryRadiusQ12 = candidateRuntimeOrRadiusQ12->e_magic + 1;
+    queryRadiusQ12 = (intptr_t)candidateRuntimeOrRadiusQ12 + 1; /* the radius value plus one */
     candidateNode = NULL;
   }
   else {
     candidateNode = *(WorldOwnerListNode **)&candidateRuntimeOrRadiusQ12->e_cp;
-    queryRadiusQ12 = (char *)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
+    queryRadiusQ12 = (intptr_t)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
   }
-  if (queryRadiusQ12 == NULL) {
+  if (queryRadiusQ12 == 0) {
     return false;
   }
   for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {

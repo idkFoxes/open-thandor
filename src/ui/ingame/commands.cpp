@@ -131,7 +131,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   WorldRuntimeContext *worldRuntime;
   uint32_t lookupError;
   ArmyAssetRecordPrefix *armyRecord;
-  uint32_t checkedAssetLookup;
+  uintptr_t checkedAssetLookup;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_UNIT_PLACEMENT,source);
   worldRuntime = &runtimeRoot->worldRuntime;
@@ -143,7 +143,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
   lookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&armyRecord);
-  checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError : (uint32_t)armyRecord,
+  checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError : (uintptr_t)armyRecord,
                                                lookupError != 0);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup;
   InGameSelectionDetailPanel_Rebuild();
@@ -292,7 +292,7 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
   }
   for (mappingIndex = 0, mappingsRemaining = MATERIAL_SWATCH_COUNT; mappingsRemaining != 0;
        mappingIndex++, mappingsRemaining--) {
-    if ((int)source - (int)root == g_UiMappedCommandControlOffsets[mappingIndex]) {
+    if ((int)((uintptr_t)source - (uintptr_t)root) == g_UiMappedCommandControlOffsets[mappingIndex]) {
       UiCommandMatrix_SelectIndex(mappingIndex + g_UiCommandSelectionPageBaseIndex,root);
       return;
     }
@@ -403,7 +403,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
   if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     recordIndex = ARMY_STOCK_ENTRY_COUNT - 1;
     do {
-      if ((int)control - (int)g_InGameRuntimeRoot ==
+      if ((int)((uintptr_t)control - (uintptr_t)g_InGameRuntimeRoot) ==
           g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][recordIndex])
       {
         g_UiHoverSelectionRecord = g_UiCommandSpriteVariantARecords[recordIndex];
@@ -517,7 +517,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
 
 {
   FactionRelationCounter *relationCounter;
-  uint32_t pendingEntry;
+  uintptr_t pendingEntry;
   uint32_t ownerFactionIndex;
   SelectionPlayerRuntimeBlock *playerBlock;
   ArmyRuntimeSlot *modelNodeRuntime;
@@ -570,7 +570,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-                   (EffectDefinition *)slotModelRuntime->attachments[2].childLocalRotationAngle0,
+                   (EffectDefinition *)slotModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
                    worldRuntime);
         InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
         InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
@@ -625,8 +625,8 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   assetCursor = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
     for (; remainingAssets != 0; remainingAssets--) {
-      if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource != NULL) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) {
-        *recordCursor = (UiCommandRuntimeRecordPrefix *)*assetCursor;
+      if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource != NULL) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+        *recordCursor = (UiCommandRuntimeRecordPrefix *)*assetCursor; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
         itemCount++;
         recordCursor++;
       }
@@ -700,8 +700,8 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != NULL) {
-    modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
-                  g_ModelRuntimeRebaseDelta;
+    modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
+                        (intptr_t)g_ModelRuntimeRebaseDelta);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
@@ -765,7 +765,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
     }
     entryIndex = BUILD_CATALOG_ENTRY_COUNT - 1;
-    while ((int)source - (int)root !=
+    while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][entryIndex]) {
       entryIndex--;
       if (entryIndex < 0) {
@@ -822,7 +822,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
     }
     entryIndex = SPECIAL_BUILD_CATALOG_ENTRY_COUNT - 1;
-    while ((int)source - (int)root !=
+    while ((int)((uintptr_t)source - (uintptr_t)root) !=
            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][entryIndex]) {
       entryIndex--;
       if (entryIndex < 0) {
@@ -888,7 +888,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
     *flagsField = *flagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
     if ((((WorldRuntimeContext *)INGAME_UI(root,worldView))->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
       slotIndex = ARMY_STOCK_ENTRY_COUNT - 1;
-      while ((int)control - (int)root !=
+      while ((int)((uintptr_t)control - (uintptr_t)root) !=
              g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][slotIndex]) {
         slotIndex--;
         if (slotIndex < 0) {
@@ -963,7 +963,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   }
   /* find the group of the clicked button */
   groupIndex = SELECTION_GROUP_COUNT - 1;
-  while ((int)control - (int)root != g_UiAction100AControlOffsets[groupIndex]) {
+  while ((int)((uintptr_t)control - (uintptr_t)root) != g_UiAction100AControlOffsets[groupIndex]) {
     groupIndex--;
     if ((int)groupIndex < 0) {
       return;

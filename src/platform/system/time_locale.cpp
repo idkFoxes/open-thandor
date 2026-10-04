@@ -181,7 +181,7 @@ uint32_t Locale_FormatDateFieldsUtf16
   uint32_t appendByteLength;
   uint32_t separatorByteLength;
   uint16_t *outputCursor;
-  int completedByteOffset;
+  intptr_t completedByteOffset;
   
   if (g_LocaleSystemState.longDateOrder == 0) {
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,destination);
@@ -193,7 +193,7 @@ uint32_t Locale_FormatDateFieldsUtf16
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
     outputCursor = (uint16_t *)((uint8_t *)outputCursor + appendByteLength);
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
-    completedByteOffset = (int)outputCursor + appendByteLength;
+    completedByteOffset = (intptr_t)outputCursor + appendByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,destination);
@@ -205,7 +205,7 @@ uint32_t Locale_FormatDateFieldsUtf16
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
     outputCursor = (uint16_t *)((uint8_t *)outputCursor + appendByteLength);
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
-    completedByteOffset = (int)outputCursor + appendByteLength;
+    completedByteOffset = (intptr_t)outputCursor + appendByteLength;
   }
   else {
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,destination);
@@ -217,9 +217,9 @@ uint32_t Locale_FormatDateFieldsUtf16
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
     outputCursor = (uint16_t *)((uint8_t *)outputCursor + appendByteLength);
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,outputCursor);
-    completedByteOffset = (int)outputCursor + appendByteLength;
+    completedByteOffset = (intptr_t)outputCursor + appendByteLength;
   }
-  return completedByteOffset - (int)destination;
+  return (uint32_t)(completedByteOffset - (intptr_t)destination);
 }
 
 /* Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator). Returns the
@@ -236,7 +236,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
   uint32_t dateSeparatorByteLength;
   uint16_t *outputCursor;
   uint16_t *branchOutputCursor;
-  int completedByteOffset;
+  intptr_t completedByteOffset;
   uint16_t *fieldCursor;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -264,7 +264,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
     fieldByteLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.year,
                        branchOutputCursor);
-    completedByteOffset = (int)branchOutputCursor + fieldByteLength;
+    completedByteOffset = (intptr_t)branchOutputCursor + fieldByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
     fieldByteLength = g_WideNumberFormatUtf16
@@ -282,7 +282,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
     fieldByteLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.year,
                        fieldCursor);
-    completedByteOffset = (int)fieldCursor + fieldByteLength;
+    completedByteOffset = (intptr_t)fieldCursor + fieldByteLength;
   }
   else {
     fieldByteLength = g_WideNumberFormatUtf16
@@ -300,9 +300,9 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
     fieldByteLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.day,
                        fieldCursor);
-    completedByteOffset = (int)fieldCursor + fieldByteLength;
+    completedByteOffset = (intptr_t)fieldCursor + fieldByteLength;
   }
-  return completedByteOffset - (int)destination;
+  return (uint32_t)(completedByteOffset - (intptr_t)destination);
 }
 
 
@@ -331,7 +331,7 @@ uint32_t Locale_FormatTimeFieldsUtf16
   uint32_t separatorByteLength;
   uint16_t *designatorText;
   uint16_t *outputCursor;
-  int completedByteOffset;
+  intptr_t completedByteOffset;
 
   /* the local time is fetched but not used */
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -354,7 +354,7 @@ uint32_t Locale_FormatTimeFieldsUtf16
     }
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
     separatorByteLength = Utf16_CopyAndReturnByteLength((uint16_t *)((uint8_t *)outputCursor + appendByteLength),designatorText);
-    completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
+    completedByteOffset = (intptr_t)((intptr_t)outputCursor + appendByteLength) + separatorByteLength;
   }
   else {
     outputCursor = destination;
@@ -373,9 +373,9 @@ uint32_t Locale_FormatTimeFieldsUtf16
       outputCursor = outputCursor + 1;
     }
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
-    completedByteOffset = (int)outputCursor + appendByteLength;
+    completedByteOffset = (intptr_t)outputCursor + appendByteLength;
   }
-  return completedByteOffset - (int)destination;
+  return (uint32_t)(completedByteOffset - (intptr_t)destination);
 }
 
 /* Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped

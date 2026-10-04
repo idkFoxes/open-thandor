@@ -205,6 +205,7 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
 
   linkedArmyRuntime = modelRuntime->classLinkState.armyLinkOrState.armyRuntime;
   if (linkedArmyRuntime != NULL) {
+    /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntime->classLinkState.armyLinkOrState.armyRuntime =
          (ArmyRuntimeSlot *)((int)linkedArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
   }
@@ -222,6 +223,7 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
 
   linkedArmyRuntime = modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime;
   if (linkedArmyRuntime != NULL) {
+    /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime =
          (ArmyRuntimeSlot *)((int)linkedArmyRuntime + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   }
@@ -373,6 +375,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
 
   linkedModelRuntime = modelRuntime->classLinkState.modelLinkOrState.modelRuntime;
   if (linkedModelRuntime != NULL) {
+    /* 5f-format: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
          (ModelRuntimeSlot *)((int)linkedModelRuntime - g_ModelRuntimeRebaseDelta);
   }

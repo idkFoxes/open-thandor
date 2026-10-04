@@ -217,7 +217,7 @@ static void GraphicsPaletteTextureSource_PackUsedEntriesOfBank(GraphicsTextureSo
    source has no palette bank or no subresource. No caller or table reference is known (converter/editor code left
    in the game).
 */
-Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
+Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t textureSourceBase)
 
 {
   GraphicsTextureSourceHeaderView *textureSource;
@@ -336,7 +336,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   allocError = g_MemoryApi.alloc(allocationSize,(void **)&clonedAsset);
   if (allocError != 0) {
     /* Original quirk: a failed allocation returns its error code as the asset pointer */
-    return (GraphicsPaletteAsset *)allocError;
+    return (GraphicsPaletteAsset *)(uintptr_t)allocError;
   }
   sourceDword = (const uint32_t *)paletteAsset;
   destinationDword = (uint32_t *)clonedAsset;
@@ -350,7 +350,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
     return validatedAsset;
   }
   /* Original quirk: the clone's result after a failed validation is the free's status (0 = NULL) */
-  return (GraphicsPaletteAsset *)g_MemoryApi.free(clonedAsset);
+  return (GraphicsPaletteAsset *)(uintptr_t)g_MemoryApi.free(clonedAsset);
 }
 
 

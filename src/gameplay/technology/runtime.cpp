@@ -207,7 +207,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
       /* the root node's model definition id (ArmyModelTreeNode.linkedDefinitionIds[0]) */
       definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
                         (*(PckModelDefinitionIdCatalog *)
-                          (armyAssetRecord->rootNodeOffsetOrPointer + 32));
+                          (armyAssetRecord->rootNodeOffsetOrPointer + 32)); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
       if (definitionRecord != NULL) {
         /* per target class (targetClassIndex) the largest armour (maximumHealth); for mobile models
            (accelerationPerTick) the top speed (movementSpeed) */

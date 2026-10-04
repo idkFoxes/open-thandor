@@ -1713,6 +1713,18 @@ static const ModelLightingOriginalRange s_ModelLightingOriginalWindow[] = {
   {0x004CCFF0, 0x004CD1A0, s_ModelLightingOriginalCode004CCFF0},
 };
 
+/* 5f-format: overread s_ModelLightingOriginalWindow - the window maps original 32-bit addresses onto today's
+   variables and assumes their 32-bit layouts. On x64 the pointer variables are read as their low dwords and the
+   records at their 32-bit offsets (other bytes than the original's), but never past the end of a variable. */
+#if defined(_WIN64)
+static_assert(sizeof g_GraphicsShadingNearbyRecords >= 0x4000 && sizeof g_GraphicsShadingNearbyRecordCount == 4 &&
+              sizeof g_ModelLightingMmxMultiplierRows == 0x1998 && sizeof g_ModelLightingVertexToLightVectorScratch == 0xC &&
+              sizeof g_ModelLightingTransformedSurfaceNormalScratch == 0xC &&
+              sizeof g_GraphicsShadingGeneratedTexturePixelCursor >= 4 && sizeof g_GraphicsShadingGeneratedAsset >= 4 &&
+              sizeof g_GraphicsShadingGridScratch >= 4 && sizeof g_GraphicsShadingGridScratchInterior >= 4 &&
+              sizeof g_GraphicsShadingTextureSet >= 4 && sizeof g_GeneratedTextureScratchRuntime >= 0x1A8,
+              "the lighting window must not read past a variable");
+#else
 /* The variables must still have their original sizes for the window above. */
 typedef char ModelLightingOriginalWindowSizeCheck
   [(sizeof g_GraphicsShadingNearbyRecords == 0x4000 && sizeof g_GraphicsShadingNearbyRecordCount == 4 &&
@@ -1721,6 +1733,7 @@ typedef char ModelLightingOriginalWindowSizeCheck
     sizeof g_GraphicsShadingGeneratedTexturePixelCursor == 4 && sizeof g_GraphicsShadingGeneratedAsset == 4 &&
     sizeof g_GraphicsShadingGridScratch == 4 && sizeof g_GraphicsShadingGridScratchInterior == 4 &&
     sizeof g_GraphicsShadingTextureSet == 4 && sizeof g_GeneratedTextureScratchRuntime == 0x1A8) ? 1 : -1];
+#endif
 
 /* The 8 bytes the original read at originalAddress, little-endian. Inside the window they are exact; outside it
    (only ModelRender_ComputeVertexIntensityScaledPath gets there, see its quirk) the original read unrelated

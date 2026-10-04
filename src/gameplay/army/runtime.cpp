@@ -222,7 +222,7 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
   uint32_t healthDifference;
 
   definition = modelRuntime->modelDefinition;
-  homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset;
+  homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset; /* 5f-format: ModelRuntimeSlot.definitionOrSavedId */
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
   ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
   scaledPadHealth = (int)(((int64_t)(int)homeModelRuntime->health * (int64_t)definition->maximumHealth) /
@@ -346,7 +346,7 @@ static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRu
   if (definition->modelPointStep == 0) {
     return;
   }
-  modelPointTable = (void *)((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0];
+  modelPointTable = (void *)((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
   for (modelPointOrdinal = 7; modelPointOrdinal != 0; modelPointOrdinal = modelPointOrdinal - 1) {
     if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
       ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
@@ -543,7 +543,7 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
     /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
        (energyLoadQ4), the sums of its model definitions' build metrics */
-    candidateAsset = (ArmyAssetRecord *)*queueEntry;
+    candidateAsset = (ArmyAssetRecord *)*queueEntry; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
        (g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 < candidateAsset->xeniteCostQ4)) {
       continue;
@@ -735,7 +735,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
                assetRecord) */
             ArmyAssetRegistry_FindById(secondaryAssetId,&assetRecord);
             selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                               (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer);
+                               (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
             linkedModelDefinition = (ModelDefinition *)selectedDefinition;
             linkedModelDefinition->builtCount = linkedModelDefinition->builtCount + 1;
             notificationMovieId = linkedModelDefinition->firstBuiltNotificationMovieId;
@@ -859,7 +859,7 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
   remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
   queueEntry = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
-    candidateAsset = (ArmyAssetRecord *)*queueEntry;
+    candidateAsset = (ArmyAssetRecord *)*queueEntry; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if ((candidateAsset->flags & modelRuntime->modelDefinition->classParameterC4) == 0) {
       continue;
     }
@@ -1150,7 +1150,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
         queueSlot = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
             remainingAssetCount = remainingAssetCount - 1) {
-          candidateAsset = (ArmyAssetRecord *)*queueSlot;
+          candidateAsset = (ArmyAssetRecord *)*queueSlot; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
           if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) != 0) &&
              (candidateAsset->xeniteCostQ4 <= g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4))
           {
@@ -1213,11 +1213,11 @@ void ArmyRuntimeClass_UpdateStructureFactory
             activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
             /* appended to the faction's primary asset list */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[primaryAssetCount] =
-                 (uint32_t)assetRecord;
+                 (uint32_t)assetRecord; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount =
                  g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
-              linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer;
+              linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
               InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
               linkedModelDefinition = (ModelDefinition *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,linkedRootNodeOffset);
@@ -1282,7 +1282,7 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
         if ((fieldGrid->cells[cellIndex].flagsAndMaterial & supportFlagMask) != 0) {
           /* the cell supports this extractor: register it (as a saved offset) and run its emitters */
           fieldGrid->cells[cellIndex].armyRuntimeSavedOffset =
-               (int)modelRuntime - g_ModelRuntimeRebaseDelta;
+               (int)modelRuntime - g_ModelRuntimeRebaseDelta; /* 5f-format: FieldGridCell.armyRuntimeSavedOffset */
           ArmyRuntime_UpdateTimedShotAndEffectEmitters
                     (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
           ArmyRuntime_UpdateAnimatedModelSubnodes
@@ -1604,7 +1604,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                           ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                           (WorldRuntimeContext *)ownerContext);
       if (previewTexture != NULL) {
-        armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)previewTexture;
+        armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)previewTexture; /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
         previewHeight =
              (GraphicsPixelDimension)
              ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
@@ -1613,7 +1613,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                             ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                             (WorldRuntimeContext *)ownerContext);
         if (previewTexture != NULL) {
-          armyAsset[1].registryId = (PckArmyAssetIdCatalog)previewTexture;
+          armyAsset[1].registryId = (PckArmyAssetIdCatalog)previewTexture; /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
         }
       }
     }
@@ -1673,9 +1673,9 @@ void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
 {
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     node->runtimeFlags = node->runtimeFlags & ~(TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE | TERRAIN_OCCUPANCY_FLAG_PRESENT);
-    /* the army runtime at +8 of the node's payload */
+    /* the owning army runtime (+8) of the node's model runtime */
     ArmyRuntime_InitializeTerrainOccupancyFlags
-              (armyContext,*(ArmyRuntimeSlot **)((int)node->runtimePayload + 8));
+              (armyContext,((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)node);
   }
 }
@@ -1818,10 +1818,10 @@ ArmyRuntime_ResolveShotAimPoint
         }
         aimWorldX = (targetNode->worldTransform).translation.x;
         targetDefinitionRecord = (int *)(targetEntity->common).ownership.definitionOrClassRecord;
-        targetDefinition = (ModelDefinition *)*targetDefinitionRecord;
+        targetDefinition = ((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition;
         aimWorldY = (targetNode->worldTransform).translation.y;
         aimWorldZ = (targetNode->worldTransform).translation.z + targetDefinition->aimHeightOffsetQ12;
-        targetArmy = (ArmyRuntimeSlot *)targetDefinitionRecord[2];
+        targetArmy = ((ModelRuntimeSlot *)targetDefinitionRecord)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         if ((targetDefinition->accelerationPerTick != 0) && ((targetArmy->movementStateFlags & 4) == 0)) {
           targetDistance = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
                                              aimWorldX - sourceWorldXQ12);
@@ -2016,8 +2016,8 @@ void ArmyRuntime_ShutdownPoolAndGraphics(void)
     armyAsset = g_ArmyAssetRecordRegistry[registryIndex];
     if (armyAsset != NULL) {
       /* the two preview textures stored in the record that follows the prefix */
-      g_MemoryApi.free((void *)armyAsset[1].rootNodeOffsetOrPointer);
-      g_MemoryApi.free((void *)armyAsset[1].registryId);
+      g_MemoryApi.free((void *)armyAsset[1].rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
+      g_MemoryApi.free((void *)armyAsset[1].registryId); /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
       g_ArmyAssetRecordRegistry[registryIndex] = NULL;
     }
   }
@@ -2050,18 +2050,18 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
       }
       continue;
     }
-    savedModelRuntimeOffset = (ModelRuntimeSlot *)
+    savedModelRuntimeOffset = (ModelRuntimeSlot *) /* 5f-format: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
              ((int)(slot->modelRuntimeOrSavedOffset).modelRuntime - g_ModelRuntimeRebaseDelta);
     savedTargetOffset = slot->commandTargetArmyRuntime;
     if (savedTargetOffset != NULL) {
-      savedTargetOffset = (ArmyRuntimeSlot *)((int)savedTargetOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne);
+      savedTargetOffset = (ArmyRuntimeSlot *)((int)savedTargetOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
     }
-    slot->modelNodeRuntime =
+    slot->modelNodeRuntime = /* 5f-format: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
          (ModelRuntimeNode *)((int)slot->modelNodeRuntime - (int)g_RuntimeObjectRebaseBaseMinusOne);
     assignedTargetOffset = slot->assignedTargetArmyRuntime;
     (slot->modelRuntimeOrSavedOffset).modelRuntime = savedModelRuntimeOffset;
     if (assignedTargetOffset != 0) {
-      assignedTargetOffset = assignedTargetOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+      assignedTargetOffset = assignedTargetOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
     }
     slot->commandTargetArmyRuntime = savedTargetOffset;
     slot->assignedTargetArmyRuntime = assignedTargetOffset;
@@ -2093,16 +2093,16 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
     rebasedModelRuntime = (uint8_t *)(slot->modelRuntimeOrSavedOffset).modelRuntime + g_ModelRuntimeRebaseDelta;
     rebasedCommandTarget = NULL;
     if (slot->commandTargetArmyRuntime != NULL) {
-      rebasedCommandTarget =
+      rebasedCommandTarget = /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
            (ArmyRuntimeSlot *)((int)slot->commandTargetArmyRuntime + (int)g_ArmyRuntimeRebaseBaseMinusOne);
     }
     /* modelNodeRuntime + g_RuntimeObjectRebaseBaseMinusOne */
-    slot->modelNodeRuntime =
+    slot->modelNodeRuntime = /* 5f-format: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
          (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)slot->modelNodeRuntime);
     savedAssignedTargetOffset = slot->assignedTargetArmyRuntime;
     (slot->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)rebasedModelRuntime;
     if (savedAssignedTargetOffset != 0) {
-      savedAssignedTargetOffset = savedAssignedTargetOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne;
+      savedAssignedTargetOffset = savedAssignedTargetOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
     }
     slot->commandTargetArmyRuntime = rebasedCommandTarget;
     slot->assignedTargetArmyRuntime = savedAssignedTargetOffset;
@@ -2308,10 +2308,10 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
         rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
         (rootNode->modelPayload).meshGroupMask &= ~1u;
         ModelRuntime_EmitProjectilesFromAttachmentPoints
-                  ((ShotTargetModelReference)
+                  ((ShotTargetModelReference) /* 5f-format: ShotTargetModelReference (ShotRuntimeSlot +0x14) */
                    (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime,targetWorldZQ12
                    ,targetWorldYQ12,targetWorldXQ12,(timedTargetDefinition->shotDefinitionReference).definition,
-                   rootNode,(MdlSerializedNodeHeader *)timedTargetDefinition->rootNodeOffsetOrPointer,
+                   rootNode,(MdlSerializedNodeHeader *)timedTargetDefinition->rootNodeOffsetOrPointer, /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
                    worldRuntime);
       }
     }
@@ -2878,13 +2878,13 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   } while (remainingRows != 0);
   /* halve the stored sizes and shrink the allocation to the 0x220-byte header plus 32-bit pixels */
   halvedWidth = (int)previewTexture[1].common.commandFlags >> 1;
-  halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1;
+  halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1; /* 5f-format: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
   previewTexture[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
-  previewTexture[1].common.commandTarget.targetEntity = (GameEntityRuntime *)halvedHeight;
-  previewTexture[1].common.ownership.definitionOrClassRecord = THANDOR_PTR(halvedWidth);
-  previewTexture[1].common.ownership.modelNode = (ModelRuntimeNode *)halvedHeight;
+  previewTexture[1].common.commandTarget.targetEntity = (GameEntityRuntime *)halvedHeight; /* 5f-format: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
+  previewTexture[1].common.ownership.definitionOrClassRecord = THANDOR_PTR(halvedWidth); /* 5f-format: GraphicsTextureSourceAsset header +0x218 (GameEntityRuntime view) */
+  previewTexture[1].common.ownership.modelNode = (ModelRuntimeNode *)halvedHeight; /* 5f-format: GraphicsTextureSourceAsset header +0x21C (GameEntityRuntime view) */
   allocationSize = (uint32_t)(halvedWidth * halvedHeight * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
-  (previewTexture->common).ownership.modelNode = (ModelRuntimeNode *)allocationSize;
+  (previewTexture->common).ownership.modelNode = (ModelRuntimeNode *)allocationSize; /* 5f-format: GraphicsTextureSourceAsset header +0x04 (GameEntityRuntime view) */
   g_MemoryApi.shrinkInPlace(allocationSize,previewTexture);
   return (GraphicsTextureResource *)previewTexture;
 }
@@ -2918,7 +2918,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   uint32_t parentStateFlags;
   ModelRuntimeSlot *childModelRuntime;
 
-  definition = (ModelDefinition *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
+  definition = (modelRuntime->definitionOrSavedId).runtimeDefinition;
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[definition->runtimeClassId]
             (worldRuntime,modelRuntime);
   /* every 4 ticks health regenerates by healthRegenerationPerStep up to 3/4 of the definition's
@@ -3141,11 +3141,11 @@ Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelR
 
   candidateDefinition = candidateModelRuntime->definitionOrSavedId.runtimeDefinition;
   remainingAttachments = sourceModelRuntime->attachmentCount;
-  /* The candidate radius is candidateDefinition->footprintRadiusCopy. It is read through a pointer-typed field
-     at the same offset (attachments[3].childModelRuntimeOrSavedOffset of a ModelRuntimeSlot view): a uint32_t
-     read schedules the loads and the spill of the radius differently. */
+  /* The candidate radius is candidateDefinition->footprintRadiusCopy (the original read it through a
+     pointer-typed field at the same offset, attachments[3].childModelRuntimeOrSavedOffset of a ModelRuntimeSlot
+     view). */
   baseWithinRadius = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
-                    ((UQ12)((ModelRuntimeSlot *)candidateDefinition)->attachments[3].childModelRuntimeOrSavedOffset,
+                    (candidateDefinition->footprintRadiusCopy,
                      sourceModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy,
                      candidateModelRuntime->rootModelNodeOrSavedOffset.modelNode,
                      sourceModelRuntime->rootModelNodeOrSavedOffset.modelNode);
@@ -3156,8 +3156,7 @@ Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelR
     childModelRuntime = sourceModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
     if (childModelRuntime != NULL) {
       childWithinRadius = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
-                            ((UQ12)((ModelRuntimeSlot *)candidateDefinition)->attachments[3].
-                                   childModelRuntimeOrSavedOffset,
+                            (candidateDefinition->footprintRadiusCopy,
                              childModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy,
                              candidateModelRuntime->rootModelNodeOrSavedOffset.modelNode,
                              childModelRuntime->rootModelNodeOrSavedOffset.modelNode);
@@ -3203,7 +3202,8 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   do {
     playerSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId];
-    if (entityRuntime == (GameEntityRuntime *)playerSelectionBlock->placedArmyToken) {
+    /* Original quirk: compares the entity address with the token, which is an offset (not a pointer) */
+    if ((uintptr_t)entityRuntime == (uintptr_t)playerSelectionBlock->placedArmyToken) {
       playerSelectionBlock->placedArmyToken = 0;
     }
     playerBlockCursor++;
@@ -3330,7 +3330,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) == 0) {
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {
         selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,assetRecord->rootNodeOffsetOrPointer);
+                          (factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
         metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
       }
     }
@@ -3539,7 +3539,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
                  pointOffsetMask) + worldYQ12,
                  (localPoint.xQ12 - ((ModelRuntimeNode *)sourceRuntime)->worldTransform.translation.x &
                  pointOffsetMask) + worldXQ12,
-                 localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,(ShotDefinition *)effectDefinitionId,worldContext);
+                 localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,(ShotDefinition *)effectDefinitionId,worldContext); /* 5f-format: ModelDefinition.modelPointEffectId (relocated shot reference) */
     }
     localPointRecord = localPointRecord + 1;
   }
@@ -3573,7 +3573,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
   /* root model: the effects use the root node's orientation */
   rootModelResource =
        (ModelResource *)((MdlSerializedNodeHeader *)
-                         (modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer)->
+                         (modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
        spriteAssetReference.modelResource;
   modelRuntime->health = 0;
   for (channelIndex = 0; channelIndex < 8; channelIndex = channelIndex + 1) {
@@ -3605,9 +3605,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
   }
   /* child model 0 (when its node flags' low nibble is 0): the effects use a fixed orientation */
   rootNodeHeader =
-       (MdlSerializedNodeHeader *)(modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer;
+       (MdlSerializedNodeHeader *)(modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer; /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
   if (rootNodeHeader->childCount != 0) {
-    childNodeHeader = (MdlSerializedNodeHeader *)rootNodeHeader->childSerializedOffsets[0];
+    childNodeHeader = (MdlSerializedNodeHeader *)rootNodeHeader->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
     childModelResource = (ModelResource *)childNodeHeader->spriteAssetReference.modelResource;
     if ((childNodeHeader->nodeFlags & 0xf) == 0) {
       for (channelIndex = 0; channelIndex < 8; channelIndex = channelIndex + 1) {
@@ -3810,7 +3810,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
       (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
     selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                      (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
+                      (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
     ((ModelDefinition *)selectedDefinition)->builtCount++;
   }
   /* the graphics bindings exist for faction slots 0-7 only */
@@ -3829,7 +3829,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
   armyRuntime->aiFactionAnchorScoreWeight = anchorScoreWeight;
   armyRuntime->aiSecondaryWorkspaceScoreWeight = secondaryWorkspaceScoreWeight;
-  linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize;
+  linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize; /* 5f-format: ArmyAssetRecord[1].byteSize (linked entity) */
   armyRuntime->occupancyMarkRadius = 0;
   armyRuntime->visibilityRadius = 0;
   armyRuntime->visibilityHeightOffset = 0;
@@ -4045,9 +4045,9 @@ static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mo
   ModelPackedPointRecord *emitterPoint;
   ModelRuntimeNode *modelNode;
 
-  serializedNode = (MdlSerializedNodeHeader *)emitterDefinition->rootNodeOffsetOrPointer;
+  serializedNode = (MdlSerializedNodeHeader *)emitterDefinition->rootNodeOffsetOrPointer; /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
   if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-    serializedNode = (MdlSerializedNodeHeader *)serializedNode->childSerializedOffsets[0];
+    serializedNode = (MdlSerializedNodeHeader *)serializedNode->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
   }
   modelResource = (ModelResource *)serializedNode->spriteAssetReference.modelResource;
   remainingRecords = modelResource->packedLookupTableEntryCount;

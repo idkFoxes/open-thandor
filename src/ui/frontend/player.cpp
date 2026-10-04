@@ -140,8 +140,8 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
   ModelRuntimeSlot *technologyBuilding;
 
   /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
-  selectedArmy = (ArmyRuntimeSlot *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
-  technologyBuilding = (ModelRuntimeSlot *)(armyToken + g_ModelRuntimeRebaseDelta);
+  selectedArmy = (ArmyRuntimeSlot *)(modelToken + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+  technologyBuilding = (ModelRuntimeSlot *)(armyToken + (intptr_t)g_ModelRuntimeRebaseDelta);
   if (selectedArmy != NULL && technologyBuilding != NULL && selectedArmy->modelNodeRuntime != NULL &&
       technologyBuilding->rootModelNodeOrSavedOffset.modelNode != NULL) {
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
@@ -162,7 +162,7 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
    this player's consensus value with FRONTEND_COMMAND_SET_CONSENSUS_VALUE, or applies it directly without a
    network session.
 */
-void FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
+void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source)
 
 {
   uint32_t consensusValue;
@@ -287,7 +287,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
    technology window of a selected object is offered. Returns true when such a player exists.
 */
 Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
-          (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
+          (uintptr_t assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -311,7 +311,7 @@ Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
 /* Releases an assignment token: every frontend player whose selection player block (technologyPageBuilding) still holds
    the token gets it cleared to 0. Assumes at least one frontend player block (do/while as in the original).
 */
-void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
+void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken)
 
 {
   uint32_t playerBlocksRemaining;
@@ -824,24 +824,24 @@ void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 
 {
   if (armyRuntimeOffset0 != 0 &&
-      ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
+      ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset1 != 0 &&
-      ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
+      ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset2 != 0 &&
-      ((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
+      ((GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              ((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
@@ -864,23 +864,23 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
   GameEntityRuntime *army2;
 
   if (armyRuntimeOffset0 != 0 &&
-      ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
+      ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
     SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset1 != 0 &&
-      ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
+      ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
     SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   /* stays NULL (the raw offset 0) when the third argument is empty */
   army2 = NULL;
   if (armyRuntimeOffset2 != 0) {
-    army2 = (GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    army2 = (GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     if (army2->common.ownership.modelNode != NULL) {
       SelectionPointerArray_RemoveFirstMatch
                 (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -1022,7 +1022,7 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   if (modelOffset == 0) {
     return;
   }
-  building = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta);
+  building = (GameEntityRuntime *)(modelOffset + (intptr_t)g_ModelRuntimeRebaseDelta);
   if (building->common.ownership.modelNode == NULL) {
     return;
   }
@@ -1134,7 +1134,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   Bool8 notInSelection;
 
   selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+  targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   remainingEntries = 32;
   /* SelectionPointerArray_Contains returns true when the army is NOT in the selection */
@@ -1467,7 +1467,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
   GameEntityRuntime *army;
   
   if (armyRuntimeOffset != 0) {
-    army = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    army = (GameEntityRuntime *)(armyRuntimeOffset + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     if (army->common.ownership.modelNode != NULL) {
       SelectionPointerArray_InsertUniqueAndRecenter
@@ -1500,12 +1500,12 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
   if (modelOffset == 0) {
     return;
   }
-  building = (ModelRuntimeSlot *)(modelOffset + g_ModelRuntimeRebaseDelta);
+  building = (ModelRuntimeSlot *)(modelOffset + (intptr_t)g_ModelRuntimeRebaseDelta);
   if (building->rootModelNodeOrSavedOffset.modelNode == NULL) {
     return;
   }
   buildingStateFlags = building->classState.stateFlags;
-  playerBlock->technologyPageBuilding = (uint32_t)building;
+  playerBlock->technologyPageBuilding = (uintptr_t)building;
   playerBlock->heldResearchUnpaidFlag = buildingStateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
   building->classState.stateFlags = building->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
   return;

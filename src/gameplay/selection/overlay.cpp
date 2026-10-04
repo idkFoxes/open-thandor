@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-int32_t g_InGamePendingPlacementArmyAsset = 0;
+intptr_t g_InGamePendingPlacementArmyAsset = 0;
 
 uint32_t g_InGameCommandPreviewArmyAssetId = 0;
 
@@ -70,7 +70,7 @@ static void InGameWorldOverlay_UpdateCommandPreviewArmy
 /* Placement mode: builds the ghost of the pending army at the (possibly snapped) placement point.
    pendingPlacementAsset is g_InGamePendingPlacementArmyAsset as read on entry to the overlay callback. */
 static void InGameWorldOverlay_BuildPlacementPreviewArmy
-          (int32_t pendingPlacementAsset,WorldRuntimeContext *worldRuntime)
+          (intptr_t pendingPlacementAsset,WorldRuntimeContext *worldRuntime)
 
 {
   PackedArgb32 *childTint;
@@ -316,7 +316,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
 
 {
-  int32_t pendingPlacementAsset;
+  intptr_t pendingPlacementAsset;
 
   /* developer tools (not in the original): no render-path objects while the determinism test hashes the
      simulation */

@@ -71,7 +71,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
     if (currentDefinition != NULL) {
       if (currentDefinition->linkedEffectPresent != 0) {
         lookupError = EffectDefinitionRegistry_FindById
-                          ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition,&linkedEffect);
+                          ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition,&linkedEffect); /* 5f-format: EffectDefinition.linkedEffectDefinition (+0x14, id on disk, pointer after resolve) */
         if (lookupError != 0) {
           return lookupError;
         }
@@ -79,7 +79,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
       }
       if (currentDefinition->linkedShotPresent != 0) {
         lookupError = ShotDefinitionRegistry_FindByIdWithError
-                          ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition,&linkedShot);
+                          ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition,&linkedShot); /* 5f-format: EffectDefinition.linkedShotDefinition (+0x1C, id on disk, pointer after resolve) */
         if (lookupError != 0) {
           return lookupError;
         }

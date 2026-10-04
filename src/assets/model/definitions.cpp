@@ -28,7 +28,7 @@ ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {0};
    miss still writes g_PackageLastErrorPath.
 */
 ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
-          (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
 
 {
   PckModelDefinitionIdCatalog linkedDefinitionId;
@@ -69,7 +69,7 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
   uint32_t childIndex;
   ModelDefinition_UnlockLinkedTechnologyForFaction
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
-                                    (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
+                                    (factionIndex,(uintptr_t)node));
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ModelDefinitionHierarchy_UnlockFrom(factionIndex,node->children[childIndex]);
   }
@@ -86,7 +86,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   ModelDefinitionHierarchy_UnlockFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 
@@ -120,7 +120,7 @@ Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 
@@ -415,7 +415,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    unlocked, or the first id when none is.
 */
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
-          (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
 
 {
   PckModelDefinitionIdCatalog linkedDefinitionId;
@@ -534,24 +534,24 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
   ShotDefinition *resolvedEmitterShot;
 
   status = ShotDefinitionRegistry_FindByIdWithError
-                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot);
+                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot); /* 5f-format: ModelDefinition.shotDefinitionReference (id on disk, pointer after resolve) */
   if (status != 0) return status;
   definition->shotDefinitionReference = resolvedShot;
   for (fieldIndex = 0; fieldIndex < 8; fieldIndex++) {
     status = EffectDefinitionRegistry_FindById
-                       ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],destructionEffects[fieldIndex]);
+                       ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],destructionEffects[fieldIndex]); /* 5f-format: ModelDefinition destruction effect references (id on disk, pointer after resolve) */
     if (status != 0) return status;
   }
   /* -1: the definition has no emitter shot */
   if (definition->emitterShotDefinitionReference != (ShotDefinition *)(intptr_t)-1) {
     status = ShotDefinitionRegistry_FindByIdWithError
-                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
+                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot); /* 5f-format: ModelDefinition.emitterShotDefinitionReference (id on disk, pointer after resolve) */
     if (status != 0) return status;
     definition->emitterShotDefinitionReference = resolvedEmitterShot;
   }
   for (fieldIndex = 0; fieldIndex < 4; fieldIndex++) {
     status = EffectDefinitionRegistry_FindById
-                       ((PckEffectDefinitionIdCatalog)*emitterAndRemovalEffects[fieldIndex],
+                       ((PckEffectDefinitionIdCatalog)*emitterAndRemovalEffects[fieldIndex], /* 5f-format: ModelDefinition emitter/removal effect references (id on disk, pointer after resolve) */
                         emitterAndRemovalEffects[fieldIndex]);
     if (status != 0) return status;
   }
@@ -628,7 +628,7 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   rootNodeOffset = definition->rootNodeOffsetOrPointer;
   if (rootNodeOffset != 0) {
     /* asset start + serialized offset */
-    definition->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)asset + rootNodeOffset);
+    definition->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)asset + rootNodeOffset); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
     /* The node tree walk is a recursion over every child (ModelDefinition_ResolveNodeSprites). */
     if (ModelDefinition_ResolveNodeSprites
                   ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status)) {
@@ -707,7 +707,7 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
   }
   /* Original quirk: the number formatted is the last registry slot's content, not the missing id */
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registeredDefinition,g_PackageLastErrorPath);
   return NULL;
 }
 

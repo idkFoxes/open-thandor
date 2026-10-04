@@ -8,6 +8,8 @@
 #include <thandor/core/memory/allocator.h>
 #include <thandor/thandor.h>
 
+static_assert(sizeof(ArenaBlockHeader) == ARENA_BLOCK_HEADER_BYTES, "arena block header is 0x20 bytes");
+
 /* Module data. */
 
 __declspec(align(16)) MemoryApiTable g_MemoryApi = {0};
@@ -164,7 +166,7 @@ void * __cdecl ArenaHeap_Init(void)
     rawArenaAllocation = HeapAlloc(heap,0,ARENA_HEAP_RESERVE_BYTES);
     if (rawArenaAllocation != NULL) {
       alignedFirstBlock = (ArenaBlockHeader *)
-          (((int)rawArenaAllocation + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK);
+          (((uintptr_t)rawArenaAllocation + ARENA_BLOCK_ALIGNMENT_MASK) & ~(uintptr_t)ARENA_BLOCK_ALIGNMENT_MASK);
       g_Arena.rawAllocation = rawArenaAllocation;
       g_Arena.firstBlock = alignedFirstBlock;
       alignedFirstBlock->payloadSize = ARENA_HEAP_PAYLOAD_BYTES;
@@ -283,7 +285,7 @@ uint32_t ArenaHeap_Free(void *memory)
 
   if (memory != NULL) {
     /* the header is addressed both as freedBlock (sizes) and as memory[-1] (links), as in the original */
-    freedBlock = (ArenaBlockHeader *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
+    freedBlock = (ArenaBlockHeader *)((uintptr_t)memory - ARENA_BLOCK_HEADER_BYTES);
     if (((ArenaBlockHeader *)memory)[-1].stateMagic != ARENA_BLOCK_ALLOCATED) {
       return ARENA_HEAP_CORRUPT;
     }

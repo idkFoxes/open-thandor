@@ -1352,7 +1352,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   }
   /* 0x230010 + 0x10 * level title + faction selects the task description of the local player's faction */
   ((UiWrappedTextControl *)FRONTEND_UI(taskAssignmentRoot,taskDescriptionText))->text =
-       (uint16_t *)
+       (uint16_t *)(uintptr_t)
        (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   /* Offsets from the control tables are control offsets in the page: + nodeFlags gives the control's nodeFlags
      (UI_NODE_SUPPRESSED), + rootFlags its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
@@ -1446,7 +1446,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
         controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
         *controlFlags = *controlFlags | lastPlayerFactionIndex;
         controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
-        *controlFlags = *controlFlags & (uint32_t)loadedLevelAsset;
+        *controlFlags = *controlFlags & (uint32_t)(uintptr_t)loadedLevelAsset; /* the quirk: low address bits */
       }
     }
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;

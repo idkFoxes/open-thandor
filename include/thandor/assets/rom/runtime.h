@@ -116,9 +116,9 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 
 extern uint32_t g_FrontendRomTransitionPageAction;
-extern uint32_t g_FrontendActiveRomRecord;
+extern uintptr_t g_FrontendActiveRomRecord;
 extern uint32_t g_FrontendRomTransitionElapsedTicks;
-extern uint32_t g_FrontendRomTransitionSplineKeyframes;
+extern uintptr_t g_FrontendRomTransitionSplineKeyframes;
 extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
 extern uint32_t g_FrontendRomTransitionTargetRecordId;
 extern RomRegistrySlot *g_RomRegistrySlots;

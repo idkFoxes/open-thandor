@@ -84,7 +84,7 @@ void FontRuntime_Init(void)
   uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;
-  uint32_t checkedValue;
+  uintptr_t checkedValue;
   uint32_t allocError;
   void *allocPayload;
 
@@ -93,7 +93,7 @@ void FontRuntime_Init(void)
   scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
   for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {
     loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16,&textureLoadError);
-    checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+    checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uintptr_t)loadedTexture : textureLoadError,
                                             loadedTexture == NULL);
     g_FontTextureSources[sourceIndex] = (GraphicsTextureSourceAsset *)checkedValue;
     /* step pathUtf16 past the terminator to the next path */
@@ -105,10 +105,10 @@ void FontRuntime_Init(void)
     }
   }
   allocError = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t),&allocPayload); /* 16 KiB */
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_FontRuntimeBuffer = (uint8_t *)checkedValue;
   allocError = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable),&allocPayload);
-  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_TextResourceOverrides = (TextResourceOverrideTable *)checkedValue;
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
@@ -288,7 +288,7 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' asset (which is released). outLocaleBlockOrError may be
    NULL.
 */
-Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError)
+Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintptr_t *outLocaleBlockOrError)
 
 {
   uint16_t codeUnit;
@@ -376,7 +376,7 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint3
     stringIndex++;
   }
   if (outLocaleBlockOrError != NULL) {
-    *outLocaleBlockOrError = (uint32_t)localeBlock;
+    *outLocaleBlockOrError = (uintptr_t)localeBlock;
   }
   return true;
 }
@@ -389,28 +389,19 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint3
 void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 
 {
-  int overrideSlotsRemaining;
-  TextResourceOverrideParallelWord4 *overrideWordScanCursor;
-  TextResourceOverrideParallelWord4 *overrideWordCursorAfterScan;
-  Bool8 availableOverrideSlotFound;
+  uint32_t overrideIndex;
 
-  overrideSlotsRemaining = TEXT_RESOURCE_OVERRIDE_CAPACITY;
-  availableOverrideSlotFound = g_TextResourceOverrides == NULL;
-  overrideWordScanCursor = (TextResourceOverrideParallelWord4 *)g_TextResourceOverrides;
-  if (!availableOverrideSlotFound) {
-    /* scan the id array for a zero id; the cursor ends one entry past the match */
-    do {
-      overrideWordCursorAfterScan = overrideWordScanCursor;
-      if (overrideSlotsRemaining == 0) break;
-      overrideSlotsRemaining--;
-      overrideWordCursorAfterScan = overrideWordScanCursor + 1;
-      availableOverrideSlotFound = overrideWordScanCursor->resourceId == 0;
-      overrideWordScanCursor = overrideWordCursorAfterScan;
-    } while (!availableOverrideSlotFound);
-    if (availableOverrideSlotFound) {
-      /* the text pointer array follows the id array, TEXT_RESOURCE_OVERRIDE_CAPACITY entries further on */
-      overrideWordCursorAfterScan[-1].resourceId = resourceId;
-      overrideWordCursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1].textPointer = text;
+  if (g_TextResourceOverrides == NULL) {
+    return;
+  }
+  /* the first entry with a zero id; its text pointer is the entry of the same index in textPointers (the
+     original scans the id array as dwords and writes the pointer TEXT_RESOURCE_OVERRIDE_CAPACITY dwords
+     further on) */
+  for (overrideIndex = 0; overrideIndex < TEXT_RESOURCE_OVERRIDE_CAPACITY; overrideIndex++) {
+    if (g_TextResourceOverrides->resourceIds[overrideIndex] == 0) {
+      g_TextResourceOverrides->resourceIds[overrideIndex] = resourceId;
+      g_TextResourceOverrides->textPointers[overrideIndex] = text;
+      return;
     }
   }
   return;
@@ -426,32 +417,19 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
 {
   TextResourceLocaleBlockPrefix *localeBlock;
-  int remainingSlots;
-  uint32_t *scanCursor;
-  uint32_t *cursorAfterScan;
-  Bool8 overrideFound;
+  uint32_t overrideIndex;
 
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
     *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
     return true;
   }
-  remainingSlots = TEXT_RESOURCE_OVERRIDE_CAPACITY;
-  overrideFound = g_TextResourceOverrides == NULL;
-  scanCursor = (uint32_t *)g_TextResourceOverrides;
-  if (!overrideFound) {
-    do {
-      cursorAfterScan = scanCursor;
-      if (remainingSlots == 0) break;
-      remainingSlots--;
-      cursorAfterScan = scanCursor + 1;
-      overrideFound = resourceId == *scanCursor;
-      scanCursor = cursorAfterScan;
-    } while (!overrideFound);
-    if (overrideFound) {
-      /* cursorAfterScan is one past the matching id; its text pointer is TEXT_RESOURCE_OVERRIDE_CAPACITY
-         dwords further, in textPointers */
-      *outText = (uint16_t *)cursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1];
-      return true;
+  if (g_TextResourceOverrides != NULL) {
+    /* the first entry with this id; its text is the entry of the same index in textPointers */
+    for (overrideIndex = 0; overrideIndex < TEXT_RESOURCE_OVERRIDE_CAPACITY; overrideIndex++) {
+      if (resourceId == g_TextResourceOverrides->resourceIds[overrideIndex]) {
+        *outText = g_TextResourceOverrides->textPointers[overrideIndex];
+        return true;
+      }
     }
   }
   if ((resourceId & 0xff0000) == 0) {

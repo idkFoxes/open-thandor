@@ -453,7 +453,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
   ArmyRuntimeSlot *sourceArmyRuntime;
 
   if (armyRuntimeIndex != 0) {
-    sourceArmyRuntime = (ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    sourceArmyRuntime = (ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
     if (sourceArmyRuntime->modelNodeRuntime != NULL) {
       SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
@@ -509,10 +509,10 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
 
 {
   if ((armyRuntimeIndex != 0) &&
-     (((ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne))->
+     (((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex))->
       modelNodeRuntime != NULL)) {
     SelectionPointerArray_ApplyArmyRuntimeTarget
-              ((ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex),
                &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   }
   return;
@@ -643,7 +643,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
     /* the result is ignored: the primary entity is moved whether or not it is still selected */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -686,7 +686,7 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
 
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken;
   if (primaryEntityOffset != 0) {
-    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    target = (GameEntityRuntime *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
     /* the result is ignored, as in SelectionPlayerRuntime_MovePrimarySelectionBy */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -1555,7 +1555,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
         targetWorldY = targetWorldY + movementRuntime->ownerValue64;
       }
     }
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
+    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -1804,8 +1804,8 @@ void SelectionPanel_DrawForwardCappedBar
   GraphicsTextureLogicalSize startCapSize;
   GraphicsTextureLogicalSize endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -1840,8 +1840,8 @@ void SelectionPanel_DrawSolidCappedBar
   GraphicsTextureLogicalSize startCapSize;
   GraphicsTextureLogicalSize endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -1880,9 +1880,9 @@ void SelectionPanel_DrawSegmentedCappedBar
   uint32_t *cellFlags;
   GraphicsTextureLogicalSize spriteSize;
   
-  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellFlags = (uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)((uintptr_t)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -2000,13 +2000,13 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
-        runtimeState->assignedTargetArmyRuntime = (uint32_t)targetArmyRuntime;
+        runtimeState->assignedTargetArmyRuntime = (uint32_t)targetArmyRuntime; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
         runtimeState->commandModeFlags = runtimeState->commandModeFlags |
                                        (ARMY_COMMAND_MODE_SELECTION_ORDER | ARMY_COMMAND_MODE_INTERRUPTED);
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
       }
     }
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
+    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -2039,7 +2039,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
         runtimeState->commandGeneration = runtimeState->commandGeneration << 2;
       }
     }
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
+    selection = (SelectionPointerArray32 *)&selection->entries[1]; /* next entry */
     entriesRemaining--;
   } while (entriesRemaining != 0);
 }
@@ -2336,7 +2336,7 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
   /* array is advanced as a cursor over its entries */
   for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
     array->entries[0] = NULL;
-    array = (SelectionPointerArray32 *)((int)array + 4);
+    array = (SelectionPointerArray32 *)&array->entries[1];
   }
 }
 

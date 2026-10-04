@@ -2949,21 +2949,21 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
         if (7 < pendingBitCount) {
           *(char *)outputCursor = (char)bitAccumulator;
           bitAccumulator = bitAccumulator >> 8;
-          outputCursor = (uint32_t *)((int)outputCursor + 1);
+          outputCursor = (uint32_t *)((uintptr_t)outputCursor + 1);
           pendingBitCount = pendingBitCount - 8;
         }
       }
       else {
         *(short *)outputCursor = (short)bitAccumulator;
         bitAccumulator = bitAccumulator >> 16;
-        outputCursor = (uint32_t *)((int)outputCursor + 2);
+        outputCursor = (uint32_t *)((uintptr_t)outputCursor + 2);
         pendingBitCount = pendingBitCount - 16;
       }
     }
     else {
       *outputCursor = bitAccumulator;
       bitAccumulator = bitAccumulator >> 24;
-      outputCursor = (uint32_t *)((int)outputCursor + 3);
+      outputCursor = (uint32_t *)((uintptr_t)outputCursor + 3);
       pendingBitCount = pendingBitCount - 24;
     }
     inputCoefficients++;
@@ -2973,15 +2973,15 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
   if (pendingBitCount < 8) {
     if (pendingBitCount != 0) {
       *(char *)outputCursor = (char)bitAccumulator;
-      outputCursor = (uint32_t *)((int)outputCursor + 1);
+      outputCursor = (uint32_t *)((uintptr_t)outputCursor + 1);
     }
   }
   else {
     *(short *)outputCursor = (short)bitAccumulator;
-    outputCursor = (uint32_t *)((int)outputCursor + 2);
+    outputCursor = (uint32_t *)((uintptr_t)outputCursor + 2);
   }
   /* bytes written, rounded up to a dword */
-  return ((uint32_t)((int)outputCursor + 3U) & 0xfffffffc) - (int)encodedBlock;
+  return (uint32_t)((((uintptr_t)outputCursor + 3U) & ~(uintptr_t)3) - (uintptr_t)encodedBlock);
 }
 
 /* Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
@@ -3035,7 +3035,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
       refillDword = *(int *)inputCursor;
-      inputCursor = (uint16_t *)((int)inputCursor + 3);
+      inputCursor = (uint16_t *)((uintptr_t)inputCursor + 3);
       availableBitCount = availableBitCount + 24;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
@@ -3047,7 +3047,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     }
     else if (availableBitCount < 25) {
       refillWord = *inputCursor;
-      inputCursor = (uint16_t *)((int)inputCursor + 1);
+      inputCursor = (uint16_t *)((uintptr_t)inputCursor + 1);
       availableBitCount = availableBitCount + 8;
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
@@ -3055,11 +3055,11 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
     coefficientsRemaining--;
   } while (coefficientsRemaining != 0);
   if (availableBitCount == 32) {
-    inputCursor = (uint16_t *)((int)inputCursor - 1);
+    inputCursor = (uint16_t *)((uintptr_t)inputCursor - 1);
   }
   else if (availableBitCount < 24) {
-    inputCursor = (uint16_t *)((int)inputCursor + 1);
+    inputCursor = (uint16_t *)((uintptr_t)inputCursor + 1);
   }
-  return ((uint32_t)inputCursor & 0xfffffffc) - (int)encodedBlock;
+  return (uint32_t)(((uintptr_t)inputCursor & ~(uintptr_t)3) - (uintptr_t)encodedBlock);
 }
 

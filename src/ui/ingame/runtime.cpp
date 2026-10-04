@@ -13,11 +13,11 @@
 
 __declspec(align(4)) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
 
-__declspec(align(4)) uint32_t g_InGameDiagramTextureSource = 0;
+__declspec(align(4)) GraphicsTextureSourceAsset *g_InGameDiagramTextureSource = 0;
 
-__declspec(align(8)) uint32_t g_InGameTechnologyTextureSource = 0;
+__declspec(align(8)) GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource = 0;
 
-__declspec(align(4)) uint32_t g_InGameWindowTextureSource = 0;
+__declspec(align(4)) GraphicsTextureSourceAsset *g_InGameWindowTextureSource = 0;
 
 __declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
@@ -385,10 +385,10 @@ static void InGameEditorKeyboard_HoverUnitPlacementArmy(void)
 {
   uint32_t armyLookupError;
   ArmyAssetRecordPrefix *foundArmyAsset;
-  uint32_t hoverRecordValue;
+  uintptr_t hoverRecordValue;
 
   armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-  hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+  hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uintptr_t)foundArmyAsset,
                                               armyLookupError != 0);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
   InGameSelectionDetailPanel_Rebuild();
@@ -492,7 +492,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     counterField = (int32_t *)&((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text;
     *counterField = *counterField + 1;
     if (TEXT_ID_WORLD_VIEW_INFO_LAST <
-        (uint32_t)((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text) {
+        (uint32_t)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text) {
       ((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text =
            (uint16_t *)TEXT_ID_WORLD_VIEW_INFO_FIRST;
     }
@@ -618,7 +618,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t)g_UiCommandModeGOwnerFactionIndex) {
         g_UiCommandModeGOwnerFactionIndex = 1;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uintptr_t)uiRoot);
     }
     break;
   case 0x56edc0: /* Page Down: previous owner faction for unit placement */
@@ -627,7 +627,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
         g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uintptr_t)uiRoot);
     }
     break;
   /* Letter keys: editor tab and tool */
@@ -897,7 +897,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
       /* Recipient mask: bit 9+n when box n of the faction tab is ticked (messageRecipientPlayersTab), bit 16+n
          for box n of the session player tab (messageRecipientGroupsTab), 0xFFFFFF00 for everyone. */
-      tabOffset = (int)recipientTab - (int)commandTextEdit;
+      tabOffset = (int)((uintptr_t)recipientTab - (uintptr_t)commandTextEdit);
       if (tabOffset ==
           (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
         recipientMask = InGameChatInput_CollectTickedSlotBits
@@ -1187,7 +1187,7 @@ Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath)
    world runtime (the worldView node of the same in-game UI copy) by the distance to the new centre, then clears
    the field grid dirty flag.
 */
-void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
+void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
 
 {
   int64_t scaledProduct;
@@ -3107,10 +3107,10 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
             (0,(UiPageStackControl *)
                THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
   /* the text fields hold text resource ids; the colour name of the faction's colorIndex */
-  ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
-       (uint16_t *)(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
-  ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
-       (uint16_t *)(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
+  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
+       (uint16_t *)(uintptr_t)(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
+  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
+       (uint16_t *)(uintptr_t)(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
   relationState = g_GameFactionRuntimeImage.records
                   [((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex]
                   .packedRelationStates >> ((uint8_t)(factionIndex << 2) & SHIFT_COUNT_MASK) &
@@ -3118,17 +3118,17 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   /* the original shifts the index left and back right around the nibble shift, which only clears its top
      two bits: the index itself is unchanged */
   factionIndex = factionIndex & 0x3fffffff;
-  ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
-       (uint16_t *)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
+  ((UiSingleLineTextControl *)((uint8_t *)node +g_UiAction1012StateTextOffsets[slotIndex]))->text =
+       (uint16_t *)(uintptr_t)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
   /* player name: empty, or in network games the name of the player assigned to this faction */
   playerNameTextOffset = g_UiAction1012IconImageOffsets[slotIndex];
-  ((UiSingleLineTextControl *)((int)node + playerNameTextOffset))->text = g_EmptyFrontendPlayerNameUtf16;
+  ((UiSingleLineTextControl *)((uint8_t *)node +playerNameTextOffset))->text = g_EmptyFrontendPlayerNameUtf16;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
     do {
       if ((playerBlock->factionAssignment).factionAssignmentIndex == factionIndex) {
-        ((UiSingleLineTextControl *)((int)node + playerNameTextOffset))->text = (uint16_t *)&playerBlock->playerName;
+        ((UiSingleLineTextControl *)((uint8_t *)node +playerNameTextOffset))->text = (uint16_t *)&playerBlock->playerName;
         break;
       }
       playerBlock++;
@@ -3141,7 +3141,7 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   iconSubresource = g_UiAction1012SubresourceByState[relationState];
   controlFlags = (uint32_t *)&THANDOR_UI_AT(node,iconButtonOffset)->nodeFlags;
   *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-  ((UiCommandSpriteButtonControl *)((int)node + iconButtonOffset))->sprite.normalSubresourceStartOrDescriptor =
+  ((UiCommandSpriteButtonControl *)((uint8_t *)node +iconButtonOffset))->sprite.normalSubresourceStartOrDescriptor =
        iconSubresource;
   if (((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) != 0) &&
      ((7 < relationState ||
@@ -3396,15 +3396,15 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 
 {
   uint32_t selectedTabIndex;
-  int parentNodeAddress;
+  uintptr_t parentNodeAddress;
   void *rootNodeCursor;
-  
+
   /* climb to the UI root (parent -1) */
-  parentNodeAddress = (int)(selectableControl->base).parent;
+  parentNodeAddress = (uintptr_t)(selectableControl->base).parent;
   rootNodeCursor = selectableControl;
-  while (parentNodeAddress != -1) {
+  while (parentNodeAddress != (uintptr_t)-1) {
     rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
-    parentNodeAddress = *(int *)((int)rootNodeCursor + 8); /* ->parent */
+    parentNodeAddress = (uintptr_t)((UiNodeBase *)rootNodeCursor)->parent;
   }
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
       INGAME_UI(rootNodeCursor,resultsTabThird),
@@ -3432,8 +3432,15 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
 {
   UiCommandSpriteButtonControl *rootControl;
   CommandPayload rowFactionIndex;
-  GraphicsTextureSourceAsset *rootFactionValue;
+  FactionRuntimeIndex rootFactionValue;
   int slotIndex;
+
+  /* the original reads rootControl[21].sprite.primaryTextureSource, which on the 32-bit layout is this field */
+  static_assert(sizeof(void *) != 4 ||
+                21 * sizeof(UiCommandSpriteButtonControl) +
+                offsetof(UiCommandSpriteButtonControl,sprite.primaryTextureSource) ==
+                offsetof(InGameUiImage,worldView) + offsetof(WorldRuntimeContext,activeFactionRuntimeIndex),
+                "rootControl[21].sprite.primaryTextureSource overlays the world view's activeFactionRuntimeIndex");
 
   if ((g_UiCommandRuntimeFlags &
        (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
@@ -3442,17 +3449,17 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       rootControl = (UiCommandSpriteButtonControl *)(rootControl->sprite).selectable.base.parent;
     }
     slotIndex = 6;
-    while ((int)control - (int)rootControl != g_UiAction1012ControlOffsets[slotIndex]) {
+    while ((int)((uintptr_t)control - (uintptr_t)rootControl) != g_UiAction1012ControlOffsets[slotIndex]) {
       slotIndex--;
       if (slotIndex < 0) {
         return;
       }
     }
     rowFactionIndex = g_UiAction1012TargetPlayerIndices[slotIndex];
-    /* rootControl[21].sprite.primaryTextureSource overlays the activeFactionRuntimeIndex of the in-game
-       root's world runtime: the local faction */
+    /* the local faction: the activeFactionRuntimeIndex of the in-game root's world runtime (the original
+       reads it as rootControl[21].sprite.primaryTextureSource, see the static_assert above) */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
-      rootFactionValue = rootControl[21].sprite.primaryTextureSource;
+      rootFactionValue = ((WorldRuntimeContext *)INGAME_UI(rootControl,worldView))->activeFactionRuntimeIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         GameFactionRuntime_AdvancePairwiseRelationState
@@ -3464,7 +3471,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       }
     }
     else {
-      rootFactionValue = rootControl[21].sprite.primaryTextureSource;
+      rootFactionValue = ((WorldRuntimeContext *)INGAME_UI(rootControl,worldView))->activeFactionRuntimeIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         GameFactionRuntime_ResetPairwiseRelationState
@@ -3518,7 +3525,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
       InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
       /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
-      modelOffset = (int)definitionRecord - g_ModelRuntimeRebaseDelta;
+      modelOffset = (int)((intptr_t)definitionRecord - (intptr_t)g_ModelRuntimeRebaseDelta);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
@@ -3548,7 +3555,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   uint16_t *stream;
   TextResourceId resourceId;
   uint32_t factionIndexCursor;
-  int factionRecordAddress;
+  uintptr_t factionRecordAddress;
   uint32_t filledSlotCount;
   uint16_t *resolvedText;
   
@@ -3794,7 +3801,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback
                       ((ArmyRuntimeSlot **)
                        (localSelectionBlock->placedArmyToken +
-                       (int)g_ArmyRuntimeRebaseBaseMinusOne),worldRuntime);
+                       (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),worldRuntime);
     if (callbackAccepted) {
       return cursorCode + 1;
     }
@@ -4019,9 +4026,9 @@ static void InGameEditorPointer_BeginPlacementTool
   }
   if (ownerNodeUnderPointer != NULL) {
     if (placementSubMode == 1) {
-      armyToken = (int)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
+      armyToken = (int)((uintptr_t)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
                   ownerArmyRuntimeOrSavedOffset.armyRuntime -
-                  (int)g_ArmyRuntimeRebaseBaseMinusOne;
+                  (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,armyToken);
@@ -4032,9 +4039,9 @@ static void InGameEditorPointer_BeginPlacementTool
     }
     g_UiCommandDragStartScreenX = mapControl->pointerPressX;
     g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-    armyToken = (int)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
+    armyToken = (int)((uintptr_t)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
                 ownerArmyRuntimeOrSavedOffset.armyRuntime -
-                (int)g_ArmyRuntimeRebaseBaseMinusOne;
+                (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       PlayerRuntime_SetPlacementArmy(g_LocalPlayerRuntimeId,0,0,armyToken);
@@ -4183,10 +4190,12 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   for (runtimeNode = (WorldOwnerListNode *)mapControl->ownerListHead; runtimeNode != NULL;
       runtimeNode = runtimeNode->nextNode) {
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) == 0) continue;
-    entry = *(GameEntityRuntime **)((int)runtimeNode->runtimePayload + 8);
+    static_assert(sizeof(void *) != 4 || offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
+                  "the owner army is the dword at payload + 8");
+    entry = ((ModelRuntimeSlot *)runtimeNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0 ||
         ownerFactionIndex != (entry->common).ownership.ownerIndex) continue;
-    payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+    payloadValue = (int)((uintptr_t)entry - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     if (WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,mapControl)) {
       isEntryAbsent = SelectionInfo_IsEntryAbsent(entry);
       tripletDwordCount = g_InGameSelectionInsertTripletDwordCount;
@@ -4785,7 +4794,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         root->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
       }
       materialTextureSet = g_TerrainMaterialTextureSets[materialIndex];
-      root->notificationButtonTextureSource = (uint32_t)panelTextureSource;
+      root->notificationButtonTextureSource = (uintptr_t)panelTextureSource;
       /* preview texture of the selected material */
       swatchTextureSource = NULL;
       if (materialTextureSet != NULL) {
@@ -4872,7 +4881,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];
       if (armyAsset != NULL) {
-        g_MemoryApi.free((void *)armyAsset[2].byteSize);
+        g_MemoryApi.free((void *)armyAsset[2].byteSize); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
         armyAsset[2].byteSize = 0;
       }
     }
@@ -5085,9 +5094,9 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   ModelDefinitionRecordPrefix *unlockedDefinition;
 
   classRecordWords = (int *)entity->common.ownership.definitionOrClassRecord;
-  entityDefinition = (ModelDefinition *)*classRecordWords;
+  entityDefinition = ((ModelRuntimeSlot *)classRecordWords)->definitionOrSavedId.runtimeDefinition;
   if (!FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
-         ((RuntimeToken)classRecordWords,g_InGameRuntimeRoot->worldRuntime.selection.activePlayerRuntimeId)) {
+         ((uintptr_t)classRecordWords,g_InGameRuntimeRoot->worldRuntime.selection.activePlayerRuntimeId)) {
     /* The technology button stays available when any of the 28 technology slots is available. */
     UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)root);
     for (technologySlot = 28; technologySlot != 0; technologySlot--) {
@@ -5106,7 +5115,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   }
   armyLookupError = ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
   armyAsset = (ArmyAssetRecord *)FatalError_ExitIfFailed
-                (armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,armyLookupError != 0);
+                (armyLookupError != 0 ? armyLookupError : (uintptr_t)foundArmyAsset,armyLookupError != 0);
   UiPageStack_SetActiveIndex(1,stack);
   selectionDetailValue = armyAsset->selectionDetailValue;
   armour = ModelRuntimeHierarchy_SumArmour((int *)entity);
@@ -5117,10 +5126,10 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,activeMetric >> 4,g_InGameSelectionDetailEnergyTextUtf16);
   ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
-       (uint16_t *)(armyAsset->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
+       (uint16_t *)(uintptr_t)(armyAsset->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
   InGameSelectionDetailPanel_CopyName
             (g_InGameSelectionDetailNameTextUtf16,
-             TextResource_Resolve(((ModelDefinition *)*(int *)entity->common.ownership.definitionOrClassRecord)->
+             TextResource_Resolve(((ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord)->definitionOrSavedId.runtimeDefinition->
                                   nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
   /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
   noWeaponText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
@@ -5138,7 +5147,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
     ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
     researchTechnologyId = modelRuntime->researchTechnologyId;
     ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
-         (uint16_t *)(foundArmyAsset->selectionDetailTemplateVariantIndex +
+         (uint16_t *)(uintptr_t)(foundArmyAsset->selectionDetailTemplateVariantIndex +
                       TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
     RichTextCommandStream_CopyExpanded
               (128,g_InGameSelectionDetailTextSlot09Utf16,
@@ -5178,7 +5187,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   /* Linked army asset: class 0x16 checks word 43, classes 0x0B/0x0D check word 46 of the class record; class
      0x0E only prints word 24 as a number. */
   classRecordWords = (int *)entity->common.ownership.definitionOrClassRecord;
-  runtimeClassId = ((ModelDefinition *)*classRecordWords)->runtimeClassId;
+  runtimeClassId = ((ModelRuntimeSlot *)classRecordWords)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
   if (runtimeClassId == MODEL_RUNTIME_CLASS_22) {
     if (classRecordWords[43] != 1) {
       return;
@@ -5200,15 +5209,15 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
      linkedArmyAsset) */
   ArmyAssetRegistry_FindById(classRecordWords[24],&linkedArmyAsset);
-  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer;
+  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
     ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
-         (uint16_t *)((int)((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text +
+         (uint16_t *)((uintptr_t)((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text +
                       linkedArmyAsset->selectionDetailTemplateVariantIndex);
   }
   unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                      (root->worldRuntime.activeFactionRuntimeIndex,
-                      (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+                      (uintptr_t)linkedDefinitionListView);
   InGameSelectionDetailPanel_FillLinkedDefinitionNames
             (root,g_InGameSelectionDetailTextSlot05Utf16,
              TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE),
@@ -5241,7 +5250,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
          foundArmyAsset) */
       ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
       ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->base.textureSource =
-           (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId;
+           (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId; /* 5f-format: ArmyAssetRecord +0x18 (dword read as texture source) */
       remainingCells--;
       gridCellOffset++;
     }
@@ -5289,12 +5298,12 @@ static void InGameSelectionDetailPanel_ShowHoverRecord
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,displayedEnergy >> 4,g_InGameSelectionDetailEnergyTextUtf16);
   statsTemplateTextId = hoverRecord->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
-  ((UiWrappedTextControl *)INGAME_UI(root,hoverItemStatsText))->text = (uint16_t *)statsTemplateTextId;
-  ((UiWrappedTextControl *)INGAME_UI(root,unitPlacementStatsText))->text = (uint16_t *)statsTemplateTextId;
-  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)hoverRecord->rootNodeOffsetOrPointer;
+  ((UiWrappedTextControl *)INGAME_UI(root,hoverItemStatsText))->text = (uint16_t *)(uintptr_t)statsTemplateTextId;
+  ((UiWrappedTextControl *)INGAME_UI(root,unitPlacementStatsText))->text = (uint16_t *)(uintptr_t)statsTemplateTextId;
+  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)hoverRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer (UiCommandRuntimeRecordPrefix view) */
   unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                      (root->worldRuntime.activeFactionRuntimeIndex,
-                      (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+                      (uintptr_t)linkedDefinitionListView);
   InGameSelectionDetailPanel_FillLinkedDefinitionNames
             (root,g_InGameSelectionDetailNameTextUtf16,
              TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE),

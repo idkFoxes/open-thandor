@@ -98,6 +98,6 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
 extern int32_t g_ModelLodDepthThresholdQ8;
 extern GraphicsFixedVec3 g_ModelCullViewRelative;
 extern ModelRuntimeSlot *g_ModelRuntimeSlots;
-extern int g_ModelRuntimeRebaseDelta;
+extern intptr_t g_ModelRuntimeRebaseDelta; /* model runtime pool base - 1 */
 
 #endif /* THANDOR_WORLD_MODEL_RUNTIME_H */

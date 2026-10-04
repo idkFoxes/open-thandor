@@ -1317,6 +1317,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       cell->flagsAndMaterial = cell->flagsAndMaterial & ~FIELD_CELL_RANDOM_VARIANT_MASK;
       cell->surfacePacketIndex = phaseRandomValue & (1 << ((uint8_t)phaseSeedBitWidth & 31)) - 1U;
       /* 16x16 tiling of the 256 direction records over the world */
+      /* 5f-format: FieldGridCell.persistedAux54 (direction record address in a 32-bit FLD field) */
       cell->persistedAux54 =
            (FieldCellPersistedAux)
            (g_TerrainDirectionRecordTable256 + (cellWorldYQ12 & 0xfU) + (cellWorldXQ12 & 0xfU) * 16);
@@ -1369,6 +1370,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   columnsRemaining = gridWidth;
   do {
     do {
+      /* 5f-format: FieldGridCell.persistedAux54 */
       currentCell->persistedAux54 =
            (FieldCellPersistedAux)
            (g_TerrainDirectionRecordTable256 +
@@ -2328,15 +2330,15 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
-  int rowStartCellAddress;
-  int centerCellAddress;
-  int upperCellAddress;
+  intptr_t rowStartCellAddress;
+  intptr_t centerCellAddress;
+  intptr_t upperCellAddress;
   int *neighborWaterDelta;
   
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   rowStartCellAddress =
-       (int)fieldGrid + rowLength * -(int)sizeof(FieldGridCell) +
+       (intptr_t)fieldGrid - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell) +
        (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
@@ -2347,7 +2349,7 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
          (((uint32_t)((FieldGridCell *)centerCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
              ((FieldGridCell *)centerCellAddress)->waterSurfaceDelta + ((FieldGridCell *)centerCellAddress)->terrainHeight;
-        upperCellAddress = centerCellAddress + rowLength * -(int)sizeof(FieldGridCell);
+        upperCellAddress = centerCellAddress - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell);
         if (((uint32_t)((FieldGridCell *)upperCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           neighborWaterDelta = &((FieldGridCell *)upperCellAddress)->waterSurfaceDelta;
           *neighborWaterDelta =
@@ -2488,16 +2490,16 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
-  int sourceCellAddress;
-  int cellAfterSourceAddress;
-  int upperRowCellAddress;
+  intptr_t sourceCellAddress;
+  intptr_t cellAfterSourceAddress;
+  intptr_t upperRowCellAddress;
   int *neighborWaterDelta;
   FieldGridDimension gridWidth;
   
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   sourceCellAddress =
-       (int)fieldGrid + rowLength * -(int)sizeof(FieldGridCell) +
+       (intptr_t)fieldGrid - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell) +
        (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
@@ -2507,7 +2509,7 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
       if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
         sourceSurfaceHeightQ12 =
              ((FieldGridCell *)cellAfterSourceAddress)->waterSurfaceDelta + ((FieldGridCell *)cellAfterSourceAddress)->terrainHeight;
-        upperRowCellAddress = cellAfterSourceAddress + rowLength * -(int)sizeof(FieldGridCell);
+        upperRowCellAddress = cellAfterSourceAddress - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell);
         if (((uint32_t)((FieldGridCell *)upperRowCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           neighborWaterDelta = &((FieldGridCell *)upperRowCellAddress)->waterSurfaceDelta;
           *neighborWaterDelta =

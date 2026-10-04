@@ -55,7 +55,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
   launchNode = pitchNode->childNodes[0];
   launchNode->runtimeFlags = launchNode->runtimeFlags | 1;
   attachmentNodeHeader = (MdlSerializedNodeHeader *)
-                         ((MdlSerializedNodeHeader *)weaponDefinitionView->rootNode->childSerializedOffsets[0])->
+                         ((MdlSerializedNodeHeader *)weaponDefinitionView->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
                          childSerializedOffsets[0];
   for (attachmentSelectorOrdinal = 0; attachmentSelectorOrdinal < ARMY_WEAPON_ATTACHMENT_COUNT;
       attachmentSelectorOrdinal++) {

@@ -103,7 +103,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
           (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
           void *inGameRuntime);
 
-extern int32_t g_InGamePendingPlacementArmyAsset;
+extern intptr_t g_InGamePendingPlacementArmyAsset; /* ArmyAssetRecordPrefix * staged for placement, 0 when none */
 extern uint32_t g_InGameCommandPreviewArmyAssetId;
 
 /* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,

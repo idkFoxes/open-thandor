@@ -485,9 +485,9 @@ WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *wo
 }
 
 
-/* Attaches a caller-owned workspace of count dwords to the world runtime and zeroes it.
+/* Attaches a caller-owned workspace of count pointer-sized words to the world runtime and zeroes it.
 */
-void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
+void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uintptr_t *array,WorldRuntimeContext *world)
 
 {
   world->dwordArray = array;
@@ -661,9 +661,10 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
-    ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,(int *)modelRuntime);
+    ModelRuntimeHierarchy_ClearMatchingTargetRecursive(releasedObject,(int *)modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (pool offset in saves) */
     if (releasedObject == (void *)ownerArmy->assignedTargetArmyRuntime) {
       ownerArmy->assignedTargetArmyRuntime = 0;
     }
@@ -707,6 +708,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   if (sourceRuntime == NULL) {
     return;
   }
+  /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   definitionRecord = ModelDefinitionRegistry_FindById
                     (((AiLinkedDefinitionListView *)
                       ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);

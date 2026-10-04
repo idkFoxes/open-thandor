@@ -326,7 +326,7 @@ Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
 void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
 
 {
-  uint32_t resolvedTexture;
+  uintptr_t resolvedTexture;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecord *registeredRecord;
@@ -336,7 +336,7 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
        registrySlotsRemaining--) {
     registeredRecord = (ArmyAssetRecord *)*registryCursor;
     if (registeredRecord != NULL) {
-      g_MemoryApi.free((void *)registeredRecord->previewTexture);
+      g_MemoryApi.free((void *)registeredRecord->previewTexture); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
       registeredRecord->previewTexture = 0;
     }
     registryCursor++;
@@ -359,7 +359,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   uint32_t armourSum;
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                       (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
+                       (factionIndex,(uintptr_t)node);
   armourSum = ((ModelDefinition *)selected)->maximumHealth;
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ArmyModelTreeNode *child = node->children[childIndex];
@@ -380,7 +380,7 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ArmyAssetHierarchy_SumArmourFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 
@@ -393,7 +393,7 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   uint32_t childCount;
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                       (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
+                       (factionIndex,(uintptr_t)node);
   energySum = ((ModelDefinition *)selected)->energyLoadQ4;
   childCount = node->childCount;
   if ((((ModelDefinition *)selected)->modelFlags &
@@ -416,7 +416,7 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ArmyAssetHierarchy_SumEnergyFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 
@@ -545,7 +545,7 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
    ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected.
 */
-uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
+uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
 
 {
   ArmyAssetRecord *registeredRecord;
@@ -572,8 +572,8 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
     if (previewTexture == NULL) {
       return 0;
     }
-    registeredRecord->previewTexture = (uint32_t)previewTexture;
-    return (uint32_t)previewTexture;
+    registeredRecord->previewTexture = (uint32_t)previewTexture; /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+    return (uintptr_t)previewTexture;
   }
   return 0; /* unknown id */
 }

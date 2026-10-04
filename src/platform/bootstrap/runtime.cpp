@@ -37,15 +37,15 @@ static uint16_t g_TexteHelpStrPathUtf16[15] = {'t', 'e', 'x', 't', 'e', '\\', 'h
 
 static uint16_t g_TexteTastaturStrPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'a', 's', 't', 'a', 't', 'u', 'r', '.', 's', 't', 'r', 0}; /* L"texte\\tastatur.str" */
 
-static uint32_t g_DataPackageHandle = 0;
+static uintptr_t g_DataPackageHandle = 0;
 
-static uint32_t g_ModelPackageHandle = 0;
+static uintptr_t g_ModelPackageHandle = 0;
 
-static uint32_t g_GraphicsPackageHandle = 0;
+static uintptr_t g_GraphicsPackageHandle = 0;
 
-static uint32_t g_MoviePackageHandle = 0;
+static uintptr_t g_MoviePackageHandle = 0;
 
-static uint32_t g_LevelPackageHandle = 0;
+static uintptr_t g_LevelPackageHandle = 0;
 
 static uint32_t g_InstallRegistryKeyHandle = 0;
 
@@ -155,7 +155,7 @@ void *g_GameStatTableImage = 0;
 
 GameDataAuxState g_GameDataAuxState = {0};
 
-uint32_t g_FrontendPlayerListRows[8] = {
+uintptr_t g_FrontendPlayerListRows[8] = {
     0, /* row 0 */
     0, /* row 1 */
     0, /* row 2 */
@@ -617,7 +617,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
 uint32_t __cdecl CPU_DetectFeatures(void)
 
 {
-  int cpuidVersionInfo;
+  intptr_t cpuidVersionInfo;
 
   cpuidVersionInfo = cpuid_Version_info(CPUID_LEAF_VERSION_INFO);
   /* offset 8 of the CPUID result is EDX */
@@ -774,7 +774,7 @@ static void CoreAssets_UseLocalMovieFolder(void)
 static void CoreAssets_MountPackages(void)
 
 {
-  uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
+  uintptr_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
 
   /* patchNN.pck and then levelNN.pck, NN counting down to "00". decimalDigits.codeUnits[0] is the tens
      digit, [1] the ones digit; adding UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP to the packed pair decrements the
@@ -909,7 +909,7 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)
 
 
 /* Loads the eight text pages; returns false with the failing page's error code in *error. */
-static Bool8 CoreAssets_LoadTextPages(uint32_t *error)
+static Bool8 CoreAssets_LoadTextPages(uintptr_t *error)
 
 {
   return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)g_TexteNeterrorStrPathUtf16,error) &&
@@ -968,7 +968,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
 
 {
   uint16_t *textBuffer;
-  uint32_t playerListBase;
+  uintptr_t playerListBase;
   float *splineBuffer;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
@@ -996,7 +996,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
   if (allocError != 0) {
     return allocError;
   }
-  playerListBase = (uint32_t)allocPayload;
+  playerListBase = (uintptr_t)allocPayload;
   g_FrontendPlayerListRows[1] = playerListBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
   g_FrontendPlayerListRows[2] = playerListBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
   g_FrontendPlayerListRows[3] = playerListBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
@@ -1070,17 +1070,17 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
   if (allocError != 0) {
     return allocError;
   }
-  g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
+  g_FrontendLocalPlayerPcxPreview = (uintptr_t)allocPayload;
   allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
   if (allocError != 0) {
     return allocError;
   }
-  g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
+  g_TerrainRegionCollectionEntries = (uintptr_t)allocPayload;
   allocError = g_MemoryApi.alloc(800,&allocPayload);
   if (allocError != 0) {
     return allocError;
   }
-  g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
+  g_FrontendPlayerMessageBuffers = (uintptr_t)allocPayload;
   allocError = g_MemoryApi.alloc
                    (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
                     (void **)&playerRecordCursor);
@@ -1152,7 +1152,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
 {
   uint32_t aiInitError;
   uint32_t buttonSoundError;
-  uint32_t textPageError; /* the failing text page's error code */
+  uintptr_t textPageError; /* the failing text page's error code */
   GraphicsTextureSourceAsset *panelTexture;
   uint32_t panelTextureError;
 
@@ -1178,7 +1178,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   CoreAssets_AdvanceScreenshotName();
   CoreAssets_BindDebugOverlayTextsAndUiPages();
   if (!CoreAssets_LoadTextPages(&textPageError)) {
-    return textPageError;
+    return (uint32_t)textPageError;
   }
   RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TextResource_Resolve(TEXT_ID_MOUSE_HELP));
   CoreAssets_ApplySoundSettings();

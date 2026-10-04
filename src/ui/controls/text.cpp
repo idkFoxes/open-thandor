@@ -1604,9 +1604,9 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
     /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
        text itself */
-    commandStream = (uint16_t *)tooltipTarget[-1].nodeFlags;
+    commandStream = (uint16_t *)tooltipTarget[-1].nodeFlags; /* 5f-format: UI template tooltip prefix dword (node - 4) */
     if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
-      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
     }
     textExtent = RichTextCommandStream_MeasureLine(g_UiTooltipTextStyle,commandStream);
@@ -2750,7 +2750,7 @@ static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextContro
 
 {
   if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
-    return TextResource_Resolve((TextResourceId)control->text);
+    return TextResource_Resolve((TextResourceId)(uintptr_t)control->text);
   }
   return control->text;
 }
@@ -3116,7 +3116,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-    pageUpRow = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
+    pageUpRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) -
             ((int)(viewportSize.height / control->rowHeight) - 1);
     if (pageUpRow < 0) {
       pageUpRow = 0;
@@ -3125,7 +3125,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-    pageDownRow = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) +
+    pageDownRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) +
             (int)(viewportSize.height / control->rowHeight) - 1;
     if (control->rowCount <= pageDownRow) {
       pageDownRow = control->rowCount - 1;
@@ -3138,7 +3138,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     }
   }
   else if (keyCode == KEYBOARD_KEY_CODE_DOWN) {
-    if (((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) + 1 <
+    if (((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) + 1 <
         control->rowCount) {
       control->selectedRowSlot++;
     }
@@ -3152,7 +3152,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
        (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
-    selectedRowTop = ((uint32_t)((int)selectedSlot - (int)control->rowTextSlots) >> 2) * control->rowHeight;
+    selectedRowTop = ((uint32_t)(((uintptr_t)selectedSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               (selectedRowTop + control->rowHeight + 1,(control->base).rightOffset,selectedRowTop,0,
                (UiScrollableControl *)(control->base).parent);
@@ -3295,7 +3295,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
     packedStyleOverride = control->styleOverride;
     commandStream = control->text;
     if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
-      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
     }
     RichTextCommandStream_DrawWrappedBlock
@@ -4026,9 +4026,9 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
 
   if (node != NULL) {
     /* the last field of the (virtual) node before this one = the dword at node - 4 */
-    commandStream = (uint16_t *)node[-1].nodeFlags;
+    commandStream = (uint16_t *)node[-1].nodeFlags; /* 5f-format: UI template tooltip prefix dword (node - 4) */
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
-      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
     }
     RichTextCommandStream_MeasureLine(g_UiTooltipTextStyle,commandStream);

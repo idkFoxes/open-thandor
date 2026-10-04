@@ -45,13 +45,13 @@ Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);
 
-Bool8 Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
+Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError);
 
 Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
-Bool8 Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);
+Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError);
 
 Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount);

@@ -74,7 +74,7 @@ void PersistentSettings_Load(void)
             g_FileSystemCombinedPathScratchUtf16,&pathByteCount)) {
       pathByteCount = FATAL_ERROR_GENERAL_FAILURE;
     }
-    fileHandle = THANDOR_PTR(pathByteCount);
+    fileHandle = THANDOR_PTR((uintptr_t)pathByteCount);
   }
   if (g_FileSystemGetSize(fileHandle,&fileSize)) {
     byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;

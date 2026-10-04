@@ -170,7 +170,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
     if (g_MemoryApi.alloc(bufferBytes,(void **)&(frontendCreditsView->creditsMaskRuntime).maskPixels) == 0) {
       if (g_MemoryApi.alloc(bufferBytes,&blendedBufferPayload) == 0) {
         /* blendedSourcePixels is the second work buffer */
-        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uint32_t)blendedBufferPayload;
+        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uintptr_t)blendedBufferPayload;
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */

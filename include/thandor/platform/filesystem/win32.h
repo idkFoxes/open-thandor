@@ -23,7 +23,7 @@
 #define DOS83_EXTENSION_MAX_CHARS 3
 /* Functions are grouped by semantic ownership. */
 
-uint32_t __cdecl FileSystem_Init(void);
+uintptr_t __cdecl FileSystem_Init(void);
 
 /* 0 with the packed DOS date/time, or FATAL_ERROR_FILE_ACCESS_FAILED */
 uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime);

@@ -281,7 +281,7 @@ Bool8 Package_LoadEntryIntoBuffer
    executable first, then as given), allocates the entry-header array and reads the directory into
    mountSlot. Stores the file handle or the open/allocation error code in *outFileHandleOrError (may be
    NULL); returns true on success. */
-static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_t *outFileHandleOrError)
+static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   void *handle;
@@ -309,7 +309,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32
       mountSlot->entryCount = 0;
       Package_ReadDirectory((EngineFileHandle)handle,NULL); /* its result is ignored */
       if (outFileHandleOrError != NULL) {
-        *outFileHandleOrError = (uint32_t)handle;
+        *outFileHandleOrError = (uintptr_t)handle;
       }
       return true;
     }
@@ -327,7 +327,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32
    archive loses against every other one. FileSystem_Init mounts engine.pck this way. Same result as
    Package_Mount.
 */
-Bool8 Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
+Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   int slotsRemaining;
@@ -568,7 +568,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
    returns false with an error code there instead when no slot is free, the file cannot be opened or the
    allocation fails. outFileHandleOrError may be NULL.
 */
-Bool8 Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError)
+Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
   int slotsRemaining;

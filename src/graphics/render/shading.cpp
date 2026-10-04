@@ -8,6 +8,17 @@
 #include <thandor/graphics/render/shading.h>
 #include <thandor/thandor.h>
 
+#if !defined(_WIN64)
+/* the original offsets of the render context view and the 0x80-byte primitive blocks */
+static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
+              offsetof(GeneratedTextureRenderContextView, lightAzimuthAngle) == 0xB8 &&
+              offsetof(GeneratedTextureRenderContextView, projectedPointBlockPool) == 0xC8,
+              "GeneratedTextureRenderContextView layout");
+static_assert(offsetof(GraphicsPrimitivePacket, textureEntry) == 0x64 && offsetof(GraphicsPrimitiveQueue, primaryNodes) == 0x20,
+              "primitive block layout");
+#endif
+static_assert(sizeof(GraphicsPrimitivePacket) == GRAPHICS_PROJECTED_BLOCK_BYTES, "a primitive block is one packet");
+
 /* Module data. */
 
 /* filled at startup by GraphicsLighting_BuildPackedLookupTable */
@@ -15,7 +26,7 @@ __declspec(align(16)) uint64_t g_PackedLightingLookupTable[512] = {0};
 
 __declspec(align(16)) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {0};
 
-uint32_t g_GraphicsIntensityClampTableBase = 0;
+uintptr_t g_GraphicsIntensityClampTableBase = 0;
 
 GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount = 0;
 
@@ -594,9 +605,9 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
     return;
   }
   GraphicsShadingGeneratedTexture_FillShadowPatchVertices(projectedBlocks,modelNode);
-  projectedBlocks[GRAPHICS_PROJECTED_PAIR(0,12)].projectedY =
-       (GraphicsPrimitiveBackendCoordinate)
-       (g_GraphicsShadingTextureSet->entries + g_GraphicsShadingGeneratedTextureSubresourceIndex);
+  /* the first block's packet header (pair 12 of block 0): the generated texture's entry */
+  ((GraphicsPrimitivePacket *)projectedBlocks)->textureEntry =
+       g_GraphicsShadingTextureSet->entries + g_GraphicsShadingGeneratedTextureSubresourceIndex;
   GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(projectedBlocks);
   /* The original tests the result the soft shadow traversal leaves (its return value here). */
   if (GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(modelNode) != 0) {
@@ -627,10 +638,10 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
   if (allocError == 0) {
     targetIntensity = 0;
     /* round up to the next 64 KiB boundary */
-    tableCursor = (char *)((uint32_t)allocPayload +(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
+    tableCursor = (char *)((uintptr_t)allocPayload +(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(uintptr_t)(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
     rowsRemaining = 256;
     previousIntensity = 0;
-    g_GraphicsIntensityClampTableBase = (uint32_t)tableCursor;
+    g_GraphicsIntensityClampTableBase = (uintptr_t)tableCursor;
     do {
       do {
         targetByte = (char)targetIntensity;
@@ -1076,6 +1087,7 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
     recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
   }
   for (; triangleCount != 0; triangleCount--) {
+    /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record) */
     triangle = (GraphicsTriangleInput *)recordCursor;
     GraphicsShadingGeneratedTexture_RasterizeTriangleMask
               ((GraphicsFixedVec2 *)((uint8_t *)triangle->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
@@ -1151,14 +1163,14 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
    when triangles were, otherwise the address of the last transformed vertex's shadow XY (what the original
    leaves as its result when the batch has vertices but no triangles).
 */
-uint32_t
+uintptr_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 meshRecord)
 
 {
   int vertexCount;
   int triangleCount;
   GraphicsFixedVec3 *recordCursor;
-  uint32_t result;
+  uintptr_t result;
 
   result = 0;
   vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
@@ -1166,7 +1178,7 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
   if (((((ModelMeshHeader *)meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
     do {
-      result = (uint32_t)&recordCursor[2].z;
+      result = (uintptr_t)&recordCursor[2].z;
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
                 ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
@@ -1175,6 +1187,8 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
     } while (vertexCount != 0);
     if (triangleCount != 0) {
       for (; triangleCount != 0; triangleCount--) {
+        /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record, 32-bit vertex
+           addresses; vertex0 read as recordCursor->x) */
         GraphicsShadingGeneratedTexture_RasterizeTriangleMask
                   ((GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
                    (GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
@@ -1194,11 +1208,11 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
    mesh record's result plus the shadow mesh-group offset, plus the children's results. Nonzero whenever the
    hierarchy has a mesh group.
 */
-uint32_t
+uintptr_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *modelNode)
 
 {
-  uint32_t result;
+  uintptr_t result;
   GraphicsFixedVec3 *nodeTranslation;
   ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 originX;
@@ -1558,34 +1572,29 @@ GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProje
           (GeneratedTextureRenderContextView *renderContext)
 
 {
-  uint32_t *blockPool;
+  GraphicsPrimitiveQueue *blockPool;
   uint32_t usedBlockCount;
   uint32_t newBlockCount;
+  uint32_t blockIndex;
   GraphicsProjectedPointPair *firstBlock;
+  GraphicsPrimitivePacket *firstPacket;
 
+  /* the pool is the active primitive queue: count, capacity, packetPool and the primary nodes' packets */
   blockPool = renderContext->projectedPointBlockPool;
-  usedBlockCount = blockPool[1];
+  usedBlockCount = blockPool->count;
   newBlockCount = usedBlockCount + 14;
-  if (newBlockCount < *blockPool) {
-    blockPool[1] = newBlockCount;
-    firstBlock = (GraphicsProjectedPointPair *)(usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES + blockPool[2]);
-    blockPool[usedBlockCount * 4 + 9] = (uint32_t)firstBlock;
-    blockPool[usedBlockCount * 4 + 13] = (uint32_t)((uint8_t *)firstBlock + 1 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 17] = (uint32_t)((uint8_t *)firstBlock + 2 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 21] = (uint32_t)((uint8_t *)firstBlock + 3 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 25] = (uint32_t)((uint8_t *)firstBlock + 4 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 29] = (uint32_t)((uint8_t *)firstBlock + 5 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 33] = (uint32_t)((uint8_t *)firstBlock + 6 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 37] = (uint32_t)((uint8_t *)firstBlock + 7 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 41] = (uint32_t)((uint8_t *)firstBlock + 8 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 45] = (uint32_t)((uint8_t *)firstBlock + 9 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 49] = (uint32_t)((uint8_t *)firstBlock + 10 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 53] = (uint32_t)((uint8_t *)firstBlock + 11 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 57] = (uint32_t)((uint8_t *)firstBlock + 12 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 61] = (uint32_t)((uint8_t *)firstBlock + 13 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    firstBlock[GRAPHICS_PROJECTED_PAIR(0,12)].projectedX = 0;
-    firstBlock[GRAPHICS_PROJECTED_PAIR(0,13)].projectedX =
-         GRAPHICS_PRIMITIVE_FLAG_TEXTURED | GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT;
+  if (newBlockCount < blockPool->capacity) {
+    blockPool->count = newBlockCount;
+    firstBlock = (GraphicsProjectedPointPair *)
+                 ((uint8_t *)blockPool->packetPool + usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    for (blockIndex = 0; blockIndex < 14; blockIndex++) {
+      blockPool->primaryNodes[usedBlockCount + blockIndex].packet =
+           (GraphicsPrimitivePacket *)((uint8_t *)firstBlock + blockIndex * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    }
+    /* the first block's packet header: modulation colour 0, flags textured + translucent */
+    firstPacket = (GraphicsPrimitivePacket *)firstBlock;
+    firstPacket->modulationColor = 0;
+    firstPacket->renderFlags = GRAPHICS_PRIMITIVE_FLAG_TEXTURED | GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT;
     return firstBlock;
   }
   return NULL;
@@ -1600,7 +1609,7 @@ void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
                (GeneratedTextureRenderContextView *renderContext)
 
 {
-  renderContext->projectedPointBlockPool[1] = renderContext->projectedPointBlockPool[1] - 14;
+  renderContext->projectedPointBlockPool->count = renderContext->projectedPointBlockPool->count - 14;
   return;
 }
 

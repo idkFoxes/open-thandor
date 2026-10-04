@@ -537,7 +537,7 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 
 {
   uint32_t *displayFlags;
-  int frontendRootAddress;
+  uintptr_t frontendRootAddress;
 
   frontendRootAddress = g_FrontendRootNode;
   Movie_Close();
@@ -560,7 +560,7 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
           FrontendStatusCode romActionIndex)
 
 {
-  int frontendRootAddress;
+  uintptr_t frontendRootAddress;
 
   frontendRootAddress = g_FrontendRootNode;
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));

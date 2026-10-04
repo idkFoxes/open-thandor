@@ -165,7 +165,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
 
 {
   ArmyAssetRecord *armyAssetRecord;
-  uint32_t assetDefinitionListAddress;
+  uintptr_t assetDefinitionListAddress;
   ModelDefinitionRecordPrefix *modelDefinition;
   AiCandidateScore32 candidateScore;
   int registryEntriesRemaining;
@@ -192,7 +192,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
       if ((armyAssetRecord != NULL) &&
          ((armyAssetRecord->flags & 1) != 0)) { /* bit 0: asset enabled */
         /* the asset's root node is an AiLinkedDefinitionListView */
-        assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer;
+        assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
         if ((((candidateModelDefinitionId !=
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]) &&
              (((candidateModelDefinitionId !=
@@ -215,7 +215,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||
               (nestedLinkedDefinitions =
-               (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address,
+               (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address, /* 5f-format: ArmyModelTreeNode.childList0Address */
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
                 ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[1] &&
@@ -226,7 +226,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
               ((secondNestedLinkedDefinitions =
-                (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address,
+                (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address, /* 5f-format: ArmyModelTreeNode.childList1Address */
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
@@ -447,7 +447,7 @@ Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
         /* The original then compares the selected definition's placementContactKindIndex with 1 (ignoring the
            selector's status), but both outcomes call the same placement handler. */
         (void)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,armyAsset->rootNodeOffsetOrPointer);
+                          (factionIndex,armyAsset->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
@@ -550,7 +550,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.z,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.y,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.x,
-             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
+             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
   return true;
@@ -772,7 +772,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
+             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
 }
@@ -992,7 +992,8 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
       if ((entitySlot != NULL) &&
           ((entitySlot[59] & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) &&
-          AiPurchaseCandidate_DefinitionListsResearch((ModelDefinition *)*entitySlot,candidateId)) {
+          AiPurchaseCandidate_DefinitionListsResearch
+            (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition,candidateId)) {
         return false;
       }
     }
@@ -1008,7 +1009,8 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   if ((producerClassMask & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId == MODEL_RUNTIME_CLASS_11) &&
+      if ((entitySlot != NULL) &&
+          (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot[46] == 0)) {
         return false;
       }
@@ -1017,7 +1019,8 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   else if ((producerClassMask & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId == MODEL_RUNTIME_CLASS_22) &&
+      if ((entitySlot != NULL) &&
+          (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot[43] == 0)) {
         return false;
       }
@@ -1026,10 +1029,11 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   else if ((producerClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
+      if ((entitySlot != NULL) &&
+          (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) &&
-          ((((ModelDefinition *)*entitySlot)->classParameterC4 & producerClassMask &
-            ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0) &&
+          ((((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->classParameterC4 &
+            producerClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0) &&
           (entitySlot[46] == 0)) {
         return false;
       }
@@ -1515,7 +1519,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     return;
   }
   modelDefinition = ModelDefinitionRegistry_FindById
-                     (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]);
+                     (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == NULL) {
     return;
   }
@@ -1586,7 +1590,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
   (*relationCounter)++;
   for (; remainingAssets != 0; remainingAssets--) {
-    if (armyAsset == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
+    if (armyAsset == (ArmyAssetRecordPrefix *)*assetPointerCursor) break; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
     assetPointerCursor++;
   }
   if (remainingAssets == 0) {
@@ -1674,11 +1678,11 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   int weightedDefinitionScore;
   AiLinkedDefinitionListView *linkedDefinitionList;
 
-  linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer;
+  linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   /* the original tests the selector's status after each of the three selections below, but it is always
      "found" */
   selectedModelDefinition = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                    (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
+                    (factionIndex,(uintptr_t)linkedDefinitionList);
   weightedDefinitionScore = scoreWeights->baseScore;
   if (selectedModelDefinition->accelerationPerTick != 0) {
     weightedDefinitionScore = weightedDefinitionScore + scoreWeights->nonzeroDefinition18Bonus;
@@ -1695,7 +1699,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
             g_TechnologyCategoryMaximums[selectedModelDefinition->targetClassIndex])) * 8;
   if (childCount != 0) {
     selectedChildModelDefinition0 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                      (factionIndex,linkedDefinitionList->childList0Address);
+                      (factionIndex,linkedDefinitionList->childList0Address); /* 5f-format: ArmyModelTreeNode.childList*Address */
     if ((selectedChildModelDefinition0->reloadTicks != 0) &&
         (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0)) {
       weightedDefinitionScore = weightedDefinitionScore +
@@ -1705,7 +1709,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
     }
     if (1 < childCount) {
       selectedChildModelDefinition1 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                        (factionIndex,linkedDefinitionList->childList1Address);
+                        (factionIndex,linkedDefinitionList->childList1Address); /* 5f-format: ArmyModelTreeNode.childList*Address */
       if ((selectedChildModelDefinition1->reloadTicks != 0) &&
           (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0)) {
         weightedDefinitionScore = weightedDefinitionScore +

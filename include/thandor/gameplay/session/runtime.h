@@ -98,7 +98,7 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot);
 
 void InGameRuntime_UpdateSimulationAndNetworkTick(void);
 
-uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument);
+uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument);
 
 extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks;
 
@@ -107,11 +107,11 @@ extern uint16_t g_FlmEnde0001FlmPathUtf16[17];
 extern uint32_t g_SessionNetworkTickCounter;
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount;
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount;
-extern uint32_t g_TerrainRegionCollectionEntries;
+extern uintptr_t g_TerrainRegionCollectionEntries;
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks;
-extern uint32_t g_InGameActiveEffectVoice;
+extern IDirectSoundBuffer *g_InGameActiveEffectVoice;
 extern uint32_t g_InGameEffectsEnabled;
-extern uint32_t g_InGameActiveMusicVoice;
+extern IDirectSoundBuffer *g_InGameActiveMusicVoice;
 extern uint32_t g_InGameMusicNextTrackCountdown;
 extern uint16_t g_InGameCountdownTextUtf16[8];
 extern uint32_t g_InGameNetworkTickCountdown;

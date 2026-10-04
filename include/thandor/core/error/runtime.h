@@ -132,7 +132,7 @@
 
 /* The fatal-error handlers take an error code (a text id of the error page, below 0x100) or a pointer to a
    rich-text message; a value with no bits above the low byte is a code */
-#define FATAL_ERROR_IS_CODE(errorOrValue) (((errorOrValue) & 0xffffff00) == 0)
+#define FATAL_ERROR_IS_CODE(errorOrValue) (((uintptr_t)(errorOrValue) & ~(uintptr_t)0xff) == 0)
 /* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
 #define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
 
@@ -146,11 +146,11 @@ int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
-uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 failed);
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed);
 
 void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
-uint32_t FatalError_Exit(uint32_t valueOrError,Bool8 failed);
+uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed);
 
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 

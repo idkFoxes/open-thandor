@@ -211,7 +211,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   titleTextId = g_FrontendLoadedLevelAsset->header.titleTextResourceIndex;
   /* briefingText's text resource id: the faction's briefing entry of the level's text page */
   ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text =
-       (uint16_t *)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
+       (uint16_t *)(uintptr_t)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
        g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
   *briefingText = FRONTEND_TEXT_STYLE_NORMAL;
@@ -232,7 +232,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     }
     else {
       ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
-           (GraphicsTextureSourceAsset *)movieEndCode;
+           (GraphicsTextureSourceAsset *)(uintptr_t)movieEndCode;
     }
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->subresource = 0;
   }
@@ -279,7 +279,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     playersRemaining--;
     playerRecord++;
   } while (playersRemaining != 0);
-  briefingText = TextResource_Resolve((TextResourceId)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
+  briefingText = TextResource_Resolve((TextResourceId)(uintptr_t)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
   textExtent = RichTextCommandStream_MeasureWrappedBlock
                      (g_UiTextStyleNormal,briefingText,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */

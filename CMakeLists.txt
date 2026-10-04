@@ -28,13 +28,12 @@ if(DEFINED THANDOR_TEST_AIDS)
     unset(THANDOR_TEST_AIDS CACHE)
 endif()
 
-# The code needs MSVC (inline __asm, __stdcall/__fastcall, MSVC pragmas) targeting 32-bit x86.
-# Use a preset (CMakePresets.json: debug, release, test), which finds MSVC x86 by itself, or
-# configure from a vcvars32 prompt. In CLion: Settings > Build > CMake, enable the presets and
-# disable the default MinGW profile.
-if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(FATAL_ERROR "open-thandor must be built with MSVC for 32-bit x86: use a CMake preset "
-                        "(cmake --preset release) or a vcvars32 prompt. Found: ${CMAKE_C_COMPILER_ID}, "
+# The code needs MSVC (__stdcall, MSVC pragmas and intrinsics). Use a preset (CMakePresets.json: debug, release,
+# test for 32-bit x86; x64-release, x64-test for 64-bit), which finds MSVC by itself, or configure from a vcvars
+# prompt. In CLion: Settings > Build > CMake, enable the presets and disable the default MinGW profile.
+if(NOT MSVC OR NOT (CMAKE_SIZEOF_VOID_P EQUAL 4 OR CMAKE_SIZEOF_VOID_P EQUAL 8))
+    message(FATAL_ERROR "open-thandor must be built with MSVC (x86 or x64): use a CMake preset "
+                        "(cmake --preset release) or a vcvars prompt. Found: ${CMAKE_CXX_COMPILER_ID}, "
                         "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
 endif()
 
@@ -152,6 +151,8 @@ add_executable(thandor WIN32
     src/platform/bootstrap/image.cpp
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
+# The file formats still hold pointers in 32-bit fields: on x64 the process stays below 2 GB
+# (/LARGEADDRESSAWARE:NO) so those pointers fit until the formats get explicit (de)serialisation.
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
 if(THANDOR_DEV_TOOLS)

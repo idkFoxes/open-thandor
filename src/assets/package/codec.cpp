@@ -65,7 +65,7 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
   bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
   allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
   if (allocError != 0) {
-    compactFieldImageBase = (AssetMagic *)allocError;
+    compactFieldImageBase = (AssetMagic *)(uintptr_t)allocError; /* error code, read back below */
   }
   else {
     compactWriteCursor = compactFieldImageBase;
@@ -101,7 +101,7 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
     g_MemoryApi.free(compactFieldImageBase);
     return PckCodec_Fail(outErrorCode,encodeErrorCode);
   }
-  return PckCodec_Fail(outErrorCode,(uint32_t)compactFieldImageBase);
+  return PckCodec_Fail(outErrorCode,(uint32_t)(uintptr_t)compactFieldImageBase);
 }
 
 

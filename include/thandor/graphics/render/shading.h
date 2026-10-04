@@ -73,10 +73,10 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
 
 void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNode *modelNode);
 
-uint32_t
+uintptr_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
-uint32_t
+uintptr_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *modelNode);
 
 void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelMeshGroupAddress32 meshRecord);
@@ -116,7 +116,7 @@ void GraphicsLighting_BuildPackedLookupTable(void);
 
 extern uint32_t g_TextureDownsampleShift;
 
-extern uint32_t g_GraphicsIntensityClampTableBase;
+extern uintptr_t g_GraphicsIntensityClampTableBase;
 extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount;
 extern uint32_t g_GraphicsShadingTextureDimension;
 extern uint32_t g_GraphicsShadingGridHalfSize;

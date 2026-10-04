@@ -68,7 +68,7 @@ static FileSystemMoveProc *g_FileSystemMove = 0;
 
 static FileSystemCopyProc *g_FileSystemCopy = 0;
 
-static uint32_t g_EnginePackageLowPriorityMountHandle = 0;
+static uintptr_t g_EnginePackageLowPriorityMountHandle = 0;
 
 static uint16_t g_ThandorCfgPathUtf16[12] = {'T', 'H', 'A', 'N', 'D', 'O', 'R', '.', 'c', 'f', 'g', 0}; /* L"THANDOR.cfg" */
 
@@ -199,7 +199,7 @@ Bool8 FileSystem_BuildEnumerationStringTable
    directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
    The original never reports failure to its caller; the return value is the result of the engine.pck mount.
 */
-uint32_t __cdecl FileSystem_Init(void)
+uintptr_t __cdecl FileSystem_Init(void)
 
 {
   uint8_t configByte;
@@ -210,7 +210,7 @@ uint32_t __cdecl FileSystem_Init(void)
   ArenaPayloadByteCount configBytesLeft;
   uint16_t *labelCursor;
   uint32_t openError;
-  uint32_t engineMountResult; /* the mount stores engine.pck's handle, or its error code on failure */
+  uintptr_t engineMountResult; /* the mount stores engine.pck's handle, or its error code on failure */
 
   /* open-thandor: the original took the executable path from the first command-line token, which
      is only a bare "thandor.exe" when started from a shell or batch file; the executable

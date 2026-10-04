@@ -129,7 +129,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 failed)
+uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed)
 
 {
   UiRootNode *dialogRoot;
@@ -138,7 +138,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 fail
   const uint32_t *templateImageCursor;
   uint32_t *templateCopyCursor;
   RichTextExtent wrappedExtent;
-  uint32_t error;
+  uintptr_t error;
 
   if (!failed) {
     return valueOrError;
@@ -154,7 +154,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 fail
   if (FATAL_ERROR_IS_CODE(error)) {
     /* only resolved error-page texts get the payload selectors 0..3 patched (FatalError_Exit patches
        every stream) */
-    stream = TextResource_Resolve(error);
+    stream = TextResource_Resolve((uint32_t)error);
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(2,g_FatalErrorDetail2Utf16,stream);
@@ -218,10 +218,10 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState(void)
    in the last path and the three detail strings, shuts everything down, shows the text in a message box and
    exits the process (it does not return then).
 */
-uint32_t FatalError_Exit(uint32_t valueOrError,Bool8 failed)
+uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed)
 
 {
-  uint32_t error;
+  uintptr_t error;
   uint16_t *messageText;
 
   if (!failed) {
@@ -230,10 +230,10 @@ uint32_t FatalError_Exit(uint32_t valueOrError,Bool8 failed)
   /* from here on valueOrError (see FatalErrorPassThroughProc) is the error code or rich-text stream */
   error = valueOrError;
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
-  Thandor_Log("fatal error 0x%08X, last path \"%ls\"", error, (wchar_t *)g_PackageLastErrorPath);
-  Thandor_LogStack("fatal error stack", error);
+  Thandor_Log("fatal error 0x%08IX, last path \"%ls\"", error, (wchar_t *)g_PackageLastErrorPath);
+  Thandor_LogStack("fatal error stack", (unsigned)error);
   if (FATAL_ERROR_IS_CODE(error)) {
-    messageText = TextResource_Resolve(error);
+    messageText = TextResource_Resolve((uint32_t)error);
   }
   else {
     messageText = (uint16_t *)error;

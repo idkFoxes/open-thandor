@@ -48,7 +48,7 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
     control->animationFrameOffset = 0;
     if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR) != 0) {
-      sequenceDescriptor = (int32_t *)control->normalSubresourceStartOrDescriptor;
+      sequenceDescriptor = (int32_t *)control->normalSubresourceStartOrDescriptor; /* 5f-format: UiSpriteButtonControl.normalSubresourceStartOrDescriptor (UI template) */
       (control->selectable).base.leftOffset = sequenceDescriptor[0];
       (control->selectable).base.topOffset = sequenceDescriptor[1];
       (control->selectable).base.rightOffset = sequenceDescriptor[2];
