@@ -941,7 +941,7 @@ static_assert(sizeof(UiPathTextEditControl) == 0x26C &&
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x160 &&
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x16C && /* 0x160 + the 3 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
               offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
@@ -1599,7 +1599,9 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiImage) == 0x5954,
+static_assert(sizeof(FrontendUiImage) == 0x5AC8 && /* 0x5954 + the display mode kind nodes of open-thandor */
+              offsetof(FrontendUiImage, displayModeKindGroup) == 0x5954 &&
+              offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68,
               "FrontendUiImage keeps its 32-bit layout");
 static_assert(sizeof(InGameUiImage) == 0xC3E4,
               "InGameUiImage keeps its 32-bit layout");

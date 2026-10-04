@@ -13,16 +13,29 @@
 
 FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
 
+/* Not in the original: the pending display mode kind (PERSISTENT_DISPLAY_MODE_*) of the display settings page. */
+static uint32_t s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;
+
+/* Not in the original: the pending adapter (renderer) and display mode kind as saved (SdlVideo_SavedAdapterIndex,
+   SdlVideo_SavedDisplayModeKind; the renderer is not kept in the original's adapter index). */
+static void FrontendDisplaySettingsPage_ReadSavedRendererAndKind(void)
+{
+  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex =
+       SdlVideo_SavedAdapterIndex();
+  s_pendingDisplayModeKind = SdlVideo_SavedDisplayModeKind();
+}
+
 /* Implementation ownership: ui/frontend/display_settings. */
 
-/* Adapter row adapterIndex of the display settings page: driver description and device name (every adapter is
-   a software renderer device, which gets its text resource name). */
+/* Adapter row adapterIndex of the display settings page: driver description and device name (the SDL3 backend's
+   adapters are its renderers: "Vulkan", "DirectX 12", "Software" with "GPU" / "CPU"). */
 static void FrontendDisplaySettingsPage_FillAdapterRow
           (FrontendDisplaySettingsPageOptionState *source,uint32_t adapterIndex)
 {
   source->adapterRows.rows[adapterIndex].adapterDescriptionUtf16 =
        g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16;
-  source->adapterRows.rows[adapterIndex].deviceNameUtf16 = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
+  /* not in the original: every adapter is a renderer, labelled "<renderer> (GPU|CPU)" */
+  source->adapterRows.rows[adapterIndex].deviceNameUtf16 = SdlVideo_AdapterDetailUtf16(adapterIndex);
 }
 
 /* Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
@@ -89,14 +102,9 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
     source->resolutionRows.rows[rowIndex].width = candidates[rowIndex] >> 16;
     source->resolutionRows.rows[rowIndex].height = candidates[rowIndex] & UI_DISPLAY_MODE_HEIGHT_MASK;
   }
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
-  /* Not in the original: a saved index past the adapter list (the default 1 with a single adapter, or a
-     hardware renderer device saved by the original game) selects adapter 0, as ProcessEntry does at startup */
-  if (g_GraphicsAdapterCount <=
-      (uint32_t)g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex) {
-    g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = 0;
-  }
+  /* Not in the original: the adapter is the saved renderer (the original read its adapter index here), and the
+     display mode kind choice */
+  FrontendDisplaySettingsPage_ReadSavedRendererAndKind();
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
        PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
@@ -189,7 +197,8 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   GraphicsTextureSourceAsset **fontTextureSource;
   uint32_t selectedModeError;
   uint32_t restoredModeError;
-  
+  uint32_t previousDisplayModeKind;
+
   selectedBitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              bitsPerPixel;
   selectedHeight = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
@@ -201,6 +210,9 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   previousAdapterIndex = g_ActiveGraphicsAdapterIndex;
   previousHeight = g_FramebufferHeight;
   previousWidth = g_FramebufferWidth;
+  /* not in the original: the display mode kind is applied by the same switch */
+  previousDisplayModeKind = SdlVideo_DisplayModeKind();
+  SdlVideo_SetDisplayModeKind(s_pendingDisplayModeKind);
   g_CursorVisibilityToken--;
   /* the current colour depth: the RGB bits of the pixel format, rounded up to a multiple of 16 below */
   currentColorBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
@@ -220,15 +232,10 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     }
     g_CursorVisibilityToken++;
     FatalError_ReportIfFailed(selectedModeError,true);
-    /* note the default adapter 1 here (ProcessEntry uses 0) */
-    g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
-    /* Not in the original: an index past the adapter list falls back to adapter 0 (see
-       FrontendDisplaySettingsAction_OpenPageAndListModes) */
-    if (g_GraphicsAdapterCount <=
-        (uint32_t)g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex) {
-      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = 0;
-    }
+    /* Not in the original: the saved renderer and display mode kind (see
+       FrontendDisplaySettingsAction_OpenPageAndListModes); the previous kind is applied again */
+    SdlVideo_SetDisplayModeKind(previousDisplayModeKind);
+    FrontendDisplaySettingsPage_ReadSavedRendererAndKind();
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
          PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
@@ -238,7 +245,12 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
     return;
   }
-  PersistentSettings_Write(selectedAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
+  /* not in the original: the renderer and the display mode kind are saved in their own settings */
+  SdlVideo_SaveAdapterIndex(g_ActiveGraphicsAdapterIndex);
+  SdlVideo_SaveDisplayModeKind(s_pendingDisplayModeKind);
+  (void)selectedAdapterIndex;
+  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex =
+       g_ActiveGraphicsAdapterIndex; /* a renderer that fell back shows the one that runs */
   PersistentSettings_Write(selectedWidth,PERSISTENT_SETTING_DISPLAY_WIDTH);
   PersistentSettings_Write(selectedHeight,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   PersistentSettings_Write(selectedBitsPerPixel,PERSISTENT_SETTING_BITS_PER_PIXEL);
@@ -608,8 +620,23 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
       modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
       modeStack[modeStackTop + 4],modeStack[modeStackTop + 5]);
-  persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
-  if ((((persistedValue == adapterIndex) &&
+  /* not in the original: the display mode kind choices (one selected) */
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW,frontendRoot);
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW,frontendRoot);
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS,frontendRoot);
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN,frontendRoot);
+  UiSelectableGroup_SelectExclusive(3,
+      (s_pendingDisplayModeKind == PERSISTENT_DISPLAY_MODE_WINDOW) ?
+           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow) :
+      (s_pendingDisplayModeKind == PERSISTENT_DISPLAY_MODE_FULLSCREEN) ?
+           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen) :
+           (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
+      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen),
+      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
+      (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow));
+  /* the original compared the saved adapter index; here the saved renderer and display mode kind */
+  persistedValue = SdlVideo_SavedAdapterIndex();
+  if ((((persistedValue == adapterIndex) && (SdlVideo_SavedDisplayModeKind() == s_pendingDisplayModeKind) &&
        (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
       (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight)) &&
      (persistedValue = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL), persistedValue == bitsPerPixel)) {
@@ -618,4 +645,25 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   }
   UiNodeList_UnsuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
   return;
+}
+
+/* Not in the original: handler of the display mode kind choices "Fenster", "Vollbildfenster" and "Vollbild"
+   (FRONTEND_ACTION_DISPLAY_MODE_KIND_*, handlers58_5A of g_FrontendUiActionHandlersPage20): takes the kind as the
+   pending one and refreshes the page; the apply action switches to it together with the pending mode. */
+void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
+{
+  UiNodeBase *frontendRoot = sourceNode;
+  while (frontendRoot->parent != UI_NODE_NONE) {
+    frontendRoot = frontendRoot->parent;
+  }
+  if (sourceNode == (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow)) {
+    s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_WINDOW;
+  }
+  else if (sourceNode == (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen)) {
+    s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;
+  }
+  else {
+    s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_BORDERLESS;
+  }
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode);
 }

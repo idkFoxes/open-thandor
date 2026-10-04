@@ -20,6 +20,17 @@ static uint16_t g_EmptyTextResourceUtf16[2] = {0};
 /* UTF-16 rich-text stream L"-" (code unit '-' plus terminator) that unresolved nested-stream records point to */
 static uint16_t g_MissingTextResourceFallbackStream[2] = {0x002D, 0x0000};
 
+/* Not in the original: the texts of TEXT_ID_PROJECT_BASE.. (UTF-16 rich-text streams). The choices start with the
+   opcode "colour from palette entry 3" (0x8000 | RICHTEXT_OP_COLOR_PALETTE_3) as the adapter and colour depth
+   choices of the display settings page do; the group title is plain like the original titles. */
+#define PROJECT_TEXT_BRIGHT (0x8000 | RICHTEXT_OP_COLOR_PALETTE_3)
+static uint16_t g_ProjectTextAnzeigemodus[] = {'A','n','z','e','i','g','e','m','o','d','u','s',':',0};
+static uint16_t g_ProjectTextFenster[] = {PROJECT_TEXT_BRIGHT,'F','e','n','s','t','e','r',0};
+static uint16_t g_ProjectTextVollbildfenster[] = {PROJECT_TEXT_BRIGHT,'V','o','l','l','b','i','l','d','f','e','n','s','t','e','r',0};
+static uint16_t g_ProjectTextVollbild[] = {PROJECT_TEXT_BRIGHT,'V','o','l','l','b','i','l','d',0};
+static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
+    g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild};
+
 /* Implementation ownership: assets/text/resources. */
 
 /* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
@@ -235,6 +246,10 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
     *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    return true;
+  }
+  if ((resourceId >= TEXT_ID_PROJECT_BASE) && (resourceId < TEXT_ID_PROJECT_BASE + TEXT_ID_PROJECT_COUNT)) {
+    *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
     return true;
   }
   if (g_TextResourceOverrides != NULL) {

@@ -26,6 +26,14 @@
 #define TEXT_ID_LEVEL_PAGE_DESCRIPTION 0x3001
 #define TEXT_ID_LEVEL_PAGE_EXTRA_LINES 0x3002
 #define TEXT_LEVEL_EXTRA_LINE_COUNT 14
+/* Not in the original: texts of open-thandor's own controls (literal German, no locale data), resolved by
+   TextResource_TryResolve before the override table. Page 0x7F (extended ids) is not used by the game data. */
+#define TEXT_ID_PROJECT_BASE 0x7F0000
+#define TEXT_ID_DISPLAY_MODE_KIND_TITLE (TEXT_ID_PROJECT_BASE + 0) /* "Anzeigemodus:" */
+#define TEXT_ID_DISPLAY_MODE_KIND_WINDOW (TEXT_ID_PROJECT_BASE + 1) /* "Fenster" */
+#define TEXT_ID_DISPLAY_MODE_KIND_BORDERLESS (TEXT_ID_PROJECT_BASE + 2) /* "Vollbildfenster" */
+#define TEXT_ID_DISPLAY_MODE_KIND_FULLSCREEN (TEXT_ID_PROJECT_BASE + 3) /* "Vollbild" */
+#define TEXT_ID_PROJECT_COUNT 4
 
 /* Functions are grouped by semantic ownership. */
 

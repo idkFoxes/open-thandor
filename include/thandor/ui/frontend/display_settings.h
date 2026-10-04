@@ -19,6 +19,8 @@
 void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source);
 
 void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);
+/* Not in the original: handler of the display mode kind choices (FRONTEND_ACTION_DISPLAY_MODE_KIND_*). */
+void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode);
 
 void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
 

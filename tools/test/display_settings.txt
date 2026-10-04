@@ -1,0 +1,39 @@
+# Visit of the display settings page (Optionen -> Grafik) with renderer switches at run time. Start with -NOINTRO in
+# the developer tools' window, OPEN_THANDOR_GPU=auto (the saved renderer; without it run_game.py forces software and
+# only "Software (CPU)" is listed) and a saved display mode of 1280x800 (layout below; other sizes move the page by
+# half the difference). Shots: shots\script_NNNN.bmp.
+#   main room: the left door (265,380) opens "Optionen", its "Grafik" button sits at page centre + (-200,-36)
+#   display page (centre 640,400): renderer rows ("Darstellung") at y 282/306/330, display mode kind rows
+#   ("Anzeigemodus": Fenster/Vollbildfenster/Vollbild) at y 372/396/420, the radio circles at x 365 (only the
+#   circle takes a click, UiTextButtonControl_NonRightPress); "Anwenden" at 840,540
+# Steps: open the page (shot 0), choose DirectX 12 and "Fenster" (shot 1), apply (shot 2: the page drawn by
+# DirectX 12), choose Software and apply (shot 3), choose Vulkan and "Vollbild" and apply (shot 4), quit.
+# The developer tools' window stays a window whatever kind is chosen; thandor.log names every switch.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 800
+6000 move 265 380
+6500 click 265 380
+9000 move 440 364
+9500 click 440 364
+11500 shot
+12000 move 365 306
+12500 click 365 306
+13000 move 365 372
+13500 click 365 372
+14000 shot
+14200 move 840 540
+14700 click 840 540
+17000 shot
+17500 move 365 330
+18000 click 365 330
+18500 move 840 540
+19000 click 840 540
+21000 shot
+21500 move 365 282
+22000 click 365 282
+22500 move 365 420
+23000 click 365 420
+23500 move 840 540
+24000 click 840 540
+26000 shot
+27000 quit
