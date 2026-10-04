@@ -17,7 +17,9 @@ static uint16_t g_CampaignLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0};
 
 uint16_t g_ScenarioLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 
-uint16_t g_LevelResourcePathScratchUtf16[256] = {0};
+/* <exe dir>\<level>.fld / .pcx. open-thandor: THANDOR_PATH_CAPACITY units; the loaders then combine this absolute
+   path with the executable directory once more (FileSystem_LoadWholeFileNearExecutable), see THANDOR_PATH_CAPACITY. */
+uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
 
 FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = 0;
 

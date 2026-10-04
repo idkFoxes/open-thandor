@@ -10,6 +10,7 @@
 
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/core/text/path.h>
 
 /* Submodule: gameplay/session/scenario_load. */
 
@@ -26,7 +27,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex);
 
 extern uint16_t g_ScenarioLevelDirectoryUtf16[6];
-extern uint16_t g_LevelResourcePathScratchUtf16[256];
+extern uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY];
 extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset;
 
 extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* level/campaign/save path (level\<name>.lev etc.) built for Package_LoadEntry */

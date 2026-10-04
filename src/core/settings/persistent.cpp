@@ -37,7 +37,9 @@ uint32_t g_LocaleCountryCodeOverride = 0;
 
 /* open-thandor: the ini file name and the path it was found at (or will be written to) */
 static const uint16_t s_PersistentSettingsIniLeaf[] = {'t', 'h', 'a', 'n', 'd', 'o', 'r', '.', 'i', 'n', 'i', 0};
-static uint16_t s_PersistentSettingsIniPath[256];
+/* THANDOR_PATH_CAPACITY units: with a long game directory a 0x100-unit copy cut <exe dir>\thandor.ini off, and the
+   flush then wrote the settings to the cut name */
+static uint16_t s_PersistentSettingsIniPath[THANDOR_PATH_CAPACITY];
 /* bit i: the dword at byte offset 4 * i was loaded (Read returns it instead of the default) */
 static uint64_t s_PersistentSettingsPresentMask;
 /* bit i: the dword at byte offset 4 * i was written since the load (Flush saves it) */
@@ -712,7 +714,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
     if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
       return false;
     }
-    for (index = 0; index < 255 && g_FileSystemCombinedPathScratchUtf16[index] != 0; index++) {
+    for (index = 0; index < THANDOR_PATH_CAPACITY - 1 && g_FileSystemCombinedPathScratchUtf16[index] != 0; index++) {
       s_PersistentSettingsIniPath[index] = g_FileSystemCombinedPathScratchUtf16[index];
     }
     s_PersistentSettingsIniPath[index] = 0;

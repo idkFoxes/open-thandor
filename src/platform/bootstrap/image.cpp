@@ -192,6 +192,10 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     for (i = 0; path[i] != 0; i++) {
         if (path[i] == '\\') slash = path + i + 1;
     }
+    /* a long game directory can leave too little room after it for the (longer than thandor.exe) name */
+    if ((size_t)(path + sizeof path - slash) < sizeof "crash_raw.log") {
+        return;
+    }
     lstrcpyA(slash, "crash_raw.log");
     file = CreateFileA(path, FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
                        FILE_ATTRIBUTE_NORMAL, NULL);

@@ -16,6 +16,15 @@
 /* Engine path buffers hold at most 256 UTF-16 code units (0x200 bytes) including the terminator, e.g.
    g_FileSystemCombinedPathScratchUtf16 and g_ExecutableDirectoryUtf16. */
 #define WIDE_PATH_MAX_CODE_UNITS 0x100
+/* open-thandor: capacity in UTF-16 code units of the runtime-only path buffers that receive a
+   WidePath_CombineDirectoryAndLeaf result (g_FileSystemCombinedPathScratchUtf16, g_ScenarioCatalogPathScratchUtf16,
+   g_LevelResourcePathScratchUtf16, ...). The combine scans directory and leaf for up to WIDE_PATH_MAX_CODE_UNITS units
+   each, so it writes up to 2 * WIDE_PATH_MAX_CODE_UNITS units; the loaders also combine the executable directory with
+   paths that already start with it (an absolute save or level path). In the original these buffers had
+   WIDE_PATH_MAX_CODE_UNITS units, and a game directory of about 120 characters or more made such a combined
+   path run past them into the file-system function table. Also the size of the narrow (8-bit) path scratch of
+   platform/filesystem. Not part of any file, savegame or packet layout. */
+#define THANDOR_PATH_CAPACITY 0x400
 /* WidePath_ParseTrailingNumberBeforeExtension: code units scanned for the terminator and the digits */
 #define WIDE_PATH_NUMBER_SCAN_MAX_UNITS 32
 /* Extension codes for WidePath_SetExtensionCode: the three lower-case letters packed little-endian (the same
