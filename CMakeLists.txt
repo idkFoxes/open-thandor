@@ -91,8 +91,13 @@ add_library(thandor_curated STATIC
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
     src/gameplay/input/world.cpp
+    src/gameplay/selection/commands.cpp
     src/gameplay/selection/overlay.cpp
-    src/gameplay/selection/runtime.cpp
+    src/gameplay/selection/panel_cells.cpp
+    src/gameplay/selection/panel_metrics.cpp
+    src/gameplay/selection/panel_resources.cpp
+    src/gameplay/selection/queries.cpp
+    src/gameplay/selection/selection_set.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
