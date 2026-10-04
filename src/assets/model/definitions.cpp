@@ -351,7 +351,7 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   rootNodeOffset = definition->rootNodeOffsetOrPointer;
   if (rootNodeOffset != 0) {
     /* asset start + serialized offset */
-    definition->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)asset + rootNodeOffset); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+    definition->rootNodeOffsetOrPointer = Thandor_PointerToU32((uint8_t *)asset + rootNodeOffset); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
     /* The node tree walk is a recursion over every child (ModelDefinition_ResolveNodeSprites). */
     if (ModelDefinition_ResolveNodeSprites
                   ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status)) {

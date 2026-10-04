@@ -25,6 +25,9 @@ references to it.
 
 #include <stddef.h>
 #include <stdint.h>
+#ifdef __cplusplus
+#include <type_traits>
+#endif
 
 #ifdef __cplusplus
 /* THANDOR_FN(function) / THANDOR_PTR(pointer) values (core/contracts.h). */
@@ -90,6 +93,44 @@ struct UPtr32 {
     UPtr32 &operator+=(uintptr_t count) { return *this = (uintptr_t)*this + count; }
     UPtr32 &operator-=(uintptr_t count) { return *this = (uintptr_t)*this - count; }
 };
+
+/*
+Explicit conversions between a pointer and a 32-bit value of the original layouts, for the places that keep a
+pointer in a plain 32-bit integer (a field that holds a pointer or an offset/id, a saved offset computed from two
+pointers, a pointer dword of a UI template). They replace the plain (uint32_t)pointer / (int)pointer /
+(T *)value casts, which truncate silently and are compile errors in g++.
+
+Thandor_PointerToU32(pointer) / Thandor_PointerToI32(pointer): the pointer's address as 32 bits, the same value
+the plain cast gave; a pointer of 2 GB or more (which a 32-bit field cannot hold) stops the game
+(Thandor_Ptr32Overflow), as for a Ptr32 field. Data and function pointers.
+
+Thandor_U32ToPointer<T>(value): the T * of a 32-bit value (any integer type of up to 4 bytes), sign-extended like
+a Ptr32 field: addresses below 2 GB come back unchanged and sentinels like 0xFFFFFFFF become (T *)-1. A wider
+integer (uintptr_t) does not compile: it is not a 32-bit value.
+*/
+template <class P> static __forceinline int32_t Thandor_PointerToI32(P *pointer)
+{
+    return thandor_ptr32_pack((const volatile void *)pointer);
+}
+template <class P> static __forceinline uint32_t Thandor_PointerToU32(P *pointer)
+{
+    return (uint32_t)thandor_ptr32_pack((const volatile void *)pointer);
+}
+/* A Ptr32 field already holds the 32-bit value. */
+template <class P> static __forceinline int32_t Thandor_PointerToI32(const Ptr32<P> &field)
+{
+    return field.value;
+}
+template <class P> static __forceinline uint32_t Thandor_PointerToU32(const Ptr32<P> &field)
+{
+    return (uint32_t)field.value;
+}
+template <class T = void, class I> static __forceinline T *Thandor_U32ToPointer(I value)
+{
+    static_assert((std::is_integral_v<I> || std::is_enum_v<I>) && sizeof(I) <= 4,
+                  "Thandor_U32ToPointer takes a 32-bit integer");
+    return (T *)(intptr_t)(int32_t)value;
+}
 #endif /* __cplusplus */
 
 #ifdef __cplusplus

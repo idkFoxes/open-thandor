@@ -127,7 +127,7 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ArmyAssetHierarchy_SumArmourFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+       factionIndex,Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Displayed energy (Q4 energyLoadQ4) of the definition the faction has unlocked for one model-tree node, plus
@@ -162,7 +162,7 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ArmyAssetHierarchy_SumEnergyFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+       factionIndex,Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Relocates one node of an army record's model tree and all of its children (children[], childCount)
