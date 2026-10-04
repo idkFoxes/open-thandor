@@ -79,6 +79,7 @@ add_library(thandor_curated STATIC
     src/gameplay/army/class_updates.cpp
     src/gameplay/army/collision.cpp
     src/gameplay/army/combat.cpp
+    src/gameplay/army/damage.cpp
     src/gameplay/army/drive_banking.cpp
     src/gameplay/army/drive_common.cpp
     src/gameplay/army/drive_ground.cpp

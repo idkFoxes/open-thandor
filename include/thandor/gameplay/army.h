@@ -14,6 +14,7 @@
 #include <thandor/gameplay/army/class_updates.h>
 #include <thandor/gameplay/army/collision.h>
 #include <thandor/gameplay/army/combat.h>
+#include <thandor/gameplay/army/damage.h>
 #include <thandor/gameplay/army/drive_banking.h>
 #include <thandor/gameplay/army/drive_common.h>
 #include <thandor/gameplay/army/drive_ground.h>
