@@ -661,7 +661,7 @@ Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `
 
 - [`grid.h`](source_guide/world.md#file-world-pathing-grid)
 - [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_ClearDistanceBandsAndRefreshEntities`, `GridInfluence_AddLowDistanceBands`, `GridInfluence_RemoveLowDistanceBands`
-- [`path_cost.cpp / path_cost.h`](source_guide/world.md#file-world-pathing-path-cost) - Hex path costs on the scratch grid: the weighted neighbour propagation (Dijkstra over the hex lattice), the best-route backtrack and the relocation out of a blocked cell.
+- [`path_cost.cpp / path_cost.h`](source_guide/world.md#file-world-pathing-path-cost) - Hex path costs on the scratch grid: the weighted neighbour propagation (a FIFO label-correcting queue over the hex lattice, not Dijkstra: a cell is queued again whenever a cheaper cost reaches it), ...
 - [`reachability.cpp / reachability.h`](source_guide/world.md#file-world-pathing-reachability) - Reachability on the scratch grid: connected regions around a world point, unreachable-region marking and the hex line-of-passage test of a segment.
 - [`route.cpp / route.h`](source_guide/world.md#file-world-pathing-route) - Entity routes: destination resolution and route rebuilds for one entity or an overlapping group, route segment updates and the footprint traversal flags around a world point.
 - [`scratch_grid.cpp / scratch_grid.h`](source_guide/world.md#file-world-pathing-scratch-grid) - The pathing scratch grid: allocation for a field grid, terrain and runtime classification of its cells, occupancy propagation, flood fills and the primary/secondary copy and swap.
@@ -707,7 +707,7 @@ Module header: [`terrain.h`](../include/thandor/world/terrain.h) · Changelog: `
 - [`placement_tests.cpp / placement_tests.h`](source_guide/world.md#file-world-terrain-placement-tests) - no file comment; main functions `TerrainHeightBand_TestAroundWorldPoint`, `TerrainAuxHeightThreshold_TestAroundWorldPoint`
 - [`sight.cpp / sight.h`](source_guide/world.md#file-world-terrain-sight) - Line of sight over the terrain: the occlusion mask around a world point, traced along the six hexagon wedges and directions (fog-of-war visibility, not screen projection).
 - [`types.h`](source_guide/world.md#file-world-terrain-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
-- [`water_relaxation.cpp / water_relaxation.h`](source_guide/world.md#file-world-terrain-water-relaxation) - Editor water relaxation (command 0x3200): directional passes that relax neighbour heights.
+- [`water_relaxation.cpp / water_relaxation.h`](source_guide/world.md#file-world-terrain-water-relaxation) - Water relaxation: directional passes that pull the water surface of each cell's six neighbours toward the cell's own.
 
 ## [Generated](source_guide/generated.md)
 

@@ -5,7 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
-/* Editor water relaxation (command 0x3200): directional passes that relax neighbour heights. */
+/* Water relaxation: directional passes that pull the water surface of each cell's six neighbours toward the
+   cell's own. The sign-gated pair is simulation (tick-wheel cases 1 and 5, gameplay/session/tick.cpp); command
+   0x3200 (the editor's smoothing page) runs either pair in bulk. */
 
 #include <thandor/world/terrain/water_relaxation.h>
 #include <thandor/thandor.h>
@@ -113,7 +115,6 @@ void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGr
     rowStartCell = centerCell + 2;
     rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
 
 /* Water flow pass B (tick-wheel case 5): the same neighbour relaxation as pass A, scanning the interior
@@ -139,12 +140,12 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
   rowsRemaining = fieldGrid->gridHeight - 2;
   rowStartCellAddress =
        (intptr_t)fieldGrid - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell) +
-       (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
+       (rowLength * fieldGrid->gridHeight - 1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
     centerCellAddress = rowStartCellAddress;
     do {
-      centerCellAddress = centerCellAddress - (int)sizeof(FieldGridCell);
+      centerCellAddress = centerCellAddress - (intptr_t)sizeof(FieldGridCell);
       if ((-1 < ((FieldGridCell *)centerCellAddress)->waterSurfaceDelta) &&
          (((uint32_t)((FieldGridCell *)centerCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
@@ -189,10 +190,9 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
       }
       columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowStartCellAddress = centerCellAddress + -(int)FIELD_GRID_TWO_CELLS_BYTES;
+    rowStartCellAddress = centerCellAddress - (intptr_t)FIELD_GRID_TWO_CELLS_BYTES;
     rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
 
 /* Water relaxation, forward, without the sign gate: like pass A
@@ -265,13 +265,11 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
                 sourceSurfaceHeightQ12 >> 3);
         }
       }
-      columnsRemaining = columnsRemaining + -1;
-      cellBeforeSource = cellBeforeSource;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
     sourceCell = cellBeforeSource + 2;
-    rowsRemaining = rowsRemaining + -1;
+    rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
 
 /* Water relaxation, backward, without the sign gate: TerrainGrid_RelaxNeighborHeightsForward scanning the
@@ -297,12 +295,12 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
   rowsRemaining = fieldGrid->gridHeight - 2;
   sourceCellAddress =
        (intptr_t)fieldGrid - (intptr_t)rowLength * (intptr_t)sizeof(FieldGridCell) +
-       (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
+       (rowLength * fieldGrid->gridHeight - 1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
     cellAfterSourceAddress = sourceCellAddress;
     do {
-      cellAfterSourceAddress = cellAfterSourceAddress + -(int)sizeof(FieldGridCell);
+      cellAfterSourceAddress = cellAfterSourceAddress - (intptr_t)sizeof(FieldGridCell);
       if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
         sourceSurfaceHeightQ12 =
              ((FieldGridCell *)cellAfterSourceAddress)->waterSurfaceDelta + ((FieldGridCell *)cellAfterSourceAddress)->terrainHeight;
@@ -344,11 +342,9 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
                 sourceSurfaceHeightQ12 >> 3);
         }
       }
-      columnsRemaining = columnsRemaining + -1;
-      cellAfterSourceAddress = cellAfterSourceAddress;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    sourceCellAddress = cellAfterSourceAddress + -(int)FIELD_GRID_TWO_CELLS_BYTES;
-    rowsRemaining = rowsRemaining + -1;
+    sourceCellAddress = cellAfterSourceAddress - (intptr_t)FIELD_GRID_TWO_CELLS_BYTES;
+    rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
