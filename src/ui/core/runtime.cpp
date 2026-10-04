@@ -256,8 +256,7 @@ void __cdecl UiActionQueue_DispatchPending()
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
-    actionHandler = (void (*)(void *))
-                    g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
+    actionHandler = g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
                     [(int32_t)((uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1))];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;

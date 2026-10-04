@@ -61,7 +61,7 @@ struct UiDirtyRectEntry {
 };
 
 struct UiActionHandlerPage {
-    Ptr32<void> handlers[256]; 
+    Ptr32<void (void *)> handlers[256]; 
 };
 
 struct UiActionQueueEntry {
