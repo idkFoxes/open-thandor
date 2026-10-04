@@ -35,6 +35,7 @@ void DebugHook_MessagePump()
 {
   DebugAutoShot_Tick();
   DebugScript_Tick();
+  Thandor_TestAidRestoreWindowWhenDue(g_MainWindow);
 }
 
 /* OPEN_THANDOR_MOVIEEXPORT=<name>[,<name>...] exports those movies and exits; OPEN_THANDOR_MOVIE=<name>|all plays

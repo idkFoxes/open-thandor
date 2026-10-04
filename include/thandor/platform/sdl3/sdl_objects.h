@@ -72,7 +72,11 @@ void UpdateMouseMode() noexcept;
    (framebuffer size), then presents that letterboxed with the cursor on top (cursor nullptr: hidden).
    ReadGpuFrame downloads a rectangle of the frame target (the last presented frame without the cursor) as
    0xFFRRGGBB pixels, synchronously (captures). PresentWithGpu (compare mode) uploads the software framebuffer
-   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. */
+   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. Without a swapchain texture
+   (minimized window, dropped mailbox frame) both draw and submit the frame without presenting it. A window that
+   could not get its swapchain yet (Vulkan, minimized at the start) is claimed again once it is not minimized;
+   GpuWindowChanged (the pump, on window restore / show / size events) makes that happen at the next present.
+   Fullscreen and size switches need nothing from here: SDL recreates a claimed window's swapchain itself. */
 struct GpuCursorSprite {
   const GraphicsTextureSourceAsset *asset;
   uint32_t subresource;
@@ -82,6 +86,7 @@ struct GpuCursorSprite {
 bool GpuRendererSupported(uint32_t renderer) noexcept;
 bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept;
 void StopGpuDevice() noexcept;
+void GpuWindowChanged() noexcept;
 bool GpuDeviceRunning() noexcept;
 bool GpuFrameActive() noexcept;
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;

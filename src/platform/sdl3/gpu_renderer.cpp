@@ -291,6 +291,23 @@ struct GpuState {
   Uint32 frameUploadBytes = 0;
   bool presentFailureLogged = false;
 
+  /* the window's swapchain. SDL 3.2 Vulkan "claims" a window whose surface has a zero extent (minimized) without
+     registering it: SDL_ClaimWindowForGPUDevice returns true, but every acquire then fails as an unclaimed window.
+     windowClaimed is therefore checked through the swapchain format; an unclaimed window is claimed again once it
+     is not minimized (claimRetry: a window event, else every kClaimRetryFrames frames). framesWithoutSwapchain
+     counts the frames since the last swapchain texture, for the log line when one is acquired again. */
+  bool windowClaimed = false;
+  bool claimRetry = false;
+  uint32_t claimWaitFrames = 0;
+  uint32_t framesWithoutSwapchain = 0;
+  Uint32 swapchainWidth = 0; /* the size of the last swapchain texture, logged when it changes */
+  Uint32 swapchainHeight = 0;
+  /* a swapchain that keeps another size than the window (Direct3D 12 claimed while minimized: 8x8, and no size
+     event follows the restore) is recreated once per window size; see CheckSwapchainSize */
+  uint32_t sizeMismatchFrames = 0;
+  int recreatedForWidth = 0;
+  int recreatedForHeight = 0;
+
   /* step 9, GPU_MODE_ON: the whole frame on the GPU. The 2D draw list (draw2d.h) records the UI, the scenes wait in
      pendingScenes; PresentGpuFrame draws both in call order into the persistent frame target (framebuffer size,
      loaded every frame, so screens that draw only part of the frame keep the rest) and presents it. */
@@ -1710,7 +1727,7 @@ void ReleaseDevice() noexcept
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.presentTarget);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.captureDownload);
-  if (s_gpu.window != nullptr) {
+  if ((s_gpu.window != nullptr) && s_gpu.windowClaimed) {
     SDL_ReleaseWindowFromGPUDevice(s_gpu.device, s_gpu.window);
   }
   SDL_DestroyGPUDevice(s_gpu.device);
@@ -1725,7 +1742,128 @@ void ChoosePresentMode() noexcept
   if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
     presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
   }
-  SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode);
+  if (!SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode)) {
+    Thandor_Log("SDL_GPU: swapchain parameters not set (%s)", SDL_GetError());
+  }
+}
+
+/* True when the device really holds the window's swapchain: SDL_GetGPUSwapchainTextureFormat fails only for an
+   unclaimed window (see GpuState::windowClaimed). */
+bool WindowHasSwapchain() noexcept
+{
+  return SDL_GetGPUSwapchainTextureFormat(s_gpu.device, s_gpu.window) != SDL_GPU_TEXTUREFORMAT_INVALID;
+}
+
+/* Claims s_gpu.window for the device's swapchain. False when SDL refuses (error set). True when SDL accepts it;
+   s_gpu.windowClaimed then says whether the swapchain exists (else the claim is repeated after a restore). */
+bool ClaimWindow() noexcept
+{
+  if (!SDL_ClaimWindowForGPUDevice(s_gpu.device, s_gpu.window)) {
+    return false;
+  }
+  s_gpu.windowClaimed = WindowHasSwapchain();
+  if (s_gpu.windowClaimed) {
+    ChoosePresentMode();
+  }
+  return true;
+}
+
+constexpr uint32_t kClaimRetryFrames = 120;
+
+/* Claims a window that is still unclaimed (minimized at the start) once it is no longer minimized: right after a
+   window event (GpuWindowChanged), else every kClaimRetryFrames frames as a fallback. A minimized window is never
+   claimed: SDL would only create and drop a surface again. */
+void RetryWindowClaim() noexcept
+{
+  if (s_gpu.windowClaimed) {
+    return;
+  }
+  s_gpu.claimWaitFrames++;
+  if (!s_gpu.claimRetry && (s_gpu.claimWaitFrames < kClaimRetryFrames)) {
+    return;
+  }
+  s_gpu.claimRetry = false;
+  s_gpu.claimWaitFrames = 0;
+  int width = 0;
+  int height = 0;
+  if (((SDL_GetWindowFlags(s_gpu.window) & SDL_WINDOW_MINIMIZED) != 0) ||
+      !SDL_GetWindowSizeInPixels(s_gpu.window, &width, &height) || (width <= 0) || (height <= 0)) {
+    return;
+  }
+  if (!ClaimWindow()) {
+    Thandor_Log("SDL_GPU: window claim failed (%s)", SDL_GetError());
+    return;
+  }
+  Thandor_Log("SDL_GPU: window %dx%d claimed for the swapchain%s", width, height,
+              s_gpu.windowClaimed ? "" : ", still without a swapchain (retried later)");
+}
+
+constexpr uint32_t kSizeMismatchFrames = 30;
+
+/* SDL recreates a claimed window's swapchain on its own pixel size events (fullscreen and size switches). A
+   swapchain made while the window was minimized can keep a wrong size without such an event (Direct3D 12: 8x8
+   after the restore). When the last swapchain texture differs from the window for kSizeMismatchFrames frames in a
+   row, the window is released and claimed again (once per window size, so a backend whose swapchain legitimately
+   differs is not recreated over and over). Runs before the acquire: no swapchain texture is pending then. */
+void CheckSwapchainSize() noexcept
+{
+  int width = 0;
+  int height = 0;
+  if (!s_gpu.windowClaimed || (s_gpu.swapchainWidth == 0) ||
+      ((SDL_GetWindowFlags(s_gpu.window) & SDL_WINDOW_MINIMIZED) != 0) ||
+      !SDL_GetWindowSizeInPixels(s_gpu.window, &width, &height) || (width <= 0) || (height <= 0) ||
+      ((static_cast<Uint32>(width) == s_gpu.swapchainWidth) && (static_cast<Uint32>(height) == s_gpu.swapchainHeight)) ||
+      ((width == s_gpu.recreatedForWidth) && (height == s_gpu.recreatedForHeight))) {
+    s_gpu.sizeMismatchFrames = 0;
+    return;
+  }
+  if (++s_gpu.sizeMismatchFrames < kSizeMismatchFrames) {
+    return;
+  }
+  s_gpu.sizeMismatchFrames = 0;
+  s_gpu.recreatedForWidth = width;
+  s_gpu.recreatedForHeight = height;
+  Thandor_Log("SDL_GPU: swapchain %ux%u does not follow the window %dx%d, window claimed again", s_gpu.swapchainWidth,
+              s_gpu.swapchainHeight, width, height);
+  SDL_ReleaseWindowFromGPUDevice(s_gpu.device, s_gpu.window);
+  s_gpu.windowClaimed = false;
+  if (!ClaimWindow()) {
+    Thandor_Log("SDL_GPU: window claim failed (%s)", SDL_GetError());
+  }
+}
+
+/* The swapchain texture for this frame's command buffer, nullptr when there is none: an unclaimed window (minimized
+   at the start), a minimized window, or a frame the non-waiting acquire drops (mailbox, all images in flight).
+   None of these is an error; the frame is drawn and submitted without the present. */
+SDL_GPUTexture *AcquireSwapchain(SDL_GPUCommandBuffer *commands, Uint32 *width, Uint32 *height) noexcept
+{
+  RetryWindowClaim();
+  CheckSwapchainSize();
+  SDL_GPUTexture *swapchain = nullptr;
+  if (s_gpu.windowClaimed && !SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)) {
+    if (!s_gpu.presentFailureLogged) {
+      Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
+      s_gpu.presentFailureLogged = true;
+    }
+    swapchain = nullptr;
+  }
+  if (swapchain == nullptr) {
+    s_gpu.framesWithoutSwapchain++;
+    return nullptr;
+  }
+  /* a dropped mailbox frame is no news; a minimized or unclaimed stretch is */
+  if ((s_gpu.framesWithoutSwapchain >= 30) || s_gpu.presentFailureLogged) {
+    Thandor_Log("SDL_GPU: swapchain texture %ux%u acquired again after %u frames without", *width, *height,
+                s_gpu.framesWithoutSwapchain);
+  }
+  else if ((*width != s_gpu.swapchainWidth) || (*height != s_gpu.swapchainHeight)) {
+    Thandor_Log("SDL_GPU: swapchain %ux%u", *width, *height);
+  }
+  s_gpu.swapchainWidth = *width;
+  s_gpu.swapchainHeight = *height;
+  s_gpu.framesWithoutSwapchain = 0;
+  s_gpu.presentFailureLogged = false;
+  return swapchain;
 }
 
 /* The framebuffer texture in the framebuffer's size, B8G8R8A8 (the XRGB8888 framebuffer's bit layout). */
@@ -1772,13 +1910,17 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     return false;
   }
   s_gpu.shaderFormat = ShaderFormatOf(renderer);
-  if (!SDL_ClaimWindowForGPUDevice(s_gpu.device, window)) {
+  s_gpu.window = window;
+  if (!ClaimWindow()) {
     Thandor_Log("SDL_GPU: %s cannot present to the window (%s)", DriverName(renderer), SDL_GetError());
+    s_gpu.window = nullptr;
     ReleaseDevice();
     return false;
   }
-  s_gpu.window = window;
-  ChoosePresentMode();
+  if (!s_gpu.windowClaimed) {
+    Thandor_Log("SDL_GPU: %s has no swapchain for the minimized window yet, claimed again when it is restored",
+                DriverName(renderer));
+  }
   SDL_GPUSamplerCreateInfo samplerInfo;
   SDL_zero(samplerInfo);
   samplerInfo.min_filter = SDL_GPU_FILTER_NEAREST;
@@ -1830,6 +1972,13 @@ void StopGpuDevice() noexcept
   g_GraphicsDrawPrimitiveQueue = SoftwareRenderer_DrawPrimitiveQueueBridge;
   g_GraphicsEndScene = SoftwareGraphicsDispatch_NoOp;
   ReleaseDevice();
+}
+
+void GpuWindowChanged() noexcept
+{
+  if ((s_gpu.device != nullptr) && !s_gpu.windowClaimed) {
+    s_gpu.claimRetry = true;
+  }
 }
 
 bool GpuDeviceRunning() noexcept
@@ -1970,16 +2119,9 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 
   /* present: the frame target (with the cursor on a copy of it) letterboxed into the swapchain; without a
      swapchain texture (minimized window) the frame target is still drawn, so captures keep working */
-  SDL_GPUTexture *swapchain = nullptr;
   Uint32 swapchainWidth = 0;
   Uint32 swapchainHeight = 0;
-  if (!SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, &swapchainWidth, &swapchainHeight)) {
-    if (!s_gpu.presentFailureLogged) {
-      Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
-      s_gpu.presentFailureLogged = true;
-    }
-    swapchain = nullptr;
-  }
+  SDL_GPUTexture *swapchain = AcquireSwapchain(commands, &swapchainWidth, &swapchainHeight);
   if (swapchain != nullptr) {
     SDL_GPUTexture *shown = s_gpu.frameTarget;
     if (cursorQuad) {
@@ -2152,15 +2294,9 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
   SDL_UploadToGPUTexture(copyPass, &source, &destination, true);
   SDL_EndGPUCopyPass(copyPass);
 
-  SDL_GPUTexture *swapchain = nullptr;
   Uint32 swapchainWidth = 0;
   Uint32 swapchainHeight = 0;
-  if (!SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, &swapchainWidth, &swapchainHeight)) {
-    if (!s_gpu.presentFailureLogged) {
-      Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
-      s_gpu.presentFailureLogged = true;
-    }
-  }
+  SDL_GPUTexture *swapchain = AcquireSwapchain(commands, &swapchainWidth, &swapchainHeight);
   if (swapchain != nullptr) {
     /* letterboxed: the largest rectangle of the framebuffer's aspect, centred, black around it */
     const SDL_FRect box = LetterboxRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
