@@ -7,6 +7,7 @@
 
 #include <thandor/assets/text/richtext.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -283,6 +284,21 @@ Bool8 RichTextCommandStream_CopyExpanded
   return false;
 }
 
+/* A nested-stream command (0x18/0x19) of RichTextCommandStream_FlattenNestedToRuntimeBuffer whose pointer is
+   NULL: the original follows it and reads address 0; skipped here (the cursor moves behind the payload) because
+   the pointers are patched in at run time (RichTextCommandStream_PatchPayloadBySelector) and may be unset.
+   Logged once. */
+static void RichTextCommandStream_SkipNullNestedStream(uint16_t **commandStream)
+{
+  static Bool8 s_logged = false;
+
+  if (!s_logged) {
+    s_logged = true;
+    Thandor_Log("RichTextCommandStream_FlattenNestedToRuntimeBuffer: NULL nested stream skipped");
+  }
+  *commandStream = (uint16_t *)((uint8_t *)*commandStream + RICHTEXT_NESTED_PAYLOAD_BYTES);
+}
+
 /* Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and
    drawing code can walk one flat stream: glyphs and most commands are copied, literal colours and inline images
    with their payload, nested-stream commands are followed instead of copied and the reserved and inline-value
@@ -354,10 +370,18 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
         break;
       }
+      if (THANDOR_PTR32_AT(uint16_t, commandStream) == NULL) {
+        RichTextCommandStream_SkipNullNestedStream(&commandStream);
+        break;
+      }
       nestedReturnStack[nestedDepth] = commandStream;
       nestedDepth++;
       /* fall through: enter the nested stream */
     case RICHTEXT_OP_JUMP_NESTED:
+      if (THANDOR_PTR32_AT(uint16_t, commandStream) == NULL) {
+        RichTextCommandStream_SkipNullNestedStream(&commandStream);
+        break;
+      }
       commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
@@ -370,6 +394,11 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
         commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       }
     }
+  }
+  if (remainingWords == 0) {
+    /* The original writes the terminator behind a completely filled buffer; bounded here because that unit lies
+       past the 16 KiB allocation: the terminator replaces the last unit instead. */
+    outputCursor--;
   }
   *outputCursor = 0;
   g_RichTextRuntimeBufferUsedWords = 0;

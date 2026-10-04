@@ -7,6 +7,7 @@
 
 #include <thandor/assets/army/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -167,9 +168,12 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 
 /* Relocates one node of an army record's model tree and all of its children (children[], childCount)
    against assetBase, adding each node's model-definition build costs (looked up by linkedDefinitionIds[0])
-   to the record. Returns the last lookup error, or 0. */
+   to the record. Returns the last lookup error, or 0. The original trusts childCount and the nesting depth;
+   bounded here because the walk follows file data: a node with more children than children[] holds or a tree
+   deeper than ARMY_MODEL_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_ARMY_ASSET_INVALID. */
+#define ARMY_MODEL_TREE_MAX_DEPTH 64
 static uint32_t ArmyAssetRecord_RelocateModelTree
-          (ArmyAssetRecord *record,uint8_t *assetBase,ArmyModelTreeNode *node)
+          (ArmyAssetRecord *record,uint8_t *assetBase,ArmyModelTreeNode *node,uint32_t depth)
 {
   uint32_t energyLoadQ4;
   uint32_t buildTicks;
@@ -179,6 +183,12 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   uint32_t error;
   uint32_t childError;
 
+  if (depth >= ARMY_MODEL_TREE_MAX_DEPTH ||
+      node->childCount > sizeof(node->children) / sizeof(node->children[0])) {
+    Thandor_Log("ArmyAssetRecord_RegisterAndRelocate: army %u: model tree node with %u children at depth %u, "
+                "rejected",record->registryId,node->childCount,depth);
+    return FATAL_ERROR_ARMY_ASSET_INVALID;
+  }
   error = ModelDefinitionRegistry_FindBuildCostsById
                     (node->linkedDefinitionIds[0],&energyLoadQ4,&buildTicks,&xeniteCostQ4);
   if (error == 0) {
@@ -190,7 +200,10 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   for (childIndex = 0; childIndex < childCount; childIndex++) {
     /* serialized offset from assetBase -> pointer */
     node->children[childIndex] = (ArmyModelTreeNode *)((uint8_t *)node->children[childIndex] + (uintptr_t)assetBase);
-    childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,node->children[childIndex]);
+    childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,node->children[childIndex],depth + 1);
+    if (childError == FATAL_ERROR_ARMY_ASSET_INVALID) {
+      return childError;
+    }
     if (childError != 0) {
       error = childError;
     }
@@ -227,7 +240,7 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
       /* serialized offset from assetBase -> pointer */
       record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (uint32_t)(uintptr_t)assetBase;
       error = ArmyAssetRecord_RelocateModelTree
-                        (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer);
+                        (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer,0);
     }
     return error;
   }

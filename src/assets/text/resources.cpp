@@ -243,6 +243,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 {
   TextResourceLocaleBlockPrefix *localeBlock;
   uint32_t overrideIndex;
+  uint32_t pageIndex;
 
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
     *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
@@ -261,9 +262,17 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
       }
     }
   }
+  /* The original tests only bits 16-23 and indexes the 256 page bindings with the whole shifted id; bounded here
+     because ids come from save files and the network: ids with bits 24-31 set are missing. */
+  pageIndex = ((resourceId & 0xff0000) == 0) ? (uint32_t)resourceId >> 8 : (uint32_t)resourceId >> 16;
+  if (pageIndex >= sizeof(g_TextResourcePageBindings) / sizeof(g_TextResourcePageBindings[0])) {
+    Thandor_Log("text resource 0x%08X missing (page out of range)", resourceId);
+    *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
+    return false;
+  }
   if ((resourceId & 0xff0000) == 0) {
     /* compact id: page << 8 | 8-bit index; the string offsets follow the 16-byte block prefix */
-    localeBlock = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
+    localeBlock = g_TextResourcePageBindings[pageIndex].selectedLocaleBlock;
     if ((localeBlock != NULL) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
       /* the string offsets are relative to the block */
@@ -273,7 +282,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   }
   else {
     /* extended id: page << 16 | 16-bit index */
-    localeBlock = g_TextResourcePageBindings[resourceId >> 16].selectedLocaleBlock;
+    localeBlock = g_TextResourcePageBindings[pageIndex].selectedLocaleBlock;
     if ((localeBlock != NULL) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
       *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
@@ -281,7 +290,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     }
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
-              (void *)g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 16].selectedLocaleBlock);
+              (void *)g_TextResourcePageBindings[pageIndex].selectedLocaleBlock);
   *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
   return false;
 }

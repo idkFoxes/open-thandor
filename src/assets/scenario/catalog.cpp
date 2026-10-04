@@ -7,6 +7,7 @@
 
 #include <thandor/assets/scenario/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
@@ -39,6 +40,20 @@ uint16_t g_SaveSvePatternUtf16[11] = {'s', 'a', 'v', 'e', '\\', '*', '.', 's', '
 
 /* Implementation ownership: assets/scenario/catalog. */
 
+/* The catalog may use SCENARIO_CATALOG_CAPACITY minus the dword in which the host's network copy stores its
+   unpacked size (ui/frontend/main_loop.cpp packs the catalog into the rest of the same allocation). */
+#define SCENARIO_CATALOG_USABLE_BYTES ((uint32_t)(SCENARIO_CATALOG_CAPACITY - sizeof(uint32_t)))
+
+/* Number of further records (SCENARIO_CATALOG_RECORD_STRIDE each, as g_ScenarioCatalogUsedBytes counts them) that
+   still fit into the catalog. */
+static uint32_t ScenarioCatalog_FreeRecordSlots(void)
+{
+  if (g_ScenarioCatalogUsedBytes >= SCENARIO_CATALOG_USABLE_BYTES) {
+    return 0;
+  }
+  return (SCENARIO_CATALOG_USABLE_BYTES - g_ScenarioCatalogUsedBytes) / SCENARIO_CATALOG_RECORD_STRIDE;
+}
+
 /* Copies a whole loaded catalog file (byteCount / 4 dwords) into a catalog section. */
 static void ScenarioCatalog_CopyFileIntoSection
           (ScenarioCatalogRecord *sectionRecords,const void *fileBytes,uint32_t byteCount)
@@ -54,6 +69,34 @@ static void ScenarioCatalog_CopyFileIntoSection
   }
 }
 
+/* Copies a level.dat / campagne.dat file into the catalog section at sectionRecords and returns its record
+   count. The original copies the whole file without a capacity check and counts at least one record (an empty
+   file wraps the count loop); bounded here because the files are user-editable: a file without a whole record
+   is skipped (0 records) and a file larger than the remaining catalog space is cut to the records that fit. */
+static uint32_t ScenarioCatalog_CopyDataFileIntoSection
+          (ScenarioCatalogRecord *sectionRecords,const void *fileBytes,uint32_t byteCount,const char *fileName)
+{
+  uint32_t recordCount = byteCount / SCENARIO_CATALOG_RECORD_SIZE;
+  uint32_t freeRecordSlots = ScenarioCatalog_FreeRecordSlots();
+
+  if (recordCount == 0) {
+    Thandor_Log("ScenarioCatalog_Rebuild: %s holds no record (%u bytes), skipped",fileName,byteCount);
+    return 0;
+  }
+  if (recordCount > freeRecordSlots) {
+    Thandor_Log("ScenarioCatalog_Rebuild: %s has %u records, only %u fit into the catalog",fileName,recordCount,
+                freeRecordSlots);
+    recordCount = freeRecordSlots;
+    byteCount = recordCount * SCENARIO_CATALOG_RECORD_SIZE;
+  }
+  else if (byteCount > freeRecordSlots * SCENARIO_CATALOG_RECORD_STRIDE) {
+    /* a trailing partial record would not fit */
+    byteCount = recordCount * SCENARIO_CATALOG_RECORD_SIZE;
+  }
+  ScenarioCatalog_CopyFileIntoSection(sectionRecords,fileBytes,byteCount);
+  return recordCount;
+}
+
 /* Merges the add-on files <prefix>00.dat .. <prefix>99.dat of a path template into a catalog section and
    returns the new record count. The two digit code units are packed as one dword (UTF16_DIGIT_PAIR): the units
    digit counts '0'..'9', then subtracting UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP resets it to '0' and increments
@@ -64,12 +107,15 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
 {
   void *loadedBuffer;
   uint32_t loadedByteCount;
+  /* the section's records enter g_ScenarioCatalogUsedBytes only after the merge */
+  uint32_t maxRecordCount = recordCount + ScenarioCatalog_FreeRecordSlots();
 
   decimalDigits->packedDigits = UTF16_DIGIT_PAIR('0','0');
   do {
     if (Resource_Load(pathTemplate,&loadedBuffer,&loadedByteCount,NULL)) {
       recordCount = ScenarioCatalog_MergeRecordsByName
-                        (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,sectionRecords);
+                        (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,sectionRecords,
+                         maxRecordCount);
       Resource_Release((ScenarioCatalogRecord *)loadedBuffer);
     }
     decimalDigits->codeUnits[1]++;
@@ -101,6 +147,7 @@ void ScenarioCatalog_Rebuild(void)
   void *allocationPayload;
   uintptr_t checkedValue;
   uint32_t openError;
+  uint32_t readError;
   Bool8 loaded;
   void *loadedBuffer;
   uint32_t loadedByteCount;
@@ -121,16 +168,18 @@ void ScenarioCatalog_Rebuild(void)
   loaded = Resource_Load((uint16_t *)g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
   if (loaded) {
-    recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
-    ScenarioCatalog_CopyFileIntoSection(recordsBase,loadedBuffer,loadedByteCount);
+    recordCount = ScenarioCatalog_CopyDataFileIntoSection(recordsBase,loadedBuffer,loadedByteCount,"level.dat");
     Resource_Release((uint32_t *)loadedBuffer);
+    loaded = recordCount != 0;
+  }
+  if (loaded) {
     /* level00.dat .. level99.dat */
     recordCount = ScenarioCatalog_MergeAddOnFiles
                       (g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits,
                        &g_ScenarioLevelDataPathTemplateUtf16.decimalDigits,recordCount,recordsBase);
-    /* count the records (at least one, as in the original) */
+    /* count the records (at least one: files without a record are skipped above) */
     do {
       catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
       catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
@@ -142,16 +191,19 @@ void ScenarioCatalog_Rebuild(void)
   loaded = Resource_Load((uint16_t *)g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
   if (loaded) {
-    recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->campaignRecordsOffset);
-    ScenarioCatalog_CopyFileIntoSection(recordsBase,loadedBuffer,loadedByteCount);
+    recordCount = ScenarioCatalog_CopyDataFileIntoSection(recordsBase,loadedBuffer,loadedByteCount,
+                                                          "campagne.dat");
     Resource_Release((uint32_t *)loadedBuffer);
+    loaded = recordCount != 0;
+  }
+  if (loaded) {
     /* campagne00.dat .. campagne99.dat */
     recordCount = ScenarioCatalog_MergeAddOnFiles
                       (g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits,
                        &g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits,recordCount,recordsBase);
-    /* count the records (at least one, as in the original) */
+    /* count the records (at least one: files without a record are skipped above) */
     do {
       catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
       catalog->campaignRecordCount++;
@@ -171,6 +223,12 @@ void ScenarioCatalog_Rebuild(void)
                  ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->saveRecordsOffset);
     saveFileEntry = g_PackageScratchBuffer;
     do {
+      if (ScenarioCatalog_FreeRecordSlots() == 0) {
+        /* The original appends every save without a capacity check; bounded here because the number of save
+           files is unlimited. */
+        Thandor_Log("ScenarioCatalog_Rebuild: catalog full, %u save files not listed",saveFilesRemaining);
+        break;
+      }
       WidePath_CombineDirectoryAndLeaf
                 (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
@@ -184,8 +242,16 @@ void ScenarioCatalog_Rebuild(void)
       handleToClose = handle;
       /* The save's catalog record is the second 0x100-byte block of the file. */
       g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,SCENARIO_CATALOG_RECORD_SIZE,handle);
-      g_FileSystemReadExact(SCENARIO_CATALOG_RECORD_SIZE,saveRecord,handle);
+      readError = g_FileSystemReadExact(SCENARIO_CATALOG_RECORD_SIZE,saveRecord,handle);
       g_FileSystemClose(handleToClose);
+      if (readError != 0) {
+        /* The original ignores the read result and lists the uninitialised record; skipped here because a
+           truncated save would turn arbitrary bytes into text ids. */
+        Thandor_Log("ScenarioCatalog_Rebuild: save file too short, not listed");
+        saveFileEntry = saveFileEntry + FILESYSTEM_ENUMERATION_RECORD_BYTES;
+        saveFilesRemaining--;
+        continue;
+      }
       /* Turn the stored level title index and the optional campaign title index (negative = none) into
          text resource ids. */
       saveRecord->levelTitleTextId = saveRecord->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE;
@@ -232,11 +298,14 @@ static Bool8 ScenarioCatalog_RecordIdentifiersEqual
 
 /* Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte
    UTF-16 identifier: a match is overwritten, a new identifier is appended. Returns the new destination
-   record count. Like the original, the loops assume at least one source and one existing destination record.
+   record count. The original assumes at least one source and one existing destination record (the loops wrap
+   otherwise) and appends without a capacity check; bounded here because add-on files are user files: a file
+   without a whole record or an empty destination is skipped, and new records beyond maxRecordCount are dropped.
 */
 ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
           (ScenarioCatalogSourceByteCount sourceByteCount,ScenarioCatalogRecord *sourceRecords,
-          ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords)
+          ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords,
+          ScenarioCatalogRecordCount maxRecordCount)
 
 {
   uint32_t sourceRecordsRemaining;
@@ -244,6 +313,11 @@ ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
   ScenarioCatalogRecord *destinationRecordCursor;
 
   sourceRecordsRemaining = sourceByteCount / SCENARIO_CATALOG_RECORD_SIZE;
+  if (sourceRecordsRemaining == 0 || existingRecordCount == 0) {
+    Thandor_Log("ScenarioCatalog_MergeRecordsByName: add-on skipped (%u bytes, %u existing records)",
+                sourceByteCount,existingRecordCount);
+    return existingRecordCount;
+  }
   do {
     /* find the destination record with the same identifier */
     destinationRecordsRemaining = existingRecordCount;
@@ -253,9 +327,16 @@ ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
       destinationRecordsRemaining--;
       if (destinationRecordsRemaining == 0) {
         /* No match: append after the existing records (the cursor is already there). */
-        existingRecordCount++;
         break;
       }
+    }
+    if (destinationRecordsRemaining == 0) {
+      if (existingRecordCount >= maxRecordCount) {
+        Thandor_Log("ScenarioCatalog_MergeRecordsByName: catalog full, %u add-on records dropped",
+                    sourceRecordsRemaining);
+        break;
+      }
+      existingRecordCount++;
     }
     /* copy the whole 0x100-byte record */
     *destinationRecordCursor = *sourceRecords;
