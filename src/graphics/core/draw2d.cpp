@@ -18,6 +18,7 @@ GraphicsMinimapDrawProc *g_GraphicsMinimapDraw = SoftwareTexture_DrawMinimapBili
 GraphicsFillColumnSegmentsProc *g_GraphicsFillColumnSegments = SoftwareFramebuffer_FillColumnSegments32;
 GraphicsGreyScaleImageProc *g_GraphicsGreyScaleImage = SoftwareTexture_BilinearBlendScaleSubresources;
 Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded = nullptr;
+uint32_t g_Draw2DMinimapContentGeneration = 0;
 
 namespace {
 
@@ -290,14 +291,29 @@ void RecordMinimapDraw(int32_t destY, int32_t destX, int32_t height, int32_t wid
                                               rowStepU, rowStepV, texture, framebuffer);
         return;
     }
-    if (width <= 0 || height <= 0) {
+    int32_t left = destX;
+    int32_t top = destY;
+    int32_t right = destX + width;
+    int32_t bottom = destY + height;
+    if (width <= 0 || height <= 0 || SubresourceEntry(texture, 0) == nullptr ||
+        !ClipToDisplay(INT32_MAX, INT32_MAX, INT32_MIN, INT32_MIN, &left, &top, &right, &bottom)) {
         return;
     }
-    uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    SoftwareFramebufferAccess scratch = ScratchFramebuffer(pixels, width, height);
-    SoftwareTexture_DrawMinimapBilinear32(0, 0, height, width, startU, startV, pixelStepU, pixelStepV, rowStepU,
-                                          rowStepV, texture, &scratch);
-    RecordImageRegion(destX, destY, width, height, pixels, width * 4);
+    /* the GPU samples the texture itself (step 9 WP5): the item keeps the Q12 walk of the software sampler */
+    Draw2DItem *item = AppendItem(DRAW2D_OP_ROTATED_BILINEAR, DRAW2D_BLEND_OPAQUE);
+    item->asset = texture;
+    item->subresource = 0;
+    item->paletteBank = DRAW2D_PALETTE_BANK_DIRECT;
+    SetRect(item->dst, destX, destY, destX + width, destY + height);
+    SetRect(item->clip, left, top, right, bottom);
+    const uint32_t steps[6] = {startU, startV, pixelStepU, pixelStepV, rowStepU, rowStepV};
+    for (int index = 0; index < 6; index++) {
+        item->q12[index] = (int32_t)steps[index];
+    }
+    item->contentGeneration = g_Draw2DMinimapContentGeneration;
+    if (g_Draw2DSpriteRecorded != nullptr) {
+        g_Draw2DSpriteRecorded((uint32_t)(s_items.size() - 1), item);
+    }
 }
 
 void RecordFillColumnSegments(int32_t topY, int32_t drawX, uint32_t segmentCount, const int32_t *segmentHeights,
