@@ -40,8 +40,8 @@ Bool8 SoundBackendDisabled_PlayOneShot
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  if (outVoice != NULL) {
-    *outVoice = NULL;
+  if (outVoice != nullptr) {
+    *outVoice = nullptr;
   }
   return true;
 }
@@ -57,8 +57,8 @@ Bool8 SoundBackendDisabled_PlayLooping
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  if (outVoice != NULL) {
-    *outVoice = NULL;
+  if (outVoice != nullptr) {
+    *outVoice = nullptr;
   }
   return true;
 }
