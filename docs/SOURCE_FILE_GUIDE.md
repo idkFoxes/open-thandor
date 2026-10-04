@@ -448,9 +448,9 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 ### `platform/sdl3`
 
 - [`audio.cpp`](source_guide/platform.md#file-platform-sdl3-audio) - SDL3 backend: audio.
-- [`gpu_renderer.cpp`](source_guide/platform.md#file-platform-sdl3-gpu-renderer) - SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GPU (CMake option THANDOR_RENDERER_SDL_GPU, switched on at run time with OPEN_THANDOR_GPU=1 or the command-line option ...
+- [`gpu_renderer.cpp`](source_guide/platform.md#file-platform-sdl3-gpu-renderer) - SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GPU and presents the finished frames through the same device (CMake option THANDOR_RENDERER_SDL_GPU).
 - [`input.cpp`](source_guide/platform.md#file-platform-sdl3-input) - SDL3 backend: keyboard and mouse.
-- [`platform.cpp / platform.h`](source_guide/platform.md#file-platform-sdl3-platform) - SDL3 backend: the main window, its renderer and the event pump (g_Win32PumpMessages).
+- [`platform.cpp / platform.h`](source_guide/platform.md#file-platform-sdl3-platform) - SDL3 backend: the main window and the event pump (g_Win32PumpMessages); video.cpp presents into the window.
 - [`sdl_objects.h`](source_guide/platform.md#file-platform-sdl3-sdl-objects) - Shared declarations of the SDL3 backend's source files (src/platform/sdl3): owning handles for SDL objects and the functions one file calls in another.
 - [`timer.cpp`](source_guide/platform.md#file-platform-sdl3-timer) - SDL3 backend: the periodic timers of g_TimerRegisterPeriodic / g_TimerUnregisterPeriodic on SDL timers instead of WinMM's timeSetEvent.
 - [`types.h`](source_guide/platform.md#file-platform-sdl3-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
