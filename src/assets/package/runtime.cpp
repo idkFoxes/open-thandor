@@ -525,7 +525,9 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
 /* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
    in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
    many code units as the path has, running past the terminator and, for paths
-   over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
+   over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer. That neighbour is explicit
+   here: the variables are no longer adjacent, and the units past the buffer overwrote whatever the compiler
+   placed behind it (the package mount table and g_PackageScratchBuffer in the GCC build).
 */
 THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
 
@@ -548,6 +550,9 @@ THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
   remainingCount = (int)((uint8_t *)scanEnd - (uint8_t *)path); /* bytes, used as a code-unit count below */
   wordCursor = g_PackageLastErrorPath;
   for (; remainingCount != 0; remainingCount--) {
+    if (wordCursor == g_PackageLastErrorPath + 256) {
+      wordCursor = g_FatalErrorDetail1Utf16; /* behind the buffer in the original image (at most 0x100 units) */
+    }
     *wordCursor = *path;
     path++;
     wordCursor++;
