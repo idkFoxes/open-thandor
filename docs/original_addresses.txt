@@ -1200,18 +1200,18 @@
 0x00508790  function  TerrainAuxHeightThreshold_TestWedge4                              src/world/terrain/placement_tests.cpp
 0x00508850  function  TerrainAuxHeightThreshold_TestWedge5                              src/world/terrain/placement_tests.cpp
 0x00508920  function  TerrainAuxHeightThreshold_TestAroundWorldPoint                    src/world/terrain/placement_tests.cpp
-0x00508AE0  function  TerrainHeightDelta_ApplyDirection0                                src/world/terrain/field_deformation.cpp
-0x00508B40  function  TerrainHeightDelta_ApplyDirection1                                src/world/terrain/field_deformation.cpp
-0x00508BA0  function  TerrainHeightDelta_ApplyDirection2                                src/world/terrain/field_deformation.cpp
-0x00508C00  function  TerrainHeightDelta_ApplyDirection3                                src/world/terrain/field_deformation.cpp
-0x00508C60  function  TerrainHeightDelta_ApplyDirection4                                src/world/terrain/field_deformation.cpp
-0x00508CC0  function  TerrainHeightDelta_ApplyDirection5                                src/world/terrain/field_deformation.cpp
-0x00508D20  function  TerrainHeightDelta_ApplyWedge0                                    src/world/terrain/field_deformation.cpp
-0x00508DC0  function  TerrainHeightDelta_ApplyWedge1                                    src/world/terrain/field_deformation.cpp
-0x00508E60  function  TerrainHeightDelta_ApplyWedge2                                    src/world/terrain/field_deformation.cpp
-0x00508F00  function  TerrainHeightDelta_ApplyWedge3                                    src/world/terrain/field_deformation.cpp
-0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    src/world/terrain/field_deformation.cpp
-0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    src/world/terrain/field_deformation.cpp
+0x00508AE0  function  TerrainHeightDelta_ApplyDirection0                                (merged into TerrainHexScan_Leg)
+0x00508B40  function  TerrainHeightDelta_ApplyDirection1                                (merged into TerrainHexScan_Leg)
+0x00508BA0  function  TerrainHeightDelta_ApplyDirection2                                (merged into TerrainHexScan_Leg)
+0x00508C00  function  TerrainHeightDelta_ApplyDirection3                                (merged into TerrainHexScan_Leg)
+0x00508C60  function  TerrainHeightDelta_ApplyDirection4                                (merged into TerrainHexScan_Leg)
+0x00508CC0  function  TerrainHeightDelta_ApplyDirection5                                (merged into TerrainHexScan_Leg)
+0x00508D20  function  TerrainHeightDelta_ApplyWedge0                                    (merged into TerrainHexScan_Sector)
+0x00508DC0  function  TerrainHeightDelta_ApplyWedge1                                    (merged into TerrainHexScan_Sector)
+0x00508E60  function  TerrainHeightDelta_ApplyWedge2                                    (merged into TerrainHexScan_Sector)
+0x00508F00  function  TerrainHeightDelta_ApplyWedge3                                    (merged into TerrainHexScan_Sector)
+0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    (merged into TerrainHexScan_Sector)
+0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    (merged into TerrainHexScan_Sector)
 0x005090E0  function  FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors              src/world/terrain/field_deformation.cpp
 0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                src/world/terrain/field_lifecycle.cpp
 0x005092E0  function  FieldGrid_SetAllCellOverlayColors                                 src/world/terrain/field_lifecycle.cpp

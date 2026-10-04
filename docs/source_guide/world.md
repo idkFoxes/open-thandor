@@ -576,23 +576,15 @@ No file comment; function families: `TerrainMaterialEdit_*` (5), `TerrainEditBuf
 
 Field-grid deformation in play: the radial crater/mound of an effect and the height set at a world point (levelling under a unit), with the neighbour refresh.
 
-**Functions** (15 public, 1 file-local):
+**Functions** (3 public, 1 file-local):
 
 - [`FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface`](../../src/world/terrain/field_deformation.cpp#L22) - Deforms the terrain around a world point (crater/mound of an effect): clips the cell rectangle around the circle to the grid interior, applies FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial ...
-- [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`](../../src/world/terrain/field_deformation.cpp#L122) - Terrain shaping at a world point (used by armies whose class shapes the ground under them): sets the grid vertex nearest to (worldX, worldY) to the height worldZ (moving its water surface by the ...
-- [`FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial`](../../src/world/terrain/field_deformation.cpp#L218) - One cell of FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface: when the cell lies strictly inside the circle, its height changes by amplitude * (distance^2 / radius^2 - 1) (a paraboloid, ...
-- [`TerrainHeightDelta_ApplyWedge0`](../../src/world/terrain/field_deformation.cpp#L284) - Flatten brush, sector 0 of the hexagon around the brush vertex (FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors): walks the sector's diagonal, levels each cell and the one between it and the ...
-- [`TerrainHeightDelta_ApplyWedge1`](../../src/world/terrain/field_deformation.cpp#L315) - Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the straight scans of directions 1 and 2.
-- [`TerrainHeightDelta_ApplyWedge2`](../../src/world/terrain/field_deformation.cpp#L348) - Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the straight scans of directions 2 and 3.
-- [`TerrainHeightDelta_ApplyWedge3`](../../src/world/terrain/field_deformation.cpp#L385) - Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the straight scans of directions 3 and 4.
-- [`TerrainHeightDelta_ApplyWedge4`](../../src/world/terrain/field_deformation.cpp#L416) - Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the straight scans of directions 4 and 5.
-- [`TerrainHeightDelta_ApplyWedge5`](../../src/world/terrain/field_deformation.cpp#L450) - Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the straight scans of directions 5 and 0.
-- [`TerrainHeightDelta_ApplyDirection0`](../../src/world/terrain/field_deformation.cpp#L490) - Flatten brush, straight leg along direction 0 (C+1, right): levels each cell to g_TerrainScanReferenceHeight and takes the change out of waterSurfaceDelta so the water surface stays where it was.
-- 5 more: `TerrainHeightDelta_ApplyDirection1`, `TerrainHeightDelta_ApplyDirection2`, `TerrainHeightDelta_ApplyDirection3`, `TerrainHeightDelta_ApplyDirection4`, `TerrainHeightDelta_ApplyDirection5`
+- [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`](../../src/world/terrain/field_deformation.cpp#L136) - Terrain shaping at a world point (used by armies whose class shapes the ground under them): sets the grid vertex nearest to (worldX, worldY) to the height worldZ (moving its water surface by the ...
+- [`FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial`](../../src/world/terrain/field_deformation.cpp#L221) - One cell of FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface: when the cell lies strictly inside the circle, its height changes by amplitude * (distance^2 / radius^2 - 1) (a paraboloid, ...
 
 **Called from** (3 files): [`gameplay/army/class_updates`](gameplay.md#file-gameplay-army-class-updates) (`ArmyRuntime_ClassCommandHandlerGroupA`); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`HexscanTest_RunDriver`); [`world/effects/lifecycle`](#file-world-effects-lifecycle) (`EffectLifecycle_CountDownCompletionAction`).
 
-**Depends on** (3 files, names used): [`world/terrain/hex_scan`](#file-world-terrain-hex-scan) (3), [`world/terrain/field_lighting`](#file-world-terrain-field-lighting) (2), [`world/terrain/field_sampling`](#file-world-terrain-field-sampling) (1).
+**Depends on** (3 files, names used): [`world/terrain/hex_scan`](#file-world-terrain-hex-scan) (5), [`world/terrain/field_lighting`](#file-world-terrain-field-lighting) (2), [`world/terrain/field_sampling`](#file-world-terrain-field-sampling) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
@@ -771,7 +763,7 @@ Shared state and set-up of the hexagonal radius scans around a world point (sigh
 
 **Data** (4 shared, 0 file-local): `g_TerrainScanRowStrideBytes`, `g_TerrainScanStepLimit`, `g_TerrainScanSharedSelectorValue`, `g_TerrainScanReferenceHeight`.
 
-**Called from** (6 files): [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestDirection0`, `TerrainAuxHeightThreshold_TestDirection1` +25); [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_ApplyDirection0` +12); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`, `TerrainOccupancyBit2_MarkDirection0` +11); [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_ScanDirection0` +11); [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`).
+**Called from** (6 files): [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestDirection0`, `TerrainAuxHeightThreshold_TestDirection1` +25); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`, `TerrainOccupancyBit2_MarkDirection0` +11); [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_ScanDirection0` +11); [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_LevelCell`); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
