@@ -64,4 +64,6 @@ THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestinatio
 
 extern uint8_t *g_PackageScratchBuffer;
 
+extern uint16_t g_PackageLastErrorPath[256];
+
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */

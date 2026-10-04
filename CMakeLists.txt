@@ -63,6 +63,7 @@ add_library(thandor_curated STATIC
     src/audio/backend/runtime.cpp
     src/audio/codec/sam.cpp
     src/audio/spatial/runtime.cpp
+    src/core/error/fatal_dialog.cpp
     src/core/error/runtime.cpp
     src/core/layout_checks.cpp
     src/core/math/fixed_transform.cpp

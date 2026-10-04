@@ -83,4 +83,9 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
 extern uint8_t *g_FontRuntimeBuffer;
 extern uint32_t g_RichTextRuntimeBufferUsedWords;
 
+/* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
+#define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
+
+int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
+
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_H */

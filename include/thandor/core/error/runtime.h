@@ -133,32 +133,19 @@
 /* The fatal-error handlers take an error code (a text id of the error page, below 0x100) or a pointer to a
    rich-text message; a value with no bits above the low byte is a code */
 #define FATAL_ERROR_IS_CODE(errorOrValue) (((uintptr_t)(errorOrValue) & ~(uintptr_t)0xff) == 0)
-/* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
-#define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
 
 /* Functions are grouped by semantic ownership. */
 
 void __cdecl ErrorSystem_Init(void);
 
-Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
-
-int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
-
-void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
-
-uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 failed);
-
-void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
-
 uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed);
-
-int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 extern FatalErrorPassThroughProc *g_FatalErrorExitHandler;
 extern FatalErrorPassThroughProc *g_FatalErrorReportHandler;
 extern uint16_t g_ErrorTextIoInitializationFailed[34];
 
-extern uint16_t g_PackageLastErrorPath[256];
 extern uint16_t g_FatalErrorDetail1Utf16[256];
+extern uint16_t g_FatalErrorDetail2Utf16[256];
+extern uint16_t g_FatalErrorDetail3Utf16[256];
 
 #endif /* THANDOR_CORE_ERROR_RUNTIME_H */

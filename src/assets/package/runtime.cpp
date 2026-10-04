@@ -22,6 +22,8 @@ static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*'
 
 uint8_t *g_PackageScratchBuffer = 0;
 
+__declspec(align(4)) uint16_t g_PackageLastErrorPath[256] = {0};
+
 /* Implementation ownership: assets/package/runtime. */
 
 /* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
