@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/world/model/slots.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/army/model_slots.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_WORLD_MODEL_SLOTS_H
-#define THANDOR_WORLD_MODEL_SLOTS_H
+#ifndef THANDOR_GAMEPLAY_ARMY_MODEL_SLOTS_H
+#define THANDOR_GAMEPLAY_ARMY_MODEL_SLOTS_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/model/slots. */
+/* Submodule: gameplay/army/model_slots. */
 
 /* ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming: value of the classLinkState words classState68..classState74 that
    hold no coordinate yet (INT32_MIN bit pattern, never a real world coordinate) */
@@ -69,4 +69,4 @@ void ModelRuntimeSlotClassInit_ClearField60 (ModelDefinitionRecordPrefix *modelD
 
 void ModelRuntimeSlotClassInit_ClearFields60AndB8 (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot);
 
-#endif /* THANDOR_WORLD_MODEL_SLOTS_H */
+#endif /* THANDOR_GAMEPLAY_ARMY_MODEL_SLOTS_H */

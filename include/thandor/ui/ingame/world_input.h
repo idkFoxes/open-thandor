@@ -75,4 +75,19 @@ extern uint32_t g_InGameCommandPreviewWorldXQ12;
 extern uint32_t g_InGameCommandPreviewSurfaceHeightQ12OrSentinel;
 extern uint32_t g_InGamePointerInteractionStateFlags;
 
+Bool8 WorldRuntimeNode_IsPositionInsideBounds
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
+
+/* Scroll-arrow cursor frames returned by WorldRuntime_ApplyEdgeScrollAndGetCursorFrame (clockwise from up). */
+#define WORLD_CURSOR_SCROLL_UP 0x2F
+#define WORLD_CURSOR_SCROLL_UP_RIGHT 0x30
+#define WORLD_CURSOR_SCROLL_RIGHT 0x31
+#define WORLD_CURSOR_SCROLL_DOWN_RIGHT 0x32
+#define WORLD_CURSOR_SCROLL_DOWN 0x33
+#define WORLD_CURSOR_SCROLL_DOWN_LEFT 0x34
+#define WORLD_CURSOR_SCROLL_LEFT 0x35
+#define WORLD_CURSOR_SCROLL_UP_LEFT 0x36
+
+uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime);
+
 #endif /* THANDOR_UI_INGAME_WORLD_INPUT_H */

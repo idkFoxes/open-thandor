@@ -44,4 +44,19 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
 extern ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes;
 extern RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
 
+void ArmyRuntimeClass_NoOpTickUpdateForClass5
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
+
+void ArmyRuntimeClass_NoOpTickUpdateForClass6
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
+
+void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
+
+void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
+
+Bool8 UnifiedRuntimeDefault_TwoArgSuccess
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
+
+void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_CLASS_DISPATCH_H */

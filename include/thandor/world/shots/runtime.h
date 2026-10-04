@@ -12,11 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/shots/runtime. */
+
 #define SHOT_RUNTIME_SLOT_COUNT 0x1000 /* g_ShotRuntimeSlots, 0x40-byte slots */
 #define SHOT_RUNTIME_POOL_BYTES 0x40000 /* SHOT_RUNTIME_SLOT_COUNT * sizeof(ShotRuntimeSlot) */
-/* Functions are grouped by semantic ownership. */
 
-void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime);
+/* Functions are grouped by semantic ownership. */
 
 Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 

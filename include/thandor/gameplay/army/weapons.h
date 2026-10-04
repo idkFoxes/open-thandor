@@ -47,4 +47,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
 void ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
+void ModelRuntime_EmitProjectilesFromAttachmentPoints
+          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
+          Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
+          MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_WEAPONS_H */

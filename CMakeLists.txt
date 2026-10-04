@@ -90,6 +90,8 @@ add_library(thandor_curated STATIC
     src/gameplay/army/drive_common.cpp
     src/gameplay/army/drive_ground.cpp
     src/gameplay/army/factory.cpp
+    src/gameplay/army/model_rules.cpp
+    src/gameplay/army/model_slots.cpp
     src/gameplay/army/move_orders.cpp
     src/gameplay/army/placement.cpp
     src/gameplay/army/placement_contact.cpp
@@ -251,12 +253,10 @@ add_library(thandor_curated STATIC
     src/world/camera/motion_spline.cpp
     src/world/effects/lifecycle.cpp
     src/world/effects/pool.cpp
-    src/world/model/gameplay_rules.cpp
     src/world/model/hierarchy.cpp
     src/world/model/mesh_raycast.cpp
     src/world/model/picking.cpp
     src/world/model/pool.cpp
-    src/world/model/slots.cpp
     src/world/pathing/influence.cpp
     src/world/pathing/path_cost.cpp
     src/world/pathing/reachability.cpp

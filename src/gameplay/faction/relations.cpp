@@ -913,3 +913,89 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   }
   InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
 }
+
+/* Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
+   world/shots/maintenance.c). A repair shot (negative impact damage) that finds its target fully repaired
+   ends the shooter's command on it. Any other hit adds to the pair pressure of target and shooter faction;
+   if the target's faction already treats the shooter as hostile, the pair's relation tick is renewed and
+   the "under attack" alert runs, otherwise friendly fire declares hostility (relation state 0 both ways),
+   unless the shooter's active command targets another faction or the pair's last relation change is too
+   recent (the ticks elapsed in both directions add up to less than 100).
+*/
+void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime)
+
+{
+  ArmyRuntimeSlot *shooterArmy;
+  InGameSimulationTick currentTick;
+  InGameRuntimeRoot *inGameRoot;
+  FactionRelationState relationState;
+  Bool8 alreadyHostile;
+  Q12 conditionRatio;
+  FactionNotificationCodeBase activeFactionCodeForFirst;
+  FactionNotificationCodeBase activeFactionCodeForSecond;
+  FactionRelationStateNibble stateFirstTowardSecond;
+  FactionRelationStateNibble stateSecondTowardFirst;
+  uint32_t targetFactionIndex;
+  uint32_t shooterFactionIndex;
+  GameEntityRuntime *targetEntity;
+  
+  shooterArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
+  targetEntity = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime; /* the hit model's army */
+  if (shooterArmy != NULL) {
+    if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
+      /* a condition ratio of 1.0 means the target is fully repaired */
+      conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
+                        ((RuntimeModelFactionPrefix *)targetEntity);
+      if (conditionRatio == Q12_ONE &&
+          (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+          targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
+        ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
+        shooterArmy->commandGeneration = 1;
+      }
+    }
+    else {
+      shooterFactionIndex = shooterArmy->factionIndex;
+      /* the target's owning faction */
+      targetFactionIndex = targetEntity->common.ownership.ownerIndex;
+      g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + shooterFactionIndex] += 256;
+      if (shooterFactionIndex != 0 && targetFactionIndex != 0 && shooterFactionIndex != targetFactionIndex) {
+        alreadyHostile = GameFactionRuntime_TestCapabilityBitClear(targetFactionIndex,shooterFactionIndex);
+        inGameRoot = g_InGameRuntimeRoot;
+        currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
+        /* relationStateTicks: tick of the pair's last relation change */
+        if (alreadyHostile) {
+          g_GameFactionRuntimeImage.records[shooterFactionIndex].relationStateTicks[targetFactionIndex] =
+               g_GameFactionRuntimeImage.tail.simulationTick;
+          g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks[shooterFactionIndex] =
+               currentTick;
+          GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
+                    (targetModelRuntime,&inGameRoot->worldRuntime);
+          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime);
+        }
+        else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
+                  (shooterArmy->commandTargetArmyRuntime != NULL &&
+                   targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
+                 99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
+                             g_GameFactionRuntimeImage.records[shooterFactionIndex].relationStateTicks
+                             [targetFactionIndex]) -
+                            g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks
+                            [shooterFactionIndex])) {
+          stateSecondTowardFirst = 0;
+          stateFirstTowardSecond = 0;
+          /* notification text code 11, or 12 when the relation was at state 8 or above */
+          activeFactionCodeForSecond = 11;
+          activeFactionCodeForFirst = 11;
+          relationState = GameFactionRuntime_GetPackedStateNibble(targetFactionIndex,shooterFactionIndex);
+          if (7 < relationState) {
+            activeFactionCodeForFirst = 12;
+            activeFactionCodeForSecond = 12;
+          }
+          GameFactionRuntime_ApplyPairwiseRelationTransition
+                    (activeFactionCodeForFirst,activeFactionCodeForSecond,stateFirstTowardSecond,
+                     stateSecondTowardFirst,targetFactionIndex,shooterFactionIndex);
+        }
+      }
+    }
+  }
+  return;
+}

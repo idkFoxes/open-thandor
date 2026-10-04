@@ -62,11 +62,6 @@ void ModelRuntimePool_RebaseAfterLoad(void);
 
 void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-void ModelRuntime_EmitProjectilesFromAttachmentPoints
-          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
-          Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
-          MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
-
 uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,

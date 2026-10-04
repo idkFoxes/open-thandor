@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/model/slots.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/army/model_slots.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/world/model/slots.h>
+#include <thandor/gameplay/army/model_slots.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/model/slots.
+/* Implementation ownership: gameplay/army/model_slots.
 
    Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed
    by the model definition's class id (runtimeClassId): modelClassInitialize (run by

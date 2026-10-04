@@ -12,6 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/effects/lifecycle. */
+
 /* Functions are grouped by semantic ownership. */
 
 void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint

@@ -44,6 +44,8 @@ uint32_t g_InGamePointerInteractionStateFlags = 0;
 
 int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 
+static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
+
 /* Implementation ownership: ui/ingame/world_input. */
 
 /* Hover cursor of InGameWorldInput_ResolveContextActionAndCursor when the selection has an entry with
@@ -848,4 +850,110 @@ void InGameWorldInput_CommitPointerAction
             (pickedHeightQ12,pointerWorldXQ12,pointerWorldYQ12,candidateHeightQ12,candidateNode,inGameRuntime);
   g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_SELECTION_CAPTURE;
   return;
+}
+
+/* Drag selection test: projects the node's world position to the screen and returns true when that pixel
+   lies inside the rectangle spanned by the pointer press position and the current pointer position of
+   boundsControl (inclusive, in either corner order).
+*/
+Bool8 WorldRuntimeNode_IsPositionInsideBounds
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl)
+
+{
+  int boundsSecondX;
+  int boundsSecondY;
+  int projectedScreenX;
+  int boundsMaxX;
+  int projectedScreenY;
+  int boundsMinX;
+  int boundsMaxY;
+  int boundsMinY;
+  GraphicsProjectedPointPair projectedPosition;
+  
+  FixedTransform_ApplyPoint
+            (&g_GraphicsProjectionScratchVec3,(GraphicsFixedVec3 *)&runtimeNode->worldXQ12,
+             &g_ViewProjectionMatrixFixed);
+  projectedPosition = Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3);
+  boundsMinX = boundsControl->pointerPressX;
+  boundsSecondX = boundsControl->pointerX;
+  boundsMinY = boundsControl->pointerPressY;
+  boundsSecondY = boundsControl->pointerY;
+  /* the projection is in Q12 screen pixels */
+  projectedScreenX = projectedPosition.projectedX >> 12;
+  projectedScreenY = projectedPosition.projectedY >> 12;
+  boundsMaxX = boundsSecondX;
+  if (boundsSecondX < boundsMinX) {
+    boundsMaxX = boundsMinX;
+    boundsMinX = boundsSecondX;
+  }
+  boundsMaxY = boundsSecondY;
+  if (boundsSecondY < boundsMinY) {
+    boundsMaxY = boundsMinY;
+    boundsMinY = boundsSecondY;
+  }
+  if (boundsMinX <= projectedScreenX && projectedScreenX <= boundsMaxX && boundsMinY <= projectedScreenY &&
+      projectedScreenY <= boundsMaxY) {
+    return true;
+  }
+  return false;
+}
+
+/* Edge scrolling: while the cursor presses against a screen edge (g_CursorOverflow*), moves the camera by the
+   configured scroll step in that direction and returns the matching scroll-arrow cursor frame
+   (WORLD_CURSOR_SCROLL_*), or 0 when no edge is touched.
+*/
+uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
+
+{
+  uint32_t edgeScrollStep;
+  uint32_t rightStep;
+  uint32_t bottomStep;
+  uint32_t screenDeltaRight;
+  uint32_t screenDeltaDown;
+
+  edgeScrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+  rightStep = 0;
+  if (g_CursorOverflowRight != 0) {
+    rightStep = edgeScrollStep;
+  }
+  bottomStep = 0;
+  if (g_CursorOverflowBottom != 0) {
+    bottomStep = edgeScrollStep;
+  }
+  /* delta = right/bottom step - left/top overflow; a negative result becomes -step */
+  screenDeltaRight = rightStep - g_CursorOverflowLeft;
+  if ((int)screenDeltaRight < 0) {
+    screenDeltaRight = 0u - edgeScrollStep;
+  }
+  screenDeltaDown = bottomStep - g_CursorOverflowTop;
+  if ((int)screenDeltaDown < 0) {
+    screenDeltaDown = 0u - edgeScrollStep;
+  }
+  WorldRuntime_TranslateCameraByScreenDelta(screenDeltaDown,screenDeltaRight,worldRuntime);
+  WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  if (screenDeltaRight == 0) {
+    if (screenDeltaDown == 0) {
+      return 0;
+    }
+    if ((int)screenDeltaDown < 0) {
+      return WORLD_CURSOR_SCROLL_UP;
+    }
+    return WORLD_CURSOR_SCROLL_DOWN;
+  }
+  if ((int)screenDeltaRight < 0) {
+    if (screenDeltaDown == 0) {
+      return WORLD_CURSOR_SCROLL_LEFT;
+    }
+    if ((int)screenDeltaDown < 0) {
+      return WORLD_CURSOR_SCROLL_UP_LEFT;
+    }
+    return WORLD_CURSOR_SCROLL_DOWN_LEFT;
+  }
+  if (screenDeltaDown == 0) {
+    return WORLD_CURSOR_SCROLL_RIGHT;
+  }
+  if ((int)screenDeltaDown < 0) {
+    return WORLD_CURSOR_SCROLL_UP_RIGHT;
+  }
+  return WORLD_CURSOR_SCROLL_DOWN_RIGHT;
 }

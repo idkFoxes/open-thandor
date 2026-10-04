@@ -15,9 +15,10 @@ ModelRuntimeSlot *g_ModelRuntimeSlots = 0;
 
 intptr_t g_ModelRuntimeRebaseDelta = 0;
 
+/* Implementation ownership: world/model/pool. */
+
 /* Diagnostics: set by the offscreen preview renderer while it submits models. */
 
-/* Implementation ownership: world/model/pool. */
 
 /* Attaches a new model to one of the attachment points of modelRuntime (recorded by
    ModelNodeRuntime_CreateHierarchyRecursive): creates the model childDefinitionId for the same army, stores it in
@@ -78,15 +79,6 @@ Bool8 ModelRuntimePool_RepairDeferredChild
   return true;
 }
 
-
-
-
-
-
-
-
-
-
 /* Allocates and zeroes the model runtime pool (MODEL_RUNTIME_SLOT_COUNT 0x200-byte slots, 4 MiB) and records
    its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error
    (FATAL_ERROR_ARENA_EXHAUSTED / ARENA_HEAP_CORRUPT, never 0 from the arena).
@@ -116,7 +108,6 @@ uint32_t __cdecl ModelRuntimePool_Init(void)
   return 0;
 }
 
-
 /* Part of ModelRuntimePool_ShutdownAndReleaseDefinitions: releases the resource of one serialized
    MDL definition node and then, depth first in index order, of all its children (childCount,
    childSerializedOffsets). Only plain nodes (nodeFlags low nibble 0) whose ownedNestedResourcePresent is set own a
@@ -140,7 +131,6 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(MdlSerializedNodeHea
   }
   return;
 }
-
 
 /* Counterpart of ModelRuntimePool_Init: frees the model runtime pool, releases the resources of every
    registered model definition's node tree (see ModelRuntimePool_ReleaseDefinitionNodeResources) and clears
@@ -170,8 +160,6 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
   }
 }
 
-
-
 /* Part of ModelRuntimePool_UnrebaseBeforeSave: zeroes an unused slot's 0x80 dwords, one dword at a time. */
 static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseView *modelRuntime)
 
@@ -185,7 +173,6 @@ static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseVi
     slotDword++;
   }
 }
-
 
 /* Part of ModelRuntimePool_UnrebaseBeforeSave: turns the pointers of one used slot into saved offsets, replaces
    the definition by its id, runs the class's modelUnrebase handler and then unrebases the used attachment
@@ -240,7 +227,6 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   }
 }
 
-
 /* Before the model runtime pool is written to a savegame (in-game save, src/ui/ingame/runtime.c): turns the
    pointers of every used slot into offsets (owner and linked army against g_ArmyRuntimeRebaseBaseMinusOne, root
    and attachment parent nodes against g_RuntimeObjectRebaseBaseMinusOne, linked model runtime and attachment
@@ -266,7 +252,6 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
   }
 }
 
-
 /* First registered model definition with the given id, or NULL. */
 static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
 {
@@ -281,7 +266,6 @@ static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDef
   }
   return NULL;
 }
-
 
 /* Turns the saved offsets of the used attachment descriptors back into pointers: children get
    g_ModelRuntimeRebaseDelta, parent nodes g_RuntimeObjectRebaseBaseMinusOne; zero offsets stay NULL. */
@@ -312,7 +296,6 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
     attachment++;
   }
 }
-
 
 /* After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
    used model runtime slot back into pointers, replaces the saved definition id by the registered definition,
@@ -381,7 +364,6 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     }
   }
 }
-
 
 /* Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
    attached model runtimes, clears world nodes that still point to it and releases its node tree.
@@ -463,52 +445,6 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
     ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)entityRuntime);
   }
 }
-
-
-/* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
-   of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a projectile from shotDefinition
-   at the point's world position, aimed at the target shifted by the point's X/Y offset from the node, so that
-   side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
-   src/gameplay/army/runtime.c).
-*/
-void ModelRuntime_EmitProjectilesFromAttachmentPoints
-          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
-          Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
-          MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime)
-
-{
-  int modelPointRecordsRemaining;
-  ModelPackedPointRecord *localPointRecord;
-  ModelWorldPoint launchPointWorld;
-  AssetRecordByteCount modelPointTableBase;
-
-  ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-  /* sprite asset: +0xE4 offset of the point records, +0xE8 their count */
-  /* 5f-format: MdlSerializedNodeHeader.spriteAssetReference (ModelResource address in a 32-bit slot) */
-  modelPointTableBase = definitionNode->spriteAssetReference.savedId;
-  localPointRecord =
-       (ModelPackedPointRecord *)
-       (modelPointTableBase +
-       ((ModelResource *)modelPointTableBase)->packedLookupTableRelativeOffset);
-  for (modelPointRecordsRemaining =
-           ((ModelResource *)modelPointTableBase)->packedLookupTableEntryCount;
-      modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
-  {
-    if ((localPointRecord->packedLookupKey & 0xf) == MODEL_POINT_CLASS_SHOT) {
-      launchPointWorld = ModelNodeRuntime_TransformLocalPoint(localPointRecord,modelNodeRuntime);
-      ShotRuntimePool_CreateProjectileFromDefinition
-                (targetModelReference,
-                 (ArmyRuntimeSlot *)
-                 modelNodeRuntime->runtimePayload.armyRuntime->linkedEntityRuntime,
-                 targetWorldZQ12,
-                 (launchPointWorld.yQ12 - modelNodeRuntime->worldTransform.translation.y) + targetWorldYQ12,
-                 (launchPointWorld.xQ12 - modelNodeRuntime->worldTransform.translation.x) + targetWorldXQ12,
-                 launchPointWorld.zQ12,launchPointWorld.yQ12,launchPointWorld.xQ12,shotDefinition,worldRuntime);
-    }
-    localPointRecord++;
-  }
-}
-
 
 /* Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
    definition's starting values (health and the destructionEffectTimers), raises two of the
@@ -606,4 +542,3 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   *outModelRuntime = modelRuntime;
   return 0;
 }
-

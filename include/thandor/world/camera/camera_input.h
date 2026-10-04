@@ -13,21 +13,11 @@
 
 /* Submodule: world/camera/camera_input. */
 
-/* Scroll-arrow cursor frames returned by WorldRuntime_ApplyEdgeScrollAndGetCursorFrame (clockwise from up). */
-#define WORLD_CURSOR_SCROLL_UP 0x2F
-#define WORLD_CURSOR_SCROLL_UP_RIGHT 0x30
-#define WORLD_CURSOR_SCROLL_RIGHT 0x31
-#define WORLD_CURSOR_SCROLL_DOWN_RIGHT 0x32
-#define WORLD_CURSOR_SCROLL_DOWN 0x33
-#define WORLD_CURSOR_SCROLL_DOWN_LEFT 0x34
-#define WORLD_CURSOR_SCROLL_LEFT 0x35
-#define WORLD_CURSOR_SCROLL_UP_LEFT 0x36
 /* Hard lower limit (0.25 in Q12) of the camera distance and position magnitude set by the WorldMotion_Adjust*
    functions, applied after the configurable limits. */
 #define WORLD_MOTION_MINIMUM_DISTANCE_Q12 0x400
-/* Functions are grouped by semantic ownership. */
 
-uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime);
+/* Functions are grouped by semantic ownership. */
 
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime);

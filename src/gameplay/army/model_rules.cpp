@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/model/gameplay_rules.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/army/model_rules.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
 /* Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and
    selection metrics, faction technology variants and the turret yaw/pitch aim. */
 
-#include <thandor/world/model/gameplay_rules.h>
+#include <thandor/gameplay/army/model_rules.h>
 #include <thandor/thandor.h>
 
 static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node);

@@ -19,6 +19,8 @@
 #include <thandor/gameplay/army/drive_common.h>
 #include <thandor/gameplay/army/drive_ground.h>
 #include <thandor/gameplay/army/factory.h>
+#include <thandor/gameplay/army/model_rules.h>
+#include <thandor/gameplay/army/model_slots.h>
 #include <thandor/gameplay/army/move_orders.h>
 #include <thandor/gameplay/army/placement.h>
 #include <thandor/gameplay/army/placement_contact.h>

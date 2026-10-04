@@ -668,3 +668,63 @@ RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases = {
     .terrainStateRefresh = {.army = THANDOR_FN(ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint), .shot = THANDOR_FN(ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint), .effect = THANDOR_FN(EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint)},
     .occupancyRebuild = {.army = THANDOR_FN(ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback), .shot = THANDOR_FN(ShotRuntimeMaintenance_OccupancyRebuildNoOp), .effect = THANDOR_FN(EffectRuntimeMaintenance_OccupancyRebuildNoOp)},
     .audioRefresh = {.army = THANDOR_FN(ArmyRuntimeMaintenance_DispatchClassMethodDRecursive), .shot = THANDOR_FN(ShotRuntimeMaintenance_UpdateHierarchyProjectedSound), .effect = THANDOR_FN(EffectRuntimeMaintenance_AudioRefreshNoOp)}};
+
+/* Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
+   that class has nothing to update, so this does nothing.
+*/
+void ArmyRuntimeClass_NoOpTickUpdateForClass5
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
+
+{
+  return;
+}
+
+/* Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
+   that class has nothing to update, so this does nothing.
+*/
+void ArmyRuntimeClass_NoOpTickUpdateForClass6
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
+
+{
+  return;
+}
+
+/* Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
+   except 13 and 21): those classes keep no pointers that need unrebasing, so this does nothing.
+*/
+void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
+
+{
+  return;
+}
+
+/* Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
+   every class except 14-16 and 21): those classes hold no faction capacity or placement reservation to release,
+   so this does nothing.
+*/
+void UnifiedRuntimeDefault_TwoArgNoOpB
+               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+
+{
+  return;
+}
+
+/* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
+   0, 5-9, 12 and 21): accepts every placement.
+*/
+Bool8 UnifiedRuntimeDefault_TwoArgSuccess
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
+
+{
+  return false;
+}
+
+/* Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
+   15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
+   have none, so this does nothing.
+*/
+void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
+
+{
+  return;
+}

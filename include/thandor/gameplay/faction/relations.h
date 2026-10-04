@@ -108,4 +108,6 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
           FactionRelationStateNibble stateSecondTowardFirst,FactionRuntimeIndex firstFactionIndex,
           FactionRuntimeIndex secondFactionIndex);
 
+void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime);
+
 #endif /* THANDOR_GAMEPLAY_FACTION_RELATIONS_H */
