@@ -1058,7 +1058,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .nextSibling = UI_TEMPLATE_LINK(0x308C), .firstChild = UI_TEMPLATE_LINK(0x2E84), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -64, /* not in the original: 3 rows (-10) */
+            /* not in the original (bottom -10): the upper half of the left column, displayModeKindGroup the lower */
+            .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -22,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
@@ -1109,7 +1110,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002030, 0x0000212A},
         { /* +308C displayResolutionGroup g_UiTitledWindowControlVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x34F0), .firstChild = UI_TEMPLATE_LINK(0x30E0), .parent = UI_TEMPLATE_LINK(0x2CB8),
+            /* not in the original: followed by displayModeKindGroup (displayColorDepthGroup is no longer linked) */
+            .nextSibling = UI_TEMPLATE_LINK(0x5954), .firstChild = UI_TEMPLATE_LINK(0x30E0), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 48, .topOffset = -142, .rightOffset = 288, .bottomOffset = 110,
@@ -1208,11 +1210,12 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x0000202B, 0x0000212B},
         { /* +34F0 displayColorDepthGroup g_UiTitledWindowControlVtable */
-            /* not in the original: followed by displayModeKindGroup, two rows (top 2) */
-            .nextSibling = UI_TEMPLATE_LINK(0x5954), .firstChild = UI_TEMPLATE_LINK(0x3544), .parent = UI_TEMPLATE_LINK(0x2CB8),
+            /* not in the original: no longer linked into the page (32-bit colour only); the node and its four
+               choices stay as unused template data, so the image keeps its layout */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x3544), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = 38, .rightOffset = 32, .bottomOffset = 110,
+            .leftOffset = -288, .topOffset = 2, .rightOffset = 32, .bottomOffset = 110,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
@@ -2028,13 +2031,13 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000008, 0x00000000, 0x00002117},
-        /* not in the original (open-thandor): the display mode kind choice of the display settings page, between the
-           adapter (renderer) and colour depth groups; same look as the adapter choices */
+        /* not in the original (open-thandor): the display mode kind choice of the display settings page, the lower
+           half of the left column below the adapter (renderer) group; same look as the adapter choices */
         { /* +5954 displayModeKindGroup g_UiTitledWindowControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x59A8), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = -52, .rightOffset = 32, .bottomOffset = 26,
+            .leftOffset = -288, .topOffset = -10, .rightOffset = 32, .bottomOffset = 110,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
