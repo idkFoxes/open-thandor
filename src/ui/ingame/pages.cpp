@@ -219,3 +219,148 @@ InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10 = {
             /* 38 */ THANDOR_FN(InGameCommandState_SelectAndPropagateBinaryMode),
             /* 39 */ THANDOR_FN(InGameQuitMenu_RestartMission)
         }};
+
+/* Results screen continue button (action 0x101B, g_InGameUiActionHandlersPage10[27]). A local game or network host
+   sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED (the host through command 0x310 so every machine sees it); a network
+   client instead reports itself ready, which lets the host show its own continue button.
+*/
+void InGameResultsScreen_ContinueOrMarkReady(void *source)
+
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+        SESSION_NETWORK_ROLE_LOCAL) {
+      UiCommandRuntimeFlags_ApplyClearSetToggleMasks
+                (g_LocalPlayerRuntimeId,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+    }
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand
+                (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
+    }
+  }
+  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+           SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(g_LocalPlayerRuntimeId);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_RESULTS_READY,0,0,0);
+  }
+  return;
+}
+
+/* End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie by clearing
+   UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to every machine in a network
+   game).
+*/
+void InGameEndMovie_Skip(void *source)
+
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    UiCommandRuntimeFlags_ApplyClearSetToggleMasks
+              (g_LocalPlayerRuntimeId,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
+  }
+  return;
+}
+
+/* Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
+   g_InGameUiActionHandlersPage10[39]): deselects and closes the in-game menu, then issues command 0x150 with
+   INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION, which ends the session.
+*/
+void InGameQuitMenu_RestartMission(UiNodeBase *source)
+
+{
+
+  /* source becomes the in-game UI root */
+  while (source->parent != UI_NODE_NONE) {
+    source = source->parent;
+  }
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    InGameCommand_HandlePlayerDeparture
+              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
+  }
+  return;
+}
+
+/* UI action 0x1200 (game menu quit button): opens the quit game window (page 4 of the in-game window page
+   stack). Its restart button is only offered in local games, its surrender button only while the local
+   faction is still in play (world input enabled).
+*/
+void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 source)
+
+{
+  UiNodeBase *firstNode;
+
+  /* source is InGameUiImage.gameMenuQuitButton */
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_QUIT_MENU,(UiPageStackControl *)
+                             THANDOR_UI_SIBLING(source,InGameUiImage,gameMenuQuitButton,gameWindowPageStack));
+  firstNode = THANDOR_UI_AT(source,-(int)offsetof(InGameUiImage,gameMenuQuitButton)); /* the in-game UI root */
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
+  }
+  else {
+    UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
+  }
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
+  }
+  else {
+    UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
+  }
+  return;
+}
+
+/* Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
+   only offered in network games): sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED on this machine only.
+*/
+void InGameResultsScreen_CloseLocally(UiNodeBase *source)
+
+{
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED;
+  return;
+}
+
+/* Results chart mode buttons (action 0x1026, g_InGameUiActionHandlersPage10[38]): selects the clicked one of the
+   two buttons and copies the chosen mode (0 or 1) into the modeFlags of the three results charts (graph or table
+   drawing) and into the image subresource of the results screen background.
+*/
+void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
+
+{
+  UiSelectableControl *root;
+  uint32_t selectedIndexValue;
+
+  root = source;
+  while ((root->base).parent != UI_NODE_NONE) {
+    root = (UiSelectableControl *)(root->base).parent;
+  }
+  UiSelectableGroup_SelectExclusive(2,&source->base,
+      INGAME_UI(root,resultsChartModeButtonB),
+      INGAME_UI(root,resultsChartModeButtonA));
+  /* Original quirk: the result is not tested; with no visible button selected the index is 2 */
+  UiSelectableGroup_FindVisibleSelected(NULL,&selectedIndexValue,2,
+      INGAME_UI(root,resultsChartModeButtonA),
+      INGAME_UI(root,resultsChartModeButtonB));
+  /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart1))->modeFlags =
+       (uint32_t)selectedIndexValue;
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart2))->modeFlags =
+       (uint32_t)selectedIndexValue;
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart3))->modeFlags =
+       (uint32_t)selectedIndexValue;
+  ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
+       (GraphicsSubresourceIndex)selectedIndexValue;
+  return;
+}

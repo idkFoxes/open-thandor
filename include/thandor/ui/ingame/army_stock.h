@@ -1,0 +1,40 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/ingame/army_stock.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
+#ifndef THANDOR_UI_INGAME_ARMY_STOCK_H
+#define THANDOR_UI_INGAME_ARMY_STOCK_H
+
+#include <thandor/generated/types.h>
+#include <thandor/core/contracts.h>
+
+/* Submodule: ui/ingame/army_stock. */
+
+/* g_UiCommandRuntimeFlags bits of the world view overlays (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
+   no writer with a constant mask, so they can only come from command 0x310 */
+#define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS 0x8000 /* skips every selection overlay of the world view */
+#define UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS 0x40 /* debug overlay
+                                                                     SelectionOverlay_DrawDebugMarkedCellMarkers */
+/* labelFlags bits of those world view status texts */
+#define UI_WORLD_TEXT_PAUSED_ONLY 0x800 /* drawn only while the game is paused */
+#define UI_WORLD_TEXT_SHIFT_BY_STEP_TICKS 0x1000 /* needs g_InGameSimulationStepTicks > 1; text shifted by ticks - 2
+                                                    bytes */
+/* Army stock panel (UiCommandSpriteVariantA_*, g_UiCommandSpriteVariantARecords) */
+#define ARMY_STOCK_ENTRY_COUNT 24
+#define ARMY_STOCK_MAX_COLUMNS 4
+#define INGAME_CURSOR_FRAME_ARMY_STOCK 10 /* pointer over an army stock slot */
+#define INGAME_CURSOR_FRAME_ARMY_STOCK_SELL 12 /* the same with Ctrl held: a click sells the army */
+
+/* Functions are grouped by semantic ownership. */
+
+GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiCommandSpriteButtonControl *control);
+
+void InGameArmyStock_RebuildGrid(UiNodeBase *node);
+
+void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control);
+
+#endif /* THANDOR_UI_INGAME_ARMY_STOCK_H */

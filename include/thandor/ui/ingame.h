@@ -8,10 +8,14 @@
 #ifndef THANDOR_UI_INGAME_H
 #define THANDOR_UI_INGAME_H
 
+#include <thandor/ui/ingame/army_stock.h>
+#include <thandor/ui/ingame/build_catalog.h>
 #include <thandor/ui/ingame/catalog_entry.h>
 #include <thandor/ui/ingame/chat.h>
+#include <thandor/ui/ingame/command_buttons.h>
 #include <thandor/ui/ingame/commands.h>
 #include <thandor/ui/ingame/editor_keyboard.h>
+#include <thandor/ui/ingame/editor_tool_selection.h>
 #include <thandor/ui/ingame/editor_tools.h>
 #include <thandor/ui/ingame/hud.h>
 #include <thandor/ui/ingame/key_commands.h>

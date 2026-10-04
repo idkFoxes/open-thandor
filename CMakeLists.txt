@@ -149,10 +149,14 @@ add_library(thandor_curated STATIC
     src/ui/frontend/settings.cpp
     src/ui/frontend/state.cpp
     src/ui/frontend/ui_template.cpp
+    src/ui/ingame/army_stock.cpp
+    src/ui/ingame/build_catalog.cpp
     src/ui/ingame/catalog_entry.cpp
     src/ui/ingame/chat.cpp
+    src/ui/ingame/command_buttons.cpp
     src/ui/ingame/commands.cpp
     src/ui/ingame/editor_keyboard.cpp
+    src/ui/ingame/editor_tool_selection.cpp
     src/ui/ingame/editor_tools.cpp
     src/ui/ingame/hud.cpp
     src/ui/ingame/key_commands.cpp
