@@ -93,12 +93,7 @@ Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   case 0x548140:
     if (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)) ==
         FRONTEND_PAGE_FACTION_SETUP) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_XOR_PLAYER_STATE,0,0,1);
-      }
-      else {
-        FrontendPlayerRuntime_XorStateMaskByPlayerId(g_LocalPlayerRuntimeId,0,0,1);
-      }
+      FrontendCommand_Issue<FrontendPlayerRuntime_XorStateMaskByPlayerId>(0,0,1);
     }
     break;
   case 0x548190: {
