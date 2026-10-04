@@ -113,9 +113,12 @@ add_library(thandor_curated STATIC
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
     src/gameplay/session/level_script.cpp
+    src/gameplay/session/loaded_session.cpp
     src/gameplay/session/loading_movie.cpp
+    src/gameplay/session/new_session.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
+    src/gameplay/session/savegame_load.cpp
     src/gameplay/session/scenario_load.cpp
     src/gameplay/session/startup.cpp
     src/gameplay/session/tick.cpp

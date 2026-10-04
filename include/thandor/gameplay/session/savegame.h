@@ -35,10 +35,6 @@ typedef struct InGameSavePackageHeader {
 
 Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
-void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
-
-Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError);
-
 Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 
 ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
@@ -52,10 +48,6 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void);
 void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
 
 void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void);
-
-void ArmyRuntimePool_RebaseAfterLoad(void);
-
-void GameFactionRuntime_RebaseLoadedArmyReferences(void);
 
 RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
 

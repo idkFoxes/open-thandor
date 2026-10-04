@@ -13,9 +13,12 @@
 #include <thandor/gameplay/session/level_new.h>
 #include <thandor/gameplay/session/level_saved.h>
 #include <thandor/gameplay/session/level_script.h>
+#include <thandor/gameplay/session/loaded_session.h>
 #include <thandor/gameplay/session/loading_movie.h>
+#include <thandor/gameplay/session/new_session.h>
 #include <thandor/gameplay/session/runtime.h>
 #include <thandor/gameplay/session/savegame.h>
+#include <thandor/gameplay/session/savegame_load.h>
 #include <thandor/gameplay/session/scenario_load.h>
 #include <thandor/gameplay/session/startup.h>
 #include <thandor/gameplay/session/tick.h>
