@@ -436,6 +436,8 @@ def project_text(rel, full):
     if rel == 'include/thandor/core/contracts.h':
         text, n = UIROOT.subn('', text)
         assert n == 1
+        text, n = re.subn(r'/\* The function pointer types and the UI template layouts\.[^*]*\*/\n', '', text)
+        assert n == 1
     return text
 
 
@@ -483,6 +485,7 @@ def build():
         if owner is None or owner is f:
             # a struct that stays incomplete: the forward declaration is the item
             f.kind = 'agg'
+            f.incomplete = True
             f.aggs = {f.fwd_name: f.fwd_kw}
             f.names = {f.fwd_name}
             by_name[f.fwd_name] = f
@@ -816,6 +819,10 @@ BANNER = '''/*
 '''
 
 
+# The banner of the old forward-declaration block (twice) goes; the forward declarations stay.
+HOISTED = re.compile(r'/\* Forward declarations \(hoisted by tools/sort_types\.py\)\. \*/\n')
+
+
 def guard(path):
     return re.sub(r'[^A-Za-z0-9]', '_', path).upper()
 
@@ -839,7 +846,8 @@ def emit(live, dead, by_name):
             for w, k in it.refs.items():
                 if k == 'full' and by_name[w].target != t:
                     incs.add(header[by_name[w].target])
-        own_fwd = [f for it in mine for f in it.fwd]
+        own_fwd = [f for it in mine for f in it.fwd] + [it for it in mine if getattr(it, 'incomplete', False)]
+        own_fwd.sort(key=lambda f: f.order)
         own_fwd_names = {f.fwd_name for f in own_fwd}
         fwd = {}
         for it in mine:
@@ -847,6 +855,8 @@ def emit(live, dead, by_name):
                 o = by_name[w]
                 if k != 'decl' or w in own_fwd_names:
                     continue
+                if o.target == t and o.order < it.order:
+                    continue  # declared above in this header
                 if o.target != t and header[o.target] in incs:
                     continue
                 fwd[w] = o.aggs[w]
@@ -860,15 +870,17 @@ def emit(live, dead, by_name):
         for h in sorted(incs):
             lines.append(f'#include <{h}>')
         lines.append('')
-        body = ['/* Types (split from generated/types.h by tools/dev/split_types.py). */\n\n']
+        body = []
         if own_fwd or fwd:
             for f in own_fwd:
-                body.append(f.text)
+                body.append(HOISTED.sub('', f.text))
             for w in sorted(fwd):
                 body.append(f'typedef {fwd[w]} {w} {w};\n')
             body.append('\n')
         region = None
         for it in mine:
+            if getattr(it, 'incomplete', False):
+                continue  # a struct that stays incomplete: in the forward declarations
             r = it.pack[1] if it.pack else None
             if r != region:
                 if region is not None:
@@ -879,7 +891,9 @@ def emit(live, dead, by_name):
             body.append(it.text)
         if region is not None:
             body.append('#pragma pack(pop)\n')
-        text = '\n'.join(lines) + '\n' + ''.join(body)
+        body = re.sub(r'\n{3,}', '\n\n', ''.join(body).lstrip('\n'))  # one blank line between the items
+        body = '/* Types (split from generated/types.h by tools/dev/split_types.py). */\n\n' + body
+        text = '\n'.join(lines) + '\n' + body
         text = text.rstrip('\n') + '\n\n' + f'#endif /* {guard(header[t])} */\n'
         wr(os.path.join(INC, header[t]), text)
 
