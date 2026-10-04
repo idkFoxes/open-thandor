@@ -76,6 +76,7 @@ struct RendererState {
   uint32_t kind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;        /* applied */
   uint32_t pendingKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN; /* applied by the next display mode switch */
   bool kindChosen = false;
+  uint32_t windowedChosenKind = PERSISTENT_DISPLAY_MODE_COUNT; /* developer window: the last applied choice */
   bool shown = false;
   int windowWidth = 0; /* the size last given to the normal window */
   int windowHeight = 0;
@@ -609,15 +610,27 @@ uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex)
 
 uint32_t SdlVideo_SavedDisplayModeKind(void)
 {
+  if (Windowed() && (s_renderer.windowedChosenKind < PERSISTENT_DISPLAY_MODE_COUNT)) {
+    return s_renderer.windowedChosenKind; /* not saved, but the settings page treats it as applied */
+  }
   const uint32_t kind = PersistentSettings_Read(PERSISTENT_DISPLAY_MODE_FULLSCREEN, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
   return (kind < PERSISTENT_DISPLAY_MODE_COUNT) ? kind : PERSISTENT_DISPLAY_MODE_FULLSCREEN;
 }
 
 void SdlVideo_SaveDisplayModeKind(uint32_t kind)
 {
-  if (!Windowed() && (kind < PERSISTENT_DISPLAY_MODE_COUNT)) {
-    PersistentSettings_Write(kind, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
+  if (kind >= PERSISTENT_DISPLAY_MODE_COUNT) {
+    return;
   }
+  if (Windowed()) {
+    if (kind != SdlVideo_SavedDisplayModeKind()) {
+      Thandor_Log("display mode %s chosen; the developer window (OPEN_THANDOR_WINDOWED) stays a window",
+                  DisplayModeKindName(kind));
+    }
+    s_renderer.windowedChosenKind = kind;
+    return;
+  }
+  PersistentSettings_Write(kind, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
 }
 
 uint32_t SdlVideo_DisplayModeKind(void)

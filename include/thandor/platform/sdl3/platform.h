@@ -79,7 +79,8 @@ void SdlVideo_SaveAdapterIndex(uint32_t adapterIndex);
 uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex);
 /* The display mode kind (PERSISTENT_DISPLAY_MODE_*): the saved one (PERSISTENT_SETTING_DISPLAY_MODE_KIND), saving
    it, the one in use, and the one the next SdlVideo_ApplyDisplayMode applies. The developer tools' window
-   (OPEN_THANDOR_WINDOWED) stays a window and saves nothing. */
+   (OPEN_THANDOR_WINDOWED) stays a window and saves nothing: a chosen kind is logged and only kept for the
+   session (the settings page then sees it as the saved one). */
 uint32_t SdlVideo_SavedDisplayModeKind(void);
 void SdlVideo_SaveDisplayModeKind(uint32_t kind);
 uint32_t SdlVideo_DisplayModeKind(void);
