@@ -18,10 +18,10 @@ No file comment; function families: `AiCombatTarget_*` (2), `AiCombatDecision_*`
 
 **Functions** (4 public):
 
-- [`AiCombatDecision_UpdateTargetAssignment`](../../src/gameplay/ai/combat.cpp#L55) - Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases).
-- [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L99) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
-- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L200) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
-- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L315) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
+- [`AiCombatDecision_UpdateTargetAssignment`](../../src/gameplay/ai/combat.cpp#L59) - Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases).
+- [`AiUnitGroup_AssignCollectedEntitiesToBestTarget`](../../src/gameplay/ai/combat.cpp#L104) - Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until the group is strong enough (sum &gt;= 0x200), then picks the target with the highest class base ...
+- [`AiCombatTarget_SelectBestCandidate`](../../src/gameplay/ai/combat.cpp#L205) - Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, ...
+- [`AiCombatTarget_EvaluateCandidateScore`](../../src/gameplay/ai/combat.cpp#L320) - Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it.
 
 **Data** (0 shared, 10 file-local): `g_AiCommandGenerationCandidateBase`, `g_AiCommandGenerationRetainedTarget`, `g_AiCombatTargetClassBaseScores`, `g_AiCombatTargetRadialClearanceWeight`, `g_AiCombatTargetCandidateCounterCountWeight`, `g_AiCombatTargetSourceCounterCountWeight`, `g_AiCombatTargetScaleDeficitWeight`, `g_AiCombatTargetClassBaseScoreMultiplier` and 2 more.
 
@@ -60,7 +60,7 @@ No file comment; function families: `AiPlanningRebuild_*` (15), `AiPlanning_*` (
 
 **Functions** (1 public, 15 file-local):
 
-- [`AiPlanning_RebuildFactionWorkspaces`](../../src/gameplay/ai/perception.cpp#L455) - Rebuilds the faction's AI workspaces at the start of a planning pass: - world entities: own units (ARM &lt; 300) into 01, own structures into 00 (ARM 300 also remembered); entities of factions whose ...
+- [`AiPlanning_RebuildFactionWorkspaces`](../../src/gameplay/ai/perception.cpp#L456) - Rebuilds the faction's AI workspaces at the start of a planning pass: - world entities: own units (ARM &lt; 300) into 01, own structures into 00 (ARM 300 also remembered); entities of factions whose ...
 
 **Called from** (1 files): [`gameplay/ai/planning`](#file-gameplay-ai-planning) (`AiRuntime_DispatchFactionPlanningPhase`).
 
@@ -247,8 +247,8 @@ No file comment; function families: `ArmyAircraft_*` (10), `ArmyRuntimeClass_*` 
 **Functions** (3 public, 13 file-local):
 
 - [`ArmyRuntimeClass_UpdateAircraft`](../../src/gameplay/army/aircraft.cpp#L347) - Runtime update of the aircraft class (MODEL_RUNTIME_CLASS_21_AIRCRAFT), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[21] (called by ...
-- [`ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode`](../../src/gameplay/army/aircraft.cpp#L522) - Runtime update of the aircraft home pad class (22), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[22].
-- [`ArmyRuntime_TestWorldPointAllowedDefault`](../../src/gameplay/army/aircraft.cpp#L737) - Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always returns false, so the callers' `!result` branches are always taken.
+- [`ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode`](../../src/gameplay/army/aircraft.cpp#L523) - Runtime update of the aircraft home pad class (22), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[22].
+- [`ArmyRuntime_TestWorldPointAllowedDefault`](../../src/gameplay/army/aircraft.cpp#L738) - Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always returns false, so the callers' `!result` branches are always taken.
 
 **Called from** (1 files): [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`).
 
@@ -403,7 +403,7 @@ No file comment; function families: `ArmyRuntimeClass_*` (9).
 
 **Functions** (1 public, 8 file-local):
 
-- [`ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation`](../../src/gameplay/army/drive_banking.cpp#L360) - Movement of banking units with three animated child parts (runtimeUpdate slot 17 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from ...
+- [`ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation`](../../src/gameplay/army/drive_banking.cpp#L361) - Movement of banking units with three animated child parts (runtimeUpdate slot 17 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from ...
 
 **Called from** (1 files): [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`).
 
@@ -418,8 +418,8 @@ No file comment; function families: `ArmyRuntime_*` (2).
 
 **Functions** (2 public):
 
-- [`ArmyRuntime_UpdateActivationMetricAndPlayStartSound`](../../src/gameplay/army/drive_common.cpp#L20) - Accelerates a moving model (called directly by the movement class updates in gameplay/army/movement): the speed limit is the definition's movementSpeed.
-- [`ArmyRuntime_HandleCollisionPartner`](../../src/gameplay/army/drive_common.cpp#L93) - Reacts to the model a moving model has run into (called directly by the movement code in gameplay/army/movement with the mover's model runtime and position, Y before X).
+- [`ArmyRuntime_UpdateActivationMetricAndPlayStartSound`](../../src/gameplay/army/drive_common.cpp#L21) - Accelerates a moving model (called directly by the movement class updates in drive_ground.cpp and drive_banking.cpp): the speed limit is the definition's movementSpeed.
+- [`ArmyRuntime_HandleCollisionPartner`](../../src/gameplay/army/drive_common.cpp#L94) - Reacts to the model a moving model has run into (called directly by the movement code in drive_ground.cpp, drive_banking.cpp and walker.cpp with the mover's model runtime and position, Y before X).
 
 **Called from** (3 files): [`gameplay/army/walker`](#file-gameplay-army-walker) (`ArmyArticulatedRuntime_UpdateLeftTerrainContact`, `ArmyArticulatedRuntime_UpdateRightTerrainContact`); [`gameplay/army/drive_banking`](#file-gameplay-army-drive-banking) (`ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint`); [`gameplay/army/drive_ground`](#file-gameplay-army-drive-ground) (`ArmyGroundMovement_SteerAndDrive`).
 
@@ -455,12 +455,12 @@ No file comment; function families: `ArmyUnitFactory_*` (3), `ArmyRuntimeClass_*
 
 **Functions** (6 public, 3 file-local):
 
-- [`ArmyRuntimeClass_UpdateUnitFactory`](../../src/gameplay/army/factory.cpp#L185) - Runtime update of the unit factory class (13), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[13].
-- [`ArmyRuntimeClass_UpdateStructureFactory`](../../src/gameplay/army/factory.cpp#L291) - Runtime update of production class 11, reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[11].
-- [`ArmyRuntimeSpawner_CreateLinkedChildInstance`](../../src/gameplay/army/factory.cpp#L424) - Launches one linked asset of a class-22 pad (called directly by ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode): finds a not yet launched slot of completedSecondaryArmyAssetIds ...
-- [`ArmyRuntime_TestArmyNearFactoryExit`](../../src/gameplay/army/factory.cpp#L491) - Group-A command check: returns true when the source model is of class 13 and the candidate model is within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry ...
-- [`ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric`](../../src/gameplay/army/factory.cpp#L522) - Xenite refund for the not yet launched linked assets of a class-22 pad that is being dismantled (called directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): sums xeniteValueQ4 ...
-- [`EffectLifecycle_SpawnArmyFromOwner`](../../src/gameplay/army/factory.cpp#L559) - EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the army asset named by classParameterC0.
+- [`ArmyRuntimeClass_UpdateUnitFactory`](../../src/gameplay/army/factory.cpp#L186) - Runtime update of the unit factory class (13), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[13].
+- [`ArmyRuntimeClass_UpdateStructureFactory`](../../src/gameplay/army/factory.cpp#L292) - Runtime update of production class 11, reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[11].
+- [`ArmyRuntimeSpawner_CreateLinkedChildInstance`](../../src/gameplay/army/factory.cpp#L425) - Launches one linked asset of a class-22 pad (called directly by ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode): finds a not yet launched slot of completedSecondaryArmyAssetIds ...
+- [`ArmyRuntime_TestArmyNearFactoryExit`](../../src/gameplay/army/factory.cpp#L492) - Group-A command check: returns true when the source model is of class 13 and the candidate model is within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry ...
+- [`ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric`](../../src/gameplay/army/factory.cpp#L523) - Xenite refund for the not yet launched linked assets of a class-22 pad that is being dismantled (called directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): sums xeniteValueQ4 ...
+- [`EffectLifecycle_SpawnArmyFromOwner`](../../src/gameplay/army/factory.cpp#L562) - EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the army asset named by classParameterC0.
 
 **Called from** (4 files): [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive`, `g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`); [`gameplay/army/aircraft`](#file-gameplay-army-aircraft) (`ArmyPadHangar_TryLaunchPendingAircraft`); [`gameplay/army/class_updates`](#file-gameplay-army-class-updates) (`ArmyRuntime_ClassCommandHandlerGroupA`); [`world/effects/lifecycle`](world.md#file-world-effects-lifecycle) (`EffectLifecycle_CountDownCompletionAction`).
 
@@ -482,7 +482,7 @@ Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking
 - [`ModelRuntimeHierarchy_SumArmour`](../../src/gameplay/army/model_rules.cpp#L74) - Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current armour points (ModelRuntimeSlot.health) of every node, walked depth-first.
 - [`ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics`](../../src/gameplay/army/model_rules.cpp#L85) - Folds one model runtime and its attached children into the owning army's selection figures (cleared by ArmyRuntime_RebuildDerivedSelectionMetrics): maxima in the army's occupancyMarkRadius, ...
 - [`ModelRuntimeHierarchy_ComputeConditionRatioQ12`](../../src/gameplay/army/model_rules.cpp#L149) - Condition of a model hierarchy as a Q12 ratio: the node's armour points (health) relative to its definition's maximumHealth, multiplied by the average of 1.0 and the ratios of all attached child ...
-- [`ModelNodeRuntime_SmoothYawTowardTarget`](../../src/gameplay/army/model_rules.cpp#L228) - Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/B, ...
+- [`ModelNodeRuntime_SmoothYawTowardTarget`](../../src/gameplay/army/model_rules.cpp#L228) - Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/TwinBarrelTurret, ...
 - [`ModelNodeRuntime_SmoothPitchTowardTarget`](../../src/gameplay/army/model_rules.cpp#L313) - Pitch counterpart of ModelNodeRuntime_SmoothYawTowardTarget (same callers): clamps the target to the weapon definition's pitch range, then moves localRotationAngle1 toward it with the same ...
 - [`ModelRuntime_QueryHierarchyConditionRatioQ12`](../../src/gameplay/army/model_rules.cpp#L439) - Returns the condition ratio (Q12, Q12_ONE = full condition) of the model hierarchy of a runtime entry (an army).
 - [`ModelRuntime_QueryActiveHierarchyMetric`](../../src/gameplay/army/model_rules.cpp#L448) - Returns the active energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand); the in-game selection detail shows it divided by 16 as the energy value.
@@ -617,7 +617,7 @@ No file comment; function families: `ArmyPlacement_*` (3).
 
 - [`ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation`](../../src/gameplay/army/placement_release.cpp#L20) - Release handler of a resource extractor (class 14): gives back the storage it added to its faction (see ArmyPlacement_ReleaseFactionCapacity) and clears the extractor markers (armyRuntimeSavedOffset, ...
 - [`ArmyPlacement_ReleaseFactionCapacity`](../../src/gameplay/army/placement_release.cpp#L83) - Release handler of a resource storage (class 15): the model's storage (the definition's classParameterC4) is taken off its faction's Xenite or Tritium storage limit (selector classParameterC0), and - ...
-- [`ArmyPlacement_ReleaseClassStateReservation`](../../src/gameplay/army/placement_release.cpp#L123) - Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (presumably its home base) keeps 13 slots of army asset ids (from classLinkState.classState78 on) with a ...
+- [`ArmyPlacement_ReleaseClassStateReservation`](../../src/gameplay/army/placement_release.cpp#L123) - Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (its home pad) keeps 13 slots of army asset ids (from classLinkState.classState78 on) with a reservation ...
 
 **Called from** (1 files): [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`).
 
@@ -681,8 +681,8 @@ No file comment; function families: `ArmyRuntimeClass_*` (2), `FixedVector_*` (1
 
 **Functions** (3 public):
 
-- [`ArmyRuntimeClass_UpdateSingleBarrelTurret`](../../src/gameplay/army/turrets.cpp#L22) - Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive).
-- [`ArmyRuntimeClass_UpdateTwinBarrelTurret`](../../src/gameplay/army/turrets.cpp#L174) - Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from ...
+- [`ArmyRuntimeClass_UpdateSingleBarrelTurret`](../../src/gameplay/army/turrets.cpp#L22) - Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called per model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive).
+- [`ArmyRuntimeClass_UpdateTwinBarrelTurret`](../../src/gameplay/army/turrets.cpp#L174) - Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called per model class from ...
 - [`FixedVector_StepBackwardAlongOwnDirection`](../../src/gameplay/army/turrets.cpp#L351) - Moves the local translation of the model node at vectorState along its own direction: vector -= direction(vector) * directionScale * stepMultiplier.
 
 **Called from** (1 files): [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`).
@@ -739,9 +739,9 @@ No file comment; function families: `ArmyRuntime_*` (8), `ArmyRuntimeClass_*` (3
 - [`ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects`](../../src/gameplay/army/weapons.cpp#L251) - Runtime update of class 20 (a launcher that fires at enemy radar), reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[20].
 - [`ArmyRuntime_ResolveShotLaunchFromModelAttachment`](../../src/gameplay/army/weapons.cpp#L313) - Fires a shot of the weapon code (called directly by gameplay/army/combat): looks up the launch point (packed key attachmentSelectorOrdinal &lt;&lt; 4 \| 2) in the sprite model of definitionNode, transforms ...
 - [`ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate`](../../src/gameplay/army/weapons.cpp#L358) - Bomb release of an aircraft on its attack run (called directly by ArmyRuntimeClass_UpdateAircraft): scores every intact model (stateFlags bit 8 clear) of another, non-neutral faction with ...
-- [`ArmyRuntime_ProcessReadyAttachmentChannels`](../../src/gameplay/army/weapons.cpp#L456) - One tick of a model whose health is gone (called directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, which then counts the eight channel timers destructionEffectTimers down).
-- [`ArmyRuntime_UpdateTimedShotAndEffectEmitters`](../../src/gameplay/army/weapons.cpp#L613) - Timed emitters of an army model, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes .runtimeUpdate[0] and [16] and directly from most class updates (here, gameplay/army/combat and ...
-- [`ModelRuntime_EmitProjectilesFromAttachmentPoints`](../../src/gameplay/army/weapons.cpp#L722) - Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a ...
+- [`ArmyRuntime_ProcessReadyAttachmentChannels`](../../src/gameplay/army/weapons.cpp#L458) - One tick of a model whose health is gone (called directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, which then counts the eight channel timers destructionEffectTimers down).
+- [`ArmyRuntime_UpdateTimedShotAndEffectEmitters`](../../src/gameplay/army/weapons.cpp#L615) - Timed emitters of an army model, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes .runtimeUpdate[0] and [16] and directly from most class updates (here, gameplay/army/combat and ...
+- [`ModelRuntime_EmitProjectilesFromAttachmentPoints`](../../src/gameplay/army/weapons.cpp#L724) - Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a ...
 - 1 more: `ArmyRuntimeClass_SelectProjectileTargetNode`
 
 **Called from** (13 files): [`gameplay/army/aircraft`](#file-gameplay-army-aircraft) (`ArmyAircraft_DropModelPointEffectAtMark`, `ArmyRuntimeClass_UpdateAircraft` +1); [`gameplay/army/drive_ground`](#file-gameplay-army-drive-ground) (`ArmyRuntimeClass_UpdateGroundMovement`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation` +1); [`gameplay/army/class_dispatch`](#file-gameplay-army-class-dispatch) (`ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive`, `g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes`); [`gameplay/army/class_updates`](#file-gameplay-army-class-updates) (`ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy`, `ArmyRuntimeClass_UpdateGridBoundEffectsAndModels`); [`gameplay/army/combat`](#file-gameplay-army-combat) (`ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`, `ArmyWeaponRuntime_FireFromFirstLoadedAttachment`); [`gameplay/army/factory`](#file-gameplay-army-factory) (`ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeClass_UpdateUnitFactory`); [`gameplay/army/turrets`](#file-gameplay-army-turrets) (`ArmyRuntimeClass_UpdateSingleBarrelTurret`, `ArmyRuntimeClass_UpdateTwinBarrelTurret`); [`gameplay/selection/commands`](#file-gameplay-selection-commands) (`SelectionPointerArray_ApplyArmyRuntimeTarget`, `SelectionPointerArray_ApplyTargetPositionCommand`); [`gameplay/selection/queries`](#file-gameplay-selection-queries) (`SelectionInfo_TestAnyEntryWeaponDamageNonnegative`, `SelectionInfo_TestNoEntryHasWeaponDamage`); [`gameplay/army/damage`](#file-gameplay-army-damage) (`ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage`); 3 more: [`gameplay/army/drive_banking`](#file-gameplay-army-drive-banking), [`gameplay/army/move_orders`](#file-gameplay-army-move-orders), [`gameplay/army/walker`](#file-gameplay-army-walker).
@@ -787,7 +787,7 @@ No file comment; function families: `InGameFactionEconomy_*` (10), `InGameRuntim
 
 **Functions** (1 public, 10 file-local):
 
-- [`InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState`](../../src/gameplay/faction/economy.cpp#L383) - The faction economy, run every 8th simulation step (job 0 of InGameRuntime_UpdateSimulationAndNetworkTick): 1.
+- [`InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState`](../../src/gameplay/faction/economy.cpp#L384) - The faction economy, run every 8th simulation step (job 0 of InGameRuntime_UpdateSimulationAndNetworkTick): 1.
 
 **Data** (0 shared, 1 file-local): `g_FactionEnergyAllocationPriorityByModelClass`.
 
