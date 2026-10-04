@@ -792,7 +792,7 @@ static void Thandor_SelfTestScanAddresses(void)
                 break;
             }
             if (header.packedSize == 0 || header.packedSize > PACKAGE_SCRATCH_BUFFER_BYTES || header.unpackedSize > SCANADDR_MAX_UNPACKED_BYTES ||
-                (uint32_t)header.compressionMethod > 3) {
+                (uint32_t)header.compressionMethod >= sizeof g_PckDecoderTable / sizeof g_PckDecoderTable[0]) {
                 break;
             }
             for (k = 0; k < PCK_ENTRY_PATH_UNITS && header.path[k] != 0; k++) {

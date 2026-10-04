@@ -94,6 +94,13 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
 
   largestFreePayloadBytes = 1;
   alignedBytes = (bytes + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK;
+  /* The original rounded in 32 bits, so a request above 0xFFFFFFE0 wrapped to 0 and got a 0-byte block;
+     bounded here because sizes can come from the network (mailbox transfers). Nothing larger than the
+     arena can fit, so such a request walks the chain as an unsatisfiable size and fails exactly like
+     any other too large request (FATAL_ERROR_ARENA_EXHAUSTED with the largest free size). */
+  if (bytes > ARENA_HEAP_PAYLOAD_BYTES) {
+    alignedBytes = UINT32_MAX;
+  }
   blockCursor = g_Arena.firstBlock;
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
