@@ -325,10 +325,10 @@ int FatalError_CopyRichTextToNarrow
           return FatalError_TerminateCutNarrowText(destination);
         }
         nestedReturnStack[nestedDepth++] = operand;
-        command = *(uint16_t **)operand;
+        command = THANDOR_PTR32_AT(uint16_t, operand);
         break;
       case RICHTEXT_OP_JUMP_NESTED:
-        command = *(uint16_t **)operand;
+        command = THANDOR_PTR32_AT(uint16_t, operand);
         break;
       case RICHTEXT_OP_INLINE_IMAGE:
         command = record + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;

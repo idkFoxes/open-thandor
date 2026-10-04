@@ -32,15 +32,8 @@ typedef unsigned int UQ12;
    argument whose exact pointer type is given by its target (vtable slots, callback tables, handler tables).
    In C this is exactly (void *)(x); in C++ the value converts to the pointer type it is assigned to. To be
    replaced by exactly typed entries when the tables become classes. */
+#include <thandor/core/ptr32.h> /* ThandorAnyFn, ThandorAnyPtr, Ptr32 */
 #ifdef __cplusplus
-struct ThandorAnyFn {
-    void (*fn)(void);
-    template <class F> operator F *() const { return (F *)fn; }
-};
-struct ThandorAnyPtr {
-    void *ptr;
-    template <class T> operator T *() const { return (T *)ptr; }
-};
 #define THANDOR_FN(f) (ThandorAnyFn{(void (*)(void))(f)})
 #define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
 #else

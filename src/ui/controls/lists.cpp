@@ -7,6 +7,7 @@
 
 #include <thandor/ui/controls/lists.h>
 #include <thandor/thandor.h>
+#include <stdarg.h>
 
 /* Module data. */
 
@@ -328,8 +329,8 @@ Bool8 UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
-  void **previousSelectedSlot;
-  void **newSelectedSlot;
+  Ptr32<void> *previousSelectedSlot;
+  Ptr32<void> *newSelectedSlot;
   int rowValue;
   uint32_t targetRowIndex;
   Bool8 handled;
@@ -349,7 +350,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
       viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-      rowValue = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(void *))) -
+      rowValue = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) -
               ((int)(viewportSize.height / control->rowHeight) - 1);
       if (rowValue < 0) {
         rowValue = 0;
@@ -358,7 +359,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
       viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-      targetRowIndex = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(void *))) +
+      targetRowIndex = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) +
               (int)(viewportSize.height / control->rowHeight) - 1;
       if (control->rowCount <= targetRowIndex) {
         targetRowIndex = control->rowCount - 1;
@@ -371,7 +372,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
       }
     }
     else if (keyCode == KEYBOARD_KEY_CODE_DOWN) {
-      if (((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(void *))) + 1 <
+      if (((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) + 1 <
           control->rowCount) {
         control->selectedRowSlot = control->selectedRowSlot + 1;
       }
@@ -386,7 +387,7 @@ Bool8 UiListControl_HandleKeyboardNavigation
          (control->activationSound != NULL)) {
         g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
       }
-      rowValue = ((uint32_t)(((uintptr_t)newSelectedSlot - (uintptr_t)control->rowSlots) / sizeof(void *))) * control->rowHeight;
+      rowValue = ((uint32_t)(((uintptr_t)newSelectedSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
                 (rowValue + control->rowHeight + 1,(control->base).rightOffset,rowValue,0,
                  (UiScrollableControl *)(control->base).parent);
@@ -963,8 +964,8 @@ void UiPointerList_SortByDwordPairFieldDescending
   int compareCount;
   int selectedRowTop;
   UiListRowCount rowsRemaining;
-  void **pivotSlot;
-  void **scanSlot;
+  Ptr32<void> *pivotSlot;
+  Ptr32<void> *scanSlot;
 
   if (control->rowSlots == NULL) {
     return;
@@ -1022,8 +1023,8 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
   int compareCount;
   int selectedRowTop;
   UiListRowCount rowsRemaining;
-  void **pivotSlot;
-  void **scanSlot;
+  Ptr32<void> *pivotSlot;
+  Ptr32<void> *scanSlot;
 
   if (control->rowSlots == NULL) {
     return;
@@ -1900,16 +1901,16 @@ Bool8 UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
 
 {
-  UiSelectableControl **controlSlots;
+  va_list controlArgs;
   UiSelectableControl *control;
   uint32_t controlIndex;
   Bool8 found;
 
-  /* The control pointers follow controlCount on the stack. */
-  controlSlots = (UiSelectableControl **)(&controlCount + 1);
+  /* The control pointers follow controlCount as variadic arguments. */
+  va_start(controlArgs,controlCount);
   controlIndex = 0;
   found = true;
-  control = controlSlots[0];
+  control = va_arg(controlArgs,UiSelectableControl *);
   while (((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
          ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0)) {
     controlIndex++;
@@ -1917,8 +1918,9 @@ Bool8 UiSelectableGroup_FindVisibleSelected
       found = false;
       break;
     }
-    control = controlSlots[controlIndex];
+    control = va_arg(controlArgs,UiSelectableControl *);
   }
+  va_end(controlArgs);
   if (outNode != NULL) {
     *outNode = (UiNodeBase *)control;
   }
@@ -1936,19 +1938,19 @@ Bool8 UiSelectableGroup_FindVisibleSelected
 uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 
 {
+  va_list controlArgs;
   uint32_t controlIndex;
-  int controlPointerByteOffset;
 
-  controlPointerByteOffset = 0;
+  va_start(controlArgs,controlCount);
   controlIndex = 0;
   do {
-    if (((*(UiSelectableControl **)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset))->stateFlags &
-         UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if ((va_arg(controlArgs,UiSelectableControl *)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+      va_end(controlArgs);
       return controlIndex;
     }
     controlIndex++;
-    controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
+  va_end(controlArgs);
   return controlIndex;
 }
 
@@ -1959,14 +1961,14 @@ uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
 
 {
+  va_list controlArgs;
   UiSelectableControl *node;
   uint32_t controlIndex;
-  int controlPointerByteOffset;
 
-  controlPointerByteOffset = 0;
+  va_start(controlArgs,selectedControl);
   controlIndex = 0;
   do {
-    node = *(UiSelectableControl **)((uint8_t *)(&selectedControl + 1) + controlPointerByteOffset);
+    node = va_arg(controlArgs,UiSelectableControl *);
     if (&node->base == selectedControl) {
       node->stateFlags = node->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
     }
@@ -1975,8 +1977,8 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
     }
     UiNode_InvalidateRoot(&node->base);
     controlIndex++;
-    controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
+  va_end(controlArgs);
   return;
 }
 
@@ -2794,11 +2796,11 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
   uint8_t *rowRecord;
   uint32_t lastRowIndex;
   int columnX;
-  void **lastRowSlot;
+  Ptr32<void> *lastRowSlot;
   int highlightWidth;
   int columnsRemaining;
   UiListColumn *column;
-  void **rowSlot;
+  Ptr32<void> *rowSlot;
   uint16_t *commandStream;
   Bool8 accessFailed;
   RichTextExtent textExtent;
@@ -2941,7 +2943,7 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
    widths (negative widths count by their magnitude) plus 6 pixels; the parent (the scrollable frame) is
    laid out again for the new size.
 */
-void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
+void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control)
 
 {
   int columnWidth;
@@ -3169,10 +3171,10 @@ static int UiCatalogEntryControl_CountOwnedAssets(int factionIndex,const UiComma
   for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        assetSlotIndex != 0; assetSlotIndex--) {
     if (catalogRecord ==
-        *(UiCommandRuntimeRecordPrefix **)
+        THANDOR_PTR32_AT(UiCommandRuntimeRecordPrefix,
          (factionIndex * sizeof(GameFactionRuntimeRecord) +
           THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
-          assetSlotIndex * 4)) {
+          assetSlotIndex * 4))) {
       assetCount++;
     }
   }
@@ -3609,7 +3611,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   int depth;
 
   FontGlyph_GetLogicalSizeActiveFont(0,&fontLineHeight);
-  remaining = (recordTree == NULL) ? 0 : recordTree->countOrLabelText;
+  remaining = (recordTree == NULL) ? 0 : (uintptr_t)recordTree->countOrLabelText;
   (control->base).rowHeight = fontLineHeight + 1;
   (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;

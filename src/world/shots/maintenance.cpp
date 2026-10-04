@@ -285,20 +285,22 @@ static void ShotModel_CastHitRays
   Bool8 surfaceHit;
   Q12 armyHitDistanceQ12;
   Q12 surfaceDistanceQ12;
+  ModelRuntimeNode *nearestArmyModelNode;
 
   shotOwnerArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
   ownerModelNode = NULL;
   if (shotOwnerArmy != NULL) {
     ownerModelNode = shotOwnerArmy->modelNodeRuntime;
   }
+  nearestArmyModelNode = hits->nearestArmyHit.nearestModelNode;
   armyHit = ModelRuntime_RaycastCandidateListNearest
                      (modelNode->modelPayload.worldRotationAngle1 - shotRuntime->elevationOffsetAngle16,
                       modelNode->modelPayload.worldRotationAngle0,rayLengthQ12,
                       modelNode->worldTransform.translation.z,
                       modelNode->worldTransform.translation.y,
                       modelNode->worldTransform.translation.x,WORLD_OWNER_RUNTIME_MODEL,
-                      ownerModelNode,worldRuntime,&armyHitDistanceQ12,
-                      &hits->nearestArmyHit.nearestModelNode);
+                      ownerModelNode,worldRuntime,&armyHitDistanceQ12,&nearestArmyModelNode);
+  hits->nearestArmyHit.nearestModelNode = nearestArmyModelNode;
   hits->armyHitDistance = armyHitDistanceQ12;
   if (armyHit) {
     hits->targetClassIndex = (hits->nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime->

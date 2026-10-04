@@ -600,8 +600,8 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
 {
   int slotsRemaining;
   uint32_t groupNumber;
-  ArmyRuntimeSlot **slotCursor;
-  ArmyRuntimeSlot **nextSlotCursor;
+  Ptr32<ArmyRuntimeSlot> *slotCursor;
+  Ptr32<ArmyRuntimeSlot> *nextSlotCursor;
   Bool8 found;
 
   groupNumber = 0;
@@ -781,7 +781,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
   ModelRuntimeNode *parentNode;
 
   if (impactValue < 0) {
-    targetEntityRuntime = *(GameEntityRuntime **)(targetEntityRuntime->common).ownership.runtimeLink;
+    targetEntityRuntime = THANDOR_PTR32_AT(GameEntityRuntime, (targetEntityRuntime->common).ownership.runtimeLink);
   }
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state08 = 0;
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.reactionCode09 = 2;

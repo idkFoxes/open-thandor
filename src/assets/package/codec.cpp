@@ -576,7 +576,8 @@ static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
     g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount = frequencyTable[symbolIndex];
   }
   workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
-  for (clearDwordCount = 2048; clearDwordCount != 0; clearDwordCount--) {
+  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / sizeof(uint32_t); clearDwordCount != 0;
+       clearDwordCount--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;
   }

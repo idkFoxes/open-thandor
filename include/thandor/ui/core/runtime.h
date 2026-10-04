@@ -31,10 +31,10 @@
 #define UI_MODEL_TINT_TRANSPARENT_WHITE 0x00ffffff
 #define UI_MODEL_TINT_OPAQUE_GREY 0xff878787u
 
-/* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries of 8 bytes
-   (actionId, source), filled by UiActionQueue_Enqueue and drained once per frame by
+/* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries (actionId, source;
+   8 bytes each on x86), filled by UiActionQueue_Enqueue and drained once per frame by
    UiActionQueue_DispatchPending. actionId -1 means "no action" and is never queued. */
-#define UI_ACTION_QUEUE_BYTES 0x80
+#define UI_ACTION_QUEUE_BYTES (16 * sizeof(UiActionQueueEntry))
 #define UI_ACTION_NONE (-1)
 /* Dirty rectangles collected by UiNode_InvalidateRoot per frame (0x18-byte UiDirtyRectEntry each). */
 #define UI_DIRTY_RECT_CAPACITY 0x40

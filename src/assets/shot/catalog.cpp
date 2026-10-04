@@ -279,7 +279,7 @@ static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
 
 /* Replaces the effect definition id stored in *effectReference by the registered effect definition.
    On a failed lookup the field keeps the id and the lookup's error code is returned. */
-static uint32_t ShotDefinition_ResolveEffectReference(EffectDefinition **effectReference)
+static uint32_t ShotDefinition_ResolveEffectReference(Ptr32<EffectDefinition> *effectReference)
 {
   uint32_t effectLookupError;
   EffectDefinition *resolvedEffect;

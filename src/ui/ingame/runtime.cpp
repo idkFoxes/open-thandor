@@ -3436,7 +3436,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
   int slotIndex;
 
   /* the original reads rootControl[21].sprite.primaryTextureSource, which on the 32-bit layout is this field */
-  static_assert(sizeof(void *) != 4 ||
+  static_assert(
                 21 * sizeof(UiCommandSpriteButtonControl) +
                 offsetof(UiCommandSpriteButtonControl,sprite.primaryTextureSource) ==
                 offsetof(InGameUiImage,worldView) + offsetof(WorldRuntimeContext,activeFactionRuntimeIndex),
@@ -3778,7 +3778,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
           return WORLD_CURSOR_MOVE;
         }
         cursorCode = WORLD_CURSOR_MOVE;
-        callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)previewArmyRuntime,worldRuntime);
+        callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback((Ptr32<ArmyRuntimeSlot> *)previewArmyRuntime,worldRuntime);
         if (callbackAccepted) {
           cursorCode = WORLD_CURSOR_NO_TARGET;
         }
@@ -3799,7 +3799,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     }
     /* an army is picked up: test it instead (the next cursor frame when the test accepts) */
     callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback
-                      ((ArmyRuntimeSlot **)
+                      ((Ptr32<ArmyRuntimeSlot> *)
                        (localSelectionBlock->placedArmyToken +
                        (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),worldRuntime);
     if (callbackAccepted) {
@@ -3849,7 +3849,7 @@ static Bool8 InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t
   if ((cellY < 0) || ((int)fieldGrid->gridWidth <= cellX) || ((int)fieldGrid->gridHeight <= cellY)) {
     return false;
   }
-  *cellFlags = (uint32_t)fieldGrid->cells[cellY * fieldGrid->gridWidth + cellX].flagsAndMaterial;
+  *cellFlags = (uint32_t)fieldGrid->cells[(int32_t)(cellY * fieldGrid->gridWidth + cellX)].flagsAndMaterial;
   return true;
 }
 
@@ -4190,7 +4190,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   for (runtimeNode = (WorldOwnerListNode *)mapControl->ownerListHead; runtimeNode != NULL;
       runtimeNode = runtimeNode->nextNode) {
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) == 0) continue;
-    static_assert(sizeof(void *) != 4 || offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
+    static_assert(offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
                   "the owner army is the dword at payload + 8");
     entry = ((ModelRuntimeSlot *)runtimeNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) == 0 ||
@@ -5232,7 +5232,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
   int remainingCells;
   int slotIndex;
   int cellOffset;
-  GameEntityRuntime **entitySlots;
+  Ptr32<GameEntityRuntime> *entitySlots;
   GameEntityRuntime *entity;
   ArmyAssetRecordPrefix *foundArmyAsset;
   uint8_t *clearedControlBytes;
@@ -5323,7 +5323,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
   int activeFactionIndex;
   int selectedCount;
   int slotIndex;
-  GameEntityRuntime **entitySlots;
+  Ptr32<GameEntityRuntime> *entitySlots;
   GameEntityRuntime *lastSelectedEntity;
   UiPageStackControl *stack;
 

@@ -279,7 +279,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
     return NULL;
   }
   lockedSurfacePixels = g_SurfaceDesc.lpSurface;
-  sourceRow = (uint8_t *)((uint32_t *)g_SurfaceDesc.lpSurface + (sourceY * g_FramebufferWidth + sourceX));
+  sourceRow = (uint8_t *)((uint32_t *)g_SurfaceDesc.lpSurface + (int32_t)(sourceY * g_FramebufferWidth + sourceX));
   destinationPixel = capturedAsset->argb8888Pixels;
   /* Bottom-tested loops as in the original: a height of 0 would wrap the unsigned counter. */
   do {

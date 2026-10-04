@@ -1855,8 +1855,8 @@ ModelRender_ComputeVertexIntensityDefaultPath
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) | remainderLow >> 5) /
-                                                      lookupDivisor]);
+                          g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
+                                                      lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -1949,8 +1949,8 @@ ModelRender_ComputeVertexIntensityScaledPath
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) | remainderLow >> 5) /
-                                                      lookupDivisor]);
+                          g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
+                                                      lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }

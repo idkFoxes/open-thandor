@@ -240,7 +240,7 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
     return;
   }
   /* world position of the centre cell's centre */
-  centerCell = g_GridScratchPrimary + g_GridScratchWidth * row + column;
+  centerCell = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * row) + column;
   rowCenterQ12 = row * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
   wideProduct = (int64_t)(rowCenterQ12 + (column * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
   centerCellWorldX = (int)((uint64_t)wideProduct >> 32) << 19 | (uint32_t)wideProduct >> 13;
@@ -430,7 +430,7 @@ int GridInfluence_SetLowDistanceBandsDiagonalPositive
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
     *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_LOW_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-    scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
+    scratchCell = scratchCell + (int32_t)(g_GridScratchWidth * -4) + 2;
     if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
       return cellsWritten; /* the cell just written is not counted */
     }
@@ -496,7 +496,7 @@ int GridInfluence_SetHighDistanceBandsDiagonalPositive
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
     *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_HIGH_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-    scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
+    scratchCell = scratchCell + (int32_t)(g_GridScratchWidth * -4) + 2;
     if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
       return cellsWritten; /* the cell just written is not counted */
     }
@@ -562,7 +562,7 @@ int GridInfluence_ClearLowDistanceBandsDiagonalPositive
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
     *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_LOW_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-    scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
+    scratchCell = scratchCell + (int32_t)(g_GridScratchWidth * -4) + 2;
     if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
       return cellsWritten; /* the cell just written is not counted */
     }
@@ -628,7 +628,7 @@ int GridInfluence_ClearHighDistanceBandsDiagonalPositive
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
     *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_HIGH_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-    scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
+    scratchCell = scratchCell + (int32_t)(g_GridScratchWidth * -4) + 2;
     if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
       return cellsWritten; /* the cell just written is not counted */
     }

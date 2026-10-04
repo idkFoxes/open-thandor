@@ -864,8 +864,8 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **pageSlot;
-  UiNodeBase **pageCursor;
+  Ptr32<UiNodeBase> *pageSlot;
+  Ptr32<UiNodeBase> *pageCursor;
 
   pageSlot = &control->pages;
   remainingCount = control->pageCount;
@@ -896,7 +896,7 @@ void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **pageCursor;
+  Ptr32<UiNodeBase> *pageCursor;
   UiNodeBase *shownPage;
 
   pageCursor = &control->pages;
@@ -937,7 +937,7 @@ void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPa
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **pageCursor;
+  Ptr32<UiNodeBase> *pageCursor;
   UiNodeBase *shownPage;
 
   pageCursor = &control->pages;
@@ -961,7 +961,7 @@ void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,Ui
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **pageCursor;
+  Ptr32<UiNodeBase> *pageCursor;
   UiNodeBase *shownPage;
 
   pageCursor = &control->pages;
@@ -1360,7 +1360,7 @@ void UiLayoutContainerControl_ApplyFlagsRecursive
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **pageCursor;
+  Ptr32<UiNodeBase> *pageCursor;
   UiNodeBase *shownPage;
 
   pageCursor = &control->pages;

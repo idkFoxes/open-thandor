@@ -250,9 +250,8 @@ void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
   packet = GraphicsPrimitiveQueue_Begin(queue);
   while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    /* handler index * 4 = byte offset into the handler table */
-    (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlers16Bit +
-                                  ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+    /* the handler index is bits 12..17 of the flags */
+    (*g_SoftwareRasterHandlers16Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
     packet = GraphicsPrimitiveQueue_Next(queue);
@@ -274,9 +273,8 @@ void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,Graphi
   packet = GraphicsPrimitiveQueue_Begin(queue);
   while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    /* handler index * 4 = byte offset into the handler table */
-    (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlersNon16Bit +
-                                  ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+    /* the handler index is bits 12..17 of the flags */
+    (*g_SoftwareRasterHandlersNon16Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
     packet = GraphicsPrimitiveQueue_Next(queue);
@@ -304,9 +302,8 @@ void SoftwareRenderer_DrawQueueAuxiliary
     if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 113)))) {
-      /* handler index * 4 = byte offset into the handler table */
-      (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlersAuxiliary +
-                                    ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+      /* the handler index is bits 12..17 of the flags */
+      (*g_SoftwareRasterHandlersAuxiliary[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
                 (clipMaxY,clipMaxX,0,0,packet);
       g_PrimitiveDrawCallCount++;
     }
@@ -726,7 +723,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
   }
   pitchPixels = framebuffer->width;
   destinationRow = (uint16_t *)framebuffer->pixels +
-                   (destinationY * pitchPixels + destinationX);
+                   (int32_t)(destinationY * pitchPixels + destinationX);
   sourceWidth = entry->pixelWidth;
   sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
@@ -755,10 +752,10 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
           int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
-          short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
-          short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
-                                ((bottom * secondWeights[wy * 4 + lane]) >> 16));
+          short top = (short)(((a * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((b * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
+          short bottom = (short)(((c * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((d * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
+          short mixed = (short)(((top * firstWeights[(int32_t)(wy * 4 + lane)]) >> 16) +
+                                ((bottom * secondWeights[(int32_t)(wy * 4 + lane)]) >> 16));
           int value = (unsigned short)mixed >> 2;
           if (value > ARGB8888_CHANNEL_MAX) value = ARGB8888_CHANNEL_MAX;
           /* PUNPCKLBW x,x; PSLLW 4; PAND quantize mask */
@@ -828,7 +825,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   }
   pitchPixels = framebuffer->width;
   destinationRow = (uint32_t *)framebuffer->pixels +
-                   (destinationY * pitchPixels + destinationX);
+                   (int32_t)(destinationY * pitchPixels + destinationX);
   sourceWidth = entry->pixelWidth;
   sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
@@ -856,10 +853,10 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
           int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
-          short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
-          short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
-                                ((bottom * secondWeights[wy * 4 + lane]) >> 16));
+          short top = (short)(((a * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((b * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
+          short bottom = (short)(((c * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((d * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
+          short mixed = (short)(((top * firstWeights[(int32_t)(wy * 4 + lane)]) >> 16) +
+                                ((bottom * secondWeights[(int32_t)(wy * 4 + lane)]) >> 16));
           int value = (unsigned short)mixed >> 2;
           if (value > ARGB8888_CHANNEL_MAX) value = ARGB8888_CHANNEL_MAX;
           pixel |= (uint32_t)value << (lane * 8);
@@ -943,7 +940,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
       }
       y++;
     } while (--repeatRowsLeft != 0);
-    sourceRow += image.width * image.texelBytes;
+    sourceRow += (int32_t)(image.width * image.texelBytes);
   } while (--sourceRowsLeft != 0);
 }
 
@@ -1007,7 +1004,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
       }
       y++;
     } while (--repeatRowsLeft != 0);
-    sourceRow += image.width * image.texelBytes;
+    sourceRow += (int32_t)(image.width * image.texelBytes);
   } while (--sourceRowsLeft != 0);
 }
 
@@ -3379,7 +3376,7 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
   else {
     bandRow = 24 - bandIndex;
   }
-  maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytes);
+  maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + (int32_t)(bandRow * bandBytes));
   /* Original quirk: a do-while, so a band of fewer than 16 bytes wraps the counter to 2^32 steps */
   blocksLeft = bandBytes >> 4;
   do {

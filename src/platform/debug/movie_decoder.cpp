@@ -61,7 +61,7 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
       header[8] = imageBytes;
       fwrite(header, 4, 13, file);
       for (y = 0; y < (int)height; y++) {
-        fwrite(movie->argbPixels + y * width, 4, width, file);
+        fwrite(movie->argbPixels + (int32_t)(y * width), 4, width, file);
       }
       fclose(file);
     }

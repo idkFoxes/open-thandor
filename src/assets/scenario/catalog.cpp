@@ -1267,8 +1267,8 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
   void *saveRecord;
-  void **rowPointers;
-  void **rowPointerCursor;
+  Ptr32<void> *rowPointers;
+  Ptr32<void> *rowPointerCursor;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
@@ -1282,7 +1282,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
     /* the section offsets count from the catalog start; the row pointer array is built behind the records */
     saveRecord = (void *)((uint8_t *)g_ScenarioCatalog +
                      g_ScenarioCatalog->saveRecordsOffset);
-    rowPointers = (void **)(rowCount * SCENARIO_CATALOG_RECORD_SIZE + (uintptr_t)saveRecord);
+    rowPointers = (Ptr32<void> *)(rowCount * SCENARIO_CATALOG_RECORD_SIZE + (uintptr_t)saveRecord);
     rowPointerCursor = rowPointers;
     for (remainingRows = rowCount; remainingRows != 0; remainingRows--) {
       *rowPointerCursor = saveRecord;
@@ -1320,10 +1320,10 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
   ScenarioCatalogDisplayRecord *scenarioRecord;
-  ScenarioCatalogDisplayRecord **rowPointerCursor;
+  Ptr32<ScenarioCatalogDisplayRecord> *rowPointerCursor;
   uint16_t *resolvedText;
   UiListRowCount rowCount;
-  ScenarioCatalogDisplayRecord **rowPointers;
+  Ptr32<ScenarioCatalogDisplayRecord> *rowPointers;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
@@ -1337,7 +1337,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
     scenarioRecord =
          (ScenarioCatalogDisplayRecord *)
          ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
-    rowPointerCursor = (ScenarioCatalogDisplayRecord **)(scenarioRecord + remainingRows);
+    rowPointerCursor = (Ptr32<ScenarioCatalogDisplayRecord> *)(scenarioRecord + remainingRows);
     rowCount = remainingRows;
     rowPointers = rowPointerCursor;
     for (; remainingRows != 0; remainingRows--) {
@@ -1361,7 +1361,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
     }
     control = (int32_t *)FRONTEND_UI(firstNode,missionsList);
     if (rowCount != 0) {
-      UiPointerList_InitializeColumnLayout(rowCount,(void **)rowPointers,(UiPointerListControl *)control);
+      UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)rowPointers,(UiPointerListControl *)control);
       /* sorted by the jump record of the level title */
       UiPointerList_SortByExpandedTextFieldAscending
                 (offsetof(ScenarioCatalogDisplayRecord,scenarioDisplayTag),(UiPointerListControl *)control);
@@ -1402,10 +1402,10 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   UiNodeBase *firstNode;
   UiListRowCount remainingRows;
   void *campaignRecord;
-  void **rowPointerCursor;
+  Ptr32<void> *rowPointerCursor;
   uint16_t *resolvedText;
   UiListRowCount rowCount;
-  void **rowPointers;
+  Ptr32<void> *rowPointers;
   
   firstNode = (UiNodeBase *)(uintptr_t)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
@@ -1418,7 +1418,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
     remainingRows = g_ScenarioCatalog->campaignRecordCount;
     campaignRecord = (void *)((uint8_t *)g_ScenarioCatalog +
                      g_ScenarioCatalog->campaignRecordsOffset);
-    rowPointerCursor = (void **)(remainingRows * SCENARIO_CATALOG_RECORD_SIZE + (uintptr_t)campaignRecord);
+    rowPointerCursor = (Ptr32<void> *)(remainingRows * SCENARIO_CATALOG_RECORD_SIZE + (uintptr_t)campaignRecord);
     rowCount = remainingRows;
     rowPointers = rowPointerCursor;
     for (; remainingRows != 0; remainingRows--) {
@@ -1657,7 +1657,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 
 {
   UiPointerListControl *control;
-  ScenarioCatalogSaveRecord **rowPointers;
+  Ptr32<ScenarioCatalogSaveRecord> *rowPointers;
   ScenarioCatalogSaveRecord *saveRecord;
   TextResourceId resourceId;
   uintptr_t frontendRoot;
@@ -1666,7 +1666,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 
   frontendRoot = g_FrontendRootNode;
   rowPointers =
-       (ScenarioCatalogSaveRecord **)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList))->rowSlots;
+       (Ptr32<ScenarioCatalogSaveRecord> *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList))->rowSlots;
   control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList);
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
@@ -1705,7 +1705,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
 
 {
   UiPointerListControl *control;
-  void **rowPointers;
+  Ptr32<void> *rowPointers;
   uintptr_t frontendRoot;
   
   frontendRoot = g_FrontendRootNode;
@@ -1735,7 +1735,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
 {
   UiListRowIndex selectedRowIndex;
   uint32_t selectedTabIndex;
-  void **scenarioPathPointerTable;
+  Ptr32<void> *scenarioPathPointerTable;
 
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
   if (!UiSelectableGroup_FindVisibleSelected(NULL,&selectedTabIndex,3,
@@ -1808,7 +1808,7 @@ void ScenarioCatalog_SelectLevelAndShowDescription
 
 {
   UiPointerListControl *listControl;
-  void **rowPointers;
+  Ptr32<void> *rowPointers;
   uintptr_t frontendRoot;
 
   frontendRoot = g_FrontendRootNode;

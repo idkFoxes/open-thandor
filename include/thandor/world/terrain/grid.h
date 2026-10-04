@@ -42,8 +42,10 @@
 #define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
 /* the faction slot's occupancy byte of a cell (an lvalue) */
 #define FIELD_CELL_OCCUPANCY_BYTE(cell,factionSlot) (((uint8_t *)&(cell)->occupancyMask)[factionSlot])
-/* the cell byteOffset bytes away from cell; byteOffset is usually +-the row stride (one grid row) */
-#define FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,byteOffset) ((FieldGridCell *)((uint8_t *)(cell) + (byteOffset)))
+/* the cell byteOffset bytes away from cell; byteOffset is usually +-the row stride (one grid row). It is a
+   signed 32-bit offset, also when computed in unsigned arithmetic (-stride of a uint32_t stride), so it moves
+   backwards on x64 too. */
+#define FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,byteOffset) ((FieldGridCell *)((uint8_t *)(cell) + (int32_t)(byteOffset)))
 
 /* FieldGridCell.visibilityLightingIndex (+0x68) as FieldGrid_ClassifyCellFlagsToRuntimeByte sets it; the
    projection pass indexes g_PackedLightingLookupTable with it, FIELD_CELL_LIGHTING_VISIBLE selects the dynamic

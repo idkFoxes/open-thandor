@@ -1043,7 +1043,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
   ArmyRuntimeSlot *modelNodeRuntime;
   ArmyRuntimeSlot *primarySlot;
   ModelRuntimeSlot *createdModelRuntime;
-  ArmyRuntimeSlot **createdSlotPair;
+  Ptr32<ArmyRuntimeSlot> *createdSlotPair;
   int recordsRemaining;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
 
@@ -1056,7 +1056,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
     if (AiPlacement_TestWorkspaceRecordAtPoint(armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime)) {
       continue; /* placement rejected */
     }
-    createdSlotPair = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+    createdSlotPair = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                       (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                        workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                        worldRuntime,NULL);

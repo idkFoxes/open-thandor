@@ -87,7 +87,7 @@ void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
     return;
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
-  firstCell = fieldGrid->cells + minRow * rowLength + minColumn;
+  firstCell = fieldGrid->cells + (int32_t)(minRow * rowLength) + minColumn;
   rowStart = firstCell;
   for (row = 0; row < rowCount; row++) {
     cell = rowStart;
@@ -838,7 +838,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
   gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
   if ((-1 < gridColumnIndex) && (-1 < gridRowIndex) && (gridColumnIndex < (int)field->gridWidth) &&
       (gridRowIndex < (int)field->gridHeight)) {
-    return field->cells[field->gridWidth * gridRowIndex + gridColumnIndex].waterSurfaceDelta;
+    return field->cells[(int32_t)(field->gridWidth * gridRowIndex + gridColumnIndex)].waterSurfaceDelta;
   }
   /* Original quirk: outside the grid the rounded column index is returned */
   return gridColumnIndex;
@@ -877,7 +877,7 @@ Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAs
     return false;
   }
   /* cell addressing as explained in FieldGrid_InterpolateTopSurfaceHeight */
-  cell = fieldGrid->cells + gridRowIndex * gridWidth + gridColumnIndex;
+  cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
   if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
@@ -935,7 +935,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
     return 0;
   }
   /* cell addressing as in FieldGrid_InterpolateTopSurfaceHeight */
-  cell = field->cells + gridRowIndex * gridWidth + gridColumnIndex;
+  cell = field->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
   if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
@@ -993,7 +993,7 @@ Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldG
     return false;
   }
   /* cell addressing as in FieldGrid_InterpolateTopSurfaceHeight */
-  cell = fieldGrid->cells + gridRowIndex * gridWidth + gridColumnIndex;
+  cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
   if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
@@ -1060,7 +1060,7 @@ Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
   }
   /* the cells around (row, column): cell[0] this cell, cell[1] the right neighbour, cell[gridWidth] the cell
      below and cell[gridWidth + 1] the one diagonally below right. */
-  cell = fieldGrid->cells + gridRowIndex * gridWidth + gridColumnIndex;
+  cell = fieldGrid->cells + (int32_t)(gridRowIndex * gridWidth) + gridColumnIndex;
   columnFractionQ12 = gridColumnCoordinateQ12 & Q12_FRACTION_MASK;
   rowFractionQ12 = gridHalfRowCoordinateQ12 * 2 & Q12_FRACTION_MASK;
   if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
@@ -1141,7 +1141,7 @@ static Bool8 FieldGrid_LocateInterpolationTriangle
   if (row < 0 || (int)rowLength <= column || (int)fieldGrid->gridHeight <= row) {
     return false;
   }
-  cell = fieldGrid->cells + row * rowLength + column;
+  cell = fieldGrid->cells + (int32_t)(row * rowLength) + column;
   lookup->columnFractionQ12 = columnQ12 & Q12_FRACTION_MASK;
   lookup->rowFractionQ12 = rowQ12 & Q12_FRACTION_MASK;
   if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0 ||
@@ -1277,7 +1277,7 @@ Bool8 FieldGrid_TestWorldPointBlocked
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&fieldGrid->cells[fieldGrid->gridWidth * gridRowIndex + gridColumnIndex].occupancyMask)[factionSlot];
+       ((uint8_t *)&fieldGrid->cells[(int32_t)(fieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)[factionSlot];
   return (occupancyByte & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0;
 }
 
@@ -1320,7 +1320,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       /* 5f-format: FieldGridCell.persistedAux54 (direction record address in a 32-bit FLD field) */
       cell->persistedAux54 =
            (FieldCellPersistedAux)
-           (g_TerrainDirectionRecordTable256 + (cellWorldYQ12 & 0xfU) + (cellWorldXQ12 & 0xfU) * 16);
+           (g_TerrainDirectionRecordTable256 + (int32_t)(cellWorldYQ12 & 0xfU) + (int32_t)((cellWorldXQ12 & 0xfU) * 16));
       cell->armyRuntimeSavedOffset = 0;
       materialVariantRandomBits = Random_NextPrimary();
       cell->overlayColor = 0xffffffff; /* ARGB opaque white */
@@ -1374,7 +1374,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
       currentCell->persistedAux54 =
            (FieldCellPersistedAux)
            (g_TerrainDirectionRecordTable256 +
-           (currentCell->worldY & 0xfU) + (currentCell->worldX & 0xfU) * 16);
+           (int32_t)(currentCell->worldY & 0xfU) + (int32_t)((currentCell->worldX & 0xfU) * 16));
       currentCell++;
       columnsRemaining--;
     } while (columnsRemaining != 0);
@@ -1947,7 +1947,7 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
     return true;
   }
   occupancyByte =
-       ((uint8_t *)&activeFieldGrid->cells[activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex].occupancyMask)
+       ((uint8_t *)&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)
        [worldRuntime->activeFactionRuntimeIndex];
   return (occupancyByte & FIELD_CELL_OCCUPANCY_BITS01) == 0;
 }
@@ -2149,7 +2149,7 @@ void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits
   if ((-1 < columnIndex) && (-1 < rowIndex) && (columnIndex < (int)rowLength) &&
       (rowIndex < (int)fieldGrid->gridHeight)) {
     rowStrideBytes = rowLength * sizeof(FieldGridCell);
-    cell = fieldGrid->cells + columnIndex + rowIndex * rowLength;
+    cell = fieldGrid->cells + columnIndex + (int32_t)(rowIndex * rowLength);
     cell->waterSurfaceDelta = cell->waterSurfaceDelta + heightDeltaUnits * -FIELD_GRID_EDIT_DRAG_UNIT_Q12; /* 64 per unit */
     FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
     FieldGridCell_ComputeDirectionalLightColor(cell);
@@ -2266,19 +2266,19 @@ void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGr
       if ((-1 < centerCell->waterSurfaceDelta) &&
          ((centerCell->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 = centerCell->waterSurfaceDelta + centerCell->terrainHeight;
-        if ((centerCell[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
+        if ((centerCell[(int32_t)(-gridWidth)].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
             0) {
-          centerCell[-gridWidth].waterSurfaceDelta =
-               centerCell[-gridWidth].waterSurfaceDelta -
-               ((centerCell[-gridWidth].waterSurfaceDelta +
-                centerCell[-gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[(int32_t)(-gridWidth)].waterSurfaceDelta =
+               centerCell[(int32_t)(-gridWidth)].waterSurfaceDelta -
+               ((centerCell[(int32_t)(-gridWidth)].waterSurfaceDelta +
+                centerCell[(int32_t)(-gridWidth)].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((centerCell[1 - gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
+        if ((centerCell[(int32_t)(1 - gridWidth)].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
             == 0) {
-          centerCell[1 - gridWidth].waterSurfaceDelta =
-               centerCell[1 - gridWidth].waterSurfaceDelta -
-               ((centerCell[1 - gridWidth].waterSurfaceDelta +
-                centerCell[1 - gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[(int32_t)(1 - gridWidth)].waterSurfaceDelta =
+               centerCell[(int32_t)(1 - gridWidth)].waterSurfaceDelta -
+               ((centerCell[(int32_t)(1 - gridWidth)].waterSurfaceDelta +
+                centerCell[(int32_t)(1 - gridWidth)].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
         if ((centerCell[gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0
            ) {
@@ -2425,19 +2425,19 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
       if ((cellBeforeSource->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
         sourceSurfaceHeightQ12 =
              cellBeforeSource->waterSurfaceDelta + cellBeforeSource->terrainHeight;
-        if ((cellBeforeSource[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
+        if ((cellBeforeSource[(int32_t)(-gridWidth)].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
             0) {
-          cellBeforeSource[-gridWidth].waterSurfaceDelta =
-               cellBeforeSource[-gridWidth].waterSurfaceDelta -
-               ((cellBeforeSource[-gridWidth].waterSurfaceDelta +
-                cellBeforeSource[-gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          cellBeforeSource[(int32_t)(-gridWidth)].waterSurfaceDelta =
+               cellBeforeSource[(int32_t)(-gridWidth)].waterSurfaceDelta -
+               ((cellBeforeSource[(int32_t)(-gridWidth)].waterSurfaceDelta +
+                cellBeforeSource[(int32_t)(-gridWidth)].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[1 - gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
+        if ((cellBeforeSource[(int32_t)(1 - gridWidth)].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
             == 0) {
-          cellBeforeSource[1 - gridWidth].waterSurfaceDelta =
-               cellBeforeSource[1 - gridWidth].waterSurfaceDelta -
-               ((cellBeforeSource[1 - gridWidth].waterSurfaceDelta +
-                cellBeforeSource[1 - gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          cellBeforeSource[(int32_t)(1 - gridWidth)].waterSurfaceDelta =
+               cellBeforeSource[(int32_t)(1 - gridWidth)].waterSurfaceDelta -
+               ((cellBeforeSource[(int32_t)(1 - gridWidth)].waterSurfaceDelta +
+                cellBeforeSource[(int32_t)(1 - gridWidth)].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
         if ((cellBeforeSource[gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0
            ) {
@@ -2629,7 +2629,7 @@ void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldG
   centerX = fieldGrid->cells[centerCellIndex].worldX;
   centerY = fieldGrid->cells[centerCellIndex].worldY;
   sourceHeight = fieldGrid->cells
-          [(sourceRowQ12 >> Q12_SHIFT) * fieldGrid->gridWidth + (sourceColumnQ12 >> Q12_SHIFT)].terrainHeight;
+          [(int32_t)((sourceRowQ12 >> Q12_SHIFT) * fieldGrid->gridWidth + (sourceColumnQ12 >> Q12_SHIFT))].terrainHeight;
   rowStartCell = fieldGrid->cells + firstCellIndex;
   rowStartAccumulator = accumulatorPlane + firstCellIndex;
   for (rowsRemaining = (maxRow - minRow) + 1; rowsRemaining != 0; rowsRemaining--) {
@@ -2818,14 +2818,14 @@ void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,Field
     aboveCellIndex = (gridRowIndex - 1) * gridWidth + gridColumnIndex;
     heightDelta = (fieldGrid->cells[aboveCellIndex].terrainHeight +
              fieldGrid->cells[aboveCellIndex + 1].terrainHeight +
-             fieldGrid->cells[aboveCellIndex + (gridWidth - 1)].terrainHeight +
-             fieldGrid->cells[aboveCellIndex + gridWidth + 1].terrainHeight +
-             fieldGrid->cells[aboveCellIndex + gridWidth * 2 - 1].terrainHeight
-            + fieldGrid->cells[aboveCellIndex + gridWidth * 2].terrainHeight) / 6 -
-            fieldGrid->cells[aboveCellIndex + gridWidth].terrainHeight;
-    heightField = &fieldGrid->cells[aboveCellIndex + gridWidth].terrainHeight;
+             fieldGrid->cells[(int32_t)(aboveCellIndex + (gridWidth - 1))].terrainHeight +
+             fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth + 1)].terrainHeight +
+             fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth * 2 - 1)].terrainHeight
+            + fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth * 2)].terrainHeight) / 6 -
+            fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth)].terrainHeight;
+    heightField = &fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth)].terrainHeight;
     *heightField = *heightField + heightDelta;
-    heightField = &fieldGrid->cells[aboveCellIndex + gridWidth].waterSurfaceDelta;
+    heightField = &fieldGrid->cells[(int32_t)(aboveCellIndex + gridWidth)].waterSurfaceDelta;
     *heightField = *heightField - heightDelta;
   }
 }

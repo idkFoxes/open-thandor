@@ -61,7 +61,7 @@ static void Pcx_BuildCanvas(uint8_t *canvas,const uint8_t *assetBase,const Graph
                             uint32_t bytesPerLine,uint32_t planeCount)
 {
   uint32_t rowStride = bytesPerLine * planeCount;
-  uint8_t *rowStart = canvas + (uint32_t)entry->originY * rowStride + (uint32_t)entry->originX;
+  uint8_t *rowStart = canvas + (int32_t)((uint32_t)entry->originY * rowStride) + (int32_t)((uint32_t)entry->originX);
   uint32_t paddedLines;
   uint32_t line;
   uint32_t row;
@@ -245,7 +245,7 @@ Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBy
 
   if (!directColor) {
     const uint8_t *paletteEntry = assetBase + PCX_PALETTE_BANKS_OFFSET +
-                                  (uint32_t)entry->paletteIndex * PCX_PALETTE_BANK_SIZE;
+                                  (int32_t)((uint32_t)entry->paletteIndex * PCX_PALETTE_BANK_SIZE);
     uint32_t colorIndex;
     *cursor++ = PCX_PALETTE_MARKER;
     for (colorIndex = 0; colorIndex < 256; colorIndex++) {

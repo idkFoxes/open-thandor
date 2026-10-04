@@ -54,6 +54,7 @@ add_library(thandor_curated STATIC
     src/audio/codec/sam.cpp
     src/audio/spatial/runtime.cpp
     src/core/error/runtime.cpp
+    src/core/layout_checks.cpp
     src/core/math/fixed.cpp
     src/core/math/geometry.cpp
     src/core/math/interpolation.cpp

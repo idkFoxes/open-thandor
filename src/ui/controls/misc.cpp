@@ -214,9 +214,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .layoutWidth = -1, .layoutHeight = -1},
     .colorBiasValueText_fields = {.label = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM}}
 };
-#if !defined(_WIN64)
 THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsUiImage size");
-#endif
 
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {

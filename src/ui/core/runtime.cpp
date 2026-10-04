@@ -295,7 +295,7 @@ void UiRuntime_Initialize(void)
   allocError = g_MemoryApi.alloc(UI_DIRTY_RECT_CAPACITY * sizeof(UiDirtyRectEntry),&allocPayload);
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedValue;
-  allocError = g_MemoryApi.alloc(UI_ACTION_QUEUE_BYTES,&allocPayload); /* 16 queued actions of 8 bytes */
+  allocError = g_MemoryApi.alloc(UI_ACTION_QUEUE_BYTES,&allocPayload); /* 16 queued actions */
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uintptr_t)allocPayload,allocError != 0);
   g_UiActionQueueEntries = (UiActionQueueEntry *)checkedValue;
   /* from here on FatalError_ReportIfFailed shows errors in an in-game dialog */
@@ -379,8 +379,8 @@ void __cdecl UiActionQueue_DispatchPending(void)
     actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
     actionHandler = (void (*)(void *))
-                    g_UiActionHandlerPages[(uint32_t)queueHead->actionId >> 8]->handlers
-                    [(uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1)];
+                    g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
+                    [(int32_t)((uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1))];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
     /* move entries 1..15 (30 dwords) down by one */

@@ -196,7 +196,7 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
 
 void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control);
 
-void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
+void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control);
 
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
 

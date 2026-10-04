@@ -235,20 +235,20 @@ Bool8 RichTextCommandStream_DrawSingleLine
         return false;
       }
       nestedReturnStack[nestedDepth++] = commandStream;
-      commandStream = *(uint16_t **)commandStream;
+      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_JUMP_NESTED:
-      commandStream = *(uint16_t **)commandStream;
+      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3; the image sits on the
          baseline */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                        (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
+                        (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
       imageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,lineBaselineY - imageSize.logicalHeightPixels,
-                 penX,*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
+                 penX,*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream),
                  g_FramebufferAccess);
       penX = penX + imageWidth;
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
@@ -286,7 +286,7 @@ void RichTextCommandStream_PatchPayloadBySelector
         /* payload: stream pointer at commandCursor + 1, selector at commandCursor + 3 */
         stream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
         if (selector == *(int *)(commandCursor + 3)) {
-          *(void **)(commandCursor + 1) = replacementPayload;
+          THANDOR_PTR32_AT(void, commandCursor + 1) = replacementPayload;
         }
         break;
       case RICHTEXT_OP_INLINE_IMAGE:
@@ -326,7 +326,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
         break;
       case RICHTEXT_OP_INLINE_IMAGE:
         /* the texture source pointer is the first payload dword, right after the command */
-        *(GraphicsTextureSourceAsset **)streamCursor = textureSource;
+        THANDOR_PTR32_AT(GraphicsTextureSourceAsset, streamCursor) = textureSource;
         streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       }
     }
@@ -401,10 +401,10 @@ Bool8 RichTextCommandStream_CopyToNarrow
           return false;
         }
         nestedReturnStack[nestedDepth++] = readCursor;
-        readCursor = *(uint16_t **)readCursor;
+        readCursor = THANDOR_PTR32_AT(uint16_t, readCursor);
         break;
       case RICHTEXT_OP_JUMP_NESTED:
-        readCursor = *(uint16_t **)readCursor;
+        readCursor = THANDOR_PTR32_AT(uint16_t, readCursor);
         break;
       case RICHTEXT_OP_INLINE_IMAGE:
         readCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
@@ -877,10 +877,10 @@ Bool8 RichTextCommandStream_CopyExpanded
         return false;
       }
       nestedReturnStack[nestedDepth++] = nextSource;
-      source = *(uint16_t **)nextSource;
+      source = THANDOR_PTR32_AT(uint16_t, nextSource);
       continue;
     case RICHTEXT_OP_JUMP_NESTED:
-      source = *(uint16_t **)nextSource;
+      source = THANDOR_PTR32_AT(uint16_t, nextSource);
       continue;
     case RICHTEXT_OP_LITERAL_COLOR:
       recordUnits = RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
@@ -989,14 +989,14 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
         return extent;
       }
       returnStack[nesting++] = commandStream;
-      commandStream = *(uint16_t **)commandStream;
+      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_JUMP_NESTED:
-      commandStream = *(uint16_t **)commandStream;
+      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       textureSize = g_GraphicsTextureSourceGetLogicalSize
-                              (*(uint32_t *)(command + 3),*(GraphicsTextureSourceAsset **)commandStream);
+                              (*(uint32_t *)(command + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, commandStream));
       extent.widthPixels = extent.widthPixels + textureSize.logicalWidthPixels;
       commandStream = command + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       if (extent.heightPixels < textureSize.logicalHeightPixels) {
@@ -1087,7 +1087,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                        (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)readCursor);
+                        (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, readCursor));
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       readCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       if (*lineHeight < imageSize.logicalHeightPixels) {
@@ -1263,11 +1263,11 @@ Bool8 RichTextCommandStream_DrawNextWrappedLine
       /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3; the image sits on the
          line's bottom edge */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
-                         (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)drawCursor);
+                         (*(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor));
       imageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,lineBottom - imageSize.logicalHeightPixels,drawX,
-                 *(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
+                 *(uint32_t *)(commandCursor + 3),THANDOR_PTR32_AT(GraphicsTextureSourceAsset, drawCursor),g_FramebufferAccess);
       drawX = drawX + imageWidth;
       drawCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
     }
@@ -1352,7 +1352,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       nestedDepth++;
       /* fall through: enter the nested stream */
     case RICHTEXT_OP_JUMP_NESTED:
-      commandStream = *(uint16_t **)commandStream;
+      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       if (RICHTEXT_RECORD_UNITS_INLINE_IMAGE < remainingWords) {

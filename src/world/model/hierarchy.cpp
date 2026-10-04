@@ -82,8 +82,8 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   /* The clamp table is 64-KiB aligned: the target intensity is the low index byte and the previous tint
      byte the high one, i.e. it is indexed with (previous << 8) | target. */
   clampTable = (uint8_t *)g_GraphicsIntensityClampTableBase;
-  clampedColorByte = clampTable[((previousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity];
-  clampedAlphaByte = clampTable[(previousTint >> 24) << 8 | (uint32_t)alphaIntensity];
+  clampedColorByte = clampTable[(int32_t)(((previousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity)];
+  clampedAlphaByte = clampTable[(int32_t)((previousTint >> 24) << 8 | (uint32_t)alphaIntensity)];
   tintArgb = (uint32_t)clampedAlphaByte << 24 | (uint32_t)clampedColorByte << 16 | (uint32_t)clampedColorByte << 8 |
              (uint32_t)clampedColorByte;
   /* The original compares with the previous tint shifted right by 16, so the new

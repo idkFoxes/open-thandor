@@ -360,7 +360,7 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
         case RICHTEXT_OP_CALL_NESTED:
         case RICHTEXT_OP_JUMP_NESTED:
           decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
-          *(void **)(recordStart + 1) = g_MissingTextResourceFallbackStream;
+          THANDOR_PTR32_AT(void, recordStart + 1) = g_MissingTextResourceFallbackStream;
           *(uint32_t *)(recordStart + 3) = decimalValue;
           textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
           break;
@@ -452,7 +452,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     }
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
-              g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 16].selectedLocaleBlock);
+              (void *)g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 16].selectedLocaleBlock);
   *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
   return false;
 }

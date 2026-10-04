@@ -891,7 +891,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   entry = NULL;
   if ((candidateNode != NULL) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
-    entry = *(GameEntityRuntime **)((uint8_t *)candidateNode->runtimePayload + 8);
+    entry = THANDOR_PTR32_AT(GameEntityRuntime, (uint8_t *)candidateNode->runtimePayload + 8);
     if (((int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE)) ||
         ((entry->common).ownership.ownerIndex == 0)) {
       entry = NULL;

@@ -298,7 +298,7 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
-           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
   factionIndex = 0;
   cumulativeWeight = 0;
   drawnHeight = 0;
@@ -354,7 +354,7 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
-           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
   factionIndex = 0;
   cumulativeWeight = 0;
   drawnHeight = 0;
@@ -410,7 +410,7 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
-           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
   factionIndex = 0;
   cumulativeWeight = 0;
   drawnHeight = 0;

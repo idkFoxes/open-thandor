@@ -9,6 +9,7 @@
 #define THANDOR_GENERATED_TYPES_H
 
 #include <stdint.h>
+#include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
 /* Forward declarations (hoisted by tools/sort_types.py). */
 /* Forward declarations (hoisted by tools/sort_types.py). */
@@ -2436,7 +2437,7 @@ struct ModelResource {
 
 union GameEntityDamageCounterOrTerminalReference4 {
     int countdownOrState; 
-    struct GameEntityRuntime *terminalEntity; 
+    Ptr32<struct GameEntityRuntime> terminalEntity; 
     uint32_t raw; 
 };
 
@@ -2518,10 +2519,10 @@ struct TH_LEGACY_GUID {
 };
 
 union EffectRuntimeOwnerReference {
-    struct ModelRuntimeNode *modelNode;
-    struct ModelRuntimeSlot *modelRuntime; /* owner of EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY */
-    struct ArmyRuntimeSlot *armyRuntime;
-    struct ShotTerrainImpactDeformationColumns *terrainImpactColumns; /* owner of a shot's terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) */
+    Ptr32<struct ModelRuntimeNode> modelNode;
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; /* owner of EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY */
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime;
+    Ptr32<struct ShotTerrainImpactDeformationColumns> terrainImpactColumns; /* owner of a shot's terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) */
     uint32_t serializedOffset;
 };
 
@@ -2543,9 +2544,9 @@ struct ArmyRuntimeLinkedChildSpawnParameters {
 };
 
 struct GameEntityOwnershipState10 {
-    void *definitionOrClassRecord; 
-    struct ModelRuntimeNode *modelNode; 
-    void *runtimeLink; 
+    Ptr32<void> definitionOrClassRecord; 
+    Ptr32<struct ModelRuntimeNode> modelNode; 
+    Ptr32<void> runtimeLink; 
     FactionRuntimeIndex ownerIndex; 
 };
 
@@ -2554,12 +2555,12 @@ struct ShotDefinition {
     uint32_t reservedDword04; // Exact fixed dword with semantics deferred.
     PckShotDefinitionIdCatalog definitionId; // Shot-definition registry identifier.
     Q12 launchSpeedQ12; // Launch speed in Q12.
-    struct EffectDefinition *primaryEffectDefinition; // Primary effect identifier resolved in place to EffectDefinition pointer.
-    struct EffectDefinition *terrainImpactEffectDefinitions31[31]; // SHT +0x14 exact 31-entry terrain-impact effect array.
-    struct EffectDefinition *targetClassImpactEffectDefinitions8[8]; // SHT +0x90 exact 8-entry target-class impact effect array.
+    Ptr32<struct EffectDefinition> primaryEffectDefinition; // Primary effect identifier resolved in place to EffectDefinition pointer.
+    Ptr32<struct EffectDefinition> terrainImpactEffectDefinitions31[31]; // SHT +0x14 exact 31-entry terrain-impact effect array.
+    Ptr32<struct EffectDefinition> targetClassImpactEffectDefinitions8[8]; // SHT +0x90 exact 8-entry target-class impact effect array.
     Q12 targetClassImpactDamageQ12[8]; // SHT +0xB0 exact 8-entry target-class damage Q12 array.
     ShotProjectileLifetimeTicks projectileLifetimeTicks; // V414 Shot definition timing
-    struct EffectDefinition *launchEffectDefinition; // Launch-effect identifier resolved in place and emitted by projectile creation.
+    Ptr32<struct EffectDefinition> launchEffectDefinition; // Launch-effect identifier resolved in place and emitted by projectile creation.
     ShotModelSpinStepTurn16 modelSpinStepTurn16; // SHT +0xD8 added to model rotation each projectile update and masked to 16 bits.
     Q12 ballisticDivisorQ12; // Ballistic divisor in Q12.
     ShotTerrainImpactHeightDeltaQ12 terrainImpactHeightDeltasQ12[31]; // Per hit terrain material (index as terrainImpactEffectDefinitions31): terrain height delta of the crater. The address of the entry is passed as the impact effect's owner; when the effect completes (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) it reads this column and the two parallel ones below through ShotTerrainImpactDeformationColumns.
@@ -2570,7 +2571,7 @@ struct ShotDefinition {
     PackedArgb32 shadingColorArgb; // Packed shading ARGB color.
     GraphicsTransitionTickCount shadingTransitionDurationTicks; // Shading transition duration in ticks.
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks; // SHT +0x264 is passed by three projectile release/impact paths to InterpolationState_SetNegatedTargetAndRescaleProgress.
-    struct EffectDefinition *secondaryEffectDefinition; // Secondary effect identifier resolved in place to EffectDefinition pointer.
+    Ptr32<struct EffectDefinition> secondaryEffectDefinition; // Secondary effect identifier resolved in place to EffectDefinition pointer.
     ShotSecondaryEffectIntervalTicks secondaryEffectIntervalTicks; // SHT +0x26C reloads projectile secondary-effect countdown.
     ShotTrajectoryRampDurationTicks trajectoryRampDurationTicks; // V414 Shot definition timing
     ShotFixedRangeTransitionAgeTicks fixedRangeTransitionAgeThresholdTicks; // SHT +0x274 is the trajectory-mode-2 projectile age threshold compared after one age increment per processed simulation tick.
@@ -2581,7 +2582,7 @@ struct ShotDefinition {
     SpatialSoundGainQ15 positionedSoundGainQ15; // SHT +0x288 is the Q15 gain passed to SpatialSound_UpdateDesiredPositionedGains after terrain-mask gating.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // SHT +0x28C is the Q12 maximum distance passed to SpatialSound_UpdateDesiredPositionedGains after terrain-mask gating.
     AngleTurn16Stored32 guidanceTurnLimitAngle16; // Nonzero signed turn-limit magnitude used as a symmetric +/- clamp for in-flight guidance angle deltas; zero disables that runtime guidance path and selects the unguided/pre-lead range checks.
-    void *ownedNestedResource; // Loaded or reused nested sprite resource.
+    Ptr32<void> ownedNestedResource; // Loaded or reused nested sprite resource.
     OwnedNestedResourceFlag ownedNestedResourcePresent; // Nested-resource ownership marker.
     uint16_t resourcePathUtf16[34]; // Fixed 34-word resource path changed to .spr during registration.
 };
@@ -2593,19 +2594,19 @@ struct WorldRuntimeSelectionState {
     int32_t pointerSurfaceHitWorldY; /* debug overlay slot 11 */
     int32_t pointerSurfaceHitDepth; /* view depth of the terrain hit; 0x7FFFFFFF (WORLD_POINTER_NO_HIT): none */
     uint8_t reserved18_1F[8];
-    struct GameEntityRuntime *selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
-    Bool8 (*dispatchCommandCallback)(uint32_t, int, struct WorldRuntimeContext *); /* (UiKeyboardStateMask, UiActionId, ...) */ // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
-    uint32_t (*resolveContextActionPrimaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
-    uint32_t (*resolveContextActionSecondaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
-    void (*beginPointerCaptureCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
-    void (*updateDragSelectionCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
-    void (*commitPointerActionCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
-    void (*dispatchWorldContextActionCallback)(struct WorldRuntimeContext *);
+    Ptr32<struct GameEntityRuntime> selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
+    Ptr32<Bool8 (uint32_t, int, struct WorldRuntimeContext *)> dispatchCommandCallback; /* (UiKeyboardStateMask, UiActionId, ...) */ // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionPrimaryCallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> resolveContextActionSecondaryCallback;
+    Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> beginPointerCaptureCallback;
+    Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> updateDragSelectionCallback;
+    Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *)> commitPointerActionCallback;
+    Ptr32<void (struct WorldRuntimeContext *)> dispatchWorldContextActionCallback;
     uint32_t rightButtonHoldTicks; // Counted up by the camera motion update while the right button is held (runtime flag 0x40); rightButtonState11C of FrontendModelPointerContext.
 };
 
 union EffectModelNodeReferenceOrSavedOffset {
-    struct ModelRuntimeNode *modelNode; 
+    Ptr32<struct ModelRuntimeNode> modelNode; 
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
 };
@@ -2654,14 +2655,14 @@ struct WorldRuntimeInteractionState {
 };
 
 struct WorldFieldRegionState {
-    void (*clearTransientStateCallback)(struct WorldRuntimeContext *);
+    Ptr32<void (struct WorldRuntimeContext *)> clearTransientStateCallback;
     uint32_t regionToolMode; // Copy of g_UiCommandModeF (region tool option 0/1).
     WorldFieldDimension auxiliaryAzimuthAngle; // Auxiliary angle pair stored by WorldRuntime_RecomputeFieldRegionNormalsAndLighting (saved with the level); 16-bit angle.
     WorldFieldDimension auxiliaryElevationAngle; // Clamped to -0x4000..-0x1000 like the light elevation.
 };
 
 union ModelRuntimeArmyLinkOrState {
-    struct ArmyRuntimeSlot *armyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime; 
     uint32_t classState; 
     uint32_t serializedOffset; 
 };
@@ -2683,9 +2684,9 @@ struct GraphicsAdapterRecord {
 };
 
 union ResourceRegistrationRuntimePayloadReference4 {
-    struct ArmyRuntimeSlot *armyRuntime;
-    struct EffectRuntimeSlot *effectRuntime;
-    struct ShotRuntimeSlot *shotRuntime;
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime;
+    Ptr32<struct EffectRuntimeSlot> effectRuntime;
+    Ptr32<struct ShotRuntimeSlot> shotRuntime;
     uint32_t savedOffset;
     uint32_t raw;
 };
@@ -2704,7 +2705,7 @@ struct ModelAttachmentTransformRecord {
 
 struct WorldObjectRecordCommon {
     uint8_t reserved00_07[8]; 
-    struct WorldRuntimeContext *ownerWorld; 
+    Ptr32<struct WorldRuntimeContext> ownerWorld; 
     uint8_t reserved0C_4B[64]; 
     WorldObjectAllocationFlags allocationFlags; 
 };
@@ -2718,9 +2719,9 @@ struct GameEntityImpactOwnerLinksPayloadFC {
     uint8_t reserved00_3B[60];
     /* +0x140 / +0x160 of the model runtime this GameEntityRuntime view is laid over: the child model runtimes of
        its attachment descriptors 0 and 1 (ModelRuntimeSlot.attachments[i].childModelRuntimeOrSavedOffset) */
-    struct ModelRuntimeSlot *attachment0ChildModelRuntime;
+    Ptr32<struct ModelRuntimeSlot> attachment0ChildModelRuntime;
     uint8_t reserved40_5B[28];
-    struct ModelRuntimeSlot *attachment1ChildModelRuntime;
+    Ptr32<struct ModelRuntimeSlot> attachment1ChildModelRuntime;
     uint8_t reserved60_FB[156]; 
 };
 
@@ -2739,8 +2740,8 @@ struct GameEntityImpactReactionBytes8 {
 };
 
 struct GameEntityPathingReferenceState8 {
-    struct GameEntityRuntime *overlappingEntity; 
-    void *secondaryPathingReference; 
+    Ptr32<struct GameEntityRuntime> overlappingEntity; 
+    Ptr32<void> secondaryPathingReference; 
 };
 
 struct GameEntityPathingAndImpactState10 {
@@ -2760,7 +2761,7 @@ struct GameEntityDamageState2C {
 };
 
 struct GameEntityCommandTargetState {
-    struct GameEntityRuntime *targetEntity; 
+    Ptr32<struct GameEntityRuntime> targetEntity; 
     Q12 targetWorldXQ12; 
     Q12 targetWorldYQ12; 
     Q12 targetWorldZQ12; 
@@ -2798,14 +2799,14 @@ struct GameEntityRuntime {
 };
 
 union ArmyRuntimeReferenceOrSavedOffset {
-    struct ArmyRuntimeSlot *armyRuntime;
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime;
     uint32_t savedIdOrOffset;
     uint32_t raw;
-    struct GameEntityRuntime *entityRuntime; /* the same army under its GameEntityRuntime view (command target, owner) */
+    Ptr32<struct GameEntityRuntime> entityRuntime; /* the same army under its GameEntityRuntime view (command target, owner) */
     /* ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset (+0xF0) holds a model runtime, not an army: the
        factory model a new unit leaves (ArmyRuntimeClass_UpdateUnitFactory), the class-23 platform and the unit
        docked on it (ArmyRuntime_HandleCollisionPartner) */
-    struct ModelRuntimeSlot *modelRuntime;
+    Ptr32<struct ModelRuntimeSlot> modelRuntime;
 };
 
 struct AssetProducerSourceNames {
@@ -2895,7 +2896,7 @@ struct GraphicsTextureResource {
 };
 
 union ShotDefinitionReferenceOrSavedId {
-    struct ShotDefinition *definition; 
+    Ptr32<struct ShotDefinition> definition; 
     PckShotDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
@@ -2905,7 +2906,7 @@ struct IDirectDrawSurface {
 };
 
 union ModelRuntimeSlotLinkOrState {
-    struct ModelRuntimeSlot *modelRuntime; // Class-selected model-runtime link.
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; // Class-selected model-runtime link.
     uint32_t classState; // Class-selected scalar state.
     uint32_t serializedOffset; // Saved model-pool offset.
     int signedScalarState; // Signed 32-bit scalar interpretation for polymorphic class state when machine code performs arithmetic, signed comparison, or class-index use rather than pointer dereference.
@@ -2938,11 +2939,11 @@ struct IDirectDraw_Vtbl {
 };
 
 struct GraphicsTextureSetEntry {
-    struct GraphicsTextureResource *texture; 
+    Ptr32<struct GraphicsTextureResource> texture; 
     GraphicsTextureDimensionLog2 widthLog2; 
     GraphicsTextureDimensionLog2 heightLog2; 
-    struct GraphicsTextureSourceAsset *sourceAsset; 
-    struct GraphicsTextureSourceEntry *sourceEntry; 
+    Ptr32<struct GraphicsTextureSourceAsset> sourceAsset; 
+    Ptr32<struct GraphicsTextureSourceEntry> sourceEntry; 
     GraphicsSubresourceIndex subresourceIndex; 
     uint32_t reserved18; 
     uint32_t reserved1C; 
@@ -2993,7 +2994,7 @@ struct ModelRuntimeClassLinkState {
 };
 
 struct ShotRuntimeOwnerAndTrajectoryState {
-    struct ArmyRuntimeSlot *ownerArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; 
     Q12 directionComponent0Q12; 
     Q12 directionComponent1Q12; 
     Q12 directionComponent2Q12; 
@@ -3002,7 +3003,7 @@ struct ShotRuntimeOwnerAndTrajectoryState {
 };
 
 union ShotModelNodeReferenceOrSavedOffset {
-    struct ModelRuntimeNode *modelNode; 
+    Ptr32<struct ModelRuntimeNode> modelNode; 
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
 };
@@ -3011,7 +3012,7 @@ union ShotModelRuntimeStateOrSavedOffset {
     uint32_t runtimeState; 
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
-    void *runtimeStatePointer; 
+    Ptr32<void> runtimeStatePointer; 
 };
 
 struct ShotRuntimeSlot {
@@ -3029,9 +3030,9 @@ struct ShotRuntimeSlot {
 };
 
 struct WorldRuntimeNodeCommon {
-    struct WorldRuntimeNode *previousNode; 
-    struct WorldRuntimeNode *nextNode; 
-    struct WorldRuntimeContext *ownerWorld; 
+    Ptr32<struct WorldRuntimeNode> previousNode; 
+    Ptr32<struct WorldRuntimeNode> nextNode; 
+    Ptr32<struct WorldRuntimeContext> ownerWorld; 
 };
 
 struct EffectDefinitionTransitionPrefix {
@@ -3044,9 +3045,9 @@ struct EffectDefinition {
     PckEffectDefinitionIdCatalog definitionId; 
     EffectAnimationFrameCount animationFrameCount; 
     DefinitionReferencePresentFlag linkedEffectPresent; 
-    struct EffectDefinition *linkedEffectDefinition; 
+    Ptr32<struct EffectDefinition> linkedEffectDefinition; 
     DefinitionReferencePresentFlag linkedShotPresent; 
-    struct ShotDefinition *linkedShotDefinition; 
+    Ptr32<struct ShotDefinition> linkedShotDefinition; 
     EffectMovementSpeedQ12 movementSpeedQ12; 
     uint32_t completionCountdownTicks; /* +0x24 copied to the effect slot */
     EffectFrameAdvanceThresholdQ4 frameAdvanceThresholdQ4; 
@@ -3057,7 +3058,7 @@ struct EffectDefinition {
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks; 
     EffectShadingCountdownTicks shadingStartCountdownTicks; 
     EffectShadingCountdownTicks shadingStopCountdownTicks; 
-    struct EffectDefinition *periodicEffectDefinition; 
+    Ptr32<struct EffectDefinition> periodicEffectDefinition; 
     EffectPeriodicIntervalTicks periodicEffectIntervalTicks; 
     EffectAlphaFadeTicks alphaFadeInTicks; 
     EffectAlphaFadeTicks alphaFadeOutTicks;
@@ -3068,17 +3069,17 @@ struct EffectDefinition {
     Q12 modelScaleEndQ12; 
     SpatialSoundGainQ15 positionedSoundGainQ15; 
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; 
-    void *ownedNestedResource; 
+    Ptr32<void> ownedNestedResource; 
     OwnedNestedResourceFlag ownedNestedResourcePresent; 
     uint16_t resourcePathUtf16[34]; 
 };
 
 union ModelRuntimePayloadReference4 {
-    struct ModelRuntimeSlot *modelRuntime; 
-    struct ArmyRuntimeSlot *armyRuntime; 
-    struct EffectRuntimeSlot *effectRuntime; 
-    struct ShotRuntimeSlot *shotRuntime; 
-    void *opaqueRuntime; 
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime; 
+    Ptr32<struct EffectRuntimeSlot> effectRuntime; 
+    Ptr32<struct ShotRuntimeSlot> shotRuntime; 
+    Ptr32<void> opaqueRuntime; 
     uint32_t savedOffsetOrRaw; 
 };
 
@@ -3092,10 +3093,10 @@ struct WorldRuntimeNodeModelPayload {
     AngleTurn32 localRotationAngle0; 
     AngleTurn32 localRotationAngle1; 
     AngleTurn32 localRotationAngle2; 
-    struct GraphicsPaletteAsset *paletteAsset; 
-    struct GraphicsTextureSet *textureSet; 
+    Ptr32<struct GraphicsPaletteAsset> paletteAsset; 
+    Ptr32<struct GraphicsTextureSet> textureSet; 
     uint8_t reserved2C_33[8]; 
-    struct ModelResource *modelResource; 
+    Ptr32<struct ModelResource> modelResource; 
     ModelMeshGroupMask meshGroupMask; 
 };
 
@@ -3107,8 +3108,8 @@ struct ModelRuntimeNode {
     ModelTextureSubresourceIndex textureSubresourceBaseIndex; 
     Q12 subtreeBoundingRadiusQ12; 
     PackedArgb32 tintArgb; 
-    struct GraphicsShadingRuntimeRecord *shadingRecord; 
-    void *modelRuntimeLinkOrSavedOffset; 
+    Ptr32<struct GraphicsShadingRuntimeRecord> shadingRecord; 
+    Ptr32<void> modelRuntimeLinkOrSavedOffset; 
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel primaryTextureOffsetU; 
     ModelTextureOffsetTexel primaryTextureOffsetV; 
@@ -3122,21 +3123,21 @@ struct ModelRuntimeNode {
     ModelDepthBinMask depthBinMaskFar; 
     int renderDepthBiasOrState; 
     Q12 modelScaleQ12; 
-    struct ModelRuntimeNode *parentNode; 
+    Ptr32<struct ModelRuntimeNode> parentNode; 
     uint32_t childCount; 
-    struct ModelRuntimeNode *childNodes[13]; 
+    Ptr32<struct ModelRuntimeNode> childNodes[13]; 
 };
 
 union ModelRuntimeNodeReferenceOrSavedOffset4 {
-    struct ModelRuntimeNode *modelNode; 
+    Ptr32<struct ModelRuntimeNode> modelNode; 
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
 };
 
 struct ModelRuntimeAttachmentDescriptor {
-    struct ModelRuntimeSlot *childModelRuntimeOrSavedOffset; 
-    struct ModelAttachmentTransformRecord *sourceTransform; 
-    struct ModelRuntimeNode *parentModelNodeOrSavedOffset; 
+    Ptr32<struct ModelRuntimeSlot> childModelRuntimeOrSavedOffset; 
+    Ptr32<struct ModelAttachmentTransformRecord> sourceTransform; 
+    Ptr32<struct ModelRuntimeNode> parentModelNodeOrSavedOffset; 
     ModelChildNodeIndex childNodeIndex; 
     AngleTurn32 childLocalRotationAngle0; 
     AngleTurn32 childLocalRotationAngle1; 
@@ -3145,26 +3146,26 @@ struct ModelRuntimeAttachmentDescriptor {
 };
 
 union ModelDefinitionReferenceOrSavedId {
-    struct ModelDefinitionRecordPrefix *definition;
+    Ptr32<struct ModelDefinitionRecordPrefix> definition;
     uint32_t savedIdOrOffset;
     uint32_t raw;
-    struct ModelDefinition *runtimeDefinition; /* same live pointer, full definition field view */
+    Ptr32<struct ModelDefinition> runtimeDefinition; /* same live pointer, full definition field view */
 };
 
 union ModelRuntimeSlotReferenceOrSavedOffset {
-    struct ModelRuntimeSlot *modelRuntime;
+    Ptr32<struct ModelRuntimeSlot> modelRuntime;
     uint32_t savedIdOrOffset;
     uint32_t raw;
 };
 
 struct ArmyRuntimeSlot {
     union ModelRuntimeSlotReferenceOrSavedOffset modelRuntimeOrSavedOffset; // Live ModelRuntimeSlot reference; serialized save image stores the model-pool-relative offset. Verified by the create/save/rebase paths.
-    struct ModelRuntimeNode *modelNodeRuntime; // Committed V218d army runtime field.
-    struct GameEntityRuntime *linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Committed V218d army runtime field.
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
     FactionRuntimeIndex factionIndex; // Committed V218d army runtime field.
     struct ArmyRuntimeMovementControlState movementControl; // Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Committed V218d army runtime field.
     Q12 commandCoordinate0Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate1Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate2Q12; // Committed V218d army runtime field.
@@ -3184,7 +3185,7 @@ struct ArmyRuntimeSlot {
     uint32_t classState60; // +0x60..+0x68: no army code reads these (the former users were model runtimes typed as ArmyRuntimeSlot)
     uint32_t classState64;
     uint32_t classState68;
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Committed V218d army runtime field.
@@ -3206,7 +3207,7 @@ struct ArmyRuntimeSlot {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     union {
@@ -3274,7 +3275,7 @@ union WorldRuntimeNodePayload {
 struct WorldRuntimeNode {
     struct WorldRuntimeNodeCommon common; 
     union WorldRuntimeNodePayload classPayload; 
-    void *runtimePayload; 
+    Ptr32<void> runtimePayload; 
     WorldRuntimeNodeFlags runtimeFlags; 
 };
 
@@ -3380,7 +3381,7 @@ struct DDSURFACEDESC_DX6 {
 };
 
 union EffectDefinitionReferenceOrSavedId {
-    struct EffectDefinition *definition; 
+    Ptr32<struct EffectDefinition> definition; 
     PckEffectDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
@@ -3419,7 +3420,7 @@ struct EffectRuntimeSlot {
 };
 
 struct GraphicsTextureSet {
-    struct GraphicsTextureSourceAsset *sourceAsset; 
+    Ptr32<struct GraphicsTextureSourceAsset> sourceAsset; 
     uint32_t subresourceCount; 
     struct GraphicsTextureSetEntry entries[1]; 
 };
@@ -3479,16 +3480,16 @@ typedef uint32_t AssetRecordCount;
 typedef uint32_t SpriteAssetId;
 
 union SpriteAssetReferenceOrSavedId {
-    struct SpriteAssetHeader *spriteAsset; // Live relocated sprite pointer.
+    Ptr32<struct SpriteAssetHeader> spriteAsset; // Live relocated sprite pointer.
     AssetRegistryId savedId; // Serialized sprite registry id.
     uint32_t raw; // Raw exact dword view.
-    struct ModelResource *modelResource; // typed model/render view of relocated sprite asset pointer
+    Ptr32<struct ModelResource> modelResource; // typed model/render view of relocated sprite asset pointer
 };
 
 struct GeneratedAssetRegistryHeader {
     struct GeneratedAssetCommonPrefix common;
     AssetRecordCount groupCount;
-    struct SpriteAssetHeader *previousRegistryAsset;
+    Ptr32<struct SpriteAssetHeader> previousRegistryAsset;
     SpriteAssetId registryId; 
 };
 
@@ -3572,7 +3573,7 @@ struct EntityPathingDestinationRegisterResult {
 
 struct ModelRaycastNearestHitRegisterResult {
     Q12 nearestDistanceQ12; 
-    struct ModelRuntimeNode *nearestModelNode; 
+    Ptr32<struct ModelRuntimeNode> nearestModelNode; 
 };
 
 struct AiWorkspace09AnchorRegisterResult {
@@ -4420,8 +4421,8 @@ struct WorldRuntimeContext {
     struct WorldRuntimeInteractionState interaction; // In-game interaction state.
     WorldRuntimeFlags runtimeFlags; // World runtime mode and dirty flags.
     FactionRuntimeIndex activeFactionRuntimeIndex; // Faction runtime index used to select the local faction record and compare model/runtime ownership throughout the in-game world.
-    struct FieldGridAsset *fieldGrid; // Attached field grid.
-    struct WorldObjectRecord *objectArray; // Attached world-object array.
+    Ptr32<struct FieldGridAsset> fieldGrid; // Attached field grid.
+    Ptr32<struct WorldObjectRecord> objectArray; // Attached world-object array.
     RuntimeToken pendingToken; // Pending world token.
     struct WorldMotionState motion; // Live and target motion state.
     UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to 0x8000 by both session initializers and used as the lower bound by motion zoom/clamp paths.
@@ -4431,13 +4432,13 @@ struct WorldRuntimeContext {
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount; // Attached world-object count.
     struct WorldFieldRegionState fieldRegion; // Field-region dimensions and retained prefix.
-    uintptr_t *dwordArray; // Attached workspace: SpatialSoundSlot pointers by sound index (pointer-sized, runtime only).
+    Ptr32<uintptr_t> dwordArray; // Attached workspace: SpatialSoundSlot pointers by sound index (pointer-sized, runtime only).
     WorldWorkspaceElementCount dwordArrayCount; // Attached workspace element count.
     uint32_t reservedC8; // Never accessed.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
-    uint32_t *tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
-    void (*simulationAndNetworkTickCallback)(void); // In-game simulation/network tick callback installed by both session initializers.
-    struct WorldOwnerListNode *ownerListHead; // World-runtime owner-list head.
+    Ptr32<uint32_t> tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
+    Ptr32<void (void)> simulationAndNetworkTickCallback; // In-game simulation/network tick callback installed by both session initializers.
+    Ptr32<struct WorldOwnerListNode> ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
     struct WorldLightingState lighting; // Terrain-lighting configuration.
     struct WorldMotionSnapshot snapshot; // Captured motion snapshot.
@@ -4484,10 +4485,10 @@ struct DirectSoundVoiceSet {
 };
 
 struct UiNodeBase {
-    struct UiNodeBase *nextSibling; 
-    struct UiNodeBase *firstChild; 
-    struct UiNodeBase *parent; 
-    struct UiNodeVtable *vtable; 
+    Ptr32<struct UiNodeBase> nextSibling; 
+    Ptr32<struct UiNodeBase> firstChild; 
+    Ptr32<struct UiNodeBase> parent; 
+    Ptr32<struct UiNodeVtable> vtable; 
     int32_t left; 
     int32_t top; 
     int32_t right; 
@@ -4514,7 +4515,7 @@ struct UiNumericTextControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t textBuffer[16]; 
     UiNumericValue32 minimumValue; 
     UiNumericValue32 maximumValue; 
@@ -4548,28 +4549,28 @@ typedef struct UiSoundSelectableControl UiSoundSelectableControl;
 struct UiSoundSelectableControl {
     struct UiSelectableControl selectable;
     uint32_t subclassFields[2];
-    struct DirectSoundVoiceSet *activationSound;
+    Ptr32<struct DirectSoundVoiceSet> activationSound;
 };
 
 struct UiNodeVtable {
-    void (*relocate)(UiSerializedRelocationDelta, struct UiNodeBase *); 
-    void (*method04)(struct UiNodeBase *); // Common one-argument no-op callback; concrete UiNode vtables use UiNode_DefaultMethod04_NoOp.
-    void (*drawClipped)(UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight, UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft, struct UiNodeBase *node); // Clip rectangle bottom/right first (UiFrame_Draw, UiContainer_DrawIntersectingChildren), as in the texture-source blits.
-    void (*layout)(struct UiNodeBase *); 
-    void (*nonRightPress)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    void (*nonRightRelease)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    void (*rightPress)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    void (*rightRelease)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    void (*nonRightDrag)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    void (*rightDrag)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    GraphicsCursorFrameIndex (*pointerMove)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    UiNodeBase * (*hitTest)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    Bool8 (*keyboardEvent)(UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *);
-    void (*applyFlags)(UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *); 
-    void (*suppressActionId)(UiActionId, struct UiNodeBase *); 
-    void (*unsuppressActionId)(UiActionId, struct UiNodeBase *); 
-    void (*tick)(struct UiNodeBase *); 
-    void (*pointerWheel)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
+    Ptr32<void (UiSerializedRelocationDelta, struct UiNodeBase *)> relocate; 
+    Ptr32<void (struct UiNodeBase *)> method04; // Common one-argument no-op callback; concrete UiNode vtables use UiNode_DefaultMethod04_NoOp.
+    Ptr32<void (UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight, UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft, struct UiNodeBase *node)> drawClipped; // Clip rectangle bottom/right first (UiFrame_Draw, UiContainer_DrawIntersectingChildren), as in the texture-source blits.
+    Ptr32<void (struct UiNodeBase *)> layout; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> nonRightPress; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> nonRightRelease; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> rightPress; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> rightRelease; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> nonRightDrag; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> rightDrag; 
+    Ptr32<GraphicsCursorFrameIndex (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerMove; 
+    Ptr32<UiNodeBase * (UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> hitTest; 
+    Ptr32<Bool8 (UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *)> keyboardEvent;
+    Ptr32<void (UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *)> applyFlags; 
+    Ptr32<void (UiActionId, struct UiNodeBase *)> suppressActionId; 
+    Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 
+    Ptr32<void (struct UiNodeBase *)> tick; 
+    Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerWheel; 
 };
 
 /* Natural alignment as in the original: sizeof 20 (18 bytes of fields + 2 bytes tail padding); DirectSound_Init
@@ -4619,7 +4620,7 @@ struct DSBUFFERDESC_DX6 {
 struct UiPageStackControl {
     struct UiNodeBase base; 
     UiPageCount pageCount; 
-    struct UiNodeBase *pages; 
+    Ptr32<struct UiNodeBase> pages; 
 };
 
 struct InGamePersistentSettingsPage3508 {
@@ -4701,11 +4702,11 @@ typedef uint32_t UiListRowCount;
 struct UiPointerListControl {
     struct UiNodeBase base; 
     UiListStateFlags listStateFlags; 
-    void **rowSlots; 
+    Ptr32<Ptr32<void>> rowSlots; 
     UiListRowCount rowCount; 
     UiPixelExtent rowHeight; 
     UiActionId actionId; 
-    void **selectedRowSlot; 
+    Ptr32<Ptr32<void>> selectedRowSlot; 
 };
 
 typedef uint32_t CubicSplineEquationCount;
@@ -5406,7 +5407,7 @@ struct InGameCommandTextEditControlCC {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t textBuffer[48]; 
 };
 
@@ -5459,7 +5460,7 @@ typedef uint32_t RichTextInlinePayloadValue32;
 typedef uint8_t PckHuffmanBitOffset;
 
 struct SelectionInfoEntitySlots {
-    struct GameEntityRuntime *entries[32]; 
+    Ptr32<struct GameEntityRuntime> entries[32]; 
 };
 
 struct WinSockProtoEnt32 {
@@ -5487,7 +5488,7 @@ struct UiTextEditControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
 };
 
@@ -5613,11 +5614,11 @@ struct TerrainDirectionRecord {
    header (count = number of rows that follow, parentBlockOrIcon = parent block, link = parent row record,
    flags has UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY), elements 1..count are rows (payload00 = label text,
    parentBlockOrIcon = icon subresource, link = child block when flags 1|2 say expanded).
-   Runtime only: the two value-or-pointer words are pointer-sized. */
+   The two value-or-pointer words are UPtr32 (4 bytes on both architectures). */
 struct UiTimedListTreeRecord {
-    uintptr_t countOrLabelText;
-    uintptr_t parentBlockOrIcon;
-    struct UiTimedListTreeRecord *childBlockOrParentRecord;
+    UPtr32 countOrLabelText;
+    UPtr32 parentBlockOrIcon;
+    Ptr32<struct UiTimedListTreeRecord> childBlockOrParentRecord;
     UiTimedListRecordFlags flags;
 };
 
@@ -5626,13 +5627,13 @@ struct UiTimedListTreeRecord {
 struct UiTimedListControl {
     struct UiNodeBase base;
     UiTimedListStateFlags listStateAndDelay;
-    struct UiTimedListTreeRecord *recordTree;
+    Ptr32<struct UiTimedListTreeRecord> recordTree;
     UiListRowCount rowCount;
     UiPixelExtent rowHeight;
     UiActionId actionId;
-    struct UiTimedListTreeRecord *selectedRecord;
-    void (*recordSelectionCallback)(struct UiTimedListTreeRecord *, struct UiTimedListTreeControl *);
-    struct GraphicsTextureSourceAsset *rowTextureSource;
+    Ptr32<struct UiTimedListTreeRecord> selectedRecord;
+    Ptr32<void (struct UiTimedListTreeRecord *, struct UiTimedListTreeControl *)> recordSelectionCallback;
+    Ptr32<struct GraphicsTextureSourceAsset> rowTextureSource;
     uint32_t collapsedIconSubresource; // subresource of the collapsed-node icon (expandable row, flag 2 clear)
 };
 
@@ -5647,24 +5648,24 @@ struct UiTimedListTreeControl {
 };
 
 struct FrontendResultsColumnDrawDispatchTable {
-    void *spacer0Target;
-    void *spacer1Target;
-    void *colourTarget;
-    void *economyTarget;
-    void *militaryTarget;
-    void *pointsTarget;
-    void *playerTarget;
-    void *factionTarget;
-    void *exploredTerrainPercentTarget; // GameFactionRuntimeRecord.exploredTerrainPercent column
-    void *unlockedTechnologyCountTarget; // GameFactionRuntimeRecord.unlockedTechnologyCountBeyondBaseline column
-    void *primaryResourceTarget; // GameFactionRuntimeRecord.primaryResourceComponent column
-    void *secondaryResourceTarget; // GameFactionRuntimeRecord.secondaryResourceComponent column
-    void *relationCounterATarget;
-    void *relationCounterBTarget;
-    void *relationCounterCTarget;
-    void *relationCounterDTarget;
-    void *relationCounterETarget;
-    void *relationCounterFTarget;
+    Ptr32<void> spacer0Target;
+    Ptr32<void> spacer1Target;
+    Ptr32<void> colourTarget;
+    Ptr32<void> economyTarget;
+    Ptr32<void> militaryTarget;
+    Ptr32<void> pointsTarget;
+    Ptr32<void> playerTarget;
+    Ptr32<void> factionTarget;
+    Ptr32<void> exploredTerrainPercentTarget; // GameFactionRuntimeRecord.exploredTerrainPercent column
+    Ptr32<void> unlockedTechnologyCountTarget; // GameFactionRuntimeRecord.unlockedTechnologyCountBeyondBaseline column
+    Ptr32<void> primaryResourceTarget; // GameFactionRuntimeRecord.primaryResourceComponent column
+    Ptr32<void> secondaryResourceTarget; // GameFactionRuntimeRecord.secondaryResourceComponent column
+    Ptr32<void> relationCounterATarget;
+    Ptr32<void> relationCounterBTarget;
+    Ptr32<void> relationCounterCTarget;
+    Ptr32<void> relationCounterDTarget;
+    Ptr32<void> relationCounterETarget;
+    Ptr32<void> relationCounterFTarget;
 };
 
 struct UiTransferPacketHeader {
@@ -5754,12 +5755,12 @@ struct WinSockServEnt32 {
 struct UiTextListControl {
     struct UiNodeBase base; 
     UiTextListStateFlags listStateFlags; 
-    uint16_t **rowTextSlots; 
+    Ptr32<Ptr32<uint16_t>> rowTextSlots; 
     UiListRowCount rowCount; 
     UiPixelExtent rowHeight; 
     UiActionId actionId; 
-    uint16_t **selectedRowSlot; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<Ptr32<uint16_t>> selectedRowSlot; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
 };
 
 struct SprRelocationBlockHeader {
@@ -5778,10 +5779,10 @@ enum {
 typedef int InGameConditionKind;
 
 union InGameConditionPayloadPointer {
-    struct ModelRuntimeSlot *modelRuntime; 
-    struct ShotRuntimeSlot *shotRuntime; 
-    struct EffectRuntimeSlot *effectRuntime; 
-    void *raw; 
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; 
+    Ptr32<struct ShotRuntimeSlot> shotRuntime; 
+    Ptr32<struct EffectRuntimeSlot> effectRuntime; 
+    Ptr32<void> raw; 
 };
 
 struct InGameNotificationPayload {
@@ -5820,20 +5821,20 @@ struct FrontendModelPointerHitContext {
     Q12 hitReferenceWorldYQ12; // Subtracted from model world-transform Y when computing the hit metric.
     Q12 hitReferenceWorldZQ12; // Subtracted from model world-transform Z when computing the hit metric.
     uint8_t reserved6C_D7[108]; // Unresolved.
-    struct ModelRuntimeNode *candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
+    Ptr32<struct ModelRuntimeNode> candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
     uint32_t activePlayerRuntimeId; // WorldRuntimeContext.selection.activePlayerRuntimeId of the in-game world view; not consumed by the frontend selection paths.
-    struct ModelRuntimeNode *selectedModelNode; // Model-node half of the model selector's result.
+    Ptr32<struct ModelRuntimeNode> selectedModelNode; // Model-node half of the model selector's result.
     int selectedHitMetric; // Hit-metric half of the model selector's result.
     uint32_t surfaceHitWorldX; // Terrain point under the cursor: world X interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitWorldY; // Terrain point under the cursor: world Y interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitDepth; // View depth of the terrain hit (WORLD_POINTER_NO_HIT when none); passed to the pointer callbacks.
     uint8_t reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
-    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
-    uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
-    uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
-    uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button press (FrontendModelPointerContext_NonRightPress).
-    uint32_t (*buttonDragCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button drag (FrontendModelPointerContext_NonRightDrag).
-    uint32_t (*buttonReleaseCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button release (FrontendModelPointerContext_NonRightRelease).
+    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback; // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback; // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback; // Non-right button press (FrontendModelPointerContext_NonRightPress).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonDragCallback; // Non-right button drag (FrontendModelPointerContext_NonRightDrag).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonReleaseCallback; // Non-right button release (FrontendModelPointerContext_NonRightRelease).
 };
 
 struct RecentTextHistorySlot {
@@ -5842,7 +5843,7 @@ struct RecentTextHistorySlot {
 
 struct RecentTextHistoryPointerList {
     uint32_t count; 
-    struct RecentTextHistorySlot *entries[8]; 
+    Ptr32<struct RecentTextHistorySlot> entries[8]; 
 };
 
 struct RecentTextHistoryView {
@@ -5914,13 +5915,13 @@ struct UiListColumn {
 struct UiListControl {
     struct UiNodeBase base;
     UiListStateFlags listStateFlags;
-    void **rowSlots;
+    Ptr32<Ptr32<void>> rowSlots;
     UiListRowCount rowCount;
     UiPixelExtent rowHeight;
     UiActionId actionId;
-    void **selectedRowSlot;
+    Ptr32<Ptr32<void>> selectedRowSlot;
     uint32_t columnCount;
-    struct DirectSoundVoiceSet *activationSound;
+    Ptr32<struct DirectSoundVoiceSet> activationSound;
     struct UiListColumn columns[1];
 };
 
@@ -5947,7 +5948,7 @@ struct GraphicsProjectedPoint2i {
 };
 
 struct EntityPathingPriorityPair {
-    struct GameEntityRuntime *entity;
+    Ptr32<struct GameEntityRuntime> entity;
     int32_t priority;
 };
 
@@ -6008,11 +6009,11 @@ struct InGameTargetingContext {
 };
 
 struct ModelRaycastTriangleDescriptor {
-    struct GraphicsFixedVec3 *vertex0; 
+    Ptr32<struct GraphicsFixedVec3> vertex0; 
     uint8_t reservedVertex0Metadata04_0B[8]; 
-    struct GraphicsFixedVec3 *vertex1; 
+    Ptr32<struct GraphicsFixedVec3> vertex1; 
     uint8_t reservedVertex1Metadata10_17[8]; 
-    struct GraphicsFixedVec3 *vertex2; 
+    Ptr32<struct GraphicsFixedVec3> vertex2; 
     uint8_t reservedVertex2Metadata1C_23[8]; 
     GraphicsPlaneNormalFixed planeNormalX; 
     GraphicsPlaneNormalFixed planeNormalY; 
@@ -6099,8 +6100,8 @@ struct MovieFileHeader {
 struct UiRootNode {
     struct UiNodeBase base;
     UiRootFlags rootFlags;
-    struct UiRootCallbacks *callbacks;
-    struct UiRootNode *previousRoot;
+    Ptr32<struct UiRootCallbacks> callbacks;
+    Ptr32<struct UiRootNode> previousRoot;
 };
 
 typedef struct UiPanelControl UiPanelControl;
@@ -6140,12 +6141,12 @@ struct InGameRuntimeRoot {
     uint8_t reserved0058_017B[292];
     struct UiPageStackControl primaryPageStack;
     uint8_t reserved01D0_022B[92];
-    struct MovieRuntime *activeEndMovieRuntime;
+    Ptr32<struct MovieRuntime> activeEndMovieRuntime;
     uint32_t endMoviePlaybackState; // Cleared when selected end-movie playback begins; exact wider meaning remains deferred.
     uint8_t reserved0234_02F7[196];
     struct UiPageStackControl endMoviePageStack;
     uint8_t reserved034C_08D3[1416];
-    struct MovieRuntime *levelMovieRuntime;
+    Ptr32<struct MovieRuntime> levelMovieRuntime;
     uint8_t reserved08D8_08E3[12];
     struct UiNodeBase playerStatusNode;
     uint8_t reserved0930_093B[12];
@@ -6156,12 +6157,12 @@ struct InGameRuntimeRoot {
     uint32_t worldViewAreaRightOffset; // UiNodeBase.rightOffset of the world view area (+0x9DC); cleared when the side panel is switched off, before the root layout.
     uint8_t reserved0A08_0A2F[40];
     struct WorldRuntimeContext worldRuntime;
-    void (*worldOverlayCallback)(uint32_t, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
+    Ptr32<void (uint32_t, struct WorldRuntimeContext *)> worldOverlayCallback; // Overlay rebuild/release callback installed identically for new and loaded sessions.
     int32_t pointerPressX; /* pointer position at the button press */
     int32_t pointerPressY;
     int32_t pointerX; /* current pointer position */
     int32_t pointerY;
-    struct SelectionPlayerPairRecord *localPlayerMarkedCells; // The local player's SelectionPlayerRuntimeBlock.markedCells, drawn as terrain point markers.
+    Ptr32<struct SelectionPlayerPairRecord> localPlayerMarkedCells; // The local player's SelectionPlayerRuntimeBlock.markedCells, drawn as terrain point markers.
     uint32_t localPlayerMarkedCellCount; // Copy of the local player's markedCellCount.
     int32_t lightAzimuthAngle; // Terrain light direction (16-bit angle), set by WorldRuntime_RecomputeFieldRegionNormalsAndLighting; wraps.
     int32_t lightElevationAngle; // Terrain light elevation (16-bit angle), -0x4000 (straight down) .. -0x1000.
@@ -6194,10 +6195,10 @@ struct InGameRuntimeRoot {
     FieldGridCoordinates minimapOriginGridPosition; // Minimap (UiSelectionGeometryControl at +0x9A1C) source origin: the camera target in grid coordinates.
     Q12 minimapSampleScaleQ12; // Minimap sampleScaleQ12, follows the camera distance unless automatic zoom is off.
     AngleTurn32 minimapRotationAngle; // Minimap rotationAngle, follows the camera heading unless automatic rotation is off.
-    struct TerrainCompositeTextureRuntime *minimapTextureSource; // Minimap textureSource: the terrain composite texture.
+    Ptr32<struct TerrainCompositeTextureRuntime> minimapTextureSource; // Minimap textureSource: the terrain composite texture.
     uint8_t reserved9A80_9B4B[204];
     InGameNotificationInteractionState notificationButtonCursorFrame; // UiImageActionControl.cursorFrame of the notification target button (+0x9AFC): 7 while a notification target can be jumped to, 0x1B after the jump (next click cancels), 0 idle.
-    uintptr_t notificationButtonTextureSource; // Its textureSource: the playing notification movie, or the panel texture when none plays.
+    UPtr32 notificationButtonTextureSource; // Its textureSource: the playing notification movie, or the panel texture when none plays.
     uint32_t notificationButtonSubresource; // Its subresource: 0 for a movie frame, 0x25 (idle panel image) after playback closes.
     uint8_t reserved9B58_9E3F[744];
     struct InGameNotificationPayload activeNotificationPayload; // Payload promoted from the head queue record when its movie opens.
@@ -6209,7 +6210,7 @@ struct InGameRuntimeRoot {
     uint8_t reservedA000_A05F[96];
     uint32_t selectionDetailArmyAssetValue;
     uint8_t reservedA064_A067[4];
-    struct GameEntityRuntime *selectionDetailEntity;
+    Ptr32<struct GameEntityRuntime> selectionDetailEntity;
     uint8_t reservedA06C_C3E3[9080];
 };
 #pragma pack(pop)
@@ -6220,21 +6221,21 @@ struct MovieRuntime {
     MoviePaletteBankCount paletteBankCount; 
     MovieSubresourceTableOffset subresourceTableOffset; 
     uint32_t reservedBC; 
-    struct MovieFileHeader *fileHeader; 
+    Ptr32<struct MovieFileHeader> fileHeader; 
     MovieFrameIndex currentFrameIndex; 
     MovieStreamOffset videoStreamOffset; 
-    struct DirectSoundVoiceSet *audioVoiceSet; 
-    struct IDirectSoundBuffer *activeAudioBuffer; 
-    void *streamHandle; 
+    Ptr32<struct DirectSoundVoiceSet> audioVoiceSet; 
+    Ptr32<struct IDirectSoundBuffer> activeAudioBuffer; 
+    Ptr32<void> streamHandle; 
     MovieSharedStreamHandleFlag streamHandleIsSharedPackage; 
-    uint8_t *loadedVideoEnd; 
+    Ptr32<uint8_t> loadedVideoEnd; 
     MovieStreamByteCount remainingVideoBytes; 
     MovieStreamFileOffset streamFileOffset; 
     MovieOpenFlags openFlags; 
     MovieAudioGainQ15 audioGainQ15; 
     MovieWorkerActiveFlag workerActive; 
     MovieStreamState streamState; 
-    void *refillSemaphore; 
+    Ptr32<void> refillSemaphore; 
     uint32_t reservedFC;
     char unusedText[256]; // The gfx asset header's text at +0x100 (see GraphicsTextureSourceAsset); Movie_Open clears its first byte.
     struct GraphicsTextureSourceEntry sourceEntry;
@@ -6242,28 +6243,28 @@ struct MovieRuntime {
 };
 
 struct UiRootCallbacks {
-    Bool8 (*vetoClose)(struct UiRootNode *); // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
-    void (*frameUpdate)(struct UiRootNode *); // Optional per-frame callback invoked by UiFrame_Update while this root is active.
-    Bool8 (*method08)(struct UiRootNode *); // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
-    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
-    int (*pointerMissPolicy)(struct UiRootNode *); // Signed return policy; nonnegative stops pointer root traversal, negative continues to previousRoot.
+    Ptr32<Bool8 (struct UiRootNode *)> vetoClose; // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
+    Ptr32<void (struct UiRootNode *)> frameUpdate; // Optional per-frame callback invoked by UiFrame_Update while this root is active.
+    Ptr32<Bool8 (struct UiRootNode *)> method08; // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
+    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
+    Ptr32<int (struct UiRootNode *)> pointerMissPolicy; // Signed return policy; nonnegative stops pointer root traversal, negative continues to previousRoot.
 };
 
 struct InGameScheduledConditionDispatchTable14 {
-    void *noneOrUnused;
-    void *noActiveEntityWithDefinition;
-    void *noActiveEntityWithDefinitionAndClassCommandGroupA;
-    void *noActiveEntityWithDefinitionAndRuntimeId;
-    void *factionInactiveOrRelationAtLeast8;
-    void *primaryResourceCurrentAtLeast;
-    void *secondaryResourceCurrentAtLeast;
-    void *activeArmyScaleValueAtLeast;
-    void *matchingDefinitionAndRuntimeIdActiveEntityCountAtLeast;
-    void *factionTerrainOccupancyMaskF9PercentAtLeast;
-    void *countdownElapsed;
-    void *primaryResourceLimitAtMost0FA0;
-    void *noActiveEntityWithClassIdOutsideClassCommandGroupA;
-    void *booleanPostfixExpression;
+    Ptr32<void> noneOrUnused;
+    Ptr32<void> noActiveEntityWithDefinition;
+    Ptr32<void> noActiveEntityWithDefinitionAndClassCommandGroupA;
+    Ptr32<void> noActiveEntityWithDefinitionAndRuntimeId;
+    Ptr32<void> factionInactiveOrRelationAtLeast8;
+    Ptr32<void> primaryResourceCurrentAtLeast;
+    Ptr32<void> secondaryResourceCurrentAtLeast;
+    Ptr32<void> activeArmyScaleValueAtLeast;
+    Ptr32<void> matchingDefinitionAndRuntimeIdActiveEntityCountAtLeast;
+    Ptr32<void> factionTerrainOccupancyMaskF9PercentAtLeast;
+    Ptr32<void> countdownElapsed;
+    Ptr32<void> primaryResourceLimitAtMost0FA0;
+    Ptr32<void> noActiveEntityWithClassIdOutsideClassCommandGroupA;
+    Ptr32<void> booleanPostfixExpression;
 };
 
 #pragma pack(push, 1) /* packed layout: no alignment padding */
@@ -6278,7 +6279,7 @@ typedef uint32_t EnergyDemandQ4;
 
 struct ModelRuntimeAttachmentSavedDescriptor {
     ModelRuntimePoolRelativeOffset childModelRuntimeSavedOffset; 
-    struct ModelAttachmentTransformRecord *sourceTransform; 
+    Ptr32<struct ModelAttachmentTransformRecord> sourceTransform; 
     ModelNodePoolRelativeOffset parentModelNodeSavedOffset; 
     ModelChildNodeIndex childNodeIndex; 
     AngleTurn32 childLocalRotationAngle0; 
@@ -6377,7 +6378,7 @@ struct ResourceRegistrationRecordSavedView {
 };
 
 union ResourceRegistrationPointerOrSavedOffset4 {
-    void *runtimePointer; 
+    Ptr32<void> runtimePointer; 
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
 };
@@ -6386,11 +6387,11 @@ struct ResourceRegistrationRuntimeImageSavedView {
     uint8_t reserved0000_004F[80]; 
     uint32_t factionAssignmentIndex; 
     uint8_t reserved0054_0057[4]; 
-    struct ResourceRegistrationRecordSavedView *records; 
+    Ptr32<struct ResourceRegistrationRecordSavedView> records; 
     uint8_t reserved005C_00AB[80]; 
     uint32_t recordCount; 
     uint8_t reserved00B0_00D7[40]; 
-    struct ResourceRegistrationRecord *tailRecord; 
+    Ptr32<struct ResourceRegistrationRecord> tailRecord; 
 };
 
 struct ResourceRegistrationRecord {
@@ -6398,10 +6399,10 @@ struct ResourceRegistrationRecord {
     union ResourceRegistrationPointerOrSavedOffset4 secondaryPointerOrSavedOffset; 
     union ResourceRegistrationPointerOrSavedOffset4 ownerRuntimeOrSavedOffset; 
     uint8_t reserved000C_002F[36]; 
-    struct GraphicsPaletteAsset *paletteAsset; 
-    struct GraphicsTextureSet *textureSet; 
+    Ptr32<struct GraphicsPaletteAsset> paletteAsset; 
+    Ptr32<struct GraphicsTextureSet> textureSet; 
     uint8_t reserved0038_003F[8]; 
-    struct SpriteAssetHeader *spriteAsset; 
+    Ptr32<struct SpriteAssetHeader> spriteAsset; 
     uint8_t reserved0044_0047[4]; 
     union ResourceRegistrationRuntimePayloadReference4 runtimePayload; 
     RuntimeRegistrationRecordFlags flags; 
@@ -6416,7 +6417,7 @@ struct ResourceRegistrationRecord {
 };
 
 struct ShotRuntimeOwnerAndTrajectorySerializedState {
-    struct ArmyRuntimeSlot *ownerArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; 
     Q12 directionComponent0Q12; 
     Q12 directionComponent1Q12; 
     Q12 directionComponent2Q12; 
@@ -6439,13 +6440,13 @@ struct ShotRuntimeSlotSerializedScalarView {
 };
 
 struct ArmyArticulatedRuntimeSlotView {
-    void *definitionOrAsset; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<void> definitionOrAsset; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -6464,7 +6465,7 @@ struct ArmyArticulatedRuntimeSlotView {
     uint32_t classState60; 
     uint32_t ownerValue64; 
     uint32_t ownerValue68; 
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
@@ -6486,7 +6487,7 @@ struct ArmyArticulatedRuntimeSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -6512,13 +6513,13 @@ struct ArmyRuntimeLinkedChildMaskArticulatedContactState {
 };
 
 struct ArmyRuntimeLinkedChildMaskSlotView {
-    void *definitionOrAsset; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<void> definitionOrAsset; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -6537,7 +6538,7 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     uint32_t classState60; 
     uint32_t classState64; 
     uint32_t classState68; 
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
@@ -6559,7 +6560,7 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -6573,13 +6574,13 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
 };
 
 struct ArmyRuntimeMovementCountdownSlotView {
-    void *definitionOrAsset; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityMovementCountdownRuntime *linkedEntityRuntime; 
+    Ptr32<void> definitionOrAsset; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityMovementCountdownRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -6598,7 +6599,7 @@ struct ArmyRuntimeMovementCountdownSlotView {
     uint32_t classState60; 
     uint32_t classState64; 
     uint32_t classState68; 
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
@@ -6620,7 +6621,7 @@ struct ArmyRuntimeMovementCountdownSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -6662,8 +6663,8 @@ struct GameEntityMovementCountdownRuntime {
 };
 
 struct ArmyGraphicsBinding {
-    struct GraphicsTextureSet *textureSet;
-    struct GraphicsPaletteAsset *paletteAsset; 
+    Ptr32<struct GraphicsTextureSet> textureSet;
+    Ptr32<struct GraphicsPaletteAsset> paletteAsset; 
 };
 
 struct ArmyRuntimeWaypointCoordinateState {
@@ -6674,13 +6675,13 @@ struct ArmyRuntimeWaypointCoordinateState {
 };
 
 struct ArmyRuntimeWaypointCoordinateSlotView {
-    void *definitionOrAsset; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<void> definitionOrAsset; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -6699,7 +6700,7 @@ struct ArmyRuntimeWaypointCoordinateSlotView {
     uint32_t classState60; 
     uint32_t classState64; 
     uint32_t classState68; 
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
@@ -6721,7 +6722,7 @@ struct ArmyRuntimeWaypointCoordinateSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -6735,8 +6736,8 @@ struct ArmyRuntimeWaypointCoordinateSlotView {
 };
 
 struct ArmyTerrainContactDispatchTable2 {
-    void *acquireOrInitializeContactSlotEntry; 
-    void *advanceActiveContactAndReleaseEntry; 
+    Ptr32<void> acquireOrInitializeContactSlotEntry; 
+    Ptr32<void> advanceActiveContactAndReleaseEntry; 
 };
 
 struct ArmyRuntimeLinkedChildDefinitionState {
@@ -6756,13 +6757,13 @@ struct WorldPointXYQ12 {
 };
 
 struct ArmyMovementRuntime {
-    struct GameEntityRuntime *entityRuntime; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<struct GameEntityRuntime> entityRuntime; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -6781,7 +6782,7 @@ struct ArmyMovementRuntime {
     uint32_t classState60; 
     uint32_t ownerValue64; 
     uint32_t ownerValue68; 
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; 
     Q12 lastCheckedWorldXQ12; 
     Q12 lastCheckedWorldYQ12; 
     Q12 movementTargetWorldXQ12; 
@@ -6811,12 +6812,12 @@ struct ArmyMovementRuntime {
 };
 
 struct ArmyPlacementAssetClassDispatchCallbackTable24 {
-    void (*callbacks[24])(uint32_t, uint32_t, uint32_t, uint32_t, Q12, Q12, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *); 
+    Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t, Q12, Q12, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *)> callbacks[24]; 
 };
 
 struct InGameFieldImageSaveContext58 {
     uint8_t opaqueRuntimePrefix00_53[84]; 
-    struct FieldGridAsset *fieldGridAsset; 
+    Ptr32<struct FieldGridAsset> fieldGridAsset; 
 };
 
 enum /* RuntimeClassFamilyProfile, stored in 1 byte(s) */ {
@@ -6859,42 +6860,42 @@ struct RuntimeClassFamilyMap24 {
 };
 
 struct ArmyRuntimeClassCallbackPartitions {
-    void (*runtimeUpdate[24])(struct WorldRuntimeContext *, struct ModelRuntimeUpdateView *); // 24 per-class runtime-update callbacks selected by class id.
-    void (*classMethodD[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *); // 24 per-class method-D callbacks selected by class id.
-    void (*modelUnrebase[24])(struct ModelRuntimeSlot *); // 24 per-class model-runtime unrebase callbacks selected by class id.
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeUpdateView *)> runtimeUpdate[24]; // 24 per-class runtime-update callbacks selected by class id.
+    Ptr32<void (struct WorldRuntimeContext *, struct ArmyRuntimeSlot *)> classMethodD[24]; // 24 per-class method-D callbacks selected by class id.
+    Ptr32<void (struct ModelRuntimeSlot *)> modelUnrebase[24]; // 24 per-class model-runtime unrebase callbacks selected by class id.
 };
 
 union RuntimeMaintenanceObjectReference4 {
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct WorldRuntimeNode *worldNode; 
-    struct ArmyRuntimeSlot *armyRuntime; 
-    struct ShotRuntimeSlot *shotRuntime; 
-    struct EffectRuntimeSlot *effectRuntime; 
-    void *opaqueRuntime; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct WorldRuntimeNode> worldNode; 
+    Ptr32<struct ArmyRuntimeSlot> armyRuntime; 
+    Ptr32<struct ShotRuntimeSlot> shotRuntime; 
+    Ptr32<struct EffectRuntimeSlot> effectRuntime; 
+    Ptr32<void> opaqueRuntime; 
 };
 
 struct RuntimeMaintenanceObjectCallbacks {
-    void (*army)(struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4); 
-    void (*shot)(struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4); 
-    void (*effect)(struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4); 
+    Ptr32<void (struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4)> army; 
+    Ptr32<void (struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4)> shot; 
+    Ptr32<void (struct WorldRuntimeContext *, union RuntimeMaintenanceObjectReference4)> effect; 
 };
 
 struct RuntimeMaintenanceAudioRefreshCallbacks {
-    void (*army)(struct WorldRuntimeContext *, struct WorldOwnerListNode *); // the owner-list node of a model (ArmyRuntimeMaintenance_DispatchClassMethodDRecursive)
-    void (*shot)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
-    void (*effect)(struct WorldRuntimeContext *, void *); 
+    Ptr32<void (struct WorldRuntimeContext *, struct WorldOwnerListNode *)> army; // the owner-list node of a model (ArmyRuntimeMaintenance_DispatchClassMethodDRecursive)
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> shot; 
+    Ptr32<void (struct WorldRuntimeContext *, void *)> effect; 
 };
 
 struct RuntimeMaintenancePrimaryUpdateCallbacks {
-    void (*army)(struct WorldRuntimeContext *, struct WorldOwnerListNode *); // Every-tick primary update army slot.
-    void (*shot)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); // Every-tick primary update shot slot.
-    void (*effect)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); // Every-tick primary update effect slot.
+    Ptr32<void (struct WorldRuntimeContext *, struct WorldOwnerListNode *)> army; // Every-tick primary update army slot.
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> shot; // Every-tick primary update shot slot.
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> effect; // Every-tick primary update effect slot.
 };
 
 struct RuntimeMaintenanceTerrainStateRefreshCallbacks {
-    void (*army)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
-    void (*shot)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
-    void (*effect)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> army; 
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> shot; 
+    Ptr32<void (struct WorldRuntimeContext *, struct ModelRuntimeNode *)> effect; 
 };
 
 enum /* RuntimeMaintenancePhaseIndex, stored in 1 byte(s) */ {
@@ -6925,22 +6926,22 @@ struct RuntimeMaintenanceTargetTypeDescriptor8 {
     RuntimeMaintenanceDomainIndex domain; 
     RuntimeMaintenanceSecondArgumentKind secondArgumentKind; 
     uint8_t reserved03; 
-    void *callbackTarget; 
+    Ptr32<void> callbackTarget; 
 };
 
 struct ArmyPlacementClassCallbackPartitions {
-    void (*modelRelease[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *); 
-    void (*placementValidation[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *); 
+    Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelRelease[24]; 
+    Ptr32<void (struct WorldRuntimeContext *, struct ArmyRuntimeSlot *)> placementValidation[24]; 
 };
 
 struct ArmyRuntimeClassCommandTable {
-    void (*callbacks[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *); 
+    Ptr32<void (struct WorldRuntimeContext *, struct ArmyRuntimeSlot *)> callbacks[24]; 
 };
 
 struct RuntimeMaintenanceOccupancyRebuildCallbacks {
-    void (*army)(struct WorldRuntimeContext *, struct WorldOwnerListNode *); // Occupancy rebuild army slot.
-    void (*shot)(struct WorldRuntimeContext *, void *); // Occupancy rebuild shot slot.
-    void (*effect)(struct WorldRuntimeContext *, void *); // Occupancy rebuild effect slot.
+    Ptr32<void (struct WorldRuntimeContext *, struct WorldOwnerListNode *)> army; // Occupancy rebuild army slot.
+    Ptr32<void (struct WorldRuntimeContext *, void *)> shot; // Occupancy rebuild shot slot.
+    Ptr32<void (struct WorldRuntimeContext *, void *)> effect; // Occupancy rebuild effect slot.
 };
 
 struct RuntimeMaintenanceCallbackPhasesTyped {
@@ -6973,11 +6974,11 @@ struct RuntimeMaintenanceTargetTypeMatrix4x3 {
 };
 
 struct ModelRuntimeSlotPointerRebaseCallbackTable24 {
-    void (*callbacks[24])(struct ModelRuntimeSlot *); 
+    Ptr32<void (struct ModelRuntimeSlot *)> callbacks[24]; 
 };
 
 struct ModelRuntimeSlotClassInitializeCallbackTable24 {
-    void (*callbacks[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *); 
+    Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> callbacks[24]; 
 };
 
 struct NetworkBackendInstanceDescriptorPrefix {
@@ -7003,7 +7004,7 @@ enum {
 typedef int PersistentTextureQualityLevel;
 
 struct PersistentSettingsRuntime {
-    struct PersistentSettingsImage *image; 
+    Ptr32<struct PersistentSettingsImage> image; 
     PersistentSettingsByteCount loadedByteCount; 
     PersistentSettingsMutationCount dirtyWriteCount; 
     uint16_t path[256]; 
@@ -7122,11 +7123,11 @@ struct AiScoredSiteWorkspaceEntry {
     Q12 cellWorldXQ12; 
     Q12 cellWorldYQ12; 
     int score; 
-    struct FieldGridCell *cell; 
+    Ptr32<struct FieldGridCell> cell; 
 };
 
 struct AiTerrainFeatureWorkspaceEntry {
-    struct FieldGridCell *cell; 
+    Ptr32<struct FieldGridCell> cell; 
     uint32_t unresolved04; 
     PckArmyAssetIdCatalog armyAssetId; 
     int priority; 
@@ -7135,15 +7136,15 @@ struct AiTerrainFeatureWorkspaceEntry {
 struct AiRuntimeWorkspaceEntry {
     /* the model runtime (runtimePayload) of a MODEL node of the world owner list, NULL for a pending asset;
        its owning army is modelRuntime->ownerArmyRuntimeOrSavedOffset (AiPlanning_RebuildFactionWorkspaces) */
-    struct ModelRuntimeSlot *modelRuntime; 
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; 
     PckArmyAssetIdCatalog armyAssetId; 
 };
 
 struct AiTargetWorkspaceEntry {
     Q12 worldXQ12; 
     Q12 worldYQ12; 
-    struct ModelRuntimeSlot *modelRuntime; /* copied from a workspace-02 entry */
-    struct ModelRuntimeNode *modelNode; /* its root model node */
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; /* copied from a workspace-02 entry */
+    Ptr32<struct ModelRuntimeNode> modelNode; /* its root model node */
 };
 
 struct AiLinkedDefinitionListView {
@@ -7180,7 +7181,7 @@ typedef int AiTechnologyCandidateScoreKind;
 
 struct AiTechnologyPlanningCandidate {
     PckTechnologyIdCatalog technologyId00; 
-    struct ModelRuntimeSlot *sourceModelRuntime04; /* the own structure's model runtime (workspace 00 entry) */
+    Ptr32<struct ModelRuntimeSlot> sourceModelRuntime04; /* the own structure's model runtime (workspace 00 entry) */
     AiTechnologyCandidateScoreKind scoreKind08; 
     uint32_t reserved0C; 
 };
@@ -7200,6 +7201,7 @@ struct SoundSampleAsset {
     uint8_t reservedB4_1FF[332];
 };
 
+/* Runtime only (native pointers): the sound code reads voiceSet through DirectSoundVoiceSet ** slot pointers. */
 struct SpatialSoundSlot {
     struct DirectSoundVoiceSet *voiceSet; 
     struct IDirectSoundBuffer *activeVoice; 
@@ -7208,15 +7210,15 @@ struct SpatialSoundSlot {
 };
 
 struct GridInfluenceAddCallbackTable24 {
-    void (*callbacks[24])(struct GameEntityRuntime *); 
+    Ptr32<void (struct GameEntityRuntime *)> callbacks[24]; 
 };
 
 struct GridInfluenceRemoveCallbackTable24 {
-    void (*callbacks[24])(struct GameEntityRuntime *); 
+    Ptr32<void (struct GameEntityRuntime *)> callbacks[24]; 
 };
 
 struct SelectionPointerArray32 {
-    struct GameEntityRuntime *entries[32]; 
+    Ptr32<struct GameEntityRuntime> entries[32]; 
 };
 
 struct SelectionPlayerRuntimeBlock {
@@ -7224,13 +7226,13 @@ struct SelectionPlayerRuntimeBlock {
     struct SelectionPlayerPairRecord markedCells[4096]; // +0x80: field cells marked with the editor region tool (PlayerPairList_InsertUnique).
     uint32_t factionIndex; // +0x8080: the player's faction (FactionRuntimeIndex).
     uint32_t markedCellCount;
-    int *terrainHeightScratchPlane;
-    uint32_t *terrainMaterialEditPlane;
+    Ptr32<int> terrainHeightScratchPlane;
+    Ptr32<uint32_t> terrainMaterialEditPlane;
     uint32_t placementFactionIndex; // +0x8090: faction of the next army placed in the editor (PlayerRuntime_SetPlacementFaction).
     uint32_t placedArmyToken; // +0x8094: army placed/picked in the editor, as an offset from g_ArmyRuntimeRebaseBaseMinusOne; moved and turned by the placement commands.
-    uintptr_t pendingPlacementArmyAsset; // +0x8098: ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
+    UPtr32 pendingPlacementArmyAsset; // +0x8098: ArmyAssetRecordPrefix * taken from the faction's army stock for placement, 0 when none.
     uint32_t chatRecipientMaskAndWriteOffset; // +0x809C: chat recipient mask (bits 8+faction, 16+player) and, in the low byte, the write offset in chatStagingText.
-    uintptr_t technologyPageBuilding; // +0x80A0: building (ModelRuntimeSlot *) whose technology page the player has open.
+    UPtr32 technologyPageBuilding; // +0x80A0: building (ModelRuntimeSlot *) whose technology page the player has open.
     uint32_t heldResearchUnpaidFlag; // +0x80A4: its ARMY_MODEL_STATE_RESEARCH_UNPAID bit, taken away while the page is open.
     uint32_t sessionFlags;
     InGameSimulationStepBatchTicks simulationStepTicks; 
@@ -7290,7 +7292,7 @@ struct PckMountSlot {
 
 union ShotRayDistanceOrDefinitionReference {
     Q12 rayDistanceQ12; 
-    struct ShotDefinition *definition; 
+    Ptr32<struct ShotDefinition> definition; 
     PckShotDefinitionIdCatalog savedId; 
     uint32_t raw; 
 };
@@ -7324,7 +7326,7 @@ struct ModelRuntimeSlotUnrebaseView {
 };
 
 union ArmyAssetReferenceOrSavedId4 {
-    struct ArmyAssetRecordPrefix *record; 
+    Ptr32<struct ArmyAssetRecordPrefix> record; 
     PckArmyAssetIdCatalog savedId; 
     uint32_t raw; 
 };
@@ -7341,7 +7343,7 @@ struct ArmyAssetRecord {
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex;
     PckArmyAssetIdCatalog registryId;
     uint32_t rootNodeOffsetOrPointer;
-    void *linkedRuntimeOrRecord10;
+    Ptr32<void> linkedRuntimeOrRecord10;
     uint32_t flags; /* +0x14 ARMY_ASSET_FLAG_*: 1 enabled/buildable, 0x100 editor-placeable, 0x200 editor object */
     uint8_t reserved018_01B[4];
     uint32_t selectionDetailValue; /* +0x1C copied to InGameRuntimeRoot.selectionDetailArmyAssetValue */
@@ -7470,14 +7472,14 @@ struct ModelDefinitionResolveView {
     uint8_t reserved01C_023[8]; // Unresolved remaining fields.
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
-    struct ShotDefinition *shotDefinitionReference; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
+    Ptr32<struct ShotDefinition> shotDefinitionReference; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
     uint32_t reloadTicks; // ModelDefinition.reloadTicks; the AI divides shot damage by it (damage per tick), nonzero = armed.
     uint8_t reserved034_047[20]; // Unresolved remaining fields.
     uint32_t visibilityRadius;
     ModelRuntimeClassId runtimeClassId; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
     Q12 aimHeightOffsetQ12; /* +0x50 height above the model origin that shots aim at */
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
-    struct EffectDefinition *waterEmitterEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> waterEmitterEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex; also indexes the AI per-class maximum array during scoring.
     uint32_t maximumHealth; /* +0x60 maximum health */
     uint32_t rootNodeOffsetOrPointer;
@@ -7490,32 +7492,32 @@ struct ModelDefinitionResolveView {
     PckArmyAssetIdCatalog destroyedReplacementArmyAssetId; /* +0x74 */
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with positionedSoundMaximumDistanceQ12 to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with positionedSoundGainQ15.
-    struct EffectDefinition *destructionEffect0; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect0; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks0;
-    struct EffectDefinition *destructionEffect1; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect1; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks1;
-    struct EffectDefinition *destructionEffect2; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect2; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks2;
-    struct EffectDefinition *destructionEffect3; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect3; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks3;
-    struct EffectDefinition *destructionEffect4; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect4; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks4;
-    struct EffectDefinition *destructionEffect5; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect5; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks5;
-    struct EffectDefinition *destructionEffect6; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect6; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks6;
-    struct EffectDefinition *destructionEffect7; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> destructionEffect7; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint32_t destructionEffectDelayTicks7;
     uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t footprintRadius;
     uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    struct ShotDefinition *emitterShotDefinitionReference; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
+    Ptr32<struct ShotDefinition> emitterShotDefinitionReference; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
     uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    struct EffectDefinition *emitterEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> emitterEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t buildEnergyLoadQ4;
     uint32_t energyLoadQ4; /* +0x18C Energy demand (copied to the model runtime's energyLoadQ4) */
-    struct EffectDefinition *removalEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> removalEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t waterDamageThreshold;
     uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
@@ -7526,7 +7528,7 @@ struct ModelDefinitionResolveView {
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex;
     uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    struct EffectDefinition *damageEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
+    Ptr32<struct EffectDefinition> damageEffectDefinitionReference; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
     uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t footprintRadiusClass;
     uint32_t terrainTraversalClass;
@@ -7545,13 +7547,13 @@ struct ArmyRuntimeTerrainContactLinkedChildState {
 };
 
 struct ArmyRuntimeTerrainContactLinkedChildClassView {
-    void *definitionOrAsset; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<void> definitionOrAsset; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -7592,7 +7594,7 @@ struct ArmyRuntimeTerrainContactLinkedChildClassView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -7662,13 +7664,13 @@ struct ModelRuntimeLinkedChildClassView {
 };
 
 struct ArmyRuntimeTerrainContactLinkedChildModelView {
-    struct ModelRuntimeLinkedChildClassView *modelRuntime; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<struct ModelRuntimeLinkedChildClassView> modelRuntime; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -7709,7 +7711,7 @@ struct ArmyRuntimeTerrainContactLinkedChildModelView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -7723,13 +7725,13 @@ struct ArmyRuntimeTerrainContactLinkedChildModelView {
 };
 
 struct ArmyRuntimeTerrainContactLinkedChildSlotView {
-    struct ModelRuntimeLinkedChildClassView *modelRuntime; 
-    struct ModelRuntimeNode *modelNodeRuntime; 
-    struct GameEntityRuntime *linkedEntityRuntime; 
+    Ptr32<struct ModelRuntimeLinkedChildClassView> modelRuntime; 
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; 
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; 
     FactionRuntimeIndex factionIndex; 
     struct ArmyRuntimeMovementControlState movementControl; 
     ArmyMovementStateFlags movementStateFlags; 
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; 
     Q12 commandCoordinate0Q12; 
     Q12 commandCoordinate1Q12; 
     Q12 commandCoordinate2Q12; 
@@ -7758,7 +7760,7 @@ struct ArmyRuntimeTerrainContactLinkedChildSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; 
     uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
-    struct ArmyRuntimeSlot *linkedArmyRuntime; 
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
     uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
@@ -7774,13 +7776,13 @@ struct ArmyRuntimeTerrainContactLinkedChildSlotView {
 struct EffectModelRuntimeNode {
     struct WorldRuntimeNodeCommon common; 
     struct WorldRuntimeNodeModelPayload modelPayload; 
-    struct EffectRuntimeSlot *effectRuntime; 
+    Ptr32<struct EffectRuntimeSlot> effectRuntime; 
     ModelRuntimeFlags runtimeFlags; 
     ModelTextureSubresourceIndex textureSubresourceBaseIndex; 
     Q12 subtreeBoundingRadiusQ12; 
     PackedArgb32 tintArgb; 
-    struct GraphicsShadingRuntimeRecord *shadingRecord; 
-    void *modelRuntimeLinkOrSavedOffset; 
+    Ptr32<struct GraphicsShadingRuntimeRecord> shadingRecord; 
+    Ptr32<void> modelRuntimeLinkOrSavedOffset; 
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel primaryTextureOffsetU; 
     ModelTextureOffsetTexel primaryTextureOffsetV; 
@@ -7794,9 +7796,9 @@ struct EffectModelRuntimeNode {
     ModelDepthBinMask depthBinMaskFar; 
     int renderDepthBiasOrState; 
     Q12 modelScaleQ12; 
-    struct ModelRuntimeNode *parentNode; 
+    Ptr32<struct ModelRuntimeNode> parentNode; 
     uint32_t childCount; 
-    struct ModelRuntimeNode *childNodes[13]; 
+    Ptr32<struct ModelRuntimeNode> childNodes[13]; 
 };
 
 typedef uint32_t EnergyAmountQ4;
@@ -7807,28 +7809,28 @@ struct ResourceRegistrationRuntimeImage {
     uint8_t reserved0000_004F[80]; 
     uint32_t factionAssignmentIndex; 
     uint8_t reserved0054_0057[4]; 
-    struct ResourceRegistrationRecord *records; 
+    Ptr32<struct ResourceRegistrationRecord> records; 
     uint8_t reserved005C_00AB[80]; 
     uint32_t recordCount; 
     uint8_t reserved00B0_00D7[40]; 
-    struct ResourceRegistrationRecord *tailRecord; 
+    Ptr32<struct ResourceRegistrationRecord> tailRecord; 
 };
 
 typedef uint64_t ResourceRegistrationImagePair;
 
 struct ResourceRegistrationImagePairComponents8 {
-    void *runtimeImageBase;
+    Ptr32<void> runtimeImageBase;
     uint32_t byteLength;
 };
 
 /* One runtime save-segment image: the block to write and its byte size. */
 typedef struct RuntimeHexSegmentImage {
-    uint32_t *image;
+    Ptr32<uint32_t> image;
     uint32_t byteSize;
 } RuntimeHexSegmentImage;
 
 struct ResourceRegistrationDomainPairDispatchTable3 {
-    ResourceRegistrationImagePair (*callbacks[3])(void); 
+    Ptr32<ResourceRegistrationImagePair (void)> callbacks[3]; 
 };
 
 enum {
@@ -8147,19 +8149,19 @@ struct FrontendPointerHitContext {
     struct UiNodeBase base; 
     FrontendPointerContextFlags contextFlags; 
     uint8_t reserved50_D7[136]; 
-    struct UiNodeBase *candidateNodeListHead; 
+    Ptr32<struct UiNodeBase> candidateNodeListHead; 
     uint32_t activePlayerRuntimeId; 
-    struct UiNodeBase *selectedHitNode; 
+    Ptr32<struct UiNodeBase> selectedHitNode; 
     int selectedHitMetric; 
     uint32_t surfaceHitWorldX; 
     uint32_t surfaceHitWorldY; 
     uint32_t surfaceHitDepth; 
     uint8_t reservedF4_103[16]; 
-    uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *); 
-    uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *); 
-    uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *); 
-    uint32_t (*buttonDragCallback)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *); 
-    uint32_t (*buttonReleaseCallback)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *); 
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *)> hoverCursorCallback; 
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *)> heldButtonCursorCallback; 
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *)> buttonPressCallback; 
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *)> buttonDragCallback; 
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerHitContext *)> buttonReleaseCallback; 
 };
 
 struct TechnologyMask256 {
@@ -8314,8 +8316,8 @@ struct TextResourceLocaleBlockPrefix {
 };
 
 struct TextResourcePageBinding {
-    struct TextResourceLocaleBlockPrefix *selectedLocaleBlock; 
-    struct TextResourceAssetHeader *asset; 
+    Ptr32<struct TextResourceLocaleBlockPrefix> selectedLocaleBlock; 
+    Ptr32<struct TextResourceAssetHeader> asset; 
 };
 
 struct WideNumberFormatState {
@@ -8339,7 +8341,7 @@ struct WideNumberFormatState {
 
 struct TextResourceOverrideTable {
     uint32_t resourceIds[4096]; 
-    uint16_t *textPointers[4096]; 
+    Ptr32<uint16_t> textPointers[4096]; 
 };
 
 enum {
@@ -8444,33 +8446,33 @@ struct GraphicsPrimitiveVertexRaw {
 struct GraphicsPrimitivePacket {
     struct GraphicsPrimitiveVertexRaw vertices[3]; 
     PackedArgb32 modulationColor; 
-    struct GraphicsTextureSetEntry *textureEntry; 
+    Ptr32<struct GraphicsTextureSetEntry> textureEntry; 
     GraphicsPrimitiveDispatchFlags renderFlags; 
-    uint8_t reserved6C_7F[28 - 2 * sizeof(void *)]; /* the packet stays 0x80 bytes on x64 (5f) */
+    uint8_t reserved6C_7F[20];
 };
 
 union GraphicsPrimitiveRadixBucket {
     uint32_t count; 
-    struct GraphicsPrimitiveQueueNode *writeCursor; 
+    Ptr32<struct GraphicsPrimitiveQueueNode> writeCursor; 
 };
 
 struct GraphicsPrimitiveQueueNode {
     uint32_t sortKey; 
-    struct GraphicsPrimitivePacket *packet; 
-    struct GraphicsPrimitiveQueueNode *next; 
-    struct GraphicsPrimitiveQueueNode *previous; 
+    Ptr32<struct GraphicsPrimitivePacket> packet; 
+    Ptr32<struct GraphicsPrimitiveQueueNode> next; 
+    Ptr32<struct GraphicsPrimitiveQueueNode> previous; 
 };
 
 /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 - an MDL mesh triangle record (0x40-byte stride) whose
    vertex addresses are 32-bit slots in the loaded file image; with 8-byte pointers this layout no longer matches */
 struct GraphicsTriangleInput {
-    struct GraphicsProjectedVertexSource *vertex0; 
+    Ptr32<struct GraphicsProjectedVertexSource> vertex0; 
     GraphicsPrimitiveTextureCoordinateFixed textureU0; 
     GraphicsPrimitiveTextureCoordinateFixed textureV0; 
-    struct GraphicsProjectedVertexSource *vertex1; 
+    Ptr32<struct GraphicsProjectedVertexSource> vertex1; 
     GraphicsPrimitiveTextureCoordinateFixed textureU1; 
     GraphicsPrimitiveTextureCoordinateFixed textureV1; 
-    struct GraphicsProjectedVertexSource *vertex2; 
+    Ptr32<struct GraphicsProjectedVertexSource> vertex2; 
     GraphicsPrimitiveTextureCoordinateFixed textureU2; 
     GraphicsPrimitiveTextureCoordinateFixed textureV2; 
     GraphicsPlaneNormalFixed planeNormalXQ12; 
@@ -8491,7 +8493,7 @@ struct SoftwareFramebufferAccess {
     GraphicsPixelDimension width; 
     GraphicsPixelDimension height; 
     SoftwareFramebufferPixelSize bytesPerPixel; 
-    uint8_t *pixels; 
+    Ptr32<uint8_t> pixels; 
 };
 
 struct GraphicsCursorInputEvent {
@@ -8505,12 +8507,12 @@ struct GraphicsCursorInputEvent {
 
 struct SoftwareMaskRuntimeView {
     uint8_t unresolved00_4F[80]; 
-    struct GraphicsTextureSourceAsset *textureSource; 
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource; 
     uint32_t outgoingSubresource; /* UiSoftwareTexturePreviewControl.outgoingSubresource */
     uint32_t incomingSubresource; /* UiSoftwareTexturePreviewControl.incomingSubresource */
     uint32_t actionId; /* UiSoftwareTexturePreviewControl.actionId */
-    uint8_t *maskPixels;
-    uintptr_t blendedSourcePixels; /* second work buffer (UiSoftwareTexturePreviewControl.blendedSourcePixels) */
+    Ptr32<uint8_t> maskPixels;
+    UPtr32 blendedSourcePixels; /* second work buffer (UiSoftwareTexturePreviewControl.blendedSourcePixels) */
     int tickCounter; 
 };
 
@@ -8562,9 +8564,9 @@ struct SoftwarePixelMmxConstants {
 struct GraphicsPrimitiveQueue {
     uint32_t capacity; 
     uint32_t count; 
-    struct GraphicsPrimitivePacket *packetPool; 
-    struct GraphicsPrimitiveQueueNode *radixScratchPool; 
-    struct GraphicsPrimitiveQueueNode *traversalCursor; 
+    Ptr32<struct GraphicsPrimitivePacket> packetPool; 
+    Ptr32<struct GraphicsPrimitiveQueueNode> radixScratchPool; 
+    Ptr32<struct GraphicsPrimitiveQueueNode> traversalCursor; 
     uint32_t reserved14; 
     uint32_t reserved18; 
     uint32_t reserved1C; 
@@ -8749,7 +8751,7 @@ struct GameFactionRuntimeRecord {
     struct AiFactionCandidateCacheState candidateCache; 
     uint32_t secondaryArmyAssetPointersOrIds[64]; 
     uint32_t primaryArmyAssetPointersOrIds[64]; 
-    struct ArmyRuntimeSlot *runtimeGroupMembers8x32[256]; 
+    Ptr32<struct ArmyRuntimeSlot> runtimeGroupMembers8x32[256]; 
     uint32_t technologyMasks256Bits[8]; 
     uint32_t relationStateTicks[8]; 
     int32_t aiPressureValues[8]; 
@@ -8784,13 +8786,13 @@ struct GameDataAuxState {
 };
 
 struct KeyboardAsciiCaseTransformCallbackTable3 {
-    Bool8 (*compareCaseInsensitiveFlags)(uint32_t, uint32_t); /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
-    uint32_t (*toUpper)(uint32_t); 
-    uint32_t (*toLower)(uint32_t); 
+    Ptr32<Bool8 (uint32_t, uint32_t)> compareCaseInsensitiveFlags; /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
+    Ptr32<uint32_t (uint32_t)> toUpper; 
+    Ptr32<uint32_t (uint32_t)> toLower; 
 };
 
 struct RandomGeneratorState {
-    uint32_t (*next)(void); 
+    Ptr32<uint32_t (void)> next; 
     RandomSeed primarySeed; 
     RandomSeed secondarySeed; 
 };
@@ -8799,7 +8801,7 @@ struct UiTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
@@ -8816,8 +8818,8 @@ struct UiNumericPairTextButton {
 typedef struct UiPayloadPairTextButton UiPayloadPairTextButton;
 struct UiPayloadPairTextButton {
     struct UiTextButtonControl base;
-    void *firstPayload;
-    void *secondPayload;
+    Ptr32<void> firstPayload;
+    Ptr32<void> secondPayload;
 };
 
 struct UiCommandRuntimeRecordPrefix {
@@ -8825,10 +8827,10 @@ struct UiCommandRuntimeRecordPrefix {
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex; /* +0x04 added to the hover text id base */
     PckArmyAssetIdCatalog armyAssetId;
     uint32_t rootNodeOffsetOrPointer; /* +0x0C ArmyAssetRecord.rootNodeOffsetOrPointer (ArmyModelTreeNode * after registration) */
-    void *linkedRuntimeOrRecord10;
+    Ptr32<void> linkedRuntimeOrRecord10;
     uint32_t assetFlags14; /* +0x14 army asset flags (ArmyAssetRecord.flags): 1 buildable, 0x10 special catalog, rest capability bits */
     uint8_t reserved18_1B[4];
-    struct GraphicsTextureSourceAsset *textureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
     uint32_t reserved20;
     ArmyBuildDurationQ5 buildDurationQ5; 
     ArmyBuildXeniteCostQ4 buildXeniteCostQ4; 
@@ -8843,15 +8845,15 @@ struct UiSpriteButtonDrawOffsets {
 
 struct UiSpriteButtonControl {
     struct UiSelectableControl selectable; 
-    struct GraphicsTextureSourceAsset *primaryTextureSource; 
+    Ptr32<struct GraphicsTextureSourceAsset> primaryTextureSource; 
     uint32_t normalSubresourceStartOrDescriptor; 
     struct UiSpriteButtonDrawOffsets drawOffsets; 
     GraphicsSubresourceIndex selectedSubresourceStart; 
     GraphicsSubresourceEndIndex normalSubresourceEndExclusive; 
     GraphicsSubresourceEndIndex selectedSubresourceEndExclusive; 
     GraphicsSubresourceOffset animationFrameOffset; 
-    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
-    struct GraphicsTextureSourceAsset *alternateTextureSource;
+    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct GraphicsTextureSourceAsset> alternateTextureSource;
 };
 
 struct UiCommandSpriteButtonControl {
@@ -8865,8 +8867,8 @@ struct UiCatalogEntryControl {
 };
 
 struct UiDirtyRectEntry {
-    struct UiRootNode *rootNode; 
-    struct UiRootNode *rootNodeCopy; 
+    Ptr32<struct UiRootNode> rootNode; 
+    Ptr32<struct UiRootNode> rootNodeCopy; 
     GraphicsScreenCoordinate left; 
     GraphicsScreenCoordinate top; 
     GraphicsScreenCoordinate right; 
@@ -8875,12 +8877,12 @@ struct UiDirtyRectEntry {
 
 struct UiImageControl {
     struct UiSelectableControl selectable; 
-    struct GraphicsTextureSourceAsset *textureSource; 
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource; 
     GraphicsSubresourceIndex normalSubresource; 
-    struct DirectSoundVoiceSet *keyboardActivationSound; // Sound of a keyboard activation (read through UiSoundSelectableControl.activationSound).
+    Ptr32<struct DirectSoundVoiceSet> keyboardActivationSound; // Sound of a keyboard activation (read through UiSoundSelectableControl.activationSound).
     GraphicsSubresourceIndex alternateSubresource;
-    struct UiNodeBase *activeChild;
-    struct DirectSoundVoiceSet *pointerActivationSound; // Sound played when the image opens/closes on a click; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct UiNodeBase> activeChild;
+    Ptr32<struct DirectSoundVoiceSet> pointerActivationSound; // Sound played when the image opens/closes on a click; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
@@ -8891,7 +8893,7 @@ struct UiImageActionControl {
     struct UiNodeBase base;
     uint32_t displayFlags; /* 1: stretch to the node, 2: Enter queues primaryActionId, 4: letterbox to letterboxWidth */
     GraphicsCursorFrameIndex cursorFrame;
-    struct GraphicsTextureSourceAsset *textureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
     GraphicsSubresourceIndex subresource;
     UiActionId primaryActionId;
     UiActionId secondaryActionId;
@@ -8907,21 +8909,21 @@ struct UiConditionalActionControl {
     GraphicsCursorFrameIndex cursorFrame;
     UiActionId actionId;
     uint32_t lineCount;
-    uint16_t *textLines[1];
+    Ptr32<uint16_t> textLines[1];
 };
 
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    Ptr32<struct DirectSoundVoiceSet> activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 typedef struct UiWindowControl UiWindowControl;
 /* Framed icon-and-text button (g_UiWindowControlVtable); shares the UiFramedTextButtonControl input methods, which only rely on the UiSelectableControl prefix. No template instance; the size past 0x68 is unknown. */
 struct UiWindowControl {
     struct UiSelectableControl selectable;
-    struct GraphicsTextureSourceAsset *iconTextureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> iconTextureSource;
     GraphicsSubresourceIndex iconSubresource;
     struct UiSpriteButtonDrawOffsets iconDrawOffsets; // Offset of the dimmed icon copy drawn under the icon: normal pair, or selected pair when selected.
     UiTextResourceId textResourceId;
@@ -8929,17 +8931,17 @@ struct UiWindowControl {
 };
 
 struct UiActionHandlerPage {
-    void *handlers[256]; 
+    Ptr32<void> handlers[256]; 
 };
 
 struct UiActionQueueEntry {
     UiActionId actionId; 
-    void *source; 
+    Ptr32<void> source; 
 };
 
 struct UiTooltipState {
     UiFrameCount countdownFrames; 
-    struct UiNodeBase *targetNode; 
+    Ptr32<struct UiNodeBase> targetNode; 
     UiPixelCoordinate pointerX; 
     UiPixelCoordinate pointerY; 
 };
@@ -8958,9 +8960,9 @@ struct UiRuntimeRecord {
 };
 
 struct UiTransferMailboxState {
-    void *outgoingAllocation; 
+    Ptr32<void> outgoingAllocation; 
     UiTransferPayloadByteCount outgoingByteCount; 
-    void *receivedAllocation; 
+    Ptr32<void> receivedAllocation; 
     UiTransferPayloadByteCount receivedByteCount; 
     UiTransferRemainingByteCount receivedRemainingBytes; 
     UiTransferRetryTickCount receiveRetryTicks; 
@@ -8977,8 +8979,8 @@ struct FrontendDisplayResolutionRows {
 };
 
 struct FrontendDisplayAdapterOptionRow {
-    uint16_t *adapterDescriptionUtf16; 
-    uint16_t *deviceNameUtf16; 
+    Ptr32<uint16_t> adapterDescriptionUtf16; 
+    Ptr32<uint16_t> deviceNameUtf16; 
     uint8_t reserved0008_0067[96]; 
 };
 
@@ -9054,7 +9056,7 @@ struct UiRequiredTextEditControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
 };
 
@@ -9067,29 +9069,29 @@ struct UiPathTextEditControl {
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
-    struct DirectSoundVoiceSet *activationSound; 
+    Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t pathBuffer[256]; 
 };
 
 struct UiDisplayModeSelectionActionHandlerTable {
-    void (*handlers[20])(struct UiNodeBase *); 
+    Ptr32<void (struct UiNodeBase *)> handlers[20]; 
 };
 
 struct FrontendUiActionHandlerPage20Prefix {
-    void (*handlers00_54[85])(void *); // Generic queued action handlers for action IDs 0x2000-0x2054.
-    void (*scenarioCatalogRebuildCallbacks[3])(uint32_t, uint32_t, uint32_t, uint32_t); // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
+    Ptr32<void (void *)> handlers00_54[85]; // Generic queued action handlers for action IDs 0x2000-0x2054.
+    Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t)> scenarioCatalogRebuildCallbacks[3]; // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
 };
 
 struct InGameUiActionHandlerPage12Prefix28 {
-    void (*handlers[28])(void *); 
+    Ptr32<void (void *)> handlers[28]; 
 };
 
 struct InGameUiActionHandlerPage10Prefix40 {
-    void (*handlers[40])(void *); 
+    Ptr32<void (void *)> handlers[40]; 
 };
 
 struct InGameUiCommandModeActionHandlerPage11 {
-    void (*handlers[30])(void *); 
+    Ptr32<void (void *)> handlers[30]; 
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -9166,7 +9168,7 @@ struct TH_WNDCLASSA {
 
 
 struct ArmyPlacementContactCallbackTable5 {
-    void (*callbacks[5])(Q12, Q12, Q12, struct ModelRuntimeNode *, struct WorldRuntimeContext *); 
+    Ptr32<void (Q12, Q12, Q12, struct ModelRuntimeNode *, struct WorldRuntimeContext *)> callbacks[5]; 
 };
 
 struct DIPROPHEADER {
@@ -9470,15 +9472,15 @@ struct GeneratedAssetEntryCountHeader {
 };
 
 struct GraphicsTextureSourceLifecycleCallbackTable {
-    void (*releasePackage)(struct GraphicsTextureSourceAsset *); 
-    GraphicsTextureSourceAsset * (*clone)(struct GraphicsTextureSourceAsset *); 
-    void (*releaseClone)(struct GraphicsTextureSourceAsset *); 
+    Ptr32<void (struct GraphicsTextureSourceAsset *)> releasePackage; 
+    Ptr32<GraphicsTextureSourceAsset * (struct GraphicsTextureSourceAsset *)> clone; 
+    Ptr32<void (struct GraphicsTextureSourceAsset *)> releaseClone; 
 };
 
 struct GraphicsPaletteAssetLifecycleCallbackTable {
-    void (*releasePackage)(struct GraphicsPaletteAsset *); 
-    GraphicsPaletteAsset * (*clone)(struct GraphicsPaletteAsset *); 
-    void (*releaseClone)(struct GraphicsPaletteAsset *); 
+    Ptr32<void (struct GraphicsPaletteAsset *)> releasePackage; 
+    Ptr32<GraphicsPaletteAsset * (struct GraphicsPaletteAsset *)> clone; 
+    Ptr32<void (struct GraphicsPaletteAsset *)> releaseClone; 
 };
 
 struct RomAssetHeader {
@@ -9487,8 +9489,8 @@ struct RomAssetHeader {
 };
 
 struct RomRegistrySlot {
-    struct RomAssetRecordPrefix *record; 
-    struct WorldRuntimeNode *runtimeRootNode; 
+    Ptr32<struct RomAssetRecordPrefix> record; 
+    Ptr32<struct WorldRuntimeNode> runtimeRootNode; 
 };
 
 struct RomAssetRecordPrefix {
@@ -9517,11 +9519,11 @@ struct EffectAssetHeader {
 };
 
 struct EffectLifecycleTransitionDispatchTable {
-    void *spawnLinkedEffectAfterCountdownEntry; 
-    void *advancePeriodicEmissionAndCompletionActionEntry; 
-    void *integrateLinearMotionAndShadingPositionEntry; 
-    void *noAdditionalActionEntry; 
-    void *advanceTerrainRelativeMotionAndTerminateOnContactEntry; 
+    Ptr32<void> spawnLinkedEffectAfterCountdownEntry; 
+    Ptr32<void> advancePeriodicEmissionAndCompletionActionEntry; 
+    Ptr32<void> integrateLinearMotionAndShadingPositionEntry; 
+    Ptr32<void> noAdditionalActionEntry; 
+    Ptr32<void> advanceTerrainRelativeMotionAndTerminateOnContactEntry; 
 };
 
 struct ShotAssetHeader {
@@ -9563,10 +9565,10 @@ struct FrontendPlayerNameUtf16 {
 };
 
 struct FrontendNetworkSettingsPageCommonPrefix {
-    struct UiNodeBase *nextSibling; 
-    struct UiNodeBase *firstChild; 
-    struct UiNodeBase *parent; 
-    struct UiNodeVtable *vtable; 
+    Ptr32<struct UiNodeBase> nextSibling; 
+    Ptr32<struct UiNodeBase> firstChild; 
+    Ptr32<struct UiNodeBase> parent; 
+    Ptr32<struct UiNodeVtable> vtable; 
     int32_t left; 
     int32_t top; 
     int32_t right; 
@@ -10000,7 +10002,7 @@ struct IMAGE_RESOURCE_DIRECTORY {
 };
 
 struct FieldGridInterpolationCallbackTable5 {
-    Bool8 (*callbacks[5])(Q12, Q12, struct FieldGridAsset *, Q12 *); // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
+    Ptr32<Bool8 (Q12, Q12, struct FieldGridAsset *, Q12 *)> callbacks[5]; // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
 };
 
 /* Q12 vector returned by the fixed-point rotation helpers. */
@@ -10058,7 +10060,7 @@ struct FixedRollAzimuthElevation {
 };
 
 struct SelectableNodeResult {
-    struct UiNodeBase *node; // selected/last node
+    Ptr32<struct UiNodeBase> node; // selected/last node
     Bool8 noneSelected; // true when no visible node is selected
 };
 
@@ -10087,17 +10089,17 @@ struct FixedLengthAzimuthElevation {
 typedef void ModelRuntimeClassCallback(struct WorldRuntimeContext *worldRuntime, struct ModelRuntimeSlot *modelRuntime);
 
 struct ArmyRuntimeOrderHandlerMatrix11x24 {
-    ModelRuntimeClassCallback *runtimeUpdate[24];
-    ModelRuntimeClassCallback *classMethodD[24];
-    void (*modelUnrebase[24])(struct ModelRuntimeSlot *);
-    void (*modelRebaseOrLoadRepair[24])(struct ModelRuntimeSlot *);
-    void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
-    void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
-    Bool8 (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *); // 24 placement validators returning a bool. Split from generic world/army callbacks.
-    Bool8 (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue); // true = accepted, *outPlacementValue set only then
-    ModelRuntimeClassCallback *classCommand[24];
-    void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
-    void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
+    Ptr32<ModelRuntimeClassCallback> runtimeUpdate[24];
+    Ptr32<ModelRuntimeClassCallback> classMethodD[24];
+    Ptr32<void (struct ModelRuntimeSlot *)> modelUnrebase[24];
+    Ptr32<void (struct ModelRuntimeSlot *)> modelRebaseOrLoadRepair[24];
+    Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelClassInitialize[24];
+    Ptr32<void (struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *)> modelReleaseOrCommit[24];
+    Ptr32<Bool8 (struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *)> placementValidation[24]; // 24 placement validators returning a bool. Split from generic world/army callbacks.
+    Ptr32<Bool8 (uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue)> placementAssetClassDispatch[24]; // true = accepted, *outPlacementValue set only then
+    Ptr32<ModelRuntimeClassCallback> classCommand[24];
+    Ptr32<void (struct GameEntityRuntime *)> gridInfluenceAdd[24];
+    Ptr32<void (struct GameEntityRuntime *)> gridInfluenceRemove[24];
 };
 
 /* Angles of a composed rotation as FixedTransform_ComposeEulerAngles returns them; the order of the model
@@ -10111,7 +10113,7 @@ struct FixedAzimuthElevationRoll {
 
 struct AiSecondaryWorkspaceDistanceSelection {
     AiCandidateScore32 score;
-    struct AiTargetWorkspaceEntry *selectedEntry;
+    Ptr32<struct AiTargetWorkspaceEntry> selectedEntry;
 };
 struct TerrainOccupancyFlagsAndCombinedMask {
     uint32_t runtimeFlags;
@@ -10124,7 +10126,7 @@ struct TerrainOccupancyResolvedMasks {
 };
 struct AiGeneralSiteDistanceSelection {
     AiCandidateScore32 score;
-    struct AiScoredSiteWorkspaceEntry *selectedEntry;
+    Ptr32<struct AiScoredSiteWorkspaceEntry> selectedEntry;
 };
 struct GridPathBestUnreachableCell {
     uint32_t bestCellByteOffset; /* in/out: byte offset from g_GridScratchBase. */
@@ -10185,24 +10187,24 @@ struct ModelProjectedBoundsPixels {
 };
 
 struct FrameProviderResult {
-    void *frameOrError; // frame pointer when noFrame is false; error-coded value when it is true
+    Ptr32<void> frameOrError; // frame pointer when noFrame is false; error-coded value when it is true
     Bool8 noFrame; // true when no frame is returned
 };
 
 struct PcxDecodeResult {
-    void *decodedImageOrError; // decoded image or error
+    Ptr32<void> decodedImageOrError; // decoded image or error
     Bool8 failed; // true on failure
 };
 
 struct PcxEncodeResult {
-    void *encodedBytesOrError; // encoded allocation or error
+    Ptr32<void> encodedBytesOrError; // encoded allocation or error
     uint32_t encodedByteCount; // encoded byte count
     Bool8 failed; // true on failure
 };
 
 struct RuntimeModelFactionPrefix {
-    struct ModelRuntimeSlot *modelRuntime; // Root ModelRuntimeSlot consumed by hierarchy metric wrappers.
-    struct ModelRuntimeNode *modelNode; // Model node pointer shared by the observed ArmyRuntimeSlot/GameEntityRuntime headers.
+    Ptr32<struct ModelRuntimeSlot> modelRuntime; // Root ModelRuntimeSlot consumed by hierarchy metric wrappers.
+    Ptr32<struct ModelRuntimeNode> modelNode; // Model node pointer shared by the observed ArmyRuntimeSlot/GameEntityRuntime headers.
     uint32_t runtimeLinkOrKind08; // Owner-specific runtime link or small kind/state value; semantics deliberately not unified.
     FactionRuntimeIndex factionIndex; // Faction/owner index consumed by faction-runtime lookup.
 };
@@ -10219,7 +10221,7 @@ struct TerrainProjectedVertexWorkRecord {
     struct GraphicsFixedVec3 sourcePoint; // Mutable source point temporarily offset before second projection
     Q12 secondaryProjectionDepthQ12; // Q12 depth/extent added to sourcePoint.z for the secondary projection
     uint32_t projectionFlags; // Projection/clip and shading flags
-    struct GraphicsFixedVec3 *secondaryOffset; // Three-component offset added to sourcePoint for second projection
+    Ptr32<struct GraphicsFixedVec3> secondaryOffset; // Three-component offset added to sourcePoint for second projection
     PackedArgb32 packedColorA; // Packed color input A
     PackedArgb32 packedColorB; // Packed color input B
     PackedArgb32 shadedColorA; // Computed packed shaded color A
@@ -10240,14 +10242,14 @@ struct UiSelectionGeometryControl {
     Q12 sourceOriginYQ12; // Source-space Y (texture row, Q12) shown at the control's centre; the minimap stores the clicked grid row here on recentre.
     Q12 sampleScaleQ12; // Scale multiplied by the fixed sine/cosine tables before the sampling transform.
     AngleTurn32 rotationAngle; // Fixed-turn angle indexing the global Q28 sine/cosine tables.
-    struct GraphicsTextureSourceAsset *textureSource; // Texture-source asset. DrawClipped resolves its GraphicsTextureSourceEntry table and samples direct-color pixels.
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource; // Texture-source asset. DrawClipped resolves its GraphicsTextureSourceEntry table and samples direct-color pixels.
     UiActionId actionId; // Action enqueued by ConvertPointerAndEnqueueAction after writing the transformed source coordinates.
     Q12 selectedSourceXQ12; // Pointer position transformed into source-space X (texture column; the minimap's grid column) before action dispatch.
     Q12 selectedSourceYQ12; // Pointer position transformed into source-space Y (texture row; the minimap's grid row) before action dispatch.
 };
 
 union RomSerializedNodeReferenceOrSavedOffset4 {
-    struct RomSerializedNodeHeader *node; // relocated runtime pointer
+    Ptr32<struct RomSerializedNodeHeader> node; // relocated runtime pointer
     AssetRelativeOffset savedOffset; // serialized asset-relative offset before relocation
 };
 
@@ -10270,12 +10272,12 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved0058_017B[292];
     struct UiPageStackControl primaryPageStack;
     uint8_t reserved01D0_022B[92];
-    struct MovieRuntime *activeEndMovieRuntime;
+    Ptr32<struct MovieRuntime> activeEndMovieRuntime;
     uint32_t endMoviePlaybackState;
     uint8_t reserved0234_02F7[196];
     struct UiPageStackControl endMoviePageStack;
     uint8_t reserved034C_08D3[1416];
-    struct MovieRuntime *levelMovieRuntime;
+    Ptr32<struct MovieRuntime> levelMovieRuntime;
     uint8_t reserved08D8_08E3[12];
     struct UiNodeBase playerStatusNode;
     uint8_t reserved0930_093B[12];
@@ -10286,9 +10288,9 @@ struct InGameRuntimeRootUiGridView {
     uint32_t worldViewAreaRightOffset;
     uint8_t reserved0A08_0A2F[40];
     struct WorldRuntimeContext worldRuntime;
-    void (*worldOverlayCallback)(uint32_t, struct WorldRuntimeContext *);
+    Ptr32<void (uint32_t, struct WorldRuntimeContext *)> worldOverlayCallback;
     uint8_t reserved0B90_0B9F[16];
-    struct SelectionPlayerPairRecord *localPlayerMarkedCells;
+    Ptr32<struct SelectionPlayerPairRecord> localPlayerMarkedCells;
     uint32_t localPlayerMarkedCellCount;
     int32_t lightAzimuthAngle;
     int32_t lightElevationAngle;
@@ -10318,22 +10320,22 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reserved4B2C_4D0B[480];
     struct UiNodeBase diplomacyPanel; // layout container node
     uint8_t reserved4D58_4D73[28];
-    struct DirectSoundVoiceSet *diplomacyPanelSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct DirectSoundVoiceSet> diplomacyPanelSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase diplomacyFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved4DC4_5DB3[4080];
     struct UiNodeBase buildCatalogPanel; // layout container node of the 48-entry build catalog
     uint8_t reserved5E00_5E1B[28];
-    struct DirectSoundVoiceSet *buildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct DirectSoundVoiceSet> buildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase buildCatalogFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved5E6C_767F[6164];
     struct UiNodeBase specialBuildCatalogPanel; // layout container node of the 42-entry special build catalog
     uint8_t reserved76CC_76E7[28];
-    struct DirectSoundVoiceSet *specialBuildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct DirectSoundVoiceSet> specialBuildCatalogSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase specialBuildCatalogFrame; // embedded UI node prefix; rebuild updates layout offsets
     uint8_t reserved7738_8C4B[5396];
     struct UiNodeBase armyStockPanel; // layout container node of the 24-slot army stock grid
     uint8_t reserved8C98_8CB3[28];
-    struct DirectSoundVoiceSet *armyStockSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
+    Ptr32<struct DirectSoundVoiceSet> armyStockSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase armyStockFrame; // embedded UI node prefix; rebuild updates layout offsets and node flags
     uint8_t reserved8D04_9A6B[3432];
     FieldGridCoordinates minimapOriginGridPosition;
@@ -10351,7 +10353,7 @@ struct InGameRuntimeRootUiGridView {
     uint8_t reservedA000_A05F[96];
     uint32_t selectionDetailArmyAssetValue;
     uint8_t reservedA064_A067[4];
-    struct GameEntityRuntime *selectionDetailEntity;
+    Ptr32<struct GameEntityRuntime> selectionDetailEntity;
     uint8_t reservedA06C_C3E3[9080];
 };
 #pragma pack(pop)
@@ -10378,7 +10380,7 @@ struct FrontendModelPointerContext {
     struct UiNodeBase base; // Accepted frontend UI-node prefix.
     FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
     uint32_t activeFactionRuntimeIndex; // WorldRuntimeContext.activeFactionRuntimeIndex of the in-game world view; unused by the frontend paths.
-    struct FieldGridAsset *fieldGrid; // Field grid consumed by generated-texture and selection-overlay paths.
+    Ptr32<struct FieldGridAsset> fieldGrid; // Field grid consumed by generated-texture and selection-overlay paths.
     uint32_t worldObjectArray; // WorldRuntimeContext.objectArray of the in-game world view; cleared by relocation.
     uint32_t renderedPrimitiveCount; // Accumulated primitive count for this draw pass; shares storage with a world-runtime token view.
     Q12 hitReferenceWorldXQ12; // Subtracted from model world-transform X when computing the hit metric.
@@ -10407,27 +10409,27 @@ struct FrontendModelPointerContext {
     AngleTurn32 auxiliaryOrientationAngle1; // Second auxiliary orientation angle in the frontend draw view; overlaps world field-region height.
     uint32_t workspaceDwordArray; // WorldRuntimeContext.dwordArray of the in-game world view; unused by the frontend paths.
     uint32_t workspaceDwordCount; // WorldRuntimeContext.dwordArrayCount of the in-game world view; unused by the frontend paths.
-    struct GraphicsPrimitiveQueue *activePrimitiveQueue; // Primitive queue captured from GraphicsPrimitiveQueue_ResetGlobal for all model/terrain passes.
+    Ptr32<struct GraphicsPrimitiveQueue> activePrimitiveQueue; // Primitive queue captured from GraphicsPrimitiveQueue_ResetGlobal for all model/terrain passes.
     uint32_t runtimeControlFlags; // WorldRuntimeContext.runtimeControlFlags of the in-game world view; unused by the frontend paths.
-    RuntimeSpinLockValue *renderSpinLock; // Spin lock acquired around graphics queue construction.
-    void (*renderSpinLockReleaseCallback)(void); // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
-    struct ModelRuntimeNode *candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
+    Ptr32<RuntimeSpinLockValue> renderSpinLock; // Spin lock acquired around graphics queue construction.
+    Ptr32<void (void)> renderSpinLockReleaseCallback; // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
+    Ptr32<struct ModelRuntimeNode> candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
     uint32_t activePlayerRuntimeId; // WorldRuntimeContext.selection.activePlayerRuntimeId of the in-game world view; not consumed by the frontend selection paths.
-    struct ModelRuntimeNode *selectedModelNode; // Model-node half of the model selector's result.
+    Ptr32<struct ModelRuntimeNode> selectedModelNode; // Model-node half of the model selector's result.
     int selectedHitMetric; // Hit-metric half of the model selector's result.
     uint32_t surfaceHitWorldX; // Terrain point under the cursor: world X interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitWorldY; // Terrain point under the cursor: world Y interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitDepth; // View depth of the terrain hit (WORLD_POINTER_NO_HIT when none); passed to the pointer callbacks.
     Q12 cursorWorldXQ12; // Cursor override X converted from pixels to Q12 for overlay hit state.
     Q12 cursorWorldYQ12; // Cursor override Y converted from pixels to Q12 for overlay hit state.
-    struct GameEntityRuntime *selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
-    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
-    uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
-    uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
-    uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button press (FrontendModelPointerContext_NonRightPress).
-    uint32_t (*buttonDragCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button drag (FrontendModelPointerContext_NonRightDrag).
-    uint32_t (*buttonReleaseCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button release (FrontendModelPointerContext_NonRightRelease).
-    void (*rightClickCallback)(struct FrontendModelPointerContext *); // Invoked on right release when rightButtonHeldTicks < 7 (unsigned), i.e. a click rather than a camera drag; receives the context.
+    Ptr32<struct GameEntityRuntime> selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
+    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback; // root keyboard fallback callback; the bool result is the status
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback; // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback; // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback; // Non-right button press (FrontendModelPointerContext_NonRightPress).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonDragCallback; // Non-right button drag (FrontendModelPointerContext_NonRightDrag).
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonReleaseCallback; // Non-right button release (FrontendModelPointerContext_NonRightRelease).
+    Ptr32<void (struct FrontendModelPointerContext *)> rightClickCallback; // Invoked on right release when rightButtonHeldTicks < 7 (unsigned), i.e. a click rather than a camera drag; receives the context.
     uint32_t rightButtonHeldTicks; // Ticks the right button has been held: cleared on press, counted by FrontendModelPointerContext_Tick, compared against 7 on release.
     GraphicsSceneExtentFixed sceneBound0; // Exact bound0 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound1; // Exact bound1 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
@@ -10438,12 +10440,12 @@ struct FrontendModelPointerContext {
     GraphicsSceneExtentFixed sceneBound6; // Exact bound6 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound7; // Exact bound7 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     uint8_t reserved140_15B[28]; // Observed but not semantically resolved in this pass.
-    void (*renderPhaseCallback)(GraphicsBooleanState, struct WorldRuntimeContext *); // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; the installed target is InGameWorldOverlay_RebuildOrReleaseTransientMarkers.
+    Ptr32<void (GraphicsBooleanState, struct WorldRuntimeContext *)> renderPhaseCallback; // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; the installed target is InGameWorldOverlay_RebuildOrReleaseTransientMarkers.
     UiPixelCoordinate dragFrameStartX; // Pointer X of the non-right press (NonRightPress); first corner of the selection-overlay drag frame in DrawClipped.
     UiPixelCoordinate dragFrameStartY; // Pointer Y of the non-right press (NonRightPress); first corner of the selection-overlay drag frame in DrawClipped.
     UiPixelCoordinate dragFrameEndX; // Pointer X of the latest non-right drag (NonRightDrag); second corner of the drag frame.
     UiPixelCoordinate dragFrameEndY; // Pointer Y of the latest non-right drag (NonRightDrag); second corner of the drag frame.
-    int *terrainMarkerCoordinatePairs; // Pointer consumed as int coordinate pairs by SelectionOverlay_DrawTerrainPointMarkers.
+    Ptr32<int> terrainMarkerCoordinatePairs; // Pointer consumed as int coordinate pairs by SelectionOverlay_DrawTerrainPointMarkers.
     int terrainMarkerPointCount; // Point count paired with terrainMarkerCoordinatePairs.
     uint32_t reserved178; // Trailing dword; never accessed.
 };
@@ -10452,14 +10454,14 @@ struct FrontendModelPointerContext {
    that struct's offsets (0x54, 0xB8, 0xC8 on 32-bit), so the view stays right where pointers are wider (5f). */
 struct GeneratedTextureRenderContextView {
     uint8_t reserved00_53[__builtin_offsetof(struct FrontendModelPointerContext, fieldGrid)]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
-    struct FieldGridAsset *fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
+    Ptr32<struct FieldGridAsset> fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
     uint8_t reserved58_B7[__builtin_offsetof(struct FrontendModelPointerContext, auxiliaryOrientationAngle0) -
-                          __builtin_offsetof(struct FrontendModelPointerContext, fieldGrid) - sizeof(struct FieldGridAsset *)]; // Unresolved context fields.
+                          __builtin_offsetof(struct FrontendModelPointerContext, fieldGrid) - THANDOR_PTR32_BYTES]; // Unresolved context fields.
     AngleTurn32 lightAzimuthAngle; // Azimuth of the shadow-casting light direction (second FixedMath_DirectionFromAnglesScaled argument).
     AngleTurn32 lightElevationAngle; // Elevation of the shadow-casting light direction (first argument).
     uint8_t reservedC0_C7[__builtin_offsetof(struct FrontendModelPointerContext, activePrimitiveQueue) -
                           __builtin_offsetof(struct FrontendModelPointerContext, auxiliaryOrientationAngle1) - sizeof(AngleTurn32)]; // Unresolved context fields.
-    struct GraphicsPrimitiveQueue *projectedPointBlockPool; // FrontendModelPointerContext.activePrimitiveQueue: the queue whose packet pool the reserve/rollback helpers take blocks from.
+    Ptr32<struct GraphicsPrimitiveQueue> projectedPointBlockPool; // FrontendModelPointerContext.activePrimitiveQueue: the queue whose packet pool the reserve/rollback helpers take blocks from.
 };
 
 /* ArmyModelTreeNode (assets/army/catalog.h) with its children read as ModelLinkedDefinitionListAddress32. */
@@ -10476,8 +10478,8 @@ struct WorldRuntimeExtendedMapControlView {
     struct WorldRuntimeInteractionState interaction;
     WorldRuntimeFlags runtimeFlags;
     FactionRuntimeIndex activeFactionRuntimeIndex;
-    struct FieldGridAsset *fieldGrid;
-    struct WorldObjectRecord *objectArray;
+    Ptr32<struct FieldGridAsset> fieldGrid;
+    Ptr32<struct WorldObjectRecord> objectArray;
     RuntimeToken pendingToken;
     struct WorldMotionState motion;
     UQ12 minimumCameraDistanceQ12; // Lower Q12 camera/world-motion distance clamp. Initialized to 0x8000 by both session initializers and used as the lower bound by motion zoom/clamp paths.
@@ -10487,13 +10489,13 @@ struct WorldRuntimeExtendedMapControlView {
     uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount;
     struct WorldFieldRegionState fieldRegion;
-    uintptr_t *dwordArray;
+    Ptr32<uintptr_t> dwordArray;
     WorldWorkspaceElementCount dwordArrayCount;
     uint32_t reservedC8;
     WorldRuntimeControlFlags runtimeControlFlags;
-    uint32_t *tickSpinLock;
-    void (*simulationAndNetworkTickCallback)(void);
-    struct WorldRuntimeNode *ownerListHead;
+    Ptr32<uint32_t> tickSpinLock;
+    Ptr32<void (void)> simulationAndNetworkTickCallback;
+    Ptr32<struct WorldRuntimeNode> ownerListHead;
     struct WorldRuntimeSelectionState selection;
     struct WorldLightingState lighting;
     struct WorldMotionSnapshot snapshot;
@@ -10518,7 +10520,7 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
     Q12 placementHeightOffsetQ12; // ModelDefinition.placementHeightOffsetQ12
     uint8_t opaqueGap0058_005F[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     Q12 maximumHealth;
-    void *rootNode;
+    Ptr32<void> rootNode;
     uint8_t opaqueGap0068_00BF[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t phaseInitial;
     uint32_t phaseDuration;
@@ -10527,7 +10529,7 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
     uint8_t opaqueGap00D0_00DB[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     DepthIntervalRadius32 footprintRadius;
     uint8_t opaqueGap00E0_018F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct EffectDefinition *removalEffect;
+    Ptr32<struct EffectDefinition> removalEffect;
     uint8_t opaqueGap0194_026B[216]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     SoundAssetIndex terrainSoundAssetIndex;
     uint8_t opaqueGap0270_0277[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
@@ -10599,14 +10601,14 @@ struct FrontendPointerHintControl {
     struct UiNodeBase base;
     uint32_t reserved4C; // Never accessed.
     uint32_t hintActive;
-    uint16_t *commandStream;
+    Ptr32<uint16_t> commandStream;
 };
 
 struct FrontendPointerSceneRuntimeView {
     struct UiNodeBase base;
     FrontendModelPointerContextFlags contextFlags;
     uint32_t activeFactionRuntimeIndex;
-    struct FieldGridAsset *fieldGrid;
+    Ptr32<struct FieldGridAsset> fieldGrid;
     uint32_t worldObjectArray;
     uint32_t renderedPrimitiveCount;
     Q12 hitReferenceWorldXQ12;
@@ -10635,26 +10637,26 @@ struct FrontendPointerSceneRuntimeView {
     AngleTurn32 auxiliaryOrientationAngle1;
     uint32_t workspaceDwordArray;
     uint32_t workspaceDwordCount;
-    struct GraphicsPrimitiveQueue *activePrimitiveQueue;
+    Ptr32<struct GraphicsPrimitiveQueue> activePrimitiveQueue;
     uint32_t runtimeControlFlags;
-    RuntimeSpinLockValue *renderSpinLock;
-    void (*renderSpinLockReleaseCallback)(void);
-    struct ModelRuntimeNode *candidateModelListHead;
+    Ptr32<RuntimeSpinLockValue> renderSpinLock;
+    Ptr32<void (void)> renderSpinLockReleaseCallback;
+    Ptr32<struct ModelRuntimeNode> candidateModelListHead;
     uint32_t activePlayerRuntimeId;
-    struct ModelRuntimeNode *selectedModelNode;
+    Ptr32<struct ModelRuntimeNode> selectedModelNode;
     int selectedHitMetric;
     uint32_t surfaceHitWorldX;
     uint32_t surfaceHitWorldY;
     uint32_t surfaceHitDepth;
     Q12 cursorWorldXQ12;
     Q12 cursorWorldYQ12;
-    struct GameEntityRuntime *selectedOverlayEntity;
-    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
-    uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
-    uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
-    uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
-    uint32_t (*buttonDragCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
-    uint32_t (*buttonReleaseCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
+    Ptr32<struct GameEntityRuntime> selectedOverlayEntity;
+    Ptr32<Bool8 (UiKeyboardStateMask, UiActionId, struct UiRootNode *)> keyboardFallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> hoverCursorCallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> heldButtonCursorCallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonPressCallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonDragCallback;
+    Ptr32<uint32_t (uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *)> buttonReleaseCallback;
     uint32_t rightClickCallback;
     uint32_t rightButtonHeldTicks;
     GraphicsSceneExtentFixed sceneBound0;
@@ -10671,7 +10673,7 @@ struct FrontendPointerSceneRuntimeView {
     UiPixelCoordinate dragFrameStartY;
     UiPixelCoordinate dragFrameEndX;
     UiPixelCoordinate dragFrameEndY;
-    int *terrainMarkerCoordinatePairs;
+    Ptr32<int> terrainMarkerCoordinatePairs;
     int terrainMarkerPointCount;
     uint32_t reserved178;
     uint8_t opaqueGap017C_019F[36]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
@@ -10696,201 +10698,201 @@ struct FrontendScenarioSelectionPageView {
 
 struct FrontendRootResourceSlots {
     uint8_t opaqueGap0000_05DF[1504]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_05E0;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_05E0;
     uint8_t opaqueGap05E4_0643[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0644;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0644;
     uint8_t opaqueGap0648_06A3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_06A4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_06A4;
     uint8_t opaqueGap06A8_0703[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0704;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0704;
     uint8_t opaqueGap0708_0763[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0764;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0764;
     uint8_t opaqueGap0768_0A8B[804]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_0A8C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_0A8C;
     uint8_t opaqueGap0A90_0AE3[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_0AE4;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_0AE4;
     uint8_t opaqueGap0AE8_0B47[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0B48;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0B48;
     uint8_t opaqueGap0B4C_0BA7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0BA8;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0BA8;
     uint8_t opaqueGap0BAC_0C67[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_0C68;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_0C68;
     uint8_t opaqueGap0C6C_1C8B[4128]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_1C8C;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_1C8C;
     uint8_t opaqueGap1C90_1CEF[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_1CF0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_1CF0;
     uint8_t opaqueGap1CF4_1D4F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_1D50;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_1D50;
     uint8_t opaqueGap1D54_1DAF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_1DB0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_1DB0;
     uint8_t opaqueGap1DB4_1E0F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_1E10;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_1E10;
     uint8_t opaqueGap1E14_1E6F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_1E70;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_1E70;
     uint8_t opaqueGap1E74_2023[432]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_2024;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_2024;
     uint8_t opaqueGap2028_21EB[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_21EC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_21EC;
     uint8_t opaqueGap21F0_23CB[476]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_23CC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_23CC;
     uint8_t opaqueGap23D0_24F7[296]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_24F8;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_24F8;
     uint8_t opaqueGap24FC_255B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_255C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_255C;
     uint8_t opaqueGap2560_25BB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_25BC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_25BC;
     uint8_t opaqueGap25C0_266F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_2670;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_2670;
     uint8_t opaqueGap2674_26D3[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_26D4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_26D4;
     uint8_t opaqueGap26D8_278F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_2790;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_2790;
     uint8_t opaqueGap2794_27EF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_27F0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_27F0;
     uint8_t opaqueGap27F4_284F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_2850;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_2850;
     uint8_t opaqueGap2854_28AF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_28B0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_28B0;
     uint8_t opaqueGap28B4_2ADF[556]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2AE0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2AE0;
     uint8_t opaqueGap2AE4_2B3F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2B40;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2B40;
     uint8_t opaqueGap2B44_2BF3[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2BF4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2BF4;
     uint8_t opaqueGap2BF8_2C53[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2C54;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2C54;
     uint8_t opaqueGap2C58_2CB3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2CB4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2CB4;
     uint8_t opaqueGap2CB8_2D0B[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_2D0C;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_2D0C;
     uint8_t opaqueGap2D10_2D6F[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_2D70;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_2D70;
     uint8_t opaqueGap2D74_2DCF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_2DD0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_2DD0;
     uint8_t opaqueGap2DD4_2EDF[268]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2EE0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2EE0;
     uint8_t opaqueGap2EE4_2F47[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2F48;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2F48;
     uint8_t opaqueGap2F4C_2FAF[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_2FB0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_2FB0;
     uint8_t opaqueGap2FB4_3017[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3018;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3018;
     uint8_t opaqueGap301C_307F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3080;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3080;
     uint8_t opaqueGap3084_313B[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_313C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_313C;
     uint8_t opaqueGap3140_31A3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_31A4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_31A4;
     uint8_t opaqueGap31A8_320B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_320C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_320C;
     uint8_t opaqueGap3210_3273[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3274;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3274;
     uint8_t opaqueGap3278_32DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_32DC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_32DC;
     uint8_t opaqueGap32E0_3343[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3344;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3344;
     uint8_t opaqueGap3348_33AB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_33AC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_33AC;
     uint8_t opaqueGap33B0_3413[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3414;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3414;
     uint8_t opaqueGap3418_347B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_347C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_347C;
     uint8_t opaqueGap3480_34E3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_34E4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_34E4;
     uint8_t opaqueGap34E8_359F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_35A0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_35A0;
     uint8_t opaqueGap35A4_3607[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3608;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3608;
     uint8_t opaqueGap360C_366F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3670;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3670;
     uint8_t opaqueGap3674_36D7[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_36D8;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_36D8;
     uint8_t opaqueGap36DC_3737[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_3738;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_3738;
     uint8_t opaqueGap373C_379B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_379C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_379C;
     uint8_t opaqueGap37A0_3857[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3858;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3858;
     uint8_t opaqueGap385C_390B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_390C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_390C;
     uint8_t opaqueGap3910_3973[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3974;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3974;
     uint8_t opaqueGap3978_39DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_39DC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_39DC;
     uint8_t opaqueGap39E0_3A43[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3A44;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3A44;
     uint8_t opaqueGap3A48_3AAB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3AAC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3AAC;
     uint8_t opaqueGap3AB0_3B13[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3B14;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3B14;
     uint8_t opaqueGap3B18_3C97[384]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_3C98;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_3C98;
     uint8_t opaqueGap3C9C_3D4B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3D4C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3D4C;
     uint8_t opaqueGap3D50_3DAB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3DAC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3DAC;
     uint8_t opaqueGap3DB0_3E0B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3E0C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3E0C;
     uint8_t opaqueGap3E10_3E63[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_3E64;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_3E64;
     uint8_t opaqueGap3E68_3EC7[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_3EC8;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_3EC8;
     uint8_t opaqueGap3ECC_3F83[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3F84;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3F84;
     uint8_t opaqueGap3F88_3FE3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_3FE4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_3FE4;
     uint8_t opaqueGap3FE8_4043[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet4_4044;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet4_4044;
     uint8_t opaqueGap4048_41BF[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_41C0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_41C0;
     uint8_t opaqueGap41C4_433B[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_433C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_433C;
     uint8_t opaqueGap4340_44B7[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_44B8;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_44B8;
     uint8_t opaqueGap44BC_4633[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_4634;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_4634;
     uint8_t opaqueGap4638_485B[548]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_485C;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_485C;
     uint8_t opaqueGap4860_491B[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_491C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_491C;
     uint8_t opaqueGap4920_497B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_497C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_497C;
     uint8_t opaqueGap4980_49DB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_49DC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_49DC;
     uint8_t opaqueGap49E0_4AD3[244]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_4AD4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_4AD4;
     uint8_t opaqueGap4AD8_4BCF[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_4BD0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_4BD0;
     uint8_t opaqueGap4BD4_4DC3[496]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_4DC4;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_4DC4;
     uint8_t opaqueGap4DC8_4EAF[232]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_4EB0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_4EB0;
     uint8_t opaqueGap4EB4_4F2F[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_4F30;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_4F30;
     uint8_t opaqueGap4F34_4FEF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_4FF0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_4FF0;
     uint8_t opaqueGap4FF4_504F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_5050;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_5050;
     uint8_t opaqueGap5054_50BB[104]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_50BC;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_50BC;
     uint8_t opaqueGap50C0_514B[140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_514C;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_514C;
     uint8_t opaqueGap5150_520F[192]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet5_5210;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet5_5210;
     uint8_t opaqueGap5214_53D7[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_53D8;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_53D8;
     uint8_t opaqueGap53DC_5497[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_5498;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_5498;
     uint8_t opaqueGap549C_54F7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_54F8;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_54F8;
     uint8_t opaqueGap54FC_5557[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_5558;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_5558;
     uint8_t opaqueGap555C_5653[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet6_5654;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet6_5654;
     uint8_t opaqueGap5658_571F[200]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct GraphicsTextureSourceAsset *menuTextureSource_5720;
+    Ptr32<struct GraphicsTextureSourceAsset> menuTextureSource_5720;
     uint8_t opaqueGap5724_57DF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct DirectSoundVoiceSet *buttonVoiceSet3_57E0;
+    Ptr32<struct DirectSoundVoiceSet> buttonVoiceSet3_57E0;
     uint8_t opaqueGap57E4_5953[368]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 
@@ -10939,7 +10941,7 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 };
 
 struct AiStructureWorkspaceEntry {
-    struct ModelRuntimeSlot *runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime); runtime-only AI workspace.
+    Ptr32<struct ModelRuntimeSlot> runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime); runtime-only AI workspace.
     PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
 };
 
@@ -10993,7 +10995,7 @@ struct FrontendNetworkListsRuntimeView {
 struct FrontendResultsSixColumnTemplate {
     struct UiNodeBase base; // serialized/runtime UiNode prefix
     uint32_t modeFlags;
-    void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *);
+    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)> factionWeightRaster;
     uint32_t columnTypeCount;
     uint32_t rowCount;
     UiPixelMetric headerBaselineOffsetPixels; // FrontendResultsRowMetrics view of +0x5C
@@ -11009,7 +11011,7 @@ struct FrontendResultsFactionWeightPair {
 struct FrontendResultsColumnSequenceControl {
     struct UiNodeBase base; // runtime UiNode prefix
     uint32_t modeFlags; // bit 0 selects column sequence vs faction-weight raster path
-    void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *); // four-argument raster column callback
+    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)> factionWeightRaster; // four-argument raster column callback
     uint32_t columnTypeCount; // number of trailing column type dwords
     uint32_t rowCount; /* +0x58 rows (active factions) of the table, set by the end-of-game results screen */
     UiPixelMetric headerBaselineOffsetPixels; // read through the FrontendResultsRowMetrics view by the column painters
@@ -11020,7 +11022,7 @@ struct FrontendResultsColumnSequenceControl {
 struct FrontendResultsEightColumnTemplate {
     struct UiNodeBase base; // serialized/runtime UiNode prefix
     uint32_t modeFlags;
-    void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *);
+    Ptr32<void (UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair *)> factionWeightRaster;
     uint32_t columnTypeCount;
     uint32_t rowCount; /* +0x58 */
     UiPixelMetric headerBaselineOffsetPixels; // FrontendResultsRowMetrics view of +0x5C
@@ -11034,19 +11036,19 @@ struct ScenarioCatalogDisplayRecord {
     uint8_t opaqueGap0040_004F[16]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t titleTextResourceId; // resource id used with family-specific base
     uint16_t titleDisplayTag; // runtime display tag
-    uint16_t *titleResolvedText; // resolved UTF-16 text pointer
+    Ptr32<uint16_t> titleResolvedText; // resolved UTF-16 text pointer
     uint8_t opaqueGap005A_005F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t subtitleTextResourceId; // resource id used with family-specific base
     uint16_t subtitleDisplayTag; // runtime display tag
-    uint16_t *subtitleResolvedText; // resolved UTF-16 text pointer
+    Ptr32<uint16_t> subtitleResolvedText; // resolved UTF-16 text pointer
     uint8_t opaqueGap006A_006F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t scenarioTextResourceId; // resource id used with family-specific base
     uint16_t scenarioDisplayTag; // runtime display tag
-    uint16_t *scenarioResolvedText; // resolved UTF-16 text pointer
+    Ptr32<uint16_t> scenarioResolvedText; // resolved UTF-16 text pointer
     uint8_t opaqueGap007A_007F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t modeTextResourceId; // resource id used with family-specific base
     uint16_t modeDisplayTag; // runtime display tag
-    uint16_t *modeResolvedText; // resolved UTF-16 text pointer
+    Ptr32<uint16_t> modeResolvedText; // resolved UTF-16 text pointer
     uint8_t opaqueGap008A_00FF[118]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 #pragma pack(pop)
@@ -11070,13 +11072,13 @@ typedef int WSAAddressToStringA_Proc(WinSockAddress *address, uint32_t addressLe
 
 
 struct WorldOwnerListNode {
-    struct WorldOwnerListNode *previousNode;
-    struct WorldOwnerListNode *nextNode;
-    struct WorldRuntimeContext *ownerWorld;
+    Ptr32<struct WorldOwnerListNode> previousNode;
+    Ptr32<struct WorldOwnerListNode> nextNode;
+    Ptr32<struct WorldRuntimeContext> ownerWorld;
     uint8_t opaque0C_13[8]; // Opaque owner-list bytes; semantics remain class-dependent.
     AngleTurn32 modelLocalRotationAngle2; // ModelRuntimeNode local/world rotation angle 2; valid only when ownerClassId == WORLD_OWNER_RUNTIME_MODEL.
     uint8_t opaque18_47[48]; // Opaque owner-list bytes; semantics remain class-dependent.
-    void *runtimePayload; // Class-dependent payload: MODEL=>ModelRuntimeSlot*, SHOT=>ShotRuntimeSlot*, EFFECT=>EffectRuntimeSlot*. Kept void here deliberately so the neutral owner-list view cannot select a false union arm.
+    Ptr32<void> runtimePayload; // Class-dependent payload: MODEL=>ModelRuntimeSlot*, SHOT=>ShotRuntimeSlot*, EFFECT=>EffectRuntimeSlot*. Kept void here deliberately so the neutral owner-list view cannot select a false union arm.
     uint32_t runtimeFlags;
     uint8_t opaque50_57[8]; // Opaque owner-list bytes; semantics remain class-dependent.
     PackedArgb32 modelTintArgb; // ModelRuntimeNode tint ARGB; valid only for MODEL owner nodes.
@@ -11093,9 +11095,9 @@ struct WorldOwnerListNode {
 };
 
 struct ModelRuntimePlacementValidationView {
-    struct ModelDefinition *modelDefinition; // Live placement-validation phase: dispatcher reads the slot's first field as ModelDefinition and selects class via its runtimeClassId; targets read placement fields including footprintRadius, placementFlags, footprintRadiusClass, terrainTraversalClass and placementContactKindIndex.
-    struct ModelRuntimeNode *rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex and pass owner/runtime context onward.
+    Ptr32<struct ModelDefinition> modelDefinition; // Live placement-validation phase: dispatcher reads the slot's first field as ModelDefinition and selects class via its runtimeClassId; targets read placement fields including footprintRadius, placementFlags, footprintRadiusClass, terrainTraversalClass and placementContactKindIndex.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex and pass owner/runtime context onward.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -11127,7 +11129,7 @@ struct ArmyWeaponDefinitionView {
     ArmyTurnVelocityAngle16 pitchTurnRateAccelerationAnglePerTick; // Per-tick acceleration/deceleration step applied to pitch turn velocity.
     AngleTurn32 minimumPitchAngle; // Lower clamped pitch target for articulated weapon aiming.
     AngleTurn32 maximumPitchAngle; // Upper clamped pitch target for articulated weapon aiming.
-    struct ShotDefinition *shotDefinition; // Pointer consumed by the shot aim, launch-angle and launch-resolution helpers.
+    Ptr32<struct ShotDefinition> shotDefinition; // Pointer consumed by the shot aim, launch-angle and launch-resolution helpers.
     uint32_t attachmentReloadTicks; // Value copied into one of eight selector reload slots when a launch is attempted.
     int localRotationAngle2StepPerTick; // Signed per-tick increment applied to the articulated child node localRotationAngle2 during the class-7/8 weapon recoil/aim state.
     uint32_t sharedInterShotTicks; // Value copied into the shared firing gate after a successful launch.
@@ -11135,17 +11137,17 @@ struct ArmyWeaponDefinitionView {
     Q12 postLaunchVector0Q12; // Q12 value passed to the post-launch action-vector update.
     Q12 postLaunchVector1Q12; // Q12 value passed to the post-launch action-vector update.
     uint8_t opaqueGap0048_0063[28]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct MdlSerializedNodeHeader *rootNode; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferences rebases ModelDefinition.rootNodeOffsetOrPointer.
+    Ptr32<struct MdlSerializedNodeHeader> rootNode; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferences rebases ModelDefinition.rootNodeOffsetOrPointer.
 };
 
 struct ArmyWeaponRuntimeSlotView {
-    struct ArmyWeaponDefinitionView *weaponDefinition; // Class-specific definition used by this weapon update callback.
-    struct ModelRuntimeNode *modelNodeRuntime; // Committed V218d army runtime field.
-    struct GameEntityRuntime *linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
+    Ptr32<struct ArmyWeaponDefinitionView> weaponDefinition; // Class-specific definition used by this weapon update callback.
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Committed V218d army runtime field.
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
     FactionRuntimeIndex factionIndex; // Committed V218d army runtime field.
     struct ArmyRuntimeMovementControlState movementControl; // Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Committed V218d army runtime field.
     Q12 commandCoordinate0Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate1Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate2Q12; // Committed V218d army runtime field.
@@ -11180,7 +11182,7 @@ struct ArmyWeaponRuntimeSlotView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     int stateOrTechnologyId; // Committed V218d army runtime field.
@@ -11194,23 +11196,23 @@ struct ArmyWeaponRuntimeSlotView {
 };
 
 struct RuntimeCollisionQueryView {
-    struct ModelDefinition *modelDefinition; // Common collision-query layout: the first field is dereferenced directly for ModelDefinition.footprintRadius.
-    struct ModelRuntimeNode *modelNodeRuntime; // Common collision-query layout: the second field supplies model-node depth bins.
+    Ptr32<struct ModelDefinition> modelDefinition; // Common collision-query layout: the first field is dereferenced directly for ModelDefinition.footprintRadius.
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Common collision-query layout: the second field supplies model-node depth bins.
     uint8_t reserved0008_00EF[232];
-    void *linkedRuntime; // +0xF0: the model runtime this unit is linked to (ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset), excluded from the collision test.
+    Ptr32<void> linkedRuntime; // +0xF0: the model runtime this unit is linked to (ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset), excluded from the collision test.
 };
 
 struct EntityPathingRouteEntityRuntimeView {
-    struct ModelDefinition *modelDefinition; // Entity ownership definition pointer; EntityPathing_UpdateRouteSegment reads runtimeClassId, footprintRadiusClass, terrainTraversalClass and footprintRadius from this object.
-    struct ModelRuntimeNode *modelNode; // Entity ownership model-node pointer; EntityPathing_UpdateRouteSegment reads worldTransform.translation.x/y.
-    struct ArmyMovementRuntime *movementRuntime; // Entity ownership runtime-link specialized for this pathing routine; EntityPathing_UpdateRouteSegment reads factionIndex and movementWorldX/Y and passes it to ArmyRuntime_SetPendingMoveTarget.
+    Ptr32<struct ModelDefinition> modelDefinition; // Entity ownership definition pointer; EntityPathing_UpdateRouteSegment reads runtimeClassId, footprintRadiusClass, terrainTraversalClass and footprintRadius from this object.
+    Ptr32<struct ModelRuntimeNode> modelNode; // Entity ownership model-node pointer; EntityPathing_UpdateRouteSegment reads worldTransform.translation.x/y.
+    Ptr32<struct ArmyMovementRuntime> movementRuntime; // Entity ownership runtime-link specialized for this pathing routine; EntityPathing_UpdateRouteSegment reads factionIndex and movementWorldX/Y and passes it to ArmyRuntime_SetPendingMoveTarget.
     FactionRuntimeIndex ownerIndex; // Ownership index retained at canonical +0C; not reinterpreted by this shard.
 };
 
 struct ModelRuntimeUpdateView {
-    struct ModelDefinition *modelDefinition; // Live runtime-update phase definition pointer.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinition> modelDefinition; // Live runtime-update phase definition pointer.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -11333,9 +11335,9 @@ struct ModelDefinitionClass14PlacementView {
 };
 
 struct ModelRuntimePlacementClass14View {
-    struct ModelDefinitionClass14PlacementView *modelDefinition; // Class-14 placement-validation definition view; placementValidation slot 14 targets ArmyPlacement_TestGridOccupancyMask.
-    struct ModelRuntimeNode *rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex and pass owner/runtime context onward.
+    Ptr32<struct ModelDefinitionClass14PlacementView> modelDefinition; // Class-14 placement-validation definition view; placementValidation slot 14 targets ArmyPlacement_TestGridOccupancyMask.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex and pass owner/runtime context onward.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -11375,19 +11377,19 @@ struct InGameTargetingRootTraversalView {
 
 union TextResourceOverrideParallelWord4 {
     TextResourceId resourceId; // Resource-id arm used by the first 4096 dwords scanned with REPNE SCASD.
-    uint16_t *textPointer; // UTF-16 pointer arm used by the second 4096 dwords at +0x4000.
+    Ptr32<uint16_t> textPointer; // UTF-16 pointer arm used by the second 4096 dwords at +0x4000.
 };
 
 struct ShotModelRuntimeNode {
     struct WorldRuntimeNodeCommon common; // Shared world-node prefix.
     struct WorldRuntimeNodeModelPayload modelPayload; // Model-specific world-node payload.
-    struct ShotRuntimeSlot *shotRuntime; // Function-local live ShotRuntimeSlot pointer for maintenance-table object kind shot; global ModelRuntimeNode payload remains polymorphic.
+    Ptr32<struct ShotRuntimeSlot> shotRuntime; // Function-local live ShotRuntimeSlot pointer for maintenance-table object kind shot; global ModelRuntimeNode payload remains polymorphic.
     ModelRuntimeFlags runtimeFlags; // Model transform, animation, and render flags.
     ModelTextureSubresourceIndex textureSubresourceBaseIndex; // Base added to model triangle subresource indices.
     Q12 subtreeBoundingRadiusQ12; // Computed subtree bounding radius.
     PackedArgb32 tintArgb; // Current packed state tint.
-    struct GraphicsShadingRuntimeRecord *shadingRecord; // Optional runtime shading record.
-    void *modelRuntimeLinkOrSavedOffset; // Runtime link or serialized pool offset.
+    Ptr32<struct GraphicsShadingRuntimeRecord> shadingRecord; // Optional runtime shading record.
+    Ptr32<void> modelRuntimeLinkOrSavedOffset; // Runtime link or serialized pool offset.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex; // Primary animated texture subresource index.
     ModelTextureOffsetTexel primaryTextureOffsetU; // Primary animated texture U offset.
     ModelTextureOffsetTexel primaryTextureOffsetV; // Primary animated texture V offset.
@@ -11401,15 +11403,15 @@ struct ShotModelRuntimeNode {
     ModelDepthBinMask depthBinMaskFar; // Far depth-bin visibility mask.
     int renderDepthBiasOrState; // Render depth bias or class state.
     Q12 modelScaleQ12; // Model scale.
-    struct ModelRuntimeNode *parentNode; // Parent model node.
+    Ptr32<struct ModelRuntimeNode> parentNode; // Parent model node.
     uint32_t childCount; // Valid child pointer count.
-    struct ModelRuntimeNode *childNodes[13]; // Fixed child-node pointer array.
+    Ptr32<struct ModelRuntimeNode> childNodes[13]; // Fixed child-node pointer array.
 };
 
 struct ModelRuntimeClass14UpdateView {
-    struct ModelDefinitionClass14PlacementView *modelDefinition; // Runtime class-14 definition; resourceFieldSupportSelector is the verified resource-field selector for this class.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionClass14PlacementView> modelDefinition; // Runtime class-14 definition; resourceFieldSupportSelector is the verified resource-field selector for this class.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -11430,13 +11432,13 @@ struct ModelRuntimeClass14UpdateView {
 };
 
 struct ModelRuntimeArticulatedUpdateView {
-    struct ModelDefinition *modelDefinition; // Live class-3 ModelRuntime definition pointer.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinition> modelDefinition; // Live class-3 ModelRuntime definition pointer.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     struct ArmyRuntimeMovementControlState movementControl; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -11455,7 +11457,7 @@ struct ModelRuntimeArticulatedUpdateView {
     uint32_t stepStartHeading; // Class-3 walker: body heading at step start
     uint32_t stepEndHeading; // Class-3 walker: body heading at step end
     uint32_t leftFootGroundNormal; // Class-3 walker: left foot ground normal now (packed elevation << 16 | azimuth); target in fallbackWorldYQ12
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -11477,7 +11479,7 @@ struct ModelRuntimeArticulatedUpdateView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -11493,9 +11495,9 @@ struct ModelRuntimeArticulatedUpdateView {
 };
 
 struct ModelRuntimeWeaponUpdateView {
-    struct ArmyWeaponDefinitionView *modelDefinition; // Class-9 weapon definition view with verified live rootNode node pointer.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ArmyWeaponDefinitionView> modelDefinition; // Class-9 weapon definition view with verified live rootNode node pointer.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -11517,7 +11519,7 @@ struct ModelRuntimeWeaponUpdateView {
 };
 
 union ModelRaycastNearestNodeOrScratch4 {
-    struct ModelRuntimeNode *nearestModelNode; // nearest node, valid when the raycast reports a hit
+    Ptr32<struct ModelRuntimeNode> nearestModelNode; // nearest node, valid when the raycast reports a hit
     int scratchSigned; // arithmetic/scratch value when there is no hit or before the hit is stored
 };
 
@@ -11537,8 +11539,8 @@ struct TerrainPlacementResult {
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    Bool8 (*placementTests[5])(uint32_t, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; the bool result is true on reject.
-    Bool8 (*overlayCallbacks[5])(uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    Ptr32<Bool8 (uint32_t, Q12, Q12, Q12, struct FieldGridAsset *)> placementTests[5]; // Exact immutable callback partition; the bool result is true on reject.
+    Ptr32<Bool8 (uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *)> overlayCallbacks[5]; // Exact immutable callback partition.
 };
 
 
@@ -11709,9 +11711,9 @@ struct ModelDefinitionVerticalDeploymentView {
 };
 
 struct ModelRuntimeTimedEffectsUpdateView {
-    struct ModelDefinitionTimedEffectsUpdateView *modelDefinition; // Class-specific definition overlay containing the timed-effects update gate.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionTimedEffectsUpdateView> modelDefinition; // Class-specific definition overlay containing the timed-effects update gate.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -12116,7 +12118,7 @@ struct ModelDefinitionLinkedChildStateView {
 };
 
 struct ModelRuntimeLinkedChildDefinitionView {
-    struct ModelDefinitionLinkedChildStateView *modelDefinition; // Class-specific linked-child definition overlay.
+    Ptr32<struct ModelDefinitionLinkedChildStateView> modelDefinition; // Class-specific linked-child definition overlay.
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; // Live model node or saved offset.
     union ArmyRuntimeReferenceOrSavedOffset ownerArmyRuntimeOrSavedOffset; // Live army runtime or saved offset.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
@@ -12248,9 +12250,9 @@ struct ModelDefinitionDestroyEffectsView {
 };
 
 struct ModelRuntimeResourceStorageClass15View {
-    struct ModelDefinitionResourceStorageClass15View *modelDefinition; // Class-15 resource-storage definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionResourceStorageClass15View> modelDefinition; // Class-15 resource-storage definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -12373,13 +12375,13 @@ struct ModelDefinitionResourceStorageClass15View {
 };
 
 struct ArmyRuntimeGroundMovementPositionedSoundView {
-    struct ModelRuntimeGroundMovementPositionedSoundView *modelRuntime; // Live model runtime for this ground-movement positioned-sound callback family.
-    struct ModelRuntimeNode *modelNodeRuntime; // Committed V218d army runtime field.
-    struct GameEntityRuntime *linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
+    Ptr32<struct ModelRuntimeGroundMovementPositionedSoundView> modelRuntime; // Live model runtime for this ground-movement positioned-sound callback family.
+    Ptr32<struct ModelRuntimeNode> modelNodeRuntime; // Committed V218d army runtime field.
+    Ptr32<struct GameEntityRuntime> linkedEntityRuntime; // Linked GameEntityRuntime state copied from the army asset record and dereferenced by movement, command, placement, and class callbacks.
     FactionRuntimeIndex factionIndex; // Committed V218d army runtime field.
     struct ArmyRuntimeMovementControlState movementControl; // Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Committed V218d army runtime field.
     Q12 commandCoordinate0Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate1Q12; // Committed V218d army runtime field.
     Q12 commandCoordinate2Q12; // Committed V218d army runtime field.
@@ -12399,7 +12401,7 @@ struct ArmyRuntimeGroundMovementPositionedSoundView {
     uint32_t classState60; // Committed V218d army runtime field.
     uint32_t classState64; // Committed V218d army runtime field.
     uint32_t classState68; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Committed V218d army runtime field.
@@ -12421,7 +12423,7 @@ struct ArmyRuntimeGroundMovementPositionedSoundView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     int stateOrTechnologyId; // Committed V218d army runtime field.
@@ -12435,9 +12437,9 @@ struct ArmyRuntimeGroundMovementPositionedSoundView {
 };
 
 struct ModelRuntimeDestroyEffectsView {
-    struct ModelDefinitionDestroyEffectsView *modelDefinition; // Class-specific destroy/effects definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionDestroyEffectsView> modelDefinition; // Class-specific destroy/effects definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -12458,9 +12460,9 @@ struct ModelRuntimeDestroyEffectsView {
 };
 
 struct ModelRuntimeGroundMovementTrackView {
-    struct ModelDefinitionGroundMovementTrackView *modelDefinition; // Ground-movement track-animation definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionGroundMovementTrackView> modelDefinition; // Ground-movement track-animation definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     struct ArmyRuntimeMovementControlState movementControl; // Model-runtime movement step and signed turn-rate state used by the ground-movement callbacks.
     uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
@@ -12608,7 +12610,7 @@ struct ModelRuntimeLinkedChildBuildState {
 };
 
 struct ModelRuntimeLinkedChildSpawnAndBuildView {
-    struct ModelDefinitionLinkedChildStateView *modelDefinition; // Class-specific linked-child definition overlay.
+    Ptr32<struct ModelDefinitionLinkedChildStateView> modelDefinition; // Class-specific linked-child definition overlay.
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; // Live model node or saved offset.
     union ArmyRuntimeReferenceOrSavedOffset ownerArmyRuntimeOrSavedOffset; // Live army runtime or saved offset.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
@@ -12644,9 +12646,9 @@ struct ModelRuntimeLinkedChildSpawnAndBuildView {
 };
 
 struct ModelRuntimeGroundMovementSteeringView {
-    struct ModelDefinitionGroundMovementSteeringView *modelDefinition; // Ground-movement steering definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionGroundMovementSteeringView> modelDefinition; // Ground-movement steering definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     struct ArmyRuntimeMovementControlState movementControl; // Model-runtime movement step and signed turn-rate state used by the ground-movement callbacks.
     uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
@@ -12781,8 +12783,8 @@ struct ModelDefinitionGroundMovementSteeringView {
 };
 
 struct ModelRuntimeTimedTargetLinkState {
-    struct ModelRuntimeSlot *selectedTargetModelRuntime; // Eligible class-10 ModelRuntimeSlot selected from the owner-list traversal.
-    struct ShotRuntimeSlot *matchingActiveShotRuntime; // ShotRuntimeSlot whose live ShotDefinition equals targetShotDefinition2C; non-null suppresses a new emission.
+    Ptr32<struct ModelRuntimeSlot> selectedTargetModelRuntime; // Eligible class-10 ModelRuntimeSlot selected from the owner-list traversal.
+    Ptr32<struct ShotRuntimeSlot> matchingActiveShotRuntime; // ShotRuntimeSlot whose live ShotDefinition equals targetShotDefinition2C; non-null suppresses a new emission.
     uint32_t classState68; // Class state.
     union ModelRuntimeArmyLinkOrState armyLinkOrState; // Army pointer, saved offset, or class state.
     uint32_t classState70; // Class state.
@@ -12879,9 +12881,9 @@ struct ModelDefinitionTimedTargetProjectileView {
 };
 
 struct ModelRuntimeTimedTargetProjectileView {
-    struct ModelDefinitionTimedTargetProjectileView *modelDefinition; // Class-20 timed-target definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionTimedTargetProjectileView> modelDefinition; // Class-20 timed-target definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     struct ModelRuntimeTimedTargetState timedTargetState; // Timed-target reload and ShotDefinition state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -13001,9 +13003,9 @@ struct ModelDefinitionResourceExtractorClass14View {
 };
 
 struct ModelRuntimeWeaponAimStateView {
-    struct ArmyWeaponDefinitionView *modelDefinition; // Weapon-aim definition used by the shared smoothing and firing family.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ArmyWeaponDefinitionView> modelDefinition; // Weapon-aim definition used by the shared smoothing and firing family.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t reserved10_13[4]; // Unresolved class-local dword before the recovered aim velocities.
     ArmyTurnVelocityAngle16 yawTurnVelocityAngle16; // Signed current yaw turn velocity maintained by ModelNodeRuntime_SmoothYawTowardTarget.
@@ -13033,9 +13035,9 @@ struct ModelRuntimeWeaponAimStateView {
 };
 
 struct ModelRuntimeResourceExtractorClass14View {
-    struct ModelDefinitionResourceExtractorClass14View *modelDefinition; // Class-14 resource-extractor definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionResourceExtractorClass14View> modelDefinition; // Class-14 resource-extractor definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -13068,9 +13070,9 @@ struct ModelRuntimeVerticalDeploymentLinkState {
 };
 
 struct ModelRuntimeVerticalDeploymentView {
-    struct ModelDefinitionVerticalDeploymentView *modelDefinition; // Class-23 vertical-deployment definition overlay.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionVerticalDeploymentView> modelDefinition; // Class-23 vertical-deployment definition overlay.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -13249,9 +13251,9 @@ struct ModelDefinitionArticulatedMovementView {
 };
 
 struct ModelRuntimeClass21UpdateView {
-    struct ArmyRuntimeClassUpdate21DefinitionView *modelDefinition; // Class-21 update definition overlay with recovered ballistic/phase/model-point fields.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ArmyRuntimeClassUpdate21DefinitionView> modelDefinition; // Class-21 update definition overlay with recovered ballistic/phase/model-point fields.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     uint8_t classPrefixState[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
@@ -13272,13 +13274,13 @@ struct ModelRuntimeClass21UpdateView {
 };
 
 struct ModelRuntimeArticulatedMovementDefinitionView {
-    struct ModelDefinitionArticulatedMovementView *modelDefinition; // Articulated-movement definition overlay with movement-advance and water-damage parameters.
-    struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
-    struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
+    Ptr32<struct ModelDefinitionArticulatedMovementView> modelDefinition; // Articulated-movement definition overlay with movement-advance and water-damage parameters.
+    Ptr32<struct ModelRuntimeNode> rootModelNode; // Live root ModelRuntimeNode.
+    Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
     uint32_t attachmentCount; // Valid attachment descriptors in attachments.
     struct ArmyRuntimeMovementControlState movementControl; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 commandCoordinate2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -13297,7 +13299,7 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     uint32_t stepStartHeading; // Class-3 walker: body heading at step start
     uint32_t stepEndHeading; // Class-3 walker: body heading at step end
     uint32_t leftFootGroundNormal; // Class-3 walker: left foot ground normal now (packed elevation << 16 | azimuth); target in fallbackWorldYQ12
-    struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    Ptr32<struct ArmyRuntimeSlot> linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -13319,7 +13321,7 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    struct ModelRuntimeSlot *linkedModelRuntime; // +0xF0 ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset: the linked model runtime (e.g. a class-23 platform the walker docked on).
+    Ptr32<struct ModelRuntimeSlot> linkedModelRuntime; // +0xF0 ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset: the linked model runtime (e.g. a class-23 platform the walker docked on).
     ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -13335,7 +13337,7 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
 };
 
 struct InGameLevelRuntimeGlobalBlock20 {
-    struct InGameLevelConditionStorage *conditionStorage; // Allocated mutable level-image/schedule storage.
+    Ptr32<struct InGameLevelConditionStorage> conditionStorage; // Allocated mutable level-image/schedule storage.
     LevelPlayerSlotByteOffset32 playerSlotByteOffsets[7]; // Seven 0x20-byte player-slot offsets; machine code indexes these through selectors 1..7 from the block base.
 };
 
@@ -13362,8 +13364,8 @@ typedef struct UiSingleLineTextControl UiSingleLineTextControl;
 struct UiSingleLineTextControl {
     struct UiNodeBase base;
     uint32_t labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
-    struct UiNodeBase *focusChild; // Child that receives focus and forwarded input; relocated, may be null.
-    uint16_t *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    Ptr32<struct UiNodeBase> focusChild; // Child that receives focus and forwarded input; relocated, may be null.
+    Ptr32<uint16_t> text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
@@ -13374,7 +13376,7 @@ struct UiWrappedTextControl {
     struct UiNodeBase base;
     uint32_t labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
     UiPixelExtent wrapWidth; // Maximum line width for wrapping.
-    uint16_t *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    Ptr32<uint16_t> text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
@@ -13390,7 +13392,7 @@ struct UiRangeSliderControl {
     int32_t value; // Current value, kept within minimumValue..maximumValue.
     int32_t stepValue; // Increment per arrow key; per wheel notch it is scaled by g_UiRangeSliderDragScale.
     UiActionId actionId; // Enqueued on every value change; also the id matched by suppress/unsuppress.
-    struct DirectSoundVoiceSet *clickSound; // Set at runtime; may be null.
+    Ptr32<struct DirectSoundVoiceSet> clickSound; // Set at runtime; may be null.
 };
 
 /* Horizontal progress gauge drawing a framed fill for value within minimumValue..maximumValue, optionally with a
@@ -13415,7 +13417,7 @@ struct UiImagePanelControl {
     int8_t shadowOffsetX; // Drop-shadow offset from the texture position (panelFlags & 0x10).
     int8_t shadowOffsetY;
     uint16_t reserved52;
-    struct GraphicsTextureSourceAsset *textureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
     GraphicsSubresourceIndex subresource;
 };
 
@@ -13425,7 +13427,7 @@ struct UiImagePanelControl {
 typedef struct UiArmyMetricsPanel UiArmyMetricsPanel;
 struct UiArmyMetricsPanel {
     struct UiImagePanelControl base;
-    struct RuntimeModelFactionPrefix *entity; // Drawn by SelectionPanel_RenderArmyRuntimeMetrics; null draws only the texture.
+    Ptr32<struct RuntimeModelFactionPrefix> entity; // Drawn by SelectionPanel_RenderArmyRuntimeMetrics; null draws only the texture.
 };
 
 /* Panel filling its box with a solid ARGB color, or tiling a texture subresource over it
@@ -13437,7 +13439,7 @@ struct UiFillPanelControl {
     int8_t shadowOffsetX; // Drop-shadow offset from each tile (fillFlags & 0x10).
     int8_t shadowOffsetY;
     uint16_t reserved52;
-    struct GraphicsTextureSourceAsset *textureSource; // Null: fill the box with the color instead.
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource; // Null: fill the box with the color instead.
     GraphicsSubresourceIndex subresourceOrFillArgb; // Subresource of textureSource; the ARGB fill color while textureSource is null.
 };
 
@@ -13447,7 +13449,7 @@ typedef struct UiNineSlicePanelControl UiNineSlicePanelControl;
 struct UiNineSlicePanelControl {
     struct UiNodeBase base;
     uint32_t field4C; // Not read by the class methods; 0 in every template.
-    struct GraphicsTextureSourceAsset *textureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
     GraphicsSubresourceIndex firstFrameSubresource; // Eight consecutive subresources: +0 top-left, +1 top-right, +2 top edge, +3 left edge, +4 right edge, +5 bottom-left, +6 bottom-right, +7 bottom edge.
     GraphicsSubresourceIndex centerSubresource; // Tiled over the interior.
 };
@@ -13459,12 +13461,12 @@ typedef struct UiSoftwareTexturePreviewControl UiSoftwareTexturePreviewControl;
 struct UiSoftwareTexturePreviewControl {
     struct UiNodeBase base;
     uint32_t field4C; // Not read by the class methods; 0 in the template.
-    struct GraphicsTextureSourceAsset *textureSource; // Nothing is drawn while null.
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource; // Nothing is drawn while null.
     GraphicsSubresourceIndex outgoingSubresource; // Blend source B (SoftwareMaskRuntimeView.outgoingSubresource).
     GraphicsSubresourceIndex incomingSubresource; // Blend source A (SoftwareMaskRuntimeView.incomingSubresource).
     UiActionId actionId; // Enqueued on primary/secondary press and on every key except 0x10002 (which moves focus).
-    uint64_t *blendFactorPixels; // Per-pixel blend mask (SoftwareMaskRuntimeView.maskPixels).
-    uint64_t *blendedSourcePixels;
+    Ptr32<uint64_t> blendFactorPixels; // Per-pixel blend mask (SoftwareMaskRuntimeView.maskPixels).
+    Ptr32<uint64_t> blendedSourcePixels;
     int32_t tickCounter; // Mask animation tick (SoftwareMaskRuntimeView.tickCounter).
 };
 
@@ -13479,7 +13481,7 @@ struct UiFormattedContainer {
     uint32_t gaugeFlags; // 1 two-sided variant scale (below 40% and above 85% both use the late variants; else they rise from 80%), 2 has the markerValue tail (UiFormattedContainerWithMarker).
     int32_t currentValue;
     int32_t limitValue; // Nothing but the texts is drawn while 0.
-    struct GraphicsTextureSourceAsset *textureSource;
+    Ptr32<struct GraphicsTextureSourceAsset> textureSource;
     GraphicsSubresourceIndex firstFrameSubresource; // +0/+1/+2 empty bar left/middle/right, +3..+0x14 six fill variants of three parts each, +0x15 marker.
     uint16_t currentValueTextUtf16[12]; // Tooltip payload 0.
     uint16_t limitValueTextUtf16[12]; // Tooltip payload 1.
@@ -13497,7 +13499,7 @@ struct UiFormattedContainerWithMarker {
 /* The two handlers of the root-stack action page: UiRootStack_Pop, FatalErrorDialog_DismissAndPopRoot. */
 typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
 struct UiRootStackActionHandlerPage2 {
-    void (*handlers[2])(void *);
+    Ptr32<void (void *)> handlers[2];
 };
 
 #endif /* THANDOR_GENERATED_TYPES_H */

@@ -118,7 +118,7 @@ void CopyCursorRectangle(SoftwareFramebufferAccess &buffer, int drawY, int drawX
   const int rowPixels = static_cast<int>(buffer.width);
   int copyWidth = static_cast<int>(buffer.width);
   int copyHeight = static_cast<int>(buffer.height);
-  std::byte *bufferCursor = reinterpret_cast<std::byte *>(buffer.pixels);
+  std::byte *bufferCursor = reinterpret_cast<std::byte *>(static_cast<uint8_t *>(buffer.pixels));
   if (drawX < 0) {
     bufferCursor += -drawX * bytesPerPixel;
     copyWidth += drawX;

@@ -907,13 +907,13 @@ void TerrainCompositeTexture_RebuildPlane0(void)
           /* Original quirk: the bank is scaled by 4 entries (paletteIndex * 4), not by a whole
              bank like in FillPlane1/FillPlane2, so only bank 0 gives the right colour. Harmless:
              subresource 36 of panel0/1/2.gfx uses bank 0. */
-          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
+          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[(int32_t)(TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant)].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
             pixelArgb = ((pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
-                         (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + gridColumn) * 4) &
+                         (*(uint32_t *)(plane0Pixels + (int32_t)((gridRow * textureWidth + gridColumn) * 4)) &
                           TERRAIN_ARGB_HALVE_MASK)) >> 1;
           }
-          *(uint32_t *)(plane0Pixels + (gridRow * textureWidth + gridColumn) * 4) = pixelArgb;
+          *(uint32_t *)(plane0Pixels + (int32_t)((gridRow * textureWidth + gridColumn) * 4)) = pixelArgb;
         }
       }
     }

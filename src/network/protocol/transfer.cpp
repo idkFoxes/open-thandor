@@ -449,6 +449,7 @@ static void UiTransferMailbox_ReceiveChunk
   uint32_t dwordsRemaining;
   const uint32_t *receivedChunkSourceDwords;
   uint32_t *receivedChunkDestinationDwords;
+  void *receivedAllocation;
 
   if ((g_FrontendSessionToken != ringRecord->packetHeader.sequenceToken) ||
       (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder !=
@@ -464,9 +465,10 @@ static void UiTransferMailbox_ReceiveChunk
     return;
   }
   if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
-    if (g_MemoryApi.alloc(totalByteCount,&g_UiTransferMailbox.receivedAllocation) != 0) {
+    if (g_MemoryApi.alloc(totalByteCount,&receivedAllocation) != 0) {
       return;
     }
+    g_UiTransferMailbox.receivedAllocation = receivedAllocation; /* alloc writes it only on success */
     chunkOffset = 0;
     g_UiTransferMailbox.receivedByteCount = totalByteCount;
     g_UiTransferMailbox.receivedRemainingBytes = totalByteCount;
@@ -767,7 +769,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
         nameDestinationCursor++;
       }
       UiPointerList_InitializeColumnLayout
-                (playerCount,(void **)g_FrontendPlayerListRows,
+                (playerCount,(Ptr32<void> *)g_FrontendPlayerListRows,
                  (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
     }
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
@@ -1581,7 +1583,7 @@ static void FrontendTransfer_StoreSessionAdvertisement
   int sessionsRemaining;
   int dwordCount;
   FrontendSessionDiscoveryRecord *discoveryRecord;
-  FrontendSessionDiscoveryRecord **sessionRowCursor;
+  Ptr32<FrontendSessionDiscoveryRecord> *sessionRowCursor;
   uint32_t *recordDwordCursor;
   const uint32_t *sourceDwords;
 
@@ -1655,7 +1657,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
       playerRowCursor++;
     }
     UiPointerList_InitializeColumnLayout
-              (0,(void **)g_FrontendPlayerListRows,
+              (0,(Ptr32<void> *)g_FrontendPlayerListRows,
                (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
   }
 }

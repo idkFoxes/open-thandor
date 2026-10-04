@@ -12,9 +12,9 @@
 
 uint16_t g_FrontendLocalPlayerNameUtf16[20] = {0};
 
-FrontendSessionDiscoveryRecord **g_FrontendSessionListRows = 0;
+Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows = 0;
 
-FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32] = {0};
+Ptr32<FrontendPlayerRuntimeRecord> g_FrontendPlayerRuntimeRecordPointers32[32] = {0};
 
 uint32_t g_FrontendNetworkState = 0;
 
@@ -178,7 +178,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
     UiPointerList_InitializeColumnLayout
-              (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
+              (1,(Ptr32<void> *)g_FrontendPlayerRuntimeRecordPointers32,
                (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16
@@ -228,7 +228,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
     UiPointerList_InitializeColumnLayout
-              (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+              (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_CLIENT;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -301,7 +301,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendDiscoveryProbe();
   /* -HOST opens the host setup at once; otherwise -CLIENT="host address" may join a host */
   hostOption = g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26);
@@ -393,7 +393,7 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendDiscoveryProbe();
   return;
 }
@@ -526,7 +526,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
   UiPointerList_InitializeColumnLayout
-            (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
+            (1,(Ptr32<void> *)g_FrontendPlayerRuntimeRecordPointers32,
              (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16);

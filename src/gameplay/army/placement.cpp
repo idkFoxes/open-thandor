@@ -227,7 +227,7 @@ Bool8 ArmyPlacement_CanPlaceResourceExtractor
   if ((cellColumn >= 0) && (cellRow >= 0) &&
       (cellColumn < (int)activeFieldGrid->gridWidth) && (cellRow < (int)activeFieldGrid->gridHeight)) {
     /* the resource field selector of an extractor is its class parameter classParameterC0 */
-    if ((activeFieldGrid->cells[activeFieldGrid->gridWidth * cellRow + cellColumn].flagsAndMaterial &
+    if ((activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * cellRow + cellColumn)].flagsAndMaterial &
         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)modelDefinition)->classParameterC0 & 31)) != 0) {
       *outPlacementValue = clearanceValue;
       return true;
@@ -270,7 +270,7 @@ Bool8 ArmyPlacement_TestGridOccupancyMask
     if ((0 < cellColumn) && (0 < cellRow)) {
       if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
          ((cellRow + 1 < (int)activeFieldGrid->gridHeight &&
-          ((activeFieldGrid->cells[cellRow * activeFieldGrid->gridWidth + cellColumn].flagsAndMaterial &
+          ((activeFieldGrid->cells[(int32_t)(cellRow * activeFieldGrid->gridWidth + cellColumn)].flagsAndMaterial &
            FIELD_CELL_XENITE_SUPPORT <<
            ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31)) != 0)))) {
         return false;
@@ -907,7 +907,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
     candidateNode = NULL;
   }
   else {
-    candidateNode = *(WorldOwnerListNode **)&candidateRuntimeOrRadiusQ12->e_cp;
+    candidateNode = THANDOR_PTR32_AT(WorldOwnerListNode, &candidateRuntimeOrRadiusQ12->e_cp);
     queryRadiusQ12 = (intptr_t)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
   }
   if (queryRadiusQ12 == 0) {
