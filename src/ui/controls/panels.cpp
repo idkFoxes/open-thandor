@@ -835,3 +835,172 @@ UiNodeVtable g_UiSoftwareTexturePreviewControlVtable = {
     .tick = THANDOR_FN(UiNode_DefaultTick),
     .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
 };
+
+/* drawClipped of g_UiPanelControlVtable: draws the panel's optional tiled background (UI_ROOT_TILED_BACKGROUND)
+   and frame (UI_ROOT_FRAME); UI_ROOT_ALTERNATE_BACKGROUND switches to the second background and adds the
+   second frame on top. Then draws the children. A frame is four corners and four tiled edges between them.
+*/
+void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPanelControl *control)
+
+{
+  uint32_t cornerWidth;
+  GraphicsSubresourceIndex subresource;
+  uint32_t cornerHeight;
+  int bottomEdgeY;
+  int rightEdgeX;
+  Bool8 beginAccessFailed;
+  GraphicsTextureLogicalSize cornerSize;
+
+  if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
+    beginAccessFailed = g_GraphicsFramebufferBeginAccess();
+    if (!beginAccessFailed) {
+      if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
+        subresource = UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR;
+        if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+          subresource = UI_WINDOW_SUBRESOURCE_ALTERNATE_INTERIOR;
+        }
+        UiWindow_BlitTiledInterior
+                  (clipBottom,clipRight,clipTop,clipLeft,subresource,control->root.base.layoutHeight,
+                   control->root.base.layoutWidth,0,0,control);
+      }
+      if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+        /* the bottom-right corner gives the corner size */
+        cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                               (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                                g_UiWindowTextureSource);
+        cornerHeight = cornerSize.logicalHeightPixels;
+        cornerWidth = cornerSize.logicalWidthPixels;
+        rightEdgeX = control->root.base.layoutWidth - cornerWidth;
+        bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,
+                   rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        UiWindow_BlitTiledHorizontalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP,
+                   rightEdgeX,0,cornerWidth,control);
+        UiWindow_BlitTiledVerticalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_LEFT,
+                   bottomEdgeY,cornerHeight,0,control);
+        UiWindow_BlitTiledVerticalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_RIGHT,
+                   bottomEdgeY,cornerHeight,rightEdgeX,control);
+        UiWindow_BlitTiledHorizontalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                   rightEdgeX,bottomEdgeY,cornerWidth,control);
+      }
+      if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+        cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                               (UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                                g_UiWindowTextureSource);
+        cornerHeight = cornerSize.logicalHeightPixels;
+        cornerWidth = cornerSize.logicalWidthPixels;
+        rightEdgeX = control->root.base.layoutWidth - cornerWidth;
+        bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,
+                   rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
+        UiWindow_BlitTiledHorizontalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP,
+                   rightEdgeX,0,cornerWidth,control);
+        UiWindow_BlitTiledVerticalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_LEFT,
+                   bottomEdgeY,cornerHeight,0,control);
+        UiWindow_BlitTiledVerticalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_RIGHT,
+                   bottomEdgeY,cornerHeight,rightEdgeX,control);
+        UiWindow_BlitTiledHorizontalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                   rightEdgeX,bottomEdgeY,cornerWidth,control);
+      }
+      g_GraphicsFramebufferEndAccess();
+    }
+  }
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
+  return;
+}
+
+/* hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
+   hit (UI_NODE_NONE instead), so the pointer passes through the panel to what lies below it.
+*/
+UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+
+{
+  UiNodeBase *hitNode;
+
+  hitNode = UiContainer_HitTestChildren(pointerY,pointerX,control);
+  if (hitNode == control) {
+    hitNode = UI_NODE_NONE;
+  }
+  return hitNode;
+}
+
+UiNodeVtable g_UiFillPanelControlVtable = {
+        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
+        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = THANDOR_FN(UiFillPanelControl_DrawColorOrTiledTextureAndChildren),
+        .layout = THANDOR_FN(UiContainer_LayoutChildren),
+        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
+        .hitTest = THANDOR_FN(UiFillPanelControl_HitTestChildrenOnly),
+        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+        .tick = THANDOR_FN(UiNode_DefaultTick),
+        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+
+UiNodeVtable g_UiPanelControlVtable = {
+        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
+        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = THANDOR_FN(UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren),
+        .layout = THANDOR_FN(UiContainer_LayoutChildren),
+        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
+        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
+        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+        .tick = THANDOR_FN(UiNode_DefaultTick),
+        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};

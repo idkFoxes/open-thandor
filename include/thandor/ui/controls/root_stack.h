@@ -17,4 +17,22 @@
 
 Bool8 UiRootStack_PopUntilWindowTextureBoundary(void);
 
+/* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
+   previousRoot link holds it. */
+#define UI_ROOT_STACK_END ((UiRootNode *)(intptr_t)-1)
+
+void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
+
+Bool8 UiRootStack_Pop(UiRootNode *root);
+
+Bool8 UiRootStack_BringToFront(UiRootNode *root);
+
+void UiRootStack_Relayout(void);
+
+void UiRootStack_InvalidateAll(void);
+
+extern uint32_t g_UiInvalidationSuppressed;
+extern UiRootNode *g_UiRootNode;
+extern UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage;
+
 #endif /* THANDOR_UI_CONTROLS_ROOT_STACK_H */

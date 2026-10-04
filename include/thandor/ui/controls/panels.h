@@ -86,4 +86,14 @@ extern UiNodeVtable g_UiFormattedContainerVtable;
 extern UiNodeVtable g_UiArmyMetricsPanelVtable;
 extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable;
 
+void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPanelControl *control);
+
+UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+
+extern UiNodeVtable g_UiFillPanelControlVtable;
+extern UiNodeVtable g_UiPanelControlVtable;
+
 #endif /* THANDOR_UI_CONTROLS_PANELS_H */

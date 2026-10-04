@@ -9,8 +9,10 @@
 #define THANDOR_UI_CONTROLS_H
 
 #include <thandor/ui/controls/buttons.h>
+#include <thandor/ui/controls/container.h>
+#include <thandor/ui/controls/gauge.h>
+#include <thandor/ui/controls/image.h>
 #include <thandor/ui/controls/input.h>
-#include <thandor/ui/controls/layout.h>
 #include <thandor/ui/controls/lists.h>
 #include <thandor/ui/controls/misc.h>
 #include <thandor/ui/controls/panels.h>

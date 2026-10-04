@@ -1,0 +1,163 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/controls/gauge.cpp
+ * Reverse engineering by idkFoxes 2026
+ */
+
+#include <thandor/ui/controls/gauge.h>
+#include <thandor/thandor.h>
+
+/* Module data. */
+
+/* int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
+
+static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
+
+static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
+
+/* Implementation ownership: ui/controls/gauge. */
+
+/* drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
+   (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue, and with
+   gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
+   its two caps. Children are not drawn.
+*/
+void UiHorizontalGaugeControl_DrawFrameFillAndLabel
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control)
+
+{
+  uint64_t scaledFillProduct;
+  uint32_t leftCapWidth;
+  uint32_t clampedValue;
+  uint32_t progress;
+  uint32_t fillRange;
+  uint32_t percentProgress;
+  uint32_t percentRange;
+  uint32_t percent;
+  int rightCapX;
+  int fillMinEndX;
+  int fillEndX;
+  uint32_t divisionRemainder;
+  uint16_t *commandStream;
+  Bool8 beginAccessFailed;
+  GraphicsTextureLogicalSize textureSize;
+
+  beginAccessFailed = g_GraphicsFramebufferBeginAccess();
+  if (!beginAccessFailed) {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,
+               UI_WINDOW_SUBRESOURCE_GAUGE_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_LEFT,g_UiWindowTextureSource);
+    leftCapWidth = textureSize.logicalWidthPixels;
+    /* the right cap is assumed to be as wide as the left one */
+    rightCapX = control->base.layoutWidth - leftCapWidth;
+    UiWindow_BlitTiledHorizontalEdge
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_GAUGE_TRACK,rightCapX,0,
+               leftCapWidth,&control->base);
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,rightCapX + control->base.left,
+               UI_WINDOW_SUBRESOURCE_GAUGE_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+    clampedValue = control->value;
+    if (control->maximumValue < clampedValue) {
+      clampedValue = control->maximumValue;
+    }
+    progress = clampedValue - control->minimumValue;
+    percentProgress = 0;
+    if (progress != 0 && (int)control->minimumValue <= (int)clampedValue) {
+      scaledFillProduct = (uint64_t)progress * (uint64_t)(rightCapX - leftCapWidth);
+      fillRange = control->maximumValue - control->minimumValue;
+      if (fillRange == 0) {
+        fillRange = 1;
+      }
+      /* Original quirk: meant as rounding (add 1 when doubling the remainder overflows 32 bits), but it rounds
+         up only when the remainder has bit 31 set */
+      divisionRemainder = (uint32_t)(scaledFillProduct % (uint64_t)fillRange);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,
+                                                          g_UiWindowTextureSource);
+      fillEndX = ((int)(scaledFillProduct / fillRange) +
+                  (divisionRemainder >> 31) + leftCapWidth) - textureSize.logicalWidthPixels;
+      /* the fill is drawn only when there is room for both of its caps */
+      fillMinEndX = textureSize.logicalWidthPixels + leftCapWidth;
+      percentProgress = progress;
+      if (fillMinEndX <= fillEndX) {
+        UiWindow_BlitTiledHorizontalEdge
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_GAUGE_FILL,fillEndX,0,
+                   fillMinEndX,&control->base);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->base.top,leftCapWidth + control->base.left,
+                   UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipBottom,clipRight,clipTop,clipLeft,control->base.top,fillEndX + control->base.left,
+                   UI_WINDOW_SUBRESOURCE_GAUGE_FILL_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+      }
+    }
+    if ((control->gaugeFlags & UI_HORIZONTAL_GAUGE_SHOW_PERCENT) != 0) {
+      /* the percentage of the clamped progress (0 when no fill was computed), as "100%" or two digits
+         without a leading zero */
+      percentRange = control->maximumValue - control->minimumValue;
+      if (percentRange == 0) {
+        percentRange = 1;
+      }
+      divisionRemainder = (uint32_t)(((uint64_t)percentProgress * 100) % (uint64_t)percentRange);
+      percent = (int)(((uint64_t)percentProgress * 100) / (uint64_t)percentRange) +
+                (divisionRemainder >> 31); /* same rounding quirk as the fill above */
+      if (percent == 100) {
+        g_UiWindowPercentTextUtf16[0] = '1';
+        g_UiWindowPercentTextUtf16[1] = '0';
+        g_UiWindowPercentTextUtf16[2] = '0';
+        g_UiWindowPercentTextUtf16[3] = '%';
+        g_UiWindowPercentTextUtf16[4] = 0;
+      }
+      else {
+        g_UiWindowPercentTextUtf16[1] = (short)((uint64_t)percent % 10) + '0';
+        g_UiWindowPercentTextUtf16[0] = (short)((uint64_t)percent / 10) + '0';
+        g_UiWindowPercentTextUtf16[2] = '%';
+        g_UiWindowPercentTextUtf16[3] = 0;
+      }
+      commandStream = g_UiWindowPercentTextUtf16;
+      if (g_UiWindowPercentTextUtf16[0] == '0') {
+        commandStream = g_UiWindowPercentTextUtf16 + 1;
+      }
+      RichTextCommandStream_DrawSingleLine
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiHorizontalGaugeLabelTextStyle,
+                 commandStream,g_UiHorizontalGaugeLabelTopInset + control->base.top,
+                 ((uint32_t)control->base.layoutWidth >> 1) + control->base.left);
+    }
+    g_GraphicsFramebufferEndAccess();
+  }
+  return;
+}
+
+/* pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
+   bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
+   pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
+*/
+GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+
+{
+  return GRAPHICS_CURSOR_FRAME_BUSY;
+}
+
+UiNodeVtable g_UiHorizontalGaugeControlVtable = {
+        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
+        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = THANDOR_FN(UiHorizontalGaugeControl_DrawFrameFillAndLabel),
+        .layout = THANDOR_FN(UiContainer_LayoutChildren),
+        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+        .pointerMove = THANDOR_FN(UiHorizontalGaugeControl_PointerMoveBusyCursor),
+        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
+        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+        .tick = THANDOR_FN(UiNode_DefaultTick),
+        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
