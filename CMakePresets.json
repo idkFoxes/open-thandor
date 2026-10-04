@@ -47,6 +47,7 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build-${presetName}",
       "toolchainFile": "${sourceDir}/cmake/mingw-x64.cmake",
+      "cacheVariables": { "CMAKE_EXPORT_COMPILE_COMMANDS": "ON" },
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     },
     {

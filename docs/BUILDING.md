@@ -419,6 +419,28 @@ arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign
 end. The script command `clickuntilnextlevel x y <ms>` clicks until the next level has loaded, then the times
 restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-base` (940) + k.
 
+### clang-tidy (`tools/dev/tidy.py`)
+
+Mechanical source modernisations (e.g. `NULL` -> `nullptr`) run through clang-tidy on the GCC build's
+`compile_commands.json`, which the `mingw-*` presets always export. Install the tools with `pip install --user
+clang-tidy` (clang-tidy and clang-apply-replacements), configure and build once (`cmake --preset mingw-test`,
+then build: the GPU shader headers are generated during the build), then:
+
+```bat
+python tools/dev/tidy.py --checks=modernize-use-nullptr src/core            & rem report only
+python tools/dev/tidy.py --checks=modernize-use-nullptr --fix -j 6 src/core  & rem apply the fixes
+```
+
+The arguments are path prefixes; only the translation units below them are checked, and header diagnostics and
+fixes are kept for the headers of the same modules (`src/<area>/...` also takes `include/thandor/<area>/...`).
+`--checks` is a clang-tidy check list (`-*` is put in front), `-j` the number of parallel clang-tidy runs
+(default 6), `-p` the build directory (default `build-mingw-test`), `--verbose` prints every diagnostic. With
+`--fix` the fixes of all files are exported and applied together by clang-apply-replacements (no fixes are applied
+when a file did not parse). The script passes `--target=x86_64-w64-windows-gnu`: without it clang assumes the
+MSVC target on Windows and parses the GCC command lines against the MSVC headers; with it clang finds the MinGW
+GCC headers through the compiler path in the database. Review the diff and run the usual build, self-test and
+determinism checks afterwards.
+
 ## Source files that are not ordinary module code
 
 | File | Notes |
