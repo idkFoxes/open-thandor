@@ -469,7 +469,8 @@ if(THANDOR_RENDERER_SDL_GPU)
         set(THANDOR_GPU_SPIRV_FROM "none (dxc not found: vcpkg install directx-dxc, or -DTHANDOR_DXC=<dxc.exe>), the Vulkan renderer is not available")
     endif()
     message(STATUS "SDL_GPU shaders: DXBC from ${THANDOR_GPU_DXBC_FROM}; SPIR-V from ${THANDOR_GPU_SPIRV_FROM}")
-    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
+    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp src/platform/sdl3/gpu_ui_textures.cpp
+                   ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor PRIVATE THANDOR_RENDERER_SDL_GPU=1)
     if(THANDOR_GPU_SPIRV)
@@ -494,6 +495,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
+        src/platform/selftest/uiatlas_selftest.cpp
     )
     target_compile_definitions(thandor PRIVATE THANDOR_DEV_TOOLS=1)
 endif()

@@ -1240,6 +1240,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestIcon();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "uiatlas") == 0) {
+        Thandor_SelfTestUiAtlas();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "scanaddr") == 0) {
         Thandor_SelfTestScanAddresses();
         return 1;
