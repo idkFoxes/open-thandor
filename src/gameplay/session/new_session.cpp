@@ -102,10 +102,16 @@ static void InGameNewSession_ResetSessionState(void)
     selectionBlock->factionIndex = factionIndex;
     selectionBlock->simulationStepTicks = 1;
     /* Original quirk: 20 dwords (80 bytes) are copied although both name fields hold 20 UTF-16 characters
-       (40 bytes), so the copy also covers the 40 bytes behind each of them. */
+       (40 bytes), so the copy also covers the 40 bytes behind each of them (the start of the next selection block).
+       The original copies 80 bytes for the last selection block as well; bounded here to the 40-byte name field
+       because its excess would land behind the g_SelectionPlayerBlocks allocation. */
     nameSource = (uint32_t *)frontendPlayer->playerName.textUtf16;
     nameDestination = (uint32_t *)selectionBlock->playerNameUtf16;
-    for (remainingCount = 20; remainingCount != 0; remainingCount--) {
+    remainingCount = 20;
+    if (selectionBlock == g_SelectionPlayerBlocks + (SELECTION_PLAYER_BLOCK_COUNT - 1)) {
+      remainingCount = (int)(sizeof(selectionBlock->playerNameUtf16) / (sizeof(uint32_t)));
+    }
+    for (; remainingCount != 0; remainingCount--) {
       *nameDestination = *nameSource;
       nameSource++;
       nameDestination++;

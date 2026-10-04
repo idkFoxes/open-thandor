@@ -18,7 +18,8 @@
 /* Submodule: gameplay/session/level_new. */
 
 /* g_InGameLoadedResourcePointers: the level loaders allocate room for 512 loaded EFF/SHT/MDL/ARM file pointers and
-   fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. */
+   fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. The pointers are kept as Ptr32 (4 bytes each, like the
+   original's 32-bit pointers), so the original's 512 * 4-byte arena block holds all of them on x64 too. */
 #define INGAME_LOADED_RESOURCE_CAPACITY 0x200
 /* WidePath records of the EFF/SHT/MDL/ARM path tables: 32 UTF-16 code units each */
 #define LEVEL_ASSET_PATH_RECORD_UNITS 32
@@ -51,7 +52,7 @@ Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t *outError);
 Bool8 NewLevel_LoadAssetList
           (LevelAssetRuntimePrefix *levelImage,LevelAssetRelativeByteOffset pathTableOffset,
            LevelAssetRecordCount remainingRecordCount,PackedFileExtensionCode32 extensionCode,
-           NewLevelPrepareAssetFn prepareAsset,void ***loadedResourceCursor,uint32_t *outError);
+           NewLevelPrepareAssetFn prepareAsset,Ptr32<void> **loadedResourceCursor,uint32_t *outError);
 
 void NewLevel_LoadLevelSamples(void);
 
@@ -64,7 +65,7 @@ extern uint32_t g_MoviePlaybackBaseFrameGroup;
 extern uint32_t g_MoviePlaybackScheduleCounter;
 extern uint32_t g_MoviePlaybackScheduleSpan;
 extern EngineFileHandle g_SoundPackageHandle;
-extern void **g_InGameLoadedResourcePointers;
+extern Ptr32<void> *g_InGameLoadedResourcePointers;
 extern InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount;
 extern uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256];
 extern uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256];

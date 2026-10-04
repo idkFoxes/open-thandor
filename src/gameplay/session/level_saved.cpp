@@ -219,13 +219,13 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterExternalTables
 
 {
   LevelAssetRuntimePrefix *levelPrefix;
-  void **loadedResourceCursor;
+  Ptr32<void> *loadedResourceCursor;
   uint32_t allocError;
   uint32_t stepError;
 
   /* the same LEV image, viewed through the type the shared NewLevel_ steps take (identical layout) */
   levelPrefix = (LevelAssetRuntimePrefix *)levelImage;
-  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4,(void **)&loadedResourceCursor);
+  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),(void **)&loadedResourceCursor);
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }

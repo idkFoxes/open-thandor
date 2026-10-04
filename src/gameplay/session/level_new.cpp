@@ -36,7 +36,7 @@ static uint16_t g_SoundLevel00SamPathUtf16[18] =
 static uint16_t g_SessionMusic00SamPathUtf16[18] =
     {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0};
 
-void **g_InGameLoadedResourcePointers = 0;
+Ptr32<void> *g_InGameLoadedResourcePointers = 0;
 
 InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
 
@@ -233,7 +233,7 @@ Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t *outError)
 Bool8 NewLevel_LoadAssetList
           (LevelAssetRuntimePrefix *levelImage,LevelAssetRelativeByteOffset pathTableOffset,
            LevelAssetRecordCount remainingRecordCount,PackedFileExtensionCode32 extensionCode,
-           NewLevelPrepareAssetFn prepareAsset,void ***loadedResourceCursor,uint32_t *outError)
+           NewLevelPrepareAssetFn prepareAsset,Ptr32<void> **loadedResourceCursor,uint32_t *outError)
 
 {
   uint16_t *assetPathCursor;
@@ -696,11 +696,11 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
-  void **loadedResourceCursor;
+  Ptr32<void> *loadedResourceCursor;
   uint32_t allocError;
   uint32_t stepError;
 
-  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4,(void **)&loadedResourceCursor);
+  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * sizeof(Ptr32<void>),(void **)&loadedResourceCursor);
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }

@@ -86,7 +86,7 @@ Bool8 LevelAsset_PrepareEndingMoviePath
 void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime)
 
 {
-  void **loadedResourceCursor;
+  Ptr32<void> *loadedResourceCursor;
   InGameLoadedResourcePointerCount remainingResourceCount;
   uint32_t remainingSlotCount;
   uintptr_t *soundSlotCursor;
