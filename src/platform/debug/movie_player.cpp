@@ -52,7 +52,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   path[pathLength] = 0;
   DebugMovie_ClearScreen();
   DebugMovie_ClearScreen();
-  if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
+  if (!Movie_Open(MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, openError);
     sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
     if (!g_GraphicsFramebufferBeginAccess()) {
@@ -144,7 +144,7 @@ void DebugMovie_ExportOne(const char *name)
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
   CreateDirectoryA((LPCSTR)"moviedump", nullptr);
-  if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
+  if (!Movie_Open(MOVIE_OPEN_STREAM,path,&playbackRateHz,&openError)) {
     Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;
   }

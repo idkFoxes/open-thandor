@@ -98,7 +98,7 @@ Sound backend slots, sample codec and positioned sound.
 
 Module header: [`backend.h`](../include/thandor/audio/backend.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-audio-backend-runtime)
 
-- [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_CreateSampleVoiceSet`, `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`
+- [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`, `SoundBackendDisabled_PlayLooping`
 - [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-backend-runtime) - The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend.
 - [`types.h`](source_guide/audio.md#file-audio-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -270,8 +270,8 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
 - [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`
 - [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
-- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_SetWorldRuntimeFlag`, `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameRuntime_RunSessionUntilExit`
-- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_PeriodicCountdownAndClockTick`, `InGameRuntime_UpdateSimulationAndNetworkTick`
+- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameSession_ResetTickState`, `InGameSession_InstallStepTimerAndHooks`
+- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_UpdateSimulationAndNetworkTick`, `InGameRuntime_PeriodicCountdownAndClockTick`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-session-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-technology"></a>
@@ -389,10 +389,10 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 
 - [`cipher.cpp / cipher.h`](source_guide/network.md#file-network-protocol-cipher) - no file comment; main functions `UiTransfer_EncryptPacketBlocks`, `UiTransfer_DecryptPacketBlocks`
 - [`command_exchange.cpp / command_exchange.h`](source_guide/network.md#file-network-protocol-command-exchange) - no file comment; main functions `FrontendTransfer_CopyCommandRecord`, `FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`, `FrontendTransfer_HostHandleCommandSubmitOrWaitAck`
-- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `InGameCommand_Issue`
+- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommand_Issue`, `FrontendCommand_Issue`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`
 - [`frontend_session.cpp / frontend_session.h`](source_guide/network.md#file-network-protocol-frontend-session) - no file comment; main functions `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`, `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
-- [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - no file comment; main functions `Lockstep_AllClientsSubmitted`, `Lockstep_ClearClientSubmissions`, `Lockstep_ResendBatchOrWait`
+- [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - no file comment; main functions `Lockstep_PackBatch`, `Lockstep_SendBatchToClients`, `Lockstep_ExecuteRecords`
 - [`mailbox.cpp / mailbox.h`](source_guide/network.md#file-network-protocol-mailbox) - no file comment; main functions `UiTransfer_StagePacketAndSend`, `UiTransferMailbox_SetOutgoingBuffer`, `UiTransferMailbox_ClearReceivedState`
 - [`scenario_transfer.cpp / scenario_transfer.h`](source_guide/network.md#file-network-protocol-scenario-transfer) - no file comment; main functions `FrontendScenarioTransfer_ReleaseLoadedLevelAsset`, `FrontendScenarioTransfer_ProcessReceivedAsset`, `DwordBlock64Array_ContainsExactRecord`
 - [`types.h`](source_guide/network.md#file-network-protocol-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -506,6 +506,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
 - [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_SuppressIfActionId`, `UiSelectableControl_UnsuppressIfActionId`
+- [`settings_option.h`](source_guide/ui.md#file-ui-controls-settings-option) - no file comment; main functions `PersistentOption_ApplyCheckbox`, `PersistentOption_ApplyCheckbox`, `PersistentOption_StoreSlider`
 - [`slider.cpp / slider.h`](source_guide/ui.md#file-ui-controls-slider) - no file comment; main functions `UiRangeSliderControl_DrawTrackAndThumb`, `UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag`
 - [`text.cpp / text.h`](source_guide/ui.md#file-ui-controls-text) - no file comment; main functions `UiSingleLineTextControl_DrawClipped`, `UiWrappedTextControl_DrawClipped`, `UiWrappedTextControl_RelocateAndApplyDeferredOffset`
 - [`text_buttons.cpp / text_buttons.h`](source_guide/ui.md#file-ui-controls-text-buttons) - no file comment; main functions `UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease`, `UiFramedTextButtonControl_NonRightDrag`
@@ -520,11 +521,11 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-ui-core-runtime)
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
-- [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
+- [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_ProcessAndPresent`, `UiFrame_Draw`
 - [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiCommandDispatch_Find`, `UiKeyModifiers_Match`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
-- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`
+- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
 - [`types.h`](source_guide/ui.md#file-ui-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-ui-dialogs"></a>
@@ -558,7 +559,7 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkGamePage_Show`, `FrontendNetworkGamePage_ClearSessionList`, `FrontendNetworkSetupPage_InitializeBackendMode`
 - [`node_views.h`](source_guide/ui.md#file-ui-frontend-node-views) - The frontend UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
 - [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *) (calling through the slot type directly would be undefined behaviour).
-- [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`
+- [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`, `FrontendPlayerRuntime_InitializeFactionAssignments`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
 - [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
 - [`session.cpp / session.h`](source_guide/ui.md#file-ui-frontend-session) - no file comment; main functions `FrontendSession_ReturnToMainPage`, `FrontendSession_SetGameSpeedPercent`, `FrontendTransferPage_ResetSessionOpenAndRequestMailbox`
@@ -585,7 +586,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`editor_tool_selection.cpp / editor_tool_selection.h`](source_guide/ui.md#file-ui-ingame-editor-tool-selection) - no file comment; main functions `InGameCommandModeG_Select0`, `InGameCommandModeG_Select1`, `InGameCommandModeG_Select2`
 - [`editor_tools.cpp / editor_tools.h`](source_guide/ui.md#file-ui-ingame-editor-tools) - no file comment; main functions `InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState`, `InGameUiCommand_SaveFieldAndLevelAssetImages`, `InGameUiCommand_ResolveCursorCodeByMode`
 - [`hotkeys.cpp / hotkeys.h`](source_guide/ui.md#file-ui-ingame-hotkeys) - no file comment; main functions `InGameHotkeys_DispatchCommandByFlags`
-- [`hud.cpp / hud.h`](source_guide/ui.md#file-ui-ingame-hud) - no file comment; main functions `InGameOtherPlayerCommand_RebuildTargetEntries`, `InGamePanel_RebuildPlayerStatusRows`, `InGameMapAction_RecenterViewFromGridCoordinates`
+- [`hud.cpp / hud.h`](source_guide/ui.md#file-ui-ingame-hud) - no file comment; main functions `InGameOtherPlayerCommand_RebuildTargetEntries`, `InGameMapAction_RecenterViewFromGridCoordinates`, `InGameHud_UpdateStatusCountersAndSessionPrompts`
 - [`key_commands.cpp / key_commands.h`](source_guide/ui.md#file-ui-ingame-key-commands) - no file comment; main functions `InGameNotificationQueue_InsertPriorityRecord`, `InGameUiRuntime_DispatchCommandByCodeAndModifierFlags`, `InGameUiRuntime_ResetNotificationButtonCursor`
 - [`layout.cpp / layout.h`](source_guide/ui.md#file-ui-ingame-layout) - no file comment; main functions `InGameUiRuntime_InitializeControlTreeResources`
 - [`minimap_texture.cpp / minimap_texture.h`](source_guide/ui.md#file-ui-ingame-minimap-texture) - The minimap composite texture of the field grid: a gfx asset with three ARGB planes (terrain/water colours, panel colours, faction presence) built from the cells.

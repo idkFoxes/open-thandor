@@ -14,11 +14,11 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet = &SoundBackendDisabled_CreateSampleVoiceSet;
+SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet = &SoundBackendDisabled_CreateSampleVoiceSet;
 
-THANDOR_ALIGN(4) SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet = &SoundBackendDisabled_ReleaseSampleVoiceSet;
+SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet = &SoundBackendDisabled_ReleaseSampleVoiceSet;
 
-THANDOR_ALIGN(4) SoundStopAllVoicesProc *g_SoundStopAllVoices = &SoundBackendDisabled_StopAllVoices;
+SoundStopAllVoicesProc *g_SoundStopAllVoices = &SoundBackendDisabled_StopAllVoices;
 
 /* The original's DirectSound attenuation (1/100 dB), which the SDL3 mixer turns into linear channel gains
    (platform/sdl3/audio.cpp), indexed by channel gain Q15 >> 8 (0..128; the spatial gains are

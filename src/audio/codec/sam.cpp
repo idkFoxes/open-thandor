@@ -1881,7 +1881,7 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
     outputWord1 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x10);
     outputWord3 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x30);
     outputWord2 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x20);
-    /* punpcklwd/punpckhwd with itself: every word becomes a left/right stereo pair (w * 0x10001 = w:w). */
+    /* every output word becomes a left/right stereo pair with the same sample (w * 0x10001 = w:w). */
     *(uint64_t *)outputStereoPcm =
          ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
     *(uint64_t *)(outputStereoPcm + 4) =

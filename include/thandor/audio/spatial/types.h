@@ -23,12 +23,14 @@ using SpatialSoundMaximumDistanceQ12 = uint32_t;
 
 using AudioMixerGainQ15 = uint32_t;
 
-/* Runtime only (native pointers): the sound code reads voiceSet through DirectSoundVoiceSet ** slot pointers. */
+/* Runtime only (native pointers): the sound code reads voiceSet through DirectSoundVoiceSet ** slot pointers.
+   The desired gains are named after the channel they are played on; the right gain comes first in memory
+   (the original's slot order, where its names were the other way round). */
 struct SpatialSoundSlot {
     struct DirectSoundVoiceSet *voiceSet; 
     struct IDirectSoundBuffer *activeVoice; 
-    SpatialSoundGainQ15 desiredLeftGainQ15; 
     SpatialSoundGainQ15 desiredRightGainQ15; 
+    SpatialSoundGainQ15 desiredLeftGainQ15; 
 };
 
 #endif /* THANDOR_AUDIO_SPATIAL_TYPES_H */
