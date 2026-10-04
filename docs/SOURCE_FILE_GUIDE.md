@@ -169,7 +169,7 @@ Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `all
 
 Module header: [`settings.h`](../include/thandor/core/settings.h) · Changelog: `persistent` [full](../CHANGELOG_FULL.md#module-core-settings-persistent)
 
-- [`persistent.cpp / persistent.h`](source_guide/core.md#file-core-settings-persistent) - no file comment; main functions `PersistentSettings_Read`, `PersistentSettings_Write`, `PersistentSettings_Flush`
+- [`persistent.cpp / persistent.h`](source_guide/core.md#file-core-settings-persistent) - open-thandor: the settings live in a readable thandor.ini instead of the original's 200-byte thandor.dat.
 - [`types.h`](source_guide/core.md#file-core-settings-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-text"></a>
