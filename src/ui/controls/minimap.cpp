@@ -212,9 +212,6 @@ void UiSelectionGeometryControl_DrawClipped
   int remainingColumns;
   int remainingRows;
   Bool8 framebufferUnavailable;
-  PackedArgb32 blendedPixel;
-  uint64_t packedLanes;
-  uint64_t quantizeMaskLanes; /* the four 16-bit quantize masks as one 64-bit lane vector */
 
   /* intersect the clip rectangle with the node */
   if (clipLeft < (control->base).left) {
@@ -285,65 +282,32 @@ void UiSelectionGeometryControl_DrawClipped
   sourceStartUHigh = (int)(sourceStartU >> 32);
   remainingRows = clipHeight;
   remainingColumns = clipWidth;
-  if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-    destPixel = g_FramebufferAccess->pixels +
-              (int32_t)(g_FramebufferRowStrideBytes * clipTop) + clipLeft * 2;
-    sourceV = sourceStartUHigh + sourceStartV;
+  /* the original also had a 16-bit framebuffer path (packed through the 565/555 MMX constants) */
+  destPixel = g_FramebufferAccess->pixels +
+            (int32_t)(g_FramebufferRowStrideBytes * clipTop) + clipLeft * 4;
+  sourceV = sourceStartUHigh + sourceStartV;
+  rowStartU = sourceU;
+  rowStartV = sourceV;
+  destRowStart = destPixel;
+  do {
+    do {
+      *(PackedArgb32 *)destPixel =
+           UiSelectionGeometryControl_SampleBilinear
+                     (sourceTexture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
+      sourceU = sourceU + (int)pixelStepU;
+      sourceV = sourceV + pixelStepV;
+      destPixel = destPixel + 4;
+      remainingColumns = remainingColumns - 1;
+    } while (remainingColumns != 0);
+    sourceU = rowStartU + (int)rowStepUWide;
+    sourceV = rowStartV + rowStepUHigh + rowStepV;
+    destPixel = destRowStart + g_FramebufferRowStrideBytes;
+    remainingRows = remainingRows - 1;
     rowStartU = sourceU;
     rowStartV = sourceV;
+    remainingColumns = clipWidth;
     destRowStart = destPixel;
-    do {
-      do {
-        blendedPixel = UiSelectionGeometryControl_SampleBilinear
-                                 (sourceTexture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
-        /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
-           then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
-        memcpy(&quantizeMaskLanes,&g_SoftwarePixelMmxConstants.quantizeMasksQ12,sizeof(quantizeMaskLanes));
-        packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) & quantizeMaskLanes,
-                              g_SoftwarePixelMmxConstants.packWeights);
-        *(short *)destPixel = (short)(packedLanes >> 40) + (short)(packedLanes >> 8);
-        sourceU = sourceU + (int)pixelStepU;
-        sourceV = sourceV + pixelStepV;
-        destPixel = destPixel + 2;
-        remainingColumns = remainingColumns - 1;
-      } while (remainingColumns != 0);
-      sourceU = rowStartU + (int)rowStepUWide;
-      sourceV = rowStartV + rowStepUHigh + rowStepV;
-      destPixel = destRowStart + g_FramebufferRowStrideBytes;
-      remainingRows = remainingRows - 1;
-      rowStartU = sourceU;
-      rowStartV = sourceV;
-      remainingColumns = clipWidth;
-      destRowStart = destPixel;
-    } while (remainingRows != 0);
-  }
-  else {
-    destPixel = g_FramebufferAccess->pixels +
-              (int32_t)(g_FramebufferRowStrideBytes * clipTop) + clipLeft * 4;
-    sourceV = sourceStartUHigh + sourceStartV;
-    rowStartU = sourceU;
-    rowStartV = sourceV;
-    destRowStart = destPixel;
-    do {
-      do {
-        *(PackedArgb32 *)destPixel =
-             UiSelectionGeometryControl_SampleBilinear
-                       (sourceTexture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
-        sourceU = sourceU + (int)pixelStepU;
-        sourceV = sourceV + pixelStepV;
-        destPixel = destPixel + 4;
-        remainingColumns = remainingColumns - 1;
-      } while (remainingColumns != 0);
-      sourceU = rowStartU + (int)rowStepUWide;
-      sourceV = rowStartV + rowStepUHigh + rowStepV;
-      destPixel = destRowStart + g_FramebufferRowStrideBytes;
-      remainingRows = remainingRows - 1;
-      rowStartU = sourceU;
-      rowStartV = sourceV;
-      remainingColumns = clipWidth;
-      destRowStart = destPixel;
-    } while (remainingRows != 0);
-  }
+  } while (remainingRows != 0);
   g_GraphicsFramebufferEndAccess();
   return;
 }

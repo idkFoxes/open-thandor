@@ -13,7 +13,7 @@
 #include <thandor/graphics/resources/types.h>
 
 /*
-Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in
+Shared helpers of the software triangle rasterizer (SoftwareRaster{32,Aux}_ModeNN in
 software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h). Internal to
 graphics/backend; see docs/software_raster.md.
 
@@ -45,10 +45,10 @@ typedef struct RasterColor {
     short lane[RASTER_LANE_COUNT];
 } RasterColor;
 
-/* Where a family draws: 16-bit framebuffer, 32-bit framebuffer or the auxiliary 32-bit target. */
+/* Where a family draws: the 32-bit framebuffer or the auxiliary 32-bit target. */
 typedef struct RasterTarget {
     uint8_t *pixels;          /* row 0 of the colour target */
-    int pixelBytes;        /* 2 or 4 */
+    int pixelBytes;        /* 4 */
     int pixelStride;       /* bytes per colour row */
     uint8_t *depth;           /* row 0 of the depth buffer (one dword per pixel) */
     int depthStride;       /* bytes per depth row */
@@ -183,26 +183,8 @@ static __inline RasterColor RasterColor_ShiftRight(RasterColor a, int shift)
 
 /* ---- pixel formats ----------------------------------------------------------------------- */
 
-/* Unpacks a 16-bit framebuffer pixel into lanes of channel * 16 (Q4), using the runtime 565/555
-   constants: mask the channel, scale it to the top of 16 bits (PMULLW), shift down by 4 (PSRLW). */
-static __inline RasterColor Raster_Unpack16(uint16_t pixel)
-{
-    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
-    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (uint16_t)k->unpackScales.zero};
-    RasterColor result;
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        uint16_t scaled = (uint16_t)((pixel & masks[i]) * scales[i]);
-        result.lane[i] = (short)(scaled >> 4);
-    }
-    return result;
-}
-
 /* Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) >> 4, about channel * 16
-   (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4. Used by the Non16 and Aux families. */
+   (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4. Used by the 32-bit and Aux families. */
 static __inline RasterColor Raster_Unpack32(uint32_t pixel)
 {
     RasterColor result;
@@ -211,28 +193,6 @@ static __inline RasterColor Raster_Unpack32(uint32_t pixel)
         result.lane[i] = (short)((Raster_Channel(pixel, i) * 0x101) >> 4);
     }
     return result;
-}
-
-/* Packs four channel bytes into a 16-bit framebuffer pixel with the runtime 565/555 constants:
-   widen to 12 bits (PUNPCKLBW + PSRLW 4), keep the channel's top bits (PAND), move them into place
-   with PMADDWD and add the two dword halves. */
-static __inline uint16_t Raster_Pack16(const int channel[RASTER_LANE_COUNT])
-{
-    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const uint16_t masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
-                                           k->quantizeMasksQ12.red, (uint16_t)k->quantizeMasksQ12.zero};
-    const uint16_t weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
-                                             (uint16_t)k->packWeights.zero};
-    short q[RASTER_LANE_COUNT];
-    uint32_t low;
-    uint32_t high;
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        q[i] = (short)(((channel[i] * 0x101) >> 4) & masks[i]);
-    }
-    low = (uint32_t)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
-    high = (uint32_t)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
-    return (uint16_t)((low >> 8) + (high >> 8));
 }
 
 /* Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD). */
@@ -249,14 +209,6 @@ static __inline void Raster_LanesToBytes(RasterColor color, int shift, int chann
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         channel[i] = Raster_SaturateByte(color.lane[i] >> shift);
     }
-}
-
-/* Q6 shaded colour -> 16-bit pixel. */
-static __inline uint16_t Raster_ShadeToPixel16(RasterColor color)
-{
-    int channel[RASTER_LANE_COUNT];
-    Raster_LanesToBytes(color, 6, channel);
-    return Raster_Pack16(channel);
 }
 
 /* ---- blending ---------------------------------------------------------------------------- */
@@ -617,7 +569,7 @@ static __forceinline void Raster_WalkTriangle(const RasterTarget *target, const 
     }
 }
 
-/* Target of the 16-bit and 32-bit framebuffer families (g_FramebufferAccess + depth buffer). */
+/* Target of the 32-bit framebuffer family (g_FramebufferAccess + depth buffer). */
 static __inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMaxY, int clipMaxX, int clipMinY,
                                                       int clipMinX)
 {

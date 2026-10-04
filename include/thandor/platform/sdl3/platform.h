@@ -60,8 +60,8 @@ uint32_t SdlVideo_Init(void);
 void SdlVideo_Shutdown(void);
 /* Base step of g_GraphicsSetDisplayMode: switches to the adapter's renderer when it is not the running one (a
    GPU renderer that cannot start falls back Vulkan -> Direct3D 12 -> software, logged), applies the display mode
-   kind (window, borderless fullscreen, exclusive fullscreen), a w x h memory framebuffer in RGB565 or XRGB8888 (the
-   desktop depth in the developer tools' window), the pixel format, the published framebuffer and the 16/32-bit
+   kind (window, borderless fullscreen, exclusive fullscreen), a w x h memory framebuffer in XRGB8888 (32-bit
+   colour only, the requested depth is not looked at), the pixel format, the published framebuffer and the
    blitters; then the chained finalize step. */
 Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode);
@@ -79,14 +79,13 @@ void SdlVideo_SaveAdapterIndex(uint32_t adapterIndex);
 uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex);
 /* The display mode kind (PERSISTENT_DISPLAY_MODE_*): the saved one (PERSISTENT_SETTING_DISPLAY_MODE_KIND), saving
    it, the one in use, and the one the next SdlVideo_ApplyDisplayMode applies. The developer tools' window
-   (OPEN_THANDOR_WINDOWED) stays a window and saves nothing. */
+   (OPEN_THANDOR_WINDOWED) stays a window and saves nothing: a chosen kind is logged and only kept for the
+   session (the settings page then sees it as the saved one). */
 uint32_t SdlVideo_SavedDisplayModeKind(void);
 void SdlVideo_SaveDisplayModeKind(uint32_t kind);
 uint32_t SdlVideo_DisplayModeKind(void);
 void SdlVideo_SetDisplayModeKind(uint32_t kind);
 /* g_GraphicsFramebufferCaptureRegion: the memory framebuffer as a one-image ARGB8888 'gfx' asset. */
-GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion16Bit(uint32_t captureHeight,uint32_t captureWidth,
-                                                                int32_t sourceY,int32_t sourceX);
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
                                                                 int32_t sourceY,int32_t sourceX);
 

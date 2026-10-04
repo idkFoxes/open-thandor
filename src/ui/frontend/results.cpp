@@ -264,7 +264,7 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 /* factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
    stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
-   as 1 (written back into the sample). Every pixel is stored as a 16-bit word.
+   as 1 (written back into the sample). Every pixel is the faction's packed 32-bit colour.
 */
 void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
@@ -309,9 +309,9 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
+      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
       do {
-        *(short *)pixelCursor = (short)packedColor;
+        *(uint32_t *)pixelCursor = packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight--;
       } while (segmentHeight != 0);
@@ -365,9 +365,9 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
+      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
       do {
-        *(short *)pixelCursor = (short)packedColor;
+        *(uint32_t *)pixelCursor = packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight--;
       } while (segmentHeight != 0);
@@ -421,9 +421,9 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
+      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
       do {
-        *(short *)pixelCursor = (short)packedColor;
+        *(uint32_t *)pixelCursor = packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight--;
       } while (segmentHeight != 0);

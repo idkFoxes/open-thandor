@@ -43,10 +43,10 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
         /* 27 */ THANDOR_FN(FrontendAudioSettings_SetEffectsGain),
         /* 28 */ THANDOR_FN(FrontendAudioSettings_SetMovieDefaultGain),
         /* 29 */ THANDOR_FN(FrontendAudioSettings_SetMusicGain),
-        /* 30 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingColorDepth),
-        /* 31 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingColorDepth),
-        /* 32 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingColorDepth),
-        /* 33 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingColorDepth),
+        /* 30 */ THANDOR_FN(NULL), /* the original's colour depth choices, gone (32-bit colour only) */
+        /* 31 */ THANDOR_FN(NULL), /* the original's colour depth choices, gone (32-bit colour only) */
+        /* 32 */ THANDOR_FN(NULL), /* the original's colour depth choices, gone (32-bit colour only) */
+        /* 33 */ THANDOR_FN(NULL), /* the original's colour depth choices, gone (32-bit colour only) */
         /* 34 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingResolution),
         /* 35 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingResolution),
         /* 36 */ THANDOR_FN(FrontendDisplaySettingsAction_ApplyPendingResolution),

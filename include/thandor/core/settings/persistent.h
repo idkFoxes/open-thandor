@@ -78,7 +78,7 @@
 #define PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT 0x10
 #define PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD 0x10000
 #define PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP 0x20
-#define PERSISTENT_DEFAULT_BITS_PER_PIXEL 16 /* ProcessEntry: colour depth of the first display mode */
+#define PERSISTENT_DEFAULT_BITS_PER_PIXEL 32 /* the only colour depth (the original's default was 16) */
 #define PERSISTENT_DEFAULT_ADAPTER_INDEX 0
 
 /* Functions are grouped by semantic ownership. */

@@ -24,8 +24,6 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
 
 void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
 
-void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton);
-
 void FrontendDisplaySettings_ApplyMode(void *control);
 
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);

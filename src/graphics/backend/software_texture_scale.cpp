@@ -66,7 +66,7 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
 
 /* Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
    destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
-   framebuffer (16 or 32 bit), as grey levels. Called by
+   framebuffer (32 bit), as grey levels. Called by
    UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/text.c).
    1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
       factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
@@ -105,7 +105,6 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   uint32_t stepY;
   uint32_t yFixed;
   uint32_t rowsLeft;
-  int pixelBytes;
   int lane;
 
   if (asset == NULL || asset->common.magic != ASSET_MAGIC_GFX ||
@@ -145,9 +144,8 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   /* 3. bilinear scale into the framebuffer */
   stepX = (uint32_t)(((unsigned long long)(sourceWidth - 1) << 8) / (uint32_t)(destinationWidth - 1));
   stepY = (uint32_t)(((unsigned long long)(sourceHeight - 1) << 8) / (uint32_t)(destinationHeight - 1));
-  /* framebuffer->width is the row pitch in pixels; anything but 2 bytes per pixel is drawn as 4 */
-  pixelBytes = framebuffer->bytesPerPixel == 2 ? 2 : 4;
-  destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * pixelBytes;
+  /* framebuffer->width is the row pitch in pixels; 4 bytes per pixel (the original also drew 2-byte pixels) */
+  destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * 4;
   yFixed = 0;
   rowsLeft = destinationHeight;
   do {
@@ -159,15 +157,10 @@ void SoftwareTexture_BilinearBlendScaleSubresources
     do {
       uint32_t color = g_SoftwarePixelIntensityToNativeColorLut256[
           SoftwareTexture_SampleIntensity(row, sourceWidth, xFixed, upperWeight, lowerWeight)];
-      if (pixelBytes == 2) {
-        ((uint16_t *)destinationRow)[column] = (uint16_t)color;
-      }
-      else {
-        ((uint32_t *)destinationRow)[column] = color;
-      }
+      ((uint32_t *)destinationRow)[column] = color;
       xFixed += stepX;
     } while (++column != destinationWidth);
     yFixed += stepY;
-    destinationRow += (int)framebuffer->width * pixelBytes;
+    destinationRow += (int)framebuffer->width * 4;
   } while (--rowsLeft != 0);
 }

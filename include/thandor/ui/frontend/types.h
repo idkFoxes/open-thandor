@@ -365,6 +365,7 @@ struct FrontendDisplayColorDepthOptionRow {
     uint8_t reserved0004_0067[100]; 
 };
 
+/* the colour depth choices (displayColorDepthOption1..4), no longer filled: 32-bit colour only */
 struct FrontendDisplayColorDepthRows {
     struct FrontendDisplayColorDepthOptionRow rows[4]; 
 };
@@ -1236,6 +1237,8 @@ typedef struct FrontendUiImage {
     uint32_t displayResolutionOption9_fields[7];
     UiNodeBase displayResolutionOption10; /* +3488 g_UiNumericPairTextButtonVtable: Resolution choice 10 (action 0x202B). */
     uint32_t displayResolutionOption10_fields[7];
+    /* The colour depth group and its four choices: unused since open-thandor runs in 32-bit colour only (not linked
+       into the display settings page; kept so the image keeps its layout). */
     UiNodeBase displayColorDepthGroup; /* +34F0 g_UiTitledWindowControlVtable: Titled box (text 0x2127) holding the four colour-depth choices. */
     uint32_t displayColorDepthGroup_fields[2];
     UiNodeBase displayColorDepthOption1; /* +3544 g_UiNumericPairTextButtonVtable: Lowest available bits-per-pixel choice (action 0x201E, value filled by action 0x2011). */
@@ -1421,7 +1424,7 @@ typedef struct FrontendUiImage {
     UiNodeBase clientLobbyPlayerListLabel; /* +58F8 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the client lobby player list. */
     uint32_t clientLobbyPlayerListLabel_fields[4];
     /* Not in the original (open-thandor): the display mode kind choice of the display settings page, appended
-       after the original nodes and linked in after displayColorDepthGroup. */
+       after the original nodes and linked in after displayResolutionGroup. */
     UiNodeBase displayModeKindGroup; /* +5954 g_UiTitledWindowControlVtable: Titled box "Anzeigemodus:" (TEXT_ID_DISPLAY_MODE_KIND_TITLE). */
     uint32_t displayModeKindGroup_fields[2];
     UiNodeBase displayModeKindWindow; /* +59A8 g_UiTextButtonControlVtable: "Fenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW). */

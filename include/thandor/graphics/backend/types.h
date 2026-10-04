@@ -22,7 +22,6 @@ typedef struct SoftwareRasterScalarMmxLane SoftwareRasterScalarMmxLane, *PSoftwa
 typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess, *PSoftwareFramebufferAccess;
 typedef struct SoftwarePixelPackTables SoftwarePixelPackTables, *PSoftwarePixelPackTables;
 typedef struct SoftwareRasterTextureAddressState SoftwareRasterTextureAddressState, *PSoftwareRasterTextureAddressState;
-typedef struct SoftwarePixelMmxConstants SoftwarePixelMmxConstants, *PSoftwarePixelMmxConstants;
 typedef struct SoftwareRasterTexCoordFixed2 SoftwareRasterTexCoordFixed2, *PSoftwareRasterTexCoordFixed2;
 typedef struct SoftwareRasterScanState SoftwareRasterScanState, *PSoftwareRasterScanState;
 typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRasterColorFixed4;
@@ -35,7 +34,6 @@ typedef void GraphicsFramebufferCopyOriginToRegionProc(int32_t copyHeight, int32
 typedef void SoftwareFramebufferDestroyProc(SoftwareFramebufferAccess * framebuffer);
 
 enum {
-    SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT=2,
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT=4
 };
 typedef int SoftwareFramebufferPixelSize;
@@ -104,13 +102,6 @@ struct SoftwareRasterTextureAddressState {
     uint32_t vMaskQ12; 
     uint32_t vRowAddressShift; 
     uint32_t zeroShiftHigh; 
-};
-
-struct SoftwarePixelMmxConstants {
-    struct SoftwareRgbWordLanes packWeights; 
-    struct SoftwareRgbWordLanes quantizeMasksQ12; 
-    struct SoftwareRgbWordLanes unpackScales; 
-    struct SoftwareRgbWordLanes packedPixelMasks; 
 };
 
 struct SoftwareRasterTexCoordFixed2 {

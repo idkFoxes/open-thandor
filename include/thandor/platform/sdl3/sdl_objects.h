@@ -65,13 +65,13 @@ void UpdateMouseMode() noexcept;
    StartGpuDevice creates the device, claims the window for its swapchain and installs the GPU rasterization of the
    primitive queues (compare: the developer tools' compare mode); false (logged, nothing left behind) when any step
    fails. StopGpuDevice puts the software rasterizer back and releases the window and the device.
-   PresentWithGpu uploads the framebuffer (RGB565 or XRGB8888 rows, pitchBytes apart) and blits it letterboxed into
+   PresentWithGpu uploads the framebuffer (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into
    the swapchain. */
 bool GpuRendererSupported(uint32_t renderer) noexcept;
 bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept;
 void StopGpuDevice() noexcept;
 bool GpuDeviceRunning() noexcept;
-bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height, bool sixteenBit) noexcept;
+bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);

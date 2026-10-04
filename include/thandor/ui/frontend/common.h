@@ -77,7 +77,6 @@
 #define FRONTEND_ACTION_MOVIE_GAIN 0x201C /* movieVolumeSlider */
 #define FRONTEND_ACTION_MUSIC_GAIN 0x201D /* musicVolumeSlider */
 #define FRONTEND_ACTION_MOVIE_EVENT_GAIN 0x204E /* movieEventVolumeSlider */
-#define FRONTEND_ACTION_COLOR_DEPTH_OPTION1 0x201E /* displayColorDepthOption1..4: 0x201E..0x2021 */
 #define FRONTEND_ACTION_RESOLUTION_OPTION1 0x2022 /* displayResolutionOption1..10: 0x2022..0x202B */
 /* Not in the original: the display mode kind choices (handlers58_5A of g_FrontendUiActionHandlersPage20) */
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW 0x2058

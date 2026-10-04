@@ -38,20 +38,22 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .leftOffset = 128, .topOffset = 232, .rightOffset = 240, .bottomOffset = 256,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .applyButton_fields = {.button = {.stateFlags = UI_BUTTON_FRAME_INSET, .actionId = UI_DISPLAY_MODE_ACTION_APPLY, .textResourceId = TEXT_ID_OK}},
+    /* not in the original: the colour depth heading and its four buttons are not linked into the dialog any more
+       (32-bit colour only); their nodes stay as unused template data, so the image keeps its layout */
     .resolutionHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
         .leftOffset = 160, .topOffset = 8, .rightOffset = 248, .bottomOffset = 28,
         .layoutWidth = -1, .layoutHeight = -1},
     .resolutionHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_RESOLUTION_HEADING},
     .colorDepthHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(adapterHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
         .leftOffset = 24, .topOffset = 8, .rightOffset = 120, .bottomOffset = 28,
         .layoutWidth = -1, .layoutHeight = -1},
     .colorDepthHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING},
     .adapterHeading = { /* g_UiFocusProxyControlVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
         .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
         .layoutWidth = -1, .layoutHeight = -1},
@@ -79,7 +81,7 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
     .colorDepthOption3_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 2, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
     .colorDepthOption4_prefix = {0},
     .colorDepthOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
-        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 88, .rightOffset = 120, .bottomOffset = 108,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
@@ -219,10 +221,10 @@ THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsU
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {
         /*  0 */ THANDOR_FN(UiDisplayModeAction_ApplyPendingMode),
-        /*  1 */ THANDOR_FN(UiDisplayModeAction_UpdateColorDepthSelection),
-        /*  2 */ THANDOR_FN(UiDisplayModeAction_UpdateColorDepthSelection),
-        /*  3 */ THANDOR_FN(UiDisplayModeAction_UpdateColorDepthSelection),
-        /*  4 */ THANDOR_FN(UiDisplayModeAction_UpdateColorDepthSelection),
+        /*  1 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  2 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  3 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  4 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
         /*  5 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
         /*  6 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
         /*  7 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
@@ -240,8 +242,8 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
         /* 19 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection)
     }};
 
-/* the ascending list of distinct values (bit depths,
-   resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
+/* the ascending list of distinct values (resolutions,
+   adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
 static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
 static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
@@ -317,28 +319,6 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   return;
 }
 
-/* Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
-   of the display settings dialog: selects the button's bit depth, keeps the selected adapter and resolution
-   and refreshes the available buttons. Each option button keeps its value in the dword 8 bytes before it
-   (UiDisplayModeOptionPrefix.modeValue). UiDisplayModeAction_UpdateAdapterSelection is its mirror image for the
-   adapter buttons.
-*/
-void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
-
-{
-  UiNodeBase *displaySettingsRoot;
-  UiDisplaySettingsApplyButton *applyButton;
-
-  displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
-  UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
-             (FrontendColorDepthBits)DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,
-             (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
-             (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
-  return;
-}
-
 /* Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
    of the display settings dialog: selects the button's resolution (height 12 bytes and width 8 bytes before
    the button), keeps the selected adapter and bit depth and refreshes the available buttons.
@@ -361,8 +341,7 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 
 /* Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
    of the display settings dialog: selects the button's adapter (the dword 8 bytes before the button), keeps
-   the selected resolution and bit depth and refreshes the available buttons. See
-   UiDisplayModeAction_UpdateColorDepthSelection.
+   the selected resolution and bit depth and refreshes the available buttons.
 */
 void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 
@@ -460,8 +439,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   pendingWidth = applyButton->selectedWidth;
   pendingHeight = applyButton->selectedHeight;
   pendingBitsPerPixel = applyButton->selectedBitsPerPixel;
-  currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
-            g_SoftwarePixelFormatConfig.blueBitCount;
+  /* the original: the RGB bits of the pixel format (24 in a 32-bit mode); 32-bit colour only now */
+  currentBitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   pendingAdapterIndex = applyButton->selectedAdapterIndex;
   UiRootStack_Pop(root);
   if (pendingWidth == g_FramebufferWidth && pendingHeight == g_FramebufferHeight &&
@@ -570,8 +549,9 @@ void UiDisplayModeCandidates_InsertSortedUnique
 /* Opens the display settings dialog (only when more than one display mode was enumerated): copies
    g_UiDisplaySettingsRootTemplate to the heap, records the current mode and colour bias/scale as both the
    selected and the original values, installs its action handlers and pushes it. The option buttons are then
-   labelled with the enumerated values in ascending order: up to 4 distinct bit depths, 8 resolutions and 5
-   adapters (a sorted insert into the g_UiDisplayModeDistinctValueScratch slots, 0xFFFFFFFF = empty).
+   labelled with the enumerated values in ascending order: up to 8 resolutions and 5 adapters (a sorted insert
+   into the g_UiDisplayModeDistinctValueScratch slots, 0xFFFFFFFF = empty); the original also listed up to 4
+   distinct bit depths (32-bit colour only now).
    Reopened by UiDisplayModeAction_RevertAndReopenSettings. The original also reports a failed
    allocation; that caller ignores it.
 */
@@ -585,7 +565,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   int32_t colorBiasQ16;
   UiRootNode *root;
   int copyCount;
-  int redGreenBits;
   UiNodeFlags colorDepthBits;
   GraphicsDisplayModeCount remainingModes;
   uint32_t *copyCursor;
@@ -610,8 +589,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   activeAdapterIndex = g_ActiveGraphicsAdapterIndex;
   framebufferHeight = g_FramebufferHeight;
   framebufferWidth = g_FramebufferWidth;
-  colorDepthBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
-           g_SoftwarePixelFormatConfig.blueBitCount;
+  colorDepthBits = PERSISTENT_DEFAULT_BITS_PER_PIXEL; /* the original: the pixel format's RGB bits */
   /* applyButton tail: the selected mode tuple and the original one start out equal */
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
   applyButton->selectedWidth = framebufferWidth;
@@ -639,23 +617,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   UiActionHandlers_SetPage(UI_DISPLAY_MODE_ACTION_HANDLER_PAGE,
                            (UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
   UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
-
-  /* distinct bit depths, ascending */
-  g_UiDisplayModeDistinctValueScratch[0] = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch[1] = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch[2] = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch[3] = UI_DISPLAY_MODE_NONE;
-  displayMode = g_GraphicsDisplayModes;
-  for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
-    UiDisplayModeCandidates_InsertSortedUnique(g_UiDisplayModeDistinctValueScratch,4,displayMode->bitsPerPixel);
-    displayMode = displayMode + 1;
-  }
-  /* Each option button's mode value(s) sit in its <button>_prefix, the dwords just before the button (read
-     back by the action callbacks as UiDisplayModeOptionPrefix.modeValue / .resolutionHeight). */
-  DISPLAY_SETTINGS_UI(root,colorDepthOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[0];
-  DISPLAY_SETTINGS_UI(root,colorDepthOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[1];
-  DISPLAY_SETTINGS_UI(root,colorDepthOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2];
-  DISPLAY_SETTINGS_UI(root,colorDepthOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
 
   /* distinct resolutions, keyed width << 16 | height so that they sort by width, then height */
   g_UiDisplayModeDistinctValueScratch[0] = UI_DISPLAY_MODE_NONE;
@@ -708,17 +669,14 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   DISPLAY_SETTINGS_UI(root,adapterOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2];
   DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
   DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
-  redGreenBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (g_ActiveGraphicsAdapterIndex,
-             (FrontendColorDepthBits)(redGreenBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight,
-             g_FramebufferWidth,(UiNodeBase *)root);
+            (g_ActiveGraphicsAdapterIndex,colorDepthBits,g_FramebufferHeight,g_FramebufferWidth,(UiNodeBase *)root);
   UiRootStack_InvalidateAll();
   return;
 }
 
 /* Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
-   colour-depth, resolution and adapter button whose combination with the other selected values was not
+   resolution and adapter button whose combination with the other selected values was not
    enumerated (GraphicsDisplayMode_IsEnumerated) is suppressed, the others are enabled; the buttons matching
    the selection are selected in their groups; the tuple is stored as the selected one, and the apply button
    is suppressed while it and the colour bias/scale equal the values the dialog opened with.
@@ -731,9 +689,6 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 {
   /* Every option button is a 0x68-byte node; the dwords just before each button hold its mode
      value(s) (DISPLAY_MODE_OPTION_PREFIX). */
-  static const unsigned depthButtons[4] = {offsetof(DisplaySettingsUiImage,colorDepthOption1),
-      offsetof(DisplaySettingsUiImage,colorDepthOption2),offsetof(DisplaySettingsUiImage,colorDepthOption3),
-      offsetof(DisplaySettingsUiImage,colorDepthOption4)};
   static const unsigned sizeButtons[8] = {offsetof(DisplaySettingsUiImage,resolutionOption1),
       offsetof(DisplaySettingsUiImage,resolutionOption2),offsetof(DisplaySettingsUiImage,resolutionOption3),
       offsetof(DisplaySettingsUiImage,resolutionOption4),offsetof(DisplaySettingsUiImage,resolutionOption5),
@@ -749,25 +704,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
-  for (i = 0; i < 4; i++) {
-    uint32_t depth = DISPLAY_MODE_OPTION_PREFIX(root + depthButtons[i]).modeValue;
-    modeMissing = GraphicsDisplayMode_IsEnumerated(adapterIndex,depth,modeHeight,modeWidth);
-    if (modeMissing) {
-      UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + i,displaySettingsRoot);
-    }
-    else {
-      UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + i,displaySettingsRoot);
-    }
-    if (bitsPerPixel == depth) {
-      /* The original stores modeWidth instead of the button for the fourth depth. */
-      selected = (i == 3) ? (void *)(uintptr_t)modeWidth : (void *)(root + depthButtons[i]);
-    }
-  }
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)selected,
-      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption4),
-      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption3),
-      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption2),
-      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption1));
+  /* the original first refreshed the four colour depth buttons (gone, 32-bit colour only) */
   for (i = 0; i < 8; i++) {
     uint32_t height = DISPLAY_MODE_OPTION_PREFIX(root + sizeButtons[i]).resolutionHeight;
     uint32_t width = DISPLAY_MODE_OPTION_PREFIX(root + sizeButtons[i]).modeValue;

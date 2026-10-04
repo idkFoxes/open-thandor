@@ -39,10 +39,11 @@ static void FrontendDisplaySettingsPage_FillAdapterRow
 }
 
 /* Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
-   "Graphics" button: opens the display settings page and fills its choices: the four smallest distinct colour
-   depths and the ten smallest distinct resolutions (width << 16 | height) of g_GraphicsDisplayModes, each
-   collected by an insertion into a sorted list with 0xFFFFFFFF as the empty mark, and the name and device of
-   up to five adapters. The saved adapter, resolution and colour depth become the current selection.
+   "Graphics" button: opens the display settings page and fills its choices: the ten smallest distinct
+   resolutions (width << 16 | height) of g_GraphicsDisplayModes, collected by an insertion into a sorted list with
+   0xFFFFFFFF as the empty mark, and the name and device of up to five adapters. The saved adapter and resolution
+   become the current selection. Not in the original: there is no colour depth choice any more (the original
+   listed the four smallest distinct colour depths); the colour depth is always 32 bits.
 */
 void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source)
 
@@ -66,20 +67,6 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
            FRONTEND_UI((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton),menuRoomModelView))->
          contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
-  }
-  /* the four smallest distinct colour depths */
-  for (rowIndex = 0; rowIndex < 4; rowIndex++) {
-    candidates[rowIndex] = UI_DISPLAY_MODE_NONE;
-  }
-  remainingModes = g_GraphicsDisplayModeCount;
-  displayMode = g_GraphicsDisplayModes;
-  do {
-    UiDisplayModeCandidates_InsertSortedUnique(candidates,4,displayMode->bitsPerPixel);
-    displayMode++;
-    remainingModes--;
-  } while (remainingModes != 0);
-  for (rowIndex = 0; rowIndex < 4; rowIndex++) {
-    source->colorDepthRows.rows[rowIndex].bitsPerPixel = candidates[rowIndex];
   }
   /* name and device of up to five adapters (the first one is always listed) */
   FrontendDisplaySettingsPage_FillAdapterRow(source,0);
@@ -110,7 +97,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
        PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
+  bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)source);
   return;
 }
@@ -162,21 +149,8 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
   return;
 }
 
-/* Handler of the four colour-depth choices of the display settings page (actions 0x201E..0x2021, slots 30-33 of
-   g_FrontendUiActionHandlersPage20): takes the clicked button's bits per pixel as the pending colour depth and
-   refreshes which choices are available.
-*/
-void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
-
-{
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = ((UiNumericPairTextButton *)optionButton)->firstValue;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
-  return;
-}
-
 /* Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
-   g_FrontendUiActionHandlersPage20): switches to the pending adapter/resolution/colour depth. On success the mode
+   g_FrontendUiActionHandlersPage20): switches to the pending adapter/resolution (always 32-bit colour). On success the mode
    is saved in the persistent settings, the UI is laid out again and the palette-based UI textures are converted
    to the new pixel format; on failure the previous mode is restored (fatal if that fails too), the error is
    reported and the pending selection is reset to the saved one.
@@ -191,7 +165,6 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   uint32_t selectedWidth;
   uint32_t selectedHeight;
   uint32_t selectedBitsPerPixel;
-  int currentColorBits;
   int remainingFonts;
   UiNodeBase *parentCursor;
   GraphicsTextureSourceAsset **fontTextureSource;
@@ -214,9 +187,6 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   previousDisplayModeKind = SdlVideo_DisplayModeKind();
   SdlVideo_SetDisplayModeKind(s_pendingDisplayModeKind);
   g_CursorVisibilityToken--;
-  /* the current colour depth: the RGB bits of the pixel format, rounded up to a multiple of 16 below */
-  currentColorBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
-          g_SoftwarePixelFormatConfig.blueBitCount;
   if (!g_GraphicsSetDisplayMode
                     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex,
@@ -226,7 +196,8 @@ void FrontendDisplaySettings_ApplyMode(void *control)
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width,&selectedModeError)) {
-    if (!g_GraphicsSetDisplayMode(previousAdapterIndex,currentColorBits + 15U & ~15U,previousHeight,
+    /* the original restored the current depth (the pixel format's RGB bits rounded up to a multiple of 16) */
+    if (!g_GraphicsSetDisplayMode(previousAdapterIndex,PERSISTENT_DEFAULT_BITS_PER_PIXEL,previousHeight,
                                   previousWidth,&restoredModeError)) {
       FatalError_ExitIfFailed(restoredModeError,true);
     }
@@ -241,7 +212,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
          PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
+    bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
     FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
     return;
   }
@@ -286,26 +257,27 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   return;
 }
 
-/* Refreshes the display settings page after the pending mode changed (called by the colour-depth, resolution
-   and apply handlers here and by ui/frontend/runtime). Every colour-depth, resolution and adapter choice is
-   hidden unless the adapter offers it together with the other two pending values, the choices matching the
-   pending mode are selected, and the apply button is only offered while the pending mode differs from the saved
-   one.
-   How the selection works in the original: it first pushes all 19 choice controls on the machine stack
-   (adapter 1..5, resolution 1..10, colour depth 1..4, so colour depth 4 ends on top), then per group pushes
-   every choice whose value equals the pending one (colour depth: bits per pixel == the button's firstValue;
-   resolution: width == firstValue and height == secondValue; adapter: pending adapter == 0..4) and calls
-   UiSelectableGroup_SelectExclusive(count, <top of stack>, <the count entries below it>), which pops count
-   and the selected control, and then the caller pops count entries. With exactly one match per group this selects the matching choice. Quirk of the original:
-   when a group has no match, the entry on top (without earlier shifts: that group's last choice) is taken as
-   the selected control but is not in the list, so it keeps its state; the group's other choices plus the
-   next group's first choice are deselected, and every later group works on a stack shifted by one entry
-   (two matches in one group shift it the other way). modeStack models that stack exactly. Once a shift
-   reaches past the 19 pushed controls the original also deselects and redraws whatever the values
-   saved below them on its stack point at; this C leaves those entries out (listCount is cut at the last control).
+/* Refreshes the display settings page after the pending mode changed (called by the resolution, adapter, display
+   mode kind and apply handlers here and by ui/frontend/runtime). Every resolution and adapter choice is hidden
+   unless the adapter offers it together with the other pending value, the choices matching the pending mode are
+   selected, and the apply button is only offered while the pending mode differs from the saved one.
+   How the selection works in the original: it first pushes all choice controls on the machine stack
+   (adapter 1..5, resolution 1..10 and, gone here, colour depth 1..4), then per group pushes every choice whose
+   value equals the pending one (resolution: width == firstValue and height == secondValue; adapter: pending
+   adapter == 0..4) and calls UiSelectableGroup_SelectExclusive(count, <top of stack>, <the count entries below
+   it>), which pops count and the selected control, and then the caller pops count entries. With exactly one
+   match per group this selects the matching choice. Quirk of the original: when a group has no match, the entry
+   on top (without earlier shifts: that group's last choice) is taken as the selected control but is not in the
+   list, so it keeps its state; the group's other choices plus the next group's first choice are deselected, and
+   every later group works on a stack shifted by one entry (two matches in one group shift it the other way).
+   modeStack models that stack exactly. Once a shift reaches past the pushed controls the original also deselects
+   and redraws whatever the values saved below them on its stack point at; this C leaves those entries out
+   (listCount is cut at the last control). Not in the original: the colour depth group (32-bit colour only) is
+   gone, so the stack starts with the resolution choices.
 */
-#define DISPLAY_MODE_STACK_BASE 19 /* room for the pushed matches above the 19 controls */
-#define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + 19)
+#define DISPLAY_MODE_STACK_CONTROLS 15 /* adapter 1..5, resolution 1..10 */
+#define DISPLAY_MODE_STACK_BASE DISPLAY_MODE_STACK_CONTROLS /* room for the pushed matches above the controls */
+#define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + DISPLAY_MODE_STACK_CONTROLS)
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
 {
@@ -315,14 +287,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   uint32_t bitsPerPixel;
   uint32_t persistedValue;
   Bool8 modeCheckCarry;
-  /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the 19 controls stand
+  /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the controls stand
      for the values the original saved below them */
   UiNodeBase *modeStack[DISPLAY_MODE_STACK_END + 5];
   int modeStackTop;
   UiControlCount listCount;
 
-  bitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
-                 persistentSelection.bitsPerPixel;
+  bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   pendingHeight = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection
               .height;
   pendingWidth = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
@@ -333,92 +304,28 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   while (frontendRoot->parent != UI_NODE_NONE) {
     frontendRoot = frontendRoot->parent;
   }
-  /* push all 19 choices */
+  /* push all 15 choices */
   modeStackTop = DISPLAY_MODE_STACK_BASE;
-  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
-  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
-  modeStack[DISPLAY_MODE_STACK_BASE + 5] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
-  modeStack[DISPLAY_MODE_STACK_BASE + 6] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
-  modeStack[DISPLAY_MODE_STACK_BASE + 7] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
-  modeStack[DISPLAY_MODE_STACK_BASE + 8] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
-  modeStack[DISPLAY_MODE_STACK_BASE + 9] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
-  modeStack[DISPLAY_MODE_STACK_BASE + 10] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 11] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 12] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 13] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
-  modeStack[DISPLAY_MODE_STACK_BASE + 14] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
-  modeStack[DISPLAY_MODE_STACK_BASE + 15] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 16] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 17] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 18] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
+  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
+  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
+  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
+  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
+  modeStack[DISPLAY_MODE_STACK_BASE + 5] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
+  modeStack[DISPLAY_MODE_STACK_BASE + 6] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 7] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 8] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 9] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 10] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
+  modeStack[DISPLAY_MODE_STACK_BASE + 11] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 12] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 13] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 14] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   modeStack[DISPLAY_MODE_STACK_END + 0] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 1] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 2] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 3] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 4] = NULL;
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption1))->firstValue,
-                     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
-                     persistentSelection.height,
-                     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
-                     persistentSelection.width,
-                     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
-                     persistentSelection.adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
-  }
-  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption1))->firstValue) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    ((FrontendColorDepthBits)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption2))->firstValue,pendingHeight,pendingWidth
-                     ,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
-  }
-  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption2))->firstValue) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption3))->firstValue,pendingHeight,pendingWidth,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
-  }
-  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption3))->firstValue) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption4))->firstValue,pendingHeight,pendingWidth,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
-  }
-  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption4))->firstValue) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
-  }
-  /* SelectExclusive(4, top, next 4), then pop 1 + 4 */
-  listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
-  if (listCount > 4) {
-    listCount = 4;
-  }
-  UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
-      modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
-      modeStack[modeStackTop + 4]);
-  modeStackTop = modeStackTop + 5;
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue,
                      ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue,adapterIndex);
@@ -638,8 +545,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   persistedValue = SdlVideo_SavedAdapterIndex();
   if ((((persistedValue == adapterIndex) && (SdlVideo_SavedDisplayModeKind() == s_pendingDisplayModeKind) &&
        (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
-      (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight)) &&
-     (persistedValue = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL), persistedValue == bitsPerPixel)) {
+      (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
     return;
   }
