@@ -156,7 +156,7 @@ adapter = 0
 width = 1280
 ; screen height in pixels (default 480)
 height = 800
-; colour depth in bits (default 16)
+; colour depth in bits, always 32 (an older 16 is read as 32)
 bits_per_pixel = 32
 ; renderer: vulkan (default), d3d12 or software
 renderer = vulkan
@@ -226,7 +226,8 @@ SDL3 (`src/platform/sdl3`, interface
 [`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)); the game reaches them
 through the original's function slots (`g_Win32PumpMessages`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
 `g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game draws its frames with its software renderer
-into a memory framebuffer (RGB565 or XRGB8888); the 3D view can be rasterized on the GPU instead (below). The
+into a memory framebuffer (XRGB8888; the game runs in 32-bit colour only, the original's 16-bit modes were
+removed); the 3D view can be rasterized on the GPU instead (below). The
 original's 3dfx Glide and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed. The network
 code stays on WinSock (UDP).
 
@@ -244,7 +245,9 @@ The display settings page (main room: Optionen -> Grafik) chooses:
 - **Anzeigemodus**: `Fenster` (a normal, resizable window in the mode's size; the mouse is the system mouse),
   `Vollbildfenster` (a borderless window over the whole display) and `Vollbild` (default: exclusive fullscreen in
   the chosen mode, or the closest larger one the display has). The frame is letterboxed in all three.
-- **Farbtiefe** and **Auflösung** as in the original (640x480 up to the desktop size, 16 and 32 bits).
+- **Auflösung** as in the original (640x480 up to the desktop size). There is no colour depth choice (the
+  original's **Farbtiefe**): the game runs in 32 bits per pixel only, and a saved `bits_per_pixel` of 16 (an old
+  `thandor.dat` or `thandor.ini`) is read as 32 and written back as 32.
 
 "Anwenden" switches at once (renderer included, no restart) and saves the choice. `thandor.log` names the renderer
 and the API that presents (`SDL_GPU renderer: ... on vulkan`, `software renderer, presenting through the
@@ -315,7 +318,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
 | `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
 | `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
-| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (desktop colour depth, absolute mouse position, normal process priority); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
+| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (absolute mouse position, normal process priority; a display mode kind chosen in the settings is logged and kept for the session, not applied or saved); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |

@@ -291,11 +291,11 @@ Module header: [`backend.h`](../include/thandor/graphics/backend.h) · Changelog
 
 - [`directdraw.cpp / directdraw.h`](source_guide/graphics.md#file-graphics-backend-directdraw) - The display-mode and adapter tables (the framebuffer publication of a mode switch is in graphics/core/device).
 - [`software.cpp / software.h`](source_guide/graphics.md#file-graphics-backend-software) - no file comment; main functions `SoftwareRenderer_BuildFactorTables`, `SoftwareGraphicsDispatch_NoOp`, `SoftwareGraphicsDispatch_SuccessNoOp`
-- [`software_blit.cpp / software_blit.h`](source_guide/graphics.md#file-graphics-backend-software-blit) - Software blits into the framebuffer, each in a 16-bit and a 32-bit pixel version: texture source blits (alpha, half, bilinear stretch, integer scale, palette bank, saturated add, modulated), ...
+- [`software_blit.cpp / software_blit.h`](source_guide/graphics.md#file-graphics-backend-software-blit) - Software blits into the 32-bit framebuffer: texture source blits (alpha, half, bilinear stretch, integer scale, palette bank, saturated add, modulated), rectangle fill and the region copies.
 - [`software_blit_helpers.h`](source_guide/graphics.md#file-graphics-backend-software-blit-helpers) - ---- Texture-source blits and rectangle fills ---------------------------------------------
 - [`software_display_mode.cpp / software_display_mode.h`](source_guide/graphics.md#file-graphics-backend-software-display-mode) - Software renderer display mode: the pixel format and channel pack tables of a mode, the display mode hook chain and the owned memory framebuffer.
-- [`software_raster.h`](source_guide/graphics.md#file-graphics-backend-software-raster) - Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h).
-- [`software_rasterizer.cpp / software_rasterizer.h`](source_guide/graphics.md#file-graphics-backend-software-rasterizer) - Software triangle rasterizer: the primitive queue walkers per pixel family (16-bit, non-16-bit, auxiliary target), the 64-entry raster mode handler tables, the triangle packet set-up and the depth ...
+- [`software_raster.h`](source_guide/graphics.md#file-graphics-backend-software-raster) - Shared helpers of the software triangle rasterizer (SoftwareRaster{32,Aux}_ModeNN in software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h).
+- [`software_rasterizer.cpp / software_rasterizer.h`](source_guide/graphics.md#file-graphics-backend-software-rasterizer) - Software triangle rasterizer: the primitive queue walkers per pixel family (32-bit framebuffer, auxiliary target), the 64-entry raster mode handler tables, the triangle packet set-up and the depth ...
 - [`software_texture_scale.cpp / software_texture_scale.h`](source_guide/graphics.md#file-graphics-backend-software-texture-scale) - Bilinear down-scaling of texture subresources for the software renderer (texture quality setting).
 - [`types.h`](source_guide/graphics.md#file-graphics-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -331,7 +331,7 @@ Module header: [`render.h`](../include/thandor/graphics/render.h) · Changelog: 
 
 Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Changelog: `framebuffer` [full](../CHANGELOG_FULL.md#module-graphics-resources-framebuffer); `palette` [full](../CHANGELOG_FULL.md#module-graphics-resources-palette); `texture` [dev](../CHANGELOG.md#module-graphics-resources-texture) · [full](../CHANGELOG_FULL.md#module-graphics-resources-texture)
 
-- [`framebuffer.cpp / framebuffer.h`](source_guide/graphics.md#file-graphics-resources-framebuffer) - no file comment; main functions `GraphicsFramebuffer_ExpandChannelTo8Bit`, `GraphicsFramebuffer_BeginAccessStub`, `GraphicsFramebuffer_EndAccessStub`
+- [`framebuffer.cpp / framebuffer.h`](source_guide/graphics.md#file-graphics-resources-framebuffer) - no file comment; main functions `GraphicsFramebuffer_BeginAccessStub`, `GraphicsFramebuffer_EndAccessStub`, `GraphicsFramebuffer_InitCaptureAsset`
 - [`palette.cpp / palette.h`](source_guide/graphics.md#file-graphics-resources-palette) - no file comment; main functions `GraphicsPaletteAsset_LoadPackage`, `GraphicsPaletteAsset_ReleasePackage`, `GraphicsPaletteAsset_Clone`
 - [`palette_optimizer.cpp / palette_optimizer.h`](source_guide/graphics.md#file-graphics-resources-palette-optimizer) - Palette optimiser and combiner (converter/editor code, no caller in the game): folds and packs the used colours of the palette banks, merges and removes banks and combines assets, remapping the ...
 - [`pcx.h`](source_guide/graphics.md#file-graphics-resources-pcx) - PCX reading and writing in C.
@@ -524,7 +524,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
-- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplayModeCandidates_InsertSortedUnique`, `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateColorDepthSelection`
+- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplayModeCandidates_InsertSortedUnique`, `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateResolutionSelection`
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
