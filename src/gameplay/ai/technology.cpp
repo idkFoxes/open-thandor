@@ -10,6 +10,9 @@
 
 /* Implementation ownership: gameplay/ai/technology. */
 
+static UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
+              (ModelDefinitionRecordPrefix *candidateDefinition);
+
 /* Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3]; technologies
    researched in class 13/22 structures). Looks up the model definition that
    ModelDefinitionRegistry_FindByRuntimeClassId finds for the technology id and scores the technology by
@@ -17,7 +20,7 @@
    Definitions of class 1 only score while the faction has none of ARM 302/303/304, at half weight, and at
    3/8 when it has ARM 305 or 306.
 */
-AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
+static AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -27,7 +30,6 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
   ModelDefinitionRecordPrefix *candidateDefinition;
   UQ8 relationScaleQ8;
   uint32_t candidateScore;
-  Bool8 rejected;
 
   candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
   technologyAsset = g_TechnologyAsset;
@@ -44,10 +46,6 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
          with its record address (on x64 its low 32 bits). */
       return (AiTechnologyCandidateScore)(intptr_t)candidateDefinition;
     }
-    rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
-    if (rejected) {
-      return 0;
-    }
     relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
     return (relationScaleQ8 * AI_TECHNOLOGY_RELATION_SCORE_FACTOR >> 8) *
            technologyAsset->records[technologyId].baseCandidateScore >> 8;
@@ -56,10 +54,6 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
   if (AiPrimaryWorkspace_HasEntryById(ARM_0302_BUILDING_MDL0300) ||
       AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316) ||
       AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324)) {
-    return 0;
-  }
-  rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
-  if (rejected) {
     return 0;
   }
   relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
@@ -178,7 +172,7 @@ void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntim
    scaled by energy demand / energy supply (Q8), but only once demand reaches 0xF0/0x100 (about 94%)
    of supply.
 */
-AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
+static AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -213,23 +207,11 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
 }
 
 
-/* Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2]; technologies
-   researched in class 11 structures): the technology's base candidate score
-   from the technology asset, unconditionally.
+/* Technology score callback for score kinds 2 and 4 (g_AiTechnologyCandidateScoreCallbackTable[2]: technologies
+   researched in class 11 structures; [4]: radar and AR-M silo technologies): the technology's base candidate
+   score from the technology asset, unconditionally. The original has two identical copies, one per kind.
 */
-AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
-          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
-          WorldRuntimeContext *worldRuntime)
-
-{
-  return g_TechnologyAsset->records[technologyId].baseCandidateScore;
-}
-
-
-/* Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4]; radar and AR-M silo
-   technologies): the technology's base candidate score, unconditionally.
-*/
-AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
+static AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -240,42 +222,26 @@ AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
 
 /* The category mask for the score callback below; AiTechnologyCandidate_AddBestResearch stores it
    here before its scoring loop. */
-AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMask;
-
-AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-          (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
-          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
+static AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMask;
 
 /* Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5]; every technology
-   not caught by kinds 0-4). Hands the category mask (a global set by the caller) to the body below, which holds
-   the original logic.
+   not caught by kinds 0-4). Category C and D technologies score nothing unless the faction already owns a
+   technology of that category (bit 2 / bit 4 of the category mask g_AiTechnologyScoreCategoryMask, set by the
+   caller). Otherwise the score is the average faction-weighted score of the army assets the technology leads to
+   (weights g_AiArmyCandidateScoreWeightsVariantC15) times the base candidate score, >> 8.
 */
-AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
+static AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
 {
-  return AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-                   (g_AiTechnologyScoreCategoryMask,factionIndex,technologyId,worldRuntime);
-}
-
-/* Body of AiTechnologyScore_ComputeCategoryCompatibleCandidateValue (a C-only split; only called by the wrapper
-   above).
-   Category C and D technologies score nothing unless the faction already owns a technology of that
-   category (bit 2 / bit 4 of categoryMask). Otherwise the score is the average faction-weighted score
-   of the army assets the technology leads to (weights g_AiArmyCandidateScoreWeightsVariantC15) times the
-   base candidate score, >> 8.
-*/
-AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-          (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
-          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
-
-{
+  AiTechnologyCategoryMask categoryMask;
   TechnologyCategory technologyCategory;
   uint32_t categoryMaskBit;
   TechnologyAsset *technologyAsset;
   AiCandidateScore32 averageAssetScore;
   
+  categoryMask = g_AiTechnologyScoreCategoryMask;
   technologyAsset = g_TechnologyAsset;
   technologyCategory = g_TechnologyAsset->records[technologyId].category;
   /* Categories C and D need their bit in the category mask; every other category is always compatible. */
@@ -297,23 +263,12 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
 }
 
 
-/* Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
-   directly): would return true to reject the candidate definition, but always accepts (returns false).
-*/
-Bool8 AiTechnologyCompatibility_AcceptRuntimeClassCandidate
-          (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition)
-
-{
-  return false;
-}
-
-
 /* Relation scale (Q8) of a candidate definition to the faction's units in the secondary workspace
    (workspace 01): (1.0 + 2.0 per assigned unit whose definition id equals the candidate's or differs by
    1000 or 2000, i.e. the same unit in another id block) / number of assigned units; 1.0 when there is
    none. Called directly by AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue.
 */
-UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
+static UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
               (ModelDefinitionRecordPrefix *candidateDefinition)
 
 {
@@ -350,12 +305,16 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
 
 /* Class vtables. */
 
-AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6] = {
+static AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime);
+
+static AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6] = {
     /* 0 */ THANDOR_SLOT(AiTechnologyScore_AlwaysZero),
     /* 1 */ THANDOR_SLOT(AiTechnologyScore_ComputeFactionScaledCandidateValue),
-    /* 2 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValueForKind2),
+    /* 2 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValue),
     /* 3 */ THANDOR_SLOT(AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue),
-    /* 4 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValueForKind4),
+    /* 4 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValue),
     /* 5 */ THANDOR_SLOT(AiTechnologyScore_ComputeCategoryCompatibleCandidateValue)};
 
 /* Research planning: once the faction has an ARM 330 (0x14A) structure, scores every available technology of
@@ -416,7 +375,7 @@ void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,Worl
    called by AiTechnologyCandidate_AddBestResearch): a technology of this kind always scores 0, so it
    is never chosen for research.
 */
-AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
+static AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
