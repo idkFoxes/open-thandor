@@ -537,7 +537,6 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge3(TerrainDirectionalScanStep scan
 {
   int scanRowStrideBytes;
   FieldGridCell *adjacentCell;
-  int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {

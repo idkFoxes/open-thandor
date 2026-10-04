@@ -27,7 +27,7 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
 
 {
   Resource_Release((void *)g_FrontendLoadedCampaignAsset);
-  g_FrontendLoadedCampaignAsset = NULL;
+  g_FrontendLoadedCampaignAsset = 0;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
   return;

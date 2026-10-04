@@ -28,7 +28,7 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
   remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
   queueEntry = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
-    candidateAsset = (ArmyAssetRecord *)*queueEntry; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if ((candidateAsset->flags & modelRuntime->modelDefinition->classParameterC4) == 0) {
       continue;
     }
@@ -321,7 +321,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
         queueSlot = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
             remainingAssetCount = remainingAssetCount - 1) {
-          candidateAsset = (ArmyAssetRecord *)*queueSlot; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+          candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueSlot); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
           if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) != 0) &&
              (candidateAsset->xeniteCostQ4 <= g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4))
           {
@@ -384,7 +384,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
             activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
             /* appended to the faction's primary asset list */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[primaryAssetCount] =
-                 (uint32_t)assetRecord; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+                 Thandor_PointerToU32(assetRecord); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount =
                  g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {

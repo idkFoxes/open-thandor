@@ -49,8 +49,8 @@ void Thandor_Log(const char *format, ...)
     fclose(out);
 }
 
-/* `module+0xoffset` of a code address: the fallback without a symbol (a GCC build has no PDB; its thandor.map or
-   addr2line symbolizes the offset, docs/BUILDING.md). 0 when no module contains the address. */
+/* `module+0xoffset` of a code address: the fallback without a symbol (addr2line or tools/data/symbolize.py
+   symbolizes the offset offline, docs/BUILDING.md). 0 when no module contains the address. */
 static int module_offset(char *out, size_t capacity, DWORD64 address)
 {
     HMODULE module;
@@ -65,6 +65,195 @@ static int module_offset(char *out, size_t capacity, DWORD64 address)
     snprintf(out, capacity, "%s+0x%llX", base ? base + 1 : moduleName,
              (unsigned long long)(address - (DWORD64)(uintptr_t)module));
     return 1;
+}
+
+/*
+Symbol table of a GCC build (no PDB for dbghelp): thandor.sym next to the executable, written after the link by
+cmake/symbol_table.cmake from `nm -C --defined-only -n` - a first line "<address> A __ImageBase" (the link-time
+image base), then the code symbols "<address> <T|t|W|w> <demangled name>" sorted by address.
+Thandor_InstallCrashHandler reads it once into memory allocated then; the lookups of the crash, hang and watchdog
+logs only read that memory (no allocation or file access while the process is crashing). A table that does not
+belong to this executable (Thandor_InstallCrashHandler not found at its own address) is dropped.
+*/
+typedef struct SymbolTableEntry {
+    uint32_t rva;        /* offset from the image base */
+    uint32_t nameOffset; /* into g_SymbolTableText, zero-terminated */
+} SymbolTableEntry;
+
+static char *g_SymbolTableText;
+static SymbolTableEntry *g_SymbolTableEntries;
+static uint32_t g_SymbolTableCount;
+/* image offsets of the executable sections: only code addresses get a name (not data words on the stack) */
+static uint32_t g_SymbolTableCodeStart;
+static uint32_t g_SymbolTableCodeEnd;
+
+/* The table entry of the function containing image offset rva (the last symbol at or below it); NULL if none. */
+static const SymbolTableEntry *symbol_table_find(uint64_t rva)
+{
+    uint32_t low = 0;
+    uint32_t high = g_SymbolTableCount;
+    if (g_SymbolTableCount == 0 || rva < g_SymbolTableCodeStart || rva >= g_SymbolTableCodeEnd ||
+        rva < g_SymbolTableEntries[0].rva) {
+        return NULL;
+    }
+    while (high - low > 1) {
+        uint32_t middle = low + (high - low) / 2;
+        if (g_SymbolTableEntries[middle].rva <= rva) {
+            low = middle;
+        } else {
+            high = middle;
+        }
+    }
+    return &g_SymbolTableEntries[low];
+}
+
+/* "Function+0xNN [thandor.exe+0xOFFSET]" of a code address in this executable from thandor.sym; 0 when the
+   table is not loaded or does not cover the address. */
+static int symbol_table_name(char *out, size_t capacity, DWORD64 address)
+{
+    const SymbolTableEntry *entry;
+    DWORD64 base = (DWORD64)(uintptr_t)GetModuleHandleA(NULL);
+    if (g_SymbolTableCount == 0 || address < base || (entry = symbol_table_find(address - base)) == NULL) {
+        return 0;
+    }
+    snprintf(out, capacity, "%s+0x%llX [thandor.exe+0x%llX]", g_SymbolTableText + entry->nameOffset,
+             (unsigned long long)(address - base - entry->rva), (unsigned long long)(address - base));
+    return 1;
+}
+
+static void symbol_table_drop(void)
+{
+    if (g_SymbolTableEntries != NULL) {
+        VirtualFree(g_SymbolTableEntries, 0, MEM_RELEASE);
+    }
+    if (g_SymbolTableText != NULL) {
+        VirtualFree(g_SymbolTableText, 0, MEM_RELEASE);
+    }
+    g_SymbolTableEntries = NULL;
+    g_SymbolTableText = NULL;
+    g_SymbolTableCount = 0;
+}
+
+static void symbol_table_load(void)
+{
+    char path[MAX_PATH];
+    HANDLE file;
+    LARGE_INTEGER size;
+    DWORD bytesRead = 0;
+    uint32_t lineCount = 0;
+    unsigned long long imageBase = 0;
+    int haveImageBase = 0;
+    char *cursor;
+    const BYTE *module = (const BYTE *)GetModuleHandleA(NULL);
+    const IMAGE_NT_HEADERS *headers = (const IMAGE_NT_HEADERS *)(module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
+    const IMAGE_SECTION_HEADER *section = IMAGE_FIRST_SECTION(headers);
+    const SymbolTableEntry *self;
+    WORD sectionIndex;
+
+    executable_directory(path, sizeof path);
+    if (strlen(path) + sizeof "thandor.sym" > sizeof path) {
+        return;
+    }
+    strcat(path, "thandor.sym");
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) {
+        return;
+    }
+    if (GetFileSizeEx(file, &size) && size.QuadPart > 0 && size.QuadPart < 0x4000000) {
+        g_SymbolTableText = (char *)VirtualAlloc(NULL, (SIZE_T)size.QuadPart + 1, MEM_COMMIT | MEM_RESERVE,
+                                                 PAGE_READWRITE);
+        if (g_SymbolTableText != NULL &&
+            (!ReadFile(file, g_SymbolTableText, (DWORD)size.QuadPart, &bytesRead, NULL) ||
+             bytesRead != (DWORD)size.QuadPart)) {
+            bytesRead = 0;
+        }
+    }
+    CloseHandle(file);
+    if (bytesRead == 0) {
+        symbol_table_drop();
+        return;
+    }
+    g_SymbolTableText[bytesRead] = '\0';
+    for (cursor = g_SymbolTableText; *cursor != '\0'; cursor++) {
+        lineCount += (*cursor == '\n');
+    }
+    g_SymbolTableEntries = (SymbolTableEntry *)VirtualAlloc(NULL, ((SIZE_T)lineCount + 1) * sizeof(SymbolTableEntry),
+                                                            MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (g_SymbolTableEntries == NULL) {
+        symbol_table_drop();
+        return;
+    }
+    g_SymbolTableCodeStart = headers->OptionalHeader.SizeOfImage;
+    g_SymbolTableCodeEnd = 0;
+    for (sectionIndex = 0; sectionIndex < headers->FileHeader.NumberOfSections; sectionIndex++, section++) {
+        if ((section->Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0) {
+            if (section->VirtualAddress < g_SymbolTableCodeStart) {
+                g_SymbolTableCodeStart = section->VirtualAddress;
+            }
+            if (section->VirtualAddress + section->Misc.VirtualSize > g_SymbolTableCodeEnd) {
+                g_SymbolTableCodeEnd = section->VirtualAddress + section->Misc.VirtualSize;
+            }
+        }
+    }
+    /* each line: <hex address> <type> <name>; names are terminated in place */
+    cursor = g_SymbolTableText;
+    while (*cursor != '\0') {
+        char *end;
+        char *name;
+        char type;
+        unsigned long long address = strtoull(cursor, &end, 16);
+        char *lineEnd = strchr(cursor, '\n');
+        if (lineEnd == NULL) {
+            lineEnd = cursor + strlen(cursor);
+        }
+        if (end != cursor && end[0] == ' ' && end[1] != '\0' && end[2] == ' ' && end + 3 <= lineEnd) {
+            type = end[1];
+            name = end + 3;
+            char *nameEnd = lineEnd;
+            if (nameEnd > name && nameEnd[-1] == '\r') {
+                nameEnd--;
+            }
+            *nameEnd = '\0';
+            if (type == 'A' && strcmp(name, "__ImageBase") == 0) {
+                imageBase = address;
+                haveImageBase = 1;
+            } else if (haveImageBase && (type == 'T' || type == 't' || type == 'W' || type == 'w') &&
+                       name[0] != '.' && address >= imageBase && address - imageBase < g_SymbolTableCodeEnd) {
+                g_SymbolTableEntries[g_SymbolTableCount].rva = (uint32_t)(address - imageBase);
+                g_SymbolTableEntries[g_SymbolTableCount].nameOffset = (uint32_t)(name - g_SymbolTableText);
+                g_SymbolTableCount++;
+            }
+        }
+        cursor = *lineEnd != '\0' ? lineEnd + 1 : lineEnd;
+    }
+    /* the table must name this very function at its own address, else it belongs to another build */
+    self = symbol_table_find((uint64_t)((const BYTE *)(uintptr_t)&Thandor_InstallCrashHandler - module));
+    if (self == NULL || self->rva != (uint32_t)((const BYTE *)(uintptr_t)&Thandor_InstallCrashHandler - module) ||
+        strncmp(g_SymbolTableText + self->nameOffset, "Thandor_InstallCrashHandler",
+                sizeof "Thandor_InstallCrashHandler" - 1) != 0) {
+        symbol_table_drop();
+        Thandor_Log("thandor.sym does not belong to this thandor.exe (ignored)");
+    }
+}
+
+/* Name of a code address for the logs: thandor.sym (GCC build), else dbghelp (the PDB of an MSVC build;
+   SymInitialize done by the caller), else module+offset, else "?". */
+static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD64 address)
+{
+    char buffer[sizeof(SYMBOL_INFO) + 256];
+    SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+    DWORD64 displacement = 0;
+    if (symbol_table_name(out, capacity, address)) {
+        return;
+    }
+    memset(buffer, 0, sizeof buffer);
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symbol->MaxNameLen = 255;
+    if (SymFromAddr(process, address, &displacement, symbol)) {
+        snprintf(out, capacity, "%s+0x%llX", symbol->Name, (unsigned long long)displacement);
+    } else if (!module_offset(out, capacity, address)) {
+        snprintf(out, capacity, "?");
+    }
 }
 
 /* Crash log: raw stack words below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
@@ -91,26 +280,16 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
     frame.AddrStack.Offset = CONTEXT_SP(context);
     frame.AddrStack.Mode = AddrModeFlat;
     for (depth = 0; depth < 48; depth++) {
-        char buffer[sizeof(SYMBOL_INFO) + 256];
-        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+        char name[MAX_PATH + 320];
         IMAGEHLP_LINE64 line;
-        DWORD64 displacement = 0;
         DWORD lineDisplacement = 0;
         if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context, NULL,
                          SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
             break;
         }
-        memset(buffer, 0, sizeof buffer);
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-        symbol->MaxNameLen = 255;
         line.SizeOfStruct = sizeof line;
-        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
-            fprintf(out, "  %2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
-        } else {
-            char where[MAX_PATH + 32];
-            fprintf(out, "  %2d  %08llX  %s", depth, frame.AddrPC.Offset,
-                    module_offset(where, sizeof where, frame.AddrPC.Offset) ? where : "?");
-        }
+        code_address_name(name, sizeof name, process, frame.AddrPC.Offset);
+        fprintf(out, "  %2d  %08llX  %s", depth, frame.AddrPC.Offset, name);
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
             fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
         }
@@ -120,22 +299,15 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
 
 const char *Thandor_SymbolName(const void *address)
 {
-    static char name[256];
-    char buffer[sizeof(SYMBOL_INFO) + 256];
-    SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
-    DWORD64 displacement = 0;
+    static char name[MAX_PATH + 320];
     static int initialized;
     if (!initialized) {
         SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
         SymInitialize(GetCurrentProcess(), NULL, TRUE);
         initialized = 1;
     }
-    memset(buffer, 0, sizeof buffer);
-    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-    symbol->MaxNameLen = 255;
-    if (SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)address, &displacement, symbol)) {
-        snprintf(name, sizeof name, "%s+0x%llX", symbol->Name, displacement);
-    } else if (!module_offset(name, sizeof name, (DWORD64)(uintptr_t)address)) {
+    code_address_name(name, sizeof name, GetCurrentProcess(), (DWORD64)(uintptr_t)address);
+    if (strcmp(name, "?") == 0) {
         snprintf(name, sizeof name, "%p", address);
     }
     return name;
@@ -227,8 +399,8 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     CloseHandle(file);
 }
 
-/* The symbolized frames of the crashed thread (dbghelp: names and lines from the PDB of an MSVC build,
-   module+offset otherwise). */
+/* The symbolized frames of the crashed thread (names and lines from the PDB of an MSVC build through dbghelp,
+   names from thandor.sym in a GCC build, module+offset otherwise). */
 static void walk_crash_stack(FILE *out, HANDLE process, HANDLE thread, CONTEXT *context)
 {
     STACKFRAME64 frame;
@@ -241,26 +413,16 @@ static void walk_crash_stack(FILE *out, HANDLE process, HANDLE thread, CONTEXT *
     frame.AddrStack.Offset = CONTEXT_SP(*context);
     frame.AddrStack.Mode = AddrModeFlat;
     for (depth = 0; depth < 64; depth++) {
-        char buffer[sizeof(SYMBOL_INFO) + 256];
-        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+        char name[MAX_PATH + 320];
         IMAGEHLP_LINE64 line;
-        DWORD64 displacement = 0;
         DWORD lineDisplacement = 0;
         if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, context, NULL,
                          SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
             break;
         }
-        memset(buffer, 0, sizeof buffer);
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-        symbol->MaxNameLen = 255;
         line.SizeOfStruct = sizeof line;
-        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
-            fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
-        } else {
-            char where[MAX_PATH + 32];
-            fprintf(out, "%2d  %08llX  %s", depth, frame.AddrPC.Offset,
-                    module_offset(where, sizeof where, frame.AddrPC.Offset) ? where : "?");
-        }
+        code_address_name(name, sizeof name, process, frame.AddrPC.Offset);
+        fprintf(out, "%2d  %08llX  %s", depth, frame.AddrPC.Offset, name);
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
             fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
         }
@@ -441,6 +603,7 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
 
 void Thandor_InstallCrashHandler(void)
 {
+    symbol_table_load();
     SetUnhandledExceptionFilter(crash_filter);
     DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
                     DUPLICATE_SAME_ACCESS);

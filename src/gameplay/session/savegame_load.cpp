@@ -40,36 +40,36 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
      would walk 2^32 records. */
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
-      primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      primaryPointer = Thandor_U32ToPointer<uint8_t>((registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
       nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
       /* 1-based offsets from the runtime-object base; 0 stays NULL */
       if (primaryPointer != NULL) {
-        primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        primaryPointer = primaryPointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       if (secondaryPointer != NULL) {
-        secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        secondaryPointer = secondaryPointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       if (nestedBasePointer != NULL) {
-        nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        nestedBasePointer = nestedBasePointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = Thandor_PointerToU32(primaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer = secondaryPointer;
       (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
-      auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      auxiliaryPointer = Thandor_U32ToPointer<uint8_t>((registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       nestedCount = registrationRecord->nestedCount;
       if (auxiliaryPointer != NULL) {
         /* 1-based offset from the shading records; 0 is null */
-        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + Thandor_PointerToI32(auxiliaryPointer)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = Thandor_PointerToU32(auxiliaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       /* the nested pointers are 1-based offsets from the runtime-object base as well */
       for (nestedIndex = 0; nestedIndex < nestedCount; nestedIndex++) {
         if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != NULL) {
           registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer =
-               (uint8_t *)((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
-                       (int)g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+               Thandor_U32ToPointer<uint8_t>((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
+                       Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         }
       }
       payloadSlot = (registrationRecord->runtimePayload).armyRuntime;
@@ -77,20 +77,20 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
         /* textureSet holds the army graphics binding index until here */
         payloadSlot = (ArmyRuntimeSlot *)
-                     ((int)payloadSlot + g_ModelRuntimeRebaseDelta); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+                     (Thandor_PointerToI32(payloadSlot) + g_ModelRuntimeRebaseDelta); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet; /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->paletteAsset = selectedPalette;
         break;
       case RESOURCE_DOMAIN_SHOT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+                     (g_ShotRuntimeRebaseBaseMinusOne + Thandor_PointerToI32(payloadSlot)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->textureSet = g_ShotTextureSet;
         registrationRecord->paletteAsset = g_ShotPalette;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_EffectRuntimeRebaseBaseMinusOne + (int)payloadSlot); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+                     (g_EffectRuntimeRebaseBaseMinusOne + Thandor_PointerToI32(payloadSlot)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
         /* effects flagged 2 in their model runtime use the army graphics of binding 0 */
@@ -114,7 +114,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
            [12].runtimePointer;
   tailRecord = NULL;
   if (tailNestedPointer != NULL) {
-    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
+    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(tailNestedPointer)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
   }
   runtimeImage->tailRecord = tailRecord;
   (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
@@ -189,7 +189,7 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
     rebasedCommandTarget = NULL;
     if (slot->commandTargetArmyRuntime != NULL) {
       rebasedCommandTarget = /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
-           (ArmyRuntimeSlot *)((int)slot->commandTargetArmyRuntime + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+           Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(slot->commandTargetArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     }
     /* modelNodeRuntime + g_RuntimeObjectRebaseBaseMinusOne */
     slot->modelNodeRuntime = /* 5f-format: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
@@ -197,7 +197,7 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
     savedAssignedTargetOffset = slot->assignedTargetArmyRuntime;
     (slot->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)rebasedModelRuntime;
     if (savedAssignedTargetOffset != 0) {
-      savedAssignedTargetOffset = savedAssignedTargetOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
+      savedAssignedTargetOffset = savedAssignedTargetOffset + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
     }
     slot->commandTargetArmyRuntime = rebasedCommandTarget;
     slot->assignedTargetArmyRuntime = savedAssignedTargetOffset;
@@ -218,7 +218,7 @@ static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,Fact
       *assetCount = 0;
       return;
     }
-    *assetIdCursor = (uint32_t)resolvedAsset; /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds (daten.hex) */
+    *assetIdCursor = Thandor_PointerToU32(resolvedAsset); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds (daten.hex) */
     assetIdCursor++;
   }
 }
@@ -247,7 +247,7 @@ void GameFactionRuntime_RebaseLoadedArmyReferences(void)
       savedSlotOffset = factionRecord->runtimeGroupMembers8x32[groupSlotIndex];
       rebasedSlot = NULL;
       if (savedSlotOffset != NULL) {
-        rebasedSlot = (ArmyRuntimeSlot *)((int)savedSlotOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 (daten.hex) */
+        rebasedSlot = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedSlotOffset) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 (daten.hex) */
       }
       factionRecord->runtimeGroupMembers8x32[groupSlotIndex] = rebasedSlot;
     }

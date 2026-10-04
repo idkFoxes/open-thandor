@@ -86,7 +86,7 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->record != NULL) {
-      rootNode = (RomSerializedNodeHeader *)slotCursor->record->rootNodeOffsetOrPointer; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
+      rootNode = Thandor_U32ToPointer<RomSerializedNodeHeader>(slotCursor->record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       if (rootNode != NULL) {
         RomSerializedNodeTree_ReleaseSprites(rootNode);
       }
@@ -220,10 +220,10 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
     }
     if (depth != 0) {
       child = (uint32_t *)&frames[depth - 1].node->childReferences[frames[depth - 1].nextChild];
-      *child = *child + (uint32_t)assetBase; /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
+      *child = *child + Thandor_PointerToU32(assetBase); /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
       frames[depth - 1].nextChild++;
       frames[depth - 1].remaining--;
-      node = (RomSerializedNodeHeader *)*child; /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
+      node = Thandor_U32ToPointer<RomSerializedNodeHeader>(*child); /* 5f-format: RomSerializedNodeHeader.childReferences (relocated in place) */
     }
   } while (depth != 0);
   return 0;
@@ -250,7 +250,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
         return 0;
       }
       /* asset start + serialized offset */
-      record->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)assetBase + record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
+      record->rootNodeOffsetOrPointer = Thandor_PointerToU32((uint8_t *)assetBase + record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       return RomSerializedNodeTree_LoadSpritesAndRelocate
                        ((RomSerializedNodeHeader *)((uint8_t *)assetBase + rootNodeOffset),assetBase);
     }

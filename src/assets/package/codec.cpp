@@ -52,7 +52,6 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
   PckHeaderDwordCount headerDwordCount;
   uint32_t cellCount;
   uint32_t bytes;
-  PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
   AssetMagic *headerReadCursor;
   FieldGridCell *sourceCell;
@@ -292,7 +291,7 @@ static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount
     workspaceClearCursor++;
   }
   workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
-  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / sizeof(uint32_t); clearDwordCount != 0;
+  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)); clearDwordCount != 0;
        clearDwordCount--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;
@@ -576,7 +575,7 @@ static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
     g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount = frequencyTable[symbolIndex];
   }
   workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
-  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / sizeof(uint32_t); clearDwordCount != 0;
+  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / (sizeof(uint32_t)); clearDwordCount != 0;
        clearDwordCount--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;

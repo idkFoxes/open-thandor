@@ -407,7 +407,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
-        runtimeState->assignedTargetArmyRuntime = (uint32_t)targetArmyRuntime; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
+        runtimeState->assignedTargetArmyRuntime = Thandor_PointerToU32(targetArmyRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
         runtimeState->commandModeFlags = runtimeState->commandModeFlags |
                                        (ARMY_COMMAND_MODE_SELECTION_ORDER | ARMY_COMMAND_MODE_INTERRUPTED);
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;

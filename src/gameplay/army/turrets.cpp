@@ -151,9 +151,9 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
             /* the muzzle point is the first serialized child of the model point source */
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
-                       (MdlSerializedNodeHeader *)
-                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
-                       childSerializedOffsets[0],worldRuntime);
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+                       childSerializedOffsets[0]),worldRuntime);
           }
         }
       }
@@ -330,9 +330,9 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             }
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
-                       (MdlSerializedNodeHeader *)
-                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
-                       childSerializedOffsets[muzzlePointIndex],worldRuntime);
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+                       childSerializedOffsets[muzzlePointIndex]),worldRuntime);
           }
         }
       }

@@ -152,7 +152,7 @@ void ArmyPlacement_ReleaseClassStateReservation
       }
       slotAssetIds[slotIndex] = 0;
       armyLinkState = &(linkedModelSlot->classLinkState).armyLinkOrState;
-      armyLinkState->armyRuntime = (ArmyRuntimeSlot *)(armyLinkState->classState - 1); /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState */
+      armyLinkState->armyRuntime = Thandor_U32ToPointer<ArmyRuntimeSlot>(armyLinkState->classState - 1); /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState */
       classCounter = &(linkedModelSlot->classLinkState).classState70;
       *classCounter = *classCounter - 1;
       return;

@@ -66,7 +66,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
                ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-               (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+               Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
                worldRuntime);
     AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
     return;
@@ -176,7 +176,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.z,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.y,
              ((ModelRuntimeNode *)createdModelNode)->worldTransform.translation.x,
-             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
   return true;
@@ -256,7 +256,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
              ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-             (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
+             Thandor_U32ToPointer<EffectDefinition>(createdModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 */
              worldRuntime);
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
 }
@@ -368,7 +368,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     return;
   }
   modelDefinition = ModelDefinitionRegistry_FindById
-                     (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == NULL) {
     return;
   }
@@ -438,7 +438,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
   (*relationCounter)++;
   for (; remainingAssets != 0; remainingAssets--) {
-    if (armyAsset == (ArmyAssetRecordPrefix *)*assetPointerCursor) break; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+    if (armyAsset == Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*assetPointerCursor)) break; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
     assetPointerCursor++;
   }
   if (remainingAssets == 0) {

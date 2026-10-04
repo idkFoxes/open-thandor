@@ -280,7 +280,7 @@ static Bool8 NewLevel_InitTerrainAndGraphics
   if (!TerrainVisualResources_LoadPrimary
          ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
           (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.groundTextureBasePathOffset),
-          (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,&stepError)) { /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
     return NewLevel_Fail(outError,stepError);
   }
   stepError = ShotDefinitions_ValidateTerrainMaterialReferences();
@@ -347,7 +347,7 @@ static void NewLevel_PlaceStartCameraAndLightFieldRegion
   MoviePlayback_AdvanceScheduledFrameAndTick();
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[localFactionIndex - 1];
   WorldRuntime_AttachFieldGridAsset
-            ((FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,worldRuntime); /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
   MoviePlayback_AdvanceScheduledFrameAndTick();
   startSlot = (struct LevelPlayerSlotRecord *)((uint8_t *)&levelImage->playerSlots[0] + playerSlotByteOffset);
   packedHeadingLow16PitchHigh16 = startSlot->packedHeadingLow16PitchHigh16;
@@ -580,7 +580,7 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
       continue;
     }
     rootModelDefinition = ModelDefinitionRegistry_FindById
-                       (((ArmyModelTreeNode *)registryArmyDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                       (Thandor_U32ToPointer<ArmyModelTreeNode>(registryArmyDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
                         linkedDefinitionIds[0]);
     if (rootModelDefinition == NULL) {
       /* Original quirk: a failed lookup is not checked; its error code is read as the definition */
@@ -629,13 +629,13 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
     }
     if (factionModelFlags == 2) {
       g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[0] =
-           (uint32_t)class0BArmyDefinition; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+           Thandor_PointerToU32(class0BArmyDefinition); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[1] =
-           (uint32_t)class0ENoExtraArmyDefinition; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+           Thandor_PointerToU32(class0ENoExtraArmyDefinition); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[2] =
-           (uint32_t)class0EArmyDefinition; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+           Thandor_PointerToU32(class0EArmyDefinition); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[3] =
-           (uint32_t)class10ArmyDefinition; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+           Thandor_PointerToU32(class10ArmyDefinition); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount = 4;
     }
     factionIndex++;

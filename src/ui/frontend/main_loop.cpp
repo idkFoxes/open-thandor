@@ -346,7 +346,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
      level before */
   if ((g_FrontendLoadedLevelAsset != NULL) &&
      (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)) {
-    Resource_Release((void *)g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+    Resource_Release(Thandor_U32ToPointer<void>(g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = NULL;
@@ -369,7 +369,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     FrontendMainLoop_OfferLevelToClients(loadedLevelAsset,fieldGrid);
   }
-  loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+  loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(fieldGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   FrontendPlayerRuntime_InitializeFactionAssignments();
 }
 

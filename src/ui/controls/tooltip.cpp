@@ -70,7 +70,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
     /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
        text itself */
-    commandStream = (uint16_t *)tooltipTarget[-1].nodeFlags; /* 5f-format: UI template tooltip prefix dword (node - 4) */
+    commandStream = Thandor_U32ToPointer<uint16_t>(tooltipTarget[-1].nodeFlags); /* 5f-format: UI template tooltip prefix dword (node - 4) */
     if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;
@@ -197,7 +197,7 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
 
   if (node != NULL) {
     /* the last field of the (virtual) node before this one = the dword at node - 4 */
-    commandStream = (uint16_t *)node[-1].nodeFlags; /* 5f-format: UI template tooltip prefix dword (node - 4) */
+    commandStream = Thandor_U32ToPointer<uint16_t>(node[-1].nodeFlags); /* 5f-format: UI template tooltip prefix dword (node - 4) */
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)(uintptr_t)commandStream);
       commandStream = resolvedText;

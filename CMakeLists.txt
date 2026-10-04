@@ -42,11 +42,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # The same results as MSVC: no type-based alias analysis (the code reinterprets memory freely), signed overflow
     # wraps, no fused multiply-add (MSVC x64 /fp:precise does not contract), MSVC struct and bit-field layout
     # (-mms-bitfields, the MinGW default; layout_checks.cpp proves the layouts). char is signed in both.
-    # -fpermissive: the recovered code casts pointers to 32-bit integers in places ((int)pointer, MSVC warnings
-    # C4311/C4312), which g++ rejects otherwise; the cast truncates exactly as in the MSVC build and stays a warning.
+    # Pointers kept in 32-bit values of the original layouts go through the checked conversions of
+    # core/ptr32.h (Thandor_PointerToU32, Thandor_U32ToPointer), so no -fpermissive.
     # -Wall without the style warnings the decompiled code triggers by the hundreds (parentheses, sign compare,
     # '/*' in comments).
-    add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields -fpermissive
+    add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields
                         -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
 endif()
 
@@ -322,6 +322,12 @@ else()
     target_link_options(pe_not_large_address_aware PRIVATE -static)
     add_custom_command(TARGET thandor POST_BUILD
         COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
+        VERBATIM)
+    # thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
+    # watchdog (src/platform/bootstrap/image.cpp reads it at start; a GCC build has no PDB for dbghelp).
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
+                -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
         VERBATIM)
 endif()
 

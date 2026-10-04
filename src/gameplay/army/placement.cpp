@@ -53,7 +53,7 @@ Bool8 ArmyPlacement_CanPlaceAnchoredModel
      Original quirk: the found flag is not checked; without a (1,5) point the record just past the
      point table is read. */
   ModelLookupTable_FindPackedPoint
-            (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+            (1,5,Thandor_U32ToPointer<MdlSerializedNodeHeader>(modelDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
                  spriteAssetReference.modelResource,&anchorRecord);
   offsetLengthAngle = FixedMath_Vector2AngleAndLength
                     ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
@@ -399,7 +399,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
   }
   /* the model definition of the army asset's root node */
   modelDefinition = ModelDefinitionRegistry_FindById
-                    (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                    (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == NULL) {
     return false;
   }
@@ -460,7 +460,7 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   WorldOwnerListNode *ownerNode;
   Bool8 blocked;
   TerrainPlacementResult terrainTest;
-  int nearestClearanceQ12;
+  int nearestClearanceQ12 = 0; /* set together with nearestDistanceSquared */
 
   nearestDistanceSquared = INT64_MAX;
   contactKindIndex = modelDefinition->placementContactKindIndex;
@@ -663,7 +663,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
   /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   definitionRecord = ModelDefinitionRegistry_FindById
-                    (((AiLinkedDefinitionListView *)
+                    (Thandor_U32ToPointer<AiLinkedDefinitionListView>(
                       ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
   if (definitionRecord == NULL) {
     return;

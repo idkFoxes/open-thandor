@@ -222,7 +222,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in armyRecord) */
     ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId,&armyRecord);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
-         (GraphicsTextureSourceAsset *)armyRecord[1].rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord +0x1C (dword read as texture source) */
+         Thandor_U32ToPointer<GraphicsTextureSourceAsset>(armyRecord[1].rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord +0x1C (dword read as texture source) */
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB1,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB2,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB3,&inGameRoot->base);

@@ -156,7 +156,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.ownerAndDefinition.owner (saved offset) */
-        ownerModelNode = (ModelRuntimeNode *)((int)g_ArmyRuntimeRebaseBaseMinusOne + (int)ownerModelNode);
+        ownerModelNode = Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne) + Thandor_PointerToI32(ownerModelNode));
       }
     }
     /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */
@@ -169,7 +169,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
       registryDefinition = g_EffectDefinitionRegistry[registryIndex];
       /* 5f-format: EffectRuntimeSlot.definitionOrSavedId */
       if (registryDefinition != NULL &&
-          effectSlot->definitionOrSavedId.definition == (EffectDefinition *)registryDefinition->definitionId) {
+          effectSlot->definitionOrSavedId.definition == Thandor_U32ToPointer<EffectDefinition>(registryDefinition->definitionId)) {
         break;
       }
     }

@@ -132,6 +132,7 @@
 void __cdecl ErrorSystem_Init(void);
 
 uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed);
+[[noreturn]] void FatalError_ShowAndExit(uintptr_t error);
 
 extern FatalErrorPassThroughProc *g_FatalErrorExitHandler;
 extern FatalErrorPassThroughProc *g_FatalErrorReportHandler;

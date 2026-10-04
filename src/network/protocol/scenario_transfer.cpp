@@ -32,7 +32,7 @@ void FrontendScenarioTransfer_ReleaseLoadedLevelAsset(void)
 {
   if ((g_FrontendLoadedLevelAsset != NULL) &&
      (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
-    Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+    Resource_Release(Thandor_U32ToPointer<void>((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = NULL;

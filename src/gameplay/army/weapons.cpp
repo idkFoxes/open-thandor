@@ -294,7 +294,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
                   ((ShotTargetModelReference) /* 5f-format: ShotTargetModelReference (ShotRuntimeSlot +0x14) */
                    (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime,targetWorldZQ12
                    ,targetWorldYQ12,targetWorldXQ12,(timedTargetDefinition->shotDefinitionReference).definition,
-                   rootNode,(MdlSerializedNodeHeader *)timedTargetDefinition->rootNodeOffsetOrPointer, /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+                   rootNode,Thandor_U32ToPointer<MdlSerializedNodeHeader>(timedTargetDefinition->rootNodeOffsetOrPointer), /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
                    worldRuntime);
       }
     }
@@ -439,7 +439,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
                  pointOffsetMask) + worldYQ12,
                  (localPoint.xQ12 - ((ModelRuntimeNode *)sourceRuntime)->worldTransform.translation.x &
                  pointOffsetMask) + worldXQ12,
-                 localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,(ShotDefinition *)effectDefinitionId,worldContext); /* 5f-format: ModelDefinition.modelPointEffectId (relocated shot reference) */
+                 localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,Thandor_U32ToPointer<ShotDefinition>(effectDefinitionId),worldContext); /* 5f-format: ModelDefinition.modelPointEffectId (relocated shot reference) */
     }
     localPointRecord = localPointRecord + 1;
   }
@@ -471,7 +471,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
 
   /* root model: the effects use the root node's orientation */
   rootModelResource =
-       (ModelResource *)((MdlSerializedNodeHeader *)
+       (ModelResource *)Thandor_U32ToPointer<MdlSerializedNodeHeader>(
                          (modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
        spriteAssetReference.modelResource;
   modelRuntime->health = 0;
@@ -504,9 +504,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
   }
   /* child model 0 (when its node flags' low nibble is 0): the effects use a fixed orientation */
   rootNodeHeader =
-       (MdlSerializedNodeHeader *)(modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer; /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+       Thandor_U32ToPointer<MdlSerializedNodeHeader>((modelRuntime->definitionOrSavedId).runtimeDefinition->rootNodeOffsetOrPointer); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
   if (rootNodeHeader->childCount != 0) {
-    childNodeHeader = (MdlSerializedNodeHeader *)rootNodeHeader->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+    childNodeHeader = Thandor_U32ToPointer<MdlSerializedNodeHeader>(rootNodeHeader->childSerializedOffsets[0]); /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
     childModelResource = (ModelResource *)childNodeHeader->spriteAssetReference.modelResource;
     if ((childNodeHeader->nodeFlags & 0xf) == 0) {
       for (channelIndex = 0; channelIndex < 8; channelIndex = channelIndex + 1) {
@@ -565,9 +565,9 @@ static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mo
   ModelPackedPointRecord *emitterPoint;
   ModelRuntimeNode *modelNode;
 
-  serializedNode = (MdlSerializedNodeHeader *)emitterDefinition->rootNodeOffsetOrPointer; /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+  serializedNode = Thandor_U32ToPointer<MdlSerializedNodeHeader>(emitterDefinition->rootNodeOffsetOrPointer); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
   if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-    serializedNode = (MdlSerializedNodeHeader *)serializedNode->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+    serializedNode = Thandor_U32ToPointer<MdlSerializedNodeHeader>(serializedNode->childSerializedOffsets[0]); /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
   }
   modelResource = (ModelResource *)serializedNode->spriteAssetReference.modelResource;
   remainingRecords = modelResource->packedLookupTableEntryCount;
@@ -736,11 +736,11 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
   /* 5f-format: MdlSerializedNodeHeader.spriteAssetReference (ModelResource address in a 32-bit slot) */
   modelPointTableBase = definitionNode->spriteAssetReference.savedId;
   localPointRecord =
-       (ModelPackedPointRecord *)
-       (modelPointTableBase +
-       ((ModelResource *)modelPointTableBase)->packedLookupTableRelativeOffset);
+       Thandor_U32ToPointer<ModelPackedPointRecord>(
+       modelPointTableBase +
+       Thandor_U32ToPointer<ModelResource>(modelPointTableBase)->packedLookupTableRelativeOffset);
   for (modelPointRecordsRemaining =
-           ((ModelResource *)modelPointTableBase)->packedLookupTableEntryCount;
+           Thandor_U32ToPointer<ModelResource>(modelPointTableBase)->packedLookupTableEntryCount;
       modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
   {
     if ((localPointRecord->packedLookupKey & 0xf) == MODEL_POINT_CLASS_SHOT) {

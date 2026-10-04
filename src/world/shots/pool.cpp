@@ -157,12 +157,12 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
     if (shotSlot->modelNodeOrSavedOffset.modelNode != NULL) {
       if (rebasedRuntimeState != NULL) {
         /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
-        rebasedRuntimeState = (void *)((int)rebasedRuntimeState + g_ModelRuntimeRebaseDelta);
+        rebasedRuntimeState = (void *)(Thandor_PointerToI32(rebasedRuntimeState) + g_ModelRuntimeRebaseDelta);
       }
       rebasedOwnerArmy = NULL;
       if (savedOwnerArmy != NULL) {
         /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime (saved offset) */
-        rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)savedOwnerArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+        rebasedOwnerArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedOwnerArmy) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
       }
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
       /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
@@ -178,7 +178,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
         registryDefinition = *registryCursor;
         /* 5f-format: ShotRuntimeSlot.definitionOrSavedId */
         if (registryDefinition != NULL &&
-            shotSlot->definitionOrSavedId.definition == (ShotDefinition *)registryDefinition->definitionId) {
+            shotSlot->definitionOrSavedId.definition == Thandor_U32ToPointer<ShotDefinition>(registryDefinition->definitionId)) {
           break;
         }
         registryCursor++;

@@ -564,7 +564,7 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
-  UiNodeBase *selectedQualityControl;
+  UiNodeBase *selectedQualityControl = NULL; /* control is one of the three buttons */
   UiNodeBase *textureQualityGroup;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);

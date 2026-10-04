@@ -74,7 +74,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     }
     /* signed test of the returned sum: count > 0 */
     else if ((selectedTargetArmyRuntime == NULL) && (0 < sourceClassCount)) {
-      ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->assignedTargetArmyRuntime,armyRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
+      ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
       }
@@ -171,7 +171,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   for (collectedIndex = 0; collectedIndex < collectedCount; collectedIndex++) {
     collectedArmy = collectedArmies[collectedIndex];
     ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedArmy);
-    collectedArmy->assignedTargetArmyRuntime = (uint32_t)targetRuntime; /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
+    collectedArmy->assignedTargetArmyRuntime = Thandor_PointerToU32(targetRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
     collectedArmy->commandModeFlags = collectedArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     collectedArmy->aiUnitFlags = collectedArmy->aiUnitFlags | 1;
     collectedArmy->movementStateFlags = collectedArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;

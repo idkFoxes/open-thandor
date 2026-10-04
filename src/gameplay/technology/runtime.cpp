@@ -206,8 +206,8 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
        ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
       /* the root node's model definition id (ArmyModelTreeNode.linkedDefinitionIds[0]) */
       definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
-                        (*(PckModelDefinitionIdCatalog *)
-                          (armyAssetRecord->rootNodeOffsetOrPointer + 32)); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                        (*Thandor_U32ToPointer<PckModelDefinitionIdCatalog>(
+                          armyAssetRecord->rootNodeOffsetOrPointer + 32)); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
       if (definitionRecord != NULL) {
         /* per target class (targetClassIndex) the largest armour (maximumHealth); for mobile models
            (accelerationPerTick) the top speed (movementSpeed) */
@@ -315,7 +315,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   ModelDefinitionHierarchy_UnlockFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+       factionIndex,Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
@@ -348,7 +348,7 @@ Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
   /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+                    Thandor_U32ToPointer<ArmyModelTreeNode>(((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
 
 /* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id

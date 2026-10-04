@@ -97,8 +97,8 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   assetCursor = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
     for (; remainingAssets != 0; remainingAssets--) {
-      if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource != NULL) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
-        *recordCursor = (UiCommandRuntimeRecordPrefix *)*assetCursor; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+      if ((Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor)->textureSource != NULL) && (itemCount < ARMY_STOCK_ENTRY_COUNT)) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+        *recordCursor = Thandor_U32ToPointer<UiCommandRuntimeRecordPrefix>(*assetCursor); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
         itemCount++;
         recordCursor++;
       }

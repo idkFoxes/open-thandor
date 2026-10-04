@@ -466,7 +466,7 @@ void UiFormattedContainer_DrawClipped
   int fillEndX;
   int barStartX;
   GraphicsTextureLogicalSize frameSize;
-  int markerOffsetX;
+  int markerOffsetX = 0; /* set and used only with UI_GAUGE_HAS_MARKER */
 
   if (control->limitValue != 0 && !g_GraphicsFramebufferBeginAccess()) {
     if (clipLeft < (control->base).left) {

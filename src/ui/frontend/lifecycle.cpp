@@ -506,23 +506,23 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
   root = (UiRootNode *)g_FrontendRootNode;
   g_CursorVisibilityToken--;
-  if (g_FrontendRootNode != NULL) {
+  if (g_FrontendRootNode != 0) {
     FrontendTeardown_SaveStatusTextAndHostAddress((UiRootNode *)g_FrontendRootNode);
     UiRootStack_Pop(root);
     g_MemoryApi.free(root);
-    g_FrontendRootNode = NULL;
+    g_FrontendRootNode = 0;
   }
   FrontendRomRegistry_ClearAndReleaseNestedResources();
   g_MemoryApi.free(g_FrontendWorldObjectRecords);
   g_FrontendWorldObjectRecords = NULL;
   Resource_Release((void *)g_FrontendCentralRomAsset);
-  g_FrontendCentralRomAsset = NULL;
+  g_FrontendCentralRomAsset = 0;
   GraphicsShadingRuntime_ClearRecordTable();
   g_GraphicsTextureSetReleasePackage((GraphicsTextureSet *)g_FrontendCentralTextureSet);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage((GraphicsPaletteAsset *)g_FrontendCentralPaletteAsset);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_FrontendMenuTextureSource);
-  g_FrontendCentralTextureSet = NULL;
-  g_FrontendCentralPaletteAsset = NULL;
+  g_FrontendCentralTextureSet = 0;
+  g_FrontendCentralPaletteAsset = 0;
   g_FrontendMenuTextureSource = NULL;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
   voiceSetCursor = g_FrontendMenuSoundVoiceSets;

@@ -137,7 +137,7 @@ Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
     if (slotRecord != NULL) {
       modelNodeRuntime = RomRuntime_BuildNodeTreeRecursive
                         (((RomRecord *)slotRecord)->nodeTintArgb,
-                         (RomSerializedNodeHeader *)slotRecord->rootNodeOffsetOrPointer,worldRuntime); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
+                         Thandor_U32ToPointer<RomSerializedNodeHeader>(slotRecord->rootNodeOffsetOrPointer),worldRuntime); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
       if (modelNodeRuntime == NULL) {
         return true;
       }
@@ -406,7 +406,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   newNode->modelPayload.modelResource = spriteModelResource;
   newNode->shadingRecord = NULL;
   newNode->modelRuntimeLinkOrSavedOffset = NULL;
-  newNode->runtimeStateA0 = (uint32_t)&spriteModelResource->firstMeshGroupRelativeOffset; /* 5f-format: ModelRuntimeNode.runtimeStateA0 (saved model runtime pool) */
+  newNode->runtimeStateA0 = Thandor_PointerToU32(&spriteModelResource->firstMeshGroupRelativeOffset); /* 5f-format: ModelRuntimeNode.runtimeStateA0 (saved model runtime pool) */
   childSlotsRemaining = romNodeRecord->childCount;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
   childIndex = 0;
@@ -465,7 +465,7 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
   ModelResource *rootSprite;
 
   if (entryIndex < ((RomRecord *)record)->lightCount) {
-    rootSprite = ((RomSerializedNodeHeader *)record->rootNodeOffsetOrPointer)->spriteAssetReference.modelResource; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
+    rootSprite = Thandor_U32ToPointer<RomSerializedNodeHeader>(record->rootNodeOffsetOrPointer)->spriteAssetReference.modelResource; /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
     light = &((RomRecord *)record)->lights[entryIndex];
     descriptorCursor =
          (uint32_t *)((uint8_t *)rootSprite + (int)rootSprite->packedLookupTableRelativeOffset);

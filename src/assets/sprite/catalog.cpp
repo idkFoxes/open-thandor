@@ -75,11 +75,11 @@ uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
            pointerRecordsRemaining != 0; pointerRecordsRemaining--) {
         /* asset start + serialized offset */
         pointerRelocationCursor->pointerOrSerializedOffset00 =
-             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
+             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
         pointerRelocationCursor->pointerOrSerializedOffset0C =
-             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
+             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
         pointerRelocationCursor->pointerOrSerializedOffset18 =
-             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
+             Thandor_PointerToU32((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
         pointerRelocationCursor++;
       }
       /* advance by the block's leading byte size */
@@ -143,9 +143,9 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
       recordsRemaining = blockCursor->pointerRelocationCount;
       do {
         /* pointerOrSerializedOffset00/0C/18 */
-        *recordCursor = *recordCursor - (int)relocatedSourceImage; /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
-        recordCursor[3] = recordCursor[3] - (int)relocatedSourceImage; /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
-        recordCursor[6] = recordCursor[6] - (int)relocatedSourceImage; /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
+        *recordCursor = *recordCursor - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset00 */
+        recordCursor[3] = recordCursor[3] - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset0C */
+        recordCursor[6] = recordCursor[6] - Thandor_PointerToI32(relocatedSourceImage); /* 5f-format: SprPointerRelocationRecord.pointerOrSerializedOffset18 */
         recordCursor = recordCursor + 16;
         recordsRemaining--;
       } while (recordsRemaining != 0);
