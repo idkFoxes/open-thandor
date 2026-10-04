@@ -43,6 +43,6 @@ Bool8 SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 
-uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook();
+uint32_t SoftwareRenderer_InstallDisplayModeHook();
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_DISPLAY_MODE_H */

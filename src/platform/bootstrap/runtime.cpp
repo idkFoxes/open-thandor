@@ -232,7 +232,7 @@ static void ProcessEntry_RunGame()
 /* Process entry: raises the process to real-time priority, creates the full-screen main window (only
    one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
 */
-void __cdecl ProcessEntry()
+void ProcessEntry()
 
 {
   HANDLE processHandle;
@@ -504,7 +504,7 @@ void DynDLL_UnloadAll()
    from the 640x480 start mode to the saved display mode, runs the frontend main loop and
    finally closes and cleans up the network backend.
 */
-void __cdecl Game_Run()
+void Game_Run()
 
 {
   uint32_t renderingInitError;
@@ -556,7 +556,7 @@ void __cdecl Game_Run()
    Stops at the first step that fails and returns its (non-zero) error code; returns 0 when all succeed.
    The original returned g_PrimitiveQueueStorage on success; its only caller (Game_Run) discards it.
 */
-uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering()
+uint32_t GameRuntime_InitializeSpatialAudioAndRendering()
 
 {
   uint32_t poolError;
@@ -1057,7 +1057,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
    reads and writes PCX itself instead.) Returns 0, or the error code of the first failing step (the caller
    treats non-zero as failure).
 */
-uint32_t __cdecl Game_LoadCoreAssets()
+uint32_t Game_LoadCoreAssets()
 
 {
   uint32_t aiInitError;

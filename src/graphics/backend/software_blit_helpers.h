@@ -46,30 +46,30 @@ typedef struct BlitRegion {
     int height;
 } BlitRegion;
 
-static __inline int Blit_IsTransparent(uint32_t argb)
+static inline int Blit_IsTransparent(uint32_t argb)
 {
     return argb < 0x1000000u;
 }
 
-static __inline int Blit_IsOpaque(uint32_t argb)
+static inline int Blit_IsOpaque(uint32_t argb)
 {
     return argb >= 0xff000000u;
 }
 
 /* The two dwords of a palette entry: +0 ARGB colour, +4 converted pixel with the alpha on top. */
-static __inline uint32_t Blit_PaletteColor(const BlitRegion *region, uint8_t index)
+static inline uint32_t Blit_PaletteColor(const BlitRegion *region, uint8_t index)
 {
     return *(const uint32_t *)(region->palette + index * 8u);
 }
 
-static __inline uint32_t Blit_PalettePixel(const BlitRegion *region, uint8_t index)
+static inline uint32_t Blit_PalettePixel(const BlitRegion *region, uint8_t index)
 {
     return *(const uint32_t *)(region->palette + index * 8u + 4u);
 }
 
 /* ARGB -> framebuffer pixel through the g_SoftwarePixelPackTables channel tables. The alpha byte is
    added on top. */
-static __inline uint32_t Blit_ConvertArgb(uint32_t argb)
+static inline uint32_t Blit_ConvertArgb(uint32_t argb)
 {
     const SoftwarePixelPackTables *tables = g_SoftwarePixelPackTables;
     return tables->blue[argb & 0xff] + (argb & 0xff000000u) + tables->green[(argb >> 8) & 0xff] +
@@ -77,7 +77,7 @@ static __inline uint32_t Blit_ConvertArgb(uint32_t argb)
 }
 
 /* ARGB (or a 32-bit pixel) as lanes of (c * 0x101) >> shift (PUNPCKLBW with itself + PSRLW). */
-static __inline RasterColor Blit_ArgbLanes(uint32_t argb, int shift)
+static inline RasterColor Blit_ArgbLanes(uint32_t argb, int shift)
 {
     RasterColor result;
     int i;
@@ -89,7 +89,7 @@ static __inline RasterColor Blit_ArgbLanes(uint32_t argb, int shift)
 
 /* source * alpha + destination * (1 - alpha) through the blend factor tables (two PMULHW + PADDW).
    alpha is the source alpha byte (1..254 for the blits). */
-static __inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor destination, unsigned alpha)
+static inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor destination, unsigned alpha)
 {
     const SoftwareRgbWordLanes *factor = &g_SoftwareBlendAlphaFactors[alpha];
     const SoftwareRgbWordLanes *inverse = &g_SoftwareBlendInverseAlphaFactors[alpha];
@@ -107,7 +107,7 @@ static __inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor dest
 }
 
 /* Blended lanes -> 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included. */
-static __inline uint32_t Blit_PackLanes32(RasterColor lanes)
+static inline uint32_t Blit_PackLanes32(RasterColor lanes)
 {
     int channel[RASTER_LANE_COUNT];
     int i;
@@ -118,7 +118,7 @@ static __inline uint32_t Blit_PackLanes32(RasterColor lanes)
 }
 
 /* Source-alpha blend of an ARGB colour over a 32-bit pixel, alpha = the colour's top byte. */
-static __inline uint32_t Blit_BlendArgb32(uint32_t argb, uint32_t destination)
+static inline uint32_t Blit_BlendArgb32(uint32_t argb, uint32_t destination)
 {
     return Blit_PackLanes32(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_ArgbLanes(destination, 2), argb >> 24));
 }
@@ -126,7 +126,7 @@ static __inline uint32_t Blit_BlendArgb32(uint32_t argb, uint32_t destination)
 /* Intersects [left, right) x [top, bottom) with the framebuffer and the clip rectangle, in the
    original's order: rectangle clamped to 0 and to the framebuffer size, then to the clip
    rectangle (all compares signed). Returns 0 when nothing is left. */
-static __inline int Blit_ClipRect(const SoftwareFramebufferAccess *framebuffer, int clipMaxY, int clipMaxX,
+static inline int Blit_ClipRect(const SoftwareFramebufferAccess *framebuffer, int clipMaxY, int clipMaxX,
                                   int clipMinY, int clipMinX, int *left, int *top, int *right, int *bottom)
 {
     if (*left < 0) {
@@ -159,7 +159,7 @@ static __inline int Blit_ClipRect(const SoftwareFramebufferAccess *framebuffer, 
 /* Common setup of the clipped blits: validates the asset (magic, subresource index), the framebuffer
    pixel size and the entry's palette bank, places the subresource at (drawX, drawY) + its origin and
    clips it. Returns 0 when nothing is drawn. */
-static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sourceAsset,
+static inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sourceAsset,
                                           GraphicsSubresourceIndex subresourceIndex,
                                           SoftwareFramebufferAccess *framebuffer, int pixelBytes, int drawX, int drawY,
                                           int clipMaxY, int clipMaxX, int clipMinY, int clipMinX, BlitRegion *region)
@@ -216,7 +216,7 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
    (c * mc) >> 8, so even modulation 0xFFFFFFFF darkens by one step (0xFF * 0xFF >> 8 = 0xFE). In
    particular the modulated alpha is at most 0xFE: the opaque shortcut of the Modulated blits is dead
    code, and every visible texel goes through the blend. */
-static __inline uint32_t Blit_Modulate(uint32_t argb, uint32_t modulation)
+static inline uint32_t Blit_Modulate(uint32_t argb, uint32_t modulation)
 {
     uint32_t blue = ((argb & 0xff) * (modulation & 0xff)) >> 8;
     uint32_t green = (((argb >> 8) & 0xff) * ((modulation >> 8) & 0xff)) & 0xff00u;

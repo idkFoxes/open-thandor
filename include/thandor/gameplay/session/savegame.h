@@ -41,19 +41,19 @@ Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle
 
 ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
 
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage();
+ResourceRegistrationImagePair InGameSaveGame_PrepareFactionImage();
 
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots();
+ResourceRegistrationImagePair InGameSaveGame_PrepareEffectSlots();
 
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots();
+ResourceRegistrationImagePair InGameSaveGame_PrepareShotSlots();
 
 void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
 
 void ArmyRuntimePool_ConvertPointersToOffsetsForSave();
 
-RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag();
+RuntimeHexSegmentImage RuntimeHexSegment_GetLightImageAndToggleFlag();
 
-void __cdecl RuntimeHexSegment_ToggleLightImageFlag();
+void RuntimeHexSegment_ToggleLightImageFlag();
 
 RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
 

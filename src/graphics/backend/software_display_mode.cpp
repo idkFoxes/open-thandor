@@ -185,7 +185,7 @@ Bool8 SoftwareRenderer_SetDisplayMode
    depth buffer (one int32 per pixel) for the current framebuffer size. Returns 0 on success, or the arena error
    when the allocation fails.
 */
-uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook()
+uint32_t SoftwareRenderer_InstallDisplayModeHook()
 
 {
   int32_t *allocatedDepthBuffer;

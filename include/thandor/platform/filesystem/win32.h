@@ -22,9 +22,9 @@
 #define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
 /* Functions are grouped by semantic ownership. */
 
-uintptr_t __cdecl FileSystem_Init();
+uintptr_t FileSystem_Init();
 
-void __cdecl Win32FileSystem_RestoreInitialDirectory();
+void Win32FileSystem_RestoreInitialDirectory();
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 

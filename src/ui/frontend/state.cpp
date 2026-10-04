@@ -42,7 +42,7 @@ static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_
 /* Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
    Frontend_StateTick uses the countdown to pace its network polling.
 */
-void __cdecl FrontendRuntime_TimerCountdownTick()
+void FrontendRuntime_TimerCountdownTick()
 
 {
   uint32_t remainingTicks;
@@ -58,7 +58,7 @@ void __cdecl FrontendRuntime_TimerCountdownTick()
 /* Periodic timer callback of the frontend (256 Hz): advances the clock of the menu camera flight while a ROM
    transition is pending; the flight's spline is evaluated at g_FrontendRomTransitionElapsedTicks.
 */
-void __cdecl FrontendRomTransition_AdvanceElapsedTicks()
+void FrontendRomTransition_AdvanceElapsedTicks()
 
 {
   if (g_FrontendRomTransitionTargetRecordId != 0) {

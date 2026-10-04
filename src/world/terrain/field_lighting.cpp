@@ -335,7 +335,7 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
 /* Not a function of its own in the original: the inlined MMX sequence that blends one colour pair of
    WorldLightingRuntime_UpdateInterpolatedTerrainLighting per byte, color * forward + alternateColor * inverse
    with unsigned saturation (PUNPCKLBW/PSRLW 6 of both colours, PMULHW by the factors, PADDW, PACKUSWB). */
-static __inline uint32_t WorldLighting_BlendColors
+static inline uint32_t WorldLighting_BlendColors
           (uint32_t color,uint32_t alternateColor,SoftwareBgraWordLanes forwardFactors,
           SoftwareBgraWordLanes inverseFactors)
 

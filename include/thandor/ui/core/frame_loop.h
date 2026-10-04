@@ -18,7 +18,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl UiFrame_ProcessAndPresentWithLockTransition();
+void UiFrame_ProcessAndPresentWithLockTransition();
 
 void UiFrame_ProcessAndPresent();
 

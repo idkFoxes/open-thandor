@@ -19,9 +19,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl FrontendRuntime_TimerCountdownTick();
+void FrontendRuntime_TimerCountdownTick();
 
-void __cdecl FrontendRomTransition_AdvanceElapsedTicks();
+void FrontendRomTransition_AdvanceElapsedTicks();
 
 Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);

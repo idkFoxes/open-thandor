@@ -34,13 +34,13 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage();
 
 Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
 
-GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry();
+GameEntityRuntime * SelectionInfo_GetFirstEntry();
 
 Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask();
 
-uint32_t __cdecl SelectionInfo_CollectCapabilityFlags();
+uint32_t SelectionInfo_CollectCapabilityFlags();
 
 extern SelectionInfoEntitySlots *g_SelectionInfoEntitySlots;
 
