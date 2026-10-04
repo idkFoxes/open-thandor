@@ -372,7 +372,8 @@ add_custom_command(TARGET thandor POST_BUILD
 # ---- SDL_GPU renderer and its shaders -------------------------------------------------------------------------
 # SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU, and the finished frame presented through
 # the same device (Vulkan by default, else Direct3D 12; the renderer is chosen in the game's display settings, see
-# docs/BUILDING.md). The shaders (src/platform/sdl3/shaders/primitives.hlsl) are compiled at build time:
+# docs/BUILDING.md). The shaders (src/platform/sdl3/shaders/primitives.hlsl, ui2d.hlsl for the GPU 2D renderer of
+# step 9) are compiled at build time:
 #   - DXBC shader model 5.1 with fxc from the Windows SDK (Direct3D 12); required for MSVC, optional for GCC,
 #   - SPIR-V with dxc (Vulkan), optional: vcpkg port directx-dxc (find_package(directx-dxc) sets DIRECTX_DXC_TOOL,
 #     or dxc.exe in $ENV{VCPKG_ROOT}/installed/x64-windows/tools/directx-dxc, also usable from a MinGW build), dxc on
@@ -380,7 +381,7 @@ add_custom_command(TARGET thandor POST_BUILD
 # Each shader becomes a header gpu_shader_<name>.h (DXBC, array g_<entry>) and gpu_shader_<name>_spirv.h (SPIR-V,
 # array g_<entry>Spirv) in <build>/gpu_shaders. A compiler that is not found (or THANDOR_GPU_PRECOMPILED_SHADERS)
 # makes the build use the headers committed in src/platform/sdl3/shaders/compiled/ instead; after a change of
-# primitives.hlsl regenerate them from an MSVC build with fxc and dxc (docs/BUILDING.md).
+# a shader source regenerate them from an MSVC build with fxc and dxc (docs/BUILDING.md).
 # A build directory configured before the option became ON by default still has OFF cached under the old help text:
 # switch it on once (a value given on the command line has a different help text and stays).
 get_property(THANDOR_GPU_OPTION_HELP CACHE THANDOR_RENDERER_SDL_GPU PROPERTY HELPSTRING)
@@ -390,7 +391,6 @@ endif()
 option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues and present the frames with SDL_GPU" ON)
 option(THANDOR_GPU_PRECOMPILED_SHADERS "SDL_GPU: use the committed shader headers instead of running fxc and dxc" OFF)
 if(THANDOR_RENDERER_SDL_GPU)
-    set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/primitives.hlsl)
     set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
     set(THANDOR_GPU_PRECOMPILED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
     if(NOT THANDOR_GPU_PRECOMPILED_SHADERS)
@@ -421,11 +421,18 @@ if(THANDOR_RENDERER_SDL_GPU)
     file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
     set(THANDOR_GPU_SHADER_HEADERS)
     set(THANDOR_GPU_SPIRV OFF)
-    foreach(shader "vertex vs VertexMain" "fragment ps FragmentMain" "fragment_alpha_test ps FragmentAlphaTestMain")
+    # "<header name> <stage> <entry point> <source in src/platform/sdl3/shaders>"
+    foreach(shader "vertex vs VertexMain primitives.hlsl" "fragment ps FragmentMain primitives.hlsl"
+                   "fragment_alpha_test ps FragmentAlphaTestMain primitives.hlsl"
+                   "ui2d_vertex vs Ui2dVertexMain ui2d.hlsl" "ui2d_skip0 ps Ui2dSkip0Main ui2d.hlsl"
+                   "ui2d_half_rgb ps Ui2dHalfRgbMain ui2d.hlsl" "ui2d_modulated ps Ui2dModulatedMain ui2d.hlsl"
+                   "ui2d_opaque ps Ui2dOpaqueMain ui2d.hlsl" "ui2d_fill ps Ui2dFillMain ui2d.hlsl")
         separate_arguments(shader)
         list(GET shader 0 shaderName)
         list(GET shader 1 shaderStage)
         list(GET shader 2 shaderEntry)
+        list(GET shader 3 shaderFile)
+        set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/${shaderFile})
         if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
             set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
             add_custom_command(OUTPUT ${shaderHeader}
@@ -469,7 +476,8 @@ if(THANDOR_RENDERER_SDL_GPU)
         set(THANDOR_GPU_SPIRV_FROM "none (dxc not found: vcpkg install directx-dxc, or -DTHANDOR_DXC=<dxc.exe>), the Vulkan renderer is not available")
     endif()
     message(STATUS "SDL_GPU shaders: DXBC from ${THANDOR_GPU_DXBC_FROM}; SPIR-V from ${THANDOR_GPU_SPIRV_FROM}")
-    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
+    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp src/platform/sdl3/gpu_ui2d.cpp
+                                   ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor PRIVATE THANDOR_RENDERER_SDL_GPU=1)
     if(THANDOR_GPU_SPIRV)
