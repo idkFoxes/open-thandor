@@ -237,12 +237,20 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   if (!surfaceHit) {
     /* no hit: intersect the view ray with the ground plane z = 0 */
     currentPitchAngle = worldRuntime->motion.pitchAngle;
+    const int32_t pitchSineQ28 = g_FixedSineQ28[(int32_t)(FIXED_SINE_TABLE_SIN - currentPitchAngle)];
+    if (pitchSineQ28 == 0) {
+      /* The original divides by the sine of the pitch here and traps (integer divide by zero) when the
+         pitch is exactly horizontal (reachable with the unlimited camera and in the menu room); bounded
+         here because a horizontal ray never meets the ground plane: the previous target is kept. */
+      WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
+      return;
+    }
     groundOffsetXY = FixedMath_SinCosScaled
                       (worldRuntime->motion.headingAngle,
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
                         (int64_t)g_FixedSineQ28[(int32_t)(FIXED_SINE_TABLE_COS - currentPitchAngle)]) /
-                       (int64_t)g_FixedSineQ28[(int32_t)(FIXED_SINE_TABLE_SIN - currentPitchAngle)]));
+                       (int64_t)pitchSineQ28));
     groundOffsetY = groundOffsetXY.sinValue;
     worldRuntime->motion.targetPositionXQ12 = groundOffsetXY.cosValue + worldRuntime->motion.positionXQ12;
     worldRuntime->motion.targetPositionYQ12 = groundOffsetY + worldRuntime->motion.positionYQ12;
