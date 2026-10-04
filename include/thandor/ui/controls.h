@@ -13,6 +13,12 @@
 #include <thandor/ui/controls/layout.h>
 #include <thandor/ui/controls/lists.h>
 #include <thandor/ui/controls/misc.h>
+#include <thandor/ui/controls/panels.h>
+#include <thandor/ui/controls/root_stack.h>
 #include <thandor/ui/controls/text.h>
+#include <thandor/ui/controls/text_buttons.h>
+#include <thandor/ui/controls/text_edit.h>
+#include <thandor/ui/controls/tooltip.h>
+#include <thandor/ui/controls/window.h>
 
 #endif /* THANDOR_UI_CONTROLS_H */

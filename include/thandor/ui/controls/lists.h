@@ -281,4 +281,33 @@ extern int32_t g_UiCatalogGroup42OffsetsDefault[42];
 extern int32_t g_UiCatalogGroup42Offsets5Columns[42];
 extern int32_t g_UiCatalogGroup42Offsets6Columns[42];
 
+void UiPointerList_SortByExpandedTextFieldAscending
+          (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
+
+void UiTextListControl_DrawRowsAndSelection
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTextListControl *control);
+
+void UiTextListControl_SelectRowFromPointer
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiTextListControl *control);
+
+Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+          UiTextListControl *control);
+
+void UiTextListControl_TickActivationPulse(UiTextListControl *control);
+
+void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
+
+void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
+
+void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control);
+
+int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText);
+
+extern UiNodeVtable g_UiTextListControlVtable;
+extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+extern const uint32_t g_UiListTextStyle;
+
 #endif /* THANDOR_UI_CONTROLS_LISTS_H */

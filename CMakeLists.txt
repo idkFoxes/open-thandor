@@ -111,7 +111,13 @@ add_library(thandor_curated STATIC
     src/ui/controls/layout.cpp
     src/ui/controls/lists.cpp
     src/ui/controls/misc.cpp
+    src/ui/controls/panels.cpp
+    src/ui/controls/root_stack.cpp
     src/ui/controls/text.cpp
+    src/ui/controls/text_buttons.cpp
+    src/ui/controls/text_edit.cpp
+    src/ui/controls/tooltip.cpp
+    src/ui/controls/window.cpp
     src/ui/core/runtime.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/debug_overlay.cpp
