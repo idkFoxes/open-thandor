@@ -50,14 +50,10 @@ uint32_t g_FrontendExpectedPlayerRuntimeBlockCount = 0;
 
 /* Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a
    count of 0 wraps). Command dword = handler offset << 8 | player id; offsets past the command handlers are
-   ignored. */
+   ignored and records with out-of-range payloads dropped (CommandDispatch_ExecuteRecord). */
 void FrontendTransfer_ExecuteLobbyCommandRecords
           (const FrontendCommandPacketRecord *commandRecord,uint32_t commandCount)
 {
-  uint32_t packedCommand;
-  uint32_t commandHandlerIndex;
-  CommandQueueHandlerProc *commandHandler;
-
   /* Not in the original: a count of 0 (which wraps) or one past the 0x100-byte receive slot executes nothing.
      The receive check (UiTransferMailbox_DecryptAndVerifyRecord) already drops such packets; valid batches
      have 1..8 records. */
@@ -65,17 +61,7 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
     return;
   }
   do {
-    packedCommand = commandRecord->command.packedCommandAndPlayerId;
-    commandHandlerIndex = packedCommand >> 8;
-    if (commandHandlerIndex != 0) {
-      commandHandler = CommandDispatch_ResolveHandler
-                                 (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
-      if (commandHandler != NULL) {
-        (*commandHandler)
-                  (packedCommand & 0xff,commandRecord->command.payload1,commandRecord->command.payload2,
-                   commandRecord->command.payload3);
-      }
-    }
+    CommandDispatch_ExecuteRecord(FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,&commandRecord->command);
     commandRecord++;
     commandCount--;
   } while (commandCount != 0);

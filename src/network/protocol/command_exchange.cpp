@@ -348,6 +348,13 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
       copySource++;
       copyDestination++;
     }
+    /* The original keeps the player id the client put into the record, so a client could act as another
+       player; replaced here by the id of the player the packet came from. A valid client always sends its own
+       id, so its records stay unchanged; an empty record (code 0) is left as it is. */
+    if ((commandRecord->command.packedCommandAndPlayerId & 0xffffff00) != 0) {
+      commandRecord->command.packedCommandAndPlayerId =
+           (commandRecord->command.packedCommandAndPlayerId & 0xffffff00) | (playerRecord->playerRuntimeId & 0xff);
+    }
   }
   return;
 }
@@ -356,13 +363,11 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
    the local simulation, so host and clients run the same commands in the same tick. The high 24 bits of
    each packed command are the handler's offset from InGameCommandQueue_AppendLocalPlayerCommand, the low
    8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
-   is resolved to its C function by CommandDispatch_ResolveHandler.
+   is resolved to its C function and the record validated by CommandDispatch_ExecuteRecord.
 */
 void FrontendTransfer_DispatchStagedCommandRecords(void)
 
 {
-  uint32_t packedCommand;
-  uint32_t commandHandlerIndex;
   uint32_t remainingCount;
   FrontendCommandPacketRecord *commandRecord;
 
@@ -370,19 +375,7 @@ void FrontendTransfer_DispatchStagedCommandRecords(void)
   for (remainingCount = g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount >>
                         FRONTEND_PACKET_UNIT_COUNT_SHIFT;
       remainingCount != 0; remainingCount--) {
-    packedCommand = commandRecord->command.packedCommandAndPlayerId;
-    commandHandlerIndex = packedCommand >> 8;
-    if (commandHandlerIndex != 0) {
-      CommandQueueHandlerProc *commandHandler =
-           CommandDispatch_ResolveHandler
-                     (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
-      if (commandHandler != NULL)
-      {
-        (*commandHandler)
-                  (packedCommand & 0xff,commandRecord->command.payload1,commandRecord->command.payload2,
-                   commandRecord->command.payload3);
-      }
-    }
+    CommandDispatch_ExecuteRecord(INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,&commandRecord->command);
     commandRecord++;
   }
   return;

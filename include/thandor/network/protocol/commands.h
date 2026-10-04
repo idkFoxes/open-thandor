@@ -147,6 +147,11 @@ Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32
 CommandQueueHandlerProc *
 CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint32_t code);
 
+/* Rebuild helper: executes one received command record of codeBase (FRONTEND_COMMAND_CODE_BASE or
+   INGAME_COMMAND_CODE_BASE): an empty code (0) and a code CommandDispatch_ResolveHandler skips do nothing, a
+   record with an unknown player (in-game) or a payload out of range for its handler is dropped (logged once). */
+void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,const UiCommandQueueRecord *record);
+
 /* Rebuild helper: the command code of handler in the table of codeBase, or 0xFFFFFFFF. */
 uint32_t CommandDispatch_CodeOfHandler(uint32_t codeBase,const void *handler);
 

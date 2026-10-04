@@ -90,6 +90,13 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
     if (packet->packet10000Handshake.header.senderContext != commandRecord->header.senderContext) {
       playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
       *commandRecord = packet->command10011Or10021;
+      /* The original keeps the player id the client put into the record; replaced here by the id of the
+         player the packet came from (a valid client sends its own id, so its records stay unchanged). An
+         empty record (code 0) is left as it is. */
+      if ((commandRecord->command.packedCommandAndPlayerId & 0xffffff00) != 0) {
+        commandRecord->command.packedCommandAndPlayerId =
+             (commandRecord->command.packedCommandAndPlayerId & 0xffffff00) | (playerRecord->playerRuntimeId & 0xff);
+      }
     }
     return;
   }
@@ -216,24 +223,11 @@ static void FrontendNetwork_ExecuteCommandBatch(uint32_t commandCount)
 
 {
   const FrontendCommandPacketRecord *commandRecord;
-  uint32_t packedCommand;
-  uint32_t commandHandlerIndex;
-  CommandQueueHandlerProc *commandHandler;
 
   commandRecord = g_FrontendCommandBatchPacketBuffer;
   for (; commandCount != 0; commandCount--) {
-    packedCommand = commandRecord->command.packedCommandAndPlayerId;
-    commandHandlerIndex = packedCommand >> 8;
-    if (commandHandlerIndex != 0) {
-      /* the handler (FRONTEND_COMMAND_CODE_BASE + code) must lie in the code section */
-      commandHandler = CommandDispatch_ResolveHandler
-                                 (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
-      if (commandHandler != NULL) {
-        (*commandHandler)
-                  (packedCommand & 0xff,commandRecord->command.payload1,commandRecord->command.payload2,
-                   commandRecord->command.payload3);
-      }
-    }
+    /* the handler (FRONTEND_COMMAND_CODE_BASE + code) must lie in the code section */
+    CommandDispatch_ExecuteRecord(FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,&commandRecord->command);
     commandRecord++;
   }
 }
@@ -444,15 +438,14 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
    new COMMAND_BATCH is executed and answered with the client's next COMMAND_SUBMIT (returns true);
    a repeated batch (same sender context) resends the last submit. COMMAND_WAIT is answered with
    COMMAND_WAIT_ACK, and a player-removal packet drops that player's record and shows a notice. Every
-   packet from the host refreshes the session timeout. Commands are resolved to their handlers by
-   CommandDispatch_ResolveHandler.
+   packet from the host refreshes the session timeout. Commands are resolved to their handlers and validated
+   by CommandDispatch_ExecuteRecord.
 */
 Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet)
 
 {
   UiTransferSenderContext packetSenderContext;
-  uint32_t commandHandlerIndex;
   uint32_t remainingCommands;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   int dwordCount;
@@ -481,19 +474,8 @@ Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       }
       /* the batch is an array of 0x20-byte command records; the first header is the batch header */
       while (remainingCommands != 0) {
-        commandHandlerIndex = packet->command10011Or10021.command.packedCommandAndPlayerId >> 8;
-        if (commandHandlerIndex != 0) {
-          CommandQueueHandlerProc *commandHandler =
-               CommandDispatch_ResolveHandler
-                         (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
-          if (commandHandler != NULL) {
-            (*commandHandler)
-                      (packet->command10011Or10021.command.packedCommandAndPlayerId & 0xff,
-                       packet->command10011Or10021.command.payload1,
-                       packet->command10011Or10021.command.payload2,
-                       packet->command10011Or10021.command.payload3);
-          }
-        }
+        CommandDispatch_ExecuteRecord
+                  (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,&packet->command10011Or10021.command);
         packet = (FrontendTransferPacketUnion *)(&packet->command10011Or10021 + 1);
         remainingCommands--;
       }
