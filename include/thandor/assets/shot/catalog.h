@@ -21,9 +21,7 @@
 /* Entries of ShotDefinition.targetClassImpactEffectDefinitions8 / targetClassImpactDamageQ12. */
 #define SHOT_TARGET_CLASS_IMPACT_COUNT 8
 /* Entries of g_TerrainMaterialTextureSets: valid terrain-material indices are 0..25. */
-#ifndef TERRAIN_MATERIAL_COUNT
 #define TERRAIN_MATERIAL_COUNT 26
-#endif
 
 /* Functions are grouped by semantic ownership. */
 

@@ -14,14 +14,10 @@
 
 /* Submodule: assets/package/archive_write. */
 
-/* Byte offsets into g_PackageScratchBuffer while Package_UpsertEntry/Package_DeleteEntry rewrite an archive:
-   the archive header is read to offset 0, the entry header being appended follows it. */
+/* Byte offset into g_PackageScratchBuffer while Package_UpsertEntry/Package_DeleteEntry rewrite an archive:
+   the archive header is read to offset 0, the entry header being appended follows it at
+   PCK_ENTRY_HEADER_BYTES. */
 #define PCK_ARCHIVE_SIZE offsetof(PckArchiveHeader,archiveSize)
-#define PCK_NEW_ENTRY_PAYLOAD_OFFSET (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,runtimePayloadOffset))
-#define PCK_NEW_ENTRY_UNPACKED_SIZE (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,unpackedSize))
-#define PCK_NEW_ENTRY_TYPE_TAG (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,typeTag))
-#define PCK_NEW_ENTRY_PACKED_SIZE (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,packedSize))
-#define PCK_NEW_ENTRY_COMPRESSION_METHOD (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,compressionMethod))
 
 /* Functions are grouped by semantic ownership. */
 
