@@ -175,6 +175,7 @@ add_executable(thandor WIN32
     src/network/protocol/commands.cpp
     src/network/protocol/frontend_session.cpp
     src/network/protocol/lobby.cpp
+    src/network/protocol/lockstep.cpp
     src/network/protocol/mailbox.cpp
     src/network/protocol/scenario_transfer.cpp
     src/platform/bootstrap/image.cpp
