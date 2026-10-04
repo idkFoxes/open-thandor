@@ -165,7 +165,7 @@ void Frontend_PlaySelectedEndMovie(void)
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
   g_CursorVisibilityToken--;
-  if ((runtimeRoot != NULL) && (g_EndMoviePath != NULL)) {
+  if ((runtimeRoot != nullptr) && (g_EndMoviePath != nullptr)) {
     rootCallbacks = runtimeRoot->rootUi.callbacks;
     /* signature differs: the fallback returns void and takes void *, the slot returns Bool8 and takes
        UiRootNode *; the frame update takes void *, the slot UiRootNode * */
@@ -179,14 +179,14 @@ void Frontend_PlaySelectedEndMovie(void)
     /* clear both buffers to black */
     FrontendEndMovie_ClearAndPresentBlackFrame();
     FrontendEndMovie_ClearAndPresentBlackFrame();
-    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,NULL);
+    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,nullptr);
     runtimeRoot = g_InGameRuntimeRoot;
     if (movieOpened) {
       g_EndMoviePendingTicks = 0;
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack));
       endMovieRuntime = runtimeRoot->activeEndMovieRuntime;
-      endMovieAdvanced = Movie_AdvanceFrame(&endMovieRuntime,NULL);
+      endMovieAdvanced = Movie_AdvanceFrame(&endMovieRuntime,nullptr);
       runtimeRoot->activeEndMovieRuntime = endMovieRuntime;
       if (endMovieAdvanced) {
         runtimeRoot->endMoviePlaybackState = 0;
@@ -195,7 +195,7 @@ void Frontend_PlaySelectedEndMovie(void)
         do {
           if (g_EndMoviePendingTicks != 0) {
             g_EndMoviePendingTicks--;
-            if (!Movie_AdvanceFrame(NULL,NULL)) {
+            if (!Movie_AdvanceFrame(nullptr,nullptr)) {
               g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             }
           }

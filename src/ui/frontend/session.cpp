@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = 0;
+FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = nullptr;
 
 FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};
 
@@ -57,9 +57,9 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
             (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource);
   g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels);
   g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels);
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource = NULL;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = NULL;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = NULL;
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource = nullptr;
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = nullptr;
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -381,7 +381,7 @@ void FrontendSession_PeriodicTick(void)
   }
   g_SessionNetworkTickCounter++;
   if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) &&
-     (inGameRoot->activeEndMovieRuntime != NULL)) {
+     (inGameRoot->activeEndMovieRuntime != nullptr)) {
     g_EndMoviePendingTicks++;
   }
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);

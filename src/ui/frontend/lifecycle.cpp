@@ -17,11 +17,11 @@ uintptr_t g_FrontendCentralTextureSet = 0;
 
 uintptr_t g_FrontendCentralPaletteAsset = 0;
 
-GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = 0;
+GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = nullptr;
 
 uint32_t g_FrontendStateTickSpinLock = 0;
 
-DirectSoundVoiceSet *g_FrontendMusicVoiceSet = 0;
+DirectSoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
 
 uint16_t g_FrontendMusic00SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\music00.sam" */
 
@@ -32,11 +32,11 @@ static UiRootCallbacks g_FrontendUiRootCallbacks = {
 /* row pointer table of the frontend network backend list (display
    names), one entry per network backend; Frontend_Init fills it and hands it to the backend list control. The
    original addresses it on its own, right after the control offset tables, and reserves 256 entries. */
-static Ptr32<uint16_t> g_FrontendNetworkBackendNameRows[256] = {0};
+static Ptr32<uint16_t> g_FrontendNetworkBackendNameRows[256] = {};
 
 static uintptr_t g_FrontendCentralRomAsset = 0;
 
-static WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
+static WorldObjectRecord *g_FrontendWorldObjectRecords = nullptr;
 
 static uint16_t g_GfxTexturenZentraleGfxPathUtf16[26] = {'g', 'f', 'x', '\\', 't', 'e', 'x', 't', 'u', 'r', 'e', 'n', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'g', 'f', 'x', 0}; /* L"gfx\\texturen\\zentrale.gfx" */
 
@@ -63,7 +63,7 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
   voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
   while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
     while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
-      if (!Resource_Load((uint16_t *)g_SoundMenue01SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
+      if (!Resource_Load((uint16_t *)g_SoundMenue01SamPathUtf16,(void **)&loadedSample,nullptr,nullptr)) {
         return 0;
       }
       voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
@@ -95,7 +95,7 @@ void FrontendMusic_StartMenuMusic(void)
   IDirectSoundBuffer *musicBuffer;
 
   musicBuffer = g_FrontendMusicActiveBuffer;
-  if (Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
+  if (Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,nullptr,nullptr)) {
     if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
@@ -105,7 +105,7 @@ void FrontendMusic_StartMenuMusic(void)
       musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
       if (!g_SoundPlayLooping(musicGain,musicGain,musicVoiceSet,&musicBuffer)) {
         g_SoundReleaseSampleVoiceSet(musicVoiceSet);
-        g_FrontendMusicVoiceSet = 0;
+        g_FrontendMusicVoiceSet = nullptr;
         musicBuffer = g_FrontendMusicActiveBuffer;
       }
     }
@@ -235,14 +235,14 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   UiRuntime_SetSynchronizationHooks(Frontend_StateTick,(RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)g_GfxTexturenZentraleGfxPathUtf16,
                                                       &centralResourceErrorCode);
-  if (centralTextureSet == NULL) {
+  if (centralTextureSet == nullptr) {
     *outError = centralResourceErrorCode;
     return false;
   }
   g_FrontendCentralTextureSet = (uintptr_t)centralTextureSet;
   centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)g_GfxTexturenZentralePalPathUtf16,
                                                           &centralResourceErrorCode);
-  if (centralPaletteAsset == NULL) {
+  if (centralPaletteAsset == nullptr) {
     *outError = centralResourceErrorCode;
     return false;
   }
@@ -255,7 +255,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     return false;
   }
   centralRomAsset = Package_LoadEntry((uint16_t *)g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
-  if (centralRomAsset == NULL) {
+  if (centralRomAsset == nullptr) {
     *outError = romLoadErrorCode;
     return false;
   }
@@ -369,8 +369,8 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
 
-  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelMenueGfxPathUtf16,NULL);
-  if (menuTexture != NULL) {
+  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelMenueGfxPathUtf16,nullptr);
+  if (menuTexture != nullptr) {
     g_FrontendMenuTextureSource = menuTexture;
     frontendUiState->menuTextureSource_485C = menuTexture;
     frontendUiState->menuTextureSource_4F30 = menuTexture;
@@ -501,7 +501,7 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   int voiceSetsRemaining;
   DirectSoundVoiceSet **voiceSetCursor;
 
-  UiRuntime_SetSynchronizationHooks(NULL,NULL);
+  UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
   g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
   root = (UiRootNode *)g_FrontendRootNode;
@@ -514,7 +514,7 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   }
   FrontendRomRegistry_ClearAndReleaseNestedResources();
   g_MemoryApi.free(g_FrontendWorldObjectRecords);
-  g_FrontendWorldObjectRecords = NULL;
+  g_FrontendWorldObjectRecords = nullptr;
   Resource_Release((void *)g_FrontendCentralRomAsset);
   g_FrontendCentralRomAsset = 0;
   GraphicsShadingRuntime_ClearRecordTable();
@@ -523,22 +523,22 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_FrontendMenuTextureSource);
   g_FrontendCentralTextureSet = 0;
   g_FrontendCentralPaletteAsset = 0;
-  g_FrontendMenuTextureSource = NULL;
+  g_FrontendMenuTextureSource = nullptr;
   /* all 100 menu sound slots (Frontend_Init fills 1..99) */
   voiceSetCursor = g_FrontendMenuSoundVoiceSets;
   voiceSetsRemaining = 100;
   do {
-    if (*voiceSetCursor != NULL) {
+    if (*voiceSetCursor != nullptr) {
       g_SoundReleaseSampleVoiceSet(*voiceSetCursor);
     }
-    *voiceSetCursor = NULL;
+    *voiceSetCursor = nullptr;
     voiceSetCursor++;
     voiceSetsRemaining--;
   } while (voiceSetsRemaining != 0);
   g_SoundStopVoice(g_FrontendMusicActiveBuffer);
   g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
-  g_FrontendMusicActiveBuffer = NULL;
-  g_FrontendMusicVoiceSet = NULL;
+  g_FrontendMusicActiveBuffer = nullptr;
+  g_FrontendMusicVoiceSet = nullptr;
   SpriteAssetRegistry_Reset();
   UiFrame_FlushInputAndResetPendingTicks();
   return;

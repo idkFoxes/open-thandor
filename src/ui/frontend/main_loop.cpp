@@ -62,7 +62,7 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
      stops (logged) where the decoded records end. Valid tables decode and merge as before. */
   if ((receivedByteCount < sizeof(PckDecodedByteCount)) || (*receivedBuffer > PACKAGE_SCRATCH_BUFFER_BYTES) ||
       !PckCodec_DecodeHuffmanRle
-            (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),NULL,NULL)) {
+            (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),nullptr,nullptr)) {
     Thandor_Log("FrontendMainLoop_TakeReceivedSnapshots: rejected malformed snapshot table (%u bytes received)",
                 receivedByteCount);
     UiTransferMailbox_ClearReceivedState();
@@ -165,7 +165,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage(void)
       if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
           receivedBuffer = (PckDecodedByteCount *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-          if (receivedBuffer != NULL) {
+          if (receivedBuffer != nullptr) {
             FrontendMainLoop_TakeReceivedSnapshots(receivedBuffer,receivedByteCount);
           }
         }
@@ -189,7 +189,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage(void)
     remainingPlayerBlocks--;
   } while (remainingPlayerBlocks != 0);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-    UiTransferMailbox_SetOutgoingBuffer(0,NULL);
+    UiTransferMailbox_SetOutgoingBuffer(0,nullptr);
   }
   FrontendScenarioSelectionPage_InitializeAndApplyMapOption
             ((FrontendScenarioSelectionPageView *)g_FrontendRootNode);
@@ -220,7 +220,7 @@ static void FrontendMainLoop_ReleaseHostTransfer(void)
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
-    UiTransferMailbox_SetOutgoingBuffer(0,NULL);
+    UiTransferMailbox_SetOutgoingBuffer(0,nullptr);
   }
 }
 
@@ -263,7 +263,7 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel(void)
   int successorLevelId;
 
   campaign = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
-  if (campaign == NULL) {
+  if (campaign == nullptr) {
     return false;
   }
   remainingLevelRecords = campaign->levelRecordCount;
@@ -367,16 +367,16 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
 
   /* levelPathOffsetOrLoadedFieldGrid holds the field grid pointer once loaded, an offset (<= 0xFFFF) into the
      level before */
-  if ((g_FrontendLoadedLevelAsset != NULL) &&
+  if ((g_FrontendLoadedLevelAsset != nullptr) &&
      (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)) {
     Resource_Release(Thandor_U32ToPointer<void>(g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
-  g_FrontendLoadedLevelAsset = NULL;
+  g_FrontendLoadedLevelAsset = nullptr;
   loadedPackageEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
   checkedValue = FatalError_ExitIfFailed
-                      (loadedPackageEntry != NULL ? (uintptr_t)loadedPackageEntry : packageLoadErrorCode,
-                       loadedPackageEntry == NULL);
+                      (loadedPackageEntry != nullptr ? (uintptr_t)loadedPackageEntry : packageLoadErrorCode,
+                       loadedPackageEntry == nullptr);
   g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
   fieldGridPath = (uint16_t *)((uint8_t *)g_FrontendLoadedLevelAsset +
                                g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
@@ -384,7 +384,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   WidePath_CombineDirectoryAndLeaf
             (g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
   fieldGrid = FieldGrid_LoadValidated(fieldGridPath,&packageLoadErrorCode); /* the original: Package_LoadEntry, no size check */
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     /* The original did not check the field grid load and used the error code as the grid (a host then read
        through it); handled here like a failed level load because the grid is required: a fatal error with the
        load's error code. */
@@ -527,12 +527,12 @@ Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
   if (Frontend_Init(frontendEntryRecordId,&initError)) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */
-    if ((g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26) != NULL) || /* "HOST" */
-        (g_CommandLineFindOption(8,g_NameClientKarteKeywordsAscii + 6) != NULL)) {       /* "CLIENT=" */
+    if ((g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26) != nullptr) || /* "HOST" */
+        (g_CommandLineFindOption(8,g_NameClientKarteKeywordsAscii + 6) != nullptr)) {       /* "CLIENT=" */
       FrontendRomActionTable_ExecuteRecord(0,0,1,3);
       FrontendRomTransition_RequestStop();
     }
-    else if (g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14) != NULL) { /* "KARTE=" */
+    else if (g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14) != nullptr) { /* "KARTE=" */
       FrontendRomActionTable_ExecuteRecord(0,0,1,0);
       FrontendRomTransition_RequestStop();
     }

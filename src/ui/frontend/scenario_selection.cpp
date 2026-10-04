@@ -153,7 +153,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   CommandPayload selectionIndex;
 
   mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
-  if (mapOption == NULL) {
+  if (mapOption == nullptr) {
     return false;
   }
   /* The level name runs from after KARTE=" to the closing quote, which must end the command line. */
@@ -257,7 +257,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  if (!UiSelectableGroup_FindVisibleSelected(NULL,&activeTabIndex,3,
+  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&activeTabIndex,3,
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,campaignsTabButton))) {
@@ -273,7 +273,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   }
   /* option name "KARTE=\"" (7 characters) */
   mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
-  if (mapOption != NULL) {
+  if (mapOption != nullptr) {
     UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
@@ -445,7 +445,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SAVED_GAMES,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
-  if (g_ScenarioCatalog != NULL) {
+  if (g_ScenarioCatalog != nullptr) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
     /* the section offsets count from the catalog start; the row pointer array is built behind the records */
     saveRecord = (void *)((uint8_t *)g_ScenarioCatalog +
@@ -467,7 +467,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
     }
   }
   UiPointerList_InitializeColumnLayout
-            (0,NULL,(UiPointerListControl *)FRONTEND_UI(firstNode,savedGamesList));
+            (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,savedGamesList));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   return;
 }
@@ -499,7 +499,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_SINGLE_GAMES,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
-  if (g_ScenarioCatalog != NULL) {
+  if (g_ScenarioCatalog != nullptr) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
     scenarioRecord =
          (ScenarioCatalogDisplayRecord *)
@@ -541,12 +541,12 @@ void ScenarioCatalog_RebuildLevelRecordListPage
     }
     else {
       UiPointerList_InitializeColumnLayout
-                (0,NULL,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
+                (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
     }
   }
   else {
     UiPointerList_InitializeColumnLayout
-              (0,NULL,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
+              (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
@@ -580,7 +580,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(SCENARIO_SELECTION_TAB_CAMPAIGNS,
                              (UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
-  if (g_ScenarioCatalog != NULL) {
+  if (g_ScenarioCatalog != nullptr) {
     remainingRows = g_ScenarioCatalog->campaignRecordCount;
     campaignRecord = (void *)((uint8_t *)g_ScenarioCatalog +
                      g_ScenarioCatalog->campaignRecordsOffset);
@@ -612,12 +612,12 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
     }
     else {
       UiPointerList_InitializeColumnLayout
-                (0,NULL,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
+                (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
     }
   }
   else {
     UiPointerList_InitializeColumnLayout
-              (0,NULL,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
+              (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_CAMPAIGN,firstNode);
@@ -648,7 +648,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
   control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList);
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if (rowPointers != NULL) {
+  if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
     /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
        the index can come from a peer's frontend command. */
@@ -696,7 +696,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
   control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,campaignDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if (rowPointers != NULL) {
+  if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,control);
     /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
        the index can come from a peer's frontend command. */
@@ -726,7 +726,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   Ptr32<void> *scenarioPathPointerTable;
 
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
-  if (!UiSelectableGroup_FindVisibleSelected(NULL,&selectedTabIndex,3,
+  if (!UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
       THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,loadGameTabButton),
       THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,singleGameTabButton),
       THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsTabButton))) {
@@ -738,7 +738,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
       g_FrontendLoadedCampaignAsset = 0;
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList),
-                         NULL);
+                         nullptr);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendScenarioSession_LoadOrRequestLevelAsset(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
@@ -753,7 +753,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
     g_FrontendLoadedCampaignAsset = 0;
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                       ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList),
-                       NULL);
+                       nullptr);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
@@ -770,7 +770,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   g_FrontendLoadedCampaignAsset = 0;
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                     ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList),
-                     NULL);
+                     nullptr);
   /* The original uses the row even when the saved-games list has no selected row (or no rows); bounded here
      because the row pointer table would be read outside its rows. */
   if (selectedRowIndex >=
@@ -810,7 +810,7 @@ void ScenarioCatalog_SelectLevelAndShowDescription
   listControl = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text =
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-  if (rowPointers != NULL) {
+  if (rowPointers != nullptr) {
     UiPointerList_SelectColumnListIndex(selectionIndex,listControl);
     /* The original reads rowPointers[selectionIndex] even when the index was rejected; bounded here because
        the index can come from a peer's frontend command. */

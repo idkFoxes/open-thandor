@@ -373,11 +373,11 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
-    if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != NULL) &&
-       !Movie_AdvanceFrame(NULL,NULL)) {
+    if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != nullptr) &&
+       !Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Rewind();
     }
-    if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != NULL) {
+    if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != nullptr) {
       SoftwareMaskBuffer_AdvancePatternByPercentTick
                 ((SoftwareMaskRuntimeView *)FRONTEND_UI(frontendRoot,moviePlaybackView));
     }
@@ -412,7 +412,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
     /* none selected gives 3, never the single-games tab */
-    if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != NULL)) {
+    if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != nullptr)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
       levelRecord = (ScenarioCatalogDisplayRecord *)
                     ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);

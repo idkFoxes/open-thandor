@@ -30,14 +30,14 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   GraphicsTextureLogicalSize textureSizeResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
+  (frontendCreditsView->creditsMaskRuntime).textureSource = nullptr;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = nullptr;
   (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = 0;
   (frontendCreditsView->creditsMaskRuntime).outgoingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).incomingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  creditsTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16,NULL);
-  if (creditsTexture != NULL) {
+  creditsTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16,nullptr);
+  if (creditsTexture != nullptr) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = creditsTexture;
     textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,creditsTexture);
     bufferBytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
@@ -61,8 +61,8 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
             ((frontendCreditsView->creditsMaskRuntime).textureSource);
   g_MemoryApi.free((frontendCreditsView->creditsMaskRuntime).maskPixels);
   g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).blendedSourcePixels);
-  (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
+  (frontendCreditsView->creditsMaskRuntime).textureSource = nullptr;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = nullptr;
   (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = 0;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
 }

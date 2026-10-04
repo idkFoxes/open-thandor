@@ -13,7 +13,7 @@
 
 THANDOR_ALIGN(4) uint32_t g_FrontendPlayerMessageBuffers = 0;
 
-FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = 0;
+FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = nullptr;
 
 FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount = 0;
 
@@ -143,8 +143,8 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
   /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
   selectedArmy = (ArmyRuntimeSlot *)(modelToken + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
   technologyBuilding = (ModelRuntimeSlot *)(armyToken + (intptr_t)g_ModelRuntimeRebaseDelta);
-  if (selectedArmy != NULL && technologyBuilding != NULL && selectedArmy->modelNodeRuntime != NULL &&
-      technologyBuilding->rootModelNodeOrSavedOffset.modelNode != NULL) {
+  if (selectedArmy != nullptr && technologyBuilding != nullptr && selectedArmy->modelNodeRuntime != nullptr &&
+      technologyBuilding->rootModelNodeOrSavedOffset.modelNode != nullptr) {
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
@@ -658,7 +658,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,g_FrontendNetworkSpeedLabelUtf16,labelText,NULL);
+            (64,g_FrontendNetworkSpeedLabelUtf16,labelText,nullptr);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
@@ -850,21 +850,21 @@ void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 {
   if (armyRuntimeOffset0 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
-      NULL) {
+      nullptr) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset1 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
-      NULL) {
+      nullptr) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset2 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
-      NULL) {
+      nullptr) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -890,23 +890,23 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
 
   if (armyRuntimeOffset0 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
-      NULL) {
+      nullptr) {
     SelectionPointerArray_RemoveFirstMatch
               ((GameEntityRuntime *)(armyRuntimeOffset0 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (armyRuntimeOffset1 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
-      NULL) {
+      nullptr) {
     SelectionPointerArray_RemoveFirstMatch
               ((GameEntityRuntime *)(armyRuntimeOffset1 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   /* stays NULL (the raw offset 0) when the third argument is empty */
-  army2 = NULL;
+  army2 = nullptr;
   if (armyRuntimeOffset2 != 0) {
     army2 = (GameEntityRuntime *)(armyRuntimeOffset2 + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
-    if (army2->common.ownership.modelNode != NULL) {
+    if (army2->common.ownership.modelNode != nullptr) {
       SelectionPointerArray_RemoveFirstMatch
                 (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     }
@@ -970,11 +970,11 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     /* first take every selected army out of all groups of the faction */
     for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
       selectionEntry = selectionEntries[entryIndex];
-      if (selectionEntry != NULL) {
+      if (selectionEntry != nullptr) {
         factionGroupMembers = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
         for (memberIndex = 0; memberIndex < SELECTION_GROUP_COUNT * SELECTION_GROUP_ENTRY_COUNT; memberIndex++) {
           if (selectionEntry == (GameEntityRuntime *)factionGroupMembers[memberIndex]) {
-            factionGroupMembers[memberIndex] = NULL;
+            factionGroupMembers[memberIndex] = nullptr;
           }
         }
       }
@@ -995,13 +995,13 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     /* every source army not yet in the destination goes into its first empty slot (dropped when it is full) */
     for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
       selectionEntry = sourceEntries[entryIndex];
-      if (selectionEntry == NULL) continue;
+      if (selectionEntry == nullptr) continue;
       for (scanIndex = 0; scanIndex < SELECTION_GROUP_ENTRY_COUNT; scanIndex++) {
         if (selectionEntry == destEntries[scanIndex]) break;
       }
       if (scanIndex != SELECTION_GROUP_ENTRY_COUNT) continue;
       for (scanIndex = 0; scanIndex < SELECTION_GROUP_ENTRY_COUNT; scanIndex++) {
-        if (destEntries[scanIndex] == NULL) {
+        if (destEntries[scanIndex] == nullptr) {
           destEntries[scanIndex] = selectionEntry;
           break;
         }
@@ -1048,7 +1048,7 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
     return;
   }
   building = (GameEntityRuntime *)(modelOffset + (intptr_t)g_ModelRuntimeRebaseDelta);
-  if (building->common.ownership.modelNode == NULL) {
+  if (building->common.ownership.modelNode == nullptr) {
     return;
   }
   playerBlock->technologyPageBuilding = 0;
@@ -1182,7 +1182,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   /* selectionCursor walks the 32 entries, one dword per step */
   do {
     targetEntity = selectionCursor->selection.entries[0];
-    if (targetEntity != NULL) {
+    if (targetEntity != nullptr) {
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     }
     selectionCursor = (SelectionPlayerRuntimeBlock *)(selectionCursor->selection.entries + 1);
@@ -1516,7 +1516,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
   if (armyRuntimeOffset != 0) {
     army = (GameEntityRuntime *)(armyRuntimeOffset + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-    if (army->common.ownership.modelNode != NULL) {
+    if (army->common.ownership.modelNode != nullptr) {
       SelectionPointerArray_InsertUniqueAndRecenter
                 (army,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
       if (playerRuntimeId == g_LocalPlayerRuntimeId) {
@@ -1548,7 +1548,7 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
     return;
   }
   building = (ModelRuntimeSlot *)(modelOffset + (intptr_t)g_ModelRuntimeRebaseDelta);
-  if (building->rootModelNodeOrSavedOffset.modelNode == NULL) {
+  if (building->rootModelNodeOrSavedOffset.modelNode == nullptr) {
     return;
   }
   buildingStateFlags = building->classState.stateFlags;
