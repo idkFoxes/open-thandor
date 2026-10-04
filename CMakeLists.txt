@@ -13,7 +13,7 @@ string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,
-# the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/dump/compare, windowed
+# the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/export/dump, windowed
 # mode, second instance, UDP port and datagram log, watchdog - all switched on at run time by OPEN_THANDOR_*
 # environment variables (docs/BUILDING.md). The game reaches them only through
 # include/thandor/platform/debug/hooks.h. OFF (default): none of it is compiled, the hooks expand to nothing and
@@ -224,12 +224,10 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/level_script.cpp
         src/platform/debug/movie_decoder.cpp
         src/platform/debug/movie_player.cpp
-        src/platform/debug/original_code.cpp
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
         src/platform/debug/windowed.cpp
-        src/platform/selftest/relax.cpp
         src/platform/selftest/selftests.cpp
     )
     target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)

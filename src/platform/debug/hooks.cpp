@@ -103,16 +103,6 @@ void DebugHook_UdpDatagram(const char *direction, const void *sockaddrIn, unsign
 
 /* --- movie decoder --- */
 
-void DebugHook_MovieBeforeDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded)
-{
-  DebugMovieDecoder_CompareBefore(movie, height, width, encoded);
-}
-
-void DebugHook_MovieAfterDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed)
-{
-  DebugMovieDecoder_CompareAfter(movie, height, width, consumed);
-}
-
 void DebugHook_MovieFrameDone(MovieRuntime *movie, uint32_t consumedBytes)
 {
   DebugMovieDecoder_DumpFrame(movie, consumedBytes);

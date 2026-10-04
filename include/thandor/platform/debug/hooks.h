@@ -72,9 +72,7 @@ void DebugHook_AfterUdpBind(WinSockAddress *bindEndpoint, unsigned gamePort);
 /* Every datagram sent or received ("send" / "recv"). */
 void DebugHook_UdpDatagram(const char *direction, const void *sockaddrIn, unsigned byteCount, const void *buffer);
 
-/* --- movie decoder (OPEN_THANDOR_MOVIECMP, OPEN_THANDOR_MOVIEDUMP) --- */
-void DebugHook_MovieBeforeDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded);
-void DebugHook_MovieAfterDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed);
+/* --- movie decoder (OPEN_THANDOR_MOVIEDUMP) --- */
 void DebugHook_MovieFrameDone(MovieRuntime *movie, uint32_t consumedBytes);
 
 /* --- campaign and scenario selection --- */
@@ -133,8 +131,6 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_AfterUdpBind(bindEndpoint, gamePort) ((void)0)
 #define DebugHook_UdpDatagram(direction, sockaddrIn, byteCount, buffer) ((void)0)
 
-#define DebugHook_MovieBeforeDecode(movie, height, width, encoded) ((void)0)
-#define DebugHook_MovieAfterDecode(movie, height, width, consumed) ((void)0)
 #define DebugHook_MovieFrameDone(movie, consumedBytes) ((void)0)
 
 #define DebugHook_ScenarioPageOpened() 0
