@@ -1213,7 +1213,7 @@
 0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    (merged into TerrainHexScan_Sector)
 0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    (merged into TerrainHexScan_Sector)
 0x005090E0  function  FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors              src/world/terrain/field_deformation.cpp
-0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                src/world/terrain/field_lifecycle.cpp
+0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                (removed, unused)
 0x005092E0  function  FieldGrid_SetAllCellOverlayColors                                 src/world/terrain/field_lifecycle.cpp
 0x00509320  function  FieldGridTerrainOverlayVariantA_ApplyDirection0                   (merged into TerrainHexScan_Leg)
 0x00509380  function  FieldGridTerrainOverlayVariantA_ApplyDirection1                   (merged into TerrainHexScan_Leg)
@@ -1459,7 +1459,7 @@
 0x00513EE0  function  GameFactionRuntime_ApplyPairwiseRelationTransition                src/gameplay/faction/relations.cpp
 0x00514350  function  AiFactionRuntime_RebuildPlanningCapacityState                     src/gameplay/ai/planning.cpp
 0x00514510  function  GameFactionRuntime_UpdateImpactAlertAnchorAndNotify               src/gameplay/faction/runtime.cpp
-0x00514710  function  ShotRuntime_PostImpactRelationNotificationNoOp                    src/world/shots/pool.cpp
+0x00514710  function  ShotRuntime_PostImpactRelationNotificationNoOp                    (removed, unused)
 0x00514730  function  GameFactionRuntime_RecomputeProgressAndScoreMetrics               src/gameplay/faction/runtime.cpp
 0x00514900  function  GameFactionRuntime_FindRuntimeGroupNumber                         src/gameplay/faction/runtime.cpp
 0x00514960  data      g_SelectionPlayerRuntimeBlockPointers                             src/gameplay/selection/commands.cpp
@@ -2139,7 +2139,7 @@
 0x0053CA00  data      g_Q12FloatScale4096                                               src/core/math/spline.cpp
 0x0053CA10  function  WorldMotionSpline_ClearCachedDerivatives                          src/world/camera/motion_spline.cpp
 0x0053CA30  function  WorldMotionSpline_EvaluateAndApplyAtTime                          src/world/camera/motion_spline.cpp
-0x0053CBB0  function  WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime            src/world/camera/motion_spline.cpp
+0x0053CBB0  function  WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime            (removed, unused)
 0x0053CD10  function  WorldMotionSpline_BuildSixChannelCurves                           src/world/camera/motion_spline.cpp
 0x0053CF10  function  CubicSpline_BuildNaturalCoefficientSystem                         src/core/math/spline.cpp
 0x0053D160  function  CubicSpline_ForwardEliminateColumn                                src/core/math/spline.cpp

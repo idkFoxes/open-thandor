@@ -188,9 +188,9 @@ Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAs
 
 /* Water depth (waterSurfaceDelta) at a world position, interpolated linearly over the grid triangle that
    contains it like FieldGrid_InterpolateTerrainHeight. Returns 0 outside the grid or on a border cell (the
-   original also signals failure there; the C prototype drops that). Called by the army movement code
+   original also signals failure there; this prototype drops that). Called by the army movement code
    (ArmyRuntimeClass_UpdateArticulatedMovement, ..UpdateGroundMovementCollisionAndTrackAnimation,
-   ..UpdateGroundMovementVariantA).
+   ..UpdateGroundMovement).
 */
 int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
@@ -517,8 +517,8 @@ Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
 /* Placement test at a world position: returns false when the nearest grid cell's occupancy byte of
    faction slot factionSlot has any FIELD_CELL_OCCUPANCY_PRESENCE_BITS set, true ("blocked") when the
    faction is not present there or the point is outside the grid. Called by
-   ArmyPlacement_TestGridRuntimeAndFieldBlocking, ArmyPlacementCollision_TestCurrentRuntime
-   and ..TestCandidateAndClearance with the owner army's faction index.
+   ArmyPlacement_TestGridRuntimeAndFieldBlocking, ..CanPlaceMobileUnit, ..CanPlaceBuilding and
+   ArmyPlacementCollision_TestCurrentRuntime with the owner army's faction index.
 */
 Bool8 FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid

@@ -345,12 +345,3 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   }
   return;
 }
-
-/* Hook called by ShotRuntime_ApplyArmyHitRelationAndNotifications after the "under attack" alert of a hit on
-   a hostile army; it does nothing.
-*/
-void ShotRuntime_PostImpactRelationNotificationNoOp(ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime)
-
-{
-  return;
-}

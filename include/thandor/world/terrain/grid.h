@@ -13,9 +13,9 @@
 /* Submodule: world/terrain/grid. */
 /* Functions are grouped by semantic ownership. */
 
-/* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the generated
-   FieldCellPackedFlagsAndMaterial enum. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the four
-   map-edge bits on the outermost ring of cells; neighbour loops test them before touching a neighbour. */
+/* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the FIELD_CELL_* enum
+   (FieldCellPackedFlagsAndMaterial) in core/types.h. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the
+   four map-edge bits on the outermost ring of cells; neighbour loops test them before touching a neighbour. */
 #define FIELD_CELL_LAST_ROW_BOUNDARY 0x80000000u
 #define FIELD_CELL_GRID_EDGE_MASK                                                                  \
   (FIELD_CELL_LAST_ROW_BOUNDARY | FIELD_CELL_LAST_COLUMN_BOUNDARY | FIELD_CELL_FIRST_ROW_BOUNDARY | \

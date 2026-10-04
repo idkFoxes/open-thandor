@@ -17,9 +17,6 @@ intptr_t g_ModelRuntimeRebaseDelta = 0;
 
 /* Implementation ownership: world/model/pool. */
 
-/* Diagnostics: set by the offscreen preview renderer while it submits models. */
-
-
 /* Attaches a new model to one of the attachment points of modelRuntime (recorded by
    ModelNodeRuntime_CreateHierarchyRecursive): creates the model childDefinitionId for the same army, stores it in
    the attachment entry, hangs its root node into the parent node's child slot and gives it the saved local

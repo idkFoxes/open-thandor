@@ -13,6 +13,8 @@
 #include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <cassert>
+
 /* Module data. */
 
 /* Q28 unit vector */
@@ -215,19 +217,26 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 {
   FixedDirection normalDirection;
   PackedArgb32 directionalLightColor;
+  int lightLutIndex;
 
   /* packed as azimuth (low word) | elevation (high word) */
   normalDirection = FixedMath_DirectionFromAnglesQ28
                     ((int)cell->triangle0NormalAngles >> 16,cell->triangle0NormalAngles & FIXED_ANGLE16_MASK);
   /* the signed Q8 dot product (-256..256) indexes the table from its middle entry; the shaded ramp is the
      lower half */
-  directionalLightColor =
-       g_TerrainDirectionalLightColorLut
-       [TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX +
-        (((int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)g_TerrainLightDirection.x) >> 32) +
-          (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)g_TerrainLightDirection.y) >> 32) +
-          (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)g_TerrainLightDirection.z) >> 32)) >>
-         16)];
+  lightLutIndex =
+       TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX +
+       (((int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)g_TerrainLightDirection.x) >> 32) +
+         (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)g_TerrainLightDirection.y) >> 32) +
+         (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)g_TerrainLightDirection.z) >> 32)) >>
+        16);
+  /* Unverified: the three floored products of an exactly opposed normal and light could sum just below -1.0
+     and give index -1 (the entry before the table). Debug builds check it; no clamp, the original reads the
+     index as computed. */
+  assert(lightLutIndex >= 0 &&
+         lightLutIndex < (int)(sizeof(g_TerrainDirectionalLightColorLut) /
+                               sizeof(g_TerrainDirectionalLightColorLut[0])));
+  directionalLightColor = g_TerrainDirectionalLightColorLut[lightLutIndex];
   cell->secondarySurfaceDirectionalLightColor = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor = directionalLightColor;
 }
@@ -377,8 +386,9 @@ static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t al
    defines a cycle duration, the simulation tick's phase in the cycle picks a cosine blend between the
    level's primary and alternate terrain colour sets and between two packed 16-bit parameter pairs,
    installs the blended colours and recomputes the terrain normals and lighting with the blended pairs.
-   At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
-   256-entry factor tables (as in the original).
+   At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the original's
+   256-entry factor tables; the port's tables have 257 entries whose last one holds the values the original
+   read there (SoftwareRenderer_BuildFactorTables).
 */
 void WorldLightingRuntime_UpdateInterpolatedTerrainLighting()
 

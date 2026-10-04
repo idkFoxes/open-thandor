@@ -24,10 +24,6 @@ Bool8 WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
 
-uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
-          (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
-          WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
-
 void WorldMotionSpline_BuildSixChannelCurves
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes);
 
