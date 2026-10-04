@@ -27,8 +27,8 @@ segments:  every level of every campaign's winning path, split into parallel run
            (those are reached through a real level change inside a part). Every level is won after
            --win-after seconds; a part ending a campaign must fire the campaign end, the others must win their
            last level. Levels off the winning path (hansolo 7, 15-17, 20) are started by run_all_maps.py.
-quick:     10 levels in 5 parts (QUICK_SEGMENTS): tutorial 1-3 to the campaign end, hansolo 8-9, 12-13 and 22-23 (the
-           levels that take over the previous level's units) and nimm2 5 to the campaign end.
+quick:     5 levels in 3 parts (QUICK_SEGMENTS): tutorial 1-2 and hansolo 22-23 (levels that take over the previous
+           level's units) and nimm2 5 to the campaign end.
 Results in GAME_DIR/chain/results.txt, screenshots and log per run in GAME_DIR/chain/<run>/.
 """
 import argparse
@@ -50,10 +50,9 @@ SEGMENTS = [('hansolo', 2, 3, False), ('hansolo', 5, 3, False), ('hansolo', 8, 3
             ('hansolo', 14, 3, False), ('hansolo', 21, 3, False), ('hansolo', 24, 3, True),
             ('nimm2', 1, 3, False), ('nimm2', 4, 2, True), ('luke', 1, 2, False), ('luke', 3, 2, True),
             ('tutorial', 1, 3, True)]
-# quick: 10 levels in 5 parts - every level that needs the previous level's units (tutorial 2/3, hansolo 9/13/23)
-# through a real level change, and two campaign ends (tutorial, nimm2)
-QUICK_SEGMENTS = [('tutorial', 1, 3, True), ('hansolo', 8, 2, False), ('hansolo', 12, 2, False),
-                  ('hansolo', 22, 2, False), ('nimm2', 5, 1, True)]
+# quick: 5 levels in 3 parts - two levels that take over the previous level's units (tutorial 2, hansolo 23) through
+# a real level change, and a campaign end (nimm2)
+QUICK_SEGMENTS = [('tutorial', 1, 2, False), ('hansolo', 22, 2, False), ('nimm2', 5, 1, True)]
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log')
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

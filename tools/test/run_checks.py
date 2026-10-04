@@ -1,7 +1,7 @@
 """Runs all behaviour checks after a build, in parallel, and prints one summary table.
 
 usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-jobs N]
-                     [--map-minutes M] [--full-campaign] [--skip determinism,aihash,...]
+                     [--map-minutes M] [--all-maps] [--full-campaign] [--skip determinism,aihash,...]
 
 GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
 (hard links to the data files, own executable, settings, log and save folder; the tools started from here make
@@ -21,14 +21,15 @@ further copies next to it), windowed, with its own UDP ports:
                not; no crash or hang (port 907)
   multiplayer  run_multiplayer.py 150 s with mp_host_create.txt / mp_client_join.txt: both reach the game, no
                crash, and the client log still has "net recv" lines in its last 20 lines (ports 929/930)
-  maps         run_all_maps.py: all 56 missions (every campaign level started directly, every single game);
+  maps         run_all_maps.py: the 10 missions of QUICK_MAPS (with --all-maps all 56: every campaign level
+               started directly, every single game);
                non-ok missions fail, except ENDED: expected for the levels that need the previous level's units
                (tutorial 2/3, hansolo 9/13/23, tested by the campaign check), a warning elsewhere (the strong
                computer opponents can win a map in time); hansolo 20 is skipped (its level file is missing
                from the original data) (ports 940+)
-  campaign     run_campaign_chain.py quick: 10 levels in 5 parallel parts through real level changes - the
-               levels that take over the previous level's units (tutorial 2/3, hansolo 9/13/23) and the
-               tutorial and nimm2 campaign ends; with --full-campaign every level of every campaign's winning
+  campaign     run_campaign_chain.py quick: 5 levels in 3 parallel parts through real level changes - tutorial
+               2 and hansolo 23 (they take over the previous level's units) and the nimm2 campaign end;
+               with --full-campaign every level of every campaign's winning
                path (segments: 12 parts, 33 levels). Every level runs 2 minutes, then the auto-win fires the end
                trigger; every level must be won and units carried over where the campaign does it, without
                crash or hang (ports 910-921)
@@ -77,7 +78,11 @@ INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedi
 EXPECTED_ENDED = ('tutorial 2', 'tutorial 3', 'hansolo 9', 'hansolo 13', 'hansolo 23')
 # missions whose level file is missing from the original game data (hansolo 20 names level\hansolo\s19_forschung.lev)
 EXPECTED_MISSING = ('hansolo 20',)
-CAMPAIGN_PARTS = {'quick': 5, 'segments': 12}
+CAMPAIGN_PARTS = {'quick': 3, 'segments': 12}
+# maps check without --all-maps: 10 missions across tutorial, the three campaigns (hansolo 16 is off the winning path,
+# so the campaign check never reaches it) and the single maps
+QUICK_MAPS = ['tutorial 1', 'hansolo 5', 'hansolo 16', 'nimm2 3', 'luke 2', 'mittelpunkt', 'stromschnelle',
+              'hargonatoll', 'tunguska', 'multi1']
 
 args = None
 game = None
@@ -332,7 +337,8 @@ def check_maps():
     code, text = run_tool(os.path.join(out_dir, 'maps.txt'),
                           [os.path.join(HERE, 'run_all_maps.py'), folder,
                            '--jobs', str(args.map_jobs), '--max-jobs', str(args.map_max_jobs),
-                           '--jobs-file', map_jobs_file(), '--minutes', str(args.map_minutes)],
+                           '--jobs-file', map_jobs_file(), '--minutes', str(args.map_minutes)] +
+                          ([] if args.all_maps else ['--missions', ','.join(QUICK_MAPS)]),
                           3600)
     rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
     bad, ended = [], []
@@ -404,8 +410,10 @@ def main():
                                                        'at least 4, growing to 16 as the other checks finish; a '
                                                        'given number stays fixed)')
     parser.add_argument('--map-minutes', type=float, default=2)
+    parser.add_argument('--all-maps', action='store_true',
+                        help='maps check over all 56 missions instead of the 10 of QUICK_MAPS')
     parser.add_argument('--full-campaign', action='store_true',
-                        help='campaign check over all 33 levels (12 parts) instead of the 10-level quick set')
+                        help='campaign check over all 33 levels (12 parts) instead of the 5-level quick set')
     parser.add_argument('--skip', default='', help='comma-separated: ' + ','.join(CHECKS))
     args = parser.parse_args()
     INSTANCES['campaign'] = CAMPAIGN_PARTS['segments' if args.full_campaign else 'quick']

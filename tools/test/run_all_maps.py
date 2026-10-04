@@ -6,7 +6,7 @@ aids OPEN_THANDOR_CAMPAIGN / OPEN_THANDOR_CAMPAIGN_LEVEL (start a campaign at a 
 OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE and OPEN_THANDOR_NET_PORT, plus the input script
 (OPEN_THANDOR_SCRIPT).
 
-usage: run_all_maps.py GAME_DIR [--jobs 10] [--max-jobs N --jobs-file PATH] [--minutes 1] [--only PATTERN]
+usage: run_all_maps.py GAME_DIR [--jobs 10] [--max-jobs N --jobs-file PATH] [--minutes 1] [--only PATTERN] [--missions A,B,...]
                        [--shots MS]
 
 Order: the tutorial campaign, the other campaigns level by level, then the single games. For each mission:
@@ -68,6 +68,7 @@ parser.add_argument('--jobs-file', help='file holding the number of workers allo
                                         'mission; run_checks.py raises it as its other checks finish)')
 parser.add_argument('--minutes', type=float, default=1)
 parser.add_argument('--only', help='fnmatch pattern on the mission label, e.g. "hansolo*"')
+parser.add_argument('--missions', help='comma-separated mission labels, e.g. "tutorial 1,hansolo 5,mittelpunkt"')
 parser.add_argument('--shots', default='5000')
 args = parser.parse_args()
 
@@ -84,6 +85,12 @@ missions = ([('tutorial %d' % level, campaign, level) for campaign, level in TUT
             [(name, None, name) for name in SINGLE])
 if args.only:
     missions = [m for m in missions if fnmatch.fnmatch(m[0], args.only)]
+if args.missions:
+    wanted = [w.strip() for w in args.missions.split(',') if w.strip()]
+    unknown = set(wanted) - set(m[0] for m in missions)
+    if unknown:
+        raise SystemExit('unknown missions: ' + ', '.join(sorted(unknown)))
+    missions = [m for m in missions if m[0] in wanted]
 
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log')
 
