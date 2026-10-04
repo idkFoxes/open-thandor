@@ -122,8 +122,8 @@ void UiSingleLineTextControl_DrawClipped
     capWidth = (int)tileSize.logicalWidthPixels;
     /* The original leaves the cap width here, reinterpreted as a pointer, as the node the focus is lent to
        below when the framebuffer cannot be accessed; NULL here because that pointer is written through. */
-    focusLendTarget = NULL;
-    if (control->focusChild != NULL) {
+    focusLendTarget = nullptr;
+    if (control->focusChild != nullptr) {
       lineWidth = lineWidth + capWidth * 2;
     }
     if ((control->labelFlags & UI_LABEL_ALIGN_RIGHT) != 0) {
@@ -150,14 +150,14 @@ void UiSingleLineTextControl_DrawClipped
                   (clipBottom,clipRight,clipTop,clipLeft,alignOffsetY + (control->base).top,
                    alignOffsetX + (control->base).left,lineWidth,capWidth,false);
       }
-      if (control->focusChild != NULL) {
+      if (control->focusChild != nullptr) {
         alignOffsetX = capWidth + alignOffsetX;
         alignOffsetY++;
       }
       commandStream = UiSingleLineTextControl_GetCommandStream(control);
       focusLendTarget = control->focusChild;
       textStyle = g_UiTextStyleNormal;
-      if ((focusLendTarget != NULL) && ((focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+      if ((focusLendTarget != nullptr) && ((focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
         textStyle = g_UiTextStyleDisabled;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
@@ -181,7 +181,7 @@ void UiSingleLineTextControl_DrawClipped
     /* The original lends the focus whenever the label is focused, writing through NULL without a focus
        child (or through the cap width when the framebuffer could not be accessed); bounded here because
        that crashes: then the children are drawn without lending the focus. */
-    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget == NULL)) {
+    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget == nullptr)) {
       static int s_loggedMissingFocusChild;
       if (s_loggedMissingFocusChild == 0) {
         s_loggedMissingFocusChild = 1;
@@ -190,7 +190,7 @@ void UiSingleLineTextControl_DrawClipped
                     framebufferUnavailable ? "unavailable" : "accessed");
       }
     }
-    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget != NULL)) {
+    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget != nullptr)) {
       g_UiKeyboardFocusNode = focusLendTarget;
       focusLendTarget->nodeFlags = focusLendTarget->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);

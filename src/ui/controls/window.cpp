@@ -12,7 +12,7 @@
 
 GraphicsTextureSourceAsset *g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
 
-GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = 0;
+GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = nullptr;
 
 /* int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
 static const int32_t g_UiResizableWindowTitleTextTopOffset = 5;
@@ -871,12 +871,12 @@ void UiWindowResources_Init(void)
   Bool8 pageLoaded;
 
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16,&textureLoadError);
-  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uintptr_t)loadedTexture : textureLoadError,
-                                          loadedTexture == NULL);
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
+                                          loadedTexture == nullptr);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16,&textureLoadError);
-  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uintptr_t)loadedTexture : textureLoadError,
-                                          loadedTexture == NULL);
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != nullptr ? (uintptr_t)loadedTexture : textureLoadError,
+                                          loadedTexture == nullptr);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
   /* the out value is the error code on failure; on success it is only passed through unused */
   pageLoaded = TextResourcePage_Load(1,(uint16_t *)g_UiWindowClassTextPathUtf16,&pageLoadError);

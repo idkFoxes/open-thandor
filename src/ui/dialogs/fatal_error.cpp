@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static UiRootNode *g_FatalErrorUiRootTemplate = 0;
+static UiRootNode *g_FatalErrorUiRootTemplate = nullptr;
 
 static uint32_t g_FatalErrorDialogDismissed = 0;
 
@@ -103,7 +103,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
   /* valueOrError is the FatalErrorPassThroughProc contract: a caller value passed through unchanged, or
      (failed set) the error code or rich-text stream, which is all it means from here on */
   error = valueOrError;
-  if (g_FatalErrorUiRootTemplate == NULL) {
+  if (g_FatalErrorUiRootTemplate == nullptr) {
     /* no dialog state allocated yet: FatalError_Exit, which does not return */
     error = FatalError_ExitIfFailed(error,true);
   }

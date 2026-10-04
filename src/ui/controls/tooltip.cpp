@@ -26,7 +26,7 @@ void UiTooltip_TickCountdown(void)
 
 {
   if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
-     ((g_UiTooltipState.targetNode == NULL ||
+     ((g_UiTooltipState.targetNode == nullptr ||
       (((g_UiTooltipState.targetNode)->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
     if (g_UiTooltipState.countdownFrames != 0) {
       g_UiTooltipState.countdownFrames--;
@@ -66,7 +66,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   GraphicsTextureLogicalSize tileSize;
   
   tooltipTarget = g_UiTooltipState.targetNode;
-  if ((g_UiTooltipState.targetNode != NULL) && (g_UiTooltipState.countdownFrames == 0)) {
+  if ((g_UiTooltipState.targetNode != nullptr) && (g_UiTooltipState.countdownFrames == 0)) {
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
     /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
        text itself */
@@ -147,15 +147,15 @@ static UiNodeBase *UiTooltip_FindEligibleNodeAt(UiPixelCoordinate pointerY,UiPix
   UiNodeBase *hitTestNode;
 
   if ((g_UiPointerCaptureTarget != UI_NODE_NONE) || (g_UiRootNode == UI_ROOT_STACK_END)) {
-    return NULL;
+    return nullptr;
   }
   if (((g_UiRootNode->base).left > pointerX) || ((g_UiRootNode->base).top > pointerY) ||
       (pointerX >= (g_UiRootNode->base).right) || (pointerY >= (g_UiRootNode->base).bottom)) {
-    return NULL;
+    return nullptr;
   }
   hitTestNode = (*((g_UiRootNode->base).vtable)->hitTest)(pointerY,pointerX,&g_UiRootNode->base);
   if ((hitTestNode == UI_NODE_NONE) || ((hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) == 0)) {
-    return NULL;
+    return nullptr;
   }
   return hitTestNode;
 }
@@ -173,9 +173,9 @@ void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate po
   previousTarget = g_UiTooltipState.targetNode;
   g_UiTooltipState.pointerX = pointerX;
   g_UiTooltipState.pointerY = pointerY;
-  g_UiTooltipState.targetNode = NULL;
+  g_UiTooltipState.targetNode = nullptr;
   hoveredNode = UiTooltip_FindEligibleNodeAt(pointerY,pointerX);
-  if (hoveredNode != NULL) {
+  if (hoveredNode != nullptr) {
     g_UiTooltipState.targetNode = hoveredNode;
     if (hoveredNode == previousTarget) {
       return;
@@ -195,7 +195,7 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
   uint16_t *commandStream;
   uint16_t *resolvedText;
 
-  if (node != NULL) {
+  if (node != nullptr) {
     /* the last field of the (virtual) node before this one = the dword at node - 4 */
     commandStream = Thandor_U32ToPointer<uint16_t>(node[-1].nodeFlags); /* 5f-format: UI template tooltip prefix dword (node - 4) */
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {

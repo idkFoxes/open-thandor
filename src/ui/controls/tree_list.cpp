@@ -79,7 +79,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
       if (((lastRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) ||
           ((lastRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0)) break;
       childBlock = lastRecord->childBlockOrParentRecord;
-    } while (childBlock != NULL);
+    } while (childBlock != nullptr);
     break;
   case KEYBOARD_KEY_CODE_PAGE_UP:
   case KEYBOARD_KEY_CODE_UP:
@@ -102,7 +102,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
       if ((stepRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
         while ((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
                (recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0 &&
-               recordCursor->childBlockOrParentRecord != NULL) {
+               recordCursor->childBlockOrParentRecord != nullptr) {
           childBlock = recordCursor->childBlockOrParentRecord;
           recordCursor = childBlock + (int)childBlock->countOrLabelText;
           control->selectedRecord = recordCursor;
@@ -111,7 +111,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
       else {
         recordCursor = stepRecord[-1].childBlockOrParentRecord;
         control->selectedRecord = stepRecord;
-        if (recordCursor != NULL) {
+        if (recordCursor != nullptr) {
           control->selectedRecord = recordCursor;
         }
       }
@@ -134,12 +134,12 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
       startRecord = control->selectedRecord;
       siblingIndex = 0;
       scanRecord = startRecord;
-      childBlock = NULL;
+      childBlock = nullptr;
       if ((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
           (startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
         childBlock = startRecord->childBlockOrParentRecord;
       }
-      if (childBlock != NULL && childBlock->countOrLabelText != 0) {
+      if (childBlock != nullptr && childBlock->countOrLabelText != 0) {
         control->selectedRecord = childBlock + 1;
       }
       else {
@@ -154,10 +154,10 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
           scanRecord = stepRecord[-1].childBlockOrParentRecord;
           siblingIndex = 0;
           control->selectedRecord = scanRecord;
-          if (scanRecord == NULL) {
+          if (scanRecord == nullptr) {
             control->selectedRecord = startRecord;
           }
-        } while (scanRecord != NULL);
+        } while (scanRecord != nullptr);
       }
       stepCounter--;
     } while (stepCounter != 0);
@@ -169,7 +169,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
     if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0) {
       return false;
     }
-    if (control->recordSelectionCallback == 0) {
+    if (control->recordSelectionCallback == nullptr) {
       return false;
     }
     control->recordSelectionCallback
@@ -182,7 +182,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
     if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
       return false;
     }
-    if (control->recordSelectionCallback == 0) {
+    if (control->recordSelectionCallback == nullptr) {
       return false;
     }
     control->recordSelectionCallback
@@ -209,7 +209,7 @@ Bool8 UiTimedListControl_HandleKeyboardNavigation
       if ((countRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) != 0) {
         countRecord = countRecord->childBlockOrParentRecord;
       }
-    } while (countRecord != NULL);
+    } while (countRecord != nullptr);
     rowIndex = rowIndex * (int)control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               ((int)control->rowHeight + rowIndex + 1,(control->base).rightOffset,rowIndex,0,
@@ -246,7 +246,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   int indent;
 
   header = list->base.recordTree;
-  if (header == NULL) {
+  if (header == nullptr) {
     return;
   }
   remaining = (int)header->countOrLabelText;
@@ -266,7 +266,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
     remaining--;
     if ((((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
          ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
-        (record[-1].childBlockOrParentRecord != NULL) &&
+        (record[-1].childBlockOrParentRecord != nullptr) &&
         (depth < TREE_DEPTH_LIMIT)) {
       savedRecord[depth] = record;
       savedRemaining[depth] = remaining;
@@ -292,7 +292,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
         g_GraphicsTextureSourceTestOpaquePixel
                   (y + (int)list->base.rowHeight,x + (int)list->indentPixelsPerLevel,0,0,
                    list->base.collapsedIconSubresource,list->base.rowTextureSource) &&
-        (list->base.recordSelectionCallback != 0)) {
+        (list->base.recordSelectionCallback != nullptr)) {
       list->base.recordSelectionCallback(record,list);
     }
     return;
@@ -311,7 +311,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
     UiActionQueue_Enqueue(list->base.actionId,control);
   }
   if (((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) &&
-      ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) && (list->base.recordSelectionCallback != 0)) {
+      ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) && (list->base.recordSelectionCallback != nullptr)) {
     list->base.recordSelectionCallback(record,list);
   }
   return;
@@ -358,7 +358,7 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
       return recordBlock;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Builds one level of the directory tree for the tree list: for an empty path the root block with the
@@ -401,11 +401,11 @@ Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListT
     if (g_MemoryApi.alloc(2 * sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES,(void **)&recordCursor) == 0) {
       recordCursor[0].countOrLabelText = 1;
       recordCursor[0].parentBlockOrIcon = 0;
-      recordCursor[0].childBlockOrParentRecord = NULL;
+      recordCursor[0].childBlockOrParentRecord = nullptr;
       recordCursor[0].flags = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
       recordCursor[1].countOrLabelText = (uintptr_t)(recordCursor + 2);
       recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_COMPUTER;
-      recordCursor[1].childBlockOrParentRecord = NULL;
+      recordCursor[1].childBlockOrParentRecord = nullptr;
       recordCursor[1].flags = UI_TIMED_LIST_RECORD_EXPANDABLE;
       g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(recordCursor + 2));
       *outRecordBlock = recordCursor;
@@ -422,7 +422,7 @@ Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListT
       driveRow = (UiTimedListTreeRecord *)outputRecords + 1;
       driveRow[-1].countOrLabelText = directoryEntryCount;
       driveRow[-1].parentBlockOrIcon = 0;
-      driveRow[-1].childBlockOrParentRecord = NULL;
+      driveRow[-1].childBlockOrParentRecord = nullptr;
       driveRow[-1].flags = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
       labelCursor = (uint32_t *)(driveRow + directoryEntryCount);
       driveLetterCursor = (uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
@@ -431,7 +431,7 @@ Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListT
         driveRow->countOrLabelText = (uintptr_t)labelCursor;
         driveType = g_FileSystemGetDriveTypeCode(driveLetter);
         driveRow->parentBlockOrIcon = (uint32_t)driveType;
-        driveRow->childBlockOrParentRecord = NULL;
+        driveRow->childBlockOrParentRecord = nullptr;
         driveRow->flags = 0;
         g_UiTimedListDriveWildcardUtf16[0] = (wchar_t)driveLetter; /* the pattern L"?:\*.*" */
         *labelCursor = driveLetter;
@@ -502,14 +502,14 @@ Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListT
             recordCursor = (UiTimedListTreeRecord *)recordBlock;
             recordCursor->countOrLabelText = directoryEntryCount;
             recordCursor->parentBlockOrIcon = 0;
-            recordCursor->childBlockOrParentRecord = NULL;
+            recordCursor->childBlockOrParentRecord = nullptr;
             recordCursor->flags = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
             labelWriteCursor = (uint32_t *)(recordCursor + recordCount);
             leaf = outputRecords;
             for (; directoryEntryCount != 0; directoryEntryCount--) {
               recordCursor[1].countOrLabelText = (uintptr_t)labelWriteCursor;
               recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;
-              recordCursor[1].childBlockOrParentRecord = NULL;
+              recordCursor[1].childBlockOrParentRecord = nullptr;
               recordCursor[1].flags = 0;
               WidePath_CombineDirectoryAndLeaf
                         (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)leaf,
@@ -597,7 +597,7 @@ static Bool8 UiTimedListTree_AbandonDirectoryHierarchy
   for (; levelCount != 0; levelCount--) {
     g_MemoryApi.free(levelStack[--levelStackTop]);
   }
-  *outSelectedRecord = NULL;
+  *outSelectedRecord = nullptr;
   return false;
 }
 
@@ -682,11 +682,11 @@ Bool8 UiTimedListTree_BuildDirectoryHierarchy
   recordCursor = parentBlock + 1;
   do {
     levelBlock = levelStack[--levelStackTop];
-    if (levelBlock != NULL) {
+    if (levelBlock != nullptr) {
       levelBlock->parentBlockOrIcon = (uintptr_t)parentBlock;
       levelBlock->childBlockOrParentRecord = recordCursor;
     }
-    if (recordCursor != NULL) {
+    if (recordCursor != nullptr) {
       recordCursor->flags = recordCursor->flags | UI_TIMED_LIST_RECORD_EXPANDED;
       recordCursor->childBlockOrParentRecord = levelBlock;
     }
@@ -713,7 +713,7 @@ Bool8 UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
   Bool8 childContains;
   
   containsCount = 0;
-  if (recordBlock != NULL) {
+  if (recordBlock != nullptr) {
     recordCursor = recordBlock;
     for (recordsRemaining = recordBlock->countOrLabelText; recordsRemaining != 0; recordsRemaining--) {
       if (recordCursor + 1 == targetRecord) {
@@ -785,7 +785,7 @@ Bool8 UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
     else {
       /* Prepend the labels of the ancestor rows up to (not including) the drive row. */
       ancestorRecord = UiTimedListTree_FindBlockHeader(record)->childBlockOrParentRecord;
-      while ((ancestorRecord != NULL) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
+      while ((ancestorRecord != nullptr) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)ancestorRecord->countOrLabelText);
@@ -793,7 +793,7 @@ Bool8 UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
                   ((uint32_t *)&g_UiTimedListRecordPathScratch,(const uint32_t *)&g_UiTimedListCombinedPathScratch);
         ancestorRecord = UiTimedListTree_FindBlockHeader(ancestorRecord)->childBlockOrParentRecord;
       }
-      if (ancestorRecord == NULL) {
+      if (ancestorRecord == nullptr) {
         return true;
       }
       ancestorLabel = (const uint16_t *)ancestorRecord->countOrLabelText;
@@ -883,7 +883,7 @@ Bool8 UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTree
     else {
       /* Prepend the labels of the ancestor rows up to (not including) the drive row. */
       ancestorRecord = UiTimedListTree_FindBlockHeader(record)->childBlockOrParentRecord;
-      while ((ancestorRecord != NULL) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
+      while ((ancestorRecord != nullptr) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)ancestorRecord->countOrLabelText);
@@ -891,7 +891,7 @@ Bool8 UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTree
                   ((uint32_t *)&g_UiTimedListRecordPathScratch,(const uint32_t *)&g_UiTimedListCombinedPathScratch);
         ancestorRecord = UiTimedListTree_FindBlockHeader(ancestorRecord)->childBlockOrParentRecord;
       }
-      if (ancestorRecord == NULL) {
+      if (ancestorRecord == nullptr) {
         return true;
       }
       directory = (uint32_t *)ancestorRecord->countOrLabelText;
@@ -946,7 +946,7 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
     return;
   }
   header = list->base.recordTree;
-  if ((header != NULL) && (header->countOrLabelText != 0)) {
+  if ((header != nullptr) && (header->countOrLabelText != 0)) {
     rowTexture = list->base.rowTextureSource;
     remaining = header->countOrLabelText;
     record = header + 1;
@@ -1017,7 +1017,7 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
       remaining--;
       if (((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
           ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) &&
-          (record[-1].childBlockOrParentRecord != NULL) &&
+          (record[-1].childBlockOrParentRecord != nullptr) &&
           (depth < TREE_DEPTH_LIMIT)) {
         UiTimedListTreeRecord *children = record[-1].childBlockOrParentRecord;
         savedRecord[depth] = record;
@@ -1093,7 +1093,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
       /* block header: continue above the parent row (NULL at the root block) */
       countRecord = countRecord->childBlockOrParentRecord;
     }
-  } while (countRecord != NULL);
+  } while (countRecord != nullptr);
   rowIndex = rowIndex * (control->base).rowHeight;
   UiScrollableControl_ClampOffsetsToViewport
             (rowIndex + 1 + (control->base).rowHeight,(control->base).base.rightOffset,rowIndex,0,
@@ -1123,7 +1123,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   int depth;
 
   FontGlyph_GetLogicalSizeActiveFont(0,&fontLineHeight);
-  remaining = (recordTree == NULL) ? 0 : (uintptr_t)recordTree->countOrLabelText;
+  remaining = (recordTree == nullptr) ? 0 : (uintptr_t)recordTree->countOrLabelText;
   (control->base).rowHeight = fontLineHeight + 1;
   (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;
@@ -1143,7 +1143,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
     }
     if (((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
         ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) &&
-        (record[-1].childBlockOrParentRecord != NULL) &&
+        (record[-1].childBlockOrParentRecord != nullptr) &&
         (depth < TREE_DEPTH_LIMIT)) {
       UiTimedListTreeRecord *children = record[-1].childBlockOrParentRecord;
       savedRecord[depth] = record;
@@ -1187,7 +1187,7 @@ uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord
   uint32_t recordsRemaining;
   
   totalCount = 0;
-  if (recordBlock != NULL) {
+  if (recordBlock != nullptr) {
     totalCount = recordBlock->countOrLabelText;
     recordsRemaining = totalCount;
     do {

@@ -10,13 +10,13 @@
 
 /* Module data. */
 
-UiRuntimeRecord *g_UiRuntimeRecordRing = 0;
+UiRuntimeRecord *g_UiRuntimeRecordRing = nullptr;
 
 uintptr_t g_UiRuntimeRecordEndpointSlots = 0;
 
-uint8_t *g_UiTransferDataBuffer = 0;
+uint8_t *g_UiTransferDataBuffer = nullptr;
 
-UiTransferEndpointDescriptor *g_UiTransferEndpointBuffer = 0;
+UiTransferEndpointDescriptor *g_UiTransferEndpointBuffer = nullptr;
 
 RuntimeSpinLockValue g_UiRuntimeRecordRingLock = 0;
 
@@ -24,19 +24,19 @@ UiDirtyRectCount g_UiDirtyRectCount = 0;
 
 static uint32_t g_UiRuntimeRecordReadIndex = 0;
 
-static UiDirtyRectEntry *g_UiDirtyRectEntries = 0;
+static UiDirtyRectEntry *g_UiDirtyRectEntries = nullptr;
 
 static UiActionQueueUsedBytes g_UiActionQueueUsedBytes = 0;
 
-static UiActionQueueEntry *g_UiActionQueueEntries = 0;
+static UiActionQueueEntry *g_UiActionQueueEntries = nullptr;
 
 static uint32_t g_UiRuntimeInitializationCount = 0;
 
-static UiActionHandlerPage *g_UiActionHandlerPages[256] = {0};
+static UiActionHandlerPage *g_UiActionHandlerPages[256] = {};
 
-RuntimeSpinLockValue *g_UiRuntimeFrameLock = 0;
+RuntimeSpinLockValue *g_UiRuntimeFrameLock = nullptr;
 
-UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = 0;
+UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = nullptr;
 
 /* Implementation ownership: ui/core/runtime. */
 
@@ -212,14 +212,14 @@ void UiRuntime_Shutdown(void)
     g_MemoryApi.free((void *)g_UiRuntimeRecordEndpointSlots);
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
-    g_UiRuntimeRecordRing = NULL;
+    g_UiRuntimeRecordRing = nullptr;
     g_UiRuntimeRecordEndpointSlots = 0;
-    g_UiTransferDataBuffer = NULL;
-    g_UiTransferEndpointBuffer = NULL;
+    g_UiTransferDataBuffer = nullptr;
+    g_UiTransferEndpointBuffer = nullptr;
     g_MemoryApi.free(g_UiDirtyRectEntries);
-    g_UiDirtyRectEntries = NULL;
+    g_UiDirtyRectEntries = nullptr;
     g_MemoryApi.free(g_UiActionQueueEntries);
-    g_UiActionQueueEntries = NULL;
+    g_UiActionQueueEntries = nullptr;
     g_TimerUnregisterPeriodic(UiRuntime_IncrementPeriodicTickCounter);
     g_UiRuntimeInitializationCount--;
   }

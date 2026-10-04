@@ -38,7 +38,7 @@ Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
     eventResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,KEYBOARD_KEY_CODE_TAB,&control->base);
     return eventResult;
   }
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     eventResult = childControl->vtable->keyboardEvent(keyboardStateMask,keyCode,childControl);
     if (!eventResult) {
       UiNode_InvalidateRoot(&control->base);
@@ -63,7 +63,7 @@ void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
   if ((control->labelFlags & UI_LABEL_WHEEL_FORWARD_ACTIVE) == 0) {
     childControl = control->focusChild;
     control->labelFlags = control->labelFlags | UI_LABEL_WHEEL_FORWARD_ACTIVE;
-    if (childControl != NULL) {
+    if (childControl != nullptr) {
       if (&control->base == g_UiKeyboardFocusNode) {
         g_UiKeyboardFocusNode = childControl;
         childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -95,11 +95,11 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
 
   if ((((controlReg->base).nodeFlags &
         (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) &&
-     (controlReg->focusChild != NULL)) {
+     (controlReg->focusChild != nullptr)) {
     (controlReg->base).nodeFlags = (controlReg->base).nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   UiContainer_RelocateChildren(relocationDelta,&controlReg->base);
-  if (controlReg->focusChild != NULL) {
+  if (controlReg->focusChild != nullptr) {
     controlReg->focusChild = (UiNodeBase *)((uint8_t *)controlReg->focusChild + relocationDelta);
     childNodeFlagsField = &(controlReg->focusChild)->nodeFlags;
     *childNodeFlagsField =
@@ -124,7 +124,7 @@ void UiSingleLineTextControl_ForwardNonRightPressToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -150,7 +150,7 @@ void UiSingleLineTextControl_ForwardNonRightReleaseToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -177,7 +177,7 @@ void UiSingleLineTextControl_ForwardRightPressToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -205,7 +205,7 @@ void UiSingleLineTextControl_ForwardRightReleaseToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -231,7 +231,7 @@ void UiSingleLineTextControl_ForwardNonRightDragToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -257,7 +257,7 @@ void UiSingleLineTextControl_ForwardRightDragToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -284,7 +284,7 @@ GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
   
   cursorFrame = 0;
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -319,7 +319,7 @@ UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
   }
   else {
     returnedNode = hitNode;
-    if (((hitNode == &control->base) && (control->focusChild != NULL)) &&
+    if (((hitNode == &control->base) && (control->focusChild != nullptr)) &&
        (((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
       returnedNode = UI_NODE_NONE;
     }
@@ -336,7 +336,7 @@ void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != NULL) {
+  if (childControl != nullptr) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;

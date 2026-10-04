@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-UiImageControl * g_UiImageControlHoverTarget = 0;
+UiImageControl * g_UiImageControlHoverTarget = nullptr;
 
 /* Implementation ownership: ui/controls/image. */
 
@@ -106,7 +106,7 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
     previousActiveChild = control->activeChild;
     control->activeChild = (UiNodeBase *)hitControl;
   }
-  if (previousActiveChild != NULL) {
+  if (previousActiveChild != nullptr) {
     previousActiveChild->vtable->nonRightDrag
               (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
     previousActiveChild->vtable->nonRightRelease
@@ -213,10 +213,10 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   }
   if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
       ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-      control->pointerActivationSound != NULL) {
+      control->pointerActivationSound != nullptr) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               control->pointerActivationSound,NULL);
+               control->pointerActivationSound,nullptr);
   }
   opaqueHit = false;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
@@ -233,8 +233,8 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
                          control->textureSource);
     }
   }
-  control->activeChild = NULL;
-  g_UiImageControlHoverTarget = NULL;
+  control->activeChild = nullptr;
+  g_UiImageControlHoverTarget = nullptr;
   if (opaqueHit) {
     /* Pressing an already selected image on an opaque pixel clears its selected/armed state. */
     stateFlagsField = &(control->selectable).stateFlags;
@@ -269,22 +269,22 @@ void UiImageControl_NonRightRelease
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
     if (!preserveHover) {
-      if (previousActiveChild != NULL) {
+      if (previousActiveChild != nullptr) {
         activeChildVtable = previousActiveChild->vtable;
-        control->activeChild = NULL;
+        control->activeChild = nullptr;
         activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
         preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 ||
                         ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED) != 0;
       }
       if (!preserveHover) {
-        g_UiImageControlHoverTarget = NULL;
+        g_UiImageControlHoverTarget = nullptr;
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
         if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-            control->pointerActivationSound != NULL) {
+            control->pointerActivationSound != nullptr) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->pointerActivationSound,NULL);
+                     control->pointerActivationSound,nullptr);
         }
       }
     }
@@ -335,7 +335,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
   /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
      while g_UiImageControlHoverTarget is NULL */
   hitNode = UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
-  if (hitNode == (UiNodeBase *)control && g_UiImageControlHoverTarget != NULL) {
+  if (hitNode == (UiNodeBase *)control && g_UiImageControlHoverTarget != nullptr) {
     return UI_NODE_NONE;
   }
   return hitNode;
@@ -400,7 +400,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
                           (pointerY,pointerX,(UiNodeBase *)hitControl);
         return cursorFrame;
       }
-      if (g_UiImageControlHoverTarget == NULL) {
+      if (g_UiImageControlHoverTarget == nullptr) {
         return UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE;
       }
     }

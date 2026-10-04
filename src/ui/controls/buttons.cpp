@@ -93,7 +93,7 @@ void UiSpriteButtonControl_DrawClipped
       ((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0) {
     return;
   }
-  if (control->primaryTextureSource == NULL) {
+  if (control->primaryTextureSource == nullptr) {
     return;
   }
   if (g_GraphicsFramebufferBeginAccess()) {
@@ -190,10 +190,10 @@ void UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-          control->activationSound != NULL) {
+          control->activationSound != nullptr) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -217,10 +217,10 @@ void UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-          control->activationSound != NULL) {
+          control->activationSound != nullptr) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -267,10 +267,10 @@ void UiSpriteButtonControl_NonRightRelease
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-        control->activationSound != NULL) {
+        control->activationSound != nullptr) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 control->activationSound,NULL);
+                 control->activationSound,nullptr);
     }
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue((control->selectable).actionId,control);
@@ -302,7 +302,7 @@ void UiSpriteButtonControl_NonRightDrag
   }
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) == 0) {
     pointerInside = false;
-    if (control->primaryTextureSource != NULL) {
+    if (control->primaryTextureSource != nullptr) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
         pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
@@ -359,7 +359,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
     return (UiNodeBase *)control;
   }
   if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
-    if (control->primaryTextureSource == NULL) {
+    if (control->primaryTextureSource == nullptr) {
       return UI_NODE_NONE;
     }
     spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
@@ -399,7 +399,7 @@ void UiImageActionControl_DrawImageAndChildren
   int imageTop;
   Bool8 accessFailed;
 
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != NULL) {
+  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != nullptr) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if ((control->displayFlags & UI_IMAGE_ACTION_STRETCH) == 0) {

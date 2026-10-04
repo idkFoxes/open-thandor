@@ -221,10 +221,10 @@ THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsU
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {
         /*  0 */ THANDOR_FN(UiDisplayModeAction_ApplyPendingMode),
-        /*  1 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  2 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  3 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  4 */ THANDOR_FN(NULL), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  1 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  2 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  3 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  4 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
         /*  5 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
         /*  6 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
         /*  7 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
@@ -700,7 +700,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   uint8_t *root = (uint8_t *)displaySettingsRoot;
   UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = selectedBitsPerPixel;
-  void *selected = NULL;
+  void *selected = nullptr;
   Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
