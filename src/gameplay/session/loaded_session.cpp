@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = 0;
+SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = nullptr;
 
 /* Implementation ownership: gameplay/session/loaded_session. */
 
@@ -103,7 +103,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
   }
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
-  g_EndMoviePath = NULL;
+  g_EndMoviePath = nullptr;
   g_LocalPlayerRuntimeId = 0;
   g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerBlocks;
   g_SelectionPlayerBlocks->factionIndex = savedFactionIndex;
@@ -243,7 +243,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
     *outError = stepError;
     return false;
   }
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,nullptr,&stepError)) {
     *outError = stepError;
     return false;
   }
@@ -272,7 +272,7 @@ static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoa
     return false;
   }
   fieldGrid = Package_LoadEntry((uint16_t *)g_FieldHexPathUtf16,&packageLoadErrorCode);
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     *outError = packageLoadErrorCode;
     return false;
   }
@@ -370,17 +370,17 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
 
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (!Package_Mount(savePackagePath,&mountResult)) {
-    return InGameLoadedSession_Fail(NULL,0,(uint32_t)mountResult,outError);
+    return InGameLoadedSession_Fail(nullptr,0,(uint32_t)mountResult,outError);
   }
   saveHandle = mountResult;
   InGameLoadedSession_ReadSessionName(saveHandle);
-  campaignAsset = Package_LoadEntry((uint16_t *)g_CampagneHexPathUtf16,NULL);
-  if (campaignAsset != NULL) {
+  campaignAsset = Package_LoadEntry((uint16_t *)g_CampagneHexPathUtf16,nullptr);
+  if (campaignAsset != nullptr) {
     g_FrontendLoadedCampaignAsset = (uintptr_t)campaignAsset;
   }
   levelImage = (FrontendLoadedLevelAsset *)Package_LoadEntry((uint16_t *)g_LevelHexPathUtf16,&packageLoadErrorCode);
-  if (levelImage == NULL) {
-    return InGameLoadedSession_Fail(NULL,saveHandle,packageLoadErrorCode,outError);
+  if (levelImage == nullptr) {
+    return InGameLoadedSession_Fail(nullptr,saveHandle,packageLoadErrorCode,outError);
   }
   InGameLoadedSession_ResetSessionState(levelImage->playerSlots[6].aiClassOrMode);
   if (!InGameLoadedSession_CreateRoot(levelImage,&inGameRoot,&stepError) ||
@@ -415,7 +415,7 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
     InGameRuntime_UpdateSimulationAndNetworkTick();
   } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
-  inGameRoot->levelMovieRuntime = NULL;
+  inGameRoot->levelMovieRuntime = nullptr;
   inGameRoot->playerStatusLineCount = 0;
   UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
   Movie_Close();

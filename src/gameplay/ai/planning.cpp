@@ -81,10 +81,10 @@ void AiFactionRuntime_RebuildPlanningCapacityState(void)
     decayRecord++;
   }
   ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-  if (ownerNode == NULL) {
+  if (ownerNode == nullptr) {
     return;
   }
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
     /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
        the owner army holds the owning faction and a faction mask terrainOccupancyMask0 (bit 3 + 2 * (f - 1) for
@@ -143,7 +143,7 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
   g_AiActiveGridMaskClasses[3] = AI_GRID_MASK_CLASS_FREE;
   runtimeWorkspaceEntry = g_AiWorkspace01Units;
   for (remainingEntries = g_AiWorkspace01Count; remainingEntries != 0; remainingEntries--, runtimeWorkspaceEntry++) {
-    if (runtimeWorkspaceEntry->modelRuntime == NULL) {
+    if (runtimeWorkspaceEntry->modelRuntime == nullptr) {
       continue;
     }
     unitDefinition = runtimeWorkspaceEntry->modelRuntime->definitionOrSavedId.runtimeDefinition;
@@ -358,7 +358,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   entriesStillNeeded = 2;
   primaryEntry = g_AiWorkspace00Structures;
   for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--) {
-    if (primaryEntry->runtimeSlotAddressOrZero != 0) {
+    if (primaryEntry->runtimeSlotAddressOrZero != nullptr) {
       if (primaryEntry->armyAssetId < ARM_0340_BUILDING_MDL0314) {
         *factionRuntimeFlags = *factionRuntimeFlags | 1;
         return;
@@ -379,10 +379,10 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   for (remainingEntries = g_AiWorkspace01Count; remainingEntries != 0; remainingEntries--) {
     unitModelRuntime = runtimeWorkspaceEntry->modelRuntime;
     /* a unit with a child model in attachment 0 or 1 (e.g. a weapon) */
-    if (((unitModelRuntime != NULL) && (unitModelRuntime->attachmentCount != 0)) &&
-        ((unitModelRuntime->attachments[0].childModelRuntimeOrSavedOffset != NULL) ||
+    if (((unitModelRuntime != nullptr) && (unitModelRuntime->attachmentCount != 0)) &&
+        ((unitModelRuntime->attachments[0].childModelRuntimeOrSavedOffset != nullptr) ||
          ((1 < unitModelRuntime->attachmentCount) &&
-          (unitModelRuntime->attachments[1].childModelRuntimeOrSavedOffset != NULL)))) {
+          (unitModelRuntime->attachments[1].childModelRuntimeOrSavedOffset != nullptr)))) {
       entriesStillNeeded--;
       if (entriesStillNeeded == 0) {
         *factionRuntimeFlags = *factionRuntimeFlags | 1;
@@ -397,7 +397,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   contextArg = &g_InGameRuntimeRoot->worldRuntime;
   primaryEntry = g_AiWorkspace00Structures;
   for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--) {
-    if (primaryEntry->runtimeSlotAddressOrZero != 0) {
+    if (primaryEntry->runtimeSlotAddressOrZero != nullptr) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive
                 (contextArg,
                  ((ModelRuntimeSlot *)primaryEntry->runtimeSlotAddressOrZero)->ownerArmyRuntimeOrSavedOffset.
@@ -407,7 +407,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   }
   runtimeWorkspaceEntry = g_AiWorkspace01Units;
   for (remainingEntries = g_AiWorkspace01Count; remainingEntries != 0; remainingEntries--) {
-    if (runtimeWorkspaceEntry->modelRuntime != NULL) {
+    if (runtimeWorkspaceEntry->modelRuntime != nullptr) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive
                 (contextArg,runtimeWorkspaceEntry->modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime);
     }

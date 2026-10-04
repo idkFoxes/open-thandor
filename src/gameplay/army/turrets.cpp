@@ -145,7 +145,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
                        ,modelRuntime->ownerArmyRuntime);
             commandTargetArmy = modelRuntime->ownerArmyRuntime->commandTargetArmyRuntime;
             targetReference = 0;
-            if (commandTargetArmy != NULL) {
+            if (commandTargetArmy != nullptr) {
               targetReference = (commandTargetArmy->modelRuntimeOrSavedOffset).savedIdOrOffset;
             }
             /* the muzzle point is the first serialized child of the model point source */
@@ -325,7 +325,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
                        ,modelRuntime->ownerArmyRuntime);
             commandTargetArmy = modelRuntime->ownerArmyRuntime->commandTargetArmyRuntime;
             targetReference = 0;
-            if (commandTargetArmy != NULL) {
+            if (commandTargetArmy != nullptr) {
               targetReference = (commandTargetArmy->modelRuntimeOrSavedOffset).savedIdOrOffset;
             }
             ModelRuntime_EmitProjectilesFromAttachmentPoints

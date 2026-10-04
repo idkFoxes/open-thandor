@@ -107,7 +107,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
     do {
       currentSelectionEntry = selectionEntryCursor;
       if (target == (currentSelectionEntry->selection).entries[0]) {
-        (currentSelectionEntry->selection).entries[0] = NULL;
+        (currentSelectionEntry->selection).entries[0] = nullptr;
       }
       entriesRemainingInBlock--;
       selectionEntryCursor =
@@ -134,7 +134,7 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
   /* search the 32 entries; the first match is cleared. */
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (array->entries[entryIndex] == target) {
-      array->entries[entryIndex] = NULL;
+      array->entries[entryIndex] = nullptr;
       return;
     }
   }
@@ -175,11 +175,11 @@ Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Se
 
   /* The original reads the player's block unchecked; an unlinked player (no block) counts as "not listed"
      and the count is bounded by the list capacity here because the player id comes from a command record. */
-  playerBlock = NULL;
+  playerBlock = nullptr;
   if (playerRuntimeId < sizeof(g_SelectionPlayerRuntimeBlockPointers) / sizeof(g_SelectionPlayerRuntimeBlockPointers[0])) {
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   }
-  if (playerBlock == NULL) {
+  if (playerBlock == nullptr) {
     if (!s_loggedUnlinkedPlayer) {
       s_loggedUnlinkedPlayer = true;
       Thandor_Log("selection: marked-cell lookup for unlinked player %u ignored",(unsigned)playerRuntimeId);
@@ -214,7 +214,7 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
 
   sourceArmyAssetId = sourceArmyRuntime->armyAssetId;
   sourceFactionIndex = sourceArmyRuntime->factionIndex;
-  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
@@ -243,7 +243,7 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
   }
   if (entryIndex == SELECTION_ENTRY_CAPACITY) {
     for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
-      if (selection->entries[entryIndex] == NULL) {
+      if (selection->entries[entryIndex] == nullptr) {
         selection->entries[entryIndex] = entityRuntime;
         break;
       }
@@ -271,7 +271,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
   selectedCount = 0;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     entry = selection->entries[entryIndex];
-    if (entry != NULL) {
+    if (entry != nullptr) {
       modelNode = (entry->common).ownership.modelNode;
       selectedCount++;
       averageXQ12 = averageXQ12 + modelNode->worldTransform.translation.x;
@@ -285,7 +285,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
   averageYQ12 = averageYQ12 / selectedCount;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     entry = selection->entries[entryIndex];
-    if (entry != NULL) {
+    if (entry != nullptr) {
       modelNode = (entry->common).ownership.modelNode;
       (entry->common).selectionOffsetXQ12 = averageXQ12 - modelNode->worldTransform.translation.x;
       (entry->common).selectionOffsetYQ12 = averageYQ12 - modelNode->worldTransform.translation.y;
@@ -328,7 +328,7 @@ Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sel
 
   /* the first non-empty entry seeds the bounds */
   entryIndex = 0;
-  while (selection->entries[entryIndex] == NULL) {
+  while (selection->entries[entryIndex] == nullptr) {
     entryIndex++;
     if (entryIndex == SELECTION_ENTRY_CAPACITY) {
       return false;
@@ -341,7 +341,7 @@ Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sel
   minOffsetY = maxOffsetY;
   for (; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     entry = selection->entries[entryIndex];
-    if (entry == NULL) {
+    if (entry == nullptr) {
       continue;
     }
     if (entry->common.selectionOffsetXQ12 < minOffsetX) {
@@ -373,7 +373,7 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 
   /* array is advanced as a cursor over its entries */
   for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
-    array->entries[0] = NULL;
+    array->entries[0] = nullptr;
     array = (SelectionPointerArray32 *)&array->entries[1];
   }
 }

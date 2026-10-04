@@ -66,7 +66,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_INTERRUPTED | ARMY_COMMAND_MODE_AI_COMBAT_TARGET);
   }
   if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0) &&
-     ((modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == NULL)) {
+     ((modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == nullptr)) {
     armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_LOCKED;
   }
   if (armyRuntime->movementRetryCountdown != 0) {
@@ -290,7 +290,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
      (only when a linked model runtime exists) */
   if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0) &&
       ((int)modelRuntime->health < 1) &&
-      ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != NULL)) {
+      ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != nullptr)) {
     /* Original quirk: the body runs once before the counter is tested, so a step of 0 ticks wraps around. */
     ticksRemaining = g_InGameSimulationStepTicks;
     do {
@@ -343,7 +343,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   parentStateFlags = (modelRuntime->classState).stateFlags;
   for (attachmentIndex = 0; attachmentIndex < attachmentCount; attachmentIndex++) {
     childModelRuntime = modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset;
-    if (childModelRuntime != NULL) {
+    if (childModelRuntime != nullptr) {
       (childModelRuntime->classState).stateFlags |= parentStateFlags & 8;
       ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,childModelRuntime);
     }
@@ -369,7 +369,7 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
             (worldRuntime,modelRuntime);
   for (childIndex = 0; childIndex < childCount; childIndex++) {
     childModelRuntime = modelRuntime->attachments[childIndex].childModelRuntimeOrSavedOffset;
-    if (childModelRuntime != NULL) {
+    if (childModelRuntime != nullptr) {
       ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(worldRuntime,childModelRuntime);
     }
   }

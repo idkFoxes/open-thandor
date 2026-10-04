@@ -66,10 +66,10 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
   if ((previousAdvance == 0) && (newAdvance != 0)) {
     startSoundSlotIndex = definition->moveStartSoundSlotIndex;
     if ((startSoundSlotIndex != 0) &&
-       ((startSoundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
+       ((startSoundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != nullptr)))) {
       voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[startSoundSlotIndex];
       worldPosition = &(rootNode->worldTransform).translation;
-      if (voiceSetRef != NULL) {
+      if (voiceSetRef != nullptr) {
         cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                           ((rootNode->worldTransform).translation.y,worldPosition->x,worldRuntime)
         ;
@@ -97,7 +97,7 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
   uint32_t impactAngle;
   ModelRuntimeVerticalDeploymentView *platformRuntime;
 
-  if (collisionPartnerModelRuntime == NULL) {
+  if (collisionPartnerModelRuntime == nullptr) {
     return;
   }
   if (collisionPartnerModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
@@ -105,7 +105,7 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
     platformRuntime = (ModelRuntimeVerticalDeploymentView *)collisionPartnerModelRuntime;
     if ((platformRuntime->ownerArmyRuntime->factionIndex ==
          currentModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
-       ((platformRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == NULL)) {
+       ((platformRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime == nullptr)) {
       (platformRuntime->classState).behaviorState |= 1;
       (platformRuntime->deploymentState).collisionRetryCountdown = 32;
       if (((platformRuntime->classState).behaviorState & 2U) != 0) {

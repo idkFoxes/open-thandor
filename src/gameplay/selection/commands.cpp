@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* indexed by player runtime id (0..254) */
-SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256] = {0};
+SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256] = {};
 
 /* Implementation ownership: gameplay/selection/commands. */
 
@@ -29,7 +29,7 @@ void InGameSelection_SelectAllOwnAircraftPads
 
   inGameRoot = g_InGameRuntimeRoot;
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       /* model payload: the ModelRuntimeSlot; its owner army is the entity */
@@ -67,7 +67,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
   if (armyRuntimeIndex != 0) {
     sourceArmyRuntime = (ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-    if (sourceArmyRuntime->modelNodeRuntime != NULL) {
+    if (sourceArmyRuntime->modelNodeRuntime != nullptr) {
       SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
                 (sourceArmyRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
       if (playerId == g_LocalPlayerRuntimeId) {
@@ -119,7 +119,7 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
 {
   if ((armyRuntimeIndex != 0) &&
      (((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex))->
-      modelNodeRuntime != NULL)) {
+      modelNodeRuntime != nullptr)) {
     SelectionPointerArray_ApplyArmyRuntimeTarget
               ((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex),
                &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
@@ -248,7 +248,7 @@ void SelectionPointerArray_ApplyMoveCommand
   entryTargetX = targetWorldX;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     movementRuntime = (ArmyMovementRuntime *)selection->entries[entryIndex];
-    if (movementRuntime == NULL) {
+    if (movementRuntime == nullptr) {
       continue;
     }
     /* classState60/ownerValue64 are the entity's selection offsets (common.selectionOffsetXQ12/YQ12,
@@ -265,10 +265,10 @@ void SelectionPointerArray_ApplyMoveCommand
     }
   }
   selectedEntryCount = 0;
-  singleClass13Entry = NULL;
+  singleClass13Entry = nullptr;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = selection->entries[entryIndex];
-    if (selectedEntry == NULL) {
+    if (selectedEntry == nullptr) {
       continue;
     }
     selectedEntryCount++;
@@ -280,7 +280,7 @@ void SelectionPointerArray_ApplyMoveCommand
       singleClass13Entry = selectedEntry;
     }
   }
-  if ((selectedEntryCount == 1) && (singleClass13Entry != NULL)) {
+  if ((selectedEntryCount == 1) && (singleClass13Entry != nullptr)) {
     class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
     class13Record->classLinkState.classState78 = targetWorldX;
     class13Record->classLinkState.classState7C = targetWorldY;
@@ -312,7 +312,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
 
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     entryArmy = (ArmyRuntimeSlot *)selectionEntries[entryIndex];
-    if ((entryArmy == NULL) || ((entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0)) {
+    if ((entryArmy == nullptr) || ((entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0)) {
       continue;
     }
     ArmyRuntime_ResetMovementStateFromModel(entryArmy);
@@ -320,17 +320,17 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
     entryArmy->movementStateFlags = entryArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
     entryModelRuntime = entryArmy->modelRuntimeOrSavedOffset.modelRuntime;
     if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-      selectionEntries[entryIndex] = NULL;
+      selectionEntries[entryIndex] = nullptr;
       (entryModelRuntime->classState).classStateDC = 0;
     }
   }
   selectedEntryCount = 0;
-  singleClass13Entry = NULL;
+  singleClass13Entry = nullptr;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             ((SelectionPointerArray32 *)selectionEntries);
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = selectionEntries[entryIndex];
-    if (selectedEntry == NULL) {
+    if (selectedEntry == nullptr) {
       continue;
     }
     selectedEntryCount++;
@@ -342,7 +342,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRunti
       singleClass13Entry = selectedEntry;
     }
   }
-  if ((selectedEntryCount == 1) && (singleClass13Entry != NULL)) {
+  if ((selectedEntryCount == 1) && (singleClass13Entry != nullptr)) {
     class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (singleClass13Entry->common).ownership.modelNode;
     class13Record->classState.stateFlags = class13Record->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
@@ -371,7 +371,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   do {
     movementRuntime = THANDOR_PTR32_AT(ArmyMovementRuntime, selection);
-    if (movementRuntime != NULL) {
+    if (movementRuntime != nullptr) {
       if (!spreadTooLarge) {
         targetWorldX = targetWorldX - movementRuntime->classState60;
         targetWorldY = targetWorldY - movementRuntime->ownerValue64;
@@ -403,7 +403,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
-    if (runtimeState != NULL) {
+    if (runtimeState != nullptr) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
@@ -435,7 +435,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
-    if (runtimeState != NULL) {
+    if (runtimeState != nullptr) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
@@ -464,7 +464,7 @@ void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     entityRuntime = *selectionEntries;
-    if ((entityRuntime != NULL) &&
+    if ((entityRuntime != nullptr) &&
        (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
       commandFlagsPtr = &(entityRuntime->common).commandFlags;
@@ -487,7 +487,7 @@ void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     armyRuntime = *selectionEntries;
-    if ((armyRuntime != NULL) &&
+    if ((armyRuntime != nullptr) &&
        ((((ArmyRuntimeSlot *)armyRuntime)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
       ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
       ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags =
@@ -512,7 +512,7 @@ void SelectionRuntime_SelfDestruct(Ptr32<GameEntityRuntime> *selectionEntries)
   contextArg = &g_InGameRuntimeRoot->worldRuntime;
   do {
     modelRuntime = *selectionEntries;
-    if ((modelRuntime != NULL) &&
+    if ((modelRuntime != nullptr) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
       ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(ArmyRuntimeSlot *)modelRuntime);
     }
@@ -544,7 +544,7 @@ void SelectionPointerArray_SetAircraftPadTargets
 
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = selection->entries[entryIndex];
-    if (selectedEntry == NULL) {
+    if (selectedEntry == nullptr) {
       continue;
     }
     /* entry -> model runtime (dword 0) -> definition */
@@ -664,7 +664,7 @@ void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,Selecti
 }
 
 InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {
-    /* 0 */ 0,
+    /* 0 */ nullptr,
     /* 1 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane1),
     /* 2 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane2),
     /* 3 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType3),

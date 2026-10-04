@@ -10,9 +10,9 @@
 
 /* Module data. */
 
-uint32_t *g_OldUnitSecondaryTable = 0;
+uint32_t *g_OldUnitSecondaryTable = nullptr;
 
-uint32_t *g_OldUnitPrimaryTable = 0;
+uint32_t *g_OldUnitPrimaryTable = nullptr;
 
 OldUnitRecordCount g_OldUnitRecordCount = 0;
 
@@ -47,7 +47,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
      record, so ((CampaignAsset *)cursor)->levels[0] is the current record. */
-  if ((g_InGameRuntimeRoot != NULL) && (g_FrontendLoadedCampaignAsset != 0)) {
+  if ((g_InGameRuntimeRoot != nullptr) && (g_FrontendLoadedCampaignAsset != 0)) {
     levelRecordsRemaining = ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
     do {
@@ -100,7 +100,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
   }
   /* Primary records (8 dwords each, at most 0x200): [0] army asset id, [1] faction, [2] X, [3] Y,
      [4] rotation angle. */
-  if ((g_InGameRuntimeRoot == NULL) || ((skipMaskBits & 1) != 0)) {
+  if ((g_InGameRuntimeRoot == nullptr) || ((skipMaskBits & 1) != 0)) {
     return;
   }
   ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
@@ -109,7 +109,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
     return;
   }
   primaryRecord = g_OldUnitPrimaryTable;
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -130,7 +130,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
                        scenarioLevel->exitZoneCenterY[unitFactionIndex];
     primaryRecord[1] = unitFactionIndex;
     /* only a model whose classState linkedArmyRuntimeOrSavedOffset is zero is committed as a record */
-    if (modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime == NULL) {
+    if (modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime == nullptr) {
       primaryRecord[4] = ownerNode->modelLocalRotationAngle2;
       primaryRecord[0] = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId;
       g_OldUnitRecordCount++;
@@ -178,7 +178,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
     factionsRemaining--;
     nextMaskCursor = maskCursor + GAME_FACTION_RUNTIME_RECORD_BYTES / 4 - 7;
   } while (factionsRemaining != 0);
-  if ((g_InGameRuntimeRoot != NULL) && (g_OldUnitRecordCount != 0)) {
+  if ((g_InGameRuntimeRoot != nullptr) && (g_OldUnitRecordCount != 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
@@ -188,7 +188,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
       ArmyRuntime_CreateInstanceFromAsset
                 (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,primaryRecordCursor[4],
                  primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,
-                      worldRuntime,NULL);
+                      worldRuntime,nullptr);
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
       recordsRemaining--;
     } while (recordsRemaining != 0);

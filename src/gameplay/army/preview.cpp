@@ -39,7 +39,7 @@ static GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents = {
     0, /* verticalExtent (secondary colour ARGB) */
 };
 
-static ModelRuntimeNode *g_ArmyPreviewModelNode = 0;
+static ModelRuntimeNode *g_ArmyPreviewModelNode = nullptr;
 
 /* uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
 static const uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256] = {
@@ -209,17 +209,17 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   /* a temporary army at world position (ARMY_PREVIEW_WORLD_POSITION_Q12 on both axes) */
   previewArmy = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
                      (1,0,ARMY_PREVIEW_WORLD_POSITION_Q12,ARMY_PREVIEW_WORLD_POSITION_Q12,factionIndex,armyAssetId,
-                      worldRuntime,NULL);
-  if (previewArmy == NULL) {
-    return NULL;
+                      worldRuntime,nullptr);
+  if (previewArmy == nullptr) {
+    return nullptr;
   }
   rootNode = (previewArmy->common).ownership.modelNode;
   /* armies of runtime class 13 lose their fourth child node */
   if (((((ModelRuntimeSlot *)(previewArmy->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
         runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (3 < rootNode->childCount)) &&
-     (rootNode->childNodes[3] != NULL)) {
+     (rootNode->childNodes[3] != nullptr)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
-    rootNode->childNodes[3] = NULL;
+    rootNode->childNodes[3] = nullptr;
   }
   /* angles are 16-bit turns: 45 and 67.5 degrees */
   (rootNode->modelPayload).worldRotationAngle2 = FIXED_ANGLE16_EIGHTH_TURN;
@@ -261,9 +261,9 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
                       &g_ArmyPreviewViewParameters,
                       previewHeight * 2,previewWidth * 2,1,
                       &g_ArmyPreviewModelNode);
-  if (previewTexture == NULL) {
+  if (previewTexture == nullptr) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
-    return NULL;
+    return nullptr;
   }
   /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
      rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
@@ -317,7 +317,7 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     registeredRecord = (ArmyAssetRecord *)*registryCursor;
-    if (registeredRecord != NULL) {
+    if (registeredRecord != nullptr) {
       g_MemoryApi.free(Thandor_U32ToPointer<void>(registeredRecord->previewTexture)); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
       registeredRecord->previewTexture = 0;
     }
@@ -349,7 +349,7 @@ uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegi
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     registeredRecord = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
+    if (registeredRecord == nullptr || armyAssetRegistryId != registeredRecord->registryId) {
       continue;
     }
     if (registeredRecord->previewTexture != 0) {
@@ -363,7 +363,7 @@ uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegi
                       (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
-    if (previewTexture == NULL) {
+    if (previewTexture == nullptr) {
       return 0;
     }
     registeredRecord->previewTexture = Thandor_PointerToU32(previewTexture); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */

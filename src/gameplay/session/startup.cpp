@@ -12,9 +12,9 @@
 
 /* Module data. */
 
-static void *g_InGameFactionScratchBufferSetA8[8] = {0};
+static void *g_InGameFactionScratchBufferSetA8[8] = {};
 
-static void *g_InGameFactionScratchBufferSetB8[8] = {0};
+static void *g_InGameFactionScratchBufferSetB8[8] = {};
 
 int32_t g_InGamePendingSimulationTicks = 0;
 
@@ -72,7 +72,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       GridScratch_ReleaseBuffers();
       g_EndMovieSelectionIndex = 0;
       OldUnitRuntime_RebuildScenarioReplayTables();
-      UiRuntime_SetSynchronizationHooks(NULL,NULL);
+      UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       return true;
@@ -85,7 +85,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
-      UiRuntime_SetSynchronizationHooks(NULL,NULL);
+      UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16[0] = 0;
@@ -95,7 +95,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
-      UiRuntime_SetSynchronizationHooks(NULL,NULL);
+      UiRuntime_SetSynchronizationHooks(nullptr,nullptr);
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
@@ -142,32 +142,32 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   }
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
-  if (inGameRoot != NULL) {
+  if (inGameRoot != nullptr) {
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
     /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
               (world,(WorldRuntimeNodeTraversalCallback *)WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
-    if ((inGameRoot->rootUi).previousRoot != NULL) {
+    if ((inGameRoot->rootUi).previousRoot != nullptr) {
       UiRootStack_Pop(&inGameRoot->rootUi);
     }
     g_MemoryApi.free(inGameRoot);
-    g_InGameRuntimeRoot = NULL;
+    g_InGameRuntimeRoot = nullptr;
   }
   InGameRuntime_ReleaseFactionScratchBuffers();
   g_MemoryApi.free(g_InGameWorldObjectRecords);
-  g_InGameWorldObjectRecords = NULL;
+  g_InGameWorldObjectRecords = nullptr;
   Movie_Close();
   TerrainCompositeTexture_Destroy();
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameDiagramTextureSource);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGamePanelTextureSource);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameTechnologyTextureSource);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameWindowTextureSource);
-  g_InGameDiagramTextureSource = NULL;
-  g_InGamePanelTextureSource = NULL;
-  g_InGameTechnologyTextureSource = NULL;
-  g_InGameWindowTextureSource = NULL;
+  g_InGameDiagramTextureSource = nullptr;
+  g_InGamePanelTextureSource = nullptr;
+  g_InGameTechnologyTextureSource = nullptr;
+  g_InGameWindowTextureSource = nullptr;
   GraphicsShadingRuntime_ClearRecordTable();
   SelectionInfoPanel_ShutdownResources();
   SpriteAssetRegistry_Reset();
@@ -192,8 +192,8 @@ void InGameRuntime_ReleaseFactionScratchBuffers(void)
   do {
     g_MemoryApi.free(*scratchBufferSetACursor);
     g_MemoryApi.free(*scratchBufferSetBCursor);
-    *scratchBufferSetACursor = NULL;
-    *scratchBufferSetBCursor = NULL;
+    *scratchBufferSetACursor = nullptr;
+    *scratchBufferSetBCursor = nullptr;
     scratchBufferSetACursor++;
     scratchBufferSetBCursor++;
     remainingFactions--;

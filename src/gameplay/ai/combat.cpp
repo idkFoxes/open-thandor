@@ -73,7 +73,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
       armyRuntime->commandGeneration = g_AiCommandGenerationRetainedTarget;
     }
     /* signed test of the returned sum: count > 0 */
-    else if ((selectedTargetArmyRuntime == NULL) && (0 < sourceClassCount)) {
+    else if ((selectedTargetArmyRuntime == nullptr) && (0 < sourceClassCount)) {
       ArmyRuntime_ResolveCommandTarget(Thandor_U32ToPointer<ArmyRuntimeSlot>(armyRuntime->assignedTargetArmyRuntime),armyRuntime); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime */
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
@@ -151,10 +151,10 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
     }
   }
   bestScore = 0;
-  bestTargetModelRuntime = NULL;
+  bestTargetModelRuntime = nullptr;
   for (targetCandidateIndex = 0; targetCandidateIndex < targetCandidateCount; targetCandidateIndex++) {
     candidateTargetModelRuntime = targetCandidateRecords[targetCandidateIndex].modelRuntime;
-    if (candidateTargetModelRuntime == NULL) {
+    if (candidateTargetModelRuntime == nullptr) {
       continue;
     }
     candidateClassScore = g_AiCombatTargetClassBaseScores
@@ -221,7 +221,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
 
   sourceClassCount = 0;
   ownerNodeCursor = worldRuntime->ownerListHead;
-  bestCandidateArmyRuntime = NULL;
+  bestCandidateArmyRuntime = nullptr;
   /* the eight class counters targetClassShotDamage, summed from the last one down */
   for (classIndex = 7; classIndex >= 0; classIndex--) {
     sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassShotDamage[classIndex];
@@ -250,7 +250,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
     sourceFactionIndex = sourceArmyRuntime->factionIndex;
     currentBestScore = 0;
     returnedSourceClassCount = sourceClassCount;
-    for (; ownerNodeCursor != NULL; ownerNodeCursor = ownerNodeCursor->nextNode) {
+    for (; ownerNodeCursor != nullptr; ownerNodeCursor = ownerNodeCursor->nextNode) {
       if (ownerNodeCursor->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
@@ -431,12 +431,12 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
           definitionOrSavedId).runtimeDefinition;
   sourceWeaponModelRuntime = sourceModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-  if (sourceWeaponModelRuntime == NULL) {
+  if (sourceWeaponModelRuntime == nullptr) {
     if (sourceModelRuntime->attachmentCount == 1) {
       return candidateScore;
     }
     sourceWeaponModelRuntime = sourceModelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
-    if (sourceWeaponModelRuntime == NULL) {
+    if (sourceWeaponModelRuntime == nullptr) {
       return candidateScore;
     }
   }

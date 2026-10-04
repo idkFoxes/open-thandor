@@ -11,11 +11,11 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) void *g_ArmyRuntimeRebaseBaseMinusOne = 0;
+THANDOR_ALIGN(4) void *g_ArmyRuntimeRebaseBaseMinusOne = nullptr;
 
-ArmyRuntimeSlot *g_ArmyRuntimeSlots = 0;
+ArmyRuntimeSlot *g_ArmyRuntimeSlots = nullptr;
 
-ArmyGraphicsBinding g_ArmyGraphicsBindings[8] = {0};
+ArmyGraphicsBinding g_ArmyGraphicsBindings[8] = {};
 
 /* uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
 const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24] = {
@@ -103,13 +103,13 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
       *(int *)pathEnd = factionSuffixChar; /* the suffix and a terminator in one dword */
       WidePath_SetExtensionCode(ASSET_MAGIC_GFX,graphicsBasePath);
       textureSourceAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(graphicsBasePath,outError);
-      if (textureSourceAsset == NULL) {
+      if (textureSourceAsset == nullptr) {
         return false;
       }
       ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
                 (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
       loadedTextureSet = g_GraphicsCreateTextureSet(textureSourceAsset,outError);
-      if (loadedTextureSet == NULL) {
+      if (loadedTextureSet == nullptr) {
         LOCK();
         UNLOCK();
         Resource_Release(textureSourceAsset);
@@ -119,7 +119,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
       g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = loadedTextureSet;
       WidePath_SetExtensionCode(ASSET_MAGIC_PAL,graphicsBasePath);
       paletteAsset = g_GraphicsPaletteAssetLoadPackage(graphicsBasePath,outError);
-      if (paletteAsset == NULL) {
+      if (paletteAsset == nullptr) {
         return false;
       }
       g_ArmyGraphicsBindings[frontendPlayerRuntimeId].paletteAsset = paletteAsset;
@@ -134,14 +134,14 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
   registryCursor = g_ArmyAssetRecordRegistry;
   for (remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT; remainingCount != 0; remainingCount--) {
     armyAsset = *registryCursor;
-    if ((armyAsset != NULL) &&
+    if ((armyAsset != nullptr) &&
        ((armyAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_PRODUCTION_MASK) != 0)) {
       previewTexture = ArmyRuntime_RenderPreviewTexture
                          (g_InGamePanelTextureSubresource34Height,
                           g_InGamePanelTextureSubresource34Width,
                           ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                           (WorldRuntimeContext *)ownerContext);
-      if (previewTexture != NULL) {
+      if (previewTexture != nullptr) {
         armyAsset[1].rootNodeOffsetOrPointer = Thandor_PointerToU32(previewTexture); /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
         previewHeight =
              (GraphicsPixelDimension)
@@ -150,7 +150,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                            (previewHeight,previewHeight,
                             ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                             (WorldRuntimeContext *)ownerContext);
-        if (previewTexture != NULL) {
+        if (previewTexture != nullptr) {
           armyAsset[1].registryId = Thandor_PointerToI32(previewTexture); /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
         }
       }
@@ -174,25 +174,25 @@ void ArmyRuntime_ShutdownPoolAndGraphics(void)
   int registryIndex;
 
   g_MemoryApi.free(g_ArmyRuntimeSlots);
-  g_ArmyRuntimeSlots = NULL;
+  g_ArmyRuntimeSlots = nullptr;
   for (bindingIndex = 0; bindingIndex < ARMY_GRAPHICS_BINDING_COUNT; bindingIndex++) {
     graphicsBinding = &g_ArmyGraphicsBindings[bindingIndex];
-    if (graphicsBinding->textureSet != NULL) {
+    if (graphicsBinding->textureSet != nullptr) {
       g_GraphicsTextureSetReleasePackage(graphicsBinding->textureSet);
-      graphicsBinding->textureSet = NULL;
+      graphicsBinding->textureSet = nullptr;
     }
-    if (graphicsBinding->paletteAsset != NULL) {
+    if (graphicsBinding->paletteAsset != nullptr) {
       g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(graphicsBinding->paletteAsset);
-      graphicsBinding->paletteAsset = NULL;
+      graphicsBinding->paletteAsset = nullptr;
     }
   }
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
     armyAsset = g_ArmyAssetRecordRegistry[registryIndex];
-    if (armyAsset != NULL) {
+    if (armyAsset != nullptr) {
       /* the two preview textures stored in the record that follows the prefix */
       g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
       g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].registryId)); /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
-      g_ArmyAssetRecordRegistry[registryIndex] = NULL;
+      g_ArmyAssetRecordRegistry[registryIndex] = nullptr;
     }
   }
 }
@@ -211,13 +211,13 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   SelectionPlayerRuntimeBlock *playerSelectionBlock;
 
   modelRuntime = (ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord;
-  if (modelRuntime != NULL) {
-    (entityRuntime->common).ownership.definitionOrClassRecord = NULL;
+  if (modelRuntime != nullptr) {
+    (entityRuntime->common).ownership.definitionOrClassRecord = nullptr;
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime);
   }
   SelectionPlayerBlocks_RemovePointer(entityRuntime);
   if (entityRuntime == (worldRuntime->selection).selectedEntity) {
-    (worldRuntime->selection).selectedEntity = NULL;
+    (worldRuntime->selection).selectedEntity = nullptr;
   }
   WorldRuntime_ForEachOwnerListNode
             (entityRuntime,WorldRuntimeNode_ClearOwnedModelReferencesCallback,worldRuntime);
@@ -234,7 +234,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
     remainingBlocks--;
   } while (remainingBlocks != 0);
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
-  (entityRuntime->common).ownership.modelNode = NULL; /* marks the army slot free */
+  (entityRuntime->common).ownership.modelNode = nullptr; /* marks the army slot free */
   InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   InGameSelectionDetailPanel_Rebuild();
@@ -248,26 +248,26 @@ static ArmyRuntimeSlot *ArmyRuntimePool_FindFreeSlot(void)
   uint32_t armySlotsRemaining;
 
   armyRuntime = g_ArmyRuntimeSlots;
-  if (armyRuntime == NULL) {
-    return NULL;
+  if (armyRuntime == nullptr) {
+    return nullptr;
   }
   for (armySlotsRemaining = ARMY_RUNTIME_SLOT_COUNT; armySlotsRemaining != 0; armySlotsRemaining--) {
-    if (armyRuntime->modelNodeRuntime == NULL) {
+    if (armyRuntime->modelNodeRuntime == nullptr) {
       return armyRuntime;
     }
     armyRuntime++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Stores the error in *outError (when outError is not NULL) and returns the failure result NULL. */
 static ArmyRuntimeSlot *ArmyRuntime_FailCreateInstance(uint32_t error,uint32_t *outError)
 
 {
-  if (outError != NULL) {
+  if (outError != nullptr) {
     *outError = error;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Creates an army (unit or building) of an army asset for a faction at a world point: takes the first free
@@ -302,11 +302,11 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   ModelDefinition *definition;
 
   armyRuntime = ArmyRuntimePool_FindFreeSlot();
-  if (armyRuntime == NULL) {
+  if (armyRuntime == nullptr) {
     return ArmyRuntime_FailCreateInstance(FATAL_ERROR_GENERAL_FAILURE,outError);
   }
   armyAssetRecord = ArmyAssetRegistry_FindRecordById(armyAssetId);
-  if (armyAssetRecord == NULL) {
+  if (armyAssetRecord == nullptr) {
     /* the asset id as decimal text (base 10, at least one digit) for the error message */
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
     return ArmyRuntime_FailCreateInstance(FATAL_ERROR_ARMY_ID_NOT_FOUND,outError);
@@ -343,7 +343,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
   armyRuntime->linkedEntityRuntime = linkedEntity;
-  (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
+  (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = nullptr;
   armyRuntime->aiUnitState = 0;
   modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeReference);
   modelCreateError = ModelRuntimePool_CreateInstanceByDefinitionId
@@ -368,7 +368,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
   (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
   (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
-  armyRuntime->commandTargetArmyRuntime = NULL;
+  armyRuntime->commandTargetArmyRuntime = nullptr;
   armyRuntime->assignedTargetArmyRuntime = 0;
   armyRuntime->commandCoordinate0Q12 = 0;
   armyRuntime->commandCoordinate1Q12 = 0;

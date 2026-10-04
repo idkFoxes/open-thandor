@@ -37,9 +37,9 @@ uint16_t g_LightHexPathUtf16[10] = {'l', 'i', 'g', 'h', 't', '.', 'h', 'e', 'x',
 /* L"widget.hex" */
 uint16_t g_WidgetHexPathUtf16[11] = {'w', 'i', 'd', 'g', 'e', 't', '.', 'h', 'e', 'x', 0};
 
-uint8_t *g_EffectRuntimeRebaseBaseMinusOne = 0;
+uint8_t *g_EffectRuntimeRebaseBaseMinusOne = nullptr;
 
-uint8_t *g_RuntimeObjectRebaseBaseMinusOne = 0;
+uint8_t *g_RuntimeObjectRebaseBaseMinusOne = nullptr;
 
 /* Implementation ownership: gameplay/session/savegame. */
 
@@ -140,7 +140,7 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
     return false;
   }
   if (g_FrontendLoadedCampaignAsset == 0) {
-    Package_DeleteEntry((uint16_t *)g_CampagneHexPathUtf16,packageHandle,NULL);
+    Package_DeleteEntry((uint16_t *)g_CampagneHexPathUtf16,packageHandle,nullptr);
     return true;
   }
   return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
@@ -201,7 +201,7 @@ static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
                       (uint16_t *)g_StatHexPathUtf16,packageHandle);
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
-    Package_DeleteEntry((uint16_t *)g_OldunitHexPathUtf16,packageHandle,NULL);
+    Package_DeleteEntry((uint16_t *)g_OldunitHexPathUtf16,packageHandle,nullptr);
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
     return false;
@@ -407,7 +407,7 @@ InGameSaveGame_PrepareRegistrationRecords
   } while (recordsRemaining != 0);
   tailRecord = runtimeImage->tailRecord;
   records = runtimeImage->records;
-  if (tailRecord != NULL) {
+  if (tailRecord != nullptr) {
     tailRecord = Thandor_U32ToPointer<ResourceRegistrationRecord>(Thandor_PointerToI32(tailRecord) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: ResourceRegistrationImage.tailRecord (saved offset) */
   }
   recordCount = runtimeImage->recordCount;
@@ -455,7 +455,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
     runtimeMembers = factionRecord->runtimeGroupMembers8x32;
     for (memberIndex = 0; memberIndex < 256; memberIndex++) {
       runtimeMember = runtimeMembers[memberIndex];
-      if (runtimeMember != NULL) {
+      if (runtimeMember != nullptr) {
         runtimeMember =
              Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(runtimeMember) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 */
       }
@@ -485,7 +485,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 
   for (slotIndex = 0; slotIndex < EFFECT_RUNTIME_SLOT_COUNT; slotIndex++) {
     slot = g_EffectRuntimeSlots + slotIndex;
-    if (slot->modelNodeOrSavedOffset.modelNode == NULL) {
+    if (slot->modelNodeOrSavedOffset.modelNode == nullptr) {
       /* free slot: zero its 0x10 dwords */
       slotWords = (uint32_t *)slot;
       for (wordIndex = 0; wordIndex < 16; wordIndex++) {
@@ -500,7 +500,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
     }
     slotCompletionAction = slot->completionAction;
     ownerModelNode = slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
-    if (ownerModelNode != NULL) {
+    if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
         ownerModelNode = (ModelRuntimeNode *)(Thandor_PointerToI32(ownerModelNode) - g_ModelRuntimeRebaseDelta); /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
       }
@@ -541,7 +541,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
 
   for (slotIndex = 0; slotIndex < SHOT_RUNTIME_SLOT_COUNT; slotIndex++) {
     slot = g_ShotRuntimeSlots + slotIndex;
-    if (slot->modelNodeOrSavedOffset.modelNode == NULL) {
+    if (slot->modelNodeOrSavedOffset.modelNode == nullptr) {
       /* free slot: zero its 0x10 dwords */
       slotWords = (uint32_t *)slot;
       for (wordIndex = 0; wordIndex < 16; wordIndex++) {
@@ -558,10 +558,10 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
     }
     runtimeStateRef = slot->runtimeStateOrSavedOffset.runtimeStatePointer;
     ownerArmyRuntime = slot->ownerAndTrajectory.ownerArmyRuntime;
-    if (runtimeStateRef != NULL) {
+    if (runtimeStateRef != nullptr) {
       runtimeStateRef = (void *)(Thandor_PointerToI32(runtimeStateRef) - g_ModelRuntimeRebaseDelta); /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
     }
-    if (ownerArmyRuntime != NULL) {
+    if (ownerArmyRuntime != nullptr) {
       ownerArmyRuntime =
            Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(ownerArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime */
     }
@@ -624,7 +624,7 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
 
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     slot = &g_ArmyRuntimeSlots[slotIndex];
-    if (slot->modelNodeRuntime == NULL) {
+    if (slot->modelNodeRuntime == nullptr) {
       /* an unused slot is zeroed dword by dword */
       slotWords = (uint32_t *)slot;
       for (wordIndex = 0; wordIndex < (int)(sizeof(ArmyRuntimeSlot) / 4); wordIndex++) {
@@ -635,7 +635,7 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
     savedModelRuntimeOffset = (ModelRuntimeSlot *) /* 5f-format: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
              ((int)(slot->modelRuntimeOrSavedOffset).modelRuntime - g_ModelRuntimeRebaseDelta);
     savedTargetOffset = slot->commandTargetArmyRuntime;
-    if (savedTargetOffset != NULL) {
+    if (savedTargetOffset != nullptr) {
       savedTargetOffset = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedTargetOffset) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
     }
     slot->modelNodeRuntime = /* 5f-format: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */

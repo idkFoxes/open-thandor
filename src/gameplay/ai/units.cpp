@@ -36,7 +36,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
   workspaceEntryCursor = g_AiWorkspace01Units;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--, workspaceEntryCursor++) {
     unitModelRuntime = workspaceEntryCursor->modelRuntime;
-    if (unitModelRuntime == NULL) continue;
+    if (unitModelRuntime == nullptr) continue;
     slotEntityRuntime = unitModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((slotEntityRuntime->common.commandFlags &
          (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ROUTE_POINT_REACHED)) != 0) {
@@ -146,7 +146,7 @@ AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
   AiScoredSiteWorkspaceEntry *workspaceRecordCursor;
   AiGeneralSiteDistanceSelection selection;
 
-  bestEntry = NULL;
+  bestEntry = nullptr;
   workspaceRecordCursor = g_AiWorkspace05GeneralSites;
   for (recordsRemaining = g_AiWorkspace05Count; recordsRemaining != 0; recordsRemaining--) {
     negAbsDeltaXQ12 = (armyRuntimeSlot->articulatedContact).fallbackPosition0Q12 -
@@ -263,7 +263,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
   AiTargetWorkspaceEntry *workspaceRecordCursor;
   AiSecondaryWorkspaceDistanceSelection selection;
 
-  bestEntry = NULL;
+  bestEntry = nullptr;
   recordsRemaining = g_AiWorkspace07Count;
   workspaceRecordCursor = g_AiWorkspace07Targets;
   if (g_AiWorkspace07Count == 0) {

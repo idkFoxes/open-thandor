@@ -77,7 +77,7 @@ ArmyRuntime_ResolveShotAimPoint
   }
   else {
     targetEntity = (targetState->common).commandTarget.targetEntity;
-    if (targetEntity != NULL) {
+    if (targetEntity != nullptr) {
       /* bit 1 of the shooter faction's 2-bit field: the target is visible to that faction */
       visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 31);
       targetNode = (targetEntity->common).ownership.modelNode;
@@ -140,7 +140,7 @@ ArmyRuntime_ResolveShotAimPoint
         outAimPoint->z = aimWorldZ;
         return true;
       }
-      (targetState->common).commandTarget.targetEntity = NULL;
+      (targetState->common).commandTarget.targetEntity = nullptr;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
@@ -171,7 +171,7 @@ Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
    Part of ArmyRuntimeClass_SelectProjectileTargetNode (the original walks the tree inline). */
 static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
 {
-  uint8_t *found = NULL;
+  uint8_t *found = nullptr;
   int i;
   if (((ModelRuntimeSlot *)node)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
       MODEL_RUNTIME_CLASS_10_CONTINUOUS_RADAR) {
@@ -179,9 +179,9 @@ static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
   }
   for (i = 0; i < (int)((ModelRuntimeSlot *)node)->attachmentCount; i++) {
     uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments[i].childModelRuntimeOrSavedOffset;
-    if (child != NULL) {
+    if (child != nullptr) {
       uint8_t *match = ArmyRuntimeClass_FindLastClass10Node(child);
-      if (match != NULL) {
+      if (match != nullptr) {
         found = match;
       }
     }
@@ -230,7 +230,7 @@ void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjecti
     }
     /* pick the last node, depth-first, whose definition has class 10 (runtimeClassId) */
     targetModelRuntime = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((uint8_t *)candidateNode->runtimePayload);
-    if ((targetModelRuntime != NULL) && (((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) {
+    if ((targetModelRuntime != nullptr) && (((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) {
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = targetModelRuntime;
     }
   }
@@ -271,15 +271,15 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
       (modelRuntime->timedTargetState).targetProjectileReloadCountdownTicks = 0;
       /* show the loaded missile */
       (rootNode->modelPayload).meshGroupMask |= 1;
-      (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = NULL;
-      (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = NULL;
+      (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = nullptr;
+      (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = nullptr;
       /* signature differs: the callback's context is ModelRuntimeTimedTargetProjectileView *, the slot's void * */
       WorldRuntime_ForEachOwnerListNode
                 (modelRuntime,(WorldRuntimeNodeTraversalCallback *)ArmyRuntimeClass_SelectProjectileTargetNode,
                  worldRuntime);
       selectedTarget = (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime;
       if (((modelRuntime->timedTargetLinkState).matchingActiveShotRuntime ==
-           NULL) && (selectedTarget != NULL)) {
+           nullptr) && (selectedTarget != nullptr)) {
         targetRootNode = (selectedTarget->rootModelNodeOrSavedOffset).modelNode;
         targetWorldXQ12 = (targetRootNode->worldTransform).translation.x;
         targetWorldYQ12 = (targetRootNode->worldTransform).translation.y;
@@ -300,8 +300,8 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = NULL;
-  (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = NULL;
+  (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = nullptr;
+  (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = nullptr;
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
@@ -380,7 +380,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   WorldOwnerListNode *bestCandidateNode;
   uint32_t pointOffsetMask;
 
-  bestCandidateNode = NULL;
+  bestCandidateNode = nullptr;
   nodeCursor = worldContext->ownerListHead;
   pointOffsetMask = UINT32_MAX;
   currentBestScore = 0;
@@ -406,8 +406,8 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
       }
     }
     nodeCursor = nodeCursor->nextNode;
-  } while (nodeCursor != NULL);
-  if (bestCandidateNode != NULL) {
+  } while (nodeCursor != nullptr);
+  if (bestCandidateNode != nullptr) {
     candidateWorldZ = bestCandidateNode->worldZQ12;
     deltaX = bestCandidateNode->worldXQ12 - worldXQ12;
     deltaY = bestCandidateNode->worldYQ12 - worldYQ12;
@@ -521,7 +521,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
           if ((channelIndex * 16 + 3 == pointRecord->packedLookupKey) &&
               (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->childCount != 0)) {
             modelNode = ((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->childNodes[0];
-            if (modelNode != NULL) {
+            if (modelNode != nullptr) {
               localPoint = ModelNodeRuntime_TransformLocalPoint(pointRecord,modelNode);
               EffectRuntimePool_CreateInstanceFromDefinition
                         (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
@@ -540,9 +540,9 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
   /* modelRuntime advances by one 0x20-byte attachment record per iteration */
   for (remainingAttachments = modelRuntime->attachmentCount; remainingAttachments != 0; remainingAttachments = remainingAttachments - 1) {
     childModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-    if (childModelRuntime != NULL) {
+    if (childModelRuntime != nullptr) {
       childModelRuntime->health = 0;
-      (childModelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = NULL;
+      (childModelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = nullptr;
     }
     modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
   }
@@ -667,8 +667,8 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
        (modelRuntime->classState).effectEmitterTimerTicks - g_InGameSimulationStepTicks;
   /* the effect timer has reached 0 or below (signed) and there is an effect to emit */
   if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
-      ((emitterDefinition->emitterEffectDefinitionReference).definition != NULL ||
-       (emitterDefinition->waterEmitterEffectDefinitionReference).definition != NULL)) {
+      ((emitterDefinition->emitterEffectDefinitionReference).definition != nullptr ||
+       (emitterDefinition->waterEmitterEffectDefinitionReference).definition != nullptr)) {
     randomTicks = 0;
     if (emitterDefinition->effectEmitterRandomTicks != 0) {
       randomValue = g_RandomGeneratorState.next();
@@ -691,7 +691,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
     if (0 < waterDelta) {
       effectDefinition = (emitterDefinition->waterEmitterEffectDefinitionReference).definition;
     }
-    if ((effectDefinition == NULL) ||
+    if ((effectDefinition == nullptr) ||
        ((effectDefinition->transitionPrefix).transitionKind !=
         EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION)) {
       modelNode = modelRuntime->rootModelNode;
@@ -706,7 +706,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
       orientationAngle2 = orientationAngle0;
     }
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },orientationAngle0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },orientationAngle0,
                orientationAngle1,orientationAngle2,worldZQ12,worldY,worldX,effectDefinition,worldRuntime);
     (modelRuntime->classState).effectEmitterPointIndex = (modelRuntime->classState).effectEmitterPointIndex + 1;
   }

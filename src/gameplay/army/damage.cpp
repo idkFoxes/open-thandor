@@ -33,7 +33,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
   }
   rootModelNodeRuntime = modelRuntime->rootModelNode;
   childNode = rootModelNodeRuntime->childNodes[0];
-  if ((rootModelNodeRuntime->childCount != 0) && (childNode != NULL)) {
+  if ((rootModelNodeRuntime->childCount != 0) && (childNode != nullptr)) {
     (childNode->modelPayload).localTranslationZQ12 =
          (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
                (int64_t)
@@ -111,7 +111,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
   /* a destroyed model links to itself */
   modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
   modelRuntime->health = 0;
-  if (parentModelNode != NULL) {
+  if (parentModelNode != nullptr) {
     ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
     return;
   }
@@ -155,7 +155,7 @@ void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,Fac
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             (impactAngle,sourceFactionIndex,impactValue >> 1,(GameEntityRuntime *)targetModelRuntime);
   secondHalfRecipient = targetModelRuntime;
-  if (targetModelNodeRuntime->parentNode != NULL) {
+  if (targetModelNodeRuntime->parentNode != nullptr) {
     secondHalfRecipient = (targetModelNodeRuntime->parentNode->runtimePayload).modelRuntime;
   }
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
@@ -192,7 +192,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
       modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
       parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
       modelRuntime->health = 0;
-      if (parentModelNode != NULL) {
+      if (parentModelNode != nullptr) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
       }
       /* Without a parent the original goes on to the owner faction's relationCounterC/D update of
@@ -287,7 +287,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   angleRandom = randomBits & FIXED_ANGLE16_MASK;
   randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },randomBits >> 16,
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },randomBits >> 16,
              (randomValue & (FIXED_ANGLE16_EIGHTH_TURN - 1)) + (FIXED_ANGLE16_EIGHTH_TURN - 1),angleRandom,
              pointZQ12,pointYQ12,pointXQ12,effectDefinition,worldRuntime);
   return;
@@ -344,7 +344,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
       (targetEntityRuntime->common).damageState.counterOrTerminalReference.terminalEntity =
            targetEntityRuntime;
       (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
-      if (parentNode == NULL) {
+      if (parentNode == nullptr) {
         definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
         if ((((ModelDefinition *)definitionRecord)->runtimeClassId == 0) &&
            (((ModelDefinition *)definitionRecord)->placementContactKindIndex == 0)) {
@@ -397,7 +397,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
         for (attachmentsRemaining = (targetEntityRuntime->common).ownership.ownerIndex; attachmentsRemaining != 0;
              attachmentsRemaining--) {
           /* the child's health against its definition's maximumHealth: not at full health */
-          if ((attachedModelRuntime != NULL) &&
+          if ((attachedModelRuntime != nullptr) &&
              (attachedModelRuntime->health !=
               attachedModelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth)) {
             ArmyRuntime_ApplyDamageAndPropagateToParent(repairExcess,attachedModelRuntime);

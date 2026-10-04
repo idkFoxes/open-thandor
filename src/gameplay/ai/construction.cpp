@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime = 0;
+ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime = nullptr;
 
 static uint32_t g_AiConstructionPendingAssetConsumedCount = 0;
 
@@ -46,8 +46,8 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
     createdSlotPair = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                       (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                        workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
-                       worldRuntime,NULL);
-    if (createdSlotPair == NULL) {
+                       worldRuntime,nullptr);
+    if (createdSlotPair == nullptr) {
       return;
     }
     /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
@@ -59,7 +59,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
     ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
     ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -158,8 +158,8 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
   }
   armyRuntime = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorYQ12,anchorXQ12,factionIndex,armyAssetId,worldRuntime,
-                     NULL);
-  if (armyRuntime == NULL) {
+                     nullptr);
+  if (armyRuntime == nullptr) {
     return true;
   }
   createdModelNode = armyRuntime[1];
@@ -169,7 +169,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
   ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)armyRuntime,worldRuntime); /* the created army */
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle2,
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle1,
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle0,
@@ -238,8 +238,8 @@ static void AiConstructionPlanner_CreatePlacedAsset
 
   createdSlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)cell->triangle0NormalAngles,
-                     cell->worldY,cell->worldX,factionIndex,armyAssetId,worldRuntime,NULL);
-  if (createdSlots == NULL) {
+                     cell->worldY,cell->worldX,factionIndex,armyAssetId,worldRuntime,nullptr);
+  if (createdSlots == nullptr) {
     return;
   }
   modelNodeRuntime = createdSlots[1];
@@ -249,7 +249,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
   ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlots,worldRuntime); /* the created army */
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){nullptr},
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -327,7 +327,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                            candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                           (UiRootNode *)worldRuntime,NULL))) {
+                           (UiRootNode *)worldRuntime,nullptr))) {
       bestCell = candidateCell;
       bestScore = candidateScore;
     }
@@ -369,7 +369,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   }
   modelDefinition = ModelDefinitionRegistry_FindById
                      (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
-  if (modelDefinition == NULL) {
+  if (modelDefinition == nullptr) {
     return;
   }
   radiusMetric = ((ModelDefinition *)modelDefinition)->footprintRadius;
@@ -382,7 +382,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     candidateCell = *gridCellCursor;
     distanceX = candidateCell->worldX;
     distanceY = candidateCell->worldY;
-    if (g_AiWorkspaceOwnedAsset300Runtime != NULL) {
+    if (g_AiWorkspaceOwnedAsset300Runtime != nullptr) {
       distanceX = distanceX -
                   (g_AiWorkspaceOwnedAsset300Runtime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.x;
       if (distanceX < 0) {
@@ -400,7 +400,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
        (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                            candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
-                           NULL))) {
+                           nullptr))) {
       regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                             (radiusMetric,candidateCell->worldY,candidateCell->worldX);
       if (!regionUnreachable) {

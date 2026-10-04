@@ -99,7 +99,7 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   remainingSlotCount = worldRuntime->dwordArrayCount;
   soundSlotCursor = worldRuntime->dwordArray;
   /* the original loops only when both the slot count and the slot array are non-zero */
-  if (remainingSlotCount != 0 && soundSlotCursor != NULL) {
+  if (remainingSlotCount != 0 && soundSlotCursor != nullptr) {
     do {
       SpatialSoundSlot_ReleaseSample((SpatialSoundSlot *)*soundSlotCursor);
       soundSlotCursor++;
@@ -116,19 +116,19 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[3]);
   loadedResourceCursor = g_InGameLoadedResourcePointers;
   remainingResourceCount = g_InGameLoadedResourcePointerCount;
-  if (g_InGameLoadedResourcePointers != NULL) {
+  if (g_InGameLoadedResourcePointers != nullptr) {
     for (; remainingResourceCount != 0; remainingResourceCount--) {
       Resource_Release(*loadedResourceCursor);
       loadedResourceCursor++;
     }
   }
   g_MemoryApi.free(g_InGameLoadedResourcePointers);
-  g_InGameLoadedResourcePointers = NULL;
+  g_InGameLoadedResourcePointers = nullptr;
   g_InGameLoadedResourcePointerCount = 0;
   g_MemoryApi.free(g_InGameLevelRuntimeGlobalBlock.conditionStorage);
-  g_InGameLevelRuntimeGlobalBlock.conditionStorage = NULL;
+  g_InGameLevelRuntimeGlobalBlock.conditionStorage = nullptr;
   Resource_Release(g_TechnologyAsset);
-  g_TechnologyAsset = NULL;
+  g_TechnologyAsset = nullptr;
   return;
 }
 
@@ -171,7 +171,7 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
   levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
   placementRecordCursor = (LevelInitialArmyPlacementRecord20 *)(levelImageBytes + placementTableOffset);
   for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
-      ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
+      ownerListNode != nullptr; ownerListNode = ownerListNode->nextNode) {
     if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -259,8 +259,8 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
   if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
                         (uint16_t *)g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
       matchCount != 0) {
-    levelAsset = (int *)Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
-    if (levelAsset != NULL) {
+    levelAsset = (int *)Package_LoadEntry(g_LevelPackageFoundEntry.path,nullptr);
+    if (levelAsset != nullptr) {
       /* dword 0: asset magic, dword 3: converter version */
       if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
         levelTitleTextId = levelAsset[92]; /* LEV +0x170 */

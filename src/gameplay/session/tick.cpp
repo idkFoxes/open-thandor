@@ -124,7 +124,7 @@ static void InGameTick_RefreshEntityTerrainStates(WorldRuntimeContext *worldRunt
 {
   ModelRuntimeNode *modelNode;
 
-  for (modelNode = firstNode; modelNode != NULL;
+  for (modelNode = firstNode; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
       [modelNode->ownerClassId])(worldRuntime,modelNode);
@@ -157,7 +157,7 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     /* field-grid clamp; with entities present: their terrain state, then the clamp once more */
     firstModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
     FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
-    if (firstModelNode != NULL) {
+    if (firstModelNode != nullptr) {
       InGameTick_RefreshEntityTerrainStates(worldRuntime,firstModelNode);
       FieldGrid_ApplyByteClampLookupToCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     }
@@ -178,8 +178,8 @@ static void InGameTick_RunWorldJob(InGameRuntimeRoot *inGameRoot,uint32_t tickPh
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
       FieldGrid_SetOccupancyMaskByteBit0AllCells(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
     }
-    if (worldNode != NULL) {
-      for (; worldNode != NULL; worldNode = worldNode->nextNode) {
+    if (worldNode != nullptr) {
+      for (; worldNode != nullptr; worldNode = worldNode->nextNode) {
         (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
                   (worldRuntime,worldNode);
       }
@@ -205,7 +205,7 @@ static void InGameTick_RunSimulationStep(InGameRuntimeRoot *inGameRoot)
   worldRuntime = &inGameRoot->worldRuntime;
   tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
   /* per-entity update of every model, shot and effect, dispatched by owner class */
-  for (worldNode = worldRuntime->ownerListHead; worldNode != NULL; worldNode = worldNode->nextNode) {
+  for (worldNode = worldRuntime->ownerListHead; worldNode != nullptr; worldNode = worldNode->nextNode) {
     (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)[worldNode->ownerClassId])(worldRuntime,worldNode);
   }
   if (g_GameFactionRuntimeImage.tail.simulationTick % 20 == 0) {
@@ -229,7 +229,7 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) != 0) {
     return;
   }
-  for (; modelNode != NULL; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+  for (; modelNode != nullptr; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).runtimeDefinition;
       g_ArmyPlacementContactKindDispatchTable.callbacks[modelDefinition->placementContactKindIndex]

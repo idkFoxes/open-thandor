@@ -30,7 +30,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
 
   placementRadiusQ12 = ((ModelDefinition *)modelDefinition)->footprintRadius;
   ownerNode = worldRuntime->ownerListHead;
-  if ((placementRadiusQ12 != 0) && (ownerNode != NULL)) {
+  if ((placementRadiusQ12 != 0) && (ownerNode != nullptr)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
     firstMaskLow = DepthInterval_BuildBinMask(placementRadiusQ12,worldXQ12);
     do {
@@ -47,7 +47,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
         }
       }
       ownerNode = ownerNode->nextNode;
-    } while (ownerNode != NULL);
+    } while (ownerNode != nullptr);
   }
   return false;
 }
@@ -74,9 +74,9 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   currentModelNode = currentRuntime->modelNodeRuntime;
   clearanceRadiusQ12 = currentRuntime->modelDefinition->footprintRadius;
   if (clearanceRadiusQ12 == 0) {
-    return NULL;
+    return nullptr;
   }
-  for (candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; candidateModelNode != NULL;
+  for (candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; candidateModelNode != nullptr;
       candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
     if (candidateModelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
@@ -106,7 +106,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
       return candidateModelRuntime;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Tests whether a circle of queryRadiusQ12 at a candidate point hits any army in the world's owner list:
@@ -130,12 +130,12 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
   Bool8 hit;
 
   ownerNode = worldRuntime->ownerListHead;
-  if ((queryRadiusQ12 == 0) || (ownerNode == NULL)) {
+  if ((queryRadiusQ12 == 0) || (ownerNode == nullptr)) {
     return false;
   }
   firstMaskHigh = DepthInterval_BuildBinMask(queryRadiusQ12,worldYQ12);
   firstMaskLow = DepthInterval_BuildBinMask(queryRadiusQ12,worldXQ12);
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -196,10 +196,10 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   Bool8 hit;
   WorldOwnerListNode *ownerNode;
 
-  candidateIsRuntime = candidateRuntime != NULL;
+  candidateIsRuntime = candidateRuntime != nullptr;
   if (!candidateIsRuntime) {
     queryRadiusQ12 = (intptr_t)(uint32_t)radiusQ12 + 1; /* the radius value plus one */
-    candidateNode = NULL;
+    candidateNode = nullptr;
   }
   else {
     /* the runtime's root node is also its world owner-list node */
@@ -209,7 +209,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   if (queryRadiusQ12 == 0) {
     return false;
   }
-  for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (ownerNode = worldRuntime->ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -319,12 +319,12 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
     return true;
   }
   ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-  if (ownerNode == NULL) {
+  if (ownerNode == nullptr) {
     return false;
   }
   /* support check: some same-faction model with a support radius (supportRadius of its definition) must lie
      within that radius plus our own margin */
-  for (; ownerNode != NULL; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
+  for (; ownerNode != nullptr; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
     if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (ownerNode == rootNode)) {
       continue;
     }

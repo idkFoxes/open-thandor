@@ -64,7 +64,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
     modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] = weaponDefinitionView->attachmentReloadTicks;
     commandTargetArmy = modelRuntime->ownerArmyRuntime->commandTargetArmyRuntime;
     targetRuntimeReference = 0;
-    if (commandTargetArmy != NULL) {
+    if (commandTargetArmy != nullptr) {
       targetRuntimeReference = (commandTargetArmy->modelRuntimeOrSavedOffset).savedIdOrOffset;
     }
     launchFailed = ArmyRuntime_ResolveShotLaunchFromModelAttachment
@@ -338,7 +338,7 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
                      (elevationAngle,azimuthAngle,maxRayLength,(originNode->worldTransform).translation.z,
                       (originNode->worldTransform).translation.y,
                       (originNode->worldTransform).translation.x,worldRuntime->fieldGrid,
-                      &terrainHitDistance,NULL);
+                      &terrainHitDistance,nullptr);
   modelHit = ModelRuntime_RaycastCandidateListNearest
                      (elevationAngle,azimuthAngle,maxRayLength,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime,&modelHitDistanceQ12,&hitModelNode);
@@ -355,7 +355,7 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
     if ((int)distanceDifference < 0) {
       distanceDifference = -distanceDifference;
     }
-    if (((modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity == NULL) &&
+    if (((modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity == nullptr) &&
         (distanceDifference < ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 + 1)) {
       return false;
     }
@@ -373,7 +373,7 @@ Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorld
   /* range check: distance to the target minus half its radius (footprintRadius of its definition) against
      speed * (lifetime - 2/3 of the ramp ticks - 1); ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 is -2/3 in Q12 */
   targetEntity = (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity;
-  if (targetEntity != NULL) {
+  if (targetEntity != nullptr) {
     targetDistance = (int)(targetDistance * 2 -
                  ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->
                  definitionOrSavedId.runtimeDefinition->footprintRadius

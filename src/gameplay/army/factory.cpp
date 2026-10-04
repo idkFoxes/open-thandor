@@ -75,7 +75,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   GraphicsFixedVec3 *translationVec;
 
   soundIndex = factoryDefinition->primarySoundIndex;
-  if ((soundIndex == 0) || (worldRuntime->dwordArrayCount <= soundIndex) || (worldRuntime->dwordArray == NULL)) {
+  if ((soundIndex == 0) || (worldRuntime->dwordArrayCount <= soundIndex) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   rootNode = modelRuntime->rootModelNode;
@@ -83,7 +83,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
      worldRuntime->dwordArray, which is only tested for NULL. */
   soundVoiceSet = THANDOR_PTR32_AT(DirectSoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
   translationVec = &(rootNode->worldTransform).translation;
-  if (soundVoiceSet == NULL) {
+  if (soundVoiceSet == nullptr) {
     return;
   }
   if (!TerrainGrid_TestProjectedCellMaskBits01((rootNode->worldTransform).translation.y,translationVec->x,
@@ -135,8 +135,8 @@ static void ArmyUnitFactory_CreateBuiltArmy(WorldRuntimeContext *worldRuntime,Mo
   ownerArmyRuntime = modelRuntime->ownerArmyRuntime;
   createdArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
                      (4,spawnHeading,spawnPoint.yQ12,spawnPoint.xQ12,ownerArmyRuntime->factionIndex,
-                      (modelRuntime->classLinkState).modelLinkOrState.classState,worldRuntime,NULL);
-  if (createdArmyRuntime == NULL) {
+                      (modelRuntime->classLinkState).modelLinkOrState.classState,worldRuntime,nullptr);
+  if (createdArmyRuntime == nullptr) {
     return;
   }
   g_GameFactionRuntimeImage.records[ownerArmyRuntime->factionIndex].relationCounterA =
@@ -206,9 +206,9 @@ void ArmyRuntimeClass_UpdateUnitFactory
   }
   behaviorState = (modelRuntime->classState).behaviorState;
   factoryDefinition = modelRuntime->modelDefinition;
-  if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != NULL)) {
+  if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != nullptr)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
-    rootNode->childNodes[3] = NULL;
+    rootNode->childNodes[3] = nullptr;
   }
   switch(behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset this factory can build */
@@ -257,13 +257,13 @@ void ArmyRuntimeClass_UpdateUnitFactory
     break;
   case ARMY_FACTORY_STATE_WAITING_EXIT:
     linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState.armyRuntime;
-    if ((linkedArmyRuntime == NULL) ||
+    if ((linkedArmyRuntime == nullptr) ||
        ((ModelRuntimeUpdateView *)
         (((linkedArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
         linkedArmyRuntimeOrSavedOffset.modelRuntime != modelRuntime)) {
       factoryDefinition = modelRuntime->modelDefinition;
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_CLOSING;
-      (modelRuntime->classLinkState).armyLinkOrState.armyRuntime = NULL;
+      (modelRuntime->classLinkState).armyLinkOrState.armyRuntime = nullptr;
       ArmyUnitFactory_PlayPrimarySound(worldRuntime,modelRuntime,factoryDefinition);
     }
     break;
@@ -377,7 +377,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
         (modelRuntime->classState).energyLoadQ4 = (modelRuntime->classState).energyLoadQ4 - heldEnergyLoad;
         lookupError = ArmyAssetRegistry_FindById
                            ((modelRuntime->classLinkState).modelLinkOrState.classState,&assetRecord);
-        (modelRuntime->classLinkState).modelLinkOrState.modelRuntime = NULL;
+        (modelRuntime->classLinkState).modelLinkOrState.modelRuntime = nullptr;
         if (lookupError == 0) {
           primaryAssetCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
           if (primaryAssetCount < 64) {
@@ -458,8 +458,8 @@ Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
                      (modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
                      (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex,
-                     linkedArmyAssetId,worldRuntime,NULL);
-  if (createdArmy == NULL) {
+                     linkedArmyAssetId,worldRuntime,nullptr);
+  if (createdArmy == nullptr) {
     return true;
   }
   childModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
@@ -565,7 +565,7 @@ void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEn
   ArmyRuntimeSlot *createdArmy;
   ModelRuntimeSlot *createdModelSlot;
 
-  if (ownerEntity == NULL) {
+  if (ownerEntity == nullptr) {
     return;
   }
   ownerModelSlot = (ModelRuntimeSlot *)ownerEntity->common.ownership.definitionOrClassRecord;
@@ -581,8 +581,8 @@ void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEn
                       ownerModelNode->worldTransform.translation.x,
                       ownerEntity->common.ownership.ownerIndex,
                       (PckArmyAssetIdCatalog)ownerDefinition->classParameterC0,
-                      worldRuntime,NULL);
-  if (createdArmy != NULL) {
+                      worldRuntime,nullptr);
+  if (createdArmy != nullptr) {
     createdModelSlot = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
     createdModelSlot->health =
          (int)(((int64_t)(int)ownerModelSlot->health *

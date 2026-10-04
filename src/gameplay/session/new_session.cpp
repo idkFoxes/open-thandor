@@ -14,13 +14,13 @@
 
 uint32_t g_EndMovieVariantIndex = 0;
 
-uint16_t *g_EndMoviePath = 0;
+uint16_t *g_EndMoviePath = nullptr;
 
 uint32_t g_HostCommandBatchSyncSentThisInterval = 0;
 
 uint32_t g_EndGameResultsCurrentMusicTrackId = 0;
 
-WorldObjectRecord *g_InGameWorldObjectRecords = 0;
+WorldObjectRecord *g_InGameWorldObjectRecords = nullptr;
 
 uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {0}; /* SpatialSoundSlot pointers (WorldRuntimeContext.dwordArray) */
 
@@ -71,7 +71,7 @@ static void InGameNewSession_ResetSessionState(void)
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
-  g_EndMoviePath = NULL;
+  g_EndMoviePath = nullptr;
   /* clear the client packet buffers and all selection blocks (0x10230 dwords). The original clears the six packet
      buffers with one 0x280-byte fill over their contiguous memory range; they are separate variables here, so
      each is cleared on its own, in the original memory order. */
@@ -304,7 +304,7 @@ static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint
     *outError = stepError;
     return false;
   }
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,nullptr,&stepError)) {
     *outError = stepError;
     return false;
   }
@@ -461,7 +461,7 @@ static void InGameNewSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inG
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
     InGameRuntime_UpdateSimulationAndNetworkTick();
   } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
-  inGameRoot->levelMovieRuntime = NULL;
+  inGameRoot->levelMovieRuntime = nullptr;
   inGameRoot->playerStatusLineCount = 0;
   UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
   Movie_Close();

@@ -14,9 +14,9 @@ uint32_t g_InGameLevelTitleTextResourceIndex = 0;
 
 uint32_t g_InGameLevelCampaignAssociationIndex = 0;
 
-DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {0, 0, 0, 0};
+DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
 
-DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {0, 0, 0, 0};
+DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
 
 InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock = {.playerSlotByteOffsets = {0, 32, 64, 96, 128, 160, 192}};
 
@@ -36,7 +36,7 @@ static uint16_t g_SoundLevel00SamPathUtf16[18] =
 static uint16_t g_SessionMusic00SamPathUtf16[18] =
     {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0};
 
-Ptr32<void> *g_InGameLoadedResourcePointers = 0;
+Ptr32<void> *g_InGameLoadedResourcePointers = nullptr;
 
 InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
 
@@ -126,7 +126,7 @@ Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outE
   technologyPath = (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.technologyPathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_TEC,technologyPath);
   loadedTechnologyAsset = (TechnologyAsset *)Package_LoadEntry(technologyPath,&loadErrorCode);
-  if (loadedTechnologyAsset == NULL) {
+  if (loadedTechnologyAsset == nullptr) {
     return NewLevel_Fail(outError,loadErrorCode);
   }
   g_TechnologyAsset = loadedTechnologyAsset;
@@ -248,7 +248,7 @@ Bool8 NewLevel_LoadAssetList
       return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES);
     }
     loadedAsset = Package_LoadEntry(assetPathCursor,&loadErrorCode);
-    if (loadedAsset == NULL) {
+    if (loadedAsset == nullptr) {
       return NewLevel_Fail(outError,loadErrorCode);
     }
     **loadedResourceCursor = loadedAsset;
@@ -388,7 +388,7 @@ static Bool8 NewLevel_SpawnInitialArmies
                           placementCursor->orientationAngle,placementCursor->worldXQ12,
                           placementCursor->worldYQ12,placementCursor->factionIndex,
                           placementCursor->armyAssetId,worldRuntime,&armyCreateError);
-      if (createdArmy == NULL) {
+      if (createdArmy == nullptr) {
         return NewLevel_Fail(outError,armyCreateError);
       }
     }
@@ -463,21 +463,21 @@ static Bool8 NewLevel_LoadSpatialSounds
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
     if (soundIndex < worldRuntime->dwordArrayCount) {
       if (soundsInPackage) {
-        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,NULL,&loadErrorCode);
+        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,nullptr,&loadErrorCode);
       }
       else {
         WidePath_CombineDirectoryAndLeaf
                   (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
                    g_InGameLevelSoundParentDirectoryScratchUtf16);
         sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                     &loadedSample,NULL,&loadErrorCode);
+                                     &loadedSample,nullptr,&loadErrorCode);
       }
       if (!sampleLoaded) {
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
       soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
-      if (soundSlot != NULL) {
+      if (soundSlot != nullptr) {
         soundSlotCursor[soundIndex] = (uintptr_t)soundSlot;
       }
       Resource_Release(loadedSample);
@@ -503,7 +503,7 @@ static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplat
     return;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,sampleNumber,pathTemplate + 11);
-  if (Resource_Load(pathTemplate,&loadedSampleBuffer,NULL,NULL)) {
+  if (Resource_Load(pathTemplate,&loadedSampleBuffer,nullptr,nullptr)) {
     if (g_SoundCreateSampleVoiceSet((SoundSampleAsset *)loadedSampleBuffer,&createdVoiceSet) == 0) {
       *outVoiceSet = createdVoiceSet;
     }
@@ -518,18 +518,18 @@ void NewLevel_LoadLevelSamples(void)
 {
   struct LevelWorldSettings *worldSettings;
 
-  g_InGameLevelEffectVoiceSets[0] = NULL;
-  g_InGameLevelEffectVoiceSets[1] = NULL;
-  g_InGameLevelEffectVoiceSets[2] = NULL;
-  g_InGameLevelEffectVoiceSets[3] = NULL;
-  g_InGameActiveEffectVoice = 0;
+  g_InGameLevelEffectVoiceSets[0] = nullptr;
+  g_InGameLevelEffectVoiceSets[1] = nullptr;
+  g_InGameLevelEffectVoiceSets[2] = nullptr;
+  g_InGameLevelEffectVoiceSets[3] = nullptr;
+  g_InGameActiveEffectVoice = nullptr;
   g_InGameEffectsEnabled = 1;
-  g_InGameActiveMusicVoice = 0;
+  g_InGameActiveMusicVoice = nullptr;
   g_InGameMusicNextTrackCountdown = 1;
-  g_InGameLevelMusicVoiceSets[0] = NULL;
-  g_InGameLevelMusicVoiceSets[1] = NULL;
-  g_InGameLevelMusicVoiceSets[2] = NULL;
-  g_InGameLevelMusicVoiceSets[3] = NULL;
+  g_InGameLevelMusicVoiceSets[0] = nullptr;
+  g_InGameLevelMusicVoiceSets[1] = nullptr;
+  g_InGameLevelMusicVoiceSets[2] = nullptr;
+  g_InGameLevelMusicVoiceSets[3] = nullptr;
   worldSettings = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage).worldSettings;
   NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[0],g_SoundLevel00SamPathUtf16,
                            &g_InGameLevelEffectVoiceSets[0]);
@@ -570,19 +570,19 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
   ModelRuntimeSlot *modelSlot;
   int modelClassId;
 
-  class0BArmyDefinition = NULL;
-  class0ENoExtraArmyDefinition = NULL;
-  class0EArmyDefinition = NULL; /* this and class10ArmyDefinition are uninitialized in the original */
-  class10ArmyDefinition = NULL;
+  class0BArmyDefinition = nullptr;
+  class0ENoExtraArmyDefinition = nullptr;
+  class0EArmyDefinition = nullptr; /* this and class10ArmyDefinition are uninitialized in the original */
+  class10ArmyDefinition = nullptr;
   for (registrySlot = 0; registrySlot < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlot++) {
     registryArmyDefinition = g_ArmyAssetRecordRegistry[registrySlot];
-    if ((registryArmyDefinition == NULL) || ((((ArmyAssetRecord *)registryArmyDefinition)->flags & 1) == 0)) {
+    if ((registryArmyDefinition == nullptr) || ((((ArmyAssetRecord *)registryArmyDefinition)->flags & 1) == 0)) {
       continue;
     }
     rootModelDefinition = ModelDefinitionRegistry_FindById
                        (Thandor_U32ToPointer<ArmyModelTreeNode>(registryArmyDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
                         linkedDefinitionIds[0]);
-    if (rootModelDefinition == NULL) {
+    if (rootModelDefinition == nullptr) {
       /* Original quirk: a failed lookup is not checked; its error code is read as the definition */
       rootModelDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
     }
@@ -602,15 +602,15 @@ static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
       }
     }
   }
-  if ((class0BArmyDefinition == NULL) || (class0ENoExtraArmyDefinition == NULL) ||
-      (worldRuntime->ownerListHead == NULL)) {
+  if ((class0BArmyDefinition == nullptr) || (class0ENoExtraArmyDefinition == nullptr) ||
+      (worldRuntime->ownerListHead == nullptr)) {
     return;
   }
   /* factions 1..activeFactionCount; faction 1 is checked even when the count is 0 */
   factionIndex = 1;
   do {
     factionModelFlags = 0;
-    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != NULL;
+    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != nullptr;
         ownerListNode = ownerListNode->nextNode) {
       if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;

@@ -10,61 +10,61 @@
 
 /* Module data. */
 
-AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates = 0;
+AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates = nullptr;
 
 uint32_t g_AiCandidateWorkspaceEntryCount = 0;
 
-AiStructureWorkspaceEntry *g_AiWorkspace00Structures = 0;
+AiStructureWorkspaceEntry *g_AiWorkspace00Structures = nullptr;
 
 uint32_t g_AiWorkspace00Count = 0;
 
-AiRuntimeWorkspaceEntry *g_AiWorkspace01Units = 0;
+AiRuntimeWorkspaceEntry *g_AiWorkspace01Units = nullptr;
 
 uint32_t g_AiWorkspace01Count = 0;
 
-AiRuntimeWorkspaceEntry *g_AiWorkspace03UnseenHostiles = 0;
+AiRuntimeWorkspaceEntry *g_AiWorkspace03UnseenHostiles = nullptr;
 
 uint32_t g_AiWorkspace03Count = 0;
 
-AiRuntimeWorkspaceEntry *g_AiWorkspace04RequestedAssets = 0;
+AiRuntimeWorkspaceEntry *g_AiWorkspace04RequestedAssets = nullptr;
 
 uint32_t g_AiWorkspace04Count = 0;
 
-AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites = 0;
+AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites = nullptr;
 
 uint32_t g_AiWorkspace05Count = 0;
 
-uint8_t *g_AiWorkspace06FlaggedSites = 0;
+uint8_t *g_AiWorkspace06FlaggedSites = nullptr;
 
 uint32_t g_AiWorkspace06Count = 0;
 
-AiTargetWorkspaceEntry *g_AiWorkspace07Targets = 0;
+AiTargetWorkspaceEntry *g_AiWorkspace07Targets = nullptr;
 
 uint32_t g_AiWorkspace07Count = 0;
 
-AiTerrainFeatureWorkspaceEntry *g_AiWorkspace08TerrainFeatureSites = 0;
+AiTerrainFeatureWorkspaceEntry *g_AiWorkspace08TerrainFeatureSites = nullptr;
 
 uint32_t g_AiWorkspace08Count = 0;
 
-FieldGridCell **g_AiWorkspace09Cells = 0;
+FieldGridCell **g_AiWorkspace09Cells = nullptr;
 
 uint32_t g_AiWorkspace09Count = 0;
 
-FieldGridCell **g_AiWorkspace10Cells = 0;
+FieldGridCell **g_AiWorkspace10Cells = nullptr;
 
 uint32_t g_AiWorkspace10Count = 0;
 
-ArmyAssetRecordPrefix **g_AiWorkspace11ProducibleAssets = 0;
+ArmyAssetRecordPrefix **g_AiWorkspace11ProducibleAssets = nullptr;
 
 uint32_t g_AiWorkspace11Count = 0;
 
-AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates = 0;
+AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates = nullptr;
 
 AiTechnologyPlanningCandidateCount g_AiWorkspace12Count = 0;
 
-ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies = 0;
+ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies = nullptr;
 
-AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles = 0;
+AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles = nullptr;
 
 uint32_t g_AiWorkspace02Count = 0;
 
@@ -306,7 +306,7 @@ int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 world
   workspaceEntryCursor = g_AiWorkspace01Units;
   for (workspaceEntriesRemaining = g_AiWorkspace01Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->modelRuntime != NULL) {
+    if (workspaceEntryCursor->modelRuntime != nullptr) {
       entityRuntime = workspaceEntryCursor->modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
       deltaXAbsQ12 = worldX - (entityRuntime->common).pathCoordinate0Q12;
       if (deltaXAbsQ12 < 0) {
@@ -344,7 +344,7 @@ int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 w
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
     slotModelRuntime = workspaceEntryCursor->modelRuntime;
-    if ((slotModelRuntime != NULL) &&
+    if ((slotModelRuntime != nullptr) &&
        ((slotModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandState != 0)) {
       deltaXAbsQ12 = worldX - (slotModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
@@ -380,7 +380,7 @@ int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX)
   workspaceEntryCursor = g_AiWorkspace02VisibleHostiles;
   for (workspaceEntriesRemaining = g_AiWorkspace02Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->modelRuntime != NULL) {
+    if (workspaceEntryCursor->modelRuntime != nullptr) {
       modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
@@ -416,7 +416,7 @@ int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX)
   workspaceEntryCursor = g_AiWorkspace03UnseenHostiles;
   for (workspaceEntriesRemaining = g_AiWorkspace03Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->modelRuntime != NULL) {
+    if (workspaceEntryCursor->modelRuntime != nullptr) {
       modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
@@ -452,7 +452,7 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->modelRuntime != NULL) {
+    if (workspaceEntryCursor->modelRuntime != nullptr) {
       modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
@@ -528,7 +528,7 @@ Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
                                                              (void **)&g_AiWorkspace14CollectedArmies);
                               if (allocError == 0) {
                                 knowledgeDataImage = (AiKnowledgeDataImage *)Package_LoadEntry((uint16_t *)g_EngineKiDatPathUtf16,&loadErrorCode);
-                                if (knowledgeDataImage != NULL) {
+                                if (knowledgeDataImage != nullptr) {
                                   g_AiKnowledgeData = knowledgeDataImage;
                                   return true;
                                 }
@@ -613,7 +613,7 @@ Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->modelRuntime == NULL)) {
+       (workspaceEntryCursor->modelRuntime == nullptr)) {
       return true;
     }
     workspaceEntryCursor++;
@@ -654,7 +654,7 @@ int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if ((workspaceEntryCursor->modelRuntime != NULL) &&
+    if ((workspaceEntryCursor->modelRuntime != nullptr) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
       matchingAssignedEntryCount++;
     }
@@ -726,7 +726,7 @@ Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--, workspaceEntryCursor++) {
     entryModelRuntime = workspaceEntryCursor->modelRuntime;
-    if (entryModelRuntime != NULL) {
+    if (entryModelRuntime != nullptr) {
       deltaXAbsQ12 = worldX - entryModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform.translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;

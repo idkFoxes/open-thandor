@@ -46,7 +46,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
   switch(kind & INGAME_SCHEDULED_CONDITION_KIND_MASK) {
   case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        worldNode != NULL; worldNode = worldNode->nextNode) {
+        worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (operands[0] ==
           ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
@@ -56,7 +56,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     return true;
   case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        worldNode != NULL; worldNode = worldNode->nextNode) {
+        worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
            [((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId] ==
@@ -69,7 +69,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     return true;
   case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        worldNode != NULL; worldNode = worldNode->nextNode) {
+        worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         if ((operands[0] == army->factionIndex) && (army->armyAssetId == operands[2])) {
@@ -96,7 +96,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
   case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
     armiesStillNeeded = operands[1];
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        worldNode != NULL; worldNode = worldNode->nextNode) {
+        worldNode != nullptr; worldNode = worldNode->nextNode) {
       if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
           operands[0]) &&
@@ -135,7 +135,7 @@ static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCo
     return (int)g_GameFactionRuntimeImage.records[operands[0]].xeniteStorageLimitQ4 < (250 << Q4_SHIFT) + 1;
   case INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A:
     for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        worldNode != NULL; worldNode = worldNode->nextNode) {
+        worldNode != nullptr; worldNode = worldNode->nextNode) {
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         runtimeClassId =
              ((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
@@ -228,8 +228,8 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
   g_GameFactionRuntimeImage.tail.factionLifecycleStates[endedFactionIndex] = FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING;
   if (endTrigger->skipArmyDisableWhenOne != 1) {
     worldNode = (triggerRoot->worldRuntime).ownerListHead;
-    if (worldNode != NULL) {
-      for (; worldNode != NULL; worldNode = worldNode->nextNode) {
+    if (worldNode != nullptr) {
+      for (; worldNode != nullptr; worldNode = worldNode->nextNode) {
         if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
           army = ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
           if (endedFactionIndex == army->factionIndex) {

@@ -353,13 +353,13 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
   /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
      radius and this unit is still within it. */
-  if ((linkedModelRuntime != NULL) &&
+  if ((linkedModelRuntime != nullptr) &&
      ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
       (modelRuntime->modelDefinition->footprintRadius == 0) ||
       !ArmyCollision_TestPointWithinExpandedRuntimeRadius
              (modelRuntime->modelDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
               (rootNode->worldTransform).translation.x,linkedModelRuntime))) {
-    modelRuntime->linkedModelRuntime = NULL;
+    modelRuntime->linkedModelRuntime = nullptr;
   }
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
@@ -449,7 +449,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   worldXQ12 = (modelNodeRuntime->worldTransform).translation.x;
   worldYQ12 = (modelNodeRuntime->worldTransform).translation.y;
   terrainHeight = 0;
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&terrainHeight);
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
@@ -652,7 +652,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   armyRuntime->runtimeState98 = footY;
   /* the ground is sampled footRadius further out to the side */
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
-  if (activeFieldGrid == NULL) {
+  if (activeFieldGrid == nullptr) {
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
@@ -665,7 +665,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        (sampledFootY,armyRuntime->runtimeState90,(RuntimeCollisionQueryView *)armyRuntime
                         ,worldRuntime);
-    if (blockingModelRuntime == NULL) {
+    if (blockingModelRuntime == nullptr) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
       ArticulatedContact_SetLeftStepRate(armyRuntime,sampledFootZ,sampledFootY);
@@ -798,7 +798,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   armyRuntime->runtimeState94 = footX;
   armyRuntime->articulatedCoordinateOrState9C = footY;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
-  if (activeFieldGrid == NULL) {
+  if (activeFieldGrid == nullptr) {
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
@@ -811,7 +811,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        (sampledFootY,armyRuntime->runtimeState94,(RuntimeCollisionQueryView *)armyRuntime
                         ,worldRuntime);
-    if (blockingModelRuntime == NULL) {
+    if (blockingModelRuntime == nullptr) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
       ArticulatedContact_SetRightStepRate(armyRuntime,sampledFootZ,sampledFootY);
@@ -849,11 +849,11 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundIndex = definition->classParameterCC;
-  voiceSetRef = NULL;
-  if ((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount) && (worldRuntime->dwordArray != NULL)) {
+  voiceSetRef = nullptr;
+  if ((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount) && (worldRuntime->dwordArray != nullptr)) {
     voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
   }
-  if (voiceSetRef != NULL) {
+  if (voiceSetRef != nullptr) {
     worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
     cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
@@ -874,9 +874,9 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   else {
     effectDefinition = definition->waterEmitterEffectDefinitionReference.definition; /* water */
   }
-  if (effectDefinition != NULL) {
+  if (effectDefinition != nullptr) {
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                (footNode->modelPayload).worldRotationAngle2,
                (footNode->modelPayload).worldRotationAngle1,
                (footNode->modelPayload).worldRotationAngle0,
@@ -1286,7 +1286,7 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
   offsetSinCos = FixedMath_SinCosScaled
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateTerrainHeightAndNormal
                       (offsetSinCos.sinValue + armyRuntime->runtimeState98,
                        offsetSinCos.cosValue + armyRuntime->runtimeState90,worldRuntime->fieldGrid,
@@ -1330,7 +1330,7 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
   offsetSinCos = FixedMath_SinCosScaled
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateTerrainHeightAndNormal
                       (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
                        offsetSinCos.cosValue + armyRuntime->runtimeState94,worldRuntime->fieldGrid,
@@ -1404,7 +1404,7 @@ static void ArmyArticulatedRuntime_PlanLeftTurnStep
                             contactRadiusQ12);
   fieldGrid = worldRuntime->fieldGrid;
   armyRuntime->ownerValue64 = ((int)steeringAngle16 >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
-  if (fieldGrid != NULL &&
+  if (fieldGrid != nullptr &&
       FieldGrid_InterpolateTerrainHeightAndNormal
                 (offsetSinCos.sinValue + armyRuntime->runtimeState98,
                  offsetSinCos.cosValue + armyRuntime->runtimeState90,fieldGrid,
@@ -1482,7 +1482,7 @@ static void ArmyArticulatedRuntime_PlanRightTurnStep
                             contactRadiusQ12);
   fieldGrid = worldRuntime->fieldGrid;
   armyRuntime->ownerValue64 = (signedSteeringAngle >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
-  if (fieldGrid != NULL &&
+  if (fieldGrid != nullptr &&
       FieldGrid_InterpolateTerrainHeightAndNormal
                 (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
                  offsetSinCos.cosValue + armyRuntime->runtimeState94,fieldGrid,

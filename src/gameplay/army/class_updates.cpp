@@ -90,7 +90,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   /* crush every class-0/class-12 model standing inside the structure */
   ownNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
-    for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != NULL;
+    for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != nullptr;
         scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode) {
       if (scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
@@ -124,9 +124,9 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   /* count the models of the same faction within reach of the owning army's model node; idle class-18 models
      do not block, the last of them is the one to complete */
   armyModelNode = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->modelNodeRuntime;
-  completionModelRuntime = NULL;
+  completionModelRuntime = nullptr;
   blockingCount = 0;
-  for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != NULL;
+  for (scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; scanNode != nullptr;
       scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode) {
     if ((scanNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (scanNode == armyModelNode)) {
       continue;
@@ -162,7 +162,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
       blockingCount = blockingCount + 1;
     }
   }
-  if ((blockingCount == 0) && (completionModelRuntime != NULL)) {
+  if ((blockingCount == 0) && (completionModelRuntime != nullptr)) {
     completionNode = completionModelRuntime->rootModelNodeOrSavedOffset.modelNode;
     (completionModelRuntime->classState).stateFlags =
          (completionModelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
@@ -279,11 +279,11 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
 
   soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex;
   if ((soundAssetIndex == 0) || (soundAssetIndex >= worldRuntime->dwordArrayCount) ||
-      (worldRuntime->dwordArray == NULL)) {
+      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
-  if (soundVoiceSet == NULL) {
+  if (soundVoiceSet == nullptr) {
     return;
   }
   cellMasked = TerrainGrid_TestProjectedCellMaskBits01
@@ -332,7 +332,7 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
     travelStep = deploymentDefinition->verticalDeploymentStepQ12PerTick;
     (modelRuntime->classState).behaviorState &= ~2u;
     travelStep = travelStep * g_InGameSimulationStepTicks;
-    if (platformNode != NULL) {
+    if (platformNode != nullptr) {
       (platformNode->modelPayload).localTranslationZQ12 += travelStep;
       (modelRuntime->deploymentState).deploymentTravelQ12 += travelStep;
       ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
@@ -347,9 +347,9 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
   (modelRuntime->classState).behaviorState |= 2;
   if ((modelRuntime->deploymentState).collisionRetryCountdown == 0) {
     (modelRuntime->classState).behaviorState &= ~1u;
-    if (linkedModelRuntime != NULL) {
+    if (linkedModelRuntime != nullptr) {
       (modelRuntime->deploymentState).collisionRetryCountdown = 8;
-      (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+      (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
       linkedStillInRange = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                              (deploymentDefinition->footprintRadius,
                               (rootNode->worldTransform).translation.y,
@@ -366,7 +366,7 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
     if ((modelRuntime->deploymentState).deploymentTravelQ12 == 0) {
       ArmyRuntimeClass_PlayVerticalDeploymentSound(worldRuntime,deploymentDefinition,rootNode);
     }
-    if (rootNode->childNodes[0] != NULL) {
+    if (rootNode->childNodes[0] != nullptr) {
       travelStep = deploymentDefinition->verticalDeploymentStepQ12PerTick * g_InGameSimulationStepTicks;
       (rootNode->childNodes[0]->modelPayload).localTranslationZQ12 -= travelStep;
       (modelRuntime->deploymentState).deploymentTravelQ12 -= travelStep;
@@ -403,7 +403,7 @@ Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelR
   }
   for (; remainingAttachments != 0; remainingAttachments--) {
     childModelRuntime = sourceModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-    if (childModelRuntime != NULL) {
+    if (childModelRuntime != nullptr) {
       childWithinRadius = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
                             (candidateDefinition->footprintRadiusCopy,
                              childModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy,
@@ -474,7 +474,7 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
   for (targetClassIndex = 7; targetClassIndex >= 0; targetClassIndex--) {
     armyRuntime->targetClassShotDamage[targetClassIndex] = 0;
   }
-  if ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime != NULL) {
+  if ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime != nullptr) {
     ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics
               ((int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
   }
@@ -510,7 +510,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
     animationDefinition = modelRuntime->modelDefinition;
     animatedChildNode = modelNodeRuntime->childNodes[0];
     if (modelNodeRuntime->childCount != 0) {
-      if (animatedChildNode != NULL) {
+      if (animatedChildNode != nullptr) {
         (animatedChildNode->modelPayload).localRotationAngle2 =
              animationDefinition->animatedChild0RotationStep * g_InGameSimulationStepTicks +
              (animatedChildNode->modelPayload).localRotationAngle2 & FIXED_ANGLE16_MASK;
@@ -518,14 +518,14 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
       }
       animatedNode = modelNodeRuntime->childNodes[1];
       if (1 < modelNodeRuntime->childCount) {
-        if (animatedNode != NULL) {
+        if (animatedNode != nullptr) {
           (animatedNode->modelPayload).localRotationAngle2 =
                animationDefinition->animatedChild1RotationStep * g_InGameSimulationStepTicks +
                (animatedNode->modelPayload).localRotationAngle2 & FIXED_ANGLE16_MASK;
           animatedNode->runtimeFlags = animatedNode->runtimeFlags | 1;
         }
         animatedNode = modelNodeRuntime->childNodes[2];
-        if ((2 < modelNodeRuntime->childCount) && (animatedNode != NULL)) {
+        if ((2 < modelNodeRuntime->childCount) && (animatedNode != nullptr)) {
           childTranslationZQ12 = (animatedNode->modelPayload).localTranslationZQ12;
           bobStep = animationDefinition->animatedChild2BobStep * g_InGameSimulationStepTicks;
           if (((modelRuntime->classState).stateFlags & 2) == 0) {

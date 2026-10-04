@@ -21,7 +21,7 @@ uint16_t g_ScenarioLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"l
    path with the executable directory once more (FileSystem_LoadWholeFileNearExecutable), see THANDOR_PATH_CAPACITY. */
 uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
 
-FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = 0;
+FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
 uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
 
@@ -98,7 +98,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
         (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0)) {
       loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
       checkedValue = FatalError_ExitIfFailed
-                          (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
+                          (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
       (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     }
     else {
@@ -112,7 +112,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   }
   loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
   checkedValue = FatalError_ExitIfFailed
-                      (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
+                      (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
   sourceGrid = (FieldGridAsset *)checkedValue;
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
@@ -234,7 +234,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
+                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
     campaignAsset = (CampaignAsset *)checkedValue;
     DebugHook_CampaignLoaded(campaignAsset);
     /* CampaignAsset: the first level becomes the current one; find its record. levelRecordCursor is the
@@ -260,7 +260,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
+                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
     g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
     fieldGridPath = (uint8_t *)g_FrontendLoadedLevelAsset +
                     (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
@@ -270,7 +270,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     /* the original does not check this load for failure */
     sourceGrid = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
-    if (sourceGrid == NULL) {
+    if (sourceGrid == nullptr) {
       /* Original quirk: the error code is used as the grid */
       sourceGrid = (FieldGridAsset *)(uintptr_t)loadErrorCode;
     }
@@ -388,7 +388,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
-                        (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
+                        (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
     packedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
     levelAsset = (FrontendLoadedLevelAsset *)checkedValue;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -431,8 +431,8 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &
               1 << ((uint8_t)(levelRecordOffset >> 8) & 31)) != 0) {
             /* on failure levelAsset is replaced below */
-            levelAsset = (FrontendLoadedLevelAsset *)Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,NULL);
-            levelLoadedLocally = levelAsset != NULL;
+            levelAsset = (FrontendLoadedLevelAsset *)Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,nullptr);
+            levelLoadedLocally = levelAsset != nullptr;
           }
           break;
         }
