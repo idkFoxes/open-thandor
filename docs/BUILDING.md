@@ -53,11 +53,98 @@ executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the f
 Next to `thandor.exe` the game needs:
 
 - `SDL3.dll` (the build puts it next to `thandor.exe`; copy both into the game directory),
-- the game's `*.PCK` files and `thandor.dat` from the installation,
+- the game's `*.PCK` files from the installation (and its `thandor.dat` for the old settings, see below),
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.
 
 Nothing of the original executable is needed: its data (globals, tables, UI templates) is compiled in.
+
+### Settings file (`thandor.ini`)
+
+The settings live in `thandor.ini`, a text file with one commented key per setting
+([`src/core/settings/persistent.cpp`](../src/core/settings/persistent.cpp)). The game looks for it in the current
+directory, then next to `thandor.exe`, and rewrites it when a setting changed in its menus. It can be edited by
+hand while the game is not running: a missing key means the game's default, unknown keys are ignored, values are
+decimal or `0x` hex, switches `true`/`false`, volumes 0..32768 or a percentage (`effects_volume = 50%`),
+names UTF-8 in quotes (at most 20 characters).
+
+Without a `thandor.ini` the game reads the original binary `thandor.dat` (200 bytes) of the installation once and
+writes its settings as `thandor.ini` on the next save; `thandor.dat` itself is never changed or deleted. Delete
+`thandor.ini` to take the settings from `thandor.dat` again. The settings of a typical installation, migrated:
+
+```ini
+; Open Thandor settings. The game rewrites this file when a setting changes in its menus.
+; A missing key means the game's default; unknown keys are ignored.
+
+[display]
+; graphics adapter, 0 = the first (default 0)
+adapter = 0
+; screen width in pixels (default 640)
+width = 1280
+; screen height in pixels (default 480)
+height = 800
+; colour depth in bits (default 16)
+bits_per_pixel = 32
+; renderer: vulkan (default), d3d12 or software
+renderer = vulkan
+; fullscreen (default), borderless or window
+display_mode = fullscreen
+
+[graphics]
+; terrain shading (default true)
+shading = true
+; shading grid half size (default 32)
+shading_grid_half_size = 128
+; shading texture size, 2 x shading_grid_half_size (default 64)
+shading_texture_size = 256
+; shading depth (default 16)
+shading_depth = 32
+; texture quality: high, medium or low
+texture_quality = high
+; model detail distance, 8.8 fixed point (default 65536)
+model_detail = 262144
+
+[sound]
+; sound effects (default true)
+effects = true
+; music (default true)
+music = true
+; swap the left and right channel (default false)
+reverse_stereo = false
+; sound effects volume, 0..32768 = 0..100 % (default 32768); here 19.3 %
+effects_volume = 6315
+; music volume, 0..32768 = 0..100 % (default 32768); here 37.9 %
+music_volume = 12408
+; movie volume, 0..32768 = 0..100 % (default 32768); here 18.2 %
+movie_volume = 5973
+; second movie volume, 0..32768 = 0..100 % (default 32768); here 18.8 %
+movie_alternate_volume = 6144
+
+[game]
+; game speed in percent (default 100)
+speed_percent = 120
+; map scroll speed (default 32)
+scroll_step = 30
+; bits: 0x1 automatic zoom off, 0x2 automatic rotation off, 0x4 right button does not scroll / side panel hidden (default 0x0)
+map_mouse_options = 0x0
+; bits: 0x1 link rotation with zoom, 0x2 link rotation with tilt, 0x4 hide panel (default 0x0)
+link_panel_options = 0x2
+; player name, at most 20 characters
+player_name = "Spieler"
+; name of a hosted network game, at most 20 characters
+game_name = "Thandorspiel"
+; text language as telephone country code (49 German, 44 English, ...), 0 = from Windows
+language_country_code = 0
+
+[network]
+; player count of a hosted network game (default 4)
+players = 8
+```
+
+Internally the game still works on the original 200-byte layout (`PersistentSettings_Read`/`Write` with the
+`PERSISTENT_SETTING_*` offsets of
+[`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h)); each key of the
+table in `persistent.cpp` maps to one offset. The self-test `OPEN_THANDOR_SELFTEST=settings` checks the format.
 
 ## Platform layer (SDL3)
 
@@ -116,7 +203,7 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|scanaddr\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
 | `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
