@@ -2,12 +2,27 @@
 
 Status: planned, not started. Step 10 is an installer that puts our build onto an existing Thandor installation as a
 patch, with the version bumped to 1.0.6 and a picture of the game, looking like the original `Thandor-Patch-5.exe`
-(a classic Windows installer). Open decisions for the owner are listed in work package 0 (section 7).
+(a classic Windows installer). The owner decided the open points listed in work package 0 (section 7); see "Owner decisions" below.
 
 This plan is a read-only analysis (`dev` at 08eee1b6; line numbers refer to that commit). The original
 `Thandor-Patch-5.exe` was never executed, only read as bytes. Its extracted pictures, strings and a mock-up of our
 wizard image are kept locally outside the repository (they are game assets). Items marked **(guess)** are inferred
 and not verified.
+
+## Owner decisions (2026-10-04)
+
+1. **Tool: Inno Setup 7** (7.1.0 of 2026-08-12, 64-bit edition recommended by the vendor), not 6. Free for
+   non-commercial / open-source use. Check that `WizardStyle=classic` and the German messages work the same in 7;
+   the sections below still say "Inno Setup 6" where they were written, read them as "7".
+2. **Name and display in the style of the original:** "Thandor Patch 6", "Version 1.06" in the wizard (numeric
+   version 1.0.6 / 1.0.6.0 in the resources).
+3. **Icon in the repository** (the game's `thandor.ico`, for the exe resource and the installer). **The wizard image
+   is new:** an in-game screenshot crop plus the Thandor lettering (section 5), not the Patch 5 picture.
+4. **Write access: the installer grants users modify rights** on the game folder and `save\` (option (a) in
+   section 3).
+5. **Patch 5 is not required** (`PATCH00.PCK` neither required nor warned about); it should work without it -
+   to be tested later.
+6. **No Start menu entry.**
 
 ---
 
