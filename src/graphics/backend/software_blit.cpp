@@ -12,7 +12,7 @@
 #include <thandor/graphics/backend/software_blit.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include "software_raster.h"
+#include "software_blit_helpers.h"
 
 /* Module data. */
 
