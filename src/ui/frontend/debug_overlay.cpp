@@ -75,16 +75,16 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates()
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator,
                g_PrimitiveDrawCallCount,g_FrontendDebugOverlayTextSlot01Utf16);
+    /* texture binds and texture reloads: the original's hardware counters; the software renderer has
+       neither, so both print 0 */
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator,
-               g_TextureBindStateChangeCount,g_FrontendDebugOverlayTextSlot02Utf16);
+               0,g_FrontendDebugOverlayTextSlot02Utf16);
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator,
-               g_TextureDeviceReloadCount,g_FrontendDebugOverlayTextSlot03Utf16);
+               0,g_FrontendDebugOverlayTextSlot03Utf16);
     g_RenderedFrameCountSinceDebugRefresh = 0;
     g_PrimitiveDrawCallCount = 0;
-    g_TextureBindStateChangeCount = 0;
-    g_TextureDeviceReloadCount = 0;
   }
   world = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
   worldVector0 = WorldRuntime_GetCameraPosition(world);

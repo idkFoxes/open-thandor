@@ -18,18 +18,21 @@
    the entry's typeTag. The in-memory directory is reloaded afterwards. Returns true on success, false when
    deleting the old entry, a seek/read/write, the encoder or the directory reload fails (the error code is
    dropped: no caller uses it).
-   Called directly by the save-game writer in gameplay/session/savegame.cpp (no callback table).
+   Called directly by the save-game writers in gameplay/session/savegame.cpp and campaign_carryover.cpp (no
+   callback table).
 */
 Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
 
 {
   uint8_t *destination; /* archive header, then the new entry header, then (encoded) its payload */
+  PckEntryHeader *newEntry; /* the entry header behind the archive header */
   uint32_t packedByteCount;
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
 
   destination = g_PackageScratchBuffer;
+  newEntry = (PckEntryHeader *)(destination + PCK_ENTRY_HEADER_BYTES);
   if (Package_FindEntryInMount(path,fileHandle) != nullptr) {
     if (!Package_DeleteEntry(path,fileHandle,nullptr)) {
       return false;
@@ -47,21 +50,13 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
   ((PckArchiveHeader *)destination)->entryCount++;
   if (compressionMethod == PCK_COMPRESSION_STORED) {
     alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
-    /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
-       store schedules differently) */
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD] = PCK_COMPRESSION_STORED;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 1] = 0;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 2] = 0;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 3] = 0;
+    newEntry->packedSize = alignedByteCount;
+    newEntry->compressionMethod = PCK_COMPRESSION_STORED;
     *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
          *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+    newEntry->runtimePayloadOffset = 0;
+    newEntry->typeTag = (PckAssetTypeTag)*sourceData;
+    newEntry->unpackedSize = unpackedSize;
     if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }
@@ -84,16 +79,13 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
              destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,nullptr)) {
       return false;
     }
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = packedByteCount;
+    newEntry->packedSize = packedByteCount;
     byteCount = packedByteCount + PCK_ENTRY_HEADER_BYTES;
-    *(PckCompressionMethod *)(destination + PCK_NEW_ENTRY_COMPRESSION_METHOD) = compressionMethod;
+    newEntry->compressionMethod = compressionMethod;
     *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+    newEntry->runtimePayloadOffset = 0;
+    newEntry->typeTag = (PckAssetTypeTag)*sourceData;
+    newEntry->unpackedSize = unpackedSize;
     if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
       return false;
     }

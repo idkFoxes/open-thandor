@@ -764,7 +764,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
   return visitedCount;
 }
 
-/* Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly
+/* Heap-building step of the heapsort of g_EntityPathingPriorityPairs (EntityPathing_RebuildOverlappingGroupRoutes): the newly
    appended last entity/priority pair moves up the max-heap, swapping with its parent while its priority is
    larger.
 */
@@ -798,7 +798,7 @@ void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorit
   }
 }
 
-/* Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
+/* Extraction step of the heapsort of g_EntityPathingPriorityPairs (EntityPathing_RebuildOverlappingGroupRoutes): after the root was
    swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
    larger-priority child while that child is larger.
 */

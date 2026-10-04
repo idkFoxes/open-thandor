@@ -75,7 +75,10 @@ void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 }
 
 /* Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
-   of its runtime flags, the linked mark included.
+   of its runtime flags, the linked mark included. runtimeFlags (+0x4C) is the same field as
+   WorldObjectRecordCommon.allocationFlags, so this also frees the node's world object record
+   (WORLD_OBJECT_RECORD_ALLOCATED). The node's own previousNode/nextNode stay as they were;
+   WorldRuntime_ForEachOwnerListNode relies on that.
 */
 void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
 
@@ -102,6 +105,11 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
 
 /* Calls callback(callbackContext, node) for every node of the world's owner list (ownerListHead), from the most
    recently linked one on.
+   Original quirk: callbacks may destroy objects while the walk runs (e.g. the shutdown release callback via
+   ArmyRuntime_DestroyInstanceAndRefreshUi), unlinking this node and others and nesting further ForEach calls.
+   The walk still reads node->nextNode afterwards; that works only because WorldRuntime_UnlinkOwnerListNode
+   leaves the unlinked node's own links intact and the object pools are not freed meanwhile. Keep both if this
+   list is ever rewritten (clearing the links on unlink would end or change the walk).
 */
 void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
           WorldRuntimeContext *world)

@@ -17,8 +17,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef union ResourceRegistrationRuntimePayloadReference4 ResourceRegistrationRuntimePayloadReference4, *PResourceRegistrationRuntimePayloadReference4;
 typedef struct WorldObjectRecord WorldObjectRecord, *PWorldObjectRecord;
 typedef struct WorldObjectRecordCommon WorldObjectRecordCommon, *PWorldObjectRecordCommon;

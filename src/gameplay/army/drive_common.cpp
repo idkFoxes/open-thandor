@@ -11,11 +11,12 @@
 
 /* Implementation ownership: gameplay/army/drive_common. */
 
-/* Accelerates a moving model (called directly by the movement class updates in gameplay/army/movement): the
-   speed limit is the definition's movementSpeed. While the pitch (worldRotationAngle1) is below the first class threshold it is cut to 5/16, unless
-   the pitch is at least the second threshold: then it stays full, or 5/8 when angle2 - angle0 lies between a
-   quarter and three quarters of a turn. The advance per tick grows by accelerationPerTick up to that
-   limit (and drops to it at once). When the model starts from standstill its start sound plays where the active faction's cell bits 0/1 are set.
+/* Accelerates a moving model (called directly by the movement class updates in drive_ground.cpp and
+   drive_banking.cpp): the speed limit is the definition's movementSpeed. While the pitch (worldRotationAngle1) is
+   below the first class threshold it is cut to 5/16, unless the pitch is at least the second threshold: then it
+   stays full, or 5/8 when angle2 - angle0 lies between a quarter and three quarters of a turn. The advance per
+   tick grows by accelerationPerTick up to that limit (and drops to it at once). When the model starts from
+   standstill its start sound plays where the active faction's cell bits 0/1 are set.
 */
 void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
@@ -84,11 +85,11 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
   return;
 }
 
-/* Reacts to the model a moving model has run into (called directly by the movement code in
-   gameplay/army/movement with the mover's model runtime and position, Y before X). A free class-23 platform of
-   the same faction is told to dock (behaviorState bit 0, collision retry countdown 0x20) and, once it is ready
-   (bit 1), the two model runtimes are linked to each other (classState.linkedArmyRuntimeOrSavedOffset); a model
-   of class 0 is run over and takes impact damage 0x100000 from the direction of the collision.
+/* Reacts to the model a moving model has run into (called directly by the movement code in drive_ground.cpp,
+   drive_banking.cpp and walker.cpp with the mover's model runtime and position, Y before X). A free class-23
+   platform of the same faction is told to dock (behaviorState bit 0, collision retry countdown 0x20) and, once it
+   is ready (bit 1), the two model runtimes are linked to each other (classState.linkedArmyRuntimeOrSavedOffset); a
+   model of class 0 is run over and takes impact damage 0x100000 from the direction of the collision.
 */
 void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
           ModelRuntimeSlot *collisionPartnerModelRuntime,WorldRuntimeContext *worldRuntime)

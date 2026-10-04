@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/lobby.h>
 #include <thandor/thandor.h>
+#include <thandor/network/protocol/lockstep.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -60,11 +61,17 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
   if (commandCount == 0 || commandCount > FRONTEND_PACKET_MAX_UNIT_COUNT) {
     return;
   }
-  do {
-    CommandDispatch_ExecuteRecord(FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,&commandRecord->command);
-    commandRecord++;
-    commandCount--;
-  } while (commandCount != 0);
+  /* only the batch and the dispatch range are used by Lockstep_ExecuteRecords, which only reads the records */
+  const LockstepHostChannel receivedBatch = {
+    nullptr,
+    const_cast<FrontendCommandPacketRecord *>(commandRecord),
+    0,
+    nullptr,
+    0,
+    FRONTEND_COMMAND_CODE_BASE,
+    FRONTEND_COMMAND_HANDLER_REGION_END
+  };
+  Lockstep_ExecuteRecords(receivedBatch,commandCount);
 }
 
 /* Not in the original: makes a UTF-16 text received from a peer safe to draw. Up to its terminator, code
@@ -535,45 +542,37 @@ static void FrontendTransfer_StoreCapabilityHeartbeat
   FrontendPlayerRuntime_UpdateStartButtonByCdShare();
 }
 
+/* Lockstep channel of the lobby (host side). The lobby sends no wait packets: Lockstep_ResendBatchOrWait is
+   never called with it. Same slots, batch buffer and command range as the frontend session's channel. */
+static const LockstepHostChannel g_LobbyLockstepChannel = {
+  g_FrontendPlayerCommandRecords,
+  g_FrontendCommandBatchPacketBuffer,
+  FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE,
+  nullptr,
+  0,
+  FRONTEND_COMMAND_CODE_BASE,
+  FRONTEND_COMMAND_HANDLER_REGION_END
+};
+
 /* Host: adds its own next queued command (slot 0) to the commands collected from the players, compacts the
    non-empty slots into one lobby command batch (clearing them; the player id stays), sends it to every player
    but the host (record 0) and executes it. Nothing is sent when no slot holds a command. */
 static void FrontendTransfer_BroadcastAndExecuteLobbyCommands()
 {
   uint32_t commandCount;
-  int slotsRemaining;
-  int peersRemaining;
-  FrontendCommandPacketRecord *commandRecord;
-  FrontendCommandPacketRecord *batchCursor;
-  UiTransferEndpointDescriptor *peerEndpointCursor;
 
   FrontendCommandQueue_DequeueFirstIntoRecord(g_FrontendPlayerCommandRecords);
-  commandCount = 0;
-  commandRecord = g_FrontendPlayerCommandRecords;
-  batchCursor = g_FrontendCommandBatchPacketBuffer;
-  slotsRemaining = g_FrontendPlayerRuntimeCount;
-  do {
-    if ((commandRecord->command.packedCommandAndPlayerId & 0xffffff00) != 0) {
-      FrontendTransfer_CopyCommandRecord(batchCursor,commandRecord);
-      batchCursor++;
-      commandCount++;
-      commandRecord->command.packedCommandAndPlayerId = commandRecord->command.packedCommandAndPlayerId & 0xff;
-    }
-    commandRecord++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
-  if (commandCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT == 0) {
+  /* g_FrontendPlayerRuntimeCount is at least 1 on the host (it counts itself). The original packs in a
+     do-while (a count of 0 would wrap); Lockstep_PackBatch packs nothing then. */
+  commandCount =
+       Lockstep_PackBatch
+                 (g_LobbyLockstepChannel,(uint32_t)g_FrontendPlayerRuntimeCount,LockstepEmpty::SendNothing,true);
+  if (commandCount == 0) {
     return;
   }
-  /* the first packed record's header doubles as the batch header */
-  g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
-       commandCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE;
-  peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-  for (peersRemaining = g_FrontendPlayerRuntimeCount - 1; peersRemaining != 0; peersRemaining--) {
-    UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
-    peerEndpointCursor = peerEndpointCursor + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
-  }
-  FrontendTransfer_ExecuteLobbyCommandRecords(g_FrontendCommandBatchPacketBuffer,commandCount & 0xffff);
+  Lockstep_SendBatchToClients(g_LobbyLockstepChannel,(uint32_t)g_FrontendPlayerRuntimeCount);
+  /* 1..8 records (at most one per player slot) */
+  Lockstep_ExecuteRecords(g_LobbyLockstepChannel,commandCount & 0xffff);
 }
 
 /* Host: keeps a player's next command (0x10011) in its command slot and marks it pending, then broadcasts

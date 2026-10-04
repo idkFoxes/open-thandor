@@ -177,23 +177,14 @@ void FrontendCallback_NoOpArg1(void *source)
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument)
 
 {
-  /* the inner tests repeat the outer one, so only the local-direct and network-queued paths are reachable */
+  /* Original quirk: the record argument depends on the same role test that FrontendCommand_Issue repeats, so
+     a local game calls the handler with record 0 and a network game queues record 4. */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-    }
-  }
-  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-           SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,4);
+    FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,4);
+    FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,4);
   }
   return;
 }
@@ -205,13 +196,7 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
 void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   return;
 }
 
@@ -233,13 +218,7 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
     parentNodeAddress = (uintptr_t)(frontendRootPage->rootNode).parent;
   }
   if (sourceNode == &frontendRootPage->returnToMainActionControl) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-    }
+    FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
     return;
   }
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {

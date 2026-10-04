@@ -26,7 +26,7 @@ KEYWORDS = {
     "float", "double", "bool", "auto", "constexpr", "static_assert", "template", "typename", "using", "namespace",
     "operator", "else", "do", "case", "default", "break", "continue", "goto", "true", "false", "nullptr", "new",
     "delete", "this", "register", "thread_local", "noexcept", "decltype", "alignof", "__forceinline", "__cdecl",
-    "__stdcall", "__fastcall", "THANDOR_FN", "THANDOR_PTR",
+    "__stdcall", "__fastcall", "THANDOR_SLOT", "UI_SLOT", "THANDOR_PTR",
 }
 BOILERPLATE_COMMENT = re.compile(r"^(Module data\.|Implementation ownership:|Submodule:|Module:)", re.I)
 

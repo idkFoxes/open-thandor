@@ -29,7 +29,6 @@ typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRa
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
 using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
-using SoftwareFramebufferDestroyProc = void (SoftwareFramebufferAccess * framebuffer);
 
 enum {
     SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT=4
@@ -133,7 +132,6 @@ using GraphicsDrawPrimitiveQueueProc = void (int32_t clipMaxY, int32_t clipMaxX,
 using GraphicsEndSceneProc = void ();
 using GraphicsSetViewportProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);
 using SoftwareBuildPixelPackTablesProc = void (int32_t colorScaleQ16, int32_t colorBiasQ16);
-using SoftwareDrawQueueProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);
 using SoftwareFramebufferCreateProc = SoftwareFramebufferAccess * (SoftwareFramebufferPixelSize bytesPerPixel, GraphicsPixelDimension height, GraphicsPixelDimension width, uint32_t * outError);
 using SoftwareRasterHandler = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet);
 

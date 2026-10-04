@@ -19,6 +19,8 @@
 #define MOVIE_TOKEN_SKIP_SHORT 0x19 /* 1 byte: skip 1..8 blocks */
 #define MOVIE_TOKEN_SKIP_MEDIUM 0x1A /* 2 bytes: skip 9..0x808 blocks */
 #define MOVIE_TOKEN_SKIP_LONG 0x1B /* 4 bytes: skip 0x809 or more blocks */
+/* The decoder treats every token >= MOVIE_TOKEN_SKIP_LONG as a long skip, so the unused tokens 0x1C..0x1F
+   (never written by the encoder) decode like 0x1B. */
 /* Largest run of kept blocks the short and the medium skip token encode */
 #define MOVIE_SKIP_SHORT_MAX_BLOCKS 8
 #define MOVIE_SKIP_MEDIUM_MAX_BLOCKS 0x808
@@ -34,12 +36,6 @@
 #define MOVIE_COLOR_CHROMA_MASK 0x7fe0
 /* Bit 31 of a colour block's second dword: every luma step counts twice (4-bit levels 0..15 halved) */
 #define MOVIE_BLOCK_DOUBLE_STEPS 0x80000000
-/* Largest luma level of a colour block with doubled steps */
-#define MOVIE_BLOCK_WIDE_LEVEL_MAX 15
-/* 0x8000 * sqrt(3): the blue-green axis of the chroma vector (MovieColor_ComputeChromaCodeFromRgb888) */
-#define MOVIE_CHROMA_SQRT3_Q15 0xddb4
-/* 2^16 / 3: (r + g + b) * this >> 19 is the channel average scaled to 5 bits (MovieColor_ComputeLuma5FromRgb888) */
-#define MOVIE_LUMA_THIRD_Q16 0x5555
 
 /* Functions are grouped by semantic ownership. */
 

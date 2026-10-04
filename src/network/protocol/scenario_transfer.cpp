@@ -268,13 +268,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevel()
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"level");
     return;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkTaskAssignmentReadyById(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LEVEL_RECEIVED,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_MarkTaskAssignmentReadyById>(0,0,0);
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
 }
 
@@ -308,13 +302,7 @@ static void FrontendScenarioTransfer_ProcessReceivedFieldGrid()
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"field grid");
     return;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkLevelReceivedById(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_FIELD_GRID_RECEIVED,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_MarkLevelReceivedById>(0,0,0);
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
 }
 
@@ -386,13 +374,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle()
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
     return;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_BUNDLE_RECEIVED,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_MarkLevelLoadedById>(0,0,0);
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
   /* The campaign starts at its first level (stored as the current level): find that level's record
      and build level\<name>.lev. levelRecordCursor is the asset base advanced by whole
@@ -459,13 +441,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle()
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"level bundle");
     return;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_BUNDLE_RECEIVED,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_MarkLevelLoadedById>(0,0,0);
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
   FrontendPlayerRuntime_InitializeFactionAssignments();
 }

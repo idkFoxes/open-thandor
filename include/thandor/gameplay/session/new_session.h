@@ -19,9 +19,6 @@
 /* Reload value of g_InGameNetworkTickCountdown: the periodic timer counts it down, and a simulation step only
    runs at zero, so the game advances at most 80 / 4 = 20 steps per second. */
 #define INGAME_TIMER_TICKS_PER_SIMULATION_STEP 4
-/* Command code (InGameCommandQueue_AppendLocalPlayerCommand) with which a player reports its level as loaded;
-   single player calls its handler FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus directly. */
-#define INGAME_COMMAND_PLAYER_READY 0x550
 
 /* World object pool of a session (InGameRuntime_InitializeNewSession, InGameRuntime_InitializeLoadedSession): records of
    sizeof(WorldObjectRecord) bytes, handed to WorldRuntime_AttachObjectArray */

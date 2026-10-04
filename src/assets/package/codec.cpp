@@ -296,12 +296,8 @@ typedef struct PckHuffmanBitWriter {
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
    The caller rejects an empty source, for which the count loop would run 2^32 times.
-   The original clears all three with one run of PCK_HUFFMAN_WORKSPACE_DWORDS dwords from the start of
-   g_PckHuffmanSymbolWorkspace256, relying on the node workspace following the symbol table directly in its image. Here they are two separate
-   objects whose distance is up to the linker (an AddressSanitizer build puts a redzone between them), so each
-   is cleared on its own. A single run through the symbol table pointer left the tail of the node workspace
-   uncleared there: the previous call's root kept its weight, joined the new tree as a stale live node and
-   made the 256-symbol tree overflow the internal node workspace (encode failure). */
+   The symbol table and the node workspace are separate objects, so each is cleared on its own (a stale node
+   left from the previous call would join the new tree and overflow the internal node workspace). */
 static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount sourceSizeBytes)
 {
   uint32_t *workspaceClearCursor;
@@ -616,8 +612,8 @@ Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,
 }
 
 
-/* Loads the 256-byte frequency table into the symbol table, clears the leaf and internal node workspaces (0x800
-   dwords behind the symbol table) and copies the frequencies into the leaf weights. */
+/* Loads the 256-byte frequency table into the symbol table, clears the leaf and internal node workspace
+   (g_PckHuffmanNodeWorkspace) and copies the frequencies into the leaf weights. */
 static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
 {
   uint32_t *workspaceClearCursor;
@@ -660,8 +656,7 @@ static PckHuffmanNode *PckCodec_DecoderBuildTree()
     lowestNode->weight = 0;
     secondLowestNode->weight = 0;
     nextInternalNode++;
-    /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
-       where the internal node workspace ends. */
+    /* stop when the internal node workspace is used up */
     if (g_PckHuffmanNodeWorkspace + PCK_HUFFMAN_NODE_COUNT <= nextInternalNode) {
       return nullptr;
     }

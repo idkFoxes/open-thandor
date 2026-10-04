@@ -5,7 +5,8 @@
  * Reverse engineering by idkFoxes 2026
  */
 
-/* Hex path costs on the scratch grid: the weighted neighbour propagation (Dijkstra over the hex lattice),
+/* Hex path costs on the scratch grid: the weighted neighbour propagation (a FIFO label-correcting queue over
+   the hex lattice, not Dijkstra: a cell is queued again whenever a cheaper cost reaches it),
    the best-route backtrack and the relocation out of a blocked cell. */
 
 #include <thandor/world/pathing/path_cost.h>

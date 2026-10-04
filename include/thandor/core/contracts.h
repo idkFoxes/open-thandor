@@ -24,12 +24,13 @@ using UQ12 = unsigned int;
 /* Compile-time check. */
 #define THANDOR_STATIC_ASSERT(condition, message) static_assert(condition, message)
 
-/* THANDOR_FN(function) / THANDOR_PTR(pointer): an untyped function or object address for a table entry or
-   argument whose exact pointer type is given by its target (vtable slots, callback tables, handler tables).
-   The value converts to the pointer type it is assigned to. To be replaced by exactly typed entries when the
-   tables become classes. */
-#include <thandor/core/ptr32.h> /* ThandorAnyFn, ThandorAnyPtr, Ptr32 */
-#define THANDOR_FN(f) (ThandorAnyFn{(void (*)())(f)})
+/* THANDOR_PTR(pointer): an untyped object address for a table entry or argument whose exact pointer type is
+   given by its target. The value converts to the object pointer type it
+   is assigned to, never to a function pointer: function-pointer slots take THANDOR_SLOT(function) (core/slot.h),
+   which checks the signature. (The former THANDOR_FN(function), which converted to any function pointer, is gone
+   since step 8.) A plain void * that only identifies a function by its address, such as the handler of the
+   network command tables (network/protocol/commands.cpp), may still hold THANDOR_PTR(&function). */
+#include <thandor/core/ptr32.h> /* ThandorAnyPtr, Ptr32 */
 #define THANDOR_PTR(p) (ThandorAnyPtr{(void *)(p)})
 
 /* A temporary of type T from a braced initializer: THANDOR_COMPOUND(T){a, b}. */

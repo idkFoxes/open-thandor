@@ -218,7 +218,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
 }
 
 /* Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for
-   the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/B,
+   the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/TwinBarrelTurret,
    ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments): the turn velocity grows by the weapon definition's
    acceleration up to its rate limit and is reset when it points away; the target is taken exactly once it is
    within one step. Returns true while the remaining difference exceeds +-MODEL_AIM_TOLERANCE_ANGLE16 (still

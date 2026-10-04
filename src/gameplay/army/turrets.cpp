@@ -10,13 +10,13 @@
 
 /* Implementation ownership: gameplay/army/turrets. */
 
-/* Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by
+/* Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called per
    model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The root node yaws, its first
    child pitches, and that child's first child is the barrel: while reloading it spins by the definition's step
    per tick, after a shot it recoils back and returns over the recoil countdown. With an aim point the turret
    turns towards the launch direction and fires once it is on target and reloaded, unless
    ArmyRuntimeCommand_UpdateTargetFollowingState finds the line of fire blocked; without one it returns to rest
-   while the owner moves or it is still turning. Skipped while destroyed.
+   while the owner moves or it is still turning. Skipped while switched off or destroyed.
 */
 
 void ArmyRuntimeClass_UpdateSingleBarrelTurret
@@ -50,7 +50,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   ModelRuntimeNode *partNode;
 
   elapsedTicks = g_InGameSimulationStepTicks;
-  /* bit 0x1 of the runtime flags is not named yet */
+  /* switched off or destroyed: the turret does nothing this tick */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     weaponDefinition = modelRuntime->modelDefinition;
     ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
@@ -152,7 +152,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
                        Thandor_U32ToPointer<MdlSerializedNodeHeader>(
-                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
                        childSerializedOffsets[0]),worldRuntime);
           }
         }
@@ -165,7 +165,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
 }
 
 /* Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
-   called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Same as
+   called per model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Same as
    ArmyRuntimeClass_UpdateSingleBarrelTurret, but the pitch node has two barrels (children 0 and
    1) with their own recoil countdowns; the shots alternate between them, the even sequence numbers firing from
    barrel 1 and its muzzle point.
@@ -204,7 +204,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ModelRuntimeNode *partNode;
 
   elapsedTicks = g_InGameSimulationStepTicks;
-  /* bit 0x1 of the runtime flags is not named yet */
+  /* switched off or destroyed: the turret does nothing this tick */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     weaponDefinition = modelRuntime->modelDefinition;
     ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
@@ -331,7 +331,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
                        Thandor_U32ToPointer<MdlSerializedNodeHeader>(
-                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+                       Thandor_U32ToPointer<MdlSerializedNodeHeader>(weaponDefinition->rootNode->childSerializedOffsets[0])-> /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
                        childSerializedOffsets[muzzlePointIndex]),worldRuntime);
           }
         }

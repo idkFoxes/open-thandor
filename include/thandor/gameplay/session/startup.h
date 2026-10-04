@@ -10,6 +10,7 @@
 
 #include <thandor/core/types.h>
 #include <thandor/gameplay/session/types.h>
+#include <thandor/gameplay/selection/types.h>
 #include <thandor/ui/frontend/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
@@ -28,6 +29,28 @@ void InGameRuntime_ReleaseFactionScratchBuffers();
 uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument);
 
 void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,Bool8 enabled);
+
+/* Shared steps of InGameRuntime_InitializeNewSession and InGameRuntime_InitializeLoadedSession. */
+
+void InGameSession_ResetTickState();
+
+void InGameSession_InstallStepTimerAndHooks();
+
+Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,InGameRuntimeRoot **outRoot,
+          uint32_t *outError);
+
+Bool8 InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,LevelAssetHeader *levelHeader,
+          InGameRuntimeRoot *inGameRoot,uint32_t *outError);
+
+Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot *inGameRoot,uint32_t *outError);
+
+uint32_t InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world);
+
+Bool8 InGameSession_AllocateGridScratchAndRebuildDerived(WorldRuntimeContext *world,uint32_t *outError);
+
+void InGameSession_RebuildUiGrids(InGameRuntimeRoot *inGameRoot);
+
+void InGameSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot);
 
 extern int32_t g_InGamePendingSimulationTicks;
 

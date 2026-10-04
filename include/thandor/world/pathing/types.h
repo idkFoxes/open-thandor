@@ -56,7 +56,7 @@ struct GridScratchCell {
     GridPathCost pathCost; 
 };
 struct GridPathBestUnreachableCell {
-    uint32_t bestCellByteOffset; /* in/out: byte offset from g_GridScratchBase. */
+    uint32_t bestCellByteOffset; /* in/out: byte offset from g_GridScratchPrimary. */
     GridPathCost bestCost;    /* in/out: best path metric; outer caller starts at 0x7fffffff. */
 };
 

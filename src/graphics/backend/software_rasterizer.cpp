@@ -28,8 +28,6 @@ THANDOR_ALIGN(16) SoftwareRasterScanState g_SoftwareRasterScanState = {0};
 
 int32_t *g_SoftwareDepthBuffer = nullptr;
 
-SoftwareDrawQueueProc *g_SoftwareDrawQueue = nullptr;
-
 uint32_t g_SoftwareDepthRowStrideBytes = 0;
 
 void *g_SoftwareAuxiliaryTargetBase = nullptr;
@@ -74,7 +72,7 @@ static SoftwareRasterHandler *SoftwareRenderer_SelectHandler(SoftwareRasterHandl
   return handler;
 }
 
-/* Queue renderer for the 32-bit framebuffer (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
+/* Queue renderer for the 32-bit framebuffer (called by SoftwareRenderer_DrawPrimitiveQueueBridge):
    prepares every packet of the queue and draws it with the raster handler its render flags select.
 */
 void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -130,7 +128,8 @@ void SoftwareRenderer_DrawQueueAuxiliary
 }
 
 /* g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
-   renderer (g_SoftwareDrawQueue); draws nothing when the lock fails.
+   renderer SoftwareRenderer_DrawQueue32Bit (the original called it through a slot that the display mode set to
+   the 16-bit or the 32-bit queue renderer); draws nothing when the lock fails.
 */
 void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -141,7 +140,7 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
-    g_SoftwareDrawQueue(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
+    SoftwareRenderer_DrawQueue32Bit(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
     g_GraphicsFramebufferEndAccess();
   }
   return;

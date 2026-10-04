@@ -369,6 +369,9 @@ void GameFactionRelations_MaybeResetPairState
    the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's
    localPlayerMarkedCellCount (its localPlayerMarkedCells pointer aliases this list) is raised too. Called by
    PlayerPairList_InsertRange.
+   Original quirk: the cap check is `count < PLAYER_PAIR_LIST_CAPACITY` before the duplicate scan, so a list
+   that reached 4096 records accepts no more cells, and PlayerPairList_RemoveFirstMatch skips it as well: a
+   full list stays blocked for the rest of the session.
 */
 void PlayerPairList_InsertUnique
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
@@ -478,6 +481,8 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
               (2,2,4,4,sourceFactionIndex,targetFactionIndex);
     break;
   case 4:
+    /* Original quirk: IsRecentTimedRelationState only accepts states 2, 5 and 9, so this check never holds
+       and state 4 always falls through to the state-5 transition. */
     isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
       return;
@@ -491,6 +496,8 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
               (5,5,8,8,sourceFactionIndex,targetFactionIndex);
     break;
   case 8:
+    /* Original quirk: never holds either (see case 4); state 8 always falls through to the state-9
+       transition. */
     isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
       return;
@@ -943,7 +950,6 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
                currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetModelRuntime,&inGameRoot->worldRuntime);
-          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime);
         }
         else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
                   (shooterArmy->commandTargetArmyRuntime != nullptr &&

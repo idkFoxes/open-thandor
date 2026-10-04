@@ -129,6 +129,8 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   return loadError;
 }
 
+static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
+
 /* Failure exit of Movie_Open once a file or package handle is open: closes the handle unless it is a shared
    package handle, stores error in *outError (when not NULL) and returns false. */
 static Bool8 Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
@@ -264,7 +266,7 @@ Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayb
     return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
   }
   if (!g_FileSystemGetPosition(handle,&streamPosition)) {
-    /* a failed position query fails the open with the position value as the error (0) */
+    /* Original quirk: a failed position query fails the open with the position value as the error (0) */
     g_MemoryApi.free(header);
     return Movie_OpenFail(handle,isSharedPackageHandle,streamPosition,outError);
   }
@@ -381,7 +383,7 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
    MOVIE_REFILL_LIMIT_BYTES, so playback does not stall on disk reads. Ends when the movie is closed, fully
    loaded or a read fails (MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
 */
-uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
+static uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
   void *handle;

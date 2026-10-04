@@ -17,8 +17,8 @@
 
 static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = nullptr;
 
-/* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1: per channel the average of the
-   new colour and the pixel already in the plane (used to blend water over the ground colour). */
+/* Adds each byte of pixel to the matching 16-bit lane of words and halves the sum: per channel the average of
+   the new colour and the pixel already in the plane (used to blend water over the ground colour). */
 static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,uint32_t pixel)
 
 {
@@ -134,8 +134,8 @@ void TerrainCompositeTexture_FillPlane1()
   AssetDimension columnsRemaining;
   uint8_t *planePixelCursor;
   FieldGridCell *fieldCell;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
+  uint64_t litGroundWords;
+  uint64_t litWaterWords;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -159,11 +159,11 @@ void TerrainCompositeTexture_FillPlane1()
         else {
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
         }
-        /* PUNPCKLBW/PSRLW 3, PMULHW by the lighting level, PACKUSWB */
-        mm0PackedValue0 =
+        /* channels widened to words and shifted right by 3, scaled by the lighting level, packed with saturation */
+        litGroundWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(materialColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litGroundWords);
       }
       else {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -179,10 +179,10 @@ void TerrainCompositeTexture_FillPlane1()
         else {
           lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
-        mm0PackedValue1 =
+        litWaterWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue1);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litWaterWords);
       }
       fieldCell++;
       planePixelCursor = planePixelCursor + 4;
@@ -212,10 +212,10 @@ void TerrainCompositeTexture_FillPlane2()
   AssetDimension columnsRemaining;
   uint8_t *planePixelCursor;
   FieldGridCell *fieldCell;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm0PackedValue1;
+  uint64_t litXeniteWords;
+  uint64_t litTritiumWords;
+  uint64_t litSoilWords;
+  uint64_t litWaterWords;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -240,10 +240,10 @@ void TerrainCompositeTexture_FillPlane2()
           else {
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
-          mm0PackedValue3 =
+          litSoilWords =
                pmulhw(ColorLanes_UnpackBytesShiftRight(soilColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue3);
+          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litSoilWords);
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
@@ -257,10 +257,10 @@ void TerrainCompositeTexture_FillPlane2()
           else {
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
-          mm0PackedValue2 =
+          litTritiumWords =
                pmulhw(ColorLanes_UnpackBytesShiftRight(tritiumColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue2);
+          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litTritiumWords);
         }
       }
       else {
@@ -275,10 +275,10 @@ void TerrainCompositeTexture_FillPlane2()
         else {
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
         }
-        mm0PackedValue0 =
+        litXeniteWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(xeniteColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(litXeniteWords);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -295,13 +295,13 @@ void TerrainCompositeTexture_FillPlane2()
           lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
         existingPixelArgb = *(uint32_t *)planePixelCursor;
-        mm0PackedValue1 =
+        litWaterWords =
              pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        /* PADDW with the existing pixel's bytes (PUNPCKLBW/PSRLW 8), PSRLW 1, PACKUSWB */
+        /* averaged with the pixel already in the plane, packed with saturation */
         *(uint32_t *)planePixelCursor =
              ColorLanes_PackWordsUnsignedSaturate
-                       (TerrainColor_AverageWordsWithPixelBytes(mm0PackedValue1,existingPixelArgb));
+                       (TerrainColor_AverageWordsWithPixelBytes(litWaterWords,existingPixelArgb));
       }
       fieldCell++;
       planePixelCursor = planePixelCursor + 4;

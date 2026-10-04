@@ -115,10 +115,10 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
     ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
     return;
   }
-  /* The original's branch here tests a CPU flag that is formally undefined at that point (it is left over
-     from a multiplication); measured on an AMD Zen 3 it still holds the result of the runtimeClassId /
+  /* Original quirk: the branch here tests a CPU flag that is formally undefined at that point (it is left
+     over from a multiplication); measured on an AMD Zen 3 it still holds the result of the runtimeClassId /
      placementContactKindIndex tests above, so the counters are updated unless the army was turned to the
-     impact. The C follows that. */
+     impact. This code follows that. */
   rotateToImpact =
        (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_00) &&
        (modelRuntime->definitionOrSavedId.runtimeDefinition->placementContactKindIndex == 0);
@@ -195,10 +195,10 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
       if (parentModelNode != nullptr) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
       }
-      /* Without a parent the original goes on to the owner faction's relationCounterC/D update of
-         ArmyRuntime_ApplyImpactDamageAndFinalizeState, but guarded by a branch on a CPU flag that is left over
+      /* Original quirk: without a parent the original goes on to the owner faction's relationCounterC/D update
+         of ArmyRuntime_ApplyImpactDamageAndFinalizeState, but guarded by a branch on a CPU flag that is left over
          from a multiplication (measured on an AMD Zen 3: unchanged) and still reflects the parent == NULL test,
-         so the branch is always taken and the update never runs: the C omits it. */
+         so the branch is always taken and the update never runs: this code omits it. */
     }
     else if (maxHealth < (int)modelRuntime->health) {
       /* a negative damage (repair) never raises the health above maxHealth */
@@ -352,9 +352,9 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
                impactAngle;
         }
         if (impactValue != 0) {
-          /* The original's branch here tests a CPU flag that is left over from a multiplication (measured on
-             an AMD Zen 3: unchanged), so it still holds the impactValue == 0 test, whose own branch already left
-             for zero; the branch is never taken and the counters are always updated. The C follows that. */
+          /* Original quirk: the branch here tests a CPU flag that is left over from a multiplication (measured
+             on an AMD Zen 3: unchanged), so it still holds the impactValue == 0 test, whose own branch already left
+             for zero; the branch is never taken and the counters are always updated. This code follows that. */
           victimFactionIndex =
                ((ArmyRuntimeSlot *)(targetEntityRuntime->common).ownership.runtimeLink)->factionIndex;
           victimClassId =

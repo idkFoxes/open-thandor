@@ -11,12 +11,6 @@
 
 /* Module data. */
 
-/* UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
-THANDOR_ALIGN(4) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = {'a', 'r', 'm', 'y', '0', '0', '0', '0', '.', 'g', 'f', 'x', 0};
-
-/* char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
-THANDOR_ALIGN(4) char g_UnreferencedArmyTag[5] = "ARMY";
-
 ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {};
 
 /* Fixed name for the fatal-error box when an ARM asset is invalid (the asset's own path is not known here). */

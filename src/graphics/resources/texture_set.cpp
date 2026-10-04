@@ -22,13 +22,9 @@ GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = &GraphicsTextureS
 
 GraphicsTextureResource **g_GraphicsTextureSlots = nullptr;
 
-[[maybe_unused]] static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = &GraphicsTextureSet_RefreshNoOp;
-
 GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = &GraphicsTextureSet_AllocateMetadata;
 
 GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = &GraphicsTextureSet_FreeMetadata;
-
-GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = &GraphicsTexture_RebuildNoOp;
 
 /* Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per
    subresource, registered in g_GraphicsTextureSlots. Nothing reads the resources any more (they held the
@@ -153,21 +149,12 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
   return;
 }
 
-/* g_GraphicsRefreshTextureColor and g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels
-   directly, so there is nothing to re-upload after they changed (the original's hardware renderers installed
-   their own re-uploads here).
+/* g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels directly, so there is nothing to
+   re-upload after they changed (the original's hardware renderers installed their own re-uploads here; the
+   original also had a colour refresh slot and a rebuild-all slot that the texture quality settings called, both
+   no-ops in software and removed here).
 */
 void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
-
-{
-  return;
-}
-
-/* g_GraphicsRebuildAllStagingTextures: the software renderer keeps no device textures, so there is nothing to
-   rebuild after a display mode or texture detail change (the original's hardware renderers installed their own
-   rebuild here).
-*/
-void __cdecl GraphicsTexture_RebuildNoOp()
 
 {
   return;

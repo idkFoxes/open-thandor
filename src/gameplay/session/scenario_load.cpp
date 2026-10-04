@@ -99,7 +99,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
       loadedEntry = FieldGrid_LoadValidated((uint16_t *)fieldGridPath,&loadErrorCode); /* the original: Package_LoadEntry, no size check */
       checkedValue = FatalError_ExitIfFailed
                           (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
-      (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+      (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     }
     else {
       /* Not found (the record one past the last player is written, as in the original) or the
@@ -114,7 +114,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   checkedValue = FatalError_ExitIfFailed
                       (loadedEntry != nullptr ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == nullptr);
   sourceGrid = (FieldGridAsset *)checkedValue;
-  (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+  (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     /* transfer image: the decoded size, then the encoded grid; copied into its own buffer */
@@ -318,7 +318,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       }
       UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)bundleByteCount,(uint32_t *)checkedValue);
     }
-    (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+    (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 32-bit format field: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     FrontendPlayerRuntime_InitializeFactionAssignments();
   }
   else {

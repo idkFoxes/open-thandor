@@ -199,16 +199,16 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
 
 const TerrainClassPlacementAndOverlayCallbackTable10 g_TerrainClassPlacementAndOverlayCallbacks10 = {
     .placementTests = {
-        /* 0 */ THANDOR_FN(TerrainHeightBand_TestAroundWorldPoint),
-        /* 1 */ THANDOR_FN(TerrainAuxHeightThreshold_TestAroundWorldPoint),
-        /* 2 */ THANDOR_FN(TerrainHeightBand_TestAroundWorldPoint),
-        /* 3 */ THANDOR_FN(TerrainHeightBand_TestAroundWorldPoint),
-        /* 4 */ THANDOR_FN(TerrainHeightBand_TestAroundWorldPoint)
+        /* 0 */ THANDOR_SLOT(TerrainHeightBand_TestAroundWorldPoint),
+        /* 1 */ THANDOR_SLOT(TerrainAuxHeightThreshold_TestAroundWorldPoint),
+        /* 2 */ THANDOR_SLOT(TerrainHeightBand_TestAroundWorldPoint),
+        /* 3 */ THANDOR_SLOT(TerrainHeightBand_TestAroundWorldPoint),
+        /* 4 */ THANDOR_SLOT(TerrainHeightBand_TestAroundWorldPoint)
     },
     .overlayCallbacks = {
-        /* 0 */ THANDOR_FN(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
-        /* 1 */ THANDOR_FN(FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint),
-        /* 2 */ THANDOR_FN(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
-        /* 3 */ THANDOR_FN(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
-        /* 4 */ THANDOR_FN(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint)
+        /* 0 */ THANDOR_SLOT(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
+        /* 1 */ THANDOR_SLOT(FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint),
+        /* 2 */ THANDOR_SLOT(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
+        /* 3 */ THANDOR_SLOT(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint),
+        /* 4 */ THANDOR_SLOT(FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint)
     }};

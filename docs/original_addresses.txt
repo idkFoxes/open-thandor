@@ -347,7 +347,7 @@
 0x00484A70  function  FixedMath_VectorToAnglesVec3                                      src/core/math/fixed_trig.cpp
 0x00484AC0  function  FixedMath_LengthVec3                                              src/core/math/fixed_vector.cpp
 0x00484B00  function  FixedMath_SinCosScaled                                            src/core/math/fixed_trig.cpp
-0x00484B40  function  FixedMath_SinCosQ28                                               src/core/math/fixed_trig.cpp
+0x00484B40  function  FixedMath_SinCosQ28                                               (removed, unused)
 0x00484B70  function  FixedMath_Vector2AngleAndLength                                   src/core/math/fixed_trig.cpp
 0x00484BA0  function  FixedMath_Atan2Angle16                                            src/core/math/fixed_trig.cpp
 0x00484CF0  function  FixedMath_Length2                                                 src/core/math/fixed_vector.cpp
@@ -368,9 +368,9 @@
 0x00485814  data      g_TextureDownsampleShift                                          src/graphics/render/shadow_texture.cpp
 0x00485818  data      g_GraphicsSetViewportAndClearDepth                                src/graphics/backend/software.cpp
 0x0048581C  data      g_GraphicsDrawPrimitiveQueue                                      src/graphics/backend/software.cpp
-0x00485820  data      g_GraphicsBeginScene                                              src/graphics/backend/software.cpp
+0x00485820  data      g_GraphicsBeginScene                                              (removed, unused)
 0x00485824  data      g_GraphicsEndScene                                                src/graphics/backend/software.cpp
-0x00485828  data      g_GraphicsRebuildAllStagingTextures                               src/graphics/resources/texture_set.cpp
+0x00485828  data      g_GraphicsRebuildAllStagingTextures                               (removed, unused)
 0x0048582C  data      g_GraphicsTextureSetLoadPackage                                   src/graphics/resources/texture_set.cpp
 0x00485830  data      g_GraphicsTextureSetReleasePackage                                src/graphics/resources/texture_set.cpp
 0x00485834  data      g_GraphicsCreateTextureSet                                        src/graphics/resources/texture_set.cpp
@@ -381,14 +381,14 @@
 0x00485848  data      g_GraphicsOffscreenRenderModelListToTextureSource                 src/graphics/render/offscreen.cpp
 0x0048584C  data      g_RenderedFrameCountSinceDebugRefresh                             src/ui/frontend/debug_overlay.cpp
 0x00485850  data      g_PrimitiveDrawCallCount                                          src/graphics/backend/software.cpp
-0x00485854  data      g_TextureBindStateChangeCount                                     src/graphics/backend/software.cpp
-0x00485858  data      g_TextureDeviceReloadCount                                        src/graphics/backend/software.cpp
+0x00485854  data      g_TextureBindStateChangeCount                                     (removed, unused)
+0x00485858  data      g_TextureDeviceReloadCount                                        (removed, unused)
 0x0048585C  data      g_ViewOriginFixed                                                 src/graphics/render/projection.cpp
 0x00485868  data      g_ProjectionScaleFixed                                            src/graphics/render/projection.cpp
 0x0048586C  data      g_ViewAngle0                                                      src/graphics/render/projection.cpp
 0x00485870  data      g_ViewAngle1                                                      src/graphics/render/projection.cpp
 0x00485874  data      g_ProjectionShift                                                 src/graphics/render/projection.cpp
-0x00485878  data      g_ProjectionScaleProduct                                          src/graphics/render/projection.cpp
+0x00485878  data      g_ProjectionScaleProduct                                          (removed, unused)
 0x0048587C  data      g_ProjectionNumerator                                             src/graphics/render/projection.cpp
 0x00485884  data      g_ProjectionCenterFixed                                           src/graphics/render/projection.cpp
 0x0048588C  data      g_ActivePrimitiveQueue                                            src/graphics/render/projection.cpp
@@ -396,8 +396,8 @@
 0x004858A0  data      g_ViewProjectionMatrixFixed                                       src/graphics/render/projection.cpp
 0x004858D0  data      g_ViewRotationMatrixFixed                                         src/graphics/render/projection.cpp
 0x00485900  data      g_CameraTransformMatrixFixed                                      src/graphics/render/projection.cpp
-0x00485930  data      g_ProjectionAngleFactors                                          src/graphics/render/projection.cpp
-0x00485940  data      g_AuxiliaryOrientation                                            src/graphics/render/projection.cpp
+0x00485930  data      g_ProjectionAngleFactors                                          (removed, unused)
+0x00485940  data      g_AuxiliaryOrientation                                            (removed, unused)
 0x00485948  data      g_AuxiliaryForwardDirectionFixed                                  src/graphics/render/projection.cpp
 0x00485954  data      g_AuxiliaryRotationMatrixFixed                                    src/graphics/render/projection.cpp
 0x00485984  data      g_FrustumPlaneNormalFixed_0                                       src/graphics/render/projection.cpp
@@ -416,9 +416,9 @@
 0x00485FC0  function  GraphicsTextureSet_RefreshNoOp                                    src/graphics/resources/texture_set.cpp
 0x00485FD0  function  SoftwareRenderer_ClearViewport                                    src/graphics/backend/software_rasterizer.cpp
 0x00486020  function  SoftwareRenderer_DrawPrimitiveQueueBridge                         src/graphics/backend/software_rasterizer.cpp
-0x00486050  function  SoftwareGraphicsDispatch_SuccessNoOp                              src/graphics/backend/software.cpp
+0x00486050  function  SoftwareGraphicsDispatch_SuccessNoOp                              (merged into SoftwareGraphicsDispatch_NoOp)
 0x00486060  function  SoftwareGraphicsDispatch_NoOp                                     src/graphics/backend/software.cpp
-0x00486070  function  GraphicsTexture_RebuildNoOp                                       src/graphics/resources/texture_set.cpp
+0x00486070  function  GraphicsTexture_RebuildNoOp                                       (removed, unused)
 0x00486080  function  GraphicsPrimitiveQueue_RadixSortForRendering                      src/graphics/render/primitives.cpp
 0x00486430  function  Graphics_ProjectViewPoint                                         src/graphics/render/projection.cpp
 0x00486490  function  Graphics_SetProjectionClipRect                                    src/graphics/render/projection.cpp
@@ -501,7 +501,7 @@
 0x004A8F68  data      g_GraphicsPaletteAssetResolveAllocationBase                       src/graphics/resources/palette.cpp
 0x004A8F80  function  SoftwarePixelFormat_BaseDisplayModeHook                           src/graphics/backend/software_display_mode.cpp
 0x004A9110  function  SoftwareFramebuffer_Create                                        src/graphics/backend/software_display_mode.cpp
-0x004A9160  function  SoftwareFramebuffer_Destroy                                       src/graphics/backend/software_display_mode.cpp
+0x004A9160  function  SoftwareFramebuffer_Destroy                                       (removed, unused)
 0x004A9180  function  SoftwarePixelFormat_BuildChannelPackTables                        src/graphics/backend/software_display_mode.cpp
 0x004A9250  function  GraphicsFramebuffer_BeginAccessStub                               src/graphics/resources/framebuffer.cpp
 0x004A9260  function  GraphicsFramebuffer_EndAccessStub                                 src/graphics/resources/framebuffer.cpp
@@ -1005,7 +1005,7 @@
 0x004D123C  data      g_SoftwareAuxiliaryTargetBase                                     src/graphics/backend/software_rasterizer.cpp
 0x004D1240  data      g_SoftwareDepthEpoch                                              src/graphics/backend/software_rasterizer.cpp
 0x004D1244  data      g_SoftwareChainedSetDisplayMode                                   src/graphics/backend/software_display_mode.cpp
-0x004D1248  data      g_SoftwareDrawQueue                                               src/graphics/backend/software_rasterizer.cpp
+0x004D1248  data      g_SoftwareDrawQueue                                               (removed, 32-bit colour only)
 0x004D1260  data      g_SoftwareRasterHandlers16Bit                                     (removed, 32-bit colour only)
 0x004D1360  data      g_SoftwareRasterHandlers32Bit                                     src/graphics/backend/software_rasterizer.cpp
 0x004D1460  data      g_SoftwareRasterHandlersAuxiliary                                 src/graphics/backend/software_rasterizer.cpp
@@ -1213,7 +1213,7 @@
 0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    (merged into TerrainHexScan_Sector)
 0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    (merged into TerrainHexScan_Sector)
 0x005090E0  function  FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors              src/world/terrain/field_deformation.cpp
-0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                src/world/terrain/field_lifecycle.cpp
+0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                (removed, unused)
 0x005092E0  function  FieldGrid_SetAllCellOverlayColors                                 src/world/terrain/field_lifecycle.cpp
 0x00509320  function  FieldGridTerrainOverlayVariantA_ApplyDirection0                   (merged into TerrainHexScan_Leg)
 0x00509380  function  FieldGridTerrainOverlayVariantA_ApplyDirection1                   (merged into TerrainHexScan_Leg)
@@ -1371,8 +1371,8 @@
 0x0050D9C0  data      g_ScenarioCatalog                                                 src/assets/scenario/catalog.cpp
 0x0050D9C4  data      g_ScenarioCatalogUsedBytes                                        src/assets/scenario/catalog.cpp
 0x0050D9C8  data      g_SaveSvePatternUtf16                                             src/assets/scenario/catalog.cpp
-0x0050D9DE  data      g_UnreferencedLevelPatternUtf16                                   src/assets/scenario/catalog.cpp
-0x0050D9F6  data      g_UnreferencedCampaignPatternUtf16                                src/assets/scenario/catalog.cpp
+0x0050D9DE  data      g_UnreferencedLevelPatternUtf16                                   (removed, unused)
+0x0050D9F6  data      g_UnreferencedCampaignPatternUtf16                                (removed, unused)
 0x0050DA0E  data      g_LevelLevelDatPathUtf16                                          src/assets/scenario/catalog.cpp
 0x0050DA2E  data      g_ScenarioLevelDataPathTemplateUtf16                              src/assets/scenario/catalog.cpp
 0x0050DA52  data      g_LevelCampagneDatPathUtf16                                       src/assets/scenario/catalog.cpp
@@ -1459,7 +1459,7 @@
 0x00513EE0  function  GameFactionRuntime_ApplyPairwiseRelationTransition                src/gameplay/faction/relations.cpp
 0x00514350  function  AiFactionRuntime_RebuildPlanningCapacityState                     src/gameplay/ai/planning.cpp
 0x00514510  function  GameFactionRuntime_UpdateImpactAlertAnchorAndNotify               src/gameplay/faction/runtime.cpp
-0x00514710  function  ShotRuntime_PostImpactRelationNotificationNoOp                    src/world/shots/pool.cpp
+0x00514710  function  ShotRuntime_PostImpactRelationNotificationNoOp                    (removed, unused)
 0x00514730  function  GameFactionRuntime_RecomputeProgressAndScoreMetrics               src/gameplay/faction/runtime.cpp
 0x00514900  function  GameFactionRuntime_FindRuntimeGroupNumber                         src/gameplay/faction/runtime.cpp
 0x00514960  data      g_SelectionPlayerRuntimeBlockPointers                             src/gameplay/selection/commands.cpp
@@ -1575,8 +1575,8 @@
 0x0051B388  data      g_ArmyCommandGenerationStandard                                   src/gameplay/army/move_orders.cpp
 0x0051B38C  data      g_AiCommandGenerationCandidateBase                                src/gameplay/ai/combat.cpp
 0x0051B390  data      g_AiCommandGenerationRetainedTarget                               src/gameplay/ai/combat.cpp
-0x0051B394  data      g_UnreferencedArmyTexturePathUtf16                                src/assets/army/catalog.cpp
-0x0051B3AE  data      g_UnreferencedArmyTag                                             src/assets/army/catalog.cpp
+0x0051B394  data      g_UnreferencedArmyTexturePathUtf16                                (removed, unused)
+0x0051B3AE  data      g_UnreferencedArmyTag                                             (removed, unused)
 0x0051B3C0  function  ModelDefinition_SelectFactionUnlockedLinkedDefinition             src/gameplay/technology/runtime.cpp
 0x0051B430  function  ModelDefinition_SelectFactionUnlockedLinkedId                     src/gameplay/technology/runtime.cpp
 0x0051B4A0  function  ArmyAssetRecord_RegisterAndRelocate                               src/assets/army/catalog.cpp
@@ -1641,7 +1641,7 @@
 0x0051DA60  function  ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction          src/gameplay/technology/runtime.cpp
 0x0051DB00  function  ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology           src/gameplay/technology/runtime.cpp
 0x0051DB80  function  ModelRuntimeHierarchy_ApplyFactionTechnologyVariants              src/gameplay/army/model_rules.cpp
-0x0051DBA0  function  ArmyRuntime_TestWorldPointAllowedDefault                          src/gameplay/army/aircraft.cpp
+0x0051DBA0  function  ArmyRuntime_TestWorldPointAllowedDefault                          (removed, unused)
 0x0051DBC0  data      g_EffectTextureSet                                                src/world/effects/pool.cpp
 0x0051DBC4  data      g_EffectPalette                                                   src/world/effects/pool.cpp
 0x0051DBC8  data      g_EffectRuntimeSlots                                              src/world/effects/pool.cpp
@@ -2139,7 +2139,7 @@
 0x0053CA00  data      g_Q12FloatScale4096                                               src/core/math/spline.cpp
 0x0053CA10  function  WorldMotionSpline_ClearCachedDerivatives                          src/world/camera/motion_spline.cpp
 0x0053CA30  function  WorldMotionSpline_EvaluateAndApplyAtTime                          src/world/camera/motion_spline.cpp
-0x0053CBB0  function  WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime            src/world/camera/motion_spline.cpp
+0x0053CBB0  function  WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime            (removed, unused)
 0x0053CD10  function  WorldMotionSpline_BuildSixChannelCurves                           src/world/camera/motion_spline.cpp
 0x0053CF10  function  CubicSpline_BuildNaturalCoefficientSystem                         src/core/math/spline.cpp
 0x0053D160  function  CubicSpline_ForwardEliminateColumn                                src/core/math/spline.cpp

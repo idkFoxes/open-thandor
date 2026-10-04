@@ -107,7 +107,7 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
   uint32_t healthDifference;
 
   definition = modelRuntime->modelDefinition;
-  homeDefinitionSlot = Thandor_U32ToPointer<ModelRuntimeSlot>((homeModelRuntime->definitionOrSavedId).savedIdOrOffset); /* 5f-format: ModelRuntimeSlot.definitionOrSavedId */
+  homeDefinitionSlot = Thandor_U32ToPointer<ModelRuntimeSlot>((homeModelRuntime->definitionOrSavedId).savedIdOrOffset); /* 32-bit format field: ModelRuntimeSlot.definitionOrSavedId */
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
   ModelRuntime_PlayDefinitionOneShotSound
             (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
@@ -158,16 +158,15 @@ static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,Model
   }
 }
 
-/* Approach: as soon as ArmyRuntime_TestWorldPointAllowedDefault rejects the target point (classState70/74), the
-   aircraft is placed travelStepCount movement steps behind it on the attack heading (classState78) and starts
-   the attack run (drop countdown armyLinkOrState = travelStepCount, run length classState68 = twice that). The
-   run height is the highest terrain sampled every 10 movement steps along the run, plus half a unit and twice
-   the parked height (classState80). */
+/* Approach: the aircraft is placed travelStepCount movement steps behind the target point (classState70/74) on
+   the attack heading (classState78) and starts the attack run (drop countdown armyLinkOrState = travelStepCount,
+   run length classState68 = twice that). The run height is the highest terrain sampled every 10 movement steps
+   along the run, plus half a unit and twice the parked height (classState80). The original first tested the
+   target point with a world point stub that always rejected it, so the approach always starts at once. */
 static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *rootNode;
-  Bool8 pointAllowed;
   AngleTurn32 attackHeading;
   FixedSinCos sinCosStep;
   uint32_t travelSteps;
@@ -180,13 +179,6 @@ static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelR
 
   definition = modelRuntime->modelDefinition;
   rootNode = modelRuntime->rootModelNode;
-  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                     (definition->worldPointAllowedContext,
-                      (modelRuntime->classLinkState).classState74,
-                      (modelRuntime->classLinkState).classState70);
-  if (pointAllowed) {
-    return;
-  }
   attackHeading = (modelRuntime->classLinkState).classState78;
   sinCosStep = FixedMath_SinCosScaled
                      (attackHeading ^ FIXED_ANGLE16_HALF_TURN,definition->movementStepQ12 * definition->travelStepCount);
@@ -235,7 +227,7 @@ static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRu
   if (definition->modelPointStep == 0) {
     return;
   }
-  modelPointTable = Thandor_U32ToPointer<void>(((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]); /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+  modelPointTable = Thandor_U32ToPointer<void>(((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]); /* 32-bit format field: MdlSerializedNodeHeader.childSerializedOffsets */
   for (modelPointOrdinal = 7; modelPointOrdinal != 0; modelPointOrdinal = modelPointOrdinal - 1) {
     if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
       ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
@@ -292,16 +284,15 @@ static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,Model
   } while (remainingTicks != 0);
 }
 
-/* Returning (off the map): once the home pad's hangar is idle and ArmyRuntime_TestWorldPointAllowedDefault
-   rejects the pad position, the hangar starts opening (with its sound) and the aircraft is placed phaseDuration
-   movement steps behind the pad on the pad's heading to fly its landing arc. */
+/* Returning (off the map): once the home pad's hangar is idle, the hangar starts opening (with its sound) and the
+   aircraft is placed phaseDuration movement steps behind the pad on the pad's heading to fly its landing arc. The
+   original also tested the pad position with a world point stub that always rejected it. */
 static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
           ModelRuntimeSlot *homeModelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *padNode;
   ModelRuntimeNode *aircraftNode;
-  Bool8 pointAllowed;
   AngleTurn32 padHeading;
   FixedSinCos sinCosStep;
   uint32_t landingSteps;
@@ -309,13 +300,6 @@ static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,Model
   definition = modelRuntime->modelDefinition;
   padNode = (homeModelRuntime->rootModelNodeOrSavedOffset).modelNode;
   if ((homeModelRuntime->classState).classStateB0 != ARMY_PAD_HANGAR_IDLE) {
-    return;
-  }
-  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                     (definition->worldPointAllowedContext,
-                      (padNode->worldTransform).translation.y,
-                      (padNode->worldTransform).translation.x);
-  if (pointAllowed) {
     return;
   }
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_OPENING;
@@ -433,7 +417,7 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
     /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
        (energyLoadQ4), the sums of its model definitions' build metrics */
-    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
        (g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 < candidateAsset->xeniteCostQ4)) {
       continue;
@@ -453,7 +437,8 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
     (padRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks = 0;
     g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
-    /* remove the entry: shift the rest of the queue down by one */
+    /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
+       entries, i.e. it also copies the slot just behind the last queued entry (as in the factory queue). */
     do {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
@@ -625,7 +610,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
                assetRecord) */
             ArmyAssetRegistry_FindById(secondaryAssetId,&assetRecord);
             selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                               (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                               (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
             linkedModelDefinition = (ModelDefinition *)selectedDefinition;
             linkedModelDefinition->builtCount = linkedModelDefinition->builtCount + 1;
             notificationMovieId = linkedModelDefinition->firstBuiltNotificationMovieId;
@@ -700,10 +685,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_IDLE;
     /* fall through: the idle hangar launches the next pending aircraft */
   case ARMY_PAD_HANGAR_IDLE:
-    if (((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) &&
-       !ArmyRuntime_TestWorldPointAllowedDefault
-                  (linkedChildDefinition->visibilityRadius,(modelNodeRuntime->worldTransform).translation.y,
-                   (modelNodeRuntime->worldTransform).translation.x)) {
+    /* the original also required a world point stub (always false) to reject the pad position */
+    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
       /* the first pending slot whose aircraft can be created opens the hangar */
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft
@@ -729,13 +712,4 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
-}
-
-/* Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always
-   returns false, so the callers' `!result` branches are always taken.
-*/
-Bool8 ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
-
-{
-  return false;
 }

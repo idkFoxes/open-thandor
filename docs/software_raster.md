@@ -16,9 +16,8 @@ the other 16-bit paths (blits, pixel constants, display modes). The shared helpe
 `SoftwareRenderer_PrepareTrianglePacket` for each packet. That call sorts the vertices by Y, snaps X and Y to
 whole pixels (Q12), adds the depth epoch and scales U/V to the texture size. Each packet then goes to
 `handlers[(renderFlags & 0x3f000) >> 12]` of the family's 64-entry table
-(`g_SoftwareRasterHandlers32Bit`, `g_SoftwareRasterHandlersAuxiliary`). Handler ABI: five stack
-arguments `(clipMaxY, clipMaxX, clipMinY, clipMinX, packet)`, `ret 0x14`, no register
-arguments. The C functions are plain cdecl, because the tables are only called from C.
+(`g_SoftwareRasterHandlers32Bit`, `g_SoftwareRasterHandlersAuxiliary`). Every handler takes
+`(clipMaxY, clipMaxX, clipMinY, clipMinX, packet)`.
 
 | family | target | pixel | colour row stride | depth row stride |
 |---|---|---|---|---|
@@ -216,13 +215,9 @@ build, see below):
 | `SoftwareTextureSource_BlitSaturatedAddRgb32` | 0x4AB750 | removed in step 8 (nothing called it) |
 | `SoftwareTextureSource_BlitHalfRgbSaturatedAdd32` | 0x4ABD20 | removed in step 8 (nothing called it) |
 | `SoftwareTextureSource_BlitIntegerScaledSourceAlpha32` | 0x4AAA40 | removed in step 8 (nothing called it) |
-| `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | rewritten |
+| `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | rewritten; now in `src/ui/frontend/credits_mask.cpp` (its only caller is the credits screen) |
 
-## ABI
-
-All of them are `__stdcall` in the original (`ret 0x24` / `0x28`, `ret 4` for the mask step),
-preserve every register and clear CF on return. The C versions are plain cdecl and return
-`false` where the header declares `bool`. Argument order:
+## Arguments
 
 - plain blits: `(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, asset, framebuffer)`
 - `Modulated`: the extra argument (ARGB) comes before `subresourceIndex`
@@ -326,7 +321,9 @@ constants, scale, palette bank, modulation and fill arguments, the mask step), c
 framebuffer with guards, the mask buffer, the asset and the carry flag. Like rastercmp it needed
 the mapped-image build and was removed with it (step 4c), after all blits had passed it.
 
-## Remaining work
+## Tests
 
-None: all raster handlers and blits are rewritten and were verified by rastercmp, blitcmp and
-blendscalecmp before these self-tests were retired. The per-function pixel operations above describe the rewritten code.
+All raster handlers and blits are rewritten; rastercmp, blitcmp and blendscalecmp verified them against the
+original machine code before they were retired. Today `OPEN_THANDOR_SELFTEST=raster`
+(`src/platform/selftest/raster_selftest.cpp`) is the safety net: it runs the handlers, the blits and the mask step
+on synthetic seeded input and logs one golden hash per group, so two builds can be compared without game data.

@@ -141,19 +141,6 @@ FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
   return result;
 }
 
-/* Table lookup of a 16-bit angle (65536 = full turn): returns cos(angle) and sin(angle) in Q28.
-   Used by the graphics projection setup (g_ProjectionAngleFactors).
-*/
-FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle)
-
-{
-  FixedSinCos result;
-
-  result.cosValue = g_FixedSineQ28[FIXED_SINE_TABLE_COS + (angle & FIXED_ANGLE16_MASK)];
-  result.sinValue = g_FixedSineQ28[FIXED_SINE_TABLE_SIN + (angle & FIXED_ANGLE16_MASK)];
-  return result;
-}
-
 /* Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) *
    distance and y = baseY + sin(angle) * distance (Q28 table products shifted right by 28). Used by the
    army movement code to step a unit along its heading.

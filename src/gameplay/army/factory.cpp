@@ -28,7 +28,7 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
   remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
   queueEntry = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
-    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if ((candidateAsset->flags & modelRuntime->modelDefinition->classParameterC4) == 0) {
       continue;
     }
@@ -51,7 +51,8 @@ static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdate
     (modelRuntime->classLinkState).classState64 = 0;
     g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
          g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
-    /* remove the entry: shift the rest of the queue down by one */
+    /* Remove the entry: shift the rest of the queue down by one. Original quirk: it shifts remainingAssetCount
+       entries, i.e. it also copies the slot just behind the last queued entry. */
     do {
       *queueEntry = queueEntry[1];
       queueEntry = queueEntry + 1;
@@ -321,7 +322,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
         queueSlot = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
             remainingAssetCount = remainingAssetCount - 1) {
-          candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueSlot); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+          candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueSlot); /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
           if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) != 0) &&
              (candidateAsset->xeniteCostQ4 <= g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4))
           {
@@ -384,11 +385,11 @@ void ArmyRuntimeClass_UpdateStructureFactory
             activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
             /* appended to the faction's primary asset list */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[primaryAssetCount] =
-                 Thandor_PointerToU32(assetRecord); /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+                 Thandor_PointerToU32(assetRecord); /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount =
                  g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
-              linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+              linkedRootNodeOffset = assetRecord->rootNodeOffsetOrPointer; /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
               InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
               linkedModelDefinition = (ModelDefinition *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,linkedRootNodeOffset);
@@ -538,11 +539,13 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
   /* the linked asset ids are consecutive dwords starting at movementTarget0Q12 */
   linkedAssetIds = &armyRuntime->movementTarget0Q12;
+  /* Original quirk: a do/while, so slot 0 is always visited; a classParameterC4 of 0 would run on until the
+     counter wraps (the pad definitions all have linked slots). */
   do {
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) == 0) {
       if (ArmyAssetRegistry_FindById(linkedAssetIds[slotIndex],&assetRecord) == 0) {
         selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                          (factionIndex,assetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
         metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
       }
     }
@@ -555,7 +558,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
 
 /* EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the
    army asset named by classParameterC0. The new model keeps the owner's armour points (ModelRuntimeSlot.health) in proportion,
-   rescaled by the two definitions' maximumHealth (presumably the full armour), and the owner is destroyed. */
+   rescaled by the two definitions' maximumHealth (the full armour), and the owner is destroyed. */
 void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEntityRuntime *ownerEntity)
 
 {

@@ -13,7 +13,7 @@
 /* Submodule: world/pathing/grid. */
 /* Functions are grouped by semantic ownership. */
 
-/* GridScratchCell.stateMask bits beyond the generated GridScratchStateMask enum. The scratch grid has 4x4
+/* GridScratchCell.stateMask bits beyond the GridScratchStateMask enum (pathing/types.h). The scratch grid has 4x4
    cells per field cell. Bits 1..7 are set when faction slot 1..7 occupies the source field cell (bit n =
    slot n, from the FIELD_CELL_OCCUPANCY_PRESENCE_BITS of occupancy byte n); bits 8..23 are the radial
    distance bands written by the world/pathing/influence writers. */

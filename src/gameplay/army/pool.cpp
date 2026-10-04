@@ -142,7 +142,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                           ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                           (WorldRuntimeContext *)ownerContext);
       if (previewTexture != nullptr) {
-        armyAsset[1].rootNodeOffsetOrPointer = Thandor_PointerToU32(previewTexture); /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
+        armyAsset[1].rootNodeOffsetOrPointer = Thandor_PointerToU32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
         previewHeight =
              (GraphicsPixelDimension)
              ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
@@ -151,7 +151,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                             ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                             (WorldRuntimeContext *)ownerContext);
         if (previewTexture != nullptr) {
-          armyAsset[1].registryId = Thandor_PointerToI32(previewTexture); /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
+          armyAsset[1].registryId = Thandor_PointerToI32(previewTexture); /* 32-bit format field: ArmyAssetRecord[1].registryId (preview texture) */
         }
       }
     }
@@ -190,8 +190,8 @@ void ArmyRuntime_ShutdownPoolAndGraphics()
     armyAsset = g_ArmyAssetRecordRegistry[registryIndex];
     if (armyAsset != nullptr) {
       /* the two preview textures stored in the record that follows the prefix */
-      g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].rootNodeOffsetOrPointer)); /* 5f-format: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
-      g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].registryId)); /* 5f-format: ArmyAssetRecord[1].registryId (preview texture) */
+      g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].rootNodeOffsetOrPointer)); /* 32-bit format field: ArmyAssetRecord[1].rootNodeOffsetOrPointer (preview texture) */
+      g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[1].registryId)); /* 32-bit format field: ArmyAssetRecord[1].registryId (preview texture) */
       g_ArmyAssetRecordRegistry[registryIndex] = nullptr;
     }
   }
@@ -315,7 +315,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
       (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
     selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                      (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                      (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
     ((ModelDefinition *)selectedDefinition)->builtCount++;
   }
   /* the graphics bindings exist for faction slots 0-7 only */
@@ -334,7 +334,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
   armyRuntime->aiFactionAnchorScoreWeight = anchorScoreWeight;
   armyRuntime->aiSecondaryWorkspaceScoreWeight = secondaryWorkspaceScoreWeight;
-  linkedEntity = Thandor_U32ToPointer<GameEntityRuntime>(armyAssetRecord[1].byteSize); /* 5f-format: ArmyAssetRecord[1].byteSize (linked entity) */
+  linkedEntity = Thandor_U32ToPointer<GameEntityRuntime>(armyAssetRecord[1].byteSize); /* 32-bit format field: ArmyAssetRecord[1].byteSize (linked entity) */
   armyRuntime->occupancyMarkRadius = 0;
   armyRuntime->visibilityRadius = 0;
   armyRuntime->visibilityHeightOffset = 0;

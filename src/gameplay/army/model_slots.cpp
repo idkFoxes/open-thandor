@@ -205,7 +205,7 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
 
   linkedArmyRuntime = modelRuntime->classLinkState.armyLinkOrState.armyRuntime;
   if (linkedArmyRuntime != nullptr) {
-    /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
+    /* 32-bit format field: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntime->classLinkState.armyLinkOrState.armyRuntime =
          Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
@@ -223,7 +223,7 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
 
   linkedArmyRuntime = modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime;
   if (linkedArmyRuntime != nullptr) {
-    /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
+    /* 32-bit format field: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime =
          Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
@@ -365,8 +365,8 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
 
 
 /* Unrebase handler of model class 21, the aircraft (modelUnrebase[21], run by ModelRuntimePool_UnrebaseBeforeSave):
-   before a save, turns the linked model runtime classLinkState.modelLinkOrState (presumably its base) into a saved offset (pointer -
-   g_ModelRuntimeRebaseDelta).
+   before a save, turns the linked model runtime classLinkState.modelLinkOrState (its home pad) into a saved
+   offset (pointer - g_ModelRuntimeRebaseDelta).
 */
 void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
 
@@ -375,7 +375,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
 
   linkedModelRuntime = modelRuntime->classLinkState.modelLinkOrState.modelRuntime;
   if (linkedModelRuntime != nullptr) {
-    /* 5f-format: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
+    /* 32-bit format field: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
          (ModelRuntimeSlot *)(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
   }
@@ -419,7 +419,7 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
   return;
 }
 
-/* Class initializer of model class 22 (modelClassInitialize[22]), presumably the aircraft base: clears the class
+/* Class initializer of model class 22 (modelClassInitialize[22]), the aircraft pad: clears the class
    state including the 13 dwords from classLinkState.classState78 on (the army asset ids
    ArmyPlacement_ReleaseClassStateReservation looks up) and turns on texture scrolling of the root node for the
    subresource named in the definition's classParameterC0.

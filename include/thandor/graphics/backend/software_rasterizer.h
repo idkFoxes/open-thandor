@@ -128,6 +128,4 @@ extern SoftwareRasterHandler *g_SoftwareRasterHandlers32Bit[64];
 
 extern SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64];
 
-extern SoftwareDrawQueueProc *g_SoftwareDrawQueue;
-
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTERIZER_H */

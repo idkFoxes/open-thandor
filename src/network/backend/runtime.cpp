@@ -12,23 +12,23 @@
 
 THANDOR_ALIGN(4) uint32_t g_NetworkBackendInstanceCount = 0;
 
-THANDOR_ALIGN(4) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = THANDOR_FN(NetworkBackendFallback_SetSessionContext);
+THANDOR_ALIGN(4) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = &NetworkBackendFallback_SetSessionContext;
 
-THANDOR_ALIGN(16) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = THANDOR_FN(NetworkBackendFallback_Cleanup);
+THANDOR_ALIGN(16) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = &NetworkBackendFallback_Cleanup;
 
-THANDOR_ALIGN(4) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = THANDOR_FN(NetworkBackendFallback_OpenAndBindUdpSocket);
+THANDOR_ALIGN(4) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = &NetworkBackendFallback_OpenAndBindUdpSocket;
 
-THANDOR_ALIGN(8) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = THANDOR_FN(NetworkBackendFallback_CloseActiveSocket);
+THANDOR_ALIGN(8) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = &NetworkBackendFallback_CloseActiveSocket;
 
-THANDOR_ALIGN(4) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = THANDOR_FN(NetworkBackendFallback_ParsePeerEndpoint);
+THANDOR_ALIGN(4) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = &NetworkBackendFallback_ParsePeerEndpoint;
 
-THANDOR_ALIGN(8) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = THANDOR_FN(NetworkBackendFallback_FormatPeerAddress);
+THANDOR_ALIGN(8) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = &NetworkBackendFallback_FormatPeerAddress;
 
 NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = nullptr;
 
-NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = THANDOR_FN(NetworkBackendFallback_ReceiveDatagram);
+NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = &NetworkBackendFallback_ReceiveDatagram;
 
-NetworkBackendSendCallback *g_NetworkBackendSlot5 = THANDOR_FN(NetworkBackendFallback_SendDatagram);
+NetworkBackendSendCallback *g_NetworkBackendSlot5 = &NetworkBackendFallback_SendDatagram;
 
 WinSock_bindProc *g_WinSock_bind = nullptr;
 

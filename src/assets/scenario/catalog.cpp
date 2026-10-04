@@ -8,15 +8,8 @@
 #include <thandor/assets/scenario/catalog.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
-
-/* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
-THANDOR_ALIGN(4) uint16_t g_UnreferencedLevelPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'l', 'e', 'v', 0};
-
-/* UTF-16 L"level\\*.cgn"; no code reference found */
-THANDOR_ALIGN(4) uint16_t g_UnreferencedCampaignPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'c', 'g', 'n', 0};
 
 static uint16_t g_LevelLevelDatPathUtf16[16] = {'l', 'e', 'v', 'e', 'l', '\\', 'l', 'e', 'v', 'e', 'l', '.', 'd', 'a', 't', 0}; /* L"level\\level.dat" */
 

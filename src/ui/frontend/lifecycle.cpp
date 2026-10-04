@@ -380,13 +380,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   WorldMotionSpline_ClearCachedDerivatives();
   g_TimerRegisterPeriodic(FRONTEND_ROM_TRANSITION_TIMER_HZ,FrontendRomTransition_AdvanceElapsedTicks);
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    /* the same "ready" report, sent through the network command queue */
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_RecordReadyAndUpdateWaitState>(0,0,0);
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   do {
     UiNode_InvalidateRoot((UiNodeBase *)frontendUiState);

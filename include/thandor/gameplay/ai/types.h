@@ -16,8 +16,6 @@
 #include <thandor/gameplay/faction/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct AiKnowledgeParameters AiKnowledgeParameters, *PAiKnowledgeParameters;
 typedef struct AiKnowledgeDataImage AiKnowledgeDataImage, *PAiKnowledgeDataImage;
 typedef struct AiScoredSiteWorkspaceEntry AiScoredSiteWorkspaceEntry, *PAiScoredSiteWorkspaceEntry;

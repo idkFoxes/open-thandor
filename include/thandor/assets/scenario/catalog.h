@@ -74,7 +74,4 @@ extern ScenarioCatalogHeader *g_ScenarioCatalog;
 extern uint32_t g_ScenarioCatalogUsedBytes;
 extern uint16_t g_SaveSvePatternUtf16[11];
 
-extern uint16_t g_UnreferencedLevelPatternUtf16[12]; /* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
-extern uint16_t g_UnreferencedCampaignPatternUtf16[12]; /* UTF-16 L"level\\*.cgn"; no code reference found */
-
 #endif /* THANDOR_ASSETS_SCENARIO_CATALOG_H */
