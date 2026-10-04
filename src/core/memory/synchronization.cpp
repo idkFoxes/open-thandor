@@ -31,7 +31,7 @@ void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
   RuntimeSpinLockValue *previousLockValue; /* first the lock pointer (null test), then the swapped-out value */
 
   previousLockValue = lockValue;
-  while (previousLockValue != NULL) {
+  while (previousLockValue != nullptr) {
     previousLockValue =
          (RuntimeSpinLockValue *)(uintptr_t)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
   }
@@ -49,7 +49,7 @@ Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 {
   RuntimeSpinLockValue previousLockValue;
 
-  if (lockValue != NULL) {
+  if (lockValue != nullptr) {
     previousLockValue = (RuntimeSpinLockValue)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
     if (previousLockValue != SPIN_LOCK_UNLOCKED) {
       return true;
@@ -65,7 +65,7 @@ Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 {
-  if (lockValue != NULL) {
+  if (lockValue != nullptr) {
     *lockValue = SPIN_LOCK_UNLOCKED;
   }
   return;
@@ -80,11 +80,11 @@ void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
 
 {
-  if (lockValue == NULL) {
+  if (lockValue == nullptr) {
     return;
   }
   *lockValue = SPIN_LOCK_UNLOCKED;
-  if (callback != NULL) {
+  if (callback != nullptr) {
     callback();
   }
 }

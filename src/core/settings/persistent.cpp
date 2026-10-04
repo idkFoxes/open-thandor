@@ -85,75 +85,75 @@ static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 
 static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_ADAPTER_INDEX, INI_KIND_UINT, "display", "adapter",
-   "graphics adapter, 0 = the first (default 0)", 0, 0, NULL, 0},
+   "graphics adapter, 0 = the first (default 0)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_DISPLAY_WIDTH, INI_KIND_UINT, "display", "width",
-   "screen width in pixels (default 640)", 0, 0, NULL, 0},
+   "screen width in pixels (default 640)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_DISPLAY_HEIGHT, INI_KIND_UINT, "display", "height",
-   "screen height in pixels (default 480)", 0, 0, NULL, 0},
+   "screen height in pixels (default 480)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_BITS_PER_PIXEL, INI_KIND_UINT, "display", "bits_per_pixel",
-   "colour depth in bits, always 32 (an older 16 is read as 32)", 0, 0, NULL, 0},
+   "colour depth in bits, always 32 (an older 16 is read as 32)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_RENDERER, INI_KIND_ENUM, "display", "renderer",
    "renderer: vulkan (default), d3d12 or software", 0, 0, INI_ENUM(s_IniRendererNames)},
   {PERSISTENT_SETTING_DISPLAY_MODE_KIND, INI_KIND_ENUM, "display", "display_mode",
    "fullscreen (default), borderless or window", 0, 0, INI_ENUM(s_IniDisplayModeNames)},
 
   {PERSISTENT_SETTING_SHADING_ENABLED, INI_KIND_BOOL, "graphics", "shading",
-   "terrain shading (default true)", 0, 0, NULL, 0},
+   "terrain shading (default true)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE, INI_KIND_UINT, "graphics", "shading_grid_half_size",
-   "shading grid half size (default 32)", 0, 0, NULL, 0},
+   "shading grid half size (default 32)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION, INI_KIND_UINT, "graphics", "shading_texture_size",
-   "shading texture size, 2 x shading_grid_half_size (default 64)", 0, 0, NULL, 0},
+   "shading texture size, 2 x shading_grid_half_size (default 64)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT, INI_KIND_UINT, "graphics", "shading_depth",
-   "shading depth (default 16)", 0, 0, NULL, 0},
+   "shading depth (default 16)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_TEXTURE_QUALITY, INI_KIND_ENUM, "graphics", "texture_quality",
    "texture quality: high, medium or low", 0, 0, INI_ENUM(s_IniTextureQualityNames)},
   {PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, INI_KIND_INT, "graphics", "model_detail",
-   "model detail distance, 8.8 fixed point (default 65536)", 0, 0, NULL, 0},
+   "model detail distance, 8.8 fixed point (default 65536)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_GPU_RASTERIZATION, INI_KIND_ENUM, "graphics", "gpu_rasterization",
    "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
    "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
-   "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, NULL, 0},
+   "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "music",
-   "music (default true)", PERSISTENT_SOUND_OPTION_MUSIC, PERSISTENT_SOUND_OPTION_DEFAULT, NULL, 0},
+   "music (default true)", PERSISTENT_SOUND_OPTION_MUSIC, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "reverse_stereo",
    "swap the left and right channel (default false)", PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
-   PERSISTENT_SOUND_OPTION_DEFAULT, NULL, 0},
+   PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
   {PERSISTENT_SETTING_EFFECTS_GAIN, INI_KIND_GAIN, "sound", "effects_volume",
-   "sound effects volume", 0, 0, NULL, 0},
+   "sound effects volume", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_MUSIC_GAIN, INI_KIND_GAIN, "sound", "music_volume",
-   "music volume", 0, 0, NULL, 0},
+   "music volume", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, INI_KIND_GAIN, "sound", "movie_volume",
-   "movie volume", 0, 0, NULL, 0},
+   "movie volume", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN, INI_KIND_GAIN, "sound", "movie_alternate_volume",
-   "second movie volume", 0, 0, NULL, 0},
+   "second movie volume", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_GAME_SPEED_PERCENT, INI_KIND_UINT, "game", "speed_percent",
-   "game speed in percent (default 100)", 0, 0, NULL, 0},
+   "game speed in percent (default 100)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_CAMERA_SCROLL_STEP, INI_KIND_INT, "game", "scroll_step",
-   "map scroll speed (default 32)", 0, 0, NULL, 0},
+   "map scroll speed (default 32)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, INI_KIND_HEX, "game", "map_mouse_options",
    "bits: 0x1 automatic zoom off, 0x2 automatic rotation off, 0x4 right button does not scroll / side panel "
-   "hidden (default 0x0)", 0, 0, NULL, 0},
+   "hidden (default 0x0)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS, INI_KIND_HEX, "game", "link_panel_options",
-   "bits: 0x1 link rotation with zoom, 0x2 link rotation with tilt, 0x4 hide panel (default 0x0)", 0, 0, NULL, 0},
+   "bits: 0x1 link rotation with zoom, 0x2 link rotation with tilt, 0x4 hide panel (default 0x0)", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_PLAYER_NAME, INI_KIND_NAME, "game", "player_name",
-   "player name, at most 20 characters", 0, 0, NULL, 0},
+   "player name, at most 20 characters", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_GAME_NAME, INI_KIND_NAME, "game", "game_name",
-   "name of a hosted network game, at most 20 characters", 0, 0, NULL, 0},
+   "name of a hosted network game, at most 20 characters", 0, 0, nullptr, 0},
   {PERSISTENT_SETTING_LOCALE_COUNTRY_CODE, INI_KIND_UINT, "game", "language_country_code",
-   "text language as telephone country code (49 German, 44 English, ...), 0 = from Windows", 0, 0, NULL, 0},
+   "text language as telephone country code (49 German, 44 English, ...), 0 = from Windows", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_NETWORK_PLAYER_COUNT, INI_KIND_UINT, "network", "players",
-   "player count of a hosted network game (default 4)", 0, 0, NULL, 0},
+   "player count of a hosted network game (default 4)", 0, 0, nullptr, 0},
 
-  {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0xBC, INI_KIND_RAW, "reserved", "dword_bc", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, NULL, 0},
+  {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
+  {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
+  {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
+  {0xBC, INI_KIND_RAW, "reserved", "dword_bc", "unused in the original settings file, kept", 0, 0, nullptr, 0},
+  {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, nullptr, 0},
+  {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
@@ -278,7 +278,7 @@ static void PersistentIni_AppendName(PersistentIniWriter *writer, const uint8_t 
 uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity)
 {
   PersistentIniWriter writer = {out, capacity, 0};
-  const char *section = NULL;
+  const char *section = nullptr;
   uint32_t index;
 
   if (capacity == 0) {
@@ -301,7 +301,7 @@ uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask
     if (key->kind == INI_KIND_RAW && value == 0) {
       continue;
     }
-    if (section == NULL || strcmp(section, key->section) != 0) {
+    if (section == nullptr || strcmp(section, key->section) != 0) {
       section = key->section;
       PersistentIni_Append(&writer, "\r\n[%s]\r\n", section);
     }
@@ -541,8 +541,8 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
 {
   const char *cursor = text;
   const char *textEnd = text + length;
-  const char *sectionBegin = NULL;
-  const char *sectionEnd = NULL;
+  const char *sectionBegin = nullptr;
+  const char *sectionEnd = nullptr;
   uint64_t presentMask = 0;
   uint64_t bitsGivenMask = 0; /* dwords of INI_KIND_BIT keys that got their default before the first bit */
 
@@ -573,7 +573,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
     if (*lineBegin == '[') {
       const char *close = (const char *)memchr(lineBegin, ']', (size_t)(lineEnd - lineBegin));
 
-      if (close != NULL) {
+      if (close != nullptr) {
         sectionBegin = lineBegin + 1;
         sectionEnd = close;
         PersistentIni_Trim(&sectionBegin, &sectionEnd);
@@ -581,7 +581,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       continue;
     }
     equals = (const char *)memchr(lineBegin, '=', (size_t)(lineEnd - lineBegin));
-    if (equals == NULL || sectionBegin == NULL) {
+    if (equals == nullptr || sectionBegin == nullptr) {
       continue;
     }
     keyBegin = lineBegin;
@@ -684,7 +684,7 @@ void PersistentSettings_Flush(void)
   static char iniText[PERSISTENT_SETTINGS_INI_MAX_BYTES];
   uint32_t iniLength;
 
-  if (g_PersistentSettings.image != NULL) {
+  if (g_PersistentSettings.image != nullptr) {
     PersistentSettings_Write(g_LocaleCountryCodeOverride,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
     if (g_PersistentSettings.dirtyWriteCount != 0) {
       iniLength = PersistentSettings_FormatIni
@@ -727,7 +727,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
     return false;
   }
   text = (char *)malloc(fileSize + 1);
-  if (text == NULL || (fileSize != 0 && g_FileSystemReadExact(fileSize,text,fileHandle) != 0)) {
+  if (text == nullptr || (fileSize != 0 && g_FileSystemReadExact(fileSize,text,fileHandle) != 0)) {
     free(text);
     g_FileSystemClose(fileHandle);
     return false;
@@ -768,7 +768,7 @@ static void PersistentSettings_LoadImage(void)
   uint32_t dword;
 
   Resource_Release(g_PersistentSettings.image);
-  g_PersistentSettings.image = NULL;
+  g_PersistentSettings.image = nullptr;
   s_PersistentSettingsPresentMask = 0;
   s_PersistentSettingsWrittenMask = 0;
   memcpy(s_PersistentSettingsIniPath,s_PersistentSettingsIniLeaf,sizeof s_PersistentSettingsIniLeaf);
@@ -834,7 +834,7 @@ static void PersistentSettings_LoadImage(void)
    thandor.dat (the original's 16) is read as 32 and written as 32 by the next PersistentSettings_Flush. */
 static void PersistentSettings_NormalizeColorDepth(void)
 {
-  if ((g_PersistentSettings.image == NULL) ||
+  if ((g_PersistentSettings.image == nullptr) ||
       !PersistentSettings_IsPresent(PERSISTENT_SETTING_BITS_PER_PIXEL, 4) ||
       (PersistentIni_GetDword((const uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL) ==
        PERSISTENT_DEFAULT_BITS_PER_PIXEL)) {
@@ -860,7 +860,7 @@ uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if ((g_PersistentSettings.image != NULL) && PersistentSettings_IsPresent(settingsOffsetBytes,4)) {
+  if ((g_PersistentSettings.image != nullptr) && PersistentSettings_IsPresent(settingsOffsetBytes,4)) {
     defaultValue = *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
   }
   return defaultValue;
@@ -874,7 +874,7 @@ void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount region
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if ((g_PersistentSettings.image != NULL) &&
+  if ((g_PersistentSettings.image != nullptr) &&
      PersistentSettings_IsPresent(settingsOffsetBytes,regionByteCount)) {
     fallback = (uint8_t *)g_PersistentSettings.image + settingsOffsetBytes;
   }
@@ -893,7 +893,7 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
   uint32_t dwordsRemaining;
   uint32_t *destination;
 
-  if ((g_PersistentSettings.image != NULL) &&
+  if ((g_PersistentSettings.image != nullptr) &&
      (settingsOffsetBytes + regionByteCount < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
     destination = (uint32_t *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
     dwordsRemaining = regionByteCount >> 2;
@@ -917,7 +917,7 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if ((g_PersistentSettings.image != NULL) &&
+  if ((g_PersistentSettings.image != nullptr) &&
       (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
     s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
     if (*(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) != value) {
