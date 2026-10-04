@@ -245,8 +245,12 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
      removedPlayerIds. */
   scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
   if (scanRemaining > FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1) {
-    Thandor_Log("player timeouts: block count %d out of range, scan bounded",
-                (int)g_FrontendPlayerRuntimeBlockCount);
+    static int s_loggedBlockCount;
+    if (s_loggedBlockCount == 0) {
+      s_loggedBlockCount = 1;
+      Thandor_Log("player timeouts: block count %d out of range, scan bounded",
+                  (int)g_FrontendPlayerRuntimeBlockCount);
+    }
     scanRemaining = FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1;
   }
   for (; 0 < scanRemaining; scanRemaining--) {
