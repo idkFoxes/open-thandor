@@ -69,6 +69,7 @@ add_library(thandor_curated STATIC
     src/gameplay/ai/perception.cpp
     src/gameplay/ai/placement.cpp
     src/gameplay/ai/planning.cpp
+    src/gameplay/ai/purchasing.cpp
     src/gameplay/ai/technology.cpp
     src/gameplay/ai/units.cpp
     src/gameplay/ai/workspaces.cpp

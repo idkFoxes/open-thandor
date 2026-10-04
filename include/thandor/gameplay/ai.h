@@ -13,6 +13,7 @@
 #include <thandor/gameplay/ai/perception.h>
 #include <thandor/gameplay/ai/placement.h>
 #include <thandor/gameplay/ai/planning.h>
+#include <thandor/gameplay/ai/purchasing.h>
 #include <thandor/gameplay/ai/technology.h>
 #include <thandor/gameplay/ai/units.h>
 #include <thandor/gameplay/ai/workspaces.h>

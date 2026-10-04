@@ -19,4 +19,23 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
+Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
+          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+
+void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+          WorldRuntimeContext *worldRuntime);
+
+void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
+          (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+          WorldRuntimeContext *worldRuntime);
+
+void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
+          (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+          WorldRuntimeContext *worldRuntime);
+
+void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
+          (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
+
+extern ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime;
+
 #endif /* THANDOR_GAMEPLAY_AI_CONSTRUCTION_H */
