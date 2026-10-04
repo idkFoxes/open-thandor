@@ -10,119 +10,9 @@
 
 /* Module data. */
 
-/* Q12 ray origin in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
-
-/* Q28 ray direction in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
-
 ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {0};
 
 /* Implementation ownership: assets/model/definitions. */
-
-/* Picks the upgrade stage a faction can build: of the eight linked model-definition ids (linkedDefinitionIds) the last
-   non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
-   looked up in the registry. Returns that definition.
-   Original quirk: an unregistered id is not reported; the result is then the error code
-   FATAL_ERROR_MODEL_DEFINITION_MISSING cast to a pointer (what the original left as its result), and the registry
-   miss still writes g_PackageLastErrorPath.
-*/
-ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
-          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
-
-{
-  PckModelDefinitionIdCatalog linkedDefinitionId;
-  int linkedSlotsRemaining;
-  PckModelDefinitionIdCatalog selectedDefinitionId;
-  Bool8 technologyLocked;
-  ModelDefinitionRecordPrefix *selectedDefinition;
-
-  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
-    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
-    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-    if (linkedDefinitionId != 0) {
-      /* true while the technology is still locked */
-      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
-                        (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                         linkedDefinitionId);
-      if (!technologyLocked) {
-        selectedDefinitionId = linkedDefinitionId;
-      }
-    }
-    linkedDefinitionList = linkedDefinitionList + 4;
-  }
-  selectedDefinition = ModelDefinitionRegistry_FindById(selectedDefinitionId);
-  if (selectedDefinition == NULL) {
-    /* Original quirk: the error code of the failed lookup is returned as the definition */
-    selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
-  }
-  return selectedDefinition;
-}
-
-
-/* Recursive part of ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology: unlocks the technology of the
-   linked definition the faction can select at this node (linkedDefinitionIds), then does the same for every
-   child (childCount, children[]). */
-static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
-{
-  uint32_t childIndex;
-  ModelDefinition_UnlockLinkedTechnologyForFaction
-            (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
-                                    (factionIndex,(uintptr_t)node));
-  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
-    ModelDefinitionHierarchy_UnlockFrom(factionIndex,node->children[childIndex]);
-  }
-}
-
-/* Walks the model-definition tree below definitionNode depth-first and, for every node, unlocks for the
-   faction the technology granted by the linked definition the faction can currently select
-   (ModelDefinition_SelectFactionUnlockedLinkedId). Used when an army is created with
-   ARMY_CREATE_UNLOCK_TECHNOLOGY.
-*/
-void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
-          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
-
-{
-  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
-  ModelDefinitionHierarchy_UnlockFrom(
-       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
-}
-
-
-/* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
-   this node's definition id (linkedDefinitionIds[0]) or one in its subtree (childCount, children[]) names a
-   technology the faction has not unlocked yet. */
-static Bool8 ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
-{
-  uint32_t childIndex;
-  /* true from this check means the technology is still locked */
-  if (ModelDefinition_IsFactionTechnologyLocked
-                (technologyMasks,node->linkedDefinitionIds[0])) {
-    return true;
-  }
-  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
-    if (ModelDefinitionHierarchy_AnyTechnologyFrom(technologyMasks,node->children[childIndex])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/* Walks the model-definition hierarchy below definitionNode and tests each definition's technology
-   requirement against the faction's technology masks. Returns false when every definition in the tree is
-   unlocked, true as soon as one is still locked (ModelDefinition_IsFactionTechnologyLocked returns true).
-*/
-Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
-
-{
-  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
-  return ModelDefinitionHierarchy_AnyTechnologyFrom
-                   (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
-}
-
 
 /* Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
@@ -153,7 +43,6 @@ Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
   *outError = registrationStatusCode;
   return false;
 }
-
 
 /* Looks up the model's packed point table (packedLookupTableEntryCount entries of ModelPackedPointRecord at
    packedLookupTableRelativeOffset) for the key (keyIndex << 4) | keyClass. Returns true when an entry matches
@@ -190,7 +79,6 @@ Bool8 ModelLookupTable_GetPackedPointPosition
   return false;
 }
 
-
 /* Looks up the model's packed point table (packedLookupTableEntryCount, packedLookupTableRelativeOffset) for the key
    (keyIndex << 4) | keyClass. Returns true and stores the matching entry in *outEntry when one matches;
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
@@ -216,141 +104,6 @@ Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupK
   *outEntry = entryCursor;
   return false;
 }
-
-
-/* Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
-   limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane
-   through the weighted centre (2*v0 + v1 + v2) / 4), then an inside test of the hit point against the edges.
-   Returns true on a hit and stores the Q12 distance along the ray in *outDistanceQ12; returns false on a miss
-   and leaves *outDistanceQ12 unchanged. Called for each triangle by ModelNodeRuntime_RaycastHierarchyNearest.
-*/
-Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
-
-{
-  GraphicsFixedVec3 *vertex0;
-  GraphicsFixedVec3 *vertex1;
-  GraphicsFixedVec3 *vertex2;
-  int normalX;
-  int normalY;
-  int normalZ;
-  int64_t planeOffsetDot;
-  int planeOffsetHigh;
-  int halfPlaneOffsetHigh;
-  int64_t directionProduct;
-  int directionDot;
-  int maximumDistanceHigh;
-  Bool8 planeOutOfRange;
-  Q12 hitDistanceQ12;
-  int negVertex0X;
-  int negVertex0Y;
-  int negVertex0Z;
-  int hitRelativeX;
-  int hitRelativeY;
-  int hitRelativeZ;
-  int edge1X;
-  int edge1Y;
-  int edge1Z;
-  int edge2X;
-  int edge2Y;
-  int edge2Z;
-  int normalCrossEdge1X;
-  int normalCrossEdge1Y;
-  int normalCrossEdge1Z;
-  int64_t hitDotNormalCrossEdge1;
-  int64_t edge2DotNormalCrossEdge1;
-  int64_t normalCrossHitX;
-  int64_t normalCrossHitY;
-  int64_t normalCrossHitZ;
-  int64_t edge2DotNormalCrossHit;
-  int64_t insideRemainder;
-  Bool8 hitFound;
-
-  normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
-  normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);
-  normalZ = triangle->planeNormalZ << (Q28_SHIFT - Q12_SHIFT);
-  vertex0 = triangle->vertex0;
-  vertex1 = triangle->vertex1;
-  vertex2 = triangle->vertex2;
-  planeOffsetDot = (int64_t)normalY *
-          (int64_t)(((vertex0->y * 2 + vertex1->y + vertex2->y) >> 2) - g_ModelRaycastLocalOrigin.y) +
-          (int64_t)(((vertex0->x * 2 + vertex1->x + vertex2->x) >> 2) - g_ModelRaycastLocalOrigin.x) *
-          (int64_t)normalX +
-          (int64_t)(((vertex0->z * 2 + vertex1->z + vertex2->z) >> 2) - g_ModelRaycastLocalOrigin.z) *
-          (int64_t)normalZ;
-  planeOffsetHigh = (int)((uint64_t)planeOffsetDot >> 32);
-  directionProduct = (int64_t)g_ModelRaycastLocalDirectionQ28.y * (int64_t)normalY +
-          (int64_t)g_ModelRaycastLocalDirectionQ28.x * (int64_t)normalX +
-          (int64_t)g_ModelRaycastLocalDirectionQ28.z * (int64_t)normalZ;
-  directionDot = (int)FIXED_PRODUCT_SHR(directionProduct,Q28_SHIFT);
-  if (directionDot == 0) {
-    return false;
-  }
-  maximumDistanceHigh = FIXED_MUL_HIGH((int)g_ModelRaycastMaximumDistance,directionDot);
-  halfPlaneOffsetHigh = planeOffsetHigh >> 1;
-  /* Range test: the plane distance must lie within the maximum distance on the ray's side. */
-  if (planeOffsetDot < 0) {
-    planeOutOfRange = planeOffsetHigh < maximumDistanceHigh ||
-        (halfPlaneOffsetHigh <= -directionDot && halfPlaneOffsetHigh <= directionDot);
-  }
-  else {
-    planeOutOfRange = maximumDistanceHigh < planeOffsetHigh ||
-        (-directionDot <= halfPlaneOffsetHigh && directionDot <= halfPlaneOffsetHigh);
-  }
-  if (planeOutOfRange) {
-    return false;
-  }
-  hitDistanceQ12 = (int)(planeOffsetDot / (int64_t)directionDot); /* 64-by-32-bit signed division */
-
-  /* hit point relative to vertex 0 */
-  negVertex0X = -vertex0->x;
-  hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,g_ModelRaycastLocalDirectionQ28.x,Q28_SHIFT) + g_ModelRaycastLocalOrigin.x + negVertex0X;
-  negVertex0Y = -vertex0->y;
-  hitRelativeY = FIXED_MUL_SHR(g_ModelRaycastLocalDirectionQ28.y,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOrigin.y + negVertex0Y;
-  negVertex0Z = -vertex0->z;
-  hitRelativeZ = FIXED_MUL_SHR(g_ModelRaycastLocalDirectionQ28.z,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOrigin.z + negVertex0Z;
-  edge1X = negVertex0X + vertex1->x;
-  edge1Y = negVertex0Y + vertex1->y;
-  edge1Z = negVertex0Z + vertex1->z;
-  edge2X = negVertex0X + vertex2->x;
-  edge2Y = negVertex0Y + vertex2->y;
-  edge2Z = negVertex0Z + vertex2->z;
-
-  /* normal x edge1 (Q28 normal, so shifted back by 28) */
-  normalCrossEdge1X = (int)FIXED_PRODUCT_SHR((int64_t)normalY * (int64_t)edge1Z - (int64_t)normalZ * (int64_t)edge1Y,Q28_SHIFT);
-  normalCrossEdge1Y = (int)FIXED_PRODUCT_SHR((int64_t)normalZ * (int64_t)edge1X - (int64_t)normalX * (int64_t)edge1Z,Q28_SHIFT);
-  normalCrossEdge1Z = (int)FIXED_PRODUCT_SHR((int64_t)normalX * (int64_t)edge1Y - (int64_t)normalY * (int64_t)edge1X,Q28_SHIFT);
-  hitDotNormalCrossEdge1 = (int64_t)hitRelativeY * (int64_t)normalCrossEdge1Y +
-                           (int64_t)hitRelativeX * (int64_t)normalCrossEdge1X +
-                           (int64_t)hitRelativeZ * (int64_t)normalCrossEdge1Z;
-  edge2DotNormalCrossEdge1 = (int64_t)edge2Y * (int64_t)normalCrossEdge1Y +
-                             (int64_t)normalCrossEdge1X * (int64_t)edge2X +
-                             (int64_t)edge2Z * (int64_t)normalCrossEdge1Z;
-
-  /* normal x hit point, dotted with edge2 */
-  normalCrossHitX = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
-  normalCrossHitY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
-  normalCrossHitZ = (int64_t)normalX * (int64_t)hitRelativeY - (int64_t)normalY * (int64_t)hitRelativeX;
-  edge2DotNormalCrossHit = (int64_t)edge2Y * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitY,Q28_SHIFT) +
-                           (int64_t)edge2X * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitX,Q28_SHIFT) +
-                           (int64_t)edge2Z * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitZ,Q28_SHIFT);
-
-  /* Inside test: both barycentric dots and the remainder edge2DotNormalCrossEdge1 - (their sum) carry the sign
-     of edge2DotNormalCrossEdge1 (the 64-bit subtraction wraps like the original's). */
-  insideRemainder = (int64_t)((uint64_t)edge2DotNormalCrossEdge1 -
-                              (uint64_t)(edge2DotNormalCrossHit + hitDotNormalCrossEdge1));
-  if (edge2DotNormalCrossEdge1 < 0) {
-    hitFound = edge2DotNormalCrossHit < 0 && hitDotNormalCrossEdge1 < 0 && insideRemainder < 0;
-  }
-  else {
-    hitFound = edge2DotNormalCrossHit >= 0 && hitDotNormalCrossEdge1 >= 0 && insideRemainder >= 0;
-  }
-  if (!hitFound) {
-    return false;
-  }
-  *outDistanceQ12 = hitDistanceQ12;
-  return true;
-}
-
 
 /* Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three
    fields buildEnergyLoadQ4 (*outEnergyLoadQ4), buildTicks (*outBuildTicks) and xeniteValueQ4 (*outXeniteCostQ4), which
@@ -384,7 +137,6 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
   return FATAL_ERROR_MODEL_DEFINITION_MISSING;
 }
 
-
 /* Returns the first registered model definition whose runtime class id (requiredTechnologyBit) equals
    runtimeClassId, or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
 */
@@ -409,38 +161,6 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   }
   return candidateDefinition;
 }
-
-/* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
-   itself: the last non-zero of the eight linked ids (linkedDefinitionIds) whose technology the faction has
-   unlocked, or the first id when none is.
-*/
-PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
-          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
-
-{
-  PckModelDefinitionIdCatalog linkedDefinitionId;
-  int linkedSlotsRemaining;
-  PckModelDefinitionIdCatalog selectedDefinitionId;
-  Bool8 technologyLocked;
-
-  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
-    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
-    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-    if (linkedDefinitionId != 0) {
-      /* true means the technology is still locked */
-      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
-                        (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                         linkedDefinitionId);
-      if (!technologyLocked) {
-        selectedDefinitionId = linkedDefinitionId;
-      }
-    }
-    linkedDefinitionList = linkedDefinitionList + 4;
-  }
-  return selectedDefinitionId;
-}
-
 
 /* Serialized model node tree: nodeFlags (low nibble 0 = has a sprite), sprite path right after the header,
    spriteAssetReference, ownedNestedResourcePresent (owned-copy count), childCount, childSerializedOffsets
@@ -648,44 +368,6 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   return true;
 }
 
-
-/* Unlocks for the faction the technology that the model definition grants (researchTechnologyIds[0]), so building
-   that model makes its successor technology available. An unknown id is silently ignored.
-*/
-void ModelDefinition_UnlockLinkedTechnologyForFaction
-          (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
-
-{
-  ModelDefinitionRecordPrefix *modelDefinition;
-
-  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-  if (modelDefinition != NULL) {
-    Technology_UnlockForFaction
-              (0,0,((ModelDefinition *)modelDefinition)->researchTechnologyIds[0],factionIndex);
-  }
-}
-
-
-/* Tests whether the faction may use the model definition: the technology bit it requires (requiredTechnologyBit)
-   must be set in the faction's 256-bit technology masks. True means locked (bit clear or unknown id); false
-   means unlocked.
-*/
-Bool8 ModelDefinition_IsFactionTechnologyLocked
-          (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
-
-{
-  uint32_t technologyBitIndex;
-  ModelDefinitionRecordPrefix *modelDefinition;
-
-  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-  if (modelDefinition == NULL) {
-    return true;
-  }
-  technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit;
-  return (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) == 0;
-}
-
-
 /* Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
    g_PackageLastErrorPath for the error message and returns NULL (the original returned
    FATAL_ERROR_MODEL_DEFINITION_MISSING with a failure flag; callers that passed that code on now supply it
@@ -713,4 +395,3 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registeredDefinition,g_PackageLastErrorPath);
   return NULL;
 }
-

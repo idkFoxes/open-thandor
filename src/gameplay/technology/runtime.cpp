@@ -250,3 +250,169 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   }
 }
 
+/* Picks the upgrade stage a faction can build: of the eight linked model-definition ids (linkedDefinitionIds) the last
+   non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
+   looked up in the registry. Returns that definition.
+   Original quirk: an unregistered id is not reported; the result is then the error code
+   FATAL_ERROR_MODEL_DEFINITION_MISSING cast to a pointer (what the original left as its result), and the registry
+   miss still writes g_PackageLastErrorPath.
+*/
+ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
+
+{
+  PckModelDefinitionIdCatalog linkedDefinitionId;
+  int linkedSlotsRemaining;
+  PckModelDefinitionIdCatalog selectedDefinitionId;
+  Bool8 technologyLocked;
+  ModelDefinitionRecordPrefix *selectedDefinition;
+
+  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
+    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
+    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+    if (linkedDefinitionId != 0) {
+      /* true while the technology is still locked */
+      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
+                        (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
+                         linkedDefinitionId);
+      if (!technologyLocked) {
+        selectedDefinitionId = linkedDefinitionId;
+      }
+    }
+    linkedDefinitionList = linkedDefinitionList + 4;
+  }
+  selectedDefinition = ModelDefinitionRegistry_FindById(selectedDefinitionId);
+  if (selectedDefinition == NULL) {
+    /* Original quirk: the error code of the failed lookup is returned as the definition */
+    selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  }
+  return selectedDefinition;
+}
+
+/* Recursive part of ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology: unlocks the technology of the
+   linked definition the faction can select at this node (linkedDefinitionIds), then does the same for every
+   child (childCount, children[]). */
+static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
+{
+  uint32_t childIndex;
+  ModelDefinition_UnlockLinkedTechnologyForFaction
+            (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
+                                    (factionIndex,(uintptr_t)node));
+  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,node->children[childIndex]);
+  }
+}
+
+/* Walks the model-definition tree below definitionNode depth-first and, for every node, unlocks for the
+   faction the technology granted by the linked definition the faction can currently select
+   (ModelDefinition_SelectFactionUnlockedLinkedId). Used when an army is created with
+   ARMY_CREATE_UNLOCK_TECHNOLOGY.
+*/
+void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
+
+{
+  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
+  ModelDefinitionHierarchy_UnlockFrom(
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+}
+
+/* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
+   this node's definition id (linkedDefinitionIds[0]) or one in its subtree (childCount, children[]) names a
+   technology the faction has not unlocked yet. */
+static Bool8 ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
+{
+  uint32_t childIndex;
+  /* true from this check means the technology is still locked */
+  if (ModelDefinition_IsFactionTechnologyLocked
+                (technologyMasks,node->linkedDefinitionIds[0])) {
+    return true;
+  }
+  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
+    if (ModelDefinitionHierarchy_AnyTechnologyFrom(technologyMasks,node->children[childIndex])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/* Walks the model-definition hierarchy below definitionNode and tests each definition's technology
+   requirement against the faction's technology masks. Returns false when every definition in the tree is
+   unlocked, true as soon as one is still locked (ModelDefinition_IsFactionTechnologyLocked returns true).
+*/
+Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
+
+{
+  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
+  return ModelDefinitionHierarchy_AnyTechnologyFrom
+                   (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
+                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+}
+
+/* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
+   itself: the last non-zero of the eight linked ids (linkedDefinitionIds) whose technology the faction has
+   unlocked, or the first id when none is.
+*/
+PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
+
+{
+  PckModelDefinitionIdCatalog linkedDefinitionId;
+  int linkedSlotsRemaining;
+  PckModelDefinitionIdCatalog selectedDefinitionId;
+  Bool8 technologyLocked;
+
+  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
+    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
+    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
+    if (linkedDefinitionId != 0) {
+      /* true means the technology is still locked */
+      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
+                        (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
+                         linkedDefinitionId);
+      if (!technologyLocked) {
+        selectedDefinitionId = linkedDefinitionId;
+      }
+    }
+    linkedDefinitionList = linkedDefinitionList + 4;
+  }
+  return selectedDefinitionId;
+}
+
+/* Unlocks for the faction the technology that the model definition grants (researchTechnologyIds[0]), so building
+   that model makes its successor technology available. An unknown id is silently ignored.
+*/
+void ModelDefinition_UnlockLinkedTechnologyForFaction
+          (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
+
+{
+  ModelDefinitionRecordPrefix *modelDefinition;
+
+  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
+  if (modelDefinition != NULL) {
+    Technology_UnlockForFaction
+              (0,0,((ModelDefinition *)modelDefinition)->researchTechnologyIds[0],factionIndex);
+  }
+}
+
+/* Tests whether the faction may use the model definition: the technology bit it requires (requiredTechnologyBit)
+   must be set in the faction's 256-bit technology masks. True means locked (bit clear or unknown id); false
+   means unlocked.
+*/
+Bool8 ModelDefinition_IsFactionTechnologyLocked
+          (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
+
+{
+  uint32_t technologyBitIndex;
+  ModelDefinitionRecordPrefix *modelDefinition;
+
+  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
+  if (modelDefinition == NULL) {
+    return true;
+  }
+  technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit;
+  return (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) == 0;
+}

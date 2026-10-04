@@ -43,4 +43,22 @@ extern int32_t g_TechnologyCategoryMaximums[8];
 extern int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum;
 extern TechnologyCategoryMasks g_TechnologyCategoryMasks;
 
+ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList);
+
+void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
+
+Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+          (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
+
+PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
+          (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList);
+
+void ModelDefinition_UnlockLinkedTechnologyForFaction
+          (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
+
+Bool8 ModelDefinition_IsFactionTechnologyLocked
+          (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
+
 #endif /* THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H */

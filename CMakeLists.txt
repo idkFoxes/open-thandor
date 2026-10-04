@@ -41,6 +41,7 @@ add_library(thandor_curated STATIC
     src/assets/army/catalog.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
+    src/assets/model/mesh_raycast.cpp
     src/assets/package/codec.cpp
     src/assets/package/resource_loader.cpp
     src/assets/package/runtime.cpp
