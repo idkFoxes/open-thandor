@@ -29,6 +29,10 @@ static char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
 
 DirectDrawCreate *pDirectDrawCreate = 0;
 
+static GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = 0;
+
+static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = 0;
+
 /* Implementation ownership: graphics/core/device. */
 
 
@@ -205,7 +209,44 @@ void Graphics_Shutdown(void)
   return;
 }
 
-
-
-
-
+/* Publishes the display framebuffer of the new mode and selects the 16- or 32-bit software blitters (also used
+   by the SDL3 backend, which then installs its own present and capture functions and the permanent pixels). */
+void GraphicsDirectDraw_PublishFramebuffer
+          (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
+          GraphicsPixelDimension height,GraphicsPixelDimension width)
+{
+  g_FramebufferWidth = width;
+  g_FramebufferHeight = height;
+  g_ActiveGraphicsAdapterIndex = adapterIndex;
+  g_DisplayFramebufferAccess.width = width;
+  g_DisplayFramebufferAccess.height = height;
+  g_DisplayFramebufferAccess.pixels = NULL;
+  g_FramebufferAccess = &g_DisplayFramebufferAccess;
+  if (bitsPerPixel < 16 + 1) {
+    g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
+    g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion16Bit;
+    g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha16;
+    g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb16;
+    g_GraphicsTextureSourceStretchDirectColorBilinear = SoftwareTextureSource_StretchDirectColorBilinear16;
+    g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = SoftwareTextureSource_BlitIntegerScaledSourceAlpha16;
+    g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = SoftwareTextureSource_BlitSourceAlphaPaletteBank16;
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha = SoftwareTextureSource_BlitModulatedSourceAlpha16;
+    g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb16;
+    g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = SoftwareTextureSource_BlitHalfRgbSaturatedAdd16;
+    g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb16;
+  }
+  else {
+    g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
+    g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion32Bit;
+    g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
+    g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32;
+    g_GraphicsTextureSourceStretchDirectColorBilinear = SoftwareTextureSource_StretchDirectColorBilinear32;
+    g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = SoftwareTextureSource_BlitIntegerScaledSourceAlpha32;
+    g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = SoftwareTextureSource_BlitSourceAlphaPaletteBank32;
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha = SoftwareTextureSource_BlitModulatedSourceAlpha32;
+    g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32;
+    g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
+    g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
+  }
+  g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
+}

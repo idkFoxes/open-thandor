@@ -56,4 +56,8 @@ extern DirectDrawCreate *pDirectDrawCreate;
 extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize;
 extern int32_t g_GraphicsBackendAccessState;
 
+void GraphicsDirectDraw_PublishFramebuffer
+          (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
+          GraphicsPixelDimension height,GraphicsPixelDimension width);
+
 #endif /* THANDOR_GRAPHICS_CORE_RUNTIME_H */
