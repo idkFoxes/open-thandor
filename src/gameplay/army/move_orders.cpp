@@ -220,7 +220,7 @@ void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ModelRuntime
 
 /* Starts a new routed move order to the target (path finding via EntityPathing), dropping any waypoint
    queue and target mirroring. While the movement is locked the target replaces the waypoint queue instead.
-   Entities whose definition record has zero at +0x18 ignore the order.
+   Entities whose definition has no accelerationPerTick (0: not mobile) ignore the order.
 */
 void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
@@ -468,7 +468,7 @@ void ArmyRuntime_AppendWaypointOrStartMove
 
 /* Target-following move (ArmyRuntimeCommand_UpdateTargetFollowingState): unless the movement is locked,
    routed or still waiting for its retry countdown, routes to the target. If a move was active, its
-   fallback position is first saved into the waypoint queue (apparently so the army resumes it afterwards).
+   fallback position is first saved into the waypoint queue (so the army can resume it afterwards).
 */
 void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
@@ -795,7 +795,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
   return;
 }
 
-/* Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
+/* Where an entity's current command should take it, for the walker movement (walker.cpp): target flag
    1 aims at a target entity (its model position, raised by the definition's aimHeightOffsetQ12; class 0x15
    aims at its first child node), flag 2 at a fixed world position. A target entity that the owner's faction can
    no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or

@@ -288,13 +288,13 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   } while (remainingRows != 0);
   /* halve the stored sizes and shrink the allocation to the 0x220-byte header plus 32-bit pixels */
   halvedWidth = (int)previewTexture[1].common.commandFlags >> 1;
-  halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1; /* 5f-format: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
+  halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1; /* 32-bit format field: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
   previewTexture[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
-  previewTexture[1].common.commandTarget.targetEntity = Thandor_U32ToPointer<GameEntityRuntime>(halvedHeight); /* 5f-format: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
-  previewTexture[1].common.ownership.definitionOrClassRecord = Thandor_U32ToPointer(halvedWidth); /* 5f-format: GraphicsTextureSourceAsset header +0x218 (GameEntityRuntime view) */
-  previewTexture[1].common.ownership.modelNode = Thandor_U32ToPointer<ModelRuntimeNode>(halvedHeight); /* 5f-format: GraphicsTextureSourceAsset header +0x21C (GameEntityRuntime view) */
+  previewTexture[1].common.commandTarget.targetEntity = Thandor_U32ToPointer<GameEntityRuntime>(halvedHeight); /* 32-bit format field: GraphicsTextureSourceAsset header +0x204 (GameEntityRuntime view) */
+  previewTexture[1].common.ownership.definitionOrClassRecord = Thandor_U32ToPointer(halvedWidth); /* 32-bit format field: GraphicsTextureSourceAsset header +0x218 (GameEntityRuntime view) */
+  previewTexture[1].common.ownership.modelNode = Thandor_U32ToPointer<ModelRuntimeNode>(halvedHeight); /* 32-bit format field: GraphicsTextureSourceAsset header +0x21C (GameEntityRuntime view) */
   allocationSize = (uint32_t)(halvedWidth * halvedHeight * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
-  (previewTexture->common).ownership.modelNode = Thandor_U32ToPointer<ModelRuntimeNode>(allocationSize); /* 5f-format: GraphicsTextureSourceAsset header +0x04 (GameEntityRuntime view) */
+  (previewTexture->common).ownership.modelNode = Thandor_U32ToPointer<ModelRuntimeNode>(allocationSize); /* 32-bit format field: GraphicsTextureSourceAsset header +0x04 (GameEntityRuntime view) */
   g_MemoryApi.shrinkInPlace(allocationSize,previewTexture);
   return (GraphicsTextureResource *)previewTexture;
 }
@@ -318,7 +318,7 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
        registrySlotsRemaining--) {
     registeredRecord = (ArmyAssetRecord *)*registryCursor;
     if (registeredRecord != nullptr) {
-      g_MemoryApi.free(Thandor_U32ToPointer<void>(registeredRecord->previewTexture)); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+      g_MemoryApi.free(Thandor_U32ToPointer<void>(registeredRecord->previewTexture)); /* 32-bit format field: ArmyAssetRecord.previewTexture (+0x20) */
       registeredRecord->previewTexture = 0;
     }
     registryCursor++;
@@ -366,7 +366,7 @@ uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegi
     if (previewTexture == nullptr) {
       return 0;
     }
-    registeredRecord->previewTexture = Thandor_PointerToU32(previewTexture); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+    registeredRecord->previewTexture = Thandor_PointerToU32(previewTexture); /* 32-bit format field: ArmyAssetRecord.previewTexture (+0x20) */
     return (uintptr_t)previewTexture;
   }
   return 0; /* unknown id */

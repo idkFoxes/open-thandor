@@ -310,7 +310,7 @@ Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle
    array with its byte size (recordCount * 0x100) for Package_UpsertEntry. The payload pointer is rebased per
    domain (0 army/model, 1 shot, 2 effect). ResourceRegistrationRuntime_RebaseLoadedRecords undoes it.
    Called directly by the save-game writer InGameSaveGame_WritePackage.
-   Return value: (base << 32) | byteSize; the C caller splits the qword the same way.
+   Return value: (base << 32) | byteSize; the caller splits the qword the same way.
 */
 ResourceRegistrationImagePair
 InGameSaveGame_PrepareRegistrationRecords
@@ -351,13 +351,13 @@ InGameSaveGame_PrepareRegistrationRecords
       secondaryOffset = recordCursor->secondarySavedIdOrOffset;
       nestedBaseOffset = recordCursor->nestedBaseSavedOffset;
       if (primaryOffset != 0) {
-        primaryOffset = primaryOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.primarySavedIdOrOffset */
+        primaryOffset = primaryOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.primarySavedIdOrOffset */
       }
       if (secondaryOffset != 0) {
-        secondaryOffset = secondaryOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.secondarySavedIdOrOffset */
+        secondaryOffset = secondaryOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.secondarySavedIdOrOffset */
       }
       if (nestedBaseOffset != 0) {
-        nestedBaseOffset = nestedBaseOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.nestedBaseSavedOffset */
+        nestedBaseOffset = nestedBaseOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.nestedBaseSavedOffset */
       }
       recordCursor->primarySavedIdOrOffset = primaryOffset;
       recordCursor->secondarySavedIdOrOffset = secondaryOffset;
@@ -373,7 +373,7 @@ InGameSaveGame_PrepareRegistrationRecords
       nestedOffset = recordCursor->nestedSavedOffsets;
       for (; nestedCount != 0; nestedCount--) {
         if (*nestedOffset != 0) {
-          *nestedOffset = *nestedOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.nestedSavedOffsets */
+          *nestedOffset = *nestedOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.nestedSavedOffsets */
         }
         nestedOffset++;
       }
@@ -382,25 +382,25 @@ InGameSaveGame_PrepareRegistrationRecords
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
         /* the payload is a model runtime: the faction of its owner army is saved as the texture set
            (army graphics binding) index */
-        ownerArmy = Thandor_U32ToPointer<ModelRuntimeSlot>(payloadOffset)->ownerArmyRuntimeOrSavedOffset.armyRuntime; /* 5f-format: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
+        ownerArmy = Thandor_U32ToPointer<ModelRuntimeSlot>(payloadOffset)->ownerArmyRuntimeOrSavedOffset.armyRuntime; /* 32-bit format field: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
         recordCursor->paletteAssetSavedIdOrOffset = 0;
         payloadOffset = payloadOffset - g_ModelRuntimeRebaseDelta;
         recordCursor->textureSetSavedIdOrOffset = ownerArmy->factionIndex;
         break;
       case RESOURCE_DOMAIN_SHOT_RUNTIME:
-        payloadOffset = payloadOffset - Thandor_PointerToI32(g_ShotRuntimeRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
+        payloadOffset = payloadOffset - Thandor_PointerToI32(g_ShotRuntimeRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
         recordCursor->textureSetSavedIdOrOffset = 0;
         recordCursor->paletteAssetSavedIdOrOffset = 0;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
-        payloadOffset = payloadOffset - Thandor_PointerToI32(g_EffectRuntimeRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
+        payloadOffset = payloadOffset - Thandor_PointerToI32(g_EffectRuntimeRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecordSavedView.runtimePayloadSavedOffset */
         recordCursor->textureSetSavedIdOrOffset = 0;
         recordCursor->paletteAssetSavedIdOrOffset = 0;
       }
       recordCursor->runtimePayloadSavedOffset = payloadOffset;
       /* the sprite asset pointer is replaced by the asset's registry id */
       recordCursor->spriteAssetSavedIdOrOffset =
-           Thandor_U32ToPointer<SpriteAssetHeader>(recordCursor->spriteAssetSavedIdOrOffset)->registryHeader.registryId; /* 5f-format: ResourceRegistrationRecordSavedView.spriteAssetSavedIdOrOffset */
+           Thandor_U32ToPointer<SpriteAssetHeader>(recordCursor->spriteAssetSavedIdOrOffset)->registryHeader.registryId; /* 32-bit format field: ResourceRegistrationRecordSavedView.spriteAssetSavedIdOrOffset */
     }
     recordCursor = recordCursor + 1;
     recordsRemaining--;
@@ -408,11 +408,11 @@ InGameSaveGame_PrepareRegistrationRecords
   tailRecord = runtimeImage->tailRecord;
   records = runtimeImage->records;
   if (tailRecord != nullptr) {
-    tailRecord = Thandor_U32ToPointer<ResourceRegistrationRecord>(Thandor_PointerToI32(tailRecord) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: ResourceRegistrationImage.tailRecord (saved offset) */
+    tailRecord = Thandor_U32ToPointer<ResourceRegistrationRecord>(Thandor_PointerToI32(tailRecord) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 32-bit format field: ResourceRegistrationImage.tailRecord (saved offset) */
   }
   recordCount = runtimeImage->recordCount;
   /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
-  records[recordCount - 1].nestedSavedOffsets[12] = Thandor_PointerToU32(tailRecord); /* 5f-format: ResourceRegistrationRecordSavedView.nestedSavedOffsets[12] (saved tail record) */
+  records[recordCount - 1].nestedSavedOffsets[12] = Thandor_PointerToU32(tailRecord); /* 32-bit format field: ResourceRegistrationRecordSavedView.nestedSavedOffsets[12] (saved tail record) */
   return ((uint64_t)(uint32_t)(uintptr_t)records << 32) |
          (uint32_t)(recordCount * sizeof(ResourceRegistrationRecordSavedView));
 }
@@ -442,13 +442,13 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage()
     armyAssetPointerCursor = factionRecord->secondaryArmyAssetPointersOrIds;
     for (armyAssetPointersRemaining = factionRecord->secondaryArmyAssetCount;
         armyAssetPointersRemaining != 0; armyAssetPointersRemaining--) {
-      *armyAssetPointerCursor = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*armyAssetPointerCursor)->registryId; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+      *armyAssetPointerCursor = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*armyAssetPointerCursor)->registryId; /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
       armyAssetPointerCursor = armyAssetPointerCursor + 1;
     }
     primaryArmyAssetPointerCursor = factionRecord->primaryArmyAssetPointersOrIds;
     for (primaryArmyAssetPointersRemaining = factionRecord->primaryArmyAssetCount;
         primaryArmyAssetPointersRemaining != 0; primaryArmyAssetPointersRemaining--) {
-      *primaryArmyAssetPointerCursor = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*primaryArmyAssetPointerCursor)->registryId; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+      *primaryArmyAssetPointerCursor = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(*primaryArmyAssetPointerCursor)->registryId; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       primaryArmyAssetPointerCursor = primaryArmyAssetPointerCursor + 1;
     }
     /* the 8x32 group member pointers become saved army-slot offsets (0 stays 0) */
@@ -457,7 +457,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage()
       runtimeMember = runtimeMembers[memberIndex];
       if (runtimeMember != nullptr) {
         runtimeMember =
-             Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(runtimeMember) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 */
+             Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(runtimeMember) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 32-bit format field: GameFactionRuntimeRecord.runtimeGroupMembers8x32 */
       }
       runtimeMembers[memberIndex] = runtimeMember;
     }
@@ -502,16 +502,16 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots()
     ownerModelNode = slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-        ownerModelNode = (ModelRuntimeNode *)(Thandor_PointerToI32(ownerModelNode) - g_ModelRuntimeRebaseDelta); /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
+        ownerModelNode = (ModelRuntimeNode *)(Thandor_PointerToI32(ownerModelNode) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         ownerModelNode =
-             Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(ownerModelNode) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
+             Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(ownerModelNode) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 32-bit format field: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
       }
     }
     slot->modelNodeOrSavedOffset.modelNode =
          Thandor_U32ToPointer<ModelRuntimeNode>(
-         Thandor_PointerToI32(slot->modelNodeOrSavedOffset.modelNode) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: EffectRuntimeSlot.modelNodeOrSavedOffset */
+         Thandor_PointerToI32(slot->modelNodeOrSavedOffset.modelNode) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 32-bit format field: EffectRuntimeSlot.modelNodeOrSavedOffset */
     serializedDefinitionId.savedId = slot->definitionOrSavedId.definition->definitionId;
     slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
     slot->definitionOrSavedId = serializedDefinitionId;
@@ -559,15 +559,15 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots()
     runtimeStateRef = slot->runtimeStateOrSavedOffset.runtimeStatePointer;
     ownerArmyRuntime = slot->ownerAndTrajectory.ownerArmyRuntime;
     if (runtimeStateRef != nullptr) {
-      runtimeStateRef = (void *)(Thandor_PointerToI32(runtimeStateRef) - g_ModelRuntimeRebaseDelta); /* 5f-format: ShotRuntimeSlot.runtimeStateOrSavedOffset */
+      runtimeStateRef = (void *)(Thandor_PointerToI32(runtimeStateRef) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: ShotRuntimeSlot.runtimeStateOrSavedOffset */
     }
     if (ownerArmyRuntime != nullptr) {
       ownerArmyRuntime =
-           Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(ownerArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime */
+           Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(ownerArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 32-bit format field: ShotRuntimeSlot.ownerAndTrajectory.ownerArmyRuntime */
     }
     slot->modelNodeOrSavedOffset.modelNode =
          Thandor_U32ToPointer<ModelRuntimeNode>(
-         Thandor_PointerToI32(slot->modelNodeOrSavedOffset.modelNode) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: ShotRuntimeSlot.modelNodeOrSavedOffset */
+         Thandor_PointerToI32(slot->modelNodeOrSavedOffset.modelNode) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 32-bit format field: ShotRuntimeSlot.modelNodeOrSavedOffset */
     slot->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
     serializedDefinitionId.savedId = slot->definitionOrSavedId.definition->definitionId;
     slot->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
@@ -632,18 +632,18 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave()
       }
       continue;
     }
-    savedModelRuntimeOffset = (ModelRuntimeSlot *) /* 5f-format: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
+    savedModelRuntimeOffset = (ModelRuntimeSlot *) /* 32-bit format field: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
              ((int)(slot->modelRuntimeOrSavedOffset).modelRuntime - g_ModelRuntimeRebaseDelta);
     savedTargetOffset = slot->commandTargetArmyRuntime;
     if (savedTargetOffset != nullptr) {
-      savedTargetOffset = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedTargetOffset) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
+      savedTargetOffset = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedTargetOffset) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 32-bit format field: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
     }
-    slot->modelNodeRuntime = /* 5f-format: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
+    slot->modelNodeRuntime = /* 32-bit format field: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
          Thandor_U32ToPointer<ModelRuntimeNode>(Thandor_PointerToI32(slot->modelNodeRuntime) - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne));
     assignedTargetOffset = slot->assignedTargetArmyRuntime;
     (slot->modelRuntimeOrSavedOffset).modelRuntime = savedModelRuntimeOffset;
     if (assignedTargetOffset != 0) {
-      assignedTargetOffset = assignedTargetOffset - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne); /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
+      assignedTargetOffset = assignedTargetOffset - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
     }
     slot->commandTargetArmyRuntime = savedTargetOffset;
     slot->assignedTargetArmyRuntime = assignedTargetOffset;

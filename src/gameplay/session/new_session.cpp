@@ -278,7 +278,7 @@ static void InGameNewSession_QueueIntroNotifications()
   InGameNotificationMovieId firstMovieId;
   uint32_t introIndex;
 
-  /* Lost load: the original reads the first of five level intro notification movies from the level image. */
+  /* the first of the five level intro notification movies, from the level image */
   firstMovieId = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.introNotificationMovieId;
   g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
   if (firstMovieId == 0) {

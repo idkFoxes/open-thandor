@@ -112,8 +112,8 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
   return;
 }
 
-/* Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (presumably its
-   home base) keeps 13 slots of army asset ids (from classLinkState.classState78 on) with a reservation bit each
+/* Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (its home
+   pad) keeps 13 slots of army asset ids (from classLinkState.classState78 on) with a reservation bit each
    (classState.classStateB4). The first slot holding this army's asset id with its bit set gets the bit cleared
    and the counter classState70 incremented; unless class-state bit 0x20 of the released model is set, the slot
    is also emptied and the counters armyLinkOrState and classState70 are decremented.
@@ -152,7 +152,7 @@ void ArmyPlacement_ReleaseClassStateReservation
       }
       slotAssetIds[slotIndex] = 0;
       armyLinkState = &(linkedModelSlot->classLinkState).armyLinkOrState;
-      armyLinkState->armyRuntime = Thandor_U32ToPointer<ArmyRuntimeSlot>(armyLinkState->classState - 1); /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState */
+      armyLinkState->armyRuntime = Thandor_U32ToPointer<ArmyRuntimeSlot>(armyLinkState->classState - 1); /* 32-bit format field: ModelRuntimeSlot.classLinkState.armyLinkOrState */
       classCounter = &(linkedModelSlot->classLinkState).classState70;
       *classCounter = *classCounter - 1;
       return;

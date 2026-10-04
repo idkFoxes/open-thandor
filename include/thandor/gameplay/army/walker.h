@@ -41,7 +41,7 @@
 #define ARMY_ARTICULATED_STEP_HALF_TURN_SCALE 0x8000
 /* step progress runs from 0 to 1.0 (Q12); the step ends once it exceeds 0xFFF */
 #define ARMY_ARTICULATED_STEP_PROGRESS_END_Q12 0x1000
-/* Articulated walker step choice (ArmyRuntimeClass_UpdateArticulatedWalker), angles relative to the heading
+/* Articulated walker step choice (ArmyRuntimeClass_UpdateArticulatedMovement), angles relative to the heading
    in angle16 units: a new step walks on while the route point lies within the eighth turn ahead (within
    ARMY_ARTICULATED_WALK_ON_ANGLE16 once walking), otherwise the walker turns on the spot when it is more than
    ARMY_ARTICULATED_TURN_ANGLE16 off. Standing, the feet are closed when their line is more than

@@ -13,8 +13,6 @@
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct AiCandidateWorkspaceEntry AiCandidateWorkspaceEntry, *PAiCandidateWorkspaceEntry;
 typedef struct GameFactionRuntimeRecord GameFactionRuntimeRecord, *PGameFactionRuntimeRecord;
 typedef struct AiFactionCandidateCacheState AiFactionCandidateCacheState, *PAiFactionCandidateCacheState;

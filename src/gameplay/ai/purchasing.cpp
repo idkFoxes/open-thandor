@@ -79,7 +79,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
       if ((armyAssetRecord != nullptr) &&
          ((armyAssetRecord->flags & 1) != 0)) { /* bit 0: asset enabled */
         /* the asset's root node is an AiLinkedDefinitionListView */
-        assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+        assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer; /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
         if ((((candidateModelDefinitionId !=
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]) &&
              (((candidateModelDefinitionId !=
@@ -102,7 +102,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||
               (nestedLinkedDefinitions =
-               Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address), /* 5f-format: ArmyModelTreeNode.childList0Address */
+               Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address), /* 32-bit format field: ArmyModelTreeNode.childList0Address */
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
                 ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[1] &&
@@ -113,7 +113,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
               ((secondNestedLinkedDefinitions =
-                Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address), /* 5f-format: ArmyModelTreeNode.childList1Address */
+                Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address), /* 32-bit format field: ArmyModelTreeNode.childList1Address */
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
@@ -634,7 +634,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   int weightedDefinitionScore;
   AiLinkedDefinitionListView *linkedDefinitionList;
 
-  linkedDefinitionList = Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAssetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+  linkedDefinitionList = Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAssetRecord->rootNodeOffsetOrPointer); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
   /* the original tests the selector's status after each of the three selections below, but it is always
      "found" */
   selectedModelDefinition = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
@@ -655,7 +655,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
             g_TechnologyCategoryMaximums[selectedModelDefinition->targetClassIndex])) * 8;
   if (childCount != 0) {
     selectedChildModelDefinition0 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                      (factionIndex,linkedDefinitionList->childList0Address); /* 5f-format: ArmyModelTreeNode.childList*Address */
+                      (factionIndex,linkedDefinitionList->childList0Address); /* 32-bit format field: ArmyModelTreeNode.childList*Address */
     if ((selectedChildModelDefinition0->reloadTicks != 0) &&
         (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0)) {
       weightedDefinitionScore = weightedDefinitionScore +
@@ -665,7 +665,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
     }
     if (1 < childCount) {
       selectedChildModelDefinition1 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                        (factionIndex,linkedDefinitionList->childList1Address); /* 5f-format: ArmyModelTreeNode.childList*Address */
+                        (factionIndex,linkedDefinitionList->childList1Address); /* 32-bit format field: ArmyModelTreeNode.childList*Address */
       if ((selectedChildModelDefinition1->reloadTicks != 0) &&
           (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0)) {
         weightedDefinitionScore = weightedDefinitionScore +
