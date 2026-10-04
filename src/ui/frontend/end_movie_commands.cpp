@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/ui/frontend/end_movie_commands.h>
+#include <thandor/ui/core/key_dispatch.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -59,33 +60,13 @@ void EndMovieUiRuntime_DispatchCommandByFlags
 {
   /* The matching record's continuationEntryAddress selects the action below. endMovieRuntime is the in-game
      root. */
-  const UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords;
-  uint32_t target = 0;
-
-  for (;; record++) {
-    uint32_t flags = record->modifierClassFlags;
-    if (record->commandCode == 0) {
-      return;
-    }
-    if (record->commandCode != commandCode) {
-      continue;
-    }
-    /* the record's modifier class demands exactly none, Ctrl, Alt or Ctrl+Alt (Shift is ignored) */
-    if (flags == 0) {
-      if ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) continue;
-    }
-    else if ((flags & KEYBOARD_STATE_ALT) == 0) {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
-    }
-    else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-    }
-    else {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-    }
-    target = (uint32_t)record->continuationEntryAddress;
-    break;
+  /* the record's modifier class demands exactly none, Ctrl, Alt or Ctrl+Alt (Shift is ignored) */
+  const UiCommandDispatchRecord *record = UiCommandDispatch_Find(g_EndMovieCommandDispatchRecords,
+      (uint32_t)commandCode, (uint32_t)modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
+  if (record == nullptr) {
+    return;
   }
+  uint32_t target = (uint32_t)record->continuationEntryAddress;
   switch (target) {
   case 0x5658f0: /* screenshot */
     Screenshot_SaveFramebufferAsPcx();

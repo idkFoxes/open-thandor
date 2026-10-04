@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/ingame/hotkeys.h>
+#include <thandor/ui/core/key_dispatch.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -45,36 +46,17 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
   /* The record table holds the original game's continuation addresses inside this function; they are only
      used as keys here, each continuation is one case of the switch below. rt is the runtime root. */
   uint8_t *rt = (uint8_t *)inGameRoot;
-  const UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
-  uint32_t target = 0;
   Bool8 localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
-     combination (Ctrl, Alt, or both) must be held. */
-
-  for (;; record++) {
-    uint32_t flags = record->modifierClassFlags;
-    if (record->commandCode == 0) {
-      return false;
-    }
-    if (record->commandCode != commandCode) {
-      continue;
-    }
-    if (flags == 0) {
-      if ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) continue;
-    }
-    else if ((flags & KEYBOARD_STATE_ALT) == 0) {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
-    }
-    else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-    }
-    else {
-      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
-    }
-    target = (uint32_t)record->continuationEntryAddress;
-    break;
+     combination (Ctrl, Alt, or both) must be held. Shift is ignored. */
+  const UiCommandDispatchRecord *record = UiCommandDispatch_Find(
+      g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30, (uint32_t)commandCode,
+      (uint32_t)modifierFlags, UiKeyModifierRule::ExactShiftIgnored);
+  if (record == nullptr) {
+    return false;
   }
+  uint32_t target = (uint32_t)record->continuationEntryAddress;
   switch (target) {
   case 0x5671e0: /* Ctrl+Alt+Z, cheat: toggle fast build and research */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
