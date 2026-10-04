@@ -27,8 +27,9 @@
    the loading movie stays in the stage's frame group (MoviePlayback_AdvanceScheduledFrameAndTick) */
 #define LEVEL_LOAD_MOVIE_SPAN_HOLD 0x10000
 
-/* Prepares one loaded file of a LEV file list; false with the step's error code in *outError. */
-using NewLevelPrepareAssetFn = Bool8 (*)(void *asset,uint32_t *outError);
+/* Prepares one loaded file of a LEV file list (assetByteCount: the loaded byte count); false with the step's
+   error code in *outError. */
+using NewLevelPrepareAssetFn = Bool8 (*)(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
 /* Functions are grouped by semantic ownership. */
 
@@ -41,13 +42,13 @@ Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *o
 
 Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError);
 
-Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t *outError);
+Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
-Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t *outError);
+Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
-Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t *outError);
+Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
-Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t *outError);
+Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError);
 
 Bool8 NewLevel_LoadAssetList
           (LevelAssetRuntimePrefix *levelImage,LevelAssetRelativeByteOffset pathTableOffset,

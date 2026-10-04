@@ -201,29 +201,32 @@ static void NewLevel_ApplyPlayerSlots(LevelAssetRuntimePrefix *levelImage)
   g_GameFactionRuntimeImage.records[7].colorIndex = levelImage->playerSlots[6].aiClassOrMode + 7;
 }
 
-Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t *outError)
+Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
+  (void)assetByteCount;
   return EffectAsset_PrepareEntries((EffectAssetHeader *)asset,outError);
 }
 
-Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t *outError)
+Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
+  (void)assetByteCount;
   *outError = ShotAsset_PrepareEntries((ShotAssetHeader *)asset);
   return *outError == 0;
 }
 
-Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t *outError)
+Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
+  (void)assetByteCount;
   return ModelAsset_PrepareRecords((ModelAssetHeader *)asset,outError);
 }
 
-Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t *outError)
+Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t assetByteCount,uint32_t *outError)
 
 {
-  *outError = ArmyAsset_PrepareRecords((ArmyAssetHeader *)asset);
+  *outError = ArmyAsset_PrepareRecords((ArmyAssetHeader *)asset,assetByteCount);
   return *outError == 0;
 }
 
@@ -239,6 +242,7 @@ Bool8 NewLevel_LoadAssetList
   uint16_t *assetPathCursor;
   void *loadedAsset;
   uint32_t loadErrorCode;
+  uint32_t loadedByteCount;
   uint32_t prepareError;
 
   assetPathCursor = (uint16_t *)((uint8_t *)levelImage + pathTableOffset);
@@ -247,14 +251,18 @@ Bool8 NewLevel_LoadAssetList
     if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) {
       return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES);
     }
-    loadedAsset = Package_LoadEntry(assetPathCursor,&loadErrorCode);
+    /* Package_LoadEntryWithSize is the core of Package_LoadEntry (same allocation); the byte count bounds the
+       record walks of the prepare step */
+    loadedAsset = Package_LoadEntryWithSize(assetPathCursor,&loadedByteCount,&loadErrorCode);
     if (loadedAsset == nullptr) {
+      Thandor_Log("NewLevel_LoadAssetList: loading \"%ls\" failed (error 0x%08X)",(wchar_t *)assetPathCursor,
+                  loadErrorCode);
       return NewLevel_Fail(outError,loadErrorCode);
     }
     **loadedResourceCursor = loadedAsset;
     g_InGameLoadedResourcePointerCount++;
     (*loadedResourceCursor)++;
-    if (!prepareAsset(loadedAsset,&prepareError)) {
+    if (!prepareAsset(loadedAsset,loadedByteCount,&prepareError)) {
       return NewLevel_Fail(outError,prepareError);
     }
     MoviePlayback_AdvanceScheduledFrameAndTick();
