@@ -60,11 +60,11 @@ Main findings:
 | Wave | Content | State |
 |---|---|---|
 | 1 | Crashes and file/peer input: codec (field grid, Huffman), PCK directory and decoder index, empty-list navigation, savegame page, HUD buffers; registry HKEY on x64 | done, all checks pass |
-| 2 | Lobby chat and player bounds, lobby receive validation, rich-text font/palette bounds, session x64 heap overflows, world crash bounds, arena size cap | running |
-| 3 | Command validator at the dispatch (network), frontend peer indices, editor commands (terrain), field-grid load validation, UI controls crashes, movie close race and FLM header checks, graphics bounds | queued |
-| 4 | Threads: atomic counters, spin lock with `std::atomic_ref` and a guard, timer unregister | queued |
-| 5 | Test aids first: raster/blit golden-hash self-test, sine/fixed-math table hash, SAM decode hash | queued |
-| 6+ | Idiomatic C++ in small mechanical packages: `nullptr`, `const`, `[[nodiscard]]`, `constexpr` tables, C casts to named casts, flag typedefs `int` to fixed-width unsigned, typed vtable slots (`UI_SLOT`) instead of type-erasing casts, `std::span` for pointer+count, RAII guards for spin locks/framebuffer access/focus lending, typed accessors instead of raw offsets, `enum class` where a value is a pure enumeration | queued |
+| 2 | Lobby chat and player bounds, lobby receive validation, rich-text font/palette bounds, session x64 heap overflows, world crash bounds, arena size cap | done, all checks pass |
+| 3 | Command validator at the dispatch (network), frontend peer indices, editor commands (terrain), field-grid load validation, UI controls crashes, movie close race and FLM header checks, graphics bounds | merged; checks running (movie/FLM still in work) |
+| 4 | Threads: atomic counters, spin lock with `std::atomic_ref` and a guard, timer unregister | in work |
+| 5 | Test aids first: raster/blit golden-hash self-test, sine/fixed-math table hash, SAM decode hash | in work |
+| 6+ | Idiomatic C++ in small mechanical packages: `nullptr`, `const`, `[[nodiscard]]`, `constexpr` tables, C casts to named casts, flag typedefs `int` to fixed-width unsigned, typed vtable slots (`UI_SLOT`) instead of type-erasing casts, `std::span` for pointer+count, RAII guards for spin locks/framebuffer access/focus lending, typed accessors instead of raw offsets, `enum class` where a value is a pure enumeration | started: clang-tidy wrapper `tools/dev/tidy.py`, `nullptr` in core (done), world/network/platform (in work) |
 | later | Larger merges: hex walker template (family by family, determinism check per family), key-command matching, settings handlers, lockstep channel, new vs loaded session | queued |
 
 Each package lists its files, the change, why valid data stays identical, and the checks that cover it.
