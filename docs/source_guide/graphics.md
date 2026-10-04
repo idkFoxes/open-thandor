@@ -241,8 +241,8 @@ No file comment; function families: `Graphics_*` (2), `GraphicsDirectDraw_*` (1)
 **Functions** (3 public):
 
 - [`Graphics_AllocateTables`](../../src/graphics/core/device.cpp#L29) - The first step of the original's Graphics_Init, called by SdlVideo_Init: allocates and clears the texture-slot and palette tables and allocates the empty adapter and display-mode tables, in this ...
-- [`Graphics_Shutdown`](../../src/graphics/core/device.cpp#L77) - Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer and frees the software cursor buffers (SdlVideo_Shutdown then releases the framebuffer and the window).
-- [`GraphicsDirectDraw_PublishFramebuffer`](../../src/graphics/core/device.cpp#L95) - Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.
+- [`Graphics_Shutdown`](../../src/graphics/core/device.cpp#L78) - Tears the graphics backend down at exit (Runtime_Shutdown): marks the backend as not accessible (SdlVideo_Present then presents nothing) and frees the software cursor buffers (SdlVideo_Shutdown then ...
+- [`GraphicsDirectDraw_PublishFramebuffer`](../../src/graphics/core/device.cpp#L96) - Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.
 
 **Data** (2 shared, 1 file-local): `g_GraphicsDisplayModeFinalize`, `g_GraphicsBackendAccessState`.
 
