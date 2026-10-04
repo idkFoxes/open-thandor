@@ -43,11 +43,10 @@
 #define TEXT_ID_ADVANCED_UI_SCALE_AUTO (TEXT_ID_PROJECT_BASE + 12) /* "Auto" */
 #define TEXT_ID_ADVANCED_UI_SCALE_1 (TEXT_ID_PROJECT_BASE + 13) /* "1x" (2x, 3x follow) */
 #define TEXT_ID_ADVANCED_FRAME_LIMIT_TITLE (TEXT_ID_PROJECT_BASE + 16) /* "Bildratenbegrenzung:" */
-#define TEXT_ID_ADVANCED_FRAME_LIMIT_OFF (TEXT_ID_PROJECT_BASE + 17) /* "Aus" (30, 60, 120, 144 Bilder/s follow) */
-#define TEXT_ID_ADVANCED_VSYNC (TEXT_ID_PROJECT_BASE + 22) /* "VSync" */
-#define TEXT_ID_ADVANCED_NOTE_SOFTWARE (TEXT_ID_PROJECT_BASE + 23) /* edges and UI scale need a GPU renderer */
-#define TEXT_ID_ADVANCED_NOTE_UI_SCALE (TEXT_ID_PROJECT_BASE + 24) /* the UI scale applies with the next mode switch */
-#define TEXT_ID_PROJECT_COUNT 25
+#define TEXT_ID_ADVANCED_FRAME_LIMIT_OFF (TEXT_ID_PROJECT_BASE + 17) /* "Aus" (60, 120, 144 Bilder/s follow) */
+#define TEXT_ID_ADVANCED_VSYNC (TEXT_ID_PROJECT_BASE + 21) /* "VSync" */
+#define TEXT_ID_ADVANCED_NOTE_SOFTWARE (TEXT_ID_PROJECT_BASE + 22) /* edges and UI scale need a GPU renderer */
+#define TEXT_ID_PROJECT_COUNT 23
 
 Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 

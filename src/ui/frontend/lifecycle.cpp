@@ -536,7 +536,6 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
                                FRONTEND_UI(frontendUiState,advancedUiScale2),
                                FRONTEND_UI(frontendUiState,advancedUiScale3),
                                FRONTEND_UI(frontendUiState,advancedFrameLimitOff),
-                               FRONTEND_UI(frontendUiState,advancedFrameLimit30),
                                FRONTEND_UI(frontendUiState,advancedFrameLimit60),
                                FRONTEND_UI(frontendUiState,advancedFrameLimit120),
                                FRONTEND_UI(frontendUiState,advancedFrameLimit144),

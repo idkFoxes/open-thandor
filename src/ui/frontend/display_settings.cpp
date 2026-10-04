@@ -267,6 +267,47 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
 }
 
+/* The end of a successful display mode switch (FrontendDisplaySettings_ApplyMode; not in the original: also the
+   advanced settings page's UI scale): lays the UI out again, converts the palette-based UI textures to the new
+   pixel format, shows the cursor again, refreshes the display settings page and decides whether the dialog pages
+   cover the menu room. control is any node of the frontend template. */
+static void FrontendDisplaySettings_FinishModeSwitch(void *control)
+{
+  int remainingFonts;
+  UiNodeBase *parentCursor;
+  GraphicsTextureSourceAsset **fontTextureSource;
+
+  UiRootStack_Relayout();
+  g_GraphicsTextureSourceConvertPaletteEntries
+            ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
+  g_GraphicsTextureSourceConvertPaletteEntries
+            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowTextureSource);
+  g_GraphicsTextureSourceConvertPaletteEntries
+            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
+  fontTextureSource = g_FontTextureSources;
+  for (remainingFonts = 2; remainingFonts != 0; remainingFonts--) { /* both fonts */
+    g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
+    fontTextureSource++;
+  }
+  g_CursorVisibilityToken++;
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
+  /* walk up the parent links to the frontend template root */
+  parentCursor = ((UiNodeBase *)control)->parent;
+  while (parentCursor != UI_NODE_NONE) {
+    control = ((UiNodeBase *)control)->parent;
+    parentCursor = ((UiNodeBase *)control)->parent;
+  }
+  /* the new resolution decides whether the dialog pages cover the menu room */
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  }
+  else {
+    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
+         ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  }
+}
+
 /* Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
    g_FrontendUiActionHandlersPage20): switches to the pending adapter/resolution (always 32-bit colour). On success the mode
    is saved in the persistent settings, the UI is laid out again and the palette-based UI textures are converted
@@ -283,9 +324,6 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   uint32_t selectedWidth;
   uint32_t selectedHeight;
   uint32_t selectedBitsPerPixel;
-  int remainingFonts;
-  UiNodeBase *parentCursor;
-  GraphicsTextureSourceAsset **fontTextureSource;
   uint32_t selectedModeError;
   uint32_t restoredModeError;
   uint32_t previousDisplayModeKind;
@@ -343,35 +381,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   PersistentSettings_Write(selectedWidth,PERSISTENT_SETTING_DISPLAY_WIDTH);
   PersistentSettings_Write(selectedHeight,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   PersistentSettings_Write(selectedBitsPerPixel,PERSISTENT_SETTING_BITS_PER_PIXEL);
-  UiRootStack_Relayout();
-  g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
-  g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowTextureSource);
-  g_GraphicsTextureSourceConvertPaletteEntries
-            ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
-  fontTextureSource = g_FontTextureSources;
-  for (remainingFonts = 2; remainingFonts != 0; remainingFonts--) { /* both fonts */
-    g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
-    fontTextureSource++;
-  }
-  g_CursorVisibilityToken++;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
-  /* walk up the parent links to the frontend template root */
-  parentCursor = ((UiNodeBase *)control)->parent;
-  while (parentCursor != UI_NODE_NONE) {
-    control = ((UiNodeBase *)control)->parent;
-    parentCursor = ((UiNodeBase *)control)->parent;
-  }
-  /* the new resolution decides whether the dialog pages cover the menu room */
-  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
-         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
-  }
-  else {
-    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
-         ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
-  }
+  FrontendDisplaySettings_FinishModeSwitch(control);
 }
 
 /* Refreshes the display settings page after the pending mode changed (called by the resolution, adapter, display
@@ -524,11 +534,9 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen),
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow));
-  /* the original compared the saved adapter index; here the saved renderer and display mode kind, and a UI scale
-     chosen on the advanced settings page since the last switch also offers the apply button */
+  /* the original compared the saved adapter index; here the saved renderer and display mode kind */
   persistedValue = SdlVideo_SavedAdapterIndex();
   if ((((persistedValue == adapterIndex) && (SdlVideo_SavedDisplayModeKind() == s_pendingDisplayModeKind) &&
-        !SdlVideo_UiScaleChangePending() &&
        (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
       (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
@@ -560,13 +568,16 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
 
 /* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1, opened by the options
    page's fourth button). Every choice applies and saves its value at once: "3D-Kanten" ([graphics]
-   gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale,
-   taken by the next display mode switch: the display settings page then offers "Anwenden"), "Bildratenbegrenzung"
+   gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale;
+   with a GPU renderer running the display mode is set again at once, as "Anwenden" does: frame target at the new
+   scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
    a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. */
 
-static const uint32_t kAdvancedFrameLimits[] = {0,30,60,120,144}; /* advancedFrameLimitOff, 30, 60, 120, 144 */
+/* advancedFrameLimitOff, 60, 120, 144 (no 30: below 60 frames per second the simulation slows down) */
+static const uint32_t kAdvancedFrameLimits[] = {0,60,120,144};
+#define ADVANCED_FRAME_LIMIT_CHOICES 4
 
 /* The frontend root of any of its nodes. */
 static UiNodeBase *FrontendAdvancedSettingsPage_Root(UiNodeBase *node)
@@ -588,12 +599,12 @@ static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNod
 }
 
 /* Shows the current values on the advanced settings page: the selected choices, the VSync checkbox and the note
-   (software renderer: edges and UI scale need a GPU renderer; GPU renderer: when the UI scale applies). */
+   (only with the software renderer: edges and UI scale need a GPU renderer). */
 static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
 {
   UiNodeBase *edges[2];
   UiNodeBase *uiScales[4];
-  UiNodeBase *frameLimits[5];
+  UiNodeBase *frameLimits[ADVANCED_FRAME_LIMIT_CHOICES];
   UiNodeBase *selected;
   uint32_t index;
   uint32_t value;
@@ -606,26 +617,26 @@ static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
   uiScales[2] = FRONTEND_UI(frontendRoot,advancedUiScale2);
   uiScales[3] = FRONTEND_UI(frontendRoot,advancedUiScale3);
   frameLimits[0] = FRONTEND_UI(frontendRoot,advancedFrameLimitOff);
-  frameLimits[1] = FRONTEND_UI(frontendRoot,advancedFrameLimit30);
-  frameLimits[2] = FRONTEND_UI(frontendRoot,advancedFrameLimit60);
-  frameLimits[3] = FRONTEND_UI(frontendRoot,advancedFrameLimit120);
-  frameLimits[4] = FRONTEND_UI(frontendRoot,advancedFrameLimit144);
+  frameLimits[1] = FRONTEND_UI(frontendRoot,advancedFrameLimit60);
+  frameLimits[2] = FRONTEND_UI(frontendRoot,advancedFrameLimit120);
+  frameLimits[3] = FRONTEND_UI(frontendRoot,advancedFrameLimit144);
   gpu = SdlVideo_GpuRendererActive();
   FrontendAdvancedSettingsPage_SelectChoice
             (edges[(SdlVideo_GpuRasterization() == PERSISTENT_GPU_RASTERIZATION_EXACT) ? 1 : 0],edges,2);
   FrontendAdvancedSettingsPage_SelectChoice(uiScales[SdlVideo_SavedUiScale()],uiScales,4);
   value = SdlVideo_GetFrameLimit();
   selected = nullptr;
-  for (index = 0; index < 5; index++) {
+  for (index = 0; index < ADVANCED_FRAME_LIMIT_CHOICES; index++) {
     if (kAdvancedFrameLimits[index] == value) {
       selected = frameLimits[index];
     }
   }
-  FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,5); /* another limit (ini): none selected */
+  /* another limit (ini, environment): none selected; the stored value is kept until a choice is clicked */
+  FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,ADVANCED_FRAME_LIMIT_CHOICES);
   UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
                                   (UiSelectableControl *)FRONTEND_UI(frontendRoot,advancedVsyncCheckbox));
   FRONTEND_UI_FIELD(frontendRoot,advancedNoteLabel,0x54,TextResourceId) =
-       gpu ? TEXT_ID_ADVANCED_NOTE_UI_SCALE : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
+       gpu ? TEXT_RESOURCE_ID_NONE : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
   UiNode_InvalidateRoot(FRONTEND_UI(frontendRoot,advancedSettingsPage));
 }
 
@@ -659,11 +670,15 @@ void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode)
   FrontendAdvancedSettingsPage_Refresh(frontendRoot);
 }
 
-/* Handler of FRONTEND_ACTION_ADVANCED_UI_SCALE ("Auto", "1x", "2x", "3x"). */
+/* Handler of FRONTEND_ACTION_ADVANCED_UI_SCALE ("Auto", "1x", "2x", "3x"): saves the scale and, with a GPU
+   renderer running and a scale that differs from the one in use (OPEN_THANDOR_UI_SCALE wins), sets the current
+   display mode (same renderer, size and kind) again, which makes the frame target at the new scale (auto: the
+   largest whole one at which the mode fits the display), and finishes as "Anwenden" does. The page stays open. */
 void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
 {
   UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
   uint32_t scale;
+  uint32_t modeError;
 
   if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale1)) {
     scale = 1;
@@ -678,20 +693,27 @@ void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
     scale = PERSISTENT_UI_SCALE_AUTO;
   }
   SdlVideo_SaveUiScale(scale);
+  if (SdlVideo_GpuRendererActive() && SdlVideo_UiScaleChangePending()) {
+    g_CursorVisibilityToken--;
+    if (!g_GraphicsSetDisplayMode(g_ActiveGraphicsAdapterIndex,PERSISTENT_DEFAULT_BITS_PER_PIXEL,g_FramebufferHeight,
+                                  g_FramebufferWidth,&modeError)) {
+      FatalError_ExitIfFailed(modeError,true); /* the mode in use could not be set again */
+    }
+    FrontendDisplaySettings_FinishModeSwitch(sourceNode);
+  }
   FrontendAdvancedSettingsPage_Refresh(frontendRoot);
 }
 
-/* Handler of FRONTEND_ACTION_ADVANCED_FRAME_LIMIT ("Aus", 30, 60, 120, 144 frames per second). */
+/* Handler of FRONTEND_ACTION_ADVANCED_FRAME_LIMIT ("Aus", 60, 120, 144 frames per second). */
 void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
 {
   UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
-  UiNodeBase *const frameLimits[5] = {
-      FRONTEND_UI(frontendRoot,advancedFrameLimitOff),FRONTEND_UI(frontendRoot,advancedFrameLimit30),
-      FRONTEND_UI(frontendRoot,advancedFrameLimit60),FRONTEND_UI(frontendRoot,advancedFrameLimit120),
-      FRONTEND_UI(frontendRoot,advancedFrameLimit144)};
+  UiNodeBase *const frameLimits[ADVANCED_FRAME_LIMIT_CHOICES] = {
+      FRONTEND_UI(frontendRoot,advancedFrameLimitOff),FRONTEND_UI(frontendRoot,advancedFrameLimit60),
+      FRONTEND_UI(frontendRoot,advancedFrameLimit120),FRONTEND_UI(frontendRoot,advancedFrameLimit144)};
   uint32_t index;
 
-  for (index = 0; index < 5; index++) {
+  for (index = 0; index < ADVANCED_FRAME_LIMIT_CHOICES; index++) {
     if (sourceNode == frameLimits[index]) {
       SdlVideo_SetFrameLimit(kAdvancedFrameLimits[index]);
     }

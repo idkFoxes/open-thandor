@@ -87,7 +87,7 @@
 /* Not in the original: the advanced settings page (handlers5B_5F of g_FrontendUiActionHandlersPage20) */
 #define FRONTEND_ACTION_ADVANCED_EDGES 0x205B /* advancedEdgesSmooth / advancedEdgesExact */
 #define FRONTEND_ACTION_ADVANCED_UI_SCALE 0x205C /* advancedUiScaleAuto, advancedUiScale1..3 */
-#define FRONTEND_ACTION_ADVANCED_FRAME_LIMIT 0x205D /* advancedFrameLimitOff, 30, 60, 120, 144 */
+#define FRONTEND_ACTION_ADVANCED_FRAME_LIMIT 0x205D /* advancedFrameLimitOff, 60, 120, 144 */
 #define FRONTEND_ACTION_ADVANCED_VSYNC 0x205E /* advancedVsyncCheckbox */
 #define FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS 0x205F /* advancedSettingsButton of the options page */
 /* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */

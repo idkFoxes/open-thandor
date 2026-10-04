@@ -775,7 +775,7 @@ void SdlVideo_SaveUiScale(uint32_t scale)
   }
   const int requestedBefore = RequestedUiScale();
   PersistentSettings_WriteChosen(scale, PERSISTENT_SETTING_UI_SCALE);
-  Thandor_Log("UI scale %u (0 = auto) saved, applied by the next display mode switch", scale);
+  Thandor_Log("UI scale %u (0 = auto) saved", scale);
   if (RequestedUiScale() != requestedBefore) {
     ListDisplayModes(); /* a fixed scale lists the display's sizes divided by it */
   }

@@ -1582,15 +1582,15 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiImage) == 0x7948 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
               offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
               offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
               offsetof(FrontendUiImage, advancedSettingsPage) == 0x7258 &&
               offsetof(FrontendUiImage, advancedEdgesGroup) == 0x7370 &&
               offsetof(FrontendUiImage, advancedUiScaleGroup) == 0x7484 &&
               offsetof(FrontendUiImage, advancedFrameLimitGroup) == 0x7658 &&
-              offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x788C &&
-              offsetof(FrontendUiImage, advancedNoteLabel) == 0x78EC &&
+              offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C &&
+              offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C &&
               offsetof(FrontendUiImage, displayModeKindGroup) == 0x5954 &&
               offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68 &&
               offsetof(FrontendUiImage, displayResolutionScrollBox) == 0x5AC8 &&

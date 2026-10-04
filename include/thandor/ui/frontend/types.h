@@ -974,7 +974,7 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
 #define FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT 24
 #define FRONTEND_DISPLAY_RESOLUTION_ROW_INSET 3 /* the rows' left/top/right offsets in the panel */
 
-/* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 21
+/* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
    nodes of the advanced settings page). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FrontendUiImage {
@@ -1484,17 +1484,15 @@ typedef struct FrontendUiImage {
     uint32_t advancedFrameLimitGroup_fields[2];
     UiNodeBase advancedFrameLimitOff; /* +76AC g_UiTextButtonControlVtable: "Aus" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     uint32_t advancedFrameLimitOff_fields[5];
-    UiNodeBase advancedFrameLimit30; /* +770C g_UiTextButtonControlVtable: "30 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
-    uint32_t advancedFrameLimit30_fields[5];
-    UiNodeBase advancedFrameLimit60; /* +776C g_UiTextButtonControlVtable: "60 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiNodeBase advancedFrameLimit60; /* +770C g_UiTextButtonControlVtable: "60 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     uint32_t advancedFrameLimit60_fields[5];
-    UiNodeBase advancedFrameLimit120; /* +77CC g_UiTextButtonControlVtable: "120 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiNodeBase advancedFrameLimit120; /* +776C g_UiTextButtonControlVtable: "120 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     uint32_t advancedFrameLimit120_fields[5];
-    UiNodeBase advancedFrameLimit144; /* +782C g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    UiNodeBase advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
     uint32_t advancedFrameLimit144_fields[5];
-    UiNodeBase advancedVsyncCheckbox; /* +788C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
+    UiNodeBase advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
     uint32_t advancedVsyncCheckbox_fields[5];
-    UiNodeBase advancedNoteLabel; /* +78EC g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
+    UiNodeBase advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
     uint32_t advancedNoteLabel_fields[4];
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
