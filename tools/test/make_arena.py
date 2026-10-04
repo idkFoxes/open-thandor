@@ -22,7 +22,7 @@ import lev  # noqa: E402
 import pck  # noqa: E402
 
 COLUMN_STEP_X, ROW_STEP_X, ROW_STEP_Y = 0x901, 0x480, -1999   # isometric cell lattice (fld_format.md)
-TYPES_H = os.path.join(HERE, '..', '..', 'include', 'thandor', 'generated', 'types.h')
+TYPES_H = os.path.join(HERE, '..', '..', 'include', 'thandor', 'core', 'types.h')
 # armed static defences, the construction yard and factories, labs, power plant (ot-scratch/arena_orders_notes.md)
 TURRET_IDS = [345, 350, 351, 352] + list(range(360, 367)) + list(range(370, 378)) + [395]
 PRODUCTION_IDS = [300, 301, 302, 303, 304, 305, 306]

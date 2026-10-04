@@ -280,7 +280,7 @@ def army_name(asset_id):
     global _ARMY_NAMES
     if _ARMY_NAMES is None:
         _ARMY_NAMES = {}
-        types_h = os.path.join(os.path.dirname(__file__), '..', '..', 'include', 'thandor', 'generated', 'types.h')
+        types_h = os.path.join(os.path.dirname(__file__), '..', '..', 'include', 'thandor', 'core', 'types.h')
         try:
             text = open(types_h, encoding='utf-8', errors='replace').read()
             body = re.search(r'enum\s*\{([^{}]*)\};\s*typedef int PckArmyAssetIdCatalog;', text, re.S)
