@@ -16,7 +16,8 @@ const UiFrameDelayFrames g_UiListActivationPulseFrames = 8;
 
 const uint32_t g_UiListTextStyle = 0;
 
-static void *const g_Utf16StringCompareAsciiCaseInsensitiveFlags = THANDOR_FN(Utf16String_CompareAsciiCaseInsensitiveFlags);
+static decltype(&Utf16String_CompareAsciiCaseInsensitiveFlags) const g_Utf16StringCompareAsciiCaseInsensitiveFlags =
+    Utf16String_CompareAsciiCaseInsensitiveFlags;
 
 /* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {0};
@@ -935,6 +936,6 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
   RichTextCommandStream_CopyExpanded
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedRightTextUtf16,rightText,nullptr);
   /* The order is the comparator's result, unchanged. */
-  return (*(int (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
+  return g_Utf16StringCompareAsciiCaseInsensitiveFlags
             (g_UiPointerListExpandedRightTextUtf16,g_UiPointerListExpandedLeftTextUtf16);
 }

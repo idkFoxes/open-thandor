@@ -113,8 +113,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
     UiTooltip_TickCountdown();
   }
   /* the original refreshes its DirectInput mouse here every 48th call; the SDL3 backend has no device to refresh */
-  g_SpinLockReleaseAndInvoke
-            ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
+  g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
 
