@@ -12,8 +12,9 @@
 /* Implementation ownership: ui/controls/selectable. */
 
 /* Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
-   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable, g_UiFramedTextButtonControlVtable, _004BC570, _005162C0,
-   _00516310 and _00516530). Space on the focused control, or Enter / Escape when the control binds them,
+   g_UiSpriteButtonControlVtable, g_UiImageControlVtable, g_UiWindowControlVtable, g_UiFramedTextButtonControlVtable,
+   g_UiCatalogEntryControlVtable, g_UiCommandSpriteButtonControlVtable and
+   g_UiCommandSpriteButtonWithDetailsVtable). Space on the focused control, or Enter / Escape when the control binds them,
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
    gets selected; optionally with the activation sound. Other keys go to the default focus handling.
 */
@@ -83,9 +84,9 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
 
 /* Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
    keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable,
-   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
-   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
-   _004BC570, _005162C0, _00516310, _00516530.
+   g_UiSpriteButtonControlVtable, g_UiImageControlVtable, g_UiWindowControlVtable, g_UiTextButtonControlVtable,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable, g_UiFramedTextButtonControlVtable,
+   g_UiCatalogEntryControlVtable, g_UiCommandSpriteButtonControlVtable and g_UiCommandSpriteButtonWithDetailsVtable.
 */
 void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
@@ -102,9 +103,9 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
 
 /* Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
    when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable,
-   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
-   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
-   _004BC570, _005162C0, _00516310, _00516530.
+   g_UiSpriteButtonControlVtable, g_UiImageControlVtable, g_UiWindowControlVtable, g_UiTextButtonControlVtable,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable, g_UiFramedTextButtonControlVtable,
+   g_UiCatalogEntryControlVtable, g_UiCommandSpriteButtonControlVtable and g_UiCommandSpriteButtonWithDetailsVtable.
 */
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
