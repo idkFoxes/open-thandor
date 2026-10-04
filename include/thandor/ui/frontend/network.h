@@ -22,6 +22,10 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
 
 void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root);
 
+void FrontendNetworkGamePage_Show(FrontendUiImage *frontendUi);
+
+void FrontendNetworkGamePage_ClearSessionList(FrontendUiImage *frontendUi);
+
 void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);
 
 void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source);
