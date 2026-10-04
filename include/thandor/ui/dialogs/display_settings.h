@@ -19,7 +19,7 @@
    g_UiDisplayModeSelectionActionHandlers20[n]. UiDisplayModeSelection_RefreshEnumeratedOptions suppresses
    the option buttons whose mode was not enumerated. */
 #define UI_DISPLAY_MODE_ACTION_APPLY 0x200
-#define UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH 0x201 /* 4 colour-depth buttons */
+#define UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH 0x201 /* 4 colour-depth buttons (not linked any more, 32-bit colour only) */
 #define UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION 0x205 /* 8 resolution buttons */
 #define UI_DISPLAY_MODE_ACTION_REVERT 0x20D /* "keep the new mode?" dialog: back to the previous mode */
 #define UI_DISPLAY_MODE_ACTION_CANCEL 0x20E
@@ -99,8 +99,6 @@ typedef struct UiFourValueDialogCountdownText {
 /* Functions are grouped by semantic ownership. */
 
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
-
-void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode);
 
 void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode);
 
