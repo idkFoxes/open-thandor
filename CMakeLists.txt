@@ -86,6 +86,11 @@ add_library(thandor_curated STATIC
     src/gameplay/technology/runtime.cpp
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
+    src/graphics/backend/software_blit.cpp
+    src/graphics/backend/software_credits_mask.cpp
+    src/graphics/backend/software_display_mode.cpp
+    src/graphics/backend/software_rasterizer.cpp
+    src/graphics/backend/software_texture_scale.cpp
     src/graphics/core/runtime.cpp
     src/graphics/render/model.cpp
     src/graphics/render/model_draw.cpp
