@@ -374,16 +374,11 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
   allocError = g_MemoryApi.alloc(bytes,(void **)&newScratchBuffer);
   previousScratchBuffer = g_GridScratchPrimary;
   if (allocError == 0) {
-    /* the original swaps the pointers atomically */
-    LOCK();
-    UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
     g_MemoryApi.free(previousScratchBuffer);
     allocError = g_MemoryApi.alloc(bytes,(void **)&newSecondaryScratchBuffer);
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
     if (allocError == 0) {
-      LOCK();
-      UNLOCK();
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
       g_MemoryApi.free(previousSecondaryScratchBuffer);
       allocError = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES,&newAuxiliaryBuffer);
@@ -600,9 +595,7 @@ void GridScratch_SwapPrimarySecondary()
   GridScratchCell *previousSecondaryBuffer;
   
   previousSecondaryBuffer = g_GridScratchSecondary;
-  LOCK();
   g_GridScratchSecondary = g_GridScratchPrimary;
-  UNLOCK();
   g_GridScratchPrimary = previousSecondaryBuffer;
   return;
 }

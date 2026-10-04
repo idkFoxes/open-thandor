@@ -771,23 +771,15 @@ static void UiResizableWindowControl_ResizeToPointer
   }
   newRight = control->dragAnchorXOrPendingRight;
   newBottom = control->dragAnchorYOrPendingBottom;
-  /* exchange old and new edges (atomically in the original); relayout only when one changed */
-  LOCK();
+  /* exchange old and new edges; relayout only when one changed */
   oldLeft = control->root.base.left;
   control->root.base.left = newLeft;
-  UNLOCK();
-  LOCK();
   oldTop = control->root.base.top;
   control->root.base.top = newTop;
-  UNLOCK();
-  LOCK();
   oldRight = control->root.base.right;
   control->root.base.right = newRight;
-  UNLOCK();
-  LOCK();
   oldBottom = control->root.base.bottom;
   control->root.base.bottom = newBottom;
-  UNLOCK();
   if (oldLeft != control->root.base.left || oldTop != control->root.base.top ||
       oldRight != control->root.base.right || oldBottom != control->root.base.bottom) {
     UiRootStack_InvalidateAll();

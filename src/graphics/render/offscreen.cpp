@@ -99,12 +99,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   }
   savedDepthEpoch = g_SoftwareDepthEpoch;
   savedDepthBuffer = g_SoftwareDepthBuffer;
-  /* the original swaps the depth epoch and buffer in with atomic exchanges (the LOCK/UNLOCK pairs) */
-  LOCK();
   g_SoftwareDepthEpoch = -1;
-  UNLOCK();
-  LOCK();
-  UNLOCK();
   g_SoftwareDepthBuffer = depthBuffer;
   Graphics_SetProjectionClipRect(outputHeight,outputWidth,0,0);
   Graphics_SetViewProjectionParameters
@@ -132,8 +127,6 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
                                   assetWords + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET / 4,queue);
   /* restore the caller's depth buffer and epoch, free the temporary one (read back from the global) */
   usedDepthBuffer = g_SoftwareDepthBuffer;
-  LOCK();
-  UNLOCK();
   g_SoftwareDepthBuffer = savedDepthBuffer;
   g_SoftwareDepthEpoch = savedDepthEpoch;
   g_MemoryApi.free(usedDepthBuffer);

@@ -608,11 +608,6 @@ static void InGameEditorPointer_ResizeCellRectangle(GraphicsScreenCoordinate poi
   halfWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
   newCornerWorldX = (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - halfWorldY;
   newCornerWorldY = halfWorldY * 2;
-  /* The original atomically exchanges the new corner with g_UiCommandSelectionCurrentWorld*. */
-  LOCK();
-  UNLOCK();
-  LOCK();
-  UNLOCK();
   /* deselect anchor..old corner */
   lowWorldX = g_UiCommandSelectionAnchorWorldXQ12;
   if ((int)g_UiCommandSelectionCurrentWorldXQ12 < (int)g_UiCommandSelectionAnchorWorldXQ12) {
