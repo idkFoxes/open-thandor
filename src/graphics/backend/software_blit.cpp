@@ -283,3 +283,31 @@ void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,Graphi
     }
   }
 }
+
+/* Software implementation of g_GraphicsFillColumnSegments (the pixel loop of the results graph columns,
+   ui/frontend/results.cpp): from (drawX, topY) downwards, segmentHeights[i] pixels of packedColors[i] for each
+   segment whose height is not 0 (a do-while per segment, as in the original). No clipping; the row pitch is
+   framebuffer->width pixels. */
+void SoftwareFramebuffer_FillColumnSegments32(GraphicsScreenCoordinate topY,GraphicsScreenCoordinate drawX,
+          uint32_t segmentCount,const int32_t *segmentHeights,const uint32_t *packedColors,
+          SoftwareFramebufferAccess *framebuffer)
+
+{
+  uint8_t *pixelCursor;
+  uint32_t strideBytes;
+  uint32_t segment;
+  int32_t remaining;
+
+  strideBytes = framebuffer->width * 4;
+  pixelCursor = framebuffer->pixels + (int32_t)((topY * framebuffer->width + drawX) * 4);
+  for (segment = 0; segment < segmentCount; segment++) {
+    remaining = segmentHeights[segment];
+    if (remaining != 0) {
+      do {
+        *(uint32_t *)pixelCursor = packedColors[segment];
+        pixelCursor = pixelCursor + strideBytes;
+        remaining--;
+      } while (remaining != 0);
+    }
+  }
+}

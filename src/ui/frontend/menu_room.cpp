@@ -487,6 +487,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     control->contextFlags = control->contextFlags | TERRAIN_RENDER_REUSE_PROJECTION;
   }
   g_GraphicsEndScene();
+  /* the 2D draw list: the 3D scene goes here (GPU_RECORD only) */
+  Draw2D_MarkExternal3D(clipBottom,clipRight,clipTop,clipLeft);
   g_RenderedFrameCountSinceDebugRefresh++;
   if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;

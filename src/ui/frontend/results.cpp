@@ -49,10 +49,6 @@ static const int g_FrontendResultsColumnAdvanceFactionFieldB8Pixels = 26;
 
 static const int g_FrontendResultsColumnAdvanceFactionFieldBCPixels = 26;
 
-static uint32_t g_FrontendResultsFramebufferBytesPerPixel = 0;
-
-static uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
-
 static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {};
 
 /* drawClipped of g_FrontendResultsTableVtable, the three results charts (resultsChart1..3) of the end-of-game
@@ -70,7 +66,6 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
 {
   UiPixelCoordinate drawX;
   int drawY;
-  SoftwareFramebufferAccess *framebufferAccess;
   void *statTableImage;
   uint16_t *colourText;
   uint32_t pixelColumn;
@@ -225,13 +220,9 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
       packedColor++;
     }
     statTableImage = g_GameStatTableImage;
-    framebufferAccess = g_FramebufferAccess;
     pixelColumnCount = control->base.layoutWidth;
     historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> RESULTS_STAT_SAMPLE_TICK_SHIFT;
     if (!g_GraphicsFramebufferBeginAccess()) {
-      g_FrontendResultsFramebufferBytesPerPixel = framebufferAccess->bytesPerPixel;
-      g_FrontendResultsFramebufferScanlineStrideBytes =
-           framebufferAccess->width * g_FrontendResultsFramebufferBytesPerPixel;
       /* Original quirk: a do-while, so a layout width of 0 wraps around (and divides by 0). */
       pixelColumn = 0;
       do {
@@ -277,26 +268,51 @@ static Bool8 FrontendResultsGraph_RejectZeroWeightTotal(uint32_t weightTotal)
   return true;
 }
 
+/* The common end of the results graph columns: splits the column from spanStartY to spanEndY among factions
+   1..7 in proportion to their weights (lane 0 when laneMask bit 0 is set, plus lane 1 when bit 1 is set; the
+   segment ends are rounded down, the last one ends at spanEndY) and draws the segments in the factions' packed
+   colours through g_GraphicsFillColumnSegments. */
+static void FrontendResultsGraph_DrawSegments
+          (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
+          const FrontendResultsFactionWeightPair *factionWeights,uint32_t weightTotal,int laneMask)
+{
+  int32_t segmentHeights[7];
+  uint32_t factionIndex;
+  uint32_t cumulativeWeight;
+  int drawnHeight;
+
+  cumulativeWeight = 0;
+  drawnHeight = 0;
+  for (factionIndex = 0; factionIndex < 7; factionIndex++) {
+    if ((laneMask & 1) != 0) {
+      cumulativeWeight = cumulativeWeight + factionWeights[factionIndex].lane0;
+    }
+    if ((laneMask & 2) != 0) {
+      cumulativeWeight = cumulativeWeight + factionWeights[factionIndex].lane1;
+    }
+    segmentHeights[factionIndex] =
+         (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) / (uint64_t)weightTotal) -
+         drawnHeight;
+    drawnHeight = drawnHeight + segmentHeights[factionIndex];
+  }
+  g_GraphicsFillColumnSegments
+            (spanStartY,drawX,7,segmentHeights,g_FrontendResultsFactionPackedPixelColors,g_FramebufferAccess);
+}
+
 /* factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
    stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
-   as 1 (written back into the sample). Every pixel is the faction's packed 32-bit colour.
+   as 1 (written back into the sample). Every pixel is the faction's packed 32-bit colour (the original wrote only
+   a 16-bit word, in 32-bit modes too; dropped with 16-bit colour).
 */
 void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair *factionWeights)
 
 {
-  uint32_t packedColor;
-  SoftwareFramebufferAccess *framebufferAccess;
   uint32_t weightTotal;
   uint32_t factionIndex;
-  uint8_t *pixelCursor;
-  int drawnHeight;
-  int segmentHeight;
-  uint32_t cumulativeWeight;
   
-  framebufferAccess = g_FramebufferAccess;
   weightTotal = factionWeights[0].lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
           factionWeights[3].lane0 + factionWeights[4].lane0 + factionWeights[5].lane0 +
           factionWeights[6].lane0 +
@@ -316,28 +332,7 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;
   }
-  pixelCursor = framebufferAccess->pixels +
-           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
-  factionIndex = 0;
-  cumulativeWeight = 0;
-  drawnHeight = 0;
-  do {
-    cumulativeWeight = cumulativeWeight + factionWeights->lane0 + factionWeights->lane1;
-    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
-                     (uint64_t)weightTotal) - drawnHeight;
-    if (segmentHeight != 0) {
-      drawnHeight = drawnHeight + segmentHeight;
-      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
-      do {
-        *(uint32_t *)pixelCursor = packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight--;
-      } while (segmentHeight != 0);
-    }
-    factionIndex++;
-    factionWeights++;
-  } while (factionIndex <= 6);
+  FrontendResultsGraph_DrawSegments(spanEndY,spanStartY,drawX,factionWeights,weightTotal,3);
 }
 
 /* factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -348,16 +343,9 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
           FrontendResultsFactionWeightPair *factionWeights)
 
 {
-  uint32_t packedColor;
-  SoftwareFramebufferAccess *framebufferAccess;
   uint32_t factionIndex;
-  uint8_t *pixelCursor;
-  int drawnHeight;
   uint32_t weightTotal;
-  int segmentHeight;
-  uint32_t cumulativeWeight;
   
-  framebufferAccess = g_FramebufferAccess;
   weightTotal = factionWeights[0].lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
           factionWeights[3].lane0 + factionWeights[4].lane0 + factionWeights[5].lane0 +
           factionWeights[6].lane0;
@@ -374,28 +362,7 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;
   }
-  pixelCursor = framebufferAccess->pixels +
-           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
-  factionIndex = 0;
-  cumulativeWeight = 0;
-  drawnHeight = 0;
-  do {
-    cumulativeWeight = cumulativeWeight + factionWeights->lane0;
-    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
-                     (uint64_t)weightTotal) - drawnHeight;
-    if (segmentHeight != 0) {
-      drawnHeight = drawnHeight + segmentHeight;
-      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
-      do {
-        *(uint32_t *)pixelCursor = packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight--;
-      } while (segmentHeight != 0);
-    }
-    factionIndex++;
-    factionWeights++;
-  } while (factionIndex <= 6);
+  FrontendResultsGraph_DrawSegments(spanEndY,spanStartY,drawX,factionWeights,weightTotal,1);
 }
 
 /* factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -406,16 +373,9 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
           FrontendResultsFactionWeightPair *factionWeights)
 
 {
-  uint32_t packedColor;
-  SoftwareFramebufferAccess *framebufferAccess;
   uint32_t factionIndex;
-  uint8_t *pixelCursor;
-  int drawnHeight;
   uint32_t weightTotal;
-  int segmentHeight;
-  uint32_t cumulativeWeight;
   
-  framebufferAccess = g_FramebufferAccess;
   weightTotal = factionWeights[0].lane1 + factionWeights[1].lane1 + factionWeights[2].lane1 +
           factionWeights[3].lane1 + factionWeights[4].lane1 + factionWeights[5].lane1 +
           factionWeights[6].lane1;
@@ -432,28 +392,7 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
   if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
     return;
   }
-  pixelCursor = framebufferAccess->pixels +
-           (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
-  factionIndex = 0;
-  cumulativeWeight = 0;
-  drawnHeight = 0;
-  do {
-    cumulativeWeight = cumulativeWeight + factionWeights->lane1;
-    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
-                     (uint64_t)weightTotal) - drawnHeight;
-    if (segmentHeight != 0) {
-      drawnHeight = drawnHeight + segmentHeight;
-      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      /* a whole 32-bit pixel: the original wrote only a 16-bit word, in 32-bit modes too (dropped with 16-bit colour) */
-      do {
-        *(uint32_t *)pixelCursor = packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight--;
-      } while (segmentHeight != 0);
-    }
-    factionIndex++;
-    factionWeights++;
-  } while (factionIndex <= 6);
+  FrontendResultsGraph_DrawSegments(spanEndY,spanStartY,drawX,factionWeights,weightTotal,2);
 }
 
 /* Shared start of the results table column painters: draws the column header headerResourceId (style 1) at

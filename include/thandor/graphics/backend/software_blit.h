@@ -46,4 +46,8 @@ void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,Graphi
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
           SoftwareFramebufferAccess *framebuffer);
 
+void SoftwareFramebuffer_FillColumnSegments32(GraphicsScreenCoordinate topY,GraphicsScreenCoordinate drawX,
+          uint32_t segmentCount,const int32_t *segmentHeights,const uint32_t *packedColors,
+          SoftwareFramebufferAccess *framebuffer);
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_H */
