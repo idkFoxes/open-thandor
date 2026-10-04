@@ -45,4 +45,6 @@ extern int32_t g_UiCatalogGroup42OffsetsDefault[42];
 extern int32_t g_UiCatalogGroup42Offsets5Columns[42];
 extern int32_t g_UiCatalogGroup42Offsets6Columns[42];
 
+extern UiNodeVtable g_UiCatalogEntryControlVtable;
+
 #endif /* THANDOR_UI_INGAME_CATALOG_ENTRY_H */

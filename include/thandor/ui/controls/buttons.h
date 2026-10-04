@@ -12,7 +12,6 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/buttons. */
-/* Functions are grouped by semantic ownership. */
 
 /* UiSpriteButtonControl stateFlags bits beyond UiSelectableStateFlags (UiSpriteButtonControl_* functions):
    ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);
@@ -57,6 +56,8 @@
 #define UI_TEXT_BOX_WIDE_WIDTH 416
 #define UI_TEXT_BOX_WIDE_HEIGHT 58
 #define UI_TEXT_BOX_WIDE_MAX_LINES 4
+
+/* Functions are grouped by semantic ownership. */
 
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);
 
@@ -117,6 +118,5 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control);
 extern UiNodeVtable g_UiSpriteButtonControlVtable;
 extern UiNodeVtable g_UiImageActionControlVtable;
 extern UiNodeVtable g_UiConditionalActionControlVtable;
-extern UiNodeVtable g_UiCatalogEntryControlVtable;
 
 #endif /* THANDOR_UI_CONTROLS_BUTTONS_H */

@@ -101,6 +101,27 @@ int32_t g_UiCatalogGroup42Offsets6Columns[42] = {
 
 static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
 
+UiNodeVtable g_UiCatalogEntryControlVtable = {
+        .relocate = THANDOR_FN(UiSpriteButtonControl_Relocate),
+        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = THANDOR_FN(UiCatalogEntryControl_DrawClipped),
+        .layout = THANDOR_FN(UiContainer_LayoutChildren),
+        .nonRightPress = THANDOR_FN(UiCommandSpriteButtonControl_BeginPress),
+        .nonRightRelease = THANDOR_FN(UiCatalogEntryControl_NonRightRelease),
+        .rightPress = THANDOR_FN(UiCommandSpriteButtonControl_BeginPress),
+        .rightRelease = THANDOR_FN(UiCommandSpriteButtonControl_RightRelease),
+        .nonRightDrag = THANDOR_FN(UiSpriteButtonControl_NonRightDrag),
+        .rightDrag = THANDOR_FN(UiSpriteButtonControl_NonRightDrag),
+        .pointerMove = THANDOR_FN(UiCatalogEntryControl_PointerMove),
+        .hitTest = THANDOR_FN(UiSpriteButtonControl_HitTestOpaque),
+        .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
+        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
+        .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
+        .tick = THANDOR_FN(UiNode_DefaultTick),
+        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+};
+
 /* Implementation ownership: ui/ingame/catalog_entry. */
 
 /* How many entries of the faction's secondary army-asset list are the given catalog record. */

@@ -32,7 +32,6 @@ void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
   return;
 }
 
-
 /* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
    g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
    normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
@@ -68,7 +67,6 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
   return;
 }
-
 
 /* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable
    and g_UiCommandSpriteButtonControlVtable. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
@@ -163,7 +161,6 @@ void UiSpriteButtonControl_DrawClipped
   return;
 }
 
-
 /* nonRightPress slot of g_UiSpriteButtonControlVtable. A momentary button only shows its pressed frame
    (the action follows on release); a persistent one toggles (TOGGLE_ON_ACTIVATION) or latches selected,
    plays its activation sound and queues actionId, deferred to the animation end for ACTION_AFTER_ANIMATION.
@@ -247,7 +244,6 @@ void UiSpriteButtonControl_NonRightPress
   return;
 }
 
-
 /* nonRightRelease slot of g_UiSpriteButtonControlVtable. Completes the click of a momentary button: if it
    is still shown pressed (the pointer was released over it), it plays the activation sound, drops the
    pressed state and queues actionId. Persistent buttons act on press instead.
@@ -282,7 +278,6 @@ void UiSpriteButtonControl_NonRightRelease
   }
   return;
 }
-
 
 /* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables
    g_UiCommandSpriteButtonWithDetailsVtable, g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. While a momentary, non-animated button holds the
@@ -346,7 +341,6 @@ void UiSpriteButtonControl_NonRightDrag
   return;
 }
 
-
 /* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
    g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. Returns the button when the point lies on an opaque pixel of its normal frame (selected
    frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
@@ -385,7 +379,6 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
   }
   return (UiNodeBase *)control;
 }
-
 
 /* drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
    with UI_IMAGE_ACTION_STRETCH bilinearly stretched over the node; with UI_IMAGE_ACTION_LETTERBOX and a
@@ -460,7 +453,6 @@ void UiImageActionControl_DrawImageAndChildren
   return;
 }
 
-
 /* pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
 */
 GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
@@ -469,7 +461,6 @@ GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
 {
   return control->cursorFrame;
 }
-
 
 /* nonRightPress slot of g_UiImageActionControlVtable: a left click queues primaryActionId.
 */
@@ -482,7 +473,6 @@ void UiImageActionControl_EnqueuePrimaryAction
   return;
 }
 
-
 /* rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
 */
 void UiImageActionControl_EnqueueSecondaryAction
@@ -493,7 +483,6 @@ void UiImageActionControl_EnqueueSecondaryAction
   UiActionQueue_Enqueue(control->secondaryActionId,&control->base);
   return;
 }
-
 
 /* keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
@@ -513,7 +502,6 @@ Bool8 UiImageActionControl_HandleKeyboardActivation
   }
   return true;
 }
-
 
 /* drawClipped slot of g_UiConditionalActionControlVtable. Draws nothing while the box has no text lines.
    Otherwise it draws a tiled window frame (or, for a 416x58 box, one unframed background image) and the
@@ -639,7 +627,6 @@ void UiConditionalActionControl_DrawClipped
   return;
 }
 
-
 /* pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
 */
 GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
@@ -648,7 +635,6 @@ GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
 {
   return control->cursorFrame;
 }
-
 
 /* hitTest slot of g_UiConditionalActionControlVtable. An empty box (no text lines) is invisible and
    returns UI_NODE_NONE; otherwise the normal child hit test applies.
@@ -666,7 +652,6 @@ UiNodeBase * UiConditionalActionControl_HitTestWhenEnabled
   return hitNode;
 }
 
-
 /* nonRightPress slot of g_UiConditionalActionControlVtable: a left click queues actionId, but only while
    the box shows text.
 */
@@ -680,7 +665,6 @@ void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
   }
   return;
 }
-
 
 /* Advances an animated sprite button by one frame within its normal or selected frame range, wrapping to
    the first frame. On the last frame a deferred activation action is queued (and cleared), then the UI is
@@ -720,9 +704,6 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
   UiNode_InvalidateRoot((UiNodeBase *)control);
   return;
 }
-
-
-/* Class vtables. */
 
 UiNodeVtable g_UiSpriteButtonControlVtable = {
     .relocate = THANDOR_FN(UiSpriteButtonControl_Relocate),
@@ -782,27 +763,6 @@ UiNodeVtable g_UiConditionalActionControlVtable = {
         .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
         .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
         .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
-};
-
-UiNodeVtable g_UiCatalogEntryControlVtable = {
-        .relocate = THANDOR_FN(UiSpriteButtonControl_Relocate),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiCatalogEntryControl_DrawClipped),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiCommandSpriteButtonControl_BeginPress),
-        .nonRightRelease = THANDOR_FN(UiCatalogEntryControl_NonRightRelease),
-        .rightPress = THANDOR_FN(UiCommandSpriteButtonControl_BeginPress),
-        .rightRelease = THANDOR_FN(UiCommandSpriteButtonControl_RightRelease),
-        .nonRightDrag = THANDOR_FN(UiSpriteButtonControl_NonRightDrag),
-        .rightDrag = THANDOR_FN(UiSpriteButtonControl_NonRightDrag),
-        .pointerMove = THANDOR_FN(UiCatalogEntryControl_PointerMove),
-        .hitTest = THANDOR_FN(UiSpriteButtonControl_HitTestOpaque),
-        .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
         .tick = THANDOR_FN(UiNode_DefaultTick),
         .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
 };
