@@ -6,7 +6,7 @@ usage: python tools/data/lev.py dump <file.lev> [--all]
 The layout follows the loaders in src/gameplay/session/level.c
 (InGameLevelRuntime_LoadResourcesAfterDefaultReset, InGameLevelRuntime_SaveLevelAssetImageFromWorldState) and the
 types LevelAssetHeader / LevelPlayerSlotRecord / LevelWorldSettings / InGameConditionSchedule /
-LevelInitialArmyPlacementRecord20 in include/thandor/generated/types.h. Format notes: ot-scratch/lev_format.md.
+LevelInitialArmyPlacementRecord20 in include/thandor/gameplay/session/types.h. Format notes: ot-scratch/lev_format.md.
 parse(data) returns a dict; check(level, size) returns a list of problems (empty = consistent); build(level)
 serializes such a dict back (stock layout; every stock level rebuilds byte-identically, which `check` verifies).
 """
@@ -276,7 +276,7 @@ _ARMY_NAMES = None
 
 
 def army_name(asset_id):
-    """Name of an army asset id from enum PckArmyAssetIdCatalog (include/thandor/generated/types.h)."""
+    """Name of an army asset id from enum PckArmyAssetIdCatalog (include/thandor/core/types.h)."""
     global _ARMY_NAMES
     if _ARMY_NAMES is None:
         _ARMY_NAMES = {}

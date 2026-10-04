@@ -5,7 +5,7 @@ usage:
   python tools/data/fld.py flat <out.fld> <width> <height> [--like <stock.fld>] [--material N] [--height Q12]
                                 [--water Q12]
 
-A .fld as the game holds it in memory (FieldGridAsset, include/thandor/generated/types.h) is a 0x200-byte header
+A .fld as the game holds it in memory (FieldGridAsset, include/thandor/world/terrain/types.h) is a 0x200-byte header
 followed by width * height FieldGridCells of 0x80 bytes. In LEVEL.PCK it is stored with compression method 2
 (PckCodec_DecodeFieldGrid; tools/data/pck.py extracts it expanded); loose next to the executable
 (Package_LoadEntry) it is read as is, uncompressed, which is also how the map editor saves it

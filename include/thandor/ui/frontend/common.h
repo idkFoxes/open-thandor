@@ -36,7 +36,7 @@
 #define FRONTEND_ROM_RECORD_MISSION_BRIEFING 10 /* followed by FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE */
 #define FRONTEND_ROM_RECORD_SCENARIO_SELECTION 12 /* followed by FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE */
 
-/* Pages of FrontendUiImage.frontendPageStack (see generated/ui_templates.h). */
+/* Pages of FrontendUiImage.frontendPageStack (see ui/frontend/types.h). */
 #define FRONTEND_PAGE_MAIN 0 /* no dialog page: only the menu room */
 #define FRONTEND_PAGE_NETWORK_GAME 1 /* protocol, player name, host address, session list */
 #define FRONTEND_PAGE_HOST_GAME_SETUP 2

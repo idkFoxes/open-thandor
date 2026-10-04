@@ -4,7 +4,7 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/layout_checks.cpp
  */
 
-/* The structs of generated/types.h and generated/ui_templates.h are the original's 32-bit layouts on x86 and x64
+/* The structs of the type headers (<area>/<module>/types.h) are the original's 32-bit layouts on x86 and x64
    (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time. Generated from the
    x86 layouts (MSVC /d1reportAllClassLayout); runtime-only structs with native pointers (the arena, timer, PCK
    mount and Huffman workspace, spatial sound slots) and the copies of Windows/DirectX structs are not listed. */

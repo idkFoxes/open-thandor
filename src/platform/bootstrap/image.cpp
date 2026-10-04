@@ -4,7 +4,7 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/image.cpp
  */
 
-/* Own translation unit: uses the real Windows SDK headers, not generated/types.h. */
+/* Own translation unit: uses the real Windows SDK headers, not the game's type headers. */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <dbghelp.h>

@@ -10,7 +10,7 @@
 /*
 32-bit pointer fields of the original data layouts (step 5f).
 
-The structs of generated/types.h and generated/ui_templates.h are the original's 32-bit layouts: file and
+The structs of the type headers (<area>/<module>/types.h) are the original's 32-bit layouts: file and
 asset images, save-game images (pools written raw), UI templates linked by byte offsets, and runtime records
 that code walks with the original strides and offsets. Their pointer fields are declared Ptr32<T> (data
 pointers) or Ptr32<R(args)> (function pointers). Ptr32<T> is a 4-byte field holding the pointer as a signed

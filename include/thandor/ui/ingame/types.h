@@ -364,7 +364,7 @@ struct InGameCameraCommandDispatchTable {
 };
 #pragma pack(push, 1) /* packed layout: no alignment padding */
 /* The in-game UI root (g_InGameRuntimeRoot, 0xC3E4 bytes): a copy of the InGameUiImage template
-   (ui_templates.h) whose node fields are named here where the code reaches them through the root. The
+   (below) whose node fields are named here where the code reaches them through the root. The
    reserved ranges hold the other template nodes. */
 struct InGameRuntimeRoot {
     struct UiRootNode rootUi; // Exact UiRootNode prefix used by root-stack and shutdown paths.

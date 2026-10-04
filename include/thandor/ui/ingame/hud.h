@@ -15,7 +15,7 @@
 /* Submodule: ui/ingame/hud. */
 
 /* Diplomacy panel texts (InGameOtherPlayerCommand_RebuildTargetEntries, see the diplomacyRow* labels in
-   ui_templates.h): the player number is 0x2190 + faction index, the relation label 0x21A3 + the 4-bit
+   InGameUiImage): the player number is 0x2190 + faction index, the relation label 0x21A3 + the 4-bit
    relation state of the faction record's packedRelationStates. */
 #define TEXT_ID_PLAYER_NUMBER_BASE 0x2190
 #define TEXT_ID_DIPLOMATIC_RELATION_BASE 0x21A3

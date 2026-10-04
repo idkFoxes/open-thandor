@@ -14,7 +14,7 @@
 
 /* Submodule: ui/ingame/savegame_page. */
 
-/* In-game save page action (ui_templates.h: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
+/* In-game save page action (InGameUiImage: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
    enables it only for a valid typed save name. */
 #define INGAME_ACTION_SAVE_GAME_SAVE 0x1210
 /* Row selection in the save list (saveGameList) and the Delete button (saveGameDeleteButton). */

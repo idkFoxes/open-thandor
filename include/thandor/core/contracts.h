@@ -48,7 +48,7 @@ typedef unsigned int UQ12;
 #define THANDOR_COMPOUND(T) (T)
 #endif
 
-/* The original's one-byte booleans are Bool8 (generated/types.h); true/false are 1/0 for them in C. */
+/* The original's one-byte booleans are Bool8 (core/types.h); true/false are 1/0 for them in C. */
 #if !defined(__cplusplus) && !defined(true)
 #define true 1
 #define false 0
@@ -77,7 +77,7 @@ typedef unsigned int UQ12;
 #define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
-   UiNodeBase; the node offsets are those of the template layouts in generated/ui_templates.h. */
+   UiNodeBase; the node offsets are those of the template layouts (the *UiImage structs of the ui type headers). */
 #define THANDOR_UI_FIELD(base, offset, type) (*(type *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same

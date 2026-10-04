@@ -4,7 +4,7 @@ usage:
   python tools/data/pck.py list <package.pck>
   python tools/data/pck.py extract <package.pck> <out dir> [substring]
 
-Layout (include/thandor/generated/types.h): a 0x200-byte PckArchiveHeader (entry count at +0xB0), then the
+Layout (include/thandor/gameplay/session/types.h): a 0x200-byte PckArchiveHeader (entry count at +0xB0), then the
 entries one after another: a 0x200-byte PckEntryHeader (UTF-16 path, runtime payload offset, unpacked size,
 type tag, stored size, compression method) followed by the stored bytes. Compression method 0 = the Huffman/RLE
 codec of PckCodec_DecodeHuffmanRle (256-byte frequency table, then the bit stream; entries whose stored size

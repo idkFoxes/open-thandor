@@ -19,7 +19,7 @@
 #define PERSISTENT_SETTING_DISPLAY_HEIGHT 0x08
 #define PERSISTENT_SETTING_BITS_PER_PIXEL 0x0C
 /* Offsets below found from the PersistentSettings_Read/Write call sites (settings pages, session, world);
-   they match the fields of PersistentSettingsImage in generated/types.h. */
+   they match the fields of PersistentSettingsImage in core/settings/types.h. */
 #define PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE 0x10 /* default 0x20 */
 #define PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION 0x14 /* default 0x40, written as 2 * grid half size */
 #define PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT 0x18 /* default 0x10, "shading depth" */

@@ -38,7 +38,7 @@
 #define TECHNOLOGY_AREA_TAB_COUNT 7
 
 /* UiTechnologyAreaTabPrefix (the two dwords in front of each technology area tab, INGAME_UI(root,
-   technologyAreaTabN_prefix)) is generated with the template: thandor/generated/ui_templates.h. */
+   technologyAreaTabN_prefix)) is declared with the template in ui/ingame/types.h. */
 /* The UiTechnologyAreaTabPrefix in front of a technology area tab the code has only as a node pointer. */
 #define TECHNOLOGY_AREA_TAB_PREFIX(tab) UI_TEMPLATE_NODE_PREFIX(UiTechnologyAreaTabPrefix,tab)
 

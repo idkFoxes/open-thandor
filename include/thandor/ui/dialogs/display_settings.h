@@ -71,7 +71,7 @@ typedef struct UiDisplaySettingsValueReadout {
     uint16_t colorBiasTextUtf16[16];  /* +0x7C */
 } UiDisplaySettingsValueReadout;
 /* UiDisplayModeOptionPrefix (the mode values in front of each display settings option button,
-   DISPLAY_SETTINGS_UI(root, <button>_prefix)) is generated with the template: thandor/generated/ui_templates.h. */
+   DISPLAY_SETTINGS_UI(root, <button>_prefix)) is declared with the template in ui/dialogs/types.h. */
 /* The UiDisplayModeOptionPrefix in front of an option button the code has only as a node pointer. */
 #define DISPLAY_MODE_OPTION_PREFIX(button) UI_TEMPLATE_NODE_PREFIX(UiDisplayModeOptionPrefix,button)
 /* The "keep the new display mode?" dialog's countdownMessageText (a wrapped text, g_UiListOffsetControlVtable)
