@@ -12,7 +12,8 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/settings/persistent. */
-/* Byte offsets of the dwords in the persistent settings file (PersistentSettings_Read/Write/WriteBlock).
+/* Byte offsets of the dwords in the persistent settings image (PersistentSettings_Read/Write/WriteBlock), the
+   layout of the original thandor.dat; open-thandor saves them as named keys in thandor.ini (persistent.cpp).
    Named as they are found. */
 #define PERSISTENT_SETTING_ADAPTER_INDEX 0x00 /* graphics adapter chosen in the display settings */
 #define PERSISTENT_SETTING_DISPLAY_WIDTH 0x04
@@ -39,6 +40,8 @@
 #define PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS 0x5C /* link rotation zoom/tilt, hide panel */
 #define PERSISTENT_SETTING_PLAYER_NAME 0x60 /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 #define PERSISTENT_SETTING_GAME_NAME 0x88 /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
+#define PERSISTENT_SETTING_RENDERER 0xB0 /* 0 Vulkan (default), 1 DirectX 12, 2 Software; open-thandor addition */
+#define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* 0 fullscreen (default), 1 borderless, 2 window; open-thandor addition */
 #define PERSISTENT_SETTINGS_NAME_BYTES 0x28 /* 20 UTF-16 code units */
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
 /* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
@@ -81,6 +84,14 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
+
+/* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
+   FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a
+   fixed key order and returns the text length; ParseIni parses ini text into image (zeroed by the caller) and
+   returns the mask of the dwords it set (unknown keys and values that do not parse are ignored). */
+uint32_t PersistentSettings_FormatIni(const uint8_t *image, uint64_t presentMask, char *out, uint32_t capacity);
+
+uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t *image);
 
 extern uint32_t g_LocaleCountryCodeOverride;
 

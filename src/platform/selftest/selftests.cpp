@@ -495,6 +495,131 @@ static void Thandor_SelfTestNumberFormat(void)
     Thandor_Log("numberformat: 40000 numbers, hash %08X", hash);
 }
 
+/* settings: compares a reference image (loaded bytes = referenceMask) with an image parsed from ini text. Every
+   dword the reference has must come back with the same value; a dword the ini leaves out must be zero there
+   (reserved dwords are only written when nonzero). Logs the first difference; returns the number of them. */
+static unsigned SelfTest_CompareSettingsImages(const char *what, const uint8_t *reference, uint64_t referenceMask,
+                                               const uint8_t *parsed, uint64_t parsedMask)
+{
+    unsigned differences = 0;
+    unsigned dword;
+    for (dword = 0; dword < PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dword++) {
+        uint64_t bit = (uint64_t)1 << dword;
+        uint32_t expected;
+        uint32_t actual;
+        memcpy(&expected, reference + dword * 4, 4);
+        memcpy(&actual, parsed + dword * 4, 4);
+        if ((referenceMask & bit) == 0) {
+            if ((parsedMask & bit) != 0) {
+                if (differences++ == 0) {
+                    Thandor_Log("settings: %s: offset 0x%02X present, not in the reference", what, dword * 4);
+                }
+            }
+            continue;
+        }
+        if ((parsedMask & bit) == 0 ? expected != 0 : expected != actual) {
+            if (differences++ == 0) {
+                Thandor_Log("settings: %s: offset 0x%02X %s %08X, expected %08X", what, dword * 4,
+                            (parsedMask & bit) != 0 ? "is" : "missing,", actual, expected);
+            }
+        }
+    }
+    return differences;
+}
+
+/* OPEN_THANDOR_SELFTEST=settings: the thandor.ini format. Parses a fixed ini text (all value forms, unknown and
+   missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
+   ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
+   with thandor.dat (an ini the game wrote from that thandor.dat). Logs one line per check. */
+static void Thandor_SelfTestSettings(void)
+{
+    static const char fixedText[] =
+        "\xEF\xBB\xBF; comment\r\n[display]\r\nwidth = 1024\r\nheight=768 ; trailing comment\r\nrenderer = D3D12\r\n"
+        "display_mode = 2\r\nunknown_key = 5\r\n[graphics]\r\nshading = off\r\ntexture_quality = low\r\n"
+        "model_detail = -3\r\n[sound]\r\nmusic = false\r\neffects_volume = 50%\r\nmusic_volume = 0x4000\r\n"
+        "movie_volume = 37.5 %\r\n[game]\r\nplayer_name = \"Ren\xC3\xA9 \xF0\x9F\x99\x82\"\r\n"
+        "game_name = abcdefghijklmnopqrstuvwxyz\r\nmap_mouse_options = 0x5\r\nspeed_percent = oops\r\n"
+        "[nosection]\r\nplayers = 7\r\n";
+    uint8_t image[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t expected[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint8_t parsed[PERSISTENT_SETTINGS_IMAGE_BYTES];
+    uint64_t expectedMask = 0;
+    uint64_t mask;
+    static char text[0x4000];
+    uint32_t length;
+    unsigned differences;
+    static const uint16_t playerName[] = {'R', 'e', 'n', 0xE9, ' ', 0xD83D, 0xDE42};
+    FILE *file;
+
+    memset(image, 0, sizeof image);
+    memset(expected, 0, sizeof expected);
+#define SELFTEST_SETTING(offset, value) do { uint32_t v_ = (uint32_t)(value); memcpy(expected + (offset), &v_, 4); \
+        expectedMask |= (uint64_t)1 << ((offset) / 4); } while (0)
+    SELFTEST_SETTING(PERSISTENT_SETTING_DISPLAY_WIDTH, 1024);
+    SELFTEST_SETTING(PERSISTENT_SETTING_DISPLAY_HEIGHT, 768);
+    SELFTEST_SETTING(PERSISTENT_SETTING_RENDERER, 1);
+    SELFTEST_SETTING(PERSISTENT_SETTING_DISPLAY_MODE_KIND, 2);
+    SELFTEST_SETTING(PERSISTENT_SETTING_SHADING_ENABLED, 0);
+    SELFTEST_SETTING(PERSISTENT_SETTING_TEXTURE_QUALITY, TEXTURE_QUALITY_LOW);
+    SELFTEST_SETTING(PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, -3);
+    SELFTEST_SETTING(PERSISTENT_SETTING_SOUND_OPTION_FLAGS, PERSISTENT_SOUND_OPTION_EFFECTS); /* default 3 minus music */
+    SELFTEST_SETTING(PERSISTENT_SETTING_EFFECTS_GAIN, 0x4000);
+    SELFTEST_SETTING(PERSISTENT_SETTING_MUSIC_GAIN, 0x4000);
+    SELFTEST_SETTING(PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN, 0x3000);
+    SELFTEST_SETTING(PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS, 5);
+#undef SELFTEST_SETTING
+    memcpy(expected + PERSISTENT_SETTING_PLAYER_NAME, playerName, sizeof playerName);
+    memcpy(expected + PERSISTENT_SETTING_GAME_NAME, "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0", 40);
+    expectedMask |= (((uint64_t)1 << 20) - 1) << (PERSISTENT_SETTING_PLAYER_NAME / 4);
+    mask = PersistentSettings_ParseIni(fixedText, (uint32_t)(sizeof fixedText - 1), image);
+    differences = SelfTest_CompareSettingsImages("fixed text", expected, expectedMask, image, mask);
+    if (mask != expectedMask) {
+        differences++;
+    }
+    /* and back: the ini written from it parses to the same image */
+    length = PersistentSettings_FormatIni(image, mask, text, sizeof text);
+    memset(parsed, 0, sizeof parsed);
+    differences += SelfTest_CompareSettingsImages("fixed text round trip", image, mask, parsed,
+                                                  PersistentSettings_ParseIni(text, length, parsed));
+    Thandor_Log("settings: fixed text %s (present mask %016llX)", differences == 0 ? "ok" : "MISMATCH",
+                (unsigned long long)mask);
+
+    file = fopen("thandor.dat", "rb");
+    if (file == NULL) {
+        Thandor_Log("settings: no thandor.dat in the current directory, migration not checked");
+        return;
+    }
+    {
+        uint8_t datImage[PERSISTENT_SETTINGS_IMAGE_BYTES];
+        size_t datBytes;
+        uint64_t datMask = 0;
+        unsigned dword;
+        memset(datImage, 0, sizeof datImage);
+        datBytes = fread(datImage, 1, sizeof datImage, file);
+        fclose(file);
+        for (dword = 0; (dword + 1) * 4 <= datBytes; dword++) {
+            datMask |= (uint64_t)1 << dword;
+        }
+        length = PersistentSettings_FormatIni(datImage, datMask, text, sizeof text);
+        memset(parsed, 0, sizeof parsed);
+        differences = SelfTest_CompareSettingsImages("thandor.dat round trip", datImage, datMask, parsed,
+                                                     PersistentSettings_ParseIni(text, length, parsed));
+        Thandor_Log("settings: thandor.dat (%u bytes) -> ini (%u bytes) -> image: %s", (unsigned)datBytes,
+                    length, differences == 0 ? "identical" : "MISMATCH");
+        file = fopen("thandor.ini", "rb");
+        if (file == NULL) {
+            Thandor_Log("settings: no thandor.ini in the current directory");
+            return;
+        }
+        length = (uint32_t)fread(text, 1, sizeof text, file);
+        fclose(file);
+        memset(parsed, 0, sizeof parsed);
+        differences = SelfTest_CompareSettingsImages("thandor.ini vs thandor.dat", datImage, datMask, parsed,
+                                                     PersistentSettings_ParseIni(text, length, parsed));
+        Thandor_Log("settings: thandor.ini vs thandor.dat: %s", differences == 0 ? "identical" : "DIFFERENT");
+    }
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -645,6 +770,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "settings") == 0) {
+        Thandor_SelfTestSettings();
         return 1;
     }
     if (name != NULL && strcmp(name, "path") == 0) {
