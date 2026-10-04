@@ -495,7 +495,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`buttons.cpp / buttons.h`](source_guide/ui.md#file-ui-controls-buttons) - no file comment; main functions `UiSpriteButtonControl_Relocate`, `UiSpriteButtonControl_NonRightDrag`, `UiSpriteButtonControl_HitTestOpaque`
 - [`container.cpp / container.h`](source_guide/ui.md#file-ui-controls-container) - no file comment; main functions `UiPageStack_SetActiveIndex`, `UiContainer_LayoutChildren`, `UiContainer_HitTestChildren`
 - [`focus_proxy.cpp / focus_proxy.h`](source_guide/ui.md#file-ui-controls-focus-proxy) - no file comment; main functions `UiSingleLineTextControl_RelocateChild`, `UiSingleLineTextControl_ForwardKeyboardEventToChild`, `UiSingleLineTextControl_ForwardPointerWheelToChildOrParent`
-- [`gauge.cpp / gauge.h`](source_guide/ui.md#file-ui-controls-gauge) - no file comment; main functions `UiHorizontalGaugeControl_DrawFrameFillAndLabel`, `UiHorizontalGaugeControl_PointerMoveBusyCursor`, `UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw`
+- [`gauge.cpp / gauge.h`](source_guide/ui.md#file-ui-controls-gauge) - no file comment; main functions `UiHorizontalGaugeControl_DrawFrameFillAndLabel`, `UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw`
 - [`image.cpp / image.h`](source_guide/ui.md#file-ui-controls-image) - no file comment; main functions `UiImageControl_HitTestOpaque`, `UiImageControl_LayoutChildrenToParent`, `UiImageControl_NonRightDrag`
 - [`input.cpp / input.h`](source_guide/ui.md#file-ui-controls-input) - no file comment; main functions `UiNode_DefaultKeyboardEventMoveFocusNext`, `UiNode_ForwardPointerWheelToParent`, `UiNode_DefaultPointerMove`
 - [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_RefreshSelectionAndQueueAction`, `UiPointerList_SelectColumnListIndex`
@@ -508,9 +508,8 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`slider.cpp / slider.h`](source_guide/ui.md#file-ui-controls-slider) - no file comment; main functions `UiRangeSliderControl_DrawTrackAndThumb`, `UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag`
 - [`text.cpp / text.h`](source_guide/ui.md#file-ui-controls-text) - no file comment; main functions `UiSingleLineTextControl_DrawClipped`, `UiWrappedTextControl_DrawClipped`, `UiWrappedTextControl_RelocateAndApplyDeferredOffset`
 - [`text_buttons.cpp / text_buttons.h`](source_guide/ui.md#file-ui-controls-text-buttons) - no file comment; main functions `UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease`, `UiFramedTextButtonControl_NonRightDrag`
-- [`text_edit.cpp / text_edit.h`](source_guide/ui.md#file-ui-controls-text-edit) - no file comment; main functions `UiTextControl_UpdateNonEmptyValidity`, `UiNumericTextEditControl_HandleKeyboardAndCommit`, `UiPathTextEditControl_HandleKeyboardAndValidate`
+- [`text_edit.cpp / text_edit.h`](source_guide/ui.md#file-ui-controls-text-edit) - no file comment; main functions `UiTextControl_UpdateNonEmptyValidity`, `UiRequiredTextEditControl_HandleKeyboardAndValidate`, `UiTextEditControl_DrawTextSelectionAndCaret`
 - [`tooltip.cpp / tooltip.h`](source_guide/ui.md#file-ui-controls-tooltip) - no file comment; main functions `UiTooltip_TickCountdown`, `UiTooltip_Draw`, `UiTooltip_UpdateHoverTarget`
-- [`tree_list.cpp / tree_list.h`](source_guide/ui.md#file-ui-controls-tree-list) - no file comment; main functions `UiTimedListControl_HandleKeyboardNavigation`, `UiTimedListControl_SelectRowFromPointer`, `UiTimedListTree_FindRecordByLabel`
 - [`types.h`](source_guide/ui.md#file-ui-controls-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`window.cpp / window.h`](source_guide/ui.md#file-ui-controls-window) - no file comment; main functions `UiWindow_BlitTiledHorizontalEdge`, `UiWindow_BlitTiledVerticalEdge`, `UiWindow_BlitTiledInterior`
 
@@ -524,7 +523,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 - [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiKeyModifiers_Match`, `UiCommandDispatch_Find`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
-- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
+- [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`
 - [`types.h`](source_guide/ui.md#file-ui-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-ui-dialogs"></a>

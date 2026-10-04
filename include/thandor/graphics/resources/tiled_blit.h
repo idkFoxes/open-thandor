@@ -36,19 +36,4 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
-void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
 #endif /* THANDOR_GRAPHICS_RESOURCES_TILED_BLIT_H */

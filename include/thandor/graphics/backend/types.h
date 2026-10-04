@@ -29,8 +29,6 @@ typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRa
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
 using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
-using GraphicsFramebufferCopyRegionToOriginProc = void (int32_t copyHeight, int32_t copyWidth, int32_t sourceY, int32_t sourceX, SoftwareFramebufferAccess * destination, SoftwareFramebufferAccess * source);
-using GraphicsFramebufferCopyOriginToRegionProc = void (int32_t copyHeight, int32_t copyWidth, int32_t destinationY, int32_t destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);
 using SoftwareFramebufferDestroyProc = void (SoftwareFramebufferAccess * framebuffer);
 
 enum {
@@ -50,11 +48,8 @@ using DisplayModeHookArgument1 = uint32_t;
 
 using GraphicsDisplayModeCount = uint32_t;
 
-using PaletteBankIndex = uint32_t;
 
 using GraphicsPixelChannelBitShift = uint32_t;
-
-using GraphicsIntegerScale = uint32_t;
 
 using GraphicsPixelChannelBitCount = uint32_t;
 

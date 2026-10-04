@@ -15,8 +15,8 @@
 
 /* Submodule: ui/controls/lists. */
 
-/* UiListControl.listStateFlags / UiTimedListControl.listStateAndDelay: bits 24..31 count down the frames until
-   a deferred list action is queued (tick callbacks). */
+/* UiListControl.listStateFlags: bits 24..31 count down the frames until a deferred list action is queued (tick
+   callbacks). */
 #define UI_LIST_COUNTDOWN_SHIFT 24
 #define UI_LIST_COUNTDOWN_ONE 0x1000000
 #define UI_LIST_COUNTDOWN_MASK 0xff000000

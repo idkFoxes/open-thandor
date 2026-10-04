@@ -90,24 +90,16 @@ static uint32_t g_FileSystemConfigRemainingBytes = 0;
    with a long game directory the cut-off path named a different file or directory. */
 static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {0};
 
-/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA */
+/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
 FileSystemDeleteProc *g_FileSystemDelete = nullptr;
 
 FileSystemCreateDirectoryRecursiveProc *g_FileSystemCreateDirectoryRecursive = nullptr;
 
-FileSystemEnumerateDriveLettersProc *g_FileSystemEnumerateDriveLetters = nullptr;
-
-FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode = nullptr;
-
-FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady = nullptr;
-
 uint16_t g_DefaultComputerLabelUtf16[32] = {'C', 'o', 'm', 'p', 'u', 't', 'e', 'r', 0}; /* L"Computer" */
 
 FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = nullptr;
-
-FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = nullptr;
 
 /* Implementation ownership: platform/filesystem/win32. */
 
@@ -246,9 +238,6 @@ uintptr_t __cdecl FileSystem_Init()
   g_FileSystemSetCurrentDirectory = Win32File_SetCurrentDirectory;
   g_FileSystemRemoveDirectory = Win32File_RemoveDirectory;
   g_FileSystemCreateDirectoryRecursive = Win32File_CreateDirectoryRecursive;
-  g_FileSystemEnumerateDriveLetters = Win32Drive_EnumerateLetters;
-  g_FileSystemGetDriveTypeCode = Win32Drive_GetEngineTypeCode;
-  g_FileSystemCheckDriveMediaReady = Win32Drive_CheckMediaReady;
   g_FileSystemGetFreeAndTotalBytes = Win32Drive_GetFreeAndTotalBytes;
   g_FileSystemGetLastWriteDosDate = Win32File_GetLastWriteDosDate;
   g_FileSystemGetLastWriteTimeHigh = Win32File_GetLastWriteTimeHigh;
@@ -257,7 +246,6 @@ uintptr_t __cdecl FileSystem_Init()
   g_FileSystemCopy = Win32File_Copy;
   g_FileSystemEnumerateDirectoryOrVolumeEntries =
        Win32FileSystem_EnumerateDirectoryOrVolumeEntries;
-  g_FileSystemValidateDos83Path = Win32Path_ValidateDos83;
   /* GetComputerNameA size in/out; the same global later holds the THANDOR.cfg text */
   g_FileSystemInitComputerNameCapacityOrConfigCursor = (void *)sizeof g_Win32PathScratch[0];
   gotComputerName = GetComputerNameA((LPSTR)g_Win32PathScratch[0],
@@ -430,23 +418,6 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory()
     Win32File_SetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
   }
   return;
-}
-
-/* Reports whether a drive has usable media: returns false (ready) for fixed, network and other drives,
-   true (not ready) for removable and CD-ROM drives. The original contains an unreachable
-   \\.\X: + IOCTL_STORAGE_CHECK_VERIFY probe after the type check, so removable and CD-ROM drives are
-   always reported as not ready.
-*/
-Bool8 Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
-
-{
-  uint32_t engineDriveType;
-
-  engineDriveType = Win32Drive_GetEngineTypeCode(driveLetter);
-  if ((engineDriveType != ENGINE_DRIVE_REMOVABLE) && (engineDriveType != ENGINE_DRIVE_CDROM)) {
-    return false;
-  }
-  return true;
 }
 
 
@@ -736,186 +707,6 @@ Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLet
   return capacity;
 }
 
-/* Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
-   (no terminator) and returns the number of letters.
-*/
-uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
-
-{
-  uint32_t logicalDriveMask;
-  uint32_t enumeratedDriveCount;
-  uint8_t currentDriveLetter;
-  int driveLettersRemaining;
-
-  logicalDriveMask = GetLogicalDrives();
-  enumeratedDriveCount = 0;
-  driveLettersRemaining = 'Z' - 'A' + 1;
-  currentDriveLetter = 'A';
-  do {
-    if ((logicalDriveMask & 1) != 0) {
-      *lettersOut = currentDriveLetter;
-      enumeratedDriveCount++;
-      lettersOut++;
-    }
-    logicalDriveMask = logicalDriveMask >> 1;
-    currentDriveLetter++;
-    driveLettersRemaining--;
-  } while (driveLettersRemaining != 0);
-  return enumeratedDriveCount;
-}
-
-
-/* Checks that an ANSI path is made of DOS 8.3 names (letters, digits and characters below ','), with an
-   optional "X:" drive and leading '\'. FILESYSTEM_DOS83_ALLOW_WILDCARDS permits '*' and '?';
-   FILESYSTEM_DOS83_COMPONENT_ONLY checks one name only, and FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION lets
-   that name end at a '\'. Returns false when valid, true when rejected.
-*/
-Bool8 Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
-
-{
-  uint8_t pathChar;
-  int charsRemaining;
-
-  if ((flags & FILESYSTEM_DOS83_COMPONENT_ONLY) == 0) {
-    if (pathAnsi[1] == ':') {
-      pathChar = *pathAnsi;
-      if (pathChar < 'A') {
-        return true;
-      }
-      if ('z' < pathChar) {
-        return true;
-      }
-      if ((pathChar < 'a') && ('Z' < pathChar)) {
-        return true;
-      }
-      pathAnsi = pathAnsi + 2;
-    }
-    if (*pathAnsi == '\\') {
-      pathAnsi++;
-    }
-    /* check each '\'-separated name until the terminator */
-    while (!Win32Path_ValidateDos83
-              (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|FILESYSTEM_DOS83_COMPONENT_ONLY),
-               pathAnsi)) {
-      /* skip past the next '\'; the terminator ends a valid path */
-      do {
-        pathChar = *pathAnsi;
-        pathAnsi++;
-        if (pathChar == 0) {
-          return false;
-        }
-      } while (pathChar != '\\');
-    }
-  }
-  else {
-    /* base name: up to 8 characters, ended by '-', '.', '\' or the terminator */
-    charsRemaining = DOS83_BASE_NAME_MAX_CHARS;
-    do {
-      pathChar = *pathAnsi;
-      if (pathChar == 0) break;
-      if (pathChar == '*') {
-        pathAnsi++;
-        if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-          return true;
-        }
-        break;
-      }
-      if (',' < pathChar) {
-        if (pathChar < '/') break;
-        if (pathChar == '/') {
-          return true;
-        }
-        if ('9' < pathChar) {
-          if (pathChar == '?') {
-            if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-              return true;
-            }
-          }
-          else {
-            if (pathChar < 'A') {
-              return true;
-            }
-            if ('Z' < pathChar) {
-              if (pathChar == '\\') break;
-              if (pathChar < 'a') {
-                return true;
-              }
-              if ('z' < pathChar) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-      pathAnsi++;
-      charsRemaining--;
-    } while (charsRemaining != 0);
-    if (charsRemaining == DOS83_BASE_NAME_MAX_CHARS) {
-      return true; /* empty base name (a leading '*' counts as empty too) */
-    }
-    /* optional extension: '.' and up to 3 characters */
-    pathChar = *pathAnsi;
-    if (pathChar == 0) {
-      return false;
-    }
-    if (pathChar == '.') {
-      for (charsRemaining = DOS83_EXTENSION_MAX_CHARS; charsRemaining != 0; charsRemaining--) {
-        pathAnsi++;
-        pathChar = *pathAnsi;
-        if (pathChar == 0) {
-          return false;
-        }
-        if (pathChar == '*') {
-          if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-            return true;
-          }
-          break;
-        }
-        if (',' < pathChar) {
-          if (pathChar < '0') {
-            return true;
-          }
-          if ('9' < pathChar) {
-            if (pathChar == '?') {
-              if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-                return true;
-              }
-            }
-            else {
-              if (pathChar < 'A') {
-                return true;
-              }
-              if ('Z' < pathChar) {
-                if (pathChar == '\\') {
-                  return false;
-                }
-                if (pathChar < 'a') {
-                  return true;
-                }
-                if ('z' < pathChar) {
-                  return true;
-                }
-              }
-            }
-          }
-        }
-      }
-      /* the character after the last one checked must end the name */
-      pathChar = pathAnsi[1];
-      if (pathChar == 0) {
-        return false;
-      }
-    }
-    if ((flags & FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION) == 0) {
-      return true;
-    }
-    if (pathChar != '\\') {
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
 
 
 /* Whether the entry FindFirstFileA/FindNextFileA just stored in the scratch WIN32_FIND_DATAA belongs in
@@ -1100,31 +891,6 @@ uint32_t Win32File_SetCurrentDirectory(uint16_t *path)
   return FATAL_ERROR_SET_DIRECTORY_FAILED;
 }
 
-
-/* Classifies a drive for the engine: ENGINE_DRIVE_REMOVABLE, ENGINE_DRIVE_REMOTE, ENGINE_DRIVE_CDROM, or
-   ENGINE_DRIVE_OTHER for fixed, RAM-disk and unknown drives.
-*/
-EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
-
-{
-  UINT win32DriveType;
-
-  g_Win32DriveRootPathScratchA[0] = (char)driveLetter; /* "X:\" root path scratch */
-  win32DriveType = GetDriveTypeA(g_Win32DriveRootPathScratchA);
-  if (win32DriveType == DRIVE_REMOVABLE) {
-    return ENGINE_DRIVE_REMOVABLE;
-  }
-  if (DRIVE_NO_ROOT_DIR < win32DriveType) {
-    if (win32DriveType == DRIVE_REMOTE) {
-      return ENGINE_DRIVE_REMOTE;
-    }
-    /* only DRIVE_CDROM (5) is left in this range */
-    if ((DRIVE_FIXED < win32DriveType) && (win32DriveType < DRIVE_RAMDISK)) {
-      return ENGINE_DRIVE_CDROM;
-    }
-  }
-  return ENGINE_DRIVE_OTHER;
-}
 
 
 /* Opens a file (path recorded in g_PackageLastErrorPath for error messages). The FileSystemOpenFlags

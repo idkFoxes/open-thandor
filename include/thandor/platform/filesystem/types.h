@@ -39,27 +39,12 @@ struct _WIN32_FIND_DATAA {
 };
 
 enum {
-    ENGINE_DRIVE_REMOVABLE=40,
-    ENGINE_DRIVE_OTHER=41,
-    ENGINE_DRIVE_REMOTE=42,
-    ENGINE_DRIVE_CDROM=43
-};
-using EngineDriveTypeCode = int;
-
-enum {
     FILESYSTEM_OPEN_CREATE_OR_TRUNCATE=1,
     FILESYSTEM_OPEN_EXCLUSIVE_SHARE=2,
     FILESYSTEM_OPEN_EXISTING_OR_CREATE=4,
     FILESYSTEM_OPEN_WRITE_ACCESS=8
 };
 using FileSystemOpenFlags = int;
-
-enum {
-    FILESYSTEM_DOS83_ALLOW_WILDCARDS=1,
-    FILESYSTEM_DOS83_COMPONENT_ONLY=2,
-    FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION=4
-};
-using FileSystemDos83ValidationFlags = int;
 
 enum {
     FILESYSTEM_CREATE_DIRECTORY_RECURSIVE=1
@@ -82,11 +67,8 @@ using FileSystemCloseProc = void (void * handle);
 using FileSystemCopyProc = uint32_t (uint16_t * destinationPath, uint16_t * sourcePath);
 using FileSystemCreateDirectoryRecursiveProc = uint32_t (FileSystemCreateDirectoryFlags flags, uint16_t * path);
 using FileSystemDeleteProc = uint32_t (uint32_t unusedFlags, uint16_t * path);
-using FileSystemDriveReadyProc = Bool8 (uint32_t driveLetter);
 using FileSystemEnumerateDirectoryOrVolumeEntriesProc = uint32_t (FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText);
-using FileSystemEnumerateDriveLettersProc = uint32_t (uint8_t * lettersOut);
 using FileSystemGetCurrentDirectoryProc = Bool8 (uint16_t * destination);
-using FileSystemGetDriveTypeCodeProc = EngineDriveTypeCode (DosDriveLetterCode32 driveLetter);
 using FileSystemGetFreeAndTotalBytesRegsProc = Win32DriveCapacity (DosDriveLetterCode32 driveLetter);
 using FileSystemGetLastWriteDosDateProc = uint32_t (uint16_t * path, uint32_t * outDosDateTime);
 using FileSystemGetLastWriteTimeHighProc = uint32_t (uint16_t * path, uint32_t * outLastWriteTimeHigh);
@@ -99,7 +81,6 @@ using FileSystemReadExactProc = uint32_t (FileIoByteCount byteCount, void * dest
 using FileSystemRemoveDirectoryProc = uint32_t (uint16_t * path);
 using FileSystemSeekProc = uint32_t (FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle);
 using FileSystemSetCurrentDirectoryProc = uint32_t (uint16_t * path);
-using FileSystemValidateDos83Proc = Bool8 (FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi);
 using FileSystemWriteExactOrFlushProc = uint32_t (FileIoByteCount byteCount, void * source, void * handle);
 
 #endif /* THANDOR_PLATFORM_FILESYSTEM_TYPES_H */
