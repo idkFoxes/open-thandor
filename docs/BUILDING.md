@@ -128,7 +128,9 @@ Next to `thandor.exe` the game needs:
 - `SDL3.dll` (the build puts it next to `thandor.exe`; copy both into the game directory),
 - the game's `*.PCK` files from the installation (and its `thandor.dat` for the old settings, see below),
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
-  packages hold only still-image stand-ins for them.
+  packages hold only still-image stand-ins for them,
+- optionally `thandor.ico` from the installation: the window and taskbar icon (looked for next to `thandor.exe`,
+  else in the current directory; without it SDL's default icon stays, `thandor.log` says which).
 
 Nothing of the original executable is needed: its data (globals, tables, UI templates) is compiled in.
 
@@ -227,7 +229,10 @@ SDL3 (`src/platform/sdl3`, interface
 through the original's function slots (`g_Win32PumpMessages`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
 `g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game draws its frames with its software renderer
 into a memory framebuffer (XRGB8888; the game runs in 32-bit colour only, the original's 16-bit modes were
-removed); the 3D view can be rasterized on the GPU instead (below). The
+removed); the 3D view can be rasterized on the GPU instead (below). The window icon is the game's `thandor.ico`:
+SDL3 reads no `.ico` files, so [`src/platform/sdl3/window_icon.cpp`](../src/platform/sdl3/window_icon.cpp) parses
+it (the BMP images with 1, 4, 8, 24 or 32 bits per pixel; PNG images are skipped), sets the 32x32 image and adds the
+other sizes as alternate images for other display scales (log line `window icon: ...`). The
 original's 3dfx Glide and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed. The network
 code stays on WinSock (UDP).
 
@@ -245,7 +250,10 @@ The display settings page (main room: Optionen -> Grafik) chooses:
 - **Anzeigemodus**: `Fenster` (a normal, resizable window in the mode's size; the mouse is the system mouse),
   `Vollbildfenster` (a borderless window over the whole display) and `Vollbild` (default: exclusive fullscreen in
   the chosen mode, or the closest larger one the display has). The frame is letterboxed in all three.
-- **Auflösung** as in the original (640x480 up to the desktop size). There is no colour depth choice (the
+- **Auflösung**: every resolution of the display from 640x480 up to the desktop size (sorted by width, then height),
+  in a scrollable list of the original's round radio buttons (scroll bar in the original style, mouse wheel); the
+  original showed only the ten smallest. The page opens with the list scrolled to the chosen resolution. There is
+  no colour depth choice (the
   original's **Farbtiefe**): the game runs in 32 bits per pixel only, and a saved `bits_per_pixel` of 16 (an old
   `thandor.dat` or `thandor.ini`) is read as 32 and written back as 32.
 
@@ -312,11 +320,11 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|scanaddr\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|icon\|path\|stretch\|scanaddr\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
 | `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
-| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
+| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `wheel x y <notches>` (negative: down), `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
 | `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
 | `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (absolute mouse position, normal process priority; a display mode kind chosen in the settings is logged and kept for the session, not applied or saved); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
