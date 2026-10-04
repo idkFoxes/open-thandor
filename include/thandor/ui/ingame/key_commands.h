@@ -22,13 +22,6 @@
    when no notification movie plays */
 #define INGAME_NOTIFICATION_CURSOR_CANCEL 0x1B
 
-/* Queued player command codes of the selection hotkeys (network games; see the key table in ui/ingame/key_commands.cpp) */
-#define INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS 0x8F0 /* InGameSelection_SelectAllOwnAircraftPads */
-#define INGAME_COMMAND_SELECTION_RESET_MOVEMENT 0xE10 /* S: PlayerSelection_ResetMovementPruneAndRecenterEntries */
-#define INGAME_COMMAND_SELECTION_STOP_MOVEMENT 0xE30 /* Shift+S: PlayerSelection_StopMovement (stay where they are) */
-#define INGAME_COMMAND_SELECTION_CANCEL_TARGETS 0xE50 /* Alt+S: PlayerSelection_CancelTargets */
-#define INGAME_COMMAND_SELECTION_SELF_DESTRUCT 0xE70 /* Alt+D: PlayerSelection_SelfDestruct */
-
 /* Functions are grouped by semantic ownership. */
 
 Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,

@@ -446,7 +446,7 @@ void InGameSession_RebuildUiGrids(InGameRuntimeRoot *inGameRoot)
   InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
 }
 
-/* Reports this player as loaded (INGAME_COMMAND_PLAYER_READY), releases the step spin lock taken before the world
+/* Reports this player as loaded (in-game command 0x550), releases the step spin lock taken before the world
    was finished and shows the player-status screen while keeping the lockstep running until every player is ready;
    then switches to the game page and closes the level movie. */
 void InGameSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
