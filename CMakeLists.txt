@@ -179,6 +179,43 @@ if(THANDOR_PLATFORM_SDL3)
         VERBATIM)
 endif()
 
+# SDL3 stage 2 (needs THANDOR_PLATFORM_SDL3): the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
+# switched on at run time with OPEN_THANDOR_GPU=1 or -GPU; the software renderer stays the default. The shaders
+# (src/platform/sdl3/shaders/primitives.hlsl) are compiled to DXBC shader model 5.1 with fxc from the Windows SDK.
+option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU (needs THANDOR_PLATFORM_SDL3)" OFF)
+if(THANDOR_RENDERER_SDL_GPU)
+    if(NOT THANDOR_PLATFORM_SDL3)
+        message(FATAL_ERROR "THANDOR_RENDERER_SDL_GPU needs THANDOR_PLATFORM_SDL3=ON")
+    endif()
+    # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
+    set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
+    file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
+    list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
+    find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+    set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/primitives.hlsl)
+    set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
+    file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
+    set(THANDOR_GPU_SHADER_HEADERS)
+    foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
+                   "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
+        separate_arguments(shader)
+        list(GET shader 0 shaderName)
+        list(GET shader 1 shaderProfile)
+        list(GET shader 2 shaderEntry)
+        set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
+        add_custom_command(OUTPUT ${shaderHeader}
+            COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
+                    /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
+            DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
+            COMMENT "fxc ${shaderEntry}"
+            VERBATIM)
+        list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
+    endforeach()
+    target_sources(thandor_curated PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
+    target_include_directories(thandor_curated PRIVATE ${THANDOR_GPU_SHADER_DIR})
+    target_compile_definitions(thandor_curated PUBLIC THANDOR_RENDERER_SDL_GPU=1)
+endif()
+
 if(THANDOR_DEV_TOOLS)
     target_sources(thandor_curated PRIVATE
         src/platform/debug/autoshot.cpp

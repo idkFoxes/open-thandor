@@ -65,6 +65,16 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion16Bit(uint32_t capture
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
                                                                 int32_t sourceY,int32_t sourceX);
 
+/* --- GPU primitive renderer (src/platform/sdl3/gpu_renderer.cpp, CMake option THANDOR_RENDERER_SDL_GPU) --- */
+
+/* End of SdlVideo_Init: with OPEN_THANDOR_GPU=1 (or =compare in the developer tools) or the command-line option
+   -GPU, creates an SDL_GPU device and installs the GPU rasterization of the primitive queues in
+   g_GraphicsSetViewportAndClearDepth, g_GraphicsDrawPrimitiveQueue and g_GraphicsEndScene. Returns false (the
+   software renderer stays) when it is not requested or the device cannot be set up (logged). */
+bool SdlGpuRenderer_Init(void);
+/* SdlVideo_Shutdown: puts the software renderer's slots back and releases the device. */
+void SdlGpuRenderer_Shutdown(void);
+
 /* --- keyboard and mouse (src/platform/sdl3/input.cpp) --- */
 
 /* Instead of DirectInputMouse_Init: hides the system cursor, hooks the display-mode switch (cursor buffers),

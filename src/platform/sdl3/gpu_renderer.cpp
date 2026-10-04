@@ -1,0 +1,1261 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/sdl3/gpu_renderer.cpp
+ * Project code (not in the original game)
+ */
+
+/* SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GPU (CMake option
+   THANDOR_RENDERER_SDL_GPU, switched on at run time with OPEN_THANDOR_GPU=1 or the command-line option -GPU).
+
+   Only g_GraphicsDrawPrimitiveQueue is replaced: lighting, fog, projection, clipping, culling and the radix sort
+   stay on the CPU, so the simulation and the state hash are untouched. One scene (g_GraphicsSetViewportAndClearDepth
+   up to g_GraphicsEndScene, i.e. the four passes of FrontendModelPointerContext_RenderWorldViewQueuesClipped) is
+   collected and drawn at its end:
+
+   - g_GraphicsSetViewportAndClearDepth: the software clear (black rectangle, new depth epoch) and a new scene.
+   - g_GraphicsDrawPrimitiveQueue: copies the sorted queue at once (the packet pool is reused by the next pass) into
+     32-byte vertices and runs of equal pipeline and clip rectangle. Each packet becomes the triangle the software
+     rasterizer would draw, rebuilt from its fixed-point setup (edges, depth, U/V and colour planes; see
+     SoftwareTriangleSetup), so the GPU fills the same pixels with the same attributes. Each texture used by a packet is looked up in
+     an RGBA atlas (4096 x 4096, B8G8R8A8); its texels and palette are hashed once per scene and converted again when
+     they changed (the generated shadow textures change every frame).
+   - g_GraphicsEndScene: uploads vertices and changed atlas regions, draws the runs into an offscreen colour + depth
+     target (cleared to black / far), downloads the clip rectangle and writes it into the software framebuffer, so
+     the selection overlays, the UI and the cursor that the CPU draws afterwards stay as they are.
+
+   Pipelines per software mode (index (renderFlags & 0x3F000) >> 12, see docs/software_raster.md):
+     0/8/16/24                       opaque, depth write
+     1/9/17/25 and 32..63 (except 2) source-alpha blend, no depth write
+     2/10/18/26 and 34/42/50/58      additive, no depth write
+     4/6/12/14, 20/22/28/30          source-alpha blend, then a depth-only draw of the same run that writes depth
+                                     where the modulated alpha is >= 128
+     3/5/7/... (empty table entries) not drawn
+   The depth test is <= on depth / 2^32. Not reproduced exactly: the blend tables (and their over-reads), the
+   16-bit quantization after each blend, the 16-bit lane wrap and per-pixel rounding of the MMX interpolation,
+   GPU sub-pixel snapping of the rebuilt edges (1/256 pixel) and per-pixel depth writes inside one alpha-tested
+   run (they take effect after the run).
+
+   OPEN_THANDOR_GPU=compare (developer tools): both renderers run; the software picture is shown and every
+   OPEN_THANDOR_GPU_COMPARE_MS milliseconds (default 5000) the scene's clip rectangle is written as
+   shots\gpucmp_NNNN_sw.bmp, _gpu.bmp and _diff.bmp with the difference statistics in thandor.log. */
+
+#include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_timer.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+#include <unordered_map>
+#include <vector>
+
+#include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/sdl3/platform.h>
+#include <thandor/platform/system/win32.h>
+
+namespace thandor::sdl3::gpu_shaders {
+using BYTE = unsigned char;
+#include "gpu_shader_vertex.h"
+#include "gpu_shader_fragment.h"
+#include "gpu_shader_fragment_alpha_test.h"
+} // namespace thandor::sdl3::gpu_shaders
+
+namespace {
+
+constexpr Uint32 kAtlasSize = 4096;
+constexpr uint16_t kUntexturedMask = 0xFFFF;
+constexpr double kDepthScale = 1.0 / 4294967296.0;
+
+/* One packet corner as the vertex shader reads it (primitives.hlsl). */
+struct GpuVertex {
+  float x;
+  float y;
+  float z;
+  float u;
+  float v;
+  uint32_t colorArgb;
+  uint16_t atlasX;
+  uint16_t atlasY;
+  uint16_t widthMask;
+  uint16_t heightMask;
+};
+static_assert(sizeof(GpuVertex) == 32);
+
+enum GpuPipelineIndex : int {
+  GPU_PIPELINE_OPAQUE,
+  GPU_PIPELINE_ALPHA,
+  GPU_PIPELINE_ADDITIVE,
+  GPU_PIPELINE_ALPHA_DEPTH, /* depth-only pass of an alpha-tested run */
+  GPU_PIPELINE_COUNT
+};
+
+/* How a run is drawn: one of the first three pipelines, or the alpha pipeline followed by the depth pass. */
+enum GpuRunKind : int { GPU_RUN_OPAQUE, GPU_RUN_ALPHA, GPU_RUN_ADDITIVE, GPU_RUN_ALPHA_WRITES_DEPTH, GPU_RUN_NONE };
+
+struct GpuRun {
+  GpuRunKind kind;
+  SDL_Rect scissor;
+  Uint32 firstVertex;
+  Uint32 vertexCount;
+};
+
+/* A texture in the atlas, keyed by its texels, palette and size. */
+struct AtlasKey {
+  const uint8_t *texels;
+  const uint8_t *palette;
+  uint32_t widthLog2;
+  uint32_t heightLog2;
+  bool operator==(const AtlasKey &other) const noexcept
+  {
+    return (texels == other.texels) && (palette == other.palette) && (widthLog2 == other.widthLog2) &&
+           (heightLog2 == other.heightLog2);
+  }
+};
+struct AtlasKeyHash {
+  size_t operator()(const AtlasKey &key) const noexcept
+  {
+    size_t hash = reinterpret_cast<uintptr_t>(key.texels) * 0x9E3779B1u;
+    hash ^= reinterpret_cast<uintptr_t>(key.palette) + 0x7F4A7C15u + (hash << 6) + (hash >> 2);
+    return hash ^ (key.widthLog2 << 8) ^ key.heightLog2;
+  }
+};
+struct AtlasSlot {
+  uint16_t x;
+  uint16_t y;
+  uint32_t contentHash;
+  uint32_t validatedScene; /* scene serial of the last hash check */
+};
+
+/* A shelf of the atlas: textures of one height side by side. */
+struct AtlasShelf {
+  uint32_t y;
+  uint32_t height;
+  uint32_t nextX;
+};
+
+/* A converted texture waiting for the next upload. */
+struct PendingUpload {
+  uint32_t x;
+  uint32_t y;
+  uint32_t width;
+  uint32_t height;
+  size_t stagingOffset; /* in pixels */
+};
+
+struct GpuTimes {
+  uint64_t collect = 0;
+  uint64_t submit = 0;
+  uint64_t software = 0;
+  uint32_t scenes = 0;
+  uint32_t vertices = 0;
+  uint32_t runs = 0;
+  uint32_t uploadedTexels = 0;
+};
+
+enum GpuMode : int { GPU_MODE_OFF, GPU_MODE_ON, GPU_MODE_COMPARE };
+
+struct GpuState {
+  GpuMode mode = GPU_MODE_OFF;
+  SDL_GPUDevice *device = nullptr;
+  SDL_GPUGraphicsPipeline *pipelines[GPU_PIPELINE_COUNT] = {};
+  SDL_GPUSampler *sampler = nullptr;
+  SDL_GPUTexture *atlas = nullptr;
+  SDL_GPUTexture *colorTarget = nullptr;
+  SDL_GPUTexture *depthTarget = nullptr;
+  Uint32 targetWidth = 0;
+  Uint32 targetHeight = 0;
+  SDL_GPUBuffer *vertexBuffer = nullptr;
+  Uint32 vertexBufferBytes = 0;
+  SDL_GPUTransferBuffer *uploadBuffer = nullptr;
+  Uint32 uploadBufferBytes = 0;
+  SDL_GPUTransferBuffer *downloadBuffer = nullptr;
+  Uint32 downloadBufferBytes = 0;
+
+  std::unordered_map<AtlasKey, AtlasSlot, AtlasKeyHash> atlasSlots;
+  std::vector<AtlasShelf> shelves;
+  uint32_t shelvesBottom = 0;
+  std::vector<uint32_t> staging;
+  std::vector<PendingUpload> uploads;
+  uint32_t paletteLut[256] = {};
+
+  bool sceneOpen = false;
+  uint32_t sceneSerial = 0;
+  SDL_Rect sceneClip = {};
+  std::vector<GpuVertex> vertices;
+  std::vector<GpuRun> runs;
+  bool atlasResetLogged = false;
+
+  GpuTimes times;
+  uint64_t statsStart = 0;
+
+  /* compare mode */
+  std::vector<uint32_t> gpuPixels;
+  uint32_t compareIntervalMs = 5000;
+  uint32_t lastCompareTick = 0;
+  uint32_t compareNumber = 0;
+};
+GpuState s_gpu;
+
+/* --- hashing and texture conversion ------------------------------------------------------------------------ */
+
+inline uint32_t RotateLeft(uint32_t value, int count) noexcept
+{
+  return (value << count) | (value >> (32 - count));
+}
+
+/* xxHash32-style hash of byteCount bytes (byteCount a multiple of 4). */
+uint32_t HashBytes(const uint8_t *bytes, size_t byteCount, uint32_t seed) noexcept
+{
+  constexpr uint32_t kPrime1 = 0x9E3779B1u;
+  constexpr uint32_t kPrime2 = 0x85EBCA77u;
+  constexpr uint32_t kPrime3 = 0xC2B2AE3Du;
+  uint32_t lane0 = seed + kPrime1 + kPrime2;
+  uint32_t lane1 = seed + kPrime2;
+  uint32_t lane2 = seed;
+  uint32_t lane3 = seed - kPrime1;
+  size_t offset = 0;
+  for (; offset + 16 <= byteCount; offset += 16) {
+    uint32_t words[4];
+    std::memcpy(words, bytes + offset, sizeof words);
+    lane0 = RotateLeft(lane0 + words[0] * kPrime2, 13) * kPrime1;
+    lane1 = RotateLeft(lane1 + words[1] * kPrime2, 13) * kPrime1;
+    lane2 = RotateLeft(lane2 + words[2] * kPrime2, 13) * kPrime1;
+    lane3 = RotateLeft(lane3 + words[3] * kPrime2, 13) * kPrime1;
+  }
+  uint32_t hash = RotateLeft(lane0, 1) + RotateLeft(lane1, 7) + RotateLeft(lane2, 12) + RotateLeft(lane3, 18);
+  for (; offset + 4 <= byteCount; offset += 4) {
+    uint32_t word;
+    std::memcpy(&word, bytes + offset, sizeof word);
+    hash = RotateLeft(hash + word * kPrime3, 17) * 0x27D4EB2Fu;
+  }
+  hash ^= static_cast<uint32_t>(byteCount);
+  hash ^= hash >> 15;
+  hash *= kPrime2;
+  hash ^= hash >> 13;
+  hash *= kPrime3;
+  hash ^= hash >> 16;
+  return hash;
+}
+
+/* Forgets every atlas entry (the atlas is full); textures are converted again on their next use. */
+void ResetAtlas() noexcept
+{
+  s_gpu.atlasSlots.clear();
+  s_gpu.shelves.clear();
+  s_gpu.shelvesBottom = 0;
+  s_gpu.uploads.clear();
+  s_gpu.staging.clear();
+  if (!s_gpu.atlasResetLogged) {
+    Thandor_Log("SDL_GPU renderer: texture atlas full, starting over");
+    s_gpu.atlasResetLogged = true;
+  }
+}
+
+/* A free width x height rectangle (powers of two) of the atlas, false when there is none. */
+bool AllocateAtlasRectangle(uint32_t width, uint32_t height, uint32_t &outX, uint32_t &outY) noexcept
+{
+  for (AtlasShelf &shelf : s_gpu.shelves) {
+    if ((shelf.height == height) && (shelf.nextX + width <= kAtlasSize)) {
+      outX = shelf.nextX;
+      outY = shelf.y;
+      shelf.nextX += width;
+      return true;
+    }
+  }
+  if ((s_gpu.shelvesBottom + height > kAtlasSize) || (width > kAtlasSize)) {
+    return false;
+  }
+  s_gpu.shelves.push_back(AtlasShelf{s_gpu.shelvesBottom, height, width});
+  outX = 0;
+  outY = s_gpu.shelvesBottom;
+  s_gpu.shelvesBottom += height;
+  return true;
+}
+
+/* Converts the texture to ARGB into the staging pixels and queues its upload to (x, y). */
+void QueueTextureConversion(const AtlasKey &key, uint32_t x, uint32_t y) noexcept
+{
+  const uint32_t width = 1u << key.widthLog2;
+  const uint32_t height = 1u << key.heightLog2;
+  const size_t texelCount = static_cast<size_t>(width) * height;
+  const size_t stagingOffset = s_gpu.staging.size();
+  s_gpu.staging.resize(stagingOffset + texelCount);
+  uint32_t *destination = s_gpu.staging.data() + stagingOffset;
+  if (key.palette != nullptr) {
+    /* a palette entry is 8 bytes, the ARGB colour at +0 */
+    for (int index = 0; index < 256; index++) {
+      std::memcpy(&s_gpu.paletteLut[index], key.palette + index * 8, sizeof(uint32_t));
+    }
+    for (size_t texel = 0; texel < texelCount; texel++) {
+      destination[texel] = s_gpu.paletteLut[key.texels[texel]];
+    }
+  }
+  else {
+    std::memcpy(destination, key.texels, texelCount * sizeof(uint32_t));
+  }
+  s_gpu.uploads.push_back(PendingUpload{x, y, width, height, stagingOffset});
+  s_gpu.times.uploadedTexels += static_cast<uint32_t>(texelCount);
+}
+
+/* The atlas slot of a packet's texture, converted (again) when its texels or palette changed since the last
+   scene. False when the texture does not fit. */
+bool AtlasSlotOfTexture(const GraphicsTextureSetEntry *entry, AtlasSlot &outSlot) noexcept
+{
+  const GraphicsTextureSourceEntry *source = entry->sourceEntry;
+  const uint8_t *asset = reinterpret_cast<const uint8_t *>(entry->sourceAsset);
+  if ((source == nullptr) || (asset == nullptr) || (entry->widthLog2 > 12) || (entry->heightLog2 > 12)) {
+    return false;
+  }
+  const int paletteIndex = static_cast<int>(source->paletteIndex);
+  AtlasKey key;
+  key.texels = asset + source->dataOffset;
+  key.palette = (paletteIndex < 0)
+                    ? nullptr
+                    : asset + GFX_ASSET_HEADER_SIZE + static_cast<uint32_t>(paletteIndex) * GFX_PALETTE_BANK_SIZE;
+  key.widthLog2 = entry->widthLog2;
+  key.heightLog2 = entry->heightLog2;
+
+  auto found = s_gpu.atlasSlots.find(key);
+  if ((found != s_gpu.atlasSlots.end()) && (found->second.validatedScene == s_gpu.sceneSerial)) {
+    outSlot = found->second;
+    return true;
+  }
+  const size_t texelCount = static_cast<size_t>(1u << key.widthLog2) << key.heightLog2;
+  uint32_t hash = HashBytes(key.texels, (key.palette != nullptr) ? texelCount : texelCount * 4, 0);
+  if (key.palette != nullptr) {
+    hash = HashBytes(key.palette, GFX_PALETTE_BANK_SIZE, hash);
+  }
+  if (found != s_gpu.atlasSlots.end()) {
+    found->second.validatedScene = s_gpu.sceneSerial;
+    if (found->second.contentHash != hash) {
+      found->second.contentHash = hash;
+      QueueTextureConversion(key, found->second.x, found->second.y);
+    }
+    outSlot = found->second;
+    return true;
+  }
+  uint32_t x = 0;
+  uint32_t y = 0;
+  if (!AllocateAtlasRectangle(1u << key.widthLog2, 1u << key.heightLog2, x, y)) {
+    ResetAtlas();
+    if (!AllocateAtlasRectangle(1u << key.widthLog2, 1u << key.heightLog2, x, y)) {
+      return false;
+    }
+  }
+  AtlasSlot slot{static_cast<uint16_t>(x), static_cast<uint16_t>(y), hash, s_gpu.sceneSerial};
+  s_gpu.atlasSlots.emplace(key, slot);
+  QueueTextureConversion(key, x, y);
+  outSlot = slot;
+  return true;
+}
+
+/* --- packets ----------------------------------------------------------------------------------------------- */
+
+/* The run kind of a software raster handler index (see the table at the top). */
+GpuRunKind RunKindOfHandler(uint32_t handlerIndex) noexcept
+{
+  const uint32_t operation = handlerIndex & 7;
+  if (handlerIndex >= 32) {
+    if (operation == 2) {
+      return GPU_RUN_ADDITIVE;
+    }
+    return ((operation == 0) || (operation == 1) || (operation == 4) || (operation == 6)) ? GPU_RUN_ALPHA
+                                                                                         : GPU_RUN_NONE;
+  }
+  switch (operation) {
+  case 0:
+    return GPU_RUN_OPAQUE;
+  case 1:
+    return GPU_RUN_ALPHA;
+  case 2:
+    return GPU_RUN_ADDITIVE;
+  case 4:
+  case 6:
+    return GPU_RUN_ALPHA_WRITES_DEPTH;
+  default:
+    return GPU_RUN_NONE;
+  }
+}
+
+/* The triangle as the software rasterizer draws it (Raster_SetupTriangle / Raster_WalkTriangle /
+   Raster_DrawScanline), rebuilt as at most three GPU triangles in its own sample space: after
+   SoftwareRenderer_PrepareTrianglePacket (sorted by Y, snapped to whole pixels), row r of [y0, y2) covers the
+   columns between the long edge x0 + k * longXStep and the short edge (x0 + k * upperStep above v1, x1 + k *
+   lowerStep below), and the attributes of pixel px are those of the point (px + 1, r) on the long edge's affine
+   function a0 + k * longStep + (X - longX(k)) * stepX. All steps are the software rasterizer's fixed-point values
+   (1 / height in Q12, the 32-bit plane products), so tall or thin triangles keep the edges, depths and texture
+   coordinates the software rasterizer gives them (on large triangles its edges miss the far vertices by many
+   pixels) instead of the exact ones. */
+struct SoftwareTriangleSetup {
+  int x0;
+  int row0;
+  int longXStep;
+  double depth0;
+  int longDepthStep;
+  int depthStepX;
+  int u0;
+  int longUStep;
+  int uStepX;
+  int v0;
+  int longVStep;
+  int vStepX;
+  int color0[4]; /* Q6 */
+  int longColorStep[4];
+  int colorStepX[4];
+};
+
+/* A point of the rebuilt polygon: X in Q12 pixels of the software sample space, Y in rows. */
+struct SoftwarePoint {
+  double x;
+  int row;
+};
+
+GpuVertex SoftwareVertexAt(const SoftwareTriangleSetup &setup, const SoftwarePoint &point, const AtlasSlot &slot,
+                           uint16_t widthMask, uint16_t heightMask) noexcept
+{
+  const double k = static_cast<double>(point.row - setup.row0);
+  const double fromLongEdge = (point.x - (static_cast<double>(setup.x0) + k * setup.longXStep)) / 4096.0;
+  GpuVertex vertex;
+  /* GPU pixel centre (px + 0.5, py + 0.5) = software sample point (px + 1, py); moved left by one GPU sub-pixel
+     step, so a sample exactly on an edge falls on the side the software rasterizer gives it (left edge out, right
+     edge in) */
+  const double pixelX = point.x / 4096.0 - 0.5 + 1.0 / 256.0;
+  const double pixelY = static_cast<double>(point.row) + 0.5;
+  vertex.x = static_cast<float>(pixelX * 2.0 / s_gpu.targetWidth - 1.0);
+  vertex.y = static_cast<float>(1.0 - pixelY * 2.0 / s_gpu.targetHeight);
+  vertex.z = static_cast<float>((setup.depth0 + k * setup.longDepthStep + fromLongEdge * setup.depthStepX) *
+                                kDepthScale);
+  vertex.u = static_cast<float>((setup.u0 + k * setup.longUStep + fromLongEdge * setup.uStepX) / 4096.0);
+  vertex.v = static_cast<float>((setup.v0 + k * setup.longVStep + fromLongEdge * setup.vStepX) / 4096.0);
+  uint32_t color = 0;
+  for (int lane = 0; lane < 4; lane++) {
+    const double q6 = setup.color0[lane] + k * setup.longColorStep[lane] + fromLongEdge * setup.colorStepX[lane];
+    const int channel = std::clamp(static_cast<int>(q6 / 64.0 + 0.5), 0, 255);
+    color |= static_cast<uint32_t>(channel) << (8 * lane);
+  }
+  vertex.colorArgb = color;
+  vertex.atlasX = slot.x;
+  vertex.atlasY = slot.y;
+  vertex.widthMask = widthMask;
+  vertex.heightMask = heightMask;
+  return vertex;
+}
+
+/* Appends the packet's triangle as the software rasterizer would draw it (see SoftwareTriangleSetup); returns
+   the number of vertices appended (0 when the software rasterizer draws nothing: no height or no area). */
+Uint32 AppendSoftwareTriangle(const GraphicsPrimitivePacket *packet, const AtlasSlot &slot, uint16_t widthMask,
+                              uint16_t heightMask) noexcept
+{
+  GraphicsPrimitivePacket sorted = *packet;
+  const uint32_t epoch = static_cast<uint32_t>(g_SoftwareDepthEpoch);
+  SoftwareRenderer_PrepareTrianglePacket(&sorted); /* sort, snap, depth + epoch, U/V to the texture size */
+  const GraphicsPrimitiveVertexRaw &v0 = sorted.vertices[0];
+  const GraphicsPrimitiveVertexRaw &v1 = sorted.vertices[1];
+  const GraphicsPrimitiveVertexRaw &v2 = sorted.vertices[2];
+  const int height = v2.screenY - v0.screenY;
+  if (height <= 0) {
+    return 0;
+  }
+  auto mulShift = [](int a, int b, int shift) { return static_cast<int>((static_cast<long long>(a) * b) >> shift); };
+  auto diff = [](int a, int b) { return static_cast<int>(static_cast<uint32_t>(a) - static_cast<uint32_t>(b)); };
+  const long long cross = static_cast<long long>(v2.screenX - v0.screenX) * (v1.screenY - v0.screenY) -
+                          static_cast<long long>(v1.screenX - v0.screenX) * (v2.screenY - v0.screenY);
+  const int doubleArea = static_cast<int>(cross >> 12);
+  if (doubleArea == 0) {
+    return 0;
+  }
+  const int invHeight = 0x1000000 / height;
+  const int invArea = static_cast<int>(0x1000000000LL / doubleArea);
+  const int dy10 = v1.screenY - v0.screenY;
+  const int dy20 = v2.screenY - v0.screenY;
+  auto gradientX = [&](int a0, int a1, int a2, int shift) {
+    const long long plane = static_cast<long long>(diff(a2, a0)) * dy10 - static_cast<long long>(diff(a1, a0)) * dy20;
+    return mulShift(static_cast<int>(plane >> 12), invArea, shift);
+  };
+  SoftwareTriangleSetup setup;
+  setup.x0 = v0.screenX;
+  setup.row0 = v0.screenY >> 12;
+  setup.longXStep = mulShift(v2.screenX - v0.screenX, invHeight, 12);
+  setup.depth0 = static_cast<double>(static_cast<uint32_t>(v0.depth) - epoch);
+  setup.longDepthStep = mulShift(diff(v2.depth, v0.depth), invHeight, 12);
+  setup.depthStepX = gradientX(v0.depth, v1.depth, v2.depth, 24);
+  setup.u0 = v0.textureU;
+  setup.longUStep = mulShift(diff(v2.textureU, v0.textureU), invHeight, 12);
+  setup.uStepX = gradientX(v0.textureU, v1.textureU, v2.textureU, 24);
+  setup.v0 = v0.textureV;
+  setup.longVStep = mulShift(diff(v2.textureV, v0.textureV), invHeight, 12);
+  setup.vStepX = gradientX(v0.textureV, v1.textureV, v2.textureV, 24);
+  for (int lane = 0; lane < 4; lane++) {
+    const int c0 = static_cast<int>((v0.diffuseColor >> (8 * lane)) & 0xFF);
+    const int c1 = static_cast<int>((v1.diffuseColor >> (8 * lane)) & 0xFF);
+    const int c2 = static_cast<int>((v2.diffuseColor >> (8 * lane)) & 0xFF);
+    setup.color0[lane] = c0 << 6;
+    setup.longColorStep[lane] = mulShift(c2 - c0, invHeight, 6);
+    setup.colorStepX[lane] = gradientX(c0 << 12, c1 << 12, c2 << 12, 30);
+  }
+
+  const int upperRows = (v1.screenY - v0.screenY) >> 12;
+  const int lowerRows = (v2.screenY - v1.screenY) >> 12;
+  const int row1 = setup.row0 + upperRows;
+  const int row2 = row1 + lowerRows;
+  const double x0 = static_cast<double>(v0.screenX);
+  const double x1 = static_cast<double>(v1.screenX);
+  const SoftwarePoint longAtRow1{x0 + static_cast<double>(upperRows) * setup.longXStep, row1};
+  const SoftwarePoint longAtRow2{x0 + static_cast<double>(upperRows + lowerRows) * setup.longXStep, row2};
+  SoftwarePoint polygon[9];
+  int pointCount = 0;
+  if (upperRows > 0) {
+    const int upperStep = mulShift(0x1000000 / (v1.screenY - v0.screenY), v1.screenX - v0.screenX, 12);
+    polygon[pointCount++] = SoftwarePoint{x0, setup.row0};
+    polygon[pointCount++] = longAtRow1;
+    polygon[pointCount++] = SoftwarePoint{x0 + static_cast<double>(upperRows) * upperStep, row1};
+  }
+  if (lowerRows > 0) {
+    const int lowerStep = mulShift(0x1000000 / (v2.screenY - v1.screenY), v2.screenX - v1.screenX, 12);
+    const SoftwarePoint shortAtRow1{x1, row1};
+    const SoftwarePoint shortAtRow2{x1 + static_cast<double>(lowerRows) * lowerStep, row2};
+    polygon[pointCount++] = longAtRow1;
+    polygon[pointCount++] = shortAtRow1;
+    polygon[pointCount++] = shortAtRow2;
+    polygon[pointCount++] = longAtRow1;
+    polygon[pointCount++] = shortAtRow2;
+    polygon[pointCount++] = longAtRow2;
+  }
+  for (int index = 0; index < pointCount; index++) {
+    s_gpu.vertices.push_back(SoftwareVertexAt(setup, polygon[index], slot, widthMask, heightMask));
+  }
+  return static_cast<Uint32>(pointCount);
+}
+
+/* Appends one packet: its texture's atlas slot and its triangle as the software rasterizer draws it. Depths
+   beyond 0..2^32 are clamped by the GPU (depth clip off). */
+void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor) noexcept
+{
+  const uint32_t handlerIndex = (packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12;
+  const GpuRunKind kind = RunKindOfHandler(handlerIndex);
+  if (kind == GPU_RUN_NONE) {
+    return;
+  }
+  AtlasSlot slot{0, 0, 0, 0};
+  uint16_t widthMask = kUntexturedMask;
+  uint16_t heightMask = kUntexturedMask;
+  if ((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) != 0) {
+    const GraphicsTextureSetEntry *entry = packet->textureEntry;
+    if ((entry == nullptr) || !AtlasSlotOfTexture(entry, slot)) {
+      return;
+    }
+    widthMask = static_cast<uint16_t>((1u << entry->widthLog2) - 1);
+    heightMask = static_cast<uint16_t>((1u << entry->heightLog2) - 1);
+  }
+  const Uint32 firstVertex = static_cast<Uint32>(s_gpu.vertices.size());
+  const Uint32 vertexCount = AppendSoftwareTriangle(packet, slot, widthMask, heightMask);
+  if (vertexCount == 0) {
+    return;
+  }
+  if (!s_gpu.runs.empty()) {
+    GpuRun &last = s_gpu.runs.back();
+    if ((last.kind == kind) && (last.scissor.x == scissor.x) && (last.scissor.y == scissor.y) &&
+        (last.scissor.w == scissor.w) && (last.scissor.h == scissor.h) &&
+        (last.firstVertex + last.vertexCount == firstVertex)) {
+      last.vertexCount += vertexCount;
+      return;
+    }
+  }
+  s_gpu.runs.push_back(GpuRun{kind, scissor, firstVertex, vertexCount});
+}
+
+/* --- device objects ---------------------------------------------------------------------------------------- */
+
+SDL_GPUShader *CreateShader(const unsigned char *code, size_t codeSize, const char *entryPoint,
+                            SDL_GPUShaderStage stage, Uint32 samplerCount) noexcept
+{
+  SDL_GPUShaderCreateInfo info;
+  SDL_zero(info);
+  info.code = code;
+  info.code_size = codeSize;
+  info.entrypoint = entryPoint;
+  info.format = SDL_GPU_SHADERFORMAT_DXBC;
+  info.stage = stage;
+  info.num_samplers = samplerCount;
+  return SDL_CreateGPUShader(s_gpu.device, &info);
+}
+
+bool CreatePipelines() noexcept
+{
+  namespace shaders = thandor::sdl3::gpu_shaders;
+  SDL_GPUShader *vertexShader = CreateShader(shaders::g_VertexMain, sizeof shaders::g_VertexMain, "VertexMain",
+                                             SDL_GPU_SHADERSTAGE_VERTEX, 0);
+  SDL_GPUShader *fragmentShader = CreateShader(shaders::g_FragmentMain, sizeof shaders::g_FragmentMain,
+                                               "FragmentMain", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+  SDL_GPUShader *alphaTestShader =
+      CreateShader(shaders::g_FragmentAlphaTestMain, sizeof shaders::g_FragmentAlphaTestMain, "FragmentAlphaTestMain",
+                   SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+  if ((vertexShader == nullptr) || (fragmentShader == nullptr) || (alphaTestShader == nullptr)) {
+    Thandor_Log("SDL_GPU renderer: shader creation failed: %s", SDL_GetError());
+    SDL_ReleaseGPUShader(s_gpu.device, vertexShader);
+    SDL_ReleaseGPUShader(s_gpu.device, fragmentShader);
+    SDL_ReleaseGPUShader(s_gpu.device, alphaTestShader);
+    return false;
+  }
+
+  SDL_GPUVertexBufferDescription bufferDescription;
+  SDL_zero(bufferDescription);
+  bufferDescription.slot = 0;
+  bufferDescription.pitch = sizeof(GpuVertex);
+  bufferDescription.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+  const SDL_GPUVertexAttribute attributes[] = {
+      {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(GpuVertex, x)},
+      {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(GpuVertex, u)},
+      {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM, offsetof(GpuVertex, colorArgb)},
+      {3, 0, SDL_GPU_VERTEXELEMENTFORMAT_USHORT4, offsetof(GpuVertex, atlasX)},
+  };
+
+  bool created = true;
+  for (int pipelineIndex = 0; pipelineIndex < GPU_PIPELINE_COUNT; pipelineIndex++) {
+    SDL_GPUColorTargetDescription colorTarget;
+    SDL_zero(colorTarget);
+    colorTarget.format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
+    SDL_GPUColorTargetBlendState &blend = colorTarget.blend_state;
+    blend.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    blend.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    switch (pipelineIndex) {
+    case GPU_PIPELINE_ALPHA:
+      blend.enable_blend = true;
+      blend.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+      blend.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+      blend.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+      blend.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+      break;
+    case GPU_PIPELINE_ADDITIVE:
+      blend.enable_blend = true;
+      blend.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+      blend.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+      blend.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+      blend.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+      break;
+    case GPU_PIPELINE_ALPHA_DEPTH:
+      blend.enable_color_write_mask = true;
+      blend.color_write_mask = 0;
+      break;
+    default:
+      break;
+    }
+
+    SDL_GPUGraphicsPipelineCreateInfo info;
+    SDL_zero(info);
+    info.vertex_shader = vertexShader;
+    info.fragment_shader = (pipelineIndex == GPU_PIPELINE_ALPHA_DEPTH) ? alphaTestShader : fragmentShader;
+    info.vertex_input_state.vertex_buffer_descriptions = &bufferDescription;
+    info.vertex_input_state.num_vertex_buffers = 1;
+    info.vertex_input_state.vertex_attributes = attributes;
+    info.vertex_input_state.num_vertex_attributes = SDL_arraysize(attributes);
+    info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+    info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+    info.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    info.rasterizer_state.enable_depth_clip = false;
+    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
+    info.depth_stencil_state.enable_depth_test = true;
+    info.depth_stencil_state.enable_depth_write =
+        (pipelineIndex == GPU_PIPELINE_OPAQUE) || (pipelineIndex == GPU_PIPELINE_ALPHA_DEPTH);
+    info.target_info.color_target_descriptions = &colorTarget;
+    info.target_info.num_color_targets = 1;
+    info.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
+    info.target_info.has_depth_stencil_target = true;
+    s_gpu.pipelines[pipelineIndex] = SDL_CreateGPUGraphicsPipeline(s_gpu.device, &info);
+    if (s_gpu.pipelines[pipelineIndex] == nullptr) {
+      Thandor_Log("SDL_GPU renderer: pipeline %d failed: %s", pipelineIndex, SDL_GetError());
+      created = false;
+    }
+  }
+  SDL_ReleaseGPUShader(s_gpu.device, vertexShader);
+  SDL_ReleaseGPUShader(s_gpu.device, fragmentShader);
+  SDL_ReleaseGPUShader(s_gpu.device, alphaTestShader);
+  return created;
+}
+
+SDL_GPUTexture *CreateTexture(SDL_GPUTextureFormat format, SDL_GPUTextureUsageFlags usage, Uint32 width,
+                              Uint32 height) noexcept
+{
+  SDL_GPUTextureCreateInfo info;
+  SDL_zero(info);
+  info.type = SDL_GPU_TEXTURETYPE_2D;
+  info.format = format;
+  info.usage = usage;
+  info.width = width;
+  info.height = height;
+  info.layer_count_or_depth = 1;
+  info.num_levels = 1;
+  info.sample_count = SDL_GPU_SAMPLECOUNT_1;
+  return SDL_CreateGPUTexture(s_gpu.device, &info);
+}
+
+/* Colour and depth target in framebuffer size. */
+bool EnsureTargets() noexcept
+{
+  const Uint32 width = g_FramebufferWidth;
+  const Uint32 height = g_FramebufferHeight;
+  if ((s_gpu.colorTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height)) {
+    return true;
+  }
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
+  s_gpu.colorTarget = nullptr;
+  s_gpu.depthTarget = nullptr;
+  s_gpu.targetWidth = 0;
+  s_gpu.targetHeight = 0;
+  if ((width == 0) || (height == 0)) {
+    return false;
+  }
+  s_gpu.colorTarget =
+      CreateTexture(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, width, height);
+  s_gpu.depthTarget =
+      CreateTexture(SDL_GPU_TEXTUREFORMAT_D32_FLOAT, SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET, width, height);
+  if ((s_gpu.colorTarget == nullptr) || (s_gpu.depthTarget == nullptr)) {
+    Thandor_Log("SDL_GPU renderer: render targets %ux%u failed: %s", width, height, SDL_GetError());
+    return false;
+  }
+  s_gpu.targetWidth = width;
+  s_gpu.targetHeight = height;
+  return true;
+}
+
+/* Grows a buffer to at least byteCount (doubling), true when it is usable. */
+bool EnsureVertexBuffer(Uint32 byteCount) noexcept
+{
+  if ((s_gpu.vertexBuffer != nullptr) && (s_gpu.vertexBufferBytes >= byteCount)) {
+    return true;
+  }
+  SDL_ReleaseGPUBuffer(s_gpu.device, s_gpu.vertexBuffer);
+  Uint32 size = std::max<Uint32>(s_gpu.vertexBufferBytes * 2, 1u << 20);
+  while (size < byteCount) {
+    size *= 2;
+  }
+  SDL_GPUBufferCreateInfo info;
+  SDL_zero(info);
+  info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+  info.size = size;
+  s_gpu.vertexBuffer = SDL_CreateGPUBuffer(s_gpu.device, &info);
+  s_gpu.vertexBufferBytes = (s_gpu.vertexBuffer != nullptr) ? size : 0;
+  return s_gpu.vertexBuffer != nullptr;
+}
+
+bool EnsureTransferBuffer(SDL_GPUTransferBuffer *&buffer, Uint32 &bufferBytes, SDL_GPUTransferBufferUsage usage,
+                          Uint32 byteCount) noexcept
+{
+  if ((buffer != nullptr) && (bufferBytes >= byteCount)) {
+    return true;
+  }
+  SDL_ReleaseGPUTransferBuffer(s_gpu.device, buffer);
+  Uint32 size = std::max<Uint32>(bufferBytes * 2, 1u << 20);
+  while (size < byteCount) {
+    size *= 2;
+  }
+  SDL_GPUTransferBufferCreateInfo info;
+  SDL_zero(info);
+  info.usage = usage;
+  info.size = size;
+  buffer = SDL_CreateGPUTransferBuffer(s_gpu.device, &info);
+  bufferBytes = (buffer != nullptr) ? size : 0;
+  return buffer != nullptr;
+}
+
+/* --- drawing a scene --------------------------------------------------------------------------------------- */
+
+/* Uploads, draws and downloads the collected scene into s_gpu.gpuPixels (clip rectangle, B8G8R8A8 rows).
+   False when nothing could be drawn. */
+bool RenderScene() noexcept
+{
+  const SDL_Rect clip = s_gpu.sceneClip;
+  const Uint32 vertexBytes = static_cast<Uint32>(s_gpu.vertices.size() * sizeof(GpuVertex));
+  const Uint32 textureBytes = static_cast<Uint32>(s_gpu.staging.size() * sizeof(uint32_t));
+  const Uint32 downloadBytes = static_cast<Uint32>(clip.w) * static_cast<Uint32>(clip.h) * 4;
+  if ((clip.w <= 0) || (clip.h <= 0) ||
+      !EnsureTransferBuffer(s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+                            vertexBytes + textureBytes + 4) ||
+      !EnsureTransferBuffer(s_gpu.downloadBuffer, s_gpu.downloadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
+                            downloadBytes) ||
+      ((vertexBytes != 0) && !EnsureVertexBuffer(vertexBytes))) {
+    return false;
+  }
+  auto *mapped = static_cast<uint8_t *>(SDL_MapGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer, true));
+  if (mapped == nullptr) {
+    return false;
+  }
+  if (vertexBytes != 0) {
+    std::memcpy(mapped, s_gpu.vertices.data(), vertexBytes);
+  }
+  if (textureBytes != 0) {
+    std::memcpy(mapped + vertexBytes, s_gpu.staging.data(), textureBytes);
+  }
+  SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
+
+  SDL_GPUCommandBuffer *commands = SDL_AcquireGPUCommandBuffer(s_gpu.device);
+  if (commands == nullptr) {
+    return false;
+  }
+  SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
+  if (vertexBytes != 0) {
+    SDL_GPUTransferBufferLocation location{s_gpu.uploadBuffer, 0};
+    SDL_GPUBufferRegion region{s_gpu.vertexBuffer, 0, vertexBytes};
+    SDL_UploadToGPUBuffer(copyPass, &location, &region, true);
+  }
+  for (const PendingUpload &upload : s_gpu.uploads) {
+    SDL_GPUTextureTransferInfo source;
+    SDL_zero(source);
+    source.transfer_buffer = s_gpu.uploadBuffer;
+    source.offset = vertexBytes + static_cast<Uint32>(upload.stagingOffset * sizeof(uint32_t));
+    source.pixels_per_row = upload.width;
+    source.rows_per_layer = upload.height;
+    SDL_GPUTextureRegion destination;
+    SDL_zero(destination);
+    destination.texture = s_gpu.atlas;
+    destination.x = upload.x;
+    destination.y = upload.y;
+    destination.w = upload.width;
+    destination.h = upload.height;
+    destination.d = 1;
+    SDL_UploadToGPUTexture(copyPass, &source, &destination, false);
+  }
+  SDL_EndGPUCopyPass(copyPass);
+
+  SDL_GPUColorTargetInfo colorTarget;
+  SDL_zero(colorTarget);
+  colorTarget.texture = s_gpu.colorTarget;
+  colorTarget.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
+  colorTarget.load_op = SDL_GPU_LOADOP_CLEAR;
+  colorTarget.store_op = SDL_GPU_STOREOP_STORE;
+  SDL_GPUDepthStencilTargetInfo depthTarget;
+  SDL_zero(depthTarget);
+  depthTarget.texture = s_gpu.depthTarget;
+  depthTarget.clear_depth = 1.0f;
+  depthTarget.load_op = SDL_GPU_LOADOP_CLEAR;
+  depthTarget.store_op = SDL_GPU_STOREOP_DONT_CARE;
+  depthTarget.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+  depthTarget.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+  SDL_GPURenderPass *renderPass = SDL_BeginGPURenderPass(commands, &colorTarget, 1, &depthTarget);
+  if (vertexBytes != 0) {
+    SDL_GPUBufferBinding binding{s_gpu.vertexBuffer, 0};
+    SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
+    SDL_GPUTextureSamplerBinding atlasBinding{s_gpu.atlas, s_gpu.sampler};
+    SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
+    auto bind = [&](SDL_GPUGraphicsPipeline *pipeline) {
+      if (pipeline != boundPipeline) {
+        SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
+        SDL_BindGPUFragmentSamplers(renderPass, 0, &atlasBinding, 1);
+        boundPipeline = pipeline;
+      }
+    };
+    for (const GpuRun &run : s_gpu.runs) {
+      SDL_SetGPUScissor(renderPass, &run.scissor);
+      switch (run.kind) {
+      case GPU_RUN_OPAQUE:
+        bind(s_gpu.pipelines[GPU_PIPELINE_OPAQUE]);
+        break;
+      case GPU_RUN_ADDITIVE:
+        bind(s_gpu.pipelines[GPU_PIPELINE_ADDITIVE]);
+        break;
+      default:
+        bind(s_gpu.pipelines[GPU_PIPELINE_ALPHA]);
+        break;
+      }
+      SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
+      if (run.kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
+        bind(s_gpu.pipelines[GPU_PIPELINE_ALPHA_DEPTH]);
+        SDL_DrawGPUPrimitives(renderPass, run.vertexCount, 1, run.firstVertex, 0);
+      }
+    }
+  }
+  SDL_EndGPURenderPass(renderPass);
+
+  copyPass = SDL_BeginGPUCopyPass(commands);
+  SDL_GPUTextureRegion source;
+  SDL_zero(source);
+  source.texture = s_gpu.colorTarget;
+  source.x = static_cast<Uint32>(clip.x);
+  source.y = static_cast<Uint32>(clip.y);
+  source.w = static_cast<Uint32>(clip.w);
+  source.h = static_cast<Uint32>(clip.h);
+  source.d = 1;
+  SDL_GPUTextureTransferInfo destination;
+  SDL_zero(destination);
+  destination.transfer_buffer = s_gpu.downloadBuffer;
+  destination.pixels_per_row = static_cast<Uint32>(clip.w);
+  destination.rows_per_layer = static_cast<Uint32>(clip.h);
+  SDL_DownloadFromGPUTexture(copyPass, &source, &destination);
+  SDL_EndGPUCopyPass(copyPass);
+
+  SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(commands);
+  if (fence == nullptr) {
+    return false;
+  }
+  SDL_WaitForGPUFences(s_gpu.device, true, &fence, 1);
+  SDL_ReleaseGPUFence(s_gpu.device, fence);
+
+  const auto *pixels = static_cast<const uint32_t *>(SDL_MapGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer, false));
+  if (pixels == nullptr) {
+    return false;
+  }
+  s_gpu.gpuPixels.assign(pixels, pixels + static_cast<size_t>(clip.w) * clip.h);
+  SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
+  return true;
+}
+
+/* Packs one 8-bit channel into the software framebuffer format (top bits, as Raster_Pack16 quantizes). */
+inline uint32_t PackChannel(uint32_t value, GraphicsPixelChannelBitShift shift, GraphicsPixelChannelBitCount bits) noexcept
+{
+  return (bits >= 8) ? (value << shift) : ((value >> (8 - bits)) << shift);
+}
+
+/* Writes the downloaded clip rectangle into the software framebuffer. */
+void WriteSceneToFramebuffer() noexcept
+{
+  const SDL_Rect clip = s_gpu.sceneClip;
+  SoftwareFramebufferAccess *framebuffer = g_FramebufferAccess;
+  if ((framebuffer == nullptr) || (framebuffer->pixels == nullptr) || s_gpu.gpuPixels.empty()) {
+    return;
+  }
+  const SoftwarePixelFormatConfig &format = g_SoftwarePixelFormatConfig;
+  const bool sixteenBit = (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT);
+  for (int row = 0; row < clip.h; row++) {
+    const uint32_t *source = s_gpu.gpuPixels.data() + static_cast<size_t>(row) * clip.w;
+    uint8_t *destinationRow = framebuffer->pixels + static_cast<size_t>(clip.y + row) * g_FramebufferRowStrideBytes;
+    if (!sixteenBit) {
+      std::memcpy(destinationRow + static_cast<size_t>(clip.x) * 4, source, static_cast<size_t>(clip.w) * 4);
+      continue;
+    }
+    auto *destination = reinterpret_cast<uint16_t *>(destinationRow) + clip.x;
+    for (int column = 0; column < clip.w; column++) {
+      const uint32_t argb = source[column];
+      destination[column] = static_cast<uint16_t>(PackChannel((argb >> 16) & 0xFF, format.redShift, format.redBitCount) |
+                                                  PackChannel((argb >> 8) & 0xFF, format.greenShift, format.greenBitCount) |
+                                                  PackChannel(argb & 0xFF, format.blueShift, format.blueBitCount));
+    }
+  }
+}
+
+#ifdef THANDOR_DEV_TOOLS
+/* Compare mode: the clip rectangle of the framebuffer (software picture) as ARGB rows. */
+std::vector<uint32_t> ReadFramebufferRegion(const SDL_Rect &clip) noexcept
+{
+  std::vector<uint32_t> result(static_cast<size_t>(clip.w) * clip.h);
+  SoftwareFramebufferAccess *framebuffer = g_FramebufferAccess;
+  const SoftwarePixelFormatConfig &format = g_SoftwarePixelFormatConfig;
+  const bool sixteenBit = (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT);
+  for (int row = 0; row < clip.h; row++) {
+    const uint8_t *sourceRow = framebuffer->pixels + static_cast<size_t>(clip.y + row) * g_FramebufferRowStrideBytes;
+    for (int column = 0; column < clip.w; column++) {
+      uint32_t argb;
+      if (sixteenBit) {
+        uint16_t packed;
+        std::memcpy(&packed, sourceRow + (clip.x + column) * 2, 2);
+        argb = (uint32_t{GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.redMask, format.redShift,
+                                                                 format.redBitCount)} << 16) |
+               (uint32_t{GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.greenMask, format.greenShift,
+                                                                 format.greenBitCount)} << 8) |
+               GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.blueMask, format.blueShift, format.blueBitCount);
+      }
+      else {
+        std::memcpy(&argb, sourceRow + (clip.x + column) * 4, 4);
+      }
+      result[static_cast<size_t>(row) * clip.w + column] = argb;
+    }
+  }
+  return result;
+}
+
+void WriteBmp(const char *path, const uint32_t *pixels, int width, int height) noexcept
+{
+  FILE *file = std::fopen(path, "wb");
+  if (file == nullptr) {
+    return;
+  }
+  const int rowBytes = (width * 3 + 3) & ~3;
+  const uint32_t imageBytes = static_cast<uint32_t>(rowBytes * height);
+  uint8_t header[54] = {'B', 'M'};
+  auto put32 = [&](int offset, uint32_t value) { std::memcpy(header + offset, &value, 4); };
+  put32(2, 54 + imageBytes);
+  put32(10, 54);
+  put32(14, 40);
+  put32(18, static_cast<uint32_t>(width));
+  put32(22, static_cast<uint32_t>(height));
+  header[26] = 1;
+  header[28] = 24;
+  put32(34, imageBytes);
+  std::fwrite(header, 1, sizeof header, file);
+  std::vector<uint8_t> row(static_cast<size_t>(rowBytes), 0);
+  for (int y = height - 1; y >= 0; y--) {
+    for (int x = 0; x < width; x++) {
+      const uint32_t argb = pixels[static_cast<size_t>(y) * width + x];
+      row[x * 3 + 0] = static_cast<uint8_t>(argb);
+      row[x * 3 + 1] = static_cast<uint8_t>(argb >> 8);
+      row[x * 3 + 2] = static_cast<uint8_t>(argb >> 16);
+    }
+    std::fwrite(row.data(), 1, row.size(), file);
+  }
+  std::fclose(file);
+}
+
+/* Compare mode: every compareIntervalMs writes the software and GPU pictures of this scene and their difference
+   (per pixel the largest channel difference, x4, grey) and logs the statistics. */
+void CompareScene() noexcept
+{
+  const unsigned now = Thandor_TickCount();
+  if ((now - s_gpu.lastCompareTick < s_gpu.compareIntervalMs) || s_gpu.gpuPixels.empty()) {
+    return;
+  }
+  s_gpu.lastCompareTick = now;
+  const SDL_Rect clip = s_gpu.sceneClip;
+  std::vector<uint32_t> software = ReadFramebufferRegion(clip);
+  std::vector<uint32_t> difference(software.size());
+  uint64_t sum = 0;
+  uint32_t over8 = 0;
+  uint32_t over32 = 0;
+  for (size_t i = 0; i < software.size(); i++) {
+    int largest = 0;
+    for (int shift = 0; shift < 24; shift += 8) {
+      const int delta = std::abs(static_cast<int>((software[i] >> shift) & 0xFF) -
+                                 static_cast<int>((s_gpu.gpuPixels[i] >> shift) & 0xFF));
+      largest = std::max(largest, delta);
+      sum += static_cast<uint64_t>(delta);
+    }
+    over8 += (largest > 8) ? 1 : 0;
+    over32 += (largest > 32) ? 1 : 0;
+    const uint32_t grey = static_cast<uint32_t>(std::min(255, largest * 4));
+    difference[i] = (grey << 16) | (grey << 8) | grey;
+  }
+  const double pixelCount = static_cast<double>(software.size());
+  CreateDirectoryA((LPCSTR)"shots", nullptr);
+  char path[64];
+  std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_sw.bmp", s_gpu.compareNumber);
+  WriteBmp(path, software.data(), clip.w, clip.h);
+  std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_gpu.bmp", s_gpu.compareNumber);
+  WriteBmp(path, s_gpu.gpuPixels.data(), clip.w, clip.h);
+  std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_diff.bmp", s_gpu.compareNumber);
+  WriteBmp(path, difference.data(), clip.w, clip.h);
+  Thandor_Log("SDL_GPU compare %04u: %dx%d, mean channel difference %.2f, pixels > 8: %.2f%%, > 32: %.2f%%",
+              s_gpu.compareNumber, clip.w, clip.h, static_cast<double>(sum) / (pixelCount * 3.0),
+              100.0 * over8 / pixelCount, 100.0 * over32 / pixelCount);
+  s_gpu.compareNumber++;
+}
+#endif
+
+double TicksToMs(uint64_t ticks) noexcept
+{
+  return static_cast<double>(ticks) * 1000.0 / static_cast<double>(SDL_GetPerformanceFrequency());
+}
+
+/* Every 10 s: average per scene of the collection (queue copy, texture hashing/conversion), the GPU submit +
+   download wait + framebuffer write and, in compare mode, the software rasterizer. */
+void LogStatistics() noexcept
+{
+  const uint64_t now = SDL_GetPerformanceCounter();
+  if (s_gpu.statsStart == 0) {
+    s_gpu.statsStart = now;
+    return;
+  }
+  if ((TicksToMs(now - s_gpu.statsStart) < 10000.0) || (s_gpu.times.scenes == 0)) {
+    return;
+  }
+  const double scenes = s_gpu.times.scenes;
+  char software[48] = "";
+  if (s_gpu.mode == GPU_MODE_COMPARE) {
+    std::snprintf(software, sizeof software, ", software %.2f ms", TicksToMs(s_gpu.times.software) / scenes);
+  }
+  Thandor_Log("SDL_GPU renderer: %u scenes in %.1f s, per scene: collect %.2f ms, GPU %.2f ms%s, %.0f GPU triangles, "
+              "%.0f runs, %.0f texels converted",
+              s_gpu.times.scenes, TicksToMs(now - s_gpu.statsStart) / 1000.0, TicksToMs(s_gpu.times.collect) / scenes,
+              TicksToMs(s_gpu.times.submit) / scenes, software, s_gpu.times.vertices / scenes / 3.0,
+              s_gpu.times.runs / scenes, s_gpu.times.uploadedTexels / scenes);
+  s_gpu.times = GpuTimes{};
+  s_gpu.statsStart = now;
+}
+
+/* --- hooks ------------------------------------------------------------------------------------------------- */
+
+void GpuRenderer_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
+                                          GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX)
+{
+  SoftwareRenderer_ClearViewport(clipMaxY, clipMaxX, clipMinY, clipMinX);
+  s_gpu.sceneOpen = EnsureTargets();
+  s_gpu.sceneSerial++;
+  s_gpu.vertices.clear();
+  s_gpu.runs.clear();
+  const int minX = std::clamp(static_cast<int>(clipMinX), 0, static_cast<int>(s_gpu.targetWidth));
+  const int minY = std::clamp(static_cast<int>(clipMinY), 0, static_cast<int>(s_gpu.targetHeight));
+  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, static_cast<int>(s_gpu.targetWidth));
+  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, static_cast<int>(s_gpu.targetHeight));
+  s_gpu.sceneClip = SDL_Rect{minX, minY, maxX - minX, maxY - minY};
+}
+
+void GpuRenderer_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
+                                    GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
+                                    GraphicsPrimitiveQueue *queue)
+{
+  if (!s_gpu.sceneOpen) {
+    SoftwareRenderer_DrawPrimitiveQueueBridge(clipMaxY, clipMaxX, clipMinY, clipMinX, queue);
+    return;
+  }
+  const uint64_t start = SDL_GetPerformanceCounter();
+  const int minX = std::clamp(static_cast<int>(clipMinX), 0, static_cast<int>(s_gpu.targetWidth));
+  const int minY = std::clamp(static_cast<int>(clipMinY), 0, static_cast<int>(s_gpu.targetHeight));
+  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, static_cast<int>(s_gpu.targetWidth));
+  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, static_cast<int>(s_gpu.targetHeight));
+  const SDL_Rect scissor{minX, minY, maxX - minX, maxY - minY};
+  if ((scissor.w > 0) && (scissor.h > 0)) {
+    /* walk the sorted nodes without moving the queue's own cursor, so the software renderer can still walk it */
+    GraphicsPrimitiveQueueNode *const cursor = queue->traversalCursor;
+    for (GraphicsPrimitivePacket *packet = GraphicsPrimitiveQueue_Begin(queue); packet != nullptr;
+         packet = GraphicsPrimitiveQueue_Next(queue)) {
+      AppendPacket(packet, scissor);
+    }
+    queue->traversalCursor = cursor;
+  }
+  const uint64_t collected = SDL_GetPerformanceCounter();
+  s_gpu.times.collect += collected - start;
+  if (s_gpu.mode == GPU_MODE_COMPARE) {
+    SoftwareRenderer_DrawPrimitiveQueueBridge(clipMaxY, clipMaxX, clipMinY, clipMinX, queue);
+    s_gpu.times.software += SDL_GetPerformanceCounter() - collected;
+    return;
+  }
+  g_PrimitiveDrawCallCount += GraphicsPrimitiveQueue_GetCount(queue);
+}
+
+void GpuRenderer_EndScene(void)
+{
+  if (!s_gpu.sceneOpen) {
+    return;
+  }
+  s_gpu.sceneOpen = false;
+  const uint64_t start = SDL_GetPerformanceCounter();
+  s_gpu.times.scenes++;
+  s_gpu.times.vertices += static_cast<uint32_t>(s_gpu.vertices.size());
+  s_gpu.times.runs += static_cast<uint32_t>(s_gpu.runs.size());
+  if (!s_gpu.vertices.empty() || !s_gpu.uploads.empty()) {
+    const bool rendered = RenderScene();
+    s_gpu.uploads.clear();
+    s_gpu.staging.clear();
+    if (rendered) {
+#ifdef THANDOR_DEV_TOOLS
+      if (s_gpu.mode == GPU_MODE_COMPARE) {
+        CompareScene();
+      }
+#endif
+      if (s_gpu.mode == GPU_MODE_ON) {
+        if (!g_GraphicsFramebufferBeginAccess()) {
+          WriteSceneToFramebuffer();
+          g_GraphicsFramebufferEndAccess();
+        }
+      }
+    }
+  }
+  s_gpu.times.submit += SDL_GetPerformanceCounter() - start;
+  LogStatistics();
+}
+
+/* OPEN_THANDOR_GPU (1/on/compare) or -GPU on the command line. */
+GpuMode RequestedMode() noexcept
+{
+  const char *value = SDL_getenv("OPEN_THANDOR_GPU");
+  if (value != nullptr) {
+    if (SDL_strcasecmp(value, "compare") == 0) {
+#ifdef THANDOR_DEV_TOOLS
+      return GPU_MODE_COMPARE;
+#else
+      Thandor_Log("SDL_GPU renderer: compare mode needs the developer tools, using the GPU alone");
+      return GPU_MODE_ON;
+#endif
+    }
+    return ((value[0] == '0') || (value[0] == '\0') || (SDL_strcasecmp(value, "off") == 0)) ? GPU_MODE_OFF
+                                                                                           : GPU_MODE_ON;
+  }
+  const char *commandLine = GetCommandLineA();
+  for (const char *cursor = commandLine; (cursor != nullptr) && (*cursor != '\0'); cursor++) {
+    if (((cursor == commandLine) || (cursor[-1] == ' ')) && (SDL_strncasecmp(cursor, "-GPU", 4) == 0) &&
+        ((cursor[4] == '\0') || (cursor[4] == ' '))) {
+      return GPU_MODE_ON;
+    }
+  }
+  return GPU_MODE_OFF;
+}
+
+void ReleaseDevice() noexcept
+{
+  if (s_gpu.device == nullptr) {
+    return;
+  }
+  for (SDL_GPUGraphicsPipeline *&pipeline : s_gpu.pipelines) {
+    SDL_ReleaseGPUGraphicsPipeline(s_gpu.device, pipeline);
+    pipeline = nullptr;
+  }
+  SDL_ReleaseGPUSampler(s_gpu.device, s_gpu.sampler);
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.atlas);
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
+  SDL_ReleaseGPUBuffer(s_gpu.device, s_gpu.vertexBuffer);
+  SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
+  SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
+  SDL_DestroyGPUDevice(s_gpu.device);
+  s_gpu = GpuState{};
+}
+
+} // namespace
+
+bool SdlGpuRenderer_Init(void)
+{
+  const GpuMode mode = RequestedMode();
+  if (mode == GPU_MODE_OFF) {
+    return false;
+  }
+  s_gpu.device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXBC, false, nullptr);
+  if (s_gpu.device == nullptr) {
+    Thandor_Log("SDL_GPU renderer: no device (%s), the software renderer stays", SDL_GetError());
+    return false;
+  }
+  SDL_GPUSamplerCreateInfo samplerInfo;
+  SDL_zero(samplerInfo);
+  samplerInfo.min_filter = SDL_GPU_FILTER_NEAREST;
+  samplerInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
+  samplerInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+  samplerInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+  samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+  samplerInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+  s_gpu.sampler = SDL_CreateGPUSampler(s_gpu.device, &samplerInfo);
+  s_gpu.atlas = CreateTexture(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, kAtlasSize,
+                              kAtlasSize);
+  if ((s_gpu.sampler == nullptr) || (s_gpu.atlas == nullptr) || !CreatePipelines()) {
+    Thandor_Log("SDL_GPU renderer: setup failed (%s), the software renderer stays", SDL_GetError());
+    ReleaseDevice();
+    return false;
+  }
+  s_gpu.mode = mode;
+#ifdef THANDOR_DEV_TOOLS
+  if (const char *interval = SDL_getenv("OPEN_THANDOR_GPU_COMPARE_MS")) {
+    s_gpu.compareIntervalMs = static_cast<uint32_t>(std::max(1, SDL_atoi(interval)));
+  }
+  s_gpu.lastCompareTick = Thandor_TickCount();
+#endif
+  g_GraphicsSetViewportAndClearDepth = GpuRenderer_SetViewportAndClearDepth;
+  g_GraphicsDrawPrimitiveQueue = GpuRenderer_DrawPrimitiveQueue;
+  g_GraphicsEndScene = GpuRenderer_EndScene;
+  Thandor_Log("SDL_GPU renderer: %s on %s%s", (mode == GPU_MODE_COMPARE) ? "compare mode" : "primitive rasterization",
+              SDL_GetGPUDeviceDriver(s_gpu.device),
+              (mode == GPU_MODE_COMPARE) ? " (software picture shown, shots\\gpucmp_*)" : "");
+  return true;
+}
+
+void SdlGpuRenderer_Shutdown(void)
+{
+  if (s_gpu.device == nullptr) {
+    return;
+  }
+  g_GraphicsSetViewportAndClearDepth = SoftwareRenderer_ClearViewport;
+  g_GraphicsDrawPrimitiveQueue = SoftwareRenderer_DrawPrimitiveQueueBridge;
+  g_GraphicsEndScene = SoftwareGraphicsDispatch_NoOp;
+  ReleaseDevice();
+}

@@ -224,6 +224,9 @@ uint32_t SdlVideo_Init(void)
   g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccessStub;
   g_GraphicsCreateTextureSet = GraphicsTextureSet_Create;
   g_GraphicsDestroyTextureSet = GraphicsTextureSet_Destroy;
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SdlGpuRenderer_Init();
+#endif
   return 0;
 }
 
@@ -231,6 +234,9 @@ void SdlVideo_Shutdown(void)
 {
   g_GraphicsBackendAccessState = -1; /* nothing presents any more */
   g_DisplayFramebufferAccess.pixels = nullptr;
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SdlGpuRenderer_Shutdown();
+#endif
   s_video.texture.reset();
   s_video.framebuffer = std::vector<std::byte>();
   thandor::sdl3::DestroyMainWindow();
