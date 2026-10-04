@@ -81,65 +81,112 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
 
 /* Network games: writes the roster of faction factionIndex into g_InGamePlayerListTextScratchUtf16 (player
    names separated by ", ", each followed by "  P" while a pause is requested, "  x<n>" for a game speed n > 1
-   and a coloured "  W" while the player renders slowly) and returns the number of players on that faction. */
+   and a coloured "  W" while the player renders slowly) and returns the number of players on that faction.
+   The original writes without a capacity check, so five or more players with long names (sent by the peers)
+   on one faction run past the INGAME_PLAYER_LIST_TEXT_BYTES heap buffer. Bounded here: a piece that does not
+   fit (with room for the terminator) ends the text there; the players are still counted. When the text fits,
+   the output is the original's. */
 static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
 
 {
+  static Bool8 s_rosterTruncationLogged = false;
   SelectionPlayerRuntimeBlock *selectionBlock;
   uint32_t stepTicks;
-  FrontendPlayerRuntimeBlockCount remainingPlayers;
+  uint32_t playerIndex;
   FrontendPlayerRuntimeRecord *playerBlock;
   uint16_t *rosterCursor;
+  uint16_t *rosterEnd;
   uint32_t copiedByteCount;
+  uint32_t nameCapacityBytes;
+  Bool8 truncated;
   int rosterCount;
 
   rosterCount = 0;
-  remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+  truncated = false;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   rosterCursor = g_InGamePlayerListTextScratchUtf16;
-  do {
-    if (factionIndex == (playerBlock->factionAssignment).factionAssignmentIndex) {
-      if (rosterCount != 0) {
-        rosterCursor[0] = L',';
-        rosterCursor[1] = L' ';
-        rosterCursor += 2;
-      }
+  rosterEnd = g_InGamePlayerListTextScratchUtf16 + INGAME_PLAYER_LIST_TEXT_BYTES / sizeof(uint16_t);
+  /* The original is a do-while that runs once and then wraps on a player count of 0; skipped here. */
+  for (playerIndex = 0; playerIndex < g_FrontendPlayerRuntimeBlockCount; playerIndex++, playerBlock++) {
+    if (factionIndex != (playerBlock->factionAssignment).factionAssignmentIndex) {
+      continue;
+    }
+    if (truncated) {
       rosterCount++;
-      if (RichTextCommandStream_CopyExpanded
-            (40,rosterCursor,(playerBlock->playerName).textUtf16,&copiedByteCount)) {
-        rosterCursor = (uint16_t *)((uint8_t *)rosterCursor + copiedByteCount);
-        selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
-        stepTicks = selectionBlock->simulationStepTicks;
-        if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
-          /* "  P" */
-          rosterCursor[0] = L' ';
-          rosterCursor[1] = L' ';
-          rosterCursor[2] = L'P';
-          rosterCursor[3] = 0;
-          rosterCursor += 3;
+      continue;
+    }
+    if (rosterCount != 0) {
+      if (rosterEnd - rosterCursor < 2 + 1) {
+        truncated = true;
+        rosterCount++;
+        continue;
+      }
+      rosterCursor[0] = L',';
+      rosterCursor[1] = L' ';
+      rosterCursor += 2;
+    }
+    rosterCount++;
+    /* the name gets at most 40 bytes (with its terminator), less when the buffer end is closer */
+    nameCapacityBytes = 40;
+    if ((uint32_t)(rosterEnd - rosterCursor) * 2 < nameCapacityBytes) {
+      nameCapacityBytes = (uint32_t)(rosterEnd - rosterCursor) * 2;
+    }
+    if (RichTextCommandStream_CopyExpanded
+          (nameCapacityBytes,rosterCursor,(playerBlock->playerName).textUtf16,&copiedByteCount)) {
+      rosterCursor = (uint16_t *)((uint8_t *)rosterCursor + copiedByteCount);
+      selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
+      stepTicks = selectionBlock->simulationStepTicks;
+      if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
+        /* "  P" */
+        if (rosterEnd - rosterCursor < 4) {
+          truncated = true;
+          continue;
         }
-        if (1 < stepTicks) {
-          /* "  x<n>": the characters 'x' and '0' + stepTicks as one dword store */
-          rosterCursor[0] = L' ';
-          rosterCursor[1] = L' ';
-          *(uint32_t *)(rosterCursor + 2) = stepTicks * 65536 + (L'0' << 16 | L'x');
-          rosterCursor += 4;
+        rosterCursor[0] = L' ';
+        rosterCursor[1] = L' ';
+        rosterCursor[2] = L'P';
+        rosterCursor[3] = 0;
+        rosterCursor += 3;
+      }
+      if (1 < stepTicks) {
+        /* "  x<n>": the original stores 'x' and '0' + stepTicks as one dword (the low 16 bits of the sum) */
+        if (rosterEnd - rosterCursor < 4 + 1) {
+          truncated = true;
+          continue;
         }
-        if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING) != 0) {
-          /* "  W" in rich-text save colour / palette colour 3 ... restore colour */
-          rosterCursor[0] = L' ';
-          rosterCursor[1] = L' ';
-          rosterCursor[2] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SAVE_COLOR;
-          rosterCursor[3] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_3;
-          rosterCursor[4] = L'W';
-          rosterCursor[5] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_RESTORE_COLOR;
-          rosterCursor += 6;
+        rosterCursor[0] = L' ';
+        rosterCursor[1] = L' ';
+        rosterCursor[2] = L'x';
+        rosterCursor[3] = (uint16_t)(L'0' + stepTicks);
+        rosterCursor += 4;
+      }
+      if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING) != 0) {
+        /* "  W" in rich-text save colour / palette colour 3 ... restore colour */
+        if (rosterEnd - rosterCursor < 6 + 1) {
+          truncated = true;
+          continue;
         }
+        rosterCursor[0] = L' ';
+        rosterCursor[1] = L' ';
+        rosterCursor[2] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SAVE_COLOR;
+        rosterCursor[3] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_3;
+        rosterCursor[4] = L'W';
+        rosterCursor[5] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_RESTORE_COLOR;
+        rosterCursor += 6;
       }
     }
-    playerBlock++;
-    remainingPlayers--;
-  } while (remainingPlayers != 0);
+    else if (nameCapacityBytes < 40) {
+      /* the name was cut at the buffer end (CopyExpanded terminated it there) */
+      truncated = true;
+    }
+    /* Original quirk: a name longer than 40 bytes is left cut and terminated, the cursor is not advanced and
+       its marks are skipped, so the next separator overwrites it. */
+  }
+  if (truncated && !s_rosterTruncationLogged) {
+    Thandor_Log("hud: roster of faction %u cut at %u code units",factionIndex,
+                (uint32_t)(rosterEnd - g_InGamePlayerListTextScratchUtf16));
+    s_rosterTruncationLogged = true;
+  }
   *rosterCursor = 0;
   return rosterCount;
 }
@@ -333,7 +380,8 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
     (statusBox->base).bottomOffset = panelHalfHeight;
     (statusBox->base).topOffset = -panelHalfHeight;
     UiContainer_LayoutChildren((statusBox->base).parent);
-    do {
+    /* The original is a do-while that runs once and then wraps on a player count of 0; skipped here. */
+    for (; remainingPlayers != 0; remainingPlayers--) {
       if ((playerRecord->factionAssignment).readyOrWaitState == 0) {
         resourceId = TEXT_ID_PLAYER_STATUS_STATE_ZERO;
       }
@@ -345,8 +393,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText,NULL);
       destination++;
       playerRecord++;
-      remainingPlayers--;
-    } while (remainingPlayers != 0);
+    }
   }
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   return;
@@ -391,14 +438,14 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-    do {
+    /* The original is a do-while that runs once and then wraps on a player count of 0; skipped here. */
+    for (; remainingPlayerBlocks != 0; remainingPlayerBlocks--) {
       if ((playerBlock->factionAssignment).factionAssignmentIndex == factionIndex) {
         ((UiSingleLineTextControl *)((uint8_t *)node +playerNameTextOffset))->text = (uint16_t *)&playerBlock->playerName;
         break;
       }
       playerBlock++;
-      remainingPlayerBlocks--;
-    } while (remainingPlayerBlocks != 0);
+    }
   }
   /* the row's relation icon button: shown, with the sprite of the relation state; hidden again by the
      relationUiFlags rules */
@@ -445,7 +492,9 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   countedFactionIndex = 1;
   otherActiveCount = 0;
   remainingFactions = g_GameFactionRuntimeImage.tail.activeFactionCount;
-  do {
+  /* Factions 1..activeFactionCount. The original is a do-while that runs once and then wraps on a count of 0,
+     and a count of 8 or more (level data) reads past factionLifecycleStates[8]; bounded here to index 7. */
+  for (; (remainingFactions != 0) && (countedFactionIndex < 8); remainingFactions--) {
     if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[countedFactionIndex] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
          (countedFactionIndex != ((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex)) &&
@@ -453,8 +502,14 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
       otherActiveCount++;
     }
     countedFactionIndex++;
-    remainingFactions--;
-  } while (remainingFactions != 0);
+  }
+  if (remainingFactions != 0) {
+    static Bool8 s_factionCountLogged = false;
+    if (!s_factionCountLogged) {
+      Thandor_Log("diplomacy: activeFactionCount %u bounded to 7",g_GameFactionRuntimeImage.tail.activeFactionCount);
+      s_factionCountLogged = true;
+    }
+  }
   gridDimensions = UiGrid_OneColumnDimensionsPacked(otherActiveCount);
   frameExtraWidth = (int)gridDimensions.columnCount * g_InGamePanelTextureSubresource32Width +
         g_InGamePanelTextureSubresource19Width + g_InGamePanelTextureSubresource20Width;
