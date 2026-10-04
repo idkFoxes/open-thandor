@@ -103,6 +103,10 @@ void CompareGpuFrame() noexcept;
    clamped to 1..kMaxGpuUiScale. video.cpp sets it at every display mode switch (1 for the software renderer). */
 constexpr int kMaxGpuUiScale = 8;
 void SetGpuUiScale(int scale) noexcept;
+/* The rasterization of the running device's 3D scenes from the next one on (exact: the software rasterizer's
+   triangles, else smooth); kept for the session, ignored in compare mode and without a device. A starting device
+   chooses its own (ChooseRasterization: OPEN_THANDOR_GPU_RASTER, else [graphics] gpu_rasterization). */
+void SetGpuRasterizationExact(bool exact) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);

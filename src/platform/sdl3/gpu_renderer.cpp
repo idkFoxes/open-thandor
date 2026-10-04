@@ -2039,6 +2039,15 @@ void SetGpuUiScale(int scale) noexcept
   s_uiScale = std::clamp(scale, 1, kMaxGpuUiScale);
 }
 
+void SetGpuRasterizationExact(bool exact) noexcept
+{
+  if ((s_gpu.device == nullptr) || (s_gpu.mode != GPU_MODE_ON)) {
+    return;
+  }
+  s_gpu.rasterization = exact ? GPU_RASTERIZATION_EXACT : GPU_RASTERIZATION_SMOOTH;
+  Thandor_Log("SDL_GPU renderer: %s rasterization from the next scene on", RasterizationName(s_gpu.rasterization));
+}
+
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 {
   if ((s_gpu.device == nullptr) || (s_gpu.mode == GPU_MODE_OFF)) {

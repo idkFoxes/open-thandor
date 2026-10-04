@@ -100,6 +100,9 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
+/* Not in the original: Write for open-thandor's own settings chosen in its menus; the value is read back at once
+   (Write leaves a dword that was not loaded reading its default). */
+void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
    FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a

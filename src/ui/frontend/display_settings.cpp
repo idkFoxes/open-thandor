@@ -195,6 +195,9 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   frontendRoot = (UiNodeBase *)((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton));
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  /* not in the original: page 6 is displayPageStack, the display settings are its first page */
+  UiPageStack_SetActiveIndex
+            (FRONTEND_DISPLAY_SUBPAGE_DISPLAY,(UiPageStackControl *)FRONTEND_UI(frontendRoot,displayPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
          &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
@@ -521,9 +524,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindFullscreen),
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindBorderless),
       (UiNodeBase *)FRONTEND_UI(frontendRoot,displayModeKindWindow));
-  /* the original compared the saved adapter index; here the saved renderer and display mode kind */
+  /* the original compared the saved adapter index; here the saved renderer and display mode kind, and a UI scale
+     chosen on the advanced settings page since the last switch also offers the apply button */
   persistedValue = SdlVideo_SavedAdapterIndex();
   if ((((persistedValue == adapterIndex) && (SdlVideo_SavedDisplayModeKind() == s_pendingDisplayModeKind) &&
+        !SdlVideo_UiScaleChangePending() &&
        (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
       (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight))) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
@@ -551,4 +556,152 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
     s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_BORDERLESS;
   }
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode);
+}
+
+/* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1, opened by the options
+   page's fourth button). Every choice applies and saves its value at once: "3D-Kanten" ([graphics]
+   gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale,
+   taken by the next display mode switch: the display settings page then offers "Anwenden"), "Bildratenbegrenzung"
+   and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
+   with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
+   a suppressed radio row would be hidden, not greyed) and the note under the boxes says so. */
+
+static const uint32_t kAdvancedFrameLimits[] = {0,30,60,120,144}; /* advancedFrameLimitOff, 30, 60, 120, 144 */
+
+/* The frontend root of any of its nodes. */
+static UiNodeBase *FrontendAdvancedSettingsPage_Root(UiNodeBase *node)
+{
+  while (node->parent != UI_NODE_NONE) {
+    node = node->parent;
+  }
+  return node;
+}
+
+/* Selects the choice selected (one of count choices) and deselects the others; none selected for nullptr. */
+static void FrontendAdvancedSettingsPage_SelectChoice(UiNodeBase *selected,UiNodeBase *const *choices,uint32_t count)
+{
+  uint32_t index;
+
+  for (index = 0; index < count; index++) {
+    UiSelectableControl_SetSelected(choices[index] == selected,(UiSelectableControl *)choices[index]);
+  }
+}
+
+/* Shows the current values on the advanced settings page: the selected choices, the VSync checkbox and the note
+   (software renderer: edges and UI scale need a GPU renderer; GPU renderer: when the UI scale applies). */
+static void FrontendAdvancedSettingsPage_Refresh(UiNodeBase *frontendRoot)
+{
+  UiNodeBase *edges[2];
+  UiNodeBase *uiScales[4];
+  UiNodeBase *frameLimits[5];
+  UiNodeBase *selected;
+  uint32_t index;
+  uint32_t value;
+  bool gpu;
+
+  edges[0] = FRONTEND_UI(frontendRoot,advancedEdgesSmooth);
+  edges[1] = FRONTEND_UI(frontendRoot,advancedEdgesExact);
+  uiScales[0] = FRONTEND_UI(frontendRoot,advancedUiScaleAuto);
+  uiScales[1] = FRONTEND_UI(frontendRoot,advancedUiScale1);
+  uiScales[2] = FRONTEND_UI(frontendRoot,advancedUiScale2);
+  uiScales[3] = FRONTEND_UI(frontendRoot,advancedUiScale3);
+  frameLimits[0] = FRONTEND_UI(frontendRoot,advancedFrameLimitOff);
+  frameLimits[1] = FRONTEND_UI(frontendRoot,advancedFrameLimit30);
+  frameLimits[2] = FRONTEND_UI(frontendRoot,advancedFrameLimit60);
+  frameLimits[3] = FRONTEND_UI(frontendRoot,advancedFrameLimit120);
+  frameLimits[4] = FRONTEND_UI(frontendRoot,advancedFrameLimit144);
+  gpu = SdlVideo_GpuRendererActive();
+  FrontendAdvancedSettingsPage_SelectChoice
+            (edges[(SdlVideo_GpuRasterization() == PERSISTENT_GPU_RASTERIZATION_EXACT) ? 1 : 0],edges,2);
+  FrontendAdvancedSettingsPage_SelectChoice(uiScales[SdlVideo_SavedUiScale()],uiScales,4);
+  value = SdlVideo_GetFrameLimit();
+  selected = nullptr;
+  for (index = 0; index < 5; index++) {
+    if (kAdvancedFrameLimits[index] == value) {
+      selected = frameLimits[index];
+    }
+  }
+  FrontendAdvancedSettingsPage_SelectChoice(selected,frameLimits,5); /* another limit (ini): none selected */
+  UiSelectableControl_SetSelected(SdlVideo_GetVsync(),
+                                  (UiSelectableControl *)FRONTEND_UI(frontendRoot,advancedVsyncCheckbox));
+  FRONTEND_UI_FIELD(frontendRoot,advancedNoteLabel,0x54,TextResourceId) =
+       gpu ? TEXT_ID_ADVANCED_NOTE_UI_SCALE : TEXT_ID_ADVANCED_NOTE_SOFTWARE;
+  UiNode_InvalidateRoot(FRONTEND_UI(frontendRoot,advancedSettingsPage));
+}
+
+/* Handler of FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS (the options page's "Erweitert" button): shows the advanced
+   settings page (as the display settings page: the menu room is not drawn behind it in the compact layout). */
+void FrontendAdvancedSettingsAction_OpenPage(UiNodeBase *sourceNode)
+{
+  UiNodeBase *frontendRoot;
+  FrontendModelPointerContextFlags *menuRoomContextFlags;
+
+  frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+  UiPageStack_SetActiveIndex
+            (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  UiPageStack_SetActiveIndex
+            (FRONTEND_DISPLAY_SUBPAGE_ADVANCED,(UiPageStackControl *)FRONTEND_UI(frontendRoot,displayPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    menuRoomContextFlags =
+         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+    *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  }
+  FrontendAdvancedSettingsPage_Refresh(frontendRoot);
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_EDGES ("Glatt" / "Original"). */
+void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode)
+{
+  UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+
+  SdlVideo_SetGpuRasterization((sourceNode == FRONTEND_UI(frontendRoot,advancedEdgesExact)) ?
+                                    PERSISTENT_GPU_RASTERIZATION_EXACT : PERSISTENT_GPU_RASTERIZATION_SMOOTH);
+  FrontendAdvancedSettingsPage_Refresh(frontendRoot);
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_UI_SCALE ("Auto", "1x", "2x", "3x"). */
+void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
+{
+  UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+  uint32_t scale;
+
+  if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale1)) {
+    scale = 1;
+  }
+  else if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale2)) {
+    scale = 2;
+  }
+  else if (sourceNode == FRONTEND_UI(frontendRoot,advancedUiScale3)) {
+    scale = 3;
+  }
+  else {
+    scale = PERSISTENT_UI_SCALE_AUTO;
+  }
+  SdlVideo_SaveUiScale(scale);
+  FrontendAdvancedSettingsPage_Refresh(frontendRoot);
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_FRAME_LIMIT ("Aus", 30, 60, 120, 144 frames per second). */
+void FrontendAdvancedSettingsAction_SelectFrameLimit(UiNodeBase *sourceNode)
+{
+  UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
+  UiNodeBase *const frameLimits[5] = {
+      FRONTEND_UI(frontendRoot,advancedFrameLimitOff),FRONTEND_UI(frontendRoot,advancedFrameLimit30),
+      FRONTEND_UI(frontendRoot,advancedFrameLimit60),FRONTEND_UI(frontendRoot,advancedFrameLimit120),
+      FRONTEND_UI(frontendRoot,advancedFrameLimit144)};
+  uint32_t index;
+
+  for (index = 0; index < 5; index++) {
+    if (sourceNode == frameLimits[index]) {
+      SdlVideo_SetFrameLimit(kAdvancedFrameLimits[index]);
+    }
+  }
+  FrontendAdvancedSettingsPage_Refresh(frontendRoot);
+}
+
+/* Handler of FRONTEND_ACTION_ADVANCED_VSYNC (the "VSync" checkbox; the click has toggled it). */
+void FrontendAdvancedSettingsAction_SetVsync(UiNodeBase *sourceNode)
+{
+  SdlVideo_SetVsync(UiSelectableControl_IsSelected((UiSelectableControl *)sourceNode) != 0);
+  FrontendAdvancedSettingsPage_Refresh(FrontendAdvancedSettingsPage_Root(sourceNode));
 }

@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <initializer_list>
+
 /* Module data. */
 
 uint32_t g_FrontendRuntimeFlags = 0;
@@ -520,6 +522,27 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     frontendUiState->buttonVoiceSet6_4DC4 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet6_4EB0 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet6_50BC = buttonVoiceSet;
+    /* not in the original: the advanced settings page (background, and the sounds of the options page's buttons
+       and of the display settings page's choices) */
+    ((UiImagePanelControl *)FRONTEND_UI(frontendUiState,advancedSettingsPage))->textureSource = menuTexture;
+    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendUiState,advancedSettingsButton))->activationSound =
+         g_UiButtonSoundVoiceSets7[3];
+    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendUiState,advancedSettingsBackButton))->activationSound =
+         g_UiButtonSoundVoiceSets7[3];
+    for (UiNodeBase *choice : {FRONTEND_UI(frontendUiState,advancedEdgesSmooth),
+                               FRONTEND_UI(frontendUiState,advancedEdgesExact),
+                               FRONTEND_UI(frontendUiState,advancedUiScaleAuto),
+                               FRONTEND_UI(frontendUiState,advancedUiScale1),
+                               FRONTEND_UI(frontendUiState,advancedUiScale2),
+                               FRONTEND_UI(frontendUiState,advancedUiScale3),
+                               FRONTEND_UI(frontendUiState,advancedFrameLimitOff),
+                               FRONTEND_UI(frontendUiState,advancedFrameLimit30),
+                               FRONTEND_UI(frontendUiState,advancedFrameLimit60),
+                               FRONTEND_UI(frontendUiState,advancedFrameLimit120),
+                               FRONTEND_UI(frontendUiState,advancedFrameLimit144),
+                               FRONTEND_UI(frontendUiState,advancedVsyncCheckbox)}) {
+      ((UiTextButtonControl *)choice)->activationSound = g_UiButtonSoundVoiceSets7[4];
+    }
   }
 }
 

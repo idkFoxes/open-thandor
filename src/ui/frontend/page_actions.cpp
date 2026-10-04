@@ -157,6 +157,14 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
         /* 88 */ UI_SLOT(FrontendDisplaySettingsAction_SelectDisplayModeKind),
         /* 89 */ UI_SLOT(FrontendDisplaySettingsAction_SelectDisplayModeKind),
         /* 90 */ UI_SLOT(FrontendDisplaySettingsAction_SelectDisplayModeKind)
+    },
+    /* not in the original: actions 0x205B..0x205F, the advanced settings page and its options page button */
+    .handlers5B_5F = {
+        /* 91 */ UI_SLOT(FrontendAdvancedSettingsAction_SelectEdges),
+        /* 92 */ UI_SLOT(FrontendAdvancedSettingsAction_SelectUiScale),
+        /* 93 */ UI_SLOT(FrontendAdvancedSettingsAction_SelectFrameLimit),
+        /* 94 */ UI_SLOT(FrontendAdvancedSettingsAction_SetVsync),
+        /* 95 */ UI_SLOT(FrontendAdvancedSettingsAction_OpenPage)
     }};
 
 /* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of

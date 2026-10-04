@@ -928,3 +928,15 @@ void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsBy
     }
   }
 }
+
+/* Not in the original: PersistentSettings_Write for open-thandor's own settings chosen in its menus (beyond the
+   original's dwords), whose new value is read back at once: the dword also becomes present. */
+void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  PersistentSettings_Write(value,settingsOffsetBytes);
+  if ((g_PersistentSettings.image != nullptr) &&
+      (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
+    s_PersistentSettingsPresentMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
+  }
+}

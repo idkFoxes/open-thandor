@@ -31,7 +31,23 @@
 #define TEXT_ID_DISPLAY_MODE_KIND_WINDOW (TEXT_ID_PROJECT_BASE + 1) /* "Fenster" */
 #define TEXT_ID_DISPLAY_MODE_KIND_BORDERLESS (TEXT_ID_PROJECT_BASE + 2) /* "Vollbildfenster" */
 #define TEXT_ID_DISPLAY_MODE_KIND_FULLSCREEN (TEXT_ID_PROJECT_BASE + 3) /* "Vollbild" */
-#define TEXT_ID_PROJECT_COUNT 4
+/* the options page's renamed "Graphik" button and display settings page title, and the advanced settings page */
+#define TEXT_ID_OPTIONS_DISPLAY_BUTTON (TEXT_ID_PROJECT_BASE + 4) /* "Anzeige" */
+#define TEXT_ID_FRONTEND_DISPLAY_TITLE (TEXT_ID_PROJECT_BASE + 5) /* "Anzeigeeinstellungen" */
+#define TEXT_ID_OPTIONS_ADVANCED_BUTTON (TEXT_ID_PROJECT_BASE + 6) /* "Erweitert" */
+#define TEXT_ID_ADVANCED_SETTINGS_TITLE (TEXT_ID_PROJECT_BASE + 7) /* "Erweiterte Einstellungen" */
+#define TEXT_ID_ADVANCED_EDGES_TITLE (TEXT_ID_PROJECT_BASE + 8) /* "3D-Kanten:" */
+#define TEXT_ID_ADVANCED_EDGES_SMOOTH (TEXT_ID_PROJECT_BASE + 9) /* "Glatt" */
+#define TEXT_ID_ADVANCED_EDGES_EXACT (TEXT_ID_PROJECT_BASE + 10) /* "Original" */
+#define TEXT_ID_ADVANCED_UI_SCALE_TITLE (TEXT_ID_PROJECT_BASE + 11) /* "UI-Skalierung:" */
+#define TEXT_ID_ADVANCED_UI_SCALE_AUTO (TEXT_ID_PROJECT_BASE + 12) /* "Auto" */
+#define TEXT_ID_ADVANCED_UI_SCALE_1 (TEXT_ID_PROJECT_BASE + 13) /* "1x" (2x, 3x follow) */
+#define TEXT_ID_ADVANCED_FRAME_LIMIT_TITLE (TEXT_ID_PROJECT_BASE + 16) /* "Bildratenbegrenzung:" */
+#define TEXT_ID_ADVANCED_FRAME_LIMIT_OFF (TEXT_ID_PROJECT_BASE + 17) /* "Aus" (30, 60, 120, 144 Bilder/s follow) */
+#define TEXT_ID_ADVANCED_VSYNC (TEXT_ID_PROJECT_BASE + 22) /* "VSync" */
+#define TEXT_ID_ADVANCED_NOTE_SOFTWARE (TEXT_ID_PROJECT_BASE + 23) /* edges and UI scale need a GPU renderer */
+#define TEXT_ID_ADVANCED_NOTE_UI_SCALE (TEXT_ID_PROJECT_BASE + 24) /* the UI scale applies with the next mode switch */
+#define TEXT_ID_PROJECT_COUNT 25
 
 Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 

@@ -43,7 +43,8 @@
 #define FRONTEND_PAGE_HOST_LOBBY 3
 #define FRONTEND_PAGE_CLIENT_LOBBY 4 /* clientLobbyPlayerList, after the join ack */
 #define FRONTEND_PAGE_OPTIONS 5
-#define FRONTEND_PAGE_DISPLAY_SETTINGS 6 /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011) */
+#define FRONTEND_PAGE_DISPLAY_SETTINGS 6 /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011); in
+                                            open-thandor displayPageStack: also the advanced settings page */
 #define FRONTEND_PAGE_GRAPHICS_SETTINGS 7 /* "3D": shading, polygon detail, texture quality (0x2012) */
 #define FRONTEND_PAGE_AUDIO_SETTINGS 8 /* sound toggles and volume sliders (0x2013) */
 #define FRONTEND_PAGE_QUIT_CONFIRM 9
@@ -83,6 +84,15 @@
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW 0x2058
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS 0x2059
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN 0x205A
+/* Not in the original: the advanced settings page (handlers5B_5F of g_FrontendUiActionHandlersPage20) */
+#define FRONTEND_ACTION_ADVANCED_EDGES 0x205B /* advancedEdgesSmooth / advancedEdgesExact */
+#define FRONTEND_ACTION_ADVANCED_UI_SCALE 0x205C /* advancedUiScaleAuto, advancedUiScale1..3 */
+#define FRONTEND_ACTION_ADVANCED_FRAME_LIMIT 0x205D /* advancedFrameLimitOff, 30, 60, 120, 144 */
+#define FRONTEND_ACTION_ADVANCED_VSYNC 0x205E /* advancedVsyncCheckbox */
+#define FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS 0x205F /* advancedSettingsButton of the options page */
+/* the pages of displayPageStack (frontendPageStack page FRONTEND_PAGE_DISPLAY_SETTINGS) */
+#define FRONTEND_DISPLAY_SUBPAGE_DISPLAY 0 /* displaySettingsPage ("Anzeige") */
+#define FRONTEND_DISPLAY_SUBPAGE_ADVANCED 1 /* advancedSettingsPage ("Erweitert") */
 #define FRONTEND_ACTION_ADAPTER_OPTION1 0x202C /* displayAdapterOption1..5: 0x202C..0x2030 */
 /* byte offset of an adapter choice (displayAdapterOption1..5) from its parent displayAdapterGroup, as
    FrontendDisplaySettingsAction_SelectAdapter identifies the pressed button */

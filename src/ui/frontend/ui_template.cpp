@@ -92,7 +92,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .topAnchorQ31 = 0x10000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x70000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x0000000D, 0xFFFFFFFF, 0x00004808, 0x00004EDC, 0x00005384, 0x000056CC, 0x0000261C, 0x00002CB8,
+            /* not in the original: page 6 is displayPageStack (+71A0) instead of displaySettingsPage (+2CB8) */
+            0x0000000D, 0xFFFFFFFF, 0x00004808, 0x00004EDC, 0x00005384, 0x000056CC, 0x0000261C, 0x000071A0,
             0x000036E4, 0x00003E10, 0x000024A4, 0x00001C38, 0x00000A90, 0x0000058C},
         { /* +058C missionBriefingPage g_UiImagePanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x5E8), .parent = UI_TEMPLATE_LINK(0x508),
@@ -892,7 +893,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
-            0x00000080, 0x00002011, 0x00002120},
+            /* not in the original: "Anzeige" (text 0x2120 "Graphik") */
+            0x00000080, 0x00002011, TEXT_ID_OPTIONS_DISPLAY_BUTTON},
         { /* +2794 settings3DButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x27F4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -903,7 +905,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000080, 0x00002012, 0x00002121},
         { /* +27F4 soundSettingsButton g_UiFramedTextButtonControlVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x2854), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
+            /* not in the original: followed by advancedSettingsButton (then hidePanelCheckbox) */
+            .nextSibling = UI_TEMPLATE_LINK(0x71F8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -256, .topOffset = 16, .rightOffset = -144, .bottomOffset = 40,
@@ -1020,7 +1023,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000091, 0x00002051, 0x00002165},
         { /* +2CB8 displaySettingsPage g_UiImagePanelControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x2D14), .parent = UI_TEMPLATE_LINK(0x508),
+            /* not in the original: page 0 of displayPageStack (+71A0) instead of a page of frontendPageStack */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x2D14), .parent = UI_TEMPLATE_LINK(0x71A0),
             .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
@@ -1053,7 +1057,8 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000001, 0x00000000, 0x00002124},
+            /* not in the original: "Anzeigeeinstellungen" (text 0x2124 "Graphikeinstellungen") */
+            0x00000001, 0x00000000, TEXT_ID_FRONTEND_DISPLAY_TITLE},
         { /* +2E30 displayAdapterGroup g_UiTitledWindowControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x308C), .firstChild = UI_TEMPLATE_LINK(0x2E84), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
@@ -2094,4 +2099,197 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x00000000},
+        {}, /* displayResolutionExtraOptions: made at run time */
+        /* not in the original (open-thandor): the advanced settings page. frontendPageStack page 6 is
+           displayPageStack, a two-page stack (as frontendViewModeStack) holding displaySettingsPage ("Anzeige")
+           and advancedSettingsPage ("Erweitert"); the options page's fourth button opens the latter. The page
+           has the options page's background (subresource 3); its boxes, radio rows and checkbox are those of the
+           display settings and options pages */
+        { /* +71A0 displayPageStack g_UiLayoutContainerControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x508),
+            .vtable = THANDOR_PTR(&g_UiLayoutContainerControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000002, 0x00002CB8, 0x00007258},
+        { /* +71F8 advancedSettingsButton g_UiFramedTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x2854), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x261C),
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -256, .topOffset = 48, .rightOffset = -144, .bottomOffset = 72,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000080, FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS, TEXT_ID_OPTIONS_ADVANCED_BUTTON},
+        { /* +7258 advancedSettingsPage g_UiImagePanelControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x72B4), .parent = UI_TEMPLATE_LINK(0x71A0),
+            .vtable = THANDOR_PTR(&g_UiImagePanelControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000045, 0x00000000, 0x00000000, 0x00000003},
+        { /* +72B4 advancedSettingsBackButton g_UiFramedTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7314), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -256, .topOffset = 128, .rightOffset = -144, .bottomOffset = 152,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x0000008C, 0x00002010, 0x00002129},
+        { /* +7314 advancedSettingsTitle g_UiFocusProxyControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7370), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -288, .topOffset = -164, .rightOffset = 288, .bottomOffset = -140,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000001, 0x00000000, TEXT_ID_ADVANCED_SETTINGS_TITLE},
+        { /* +7370 advancedEdgesGroup g_UiTitledWindowControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7484), .firstChild = UI_TEMPLATE_LINK(0x73C4), .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -80,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, TEXT_ID_ADVANCED_EDGES_TITLE},
+        { /* +73C4 advancedEdgesSmooth g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7424), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7370),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_EDGES, TEXT_ID_ADVANCED_EDGES_SMOOTH},
+        { /* +7424 advancedEdgesExact g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7370),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_EDGES, TEXT_ID_ADVANCED_EDGES_EXACT},
+        { /* +7484 advancedUiScaleGroup g_UiTitledWindowControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7658), .firstChild = UI_TEMPLATE_LINK(0x74D8), .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -288, .topOffset = -58, .rightOffset = 32, .bottomOffset = 52,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, TEXT_ID_ADVANCED_UI_SCALE_TITLE},
+        { /* +74D8 advancedUiScaleAuto g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7538), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7484),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_UI_SCALE, TEXT_ID_ADVANCED_UI_SCALE_AUTO},
+        { /* +7538 advancedUiScale1 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x7598), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7484),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_UI_SCALE, TEXT_ID_ADVANCED_UI_SCALE_1},
+        { /* +7598 advancedUiScale2 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x75F8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7484),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_UI_SCALE, TEXT_ID_ADVANCED_UI_SCALE_1 + 1},
+        { /* +75F8 advancedUiScale3 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7484),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 75, .rightOffset = -3, .bottomOffset = 99,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_UI_SCALE, TEXT_ID_ADVANCED_UI_SCALE_1 + 2},
+        { /* +7658 advancedFrameLimitGroup g_UiTitledWindowControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x788C), .firstChild = UI_TEMPLATE_LINK(0x76AC), .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 48, .topOffset = -142, .rightOffset = 288, .bottomOffset = -8,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, TEXT_ID_ADVANCED_FRAME_LIMIT_TITLE},
+        { /* +76AC advancedFrameLimitOff g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x770C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7658),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_FRAME_LIMIT, TEXT_ID_ADVANCED_FRAME_LIMIT_OFF},
+        { /* +770C advancedFrameLimit30 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x776C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7658),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_FRAME_LIMIT, TEXT_ID_ADVANCED_FRAME_LIMIT_OFF + 1},
+        { /* +776C advancedFrameLimit60 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x77CC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7658),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_FRAME_LIMIT, TEXT_ID_ADVANCED_FRAME_LIMIT_OFF + 2},
+        { /* +77CC advancedFrameLimit120 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x782C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7658),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 75, .rightOffset = -3, .bottomOffset = 99,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_FRAME_LIMIT, TEXT_ID_ADVANCED_FRAME_LIMIT_OFF + 3},
+        { /* +782C advancedFrameLimit144 g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7658),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 99, .rightOffset = -3, .bottomOffset = 123,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000481, FRONTEND_ACTION_ADVANCED_FRAME_LIMIT, TEXT_ID_ADVANCED_FRAME_LIMIT_OFF + 4},
+        { /* +788C advancedVsyncCheckbox g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x78EC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 53, .topOffset = 6, .rightOffset = 288, .bottomOffset = 30,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000091, FRONTEND_ACTION_ADVANCED_VSYNC, TEXT_ID_ADVANCED_VSYNC},
+        { /* +78EC advancedNoteLabel g_UiFocusProxyControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x7258),
+            .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -288, .topOffset = 68, .rightOffset = 288, .bottomOffset = 92,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, 0x00000000, TEXT_ID_ADVANCED_NOTE_SOFTWARE},
 };
