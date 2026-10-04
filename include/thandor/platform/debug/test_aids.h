@@ -41,7 +41,12 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
 /* Windowed test aid (not in the original), so two instances fit side by side on one monitor:
    OPEN_THANDOR_WINDOWED=1 runs the game in a normal window at OPEN_THANDOR_WINDOW_X / OPEN_THANDOR_WINDOW_Y
    (default 0,0) instead of full screen, sized to the display mode, in the desktop's colour depth (the SDL3
-   backend: platform/sdl3/platform.cpp, video.cpp). Off by default. */
+   backend: platform/sdl3/platform.cpp, video.cpp). Off by default. OPEN_THANDOR_WINDOW_MINIMIZED=1 implies it. */
 int Thandor_TestAidWindowed();
+/* Minimized test aid (not in the original), so test games stay out of the user's way:
+   OPEN_THANDOR_WINDOW_MINIMIZED=1 creates the developer tools' window (implies OPEN_THANDOR_WINDOWED=1) minimized
+   and without activating it. The game keeps running and drawing into its framebuffer as when visible (nothing in
+   the port pauses on minimize or focus loss; screenshots read the framebuffer). Off by default. */
+int Thandor_TestAidWindowMinimized();
 
 #endif /* THANDOR_PLATFORM_DEBUG_TEST_AIDS_H */

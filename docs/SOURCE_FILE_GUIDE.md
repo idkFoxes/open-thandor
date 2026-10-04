@@ -132,7 +132,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
 - [`slot.h`](source_guide/core.md#file-core-slot) - Typed table entries (step 8): THANDOR_SLOT(function) for a function-pointer slot of a vtable or callback table (a Ptr32&lt;R(A...)&gt; field or a plain R (*)(A...)), replacing the untyped ...
 - [`types.h`](source_guide/core.md#file-core-types) - The common types: Bool8, the fixed-point scalars, angles, vectors, ids and the other small types used all over the program, in the original's 32-bit layouts.
-- [`x86_emulation.h`](source_guide/core.md#file-core-x86-emulation) - Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange, x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around ...
+- [`x86_emulation.h`](source_guide/core.md#file-core-x86-emulation) - Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange, x87 rounding and the MMX lane operations (with the original's wrap-around and ...
 
 <a id="module-core-error"></a>
 ### `core/error`
@@ -270,7 +270,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
 - [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`
 - [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
-- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameSession_ResetTickState`, `InGameSession_InstallStepTimerAndHooks`
+- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_ResetTickState`, `InGameSession_InstallStepTimerAndHooks`, `InGameSession_CreateRoot`
 - [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_UpdateSimulationAndNetworkTick`, `InGameRuntime_PeriodicCountdownAndClockTick`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-session-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 

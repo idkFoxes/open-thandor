@@ -55,11 +55,9 @@ static Bool8 UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecor
 
   UiTransfer_DecryptPacketBlocks
             (g_UiTransferRoundKeys,ringRecord,256,ringRecord);
-  LOCK();
   checksumField = &ringRecord->packetHeader.xorChecksum;
   checksum = *checksumField;
   *checksumField = 0;
-  UNLOCK();
   unitCount = ringRecord->packetHeader.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
   /* Not in the original: a unit count of 0 or one that does not fit the 0x100-byte ring slot is rejected like
      a bad checksum (see the quirk at UiTransferMailbox_ServiceAndRetransmitTimer). A valid packet always fits:

@@ -18,7 +18,7 @@ std::atomic<uint32_t> g_UiPendingFrameTicks{0};
    not hold the UI frame lock, e.g. modal loops and the fatal-error box: the lock is released for the frame
    and taken again afterwards only when it was held on entry.
 */
-void __cdecl UiFrame_ProcessAndPresentWithLockTransition()
+void UiFrame_ProcessAndPresentWithLockTransition()
 
 {
   Bool8 lockWasHeld;

@@ -9,7 +9,7 @@
 
 /*
 Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange,
-x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
+x87 rounding and the MMX lane operations (with the original's wrap-around and saturation).
 */
 
 #include <thandor/core/types.h>
@@ -22,16 +22,11 @@ x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around
 /* The structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
 
-/* LOCK()/UNLOCK(): no-op markers where the original swaps memory atomically (XCHG); the swap itself is
-   spelled out. */
-#define LOCK() ((void)0)
-#define UNLOCK() ((void)0)
-
 /*
 THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit
 location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and
 returns the previous contents as uint32_t, in one atomic step. Compiles to XCHG. Sites whose memory only
-one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
+one thread touches use a plain load and store.
 A pointer-sized location (a pointer or uintptr_t/handle slot, 8 bytes) is swapped as a whole and the
 previous contents come back as uintptr_t.
 */
@@ -53,22 +48,6 @@ static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
 #define ROUND(x) rint(x)
 
 /*
-cpuid_Version_info(leaf): runs CPUID for leaf. Returns the address of a static array holding the result
-as {EAX, EBX, EDX, ECX} (the CPUID output order); callers read feature bits from offset 8 (EDX).
-*/
-static __inline intptr_t cpuid_Version_info(int leaf)
-{
-    static unsigned int regs[4];
-    int r[4];
-    __cpuid(r, leaf);
-    regs[0] = (unsigned int)r[0];
-    regs[1] = (unsigned int)r[1];
-    regs[2] = (unsigned int)r[3];
-    regs[3] = (unsigned int)r[2];
-    return (intptr_t)regs;
-}
-
-/*
 MMX instructions on 64-bit register images (Intel SDM semantics, little-endian lanes).
 */
 typedef union ThandorMmx {
@@ -79,7 +58,7 @@ typedef union ThandorMmx {
     unsigned char ub[8];
 } ThandorMmx;
 
-static __inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i;
@@ -88,7 +67,7 @@ static __inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsi
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     x.q = a; y.q = b;
@@ -97,7 +76,7 @@ static __inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddusb(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddusb(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i, s;
@@ -106,7 +85,7 @@ static __inline unsigned long long thandor_mmx_paddusb(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddusw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddusw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i;
@@ -116,7 +95,7 @@ static __inline unsigned long long thandor_mmx_paddusw(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i, s;
@@ -128,7 +107,7 @@ static __inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsi
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsigned long long count)
+static inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsigned long long count)
 {
     ThandorMmx x, r;
     int i;
@@ -139,8 +118,8 @@ static __inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsig
 }
 
 /* Operands are integers or the 8-byte lane structs some MMX values are typed as. */
-static __inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
-static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
+static inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
+static inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
 static inline unsigned long long thandor_mmx_q(SoftwareRgbWordLanes v) { return thandor_mmx_rgb(v); }
 static inline unsigned long long thandor_mmx_q(SoftwareBgraWordLanes v) { return thandor_mmx_bgra(v); }
 static inline unsigned long long thandor_mmx_q(unsigned long long v) { return v; }

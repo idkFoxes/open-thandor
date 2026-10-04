@@ -50,6 +50,9 @@ unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass);
 /* Nonzero when the game runs in a normal window (at OPEN_THANDOR_WINDOW_X/Y, the desktop's colour depth) instead
    of full screen (SdlPlatform_CreateMainWindow, SdlVideo_ApplyDisplayMode, normal process priority). */
 int DebugHook_Windowed();
+/* Nonzero when that window is created minimized and not activated (OPEN_THANDOR_WINDOW_MINIMIZED, implies
+   OPEN_THANDOR_WINDOWED; SdlPlatform_CreateMainWindow). */
+int DebugHook_WindowMinimized();
 
 /* --- input --- */
 /* Nonzero while an input script drives the game: the real mouse is then ignored. */
@@ -113,6 +116,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_ProcessPriorityClass(priorityClass) (priorityClass)
 
 #define DebugHook_Windowed() 0
+#define DebugHook_WindowMinimized() 0
 
 #define DebugHook_IgnoreRealMouse() 0
 

@@ -203,10 +203,8 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   cell = firstCell;
   scratchHeightCursor = accumulatorPlane;
   for (remainingCellCount = cellCount; remainingCellCount != 0; remainingCellCount--) {
-    LOCK();
     targetHeight = *scratchHeightCursor;
     *scratchHeightCursor = 0;
-    UNLOCK();
     cellDelta = targetHeight - cell->terrainHeight;
     if (cellDelta != 0) {
       cell->terrainHeight = cell->terrainHeight + cellDelta;

@@ -43,7 +43,7 @@ uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 
 /* Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
 */
-void __cdecl NetworkBackendFallback_Cleanup()
+void NetworkBackendFallback_Cleanup()
 
 {
 }
@@ -60,7 +60,7 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 
 /* Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
 */
-void __cdecl NetworkBackendFallback_CloseActiveSocket()
+void NetworkBackendFallback_CloseActiveSocket()
 
 {
 }

@@ -61,7 +61,7 @@ void Random_SetBothSeeds(RandomSeed seed)
 /* Returns the current secondary seed (without stepping it); the host sends it in the player snapshot
    packet so that joining machines can continue the same stream.
 */
-uint32_t __cdecl Random_GetSecondarySeed()
+uint32_t Random_GetSecondarySeed()
 
 {
   return g_RandomGeneratorState.secondarySeed;
@@ -80,7 +80,7 @@ void Random_SelectSecondaryStream()
 /* Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching
    either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
 */
-void __cdecl Random_SelectPrimaryStream()
+void Random_SelectPrimaryStream()
 
 {
   g_RandomGeneratorState.next = Random_NextPrimary;

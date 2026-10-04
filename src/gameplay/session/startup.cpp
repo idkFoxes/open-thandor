@@ -198,15 +198,6 @@ void InGameRuntime_ReleaseFactionScratchBuffers()
   } while (remainingFactions != 0);
 }
 
-/* Optional initialisation step of new and loaded sessions; it always succeeds (returns 0), so the callers' failure
-   branches never run.
-*/
-uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument)
-
-{
-  return 0;
-}
-
 /* Shared session start steps of InGameRuntime_InitializeNewSession (new_session.cpp) and
    InGameRuntime_InitializeLoadedSession (loaded_session.cpp). */
 
@@ -387,9 +378,8 @@ Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot 
 }
 
 /* Sets the simulation step to 1, sets up the shading texture from the persistent settings and mirrors the shading
-   and mouse/panel link options into the world runtime flags. Returns the mouse/panel link option flags (the loaded
-   session reports them as the error code of an unreachable failure). */
-uint32_t InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world)
+   and mouse/panel link options into the world runtime flags. */
+void InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world)
 
 {
   uint32_t textureDimension;
@@ -414,7 +404,6 @@ uint32_t InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *worl
             (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
   InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
-  return linkOptionFlags;
 }
 
 /* Allocates the grid scratch for the world's field grid and rebuilds the derived terrain classification,

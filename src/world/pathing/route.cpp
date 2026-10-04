@@ -379,14 +379,10 @@ EntityPathing_RebuildOverlappingGroupRoutes
     } while (pairsRemaining != 0);
     do {
       rootPriority = heapBase->priority;
-      LOCK();
       candidateEntity = pairCursor[-1].entity;
       pairCursor[-1].entity = heapBase->entity;
-      UNLOCK();
-      LOCK();
       swappedPriority = pairCursor[-1].priority;
       pairCursor[-1].priority = rootPriority;
-      UNLOCK();
       heapBase->entity = candidateEntity;
       heapBase->priority = swappedPriority;
       heapSize--;

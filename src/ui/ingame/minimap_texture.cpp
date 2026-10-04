@@ -19,7 +19,7 @@ static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = nullptr;
 
 /* Adds each byte of pixel to the matching 16-bit lane of words and halves the sum: per channel the average of
    the new colour and the pixel already in the plane (used to blend water over the ground colour). */
-static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,uint32_t pixel)
+static inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,uint32_t pixel)
 
 {
   ThandorMmx lanes;

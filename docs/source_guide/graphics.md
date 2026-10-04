@@ -108,7 +108,7 @@ Software renderer display mode: the pixel format and channel pack tables of a mo
 - [`SoftwareFramebuffer_Create`](../../src/graphics/backend/software_display_mode.cpp#L67) - g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one allocation, the SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by the ...
 - [`SoftwarePixelFormat_BuildChannelPackTables`](../../src/graphics/backend/software_display_mode.cpp#L105) - g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and ...
 - [`SoftwareRenderer_SetDisplayMode`](../../src/graphics/backend/software_display_mode.cpp#L152) - Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the chained mode switch succeeds it replaces the depth buffer with one of the new size (the ...
-- [`SoftwareRenderer_InstallDisplayModeHook`](../../src/graphics/backend/software_display_mode.cpp#L188) - Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of the current g_GraphicsSetDisplayMode and allocates the depth buffer (one int32 per pixel) ...
+- [`SoftwareRenderer_InstallDisplayModeHook`](../../src/graphics/backend/software_display_mode.cpp#L186) - Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of the current g_GraphicsSetDisplayMode and allocates the depth buffer (one int32 per pixel) ...
 
 **Data** (7 shared, 1 file-local): `g_SoftwareFramebufferCreate`, `g_SoftwarePixelPackTables`, `g_SoftwareColorScaleQ16`, `g_SoftwareColorBiasQ16`, `g_SoftwarePixelFormatConfig`, `g_GraphicsSetDisplayMode`, `g_SoftwareBuildPixelPackTables`.
 
@@ -309,7 +309,7 @@ No file comment; function families: `InterpolationState_*` (1), `InterpolationSt
 **Functions** (2 public):
 
 - [`InterpolationState_SetNegatedTargetAndRescaleProgress`](../../src/graphics/render/light_transitions.cpp#L17) - Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light.
-- [`InterpolationStateTable_Advance256ByTicks`](../../src/graphics/render/light_transitions.cpp#L65) - Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks.
+- [`InterpolationStateTable_Advance256ByTicks`](../../src/graphics/render/light_transitions.cpp#L63) - Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks.
 
 **Called from** (4 files): [`world/shots/flight`](world.md#file-world-shots-flight) (`ShotModel_ReleaseAndUnlink`, `ShotProjectile_ApplyNearestHit` +1); [`world/effects/lifecycle`](world.md#file-world-effects-lifecycle) (`EffectLifecycle_ReleaseShadingAndUnlink`, `EffectLifecycle_UpdateShadingOnFrameAdvance`); [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers) (`InGameWorldOverlay_ReleaseMarkers`); [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame) (`InGameUiRoot_UpdateFrame`).
 

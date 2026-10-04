@@ -605,10 +605,8 @@ void UiPointerList_SortByExpandedTextFieldAscending
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
           if (textOrder >= 0) {
-            LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
-            UNLOCK();
             *passAnchorSlot = swappedRecord;
           }
         }

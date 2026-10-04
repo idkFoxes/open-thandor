@@ -38,8 +38,6 @@ Bool8 ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeH
 
 void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
 
-void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
-
 void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
@@ -48,11 +46,7 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
 extern ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes;
 extern RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
 
-void ArmyRuntimeClass_NoOpTickUpdateForClass5
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
-
-void ArmyRuntimeClass_NoOpTickUpdateForClass6
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
+void ArmyRuntimeClass_NoOpTickUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
 

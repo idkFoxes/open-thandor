@@ -1978,7 +1978,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
    pointers stay unset. The original returned nothing and its caller decoded with the unset tables; the
    result lets SdlAudio_Init run silent instead.
 */
-uint32_t __cdecl CosineDerivedLookupTables_Init()
+uint32_t CosineDerivedLookupTables_Init()
 
 {
   short *outputCursor;

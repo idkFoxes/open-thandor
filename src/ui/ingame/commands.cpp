@@ -69,11 +69,9 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
-  /* take the pending entry and clear it atomically, as in the original */
-  LOCK();
+  /* take the pending entry and clear it */
   pendingEntry = playerBlock->pendingPlacementArmyAsset;
   playerBlock->pendingPlacementArmyAsset = 0;
-  UNLOCK();
   if (pendingEntry != 0) {
     /* the pending entry is the chosen army asset record */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners

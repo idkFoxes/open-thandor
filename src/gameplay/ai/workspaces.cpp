@@ -211,15 +211,10 @@ void AiCandidateWorkspace_SortDescending()
     do {
       do {
         if (currentRecordScore < (int)scanRecordCursor->weightedScoreAndKind) {
-          /* the original swaps with an atomic (bus-locked) exchange, shown as LOCK/UNLOCK */
-          LOCK();
           promotedScore = scanRecordCursor->weightedScoreAndKind;
           scanRecordCursor->weightedScoreAndKind = currentRecordScore;
-          UNLOCK();
-          LOCK();
           promotedPayload = scanRecordCursor->entityIdAndMultiplicity;
           scanRecordCursor->entityIdAndMultiplicity = currentRecordPayload;
-          UNLOCK();
           currentRecordCursor->weightedScoreAndKind = promotedScore;
           currentRecordCursor->entityIdAndMultiplicity = promotedPayload;
           currentRecordScore = promotedScore;

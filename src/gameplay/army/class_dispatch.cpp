@@ -174,14 +174,6 @@ void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeC
             (worldRuntime,armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
 }
 
-/* Empty sound update of class 3, reached only through
-   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[3].
-*/
-void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
-
-{
-}
-
 /* Per-step update of one model runtime and, recursively, its attached children (called by
    ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, the primaryUpdate entry of g_RuntimeMaintenanceCallbackPhases).
    Runs the class callback runtimeUpdate[class] of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, then the
@@ -414,8 +406,8 @@ ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Cla
         /*  2 */ THANDOR_SLOT(ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation),
         /*  3 */ THANDOR_SLOT(ArmyRuntimeClass_UpdateArticulatedMovement),
         /*  4 */ THANDOR_SLOT(ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage),
-        /*  5 */ THANDOR_SLOT(ArmyRuntimeClass_NoOpTickUpdateForClass5),
-        /*  6 */ THANDOR_SLOT(ArmyRuntimeClass_NoOpTickUpdateForClass6),
+        /*  5 */ THANDOR_SLOT(ArmyRuntimeClass_NoOpTickUpdate),
+        /*  6 */ THANDOR_SLOT(ArmyRuntimeClass_NoOpTickUpdate),
         /*  7 */ THANDOR_SLOT(ArmyRuntimeClass_UpdateSingleBarrelTurret),
         /*  8 */ THANDOR_SLOT(ArmyRuntimeClass_UpdateTwinBarrelTurret),
         /*  9 */ THANDOR_SLOT(ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments),
@@ -438,7 +430,7 @@ ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Cla
         /*  0 */ THANDOR_SLOT(UnifiedRuntimeDefault_TwoArgNoOpD),
         /*  1 */ THANDOR_SLOT(ArmyRuntimeAudio_UpdateTurnAndMoveSounds),
         /*  2 */ THANDOR_SLOT(ArmyRuntimeAudio_UpdateTurnAndMoveSounds),
-        /*  3 */ THANDOR_SLOT(ArmyRuntimeClass_NoOpUpdate),
+        /*  3 */ THANDOR_SLOT(UnifiedRuntimeDefault_TwoArgNoOpD),
         /*  4 */ THANDOR_SLOT(ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled),
         /*  5 */ THANDOR_SLOT(ArmyRuntimeAudio_UpdateTurretTurnSound),
         /*  6 */ THANDOR_SLOT(ArmyRuntimeAudio_UpdateTurretTurnSound),
@@ -701,20 +693,10 @@ RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases = {
     .occupancyRebuild = {.army = THANDOR_SLOT(ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback), .shot = THANDOR_SLOT(ShotRuntimeMaintenance_OccupancyRebuildNoOp), .effect = THANDOR_SLOT(EffectRuntimeMaintenance_OccupancyRebuildNoOp)},
     .audioRefresh = {.army = THANDOR_SLOT(ArmyRuntimeMaintenance_DispatchClassMethodDRecursive), .shot = THANDOR_SLOT(ShotRuntimeMaintenance_UpdateHierarchyProjectedSound), .effect = THANDOR_SLOT(EffectRuntimeMaintenance_AudioRefreshNoOp)}};
 
-/* Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
-   that class has nothing to update, so this does nothing.
+/* Per-tick update of army classes 5 and 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5] and
+   [6]): those classes have nothing to update, so this does nothing.
 */
-void ArmyRuntimeClass_NoOpTickUpdateForClass5
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
-
-{
-}
-
-/* Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
-   that class has nothing to update, so this does nothing.
-*/
-void ArmyRuntimeClass_NoOpTickUpdateForClass6
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
+void ArmyRuntimeClass_NoOpTickUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
 }
@@ -747,8 +729,8 @@ Bool8 UnifiedRuntimeDefault_TwoArgSuccess
   return false;
 }
 
-/* Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
-   15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
+/* Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 3, 9,
+   12, 15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
    have none, so this does nothing.
 */
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)

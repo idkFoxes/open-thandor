@@ -19,7 +19,7 @@
 /* MOVD mm,value; PUNPCKLBW mm,mm; PSRLW mm,shift: byte k of value becomes word lane k = ((b << 8) | b) >> shift
    (b * 0x101 widens a byte to the full 16-bit range), e.g. shift 4 turns a colour channel into a Q12 factor
    (0xFF -> 0x0FFF) for PMULHW. */
-static __inline uint64_t ColorLanes_UnpackBytesShiftRight(uint32_t value,int shift)
+static inline uint64_t ColorLanes_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
@@ -33,7 +33,7 @@ static __inline uint64_t ColorLanes_UnpackBytesShiftRight(uint32_t value,int shi
 
 /* PACKUSWB mm,mm; MOVD dword,mm: the four signed word lanes saturated to unsigned bytes (below 0 -> 0, above
    0xff -> 0xff), word lane k -> byte k, i.e. shaded colour lanes back into one packed ARGB colour. */
-static __inline uint32_t ColorLanes_PackWordsUnsignedSaturate(uint64_t words)
+static inline uint32_t ColorLanes_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;

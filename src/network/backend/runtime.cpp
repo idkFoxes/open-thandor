@@ -103,7 +103,7 @@ static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptor
    so a missing WinSock is not fatal there. The original starts by jumping over a large block of code,
    presumably a ws2_32 path (not ported: nothing installed it).
 */
-uint32_t __cdecl Network_Init()
+uint32_t Network_Init()
 
 {
   HINSTANCE module;

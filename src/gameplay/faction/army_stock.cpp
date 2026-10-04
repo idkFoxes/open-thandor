@@ -297,11 +297,9 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   uint32_t assetCount;
   InGameRuntimeRoot *runtimeRoot;
 
-  LOCK();
   pendingAsset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingPlacementArmyAsset;
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingPlacementArmyAsset = 0;
   runtimeRoot = g_InGameRuntimeRoot;
-  UNLOCK();
   if (pendingAsset == 0) {
     return;
   }

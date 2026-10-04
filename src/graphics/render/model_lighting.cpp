@@ -899,7 +899,7 @@ static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
 /* The same lane operations on 64-bit MMX register images (ThandorMmx, core/x86_emulation.h). */
 
 /* paddw (wrapping word add) */
-static __inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
+static inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
 {
   ThandorMmx x, y, r;
   int i;

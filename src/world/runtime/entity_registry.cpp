@@ -49,7 +49,7 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
 }
 
 /* Marks node as linked and puts it at the head of its world's owner list (ownerListHead; the head is
-   swapped atomically, the neighbour links are then set without a lock).
+   swapped first, then the neighbour links are set).
 */
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 
@@ -60,11 +60,9 @@ void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 
   ownerWorld = node->ownerWorld;
   node->runtimeFlags = node->runtimeFlags | WORLD_OWNER_NODE_LINKED;
-  LOCK();
   ownerListHeadLink = &ownerWorld->ownerListHead;
   previousHeadNode = *ownerListHeadLink;
   *ownerListHeadLink = node;
-  UNLOCK();
   node->previousNode = nullptr;
   node->nextNode = previousHeadNode;
   if (previousHeadNode != nullptr) {
