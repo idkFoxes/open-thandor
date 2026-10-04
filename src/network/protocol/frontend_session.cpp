@@ -347,12 +347,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession()
     if (playerRecord->factionAssignment.readyOrWaitState == 0) {
       /* some player had not reported ready yet: report it for the local player, so a waiting
          Frontend_Init can finish (the role was cleared above, so the local branch is always taken) */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
-      }
+      FrontendCommand_Issue<FrontendPlayerRuntime_RecordReadyAndUpdateWaitState>(0,0,0);
       break;
     }
     playerRecord++;
