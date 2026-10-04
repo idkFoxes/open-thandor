@@ -20,6 +20,7 @@ import os
 import shutil
 import subprocess
 import time
+from game_env import game_env
 
 parser = argparse.ArgumentParser()
 parser.add_argument('game_dir')
@@ -60,7 +61,7 @@ def log_lines(directory):
 
 def start(directory, arguments, extra_env, script):
     shutil.rmtree(os.path.join(directory, 'shots'), ignore_errors=True)
-    env = dict(os.environ, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_MULTI_INSTANCE='1',
+    env = game_env(OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_MULTI_INSTANCE='1',
                OPEN_THANDOR_NETLOG='1', OPEN_THANDOR_WINDOWED='1', OPEN_THANDOR_WINDOW_Y='0', **extra_env)
     if script:
         env['OPEN_THANDOR_SCRIPT'] = os.path.abspath(script)

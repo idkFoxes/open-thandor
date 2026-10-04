@@ -32,6 +32,7 @@ import threading
 import time
 
 import cpu_load
+from game_env import game_env
 
 # hansolo level 1 (hansolo\s00_tut) is listed in the campaign but its level file is not in the game data;
 # the campaign itself starts at level 2.
@@ -150,7 +151,7 @@ for number, mission in enumerate(missions, 1):
 def run_mission(k, folder, number, label, campaign, level):
     exe = os.path.join(folder, 'thandor.exe')
     log = os.path.join(folder, 'thandor.log')
-    env = dict(os.environ, OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
+    env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 5) * 250), OPEN_THANDOR_WINDOW_Y=str((k // 5 % 2) * 350),
                OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(940 + k))
     for key in ('OPEN_THANDOR_CAMPAIGN', 'OPEN_THANDOR_CAMPAIGN_LEVEL'):

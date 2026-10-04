@@ -77,7 +77,7 @@ No file comment; function families: `WorldMotionSpline_*` (4).
 
 **Called from** (4 files): [`ui/frontend/menu_room_scene`](ui.md#file-ui-frontend-menu-room-scene) (`FrontendRomTransition_InitializeFromRecord`, `FrontendRomTransition_ProcessPendingRecord`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_AllocateRuntimeBuffers`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`Frontend_Init`); [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room) (`FrontendRuntime_UpdatePointerContextAndSceneView`).
 
-**Depends on** (2 files, names used): [`core/math/spline`](core.md#file-core-math-spline) (4), [`world/camera/camera`](#file-world-camera-camera) (3).
+**Depends on** (3 files, names used): [`core/math/spline`](core.md#file-core-math-spline) (4), [`world/camera/camera`](#file-world-camera-camera) (3), [`platform/sdl3/gpu_shader_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
 
 <a id="file-world-camera-types"></a>
 #### `types.h`

@@ -32,7 +32,7 @@
     },
     {
       "name": "gpu-test",
-      "displayName": "MSVC x64 RelWithDebInfo with the developer tools and the SDL_GPU renderer (OPEN_THANDOR_GPU=1)",
+      "displayName": "MSVC x64 RelWithDebInfo with the developer tools and the SDL_GPU renderer (same as test, GPU now on by default)",
       "inherits": "msvc-x64",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",

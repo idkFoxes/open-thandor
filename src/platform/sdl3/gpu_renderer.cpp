@@ -5,8 +5,12 @@
  * Project code (not in the original game)
  */
 
-/* SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GPU (CMake option
-   THANDOR_RENDERER_SDL_GPU, switched on at run time with OPEN_THANDOR_GPU=1 or the command-line option -GPU).
+/* SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GPU and presents the finished frames
+   through the same device (CMake option THANDOR_RENDERER_SDL_GPU). video.cpp decides which renderer runs (the
+   display settings' choice Vulkan / DirectX 12 / Software, or OPEN_THANDOR_GPU) and starts the device here with
+   StartGpuDevice: Vulkan with the SPIR-V shaders, Direct3D 12 with the DXBC shaders (primitives.hlsl). The device
+   claims the main window; PresentWithGpu uploads the software framebuffer (with the cursor) into a texture and
+   blits it letterboxed into the swapchain, so no SDL_Renderer (and no second graphics API) runs beside it.
 
    Only g_GraphicsDrawPrimitiveQueue is replaced: lighting, fog, projection, clipping, culling and the radix sort
    stay on the CPU, so the simulation and the state hash are untouched. One scene (g_GraphicsSetViewportAndClearDepth
@@ -35,7 +39,7 @@
    16-bit quantization after each blend, the 16-bit lane wrap and per-pixel rounding of the MMX interpolation,
    GPU sub-pixel snapping of the rebuilt edges (1/256 pixel).
 
-   OPEN_THANDOR_GPU=compare (developer tools): both renderers run; the software picture is shown and every
+   OPEN_THANDOR_GPU=compare (developer tools): both rasterizers run; the software picture is shown and every
    OPEN_THANDOR_GPU_COMPARE_MS milliseconds (default 5000) the scene's clip rectangle is written as
    shots\gpucmp_NNNN_sw.bmp, _gpu.bmp and _diff.bmp with the difference statistics in thandor.log. */
 
@@ -55,13 +59,20 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/sdl3/platform.h>
+#include <thandor/platform/sdl3/sdl_objects.h>
 #include <thandor/platform/system/win32.h>
 
+/* The compiled shaders (CMake: <build>/gpu_shaders): DXBC from fxc, SPIR-V from dxc when it was found. */
 namespace thandor::sdl3::gpu_shaders {
 using BYTE = unsigned char;
 #include "gpu_shader_vertex.h"
 #include "gpu_shader_fragment.h"
 #include "gpu_shader_fragment_alpha_test.h"
+#ifdef THANDOR_GPU_SHADERS_SPIRV
+#include "gpu_shader_vertex_spirv.h"
+#include "gpu_shader_fragment_spirv.h"
+#include "gpu_shader_fragment_alpha_test_spirv.h"
+#endif
 } // namespace thandor::sdl3::gpu_shaders
 
 namespace {
@@ -174,6 +185,8 @@ enum GpuMode : int { GPU_MODE_OFF, GPU_MODE_ON, GPU_MODE_COMPARE };
 struct GpuState {
   GpuMode mode = GPU_MODE_OFF;
   SDL_GPUDevice *device = nullptr;
+  SDL_GPUShaderFormat shaderFormat = SDL_GPU_SHADERFORMAT_INVALID;
+  SDL_Window *window = nullptr; /* the claimed window */
   SDL_GPUGraphicsPipeline *pipelines[GPU_PIPELINE_COUNT] = {};
   SDL_GPUSampler *sampler = nullptr;
   SDL_GPUTexture *atlas = nullptr;
@@ -206,6 +219,16 @@ struct GpuState {
 
   GpuTimes times;
   uint64_t statsStart = 0;
+
+  /* presentation: the framebuffer as a texture, uploaded through its own transfer buffer */
+  SDL_GPUTexture *frameTexture = nullptr;
+  SDL_GPUTextureFormat frameFormat = SDL_GPU_TEXTUREFORMAT_INVALID;
+  Uint32 frameWidth = 0;
+  Uint32 frameHeight = 0;
+  SDL_GPUTransferBuffer *frameUpload = nullptr;
+  Uint32 frameUploadBytes = 0;
+  std::vector<uint32_t> frameConverted; /* RGB565 widened to B8G8R8A8 when the device cannot sample B5G6R5 */
+  bool presentFailureLogged = false;
 
   /* compare mode */
   std::vector<uint32_t> gpuPixels;
@@ -623,15 +646,35 @@ void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor
 
 /* --- device objects ---------------------------------------------------------------------------------------- */
 
-SDL_GPUShader *CreateShader(const unsigned char *code, size_t codeSize, const char *entryPoint,
-                            SDL_GPUShaderStage stage, Uint32 samplerCount) noexcept
+/* The shader blobs of one entry point: DXBC and SPIR-V (empty without dxc). */
+struct ShaderBlobs {
+  const unsigned char *dxbc;
+  size_t dxbcSize;
+  const unsigned char *spirv;
+  size_t spirvSize;
+};
+
+SDL_GPUShader *CreateShader(const ShaderBlobs &blobs, const char *entryPoint, SDL_GPUShaderStage stage,
+                            Uint32 samplerCount) noexcept
 {
   SDL_GPUShaderCreateInfo info;
   SDL_zero(info);
-  info.code = code;
-  info.code_size = codeSize;
-  info.entrypoint = entryPoint;
-  info.format = SDL_GPU_SHADERFORMAT_DXBC;
+  if (s_gpu.shaderFormat == SDL_GPU_SHADERFORMAT_SPIRV) {
+    info.code = blobs.spirv;
+    info.code_size = blobs.spirvSize;
+    info.entrypoint = entryPoint;
+  }
+  else {
+    info.code = blobs.dxbc;
+    info.code_size = blobs.dxbcSize;
+    info.entrypoint = entryPoint;
+  }
+  if (info.code_size == 0) {
+    SDL_SetError("no %s shader for %s", (s_gpu.shaderFormat == SDL_GPU_SHADERFORMAT_SPIRV) ? "SPIR-V" : "DXBC",
+                 entryPoint);
+    return nullptr;
+  }
+  info.format = s_gpu.shaderFormat;
   info.stage = stage;
   info.num_samplers = samplerCount;
   return SDL_CreateGPUShader(s_gpu.device, &info);
@@ -640,13 +683,18 @@ SDL_GPUShader *CreateShader(const unsigned char *code, size_t codeSize, const ch
 bool CreatePipelines() noexcept
 {
   namespace shaders = thandor::sdl3::gpu_shaders;
-  SDL_GPUShader *vertexShader = CreateShader(shaders::g_VertexMain, sizeof shaders::g_VertexMain, "VertexMain",
-                                             SDL_GPU_SHADERSTAGE_VERTEX, 0);
-  SDL_GPUShader *fragmentShader = CreateShader(shaders::g_FragmentMain, sizeof shaders::g_FragmentMain,
-                                               "FragmentMain", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
-  SDL_GPUShader *alphaTestShader =
-      CreateShader(shaders::g_FragmentAlphaTestMain, sizeof shaders::g_FragmentAlphaTestMain, "FragmentAlphaTestMain",
-                   SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+#ifdef THANDOR_GPU_SHADERS_SPIRV
+#define THANDOR_SHADER_BLOBS(entry)   ShaderBlobs{shaders::g_##entry, sizeof shaders::g_##entry, shaders::g_##entry##Spirv, sizeof shaders::g_##entry##Spirv}
+#else
+#define THANDOR_SHADER_BLOBS(entry) ShaderBlobs{shaders::g_##entry, sizeof shaders::g_##entry, nullptr, 0}
+#endif
+  SDL_GPUShader *vertexShader =
+      CreateShader(THANDOR_SHADER_BLOBS(VertexMain), "VertexMain", SDL_GPU_SHADERSTAGE_VERTEX, 0);
+  SDL_GPUShader *fragmentShader =
+      CreateShader(THANDOR_SHADER_BLOBS(FragmentMain), "FragmentMain", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+  SDL_GPUShader *alphaTestShader = CreateShader(THANDOR_SHADER_BLOBS(FragmentAlphaTestMain), "FragmentAlphaTestMain",
+                                                SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+#undef THANDOR_SHADER_BLOBS
   if ((vertexShader == nullptr) || (fragmentShader == nullptr) || (alphaTestShader == nullptr)) {
     Thandor_Log("SDL_GPU renderer: shader creation failed: %s", SDL_GetError());
     SDL_ReleaseGPUShader(s_gpu.device, vertexShader);
@@ -1126,9 +1174,9 @@ void LogStatistics() noexcept
   if (s_gpu.mode == GPU_MODE_COMPARE) {
     std::snprintf(software, sizeof software, ", software %.2f ms", TicksToMs(s_gpu.times.software) / scenes);
   }
-  Thandor_Log("SDL_GPU renderer: %u scenes in %.1f s, per scene: collect %.2f ms, GPU %.2f ms%s, %.0f GPU triangles, "
-              "%.0f runs, %.0f texels converted",
-              s_gpu.times.scenes, TicksToMs(now - s_gpu.statsStart) / 1000.0, TicksToMs(s_gpu.times.collect) / scenes,
+  Thandor_Log("SDL_GPU renderer (%s): %u scenes in %.1f s, per scene: collect %.2f ms, GPU %.2f ms%s, %.0f GPU "
+              "triangles, %.0f runs, %.0f texels converted",
+              SDL_GetGPUDeviceDriver(s_gpu.device), s_gpu.times.scenes, TicksToMs(now - s_gpu.statsStart) / 1000.0, TicksToMs(s_gpu.times.collect) / scenes,
               TicksToMs(s_gpu.times.submit) / scenes, software, s_gpu.times.vertices / scenes / 3.0,
               s_gpu.times.runs / scenes, s_gpu.times.uploadedTexels / scenes);
   s_gpu.times = GpuTimes{};
@@ -1227,30 +1275,30 @@ void GpuRenderer_EndScene(void)
   LogStatistics();
 }
 
-/* OPEN_THANDOR_GPU (1/on/compare) or -GPU on the command line. */
-GpuMode RequestedMode() noexcept
+/* --- device --------------------------------------------------------------------------------------------- */
+
+/* SDL's driver name and the shader format of a GPU renderer. */
+const char *DriverName(uint32_t renderer) noexcept
 {
-  const char *value = SDL_getenv("OPEN_THANDOR_GPU");
-  if (value != nullptr) {
-    if (SDL_strcasecmp(value, "compare") == 0) {
-#ifdef THANDOR_DEV_TOOLS
-      return GPU_MODE_COMPARE;
-#else
-      Thandor_Log("SDL_GPU renderer: compare mode needs the developer tools, using the GPU alone");
-      return GPU_MODE_ON;
-#endif
-    }
-    return ((value[0] == '0') || (value[0] == '\0') || (SDL_strcasecmp(value, "off") == 0)) ? GPU_MODE_OFF
-                                                                                           : GPU_MODE_ON;
-  }
-  const char *commandLine = GetCommandLineA();
-  for (const char *cursor = commandLine; (cursor != nullptr) && (*cursor != '\0'); cursor++) {
-    if (((cursor == commandLine) || (cursor[-1] == ' ')) && (SDL_strncasecmp(cursor, "-GPU", 4) == 0) &&
-        ((cursor[4] == '\0') || (cursor[4] == ' '))) {
-      return GPU_MODE_ON;
-    }
-  }
-  return GPU_MODE_OFF;
+  return (renderer == PERSISTENT_RENDERER_VULKAN) ? "vulkan" : "direct3d12";
+}
+
+SDL_GPUShaderFormat ShaderFormatOf(uint32_t renderer) noexcept
+{
+  return (renderer == PERSISTENT_RENDERER_VULKAN) ? SDL_GPU_SHADERFORMAT_SPIRV : SDL_GPU_SHADERFORMAT_DXBC;
+}
+
+/* Device creation properties for a GPU renderer (the caller destroys them). */
+SDL_PropertiesID DeviceProperties(uint32_t renderer) noexcept
+{
+  const SDL_PropertiesID properties = SDL_CreateProperties();
+  SDL_SetStringProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, DriverName(renderer));
+  SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN,
+                         ShaderFormatOf(renderer) == SDL_GPU_SHADERFORMAT_SPIRV);
+  SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN,
+                         ShaderFormatOf(renderer) == SDL_GPU_SHADERFORMAT_DXBC);
+  SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+  return properties;
 }
 
 void ReleaseDevice() noexcept
@@ -1258,6 +1306,8 @@ void ReleaseDevice() noexcept
   if (s_gpu.device == nullptr) {
     return;
   }
+  /* nothing may still use the textures and buffers released below */
+  SDL_WaitForGPUIdle(s_gpu.device);
   for (SDL_GPUGraphicsPipeline *&pipeline : s_gpu.pipelines) {
     SDL_ReleaseGPUGraphicsPipeline(s_gpu.device, pipeline);
     pipeline = nullptr;
@@ -1266,26 +1316,85 @@ void ReleaseDevice() noexcept
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.atlas);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.depthTarget);
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTexture);
   SDL_ReleaseGPUBuffer(s_gpu.device, s_gpu.vertexBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
   SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
+  SDL_ReleaseGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
+  if (s_gpu.window != nullptr) {
+    SDL_ReleaseWindowFromGPUDevice(s_gpu.device, s_gpu.window);
+  }
   SDL_DestroyGPUDevice(s_gpu.device);
   s_gpu = GpuState{};
 }
 
+/* The swapchain's present mode: mailbox (no tearing, never waits) where the driver has it, else vsync; the
+   swapchain texture is acquired without waiting, so a frame is dropped rather than the game held up. */
+void ChoosePresentMode() noexcept
+{
+  SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
+  if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+    presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+  }
+  SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode);
+}
+
+/* The framebuffer texture in the framebuffer's size and format: B5G6R5 for RGB565 (same bit layout) when the
+   device can sample it, else B8G8R8A8 (RGB565 is widened on the CPU); B8G8R8A8 for XRGB8888. */
+bool EnsureFrameTexture(Uint32 width, Uint32 height, bool sixteenBit) noexcept
+{
+  SDL_GPUTextureFormat format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
+  if (sixteenBit && SDL_GPUTextureSupportsFormat(s_gpu.device, SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM,
+                                                 SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+    format = SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM;
+  }
+  if ((s_gpu.frameTexture != nullptr) && (s_gpu.frameWidth == width) && (s_gpu.frameHeight == height) &&
+      (s_gpu.frameFormat == format)) {
+    return true;
+  }
+  SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTexture);
+  s_gpu.frameTexture = CreateTexture(format, SDL_GPU_TEXTUREUSAGE_SAMPLER, width, height);
+  s_gpu.frameFormat = format;
+  s_gpu.frameWidth = width;
+  s_gpu.frameHeight = height;
+  return s_gpu.frameTexture != nullptr;
+}
+
 } // namespace
 
-bool SdlGpuRenderer_Init(void)
+namespace thandor::sdl3 {
+
+bool GpuRendererSupported(uint32_t renderer) noexcept
 {
-  const GpuMode mode = RequestedMode();
-  if (mode == GPU_MODE_OFF) {
-    return false;
+#ifndef THANDOR_GPU_SHADERS_SPIRV
+  if (renderer == PERSISTENT_RENDERER_VULKAN) {
+    return false; /* built without dxc: no SPIR-V shaders */
   }
-  s_gpu.device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXBC, false, nullptr);
+#endif
+  const SDL_PropertiesID properties = DeviceProperties(renderer);
+  const bool supported = SDL_GPUSupportsProperties(properties);
+  SDL_DestroyProperties(properties);
+  return supported;
+}
+
+bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept
+{
+  ReleaseDevice();
+  const SDL_PropertiesID properties = DeviceProperties(renderer);
+  s_gpu.device = SDL_CreateGPUDeviceWithProperties(properties);
+  SDL_DestroyProperties(properties);
   if (s_gpu.device == nullptr) {
-    Thandor_Log("SDL_GPU renderer: no device (%s), the software renderer stays", SDL_GetError());
+    Thandor_Log("SDL_GPU: no %s device (%s)", DriverName(renderer), SDL_GetError());
     return false;
   }
+  s_gpu.shaderFormat = ShaderFormatOf(renderer);
+  if (!SDL_ClaimWindowForGPUDevice(s_gpu.device, window)) {
+    Thandor_Log("SDL_GPU: %s cannot present to the window (%s)", DriverName(renderer), SDL_GetError());
+    ReleaseDevice();
+    return false;
+  }
+  s_gpu.window = window;
+  ChoosePresentMode();
   SDL_GPUSamplerCreateInfo samplerInfo;
   SDL_zero(samplerInfo);
   samplerInfo.min_filter = SDL_GPU_FILTER_NEAREST;
@@ -1298,11 +1407,11 @@ bool SdlGpuRenderer_Init(void)
   s_gpu.atlas = CreateTexture(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, kAtlasSize,
                               kAtlasSize);
   if ((s_gpu.sampler == nullptr) || (s_gpu.atlas == nullptr) || !CreatePipelines()) {
-    Thandor_Log("SDL_GPU renderer: setup failed (%s), the software renderer stays", SDL_GetError());
+    Thandor_Log("SDL_GPU: %s setup failed (%s)", DriverName(renderer), SDL_GetError());
     ReleaseDevice();
     return false;
   }
-  s_gpu.mode = mode;
+  s_gpu.mode = compare ? GPU_MODE_COMPARE : GPU_MODE_ON;
 #ifdef THANDOR_DEV_TOOLS
   if (const char *interval = SDL_getenv("OPEN_THANDOR_GPU_COMPARE_MS")) {
     s_gpu.compareIntervalMs = static_cast<uint32_t>(std::max(1, SDL_atoi(interval)));
@@ -1312,13 +1421,15 @@ bool SdlGpuRenderer_Init(void)
   g_GraphicsSetViewportAndClearDepth = GpuRenderer_SetViewportAndClearDepth;
   g_GraphicsDrawPrimitiveQueue = GpuRenderer_DrawPrimitiveQueue;
   g_GraphicsEndScene = GpuRenderer_EndScene;
-  Thandor_Log("SDL_GPU renderer: %s on %s%s", (mode == GPU_MODE_COMPARE) ? "compare mode" : "primitive rasterization",
+  Thandor_Log("SDL_GPU renderer: %s on %s (%s shaders), presenting through SDL_GPU%s",
+              (s_gpu.mode == GPU_MODE_COMPARE) ? "compare mode" : "primitive rasterization",
               SDL_GetGPUDeviceDriver(s_gpu.device),
-              (mode == GPU_MODE_COMPARE) ? " (software picture shown, shots\\gpucmp_*)" : "");
+              (s_gpu.shaderFormat == SDL_GPU_SHADERFORMAT_SPIRV) ? "SPIR-V" : "DXBC",
+              (s_gpu.mode == GPU_MODE_COMPARE) ? " (software picture shown, shots\\gpucmp_*)" : "");
   return true;
 }
 
-void SdlGpuRenderer_Shutdown(void)
+void StopGpuDevice() noexcept
 {
   if (s_gpu.device == nullptr) {
     return;
@@ -1328,3 +1439,107 @@ void SdlGpuRenderer_Shutdown(void)
   g_GraphicsEndScene = SoftwareGraphicsDispatch_NoOp;
   ReleaseDevice();
 }
+
+bool GpuDeviceRunning() noexcept
+{
+  return s_gpu.device != nullptr;
+}
+
+bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height, bool sixteenBit) noexcept
+{
+  if ((s_gpu.device == nullptr) || (width <= 0) || (height <= 0)) {
+    return false;
+  }
+  const auto frameWidth = static_cast<Uint32>(width);
+  const auto frameHeight = static_cast<Uint32>(height);
+  if (!EnsureFrameTexture(frameWidth, frameHeight, sixteenBit)) {
+    if (!s_gpu.presentFailureLogged) {
+      Thandor_Log("SDL_GPU: frame texture %dx%d failed: %s", width, height, SDL_GetError());
+      s_gpu.presentFailureLogged = true;
+    }
+    return false;
+  }
+  const Uint32 texelBytes = (s_gpu.frameFormat == SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM) ? 2 : 4;
+  const Uint32 rowBytes = frameWidth * texelBytes;
+  if (!EnsureTransferBuffer(s_gpu.frameUpload, s_gpu.frameUploadBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+                            rowBytes * frameHeight)) {
+    return false;
+  }
+  /* cycle: the previous frame's upload may still be in flight */
+  auto *mapped = static_cast<std::byte *>(SDL_MapGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload, true));
+  if (mapped == nullptr) {
+    return false;
+  }
+  for (Uint32 row = 0; row < frameHeight; row++) {
+    const std::byte *source = pixels + static_cast<size_t>(row) * static_cast<size_t>(pitchBytes);
+    std::byte *destination = mapped + static_cast<size_t>(row) * rowBytes;
+    if (sixteenBit && (texelBytes == 4)) {
+      /* RGB565 widened to B8G8R8A8 (top bits repeated into the low ones) */
+      for (Uint32 column = 0; column < frameWidth; column++) {
+        uint16_t packed = 0;
+        std::memcpy(&packed, source + column * 2, sizeof packed);
+        const uint32_t red = (packed >> 11) & 0x1F;
+        const uint32_t green = (packed >> 5) & 0x3F;
+        const uint32_t blue = packed & 0x1F;
+        const uint32_t pixel = 0xFF000000u | (((red << 3) | (red >> 2)) << 16) | (((green << 2) | (green >> 4)) << 8) |
+                               ((blue << 3) | (blue >> 2));
+        std::memcpy(destination + column * 4, &pixel, sizeof pixel);
+      }
+    }
+    else {
+      std::memcpy(destination, source, rowBytes);
+    }
+  }
+  SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
+
+  SDL_GPUCommandBuffer *commands = SDL_AcquireGPUCommandBuffer(s_gpu.device);
+  if (commands == nullptr) {
+    return false;
+  }
+  SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
+  SDL_GPUTextureTransferInfo source;
+  SDL_zero(source);
+  source.transfer_buffer = s_gpu.frameUpload;
+  source.pixels_per_row = frameWidth;
+  source.rows_per_layer = frameHeight;
+  SDL_GPUTextureRegion destination;
+  SDL_zero(destination);
+  destination.texture = s_gpu.frameTexture;
+  destination.w = frameWidth;
+  destination.h = frameHeight;
+  destination.d = 1;
+  SDL_UploadToGPUTexture(copyPass, &source, &destination, true);
+  SDL_EndGPUCopyPass(copyPass);
+
+  SDL_GPUTexture *swapchain = nullptr;
+  Uint32 swapchainWidth = 0;
+  Uint32 swapchainHeight = 0;
+  if (!SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, &swapchainWidth, &swapchainHeight)) {
+    if (!s_gpu.presentFailureLogged) {
+      Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
+      s_gpu.presentFailureLogged = true;
+    }
+  }
+  if (swapchain != nullptr) {
+    /* letterboxed: the largest rectangle of the framebuffer's aspect, centred, black around it */
+    const SDL_FRect box = LetterboxRect(static_cast<float>(swapchainWidth), static_cast<float>(swapchainHeight),
+                                        static_cast<float>(frameWidth), static_cast<float>(frameHeight));
+    SDL_GPUBlitInfo blit;
+    SDL_zero(blit);
+    blit.source.texture = s_gpu.frameTexture;
+    blit.source.w = frameWidth;
+    blit.source.h = frameHeight;
+    blit.destination.texture = swapchain;
+    blit.destination.x = static_cast<Uint32>(box.x);
+    blit.destination.y = static_cast<Uint32>(box.y);
+    blit.destination.w = std::max<Uint32>(1, static_cast<Uint32>(box.w));
+    blit.destination.h = std::max<Uint32>(1, static_cast<Uint32>(box.h));
+    blit.load_op = SDL_GPU_LOADOP_CLEAR;
+    blit.clear_color = SDL_FColor{0.0f, 0.0f, 0.0f, 1.0f};
+    blit.filter = SDL_GPU_FILTER_LINEAR;
+    SDL_BlitGPUTexture(commands, &blit);
+  }
+  return SDL_SubmitGPUCommandBuffer(commands);
+}
+
+} // namespace thandor::sdl3

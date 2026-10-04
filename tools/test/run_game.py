@@ -14,6 +14,7 @@ import glob
 import os
 import shutil
 import subprocess
+from game_env import game_env
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('game_dir')
@@ -30,7 +31,7 @@ crash = os.path.join(game, 'crash.log')
 log_lines = sum(1 for _ in open(log, errors='replace')) if os.path.exists(log) else 0
 crash_time = os.path.getmtime(crash) if os.path.exists(crash) else 0
 shutil.rmtree(os.path.join(game, 'shots'), ignore_errors=True)
-env = dict(os.environ, OPEN_THANDOR_AUTOSHOT=args.shots)
+env = game_env(OPEN_THANDOR_AUTOSHOT=args.shots)
 if args.script:
     env['OPEN_THANDOR_SCRIPT'] = os.path.abspath(args.script)
 process = subprocess.Popen('"%s" %s' % (exe, args.args), executable=exe, cwd=game, env=env)

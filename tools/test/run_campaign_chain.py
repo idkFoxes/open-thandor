@@ -39,6 +39,7 @@ import shutil
 import subprocess
 import threading
 import time
+from game_env import game_env
 
 # (campaign, first level, levels to play): the target is the last one; tutorial 2 itself needs tutorial 1's units
 PAIRS = [('tutorial', 1, 2), ('tutorial', 1, 3), ('hansolo', 8, 2), ('hansolo', 12, 2), ('hansolo', 22, 2)]
@@ -138,7 +139,7 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
     last_ms = int(final_seconds * 1000) if final_seconds else (args.win_after + 20) * 1000
     with open(script, 'w') as f:
         f.write(script_for(levels, args.win_after, last_ms))
-    env = dict(os.environ, OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
+    env = game_env(OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 5) * 250), OPEN_THANDOR_WINDOW_Y=str((k // 5 % 2) * 350),
                OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(args.port_base + k),
                OPEN_THANDOR_CAMPAIGN=campaign, OPEN_THANDOR_CAMPAIGN_LEVEL=str(level),

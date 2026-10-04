@@ -355,54 +355,114 @@ add_custom_command(TARGET thandor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:thandor>
     VERBATIM)
 
-# SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
-# switched on at run time with OPEN_THANDOR_GPU=1 or -GPU; the software renderer stays the default. The shaders
-# (src/platform/sdl3/shaders/primitives.hlsl) are compiled to DXBC shader model 5.1 with fxc from the Windows SDK.
-# A GCC build without fxc (or with THANDOR_GPU_PRECOMPILED_SHADERS) uses the headers fxc made, committed in
-# src/platform/sdl3/shaders/compiled/; after a change of primitives.hlsl regenerate them from an MSVC gpu-test build
-# (docs/BUILDING.md).
-option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU" OFF)
-option(THANDOR_GPU_PRECOMPILED_SHADERS "SDL_GPU: use the committed shader headers instead of running fxc" OFF)
+# ---- SDL_GPU renderer and its shaders -------------------------------------------------------------------------
+# SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU, and the finished frame presented through
+# the same device (Vulkan by default, else Direct3D 12; the renderer is chosen in the game's display settings, see
+# docs/BUILDING.md). The shaders (src/platform/sdl3/shaders/primitives.hlsl) are compiled at build time:
+#   - DXBC shader model 5.1 with fxc from the Windows SDK (Direct3D 12); required for MSVC, optional for GCC,
+#   - SPIR-V with dxc (Vulkan), optional: vcpkg port directx-dxc (find_package(directx-dxc) sets DIRECTX_DXC_TOOL,
+#     or dxc.exe in $ENV{VCPKG_ROOT}/installed/x64-windows/tools/directx-dxc, also usable from a MinGW build), dxc on
+#     the PATH, or THANDOR_DXC=<path to dxc.exe>.
+# Each shader becomes a header gpu_shader_<name>.h (DXBC, array g_<entry>) and gpu_shader_<name>_spirv.h (SPIR-V,
+# array g_<entry>Spirv) in <build>/gpu_shaders. A compiler that is not found (or THANDOR_GPU_PRECOMPILED_SHADERS)
+# makes the build use the headers committed in src/platform/sdl3/shaders/compiled/ instead; after a change of
+# primitives.hlsl regenerate them from an MSVC build with fxc and dxc (docs/BUILDING.md).
+# A build directory configured before the option became ON by default still has OFF cached under the old help text:
+# switch it on once (a value given on the command line has a different help text and stays).
+get_property(THANDOR_GPU_OPTION_HELP CACHE THANDOR_RENDERER_SDL_GPU PROPERTY HELPSTRING)
+if(THANDOR_GPU_OPTION_HELP STREQUAL "Rasterize the primitive queues on the GPU with SDL_GPU")
+    set(THANDOR_RENDERER_SDL_GPU ON CACHE BOOL "Rasterize the primitive queues and present the frames with SDL_GPU" FORCE)
+endif()
+option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues and present the frames with SDL_GPU" ON)
+option(THANDOR_GPU_PRECOMPILED_SHADERS "SDL_GPU: use the committed shader headers instead of running fxc and dxc" OFF)
 if(THANDOR_RENDERER_SDL_GPU)
-    # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
-    set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
-    file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
-    list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
-    if(THANDOR_GPU_PRECOMPILED_SHADERS)
-        # no fxc
-    elseif(MSVC)
-        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
-    else()
-        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
-    endif()
     set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/primitives.hlsl)
+    set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
+    set(THANDOR_GPU_PRECOMPILED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
+    if(NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+        # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
+        set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
+        file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true
+             "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
+        list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
+        if(MSVC)
+            find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+        else()
+            find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
+        endif()
+        # dxc for SPIR-V
+        if(NOT THANDOR_DXC)
+            find_package(directx-dxc CONFIG QUIET)
+            if(DIRECTX_DXC_TOOL AND EXISTS "${DIRECTX_DXC_TOOL}")
+                set(THANDOR_DXC "${DIRECTX_DXC_TOOL}")
+            else()
+                set(THANDOR_DXC_HINTS)
+                if(DEFINED ENV{VCPKG_ROOT})
+                    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows/tools/directx-dxc" THANDOR_DXC_HINTS)
+                endif()
+                find_program(THANDOR_DXC dxc HINTS ${THANDOR_DXC_HINTS})
+            endif()
+        endif()
+    endif()
+    file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
     set(THANDOR_GPU_SHADER_HEADERS)
-    if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
-        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
-        file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
-        foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
-                       "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
-            separate_arguments(shader)
-            list(GET shader 0 shaderName)
-            list(GET shader 1 shaderProfile)
-            list(GET shader 2 shaderEntry)
+    set(THANDOR_GPU_SPIRV OFF)
+    foreach(shader "vertex vs VertexMain" "fragment ps FragmentMain" "fragment_alpha_test ps FragmentAlphaTestMain")
+        separate_arguments(shader)
+        list(GET shader 0 shaderName)
+        list(GET shader 1 shaderStage)
+        list(GET shader 2 shaderEntry)
+        if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
             set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
             add_custom_command(OUTPUT ${shaderHeader}
-                COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
+                COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderStage}_5_1 /E ${shaderEntry} /Vn g_${shaderEntry}
                         /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
                 DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
                 COMMENT "fxc ${shaderEntry}"
                 VERBATIM)
             list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
-        endforeach()
+        else()
+            # the committed header, copied so that a generated SPIR-V header next to it does not mix directories
+            configure_file(${THANDOR_GPU_PRECOMPILED_DIR}/gpu_shader_${shaderName}.h
+                           ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h COPYONLY)
+        endif()
+        if(THANDOR_DXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+            set(spirvHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}_spirv.h)
+            add_custom_command(OUTPUT ${spirvHeader}
+                COMMAND ${THANDOR_DXC} -nologo -spirv -fspv-target-env=vulkan1.0 -O3 -T ${shaderStage}_6_0
+                        -E ${shaderEntry} -Vn g_${shaderEntry}Spirv -Fh ${spirvHeader} ${THANDOR_GPU_SHADER_SOURCE}
+                DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
+                COMMENT "dxc -spirv ${shaderEntry}"
+                VERBATIM)
+            list(APPEND THANDOR_GPU_SHADER_HEADERS ${spirvHeader})
+            set(THANDOR_GPU_SPIRV ON)
+        elseif(EXISTS ${THANDOR_GPU_PRECOMPILED_DIR}/gpu_shader_${shaderName}_spirv.h)
+            configure_file(${THANDOR_GPU_PRECOMPILED_DIR}/gpu_shader_${shaderName}_spirv.h
+                           ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}_spirv.h COPYONLY)
+            set(THANDOR_GPU_SPIRV ON)
+        endif()
+    endforeach()
+    if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+        set(THANDOR_GPU_DXBC_FROM "fxc ${THANDOR_FXC}")
     else()
-        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
-        message(STATUS "SDL_GPU shaders: the precompiled headers in ${THANDOR_GPU_SHADER_DIR}")
+        set(THANDOR_GPU_DXBC_FROM "the precompiled headers in ${THANDOR_GPU_PRECOMPILED_DIR}")
     endif()
+    if(THANDOR_DXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+        set(THANDOR_GPU_SPIRV_FROM "dxc ${THANDOR_DXC}")
+    elseif(THANDOR_GPU_SPIRV)
+        set(THANDOR_GPU_SPIRV_FROM "the precompiled headers in ${THANDOR_GPU_PRECOMPILED_DIR}")
+    else()
+        set(THANDOR_GPU_SPIRV_FROM "none (dxc not found: vcpkg install directx-dxc, or -DTHANDOR_DXC=<dxc.exe>), the Vulkan renderer is not available")
+    endif()
+    message(STATUS "SDL_GPU shaders: DXBC from ${THANDOR_GPU_DXBC_FROM}; SPIR-V from ${THANDOR_GPU_SPIRV_FROM}")
     target_sources(thandor_curated PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor_curated PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor_curated PUBLIC THANDOR_RENDERER_SDL_GPU=1)
+    if(THANDOR_GPU_SPIRV)
+        target_compile_definitions(thandor_curated PRIVATE THANDOR_GPU_SHADERS_SPIRV=1)
+    endif()
 endif()
+# ---- end of the SDL_GPU renderer -------------------------------------------------------------------------------
 
 if(THANDOR_DEV_TOOLS)
     target_sources(thandor_curated PRIVATE

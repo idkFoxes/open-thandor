@@ -23,7 +23,7 @@ see [docs/BUILDING.md](docs/BUILDING.md#settings-file-thandorini)). Save games o
 | Area | Status |
 |---|---|
 | Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions (on "strong" and the highest game speed): 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the campaign end in all four campaigns (tutorial 3 levels, Luke 4, Nimm2 5, Hansolo 20 on the winning path); units are carried over into tutorial 2 and 3 and Hansolo 9, 13 and 23 |
-| Graphics | software renderer presented through SDL3 ([details](docs/software_raster.md)), optionally rasterized on the GPU (SDL_GPU). The original's Glide (3dfx) and Direct3D renderers were removed |
+| Graphics | renderer chosen in the display settings: Vulkan (default) or DirectX 12 through SDL_GPU (3D view rasterized on the GPU, frames presented through the same API), or the software renderer ([details](docs/software_raster.md)); window, borderless or exclusive fullscreen ([BUILDING](docs/BUILDING.md#renderer-and-display-mode-display-settings)). The original's Glide (3dfx) and Direct3D renderers were removed |
 | Platform | 64-bit (x64) only, on SDL3: window, input, timers, video presentation and audio; the original's DirectDraw, DirectInput, DirectSound and WinMM code was removed |
 | Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands; protocol-compatible with the original game |
 | Map editor | hidden in the original; opened by a hotkey on the `experimental/map-editor` branch |
@@ -67,7 +67,8 @@ water flow, double clicks, spinlocks that were not atomic).
 
 Requirements: Windows, Visual Studio 2022 or newer with the C++ workload (MSVC x64 and Windows SDK), CMake 3.25+
 and Ninja on the `PATH` (a "Developer Command Prompt" is not needed; [`cmake/msvc-x64.cmake`](cmake/msvc-x64.cmake)
-finds the compiler via `vswhere`), and SDL3 for x64, e.g. `vcpkg install sdl3:x64-windows`. CMake finds SDL3 through
+finds the compiler via `vswhere`), SDL3 for x64 with Vulkan, e.g. `vcpkg install sdl3[vulkan]:x64-windows`, and dxc for
+the Vulkan shaders, `vcpkg install directx-dxc:x64-windows`. CMake finds both through
 the environment variable `VCPKG_ROOT` (the vcpkg directory) or `-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`.
 
 ```bat
@@ -79,8 +80,8 @@ cmake --build --preset release
 The result is `cmake-build-msvc-release\thandor.exe` (x64) with `SDL3.dll` next to it. Other presets: `debug`,
 `test` (`THANDOR_DEV_TOOLS=ON`, builds into `build-test` and adds the developer tools: self-tests, windowed mode,
 several instances, scripted input, starting any campaign level, winning a level automatically, the determinism
-state hash; the default build has none of them) and `gpu-test` (`test` plus the SDL_GPU rasterizer,
-`THANDOR_RENDERER_SDL_GPU=ON`). CLion and Visual Studio pick the presets up from
+state hash; the default build has none of them) and `gpu-test` (the same as `test` now that the SDL_GPU renderers,
+`THANDOR_RENDERER_SDL_GPU`, are on by default). CLion and Visual Studio pick the presets up from
 [`CMakePresets.json`](CMakePresets.json).
 
 The second compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2) with SDL3 from

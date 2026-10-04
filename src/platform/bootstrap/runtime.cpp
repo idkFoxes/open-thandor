@@ -228,10 +228,9 @@ static void ProcessEntry_RunGame(void)
   displayWidth = GAME_START_DISPLAY_WIDTH;
   displayHeight = GAME_START_DISPLAY_HEIGHT;
   bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
-  adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
-  if (g_GraphicsAdapterCount <= adapterIndex) {
-    adapterIndex = 0;
-  }
+  /* the adapters are the renderers; the choice is kept in PERSISTENT_SETTING_RENDERER, not in the original's
+     adapter index (SdlVideo_SavedAdapterIndex) */
+  adapterIndex = SdlVideo_SavedAdapterIndex();
   if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
     FatalError_ExitIfFailed(displayModeError,true);
   }
@@ -557,14 +556,11 @@ void __cdecl Game_Run(void)
   bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
   if (displayWidth != GAME_START_DISPLAY_WIDTH || displayHeight != GAME_START_DISPLAY_HEIGHT ||
       bitsPerPixel != PERSISTENT_DEFAULT_BITS_PER_PIXEL) {
-    adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
-    if (g_GraphicsAdapterCount <= adapterIndex) {
-      adapterIndex = 0;
-    }
+    adapterIndex = SdlVideo_SavedAdapterIndex();
     if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
       FatalError_ExitIfFailed(displayModeError,true);
     }
-    PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
+    SdlVideo_SaveAdapterIndex(g_ActiveGraphicsAdapterIndex);
   }
   if (!Frontend_MainLoop(1,&mainLoopError)) {
     FatalError_ExitIfFailed(mainLoopError,true);

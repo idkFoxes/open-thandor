@@ -10,7 +10,11 @@ Requirements:
 
 - Visual Studio 2022 or newer with the C++ workload (MSVC x64 tools and a Windows 10/11 SDK)
 - CMake 3.25 or newer and Ninja (both come with Visual Studio)
-- SDL3 for x64, e.g. from vcpkg: `vcpkg install sdl3:x64-windows`
+- SDL3 for x64 with Vulkan support, e.g. from vcpkg: `vcpkg install sdl3[vulkan]:x64-windows` (plain `sdl3` builds
+  and runs, but its SDL3.dll has no Vulkan, so only DirectX 12 and Software are offered)
+- for the Vulkan shaders: dxc, e.g. from vcpkg: `vcpkg install directx-dxc:x64-windows` (found through
+  `find_package(directx-dxc)`, or pass `-DTHANDOR_DXC=<path to dxc.exe>`); fxc for the Direct3D 12 shaders comes with
+  the Windows SDK; without them the build uses the committed shader headers (see below)
 
 SDL3 is found with `find_package(SDL3)`: pass its install prefix in `CMAKE_PREFIX_PATH`
 (`-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`), or set the environment variable `VCPKG_ROOT` to the vcpkg
@@ -34,7 +38,7 @@ or `-DCMAKE_PREFIX_PATH=...` on the command line):
 | `release` | RelWithDebInfo (`cmake-build-msvc-release`) |
 | `debug` | Debug (`cmake-build-msvc-debug`) |
 | `test` | RelWithDebInfo with the developer tools, in `build-test` (what `tools/test` runs) |
-| `gpu-test` | as `test`, plus the SDL_GPU rasterizer (`THANDOR_RENDERER_SDL_GPU`, see below) |
+| `gpu-test` | as `test` (the SDL_GPU renderers are on by default now, see below) |
 
 ```bat
 cmake --preset test
@@ -69,7 +73,7 @@ cmake --build --preset mingw-test
 |---|---|
 | `mingw-release` | RelWithDebInfo (`build-mingw-release`) |
 | `mingw-test` | RelWithDebInfo with the developer tools (`build-mingw-test`) |
-| `mingw-gpu-test` | as `mingw-test`, plus the SDL_GPU rasterizer (`build-mingw-gpu-test`) |
+| `mingw-gpu-test` | as `mingw-test` (`build-mingw-gpu-test`; the SDL_GPU renderers are on by default now) |
 
 [`cmake/mingw-x64.cmake`](../cmake/mingw-x64.cmake) takes the toolchain from the cache variable or environment
 variable `MINGW_ROOT` (the directory with `bin\g++.exe`), else the `g++` on the `PATH`, else `C:\mingw64`,
@@ -108,10 +112,13 @@ python tools\data\symbolize.py crash_raw.log build-mingw-test\thandor.exe
 `symbolize.py` calls `addr2line` for an `.exe` and reads a linker map otherwise; the GCC build also writes
 `thandor.map` (`-Wl,-Map`), which lists only global symbols (no `static` functions), so prefer the executable.
 
-With `THANDOR_RENDERER_SDL_GPU` a GCC build compiles the shaders with `fxc` when it finds the Windows SDK, and
-otherwise uses the headers fxc made, committed in
-[`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`
-forces them). After a change of `primitives.hlsl` regenerate them: build the MSVC preset `gpu-test` and copy
+With `THANDOR_RENDERER_SDL_GPU` (on by default) a GCC build compiles the shaders with `fxc` when it finds the
+Windows SDK and with the Windows `dxc.exe` when it finds it (`THANDOR_DXC`, the `PATH`, or
+`%VCPKG_ROOT%\installed\x64-windows\tools\directx-dxc` after `vcpkg install directx-dxc:x64-windows`), and
+otherwise uses the headers fxc and dxc made, committed in
+[`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`gpu_shader_<name>.h` DXBC,
+`gpu_shader_<name>_spirv.h` SPIR-V; `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON` forces them). After a change of
+`primitives.hlsl` regenerate them: build the MSVC preset `test` with fxc and dxc found and copy
 `<build dir>\gpu_shaders\gpu_shader_*.h` there.
 
 ## Running
@@ -218,30 +225,63 @@ The window, the event pump, keyboard and mouse, the periodic timers, the video p
 SDL3 (`src/platform/sdl3`, interface
 [`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)); the game reaches them
 through the original's function slots (`g_Win32PumpMessages`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
-`g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game always draws with its software renderer into a
-memory framebuffer (RGB565 or XRGB8888) that is presented letterboxed through an SDL renderer, fullscreen on the
-desktop (or in a window with the developer tools' `OPEN_THANDOR_WINDOWED=1`). The original's 3dfx Glide and
-Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed. The display settings list one adapter,
-"SDL", with the modes from 640x480 up to the desktop size in 16 and 32 bits; a `THANDOR.cfg` that still names an
-adapter index past that list starts on adapter 0. The network code stays on WinSock (UDP).
+`g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game draws its frames with its software renderer
+into a memory framebuffer (RGB565 or XRGB8888); the 3D view can be rasterized on the GPU instead (below). The
+original's 3dfx Glide and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed. The network
+code stays on WinSock (UDP).
+
+### Renderer and display mode (display settings)
+
+The display settings page (main room: Optionen -> Grafik) chooses:
+
+- **Darstellung** (the original's adapter list, now the renderers): `Vulkan (GPU)` (default), `DirectX 12 (GPU)`,
+  `Software (CPU)`. Only renderers whose driver is available are listed (probed once at start through SDL_GPU).
+  Vulkan and DirectX 12 rasterize the 3D view on the GPU and present every frame through the SDL_GPU device of that
+  API (its own swapchain, so overlays such as RivaTuner show that API). Software uses the software rasterizer and
+  presents through an SDL_Renderer created with the driver `vulkan`, else `direct3d12`, else `direct3d11`, else
+  SDL's choice. A GPU renderer that cannot start falls back Vulkan -> DirectX 12 -> Software. **DirectX 11** is not
+  offered: SDL_GPU has no Direct3D 11 backend.
+- **Anzeigemodus**: `Fenster` (a normal, resizable window in the mode's size; the mouse is the system mouse),
+  `Vollbildfenster` (a borderless window over the whole display) and `Vollbild` (default: exclusive fullscreen in
+  the chosen mode, or the closest larger one the display has). The frame is letterboxed in all three.
+- **Farbtiefe** and **Auflösung** as in the original (640x480 up to the desktop size, 16 and 32 bits).
+
+"Anwenden" switches at once (renderer included, no restart) and saves the choice. `thandor.log` names the renderer
+and the API that presents (`SDL_GPU renderer: ... on vulkan`, `software renderer, presenting through the
+SDL_Renderer direct3d12`, `display mode 1280x800x32, window, renderer Vulkan`).
+
+The renderer and the display mode kind are kept in the game's settings image with the rest of the settings
+(`PERSISTENT_SETTING_RENDERER` 0 Vulkan / 1 DirectX 12 / 2 Software and `PERSISTENT_SETTING_DISPLAY_MODE_KIND`
+0 Vollbild / 1 Vollbildfenster / 2 Fenster, [`include/thandor/core/settings/persistent.h`](../include/thandor/core/settings/persistent.h));
+a settings file without them starts with Vulkan in exclusive fullscreen. The original's adapter index stays 0.
+
+Overrides (every build): `OPEN_THANDOR_GPU=0|off|software` or the command-line option `-SOFTWARE` forces the software
+renderer, `OPEN_THANDOR_GPU=vulkan|d3d12` one GPU API, `OPEN_THANDOR_GPU=1` or `-GPU` the first GPU API that runs,
+`OPEN_THANDOR_GPU=auto` the saved choice (as without the variable). A forced renderer is the only one listed and is
+not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a window. The test tools
+(`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_GPU=0` unless the caller sets it, so the pixel
+and hash checks keep comparing the software renderer.
 
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 
-With the CMake option `THANDOR_RENDERER_SDL_GPU=ON` (default `OFF`; preset `gpu-test`) the build can rasterize
-the 3D view on the GPU through SDL_GPU (Direct3D 12) instead of the software rasterizer
-(`src/platform/sdl3/gpu_renderer.cpp`). The software renderer stays the default; the GPU path is switched on at run
-time with `OPEN_THANDOR_GPU=1` or the command-line option `-GPU`. Only the rasterization of the primitive queues
-moves: lighting, fog, projection, sorting and the simulation stay on the CPU, the finished 3D view is copied back
-into the framebuffer, and the overlays, the UI and the cursor are drawn on it as before. Each triangle is rebuilt
-from the software rasterizer's own fixed-point setup, so the picture matches the software renderer apart from
-rounding (blend tables, 16-bit quantization, single edge pixels). The shaders
-(`src/platform/sdl3/shaders/primitives.hlsl`) are compiled to DXBC with `fxc` from the Windows SDK during the
-build (a GCC build without `fxc` uses the committed headers, see [MinGW-w64 GCC](#mingw-w64-gcc)). Without a Direct3D 12 device the software renderer stays (logged in `thandor.log`).
+With the CMake option `THANDOR_RENDERER_SDL_GPU` (default `ON`; a build directory configured before still holding
+the old default `OFF` is switched on once) the build contains the GPU renderers
+(`src/platform/sdl3/gpu_renderer.cpp`). Only the rasterization of the primitive queues moves: lighting, fog,
+projection, sorting and the simulation stay on the CPU, the finished 3D view is copied back into the framebuffer,
+and the overlays, the UI and the cursor are drawn on it as before. Each triangle is rebuilt from the software
+rasterizer's own fixed-point setup, so the picture matches the software renderer apart from rounding (blend
+tables, 16-bit quantization, single edge pixels; 0.1-0.3 % of the pixels differ by more than 8 on both APIs). The
+shaders (`src/platform/sdl3/shaders/primitives.hlsl`) are compiled during the build to DXBC with `fxc` (Windows SDK,
+DirectX 12) and to SPIR-V with `dxc -spirv` (Vulkan). When `fxc` or `dxc` is not found (fxc is required for MSVC),
+or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers committed in
+[`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) instead (see
+[MinGW-w64 GCC](#mingw-w64-gcc)); a build without SPIR-V headers has no Vulkan renderer. With the option `OFF` only
+the software renderer exists.
 
-With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame, shows the software
-picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the 3D view of both as
-`shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the difference; both modes log
-the per-scene times every 10 seconds.
+With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame (on the first GPU API that
+runs), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
+3D view of both as `shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the
+difference; the GPU renderers log their per-scene times every 10 seconds.
 
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 

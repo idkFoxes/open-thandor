@@ -1058,7 +1058,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .nextSibling = UI_TEMPLATE_LINK(0x308C), .firstChild = UI_TEMPLATE_LINK(0x2E84), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -10,
+            .leftOffset = -288, .topOffset = -142, .rightOffset = 32, .bottomOffset = -64, /* not in the original: 3 rows (-10) */
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
@@ -1208,10 +1208,11 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x0000202B, 0x0000212B},
         { /* +34F0 displayColorDepthGroup g_UiTitledWindowControlVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x3544), .parent = UI_TEMPLATE_LINK(0x2CB8),
+            /* not in the original: followed by displayModeKindGroup, two rows (top 2) */
+            .nextSibling = UI_TEMPLATE_LINK(0x5954), .firstChild = UI_TEMPLATE_LINK(0x3544), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
-            .leftOffset = -288, .topOffset = 2, .rightOffset = 32, .bottomOffset = 110,
+            .leftOffset = -288, .topOffset = 38, .rightOffset = 32, .bottomOffset = 110,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
@@ -2027,4 +2028,42 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000008, 0x00000000, 0x00002117},
+        /* not in the original (open-thandor): the display mode kind choice of the display settings page, between the
+           adapter (renderer) and colour depth groups; same look as the adapter choices */
+        { /* +5954 displayModeKindGroup g_UiTitledWindowControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x59A8), .parent = UI_TEMPLATE_LINK(0x2CB8),
+            .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -288, .topOffset = -52, .rightOffset = 32, .bottomOffset = 26,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, TEXT_ID_DISPLAY_MODE_KIND_TITLE},
+        { /* +59A8 displayModeKindWindow g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x5A08), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5954),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
+        {
+            0x00000481, FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW, TEXT_ID_DISPLAY_MODE_KIND_WINDOW},
+        { /* +5A08 displayModeKindBorderless g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x5A68), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5954),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
+        {
+            0x00000481, FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS, TEXT_ID_DISPLAY_MODE_KIND_BORDERLESS},
+        { /* +5A68 displayModeKindFullscreen g_UiTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5954),
+            .vtable = THANDOR_PTR(&g_UiTextButtonControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
+            .rightAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
+        {
+            0x00000481, FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN, TEXT_ID_DISPLAY_MODE_KIND_FULLSCREEN},
 };

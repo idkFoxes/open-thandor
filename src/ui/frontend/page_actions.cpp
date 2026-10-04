@@ -103,6 +103,12 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
         /* 0 */ THANDOR_FN(ScenarioCatalog_RebuildSaveRecordListPage),
         /* 1 */ THANDOR_FN(ScenarioCatalog_RebuildLevelRecordListPage),
         /* 2 */ THANDOR_FN(ScenarioCatalog_RebuildCampaignRecordListPage)
+    },
+    /* not in the original: actions 0x2058..0x205A, the display mode kind choices */
+    .handlers58_5A = {
+        /* 88 */ THANDOR_FN(FrontendDisplaySettingsAction_SelectDisplayModeKind),
+        /* 89 */ THANDOR_FN(FrontendDisplaySettingsAction_SelectDisplayModeKind),
+        /* 90 */ THANDOR_FN(FrontendDisplaySettingsAction_SelectDisplayModeKind)
     }};
 
 /* Implementation ownership: ui/frontend/page_actions. */

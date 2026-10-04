@@ -43,6 +43,19 @@
 #define PERSISTENT_SETTING_RENDERER 0xB0 /* 0 Vulkan (default), 1 DirectX 12, 2 Software; open-thandor addition */
 #define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* 0 fullscreen (default), 1 borderless, 2 window; open-thandor addition */
 #define PERSISTENT_SETTINGS_NAME_BYTES 0x28 /* 20 UTF-16 code units */
+/* Not in the original (open-thandor additions in the free tail of the image; the original game never reads them and
+   writes the whole image back unchanged, so the file stays compatible). A file without them reads 0, the defaults. */
+#define PERSISTENT_SETTING_RENDERER 0xB0 /* PERSISTENT_RENDERER_*: the display settings' renderer */
+#define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* PERSISTENT_DISPLAY_MODE_*: fullscreen, borderless or window */
+#define PERSISTENT_RENDERER_VULKAN 0 /* default: SDL_GPU on Vulkan */
+#define PERSISTENT_RENDERER_DIRECT3D12 1 /* SDL_GPU on Direct3D 12 */
+#define PERSISTENT_RENDERER_SOFTWARE 2 /* the software rasterizer, presented through an SDL_Renderer */
+#define PERSISTENT_RENDERER_COUNT 3
+#define PERSISTENT_DISPLAY_MODE_FULLSCREEN 0 /* default "Vollbild": exclusive fullscreen in the display mode (or the
+                                                 closest larger one), letterboxed */
+#define PERSISTENT_DISPLAY_MODE_BORDERLESS 1 /* "Vollbildfenster": borderless window over the whole display, letterboxed */
+#define PERSISTENT_DISPLAY_MODE_WINDOW 2 /* "Fenster": normal window in the size of the display mode */
+#define PERSISTENT_DISPLAY_MODE_COUNT 3
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
 /* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
 #define PERSISTENT_SOUND_OPTION_EFFECTS 0x1

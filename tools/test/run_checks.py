@@ -57,6 +57,7 @@ import threading
 import time
 
 import cpu_load
+from game_env import game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -153,7 +154,7 @@ def run_game(folder, arguments, env, timeout, port):
         if os.path.exists(os.path.join(folder, entry)):
             os.remove(os.path.join(folder, entry))
     exe = os.path.join(folder, 'thandor.exe')
-    env = dict(os.environ, OPEN_THANDOR_WINDOWED='1', OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(port),
+    env = game_env(OPEN_THANDOR_WINDOWED='1', OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(port),
                **env)
     process = subprocess.Popen('"%s" %s' % (exe, arguments), executable=exe, cwd=folder, env=env)
     try:

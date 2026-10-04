@@ -411,6 +411,7 @@ struct FrontendGraphicsRuntimeSettingsPageState {
 struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers00_54[85]; // Generic queued action handlers for action IDs 0x2000-0x2054.
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t)> scenarioCatalogRebuildCallbacks[3]; // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
+    Ptr32<void (void *)> handlers58_5A[3]; // Not in the original: action IDs 0x2058-0x205A (the display mode kind choices).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -1419,6 +1420,16 @@ typedef struct FrontendUiImage {
     uint32_t clientLobbyPlayerList_fields[14];
     UiNodeBase clientLobbyPlayerListLabel; /* +58F8 g_UiFocusProxyControlVtable: Caption (text 0x2117) above the client lobby player list. */
     uint32_t clientLobbyPlayerListLabel_fields[4];
+    /* Not in the original (open-thandor): the display mode kind choice of the display settings page, appended
+       after the original nodes and linked in after displayColorDepthGroup. */
+    UiNodeBase displayModeKindGroup; /* +5954 g_UiTitledWindowControlVtable: Titled box "Anzeigemodus:" (TEXT_ID_DISPLAY_MODE_KIND_TITLE). */
+    uint32_t displayModeKindGroup_fields[2];
+    UiNodeBase displayModeKindWindow; /* +59A8 g_UiTextButtonControlVtable: "Fenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW). */
+    uint32_t displayModeKindWindow_fields[5];
+    UiNodeBase displayModeKindBorderless; /* +5A08 g_UiTextButtonControlVtable: "Vollbildfenster" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS). */
+    uint32_t displayModeKindBorderless_fields[5];
+    UiNodeBase displayModeKindFullscreen; /* +5A68 g_UiTextButtonControlVtable: "Vollbild" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN). */
+    uint32_t displayModeKindFullscreen_fields[5];
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
 #define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))

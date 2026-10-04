@@ -18,8 +18,12 @@
                          of 0xFFFF marks an untextured packet
    w is 1 everywhere, so every attribute is interpolated affinely in screen space like the software rasterizer.
 
-   Compiled with fxc to DXBC shader model 5.1 (SDL_GPU_SHADERFORMAT_DXBC, the D3D12 backend). Fragment resources
-   live in register space 2 as SDL_GPU expects. */
+   Compiled twice: with fxc to DXBC shader model 5.1 (SDL_GPU_SHADERFORMAT_DXBC, the Direct3D 12 backend) and with
+   dxc -spirv to SPIR-V (SDL_GPU_SHADERFORMAT_SPIRV, the Vulkan backend). SDL_GPU's resource conventions: the
+   fragment stage's sampled textures are register space 2 on D3D12 and descriptor set 2 on Vulkan, where SDL binds
+   each texture + sampler pair as one combined image sampler at binding n; dxc turns the register space into the
+   set, and [[vk::combinedImageSampler]] merges texture and sampler into that one binding. The stage inputs and
+   outputs get their Vulkan locations in declaration order (attribute n = location n). */
 
 struct VertexInput {
     float3 position : TEXCOORD0;
@@ -35,8 +39,13 @@ struct VertexOutput {
     nointerpolation uint4 atlas : TEXCOORD2;
 };
 
+#ifdef __spirv__
+[[vk::combinedImageSampler]] [[vk::binding(0, 2)]] Texture2D<float4> g_Atlas;
+[[vk::combinedImageSampler]] [[vk::binding(0, 2)]] SamplerState g_AtlasSampler;
+#else
 Texture2D<float4> g_Atlas : register(t0, space2);
 SamplerState g_AtlasSampler : register(s0, space2);
+#endif
 
 VertexOutput VertexMain(VertexInput input)
 {
@@ -57,7 +66,13 @@ float4 ShadeFragment(VertexOutput input)
         int2 texel = int2(floor(input.texel));
         uint x = input.atlas.x + ((uint)texel.x & input.atlas.z);
         uint y = input.atlas.y + ((uint)texel.y & input.atlas.w);
+#ifdef __spirv__
+        /* the combined image sampler has to be sampled (a Load would leave the sampler unused): the nearest texel
+           at its centre is the same texel */
+        color *= g_Atlas.SampleLevel(g_AtlasSampler, (float2(x, y) + 0.5) / 4096.0, 0);
+#else
         color *= g_Atlas.Load(int3(x, y, 0));
+#endif
     }
     return color;
 }
