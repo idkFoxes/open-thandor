@@ -8,7 +8,7 @@
 #define THANDOR_CORE_X86_EMULATION_H
 
 /*
-Helpers that reproduce what the original's x86 code does, expressed in portable C: container-of, atomic exchange,
+Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange,
 x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
 */
 
@@ -35,7 +35,6 @@ one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
 A pointer-sized location (a pointer or uintptr_t/handle slot, 8 bytes) is swapped as a whole and the
 previous contents come back as uintptr_t.
 */
-#ifdef __cplusplus
 template <typename T, typename V>
 static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
 {
@@ -49,10 +48,6 @@ static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
     }
 }
 #define THANDOR_ATOMIC_EXCHANGE(ptr, value) thandor_atomic_exchange((ptr), (value))
-#else
-#define THANDOR_ATOMIC_EXCHANGE(ptr, value) \
-    ((uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value)))
-#endif
 
 /* ROUND(x): x87 FRNDINT in the default round-to-nearest-even mode. */
 #define ROUND(x) rint(x)
@@ -143,27 +138,13 @@ static __inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsig
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_psllw(unsigned long long a, unsigned long long count)
-{
-    ThandorMmx x, r;
-    int i;
-    x.q = a;
-    for (i = 0; i < 4; i++) r.uw[i] = count > 15 ? 0 : (unsigned short)(x.uw[i] << count);
-    return r.q;
-}
-
-static __inline unsigned long long thandor_mmx_identity(unsigned long long v) { return v; }
 /* Operands are integers or the 8-byte lane structs some MMX values are typed as. */
 static __inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
 static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
-#ifdef __cplusplus
 static inline unsigned long long thandor_mmx_q(SoftwareRgbWordLanes v) { return thandor_mmx_rgb(v); }
 static inline unsigned long long thandor_mmx_q(SoftwareBgraWordLanes v) { return thandor_mmx_bgra(v); }
 static inline unsigned long long thandor_mmx_q(unsigned long long v) { return v; }
 #define THANDOR_MMX_Q(v) thandor_mmx_q(v)
-#else
-#define THANDOR_MMX_Q(v) _Generic((v),     SoftwareRgbWordLanes: thandor_mmx_rgb,     SoftwareBgraWordLanes: thandor_mmx_bgra,     default: thandor_mmx_identity)(v)
-#endif
 
 #define pmulhw(a, b) thandor_mmx_pmulhw(THANDOR_MMX_Q(a), THANDOR_MMX_Q(b))
 #define pmaddwd(a, b) thandor_mmx_pmaddwd(THANDOR_MMX_Q(a), THANDOR_MMX_Q(b))
@@ -171,11 +152,5 @@ static inline unsigned long long thandor_mmx_q(unsigned long long v) { return v;
 #define paddusw(a, b) thandor_mmx_paddusw(THANDOR_MMX_Q(a), THANDOR_MMX_Q(b))
 #define paddsw(a, b) thandor_mmx_paddsw(THANDOR_MMX_Q(a), THANDOR_MMX_Q(b))
 #define psraw(a, n) thandor_mmx_psraw(THANDOR_MMX_Q(a), (unsigned long long)(n))
-#define psllw(a, n) thandor_mmx_psllw(THANDOR_MMX_Q(a), (unsigned long long)(n))
-
-
-/* The original scales floats by powers of two with integer adds on their bit pattern (e.g. adding
-   -0x6000000 to the exponent bits divides by 2^12); this adds delta to the bit pattern of lvalue. */
-#define THANDOR_FLOAT_ADD_EXPONENT_BITS(lvalue, delta) (*(int32_t *)&(lvalue) += (int32_t)(delta))
 
 #endif /* THANDOR_CORE_X86_EMULATION_H */

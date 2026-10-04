@@ -26,24 +26,6 @@ typedef struct ModelPackedPointRecord ModelPackedPointRecord, *PModelPackedPoint
    false). Kept distinct from C/C++ bool, which normalizes to 0/1. */
 using Bool8 = uint8_t;
 
-/* x86 calling-convention markers. Portable source views treat them as annotations. */
-#ifndef _MSC_VER
-#ifndef __fastcall
-#define __fastcall
-#endif
-#ifndef __stdcall
-#define __stdcall
-#endif
-#ifndef __cdecl
-#define __cdecl
-#endif
-#endif
-
-#ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
-#define _WCHAR_T_DEFINED
-typedef unsigned short wchar_t;
-#endif
-
 using FactionRuntimeIndex = int;
 
 using Q12 = int;
