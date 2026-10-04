@@ -70,7 +70,9 @@ add_library(thandor_curated STATIC
     src/core/math/fixed_vector.cpp
     src/core/math/geometry.cpp
     src/core/math/interpolation.cpp
+    src/core/math/motion_spline.cpp
     src/core/math/random.cpp
+    src/core/math/spline.cpp
     src/core/memory/allocator.cpp
     src/core/memory/synchronization.cpp
     src/core/settings/persistent.cpp

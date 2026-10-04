@@ -14,6 +14,8 @@
 #include <thandor/core/math/fixed_vector.h>
 #include <thandor/core/math/geometry.h>
 #include <thandor/core/math/interpolation.h>
+#include <thandor/core/math/motion_spline.h>
 #include <thandor/core/math/random.h>
+#include <thandor/core/math/spline.h>
 
 #endif /* THANDOR_CORE_MATH_H */
