@@ -64,6 +64,7 @@ Main findings:
 | 3 | Command validator at the dispatch (network), frontend peer indices, editor commands (terrain), field-grid load validation, UI controls crashes, movie close race and FLM header checks, graphics bounds | done, all checks pass |
 | 4 | Threads: atomic counters, spin lock with `std::atomic_ref` and a guard, timer unregister | done, all checks pass |
 | 5 | Test aids first: raster/blit golden-hash self-test, sine/fixed-math table hash, SAM decode hash | done (`raster`, `tables`, `sam` self-tests; GCC and MSVC give the same hashes) |
+| review follow-up | Security/crash packages of the review triage (file, asset, savegame, level and peer input, local crashes, races, UB) | P01, P02, P06, P09, P10, P11, P18 done; the rest moved to step 11 ([plan](step11_security_crash.md)) / step 12 ([plan](step12_multiplayer_security.md)) |
 | 6+ | Idiomatic C++ in small mechanical packages: `nullptr`, `const`, `[[nodiscard]]`, `constexpr` tables, C casts to named casts, flag typedefs `int` to fixed-width unsigned, typed vtable slots (`UI_SLOT`) instead of type-erasing casts, `std::span` for pointer+count, RAII guards for spin locks/framebuffer access/focus lending, typed accessors instead of raw offsets, `enum class` where a value is a pure enumeration | started: clang-tidy wrapper `tools/dev/tidy.py`, `nullptr` everywhere in `src` (done); redundant `(void)` and `typedef` to `using` (in work) |
 | later | Larger merges: hex walker template (family by family, determinism check per family), key-command matching, settings handlers, lockstep channel, new vs loaded session | queued |
 
@@ -71,13 +72,21 @@ Each package lists its files, the change, why valid data stays identical, and th
 
 ## Owner decisions (2026-10-04)
 
-- Scope: step 8 covers every security and crash finding of the review, the cosmetic clean-up (dead code, stale
-  comments), the global mechanical packages, typed slots, the hex walker template and the larger merges (key commands,
-  local-or-queue, settings, sessions, lockstep). The remaining idiomatic backlog (accessors, value types, RAII and
-  `enum class` everywhere, class-based subsystems) becomes a later step of its own.
+- Scope: step 8 covers the cosmetic clean-up (dead code, stale comments), the global mechanical packages, typed
+  slots, the hex walker template and the larger merges (key commands, local-or-queue, settings, sessions, lockstep).
+  The remaining idiomatic backlog (accessors, value types, RAII and `enum class` everywhere, class-based subsystems)
+  becomes a later step of its own.
+- Security and crash fixes moved out (decided later the same day): the review's remaining security/crash packages
+  leave step 8. The multiplayer/network ones become step 12, the last step
+  ([plan](step12_multiplayer_security.md)); all others (file/asset/savegame/level input, local crashes, races, UB,
+  developer-tool hardening and the non-network behaviour changes below) become step 11
+  ([plan](step11_security_crash.md)). Done in step 8 and merged: P01, P02, P06, P09, P10, P11, P18.
+- Game tests (determinism, pixels, save/load, multiplayer, all maps, campaign) run only once at the end of step 8,
+  with the game windows minimized.
 - Kept tools: `texture_decompose.cpp` and the FLM encoder join the SAM encoder, map editor, TXT2STR and palette
-  optimiser; the `scanaddr` self-test is removed.
-- Behaviour changes allowed as fixes: `EDITOR_SAVE_MAP` from a peer is ignored unless the local editor is active;
+  optimiser; the `scanaddr` self-test is removed (both in step 11).
+- Behaviour changes allowed as fixes (implemented in step 11, `EDITOR_SAVE_MAP` in step 12): `EDITOR_SAVE_MAP`
+  from a peer is ignored unless the local editor is active;
   high instead of realtime process priority; the archive writer writes a temporary file and replaces the target;
   a locked savegame shows an error instead of exiting; PCK archives are checked for their magic on mount.
-- The inert text override table is removed with a same-size placeholder allocation so the arena order stays.
+- The inert text override table is removed with a same-size placeholder allocation so the arena order stays (step 11).

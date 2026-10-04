@@ -47,6 +47,10 @@ Next:
    ([plan](docs/plans/step9_gpu_ui.md)).
 3. Step 10 (later): a patch installer (Inno Setup 7, classic style) that installs Open Thandor as version 1.0.6 onto an existing Thandor
    installation, in the style of the original Patch 5 installer ([plan](docs/plans/step10_installer.md)).
+4. Step 11 (later): the remaining security and crash fixes of the step 8 review for local input - level, savegame
+   and asset files, local crashes, thread races, undefined behaviour ([plan](docs/plans/step11_security_crash.md)).
+5. Step 12 (later): the multiplayer security fixes - data received from peers, lobby and session transfer, the
+   UDP backend; tested against the original game ([plan](docs/plans/step12_multiplayer_security.md)).
 
 ### How correctness is kept
 
