@@ -60,81 +60,6 @@
    visited cells */
 #define GRID_REACHABILITY_OPEN_STOP_MASK 0xf0007f01
 
-PathingDestination
-EntityPathing_ResolveDestinationAndRebuildRoutes
-          (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
-          WorldRuntimeContext *worldRuntime);
-
-Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
-          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);
-
-void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
-
-Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
-
-void GridScratch_ReleaseBuffers(void);
-
-void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
-
-Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
-
-WorldPositionXY
-EntityPathing_RebuildOverlappingGroupRoutes
-          (UQ12 targetWorldY,UQ12 targetWorldX,GameEntityRuntime *routeEntityRuntime,
-          WorldRuntimeContext *worldRuntime);
-
-void GridFootprint_ClearTraversalFlagsAroundWorldPoint
-          (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12);
-
-WorldPositionXY EntityPathing_UpdateRouteSegment
-          (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
-          EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
-
-Bool8 GridPathCost_BacktrackBestHexRoute
-          (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
-          FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
-          FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask);
-
-void GridPathRegion_MarkUnreachableFromCell
-          (GridPathUnreachableReferenceRow32 referenceRow,
-          GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row,
-          FieldGridCellCoordinate column,FieldGridCellCoordinate *outRow,FieldGridCellCoordinate *outColumn);
-
-void __cdecl GridScratch_CopyPrimaryToSecondary(void);
-
-void GridScratch_SwapPrimarySecondary(void);
-
-void GridScratch_FloodFillConnectedCells
-          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
-
-void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
-          FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn);
-
-void GridScratch_ResetTraversalFlagsAndCosts(void);
-
-GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
-          (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
-          uint32_t bestCellByteOffset);
-
-int GridFootprint_ClearTraversalFlagsDiagonalNegative
-          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
-          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
-
-int GridFootprint_ClearTraversalFlagsDiagonalPositive
-          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
-          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
-
-void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
-
-void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
-
-Bool8 GridPathCost_RelocateFromBlockedCell
-          (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
-          FieldGridCellCoordinate *outColumn);
-
-Bool8 GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
-          FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
-
 /* Indices into g_GridTerrainClassThresholds (one table in the original). Water surface
    deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
 enum {
@@ -153,11 +78,5 @@ enum {
     GRID_TERRAIN_THRESHOLD_FALLBACK_SECONDARY = 14, /* [3] 12500/13500/14500, other contact kinds, class 4..6 */
     GRID_TERRAIN_THRESHOLD_COUNT = 17
 };
-
-extern GridScratchCell *g_GridScratchPrimary;
-extern uint32_t g_GridScratchWidth;
-extern int32_t g_GridScratchHeight;
-extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs;
-extern const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT]; /* int32_t[17] terrain-class thresholds of the grid classification and the model definition terrain-class values, one table (ModelDefinition_CopyTerrainClassValues indexes across entries); followed by 12 bytes of 0x90 padding */
 
 #endif /* THANDOR_WORLD_PATHING_GRID_H */

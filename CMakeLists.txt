@@ -138,8 +138,11 @@ add_library(thandor_curated STATIC
     src/world/model/picking.cpp
     src/world/model/pool.cpp
     src/world/model/slots.cpp
-    src/world/pathing/grid.cpp
     src/world/pathing/influence.cpp
+    src/world/pathing/path_cost.cpp
+    src/world/pathing/reachability.cpp
+    src/world/pathing/route.cpp
+    src/world/pathing/scratch_grid.cpp
     src/world/runtime/core.cpp
     src/world/runtime/entity_registry.cpp
     src/world/shots/maintenance.cpp
