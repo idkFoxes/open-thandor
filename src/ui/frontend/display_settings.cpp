@@ -15,28 +15,6 @@ FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
 
 /* Implementation ownership: ui/frontend/display_settings. */
 
-/* Inserts value into the ascending list candidates[0..candidateCount-1] (UI_DISPLAY_MODE_NONE marks empty
-   slots) unless it is already listed; the largest entry falls off the end. */
-static void FrontendDisplayModeCandidates_InsertSortedUnique
-          (uint32_t *candidates,uint32_t candidateCount,uint32_t value)
-{
-  uint32_t candidateIndex;
-  uint32_t displacedValue;
-
-  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
-    if (value == candidates[candidateIndex]) {
-      return;
-    }
-  }
-  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
-    if (value < candidates[candidateIndex]) {
-      displacedValue = candidates[candidateIndex];
-      candidates[candidateIndex] = value;
-      value = displacedValue;
-    }
-  }
-}
-
 /* Adapter row adapterIndex of the display settings page: driver description and device name (every adapter is
    a software renderer device, which gets its text resource name). */
 static void FrontendDisplaySettingsPage_FillAdapterRow
@@ -83,7 +61,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   remainingModes = g_GraphicsDisplayModeCount;
   displayMode = g_GraphicsDisplayModes;
   do {
-    FrontendDisplayModeCandidates_InsertSortedUnique(candidates,4,displayMode->bitsPerPixel);
+    UiDisplayModeCandidates_InsertSortedUnique(candidates,4,displayMode->bitsPerPixel);
     displayMode++;
     remainingModes--;
   } while (remainingModes != 0);
@@ -102,7 +80,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   remainingModes = g_GraphicsDisplayModeCount;
   displayMode = g_GraphicsDisplayModes;
   do {
-    FrontendDisplayModeCandidates_InsertSortedUnique
+    UiDisplayModeCandidates_InsertSortedUnique
               (candidates,10,displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height);
     displayMode++;
     remainingModes--;
