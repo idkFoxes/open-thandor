@@ -28,4 +28,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 
 uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry);
 
+/* Byte size of one GameFactionRuntimeRecord (8 of them in g_GameFactionRuntimeImage). */
+#define GAME_FACTION_RUNTIME_RECORD_BYTES 0x740
+
 #endif /* THANDOR_GAMEPLAY_FACTION_RUNTIME_H */

@@ -77,6 +77,7 @@ add_library(thandor_curated STATIC
     src/gameplay/army/audio.cpp
     src/gameplay/army/class_dispatch.cpp
     src/gameplay/army/class_updates.cpp
+    src/gameplay/army/collision.cpp
     src/gameplay/army/combat.cpp
     src/gameplay/army/drive_banking.cpp
     src/gameplay/army/drive_common.cpp
@@ -84,6 +85,8 @@ add_library(thandor_curated STATIC
     src/gameplay/army/factory.cpp
     src/gameplay/army/move_orders.cpp
     src/gameplay/army/placement.cpp
+    src/gameplay/army/placement_contact.cpp
+    src/gameplay/army/placement_release.cpp
     src/gameplay/army/pool.cpp
     src/gameplay/army/preview.cpp
     src/gameplay/army/turrets.cpp

@@ -37,18 +37,13 @@
    0 terrain height, 1 water surface, 2 terrain height and normal, 3 articulated suspension, 4 top surface. */
 #define ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE 1
 #define ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION 3
-/* Byte size of one GameFactionRuntimeRecord (8 of them in g_GameFactionRuntimeImage). */
-#define GAME_FACTION_RUNTIME_RECORD_BYTES 0x740
+
 /* Functions are grouped by semantic ownership. */
 
 Bool8 ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
-
-/* Extra results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
-extern Q12 g_ArmyPlacementValidatedWorldXQ12;
-extern Q12 g_ArmyPlacementValidatedWorldYQ12;
 
 Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
@@ -69,59 +64,13 @@ Bool8 ArmyPlacement_CanPlaceMobileUnit
                ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
                uint32_t *outPlacementValue);
 
-void ArmyPlacementContact_ApplyTerrainHeight
-          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
-          WorldRuntimeContext *worldRuntime);
-
-void ArmyPlacementContact_ApplyWaterSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
-          WorldRuntimeContext *worldRuntime);
-
-void ArmyPlacementContact_ApplyTerrainHeightAndNormal
-          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
-          WorldRuntimeContext *worldRuntime);
-
-void ArmyPlacementContact_ApplyTopSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
-          WorldRuntimeContext *worldRuntime);
-
-void ArmyPlacementContact_InitializeArticulatedSuspension
-          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
-          WorldRuntimeContext *worldRuntime);
-
-void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
-          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
-
-void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
-
-void ArmyPlacement_ReleaseClassStateReservation
-          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
-
 Bool8 ArmyPlacement_CanPlaceAnywhere (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
-
-Bool8 ArmyCollision_TestPointAgainstRuntimeList
-          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime);
-
-ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
-          (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,
-          WorldRuntimeContext *worldRuntime);
 
 Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
           UiRootNode *inGameRoot,uint32_t *outPlacementValue);
-
-Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
-          (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
-          Q12 worldYQ12,WorldRuntimeContext *worldRuntime);
-
-Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
-          (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
-          IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime);
-
-Bool8 ArmyPlacementCollision_TestCurrentRuntime
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 Bool8 ArmyPlacement_CanPlaceBuilding
           (ArmyPlacementDispatchArg0 placementMode,
@@ -134,13 +83,6 @@ Bool8 ArmyPlacement_CanPlaceBuilding
 Bool8 ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ModelRuntimeSlot *modelRuntime);
 
-Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
-          (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime);
-
-extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable;
-
-extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount;
-
 void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
           PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId);
 
@@ -152,5 +94,11 @@ void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unu
 
 void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2);
+
+/* Extra results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
+extern Q12 g_ArmyPlacementValidatedWorldXQ12;
+extern Q12 g_ArmyPlacementValidatedWorldYQ12;
+
+extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount;
 
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */
