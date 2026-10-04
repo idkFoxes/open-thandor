@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-RomRegistrySlot *g_RomRegistrySlots = 0;
+RomRegistrySlot *g_RomRegistrySlots = nullptr;
 
 uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'r', 'o', 'm', 0}; /* L"engine\\zentrale.rom" */
 
@@ -100,14 +100,14 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (slotCursor->record != NULL) {
+    if (slotCursor->record != nullptr) {
       rootNode = Thandor_U32ToPointer<RomSerializedNodeHeader>(slotCursor->record->rootNodeOffsetOrPointer); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
-      if (rootNode != NULL) {
+      if (rootNode != nullptr) {
         RomSerializedNodeTree_ReleaseSprites(rootNode);
       }
     }
-    slotCursor->record = NULL;
-    slotCursor->runtimeRootNode = NULL;
+    slotCursor->record = nullptr;
+    slotCursor->runtimeRootNode = nullptr;
     slotCursor = slotCursor + 1;
   }
 }
@@ -128,7 +128,7 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
     }
     slotCursor++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
@@ -148,7 +148,7 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
     recordsRemaining--;
     recordTable = (uint8_t *)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of
@@ -187,12 +187,12 @@ static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t
   /* cannot fail */
   WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)(node + 1));
   asset = (RomAssetHeader *)Package_LoadEntry((uint16_t *)(node + 1),&loadErrorCode);
-  if (asset == NULL) {
+  if (asset == nullptr) {
     *outError = loadErrorCode;
     return true;
   }
   existingSprite = SpriteAssetRegistry_FindById(((SpriteAssetHeader *)asset)->registryHeader.registryId);
-  if (existingSprite != NULL) {
+  if (existingSprite != nullptr) {
     node->spriteAssetReference.spriteAsset = existingSprite;
     Resource_Release(asset);
     return false;
@@ -271,7 +271,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
 
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (slotCursor->record == NULL) {
+    if (slotCursor->record == nullptr) {
       rootNodeOffset = record->rootNodeOffsetOrPointer;
       slotCursor->record = record;
       if (rootNodeOffset == 0) {
@@ -300,7 +300,7 @@ Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode 
 
   slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  while (slotCursor->record == NULL || recordId != slotCursor->record->recordId) {
+  while (slotCursor->record == nullptr || recordId != slotCursor->record->recordId) {
     slotCursor++;
     slotsRemaining--;
     if (slotsRemaining == 0) {
@@ -325,10 +325,10 @@ RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId)
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     slotRecord = slotCursor->record;
-    if (slotRecord != NULL && recordId == slotRecord->recordId) {
+    if (slotRecord != nullptr && recordId == slotRecord->recordId) {
       return slotRecord;
     }
     slotCursor = slotCursor + 1;
   }
-  return NULL;
+  return nullptr;
 }

@@ -30,8 +30,8 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
   uint32_t alignedByteCount;
 
   destination = g_PackageScratchBuffer;
-  if (Package_FindEntryInMount(path,fileHandle) != NULL) {
-    if (!Package_DeleteEntry(path,fileHandle,NULL)) {
+  if (Package_FindEntryInMount(path,fileHandle) != nullptr) {
+    if (!Package_DeleteEntry(path,fileHandle,nullptr)) {
       return false;
     }
   }
@@ -81,7 +81,7 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
     /* encode straight behind the new entry header, so both are written in one go */
     if (!g_PckEncoderTable[compressionMethod]
             (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
-             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,NULL)) {
+             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,nullptr)) {
       return false;
     }
     *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = packedByteCount;
@@ -106,7 +106,7 @@ Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteC
       return false;
     }
   }
-  return Package_ReadDirectory(fileHandle,NULL);
+  return Package_ReadDirectory(fileHandle,nullptr);
 }
 
 /* Package_DeleteEntry, step 1: rewrites the archive header of fileHandle with one entry less and its size
@@ -150,7 +150,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
       return statusCode;
     }
     /* a zero-byte write truncates the file at the current position */
-    return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
+    return g_FileSystemWriteExactOrFlush(0,nullptr,THANDOR_PTR(fileHandle));
   }
   statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
@@ -171,7 +171,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
   if (statusCode != 0) {
     return statusCode;
   }
-  return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
+  return g_FileSystemWriteExactOrFlush(0,nullptr,THANDOR_PTR(fileHandle));
 }
 
 /* Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
@@ -196,7 +196,7 @@ Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *o
 
   destination = g_PackageScratchBuffer;
   foundEntry = Package_FindEntryInMount(path,fileHandle);
-  if (foundEntry == NULL) {
+  if (foundEntry == nullptr) {
     /* a missing entry counts as deleted */
     return true;
   }
@@ -214,7 +214,7 @@ Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *o
       statusCode = directoryErrorCode;
     }
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = statusCode;
   }
   return false;

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {0};
+ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {};
 
 /* Implementation ownership: assets/model/definitions. */
 
@@ -65,14 +65,14 @@ Bool8 ModelLookupTable_GetPackedPointPosition
        (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
   for (; entriesRemaining != 0; entriesRemaining--) {
     if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
-      if (outLocalPosition != NULL) {
+      if (outLocalPosition != nullptr) {
         *outLocalPosition = entryCursor->localPosition;
       }
       return true;
     }
     entryCursor++; /* next 0x10-byte entry */
   }
-  if (outLocalPosition != NULL) {
+  if (outLocalPosition != nullptr) {
     outLocalPosition->x = 0;
     outLocalPosition->y = 0;
     outLocalPosition->z = 0;
@@ -125,7 +125,7 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
     registeredDefinition = *registryCursor;
-    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
+    if (registeredDefinition != nullptr && registeredDefinition->definitionId == definitionId) {
       *outBuildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
       *outEnergyLoadQ4 = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
       *outXeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
@@ -152,12 +152,12 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   while ((candidateDefinition = *registryCursor,
-         candidateDefinition == NULL ||
+         candidateDefinition == nullptr ||
          (runtimeClassId != ((ModelDefinition *)candidateDefinition)->requiredTechnologyBit))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
-      return NULL;
+      return nullptr;
     }
   }
   return candidateDefinition;
@@ -192,11 +192,11 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
        recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
     loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(spritePath,error);
-    if (loadedSprite == NULL) {
+    if (loadedSprite == nullptr) {
       return true;
     }
     registered = SpriteAssetRegistry_FindById(loadedSprite->registryHeader.registryId);
-    if (registered == NULL) {
+    if (registered == nullptr) {
       /* first use of this sprite: the node owns the loaded copy and registers it */
       uint32_t relocateError;
       node->ownedNestedResourcePresent++;
@@ -232,13 +232,13 @@ static uint32_t ModelDefinition_ClaimRegistrySlot(ModelDefinitionResolveView *de
 {
   int slotIndex;
 
-  if (ModelDefinitionRegistry_FindById(definition->definitionId) != NULL) {
+  if (ModelDefinitionRegistry_FindById(definition->definitionId) != nullptr) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     return FATAL_ERROR_MODEL_ID_DUPLICATE;
   }
   for (slotIndex = 0; slotIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; slotIndex++) {
-    if (g_ModelDefinitionRegistry[slotIndex] == NULL) {
+    if (g_ModelDefinitionRegistry[slotIndex] == nullptr) {
       g_ModelDefinitionRegistry[slotIndex] = (ModelDefinitionRecordPrefix *)definition;
       return 0;
     }
@@ -403,11 +403,11 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_LookupById(PckModelDefiniti
 
   for (registryIndex = 0; registryIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
     registeredDefinition = g_ModelDefinitionRegistry[registryIndex];
-    if ((registeredDefinition != NULL) && (registeredDefinition->definitionId == definitionId)) {
+    if ((registeredDefinition != nullptr) && (registeredDefinition->definitionId == definitionId)) {
       return registeredDefinition;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
@@ -421,7 +421,7 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
   ModelDefinitionRecordPrefix *registeredDefinition;
 
   registeredDefinition = ModelDefinitionRegistry_LookupById(definitionId);
-  if (registeredDefinition == NULL) {
+  if (registeredDefinition == nullptr) {
     /* Original quirk: the number formatted is the last registry slot's content (what the scan loaded last),
        not the missing id */
     g_WideNumberFormatUtf16

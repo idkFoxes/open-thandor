@@ -13,7 +13,7 @@
 
 static PckMountSlot g_PackageMountSlots[1024] = {0};
 
-uint8_t *g_PackageScratchBuffer = 0;
+uint8_t *g_PackageScratchBuffer = nullptr;
 
 THANDOR_ALIGN(4) uint16_t g_PackageLastErrorPath[256] = {0};
 
@@ -70,15 +70,15 @@ Bool8 Package_LoadEntryIntoBuffer
   uint32_t errorCode;
 
   bufferCapacity = bufferCapacityAndLoadFlags & PACKAGE_LOAD_CAPACITY_MASK;
-  entry = NULL;
+  entry = nullptr;
   if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_SKIP_PACKAGES) == 0) {
     entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   }
-  if (entry != NULL) {
+  if (entry != nullptr) {
     if (entry->unpackedSize <= bufferCapacity && entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1 &&
         destination != g_PackageScratchBuffer) {
       decoded = Package_DecodeEntryInto(destination,entry,entryFileHandle,&decodedByteCount,&decodeErrorCode);
-      if (outByteCountOrError != NULL) {
+      if (outByteCountOrError != nullptr) {
         *outByteCountOrError = decoded ? decodedByteCount : decodeErrorCode;
       }
       return decoded;
@@ -118,7 +118,7 @@ Bool8 Package_LoadEntryIntoBuffer
         statusCode = g_FileSystemReadExact((FileIoByteCount)byteCount,destination,handle);
         if (statusCode == 0) {
           g_FileSystemClose(handle);
-          if (outByteCountOrError != NULL) {
+          if (outByteCountOrError != nullptr) {
             *outByteCountOrError = byteCount;
           }
           return true;
@@ -128,7 +128,7 @@ Bool8 Package_LoadEntryIntoBuffer
       g_FileSystemClose(handle);
     }
   }
-  if (outByteCountOrError != NULL) {
+  if (outByteCountOrError != nullptr) {
     *outByteCountOrError = errorCode;
   }
   return false;
@@ -168,7 +168,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
          left. Rejected here because an unread directory is not usable: the mount fails as for a missing
          file. Every valid archive (the game's packages, saves, a freshly created save package) reads. */
       if (Package_ReadDirectory((EngineFileHandle)handle,&errorCode)) {
-        if (outFileHandleOrError != NULL) {
+        if (outFileHandleOrError != nullptr) {
           *outFileHandleOrError = (uintptr_t)handle;
         }
         return true;
@@ -176,7 +176,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
       Thandor_Log("Package_Mount: \"%ls\" has no readable directory (error 0x%08X)",(wchar_t *)path,errorCode);
       g_MemoryApi.free(allocatedEntryHeaders);
       mountSlot->fileHandle = 0;
-      mountSlot->entryHeaders = NULL;
+      mountSlot->entryHeaders = nullptr;
       mountSlot->entryCount = 0;
     }
     else {
@@ -184,7 +184,7 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
     }
     g_FileSystemClose(handle);
   }
-  if (outFileHandleOrError != NULL) {
+  if (outFileHandleOrError != nullptr) {
     *outFileHandleOrError = errorCode;
   }
   return false;
@@ -207,7 +207,7 @@ Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
     slotsRemaining--;
   }
   if (slotsRemaining == 0) {
-    if (outFileHandleOrError != NULL) {
+    if (outFileHandleOrError != nullptr) {
       *outFileHandleOrError = FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
     }
     return false;
@@ -232,7 +232,7 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
   uint32_t errorCode;
 
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
-  if (entry == NULL) {
+  if (entry == nullptr) {
     if (FileSystem_LoadWholeFileNearExecutable(path,&buffer,outByteCount,&errorCode)) {
       return buffer;
     }
@@ -246,8 +246,8 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
         errorCode = allocError;
       }
       else {
-        if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,NULL,&decodeErrorCode)) {
-          if (outByteCount != NULL) {
+        if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,nullptr,&decodeErrorCode)) {
+          if (outByteCount != nullptr) {
             *outByteCount = entry->unpackedSize;
           }
           return buffer;
@@ -257,10 +257,10 @@ void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *
       }
     }
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Loads an asset into a newly allocated buffer (Package_LoadEntryWithSize without the byte count). The buffer
@@ -275,18 +275,18 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
   void *buffer;
   uint32_t errorCode;
 
-  buffer = Package_LoadEntryWithSize(path,NULL,&errorCode);
-  if (buffer != NULL) {
+  buffer = Package_LoadEntryWithSize(path,nullptr,&errorCode);
+  if (buffer != nullptr) {
     return buffer;
   }
   if (loggedFailures++ < 8) {
     Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, errorCode);
     Thandor_LogStack("  load failure stack", errorCode);
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
@@ -309,7 +309,7 @@ Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
     slotsRemaining--;
   }
   if (slotsRemaining == 0) {
-    if (outFileHandleOrError != NULL) {
+    if (outFileHandleOrError != nullptr) {
       *outFileHandleOrError = FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
     }
     return false;
@@ -326,7 +326,7 @@ static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
   int slotsRemaining;
 
   if (fileHandle == 0) {
-    return NULL;
+    return nullptr;
   }
   mountSlot = g_PackageMountSlots;
   for (slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
@@ -335,7 +335,7 @@ static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
     }
     mountSlot++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Package_FindEntry sort order: true when record later is smaller than record front, comparing the whole
@@ -411,7 +411,7 @@ Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeade
   int unitIndex;
 
   mountSlot = Package_FindMountSlot(fileHandle);
-  if (mountSlot == NULL) {
+  if (mountSlot == nullptr) {
     return false;
   }
   matchedCount = 0;
@@ -449,13 +449,13 @@ void Package_Unmount(EngineFileHandle fileHandle)
   PckMountSlot *mountSlot;
 
   mountSlot = Package_FindMountSlot(fileHandle);
-  if (mountSlot == NULL) {
+  if (mountSlot == nullptr) {
     return;
   }
   g_MemoryApi.free(mountSlot->entryHeaders);
   g_FileSystemClose(THANDOR_PTR(fileHandle));
   mountSlot->fileHandle = 0;
-  mountSlot->entryHeaders = NULL;
+  mountSlot->entryHeaders = nullptr;
   mountSlot->entryCount = 0;
 }
 
@@ -510,7 +510,7 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
                 (unsigned)entry->unpackedSize);
     decoderStatusCode = FATAL_ERROR_GENERAL_FAILURE;
     Package_SetLastErrorPath(entry->path);
-    if (outErrorCode != NULL) {
+    if (outErrorCode != nullptr) {
       *outErrorCode = decoderStatusCode;
     }
     return false;
@@ -529,7 +529,7 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
     }
   }
   Package_SetLastErrorPath(entry->path);
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = decoderStatusCode;
   }
   return false;
@@ -591,7 +591,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
     pathCursor++;
   } while (!matched);
   if (!matched) {
-    return NULL; /* path too long */
+    return nullptr; /* path too long */
   }
   mountSlot = g_PackageMountSlots;
   remainingCount = PACKAGE_MOUNT_SLOT_COUNT;
@@ -599,13 +599,13 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
     mountSlot++;
     remainingCount--;
     if (remainingCount == 0) {
-      return NULL; /* not mounted */
+      return nullptr; /* not mounted */
     }
   }
   currentEntry = mountSlot->entryHeaders;
   entriesRemaining = mountSlot->entryCount;
   if (entriesRemaining == 0) {
-    return NULL; /* empty package */
+    return nullptr; /* empty package */
   }
   do {
     /* compare code units over the path length including its terminator, stopping at the first difference */
@@ -626,7 +626,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
     currentEntry++;
     entriesRemaining--;
   } while (entriesRemaining != 0);
-  return NULL;
+  return nullptr;
 }
 
 /* Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
@@ -659,12 +659,12 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
     }
     path[pathLength] = (uint16_t)codeUnit;
     pathLength++;
-    if (pathLength == PCK_ENTRY_PATH_UNITS) return NULL; /* path too long */
+    if (pathLength == PCK_ENTRY_PATH_UNITS) return nullptr; /* path too long */
   } while (codeUnit != 0);
   mountSlot = g_PackageMountSlots;
   for (slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     currentEntry = mountSlot->entryHeaders;
-    if (currentEntry != NULL) {
+    if (currentEntry != nullptr) {
       for (entriesRemaining = mountSlot->entryCount; entriesRemaining != 0;
            entriesRemaining = entriesRemaining - 1) {
         /* compare the lowercased path, terminator included, with the entry's path */
@@ -688,7 +688,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
     }
     mountSlot++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Package_ReadDirectory, once the slot is found: reads the archive header and every entry header of
@@ -773,7 +773,7 @@ Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
       return true;
     }
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = statusCode;
   }
   return false;

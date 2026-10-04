@@ -13,7 +13,7 @@
 
 uint32_t g_RichTextRuntimeBufferUsedWords = 0;
 
-uint8_t *g_FontRuntimeBuffer = 0;
+uint8_t *g_FontRuntimeBuffer = nullptr;
 
 /* Implementation ownership: assets/text/richtext. */
 
@@ -275,7 +275,7 @@ Bool8 RichTextCommandStream_CopyExpanded
   }
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
-    if (outBytesWritten != NULL) {
+    if (outBytesWritten != nullptr) {
       *outBytesWritten = (uint32_t)((uint8_t *)destinationCursor - (uint8_t *)destination);
     }
     return true;
@@ -370,7 +370,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
         break;
       }
-      if (THANDOR_PTR32_AT(uint16_t, commandStream) == NULL) {
+      if (THANDOR_PTR32_AT(uint16_t, commandStream) == nullptr) {
         RichTextCommandStream_SkipNullNestedStream(&commandStream);
         break;
       }
@@ -378,7 +378,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       nestedDepth++;
       /* fall through: enter the nested stream */
     case RICHTEXT_OP_JUMP_NESTED:
-      if (THANDOR_PTR32_AT(uint16_t, commandStream) == NULL) {
+      if (THANDOR_PTR32_AT(uint16_t, commandStream) == nullptr) {
         RichTextCommandStream_SkipNullNestedStream(&commandStream);
         break;
       }

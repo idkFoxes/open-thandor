@@ -22,7 +22,7 @@ static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
 static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 {
-  if (outByteCount != NULL) {
+  if (outByteCount != nullptr) {
     *outByteCount = byteCount;
   }
   return true;
@@ -31,7 +31,7 @@ static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 /* Failure exit of a codec (PckCodecProc): stores errorCode in *outErrorCode when it is not NULL. */
 static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
 {
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
   return false;
@@ -213,7 +213,7 @@ Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,F
   }
   if (!PckCodec_DecodeHuffmanRle
           (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
-           source + PCK_FIELD_GRID_PREFIX_BYTES,NULL,NULL)) {
+           source + PCK_FIELD_GRID_PREFIX_BYTES,nullptr,nullptr)) {
     /* Original quirk: reports the free's return value, not the decoder's error code */
     freeStatus = g_MemoryApi.free(compactFieldImageBase);
     return PckCodec_Fail(outErrorCode,freeStatus);
@@ -391,8 +391,8 @@ static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode
   uint32_t secondLowestWeight;
   int nodesLeft;
 
-  lowestNode = NULL;
-  secondLowestNode = NULL;
+  lowestNode = nullptr;
+  secondLowestNode = nullptr;
   lowestWeight = UINT32_MAX;
   secondLowestWeight = UINT32_MAX;
   scanNode = g_PckHuffmanNodeWorkspace;
@@ -663,7 +663,7 @@ static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
     /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
        where the internal node workspace ends. */
     if (g_PckHuffmanNodeWorkspace + PCK_HUFFMAN_NODE_COUNT <= nextInternalNode) {
-      return NULL;
+      return nullptr;
     }
   }
   return nextInternalNode - 1;
@@ -686,7 +686,7 @@ static PckHuffmanNode *PckCodec_DecoderReadSymbol(PckHuffmanNode *root,uint32_t 
     }
     *codeBits = *codeBits >> 1;
     *bitOffset = *bitOffset + 1;
-  } while (node->zeroChild != NULL);
+  } while (node->zeroChild != nullptr);
   return node;
 }
 
@@ -736,7 +736,7 @@ Bool8 PckCodec_DecodeHuffmanRle
   }
   PckCodec_DecoderLoadFrequencies(source);
   root = PckCodec_DecoderBuildTree();
-  if (root == NULL) {
+  if (root == nullptr) {
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
   /* no internal node: the "root" is a leaf (see PckCodec_DecoderBuildTree) */

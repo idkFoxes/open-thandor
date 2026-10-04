@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-static SpriteAssetHeader *g_SpriteAssetRegistryHead = 0;
+static SpriteAssetHeader *g_SpriteAssetRegistryHead = nullptr;
 
 /* Implementation ownership: assets/sprite/catalog. */
 
@@ -20,7 +20,7 @@ static SpriteAssetHeader *g_SpriteAssetRegistryHead = 0;
 void SpriteAssetRegistry_Reset(void)
 
 {
-  g_SpriteAssetRegistryHead = NULL;
+  g_SpriteAssetRegistryHead = nullptr;
 }
 
 /* Finds an already registered sprite asset by its id (registryHeader.registryId), walking the registry list
@@ -33,7 +33,7 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
   SpriteAssetHeader *spriteAssetCursor;
 
   spriteAssetCursor = g_SpriteAssetRegistryHead;
-  while (spriteAssetCursor != NULL && registryId != spriteAssetCursor->registryHeader.registryId) {
+  while (spriteAssetCursor != nullptr && registryId != spriteAssetCursor->registryHeader.registryId) {
     spriteAssetCursor = spriteAssetCursor->registryHeader.previousRegistryAsset;
   }
   return spriteAssetCursor;

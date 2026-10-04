@@ -11,9 +11,9 @@
 
 /* Module data. */
 
-static TextResourcePageBinding g_TextResourcePageBindings[256] = {0};
+static TextResourcePageBinding g_TextResourcePageBindings[256] = {};
 
-TextResourceOverrideTable *g_TextResourceOverrides = 0;
+TextResourceOverrideTable *g_TextResourceOverrides = nullptr;
 
 static uint16_t g_EmptyTextResourceUtf16[2] = {0};
 
@@ -46,7 +46,7 @@ Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_
   int lineIndex;
   Bool8 failed;
 
-  failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,NULL);
+  failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,nullptr);
   if (!failed) {
     failed = !TextResource_TryResolve(TEXT_ID_LEVEL_PAGE_TITLE,&resolvedText);
     if (!failed) {
@@ -92,7 +92,7 @@ static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
     block = (TextResourceLocaleBlockPrefix *)((uint8_t *)block + block->blockSizeBytes);
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return NULL;
+  return nullptr;
 }
 
 /* Returns the number held by a command record's four UTF-16 decimal digits d0..d3 (recordStart[1..4], the two
@@ -131,17 +131,17 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
   uint32_t loadErrorCode;
 
   allocation = (TextResourceAssetHeader *)Package_LoadEntry(path,&loadErrorCode);
-  if (allocation == NULL) {
+  if (allocation == nullptr) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
                 loadErrorCode);
-    if (outLocaleBlockOrError != NULL) {
+    if (outLocaleBlockOrError != nullptr) {
       *outLocaleBlockOrError = loadErrorCode;
     }
     return false;
   }
   if ((allocation->localeCountHeader).common.magic != ASSET_MAGIC_STR) {
     Resource_Release(allocation);
-    if (outLocaleBlockOrError != NULL) {
+    if (outLocaleBlockOrError != nullptr) {
       *outLocaleBlockOrError = TEXT_RESOURCE_MISSING_SENTINEL_0x33;
     }
     return false;
@@ -152,9 +152,9 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
   }
   /* the block for the country code, else the Great Britain block, else the first block */
   localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
-  if (localeBlock == NULL) {
+  if (localeBlock == nullptr) {
     localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LOCALE_COUNTRY_GREAT_BRITAIN);
-    if (localeBlock == NULL) {
+    if (localeBlock == nullptr) {
       localeBlock = (TextResourceLocaleBlockPrefix *)(allocation + 1);
     }
   }
@@ -202,7 +202,7 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uintp
     }
     stringIndex++;
   }
-  if (outLocaleBlockOrError != NULL) {
+  if (outLocaleBlockOrError != nullptr) {
     *outLocaleBlockOrError = (uintptr_t)localeBlock;
   }
   return true;
@@ -217,7 +217,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 {
   uint32_t overrideIndex;
 
-  if (g_TextResourceOverrides == NULL) {
+  if (g_TextResourceOverrides == nullptr) {
     return;
   }
   /* the first entry with a zero id; its text pointer is the entry of the same index in textPointers (the
@@ -253,7 +253,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
     *outText = g_ProjectTexts[resourceId - TEXT_ID_PROJECT_BASE];
     return true;
   }
-  if (g_TextResourceOverrides != NULL) {
+  if (g_TextResourceOverrides != nullptr) {
     /* the first entry with this id; its text is the entry of the same index in textPointers */
     for (overrideIndex = 0; overrideIndex < TEXT_RESOURCE_OVERRIDE_CAPACITY; overrideIndex++) {
       if (resourceId == g_TextResourceOverrides->resourceIds[overrideIndex]) {
@@ -273,7 +273,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   if ((resourceId & 0xff0000) == 0) {
     /* compact id: page << 8 | 8-bit index; the string offsets follow the 16-byte block prefix */
     localeBlock = g_TextResourcePageBindings[pageIndex].selectedLocaleBlock;
-    if ((localeBlock != NULL) &&
+    if ((localeBlock != nullptr) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
       /* the string offsets are relative to the block */
       *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xff]);
@@ -283,7 +283,7 @@ Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   else {
     /* extended id: page << 16 | 16-bit index */
     localeBlock = g_TextResourcePageBindings[pageIndex].selectedLocaleBlock;
-    if ((localeBlock != NULL) &&
+    if ((localeBlock != nullptr) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
       *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
       return true;

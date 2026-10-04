@@ -32,7 +32,7 @@ static ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf1
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
     .suffixCodeUnits = {'.', 'd', 'a', 't', 0}}; /* L".dat" */
 
-ScenarioCatalogHeader *g_ScenarioCatalog = 0;
+ScenarioCatalogHeader *g_ScenarioCatalog = nullptr;
 
 uint32_t g_ScenarioCatalogUsedBytes = 0;
 
@@ -112,7 +112,7 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
 
   decimalDigits->packedDigits = UTF16_DIGIT_PAIR('0','0');
   do {
-    if (Resource_Load(pathTemplate,&loadedBuffer,&loadedByteCount,NULL)) {
+    if (Resource_Load(pathTemplate,&loadedBuffer,&loadedByteCount,nullptr)) {
       recordCount = ScenarioCatalog_MergeRecordsByName
                         (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,sectionRecords,
                          maxRecordCount);
@@ -165,7 +165,7 @@ void ScenarioCatalog_Rebuild(void)
   catalog->levelRecordCount = 0;
   catalog->campaignRecordCount = 0;
   catalog->saveRecordCount = 0;
-  loaded = Resource_Load((uint16_t *)g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
+  loaded = Resource_Load((uint16_t *)g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
   catalog = g_ScenarioCatalog;
   if (loaded) {
     recordsBase = (ScenarioCatalogRecord *)
@@ -188,7 +188,7 @@ void ScenarioCatalog_Rebuild(void)
       recordCount--;
     } while (recordCount != 0);
   }
-  loaded = Resource_Load((uint16_t *)g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
+  loaded = Resource_Load((uint16_t *)g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,nullptr);
   catalog = g_ScenarioCatalog;
   if (loaded) {
     recordsBase = (ScenarioCatalogRecord *)
