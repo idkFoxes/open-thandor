@@ -1110,8 +1110,9 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002030, 0x0000212A},
         { /* +308C displayResolutionGroup g_UiTitledWindowControlVtable */
-            /* not in the original: followed by displayModeKindGroup (displayColorDepthGroup is no longer linked) */
-            .nextSibling = UI_TEMPLATE_LINK(0x5954), .firstChild = UI_TEMPLATE_LINK(0x30E0), .parent = UI_TEMPLATE_LINK(0x2CB8),
+            /* not in the original: followed by displayModeKindGroup (displayColorDepthGroup is no longer linked);
+               holds displayResolutionScrollBox, which scrolls the resolution rows */
+            .nextSibling = UI_TEMPLATE_LINK(0x5954), .firstChild = UI_TEMPLATE_LINK(0x5AC8), .parent = UI_TEMPLATE_LINK(0x2CB8),
             .vtable = THANDOR_PTR(&g_UiTitledWindowControlVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 48, .topOffset = -142, .rightOffset = 288, .bottomOffset = 110,
@@ -1120,7 +1121,9 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000000, 0x00002126},
         { /* +30E0 displayResolutionOption1 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3148), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            /* not in the original: the rows are children of displayResolutionRowPanel (the scrolled content);
+               displayResolutionOption10 is followed by the extra rows at run time */
+            .nextSibling = UI_TEMPLATE_LINK(0x3148), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
@@ -1129,7 +1132,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002022, 0x0000212B},
         { /* +3148 displayResolutionOption2 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x31B0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x31B0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
@@ -1138,7 +1141,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002023, 0x0000212B},
         { /* +31B0 displayResolutionOption3 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3218), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x3218), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
@@ -1147,7 +1150,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002024, 0x0000212B},
         { /* +3218 displayResolutionOption4 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3280), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x3280), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 75, .rightOffset = -3, .bottomOffset = 99,
@@ -1156,7 +1159,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002025, 0x0000212B},
         { /* +3280 displayResolutionOption5 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x32E8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x32E8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 99, .rightOffset = -3, .bottomOffset = 123,
@@ -1165,7 +1168,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002026, 0x0000212B},
         { /* +32E8 displayResolutionOption6 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3350), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x3350), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 123, .rightOffset = -3, .bottomOffset = 147,
@@ -1174,7 +1177,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002027, 0x0000212B},
         { /* +3350 displayResolutionOption7 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x33B8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x33B8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 147, .rightOffset = -3, .bottomOffset = 171,
@@ -1183,7 +1186,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002028, 0x0000212B},
         { /* +33B8 displayResolutionOption8 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3420), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x3420), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 171, .rightOffset = -3, .bottomOffset = 195,
@@ -1192,7 +1195,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x00002029, 0x0000212B},
         { /* +3420 displayResolutionOption9 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_LINK(0x3488), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_LINK(0x3488), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 195, .rightOffset = -3, .bottomOffset = 219,
@@ -1201,7 +1204,7 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
         {
             0x00000481, 0x0000202A, 0x0000212B},
         { /* +3488 displayResolutionOption10 g_UiNumericPairTextButtonVtable */
-            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x308C),
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5B58),
             .vtable = THANDOR_PTR(&g_UiNumericPairTextButtonVtable),
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 219, .rightOffset = -3, .bottomOffset = 243,
@@ -2069,4 +2072,26 @@ FrontendUiImage g_FrontendRootInitializationTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000481, FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN, TEXT_ID_DISPLAY_MODE_KIND_FULLSCREEN},
+        /* not in the original (open-thandor): the scrollable resolution list inside displayResolutionGroup. The
+           scroll frame fills the group and allows only a vertical bar at the right (0x80), auto-scroll steps as
+           the lobby player lists; the panel is the scrolled content (no background, rootFlags 0), its size
+           (rightOffset/bottomOffset) is set when the page opens. displayResolutionExtraOptions follow (zero
+           here, copied from displayResolutionOption1 at run time). */
+        { /* +5AC8 displayResolutionScrollBox g_UiScrollableControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x5B58), .parent = UI_TEMPLATE_LINK(0x308C),
+            .vtable = THANDOR_PTR(&g_UiScrollableControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000080, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x0000000F,
+            0x0000000F},
+        { /* +5B58 displayResolutionRowPanel g_UiPanelControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x30E0), .parent = UI_TEMPLATE_LINK(0x5AC8),
+            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000000, 0x00000000, 0x00000000},
 };

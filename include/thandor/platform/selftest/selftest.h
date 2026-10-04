@@ -20,6 +20,8 @@
      pcx            decodes pcxtest.pcx next to the executable, logs size and hash (tools/test/pcx_check.py)
      settings       thandor.ini parser/writer on a fixed text; thandor.dat of the current directory -> ini ->
                     image must be identical (migration), and a thandor.ini there must match that thandor.dat
+     icon           the .ico parser of the window icon on a synthetic icon file (pixels of 32/24/4-bit images,
+                    masks, PNG and broken entries, choice of the 100% image and of the alternate sizes)
      numberformat, fixedmath, keymap, trianglesetup, movieenc
                     hash tests: log a hash over many results of the number formatter, the fixed-point math,
                     the keyboard layer, the software triangle setup and the movie encoder/decoder, to

@@ -20,6 +20,7 @@
      <ms> rclick <x> <y>    the same with the right button
      <ms> move <x> <y>      pointer motion
      <ms> drag <x> <y> <x2> <y2>  left press at x,y, motion to x2,y2 with the button held, release there
+     <ms> wheel <x> <y> <n>  pointer at x,y, then n mouse wheel notches (positive: up, negative: down)
      <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
      <ms> keydown <vk> / keyup <vk>  press or release only (held modifiers: keydown 17, key 37, keyup 17)
      <ms> type <text>       types the rest of the line (ASCII), one character per tick, as the window procedure
@@ -43,7 +44,8 @@ volatile unsigned g_TestAidSessionCount;
    (LEFT/RIGHT of GraphicsCursorButtonState) and appends a pointer event of that type to the 256-entry ring
    g_CursorInputEvents, as the SDL3 input backend does for real mouse input, so scripted clicks
    reach the UI through the normal event path. */
-static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y)
+static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y,
+                                        UiPointerWheelDelta wheelDelta = 0)
 {
   uint32_t index = g_CursorInputWriteIndex;
   uint32_t next = index + 1;
@@ -57,7 +59,7 @@ static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t b
   g_CursorInputEvents[index].buttonState = buttons;
   g_CursorInputEvents[index].pointerX = x;
   g_CursorInputEvents[index].pointerY = y;
-  g_CursorInputEvents[index].wheelDelta = 0;
+  g_CursorInputEvents[index].wheelDelta = wheelDelta;
   g_CursorInputEvents[index].clockValue = g_CursorInputClockValue;
   g_CursorInputWriteIndex = next;
 }
@@ -255,6 +257,10 @@ void DebugScript_Tick(void)
     }
     else if (strcmp(command, "move") == 0) {
       DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+    }
+    else if (strcmp(command, "wheel") == 0) {
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+      DebugScript_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y, hold);
     }
     else if (strcmp(command, "drag") == 0) {
       /* drag x y x2 y2: press the left button at x,y, move with it held to x2,y2 and release there */

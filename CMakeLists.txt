@@ -354,6 +354,7 @@ target_sources(thandor_curated PRIVATE
     src/platform/sdl3/platform.cpp
     src/platform/sdl3/timer.cpp
     src/platform/sdl3/video.cpp
+    src/platform/sdl3/window_icon.cpp
 )
 target_link_libraries(thandor_curated PUBLIC SDL3::SDL3)
 # SDL3.dll next to thandor.exe

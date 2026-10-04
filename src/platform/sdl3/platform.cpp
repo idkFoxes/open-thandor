@@ -10,6 +10,7 @@
    keys, characters, mouse and focus changes, and a quit request ends the game. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
+#include <thandor/platform/sdl3/window_icon.h>
 
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
@@ -109,6 +110,8 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
   }
   Thandor_Log("SDL %d.%d.%d%s", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
               s_windowed ? ", windowed (test aid)" : "");
+  /* the window and taskbar icon: thandor.ico of the game directory, if there is one */
+  SetWindowIconFromGameDirectory(s_window.get());
   SDL_StartTextInput(s_window.get());
   /* the window handle for the remaining Win32 users (fatal-error message box, file dialogs) */
   g_MainWindow = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(s_window.get()),

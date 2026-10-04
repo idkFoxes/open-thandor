@@ -77,7 +77,8 @@
 #define FRONTEND_ACTION_MOVIE_GAIN 0x201C /* movieVolumeSlider */
 #define FRONTEND_ACTION_MUSIC_GAIN 0x201D /* musicVolumeSlider */
 #define FRONTEND_ACTION_MOVIE_EVENT_GAIN 0x204E /* movieEventVolumeSlider */
-#define FRONTEND_ACTION_RESOLUTION_OPTION1 0x2022 /* displayResolutionOption1..10: 0x2022..0x202B */
+#define FRONTEND_ACTION_RESOLUTION_OPTION1 0x2022 /* displayResolutionOption1..10: 0x2022..0x202B (the extra
+                                                  rows of open-thandor take 0x2022 as well) */
 /* Not in the original: the display mode kind choices (handlers58_5A of g_FrontendUiActionHandlersPage20) */
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_WINDOW 0x2058
 #define FRONTEND_ACTION_DISPLAY_MODE_KIND_BORDERLESS 0x2059

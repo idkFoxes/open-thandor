@@ -11,6 +11,9 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/selftest/selftest.h>
+#include <thandor/platform/sdl3/window_icon.h>
+
+#include <vector>
 
 /* Self-test data */
 #define SELFTEST_GUARD_BYTES 0x10000      /* codec: bytes behind each output buffer that must stay untouched */
@@ -745,6 +748,177 @@ static void Thandor_SelfTestScanAddresses(void)
     Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
 }
 
+/* OPEN_THANDOR_SELFTEST=icon: the .ico parser of the window icon (platform/sdl3/window_icon.cpp) on a synthetic
+   icon file built here: 32-bit with alpha, 4-bit with palette and mask, 32-bit without alpha (the mask decides),
+   24-bit 32x32, an 8-bit image of a size already present, a PNG entry and an entry outside the file; then the
+   choice of the 100% image and of the alternate sizes, and two files that are no icons. Logs every failed check
+   and a summary line ("icon: ok, N checks" or "icon: N of M checks FAILED"). */
+namespace {
+
+struct IconTestImage {
+    int width;
+    int height;
+    int bitsPerPixel;
+    std::vector<uint8_t> dib; /* BITMAPINFOHEADER, palette, XOR bitmap, AND mask */
+};
+
+void IconTest_PutU16(std::vector<uint8_t> &bytes, uint32_t value)
+{
+    bytes.push_back((uint8_t)value);
+    bytes.push_back((uint8_t)(value >> 8));
+}
+
+void IconTest_PutU32(std::vector<uint8_t> &bytes, uint32_t value)
+{
+    IconTest_PutU16(bytes, value & 0xFFFF);
+    IconTest_PutU16(bytes, value >> 16);
+}
+
+/* A DIB entry: the header (height doubled), the palette, then the given bitmap and mask rows (already bottom-up
+   and padded). */
+IconTestImage IconTest_Dib(int width, int height, int bitsPerPixel, const std::vector<uint32_t> &palette,
+                           const std::vector<uint8_t> &colourRows, const std::vector<uint8_t> &maskRows)
+{
+    IconTestImage image = {width, height, bitsPerPixel, {}};
+    IconTest_PutU32(image.dib, 40);
+    IconTest_PutU32(image.dib, (uint32_t)width);
+    IconTest_PutU32(image.dib, (uint32_t)height * 2);
+    IconTest_PutU16(image.dib, 1);
+    IconTest_PutU16(image.dib, (uint32_t)bitsPerPixel);
+    IconTest_PutU32(image.dib, 0);
+    IconTest_PutU32(image.dib, (uint32_t)(colourRows.size() + maskRows.size()));
+    IconTest_PutU32(image.dib, 0);
+    IconTest_PutU32(image.dib, 0);
+    IconTest_PutU32(image.dib, (uint32_t)palette.size());
+    IconTest_PutU32(image.dib, 0);
+    for (uint32_t colour : palette) {
+        IconTest_PutU32(image.dib, colour); /* B, G, R, 0 */
+    }
+    image.dib.insert(image.dib.end(), colourRows.begin(), colourRows.end());
+    image.dib.insert(image.dib.end(), maskRows.begin(), maskRows.end());
+    return image;
+}
+
+/* The icon file: header, directory, images; entry outsideEntry (if >= 0) points behind the end of the file. */
+std::vector<std::byte> IconTest_File(const std::vector<IconTestImage> &images, int outsideEntry)
+{
+    std::vector<uint8_t> bytes;
+    IconTest_PutU16(bytes, 0);
+    IconTest_PutU16(bytes, 1);
+    IconTest_PutU16(bytes, (uint32_t)images.size());
+    uint32_t offset = (uint32_t)(6 + 16 * images.size());
+    for (size_t index = 0; index < images.size(); index++) {
+        const IconTestImage &image = images[index];
+        bytes.push_back((uint8_t)image.width);
+        bytes.push_back((uint8_t)image.height);
+        bytes.push_back(0);
+        bytes.push_back(0);
+        IconTest_PutU16(bytes, 1);
+        IconTest_PutU16(bytes, (uint32_t)image.bitsPerPixel);
+        IconTest_PutU32(bytes, (uint32_t)image.dib.size());
+        IconTest_PutU32(bytes, ((int)index == outsideEntry) ? 0x7FFFFFF0u : offset);
+        offset += (uint32_t)image.dib.size();
+    }
+    for (const IconTestImage &image : images) {
+        bytes.insert(bytes.end(), image.dib.begin(), image.dib.end());
+    }
+    std::vector<std::byte> file(bytes.size());
+    memcpy(file.data(), bytes.data(), bytes.size());
+    return file;
+}
+
+} // namespace
+
+static void Thandor_SelfTestIcon(void)
+{
+    using thandor::sdl3::IconFile;
+    unsigned checks = 0;
+    unsigned failures = 0;
+#define ICON_CHECK(condition, ...) do { checks++; if (!(condition)) { failures++; Thandor_Log("icon: " __VA_ARGS__); } } while (0)
+    std::vector<IconTestImage> images;
+    /* 0: 2x2 32-bit with alpha, top row (0x80112233, 0xFF445566), bottom row (0x00778899, 0x40AABBCC); the mask
+       (all transparent) must not count */
+    images.push_back(IconTest_Dib(2, 2, 32, {},
+                                  {0x99, 0x88, 0x77, 0x00, 0xCC, 0xBB, 0xAA, 0x40,
+                                   0x33, 0x22, 0x11, 0x80, 0x66, 0x55, 0x44, 0xFF},
+                                  {0xC0, 0, 0, 0, 0xC0, 0, 0, 0}));
+    /* 1: 3x2 4-bit, palette (0x000000FF blue, 0x0000FF00 green), top row 1 0 1, bottom row 0 1 0; mask: top
+       row middle pixel transparent */
+    images.push_back(IconTest_Dib(3, 2, 4, {0x000000FF, 0x0000FF00},
+                                  {0x01, 0x00, 0x00, 0x00, 0x10, 0x10, 0x00, 0x00},
+                                  {0x00, 0, 0, 0, 0x40, 0, 0, 0}));
+    /* 2: 2x1 32-bit without alpha: the mask decides (left opaque, right transparent) */
+    images.push_back(IconTest_Dib(2, 1, 32, {}, {0x10, 0x20, 0x30, 0x00, 0x40, 0x50, 0x60, 0x00},
+                                  {0x40, 0, 0, 0}));
+    /* 3: 32x32 24-bit, all 0x123456, no mask bits */
+    {
+        std::vector<uint8_t> rows;
+        for (int pixel = 0; pixel < 32 * 32; pixel++) {
+            rows.push_back(0x56);
+            rows.push_back(0x34);
+            rows.push_back(0x12);
+        }
+        images.push_back(IconTest_Dib(32, 32, 24, {}, rows, std::vector<uint8_t>(32 * 4, 0)));
+    }
+    /* 4: 2x2 8-bit (a size already present with 32 bits) */
+    images.push_back(IconTest_Dib(2, 2, 8, {0x00FFFFFF}, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0}));
+    /* 5: a PNG image (only the signature counts) */
+    {
+        IconTestImage png = {16, 16, 32, {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0}};
+        images.push_back(png);
+    }
+    /* 6: an entry outside the file */
+    images.push_back(IconTest_Dib(1, 1, 32, {}, {0, 0, 0, 0xFF}, {0, 0, 0, 0}));
+    const std::vector<std::byte> file = IconTest_File(images, 6);
+
+    IconFile icon;
+    ICON_CHECK(thandor::sdl3::DecodeIcoFile(file, icon), "the synthetic file is not taken as an icon file");
+    ICON_CHECK(icon.images.size() == 5, "%u images decoded, expected 5", (unsigned)icon.images.size());
+    ICON_CHECK(icon.skippedPngImages == 1, "%d PNG images skipped, expected 1", icon.skippedPngImages);
+    ICON_CHECK(icon.skippedInvalidImages == 1, "%d broken images skipped, expected 1", icon.skippedInvalidImages);
+    if (icon.images.size() == 5) {
+        static const uint32_t expected0[4] = {0x80112233, 0xFF445566, 0x00778899, 0x40AABBCC};
+        static const uint32_t expected1[6] = {0xFF00FF00, 0x000000FF, 0xFF00FF00, 0xFF0000FF, 0xFF00FF00, 0xFF0000FF};
+        static const uint32_t expected2[2] = {0xFF302010, 0x00605040};
+        for (int pixel = 0; pixel < 4; pixel++) {
+            ICON_CHECK(icon.images[0].pixels[pixel] == expected0[pixel], "32-bit pixel %d is %08X, expected %08X",
+                       pixel, icon.images[0].pixels[pixel], expected0[pixel]);
+        }
+        ICON_CHECK((icon.images[1].width == 3) && (icon.images[1].height == 2), "4-bit image is %dx%d",
+                   icon.images[1].width, icon.images[1].height);
+        for (int pixel = 0; pixel < 6; pixel++) {
+            ICON_CHECK(icon.images[1].pixels[pixel] == expected1[pixel], "4-bit pixel %d is %08X, expected %08X",
+                       pixel, icon.images[1].pixels[pixel], expected1[pixel]);
+        }
+        for (int pixel = 0; pixel < 2; pixel++) {
+            ICON_CHECK(icon.images[2].pixels[pixel] == expected2[pixel],
+                       "32-bit pixel %d without alpha is %08X, expected %08X", pixel, icon.images[2].pixels[pixel],
+                       expected2[pixel]);
+        }
+        ICON_CHECK((icon.images[3].width == 32) && (icon.images[3].pixels[32 * 32 - 1] == 0xFF123456),
+                   "24-bit image is %dx%d, last pixel %08X", icon.images[3].width, icon.images[3].height,
+                   icon.images[3].pixels.empty() ? 0u : icon.images[3].pixels.back());
+        const size_t primary = thandor::sdl3::IconPrimaryImageIndex(icon);
+        ICON_CHECK(primary == 3, "100%% image is %u, expected 3 (32x32)", (unsigned)primary);
+        const std::vector<size_t> alternates = thandor::sdl3::IconAlternateImageIndices(icon, primary);
+        ICON_CHECK((alternates.size() == 3) && (alternates[0] == 2) && (alternates[1] == 0) && (alternates[2] == 1),
+                   "alternate images wrong (%u of them)", (unsigned)alternates.size());
+    }
+    /* no icon files: too short, and a cursor (type 2) */
+    std::vector<std::byte> notIcon(file.begin(), file.begin() + 5);
+    ICON_CHECK(!thandor::sdl3::DecodeIcoFile(notIcon, icon), "a 5-byte file is taken as an icon file");
+    std::vector<std::byte> cursor = file;
+    cursor[2] = std::byte{2};
+    ICON_CHECK(!thandor::sdl3::DecodeIcoFile(cursor, icon), "a cursor file is taken as an icon file");
+#undef ICON_CHECK
+    if (failures == 0) {
+        Thandor_Log("icon: ok, %u checks", checks);
+    }
+    else {
+        Thandor_Log("icon: %u of %u checks FAILED", failures, checks);
+    }
+}
+
 /* Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h. */
 int SelfTest_Run(const char *name)
 {
@@ -786,6 +960,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "stretch") == 0) {
         Thandor_SelfTestStretch();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "icon") == 0) {
+        Thandor_SelfTestIcon();
         return 1;
     }
     if (name != NULL && strcmp(name, "scanaddr") == 0) {
