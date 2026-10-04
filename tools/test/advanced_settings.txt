@@ -1,0 +1,70 @@
+# Visit of the options page's four buttons (Optionen -> Anzeige, 3D, Sound, Erweitert) and the choices of the
+# advanced settings page. Start with -NOINTRO in the developer tools' window and a saved display mode of 1280x800
+# (layout below); OPEN_THANDOR_GPU=vulkan|d3d12 shows the page with a GPU renderer (its note then tells when the
+# UI scale applies), the default software renderer the note that edges and UI scale need one.
+# Shots: shots\script_NNNN.bmp.
+#   main room: the left door (265,380) opens "Optionen"; its buttons sit at page centre + (-200, -36 / -4 / 28 / 60):
+#   "Anzeige" 440,364, "3D" 440,396, "Sound" 440,428, "Erweitert" 440,460; "Zurueck" / "Ok" at 440,540
+#   advanced page (centre 640,400): "3D-Kanten" rows Glatt/Original at y 282/306, "UI-Skalierung" rows
+#   Auto/1x/2x/3x at y 366/390/414/438 (radio circles at x 365), "Bildratenbegrenzung" rows Aus/60/120/144 at
+#   y 282/306/330/354 (circles at x 701), the "VSync" checkbox at 707,394
+# Steps: options page (shot 0), "Anzeige" (shot 1), "3D" (shot 2), "Sound" (shot 3), "Erweitert" (shot 4), choose
+# 60 Bilder/s, toggle VSync (off under the test tools, OPEN_THANDOR_VSYNC=0), choose "Original" and "2x" (shot 5: those selected; a GPU renderer switches to UI scale
+# 2 at once - run without OPEN_THANDOR_UI_SCALE, which wins, i.e. set it empty - and with
+# OPEN_THANDOR_GPU_NATIVE_SHOTS=1 the frame is also written at full size, shots\gpunative_NNNN.bmp), "1x" (shot 6:
+# back at scale 1), back to "Anzeige" (shot 7), choose 640x480 (the top of the resolution list) and apply it
+# (shot 8: the display page at the smallest mode), back and "Erweitert" again (shot 9: the advanced page at
+# 640x480), quit. The coordinates after the resolution switch are
+# moved by the layout line (the page stays centred).
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 800
+6000 move 265 380
+6500 click 265 380
+9000 shot
+9500 move 440 364
+10000 click 440 364
+12000 shot
+12500 move 440 540
+13000 click 440 540
+14000 move 440 396
+14500 click 440 396
+16000 shot
+16500 move 440 540
+17000 click 440 540
+17500 move 440 428
+18000 click 440 428
+20000 shot
+20500 move 440 540
+21000 click 440 540
+21500 move 440 460
+22000 click 440 460
+24000 shot
+24500 move 701 306
+25000 click 701 306
+25500 move 707 394
+26000 click 707 394
+26500 move 365 306
+27000 click 365 306
+27500 move 365 414
+28000 click 365 414
+30000 shot
+30500 move 365 390
+31000 click 365 390
+33000 shot
+33500 move 440 540
+34000 click 440 540
+34500 move 440 364
+35000 click 440 364
+37000 shot
+37500 wheel 800 400 60
+38000 move 701 282
+38500 click 701 282
+39000 move 840 540
+39500 click 840 540
+42000 shot
+42500 move 440 540
+43000 click 440 540
+43500 move 440 460
+44000 click 440 460
+46000 shot
+47000 quit

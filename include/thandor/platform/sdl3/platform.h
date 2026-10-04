@@ -85,6 +85,21 @@ uint32_t SdlVideo_SavedDisplayModeKind();
 void SdlVideo_SaveDisplayModeKind(uint32_t kind);
 uint32_t SdlVideo_DisplayModeKind();
 void SdlVideo_SetDisplayModeKind(uint32_t kind);
+/* Whether the renderer in use is a GPU one (Vulkan, DirectX 12), not the software renderer. */
+bool SdlVideo_GpuRendererActive();
+/* The GPU renderers' rasterization ([graphics] gpu_rasterization, PERSISTENT_GPU_RASTERIZATION_*): the saved one, and
+   saving one, which a running GPU device takes from its next scene on (OPEN_THANDOR_GPU_RASTER still wins at the
+   next device start; the developer tools' compare mode keeps the exact one). */
+uint32_t SdlVideo_GpuRasterization();
+void SdlVideo_SetGpuRasterization(uint32_t rasterization);
+/* The GPU renderers' UI scale ([graphics] ui_scale: PERSISTENT_UI_SCALE_AUTO or 1..PERSISTENT_UI_SCALE_MAX): the
+   saved one, and saving one. A saved scale takes effect at the next display mode switch (the advanced settings
+   page sets the mode in use again at once); the display modes are listed again for it at once (a fixed scale lists
+   the display's sizes divided by it). UiScaleChangePending: the scale asked for (OPEN_THANDOR_UI_SCALE wins)
+   differs from the one the running display mode was set up with. */
+uint32_t SdlVideo_SavedUiScale();
+void SdlVideo_SaveUiScale(uint32_t scale);
+bool SdlVideo_UiScaleChangePending();
 /* Frame pacing of the presents (render rate only, the game's timers are untouched; but as in the original a
    simulation step runs at the first frame after its timer countdown, so a limit below 60 slows the game: 30 fps
    gives about 14 instead of 20 steps per second).

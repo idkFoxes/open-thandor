@@ -101,6 +101,7 @@ struct RendererState {
   int windowWidth = 0; /* the size last given to the normal window */
   int windowHeight = 0;
   bool modesListedWithSettings = false;
+  int appliedUiScaleRequest = -1; /* RequestedUiScale at the last display mode switch (-1: none yet) */
 };
 RendererState s_renderer;
 
@@ -818,6 +819,54 @@ void SdlVideo_SaveDisplayModeKind(uint32_t kind)
   PersistentSettings_Write(kind, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
 }
 
+bool SdlVideo_GpuRendererActive()
+{
+  return (s_renderer.active != kNoRenderer) && (s_renderer.active != PERSISTENT_RENDERER_SOFTWARE);
+}
+
+uint32_t SdlVideo_GpuRasterization()
+{
+  return (PersistentSettings_Read(PERSISTENT_GPU_RASTERIZATION_SMOOTH, PERSISTENT_SETTING_GPU_RASTERIZATION) ==
+          PERSISTENT_GPU_RASTERIZATION_EXACT)
+             ? PERSISTENT_GPU_RASTERIZATION_EXACT
+             : PERSISTENT_GPU_RASTERIZATION_SMOOTH;
+}
+
+void SdlVideo_SetGpuRasterization(uint32_t rasterization)
+{
+  if (rasterization >= PERSISTENT_GPU_RASTERIZATION_COUNT) {
+    return;
+  }
+  PersistentSettings_WriteChosen(rasterization, PERSISTENT_SETTING_GPU_RASTERIZATION);
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SetGpuRasterizationExact(rasterization == PERSISTENT_GPU_RASTERIZATION_EXACT);
+#endif
+}
+
+uint32_t SdlVideo_SavedUiScale()
+{
+  const uint32_t saved = PersistentSettings_Read(PERSISTENT_UI_SCALE_AUTO, PERSISTENT_SETTING_UI_SCALE);
+  return (saved <= PERSISTENT_UI_SCALE_MAX) ? saved : PERSISTENT_UI_SCALE_AUTO;
+}
+
+void SdlVideo_SaveUiScale(uint32_t scale)
+{
+  if ((scale > PERSISTENT_UI_SCALE_MAX) || (scale == SdlVideo_SavedUiScale())) {
+    return;
+  }
+  const int requestedBefore = RequestedUiScale();
+  PersistentSettings_WriteChosen(scale, PERSISTENT_SETTING_UI_SCALE);
+  Thandor_Log("UI scale %u (0 = auto) saved", scale);
+  if (RequestedUiScale() != requestedBefore) {
+    ListDisplayModes(); /* a fixed scale lists the display's sizes divided by it */
+  }
+}
+
+bool SdlVideo_UiScaleChangePending()
+{
+  return (s_renderer.appliedUiScaleRequest >= 0) && (RequestedUiScale() != s_renderer.appliedUiScaleRequest);
+}
+
 uint32_t SdlVideo_DisplayModeKind()
 {
   return Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.kind;
@@ -909,6 +958,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   constexpr SDL_PixelFormat pixelFormat = SDL_PIXELFORMAT_XRGB8888;
   const uint32_t kind = Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind;
   const int uiScale = UiScaleFor(renderer, kind, static_cast<int>(width), static_cast<int>(height));
+  s_renderer.appliedUiScaleRequest = RequestedUiScale();
 #ifdef THANDOR_RENDERER_SDL_GPU
   SetGpuUiScale(uiScale);
 #endif
@@ -1040,3 +1090,4 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
   }
   return capturedAsset;
 }
+

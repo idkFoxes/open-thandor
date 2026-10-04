@@ -411,6 +411,7 @@ struct FrontendUiActionHandlerPage20Prefix {
     Ptr32<void (void *)> handlers00_54[85]; // Generic queued action handlers for action IDs 0x2000-0x2054.
     Ptr32<void (uint32_t, uint32_t, uint32_t, uint32_t)> scenarioCatalogRebuildCallbacks[3]; // Indexed 3-way save/level/campaign record-list rebuild callbacks, picked by a selector 0..2.
     Ptr32<void (void *)> handlers58_5A[3]; // Not in the original: action IDs 0x2058-0x205A (the display mode kind choices).
+    Ptr32<void (void *)> handlers5B_5F[5]; // Not in the original: action IDs 0x205B-0x205F (the advanced settings page).
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
@@ -973,7 +974,8 @@ using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32
 #define FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT 24
 #define FRONTEND_DISPLAY_RESOLUTION_ROW_INSET 3 /* the rows' left/top/right offsets in the panel */
 
-/* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+/* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows, plus the 20
+   nodes of the advanced settings page). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FrontendUiImage {
     UiNodeBase frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
@@ -1202,7 +1204,7 @@ typedef struct FrontendUiImage {
     uint32_t linkRotationTiltCheckbox_fields[5];
     UiNodeBase rightButtonNoScrollCheckbox; /* +2C58 g_UiTextButtonControlVtable: Checkbox "Right button does not scroll" (action 0x2051). */
     uint32_t rightButtonNoScrollCheckbox_fields[5];
-    UiNodeBase displaySettingsPage; /* +2CB8 g_UiImagePanelControlVtable: Page-stack page 6 (opened by action 0x2011): display adapter, resolution and colour-depth selection. */
+    UiNodeBase displaySettingsPage; /* +2CB8 g_UiImagePanelControlVtable: Page-stack page 6 (opened by action 0x2011; open-thandor: page 0 of displayPageStack): display adapter, resolution and colour-depth selection. */
     uint32_t displaySettingsPage_fields[4];
     UiNodeBase displaySettingsBackButton; /* +2D14 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options menu page (page 5). */
     uint32_t displaySettingsBackButton_fields[5];
@@ -1449,6 +1451,49 @@ typedef struct FrontendUiImage {
     UiNodeBase displayResolutionRowPanel; /* +5B58 g_UiPanelControlVtable: Scrolled content: one radio row per resolution, size set at run time. */
     uint32_t displayResolutionRowPanel_fields[3];
     UiNumericPairTextButton displayResolutionExtraOptions[FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS]; /* +5BB0 g_UiNumericPairTextButtonVtable: Resolution choices 11.. (action 0x2022). */
+    /* Not in the original (open-thandor): the "Erweitert" settings page. frontendPageStack page 6 is
+       displayPageStack, whose page 0 is displaySettingsPage ("Anzeige") and page 1 advancedSettingsPage; the
+       options page gets a fourth button (advancedSettingsButton) below "Sound". */
+    UiNodeBase displayPageStack; /* +71A0 g_UiLayoutContainerControlVtable: Two-page stack in frontendPageStack page 6: display settings, advanced settings. */
+    uint32_t displayPageStack_fields[3];
+    UiNodeBase advancedSettingsButton; /* +71F8 g_UiFramedTextButtonControlVtable: "Erweitert" button of the options page (action FRONTEND_ACTION_OPEN_ADVANCED_SETTINGS). */
+    uint32_t advancedSettingsButton_fields[5];
+    UiNodeBase advancedSettingsPage; /* +7258 g_UiImagePanelControlVtable: displayPageStack page 1: GPU edges, UI scale, frame limit, VSync. */
+    uint32_t advancedSettingsPage_fields[4];
+    UiNodeBase advancedSettingsBackButton; /* +72B4 g_UiFramedTextButtonControlVtable: Action 0x2010: returns to the options page. */
+    uint32_t advancedSettingsBackButton_fields[5];
+    UiNodeBase advancedSettingsTitle; /* +7314 g_UiFocusProxyControlVtable: Page title "Erweiterte Einstellungen". */
+    uint32_t advancedSettingsTitle_fields[4];
+    UiNodeBase advancedEdgesGroup; /* +7370 g_UiTitledWindowControlVtable: Titled box "3D-Kanten:" ([graphics] gpu_rasterization). */
+    uint32_t advancedEdgesGroup_fields[2];
+    UiNodeBase advancedEdgesSmooth; /* +73C4 g_UiTextButtonControlVtable: "Glatt" (action FRONTEND_ACTION_ADVANCED_EDGES). */
+    uint32_t advancedEdgesSmooth_fields[5];
+    UiNodeBase advancedEdgesExact; /* +7424 g_UiTextButtonControlVtable: "Original" (action FRONTEND_ACTION_ADVANCED_EDGES). */
+    uint32_t advancedEdgesExact_fields[5];
+    UiNodeBase advancedUiScaleGroup; /* +7484 g_UiTitledWindowControlVtable: Titled box "UI-Skalierung:" ([graphics] ui_scale). */
+    uint32_t advancedUiScaleGroup_fields[2];
+    UiNodeBase advancedUiScaleAuto; /* +74D8 g_UiTextButtonControlVtable: "Auto" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    uint32_t advancedUiScaleAuto_fields[5];
+    UiNodeBase advancedUiScale1; /* +7538 g_UiTextButtonControlVtable: "1x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    uint32_t advancedUiScale1_fields[5];
+    UiNodeBase advancedUiScale2; /* +7598 g_UiTextButtonControlVtable: "2x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    uint32_t advancedUiScale2_fields[5];
+    UiNodeBase advancedUiScale3; /* +75F8 g_UiTextButtonControlVtable: "3x" (action FRONTEND_ACTION_ADVANCED_UI_SCALE). */
+    uint32_t advancedUiScale3_fields[5];
+    UiNodeBase advancedFrameLimitGroup; /* +7658 g_UiTitledWindowControlVtable: Titled box "Bildratenbegrenzung:". */
+    uint32_t advancedFrameLimitGroup_fields[2];
+    UiNodeBase advancedFrameLimitOff; /* +76AC g_UiTextButtonControlVtable: "Aus" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    uint32_t advancedFrameLimitOff_fields[5];
+    UiNodeBase advancedFrameLimit60; /* +770C g_UiTextButtonControlVtable: "60 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    uint32_t advancedFrameLimit60_fields[5];
+    UiNodeBase advancedFrameLimit120; /* +776C g_UiTextButtonControlVtable: "120 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    uint32_t advancedFrameLimit120_fields[5];
+    UiNodeBase advancedFrameLimit144; /* +77CC g_UiTextButtonControlVtable: "144 Bilder/s" (action FRONTEND_ACTION_ADVANCED_FRAME_LIMIT). */
+    uint32_t advancedFrameLimit144_fields[5];
+    UiNodeBase advancedVsyncCheckbox; /* +782C g_UiTextButtonControlVtable: Checkbox "VSync" (action FRONTEND_ACTION_ADVANCED_VSYNC). */
+    uint32_t advancedVsyncCheckbox_fields[5];
+    UiNodeBase advancedNoteLabel; /* +788C g_UiFocusProxyControlVtable: Note under the boxes (text set when the page opens: software renderer / UI scale). */
+    uint32_t advancedNoteLabel_fields[4];
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
 #define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))
