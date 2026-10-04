@@ -198,9 +198,9 @@ using LocaleFormatTimeFieldsUtf16Proc = uint32_t (uint32_t hour, uint32_t minute
 using LocaleGetPackedCurrentDateProc = uint32_t ();
 using LocaleGetPackedCurrentTimeProc = uint32_t ();
 using LocaleGetTelephoneCountryCodeProc = uint32_t ();
-using TimerCallbackProc = void __cdecl ();
+using TimerCallbackProc = void ();
 using TimerRegisterPeriodicProc = void (uint32_t frequencyHz, TimerCallbackProc * callback);
 using TimerUnregisterPeriodicProc = void (TimerCallbackProc * callback);
-using Win32PumpMessagesProc = void __cdecl ();
+using Win32PumpMessagesProc = void ();
 
 #endif /* THANDOR_PLATFORM_SYSTEM_TYPES_H */

@@ -80,7 +80,7 @@ Bool8 ModelRuntimePool_RepairDeferredChild
    its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error
    (FATAL_ERROR_ARENA_EXHAUSTED / ARENA_HEAP_CORRUPT, never 0 from the arena).
 */
-uint32_t __cdecl ModelRuntimePool_Init()
+uint32_t ModelRuntimePool_Init()
 
 {
   ModelRuntimeSlot *modelRuntimePool;
@@ -240,7 +240,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
    the class's modelUnrebase handler. Unused slots are zeroed. The original also returns the pool and its size
    0x400000 for the save. Counterpart of ModelRuntimePool_RebaseAfterLoad.
 */
-void __cdecl ModelRuntimePool_UnrebaseBeforeSave()
+void ModelRuntimePool_UnrebaseBeforeSave()
 
 {
   ModelRuntimeSlotUnrebaseView *modelRuntime;

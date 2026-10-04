@@ -602,7 +602,7 @@ void SoftwareRaster32_Mode12
 
 /* The textured pixel of the auxiliary family: nearest texel modulated by the colour, saturated to
    ARGB. */
-static __inline uint32_t RasterAux_TexturedPixel(const RasterSpan *span)
+static inline uint32_t RasterAux_TexturedPixel(const RasterSpan *span)
 {
     RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
     int channel[RASTER_LANE_COUNT];

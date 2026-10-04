@@ -58,7 +58,7 @@ typedef union ThandorMmx {
     unsigned char ub[8];
 } ThandorMmx;
 
-static __inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i;
@@ -67,7 +67,7 @@ static __inline unsigned long long thandor_mmx_pmulhw(unsigned long long a, unsi
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     x.q = a; y.q = b;
@@ -76,7 +76,7 @@ static __inline unsigned long long thandor_mmx_pmaddwd(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddusb(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddusb(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i, s;
@@ -85,7 +85,7 @@ static __inline unsigned long long thandor_mmx_paddusb(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddusw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddusw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i;
@@ -95,7 +95,7 @@ static __inline unsigned long long thandor_mmx_paddusw(unsigned long long a, uns
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsigned long long b)
+static inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsigned long long b)
 {
     ThandorMmx x, y, r;
     int i, s;
@@ -107,7 +107,7 @@ static __inline unsigned long long thandor_mmx_paddsw(unsigned long long a, unsi
     return r.q;
 }
 
-static __inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsigned long long count)
+static inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsigned long long count)
 {
     ThandorMmx x, r;
     int i;
@@ -118,8 +118,8 @@ static __inline unsigned long long thandor_mmx_psraw(unsigned long long a, unsig
 }
 
 /* Operands are integers or the 8-byte lane structs some MMX values are typed as. */
-static __inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
-static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
+static inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
+static inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
 static inline unsigned long long thandor_mmx_q(SoftwareRgbWordLanes v) { return thandor_mmx_rgb(v); }
 static inline unsigned long long thandor_mmx_q(SoftwareBgraWordLanes v) { return thandor_mmx_bgra(v); }
 static inline unsigned long long thandor_mmx_q(unsigned long long v) { return v; }

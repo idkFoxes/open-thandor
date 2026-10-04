@@ -568,7 +568,7 @@ Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t
 
 /* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell), so pathing can plan on a copy and swap back afterwards.
 */
-void __cdecl GridScratch_CopyPrimaryToSecondary()
+void GridScratch_CopyPrimaryToSecondary()
 
 {
   int scratchDwordsRemaining;

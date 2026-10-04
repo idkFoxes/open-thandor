@@ -19,7 +19,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl InGameRuntime_PeriodicCountdownAndClockTick();
+void InGameRuntime_PeriodicCountdownAndClockTick();
 
 void InGameRuntime_UpdateSimulationAndNetworkTick();
 

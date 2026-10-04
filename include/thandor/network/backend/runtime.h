@@ -23,7 +23,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-uint32_t __cdecl Network_Init();
+uint32_t Network_Init();
 
 void Network_Shutdown();
 

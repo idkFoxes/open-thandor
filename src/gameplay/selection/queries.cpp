@@ -305,7 +305,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
 /* Returns the first entity of the local player's selection (the first non-NULL entry), or NULL when nothing is
    selected; the in-game panels use it as the representative of the selection.
 */
-GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry()
+GameEntityRuntime * SelectionInfo_GetFirstEntry()
 
 {
   GameEntityRuntime *firstEntry;
@@ -374,7 +374,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask()
 /* Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
    0x0D the capability dword classParameterC4 of its definition; other classes contribute nothing.
 */
-uint32_t __cdecl SelectionInfo_CollectCapabilityFlags()
+uint32_t SelectionInfo_CollectCapabilityFlags()
 
 {
   uint32_t capabilityMask;

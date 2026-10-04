@@ -28,11 +28,11 @@ uint32_t Random_NextSecondary();
 
 void Random_SetBothSeeds(RandomSeed seed);
 
-uint32_t __cdecl Random_GetSecondarySeed();
+uint32_t Random_GetSecondarySeed();
 
 void Random_SelectSecondaryStream();
 
-void __cdecl Random_SelectPrimaryStream();
+void Random_SelectPrimaryStream();
 
 extern RandomGeneratorState g_RandomGeneratorState;
 
