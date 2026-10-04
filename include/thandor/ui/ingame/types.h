@@ -387,7 +387,7 @@ struct InGameRuntimeRoot {
     uint32_t worldViewAreaRightOffset; // UiNodeBase.rightOffset of the world view area (+0x9DC); cleared when the side panel is switched off, before the root layout.
     uint8_t reserved0A08_0A2F[40];
     struct WorldRuntimeContext worldRuntime;
-    Ptr32<void (uint32_t, struct WorldRuntimeContext *)> worldOverlayCallback; // Overlay rebuild/release callback installed identically for new and loaded sessions.
+    Ptr32<void (GraphicsBooleanState, struct WorldRuntimeContext *)> worldOverlayCallback; // Overlay rebuild/release callback installed identically for new and loaded sessions.
     int32_t pointerPressX; /* pointer position at the button press */
     int32_t pointerPressY;
     int32_t pointerX; /* current pointer position */
@@ -527,7 +527,7 @@ struct InGameRuntimeRootUiGridView {
     uint32_t worldViewAreaRightOffset;
     uint8_t reserved0A08_0A2F[40];
     struct WorldRuntimeContext worldRuntime;
-    Ptr32<void (uint32_t, struct WorldRuntimeContext *)> worldOverlayCallback;
+    Ptr32<void (GraphicsBooleanState, struct WorldRuntimeContext *)> worldOverlayCallback;
     uint8_t reserved0B90_0B9F[16];
     Ptr32<struct SelectionPlayerPairRecord> localPlayerMarkedCells;
     uint32_t localPlayerMarkedCellCount;

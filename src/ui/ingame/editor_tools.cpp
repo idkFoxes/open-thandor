@@ -1119,12 +1119,6 @@ static void EditorSlot_RebuildTerrainOccupancyAndVisualState(void *callbackConte
   ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback((WorldRuntimeContext *)callbackContext,node);
 }
 
-static void EditorSlot_WorldOverlay(uint32_t releaseMode,WorldRuntimeContext *worldRuntime)
-
-{
-  InGameWorldOverlay_RebuildOrReleaseTransientMarkers((GraphicsBooleanState)releaseMode,worldRuntime);
-}
-
 static void EditorSlot_ResetNotificationButtonCursor(WorldRuntimeContext *worldRuntime)
 
 {
@@ -1279,7 +1273,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
     UiCommandModeG_HideSurfacePointMarker(&root->worldRuntime);
-    root->worldOverlayCallback = EditorSlot_WorldOverlay;
+    root->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
     (root->worldRuntime).selection.dispatchCommandCallback =
          InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
     (root->worldRuntime).selection.resolveContextActionPrimaryCallback =
