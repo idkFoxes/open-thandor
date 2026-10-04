@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(thandor_curated_reference C CXX)
+project(open_thandor C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -50,7 +50,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                         -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
 endif()
 
-add_library(thandor_curated STATIC
+# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
+add_executable(thandor WIN32
     src/assets/army/catalog.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
@@ -176,6 +177,8 @@ add_library(thandor_curated STATIC
     src/network/protocol/lobby.cpp
     src/network/protocol/mailbox.cpp
     src/network/protocol/scenario_transfer.cpp
+    src/platform/bootstrap/image.cpp
+    src/platform/bootstrap/main.cpp
     src/platform/bootstrap/runtime.cpp
     src/platform/filesystem/win32.cpp
     src/platform/input/devices.cpp
@@ -298,14 +301,8 @@ add_library(thandor_curated STATIC
     src/world/terrain/sight.cpp
     src/world/terrain/water_relaxation.cpp
 )
-target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
-add_executable(thandor WIN32
-    src/platform/bootstrap/main.cpp
-    src/platform/bootstrap/image.cpp
-)
-target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
+target_include_directories(thandor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(thandor PRIVATE kernel32 user32 dbghelp)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.
 if(MSVC)
@@ -316,18 +313,31 @@ else()
     target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
                         -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
                         -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+    # thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
+    # watchdog (src/platform/bootstrap/image.cpp reads it at start; a GCC build has no PDB for dbghelp). Written from
+    # the linked executable before its symbols are stripped below.
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
+                -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
+        VERBATIM)
+    # The debug information in a separate thandor.debug, like the PDB of an MSVC build (every GCC configuration):
+    # the linked image carries some 33 MB of DWARF and its COFF symbol table. objcopy --only-keep-debug copies both
+    # into thandor.debug, strip --strip-all removes them from thandor.exe (the loaded sections and their addresses
+    # stay as they are, so thandor.sym still matches), and the .gnu_debuglink section lets gdb and addr2line find
+    # thandor.debug next to the executable.
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:thandor> $<TARGET_FILE_DIR:thandor>/thandor.debug
+        COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:thandor>
+        COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:thandor>
+                ${CMAKE_OBJCOPY} --add-gnu-debuglink=thandor.debug $<TARGET_FILE:thandor>
+        VERBATIM)
     # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
-    # clears the flag after the link and fails the build if the image came out relocatable.
+    # clears the flag in the final image (after strip and objcopy) and fails the build if the image came out
+    # relocatable.
     add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
     target_link_options(pe_not_large_address_aware PRIVATE -static)
     add_custom_command(TARGET thandor POST_BUILD
         COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
-        VERBATIM)
-    # thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
-    # watchdog (src/platform/bootstrap/image.cpp reads it at start; a GCC build has no PDB for dbghelp).
-    add_custom_command(TARGET thandor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
-                -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
         VERBATIM)
 endif()
 
@@ -348,7 +358,7 @@ endif()
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release RelWithDebInfo)
 set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release MinSizeRel)
 find_package(SDL3 CONFIG REQUIRED)
-target_sources(thandor_curated PRIVATE
+target_sources(thandor PRIVATE
     src/platform/sdl3/audio.cpp
     src/platform/sdl3/input.cpp
     src/platform/sdl3/platform.cpp
@@ -356,7 +366,7 @@ target_sources(thandor_curated PRIVATE
     src/platform/sdl3/video.cpp
     src/platform/sdl3/window_icon.cpp
 )
-target_link_libraries(thandor_curated PUBLIC SDL3::SDL3)
+target_link_libraries(thandor PRIVATE SDL3::SDL3)
 # SDL3.dll next to thandor.exe
 add_custom_command(TARGET thandor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:thandor>
@@ -462,17 +472,17 @@ if(THANDOR_RENDERER_SDL_GPU)
         set(THANDOR_GPU_SPIRV_FROM "none (dxc not found: vcpkg install directx-dxc, or -DTHANDOR_DXC=<dxc.exe>), the Vulkan renderer is not available")
     endif()
     message(STATUS "SDL_GPU shaders: DXBC from ${THANDOR_GPU_DXBC_FROM}; SPIR-V from ${THANDOR_GPU_SPIRV_FROM}")
-    target_sources(thandor_curated PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
-    target_include_directories(thandor_curated PRIVATE ${THANDOR_GPU_SHADER_DIR})
-    target_compile_definitions(thandor_curated PUBLIC THANDOR_RENDERER_SDL_GPU=1)
+    target_sources(thandor PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
+    target_include_directories(thandor PRIVATE ${THANDOR_GPU_SHADER_DIR})
+    target_compile_definitions(thandor PRIVATE THANDOR_RENDERER_SDL_GPU=1)
     if(THANDOR_GPU_SPIRV)
-        target_compile_definitions(thandor_curated PRIVATE THANDOR_GPU_SHADERS_SPIRV=1)
+        target_compile_definitions(thandor PRIVATE THANDOR_GPU_SHADERS_SPIRV=1)
     endif()
 endif()
 # ---- end of the SDL_GPU renderer -------------------------------------------------------------------------------
 
 if(THANDOR_DEV_TOOLS)
-    target_sources(thandor_curated PRIVATE
+    target_sources(thandor PRIVATE
         src/platform/debug/autoshot.cpp
         src/platform/debug/campaign.cpp
         src/platform/debug/font.cpp
@@ -485,5 +495,5 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/test_aids.cpp
         src/platform/selftest/selftests.cpp
     )
-    target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)
+    target_compile_definitions(thandor PRIVATE THANDOR_DEV_TOOLS=1)
 endif()

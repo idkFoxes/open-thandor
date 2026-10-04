@@ -102,17 +102,27 @@ What keeps the two builds identical in behaviour (the self-test hashes and the d
 - Linker: `--image-base=0x10000000 --disable-dynamicbase --disable-high-entropy-va`. GNU ld marks every 64-bit image
   large-address aware (its `--disable-large-address-aware` is for 32-bit images only), so the build runs
   [`cmake/pe_not_large_address_aware.cpp`](../cmake/pe_not_large_address_aware.cpp) on `thandor.exe` after the
-  link: it clears `IMAGE_FILE_LARGE_ADDRESS_AWARE` and fails if the image is relocatable. Check with
-  `objdump -p thandor.exe`: `Characteristics` without 0x20, `ImageBase 0000000010000000`, `DllCharacteristics`
-  only `NX_COMPAT`.
+  link (as the last step, after the debug information is split off, see below): it clears
+  `IMAGE_FILE_LARGE_ADDRESS_AWARE` and fails if the image is relocatable. Check with `objdump -p thandor.exe`:
+  `Characteristics` without 0x20, `ImageBase 0000000010000000`, `DllCharacteristics` 0x8100 (`NX_COMPAT` and
+  `TERMINAL_SERVICE_AWARE`, no `DYNAMIC_BASE`).
+
+Debug information: an MSVC build keeps it in `thandor.pdb` next to `thandor.exe` (dbghelp reads it for the names in
+crash logs). A GCC build compiles with DWARF (`-g`, some 33 MB) and splits it off after the link like a PDB, in every
+GCC configuration: `objcopy --only-keep-debug` writes `thandor.debug`, `strip --strip-all` removes the DWARF and the
+COFF symbol table from `thandor.exe` (about 1.3 MB then; the loaded sections and their addresses do not change), and
+`objcopy --add-gnu-debuglink=thandor.debug` records the debug file in the executable, so `gdb` and `addr2line` find
+it when it lies next to `thandor.exe` (`gdb -batch -ex "info line WinMain" thandor.exe`). `thandor.debug` is only
+needed for debugging and for source lines; the game does not read it and does not need it.
 
 Crash and hang logs of a GCC build: there is no PDB for dbghelp; instead the build writes `thandor.sym` next to
-`thandor.exe` (the code symbols from `nm -C`, [`cmake/symbol_table.cmake`](../cmake/symbol_table.cmake)), which the
-crash handler reads at start, so `crash.log`, `hang.log` and the watchdog give each frame as
-`Function+0xNN [thandor.exe+0xOFFSET]` (keep `thandor.sym` with the executable; a table of another build is ignored
-with a note in `thandor.log`, and the frames then show only `thandor.exe+0xOFFSET`). The absolute address is
-`0x10000000 + OFFSET` (the image base is fixed and logged as `module base`). Source lines come from the
-executable's DWARF line information:
+`thandor.exe` (the code symbols from `nm -C` of the linked executable before it is stripped,
+[`cmake/symbol_table.cmake`](../cmake/symbol_table.cmake); about 0.4 MB), which the crash handler reads at start, so
+`crash.log`, `hang.log` and the watchdog give each frame as `Function+0xNN [thandor.exe+0xOFFSET]` (keep
+`thandor.sym` with the executable, also in a game folder; a table of another build is ignored with a note in
+`thandor.log`, and the frames then show only `thandor.exe+0xOFFSET`). The absolute address is
+`0x10000000 + OFFSET` (the image base is fixed and logged as `module base`). Source lines come from the DWARF line
+information in `thandor.debug` (next to the executable, found through the debug link):
 
 ```bat
 addr2line -f -C -i -e build-mingw-test\thandor.exe 0x100516AA 0x1000146C
@@ -121,6 +131,9 @@ python tools\data\symbolize.py crash_raw.log build-mingw-test\thandor.exe
 
 `symbolize.py` calls `addr2line` for an `.exe` and reads a linker map otherwise; the GCC build also writes
 `thandor.map` (`-Wl,-Map`), which lists only global symbols (no `static` functions), so prefer the executable.
+Symbolize against the executable in the build directory (or one with its `thandor.debug` beside it): the test
+scripts copy only `thandor.exe`, `thandor.sym` and `SDL3.dll` into the game copies, not the 35 MB `thandor.debug`;
+since the addresses are fixed, the build directory's files answer for the copies as well.
 
 With `THANDOR_RENDERER_SDL_GPU` (on by default) a GCC build compiles the shaders with `fxc` when it finds the
 Windows SDK and with the Windows `dxc.exe` when it finds it (`THANDOR_DXC`, the `PATH`, or
