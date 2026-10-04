@@ -16,10 +16,10 @@ uint16_t g_FieldHexPathUtf16[10] = {'f', 'i', 'e', 'l', 'd', '.', 'h', 'e', 'x',
 /* L"level.hex" */
 uint16_t g_LevelHexPathUtf16[10] = {'l', 'e', 'v', 'e', 'l', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_LevelEndingMovieSourcePath[256] = {0};
+uint16_t g_LevelEndingMovieSourcePath[256] = {};
 
 /* LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer (PCK_ENTRY_HEADER_BYTES) */
-static PckEntryHeader g_LevelPackageFoundEntry = {0};
+static PckEntryHeader g_LevelPackageFoundEntry = {};
 
 static uint16_t g_LevelLevPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'l', 'e', 'v', 0}; /* L"level\\*.lev" */
 
@@ -127,7 +127,6 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   g_InGameLevelRuntimeGlobalBlock.conditionStorage = nullptr;
   Resource_Release(g_TechnologyAsset);
   g_TechnologyAsset = nullptr;
-  return;
 }
 
 /* Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package

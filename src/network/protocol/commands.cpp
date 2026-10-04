@@ -11,12 +11,12 @@
 
 /* Module data. */
 
-static UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {0};
+static UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {};
 
 /* followed by 12 bytes 0x90 fill (dropped) */
 static UiCommandQueueRecord *g_FrontendCommandQueueEnd = g_FrontendCommandQueueRecords;
 
-static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {0};
+static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {};
 
 static UiCommandQueueRecord *g_InGameCommandQueueEnd = THANDOR_PTR(&g_InGameCommandQueueRecords);
 
@@ -40,7 +40,6 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,Comma
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_FrontendCommandQueueEnd++;
   }
-  return;
 }
 
 
@@ -81,7 +80,6 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
     }
   }
   g_FrontendCommandQueueEnd--;
-  return;
 }
 
 
@@ -106,7 +104,6 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_InGameCommandQueueEnd++;
   }
-  return;
 }
 
 
@@ -147,7 +144,6 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
     }
   }
   g_InGameCommandQueueEnd--;
-  return;
 }
 
 

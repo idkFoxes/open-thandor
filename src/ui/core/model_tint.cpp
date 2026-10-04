@@ -21,7 +21,6 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
   if (tintArgb != modelNode->tintArgb) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode);
   }
-  return;
 }
 
 /* Tint of a world model (both callers pass a ModelRuntimeNode) from its terrain-derived runtimeFlags: 0x04 ->

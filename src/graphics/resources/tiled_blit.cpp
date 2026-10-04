@@ -108,7 +108,6 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
       } while (tileX < repeatEndX);
     }
   }
-  return;
 }
 
 /* GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfSourceRgb as the per-tile
@@ -179,5 +178,4 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
       } while (tileX < repeatEndX);
     }
   }
-  return;
 }

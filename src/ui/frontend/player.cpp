@@ -17,13 +17,13 @@ FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = nullptr;
 
 FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount = 0;
 
-UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {0};
+UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {};
 
-uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {0};
+uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {};
 
-static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {0};
+static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {};
 
-static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {0};
+static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {};
 
 /* Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:
    when the typed line is valid, converts it to 0x30 narrow bytes and sends it to every player as
@@ -71,7 +71,6 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
       textCursor = textCursor + 2;
     }
   }
-  return;
 }
 
 
@@ -104,7 +103,6 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
     }
     FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch(playerIndex,0,0,armyToken);
   }
-  return;
 }
 
 
@@ -120,7 +118,6 @@ void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source)
   
   consensusValue = ((UiSelectableControl *)source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED;
   FrontendCommand_Issue<FrontendPlayerRuntime_SetConsensusValueAndRefresh>(0,0,consensusValue);
-  return;
 }
 
 
@@ -150,7 +147,6 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
     FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
               ((FrontendNetworkListsRuntimeView *)rootNode);
   }
-  return;
 }
 
 
@@ -236,7 +232,6 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers()
     }
   }
   FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(0xffffffff,0,0,0);
-  return;
 }
 
 
@@ -287,7 +282,6 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(uintptr_t assignmentToken
     playerBlockCursor++;
     playerBlocksRemaining--;
   } while (playerBlocksRemaining != 0);
-  return;
 }
 
 
@@ -346,7 +340,6 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
   if (FrontendPlayerRuntime_AreAllClientsReady()) {
     FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   }
-  return;
 }
 
 
@@ -371,7 +364,6 @@ void FrontendPlayerRuntime_MarkLevelReceivedById
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -395,7 +387,6 @@ void FrontendPlayerRuntime_XorStateMaskByPlayerId
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -420,7 +411,6 @@ void FrontendPlayerRuntime_MarkLevelLoadedById
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -445,7 +435,6 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -479,7 +468,6 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -585,7 +573,6 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   firstPlayerBlock->factionAssignment.roleStateFlags = 0;
   firstPlayerBlock->colourCycleFlags = 0;
   firstPlayerBlock->snapshotTransferFlags = 0;
-  return;
 }
 
 
@@ -604,7 +591,6 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   RichTextCommandStream_CopyExpanded
             (64,g_FrontendNetworkSpeedLabelUtf16,labelText,nullptr);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
-  return;
 }
 
 
@@ -635,7 +621,6 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare()
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,(UiNodeBase *)g_FrontendRootNode);
   }
-  return;
 }
 
 
@@ -655,7 +640,6 @@ void FrontendPlayerRuntime_SetSlowRenderingFlagById
   readyFlagsField = (uint8_t *)&playerRuntimeBlock->sessionFlags;
   *(uint32_t *)readyFlagsField = *(uint32_t *)readyFlagsField & ~PLAYER_SESSION_FLAG_SLOW_RENDERING;
   playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | slowRenderingFlag;
-  return;
 }
 
 
@@ -693,7 +677,6 @@ void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntime
   if (FrontendPlayerRuntime_AreAllClientsReady()) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return;
 }
 
 
@@ -726,7 +709,6 @@ static void FrontendPlayerRuntime_EndInGameStartPause()
     g_UiCommandRuntimeFlags &=
          ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
   }
-  return;
 }
 
 
@@ -775,7 +757,6 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
     }
   }
   FrontendPlayerRuntime_EndInGameStartPause();
-  return;
 }
 
 
@@ -812,7 +793,6 @@ void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return;
 }
 
 
@@ -858,7 +838,6 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return;
 }
 
 
@@ -874,7 +853,6 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return;
 }
 
 
@@ -963,7 +941,6 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
       }
     }
   }
-  return;
 }
 
 
@@ -1001,7 +978,6 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   else {
     Technology_ApplyRecordToEntity(technologyIndexOrRestore,building);
   }
-  return;
 }
 
 
@@ -1014,7 +990,6 @@ void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,ui
 
 {
   g_SelectionPlayerRuntimeBlockPointers[playerIndex]->chatRecipientMaskAndWriteOffset = packedState;
-  return;
 }
 
 
@@ -1053,7 +1028,6 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
   }
   *(FrontendTextCommandValue2 *)(playerBlock->chatStagingText + writeOffset + 8) = value2;
   playerBlock->chatRecipientMaskAndWriteOffset = playerBlock->chatRecipientMaskAndWriteOffset | nextOffset;
-  return;
 }
 
 
@@ -1088,7 +1062,6 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
-  return;
 }
 
 
@@ -1127,7 +1100,6 @@ void FrontendPlayerSelection_ApplyEntryOrAll
     selectionCursor = (SelectionPlayerRuntimeBlock *)(selectionCursor->selection.entries + 1);
     remainingEntries--;
   } while (remainingEntries != 0);
-  return;
 }
 
 
@@ -1139,7 +1111,6 @@ static void FrontendPlayerRuntime_EndFrontendPlayerWait()
     g_FrontendNetworkTickCounter = 0;
     g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
   }
-  return;
 }
 
 
@@ -1188,7 +1159,6 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
     }
   }
   FrontendPlayerRuntime_EndFrontendPlayerWait();
-  return;
 }
 
 
@@ -1237,7 +1207,6 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
     playerBlock++;
     remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 
@@ -1292,7 +1261,6 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
   }
   /* dword 0: the write offset, rewound to the start of the text */
   *(uint32_t *)messageRecord = FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
-  return;
 }
 
 
@@ -1329,7 +1297,6 @@ void FrontendPlayerMessageBuffer_AppendTripleById
   *(FrontendMessageValueC *)(messageRecord + writeOffset) = valueC;
   *(FrontendMessageValueB *)(messageRecord + writeOffset + 4) = valueB;
   *(FrontendMessageValueA *)(messageRecord + writeOffset + 8) = valueA;
-  return;
 }
 
 
@@ -1355,7 +1322,6 @@ void FrontendPlayerMessageBuffer_PublishTextById
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,messageText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendPlayerMessageScratchUtf16,messageText);
   FrontendRecentTextHistory_InsertAndRebuild5(messageText);
-  return;
 }
 
 
@@ -1432,7 +1398,6 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
                g_FrontendNetworkRuntimeCountTextUtf16);
     UiPointerList_RefreshSelectionAndQueueAction(&frontendRoot->playerRuntimeList);
   }
-  return;
 }
 
 
@@ -1459,7 +1424,6 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
       }
     }
   }
-  return;
 }
 
 
@@ -1489,6 +1453,5 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
   playerBlock->technologyPageBuilding = (uintptr_t)building;
   playerBlock->heldResearchUnpaidFlag = buildingStateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
   building->classState.stateFlags = building->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
-  return;
 }
 

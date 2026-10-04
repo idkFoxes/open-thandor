@@ -48,7 +48,6 @@ void InGameSelection_SelectAllOwnAircraftPads
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_REPLACE_SELECTION: replaces the player's selection with all world
@@ -74,7 +73,6 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
       }
     }
   }
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_MOVE (plain click on the ground): sends the player's
@@ -89,7 +87,6 @@ void InGamePlayerSelection_ApplyMoveCommand
   SelectionPointerArray_ApplyMoveCommand
             (worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_POSITION (Shift/Alt-click on the ground): queues the world point as a
@@ -103,7 +100,6 @@ void InGamePlayerSelection_ApplyPositionCommand
   SelectionPointerArray_ApplyPositionCommand
             (worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_SELECT_ARMY (click on an army as an order target): makes the army at
@@ -122,7 +118,6 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
               ((ArmyRuntimeSlot *)((uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne + armyRuntimeIndex),
                &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   }
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_TARGET_POSITION (Ctrl-click on the ground): gives every eligible
@@ -135,7 +130,6 @@ void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,C
   SelectionPointerArray_ApplyTargetPositionCommand
             (surfaceHeightQ12,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
@@ -147,7 +141,6 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
 {
   SelectionRuntime_ResetMovementPruneAndRecenterEntries
             ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
-  return;
 }
 
 /* In-game command handler 0xE30 (Shift+S): resets the movement anchors of the eligible entries of the player's
@@ -161,7 +154,6 @@ void PlayerSelection_StopMovement
 {
   SelectionRuntime_StopMovement
             ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
-  return;
 }
 
 /* In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
@@ -174,7 +166,6 @@ void PlayerSelection_CancelTargets
 {
   SelectionRuntime_CancelTargets
             ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
-  return;
 }
 
 /* In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
@@ -187,7 +178,6 @@ void PlayerSelection_SelfDestruct
 {
   SelectionRuntime_SelfDestruct
             ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
-  return;
 }
 
 /* Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in ui/ingame/world_input.cpp when the
@@ -203,7 +193,6 @@ void InGameSelection_SetAircraftPadTargetLane1
   SelectionPointerArray_SetAircraftPadTargets
             (1,heading16,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  return;
 }
 
 /* Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
@@ -217,7 +206,6 @@ void InGameSelection_SetAircraftPadTargetLane2
   SelectionPointerArray_SetAircraftPadTargets
             (2,heading16,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  return;
 }
 
 /* Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
@@ -583,7 +571,6 @@ void SelectionPointerArray_SetAircraftPadTargets
       }
     }
   }
-  return;
 }
 
 /* Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
@@ -598,7 +585,6 @@ void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,Selecti
   SelectionPointerArray_SetAircraftPadTargets
             (3,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
@@ -613,7 +599,6 @@ void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,Selecti
   SelectionPointerArray_SetAircraftPadTargets
             (4,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
@@ -628,7 +613,6 @@ void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,Selecti
   SelectionPointerArray_SetAircraftPadTargets
             (5,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
@@ -643,7 +627,6 @@ void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,Selecti
   SelectionPointerArray_SetAircraftPadTargets
             (6,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 /* Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
@@ -658,7 +641,6 @@ void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,Selecti
   SelectionPointerArray_SetAircraftPadTargets
             (7,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-  return;
 }
 
 InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {

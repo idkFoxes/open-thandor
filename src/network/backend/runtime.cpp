@@ -90,7 +90,7 @@ static char s_Wsock32Export_WSAStartup[11] = "WSAStartup";
 
 static uint32_t g_NetworkBackendMode = 0;
 
-static WinSockData11 g_WinSockStartupData = {0};
+static WinSockData11 g_WinSockStartupData = {};
 
 static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = {'W', 'i', 'n', 'S', 'o', 'c', 'k', '3', '2', ' ', '1', '.', '1', ' ', '-', ' ', 'U', 'D', 'P', 0}}; /* L"WinSock32 1.1 - UDP" */
 
@@ -164,7 +164,6 @@ void Network_Shutdown()
     g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
     return;
   }
-  return;
 }
 
 /* Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it

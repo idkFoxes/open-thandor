@@ -87,7 +87,6 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
       }
     }
   }
-  return;
 }
 
 /* Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes):

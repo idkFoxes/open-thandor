@@ -481,5 +481,4 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   AiPlanningRebuild_CollectProducibleAssets(factionIndex,AiPlanningRebuild_CollectProductionMask());
   AiPlanningRebuild_CollectTargets();
   AiPlanningRebuild_CollectResearchCandidates(factionIndex);
-  return;
 }

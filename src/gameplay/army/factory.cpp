@@ -277,7 +277,6 @@ void ArmyRuntimeClass_UpdateUnitFactory
     }
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Runtime update of production class 11, reached only through
@@ -410,7 +409,6 @@ void ArmyRuntimeClass_UpdateStructureFactory
     }
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Launches one linked asset of a class-22 pad (called directly by

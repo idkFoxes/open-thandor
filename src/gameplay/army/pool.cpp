@@ -444,7 +444,6 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLED) != 0) {
     modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_FORCE_TRANSPARENT;
   }
-  return;
 }
 
 /* Replaces one image of a freshly loaded faction graphics ('gfx') asset with the image a frontend player sent in
@@ -506,5 +505,4 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
     payloadCursor = payloadCursor + 4;
     destinationCursor++;
   }
-  return;
 }

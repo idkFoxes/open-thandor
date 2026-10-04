@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
+UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {};
 
 static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
 
@@ -20,10 +20,10 @@ static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
 
 static uint32_t g_NetworkFallbackAddressLength = 0;
 
-static WinSockAddress g_NetworkFallbackBindEndpoint = {0};
+static WinSockAddress g_NetworkFallbackBindEndpoint = {};
 
 /* narrow endpoint/address text (written with capacity 255) */
-static uint8_t g_NetworkEndpointTextScratchA[256] = {0};
+static uint8_t g_NetworkEndpointTextScratchA[256] = {};
 
 /* Original quirk: "IP=" has no terminator (the next byte is 0x90 filler);
    g_CommandLineFindOption gets the length 3 and never reads past it */
@@ -44,7 +44,6 @@ uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 void NetworkBackendFallback_Cleanup()
 
 {
-  return;
 }
 
 /* Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
@@ -62,7 +61,6 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 void NetworkBackendFallback_CloseActiveSocket()
 
 {
-  return;
 }
 
 /* Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
@@ -104,7 +102,6 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
   outputText[1] = '\0';
   outputText[2] = '\0';
   outputText[3] = '\0';
-  return;
 }
 
 /* Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
@@ -113,7 +110,6 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
 void NetworkFallback_NoOpBackendCleanup()
 
 {
-  return;
 }
 
 
@@ -259,7 +255,6 @@ void NetworkFallback_CloseActiveSocket()
     socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,INVALID_SOCKET);
     g_WinSock_closesocket(socket);
   }
-  return;
 }
 
 
@@ -379,6 +374,5 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
   outputText[1] = '\0';
   outputText[2] = '\0';
   outputText[3] = '\0';
-  return;
 }
 

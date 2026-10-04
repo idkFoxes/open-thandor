@@ -175,7 +175,6 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Owner test for a model in the line of fire: it blocks unless it is the shooter's command target or passes

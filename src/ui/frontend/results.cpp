@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static uint16_t g_FrontendResultsValueTextUtf16[32] = {0};
+static uint16_t g_FrontendResultsValueTextUtf16[32] = {};
 
 static const int g_FrontendResultsColumnAdvance00Pixels = 0;
 
@@ -53,7 +53,7 @@ static uint32_t g_FrontendResultsFramebufferBytesPerPixel = 0;
 
 static uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
 
-static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
+static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {};
 
 /* drawClipped of g_FrontendResultsTableVtable, the three results charts (resultsChart1..3) of the end-of-game
    results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
@@ -338,7 +338,6 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -397,7 +396,6 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -456,7 +454,6 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* Shared start of the results table column painters: draws the column header headerResourceId (style 1) at

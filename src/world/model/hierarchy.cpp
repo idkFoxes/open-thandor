@@ -23,9 +23,9 @@ int32_t g_ModelBoundsMinimumZ = 0;
 
 int32_t g_ModelBoundsMaximumZ = 0;
 
-static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {0};
+static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {};
 
-GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {0};
+GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {};
 
 /* Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
    hierarchy (called by the army terrainStateRefresh maintenance phase in gameplay/army/class_dispatch.cpp). Targets:
@@ -76,7 +76,6 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   if (tintArgb != previousTint >> 16) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
-  return;
 }
 
 
@@ -116,7 +115,6 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
       node = (ModelRuntimeNode *)((uint32_t *)node + 1);
     }
   }
-  return;
 }
 
 
@@ -175,7 +173,6 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
     }
     childIndex++;
   }
-  return;
 }
 
 
@@ -200,7 +197,6 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
             (&modelNodeRuntime->worldTransform,viewFacingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
              modelNodeRuntime->modelPayload.worldRotationAngle1,
              modelNodeRuntime->modelPayload.worldRotationAngle0);
-  return;
 }
 
 
@@ -220,7 +216,6 @@ void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
                      modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x);
   angle0 = viewAngles.azimuthAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.elevationAngle,angle0);
-  return;
 }
 
 
@@ -256,7 +251,6 @@ void ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNode
     childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
   }
   modelNodeRuntime->subtreeBoundingRadiusQ12 = maximumRadius;
-  return;
 }
 
 
@@ -280,7 +274,6 @@ void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,Mo
   modelNodeRuntime->depthBinMaskNear = binMask;
   binMask = DepthInterval_BuildBinMask(minimumRadius,centerY);
   modelNodeRuntime->depthBinMaskFar = binMask;
-  return;
 }
 
 
@@ -402,7 +395,6 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
     modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
   }
-  return;
 }
 
 
@@ -701,7 +693,6 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
     }
   }
   WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)node);
-  return;
 }
 
 
@@ -722,7 +713,6 @@ void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode 
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
     modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
   }
-  return;
 }
 
 
@@ -778,7 +768,6 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
       }
     } while (childIndex < modelNodeRuntime->childCount);
   }
-  return;
 }
 
 

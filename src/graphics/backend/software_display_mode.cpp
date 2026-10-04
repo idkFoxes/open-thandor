@@ -25,7 +25,7 @@ int32_t g_SoftwareColorScaleQ16 = 0x10000;
 
 int32_t g_SoftwareColorBiasQ16 = 0;
 
-SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {0};
+SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {};
 
 SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = &SoftwarePixelFormat_BaseDisplayModeHook;
 
@@ -141,7 +141,6 @@ void SoftwarePixelFormat_BuildChannelPackTables
   } while (channelIndex < 256);
   g_SoftwareColorBiasQ16 = colorBiasQ16;
   g_SoftwareColorScaleQ16 = colorScaleQ16;
-  return;
 }
 
 /* Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the

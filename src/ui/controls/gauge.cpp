@@ -16,7 +16,7 @@ static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
 
-static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
+static uint16_t g_UiWindowPercentTextUtf16[5] = {};
 
 /* Draws the horizontal gauge (progress bar, the drawing half of g_UiTransferProgressGaugeVtable): the track, a
    fill proportional to (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue,
@@ -127,7 +127,6 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
     }
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
@@ -197,7 +196,6 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     }
   }
   UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipBottom,clipRight,clipTop,clipLeft,control);
-  return;
 }
 
 UiNodeVtable g_UiTransferProgressGaugeVtable = {

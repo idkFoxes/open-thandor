@@ -84,7 +84,6 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   default:
     break;
   }
-  return;
 }
 
 /* Ends a notification "go to" (state 27): resets the state to idle, walks up to the in-game root, clears bit 0x10
@@ -108,5 +107,4 @@ void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalVi
     *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
     WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime);
   }
-  return;
 }

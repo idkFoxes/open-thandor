@@ -61,7 +61,6 @@ void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
   
   allocation = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
   Resource_Release(allocation);
-  return;
 }
 
 
@@ -113,7 +112,6 @@ void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
   
   allocation = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
   g_MemoryApi.free(allocation);
-  return;
 }
 
 

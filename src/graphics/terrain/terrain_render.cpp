@@ -221,7 +221,6 @@ void TerrainProjectedGrid_TransformShadeAndQueue
     rowCells = rowCells + gridWidth;
     quadRowsLeft = quadRowsLeft - 1;
   } while (quadRowsLeft != 0);
-  return;
 }
 
 
@@ -262,7 +261,6 @@ void TerrainProjectedQuad_QueueAsTwoTriangles
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
              (TerrainProjectedVertexWorkRecord *)((uint8_t *)(topLeftVertex + 1) + rowStrideBytes),
              (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),renderContext);
-  return;
 }
 
 
@@ -378,7 +376,6 @@ void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkR
     vertex->projectionFlags = resultFlags;
     vertex->shadedColorB = shadedColorB;
   }
-  return;
 }
 
 
@@ -398,7 +395,6 @@ void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkR
   }
   vertex->shadedColorA = TerrainProjectedVertex_ShadeColor(vertex,vertex->packedColorA,&vertex->viewPointA);
   vertex->projectionFlags = resultFlags;
-  return;
 }
 
 
@@ -631,7 +627,6 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                  (GraphicsProjectedVertexSource *)vertex0,renderContext);
     }
   }
-  return;
 }
 
 
@@ -746,7 +741,6 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
       rowsRemaining--;
     } while (rowsRemaining != 0);
   }
-  return;
 }
 
 /* Fills one packet vertex from a terrain vertex's second screen/depth block for

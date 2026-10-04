@@ -15,7 +15,7 @@ uint32_t g_EndMoviePendingTicks = 0;
 
 static uint16_t g_FrontendEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '0', '.', 'f', 'l', 'm', 0}; /* L"flm\\ende0000.flm" */
 
-static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
+static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {};
 
 /* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns Bool8, but its only
    caller (UiKeyboard_DispatchPendingEvents) ignores the result, so false is returned. */
@@ -223,5 +223,4 @@ void Frontend_PlaySelectedEndMovie()
   rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
   rootCallbacks->keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
   rootCallbacks->frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
-  return;
 }

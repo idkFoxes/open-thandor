@@ -461,7 +461,6 @@ void InGameUiCommand_BeginInteractionByMode
     g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     g_UiCommandSelectionCurrentWorldYQ12 = g_UiCommandSelectionAnchorWorldYQ12;
   }
-  return;
 }
 
 /* Army drag selection step of InGameUiCommand_UpdateInteractionByMode: collects the own rendered armies
@@ -800,7 +799,6 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   if ((pointerRegionCode != WORLD_POINTER_NO_HIT) && (g_UiCommandSelectionAnchorWorldXQ12 != WORLD_POINTER_NO_HIT)) {
     InGameEditorPointer_ResizeCellRectangle(pointerX,pointerY,mapControl);
   }
-  return;
 }
 
 /* Map editor pointer release (selection.commitPointerActionCallback of the world runtime while the editor is
@@ -847,7 +845,6 @@ void InGameUiCommand_EndInteractionByMode
       InGameCommand_Issue<PlayerRuntime_ClearPlacementArmy>(0,0,0);
     }
   }
-  return;
 }
 
 /* Map editor context action (selection.dispatchWorldContextActionCallback of the world runtime while the
@@ -867,7 +864,6 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
   case EDITOR_MODE_UNIT_PLACEMENT:
     InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
   }
-  return;
 }
 
 /* Slot adapters for the callbacks installed below whose own signature differs from the slot's (calling through
@@ -1136,7 +1132,6 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     g_UiHoverSelectionRecord = nullptr;
     InGameSelectionDetailPanel_Rebuild();
   }
-  return;
 }
 
 /* In-game command INGAME_COMMAND_EDITOR_SAVE_MAP (editor hotkey F2): writes the edited map back - the field
@@ -1160,5 +1155,4 @@ void InGameUiCommand_SaveFieldAndLevelAssetImages
                     ((InGameLevelSaveWorldView *)&runtimeRoot->worldRuntime,&levelSaveError)) {
     FatalError_ReportIfFailed(levelSaveError,true);
   }
-  return;
 }

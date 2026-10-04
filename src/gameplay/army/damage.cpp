@@ -42,7 +42,6 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4]):
@@ -62,7 +61,6 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
     ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Applies an impact's damage to a living army (health, capped at the definition's maximumHealth). When the
@@ -204,7 +202,6 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
            modelRuntime->health + (maxHealth - modelRuntime->health);
     }
   }
-  return;
 }
 
 /* Damage smoke/fire of a damaged army: while its health is below the definition's threshold percentage
@@ -288,7 +285,6 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },randomBits >> 16,
              (randomValue & (FIXED_ANGLE16_EIGHTH_TURN - 1)) + (FIXED_ANGLE16_EIGHTH_TURN - 1),angleRandom,
              pointZQ12,pointYQ12,pointXQ12,effectDefinition,worldRuntime);
-  return;
 }
 
 /* Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;

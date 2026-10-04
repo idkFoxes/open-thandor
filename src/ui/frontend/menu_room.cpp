@@ -205,7 +205,6 @@ void FrontendModelPointerContext_NonRightPress
                callbackContext->selectedModelNode,
                (FrontendModelPointerHitContext *)callbackContext);
   }
-  return;
 }
 
 /* Release of a non-right button on the model pointer context (nonRightRelease of
@@ -232,7 +231,6 @@ void FrontendModelPointerContext_NonRightRelease
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,callbackContext);
   }
-  return;
 }
 
 /* Drag with a non-right button on the model pointer context (nonRightDrag of
@@ -261,7 +259,6 @@ void FrontendModelPointerContext_NonRightDrag
                callbackContext->selectedModelNode,
                (FrontendModelPointerHitContext *)callbackContext);
   }
-  return;
 }
 
 /* Relocate method of the model pointer context (relocate of g_FrontendModelPointerContextVtable), run when the
@@ -295,7 +292,6 @@ void FrontendModelPointerContext_Relocate
   control->candidateModelListHead = nullptr;
   control->selectedOverlayEntity = nullptr;
   UiContainer_RelocateChildren(relocationDelta,&control->base);
-  return;
 }
 
 /* Layout method of the model pointer context (layout of g_FrontendModelPointerContextVtable): a new size
@@ -307,7 +303,6 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 {
   WorldRuntime_ClearFieldGridDirtyFlag(callbackContext);
   UiContainer_LayoutChildren((UiNodeBase *)callbackContext);
-  return;
 }
 
 /* Hierarchy renderer for the model passes of FrontendModelPointerContext_RenderWorldViewQueuesClipped. */
@@ -551,7 +546,6 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     control->selectedModelNode = nullptr;
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 /* Right-button press on the model pointer context (rightPress of g_FrontendModelPointerContextVtable): starts a
@@ -572,7 +566,6 @@ void FrontendModelPointerContext_RightPress
        FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION;
   callbackContext->rightButtonHeldTicks = 0;
   g_CursorUseOverridePosition++;
-  return;
 }
 
 /* Right-button release on the model pointer context (rightRelease of g_FrontendModelPointerContextVtable): ends
@@ -592,7 +585,6 @@ void FrontendModelPointerContext_RightRelease
      (callbackContext->rightClickCallback != nullptr)) {
     callbackContext->rightClickCallback(callbackContext);
   }
-  return;
 }
 
 /* Right-button drag on the model pointer context (rightDrag of g_FrontendModelPointerContextVtable): moves the
@@ -719,7 +711,6 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
   if (clearTransientCallback != nullptr) {
     clearTransientCallback(callbackContext);
   }
-  return;
 }
 
 /* Wheel handler of the model pointer context (pointerWheel of g_FrontendModelPointerContextVtable): unless
@@ -752,7 +743,6 @@ void FrontendModelPointerContext_PointerWheel
       WorldRuntime_CaptureMotionStateToSnapshot(callbackContext);
     }
   }
-  return;
 }
 
 /* Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
@@ -822,7 +812,6 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
          cameraOffset.z + callbackContext->motion.targetPositionZQ12;
     WorldRuntime_ClearFieldGridDirtyFlag(callbackContext);
   }
-  return;
 }
 
 /* Hover handler of the menu room's pointer context (hoverCursorCallback/108). On the main page (not on a
@@ -953,7 +942,6 @@ void FrontendMenuRoom_PressNoOp
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext)
 
 {
-  return;
 }
 
 /* Drag handler of the menu room's pointer context (buttonDragCallback); dragging does nothing in the
@@ -964,7 +952,6 @@ void FrontendMenuRoom_DragNoOp
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext)
 
 {
-  return;
 }
 
 /* Button-release handler of the menu room's pointer context (buttonReleaseCallback): clicking an object of
@@ -988,7 +975,6 @@ void FrontendMenuRoom_ExecuteClickedRomAction
       }
     }
   }
-  return;
 }
 
 /* Right-button release handler of the menu room's pointer context (rightClickCallback): stops the running
@@ -1001,7 +987,6 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     FrontendCommand_Issue<ScenarioCatalog_RequestRomTransitionStopCallback>(0,0,0);
   }
-  return;
 }
 
 /* FrontendModelPointerContext_FindBestEligibleModelHitTarget: the hit priority of model runtime class

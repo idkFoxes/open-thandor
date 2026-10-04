@@ -696,7 +696,6 @@ void GraphicsShadingRuntime_Shutdown()
   g_GraphicsShadingGeneratedAsset = nullptr;
   g_MemoryApi.free(g_GraphicsShadingGridScratch);
   g_GraphicsShadingGridScratch = nullptr;
-  return;
 }
 
 
@@ -741,7 +740,6 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes()
     alphaCursor[3] = 0;
     alphaCursor = alphaCursor + 4;
   }
-  return;
 }
 
 
@@ -765,7 +763,6 @@ void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources()
       (g_GraphicsShadingGeneratedTextureTileX != 0 || g_GraphicsShadingGeneratedTextureTileY != 0)) {
     g_GraphicsRefreshTextureAlpha(subresourceIndex,g_GraphicsShadingTextureSet);
   }
-  return;
 }
 
 
@@ -805,7 +802,6 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
                (GraphicsFixedVec2 *)((uint8_t *)triangle->vertex0 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
     recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
   }
-  return;
 }
 
 
@@ -863,7 +859,6 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
     }
     childIndex++;
   }
-  return;
 }
 
 
@@ -1010,7 +1005,6 @@ void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelM
       g_GeneratedTextureScratchRuntime.projectedMaxY = vertexY;
     }
   }
-  return;
 }
 
 
@@ -1066,7 +1060,6 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
     }
     childIndex++;
   }
-  return;
 }
 
 
@@ -1092,7 +1085,6 @@ void GraphicsShadingGeneratedTexture_TransformPointXY
           (int64_t)transform->basisRow1[2] * (int64_t)point->z;
   outputXY->component1 =
        (FIXED_PRODUCT_SHR(dotProduct, Q28_SHIFT)) + (transform->translation).y;
-  return;
 }
 
 
@@ -1130,7 +1122,6 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor()
       }
     }
   }
-  return;
 }
 
 
@@ -1245,7 +1236,6 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
     textureCursor = textureCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize);
     rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
 
 
@@ -1320,7 +1310,6 @@ void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
 
 {
   renderContext->projectedPointBlockPool->count = renderContext->projectedPointBlockPool->count - 14;
-  return;
 }
 
 
@@ -1348,7 +1337,6 @@ void GraphicsShadingGeneratedTexture_TransformPointXYQuantized
   outputXY->component1 =
        (FIXED_PRODUCT_SHR(dotProduct, Q12_SHIFT)) + (transform->translation).y &
        ~(uint32_t)Q12_FRACTION_MASK;
-  return;
 }
 
 
@@ -1430,7 +1418,6 @@ void GraphicsShadingGeneratedTexture_ComposeTransform
   (outTransform->translation).z =
        (FIXED_PRODUCT_SHR(dotProduct, Q12_SHIFT)) +
        (lhsTransform->translation).z;
-  return;
 }
 
 
@@ -1588,7 +1575,6 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
       longEdgeX = longEdgeX + longEdgeStep;
     }
   }
-  return;
 }
 
 

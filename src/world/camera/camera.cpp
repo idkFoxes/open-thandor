@@ -30,7 +30,6 @@ void WorldRuntime_SetCameraPositionKeepingTarget
   runtime->motion.targetDistanceQ12 = targetDistanceQ12;
   runtime->motion.committedDistanceQ12 = targetDistanceQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
-  return;
 }
 
 /* Sets the camera's magnitude (at least 0x400 = 0.25 in Q12), heading (16-bit turn) and pitch and the
@@ -66,7 +65,6 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
   runtime->motion.pitchAngle = pitchAngle;
   runtime->motion.projectionShift = projectionShift;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
-  return;
 }
 
 /* Points the camera at a target: stores the target point (motion.targetPosition), pitch, heading and
@@ -93,7 +91,6 @@ void WorldRuntime_PointCameraAtTarget
   runtime->motion.positionYQ12 = directionOffset.y + runtime->motion.targetPositionYQ12;
   runtime->motion.positionZQ12 = directionOffset.z + runtime->motion.targetPositionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
-  return;
 }
 
 /* Restores the camera saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude, angles,
@@ -122,7 +119,6 @@ void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRunti
   worldRuntime->motion.targetDistanceQ12 = snapshotDistanceQ12;
   worldRuntime->motion.committedDistanceQ12 = snapshotDistanceQ12;
   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-  return;
 }
 
 /* Saves the camera (position, magnitude, heading, pitch and committed distance) into worldRuntime->snapshot,
@@ -149,7 +145,6 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
   worldRuntime->snapshot.headingAngle = snapshotHeadingAngle;
   worldRuntime->snapshot.pitchAngle = snapshotPitchAngle;
   worldRuntime->snapshot.distanceQ12 = snapshotDistanceQ12;
-  return;
 }
 
 /* Commits the camera's target distance (motion.targetDistanceQ12) as its committed distance
@@ -160,7 +155,6 @@ void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world)
 
 {
   world->motion.committedDistanceQ12 = world->motion.targetDistanceQ12;
-  return;
 }
 
 /* Returns the camera position (motion.positionX/Y/ZQ12).
@@ -268,7 +262,6 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   worldRuntime->motion.targetPositionYQ12 = endpointOffset.y + worldRuntime->motion.positionYQ12;
   worldRuntime->motion.targetPositionZQ12 = endpointOffset.z + worldRuntime->motion.positionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Clears WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY; called after every change of the camera state and when a
@@ -278,5 +271,4 @@ void WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world)
 
 {
   world->runtimeFlags = world->runtimeFlags & ~WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY;
-  return;
 }

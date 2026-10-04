@@ -19,11 +19,11 @@ uint16_t g_ScenarioLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"l
 
 /* <exe dir>\<level>.fld / .pcx. open-thandor: THANDOR_PATH_CAPACITY units; the loaders then combine this absolute
    path with the executable directory once more (FileSystem_LoadWholeFileNearExecutable), see THANDOR_PATH_CAPACITY. */
-uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
+uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {};
 
 FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
-uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
+uint16_t g_FrontendScenarioPathScratchUtf16[256] = {};
 
 /* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
@@ -40,7 +40,6 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source)
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_FIELD_GRID,0,0,0);
   }
-  return;
 }
 
 /* Loading part of FrontendScenarioSession_LoadOrRequestFieldGrid, run when some player still lacks
@@ -181,7 +180,6 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
     }
   }
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,1);
-  return;
 }
 
 /* Starts the campaign in row selectedRecordIndex of the campaigns list. The host (or a local game) loads
@@ -329,7 +327,6 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3); /* ROM action table entry 3 */
-  return;
 }
 
 /* Handler for starting a single-game level (frontend command 0x920 in a network game): builds the level path,
@@ -462,5 +459,4 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       playerRecord++;
     }
   }
-  return;
 }

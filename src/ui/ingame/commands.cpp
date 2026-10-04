@@ -41,7 +41,6 @@ void InGameCommand_TogglePauseRequest
     remainingPlayers--;
   } while (remainingPlayers != 0);
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_PAUSED;
-  return;
 }
 
 /* In-game command handler INGAME_COMMAND_PLACE_ARMY: takes the player's pending army asset (stock entry chosen
@@ -119,7 +118,6 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
     }
     g_SelectionPlayerRuntimeBlockPointers[playerId]->pendingPlacementArmyAsset = pendingEntry;
   }
-  return;
 }
 
 /* Technology window close button (action 0x1011, g_InGameUiActionHandlersPage10[17]): shows the world view again,
@@ -146,7 +144,6 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
     InGameCommand_Issue<FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology>
               (0,0xffffffff,modelOffset);
   }
-  return;
 }
 
 /* Selection group button click (action 0x100A, g_InGameUiActionHandlersPage10[10]; the 8 buttons of
@@ -197,7 +194,6 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
   factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
   InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
             ((CommandPayload)factionIndex,transferModeFlags,groupIndex);
-  return;
 }
 
 /* Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
@@ -206,7 +202,6 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 void UiCommandRuntime_CallbackNoOp()
 
 {
-  return;
 }
 
 /* In-game command handler 0x150 (quit game window and player departure): CLOSE_SESSION ends the session,
@@ -288,7 +283,6 @@ void InGameCommand_HandlePlayerDeparture
     remainingPlayers--;
     playerRecord++;
   } while (remainingPlayers != 0);
-  return;
 }
 
 /* Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask

@@ -406,7 +406,6 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
     g_GraphicsFramebufferEndAccess();
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
-  return;
 }
 
 /* drawClipped of g_UiTitledWindowControlVtable: draws the group-box frame with the title text set into its
@@ -503,7 +502,6 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
     g_GraphicsFramebufferEndAccess();
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
-  return;
 }
 
 /* Restores the rectangle saved when the window was maximized and lays the window out again. */
@@ -515,7 +513,6 @@ static void UiResizableWindowControl_RestoreSavedRectangle(UiResizableWindowCont
   control->root.base.bottom = control->restoredBottom;
   control->root.base.right = control->restoredRight;
   UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
-  return;
 }
 
 /* Maximizes the window: saves its rectangle for the restore, makes it cover the whole framebuffer and lays it
@@ -532,7 +529,6 @@ static void UiResizableWindowControl_SaveRectangleAndCoverFramebuffer(UiResizabl
   control->root.base.top = 0;
   control->root.base.bottom = g_FramebufferHeight;
   UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
-  return;
 }
 
 /* nonRightRelease of g_UiResizableWindowControlVtable: ends a move or resize and completes a button press.
@@ -564,7 +560,6 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
   control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_POINTER_STATE;
-  return;
 }
 
 /* keyboardEvent of g_UiResizableWindowControlVtable: Alt+C closes the window (with a close button), Alt+Z
@@ -617,7 +612,6 @@ void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocati
     control->selectable.base.bottomOffset = control->selectable.base.bottomOffset + frameInset;
   }
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
-  return;
 }
 
 /* layout of g_UiTitledWindowControlVtable: lays out the children inside the frame, i.e. with the rectangle
@@ -664,7 +658,6 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
   control->base.top = control->base.top - topInset;
   control->base.layoutWidth = control->base.layoutWidth + leftInset;
   control->base.layoutHeight = control->base.layoutHeight + topInset;
-  return;
 }
 
 /* relocate of g_UiResizableWindowControlVtable: relocates the children, then makes the window a keyboard
@@ -683,7 +676,6 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
   else {
     control->root.base.nodeFlags = control->root.base.nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
-  return;
 }
 
 /* Sets or clears armedFlag (UI_ROOT_CLOSE_ARMED / UI_ROOT_MAXIMIZE_ARMED) of a pressed window button to match
@@ -784,7 +776,6 @@ static void UiResizableWindowControl_ResizeToPointer
     control->root.base.vtable->layout((UiNodeBase *)control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* nonRightDrag of g_UiResizableWindowControlVtable: while moving, shifts the window by the pointer's
@@ -844,7 +835,6 @@ void UiResizableWindowControl_UpdateMoveOrResize
   else if ((control->root.rootFlags & UI_ROOT_RESIZING) != 0) {
     UiResizableWindowControl_ResizeToPointer(pointerY,pointerX,control);
   }
-  return;
 }
 
 /* Loads what every window needs: the frame graphics (engine\win.gfx, engine\winclass.gfx) and their texts
@@ -873,7 +863,6 @@ void UiWindowResources_Init()
   FatalError_ExitIfFailed(pageLoadError,!pageLoaded);
   UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = UI_ROOT_STACK_END;
-  return;
 }
 
 /* nonRightPress of g_UiResizableWindowControlVtable: a press on the close or maximize button (its opaque
@@ -964,7 +953,6 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
       g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_MOVE);
     }
   }
-  return;
 }
 
 /* pointerMove of g_UiResizableWindowControlVtable: returns the cursor frame for the pointer position, a
@@ -1036,7 +1024,6 @@ void UiWindow_BlitTiledInterior(UiPixelCoordinate clipBottom,UiPixelCoordinate c
              tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
              tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
-  return;
 }
 
 /* Tiles a piece of g_UiWindowTextureSource downwards from tileTop to tileBottom in one column at tileLeft
@@ -1053,7 +1040,6 @@ void UiWindow_BlitTiledVerticalEdge(UiPixelCoordinate clipBottom,UiPixelCoordina
             (clipBottom,clipRight,clipTop,clipLeft,tileBottom + ((UiNodeBase *)node)->top,INT32_MIN,
              tileTop + ((UiNodeBase *)node)->top,tileLeft + ((UiNodeBase *)node)->left,subresource,
              g_UiWindowTextureSource,g_FramebufferAccess);
-  return;
 }
 
 /* Tiles a piece of g_UiWindowTextureSource rightwards from tileLeft to tileRight in one row at tileTop
@@ -1072,7 +1058,6 @@ void UiWindow_BlitTiledHorizontalEdge
              tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
              tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
-  return;
 }
 
 UiNodeVtable g_UiTitledWindowControlVtable = {

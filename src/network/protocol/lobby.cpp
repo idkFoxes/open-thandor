@@ -17,27 +17,27 @@ THANDOR_ALIGN(16) int32_t g_FrontendPlayerRuntimeCount = 0;
 /* version string shown to joining players ("1.5.45") */
 static uint16_t g_GameVersionUtf16[7] = {'1', '.', '5', '.', '4', '5', 0}; /* L"1.5.45" */
 
-static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {0};
+static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {};
 
-static FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer = {0};
+static FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer = {};
 
-static FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer = {0};
+static FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer = {};
 
-static FrontendPacket10003JoinAck g_FrontendPacket10003Buffer = {0};
+static FrontendPacket10003JoinAck g_FrontendPacket10003Buffer = {};
 
-static FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer = {0};
+static FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer = {};
 
-static FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer = {0};
+static FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer = {};
 
-static FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer = {0};
+static FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer = {};
 
-FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {0};
+FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {};
 
-static FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {0};
+static FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {};
 
 static uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
 
-UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {0};
+UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {};
 
 uint32_t g_FrontendSessionToken = 0;
 
@@ -275,7 +275,6 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     UiTransferMailbox_MarkUnavailable();
   }
-  return;
 }
 
 /* Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in
@@ -316,7 +315,6 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
     playerRecord = playerRecord + 1;
     playersRemaining--;
   } while (playersRemaining != 0);
-  return;
 }
 
 /* Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
@@ -736,7 +734,6 @@ void FrontendTransfer_SendCapabilityHeartbeat()
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);
-  return;
 }
 
 /* Session advertisement (0x50001): updates the known session (same sequence token and IPv4 address) in place,
@@ -880,7 +877,6 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
   if (g_SessionTransferTimeoutTicks == 0) {
     FrontendTransferPage_ResetSessionOpenAndRequestMailbox(FRONTEND_UI(frontendRoot,clientLobbyLeaveButton));
   }
-  return;
 }
 
 /* Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
@@ -920,5 +916,4 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest()
     UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10004Buffer.header);
   }
-  return;
 }

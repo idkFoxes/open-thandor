@@ -11,10 +11,10 @@
 /* Module data. */
 
 /* Q12 ray origin in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
+GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {};
 
 /* Q28 ray direction in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
+GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {};
 
 /* Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
    limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane

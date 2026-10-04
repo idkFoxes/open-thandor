@@ -101,5 +101,4 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer()
     InGameNotification_StartQueueHeadMovie(inGameRoot);
     InGameNotification_PopQueueHead(inGameRoot);
   }
-  return;
 }

@@ -14,9 +14,9 @@ const uint32_t g_UiTextStyleNormal = 0;
 
 const int32_t g_UiWindowFrameInset = 2;
 
-uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
+uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {};
 
-uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
+uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {};
 
 /* UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/window.cpp). */
 const UiPackedTextStyle g_UiTextStyleSelected = 0x10000;
@@ -26,9 +26,9 @@ const UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
 
 static const uint32_t g_UiTextStyleAlternate = 0;
 
-static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {0};
+static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {};
 
-static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {0};
+static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {};
 
 /* Draws a graphics-adapter option button (drawClipped slot of g_UiGraphicsAdapterTextButtonVtable): patches
    rich-text payloads 0 and 1 of its text and draws it as a text button. The values are the two dwords stored
@@ -76,7 +76,6 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     RichTextCommandStream_PatchPayloadBySelector(1,resolvedText,stream);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,control);
   }
-  return;
 }
 
 /* Draws a text button showing two numbers (drawClipped slot of g_UiNumericPairTextButtonVtable, e.g. a
@@ -102,7 +101,6 @@ void UiNumericPairTextButton_DrawFormattedValues
     RichTextCommandStream_PatchPayloadBySelector(1,g_UiNumericPairSecondValueScratchUtf16,resolvedText);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   }
-  return;
 }
 
 /* Draws a text button with two text payloads (drawClipped slot of g_UiPayloadPairTextButtonVtable): patches
@@ -122,7 +120,6 @@ void UiPayloadPairTextButton_DrawFormattedPayloads
     RichTextCommandStream_PatchPayloadBySelector(1,control->secondPayload,resolvedText);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   }
-  return;
 }
 
 /* Relocation of a loaded framed text button (relocate slot of g_UiFramedTextButtonControlVtable): an inset-framed
@@ -150,7 +147,6 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
     *bottomOffsetField = *bottomOffsetField + frameInset;
   }
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
-  return;
 }
 
 /* Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
@@ -350,7 +346,6 @@ void UiFramedTextButtonControl_DrawClipped
     UiContainer_DrawIntersectingChildren
               (clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
   }
-  return;
 }
 
 /* Primary button press on a framed button (nonRightPress slot of g_UiFramedTextButtonControlVtable and
@@ -400,7 +395,6 @@ void UiFramedTextButtonControl_NonRightPress
       UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
-  return;
 }
 
 /* Primary button release on a framed button (nonRightRelease slot of g_UiFramedTextButtonControlVtable and
@@ -427,7 +421,6 @@ void UiFramedTextButtonControl_NonRightRelease
     UiActionQueue_Enqueue((control->selectable).actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* True when the point lies inside the framed button's box (with UI_BUTTON_FRAME_INSET: inside its frame,
@@ -501,7 +494,6 @@ void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,Ui
 
 {
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
-  return;
 }
 
 /* Primary button press on a text button (nonRightPress slot of g_UiTextButtonControlVtable,
@@ -561,7 +553,6 @@ void UiTextButtonControl_NonRightPress
       }
     }
   }
-  return;
 }
 
 /* Keyboard handler of a text button (keyboardEvent slot of g_UiTextButtonControlVtable,

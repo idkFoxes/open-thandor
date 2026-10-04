@@ -65,7 +65,6 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
                  worldRuntime);
     }
   }
-  return;
 }
 
 
@@ -121,7 +120,6 @@ void AiUnitBehavior_SelectBestAnchorAction
     }
   }
   AiUnitBehavior_CollectUnassignedEntity(armyRuntimeSlot,worldRuntime);
-  return;
 }
 
 
@@ -320,7 +318,6 @@ void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot
   workspacePoint[2] = 0; /* AiScoredSiteWorkspaceEntry.score */
   ArmyRuntime_StartRoutedMoveCommand
             (workspacePoint[1],*workspacePoint,(ArmyMovementRuntime *)armyRuntime);
-  return;
 }
 
 
@@ -347,7 +344,6 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
   armyRuntime->aiUnitFlags = armyRuntime->aiUnitFlags & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   ArmyRuntime_StartRoutedMoveCommand
             (targetWorldY,targetWorldX,(ArmyMovementRuntime *)armyRuntime);
-  return;
 }
 
 
@@ -363,7 +359,6 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
     g_AiWorkspace14CollectedArmies[g_AiCollectedEntityCount] = armyRuntimeSlot;
     g_AiCollectedEntityCount++;
   }
-  return;
 }
 
 
@@ -542,6 +537,5 @@ void AiUnitBehavior_UpdatePioneerVehicle
       ArmyRuntime_ResetMovementStateFromModel(armyRuntime);
     }
   }
-  return;
 }
 

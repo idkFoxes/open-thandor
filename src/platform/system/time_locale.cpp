@@ -22,9 +22,9 @@ THANDOR_ALIGN(4) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = nullpt
 
 THANDOR_ALIGN(4) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = nullptr;
 
-static uint8_t g_LocaleInfoScratch[16] = {0};
+static uint8_t g_LocaleInfoScratch[16] = {};
 
-static LocaleSystemState g_LocaleSystemState = {0};
+static LocaleSystemState g_LocaleSystemState = {};
 
 LocaleFormatCurrentDateUtf16Proc *g_LocaleFormatCurrentDateUtf16 = nullptr;
 
@@ -421,7 +421,6 @@ void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
   }
-  return;
 }
 
 

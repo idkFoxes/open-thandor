@@ -77,7 +77,6 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
       }
     }
   }
-  return;
 }
 
 /* Reacts to the model a moving model has run into (called directly by the movement code in drive_ground.cpp,

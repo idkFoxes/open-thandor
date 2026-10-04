@@ -53,7 +53,6 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
   }
-  return;
 }
 
 /* Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
@@ -93,7 +92,6 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       InGameCommand_Issue<GameFactionRuntime_CancelQueuedArmyAssetsAndRefund>(1,assetId,factionIndex);
     }
   }
-  return;
 }
 
 /* Fills the slotCount catalog slot controls (UiCatalogEntryControl at root + slotOffsets[i]): the first itemCount
@@ -225,7 +223,6 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
                          BUILD_CATALOG_ENTRY_COUNT,itemCount);
   (*((inGameUiGridView->buildCatalogPanel).vtable)->layout)
             (&inGameUiGridView->buildCatalogPanel);
-  return;
 }
 
 /* Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
@@ -326,5 +323,4 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
                          SPECIAL_BUILD_CATALOG_ENTRY_COUNT,itemCount);
   (*((inGameUiGridView->specialBuildCatalogPanel).vtable)->layout)
             (&inGameUiGridView->specialBuildCatalogPanel);
-  return;
 }

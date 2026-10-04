@@ -121,7 +121,6 @@ void UiRangeSliderControl_DrawTrackAndThumb
                subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
   }
   g_GraphicsFramebufferEndAccess();
-  return;
 }
 
 /* nonRightPress of the range slider (g_UiRangeSliderControlVtable): a press inside the slider, within the
@@ -166,7 +165,6 @@ void UiRangeSliderControl_BeginThumbDrag
   if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
-  return;
 }
 
 /* nonRightRelease of the range slider (g_UiRangeSliderControlVtable): ends a thumb drag and plays the click
@@ -182,7 +180,6 @@ void UiRangeSliderControl_EndThumbDrag
        ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
-  return;
 }
 
 /* suppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
@@ -196,7 +193,6 @@ void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderCo
     UiKeyboardFocus_ReleaseNode(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* unsuppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
@@ -210,7 +206,6 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
     UiKeyboardFocus_AcquireIfNone(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 UiNodeVtable g_UiRangeSliderControlVtable = {
@@ -360,7 +355,6 @@ void UiRangeSliderControl_UpdateValueFromPointer
     UiActionQueue_Enqueue(control->actionId,&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* pointerWheel slot of g_UiRangeSliderControlVtable. Unless the thumb is being dragged, each wheel notch
@@ -388,5 +382,4 @@ void UiRangeSliderControl_HandlePointerWheel
     UiActionQueue_Enqueue(control->actionId,&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }

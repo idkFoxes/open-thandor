@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-uint16_t g_FrontendLocalPlayerNameUtf16[20] = {0};
+uint16_t g_FrontendLocalPlayerNameUtf16[20] = {};
 
 Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows = nullptr;
 
@@ -24,13 +24,13 @@ char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
 char g_NameClientKarteKeywordsAscii[21] = {'N', 'A', 'M', 'E', '=', '"', 'C', 'L', 'I', 'E', 'N', 'T', '=', '"', 'K', 'A', 'R', 'T', 'E', '=', '"'}; /* "NAME=\"CLIENT=\"KARTE=\"" without its NUL */
 
-UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
+UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {};
 
-uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {0};
+uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {};
 
-uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {0};
+uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {};
 
-uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {0};
+uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {};
 
 /* Scans the value of a quoted command-line option (valueText follows the opening quote) for its closing quote:
    at most maxChars characters, stopping at the terminator or a control character. Returns the closing quote, or
@@ -312,7 +312,6 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   else {
     FrontendNetworkSetupPage_ApplyClientOption();
   }
-  return;
 }
 
 
@@ -342,7 +341,6 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
     sourceCursor++;
     destinationCursor++;
   }
-  return;
 }
 
 
@@ -369,7 +367,6 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
   g_NetworkBackendSlot7
             ((char *)g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
-  return;
 }
 
 
@@ -388,7 +385,6 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   FrontendNetworkGamePage_ClearSessionList(frontendUi);
   UiTransfer_SendDiscoveryProbe();
-  return;
 }
 
 
@@ -489,7 +485,6 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   if (appliedOptionMask == 7) {
     FrontendNetworkSetupPage_InitializeSingleLocalPlayer(FRONTEND_UI(frontendUi,hostGameCreateButton));
   }
-  return;
 }
 
 
@@ -567,7 +562,6 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localPlayerRecordDwordCursor[11] = 0;
   localPlayerRecordDwordCursor[10] = L'D' << 16 | L'C'; /* L"CD" in capabilityLabelUtf16 */
   FrontendPlayerRuntime_UpdateStartButtonByCdShare();
-  return;
 }
 
 /* Handler of action 0x200F (slot 15 of g_FrontendUiActionHandlersPage20.handlers00_54), a choice in the network
@@ -624,7 +618,6 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
   }
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   Random_SelectPrimaryStream();
-  return;
 }
 
 /* Change handler of the network game page's player-name edit (playerNameEdit, action 0x2032, slot 50 of
@@ -668,7 +661,6 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
       playerNameDwordCursor++;
     }
   }
-  return;
 }
 
 /* Handler of the host game setup page's player-count slider (maxPlayersSlider, action 0x2007, slot 7 of
@@ -685,7 +677,6 @@ void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
              g_FrontendNetworkPlayerCountTextUtf16);
-  return;
 }
 
 /* Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
@@ -712,7 +703,6 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
     PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
                                   PERSISTENT_SETTING_GAME_NAME);
   }
-  return;
 }
 
 /* Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
@@ -755,7 +745,6 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
                 ((FrontendNetworkSettingsControlView *)FRONTEND_UI(rootNode,networkGameJoinButton));
     }
   }
-  return;
 }
 
 /* Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of

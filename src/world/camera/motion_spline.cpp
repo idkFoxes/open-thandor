@@ -12,7 +12,7 @@
 
 static float g_WorldMotionSplineCachedDerivatives[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
-static int32_t g_WorldMotionSplineEquationCounts[6] = {0};
+static int32_t g_WorldMotionSplineEquationCounts[6] = {};
 
 float *g_WorldMotionSplineMatrixWorkspaces[6] = {};
 
@@ -197,5 +197,4 @@ void WorldMotionSpline_ClearCachedDerivatives()
     *derivativeCursor = 0.0;
     derivativeCursor++;
   }
-  return;
 }

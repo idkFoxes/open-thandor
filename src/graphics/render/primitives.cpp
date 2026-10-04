@@ -18,7 +18,7 @@ static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
 static const uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
-static uint32_t g_PrimitiveRadixBucketWords[256] = {0};
+static uint32_t g_PrimitiveRadixBucketWords[256] = {};
 
 static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
@@ -330,7 +330,6 @@ void GraphicsPrimitiveQueue_SetVertexColors
          packetPool[queuedPacketCount - 1].renderFlags ^ existingBlendModeFlags ^
          GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
   }
-  return;
 }
 
 
@@ -354,7 +353,6 @@ void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTex
          packetPool[queuedPacketCount - 1].renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
     packetPool[queuedPacketCount - 1].textureEntry = textureEntry;
   }
-  return;
 }
 
 
@@ -385,7 +383,6 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
   *textureCoordinateSlot = *textureCoordinateSlot + deltaV;
   textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[2].textureV;
   *textureCoordinateSlot = *textureCoordinateSlot + deltaV;
-  return;
 }
 
 

@@ -218,7 +218,6 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
     return;
   }
   AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate(armyAssetId,factionIndex,worldRuntime);
-  return;
 }
 
 /* Creates armyAssetId for the faction at the chosen field cell (technology unlocked), clears the new model

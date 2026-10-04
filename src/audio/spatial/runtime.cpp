@@ -12,14 +12,14 @@
 
 int32_t g_ReverseStereoMask = 0;
 
-static GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform = {0};
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform = {};
 
-static GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation = {0};
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation = {};
 
-static GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal = {0};
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal = {};
 
 /* sound position in the listener's frame */
-static GraphicsFixedVec3 g_SpatialSoundRelative = {0};
+static GraphicsFixedVec3 g_SpatialSoundRelative = {};
 
 static SpatialSoundSlot *g_SpatialSoundSlots = nullptr;
 
@@ -80,7 +80,6 @@ void SpatialSound_RebuildListenerTransformFromPose
   FixedTransform_Compose
             (&g_SpatialSoundListenerTransform,
              &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);
-  return;
 }
 
 
@@ -254,7 +253,6 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
     memset(slot,0,sizeof(SpatialSoundSlot));
   }
-  return;
 }
 
 
@@ -277,7 +275,6 @@ void SpatialSoundPool_ClearDesiredGains()
     slotCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  return;
 }
 
 
@@ -317,6 +314,5 @@ void SpatialSoundPool_ApplyDesiredGains()
     slotCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  return;
 }
 

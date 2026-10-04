@@ -11,11 +11,11 @@
 
 /* Module data. */
 
-static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {0};
+static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {};
 
 /* Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol), [256..511] internal
    nodes; the tree-building scans run over both halves as one array. */
-static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
+static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {};
 
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
 static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)

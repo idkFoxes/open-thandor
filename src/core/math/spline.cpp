@@ -225,7 +225,6 @@ void CubicSpline_ForwardEliminateColumn
     } while (priorIndex <= (int)lastPriorIndex);
   }
   *targetElement = reducedValue / pivot;
-  return;
 }
 
 /* One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M:
@@ -250,7 +249,6 @@ void CubicSpline_BackSubstituteRow(float pivot,CubicSplineMatrixIndex lastSolved
     solvedRhsCursor++;
   }
   rhsVector[targetIndex] = targetSolutionValue / pivot;
-  return;
 }
 
 /* Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t +

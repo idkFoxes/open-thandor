@@ -11,9 +11,9 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(16) uint16_t g_ExecutableDirectoryUtf16[256] = {0};
+THANDOR_ALIGN(16) uint16_t g_ExecutableDirectoryUtf16[256] = {};
 
-THANDOR_ALIGN(16) uint16_t g_FileSystemCombinedPathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
+THANDOR_ALIGN(16) uint16_t g_FileSystemCombinedPathScratchUtf16[THANDOR_PATH_CAPACITY] = {};
 
 THANDOR_ALIGN(16) FileSystemOpenProc *g_FileSystemOpen = nullptr;
 
@@ -48,7 +48,7 @@ static const uint8_t g_FileSystemConfigCharacterNormalizationMap[256] = {
     /* 224 */ 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
     /* 240 */ 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
 
-static WidePathBuffer256 g_InitialWorkingDirectory = {0};
+static WidePathBuffer256 g_InitialWorkingDirectory = {};
 
 static uint16_t g_ThandorCfgPathUtf16[12] = {'T', 'H', 'A', 'N', 'D', 'O', 'R', '.', 'c', 'f', 'g', 0}; /* L"THANDOR.cfg" */
 
@@ -57,14 +57,14 @@ static uint16_t g_EnginePckPathUtf16[11] = {'e', 'n', 'g', 'i', 'n', 'e', '.', '
 static uint32_t g_Win32FileBytesTransferred = 0;
 
 /* WIN32_FIND_DATAA of the directory enumeration */
-static _WIN32_FIND_DATAA g_Win32FindDataScratch = {0};
+static _WIN32_FIND_DATAA g_Win32FindDataScratch = {};
 
 /* two narrow path buffers ([1] held the second path of the original's move/copy, which had no caller); the
    directory sort swaps 0x200-byte records through the start of the block. open-thandor: THANDOR_PATH_CAPACITY
    bytes each instead of the original's 0x100, and a path that does not fit fails the operation
    (Win32Path_ToNarrow) instead of going to Windows cut off: with a long game directory the cut-off path named
    a different file or directory. */
-static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {0};
+static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {};
 
 /* char[4]: "x:\" root path, drive letter patched at [0] before GetVolumeInformationA */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
@@ -200,7 +200,6 @@ void Win32FileSystem_RestoreInitialDirectory()
   if (g_InitialWorkingDirectory.firstTwoCodeUnits != 0) {
     Win32File_SetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
   }
-  return;
 }
 
 
@@ -635,6 +634,5 @@ void Win32File_Close(void *handle)
 
 {
   CloseHandle(handle);
-  return;
 }
 

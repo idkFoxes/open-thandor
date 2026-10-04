@@ -41,7 +41,6 @@ void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
   else {
     FrontendClientSession_TickHostTimeout();
   }
-  return;
 }
 
 /* Keyboard handler of the end-movie UI: looks the key up in the end-movie command table, whose records also
@@ -97,5 +96,4 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     Thandor_Log("EndMovie dispatch: unhandled continuation %08x",target);
     break;
   }
-  return;
 }

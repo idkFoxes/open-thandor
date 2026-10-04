@@ -44,7 +44,6 @@ void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
       rootModelNode->secondaryTextureOffsetV = 0;
     }
   }
-  return;
 }
 
 
@@ -88,7 +87,6 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   *(int *)modelRuntimeSlot->classPrefixState = initialTimingValue;
   modelRuntimeSlot->classState.classStateD0 = initialTimingValue;
   modelRuntimeSlot->classState.effectEmitterTimerTicks = INT32_MAX;
-  return;
 }
 
 
@@ -115,7 +113,6 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
   rootWorldYQ12 = rootModelNode->worldTransform.translation.y;
   modelRuntimeSlot->classLinkState.classState68 = rootModelNode->worldTransform.translation.x;
   modelRuntimeSlot->classLinkState.armyLinkOrState.classState = rootWorldYQ12;
-  return;
 }
 
 
@@ -175,7 +172,6 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
          (7,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,nullptr)) {
     modelRuntimeSlot->classLinkState.classState7C -= 1;
   }
-  return;
 }
 
 
@@ -190,7 +186,6 @@ void ModelRuntimeSlotClassInit_ResetStructureFactoryBuild
   modelRuntimeSlot->classLinkState.classState74 = 0;
   modelRuntimeSlot->classLinkState.classState64 = 0;
   modelRuntimeSlot->classLinkState.classState68 = 0;
-  return;
 }
 
 /* Unrebase handler of model class 13 (modelUnrebase[13], run by ModelRuntimePool_UnrebaseBeforeSave): before a
@@ -207,7 +202,6 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
     modelRuntime->classLinkState.armyLinkOrState.armyRuntime =
          Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
-  return;
 }
 
 
@@ -225,7 +219,6 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
     modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime =
          Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
-  return;
 }
 
 
@@ -252,7 +245,6 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   rootModelNode->primaryTextureOffsetV = 0;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
   rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL;
-  return;
 }
 
 
@@ -287,7 +279,6 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
     rootModelNode->childNodes[3] = nullptr;
   }
-  return;
 }
 
 
@@ -320,7 +311,6 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
     rootModelNode->childNodes[1] = nullptr;
   }
-  return;
 }
 
 
@@ -339,7 +329,6 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
         [modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
   *factionProgressLimitQ4 = *factionProgressLimitQ4 + ((ModelDefinition *)modelDefinition)->classParameterC0;
-  return;
 }
 
 
@@ -358,7 +347,6 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
         [modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
   *factionProgressLimitQ4 = *factionProgressLimitQ4 - ((ModelDefinition *)modelDefinition)->classParameterC0;
-  return;
 }
 
 
@@ -377,7 +365,6 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
          (ModelRuntimeSlot *)(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
   }
-  return;
 }
 
 
@@ -395,7 +382,6 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
     modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
          (ModelRuntimeSlot *)((uint8_t *)linkedModelRuntime + g_ModelRuntimeRebaseDelta);
   }
-  return;
 }
 
 
@@ -414,7 +400,6 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
   rootChild0Node = rootModelNode->childNodes[0];
   modelRuntimeSlot->classState.behaviorState = 0;
   rootChild0Node->modelPayload.localTranslationZQ12 = Q12_ONE;
-  return;
 }
 
 /* Class initializer of model class 22 (modelClassInitialize[22]), the aircraft pad: clears the class
@@ -450,7 +435,6 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   for (stateDwordsRemaining = 13; stateDwordsRemaining != 0; stateDwordsRemaining--) {
     *stateClearCursor++ = 0;
   }
-  return;
 }
 
 
@@ -460,7 +444,6 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
 void ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  return;
 }
 
 
@@ -471,7 +454,6 @@ void ModelRuntimeSlotClassInit_NoOp
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  return;
 }
 
 /* Class initializer of model class 12 (modelClassInitialize[12]): clears the link classLinkState.modelLinkOrState.
@@ -481,7 +463,6 @@ void ModelRuntimeSlotClassInit_ClearField60
 
 {
   modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = nullptr;
-  return;
 }
 
 /* Class initializer of model class 23 (modelClassInitialize[23]): clears the class fields modelLinkOrState and
@@ -493,5 +474,4 @@ void ModelRuntimeSlotClassInit_ClearFields60AndB8
 {
   modelRuntimeSlot->classState.behaviorState = 0;
   modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime = nullptr;
-  return;
 }

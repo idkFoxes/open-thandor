@@ -27,7 +27,6 @@ void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 
 {
   UiTree_AdvanceSpriteButtonAnimationsFrom(root->firstChild);
-  return;
 }
 
 /* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
@@ -63,7 +62,6 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
     }
   }
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
-  return;
 }
 
 /* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable
@@ -156,7 +154,6 @@ void UiSpriteButtonControl_DrawClipped
             (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
              (control->selectable).base.left,subresourceIndex,textureSource,framebufferAccess);
   g_GraphicsFramebufferEndAccess();
-  return;
 }
 
 /* nonRightPress slot of g_UiSpriteButtonControlVtable. A momentary button only shows its pressed frame
@@ -239,7 +236,6 @@ void UiSpriteButtonControl_NonRightPress
       UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
-  return;
 }
 
 /* nonRightRelease slot of g_UiSpriteButtonControlVtable. Completes the click of a momentary button: if it
@@ -274,7 +270,6 @@ void UiSpriteButtonControl_NonRightRelease
     UiActionQueue_Enqueue((control->selectable).actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables
@@ -336,7 +331,6 @@ void UiSpriteButtonControl_NonRightDrag
     (control->selectable).stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
@@ -448,7 +442,6 @@ void UiImageActionControl_DrawImageAndChildren
     }
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 /* pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
@@ -468,7 +461,6 @@ void UiImageActionControl_EnqueuePrimaryAction
 
 {
   UiActionQueue_Enqueue(control->primaryActionId,&control->base);
-  return;
 }
 
 /* rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
@@ -479,7 +471,6 @@ void UiImageActionControl_EnqueueSecondaryAction
 
 {
   UiActionQueue_Enqueue(control->secondaryActionId,&control->base);
-  return;
 }
 
 /* keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
@@ -622,7 +613,6 @@ void UiConditionalActionControl_DrawClipped
     } while (remainingLines != 0);
   }
   g_GraphicsFramebufferEndAccess();
-  return;
 }
 
 /* pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
@@ -661,7 +651,6 @@ void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
   if (control->lineCount != 0) {
     UiActionQueue_Enqueue(control->actionId,&control->base);
   }
-  return;
 }
 
 /* Advances an animated sprite button by one frame within its normal or selected frame range, wrapping to
@@ -700,7 +689,6 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
     (control->selectable).stateFlags &= ~UI_SPRITE_BUTTON_ACTION_PENDING;
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
-  return;
 }
 
 UiNodeVtable g_UiSpriteButtonControlVtable = {

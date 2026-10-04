@@ -257,7 +257,6 @@ void ScenarioCatalog_Rebuild()
       saveFilesRemaining--;
     } while (saveFilesRemaining != 0);
   }
-  return;
 }
 
 /* Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,
@@ -268,7 +267,6 @@ void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,u
 
 {
   FrontendRomTransition_RequestStop();
-  return;
 }
 
 /* Compares the 0x40-byte identifiers of two catalog records dword by dword. */

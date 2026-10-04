@@ -82,5 +82,4 @@ void Random_SelectPrimaryStream()
 
 {
   g_RandomGeneratorState.next = Random_NextPrimary;
-  return;
 }

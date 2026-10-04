@@ -314,7 +314,6 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
   if (notificationButton->cursorFrame == INGAME_NOTIFICATION_CURSOR_CANCEL) {
     notificationButton->cursorFrame = 0;
   }
-  return;
 }
 
 /* The world view's dispatchWorldContextActionCallback, unless the game is paused or the world input is
@@ -351,7 +350,6 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
       WorldRuntime_RestoreMotionStateFromSnapshot(world);
     }
   }
-  return;
 }
 
 /* Queues an in-game notification (movie id, priority and position/orientation payload) in the four-slot
@@ -391,5 +389,4 @@ void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind 
            THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload).payloadKind,payloadKind);
     }
   }
-  return;
 }

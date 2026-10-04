@@ -13,7 +13,7 @@
 /* UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel */
 static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
 
-static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
+static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {};
 
 /* The SELECTION_PANEL_CELL_SIZE-byte record of cellIndex in select.dat (fields SELECTION_PANEL_CELL_*). */
 static uint8_t *SelectionPanel_GetCellRecord(SelectionPanelCellIndex cellIndex)
@@ -231,7 +231,6 @@ void SelectionPanel_DrawProportionalCappedBar
   g_SelectionPanelBlitClipped
             (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  return;
 }
 
 /* Draws a horizontal bar without a value in row fixedCoordinate: start cap (base sprite) at barStartCoordinate,
@@ -266,7 +265,6 @@ void SelectionPanel_DrawForwardCappedBar
             (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,
              barStartCoordinate + startCapSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  return;
 }
 
 /* Vertical counterpart of SelectionPanel_DrawForwardCappedBar: start cap (base sprite) at barStartCoordinate,
@@ -301,7 +299,6 @@ void SelectionPanel_DrawSolidCappedBar
             (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
              barStartCoordinate + startCapSize.logicalHeightPixels,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  return;
 }
 
 /* Draws a vertical segment row in column fixedCoordinate: caps at barStartCoordinate and barEndCoordinate,
@@ -421,5 +418,4 @@ void SelectionPanel_DrawSegmentedCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  return;
 }

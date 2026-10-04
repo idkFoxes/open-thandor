@@ -13,15 +13,15 @@
 
 /* Module data. */
 
-static GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8] = {0};
+static GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8] = {};
 
 int32_t g_ModelRaycastMaximumDistance = 0;
 
 /* Q12 world-space ray origin */
-GraphicsFixedVec3 g_ModelRaycastOrigin = {0};
+GraphicsFixedVec3 g_ModelRaycastOrigin = {};
 
 /* Q28 world-space ray direction */
-GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28 = {0};
+GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28 = {};
 
 /* Transforms one bounds corner by g_GraphicsTransformScratchMatrix3x4. Returns its clip bit when it lies behind
    the near plane (z < g_ProjectionScaleFixed); otherwise stores its screen point in

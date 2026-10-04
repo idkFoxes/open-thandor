@@ -84,7 +84,6 @@ void Graphics_Shutdown()
   g_CursorSavedBackground = nullptr;
   g_CursorCompositeBuffer = nullptr;
   g_CursorAlternateSavedBackground = nullptr;
-  return;
 }
 
 /* Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.

@@ -134,7 +134,6 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
       g_GraphicsFramebufferEndAccess();
     }
   }
-  return;
 }
 
 /* The tooltip-eligible node under the pointer in the top root, or NULL: none while a node holds the pointer
@@ -205,5 +204,4 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
     g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     UiRootStack_InvalidateAll();
   }
-  return;
 }

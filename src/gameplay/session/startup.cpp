@@ -170,7 +170,6 @@ void InGameRuntime_ShutdownAndReleaseResources()
   SpriteAssetRegistry_Reset();
   UiFrame_FlushInputAndResetPendingTicks();
   g_CursorVisibilityToken--;
-  return;
 }
 
 /* Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
@@ -195,7 +194,6 @@ void InGameRuntime_ReleaseFactionScratchBuffers()
     scratchBufferSetBCursor++;
     remainingFactions--;
   } while (remainingFactions != 0);
-  return;
 }
 
 /* Shared session start steps of InGameRuntime_InitializeNewSession (new_session.cpp) and

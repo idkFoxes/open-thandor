@@ -18,7 +18,7 @@ THANDOR_ALIGN(4) int32_t g_CursorVisibilityToken = -1;
 
 THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
 
-THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
+THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {};
 
 THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = &Keyboard_FlushEvents;
 
@@ -34,7 +34,7 @@ static uint16_t g_EngineMouseDatPathUtf16[17] = {'e', 'n', 'g', 'i', 'n', 'e', '
 
 /* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
    the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
-static KeyboardInputEvent g_KeyboardEvents[256] = {0};
+static KeyboardInputEvent g_KeyboardEvents[256] = {};
 
 static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
 
@@ -93,7 +93,6 @@ void Keyboard_FlushEvents()
 
 {
   g_KeyboardWriteIndex = g_KeyboardReadIndex;
-  return;
 }
 
 
@@ -418,7 +417,6 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }
-  return;
 }
 
 
@@ -452,7 +450,6 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
   if (navigationCode != 0) {
     g_KeyboardSpecialKeyDown[navigationCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
   }
-  return;
 }
 
 
@@ -481,7 +478,6 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }
-  return;
 }
 
 

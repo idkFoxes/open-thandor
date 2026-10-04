@@ -44,7 +44,6 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
       currentCell = currentCell + 1;
     }
   }
-  return;
 }
 
 /* Rebuilds every cell's fog-of-war lighting index (visibilityLightingIndex) from the occupancy byte of

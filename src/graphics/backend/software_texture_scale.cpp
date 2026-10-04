@@ -14,7 +14,7 @@
 
 /* Module data. */
 
-static uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256] = {0};
+static uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256] = {};
 
 static const uint64_t g_SoftwareBlendUnityWordLanesQ14 = 0x4000400040004000ull;
 

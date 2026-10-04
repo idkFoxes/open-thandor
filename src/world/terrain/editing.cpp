@@ -249,7 +249,6 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
     heightDeltaCursor = heightDeltaCursor + 1;
     remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 
@@ -280,7 +279,6 @@ void TerrainEditBuffer_CopyCellMaterialBytes
     materialCursor = materialCursor + 1;
     remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 
@@ -311,7 +309,6 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
     materialDeltaCursor = materialDeltaCursor + 1;
     remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 
@@ -353,7 +350,6 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
     materialDeltaCursor = materialDeltaCursor + 1;
     remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 
@@ -384,7 +380,6 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
     heightCursor = heightCursor + 1;
     remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 

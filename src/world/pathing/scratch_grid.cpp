@@ -530,7 +530,6 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
     rowsRemaining--;
     columnsRemaining = gridWidth;
   } while (rowsRemaining != 0);
-  return;
 }
 
 /* Tests whether a world point may be used for pathing: projects it onto the grid-scratch cells (the same
@@ -583,7 +582,6 @@ void GridScratch_CopyPrimaryToSecondary()
     primaryReadCursor++;
     secondaryWriteCursor++;
   }
-  return;
 }
 
 /* Swaps the primary and secondary scratch grid pointers, making the copy made by
@@ -597,7 +595,6 @@ void GridScratch_SwapPrimarySecondary()
   previousSecondaryBuffer = g_GridScratchSecondary;
   g_GridScratchSecondary = g_GridScratchPrimary;
   g_GridScratchPrimary = previousSecondaryBuffer;
-  return;
 }
 
 /* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
@@ -693,5 +690,4 @@ void GridScratch_ResetTraversalFlagsAndCosts()
     fullRecordBlockRemaining = 15 < cellsRemaining;
     cellsRemaining = cellsRemaining - 16;
   } while (fullRecordBlockRemaining && cellsRemaining != 0);
-  return;
 }

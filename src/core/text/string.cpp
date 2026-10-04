@@ -269,6 +269,5 @@ void WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,u
       destination++;
     }
   }
-  return;
 }
 

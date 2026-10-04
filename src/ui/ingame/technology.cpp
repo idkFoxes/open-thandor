@@ -18,9 +18,9 @@ PckTechnologyIdCatalog g_InGameSelectedTechnologyId = 0;
    colour command into the text */
 static uint16_t g_InGameTechnologyCostRichText[25] = {32774};
 
-static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {};
 
-static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {0};
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {};
 
 static int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
 
@@ -60,7 +60,6 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
       INGAME_UI(inGameRoot,technologyAreaTab1));
   }
   InGameTechnologyPanel_Rebuild(inGameRoot);
-  return;
 }
 
 /* Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
@@ -152,7 +151,6 @@ void InGameTechnologyResearch_StartSelected(void *source)
     InGameCommand_Issue<FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology>
               (0,doubledTechnologyId >> 1,modelOffset);
   }
-  return;
 }
 
 /* Rebuilds the technology window for the first selected entity: the research button (off while the entity's
@@ -341,5 +339,4 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)(uintptr_t)descriptionTextId;
     }
   }
-  return;
 }

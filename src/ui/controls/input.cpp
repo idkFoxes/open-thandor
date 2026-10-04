@@ -124,7 +124,6 @@ void UiPointer_DispatchPendingEvents()
     }
   }
   g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
-  return;
 }
 
 /* Takes the keyboard focus away from node (e.g. before it is hidden or removed): the focus moves on to the
@@ -139,7 +138,6 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
       UiKeyboardFocus_Set(UI_NODE_NONE);
     }
   }
-  return;
 }
 
 /* The node after node in pre-order (first child, else the next sibling of node or of its nearest ancestor
@@ -233,7 +231,6 @@ void UiKeyboard_DispatchPendingEvents()
     }
   }
   g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
-  return;
 }
 
 /* The node after node in pre-order: its first child, else the next sibling of node or of its nearest ancestor
@@ -284,7 +281,6 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
   if (node != g_UiKeyboardFocusNode) {
     UiKeyboardFocus_Set(node);
   }
-  return;
 }
 
 /* Called when a control is unsuppressed or its page becomes active: gives it the keyboard focus if no node
@@ -297,7 +293,6 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
      ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)) {
     UiKeyboardFocus_Set(node);
   }
-  return;
 }
 
 /* Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
@@ -434,7 +429,6 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
   UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_LEFT,
                             (buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != CURSOR_BUTTON_NONE,
                             wheelDelta,pointerY,pointerX);
-  return;
 }
 
 /* Middle button press: like UiPointer_DispatchLeftPress (same node selection, focus and nonRightPress /
@@ -460,7 +454,6 @@ void UiPointer_DispatchMiddlePress
     return;
   }
   UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_MIDDLE,true,wheelDelta,pointerY,pointerX);
-  return;
 }
 
 /* Right button press: the hit test of the topmost root containing the pointer (a hovered image control
@@ -491,7 +484,6 @@ void UiPointer_DispatchRightPress
   }
   UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != 0,
                             wheelDelta,pointerY,pointerX);
-  return;
 }
 
 /* The node after node in pre-order: its first child, else the next sibling of node or of its nearest ancestor
@@ -536,7 +528,6 @@ void UiKeyboardFocus_MoveNext()
     return; /* back at the focus node: no other focus target */
   }
   UiKeyboardFocus_Set(node);
-  return;
 }
 
 /* Pointer motion (and wheel): drops a hovered in-game selection record (rebuilding the detail panel) and
@@ -596,7 +587,6 @@ void UiPointer_DispatchMotionAndWheel
     }
     root = root->previousRoot;
   }
-  return;
 }
 
 /* Default pointerWheel slot of most UI vtables: passes the wheel event up to the parent node (if any), so
@@ -613,7 +603,6 @@ void UiNode_ForwardPointerWheelToParent
   if (parentControl != UI_NODE_NONE) {
     parentControl->vtable->pointerWheel(wheelDelta,pointerY,pointerX,parentControl);
   }
-  return;
 }
 
 /* Default keyboardEvent slot of many UI vtables, also the fallback of the slider and focus-proxy handlers.
@@ -644,5 +633,4 @@ void UiKeyboardFocus_Set(UiNodeBase *node)
     }
   }
   UiRootStack_InvalidateAll();
-  return;
 }

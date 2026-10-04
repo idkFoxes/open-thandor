@@ -246,7 +246,6 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
     g_GraphicsFramebufferEndAccess();
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 /* Relocation of a wrapped text control loaded from a serialized UI tree (relocate of
@@ -262,5 +261,4 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
     control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
-  return;
 }

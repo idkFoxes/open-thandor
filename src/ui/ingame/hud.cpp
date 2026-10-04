@@ -13,7 +13,7 @@
 
 THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = nullptr;
 
-static uint16_t g_InGameHudNumberTextUtf16[16] = {0};
+static uint16_t g_InGameHudNumberTextUtf16[16] = {};
 
 static int32_t g_UiAction1012PlayerIndexTextOffsets[7] = {20540, 20632, 20724, 20816, 20908, 21000, 21092};
 
@@ -30,17 +30,17 @@ static int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 2
 /* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
-static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
+static uint32_t g_UiAction1012TargetPlayerIndices[7] = {};
 
 uint16_t *g_InGamePlayerListTextScratchUtf16 = nullptr;
 
-InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
+InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {};
 
-uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {0};
+uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {};
 
 uint32_t g_InGameReadyStateToggleFlags = 0;
 
-uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
+uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {};
 
 /* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView).
    Latches the clicked grid
@@ -74,7 +74,6 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
   MAP_WORLD->motion.positionYQ12 = MAP_WORLD->motion.positionYQ12 + yComponent;
   WorldRuntime_ClearFieldGridDirtyFlag(MAP_WORLD);
 #undef MAP_WORLD
-  return;
 }
 
 /* Network games: writes the roster of faction factionIndex into g_InGamePlayerListTextScratchUtf16 (player
@@ -535,7 +534,6 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
               (1,(UiPageStackControl *)
                  THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
   }
-  return;
 }
 
 /* UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
@@ -583,7 +581,6 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       InGameCommand_Issue<GameFactionRuntime_ResetPairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
   }
-  return;
 }
 
 /* Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
@@ -627,5 +624,4 @@ void InGameHud_UpdateCurrentFactionMetricCache()
   /* the extraction rate is added unshifted, as in the original */
   runtimeRoot->baselineEnergySupplyDisplay =
        ((int)baselineEnergySupplyQ4 >> 4) + tritiumExtractionRate;
-  return;
 }

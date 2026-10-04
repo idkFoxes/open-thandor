@@ -40,9 +40,9 @@ Ptr32<void> *g_InGameLoadedResourcePointers = nullptr;
 
 InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
 
-uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {0};
+uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {};
 
-uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {0};
+uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {};
 
 /* LEV level file ('lev', converter version 0x70001) as read by the two level loaders below. Offsets are
    byte offsets from the start of the file image; every "path" field holds the offset of a UTF-16 path string.

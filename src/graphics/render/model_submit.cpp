@@ -14,19 +14,19 @@
 
 /* Module data. */
 
-GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3 = {0};
+GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3 = {};
 
-GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3 = {0};
+GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3 = {};
 
-GraphicsFixedMatrix3x4 g_ModelViewCompositeTransform = {0};
+GraphicsFixedMatrix3x4 g_ModelViewCompositeTransform = {};
 
-static GraphicsFixedVec3 g_ModelViewDirectionLocal = {0};
+static GraphicsFixedVec3 g_ModelViewDirectionLocal = {};
 
-static GraphicsFixedVec3 g_ModelViewDirectionWorld = {0};
+static GraphicsFixedVec3 g_ModelViewDirectionWorld = {};
 
-static GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal = {0};
+static GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal = {};
 
-GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4 = {0};
+GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4 = {};
 
 /* Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
    Group flag 1 turns the node towards the viewer and flag 2 makes it a billboard; the node's rotation angles and

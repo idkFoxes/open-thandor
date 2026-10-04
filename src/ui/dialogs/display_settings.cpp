@@ -58,119 +58,119 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
         .layoutWidth = -1, .layoutHeight = -1},
     .adapterHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_ADAPTER_HEADING},
-    .colorDepthOption1_prefix = {0},
+    .colorDepthOption1_prefix = {},
     .colorDepthOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 28, .rightOffset = 120, .bottomOffset = 48,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorDepthOption1_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
-    .colorDepthOption2_prefix = {0},
+    .colorDepthOption2_prefix = {},
     .colorDepthOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 48, .rightOffset = 120, .bottomOffset = 68,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorDepthOption2_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 1, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
-    .colorDepthOption3_prefix = {0},
+    .colorDepthOption3_prefix = {},
     .colorDepthOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 68, .rightOffset = 120, .bottomOffset = 88,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorDepthOption3_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 2, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
-    .colorDepthOption4_prefix = {0},
+    .colorDepthOption4_prefix = {},
     .colorDepthOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 88, .rightOffset = 120, .bottomOffset = 108,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .colorDepthOption4_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 3, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
-    .resolutionOption1_prefix = {0},
+    .resolutionOption1_prefix = {},
     .resolutionOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 28, .rightOffset = 248, .bottomOffset = 48,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption1_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption2_prefix = {0},
+    .resolutionOption2_prefix = {},
     .resolutionOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 48, .rightOffset = 248, .bottomOffset = 68,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption2_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 1, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption3_prefix = {0},
+    .resolutionOption3_prefix = {},
     .resolutionOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 68, .rightOffset = 248, .bottomOffset = 88,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption3_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 2, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption4_prefix = {0},
+    .resolutionOption4_prefix = {},
     .resolutionOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption5), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 88, .rightOffset = 248, .bottomOffset = 108,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption4_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 3, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption5_prefix = {0},
+    .resolutionOption5_prefix = {},
     .resolutionOption5 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption6), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 108, .rightOffset = 248, .bottomOffset = 128,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption5_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 4, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption6_prefix = {0},
+    .resolutionOption6_prefix = {},
     .resolutionOption6 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption7), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 128, .rightOffset = 248, .bottomOffset = 148,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption6_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 5, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption7_prefix = {0},
+    .resolutionOption7_prefix = {},
     .resolutionOption7 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 148, .rightOffset = 248, .bottomOffset = 168,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption7_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 6, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .resolutionOption8_prefix = {0},
+    .resolutionOption8_prefix = {},
     .resolutionOption8 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 152, .topOffset = 168, .rightOffset = 248, .bottomOffset = 188,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .resolutionOption8_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 7, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
-    .adapterOption1_prefix = {0},
+    .adapterOption1_prefix = {},
     .adapterOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 132, .rightOffset = 144, .bottomOffset = 152,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
     .adapterOption1_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
-    .adapterOption2_prefix = {0},
+    .adapterOption2_prefix = {},
     .adapterOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 152, .rightOffset = 144, .bottomOffset = 172,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
     .adapterOption2_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 1, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
-    .adapterOption3_prefix = {0},
+    .adapterOption3_prefix = {},
     .adapterOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 172, .rightOffset = 144, .bottomOffset = 192,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .adapterOption3_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 2, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
-    .adapterOption4_prefix = {0},
+    .adapterOption4_prefix = {},
     .adapterOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption5), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
         .leftOffset = 16, .topOffset = 192, .rightOffset = 144, .bottomOffset = 212,
         .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
     .adapterOption4_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 3, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
-    .adapterOption5_prefix = {0},
+    .adapterOption5_prefix = {},
     .adapterOption5 = { /* g_UiGraphicsAdapterTextButtonVtable */
         .nextSibling = DISPLAY_SETTINGS_LINK(colorScaleSliderFrame), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
         .vtable = THANDOR_PTR(&g_UiGraphicsAdapterTextButtonVtable),
@@ -244,7 +244,7 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
 
 /* the ascending list of distinct values (resolutions,
    adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
-static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
+static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {};
 
 static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
     .vetoClose = UI_SLOT(UiRootCallbacks_Free),
@@ -314,7 +314,6 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
                applyButton->selectedWidth,&root->base);
     UiDisplaySettingsRoot_FormatColorReadouts(root);
   }
-  return;
 }
 
 /* Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
@@ -334,7 +333,6 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).resolutionHeight,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,displaySettingsRoot);
-  return;
 }
 
 /* Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
@@ -354,7 +352,6 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
              (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
-  return;
 }
 
 /* Revert action (UI_DISPLAY_MODE_ACTION_REVERT, g_UiDisplayModeSelectionActionHandlers20[13]) of the "keep
@@ -407,7 +404,6 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   } while (root != (UiRootNode *)UI_NODE_NONE);
   g_CursorVisibilityToken++;
   UiDisplaySettings_OpenAndPopulateModeSelection();
-  return;
 }
 
 /* Apply action (UI_DISPLAY_MODE_ACTION_APPLY, g_UiDisplayModeSelectionActionHandlers20[0]) of the display
@@ -464,7 +460,6 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   UiRootStack_Relayout();
   g_CursorVisibilityToken++;
   UiRuntime_OpenFourValueDialog(currentAdapterIndex,currentBitsPerPixel,currentHeight,currentWidth);
-  return;
 }
 
 /* Cancel action (UI_DISPLAY_MODE_ACTION_CANCEL, g_UiDisplayModeSelectionActionHandlers20[14]) of the display
@@ -485,7 +480,6 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   colorScaleQ16 = applyButton->originalColorScaleQ16;
   UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
-  return;
 }
 
 /* frameUpdate of g_UiFourValueDialogRootCallbacks (the "keep the new display mode?" dialog): every
@@ -517,7 +511,6 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
                  countdownText->countdownTextUtf16);
     }
   }
-  return;
 }
 
 /* Inserts value into the ascending list candidates[0..candidateCount-1] (UI_DISPLAY_MODE_NONE marks empty
@@ -670,7 +663,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   UiDisplayModeSelection_RefreshEnumeratedOptions
             (g_ActiveGraphicsAdapterIndex,colorDepthBits,g_FramebufferHeight,g_FramebufferWidth,(UiNodeBase *)root);
   UiRootStack_InvalidateAll();
-  return;
 }
 
 /* Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
@@ -762,7 +754,6 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   else {
     UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
   }
-  return;
 }
 
 /* Writes the two number readouts of the display settings dialog (root is a copy of
@@ -786,7 +777,6 @@ void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,applyButton->selectedColorScaleQ16,
              readout->colorScaleTextUtf16);
-  return;
 }
 
 /* Opens the "keep the new display mode?" dialog after UiDisplayModeAction_ApplyPendingMode switched modes:
@@ -834,5 +824,4 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     UiRootStack_InvalidateAll();
     return;
   }
-  return;
 }

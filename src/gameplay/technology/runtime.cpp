@@ -14,7 +14,7 @@ int32_t g_TechnologyCategoryMaximums[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
 
-TechnologyCategoryMasks g_TechnologyCategoryMasks = {0};
+TechnologyCategoryMasks g_TechnologyCategoryMasks = {};
 
 TechnologyAsset *g_TechnologyAsset = nullptr;
 
@@ -166,7 +166,6 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
     entityRuntimeFlags = &(entity->common).runtimeFlags;
     *entityRuntimeFlags = *entityRuntimeFlags | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED;
   }
-  return;
 }
 
 

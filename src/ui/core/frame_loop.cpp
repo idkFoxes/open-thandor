@@ -41,7 +41,6 @@ void UiFrame_ProcessAndPresentWithLockTransition()
   UiFrame_Draw();
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
-  return;
 }
 
 /* Runs one complete UI frame: dispatches pending keyboard and pointer events, runs the pending frame ticks,
@@ -57,7 +56,6 @@ void UiFrame_ProcessAndPresent()
   UiActionQueue_DispatchPending();
   UiFrame_Draw();
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
-  return;
 }
 
 /* Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
@@ -69,7 +67,6 @@ void UiFrame_FlushInputAndResetPendingTicks()
   g_KeyboardFlushEvents();
   g_PointerFlushEvents();
   g_UiPendingFrameTicks = 0;
-  return;
 }
 
 /* One UI frame step under the UI frame lock: pumps Win32 messages, then runs every pending frame tick
@@ -112,7 +109,6 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   }
   /* the original refreshes its DirectInput mouse here every 48th call; the SDL3 backend has no device to refresh */
   g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
-  return;
 }
 
 /* Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
@@ -166,5 +162,4 @@ void UiFrame_Draw()
     }
   }
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
-  return;
 }

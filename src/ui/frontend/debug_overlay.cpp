@@ -11,40 +11,40 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {};
 
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {};
 
 /* 32 units, the last slot owns the unnamed 0x20 bytes after its first 16 units in the original. It receives the locale-formatted elapsed time (hours, time separator, minutes, AM/PM designator),
    which can run past 16 units. */
-THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {};
 
 /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
 uint32_t g_DebugOverlayCounterRefreshCountdown = 20;
 
 uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
 
-uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
+uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {};
 
-uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
+uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {};
 
 /* Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the
    draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
@@ -116,5 +116,4 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates()
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,freeArenaBytes,
              g_FrontendDebugOverlayTextSlot12Utf16); /* hexadecimal despite radix 10 */
   g_FrontendDebugOverlayTextSlot13Utf16[0] = 0;
-  return;
 }

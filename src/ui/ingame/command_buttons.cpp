@@ -73,7 +73,6 @@ void UiCommandSpriteButtonControl_BeginPress
            control->activationInputState | UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
     }
   }
-  return;
 }
 
 /* Left/middle button release of the command sprite buttons (nonRightRelease of g_UiCommandSpriteButtonWithDetailsVtable and
@@ -105,7 +104,6 @@ void UiCommandSpriteButtonControl_NonRightRelease
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* Right button release of the command sprite buttons (rightRelease of g_UiCommandSpriteButtonWithDetailsVtable,
@@ -133,7 +131,6 @@ void UiCommandSpriteButtonControl_RightRelease
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }
 
 /* drawClipped of g_UiCommandVisibilityWrappedTextVtable (the wrapped world view status text): draws the text
@@ -151,7 +148,6 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
       (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,(UiWrappedTextControl *)control);
   }
-  return;
 }
 
 /* drawClipped of g_UiCommandVisibilitySingleLineTextVtable (the single-line world view texts): same visibility
@@ -184,7 +180,6 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
   textControl->text = (uint16_t *)((uint8_t *)textControl->text + drawOffsetAdjust);
   UiSingleLineTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,textControl);
   textControl->text = (uint16_t *)((uint8_t *)textControl->text - drawOffsetAdjust);
-  return;
 }
 
 UiNodeVtable g_UiCommandSpriteButtonWithDetailsVtable = {

@@ -48,7 +48,6 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
   worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
   worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Camera drag up/down (left+right-button drag of the model pointer context in camera scheme 0x8000,
@@ -79,7 +78,6 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
   worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
   worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Camera drag forward/back (right-button drag of the model pointer context in camera scheme 0x8000, together with
@@ -103,7 +101,6 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
   worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
   worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Orbits the camera around its target (right-button drag of the model pointer context in camera schemes 0x100 and
@@ -126,7 +123,6 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
   worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
   worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Turns the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
@@ -140,7 +136,6 @@ void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,World
        worldRuntime->motion.headingAngle - headingDeltaInput * g_WorldMotionHeadingInputScale &
        FIXED_ANGLE16_MASK;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Camera zoom (mouse wheel and camera drags of the model pointer context, ui/frontend/menu_room.cpp): changes
@@ -185,7 +180,6 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
   worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Ctrl + left+right-button drag of the model pointer context in camera scheme 0x8000 (ui/frontend/menu_room.cpp):
@@ -222,7 +216,6 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
   }
   worldRuntime->motion.positionMagnitudeQ12 = clampedMagnitudeQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Camera tilt around its target (Ctrl + mouse wheel and camera drags of the model pointer context,
@@ -269,7 +262,6 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
   worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
   worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Tilts the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
@@ -308,7 +300,6 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
   }
   worldRuntime->motion.pitchAngle = clampedPitchAngle;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }
 
 /* Scrolls the camera by a screen-space delta (arrow keys, edge scrolling): screenDeltaDown moves along the
@@ -339,5 +330,4 @@ void WorldRuntime_TranslateCameraByScreenDelta
   worldRuntime->motion.targetPositionXQ12 -= sideDeltaXYQ12.cosValue;
   worldRuntime->motion.targetPositionYQ12 -= sideDeltaXYQ12.sinValue;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-  return;
 }

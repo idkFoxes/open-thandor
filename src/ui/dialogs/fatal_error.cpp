@@ -76,7 +76,6 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 {
   UiRootStack_Pop(rootNode);
   g_FatalErrorDialogDismissed++;
-  return;
 }
 
 /* The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by
@@ -163,5 +162,4 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState()
     g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
     g_FatalErrorUiRootTemplate = (UiRootNode *)allocPayload;
   }
-  return;
 }

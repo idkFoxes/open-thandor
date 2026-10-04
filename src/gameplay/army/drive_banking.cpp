@@ -413,5 +413,4 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
-  return;
 }

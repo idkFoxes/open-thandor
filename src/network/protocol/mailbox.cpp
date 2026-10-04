@@ -12,10 +12,10 @@
 /* Module data. */
 
 /* mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (with packetHeader.sequenceToken), payload = chunk offset (payload byte 0), transfer byte count (payload byte 4), chunk data (from payload byte 8, 58 dwords). */
-static UiRuntimeRecord g_UiTransferChunkPacket = {0};
+static UiRuntimeRecord g_UiTransferChunkPacket = {};
 
 /* ping answer packet 0x10033 (same layout as the 0x10032 ping): header (with header.sequenceToken), echoed tick (backendSessionValue). */
-static FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
+static FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {};
 
 UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter = 0;
 
@@ -359,7 +359,6 @@ void UiTransferMailbox_ClearReceivedState()
   g_UiTransferMailbox.receivedByteCount = 0;
   g_UiTransferMailbox.receivedRemainingBytes = 0;
   g_UiTransferMailbox.receiveRetryTicks = 0;
-  return;
 }
 
 /* Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
@@ -390,7 +389,6 @@ void UiTransferMailbox_RandomizeSequenceToken()
   
   randomValue = Random_NextPrimary();
   g_UiTransferSequenceToken = g_UiTransferSequenceToken ^ randomValue & 0xffff;
-  return;
 }
 
 /* Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
@@ -403,7 +401,6 @@ void UiTransferMailbox_MarkUnavailable()
   g_UiTransferMailbox.receivedByteCount = 1;
   g_UiTransferMailbox.receivedRemainingBytes = 1;
   g_UiTransferMailbox.receiveRetryTicks = 1;
-  return;
 }
 
 /* Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
@@ -414,7 +411,6 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
 {
   g_UiTransferMailbox.outgoingAllocation = allocation;
   g_UiTransferMailbox.outgoingByteCount = byteCount;
-  return;
 }
 
 /* Sends one packet to endpoint; every packet of the game goes through here. Stamps the header with this

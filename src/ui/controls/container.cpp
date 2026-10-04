@@ -28,7 +28,6 @@ void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
     UiNodeSubtree_AcquireKeyboardFocusDefaults(&stack->base);
     UiNode_InvalidateRoot(&stack->base);
   }
-  return;
 }
 
 /* relocate of g_UiLayoutContainerControlVtable (the page stack, UiPageStackControl): turns the page links
@@ -71,7 +70,6 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
     remainingCount--;
   }
   control->base.firstChild = control->pages;
-  return;
 }
 
 /* layout of g_UiLayoutContainerControlVtable: lays out every page of the page stack, hidden ones included,
@@ -94,7 +92,6 @@ void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
     remainingCount--;
   }
   control->base.firstChild = shownPage;
-  return;
 }
 
 /* hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
@@ -133,7 +130,6 @@ void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPa
     remainingCount--;
   }
   control->base.firstChild = shownPage;
-  return;
 }
 
 /* unsuppressActionId of g_UiLayoutContainerControlVtable: the counterpart of
@@ -156,7 +152,6 @@ void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,Ui
     remainingCount--;
   }
   control->base.firstChild = shownPage;
-  return;
 }
 
 /* applyFlags of g_UiLayoutContainerControlVtable: applies the node-flag masks (UiNode_ApplyFlagsRecursive)
@@ -180,7 +175,6 @@ void UiLayoutContainerControl_ApplyFlagsRecursive
     remainingCount--;
   }
   control->base.firstChild = shownPage;
-  return;
 }
 
 /* Picks a grid (columns and rows) for itemCount items: up to 4 items in one row, up to
@@ -241,7 +235,6 @@ void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
       childNode = childNode->nextSibling) {
     childNode->vtable->suppressActionId(actionId,childNode);
   }
-  return;
 }
 
 /* unsuppressActionId of the same container vtables as UiContainer_SuppressActionId: passes the request on to
@@ -256,7 +249,6 @@ void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
       childNode = childNode->nextSibling) {
     childNode->vtable->unsuppressActionId(actionId,childNode);
   }
-  return;
 }
 
 /* Relocates a UI tree loaded from a serialized image: for each node of the sibling chain from firstNode
@@ -283,7 +275,6 @@ void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeB
          firstNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
     firstNode->vtable->relocate(imageDelta,firstNode);
   }
-  return;
 }
 
 /* Gives the keyboard focus, if nothing has it, to the first focus target below root (depth first), e.g. when
@@ -298,7 +289,6 @@ void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
     UiKeyboardFocus_AcquireIfNone(node);
     UiNodeSubtree_AcquireKeyboardFocusDefaults(node);
   }
-  return;
 }
 
 /* Takes the keyboard focus away from every node below root (depth first; see UiKeyboardFocus_ReleaseNode)
@@ -313,7 +303,6 @@ void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
     UiKeyboardFocus_ReleaseNode(node);
     UiNodeSubtree_ReleaseKeyboardFocus(node);
   }
-  return;
 }
 
 /* layout of g_UiResizableWindowControlVtable (also called after maximize/restore): lays out the children
@@ -338,7 +327,6 @@ void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *
     control->root.base.top = control->root.base.top - headerHeight;
     control->root.base.layoutHeight = control->root.base.layoutHeight + headerHeight;
   }
-  return;
 }
 
 /* Eligible siblings from `child` on, hit-tested last first. The recursion first checks every remaining
@@ -409,7 +397,6 @@ void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,Ui
          childNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
     childNode->vtable->relocate(relocationDelta,childNode);
   }
-  return;
 }
 
 /* drawClipped of g_UiLayoutContainerControlVtable and the tail of the container draw methods: draws each
@@ -430,7 +417,6 @@ void UiContainer_DrawIntersectingChildren
       childNode->vtable->drawClipped(clipBottom,clipRight,clipTop,clipLeft,childNode);
     }
   }
-  return;
 }
 
 /* Default layout of a container: stores its own width/height, then places every child. Each child edge is
@@ -479,7 +465,6 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
     childNode->layoutHeight = childNode->layoutHeight - topEdge;
     childNode->vtable->layout(childNode);
   }
-  return;
 }
 
 UiNodeVtable g_UiLayoutContainerControlVtable = {
@@ -511,7 +496,6 @@ void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
   for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
     firstNode->vtable->unsuppressActionId(actionId,firstNode);
   }
-  return;
 }
 
 /* Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
@@ -523,7 +507,6 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
   for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
     firstNode->vtable->suppressActionId(actionId,firstNode);
   }
-  return;
 }
 
 /* Looks up the page stack's shown page (its first child) in its page array and returns the page's index;

@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
+FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {};
 
 /* Not in the original: the pending display mode kind (PERSISTENT_DISPLAY_MODE_*) of the display settings page. */
 static uint32_t s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;
@@ -217,7 +217,6 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(frontendRoot);
   FrontendDisplaySettingsPage_LayoutResolutionList(frontendRoot,true);
-  return;
 }
 
 /* Handler of actions 0x202C..0x2030 (slots 44..48 of g_FrontendUiActionHandlersPage20.handlers00_54), the five
@@ -249,7 +248,6 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
   }
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = adapterIndex;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode->parent);
-  return;
 }
 
 /* Handler of the resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
@@ -264,7 +262,6 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
        ((UiNumericPairTextButton *)optionButton)->secondValue;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
-  return;
 }
 
 /* Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
@@ -372,7 +369,6 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  return;
 }
 
 /* Refreshes the display settings page after the pending mode changed (called by the resolution, adapter, display
@@ -534,7 +530,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     return;
   }
   UiNodeList_UnsuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
-  return;
 }
 
 /* Not in the original: handler of the display mode kind choices "Fenster", "Vollbildfenster" and "Vollbild"

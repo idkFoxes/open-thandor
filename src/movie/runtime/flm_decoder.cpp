@@ -24,7 +24,7 @@
 /* filled at startup by Movie_BuildChromaLumaTable; row = chroma code, column = luma. The original's
    precomputed table was read past the end of a row (into the next one) by malformed colour blocks, which is
    kept; the padding bounds the last row, whose spill reads the zero padding here. */
-static uint32_t g_MovieChromaLumaToArgb[MOVIE_CHROMA_CODES * MOVIE_CHROMA_LUMA_ROW + MOVIE_CHROMA_LUMA_PADDING] = {0};
+static uint32_t g_MovieChromaLumaToArgb[MOVIE_CHROMA_CODES * MOVIE_CHROMA_LUMA_ROW + MOVIE_CHROMA_LUMA_PADDING] = {};
 
 /* Not in the original (split out of Movie_DecodeFrame4x4Delta, which unrolls it twice): draws one 4x4 colour
    block from its two stream dwords. Table row = chroma code (second dword bits 21-30) * 32 + base luma (first

@@ -25,7 +25,6 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet)
 
 {
-  return;
 }
 
 /* Silent-backend stub in slot g_SoundPlayOneShot: plays nothing and reports success (returns true)
@@ -66,7 +65,6 @@ Bool8 SoundBackendDisabled_PlayLooping
 void SoundBackendDisabled_StopVoice(SoundVoice *voice)
 
 {
-  return;
 }
 
 /* Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not
@@ -84,7 +82,6 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
           SoundVoice *voice)
 
 {
-  return;
 }
 
 /* Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until

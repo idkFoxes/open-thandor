@@ -470,7 +470,6 @@ void FrontendScenarioTransfer_ProcessReceivedAsset()
       FrontendScenarioTransfer_ProcessReceivedLevelBundle();
     }
   }
-  return;
 }
 
 /* Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to

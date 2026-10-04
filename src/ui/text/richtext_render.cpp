@@ -41,7 +41,7 @@ static uint32_t g_RichTextShadowOffsetPalette[TEXT_STYLE_INDEX_MASK + 1] = {
 };
 
 /* the stream entered by a nested-stream command without a target: just a terminator */
-static uint16_t g_RichTextEmptyStream[1] = {0};
+static uint16_t g_RichTextEmptyStream[1] = {};
 
 static uint32_t g_RichTextSavedColorArgb = 0;
 
@@ -138,7 +138,6 @@ void RichTextCommandStream_DrawWrappedBlock
                 (clipBottom,clipRight,clipTop,clipLeft,maximumWidth,drawY,drawX,&lineHeight)) {
     drawY = drawY + lineHeight;
   }
-  return;
 }
 
 /* Draws one rich-text line: measures it first to align it (right or centred on penX, per the packed style) and

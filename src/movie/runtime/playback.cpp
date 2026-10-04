@@ -373,7 +373,6 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
   if (g_ActiveMovie != nullptr) {
     g_ActiveMovie->audioGainQ15 = gainQ15;
   }
-  return;
 }
 
 /* Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
@@ -452,7 +451,6 @@ void Movie_Rewind()
       activeMovie->activeAudioBuffer = nullptr;
     }
   }
-  return;
 }
 
 /* Closes g_ActiveMovie. With the arena allocator a refill worker may run: it is told to stop and waited for
@@ -495,7 +493,6 @@ void Movie_Close()
     }
     g_MemoryApi.free(movie);
   }
-  return;
 }
 
 /* Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in
@@ -506,7 +503,6 @@ void IntroMovie_TimerTick()
 
 {
   g_IntroMoviePendingTicks++;
-  return;
 }
 
 /* Not in the original (split out of Movie_AdvanceFrame): stores endCode in *outEndCode when given and

@@ -327,7 +327,6 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
   ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
        (GraphicsTextureSourceAsset *)resolvedTexture;
-  return;
 }
 
 /* Returns the preview texture of a registered army asset for the editor's placement panels. The texture is

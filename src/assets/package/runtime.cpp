@@ -11,11 +11,11 @@
 
 /* Module data. */
 
-static PckMountSlot g_PackageMountSlots[1024] = {0};
+static PckMountSlot g_PackageMountSlots[1024] = {};
 
 uint8_t *g_PackageScratchBuffer = nullptr;
 
-THANDOR_ALIGN(4) uint16_t g_PackageLastErrorPath[256] = {0};
+THANDOR_ALIGN(4) uint16_t g_PackageLastErrorPath[256] = {};
 
 /* Package_UpsertEntry: fills the PCK_ENTRY_PATH_UNITS code-unit path field (PckEntryHeader.path) at
    nameDestination with path: its code units up to and including the terminator (at most the whole field),

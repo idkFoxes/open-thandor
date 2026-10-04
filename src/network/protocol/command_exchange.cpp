@@ -12,21 +12,21 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(16) FrontendPacket10022StatePending g_FrontendPacket10022Buffer = {0};
+THANDOR_ALIGN(16) FrontendPacket10022StatePending g_FrontendPacket10022Buffer = {};
 
-static FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer = {0};
+static FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer = {};
 
-static FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer = {0};
+static FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer = {};
 
 uint32_t g_FrontendTransferResponsePending = 0;
 
 uintptr_t g_FrontendLocalPlayerPcxPreview = 0;
 
-FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8] = {0};
+FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8] = {};
 
-FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8] = {0};
+FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8] = {};
 
-FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};
+FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {};
 
 static bool s_loggedSnapshotChunkOffset = false;
 
@@ -242,7 +242,6 @@ void FrontendTransfer_SendCommandSubmit()
   InGameCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10021Buffer);
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
-  return;
 }
 
 /* Host side of the in-game command exchange: finds the player the packet came from (sequence token and
@@ -316,7 +315,6 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
            (commandRecord->command.packedCommandAndPlayerId & 0xffffff00) | (playerRecord->playerRuntimeId & 0xff);
     }
   }
-  return;
 }
 
 /* Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on

@@ -16,7 +16,7 @@ RecentTextHistorySlot *g_RecentTextSlotStorage = nullptr;
 
 static RecentTextSerialCounter g_RecentTextSerialCounter = 1;
 
-static uint32_t g_RecentTextEntrySerials[8] = {0};
+static uint32_t g_RecentTextEntrySerials[8] = {};
 
 /* Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:
    sorts the slots by serial, newest first, and lists them until an empty slot, an expired one (older than
@@ -68,7 +68,6 @@ void RecentTextHistory_SortAndBuildPointerList
     g_RecentTextEntrySerials[outputIndex] = 0;
   }
   g_RecentTextSerialCounter++;
-  return;
 }
 
 /* Adds a chat message to the recent-text history: it replaces the oldest slot (lowest serial, an empty
@@ -133,7 +132,6 @@ void RecentTextHistory_RemoveOldest()
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = 0;
   }
-  return;
 }
 
 /* Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {0};
+static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {};
 
 /* Draws the metric bars (SelectionPanel_RenderArmyRuntimeMetrics) over every selected entity whose model node
    carries flag 4, or flag 8 without 0x10, at the screen bounds of its projected model hierarchy; entities whose
@@ -95,7 +95,6 @@ void SelectionOverlay_RenderArmyMetricsForEntity
       g_SelectionPanelData = savedPanelData;
     }
   }
-  return;
 }
 
 /* Draws a frame around the screen rectangle spanned by corners A and B (either order; nothing when it is empty in
@@ -167,7 +166,6 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
                cornerAX,SELECTION_OVERLAY_FRAME_RIGHT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* Draws the SELECTION_OVERLAY_MARKER_GRID_POINT marker centred on the screen position of each of markerPointCount
@@ -234,7 +232,6 @@ void SelectionOverlay_DrawTerrainPointMarkers
       g_GraphicsFramebufferEndAccess();
     }
   }
-  return;
 }
 
 /* Draws the SELECTION_OVERLAY_MARKER_WORLD_POINT marker centred on the projected nearest terrain point (or top
@@ -283,7 +280,6 @@ void SelectionOverlay_DrawWorldPointMarker
                SELECTION_OVERLAY_MARKER_WORLD_POINT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* Draws the SELECTION_OVERLAY_MARKER_GRID_VERTEX marker at the projected position of every fourth field cell in
@@ -349,7 +345,6 @@ void SelectionOverlay_DrawGridVertexMarkers
     } while (-1 < (int)rowsRemaining);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* Marks the field cells excluded from the fluid simulation: SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED and/or
@@ -431,7 +426,6 @@ void SelectionOverlay_DrawFluidExclusionMarkers
     } while (rowsRemaining != 0);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* Marks the field cells that support Xenite or Tritium: SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE when the cell
@@ -516,7 +510,6 @@ void SelectionOverlay_DrawResourceCellMarkers
     } while (rowsRemaining != 0);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* Debug overlay: draws the SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at the projected point A of
@@ -575,5 +568,4 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
     } while (rowsRemaining != 0);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }

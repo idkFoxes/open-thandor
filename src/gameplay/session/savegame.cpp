@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {0};
+static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {};
 
 uint16_t g_CampagneHexPathUtf16[13] = {'c', 'a', 'm', 'p', 'a', 'g', 'n', 'e', '.', 'h', 'e', 'x', 0}; /* L"campagne.hex" */
 
@@ -674,7 +674,6 @@ void RuntimeHexSegment_ToggleLightImageFlag()
 {
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  return;
 }
 
 /* Pre-serializer provider of the field.hex save segment (called by
@@ -697,5 +696,4 @@ RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveConte
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext)
 
 {
-  return;
 }

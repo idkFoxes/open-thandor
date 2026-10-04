@@ -176,7 +176,6 @@ void AiPlanning_CollectActiveGridMaskClasses()
   if (g_AiActiveGridMaskClasses[0] == AI_GRID_MASK_CLASS_FREE) {
     g_AiActiveGridMaskClasses[0] = GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_LOW_BAND0;
   }
-  return;
 }
 
 /* AI planning job of the simulation step for one faction. Each faction gets its turn every 64 simulation ticks
@@ -260,7 +259,6 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
       }
     }
   }
-  return;
 }
 
 /* Once the faction has an ARM 330 (0x14A) structure: while Arms Factories is still locked it proposes building
@@ -300,7 +298,6 @@ void AiStrategicClass_AddArmsFactoriesStageBuilding(FactionRuntimeIndex factionI
     }
     AiCandidateWorkspace_AddOrAccumulateWeightedEntry(classSelection.selectedRuntimeToken,weightRange,1);
   }
-  return;
 }
 
 /* Once the faction has an ARM 330 (0x14A) structure and the planning capacity allows it, proposes the class
@@ -330,7 +327,6 @@ void AiStrategicClass_AddWeightedClassCandidate(FactionRuntimeIndex factionIndex
     }
     AiCandidateWorkspace_AddOrAccumulateWeightedEntry(classSelection.selectedRuntimeToken,weightRange,1);
   }
-  return;
 }
 
 /* Sets bit 0 of the faction's runtimeFlags when the faction is active enough: one assigned workspace 00

@@ -169,7 +169,6 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   /* Track clicks page by half a viewport. */
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
   UiNode_InvalidateRoot(&control->base);
-  return;
 }
 
 /* Left-button release on a scroll frame (g_UiScrollableControlVtable nonRightRelease): a held track pages by
@@ -199,7 +198,6 @@ void UiScrollableControl_EndPrimaryScrollInteraction
   control->scrollStateFlags = control->scrollStateFlags &
        ~(UI_SCROLL_VERTICAL_PARTS_ACTIVE|UI_SCROLL_HORIZONTAL_PARTS_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
   UiNode_InvalidateRoot(&control->base);
-  return;
 }
 
 /* Left-button drag on a scroll frame (g_UiScrollableControlVtable nonRightDrag): a grabbed thumb follows the
@@ -377,7 +375,6 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   }
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
   UiNode_InvalidateRoot(&control->base);
-  return;
 }
 
 /* Right-button drag on a scroll frame (g_UiScrollableControlVtable rightDrag): pans the content by the
@@ -405,7 +402,6 @@ void UiScrollableControl_UpdateSecondaryScrollDrag
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
   UiNode_InvalidateRoot(&control->base);
   g_PointerSetPosition(control->pointerAnchorY,control->pointerAnchorX);
-  return;
 }
 
 /* Per-frame tick of a scroll frame (g_UiScrollableControlVtable tick): while an arrow is held under the
@@ -430,7 +426,6 @@ void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* Mouse wheel over a scroll frame (g_UiScrollableControlVtable pointerWheel): scrolls vertically by
@@ -468,7 +463,6 @@ void UiScrollableControl_HandlePointerWheel
   control->scrollOffsetY = control->scrollOffsetY + wheelDelta * scrollStep;
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
   UiNode_InvalidateRoot(&control->base);
-  return;
 }
 
 /* Relocation of a scroll frame loaded from a serialized UI tree (g_UiScrollableControlVtable relocate):
@@ -490,7 +484,6 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
     control->scrollOffsetX = 0;
     control->scrollOffsetY = 0;
   }
-  return;
 }
 
 /* The part of a scroll frame not yet taken by bars and frame pieces, relative to the control. */
@@ -1077,7 +1070,6 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
       control->verticalThumbBottom = control->verticalThumbBottom + horizontalExtent;
     }
   }
-  return;
 }
 
 /* Cursor of a scroll frame (g_UiScrollableControlVtable pointerMove): while a right-button pan that started
@@ -1158,7 +1150,6 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
     cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
   }
   g_GraphicsCursorSetFrame(cursorFrame);
-  return;
 }
 
 /* Right-button release on a scroll frame (g_UiScrollableControlVtable rightRelease): ends panning, releases
@@ -1173,7 +1164,6 @@ void UiScrollableControl_EndSecondaryScrollInteraction
   control->scrollStateFlags = control->scrollStateFlags &
        ~(UI_SCROLL_SECONDARY_PANNING_CONTENT|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-  return;
 }
 
 /* Hit test of a scroll frame (g_UiScrollableControlVtable hitTest): a pointer inside the content view hits
@@ -1358,7 +1348,6 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
       control->verticalThumbBottom = control->verticalThumbBottom + horizontalExtent;
     }
   }
-  return;
 }
 
 /* Scrolls a scrollable control just far enough that the target rectangle (content coordinates, e.g. a
@@ -1418,7 +1407,6 @@ void UiScrollableControl_ClampOffsetsToViewport
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 UiNodeVtable g_UiScrollableControlVtable = {

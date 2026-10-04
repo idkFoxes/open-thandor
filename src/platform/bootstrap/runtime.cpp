@@ -19,7 +19,7 @@ THANDOR_ALIGN(4) CommandLineFindOptionProc *g_CommandLineFindOption = nullptr;
 
 /* UTF-16 copies of the three positional arguments, filled by CommandLine_Parse; nothing reads them (left
    for the command-line rework) */
-static CommandLineWideArguments g_CommandLineWideArguments = {0};
+static CommandLineWideArguments g_CommandLineWideArguments = {};
 
 static uint16_t g_TexteTechnoStrPathUtf16[17] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'e', 'c', 'h', 'n', 'o', '.', 's', 't', 'r', 0}; /* L"texte\\techno.str" */
 
@@ -46,9 +46,9 @@ static uint32_t g_InstallRegistryValueDataCapacityBytes = 256;
 static uint32_t g_InstallRegistryValueType = 0;
 
 /* RegQueryValueExA data buffer for the install "CD" value (capacity g_InstallRegistryValueDataCapacityBytes) */
-static uint8_t g_InstallRegistryValueDataA[256] = {0};
+static uint8_t g_InstallRegistryValueDataA[256] = {};
 
-static uint16_t g_InstallDirectoryScratchUtf16[256] = {0};
+static uint16_t g_InstallDirectoryScratchUtf16[256] = {};
 
 static uint16_t g_ThandorWindowTitleUtf16[8] = {'T', 'h', 'a', 'n', 'd', 'o', 'r', 0}; /* L"Thandor" */
 
@@ -119,11 +119,11 @@ static char g_BootstrapApiName_RegCloseKey[12] = "RegCloseKey";
 
 static char g_CommandLineOptionSound[6] = "SOUND";
 
-static CommandLineArgumentMirrorState500 g_CommandLine = {0};
+static CommandLineArgumentMirrorState500 g_CommandLine = {};
 
 static char sz_MainWindowTitle[15] = " thandor  (TG)";
 
-WidePathBuffer256 g_LooseMoviePathPrefix = {0};
+WidePathBuffer256 g_LooseMoviePathPrefix = {};
 
 uint16_t g_DatenHexPathUtf16[10] = {'d', 'a', 't', 'e', 'n', '.', 'h', 'e', 'x', 0}; /* L"daten.hex" */
 
@@ -131,7 +131,7 @@ uint16_t g_StatHexPathUtf16[9] = {'s', 't', 'a', 't', '.', 'h', 'e', 'x', 0}; /*
 
 void *g_GameStatTableImage = nullptr;
 
-GameDataAuxState g_GameDataAuxState = {0};
+GameDataAuxState g_GameDataAuxState = {};
 
 UPtr32 g_FrontendPlayerListRows[8] = {
     0, /* row 0 */
@@ -489,7 +489,6 @@ void DynDLL_UnloadAll()
     }
     moduleEntryCursor++;
   }
-  return;
 }
 
 
@@ -541,7 +540,6 @@ void Game_Run()
   }
   g_NetworkBackendSlot3(); /* close */
   g_NetworkBackendSlot1(); /* cleanup */
-  return;
 }
 
 
@@ -1587,6 +1585,5 @@ void CommandLine_Parse()
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument3,g_CommandLineWideArguments.argument3,
              (uint8_t *)g_CommandLine.argument3);
-  return;
 }
 

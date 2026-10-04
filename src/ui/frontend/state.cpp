@@ -50,7 +50,6 @@ void FrontendRuntime_TimerCountdownTick()
   while ((remainingTicks != 0) &&
          !g_FrontendTimerCountdownTicks.compare_exchange_weak(remainingTicks,remainingTicks - 1)) {
   }
-  return;
 }
 
 /* Periodic timer callback of the frontend (256 Hz): advances the clock of the menu camera flight while a ROM
@@ -62,7 +61,6 @@ void FrontendRomTransition_AdvanceElapsedTicks()
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     g_FrontendRomTransitionElapsedTicks.fetch_add(1);
   }
-  return;
 }
 
 /* Keyboard fallback of the menu room's pointer context: looks the key up in the frontend hotkey table
@@ -165,7 +163,6 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 
 {
   FrontendRomActionTable_ExecuteRecord(0,0,false,romRecordIndex);
-  return;
 }
 
 /* Network work of the frontend, run under the frontend tick spin lock (skipped while the lock is busy); it is
@@ -288,7 +285,6 @@ void Frontend_StateTick()
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
-  return;
 }
 
 /* Title marker of one level on the game selection page: highlighted when one of the other players (records
