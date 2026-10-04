@@ -7,6 +7,7 @@
 
 #include <thandor/ui/controls/container.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/controls/container. */
 
@@ -34,7 +35,9 @@ void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
 
 /* relocate of g_UiLayoutContainerControlVtable (the page stack, UiPageStackControl): turns the page links
    from image offsets into pointers, relocates every page's tree by making it the stack's firstChild in
-   turn, and leaves page 0 as the shown page. Like the other page-stack methods it assumes at least one page.
+   turn, and leaves page 0 as the shown page. The original page-stack methods loop with do-while and assume
+   at least one page; here every page loop is a while loop because a page count of 0 would wrap and walk
+   ~2^32 page slots (logged once here, at load).
 */
 void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control)
 
@@ -43,23 +46,32 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
   Ptr32<UiNodeBase> *pageSlot;
   Ptr32<UiNodeBase> *pageCursor;
 
+  if (control->pageCount == 0) {
+    static int s_loggedEmptyPageStack;
+    if (s_loggedEmptyPageStack == 0) {
+      s_loggedEmptyPageStack = 1;
+      Thandor_Log("page stack %p: page count 0, page loops skipped",(void *)control);
+    }
+    control->base.firstChild = UI_NODE_NONE; /* no page to show; the page slot holds an unrelocated offset */
+    return;
+  }
   pageSlot = &control->pages;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     if (*pageSlot != UI_NODE_NONE) {
       *pageSlot = (UiNodeBase *)((uint8_t *)*pageSlot + relocationDelta);
     }
     pageSlot = pageSlot + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   pageCursor = &control->pages;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     control->base.firstChild = *pageCursor;
     UiContainer_RelocateChildren(relocationDelta,&control->base);
     pageCursor = pageCursor + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   control->base.firstChild = control->pages;
   return;
 }
@@ -77,12 +89,12 @@ void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
   pageCursor = &control->pages;
   shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     control->base.firstChild = *pageCursor;
     UiContainer_LayoutChildren(&control->base);
     pageCursor = pageCursor + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   control->base.firstChild = shownPage;
   return;
 }
@@ -116,12 +128,12 @@ void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPa
   pageCursor = &control->pages;
   shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     control->base.firstChild = *pageCursor;
     UiContainer_SuppressActionId(actionId,&control->base);
     pageCursor = pageCursor + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   control->base.firstChild = shownPage;
   return;
 }
@@ -139,12 +151,12 @@ void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,Ui
   pageCursor = &control->pages;
   shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     control->base.firstChild = *pageCursor;
     UiContainer_UnsuppressActionId(actionId,&control->base);
     pageCursor = pageCursor + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   control->base.firstChild = shownPage;
   return;
 }
@@ -163,12 +175,12 @@ void UiLayoutContainerControl_ApplyFlagsRecursive
   pageCursor = &control->pages;
   shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
-  do {
+  while (remainingCount != 0) {
     control->base.firstChild = *pageCursor;
     UiNode_ApplyFlagsRecursive(setMask,retainMask,&control->base);
     pageCursor = pageCursor + 1;
     remainingCount--;
-  } while (remainingCount != 0);
+  }
   control->base.firstChild = shownPage;
   return;
 }

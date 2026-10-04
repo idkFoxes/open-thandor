@@ -164,8 +164,9 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
 
 /* After a display mode change (UiDisplayModeAction_ApplyPendingMode, FrontendDisplaySettings_ApplyMode):
    recomputes the rectangle of every open root from the new framebuffer size, its Q31 anchors and pixel
-   offsets (as UiRootStack_Push does) and lays it out again, from the front root down. Assumes at least one
-   open root.
+   offsets (as UiRootStack_Push does) and lays it out again, from the front root down. The original assumes
+   at least one open root; with none it is a no-op here because the do-while would dereference
+   UI_ROOT_STACK_END.
 */
 void UiRootStack_Relayout(void)
 
@@ -176,7 +177,7 @@ void UiRootStack_Relayout(void)
   int64_t anchorPixelProductQ31;
   
   rootNode = g_UiRootNode;
-  do {
+  while (rootNode != UI_ROOT_STACK_END) {
     /* each edge = (framebuffer extent * anchorQ31) >> 31 + offset */
     anchorPixelProductQ31 =
          (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).rightAnchorQ31;
@@ -197,7 +198,7 @@ void UiRootStack_Relayout(void)
          (rootNode->base).topOffset;
     (*((rootNode->base).vtable)->layout)(&rootNode->base);
     rootNode = rootNode->previousRoot;
-  } while (rootNode != UI_ROOT_STACK_END);
+  }
   return;
 }
 

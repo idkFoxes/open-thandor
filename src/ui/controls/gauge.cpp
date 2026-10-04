@@ -7,6 +7,7 @@
 
 #include <thandor/ui/controls/gauge.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -185,8 +186,19 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     if (g_UiTransferMailbox.outgoingByteCount == 0) {
       return;
     }
-    remainingPlayers = g_FrontendPlayerRuntimeBlockCount - 1;
-    if (remainingPlayers == 0) {
+    /* The original stops only on exactly one block; a count of 0 (-1 remaining) and counts above the 8
+       allocated blocks are bounded here because they would scan ~2^32 records or past the blocks. */
+    remainingPlayers = (int)g_FrontendPlayerRuntimeBlockCount - 1;
+    if (remainingPlayers > FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1) {
+      static int s_loggedBlockCount;
+      if (s_loggedBlockCount == 0) {
+        s_loggedBlockCount = 1;
+        Thandor_Log("transfer gauge: block count %d out of range, scan bounded",
+                    (int)g_FrontendPlayerRuntimeBlockCount);
+      }
+      remainingPlayers = FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1;
+    }
+    if (remainingPlayers <= 0) {
       return;
     }
     control->minimumValue = 0;
