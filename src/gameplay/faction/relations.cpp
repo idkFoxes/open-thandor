@@ -476,3 +476,440 @@ void PlayerPairList_RemoveFirstMatch
   return;
 }
 
+/* Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex
+   towards sourceFactionIndex: 0..2 -> 3/2, 3 -> 4, 4..5 -> 6/5, 6 -> 8, 8..9 -> 10/9, 10 -> 11 (merge),
+   first value for the source's state towards the target. State 2 does nothing while the last change is at
+   most 600 ticks old; the same check in states 4 and 8 never holds (it only accepts 2, 5 and 9). The first
+   two arguments are not used.
+*/
+void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+          FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
+
+{
+  Bool8 isRecentTimedState;
+  
+  switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
+         ((uint8_t)(sourceFactionIndex << 2) & 31) & 0xf) {
+  case 2:
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
+      return;
+    }
+  case 0:
+  case 1:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (1,0,3,2,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 3:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (2,2,4,4,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 4:
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
+      return;
+    }
+  case 5:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (4,3,6,5,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 6:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (5,5,8,8,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 8:
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
+      return;
+    }
+  case 9:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (7,6,10,9,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 10:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (8,8,FACTION_RELATION_MERGE,FACTION_RELATION_MERGE,sourceFactionIndex,targetFactionIndex);
+  }
+  return;
+}
+
+/* Moves the diplomatic relation of a faction pair back, chosen by the state of targetFactionIndex towards
+   sourceFactionIndex: 1..3 -> 0, 4 and 6 -> 0, 5 -> 4, 8 and 10 -> 4, 9 -> 8 (both directions get the same
+   state), with the matching notification text. Other states stay. The first two arguments are not used.
+*/
+void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+          FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
+
+{
+  switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
+         ((uint8_t)(sourceFactionIndex << 2) & 31) & 0xf) {
+  case 1:
+  case 2:
+  case 3:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (19,19,0,0,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 4:
+  case 6:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (9,9,0,0,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 5:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (19,19,4,4,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 8:
+  case 10:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (10,10,4,4,sourceFactionIndex,targetFactionIndex);
+    break;
+  case 9:
+    GameFactionRuntime_ApplyPairwiseRelationTransition
+              (19,19,8,8,sourceFactionIndex,targetFactionIndex);
+  }
+  return;
+}
+
+#define FACTION_TECHNOLOGY_MASK_BITS 256u
+
+/* Lowest technology whose bit is set in haveMasks and clear in lackMasks (both 256-bit technology masks), or
+   FACTION_TECHNOLOGY_MASK_BITS when there is none. */
+static TechnologyId GameFactionRuntime_FindFirstTechnologyOnlyIn(const uint32_t *haveMasks,
+          const uint32_t *lackMasks)
+{
+  TechnologyId technologyIndex;
+  uint32_t bitMask;
+
+  for (technologyIndex = 0; technologyIndex < FACTION_TECHNOLOGY_MASK_BITS; technologyIndex++) {
+    bitMask = 1u << (technologyIndex & 31);
+    if (((haveMasks[technologyIndex >> 5] & bitMask) != 0) && ((lackMasks[technologyIndex >> 5] & bitMask) == 0)) {
+      return technologyIndex;
+    }
+  }
+  return FACTION_TECHNOLOGY_MASK_BITS;
+}
+
+/* Technology exchange between related factions: for every unordered pair of factions 1..7 whose relation
+   state is 8, 9 or 10, the lowest technology only the source faction has and the lowest technology only the
+   other faction has are swapped (each side unlocks the other's). A pair where either side has nothing the
+   other lacks exchanges nothing. Afterwards the other-player command entries are rebuilt.
+*/
+void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
+
+{
+  uint32_t sourceFactionIndex;
+  uint32_t otherFactionIndex;
+  uint32_t relationState;
+  TechnologyId sourceTechnologyIndex;
+  TechnologyId otherTechnologyIndex;
+  GameFactionRuntimeRecord *sourceRecord;
+  GameFactionRuntimeRecord *otherRecord;
+
+  for (sourceFactionIndex = 1; sourceFactionIndex < 7; sourceFactionIndex++) {
+    sourceRecord = &g_GameFactionRuntimeImage.records[sourceFactionIndex];
+    for (otherFactionIndex = sourceFactionIndex + 1; otherFactionIndex < 8; otherFactionIndex++) {
+      otherRecord = &g_GameFactionRuntimeImage.records[otherFactionIndex];
+      /* the other faction's relation-state nibble towards the source faction */
+      relationState = otherRecord->packedRelationStates >> ((char)sourceFactionIndex * 4 & 31U) & 0xf;
+      if ((relationState < 8) || (10 < relationState)) {
+        continue;
+      }
+      sourceTechnologyIndex = GameFactionRuntime_FindFirstTechnologyOnlyIn(sourceRecord->technologyMasks256Bits,
+                                                                          otherRecord->technologyMasks256Bits);
+      if (sourceTechnologyIndex == FACTION_TECHNOLOGY_MASK_BITS) {
+        continue;
+      }
+      otherTechnologyIndex = GameFactionRuntime_FindFirstTechnologyOnlyIn(otherRecord->technologyMasks256Bits,
+                                                                         sourceRecord->technologyMasks256Bits);
+      if (otherTechnologyIndex == FACTION_TECHNOLOGY_MASK_BITS) {
+        continue;
+      }
+      /* swap the pair */
+      Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
+      Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
+    }
+  }
+  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+}
+
+/* Returns true when the relation of factionIndex towards otherFactionIndex is in one of the pending states
+   2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
+   again too soon.
+*/
+Bool8 GameFactionRuntime_IsRecentTimedRelationState
+          (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
+
+{
+  uint32_t relationStateNibble;
+
+  relationStateNibble =
+       g_GameFactionRuntimeImage.records[factionIndex].packedRelationStates >>
+       ((char)otherFactionIndex * 4 & 31U) & 0xf;
+  /* relationStateTicks[other faction]: tick of the pair's last relation change */
+  if ((((relationStateNibble == 2) || (relationStateNibble == 5)) || (relationStateNibble == 9)) &&
+     ((int)(g_GameFactionRuntimeImage.tail.simulationTick -
+           (int)g_GameFactionRuntimeImage.records[factionIndex].relationStateTicks[otherFactionIndex]) <
+      FACTION_RELATION_CHANGE_COOLDOWN_TICKS + 1)) {
+    return true;
+  }
+  return false;
+}
+
+/* Appends an absorbed faction's army-asset list to the survivor's list of the same kind, stopping when the
+   survivor's 64 entries are full. */
+static void GameFactionRuntime_AppendArmyAssetList(FactionArmyAssetCount *survivorCount,uint32_t *survivorList,
+          FactionArmyAssetCount absorbedCount,const uint32_t *absorbedList)
+{
+  FactionArmyAssetCount assetsRemaining;
+  uint32_t armyAssetReferenceDword;
+  uint32_t slotIndex;
+  int sourceIndex;
+
+  assetsRemaining = absorbedCount;
+  sourceIndex = 0;
+  for (slotIndex = *survivorCount;
+      (assetsRemaining != 0) && (slotIndex < FACTION_ARMY_ASSET_LIST_CAPACITY); slotIndex++) {
+    armyAssetReferenceDword = absorbedList[sourceIndex];
+    *survivorCount = *survivorCount + 1;
+    survivorList[slotIndex] = armyAssetReferenceDword;
+    sourceIndex++;
+    assetsRemaining--;
+  }
+}
+
+/* Merge (relation state 11) of GameFactionRuntime_ApplyPairwiseRelationTransition: survivingFactionIndex takes
+   over absorbedFactionIndex's models (re-owned and repainted), players, per-faction cell bytes, resources,
+   technology, statistics and army-asset lists; the absorbed faction becomes inactive and the in-game catalogs
+   are rebuilt. */
+static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivingFactionIndex,
+          FactionRuntimeIndex absorbedFactionIndex)
+{
+  TritiumAmountQ4 *tritiumField;
+  XeniteAmountQ4 *xeniteField;
+  EnergyAmountQ4 *energyField;
+  FactionRelationCounter *relationCounter;
+  TritiumAmountQ4 tritiumAmount;
+  XeniteAmountQ4 xeniteLimit;
+  TritiumAmountQ4 tritiumLimit;
+  EnergyAmountQ4 energyCapacity;
+  TritiumAmountQ4 tritiumExtracted;
+  FactionRelationCounter counterA;
+  FactionRelationCounter counterB;
+  FactionRelationCounter counterD;
+  FactionRelationCounter counterE;
+  FactionRelationCounter counterF;
+  int maskWordIndex;
+  int playerRuntimeId;
+  int cellsRemaining;
+  FrontendPlayerRuntimeRecord *playerBlockCursor;
+  FrontendPlayerRuntimeBlockCount playerBlocksRemaining;
+  FieldGridCell *gridCell;
+  GraphicsTextureSet *survivingFactionTextureSet;
+  GraphicsPaletteAsset *survivingFactionPaletteAsset;
+  FieldGridAsset *terrainGrid;
+  InGameRuntimeRoot *runtimeRoot;
+  WorldOwnerListNode *ownerNode;
+  ArmyRuntimeSlot *armyRuntime;
+  GameFactionRuntimeRecord *survivor;
+  GameFactionRuntimeRecord *absorbed;
+
+  runtimeRoot = g_InGameRuntimeRoot;
+  if (absorbedFactionIndex == g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex) {
+    g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = survivingFactionIndex;
+  }
+  survivingFactionTextureSet = g_ArmyGraphicsBindings[survivingFactionIndex].textureSet;
+  survivingFactionPaletteAsset = g_ArmyGraphicsBindings[survivingFactionIndex].paletteAsset;
+  for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    /* re-own the absorbed faction's models (their army's factionIndex) and repaint them in the survivor's colours */
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      armyRuntime = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      if (armyRuntime->factionIndex == absorbedFactionIndex) {
+        armyRuntime->factionIndex = survivingFactionIndex;
+        ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
+                  (survivingFactionPaletteAsset,survivingFactionTextureSet,armyRuntime->modelNodeRuntime);
+      }
+    }
+  }
+  /* the player blocks are read after the repaint walk */
+  playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+  playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+  do {
+    if (absorbedFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+      playerRuntimeId = playerBlockCursor->playerRuntimeId;
+      (playerBlockCursor->factionAssignment).factionAssignmentIndex = survivingFactionIndex;
+      g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->factionIndex = survivingFactionIndex;
+    }
+    playerBlockCursor++;
+    playerBlocksRemaining--;
+  } while (playerBlocksRemaining != 0);
+  /* the survivor also gets the absorbed faction's per-faction cell byte (its byte of the cell's occupancyMask) */
+  terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
+  cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
+  gridCell = terrainGrid->cells;
+  do {
+    ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] =
+         ((uint8_t *)&gridCell->occupancyMask)[survivingFactionIndex] |
+         ((uint8_t *)&gridCell->occupancyMask)[absorbedFactionIndex];
+    gridCell++;
+    cellsRemaining--;
+  } while (cellsRemaining != 0);
+  g_GameFactionRuntimeImage.tail.factionLifecycleStates[absorbedFactionIndex] = FACTION_RUNTIME_LIFECYCLE_INACTIVE;
+  survivor = &g_GameFactionRuntimeImage.records[survivingFactionIndex];
+  absorbed = &g_GameFactionRuntimeImage.records[absorbedFactionIndex];
+  tritiumAmount = absorbed->tritiumCurrentQ4;
+  xeniteLimit = absorbed->xeniteStorageLimitQ4;
+  tritiumLimit = absorbed->tritiumStorageLimitQ4;
+  survivor->xeniteCurrentQ4 = survivor->xeniteCurrentQ4 + absorbed->xeniteCurrentQ4;
+  tritiumField = &survivor->tritiumCurrentQ4;
+  *tritiumField = *tritiumField + tritiumAmount;
+  xeniteField = &survivor->xeniteStorageLimitQ4;
+  *xeniteField = *xeniteField + xeniteLimit;
+  tritiumField = &survivor->tritiumStorageLimitQ4;
+  *tritiumField = *tritiumField + tritiumLimit;
+  energyCapacity = absorbed->energyGenerationCapacityQ4;
+  energyField = &survivor->baselineEnergySupplyQ4;
+  *energyField = *energyField + absorbed->baselineEnergySupplyQ4;
+  energyField = &survivor->energyGenerationCapacityQ4;
+  *energyField = *energyField + energyCapacity;
+  for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
+    survivor->technologyMasks256Bits[maskWordIndex] =
+         survivor->technologyMasks256Bits[maskWordIndex] | absorbed->technologyMasks256Bits[maskWordIndex];
+  }
+  tritiumExtracted = absorbed->tritiumExtractedTotalQ4;
+  counterA = absorbed->relationCounterA;
+  counterB = absorbed->relationCounterB;
+  xeniteField = &survivor->xeniteExtractedTotalQ4;
+  *xeniteField = *xeniteField + absorbed->xeniteExtractedTotalQ4;
+  tritiumField = &survivor->tritiumExtractedTotalQ4;
+  *tritiumField = *tritiumField + tritiumExtracted;
+  relationCounter = &survivor->relationCounterA;
+  *relationCounter = *relationCounter + counterA;
+  relationCounter = &survivor->relationCounterB;
+  *relationCounter = *relationCounter + counterB;
+  counterD = absorbed->relationCounterD;
+  counterE = absorbed->relationCounterE;
+  counterF = absorbed->relationCounterF;
+  relationCounter = &survivor->relationCounterC;
+  *relationCounter = *relationCounter + absorbed->relationCounterC;
+  relationCounter = &survivor->relationCounterD;
+  *relationCounter = *relationCounter + counterD;
+  relationCounter = &survivor->relationCounterE;
+  *relationCounter = *relationCounter + counterE;
+  relationCounter = &survivor->relationCounterF;
+  *relationCounter = *relationCounter + counterF;
+  /* append both army-asset lists (primaryArmyAssetPointersOrIds, secondaryArmyAssetPointersOrIds; 64 entries
+     each) */
+  GameFactionRuntime_AppendArmyAssetList(&survivor->primaryArmyAssetCount,survivor->primaryArmyAssetPointersOrIds,
+                                         absorbed->primaryArmyAssetCount,absorbed->primaryArmyAssetPointersOrIds);
+  GameFactionRuntime_AppendArmyAssetList(&survivor->secondaryArmyAssetCount,
+                                         survivor->secondaryArmyAssetPointersOrIds,
+                                         absorbed->secondaryArmyAssetCount,absorbed->secondaryArmyAssetPointersOrIds);
+  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+}
+
+/* Changes the diplomatic relation between two factions: notifies the shown faction (text code + 500), stores
+   both directed 4-bit relation states, sets or clears the factions' friendly bits in each other's
+   capabilityFlags (both by stateSecondTowardFirst: friendly from state 4 on) and stamps the change tick.
+   State 11 merges the factions: one of them (see below) gives its units, cells, players, resources,
+   technology, statistics and army-asset lists to the other and becomes inactive. Finally the other-player
+   command entries are rebuilt.
+*/
+void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeBase activeFactionCodeForFirst,
+          FactionNotificationCodeBase activeFactionCodeForSecond,
+          FactionRelationStateNibble stateFirstTowardSecond,
+          FactionRelationStateNibble stateSecondTowardFirst,FactionRuntimeIndex firstFactionIndex,
+          FactionRuntimeIndex secondFactionIndex)
+
+{
+  FactionCapabilityFlags *capabilityFlagsField;
+  InGameSimulationTick currentTick;
+  FactionRuntimeIndex originalFirstFactionIndex;
+  uint32_t secondFactionBit;
+  uint32_t firstFactionBit;
+  uint32_t secondFactionPlayerCount;
+  uint32_t firstFactionPlayerCount;
+  uint32_t randomValue;
+  Bool8 swapMergeDirection;
+  uint8_t secondShift;
+  uint8_t firstShift;
+  FrontendPlayerRuntimeRecord *playerBlockCursor;
+  FrontendPlayerRuntimeBlockCount playerBlocksRemaining;
+
+  originalFirstFactionIndex = firstFactionIndex;
+  if (g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex == secondFactionIndex) {
+    InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForSecond +
+                                                 500);
+  }
+  else if (g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex == firstFactionIndex) {
+    InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
+  }
+  /* each record's packedRelationStates holds a nibble per other faction */
+  secondShift = (uint8_t)secondFactionIndex * 4;
+  firstShift = (uint8_t)firstFactionIndex * 4;
+  g_GameFactionRuntimeImage.records[firstFactionIndex].packedRelationStates =
+       stateFirstTowardSecond << (secondShift & 31) |
+       ~(0xf << (secondShift & 31)) &
+       g_GameFactionRuntimeImage.records[firstFactionIndex].packedRelationStates;
+  g_GameFactionRuntimeImage.records[secondFactionIndex].packedRelationStates =
+       ~(0xf << (firstShift & 31)) &
+       g_GameFactionRuntimeImage.records[secondFactionIndex].packedRelationStates |
+       stateSecondTowardFirst << (firstShift & 31);
+  secondFactionBit = 1 << ((uint8_t)secondFactionIndex & 31);
+  if (stateSecondTowardFirst < FACTION_RELATION_STATE_FRIENDLY) {
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField & ~secondFactionBit;
+  }
+  else {
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField | secondFactionBit;
+  }
+  firstFactionBit = 1 << ((uint8_t)firstFactionIndex & 31);
+  if (stateSecondTowardFirst < FACTION_RELATION_STATE_FRIENDLY) {
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField & ~firstFactionBit;
+  }
+  else {
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField | firstFactionBit;
+  }
+  /* tick of the last relation change per pair (relationStateTicks[other faction]) */
+  currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
+  g_GameFactionRuntimeImage.records[firstFactionIndex].relationStateTicks[secondFactionIndex] =
+       g_GameFactionRuntimeImage.tail.simulationTick;
+  g_GameFactionRuntimeImage.records[secondFactionIndex].relationStateTicks[firstFactionIndex] = currentTick;
+  if (stateSecondTowardFirst == FACTION_RELATION_MERGE) {
+    secondFactionPlayerCount = 0;
+    firstFactionPlayerCount = 0;
+    playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+    playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+    do {
+      if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+        secondFactionPlayerCount++;
+      }
+      if (firstFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+        firstFactionPlayerCount++;
+      }
+      playerBlockCursor++;
+      playerBlocksRemaining--;
+    } while (playerBlocksRemaining != 0);
+    /* State 11 merges the two factions. The second faction survives when it has players and the (bitwise) counts
+       do not overlap; with no players on either side, or overlapping counts, a random bit decides. */
+    if (((secondFactionPlayerCount & firstFactionPlayerCount) == 0) &&
+        ((secondFactionPlayerCount != 0) || (firstFactionPlayerCount != 0))) {
+      swapMergeDirection = secondFactionPlayerCount != 0;
+    }
+    else {
+      randomValue = g_RandomGeneratorState.next();
+      swapMergeDirection = (randomValue & FACTION_MERGE_RANDOM_DIRECTION_BIT) == 0;
+    }
+    /* from here on firstFactionIndex survives and secondFactionIndex is absorbed */
+    if (swapMergeDirection) {
+      firstFactionIndex = secondFactionIndex;
+      secondFactionIndex = originalFirstFactionIndex;
+    }
+    GameFactionRuntime_MergeAbsorbedFaction(firstFactionIndex,secondFactionIndex);
+  }
+  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+}

@@ -61,34 +61,10 @@
    is written behind them). */
 #define RICHTEXT_RUNTIME_BUFFER_UNITS 0x2000
 
-/* TXT2STR markup (RichTextMarkup_ParseAndBuildStringAsset): '#@'..'#~' select code page (c - '@'), which adds
-   (c - '@') * RICHTEXT_MARKUP_CODE_PAGE_UNITS to the following bytes; '#!' makes '@'..'_' command code units. */
-#define RICHTEXT_MARKUP_CODE_PAGE_UNITS 0x80
-#define RICHTEXT_MARKUP_COMMAND_BIAS (RICHTEXT_COMMAND_FLAG - '@') /* '@' + bias = RICHTEXT_COMMAND_FLAG | 0 */
-/* Code unit of the "TXT2STR: unknown character" message where the byte offset is written (+0x4C). */
-#define RICHTEXT_MARKUP_ERROR_OFFSET_UNIT 38
-
-/* UiPackedTextStyle fields as the rich-text interpreters decode them. */
-#define TEXT_STYLE_ALIGN_RIGHT 0x1 /* the line ends at the given x */
-#define TEXT_STYLE_ALIGN_CENTER 0x2 /* the line is centred on the given x (ignored with ALIGN_RIGHT) */
-#define TEXT_STYLE_PALETTE_SHIFT 16 /* bits 16-18: colour/shadow palette entry */
-#define TEXT_STYLE_FONT_SHIFT 24 /* bits 24-26: font index */
-#define TEXT_STYLE_INDEX_MASK 7
+/* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */
+#define RICHTEXT_NESTING_LIMIT 64
 
 /* Functions are grouped by semantic ownership. */
-
-RichTextExtent RichTextCommandStream_MeasureWrappedBlock
-          (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);
-
-void RichTextCommandStream_DrawWrappedBlock
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,uint32_t packedStyle,uint16_t *commandStream,
-          UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
-
-Bool8 RichTextCommandStream_DrawSingleLine
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
-          UiPixelCoordinate lineTopY,UiPixelCoordinate penX);
 
 void RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream);
@@ -98,27 +74,18 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
 Bool8 RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
-Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
-
 Bool8 RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten);
 
-RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream);
-
-Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);
-
-Bool8 RichTextCommandStream_DrawNextWrappedLine
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
-          UiPixelCoordinate drawX,UiPixelExtent *lineAdvance);
-
 void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);
 
-extern PackedArgb32 g_RichTextColorPaletteArgb[6];
-extern uint32_t g_ActiveFontIndex;
-extern uint32_t g_RichTextCurrentColorArgb;
-extern uint32_t g_RichTextCurrentShadowOffset;
 extern uint8_t *g_FontRuntimeBuffer;
+extern uint32_t g_RichTextRuntimeBufferUsedWords;
+
+/* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
+#define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
+
+int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_H */

@@ -29,40 +29,8 @@
 #define MOVIE_REFILL_CHUNK_BYTES 0x1E000 /* bytes per refill; also the minimum buffered ahead of a decode */
 #define MOVIE_COMPACT_SHIFT_BYTES 0x1E0000 /* played bytes dropped from the buffer front at once */
 #define MOVIE_MAX_AUDIO_TRACKS 14 /* MovieFileHeader.audioTrackBytes; Movie_Open plays no audio for larger counts */
-/* FLM frame tokens (low 5 bits of the next stream dword, Movie_DecodeFrame4x4Delta / Movie_EncodeFrame4x4*):
-   0..24 start an 8-byte colour block with that base luma; the skip tokens keep blocks of the previous frame,
-   the count (minus its bias) sits in the bits above the token */
-#define MOVIE_TOKEN_SKIP_SHORT 0x19 /* 1 byte: skip 1..8 blocks */
-#define MOVIE_TOKEN_SKIP_MEDIUM 0x1A /* 2 bytes: skip 9..0x808 blocks */
-#define MOVIE_TOKEN_SKIP_LONG 0x1B /* 4 bytes: skip 0x809 or more blocks */
-/* Largest run of kept blocks the short and the medium skip token encode */
-#define MOVIE_SKIP_SHORT_MAX_BLOCKS 8
-#define MOVIE_SKIP_MEDIUM_MAX_BLOCKS 0x808
-/* Low 5 bits of a stream dword: the frame token (MOVIE_TOKEN_SKIP_*, or the base luma of a colour block) */
-#define MOVIE_TOKEN_MASK 0x1f
-/* Highest base luma of a colour block (tokens 0..24) */
-#define MOVIE_TOKEN_BASE_LUMA_MAX 24
-/* FLM colour: 5-bit luma in bits 0-4 below the 10-bit chroma code (hue in bits 5-9, saturation in 10-14);
-   a colour block stores the chroma code in bits 21-30 of its second dword */
-#define MOVIE_COLOR_LUMA_MASK 0x1f
-#define MOVIE_COLOR_HUE_MASK 0x3e0
-#define MOVIE_COLOR_SATURATION_MASK 0x7c00
-#define MOVIE_COLOR_CHROMA_MASK 0x7fe0
-/* Bit 31 of a colour block's second dword: every luma step counts twice (4-bit levels 0..15 halved) */
-#define MOVIE_BLOCK_DOUBLE_STEPS 0x80000000
-/* Largest luma level of a colour block with doubled steps */
-#define MOVIE_BLOCK_WIDE_LEVEL_MAX 15
-/* 0x8000 * sqrt(3): the blue-green axis of the chroma vector (MovieColor_ComputeChromaCodeFromRgb888) */
-#define MOVIE_CHROMA_SQRT3_Q15 0xddb4
-/* 2^16 / 3: (r + g + b) * this >> 19 is the channel average scaled to 5 bits (MovieColor_ComputeLuma5FromRgb888) */
-#define MOVIE_LUMA_THIRD_Q16 0x5555
+
 /* Functions are grouped by semantic ownership. */
-
-Bool8 Movie_EncodeFlmBufferFromFrameProvider
-          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount);
-
-void MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
 Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
@@ -76,36 +44,11 @@ void Movie_Rewind(void);
 
 void Movie_Close(void);
 
-void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime);
-
-void EndMovieUiRuntime_DispatchCommandByFlags
-          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime);
-
 void IntroMovie_TimerTick(void);
-
-uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *encodedOutput,uint32_t *sourcePixels);
-
-uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels);
 
 Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 
-void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
-
-uint32_t Movie_DecodeFrame4x4Delta
-          (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
-          uint8_t *encodedFrame);
-
-uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888);
-
-uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888);
-
-/* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */
-void Movie_BuildChromaLumaTable(void);
-
 extern MovieRuntime *g_ActiveMovie;
-extern uint32_t g_MoviePlaybackCurrentFrame;
 
 extern MovieAudioGainQ15 g_MovieDefaultAudioGainQ15;
 extern MovieAudioGainQ15 g_MovieAlternateAudioGainQ15;

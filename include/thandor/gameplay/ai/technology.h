@@ -55,4 +55,10 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8 (ModelDefinit
 
 extern AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6];
 
+void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+
+AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime);
+
 #endif /* THANDOR_GAMEPLAY_AI_TECHNOLOGY_H */

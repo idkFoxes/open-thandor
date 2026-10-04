@@ -8,6 +8,8 @@
 #ifndef THANDOR_GAMEPLAY_FACTION_H
 #define THANDOR_GAMEPLAY_FACTION_H
 
+#include <thandor/gameplay/faction/army_stock.h>
+#include <thandor/gameplay/faction/carryover.h>
 #include <thandor/gameplay/faction/relations.h>
 #include <thandor/gameplay/faction/runtime.h>
 

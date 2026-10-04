@@ -25,28 +25,6 @@
    DirectSound stages) */
 #define DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER 100
 #define DIRECTSOUND_VOICE_STAGE_FILL 102
-/* Functions are grouped by semantic ownership. */
-
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
-
-void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
-
-Bool8 SoundBackendDisabled_PlayOneShot
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-Bool8 SoundBackendDisabled_PlayLooping
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
-
-Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
-
-void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          IDirectSoundBuffer *voice);
-
-void SoundBackendDisabled_StopAllVoices(void);
 
 extern SoundPlayVoiceProc *g_SoundPlayOneShot;
 

@@ -12,7 +12,6 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/package/runtime. */
-/* Functions are grouped by semantic ownership. */
 
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
    load/enumeration buffer (the original repeats the literal 0x800000 at every use). */
@@ -23,31 +22,21 @@
 #define PCK_ENTRY_HEADER_BYTES 0x200 /* sizeof(PckEntryHeader); the archive header has the same size */
 #define PACKAGE_DWORD_ALIGN_MASK 0xFFFFFFFCU /* ~3: (byteCount + 3) & mask rounds up to whole dwords */
 #define PCK_ENTRY_PATH_UNITS 0xF6 /* UTF-16 code units of PckEntryHeader.path, terminator included */
-/* Byte offsets into g_PackageScratchBuffer while Package_UpsertEntry/Package_DeleteEntry rewrite an archive:
-   the archive header is read to offset 0, the entry header being appended follows it. */
-#define PCK_ARCHIVE_SIZE offsetof(PckArchiveHeader,archiveSize)
-#define PCK_NEW_ENTRY_PAYLOAD_OFFSET (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,runtimePayloadOffset))
-#define PCK_NEW_ENTRY_UNPACKED_SIZE (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,unpackedSize))
-#define PCK_NEW_ENTRY_TYPE_TAG (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,typeTag))
-#define PCK_NEW_ENTRY_PACKED_SIZE (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,packedSize))
-#define PCK_NEW_ENTRY_COMPRESSION_METHOD (PCK_ENTRY_HEADER_BYTES + offsetof(PckEntryHeader,compressionMethod))
+
 /* High bits of the Package_LoadEntryIntoBuffer capacity argument */
 #define PACKAGE_LOAD_CAPACITY_MASK 0x3FFFFFFF
 #define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
 #define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
 
-Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
+/* Functions are grouped by semantic ownership. */
 
-Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
-                   uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);
+Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
 
 Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);
 
 Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError);
-
-Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
@@ -71,6 +60,10 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 
 Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
+THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path);
+
 extern uint8_t *g_PackageScratchBuffer;
+
+extern uint16_t g_PackageLastErrorPath[256];
 
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */

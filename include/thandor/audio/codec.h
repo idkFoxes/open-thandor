@@ -9,5 +9,6 @@
 #define THANDOR_AUDIO_CODEC_H
 
 #include <thandor/audio/codec/sam.h>
+#include <thandor/audio/codec/sam_encoder.h>
 
 #endif /* THANDOR_AUDIO_CODEC_H */

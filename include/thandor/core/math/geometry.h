@@ -27,4 +27,6 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
           GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
           GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX);
 
+FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
+
 #endif /* THANDOR_CORE_MATH_GEOMETRY_H */

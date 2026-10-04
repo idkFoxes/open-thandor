@@ -9,8 +9,11 @@
 #define THANDOR_GAMEPLAY_AI_H
 
 #include <thandor/gameplay/ai/combat.h>
+#include <thandor/gameplay/ai/construction.h>
+#include <thandor/gameplay/ai/perception.h>
 #include <thandor/gameplay/ai/placement.h>
 #include <thandor/gameplay/ai/planning.h>
+#include <thandor/gameplay/ai/purchasing.h>
 #include <thandor/gameplay/ai/technology.h>
 #include <thandor/gameplay/ai/units.h>
 #include <thandor/gameplay/ai/workspaces.h>

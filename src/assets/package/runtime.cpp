@@ -22,6 +22,8 @@ static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*'
 
 uint8_t *g_PackageScratchBuffer = 0;
 
+__declspec(align(4)) uint16_t g_PackageLastErrorPath[256] = {0};
+
 /* Implementation ownership: assets/package/runtime. */
 
 /* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
@@ -66,7 +68,6 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
   return true;
 }
 
-
 /* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
    nameDestination, two code units per dword.
    Original quirk: the full field is copied (0x7B whole dwords = 492 bytes) whatever the path's length,
@@ -77,7 +78,7 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
    terminator in the path field of the entry header written to the save file; every reader stops at the
    terminator (Package_FindEntryInMount / Package_FindEntryAcrossMounts compare up to it, Package_FindEntry's
    copy is then used as a string), so they never reach a result. */
-static THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
+THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
 
 {
   int dwordsRemaining;
@@ -88,106 +89,6 @@ static THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDes
     nameDestination = nameDestination + 4;
   }
 }
-
-
-/* Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
-   archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry header and
-   its payload are appended at the end of the file. compressionMethod indexes g_PckEncoderTable, except
-   PCK_COMPRESSION_STORED, which appends the source dword-aligned as it is; the first source dword becomes
-   the entry's typeTag. The in-memory directory is reloaded afterwards. Returns true on success, false when
-   deleting the old entry, a seek/read/write, the encoder or the directory reload fails (the error code is
-   dropped: no caller uses it).
-   Called directly by the save-game writer in ui/ingame/runtime.c (no callback table).
-*/
-Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
-                   uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
-
-{
-  uint8_t *destination; /* archive header, then the new entry header, then (encoded) its payload */
-  uint32_t packedByteCount;
-  FileIoByteCount byteCount;
-  uint32_t alignedByteCount;
-
-  destination = g_PackageScratchBuffer;
-  if (Package_FindEntryInMount(path,fileHandle) != NULL) {
-    if (!Package_DeleteEntry(path,fileHandle,NULL)) {
-      return false;
-    }
-  }
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle)) != 0) {
-    return false;
-  }
-  if (g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
-    return false;
-  }
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle)) != 0) {
-    return false;
-  }
-  ((PckArchiveHeader *)destination)->entryCount++;
-  if (compressionMethod == PCK_COMPRESSION_STORED) {
-    alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
-    /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
-       store schedules differently) */
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD] = PCK_COMPRESSION_STORED;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 1] = 0;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 2] = 0;
-    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 3] = 0;
-    *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
-         *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-    Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
-    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination + PCK_ENTRY_HEADER_BYTES,
-                                      THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-    if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-  }
-  else {
-    /* encode straight behind the new entry header, so both are written in one go */
-    if (!g_PckEncoderTable[compressionMethod]
-            (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
-             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,NULL)) {
-      return false;
-    }
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = packedByteCount;
-    byteCount = packedByteCount + PCK_ENTRY_HEADER_BYTES;
-    *(PckCompressionMethod *)(destination + PCK_NEW_ENTRY_COMPRESSION_METHOD) = compressionMethod;
-    *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-    Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
-    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-    if (g_FileSystemWriteExactOrFlush
-          (byteCount,destination + PCK_ENTRY_HEADER_BYTES,THANDOR_PTR(fileHandle)) != 0) {
-      return false;
-    }
-  }
-  return Package_ReadDirectory(fileHandle,NULL);
-}
-
 
 /* Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise
    from the loose file (PACKAGE_LOAD_* flags in the top two bits of the capacity select loose-only loading and a
@@ -276,7 +177,6 @@ Bool8 Package_LoadEntryIntoBuffer
   return false;
 }
 
-
 /* Package_Mount and Package_MountLowPriority, once a free slot is chosen: opens path for writing (next to the
    executable first, then as given), allocates the entry-header array and reads the directory into
    mountSlot. Stores the file handle or the open/allocation error code in *outFileHandleOrError (may be
@@ -322,7 +222,6 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
   return false;
 }
 
-
 /* Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this
    archive loses against every other one. FileSystem_Init mounts engine.pck this way. Same result as
    Package_Mount.
@@ -347,121 +246,6 @@ Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
   }
   return Package_MountIntoSlot(mountSlot,path,outFileHandleOrError);
 }
-
-
-/* Package_DeleteEntry, step 1: rewrites the archive header of fileHandle with one entry less and its size
-   reduced by the deleted entry (header plus entryPackedSize payload bytes), staged in destination. Stores the
-   archive size before the delete in *outArchiveEndOffset. Returns 0 or the file-system error code. */
-static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,uint8_t *destination,
-                                            EngineFileHandle fileHandle,int *outArchiveEndOffset)
-{
-  uint32_t statusCode;
-
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  *outArchiveEndOffset = *(int *)(destination + PCK_ARCHIVE_SIZE);
-  ((PckArchiveHeader *)destination)->entryCount--;
-  *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
-       *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  return g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,THANDOR_PTR(fileHandle));
-}
-
-
-/* Package_DeleteEntry, step 2: moves the tailByteCount bytes from tailOffset down to entryOffset (the deleted
-   entry's header) through g_PackageScratchBuffer and truncates the file behind them. Returns 0, the
-   file-system error code, or FATAL_ERROR_GENERAL_FAILURE when the tail does not fit the scratch buffer. */
-static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,FileSystemFilePosition tailOffset,
-                                          uint32_t tailByteCount,EngineFileHandle fileHandle)
-{
-  uint32_t statusCode;
-
-  if (tailByteCount == 0) {
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,THANDOR_PTR(fileHandle));
-    if (statusCode != 0) {
-      return statusCode;
-    }
-    /* a zero-byte write truncates the file at the current position */
-    return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
-  }
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  if (PACKAGE_SCRATCH_BUFFER_BYTES < tailByteCount) {
-    return FATAL_ERROR_GENERAL_FAILURE;
-  }
-  statusCode = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  statusCode = g_FileSystemWriteExactOrFlush(tailByteCount,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
-  if (statusCode != 0) {
-    return statusCode;
-  }
-  return g_FileSystemWriteExactOrFlush(0,NULL,THANDOR_PTR(fileHandle));
-}
-
-
-/* Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
-   deleted): the archive header loses one entry and its size, everything behind the entry is moved down over
-   it through g_PackageScratchBuffer, the file is truncated there and the in-memory directory is reloaded.
-   Returns true on success; on failure returns false with the file-system error code (or
-   FATAL_ERROR_GENERAL_FAILURE when the tail does not fit the scratch buffer) in *outErrorCode, which may be
-   NULL. Called directly by Package_UpsertEntry and the save-game writer in ui/ingame/runtime.c (no callback
-   table).
-*/
-Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)
-
-{
-  PckStoredByteCount entryPackedSize;
-  int archiveEndOffset; /* archive size before the delete */
-  uint8_t *destination;
-  PckEntryHeader *foundEntry;
-  FileSystemFilePosition tailOffset; /* first byte behind the deleted entry */
-  uint32_t statusCode;
-  uint32_t tailByteCount;
-  uint32_t directoryErrorCode;
-
-  destination = g_PackageScratchBuffer;
-  foundEntry = Package_FindEntryInMount(path,fileHandle);
-  if (foundEntry == NULL) {
-    /* a missing entry counts as deleted */
-    return true;
-  }
-  entryPackedSize = foundEntry->packedSize;
-  statusCode = Package_ShrinkArchiveHeader(entryPackedSize,destination,fileHandle,&archiveEndOffset);
-  if (statusCode == 0) {
-    /* runtimePayloadOffset is the file offset of the entry header */
-    tailOffset = foundEntry->runtimePayloadOffset + foundEntry->packedSize + PCK_ENTRY_HEADER_BYTES;
-    tailByteCount = archiveEndOffset - tailOffset;
-    statusCode = Package_MoveTailOverEntry(foundEntry->runtimePayloadOffset,tailOffset,tailByteCount,fileHandle);
-    if (statusCode == 0) {
-      if (Package_ReadDirectory(fileHandle,&directoryErrorCode)) {
-        return true;
-      }
-      statusCode = directoryErrorCode;
-    }
-  }
-  if (outErrorCode != NULL) {
-    *outErrorCode = statusCode;
-  }
-  return false;
-}
-
 
 /* Package_LoadEntry for a path in no mounted package: opens the loose file (relative to the executable
    directory first, then as given) and reads it whole into a newly allocated buffer. Returns the buffer, or
@@ -509,7 +293,6 @@ static void *Package_LoadLooseFile(uint16_t *path,uint32_t *outErrorCode)
   *outErrorCode = errorCode;
   return NULL;
 }
-
 
 /* Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
    a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
@@ -561,7 +344,6 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
   return NULL;
 }
 
-
 /* Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
    and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array. Lookups scan the slots in
    the same order, so earlier mounts win. Returns true and stores the file handle in *outFileHandleOrError;
@@ -589,7 +371,6 @@ Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
   return Package_MountIntoSlot(mountSlot,path,outFileHandleOrError);
 }
 
-
 /* The mount slot holding fileHandle, or NULL when it is not mounted. A zero handle is never found (it would
    otherwise match a free slot). Used by Package_FindEntry and Package_Unmount. */
 static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
@@ -611,7 +392,6 @@ static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
   return NULL;
 }
 
-
 /* Package_FindEntry sort order: true when record later is smaller than record front, comparing the whole
    PCK_ENTRY_HEADER_BYTES record as unsigned UTF-16 code units (the path first, then whatever the output
    record held behind it). Equal records are not smaller. */
@@ -632,7 +412,6 @@ static Bool8 Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEn
   return false;
 }
 
-
 /* Exchanges two whole PCK_ENTRY_HEADER_BYTES records, dword by dword. */
 static void Package_SwapFoundEntries(PckEntryHeader *first,PckEntryHeader *second)
 
@@ -651,7 +430,6 @@ static void Package_SwapFoundEntries(PckEntryHeader *first,PckEntryHeader *secon
   }
 }
 
-
 /* Package_FindEntry, final step: exchange sort of the entryCount found records. Every record is compared
    with each later one and the two are swapped when the later one is smaller. */
 static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
@@ -668,7 +446,6 @@ static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
     }
   }
 }
-
 
 /* Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches):
    copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and sorts the records
@@ -717,7 +494,6 @@ Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeade
   return true;
 }
 
-
 /* Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
    Does nothing for a zero or unknown handle.
 */
@@ -736,7 +512,6 @@ void Package_Unmount(EngineFileHandle fileHandle)
   mountSlot->entryHeaders = NULL;
   mountSlot->entryCount = 0;
 }
-
 
 /* Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
@@ -762,7 +537,6 @@ Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
   } while (patternCodeUnit != 0);
   return false; /* both ended together */
 }
-
 
 /* Reads the packed data of entry from the package fileHandle into g_PackageScratchBuffer and unpacks it into
    destination with the decoder of its compression method (g_PckDecoderTable). Returns true on success with the
@@ -797,7 +571,6 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
   return false;
 }
 
-
 /* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
    in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
    many code units as the path has, running past the terminator and, for paths
@@ -830,7 +603,6 @@ THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
   }
   return;
 }
-
 
 /* Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in
    lower case) in the package mounted as fileHandle and returns its entry header. Returns NULL when no entry
@@ -897,7 +669,6 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
   return NULL;
 }
 
-
 /* Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
    package that has the entry wins. The path is lowercased in place first (package paths are stored in lower
    case). Returns the entry header and stores the package's handle in *outFileHandle; returns NULL (leaving
@@ -960,7 +731,6 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
   return NULL;
 }
 
-
 /* Package_ReadDirectory, once the slot is found: reads the archive header and every entry header of
    fileHandle into mountSlot. Returns 0 or the file-system error code of the failed seek/read. */
 static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFileHandle fileHandle)
@@ -1000,7 +770,6 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
   return 0;
 }
 
-
 /* Loads the directory of the mounted package fileHandle into its mount slot: reads the archive header for the
    entry count, then every entry header, recording the file offset of the entry (its header; the packed
    payload follows it) and seeking past the payload to the next header. Returns true on success; false with
@@ -1035,4 +804,3 @@ Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
   }
   return false;
 }
-

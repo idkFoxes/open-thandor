@@ -39,47 +39,92 @@ endif()
 
 add_library(thandor_curated STATIC
     src/assets/army/catalog.cpp
+    src/assets/army/editor_cycling.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
+    src/assets/model/mesh_raycast.cpp
+    src/assets/package/archive_write.cpp
     src/assets/package/codec.cpp
+    src/assets/package/resource_loader.cpp
     src/assets/package/runtime.cpp
-    src/assets/resource/runtime.cpp
+    src/assets/resource/savegame_prepare.cpp
+    src/assets/rom/menu_room.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
+    src/assets/scenario/frontend_selection.cpp
+    src/assets/scenario/session_load.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/font.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
+    src/assets/text/richtext_markup.cpp
+    src/assets/text/richtext_render.cpp
+    src/audio/backend/null_backend.cpp
     src/audio/backend/runtime.cpp
     src/audio/codec/sam.cpp
+    src/audio/codec/sam_encoder.cpp
     src/audio/spatial/runtime.cpp
+    src/core/error/fatal_dialog.cpp
     src/core/error/runtime.cpp
     src/core/layout_checks.cpp
-    src/core/math/fixed.cpp
+    src/core/math/fixed_transform.cpp
+    src/core/math/fixed_trig.cpp
+    src/core/math/fixed_vector.cpp
     src/core/math/geometry.cpp
     src/core/math/interpolation.cpp
+    src/core/math/motion_spline.cpp
     src/core/math/random.cpp
+    src/core/math/spline.cpp
     src/core/memory/allocator.cpp
     src/core/memory/synchronization.cpp
     src/core/settings/persistent.cpp
     src/core/text/path.cpp
     src/core/text/string.cpp
     src/gameplay/ai/combat.cpp
+    src/gameplay/ai/construction.cpp
+    src/gameplay/ai/perception.cpp
     src/gameplay/ai/placement.cpp
     src/gameplay/ai/planning.cpp
+    src/gameplay/ai/purchasing.cpp
     src/gameplay/ai/technology.cpp
     src/gameplay/ai/units.cpp
     src/gameplay/ai/workspaces.cpp
+    src/gameplay/army/aircraft.cpp
     src/gameplay/army/audio.cpp
+    src/gameplay/army/class_dispatch.cpp
+    src/gameplay/army/class_updates.cpp
+    src/gameplay/army/collision.cpp
     src/gameplay/army/combat.cpp
-    src/gameplay/army/movement.cpp
+    src/gameplay/army/damage.cpp
+    src/gameplay/army/drive_banking.cpp
+    src/gameplay/army/drive_common.cpp
+    src/gameplay/army/drive_ground.cpp
+    src/gameplay/army/factory.cpp
+    src/gameplay/army/move_orders.cpp
     src/gameplay/army/placement.cpp
-    src/gameplay/army/runtime.cpp
+    src/gameplay/army/placement_contact.cpp
+    src/gameplay/army/placement_release.cpp
+    src/gameplay/army/pool.cpp
+    src/gameplay/army/preview.cpp
+    src/gameplay/army/turrets.cpp
+    src/gameplay/army/walker.cpp
+    src/gameplay/army/weapons.cpp
+    src/gameplay/faction/army_stock.cpp
+    src/gameplay/faction/carryover.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
+    src/gameplay/input/camera_commands.cpp
+    src/gameplay/input/targeting.cpp
     src/gameplay/input/world.cpp
+    src/gameplay/selection/commands.cpp
     src/gameplay/selection/overlay.cpp
-    src/gameplay/selection/runtime.cpp
+    src/gameplay/selection/panel_cells.cpp
+    src/gameplay/selection/panel_metrics.cpp
+    src/gameplay/selection/panel_resources.cpp
+    src/gameplay/selection/preview_markers.cpp
+    src/gameplay/selection/queries.cpp
+    src/gameplay/selection/selection_set.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
@@ -113,11 +158,20 @@ add_library(thandor_curated STATIC
     src/graphics/terrain/minimap_composite.cpp
     src/graphics/terrain/terrain_render.cpp
     src/graphics/terrain/terrain_resources.cpp
+    src/movie/runtime/end_movie_ui.cpp
+    src/movie/runtime/flm_decoder.cpp
+    src/movie/runtime/flm_encoder.cpp
     src/movie/runtime/playback.cpp
+    src/movie/runtime/session_schedule.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
+    src/network/protocol/cipher.cpp
+    src/network/protocol/command_exchange.cpp
     src/network/protocol/commands.cpp
-    src/network/protocol/transfer.cpp
+    src/network/protocol/frontend_session.cpp
+    src/network/protocol/lobby.cpp
+    src/network/protocol/mailbox.cpp
+    src/network/protocol/scenario_transfer.cpp
     src/platform/bootstrap/runtime.cpp
     src/platform/filesystem/win32.cpp
     src/platform/input/devices.cpp

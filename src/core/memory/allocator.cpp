@@ -8,9 +8,9 @@
 #include <thandor/core/memory/allocator.h>
 #include <thandor/thandor.h>
 
-static_assert(sizeof(ArenaBlockHeader) == ARENA_BLOCK_HEADER_BYTES, "arena block header is 0x20 bytes");
-
 /* Module data. */
+
+static_assert(sizeof(ArenaBlockHeader) == ARENA_BLOCK_HEADER_BYTES, "arena block header is 0x20 bytes");
 
 __declspec(align(16)) MemoryApiTable g_MemoryApi = {0};
 
@@ -65,7 +65,6 @@ void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorit
   }
 }
 
-
 /* Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
    swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
    larger-priority child while that child is larger.
@@ -109,40 +108,6 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
   }
 }
 
-
-/* Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
-   candidateRecord. Inverted like all failure flags: false = found, true = not found.
-   recordCount must be at least 1.
-*/
-Bool8 DwordBlock64Array_ContainsExactRecord
-          (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
-
-{
-  int dwordsRemainingInRecord;
-  uint32_t *candidateRecordCursor;
-  Bool8 dwordsEqual;
-
-  do {
-    /* compare the 0x40 dwords until the first difference (the count is nonzero, so dwordsEqual holds the
-       last comparison) */
-    dwordsRemainingInRecord = DWORD_BLOCK64_RECORD_DWORDS;
-    candidateRecordCursor = candidateRecord;
-    do {
-      dwordsRemainingInRecord--;
-      dwordsEqual = *recordArray == *candidateRecordCursor;
-      recordArray++;
-      candidateRecordCursor++;
-    } while (dwordsEqual && (dwordsRemainingInRecord != 0));
-    if (dwordsEqual) {
-      return false;
-    }
-    recordArray = recordArray + dwordsRemainingInRecord; /* skip the rest of the mismatching record */
-    recordCount--;
-  } while (recordCount != 0);
-  return true;
-}
-
-
 /* Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the
    ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block. Returns the raw HeapAlloc
    pointer; if the heap cannot be created or allocated the game exits with the heap error message.
@@ -179,7 +144,6 @@ void * __cdecl ArenaHeap_Init(void)
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextHeapAllocationFailed,0),true);
 }
 
-
 /* Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
 */
 void ArenaHeap_Shutdown(void)
@@ -189,7 +153,6 @@ void ArenaHeap_Shutdown(void)
   HeapDestroy(g_Arena.processHeap);
   return;
 }
-
 
 /* The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
    bytes, splitting off the rest of the block as a new free block when it is large enough. Returns 0 with
@@ -245,7 +208,6 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreePayloadBytes,g_PackageLastErrorPath);
   return FATAL_ERROR_ARENA_EXHAUSTED;
 }
-
 
 /* Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or
    ARENA_HEAP_CORRUPT when the block chain is corrupt.
@@ -316,7 +278,6 @@ uint32_t ArenaHeap_Free(void *memory)
   return 0;
 }
 
-
 /* Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0
    with its payload pointer in *outAllocation and its size in *outBlockSize, for callers that shrink it
    afterwards with ArenaHeap_ShrinkInPlace. Returns FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
@@ -352,7 +313,6 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
   *outAllocation = largestFreeBlock + 1;
   return 0;
 }
-
 
 /* Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block,
    merged with a free following block (g_MemoryApi.shrinkInPlace). A tail too small to split is kept.
@@ -405,7 +365,6 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   }
   return 0;
 }
-
 
 /* Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
    returns 0 with the old cursor in *outBase and advances it by bytes, or FATAL_ERROR_GENERAL_FAILURE

@@ -10,69 +10,6 @@
 
 /* Implementation ownership: gameplay/army/audio. */
 
-/* Replaces one image of a freshly loaded faction graphics ('gfx') asset with the image a frontend player sent in
-   his snapshot payload, so the player's own picture shows in the game: the payload's 256 RGB palette entries
-   become opaque ARGB entries (pure black stays transparent), followed by 0x1000 bytes of pixel data. Nothing
-   changes when no player with a complete snapshot has frontendPlayerRuntimeId as faction assignment.
-*/
-void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
-          ArmyGraphicsAssetAddress32 armyGraphicsAsset)
-
-{
-  int pixelDataOffset;
-  uint32_t paletteColor;
-  FrontendPlayerRuntimeBlockCount remainingBlocks;
-  int remainingCount;
-  FrontendPlayerRuntimeRecord *playerRecord;
-  uint8_t *payloadCursor;
-  uint32_t *destinationCursor;
-
-  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
-  playerRecord = g_FrontendPlayerRuntimeBlocks;
-  while ((frontendPlayerRuntimeId != (playerRecord->factionAssignment).factionAssignmentIndex ||
-         ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
-    playerRecord++;
-    remainingBlocks = remainingBlocks - 1;
-    if (remainingBlocks == 0) {
-      return;
-    }
-  }
-  payloadCursor = playerRecord->snapshotPayload;
-  /* The asset is a texture source asset; the replaced image is subresource 0x71 of its table (entry at table
-     offset + 0xE20). Its paletteIndex selects one of the 0x800-byte palettes (256 8-byte entries) from asset
-     +0x200, its dataOffset locates the pixel data. */
-  pixelDataOffset =
-       ((GraphicsTextureSourceEntry *)
-        (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.subresourceTableOffset +
-        armyGraphicsAsset))[ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].dataOffset;
-  destinationCursor = (uint32_t *)(((GraphicsTextureSourceEntry *)
-                                    (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.
-                                     subresourceTableOffset + armyGraphicsAsset))
-                                   [ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].paletteIndex * ARMY_GRAPHICS_PALETTE_BYTES
-                    + ARMY_GRAPHICS_PALETTE_TABLE_OFFSET + armyGraphicsAsset);
-  for (remainingCount = 256; remainingCount != 0; remainingCount--) {
-    /* reads four bytes of a three-byte entry; the fourth is replaced by the alpha */
-    paletteColor = *(uint32_t *)payloadCursor;
-    if ((paletteColor & 0xffffff) == 0) {
-      paletteColor = paletteColor & 0xffffff;
-    }
-    else {
-      paletteColor = paletteColor | 0xff000000;
-    }
-    *destinationCursor = paletteColor;
-    payloadCursor = payloadCursor + 3;
-    destinationCursor = destinationCursor + 2;
-  }
-  destinationCursor = (uint32_t *)(pixelDataOffset + armyGraphicsAsset);
-  for (remainingCount = ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS; remainingCount != 0; remainingCount--) {
-    *destinationCursor = *(uint32_t *)payloadCursor;
-    payloadCursor = payloadCursor + 4;
-    destinationCursor++;
-  }
-  return;
-}
-
-
 /* Feeds the world sound slot soundSlotIndex (0 = none; out of range or no slot table = none) with the position of
    modelNode, using the positioned-sound distance and gain of definition, when TerrainGrid_TestProjectedCellMaskBits01
    reports occupancy bit 0 or 1 of the active faction at the model's cell. Shared by the class sound updates below. */
@@ -99,7 +36,6 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
   }
   return;
 }
-
 
 /* Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index
    turningLoopSoundSlotIndex of the model's definition) and the movement sound (movingLoopSoundSlotIndex) follow
@@ -130,7 +66,6 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
   return;
 }
 
-
 /* Picks the positioned-sound update by the placement contact kind (placementContactKindIndex) of the model's
    definition: kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
    ArmyRuntimeClass_UpdateWaterPositionedSounds, every other kind ArmyRuntimeClass_UpdateGroundPositionedSounds.
@@ -150,7 +85,6 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
   }
   return;
 }
-
 
 /* Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
    turn sound (turningLoopSoundSlotIndex) and movement sound (movingLoopSoundSlotIndex) of the definition follow
@@ -179,7 +113,6 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
   return;
 }
 
-
 /* Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex) with the turret while it
    turns in pitch (pitchTurnVelocityAngle16) or yaw (yawTurnVelocityAngle16), if its cell passes
    TerrainGrid_TestProjectedCellMaskBits01.
@@ -200,7 +133,6 @@ void ArmyRuntimeAudio_UpdateTurretTurnSound
   }
   return;
 }
-
 
 /* Structure factory sound (class 11): moves the looping sound (definition loopingSoundSlotIndex) with the model
    unless it is switched off (state flag 0x1), and only while it researches (flag 0x40) or builds (behaviorState
@@ -223,7 +155,6 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
   }
   return;
 }
-
 
 /* Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition
    loopingSoundSlotIndex) under the same condition as ArmyRuntimeAudio_UpdateStructureFactorySound (not switched
@@ -255,7 +186,6 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
   return;
 }
 
-
 /* Unconditionally moves the sound whose slot index is the definition's loopingSoundSlotIndex with the unit, when
    the unit's cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21], which
@@ -272,7 +202,6 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
              definition->loopingSoundSlotIndex);
   return;
 }
-
 
 /* Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
    the looping one (definition loopingSoundSlotIndex) while it is not switched off and researches (flag 0x40)
@@ -304,7 +233,6 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
   return;
 }
 
-
 /* Runs the looping positioned-sound update only while the model researches (state flag 0x40).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
@@ -318,3 +246,246 @@ void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRu
   return;
 }
 
+/* One looping sound of ArmyRuntimeClass_UpdateGroundPositionedSounds and
+   ArmyRuntimeClass_UpdateWaterPositionedSounds (slot index soundSlotIndex in the world's
+   sound slot array; 0, out of range or an empty slot is ignored) kept at the model's root position, only where
+   the active faction's cell bits 0/1 are set. */
+static void ArmyRuntimeClass_UpdateGroundLoopSoundAtModel(WorldRuntimeContext *worldRuntime,
+          ModelRuntimeSlot *modelRuntime,ModelDefinition *definition,uint32_t soundSlotIndex)
+{
+  SpatialSoundSlot *soundSlot;
+  GraphicsFixedVec3 *worldPosition;
+  Bool8 cellMasked;
+
+  if ((soundSlotIndex == 0) || (soundSlotIndex >= worldRuntime->dwordArrayCount) ||
+      (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  if (soundSlot == NULL) {
+    return;
+  }
+  worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
+  cellMasked = TerrainGrid_TestProjectedCellMaskBits01
+                    ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,worldPosition->x,
+                     worldRuntime);
+  if (!cellMasked) {
+    SpatialSound_UpdateDesiredPositionedGains
+              (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,worldPosition,
+               soundSlot);
+  }
+}
+
+/* Sound update of a moving ground army, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
+   .classMethodD[1] and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
+   every placement kind but water). While the model turns it keeps the turning sound (definition
+   turningLoopSoundSlotIndex) at the model's position; while it turns or drives it keeps the movement
+   sound (movingLoopSoundSlotIndex) there; both only
+   where the active faction's cell bits 0/1 are set (TerrainGrid_TestProjectedCellMaskBits01). Identical to
+   ArmyRuntimeClass_UpdateWaterPositionedSounds except for the reload below.
+*/
+
+void ArmyRuntimeClass_UpdateGroundPositionedSounds(WorldRuntimeContext *worldRuntime,
+          ModelRuntimeSlot *modelRuntime)
+
+{
+  ModelDefinition *definition;
+
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((modelRuntime->movementControl).turnVelocityAngle16 == 0) {
+    if ((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
+      return;
+    }
+  }
+  else {
+    ArmyRuntimeClass_UpdateGroundLoopSoundAtModel
+              (worldRuntime,modelRuntime,definition,definition->turningLoopSoundSlotIndex);
+    /* Reload (the original skips this after a masked cell; nothing in between writes it). */
+    definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  }
+  ArmyRuntimeClass_UpdateGroundLoopSoundAtModel
+            (worldRuntime,modelRuntime,definition,definition->movingLoopSoundSlotIndex);
+}
+
+/* Sound update of a moving army on water, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
+   .classMethodD[19] and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
+   placement kind 1 = water surface). Same as ArmyRuntimeClass_UpdateGroundPositionedSounds: the turning sound
+   (definition turningLoopSoundSlotIndex) while turning, the movement sound (movingLoopSoundSlotIndex) while
+   turning or driving, only where the active faction's cell bits 0/1 are set.
+*/
+
+void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,
+          ModelRuntimeSlot *modelRuntime)
+
+{
+  ModelDefinition *definition;
+
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((modelRuntime->movementControl).turnVelocityAngle16 == 0) {
+    if ((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
+      return;
+    }
+  }
+  else {
+    ArmyRuntimeClass_UpdateGroundLoopSoundAtModel
+              (worldRuntime,modelRuntime,definition,definition->turningLoopSoundSlotIndex);
+  }
+  ArmyRuntimeClass_UpdateGroundLoopSoundAtModel
+            (worldRuntime,modelRuntime,definition,definition->movingLoopSoundSlotIndex);
+}
+
+/* Keeps the model's looping sound (its definition's loopingSoundSlotIndex) at the model's position while
+   state flag 1 (switched off) is clear and the active faction's cell bits 0/1 are set there. Reached through
+   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[10], [14] and [16] and through
+   ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled (classMethodD[4]).
+*/
+void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
+
+{
+  GraphicsFixedVec3 *worldPosition;
+  ModelDefinition *definition;
+  uint32_t soundSlotIndex;
+  SpatialSoundSlot *slot;
+  Bool8 cellMasked;
+
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  soundSlotIndex = definition->loopingSoundSlotIndex;
+  if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) || (soundSlotIndex == 0) ||
+      (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  if (slot == NULL) {
+    return;
+  }
+  worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
+  cellMasked = TerrainGrid_TestProjectedCellMaskBits01
+                    ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
+                     worldPosition->x,worldRuntime);
+  if (!cellMasked) {
+    SpatialSound_UpdateDesiredPositionedGains
+              (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,worldPosition,slot);
+  }
+}
+
+/* Air-raid alert (called directly by ArmyRuntimeClass_UpdateAircraft on every tick of an attack
+   run): when the aircraft of factionIndex is hostile to the active faction and flies over a grid cell with bit
+   0x10 in the active faction's byte of the cell's occupancyMask, the sound soundAssetIndex is played
+   unpositioned at the effects gain, at most once per 16 ticks of the faction's relationTransitionTick.
+*/
+void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
+          SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext)
+
+{
+  DirectSoundVoiceSet **voiceSetRef;
+  FieldGridDimension gridWidthCells;
+  uint32_t activeFactionIndex;
+  int cellColumn;
+  uint32_t projectedRow;
+  int cellRow;
+  Bool8 capabilityClear;
+  FieldGridAsset *fieldGrid;
+
+  if ((soundAssetIndex == 0) || (worldContext->dwordArray == NULL) ||
+      (soundAssetIndex >= worldContext->dwordArrayCount)) {
+    return;
+  }
+  voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
+  if (voiceSetRef == NULL) {
+    return;
+  }
+  fieldGrid = worldContext->fieldGrid;
+  /* world point -> grid cell (fixed-point projection, rounded) */
+  projectedRow = FIXED_MUL_SHR(worldYQ12,FIELD_GRID_WORLD_Y_TO_ROW_Q20,Q20_SHIFT + 1);
+  gridWidthCells = fieldGrid->gridWidth;
+  cellColumn = (int)((FIXED_MUL_SHR(worldXQ12,FIELD_GRID_WORLD_X_TO_COLUMN_Q20,Q20_SHIFT) - projectedRow) + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
+  if (cellColumn < 0) {
+    return;
+  }
+  cellRow = (int)(projectedRow * 2 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
+  if ((cellRow < 0) || (cellColumn >= (int)gridWidthCells) || (cellRow >= (int)fieldGrid->gridHeight)) {
+    return;
+  }
+  activeFactionIndex = worldContext->activeFactionRuntimeIndex;
+  if (factionIndex == activeFactionIndex) {
+    return;
+  }
+  capabilityClear = GameFactionRuntime_TestCapabilityBitClear(activeFactionIndex,factionIndex);
+  /* the active faction's byte of the cell's occupancy mask */
+  if ((capabilityClear) &&
+      ((((uint8_t *)&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)].occupancyMask)[activeFactionIndex] &
+        ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
+      (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
+    g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;
+    g_SoundPlayOneShot(g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef,NULL);
+  }
+}
+
+/* Plays the one-shot sound secondarySoundIndex of the model's definition at the model's position, with the
+   definition's range and gain (positionedSoundMaximumDistanceQ12/positionedSoundGainQ15), where the active
+   faction's cell bits 0/1 are set. Called directly by ArmyRuntimeClass_UpdateAircraft for the home pad when an
+   aircraft lands or takes off (the pad's platform sound).
+*/
+void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime)
+
+{
+  ModelDefinition *definition;
+  ModelRuntimeNode *rootNode;
+  uint32_t soundAssetIndex;
+  DirectSoundVoiceSet **voiceSetRef;
+  Bool8 cellMasked;
+
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  soundAssetIndex = definition->secondarySoundIndex;
+  if ((soundAssetIndex == 0) || (soundAssetIndex >= worldRuntime->dwordArrayCount) ||
+      (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  if (voiceSetRef == NULL) {
+    return;
+  }
+  cellMasked = TerrainGrid_TestProjectedCellMaskBits01
+                    ((rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x,worldRuntime);
+  if (!cellMasked) {
+    SpatialSound_PlayPositionedOneShot
+              (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
+               &(rootNode->worldTransform).translation,voiceSetRef);
+  }
+}
+
+/* Plays the one-shot sound primarySoundIndex of the model's definition at the model's position, with the
+   definition's range and gain (positionedSoundMaximumDistanceQ12/positionedSoundGainQ15), where the active
+   faction's cell bits 0/1 are set. Called directly by ArmyRuntimeClass_UpdateAircraft when a returning aircraft
+   opens its home pad. Despite the name no effect is spawned; it is the hatch sound class 22 plays itself in
+   ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode.
+*/
+void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldContext)
+
+{
+  ModelDefinition *definition;
+  ModelRuntimeNode *rootNode;
+  uint32_t soundAssetIndex;
+  DirectSoundVoiceSet **voiceSetRef;
+  Bool8 cellMasked;
+
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  soundAssetIndex = definition->primarySoundIndex;
+  if ((soundAssetIndex == 0) || (soundAssetIndex >= worldContext->dwordArrayCount) ||
+      (worldContext->dwordArray == NULL)) {
+    return;
+  }
+  voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
+  if (voiceSetRef == NULL) {
+    return;
+  }
+  cellMasked = TerrainGrid_TestProjectedCellMaskBits01
+                    ((rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x,worldContext);
+  if (!cellMasked) {
+    SpatialSound_PlayPositionedOneShot
+              (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
+               &(rootNode->worldTransform).translation,voiceSetRef);
+  }
+}

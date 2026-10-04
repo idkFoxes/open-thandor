@@ -20,222 +20,6 @@ ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {0};
 
 /* Implementation ownership: assets/army/catalog. */
 
-/* Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
-   otherwise moves on to the next such id with wrap-around. Called by
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
-   Returns the placeable unit id.
-*/
-ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId)
-
-{
-  if (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
-    return ArmyAssetRegistry_FindNextPlaceableUnitWrapped(recordId);
-  }
-  return recordId;
-}
-
-
-/* Steps the editor's unit-placement army id to the next placeable unit (flag 0x0100 set, 0x0200 clear). Ids of
-   other units (0x0200 clear) are skipped; at the end of the run of unit ids it goes back to the first id of that
-   run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10011) in unit-placement mode.
-   Returns the new id.
-*/
-ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
-
-{
-  ArmyAssetId baseId;
-  Bool8 broaderAbsent;
-  ArmyAssetId candidateId;
-
-  baseId = recordId;
-  candidateId = baseId + 1;
-  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
-    recordId = candidateId;
-    if (broaderAbsent) {
-      /* Left the run: walk back to its other end. */
-      do {
-        baseId--;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
-        recordId = baseId;
-      } while (!broaderAbsent);
-    }
-    baseId = recordId;
-    candidateId = baseId + 1;
-  }
-  return candidateId;
-}
-
-
-/* Steps the editor's unit-placement army id to the previous placeable unit (flag 0x0100 set, 0x0200 clear).
-   Ids of other units are skipped; at the start of the run of unit ids it goes forward to the last id of that
-   run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10019) in unit-placement mode.
-   Returns the new id.
-*/
-ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
-
-{
-  ArmyAssetId baseId;
-  Bool8 broaderAbsent;
-  ArmyAssetId candidateId;
-
-  baseId = recordId;
-  candidateId = baseId - 1;
-  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
-    recordId = candidateId;
-    if (broaderAbsent) {
-      /* Left the run: walk back to its other end. */
-      do {
-        baseId++;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
-        recordId = baseId;
-      } while (!broaderAbsent);
-    }
-    baseId = recordId;
-    candidateId = baseId - 1;
-  }
-  return candidateId;
-}
-
-
-/* Moves the editor's unit-placement army id back out of its current run of unit ids (flag 0x0200 clear) and
-   returns the nearest placeable unit (0x0100 set, 0x0200 clear) below it, wrapping from below 0 to 0x1000. Unlike
-   the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10014) in unit-placement mode.
-*/
-ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId)
-
-{
-  /* Leave the current run of unit ids first. */
-  while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
-    recordId--;
-    if ((int)recordId < 0) {
-      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
-      break;
-    }
-  }
-  /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
-    recordId--;
-    if ((int)recordId < 0) {
-      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
-    }
-  }
-  return recordId;
-}
-
-
-/* Keeps the editor's object-placement army id when it names a placeable object (flags 0x0100 and 0x0200 set),
-   otherwise moves on to the next such id with wrap-around. Called by
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
-   Returns the placeable object id.
-*/
-ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId)
-
-{
-  if (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
-    return ArmyAssetRegistry_FindNextPlaceableObjectWrapped(recordId);
-  }
-  return recordId;
-}
-
-
-/* Steps the editor's object-placement army id to the next placeable object (flags 0x0100 and 0x0200 set). Other
-   objects (0x0200 set) are skipped; at the end of the run of object ids it goes back to the first id of that run,
-   so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10011) in object-placement mode.
-   Returns the new id.
-*/
-ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
-
-{
-  ArmyAssetId baseId;
-  Bool8 broaderAbsent;
-  ArmyAssetId candidateId;
-
-  baseId = recordId;
-  candidateId = baseId + 1;
-  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
-    recordId = candidateId;
-    if (broaderAbsent) {
-      /* Left the run: walk back to its other end. */
-      do {
-        baseId--;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
-        recordId = baseId;
-      } while (!broaderAbsent);
-    }
-    baseId = recordId;
-    candidateId = baseId + 1;
-  }
-  return candidateId;
-}
-
-
-/* Steps the editor's object-placement army id to the previous placeable object (flags 0x0100 and 0x0200 set).
-   Other objects are skipped; at the start of the run of object ids it goes forward to the last id of that run,
-   so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10019) in object-placement mode.
-   Returns the new id.
-*/
-ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
-
-{
-  ArmyAssetId baseId;
-  Bool8 broaderAbsent;
-  ArmyAssetId candidateId;
-
-  baseId = recordId;
-  candidateId = baseId - 1;
-  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
-    recordId = candidateId;
-    if (broaderAbsent) {
-      /* Left the run: walk back to its other end. */
-      do {
-        baseId++;
-        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
-        recordId = baseId;
-      } while (!broaderAbsent);
-    }
-    baseId = recordId;
-    candidateId = baseId - 1;
-  }
-  return candidateId;
-}
-
-
-/* Moves the editor's object-placement army id back out of its current run of object ids (flag 0x0200 set) and
-   returns the nearest placeable object (0x0100 and 0x0200 set) below it, wrapping from below 0 to 0x1000. Called
-   from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (command 0x10014)
-   in object-placement mode.
-*/
-ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId)
-
-{
-  /* Leave the current run of object ids first. */
-  while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
-    recordId--;
-    if ((int)recordId < 0) {
-      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
-      break;
-    }
-  }
-  /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
-    recordId--;
-    if ((int)recordId < 0) {
-      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
-    }
-  }
-  return recordId;
-}
-
-
 /* Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
    in it (the variable-size records follow the 0x200-byte header, each starting with its byte size). A wrong
    header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
@@ -264,7 +48,6 @@ uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
   return FATAL_ERROR_ARMY_ASSET_INVALID;
 }
 
-
 /* Checks whether an army asset id is registered and enabled: returns false only when the record exists
    and bit 0 (ARMY_ASSET_FLAG_ENABLED) of its flags is set, true when it is missing or disabled.
 */
@@ -278,7 +61,6 @@ Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
   }
   return (((ArmyAssetRecord *)registeredRecord)->flags & ARMY_ASSET_FLAG_ENABLED) == 0; /* disabled */
 }
-
 
 /* Checks the 16 army-asset ids linked from an army record (linkedArmyAssetIds) and returns true as soon as one
    names a registered, enabled asset whose technology is fully unlocked for the faction (every definition of its
@@ -316,41 +98,6 @@ Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
   return false;
 }
 
-
-/* Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
-   unit- and object-placement selections into their image panels on the in-game UI root. Needed because the
-   previews are drawn in the unit-placement owner faction's colours: called from the in-game keyboard dispatch
-   table g_InGameKeyboardDispatchRecords (commands 0x10012 / 0x1001A) after
-   g_UiCommandModeGOwnerFactionIndex was cycled.
-*/
-void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
-
-{
-  uintptr_t resolvedTexture;
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecord *registeredRecord;
-
-  registryCursor = g_ArmyAssetRecordRegistry;
-  for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
-       registrySlotsRemaining--) {
-    registeredRecord = (ArmyAssetRecord *)*registryCursor;
-    if (registeredRecord != NULL) {
-      g_MemoryApi.free((void *)registeredRecord->previewTexture); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
-      registeredRecord->previewTexture = 0;
-    }
-    registryCursor++;
-  }
-  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
-       (GraphicsTextureSourceAsset *)resolvedTexture;
-  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
-       (GraphicsTextureSourceAsset *)resolvedTexture;
-  return;
-}
-
-
 /* Armour of one model-tree node (maximumHealth of the definition the faction has unlocked for it) plus that of
    all its children (childCount, children). */
 static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
@@ -382,7 +129,6 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
   return ArmyAssetHierarchy_SumArmourFrom(
        factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
-
 
 /* Displayed energy (Q4 energyLoadQ4) of the definition the faction has unlocked for one model-tree node, plus
    that of its children when the definition's modelFlags have bit 0x80 set. */
@@ -418,54 +164,6 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
   return ArmyAssetHierarchy_SumEnergyFrom(
        factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
 }
-
-
-/* Moves the editor's unit-placement army id forward out of its current run of unit ids (flag 0x0200 clear) and
-   returns the next placeable unit (0x0100 set, 0x0200 clear), wrapping from 0x1000 to 0. Unlike the step
-   functions this jumps between id blocks. Called from the in-game keyboard dispatch table
-   g_InGameKeyboardDispatchRecords (command 0x10016) in unit-placement mode, and by
-   ArmyAssetRegistry_NormalizeIdToPlaceableUnit. Returns the found id; the scan only ends on a match (it loops
-   forever when no placeable unit is registered).
-*/
-ArmyAssetId ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
-
-{
-  /* Leave the current run of unit ids first. */
-  while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
-    recordId++;
-  }
-  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
-    recordId++;
-    if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
-      recordId = 0;
-    }
-  }
-  return recordId;
-}
-
-
-/* Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
-   returns the next placeable object (0x0100 and 0x0200 set), wrapping from 0x1000 to 0. Called from the in-game
-   keyboard dispatch table g_InGameKeyboardDispatchRecords (command 0x10016) in
-   object-placement mode, and by ArmyAssetRegistry_NormalizeIdToPlaceableObject. Returns the found id; the scan
-   only ends on a match (it loops forever when no placeable object is registered).
-*/
-ArmyAssetId ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId)
-
-{
-  /* Leave the current run of object ids first. */
-  while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
-    recordId++;
-  }
-  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
-    recordId++;
-    if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
-      recordId = 0;
-    }
-  }
-  return recordId;
-}
-
 
 /* Relocates one node of an army record's model tree and all of its children (children[], childCount)
    against assetBase, adding each node's model-definition build costs (looked up by linkedDefinitionIds[0])
@@ -537,48 +235,6 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
   return FATAL_ERROR_ARMY_REGISTRY_FULL;
 }
 
-
-/* Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
-   cached in the record (previewTexture); on the first request it is rendered in the unit-placement
-   owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
-   Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
-   ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected.
-*/
-uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
-
-{
-  ArmyAssetRecord *registeredRecord;
-  int slotIndex;
-  GraphicsTextureResource *previewTexture;
-  FactionRuntimeIndex factionIndex;
-
-  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
-    registeredRecord = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
-      continue;
-    }
-    if (registeredRecord->previewTexture != 0) {
-      return registeredRecord->previewTexture;
-    }
-    factionIndex = g_UiCommandModeGOwnerFactionIndex;
-    if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
-      factionIndex = 0;
-    }
-    previewTexture = ArmyRuntime_RenderPreviewTexture
-                      (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
-                       INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
-                       factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
-    if (previewTexture == NULL) {
-      return 0;
-    }
-    registeredRecord->previewTexture = (uint32_t)previewTexture; /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
-    return (uintptr_t)previewTexture;
-  }
-  return 0; /* unknown id */
-}
-
-
 /* Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
    *outRecord; an unknown id is written as decimal text to g_PackageLastErrorPath and returns
    FATAL_ERROR_ARMY_ID_NOT_FOUND.
@@ -604,7 +260,6 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
   return FATAL_ERROR_ARMY_ID_NOT_FOUND;
 }
 
-
 /* Returns 0 when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags clear;
    1 otherwise. Several records may share an id, so the scan goes on past a match
    with the wrong flags. Predicate of the editor's unit-placement id searches
@@ -626,7 +281,6 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
   return 1;
 }
 
-
 /* Returns 0 when some registered army record with this id is an object, i.e. has flag 0x0200 of its flags set;
    1 otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
@@ -646,7 +300,6 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
   }
   return 1;
 }
-
 
 /* Returns 0 when some registered army record with this id is a placeable unit (flags with 0x0100 set and 0x0200
    clear); 1 otherwise. The id test of the editor's unit-placement list
@@ -669,7 +322,6 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
   return 1;
 }
 
-
 /* Returns 0 when some registered army record with this id is a placeable object (flags with 0x0100 and 0x0200
    set); 1 otherwise. The id test of the editor's object-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flags0100And0200).
@@ -690,4 +342,3 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId)
   }
   return 1;
 }
-
