@@ -150,7 +150,7 @@ The bump "1.0.6" therefore matches the series, with two caveats:
 
 | # | Place | What | May change to 1.0.6? |
 |---|---|---|---|
-| 1 | `CMakeLists.txt:2` `project(thandor_curated_reference C CXX)` | no version | **Yes: make this the single source**, `project(... VERSION 1.0.6 ...)` |
+| 1 | `CMakeLists.txt:2` `project(open_thandor C CXX)` | no version | **Yes: make this the single source**, `project(... VERSION 1.0.6 ...)` |
 | 2 | (missing) exe VERSIONINFO resource | does not exist. There is no `.rc` in the repo; the window icon is loaded at runtime from `thandor.ico` (`src/platform/sdl3/window_icon.cpp:42`) | **Yes: new**, generated from #1 (FileVersion/ProductVersion 1.0.6.0, ProductName "Thandor", FileDescription "Thandor – Open Thandor 1.0.6") |
 | 3 | `thandor.log` | logs the SDL version only (`src/platform/sdl3/platform.cpp:111`) | **Yes: add** one line "Open Thandor 1.0.6" at start (useful for crash reports) |
 | 4 | `src/network/protocol/lobby.cpp:15-16` `g_GameVersionUtf16 = L"1.5.45"`, used at `lobby.cpp:294-297` | the host puts it into text 0x211A (`include/thandor/network/protocol/lobby.h:45`, "selector 0 = game version") and sends the result as `sessionTitleUtf16[20]` in packet 0x50001 (`include/thandor/network/protocol/types.h:156`) to every original or Open Thandor client that browses sessions | **Do NOT change.** It is the original exe's build string and goes over the wire. Nothing compares it (only display), but players of the original see it in the session list, and keeping "1.5.45" keeps us identical to a Patch 5 host. A changed value would also change the network-test traffic |
@@ -342,7 +342,7 @@ At build time it could be taken from the game folder given to CMake.
 
 ## 6. Build integration
 
-**Single version source:** `CMakeLists.txt:2` becomes `project(thandor_curated_reference VERSION 1.0.6 LANGUAGES C CXX)`.
+**Single version source:** `CMakeLists.txt:2` becomes `project(open_thandor VERSION 1.0.6 LANGUAGES C CXX)`.
 From there:
 
 - `configure_file(include/thandor/version.h.in ${CMAKE_BINARY_DIR}/generated/thandor/version.h)` with
