@@ -17,6 +17,24 @@ static uint32_t g_FrontendFactionAssignmentReadyStateGeneration = 0;
 
 /* Implementation ownership: ui/frontend/faction_setup. */
 
+/* The original indexes the seven-entry row tables (and factionLifecycleStates[rowIndex + 1]) with the row index
+   of a frontend command without a check; bounded here because in a network game the command (and its row
+   index) comes from a peer. Rows 0..6 pass; anything else is dropped (logged once). */
+static bool FrontendFactionSetup_IsValidRowIndex(FrontendFactionAssignmentIndex rowIndex,const char *commandName)
+
+{
+  static int s_loggedInvalidRowIndex;
+
+  if (rowIndex >= 0 && rowIndex < 7) {
+    return true;
+  }
+  if (s_loggedInvalidRowIndex == 0) {
+    s_loggedInvalidRowIndex = 1;
+    Thandor_Log("faction setup: %s row index %d out of range, command dropped",commandName,rowIndex);
+  }
+  return false;
+}
+
 /* Handler of action 0x2044 (slot 68 of g_FrontendUiActionHandlersPage20.handlers00_54), the colour buttons of
    the faction setup page: finds the row of the pressed button in the factionControls offset table and cycles
    that faction's colour (FrontendFactionSetup_CycleFactionColour directly in a local game,
@@ -139,6 +157,9 @@ void FrontendFactionSetup_CycleFactionColour
   int selectionTextCycleLength;
   int *selectionCycleCounterField;
   
+  if (!FrontendFactionSetup_IsValidRowIndex(rowIndex,"cycle colour")) {
+    return;
+  }
   loadedLevelAsset = g_FrontendLoadedLevelAsset;
   selectionTextCycleLength = 7;
   playerRecordsRemaining = g_FrontendPlayerRuntimeBlockCount;
@@ -183,6 +204,9 @@ void FrontendFactionSetup_ToggleFactionActive
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
+  if (!FrontendFactionSetup_IsValidRowIndex(rowIndex,"toggle active")) {
+    return;
+  }
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
@@ -215,6 +239,9 @@ void FrontendFactionSetup_ChooseFaction
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   FrontendPlayerRuntimeRecord *matchedPlayerBlock;
 
+  if (!FrontendFactionSetup_IsValidRowIndex(rowIndex,"choose faction")) {
+    return;
+  }
   selectedControl =
        THANDOR_UI_AT(g_FrontendRootNode,
                      g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);

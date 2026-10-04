@@ -26,6 +26,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   uint32_t bufferBytes;
   GraphicsTextureSourceAsset *creditsTexture;
   void *blendedBufferPayload;
+  void *maskBufferPayload;
   GraphicsTextureLogicalSize textureSizeResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -40,7 +41,10 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
     (frontendCreditsView->creditsMaskRuntime).textureSource = creditsTexture;
     textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,creditsTexture);
     bufferBytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
-    if (g_MemoryApi.alloc(bufferBytes,(void **)&(frontendCreditsView->creditsMaskRuntime).maskPixels) == 0) {
+    /* The original lets the allocator store the pointer straight into maskPixels; that field is a 32-bit
+       slot here, so the 64-bit pointer goes through a local. */
+    if (g_MemoryApi.alloc(bufferBytes,&maskBufferPayload) == 0) {
+      (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)maskBufferPayload;
       if (g_MemoryApi.alloc(bufferBytes,&blendedBufferPayload) == 0) {
         /* blendedSourcePixels is the second work buffer */
         (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uintptr_t)blendedBufferPayload;
