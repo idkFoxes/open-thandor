@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/lobby.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -80,6 +81,30 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
   } while (commandCount != 0);
 }
 
+/* Not in the original: makes a UTF-16 text received from a peer safe to draw. Up to its terminator, code
+   units >= 0x8000 (rich-text command codes: 0x8018/0x8019/0x801A make the text renderer follow embedded
+   pointers, others switch fonts) become '?', and a text without terminator gets one in its last unit. Returns
+   whether anything was changed. Texts the original sends (typed names, "<n>ms") hold no command codes and are
+   terminated within unitCount, so they stay byte-identical. */
+static Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
+{
+  int unitIndex;
+  Bool8 changed;
+
+  changed = false;
+  for (unitIndex = 0; unitIndex < unitCount; unitIndex++) {
+    if (text[unitIndex] == 0) {
+      return changed;
+    }
+    if (text[unitIndex] >= 0x8000) {
+      text[unitIndex] = '?';
+      changed = true;
+    }
+  }
+  text[unitCount - 1] = 0;
+  return true;
+}
+
 /* Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the
    player's name; a non-zero expected block count starts the session and switches to
    FRONTEND_NETWORK_STATE_CLIENT_STARTING) and the host's lobby command batches, whose commands it executes
@@ -104,8 +129,37 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
        FRONTEND_PACKET_40008_SESSION_PLAYER_ROW) &&
       (g_FrontendSessionToken == packet->packet40008LobbyRosterSnapshot.header.sequenceToken) &&
       (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder == senderEndpoint->ipv4AddressNetworkOrder)) {
+    /* The original takes any pending session player count; it becomes the number of player snapshots the
+       client waits for and walks over the 8 player records. Bounded here because the original host sends
+       g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount, at most 8 players: a larger
+       count drops the whole packet. */
+    if (packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount > 8) {
+      static Bool8 s_pendingCountLogged = false;
+      if (!s_pendingCountLogged) {
+        s_pendingCountLogged = true;
+        Thandor_Log("network: session packet with %u pending players (more than 8), ignored",
+                    (unsigned)packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount);
+      }
+      return;
+    }
     playerCount = packet->packet40008LobbyRosterSnapshot.playerCount;
     if ((packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex < 8) && (playerCount < 9)) {
+      /* The original copies the name (into the list row and the player record) and the ping text raw, so a
+         peer could embed rich-text command codes or leave them unterminated. Bounded here because the
+         original host sends a typed name whose unit 19 it zeroed on admission
+         (FrontendTransfer_AdmitJoiningPlayer) and "<n>ms": both are cleaned in the packet before the copies,
+         and valid texts are unchanged. */
+      if (FrontendTransfer_SanitizePeerTextUtf16
+                ((uint16_t *)packet->packet40008LobbyRosterSnapshot.playerDescriptorPayload,20) |
+          FrontendTransfer_SanitizePeerTextUtf16
+                (packet->packet40008LobbyRosterSnapshot.selectedPlayerStatusTextUtf16,16)) {
+        static Bool8 s_playerTextLogged = false;
+        if (!s_playerTextLogged) {
+          s_playerTextLogged = true;
+          Thandor_Log("network: session packet player name or ping text with command codes or without "
+                      "terminator, cleaned");
+        }
+      }
       packetCursor = (uint32_t *)packet;
       playerRowCursor = (uint32_t *)g_FrontendPlayerListRows
                         [packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex];
@@ -706,8 +760,36 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
   else if ((packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10003_JOIN_ACK) &&
            (g_FrontendSessionToken == packet->packet10000Handshake.header.sequenceToken) &&
            (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder == senderEndpoint->ipv4AddressNetworkOrder)) {
+    /* The original takes any assigned player id; it indexes 256-entry tables (and is the low byte of every
+       packed command). Bounded here because the original host assigns
+       FrontendTransfer_FindLowestFreePlayerRuntimeId, at most 0xFF: a larger id drops the join ack. */
+    if ((uint32_t)packet->packet10003JoinAck.assignedPlayerRuntimeId > 0xff) {
+      static Bool8 s_playerIdLogged = false;
+      if (!s_playerIdLogged) {
+        s_playerIdLogged = true;
+        Thandor_Log("network: join ack with player id %u (more than 255), ignored",
+                    (unsigned)packet->packet10003JoinAck.assignedPlayerRuntimeId);
+      }
+      return;
+    }
     g_LocalPlayerRuntimeId = packet->packet10003JoinAck.assignedPlayerRuntimeId;
-    g_SessionNetworkTickInterval = packet->packet10003JoinAck.networkTickInterval;
+    /* The original takes any network tick interval; 0 divides by zero in the lockstep tick. Bounded here
+       because the original host sends twice its speed slider value (1..7, also -NETZWERK="1".."7"), i.e. an
+       even value 2..14: anything else keeps the previous interval. */
+    if ((packet->packet10003JoinAck.networkTickInterval >= 2) &&
+        (packet->packet10003JoinAck.networkTickInterval <= 14) &&
+        ((packet->packet10003JoinAck.networkTickInterval & 1) == 0)) {
+      g_SessionNetworkTickInterval = packet->packet10003JoinAck.networkTickInterval;
+    }
+    else {
+      static Bool8 s_tickIntervalLogged = false;
+      if (!s_tickIntervalLogged) {
+        s_tickIntervalLogged = true;
+        Thandor_Log("network: join ack with tick interval %u (valid: even 2..14), kept %u",
+                    (unsigned)packet->packet10003JoinAck.networkTickInterval,
+                    (unsigned)g_SessionNetworkTickInterval);
+      }
+    }
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_CLIENT_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendRuntime,frontendPageStack));
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_JOINED;
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;

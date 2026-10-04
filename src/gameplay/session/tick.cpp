@@ -27,6 +27,21 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
   return;
 }
 
+/* Whether the current simulation step is a network interval boundary. The original divides by
+   g_SessionNetworkTickInterval directly; an interval of 0 is treated as 1 here (every step a boundary) so a
+   bad value cannot divide by zero. The join ack only accepts the original's even 2..14, so valid sessions
+   compute exactly the original remainder. */
+static Bool8 InGameTick_IsNetworkIntervalBoundary(void)
+{
+  uint32_t tickInterval;
+
+  tickInterval = g_SessionNetworkTickInterval;
+  if (tickInterval == 0) {
+    tickInterval = 1;
+  }
+  return g_SessionNetworkTickCounter % tickInterval == 0;
+}
+
 /* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
    the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
    be broadcast because a peer has not submitted yet. */
@@ -43,7 +58,7 @@ static Bool8 InGameTick_RunHostOrLocalLockstep(void)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
     return true;
   }
-  if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+  if (InGameTick_IsNetworkIntervalBoundary()) {
     /* interval boundary: the batch must be out before it is executed, else wait for the peers */
     while (g_HostCommandBatchSyncSentThisInterval == 0) {
       if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
@@ -81,7 +96,7 @@ static Bool8 InGameTick_RunClientLockstep(void)
   void *packet;
   void *packetEndpoint;
 
-  if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+  if (InGameTick_IsNetworkIntervalBoundary()) {
     /* interval boundary: wait for the host's command batch, then execute it */
     if (!UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken)) {
       return false;
