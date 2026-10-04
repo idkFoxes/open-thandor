@@ -23,6 +23,8 @@
 Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);
 
+void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText);
+
 void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView);
 
 void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world);

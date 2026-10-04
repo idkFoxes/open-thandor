@@ -12,8 +12,9 @@
 
 /* Module data. */
 
-/* 63 key command records and the terminator record (commandCode 0) that ends the dispatcher's scan */
-static UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
+/* 63 key command records of the original, Ctrl+I (added, see INGAME_KEY_INFO_TEXT_NEXT) and the terminator record
+   (commandCode 0) that ends the dispatcher's scan */
+static UiCommandDispatchRecord g_InGameCommandDispatchRecords[65] = {
     /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
     /*  1 */ {.commandCode = 0x30073, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567FC0},
     /*  2 */ {.commandCode = 0x30073, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568020},
@@ -77,7 +78,8 @@ static UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
     /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190},
     /* 61 */ {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0},
     /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130},
-    /* 63 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
+    /* 63 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x1},
+    /* 64 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
 uint32_t g_UiCommandRuntimeFlags = 0;
 
@@ -101,7 +103,8 @@ enum InGameKeyCommandContinuation {
   INGAME_KEY_SELECTION_SELF_DESTRUCT = 0x568130,     /* Alt+D */
   INGAME_KEY_FREE_CAMERA_TOGGLE = 0x568190,          /* Alt+C */
   INGAME_KEY_WRAPPED_STATUS_TEXT_TOGGLE = 0x5681a0,  /* O */
-  INGAME_KEY_CHEAT_OCCUPANCY_TOGGLE = 0x5681b0       /* Ctrl+Alt+V */
+  INGAME_KEY_CHEAT_OCCUPANCY_TOGGLE = 0x5681b0,      /* Ctrl+Alt+V */
+  INGAME_KEY_INFO_TEXT_NEXT = 0x1                    /* Ctrl+I; not in the original's table, no original address */
 };
 
 /* In-game key commands (the world view's dispatchCommandCallback): the first record of
@@ -126,6 +129,8 @@ enum InGameKeyCommandContinuation {
      O                      show/hide the wrapped world-view status text
      Alt+C                  toggle the free camera (no pitch and distance clamps)
      Ctrl+Alt+V             cheat, single player only: toggle occupancy bit 0 on every field cell
+     Ctrl+I                 next world view info text (InGameWorldView_ShowNextInfoText); added - the original
+                            has this key only in the map editor's keyboard handler
    Returns true when no record matches: the field is the keyboardFallback of the world view's
    pointer context (FrontendModelPointerContext_KeyboardEvent), which then passes the key on, so keys such as Esc
    reach the in-game root's hotkeys. A matched record returns false, also when the command is blocked.
@@ -294,11 +299,36 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     }
     FieldGrid_ClassifyCellFlagsToRuntimeByte(world->activeFactionRuntimeIndex,world->fieldGrid);
     break;
+  case INGAME_KEY_INFO_TEXT_NEXT:
+    /* local display only: no command, no simulation state */
+    InGameWorldView_ShowNextInfoText((UiSingleLineTextControl *)
+         THANDOR_UI_SIBLING(world,InGameUiImage,worldView,worldViewCyclingInfoText));
+    break;
   default:
     Thandor_Log("InGameUi dispatch: unhandled continuation %08x",target);
     break;
   }
   return false;
+}
+
+/* Ctrl+I in the game (InGameUiRuntime_DispatchCommandByCodeAndModifierFlags) and in the map editor
+   (InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags): shows the next world view info text. The
+   control's text field holds a text resource id: 0x112 is a blank (the default, so the line is off), 0x113 the
+   render statistics (frames per second, draw calls, texture binds and reloads per frame), 0x114 the camera
+   position, 0x115 the camera orientation, 0x116 the cursor, 0x117 the free arena bytes; after 0x117 it wraps to the
+   blank. The placeholders are filled by InGameHud_UpdateStatusCountersAndSessionPrompts every tick (the
+   statistics once a second). The choice is kept for the next session (InGameRuntime_SaveWorldViewInfoTextChoice).
+*/
+void InGameWorldView_ShowNextInfoText(UiSingleLineTextControl *infoText)
+
+{
+  uint32_t resourceId;
+
+  resourceId = (uint32_t)(uintptr_t)(uint16_t *)infoText->text + 1;
+  if (resourceId > TEXT_ID_WORLD_VIEW_INFO_LAST) {
+    resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST;
+  }
+  infoText->text = (uint16_t *)(uintptr_t)resourceId;
 }
 
 /* The world view's fieldRegion.clearTransientStateCallback: resets the notification target button's cursor

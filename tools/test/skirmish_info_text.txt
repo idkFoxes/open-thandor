@@ -1,0 +1,19 @@
+# Manual check of Ctrl+I in the game: start with -NOINTRO -KARTE="mittelpunkt"; click "Weiter"/"Beginnen" until the
+# skirmish runs. Ctrl+I shows the next world view info text (blank -> render statistics -> camera position -> camera
+# orientation -> cursor -> free memory -> blank). Two presses with a shot after each: shots\script_0000.bmp shows the
+# statistics line ("bps: <frames per second>, dpb: <draw calls per frame>, ...") at the bottom left of the world
+# view, script_0001.bmp the camera position. The statistics refresh once a second, so the first shot waits 2 s.
+# Keys (decimal VK): 17 Ctrl, 73 I.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+20000 keydown 17
+20100 key 73
+20200 keyup 17
+22200 shot
+22400 keydown 17
+22500 key 73
+22600 keyup 17
+23500 shot
+25000 quit
