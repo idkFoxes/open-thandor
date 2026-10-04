@@ -19,11 +19,11 @@ uint16_t g_ScenarioLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"l
 
 /* <exe dir>\<level>.fld / .pcx. open-thandor: THANDOR_PATH_CAPACITY units; the loaders then combine this absolute
    path with the executable directory once more (FileSystem_LoadWholeFileNearExecutable), see THANDOR_PATH_CAPACITY. */
-uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
+uint16_t g_LevelResourcePathScratchUtf16[THANDOR_PATH_CAPACITY] = {};
 
 FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = nullptr;
 
-uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
+uint16_t g_FrontendScenarioPathScratchUtf16[256] = {};
 
 /* Implementation ownership: gameplay/session/scenario_load. */
 

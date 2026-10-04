@@ -14,11 +14,11 @@
 
 /* Module data. */
 
-static GraphicsFixedVec3 g_GraphicsDirectionWorld = {0};
+static GraphicsFixedVec3 g_GraphicsDirectionWorld = {};
 
 int32_t g_ModelLodDepthThresholdQ8 = 65536;
 
-GraphicsFixedVec3 g_ModelCullViewRelative = {0};
+GraphicsFixedVec3 g_ModelCullViewRelative = {};
 
 /* Part of ModelRuntime_CullAndRenderHierarchyRecursive: the node passed the four side planes with its own
    radius; g_ModelCullViewRelative holds its view-relative position. Projects it and, when it lies fully in

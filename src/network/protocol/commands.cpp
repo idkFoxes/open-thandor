@@ -11,12 +11,12 @@
 
 /* Module data. */
 
-static UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {0};
+static UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {};
 
 /* followed by 12 bytes 0x90 fill (dropped) */
 static UiCommandQueueRecord *g_FrontendCommandQueueEnd = g_FrontendCommandQueueRecords;
 
-static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {0};
+static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {};
 
 static UiCommandQueueRecord *g_InGameCommandQueueEnd = THANDOR_PTR(&g_InGameCommandQueueRecords);
 

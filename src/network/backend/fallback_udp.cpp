@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
+UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {};
 
 static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
 
@@ -20,10 +20,10 @@ static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
 
 static uint32_t g_NetworkFallbackAddressLength = 0;
 
-static WinSockAddress g_NetworkFallbackBindEndpoint = {0};
+static WinSockAddress g_NetworkFallbackBindEndpoint = {};
 
 /* narrow endpoint/address text (written with capacity 255) */
-static uint8_t g_NetworkEndpointTextScratchA[256] = {0};
+static uint8_t g_NetworkEndpointTextScratchA[256] = {};
 
 /* Original quirk: "IP=" has no terminator (the next byte is 0x90 filler);
    g_CommandLineFindOption gets the length 3 and never reads past it */

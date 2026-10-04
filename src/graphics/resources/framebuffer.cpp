@@ -15,7 +15,7 @@ THANDOR_ALIGN(8) uint32_t g_FramebufferWidth = 0;
 
 GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = nullptr;
 
-SoftwareFramebufferAccess g_DisplayFramebufferAccess = {0};
+SoftwareFramebufferAccess g_DisplayFramebufferAccess = {};
 
 SoftwareFramebufferAccess *g_FramebufferAccess = nullptr;
 

@@ -23,9 +23,9 @@ int32_t g_ModelBoundsMinimumZ = 0;
 
 int32_t g_ModelBoundsMaximumZ = 0;
 
-static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {0};
+static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {};
 
-GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {0};
+GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {};
 
 /* Implementation ownership: world/model/hierarchy. */
 

@@ -18,14 +18,14 @@
 /* Module data. */
 
 /* Q28 unit vector */
-static GraphicsFixedVec3 g_TerrainLightDirection = {0};
+static GraphicsFixedVec3 g_TerrainLightDirection = {};
 
-TerrainDirectionRecord g_TerrainDirectionRecordTable256[256] = {0};
+TerrainDirectionRecord g_TerrainDirectionRecordTable256[256] = {};
 
 /* entries 0..255 the shaded colour ramp (originally
    g_TerrainLightingColorRampArgb256), entries 256..512 the lit half; indexed by the signed dot
    product -256..256 from entry 256 */
-PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {0};
+PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {};
 
 uint32_t g_TerrainDirectionalLightSecondaryColor = 0;
 

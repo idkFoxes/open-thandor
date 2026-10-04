@@ -160,7 +160,7 @@ void DebugCampaign_LogCarryOver(int afterMerge)
   if (g_InGameRuntimeRoot != nullptr && g_OldUnitRecordCount != 0) {
     /* where the carried units of the local faction landed, against the level's start view */
     WorldRuntimeContext *world = &g_InGameRuntimeRoot->worldRuntime;
-    unsigned perFaction[8] = {0}, record, shown = 0;
+    unsigned perFaction[8] = {}, record, shown = 0;
     unsigned localFaction = world->activeFactionRuntimeIndex;
     for (record = 0; record < (unsigned)g_OldUnitRecordCount && record < OLD_UNIT_PRIMARY_RECORD_CAPACITY; record++) {
       perFaction[g_OldUnitPrimaryTable[record * 8 + 1] & 7]++;

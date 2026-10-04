@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-uint16_t g_FrontendLocalPlayerNameUtf16[20] = {0};
+uint16_t g_FrontendLocalPlayerNameUtf16[20] = {};
 
 Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows = nullptr;
 
@@ -24,13 +24,13 @@ char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
 char g_NameClientKarteKeywordsAscii[21] = {'N', 'A', 'M', 'E', '=', '"', 'C', 'L', 'I', 'E', 'N', 'T', '=', '"', 'K', 'A', 'R', 'T', 'E', '=', '"'}; /* "NAME=\"CLIENT=\"KARTE=\"" without its NUL */
 
-UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
+UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {};
 
-uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {0};
+uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {};
 
-uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {0};
+uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {};
 
-uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {0};
+uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {};
 
 /* Implementation ownership: ui/frontend/network. */
 

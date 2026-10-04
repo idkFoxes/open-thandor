@@ -14,11 +14,11 @@ static GraphicsFixedVec3 g_ArmySuspensionBlendVectorA = {0, 0, 0};
 
 static GraphicsFixedVec3 g_ArmySuspensionBlendVectorB = {0, 0, 0};
 
-static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA = {0};
+static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA = {};
 
-static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB = {0};
+static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB = {};
 
-static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch = {0};
+static GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch = {};
 
 /* What ArticulatedWalker_TryStartRouteStep decided for a standing walker. */
 enum {

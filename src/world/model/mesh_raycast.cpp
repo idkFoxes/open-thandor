@@ -11,10 +11,10 @@
 /* Module data. */
 
 /* Q12 ray origin in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
+GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {};
 
 /* Q28 ray direction in the tested node's frame */
-GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
+GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {};
 
 /* Implementation ownership: world/model/mesh_raycast. */
 

@@ -13,7 +13,7 @@
 
 THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = nullptr;
 
-static uint16_t g_InGameHudNumberTextUtf16[16] = {0};
+static uint16_t g_InGameHudNumberTextUtf16[16] = {};
 
 static int32_t g_UiAction1012PlayerIndexTextOffsets[7] = {20540, 20632, 20724, 20816, 20908, 21000, 21092};
 
@@ -30,17 +30,17 @@ static int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 2
 /* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
-static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
+static uint32_t g_UiAction1012TargetPlayerIndices[7] = {};
 
 uint16_t *g_InGamePlayerListTextScratchUtf16 = nullptr;
 
-InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
+InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {};
 
-uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {0};
+uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {};
 
 uint32_t g_InGameReadyStateToggleFlags = 0;
 
-uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
+uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {};
 
 /* Implementation ownership: ui/ingame/hud. */
 

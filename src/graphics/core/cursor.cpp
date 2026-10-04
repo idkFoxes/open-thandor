@@ -24,7 +24,7 @@ SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = nullptr;
 /* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0). */
 static uint32_t g_GraphicsCursorAnimationCountdown = 2;
 
-static uint32_t g_CursorButtonReleaseClock[3] = {0};
+static uint32_t g_CursorButtonReleaseClock[3] = {};
 
 static GraphicsCursorFrameIndex g_CursorFrameIndex = 0;
 
@@ -32,7 +32,7 @@ static UiPixelCoordinate g_CursorLastClickX = 0;
 
 static UiPixelCoordinate g_CursorLastClickY = 0;
 
-GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {0};
+GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {};
 
 uint32_t g_CursorInputReadIndex = 0;
 

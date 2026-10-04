@@ -13,7 +13,7 @@
 /* UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel */
 static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
 
-static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
+static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {};
 
 /* Implementation ownership: ui/ingame/selection_panel_cells. */
 

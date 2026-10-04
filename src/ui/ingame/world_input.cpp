@@ -22,9 +22,9 @@ static uint32_t g_InGameCommandPointerCaptureY = 0;
 /* uint32_t[8]: command id per pointer mode (modifier mask & variant mask) */
 static const uint32_t g_InGamePointerModeCommandIds[8] = {26, 38, 39, 40, 41, 42, 43, 44};
 
-InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12] = {0};
+InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12] = {};
 
-InGameCommandPayloadTripletValue32 g_InGameSelectionRemoveTripletDwords[12] = {0};
+InGameCommandPayloadTripletValue32 g_InGameSelectionRemoveTripletDwords[12] = {};
 
 uint32_t g_InGamePlacementHeading16 = 0;
 
@@ -44,7 +44,7 @@ uint32_t g_InGamePointerInteractionStateFlags = 0;
 
 int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 
-static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
+static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {};
 
 /* Implementation ownership: ui/ingame/world_input. */
 

@@ -25,7 +25,7 @@ int32_t g_SoftwareColorScaleQ16 = 0x10000;
 
 int32_t g_SoftwareColorBiasQ16 = 0;
 
-SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {0};
+SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {};
 
 SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = &SoftwarePixelFormat_BaseDisplayModeHook;
 

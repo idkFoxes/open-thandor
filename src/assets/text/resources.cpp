@@ -15,7 +15,7 @@ static TextResourcePageBinding g_TextResourcePageBindings[256] = {};
 
 TextResourceOverrideTable *g_TextResourceOverrides = nullptr;
 
-static uint16_t g_EmptyTextResourceUtf16[2] = {0};
+static uint16_t g_EmptyTextResourceUtf16[2] = {};
 
 /* UTF-16 rich-text stream L"-" (code unit '-' plus terminator) that unresolved nested-stream records point to */
 static uint16_t g_MissingTextResourceFallbackStream[2] = {0x002D, 0x0000};

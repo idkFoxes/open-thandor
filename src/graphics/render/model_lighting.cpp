@@ -846,9 +846,9 @@ SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819] = {
     /* 135 */ {.alpha = 16384},
     /* 136 */ {.alpha = 16384}};
 
-GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch = {0};
+GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch = {};
 
-GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch = {0};
+GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch = {};
 
 /* Implementation ownership: graphics/render/model_lighting. */
 

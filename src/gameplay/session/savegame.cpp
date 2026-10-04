@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {0};
+static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {};
 
 uint16_t g_CampagneHexPathUtf16[13] = {'c', 'a', 'm', 'p', 'a', 'g', 'n', 'e', '.', 'h', 'e', 'x', 0}; /* L"campagne.hex" */
 

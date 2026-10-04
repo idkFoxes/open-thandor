@@ -24,7 +24,7 @@ typedef struct RasterAuxTexture {
 
 /* Module data. */
 
-THANDOR_ALIGN(16) SoftwareRasterScanState g_SoftwareRasterScanState = {0};
+THANDOR_ALIGN(16) SoftwareRasterScanState g_SoftwareRasterScanState = {};
 
 int32_t *g_SoftwareDepthBuffer = nullptr;
 

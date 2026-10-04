@@ -18,9 +18,9 @@ PckTechnologyIdCatalog g_InGameSelectedTechnologyId = 0;
    colour command into the text */
 static uint16_t g_InGameTechnologyCostRichText[25] = {32774};
 
-static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {};
 
-static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {0};
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {};
 
 static int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
 

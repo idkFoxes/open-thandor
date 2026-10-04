@@ -13,7 +13,7 @@
 
 FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = nullptr;
 
-FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};
+FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {};
 
 /* Implementation ownership: ui/frontend/session. */
 

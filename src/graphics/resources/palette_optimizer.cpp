@@ -14,9 +14,9 @@
 
 /* Module data. */
 
-static uint32_t g_GraphicsPaletteBankSlots[512] = {0};
+static uint32_t g_GraphicsPaletteBankSlots[512] = {};
 
-static uint8_t g_GraphicsPaletteRemapBytes[256] = {0};
+static uint8_t g_GraphicsPaletteRemapBytes[256] = {};
 
 /* Returns the first entry (colour dword, second dword) of palette bank bankIndex. */
 static uint32_t *GraphicsPaletteTextureSource_GetBankEntries(GraphicsTextureSourceHeaderView *textureSource,

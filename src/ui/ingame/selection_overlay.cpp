@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {0};
+static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {};
 
 /* Implementation ownership: ui/ingame/selection_overlay. */
 

@@ -14,9 +14,9 @@ const uint32_t g_UiTextStyleNormal = 0;
 
 const int32_t g_UiWindowFrameInset = 2;
 
-uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
+uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {};
 
-uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
+uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {};
 
 /* UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/window.cpp). */
 const UiPackedTextStyle g_UiTextStyleSelected = 0x10000;
@@ -26,9 +26,9 @@ const UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
 
 static const uint32_t g_UiTextStyleAlternate = 0;
 
-static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {0};
+static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {};
 
-static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {0};
+static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {};
 
 /* Implementation ownership: ui/controls/text_buttons. */
 

@@ -15,7 +15,7 @@ uint32_t g_EndMoviePendingTicks = 0;
 
 static uint16_t g_FrontendEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '0', '.', 'f', 'l', 'm', 0}; /* L"flm\\ende0000.flm" */
 
-static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
+static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {};
 
 /* Implementation ownership: ui/frontend/end_movie. */
 

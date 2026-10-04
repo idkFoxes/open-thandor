@@ -11,25 +11,25 @@
 
 /* Module data. */
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {};
 
-UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {0};
+UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {};
 
 int g_InGameSelectionDetailGridCellOffsets[12] = {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520};
 

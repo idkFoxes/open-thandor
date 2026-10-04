@@ -11,13 +11,13 @@
 
 /* Module data. */
 
-static GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch = {0};
+static GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch = {};
 
-static GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch = {0};
+static GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch = {};
 
-static GraphicsFixedVec3 g_ModelTransformInput = {0};
+static GraphicsFixedVec3 g_ModelTransformInput = {};
 
-GraphicsFixedVec3 g_ModelTransformOutput = {0};
+GraphicsFixedVec3 g_ModelTransformOutput = {};
 
 /* Implementation ownership: core/math/fixed_transform. */
 

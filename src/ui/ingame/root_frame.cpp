@@ -24,7 +24,7 @@ IDirectSoundBuffer *g_InGameActiveMusicVoice = nullptr;
 
 uint32_t g_InGameMusicNextTrackCountdown = 0;
 
-uint16_t g_InGameCountdownTextUtf16[8] = {0};
+uint16_t g_InGameCountdownTextUtf16[8] = {};
 
 /* The largest countdown that fits g_InGameCountdownTextUtf16: "9999:59" plus the terminator. */
 #define INGAME_COUNTDOWN_MAX_SECONDS (9999u * 60u + 59u)

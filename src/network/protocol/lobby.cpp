@@ -17,27 +17,27 @@ THANDOR_ALIGN(16) int32_t g_FrontendPlayerRuntimeCount = 0;
 /* version string shown to joining players ("1.5.45") */
 static uint16_t g_GameVersionUtf16[7] = {'1', '.', '5', '.', '4', '5', 0}; /* L"1.5.45" */
 
-static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {0};
+static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {};
 
-static FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer = {0};
+static FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer = {};
 
-static FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer = {0};
+static FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer = {};
 
-static FrontendPacket10003JoinAck g_FrontendPacket10003Buffer = {0};
+static FrontendPacket10003JoinAck g_FrontendPacket10003Buffer = {};
 
-static FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer = {0};
+static FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer = {};
 
-static FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer = {0};
+static FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer = {};
 
-static FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer = {0};
+static FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer = {};
 
-FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {0};
+FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {};
 
-static FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {0};
+static FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {};
 
 static uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
 
-UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {0};
+UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {};
 
 uint32_t g_FrontendSessionToken = 0;
 

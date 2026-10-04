@@ -18,7 +18,7 @@ static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
 static const uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
-static uint32_t g_PrimitiveRadixBucketWords[256] = {0};
+static uint32_t g_PrimitiveRadixBucketWords[256] = {};
 
 static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 

@@ -16,7 +16,7 @@ RecentTextHistorySlot *g_RecentTextSlotStorage = nullptr;
 
 static RecentTextSerialCounter g_RecentTextSerialCounter = 1;
 
-static uint32_t g_RecentTextEntrySerials[8] = {0};
+static uint32_t g_RecentTextEntrySerials[8] = {};
 
 /* Implementation ownership: ui/core/chat_history. */
 

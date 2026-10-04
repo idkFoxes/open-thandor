@@ -15,13 +15,13 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) GraphicsFixedVec3 g_ViewOriginFixed = {0};
+THANDOR_ALIGN(4) GraphicsFixedVec3 g_ViewOriginFixed = {};
 
 int32_t g_ProjectionScaleFixed = 0;
 
-GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed = {0};
+GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed = {};
 
-GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed = {0};
+GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed = {};
 
 static GraphicsViewAngle16 g_ViewAngle0 = 0;
 
@@ -29,25 +29,25 @@ static GraphicsViewAngle16 g_ViewAngle1 = 0;
 
 static uint32_t g_ProjectionShift = 0;
 
-static GraphicsWideFixed g_ProjectionNumerator = {0};
+static GraphicsWideFixed g_ProjectionNumerator = {};
 
-static GraphicsFixedVec2 g_ProjectionCenterFixed = {0};
+static GraphicsFixedVec2 g_ProjectionCenterFixed = {};
 
-static GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed = {0};
+static GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed = {};
 
-static GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed = {0};
+static GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed = {};
 
-static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {0};
+static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {};
 
-GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed = {0};
+GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed = {};
 
-GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {0};
+GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {};
 
-GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
+GraphicsSceneBounds8 g_SceneBoundsFixed = {};
 
 GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = nullptr;
 
-GraphicsFixedRect g_ProjectionClipRect = {0};
+GraphicsFixedRect g_ProjectionClipRect = {};
 
 /* Perspective-projects one view-space Q12 point to screen coordinates (returned as an x/y pair): the perspective
    scale is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection

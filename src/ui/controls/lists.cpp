@@ -20,10 +20,10 @@ static decltype(&Utf16String_CompareAsciiCaseInsensitiveFlags) const g_Utf16Stri
     Utf16String_CompareAsciiCaseInsensitiveFlags;
 
 /* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
-static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {0};
+static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {};
 
 /* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
-static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {0};
+static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {};
 
 /* Implementation ownership: ui/controls/lists. */
 

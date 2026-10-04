@@ -99,7 +99,7 @@ int32_t g_UiCatalogGroup42Offsets6Columns[42] = {
     /* 32 */ 33352, 33480, 34760, 35656, 33608, 33736, 33864, 33992,
     /* 40 */ 34888, 35784};
 
-static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
+static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {};
 
 UiNodeVtable g_UiCatalogEntryControlVtable = {
         .relocate = UI_SLOT(UiSpriteButtonControl_Relocate),

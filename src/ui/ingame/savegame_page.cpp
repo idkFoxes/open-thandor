@@ -16,7 +16,7 @@ uint16_t g_SaveDirectoryUtf16[5] = {'s', 'a', 'v', 'e', 0};
 
 /* <exe dir>\save\<name>.sve and the save\*.sve pattern. open-thandor: THANDOR_PATH_CAPACITY units (the original's
    0x100 units overflowed with a long game directory and a long save name). */
-uint16_t g_ScenarioCatalogPathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
+uint16_t g_ScenarioCatalogPathScratchUtf16[THANDOR_PATH_CAPACITY] = {};
 
 /* Implementation ownership: ui/ingame/savegame_page. */
 

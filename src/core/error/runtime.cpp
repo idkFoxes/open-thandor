@@ -11,16 +11,16 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) uint16_t g_FatalErrorDetail1Utf16[256] = {0};
+THANDOR_ALIGN(4) uint16_t g_FatalErrorDetail1Utf16[256] = {};
 
-uint16_t g_FatalErrorDetail2Utf16[256] = {0};
+uint16_t g_FatalErrorDetail2Utf16[256] = {};
 
-uint16_t g_FatalErrorDetail3Utf16[256] = {0};
+uint16_t g_FatalErrorDetail3Utf16[256] = {};
 
 /* "texte\\error.str" */
 static uint16_t g_TexteErrorStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'e', 'r', 'r', 'o', 'r', '.', 's', 't', 'r'};
 
-static uint8_t g_FatalErrorNarrowBuffer[1024] = {0};
+static uint8_t g_FatalErrorNarrowBuffer[1024] = {};
 
 FatalErrorPassThroughProc *g_FatalErrorExitHandler = nullptr;
 

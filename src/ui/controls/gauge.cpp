@@ -16,7 +16,7 @@ static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
 
-static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
+static uint16_t g_UiWindowPercentTextUtf16[5] = {};
 
 /* Implementation ownership: ui/controls/gauge. */
 

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-static uint16_t g_FrontendResultsValueTextUtf16[32] = {0};
+static uint16_t g_FrontendResultsValueTextUtf16[32] = {};
 
 static const int g_FrontendResultsColumnAdvance00Pixels = 0;
 
@@ -53,7 +53,7 @@ static uint32_t g_FrontendResultsFramebufferBytesPerPixel = 0;
 
 static uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
 
-static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
+static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {};
 
 /* Implementation ownership: ui/frontend/results. */
 

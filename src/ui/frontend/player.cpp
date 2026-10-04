@@ -17,13 +17,13 @@ FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = nullptr;
 
 FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount = 0;
 
-UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {0};
+UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {};
 
-uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {0};
+uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {};
 
-static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {0};
+static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {};
 
-static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {0};
+static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {};
 
 /* Implementation ownership: ui/frontend/player. */
 

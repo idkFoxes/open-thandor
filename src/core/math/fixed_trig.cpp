@@ -13,7 +13,7 @@
 
 /* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed_trig.h>); filled at startup by
    FixedMath_BuildSinCosTables */
-int32_t g_FixedSineQ28[98304] = {0};
+int32_t g_FixedSineQ28[98304] = {};
 
 /* Implementation ownership: core/math/fixed_trig. */
 

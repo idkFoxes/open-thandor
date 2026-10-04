@@ -15,9 +15,9 @@
 /* Module data. */
 
 /* filled at startup by GraphicsLighting_BuildPackedLookupTable */
-THANDOR_ALIGN(16) uint64_t g_PackedLightingLookupTable[512] = {0};
+THANDOR_ALIGN(16) uint64_t g_PackedLightingLookupTable[512] = {};
 
-THANDOR_ALIGN(16) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {0};
+THANDOR_ALIGN(16) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {};
 
 uintptr_t g_GraphicsIntensityClampTableBase = 0;
 
@@ -27,9 +27,9 @@ GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount = 0;
    lane; built by GraphicsShading_BuildIntensityScaleTable. */
 SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256];
 
-static GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256] = {0};
+static GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256] = {};
 
-GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256] = {0};
+GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256] = {};
 
 /* GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
 GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount = 0;

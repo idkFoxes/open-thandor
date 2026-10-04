@@ -40,9 +40,9 @@ Ptr32<void> *g_InGameLoadedResourcePointers = nullptr;
 
 InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
 
-uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {0};
+uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {};
 
-uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {0};
+uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {};
 
 /* Implementation ownership: gameplay/session/level_new. */
 

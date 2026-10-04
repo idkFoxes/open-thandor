@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
+FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {};
 
 /* Not in the original: the pending display mode kind (PERSISTENT_DISPLAY_MODE_*) of the display settings page. */
 static uint32_t s_pendingDisplayModeKind = PERSISTENT_DISPLAY_MODE_FULLSCREEN;

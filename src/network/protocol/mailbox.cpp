@@ -12,10 +12,10 @@
 /* Module data. */
 
 /* mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (with packetHeader.sequenceToken), payload = chunk offset (payload byte 0), transfer byte count (payload byte 4), chunk data (from payload byte 8, 58 dwords). */
-static UiRuntimeRecord g_UiTransferChunkPacket = {0};
+static UiRuntimeRecord g_UiTransferChunkPacket = {};
 
 /* ping answer packet 0x10033 (same layout as the 0x10032 ping): header (with header.sequenceToken), echoed tick (backendSessionValue). */
-static FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
+static FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {};
 
 UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter = 0;
 

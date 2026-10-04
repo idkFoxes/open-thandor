@@ -18,7 +18,7 @@ THANDOR_ALIGN(4) int32_t g_CursorVisibilityToken = -1;
 
 THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
 
-THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
+THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {};
 
 THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = &Keyboard_FlushEvents;
 
@@ -34,7 +34,7 @@ static uint16_t g_EngineMouseDatPathUtf16[17] = {'e', 'n', 'g', 'i', 'n', 'e', '
 
 /* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
    the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
-static KeyboardInputEvent g_KeyboardEvents[256] = {0};
+static KeyboardInputEvent g_KeyboardEvents[256] = {};
 
 static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
 

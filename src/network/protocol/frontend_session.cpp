@@ -11,22 +11,22 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(16) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
+THANDOR_ALIGN(16) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {};
 
 /* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
 uint32_t g_FrontendSelectedPlayerToken = 1;
 
 uint32_t g_FrontendHostSnapshotTransferCountdown = 0;
 
-FrontendCommandPacketRecord g_FrontendPlayerCommandRecords[8] = {0};
+FrontendCommandPacketRecord g_FrontendPlayerCommandRecords[8] = {};
 
-FrontendCommandPacketRecord g_FrontendCommandBatchPacketBuffer[8] = {0};
+FrontendCommandPacketRecord g_FrontendCommandBatchPacketBuffer[8] = {};
 
-static FrontendPacket30005PlayerSnapshot g_FrontendPacket30005Buffer = {0};
+static FrontendPacket30005PlayerSnapshot g_FrontendPacket30005Buffer = {};
 
-static FrontendPacket10009SnapshotChunkRequest g_FrontendPacket10009Buffer = {0};
+static FrontendPacket10009SnapshotChunkRequest g_FrontendPacket10009Buffer = {};
 
-static FrontendPacket10012SyncPending g_FrontendPacket10012Buffer = {0};
+static FrontendPacket10012SyncPending g_FrontendPacket10012Buffer = {};
 
 /* Implementation ownership: network/protocol/frontend_session. */
 

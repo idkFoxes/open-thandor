@@ -22,7 +22,7 @@ uint32_t g_EndGameResultsCurrentMusicTrackId = 0;
 
 WorldObjectRecord *g_InGameWorldObjectRecords = nullptr;
 
-uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {0}; /* SpatialSoundSlot pointers (WorldRuntimeContext.dwordArray) */
+uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {}; /* SpatialSoundSlot pointers (WorldRuntimeContext.dwordArray) */
 
 static uint8_t g_InGameSessionStartedNetworked = 0;
 
