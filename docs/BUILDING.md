@@ -45,6 +45,24 @@ cmake -S . -B build-sdl -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -
 cmake --build build-sdl
 ```
 
+### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
+
+With `THANDOR_RENDERER_SDL_GPU=ON` as well (needs `THANDOR_PLATFORM_SDL3`, default `OFF`) the build can rasterize
+the 3D view on the GPU through SDL_GPU (Direct3D 12) instead of the software rasterizer
+(`src/platform/sdl3/gpu_renderer.cpp`). The software renderer stays the default; the GPU path is switched on at run
+time with `OPEN_THANDOR_GPU=1` or the command-line option `-GPU`. Only the rasterization of the primitive queues
+moves: lighting, fog, projection, sorting and the simulation stay on the CPU, the finished 3D view is copied back
+into the framebuffer, and the overlays, the UI and the cursor are drawn on it as before. Each triangle is rebuilt
+from the software rasterizer's own fixed-point setup, so the picture matches the software renderer apart from
+rounding (blend tables, 16-bit quantization, single edge pixels). The shaders
+(`src/platform/sdl3/shaders/primitives.hlsl`) are compiled to DXBC with `fxc` from the Windows SDK during the
+build. Without a Direct3D 12 device the software renderer stays (logged in `thandor.log`).
+
+With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame, shows the software
+picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the 3D view of both as
+`shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the difference; both modes log
+the per-scene times every 10 seconds.
+
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 
 All test and debug aids of the port - the self-tests, the input scripts, automatic screenshots, the determinism
