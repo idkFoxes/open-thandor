@@ -1371,8 +1371,8 @@
 0x0050D9C0  data      g_ScenarioCatalog                                                 src/assets/scenario/catalog.cpp
 0x0050D9C4  data      g_ScenarioCatalogUsedBytes                                        src/assets/scenario/catalog.cpp
 0x0050D9C8  data      g_SaveSvePatternUtf16                                             src/assets/scenario/catalog.cpp
-0x0050D9DE  data      g_UnreferencedLevelPatternUtf16                                   src/assets/scenario/catalog.cpp
-0x0050D9F6  data      g_UnreferencedCampaignPatternUtf16                                src/assets/scenario/catalog.cpp
+0x0050D9DE  data      g_UnreferencedLevelPatternUtf16                                   (removed, unused)
+0x0050D9F6  data      g_UnreferencedCampaignPatternUtf16                                (removed, unused)
 0x0050DA0E  data      g_LevelLevelDatPathUtf16                                          src/assets/scenario/catalog.cpp
 0x0050DA2E  data      g_ScenarioLevelDataPathTemplateUtf16                              src/assets/scenario/catalog.cpp
 0x0050DA52  data      g_LevelCampagneDatPathUtf16                                       src/assets/scenario/catalog.cpp
@@ -1575,8 +1575,8 @@
 0x0051B388  data      g_ArmyCommandGenerationStandard                                   src/gameplay/army/move_orders.cpp
 0x0051B38C  data      g_AiCommandGenerationCandidateBase                                src/gameplay/ai/combat.cpp
 0x0051B390  data      g_AiCommandGenerationRetainedTarget                               src/gameplay/ai/combat.cpp
-0x0051B394  data      g_UnreferencedArmyTexturePathUtf16                                src/assets/army/catalog.cpp
-0x0051B3AE  data      g_UnreferencedArmyTag                                             src/assets/army/catalog.cpp
+0x0051B394  data      g_UnreferencedArmyTexturePathUtf16                                (removed, unused)
+0x0051B3AE  data      g_UnreferencedArmyTag                                             (removed, unused)
 0x0051B3C0  function  ModelDefinition_SelectFactionUnlockedLinkedDefinition             src/gameplay/technology/runtime.cpp
 0x0051B430  function  ModelDefinition_SelectFactionUnlockedLinkedId                     src/gameplay/technology/runtime.cpp
 0x0051B4A0  function  ArmyAssetRecord_RegisterAndRelocate                               src/assets/army/catalog.cpp
