@@ -236,7 +236,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   }
 }
 
-/* Before the model runtime pool is written to a savegame (in-game save, src/ui/ingame/runtime.c): turns the
+/* Before the model runtime pool is written to a savegame (in-game save, src/gameplay/session/savegame.cpp): turns the
    pointers of every used slot into offsets (owner and linked army against g_ArmyRuntimeRebaseBaseMinusOne, root
    and attachment parent nodes against g_RuntimeObjectRebaseBaseMinusOne, linked model runtime and attachment
    children against g_ModelRuntimeRebaseDelta; NULL stays 0), replaces the definition pointer by its id and runs

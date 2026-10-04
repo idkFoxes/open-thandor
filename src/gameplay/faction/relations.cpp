@@ -54,7 +54,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
 
 /* Adds one row of field cells (world X from firstWorldXQ12 to lastWorldXQ12 inclusive, one cell apart, at
    worldYQ12) to the player's marked-cell list. Called per row by the in-game command UI when an area is dragged
-   out in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D00 instead).
+   out in a local session (ui/ingame/editor_tools.cpp; networked sessions queue command 0x1D00 instead).
 */
 void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
@@ -69,7 +69,7 @@ void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
 
 /* Counterpart of PlayerPairList_InsertRange: removes one row of field cells (world X from firstWorldXQ12 to
    lastWorldXQ12 inclusive, at worldYQ12) from the player's marked-cell list. Called per row by the in-game
-   command UI in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D40 instead).
+   command UI in a local session (ui/ingame/editor_tools.cpp; networked sessions queue command 0x1D40 instead).
 */
 void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
@@ -888,7 +888,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
 }
 
 /* Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
-   world/shots/maintenance.c). A repair shot (negative impact damage) that finds its target fully repaired
+   world/shots/flight.cpp). A repair shot (negative impact damage) that finds its target fully repaired
    ends the shooter's command on it. Any other hit adds to the pair pressure of target and shooter faction;
    if the target's faction already treats the shooter as hostile, the pair's relation tick is renewed and
    the "under attack" alert runs, otherwise friendly fire declares hostility (relation state 0 both ways),

@@ -11,10 +11,10 @@
 
 /* Module data. */
 
-/* int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
+/* int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler). */
 static const int32_t g_UiScrollWheelDefaultStep = 14;
 
-/* int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
+/* int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control. */
 static const int32_t g_UiScrollWheelListStep = 15;
 
 /* Implementation ownership: ui/controls/scrollable. */

@@ -14,7 +14,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/frontend/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct GraphicsDisplayMode GraphicsDisplayMode, *PGraphicsDisplayMode;
 typedef struct SoftwarePixelFormatConfig SoftwarePixelFormatConfig, *PSoftwarePixelFormatConfig;

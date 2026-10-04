@@ -6,7 +6,7 @@
  */
 
 /* Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords
-   (gameplay/session/runtime.c). At simulation tick 20 it writes every used condition (16 raw bytes) and trigger
+   (gameplay/session/level_script.cpp). At simulation tick 20 it writes every used condition (16 raw bytes) and trigger
    of the level script to thandor.log, before and after their first evaluation, and it logs every end trigger
    that fires. Always on in a THANDOR_DEV_TOOLS build (the campaign tools read it). */
 

@@ -101,7 +101,7 @@ static void GraphicsPrimitivePacket_HalveVertexRgb(GraphicsPrimitivePacket *pack
    halveVertexRgb set every packet's vertex RGB is halved (alpha kept, MMX).
    Installed in the graphics dispatch slot g_GraphicsPrimitiveQueueRadixSortProc (called
    by FrontendModelPointerContext_RenderWorldViewQueuesClipped with node flag 8) and called directly by the
-   offscreen model renderer (graphics/render/projection.c).
+   offscreen model renderer (graphics/render/offscreen.cpp).
 */
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
@@ -170,7 +170,7 @@ uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacit
 /* Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool:
    primaryNodes right after the 0x20-byte header, then radixScratchPool, then the packets, each part sized for
    the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails; returns the queue.
-   Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
+   Called by the frontend 3D views (ui/frontend/menu_room.cpp) and the offscreen model renderer.
 */
 GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal()
 
@@ -191,7 +191,7 @@ GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal()
 
 
 /* Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
-   (ui/frontend/runtime.c) after each drawn pass.
+   (ui/frontend/menu_room.cpp) after each drawn pass.
 */
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 
@@ -241,7 +241,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
    the three projected vertices and the texture coordinates from triangle, and sets renderFlags. The colours,
    material and texture are filled in afterwards by GraphicsPrimitiveQueue_SetVertexColors/SetMaterial. Returns
    true when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
-   ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model.c).
+   ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model_submit.cpp).
 */
 Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
@@ -308,7 +308,7 @@ Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,G
 
 /* Sets the three vertex colours of the packet appended last. When not all three colours are fully opaque
    (alpha 0xFF) and the packet's blend mode is opaque (0) or 4, the blend mode becomes 6 (the XOR clears the
-   old mode). Called by the model renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
+   old mode). Called by the model renderer (graphics/render/model_submit.cpp) after GraphicsPrimitiveQueue_AppendTriangle.
 */
 void GraphicsPrimitiveQueue_SetVertexColors
           (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
@@ -338,7 +338,7 @@ void GraphicsPrimitiveQueue_SetVertexColors
 
 /* Sets the modulation colour of the packet appended last and, when textureEntry is not NULL, its texture
    (marking the packet GRAPHICS_PRIMITIVE_FLAG_TEXTURED); otherwise the texture is cleared. Called by the model
-   renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
+   renderer (graphics/render/model_submit.cpp) after GraphicsPrimitiveQueue_AppendTriangle.
 */
 void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
           GraphicsPrimitiveQueue *queue)
@@ -361,7 +361,7 @@ void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTex
 
 
 /* Adds (deltaU, deltaV) to the texture coordinates of all three vertices of the packet appended last, for
-   scrolling textures. Called by ModelRender_SubmitTriangle (graphics/render/model.c).
+   scrolling textures. Called by ModelRender_SubmitTriangle (graphics/render/model_submit.cpp).
 */
 void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue)

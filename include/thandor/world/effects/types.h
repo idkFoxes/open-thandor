@@ -16,7 +16,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct EffectRuntimeSlot EffectRuntimeSlot, *PEffectRuntimeSlot;
 typedef union EffectModelNodeReferenceOrSavedOffset EffectModelNodeReferenceOrSavedOffset, *PEffectModelNodeReferenceOrSavedOffset;

@@ -160,7 +160,7 @@ Bool8 UiSelectableGroup_FindVisibleSelected
 
 /* Returns the index of the first selected control of a group (controlCount control pointers follow on the
    stack), suppressed ones included, or controlCount when none is selected. Called by the frontend scenario
-   page (src/ui/frontend/scenario.c).
+   page (src/ui/frontend/state.cpp).
 */
 uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 

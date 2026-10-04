@@ -13,7 +13,7 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/text/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef union WidePathBuffer256 WidePathBuffer256, *PWidePathBuffer256;
 typedef struct UiPageStackControl UiPageStackControl, *PUiPageStackControl;

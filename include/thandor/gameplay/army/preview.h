@@ -38,7 +38,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime);
 
-extern const uint32_t g_InGamePointerModePreviewArmyIds[8]; /* uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+extern const uint32_t g_InGamePointerModePreviewArmyIds[8]; /* uint32_t[8]: preview army asset id per pointer mode (0 = none); ui/ingame/world_input.cpp */
 
 /* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
 #define ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID 400

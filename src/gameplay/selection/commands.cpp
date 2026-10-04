@@ -192,7 +192,7 @@ void PlayerSelection_SelfDestruct
   return;
 }
 
-/* Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in gameplay/input/world.c when the
+/* Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in ui/ingame/world_input.cpp when the
    modifier mask (no modifier = 7, Shift = 1) and the attachment variant mask leave 1; networked as command code
    0xE90): stores the pointed world point and preview heading as marker lane 1 of every class-0x16 entity in
    the player's selection (SelectionPointerArray_SetAircraftPadTargets).
@@ -225,7 +225,7 @@ void InGameSelection_SetAircraftPadTargetLane2
 /* Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
    the target shifted by its offset from the selection's centre, so the group keeps its formation, unless the
    selection is spread too widely, then all go to the target itself. If the selection is exactly one class-0xD
-   entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point in the model
+   entity (a production structure), the target becomes its point in the model
    runtime's classLinkState.classState78/7C (flag 0x800 in classState.stateFlags) and the selection is cleared.
 */
 void SelectionPointerArray_ApplyMoveCommand

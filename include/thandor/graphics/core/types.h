@@ -13,7 +13,7 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
 typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;

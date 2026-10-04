@@ -90,7 +90,7 @@ static uint32_t g_FileSystemConfigRemainingBytes = 0;
    with a long game directory the cut-off path named a different file or directory. */
 static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {0};
 
-/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
+/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
 FileSystemDeleteProc *g_FileSystemDelete = nullptr;

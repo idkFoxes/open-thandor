@@ -24,7 +24,7 @@ int32_t g_GridScratchHeight = 0;
 /* int32_t[17] terrain-class thresholds, one table in the original
    (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
    ModelDefinition_CopyTerrainClassValues indexes from several entries into their neighbours by the model's
-   terrainTraversalClass (assets/model/definitions.c). Followed by 12 bytes of 0x90 padding in the original. */
+   terrainTraversalClass (assets/model/definitions.cpp). Followed by 12 bytes of 0x90 padding in the original. */
 const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT] = {
     0, /* [0] bit 24 max water surface delta (Q12) */
     11500, /* [1] bit 24 max triangle 1 normal angle (high 16) */

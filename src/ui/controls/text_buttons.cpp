@@ -18,10 +18,10 @@ uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
 
 uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
 
-/* UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
+/* UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/window.cpp). */
 const UiPackedTextStyle g_UiTextStyleSelected = 0x10000;
 
-/* UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
+/* UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.cpp, window.cpp). */
 const UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
 
 static const uint32_t g_UiTextStyleAlternate = 0;

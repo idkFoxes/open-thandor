@@ -11,7 +11,7 @@
 /*
 The original image has no C runtime: its PE entry point is ProcessEntry, which
 ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the code uses memcpy),
-has the original data compiled in (the modules' data.c files) and enters ProcessEntry from WinMain.
+has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
 */
 
 /* Program start (not part of the original): installs the crash and hang reports, computes the tables
@@ -31,7 +31,7 @@ extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance,
     UiScaler_BuildPixelWeightTables();
     SoftwareRenderer_BuildFactorTables();
     GraphicsShading_BuildIntensityScaleTable();
-    if (DebugHook_RunSelfTest()) { /* platform/selftest/selftests.c */
+    if (DebugHook_RunSelfTest()) { /* platform/selftest/selftests.cpp */
         return 0;
     }
     ProcessEntry();

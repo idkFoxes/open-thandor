@@ -717,8 +717,8 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
 /* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
    of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a projectile from shotDefinition
    at the point's world position, aimed at the target shifted by the point's X/Y offset from the node, so that
-   side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
-   src/gameplay/army/runtime.c).
+   side-by-side launchers fire parallel shots. Called by the army turret code
+   (src/gameplay/army/turrets.cpp).
 */
 void ModelRuntime_EmitProjectilesFromAttachmentPoints
           (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,

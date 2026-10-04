@@ -15,7 +15,7 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct TechnologyCategoryMasks TechnologyCategoryMasks, *PTechnologyCategoryMasks;
 typedef struct TechnologyRecord TechnologyRecord, *PTechnologyRecord;

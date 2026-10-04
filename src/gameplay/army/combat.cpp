@@ -263,7 +263,7 @@ static Bool8 ArmyWeaponRuntime_TestBallisticLineOfFire
    0x400 of the aim point) and no model in the way, and must reach the target (its distance minus half its radius)
    within speed * (lifetime - 2/3 ramp - 1). A model in the way does not block when it is the command target or
    passes the owner test (commandState < 1: models of the own owner, otherwise those of other owners). Called
-   directly by the AI combat target selection (gameplay/ai/combat.c) and gameplay/army/movement.c.
+   directly by the AI combat target selection (gameplay/ai/combat.cpp) and gameplay/army/move_orders.cpp.
 */
 Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)

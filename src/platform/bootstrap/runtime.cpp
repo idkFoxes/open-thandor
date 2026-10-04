@@ -50,7 +50,7 @@ static uintptr_t g_LevelPackageHandle = 0;
 /* HKEY (pointer-sized on x64) */
 static uintptr_t g_InstallRegistryKeyHandle = 0;
 
-/* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
+/* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA) */
 static uint32_t g_InstallRegistryValueDataCapacityBytes = 256;
 
 static uint32_t g_InstallRegistryValueType = 0;
@@ -1124,7 +1124,7 @@ uint32_t __cdecl Game_LoadCoreAssets()
     return aiInitError;
   }
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
-     written in C, graphics/resources/pcx_read.c and pcx_write.c. */
+     written in C, graphics/resources/pcx_read.cpp and pcx_write.cpp. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
                      ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == nullptr) {

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+/* int32_t, 4: pixels from the gauge top to its label line */
 static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;

@@ -23,7 +23,7 @@ uint32_t g_UiRuntimeRecordWriteIndex = 0;
 
 uint32_t g_UiTransferUnitCursor = 0;
 
-/* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+/* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value; network/protocol/mailbox.cpp, ui/frontend/network.cpp). */
 uint32_t g_UiTransferSequenceToken = 0x12340000;
 
 uint32_t g_UiTransferSenderContext = 0;

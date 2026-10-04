@@ -29,7 +29,7 @@ uint32_t g_GraphicsAdapterCount = 0;
 
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
    (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true
-   when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
+   when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/dialogs/display_settings.cpp) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
 Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
@@ -55,7 +55,7 @@ Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,
 
 /* Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: returns false when
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
-   (ui/frontend/settings.c).
+   (ui/frontend/display_settings.cpp).
 */
 Bool8 DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
