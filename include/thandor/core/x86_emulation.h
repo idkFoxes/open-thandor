@@ -9,7 +9,7 @@
 
 /*
 Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange,
-x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
+x87 rounding and the MMX lane operations (with the original's wrap-around and saturation).
 */
 
 #include <thandor/core/types.h>
@@ -51,22 +51,6 @@ static __forceinline auto thandor_atomic_exchange(T *ptr, V value)
 
 /* ROUND(x): x87 FRNDINT in the default round-to-nearest-even mode. */
 #define ROUND(x) rint(x)
-
-/*
-cpuid_Version_info(leaf): runs CPUID for leaf. Returns the address of a static array holding the result
-as {EAX, EBX, EDX, ECX} (the CPUID output order); callers read feature bits from offset 8 (EDX).
-*/
-static __inline intptr_t cpuid_Version_info(int leaf)
-{
-    static unsigned int regs[4];
-    int r[4];
-    __cpuid(r, leaf);
-    regs[0] = (unsigned int)r[0];
-    regs[1] = (unsigned int)r[1];
-    regs[2] = (unsigned int)r[3];
-    regs[3] = (unsigned int)r[2];
-    return (intptr_t)regs;
-}
 
 /*
 MMX instructions on 64-bit register images (Intel SDM semantics, little-endian lanes).

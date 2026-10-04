@@ -32,9 +32,10 @@
 #define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
 #define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
 #define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
-/* Sound setup (the original's DirectSound primary/secondary buffers; SdlAudio_CreateSampleVoiceSet for an empty
-   sample); the stage number is left in g_PackageLastErrorPath. 0x17, 0x18 (no DirectDraw adapter / display mode)
-   and 0x25 (DirectInput mouse setup) were the original's startup errors of the DirectX backend. */
+/* Sound setup: SdlAudio_CreateSampleVoiceSet returns it for a sample without decoded blocks (the voice stage
+   number is left in g_PackageLastErrorPath). The name is the original's (its DirectSound primary/secondary buffer
+   setup); 0x17, 0x18 (no DirectDraw adapter / display mode) and 0x25 (DirectInput mouse setup) were the
+   original's other startup errors of the DirectX backend and are no longer returned. */
 #define FATAL_ERROR_DIRECTSOUND_SETUP 0x29
 /* Generic failure code returned as a failure by many helpers (package mount/lookup, PCK codec, text copies,
    runtime pools); InGameRuntime_RunSessionUntilExit returns it when the UI root stack runs empty */
@@ -46,8 +47,9 @@
 /* Network socket setup/send failed (NetworkFallback_OpenAndBindUdpSocket, NetworkFallback_SendDatagram); the
    WSAGetLastError code is left in g_PackageLastErrorPath */
 #define FATAL_ERROR_NETWORK_SOCKET 0x2A
-/* No network backend: the default g_NetworkBackendSlot0/Slot2 entries (NetworkBackendFallback_Slot0/2, left in
-   place when Network_Init could not start WinSock) return it; the frontend reports it when no backend opens */
+/* No network backend: the default g_NetworkBackendSlot0/Slot2 entries (NetworkBackendFallback_SetSessionContext /
+   NetworkBackendFallback_OpenAndBindUdpSocket, left in place when Network_Init could not start WinSock) return it;
+   the frontend reports it when no backend opens */
 #define FATAL_ERROR_NETWORK_UNAVAILABLE 0x2B
 /* SdlAudio_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 */
 #define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
@@ -112,8 +114,9 @@
 #define FATAL_ERROR_ARMY_REGISTRY_FULL 0x42 /* all 768 army registry slots are taken */
 #define FATAL_ERROR_ARMY_ID_DUPLICATE 0x4C /* ArmyAssetRecord_RegisterAndRelocate: an army id is registered twice
                                               (the id is left in g_PackageLastErrorPath) */
-/* Display mode switch (SdlVideo_ApplyDisplayMode): the frame's texture cannot be created (the original's
-   DirectDraw surface creation error; 0x19, 0x1A and 0x1C were its other DirectDraw setup steps) */
+/* Display mode switch (SdlVideo_ApplyDisplayMode): no renderer starts or the frame's SDL texture cannot be
+   created ("0" is left in g_PackageLastErrorPath). The name is the original's DirectDraw surface creation error;
+   0x19, 0x1A and 0x1C were its other DirectDraw setup steps and are no longer returned. */
 #define FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES 0x1B
 /* 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors) */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */

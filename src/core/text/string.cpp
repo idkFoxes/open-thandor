@@ -161,7 +161,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
 /* Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order
    of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater. A string that ends first
    compares as greater (1), equal (0) only when both end together. (The original returned the order in CPU
-   flags; the name keeps "Flags" because the generated image data refers to it.)
+   flags, hence "Flags" in the name.)
 */
 int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
 

@@ -19,10 +19,6 @@ typedef union _union_518 _union_518, *P_union_518;
 typedef struct _struct_519 _struct_519, *P_struct_519;
 typedef struct _SECURITY_ATTRIBUTES _SECURITY_ATTRIBUTES, *P_SECURITY_ATTRIBUTES;
 typedef struct _SYSTEMTIME _SYSTEMTIME, *P_SYSTEMTIME;
-typedef struct _COORD _COORD, *P_COORD;
-typedef struct _SMALL_RECT _SMALL_RECT, *P_SMALL_RECT;
-typedef struct _CONSOLE_SCREEN_BUFFER_INFO _CONSOLE_SCREEN_BUFFER_INFO, *P_CONSOLE_SCREEN_BUFFER_INFO;
-typedef struct _CONSOLE_READCONSOLE_CONTROL _CONSOLE_READCONSOLE_CONTROL, *P_CONSOLE_READCONSOLE_CONTROL;
 typedef struct HWND__ HWND__, *PHWND__;
 typedef struct Win32SystemTime16 Win32SystemTime16, *PWin32SystemTime16;
 typedef struct LocaleSystemState LocaleSystemState, *PLocaleSystemState;
@@ -92,45 +88,6 @@ typedef struct _SECURITY_ATTRIBUTES *LPSECURITY_ATTRIBUTES;
 typedef struct _WIN32_FIND_DATAA *LPWIN32_FIND_DATAA;
 
 typedef struct _SYSTEMTIME *LPSYSTEMTIME;
-
-using SHORT = short;
-
-struct _COORD {
-    SHORT X;
-    SHORT Y;
-};
-
-typedef struct _COORD COORD;
-
-struct _SMALL_RECT {
-    SHORT Left;
-    SHORT Top;
-    SHORT Right;
-    SHORT Bottom;
-};
-
-typedef struct _SMALL_RECT SMALL_RECT;
-
-struct _CONSOLE_SCREEN_BUFFER_INFO {
-    COORD dwSize;
-    COORD dwCursorPosition;
-    WORD wAttributes;
-    SMALL_RECT srWindow;
-    COORD dwMaximumWindowSize;
-};
-
-typedef struct _CONSOLE_READCONSOLE_CONTROL *PCONSOLE_READCONSOLE_CONTROL;
-
-using ULONG = uint32_t;
-
-struct _CONSOLE_READCONSOLE_CONTROL {
-    ULONG nLength;
-    ULONG nInitialChars;
-    ULONG dwCtrlWakeupMask;
-    ULONG dwControlKeyState;
-};
-
-typedef struct _CONSOLE_SCREEN_BUFFER_INFO *PCONSOLE_SCREEN_BUFFER_INFO;
 
 using va_list = char *;
 
@@ -224,8 +181,6 @@ using SIZE_T = ULONG_PTR;
 using LPDWORD = DWORD *;
 
 using HMODULE = HINSTANCE;
-
-using HLOCAL = HANDLE;
 
 using LPLONG = long *;
 
