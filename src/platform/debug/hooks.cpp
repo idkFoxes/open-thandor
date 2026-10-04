@@ -74,6 +74,11 @@ int DebugHook_Windowed()
   return Thandor_TestAidWindowed();
 }
 
+int DebugHook_WindowMinimized()
+{
+  return Thandor_TestAidWindowMinimized();
+}
+
 /* --- input --- */
 
 int DebugHook_IgnoreRealMouse()

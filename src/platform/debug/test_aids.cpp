@@ -105,6 +105,17 @@ int Thandor_TestAidWindowed()
     static int enabled = -1;
     if (enabled < 0) {
         const char *value = getenv("OPEN_THANDOR_WINDOWED");
+        enabled = (value != nullptr && value[0] == '1') || Thandor_TestAidWindowMinimized();
+    }
+    return enabled;
+}
+
+/* Test aid (not in the original): see test_aids.h. */
+int Thandor_TestAidWindowMinimized()
+{
+    static int enabled = -1;
+    if (enabled < 0) {
+        const char *value = getenv("OPEN_THANDOR_WINDOW_MINIMIZED");
         enabled = value != nullptr && value[0] == '1';
     }
     return enabled;
