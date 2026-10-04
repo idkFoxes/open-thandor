@@ -11,11 +11,11 @@
 
 /* Module data. */
 
-GraphicsTextureSet *g_EffectTextureSet = 0;
+GraphicsTextureSet *g_EffectTextureSet = nullptr;
 
-GraphicsPaletteAsset *g_EffectPalette = 0;
+GraphicsPaletteAsset *g_EffectPalette = nullptr;
 
-EffectRuntimeSlot *g_EffectRuntimeSlots = 0;
+EffectRuntimeSlot *g_EffectRuntimeSlots = nullptr;
 
 /* Implementation ownership: world/effects/pool. */
 
@@ -30,7 +30,7 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
   EffectDefinition *registryDefinition;
 
   registryDefinition = EffectDefinitionRegistry_LookupById(definitionId);
-  if (registryDefinition == NULL) {
+  if (registryDefinition == nullptr) {
     /* Original quirk: the error text gets the last registry slot's pointer (what the original's scan loaded
        last), not the requested id */
     g_WideNumberFormatUtf16
@@ -60,7 +60,7 @@ Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *ou
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   loadedTextureSet = g_GraphicsTextureSetLoadPackage(mutableBasePath,&error);
-  if (loadedTextureSet == NULL) {
+  if (loadedTextureSet == nullptr) {
     *outError = error;
     return false;
   }
@@ -68,7 +68,7 @@ Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *ou
   g_EffectTextureSet = loadedTextureSet;
   WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
   loadedPalette = g_GraphicsPaletteAssetLoadPackage(mutableBasePath,&error);
-  if (loadedPalette == NULL) {
+  if (loadedPalette == nullptr) {
     *outError = error;
     return false;
   }
@@ -104,23 +104,23 @@ void EffectRuntime_ShutdownGraphicsResources(void)
   EffectDefinition *currentDefinition;
   
   g_MemoryApi.free(g_EffectRuntimeSlots);
-  g_EffectRuntimeSlots = NULL;
-  if (g_EffectTextureSet != NULL) {
+  g_EffectRuntimeSlots = nullptr;
+  if (g_EffectTextureSet != nullptr) {
     g_GraphicsTextureSetReleasePackage(g_EffectTextureSet);
-    g_EffectTextureSet = NULL;
+    g_EffectTextureSet = nullptr;
   }
-  if (g_EffectPalette != NULL) {
+  if (g_EffectPalette != nullptr) {
     g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_EffectPalette);
-    g_EffectPalette = NULL;
+    g_EffectPalette = nullptr;
   }
   registryCursor = g_EffectDefinitionRegistry;
   for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     currentDefinition = *registryCursor;
-    if (currentDefinition != NULL && currentDefinition->ownedNestedResourcePresent != 0) {
+    if (currentDefinition != nullptr && currentDefinition->ownedNestedResourcePresent != 0) {
       Resource_Release(currentDefinition->ownedNestedResource);
     }
-    *registryCursor = NULL;
+    *registryCursor = nullptr;
     registryCursor++;
   }
 }
@@ -144,13 +144,13 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
   g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
   for (effectSlotIndex = 0; effectSlotIndex < EFFECT_RUNTIME_SLOT_COUNT; effectSlotIndex++) {
     effectSlot = &g_EffectRuntimeSlots[effectSlotIndex];
-    if (effectSlot->modelNodeOrSavedOffset.modelNode == NULL) {
+    if (effectSlot->modelNodeOrSavedOffset.modelNode == nullptr) {
       continue;
     }
     /* saved offset + pool base - 1 */
     slotCompletionAction = effectSlot->completionAction;
     ownerModelNode = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
-    if (ownerModelNode != NULL) {
+    if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
         ownerModelNode = (ModelRuntimeNode *)((uint8_t *)ownerModelNode + g_ModelRuntimeRebaseDelta);
       }
@@ -164,18 +164,18 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
          (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
     effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
     /* the slot holds the saved definition id here */
-    registryDefinition = NULL;
+    registryDefinition = nullptr;
     for (registryIndex = 0; registryIndex < EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
       registryDefinition = g_EffectDefinitionRegistry[registryIndex];
       /* 5f-format: EffectRuntimeSlot.definitionOrSavedId */
-      if (registryDefinition != NULL &&
+      if (registryDefinition != nullptr &&
           effectSlot->definitionOrSavedId.definition == Thandor_U32ToPointer<EffectDefinition>(registryDefinition->definitionId)) {
         break;
       }
     }
     if (registryIndex == EFFECT_DEFINITION_REGISTRY_SLOT_COUNT) {
       /* saved definition no longer registered: drop the effect (definition = last registry entry) */
-      effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
+      effectSlot->modelNodeOrSavedOffset.modelNode = nullptr;
     }
     effectSlot->definitionOrSavedId.definition = registryDefinition;
   }
@@ -224,27 +224,27 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   uint32_t soundTableIndex;
 
   DebugHook_NoteOutsideStep("effect creation");
-  if (effectDefinition == NULL) {
+  if (effectDefinition == nullptr) {
     /* the original reports success with the pool base */
     return g_EffectRuntimeSlots;
   }
-  if (g_EffectRuntimeSlots == NULL) {
-    return NULL;
+  if (g_EffectRuntimeSlots == nullptr) {
+    return nullptr;
   }
   /* first free slot */
-  effectSlot = NULL;
+  effectSlot = nullptr;
   for (slotIndex = 0; slotIndex < EFFECT_RUNTIME_SLOT_COUNT; slotIndex++) {
-    if (g_EffectRuntimeSlots[slotIndex].modelNodeOrSavedOffset.modelNode == NULL) {
+    if (g_EffectRuntimeSlots[slotIndex].modelNodeOrSavedOffset.modelNode == nullptr) {
       effectSlot = &g_EffectRuntimeSlots[slotIndex];
       break;
     }
   }
-  if (effectSlot == NULL) {
-    return NULL;
+  if (effectSlot == nullptr) {
+    return nullptr;
   }
   effectModelNode = (EffectModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
-  if (effectModelNode == NULL) {
-    return NULL;
+  if (effectModelNode == nullptr) {
+    return nullptr;
   }
   WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)effectModelNode);
   effectSlot->modelNodeOrSavedOffset.modelNode = (ModelRuntimeNode *)effectModelNode;
@@ -282,8 +282,8 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->modelPayload.meshGroupMask = UINT32_MAX; /* all mesh groups */
   effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | (MODEL_RUNTIME_FLAG_APPLY_SCALE | MODEL_NODE_FLAG_TRANSFORM_DIRTY);
   effectModelNode->textureSubresourceBaseIndex = 0;
-  effectModelNode->modelRuntimeLinkOrSavedOffset = NULL;
-  effectModelNode->parentNode = NULL;
+  effectModelNode->modelRuntimeLinkOrSavedOffset = nullptr;
+  effectModelNode->parentNode = nullptr;
   effectModelNode->childCount = 0;
   effectSlot->animationFramesRemaining = frameCount;
   effectSlot->linkedEffectPresent = effectLinkPresent;
@@ -313,7 +313,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
                         effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
   }
   else {
-    effectModelNode->shadingRecord = NULL;
+    effectModelNode->shadingRecord = nullptr;
   }
   completionCountdownTicks = effectDefinition->completionCountdownTicks;
   soundTableIndex = effectDefinition->soundSlotIndex;
@@ -332,9 +332,9 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   effectModelNode->tintArgb = 0xffffff;
   if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
-      worldRuntime->dwordArray != NULL) {
+      worldRuntime->dwordArray != nullptr) {
     voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex];
-    if (voiceSetRef != NULL) {
+    if (voiceSetRef != nullptr) {
       worldPosition = &effectModelNode->worldTransform.translation;
       projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01
                          (effectModelNode->worldTransform.translation.y,worldPosition->x,worldRuntime);

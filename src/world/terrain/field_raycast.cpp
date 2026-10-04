@@ -73,7 +73,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
                           currentCell[1].terrainHeight,currentCell->terrainHeight,
                           currentRowQ12 + rayStartHalfRowQ12 * -2,currentColumnQ12 - rayStartColumnQ12,
                           outDistanceQ12)) {
-        if (outMaterialIndex != NULL) {
+        if (outMaterialIndex != nullptr) {
           *outMaterialIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
         }
         return true;
@@ -93,7 +93,7 @@ Bool8 FieldGrid_RaycastTerrainSurfaceDistance
   /* Original quirk: a miss leaves the material output as the current row coordinate (or end row - current row
      when the traversal reached the ray end). Callers that copy the material unconditionally get this value, but
      none uses it on a miss (shots index their impact table only with a terrain distance within range). */
-  if (outMaterialIndex != NULL) {
+  if (outMaterialIndex != nullptr) {
     *outMaterialIndex = currentRowQ12;
   }
   *outDistanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;

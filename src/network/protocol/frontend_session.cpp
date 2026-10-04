@@ -45,7 +45,7 @@ static FrontendPlayerRuntimeRecord *FrontendNetwork_FindPlayerBySender
     playerRecord++;
     remainingPlayers--;
     if (remainingPlayers == 0) {
-      return NULL;
+      return nullptr;
     }
   }
   return playerRecord;
@@ -80,7 +80,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 
   if (packetType == FRONTEND_PACKET_10011_LOBBY_COMMAND) {
     playerRecord = FrontendNetwork_FindPlayerBySender(sequenceToken,senderAddress);
-    if (playerRecord == NULL) {
+    if (playerRecord == nullptr) {
       return;
     }
     /* the command records run parallel to the player records */
@@ -103,7 +103,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 
   if (packetType == FRONTEND_PACKET_10013_WAIT_ACK) {
     playerRecord = FrontendNetwork_FindPlayerBySender(sequenceToken,senderAddress);
-    if (playerRecord != NULL) {
+    if (playerRecord != nullptr) {
       playerRecord->heartbeatExpiryTicks = FRONTEND_PEER_TIMEOUT_TICKS;
     }
     return;
@@ -111,7 +111,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 
   if (packetType == FRONTEND_PACKET_10004_SNAPSHOT_REQUEST) {
     playerRecord = FrontendNetwork_FindPlayerBySender(sequenceToken,senderAddress);
-    if (playerRecord == NULL) {
+    if (playerRecord == nullptr) {
       return;
     }
     requestedPlayerIndex = packet->packet10004PlayerSnapshotRequest.requestedPlayerIndex;
@@ -135,7 +135,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
     return;
   }
   playerRecord = FrontendNetwork_FindPlayerBySender(sequenceToken,senderAddress);
-  if (playerRecord == NULL) {
+  if (playerRecord == nullptr) {
     return;
   }
   /* only the chunk at the expected offset of an incomplete snapshot is stored */
@@ -273,7 +273,7 @@ static void FrontendNetwork_PublishSnapshots(void)
   /* encoded behind the packed data, after a size dword; the size and the encoded bytes are then copied out */
   if (!PckCodec_EncodeHuffmanRle
            (PACKAGE_SCRATCH_BUFFER_BYTES - 4 - packedSizeBytes,(uint8_t *)(scratchCursor + 1),packedSizeBytes,
-            g_PackageScratchBuffer,&encodedByteCount,NULL)) {
+            g_PackageScratchBuffer,&encodedByteCount,nullptr)) {
     return;
   }
   *scratchCursor = packedSizeBytes;

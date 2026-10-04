@@ -26,13 +26,13 @@ void DebugAutoShot_Tick(void)
   unsigned now;
   if (interval < 0) {
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
-    interval = (value != NULL) ? atoi(value) : 0;
+    interval = (value != nullptr) ? atoi(value) : 0;
     if (interval > 0) {
-      CreateDirectoryA((LPCSTR)"shots", NULL);
+      CreateDirectoryA((LPCSTR)"shots", nullptr);
     }
     last = Thandor_TickCount();
   }
-  if (interval <= 0 || g_GraphicsFramebufferCaptureRegion == NULL || g_FramebufferWidth == 0) {
+  if (interval <= 0 || g_GraphicsFramebufferCaptureRegion == nullptr || g_FramebufferWidth == 0) {
     return;
   }
   now = Thandor_TickCount();
@@ -46,11 +46,11 @@ void DebugAutoShot_Tick(void)
 void DebugAutoShot_SaveNow(void)
 {
   static unsigned number;
-  if (g_GraphicsFramebufferCaptureRegion == NULL || g_FramebufferWidth == 0) {
+  if (g_GraphicsFramebufferCaptureRegion == nullptr || g_FramebufferWidth == 0) {
     Thandor_Log("script shot: no framebuffer yet");
     return;
   }
-  CreateDirectoryA((LPCSTR)"shots", NULL);
+  CreateDirectoryA((LPCSTR)"shots", nullptr);
   DebugAutoShot_Save("script", &number);
 }
 
@@ -59,11 +59,11 @@ static void DebugAutoShot_Save(const char *prefix, unsigned *number)
 {
   GraphicsCapturedTextureSourceAsset *capture;
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-  if (capture == NULL) {
+  if (capture == nullptr) {
     Thandor_Log("autoshot failed: backend access state %d, frame heartbeat %u",
                 (int)g_GraphicsBackendAccessState, g_ThandorFrameHeartbeat);
   }
-  if (capture != NULL) {
+  if (capture != nullptr) {
     GraphicsTextureSourceEntry *entry = &capture->sourceEntry;
     const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture + entry->dataOffset);
     uint32_t width = entry->pixelWidth;
@@ -72,7 +72,7 @@ static void DebugAutoShot_Save(const char *prefix, unsigned *number)
     FILE *file;
     sprintf(name, "shots\\%s_%04u.bmp", prefix, (*number)++);
     file = fopen(name, "wb");
-    if (file != NULL) {
+    if (file != nullptr) {
       /* "BM" + the rest of BITMAPFILEHEADER (14 bytes) and a BITMAPINFOHEADER (40 bytes): 32-bit top-down */
       uint32_t header[13];
       uint32_t imageBytes = width * height * 4;

@@ -410,7 +410,7 @@ static const CommandTableEntry *CommandDispatch_TableForBase(uint32_t codeBase,u
     return g_InGameCommandTable;
   }
   *outCount = 0;
-  return NULL;
+  return nullptr;
 }
 
 
@@ -431,7 +431,7 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
   uint32_t index;
 
   if (codeBase + code >= originalRegionEnd) {
-    return NULL;
+    return nullptr;
   }
   table = CommandDispatch_TableForBase(codeBase,&count);
   for (index = 0; index < count; index++) {
@@ -450,7 +450,7 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
     s_loggedInvalidCode = 1;
     Thandor_Log("network: command code 0x%X (base 0x%08X) is no command handler, ignored",code,codeBase);
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -485,7 +485,7 @@ static Bool8 CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIn
   const UiListControl *list;
 
   list = (const UiListControl *)listNode;
-  return list->rowSlots == NULL || rowIndex < list->rowCount;
+  return list->rowSlots == nullptr || rowIndex < list->rowCount;
 }
 
 /* Applies one CommandPayloadCheck to a payload dword. */
@@ -547,7 +547,7 @@ static Bool8 CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQue
   code = record->packedCommandAndPlayerId >> 8;
   playerId = record->packedCommandAndPlayerId & 0xff;
   if (codeBase == INGAME_COMMAND_CODE_BASE) {
-    if (g_SelectionPlayerRuntimeBlockPointers[playerId] == NULL) {
+    if (g_SelectionPlayerRuntimeBlockPointers[playerId] == nullptr) {
       if (s_loggedUnknownPlayer == 0) {
         s_loggedUnknownPlayer = 1;
         Thandor_Log("network: command 0x%X names player %u without a player block, dropped",code,playerId);
@@ -598,7 +598,7 @@ void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,
     return;
   }
   commandHandler = CommandDispatch_ResolveHandler(codeBase,originalRegionEnd,code);
-  if (commandHandler == NULL || !CommandDispatch_ValidateRecord(codeBase,record)) {
+  if (commandHandler == nullptr || !CommandDispatch_ValidateRecord(codeBase,record)) {
     return;
   }
   (*commandHandler)(record->packedCommandAndPlayerId & 0xff,record->payload1,record->payload2,record->payload3);

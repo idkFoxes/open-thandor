@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) CommandLineFindOptionProc *g_CommandLineFindOption = 0;
+THANDOR_ALIGN(4) CommandLineFindOptionProc *g_CommandLineFindOption = nullptr;
 
 static CommandLineWideArguments g_CommandLineWideArguments = {0};
 
@@ -109,7 +109,7 @@ static uint16_t g_FlmIntro0FlmPathUtf16[15] = {'f', 'l', 'm', '\\', 'i', 'n', 't
 
 static char g_CommandLineOptionNoIntro[8] = "NOINTRO";
 
-static DynamicModuleEntry g_DynamicModules[16] = {0};
+static DynamicModuleEntry g_DynamicModules[16] = {};
 
 static uint32_t g_DynamicModuleCount = 0;
 
@@ -139,7 +139,7 @@ uint16_t g_DatenHexPathUtf16[10] = {'d', 'a', 't', 'e', 'n', '.', 'h', 'e', 'x',
 
 uint16_t g_StatHexPathUtf16[9] = {'s', 't', 'a', 't', '.', 'h', 'e', 'x', 0}; /* L"stat.hex" */
 
-void *g_GameStatTableImage = 0;
+void *g_GameStatTableImage = nullptr;
 
 GameDataAuxState g_GameDataAuxState = {0};
 
@@ -169,9 +169,9 @@ DynamicApiBinding g_BootstrapApiBindings[6] = {
         .destination = THANDOR_PTR(g_BootstrapApiName_RegQueryValueExA),
         .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
         /* 4 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegCloseKey), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
-        /* 5: terminator */ {0}};
+        /* 5: terminator */ {}};
 
-HWND g_MainWindow = 0;
+HWND g_MainWindow = nullptr;
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
@@ -217,7 +217,7 @@ static void ProcessEntry_RunGame(void)
   Thandor_Log("SdlAudio_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
   if (soundError != 0) {
     /* without a sound device the game only stops when -SOUND demands sound */
-    if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
+    if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != nullptr) {
       FatalError_ExitIfFailed(soundError,true);
     }
   }
@@ -256,7 +256,7 @@ void __cdecl ProcessEntry(void)
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
   /* the window has SDL's class, so the running instance is found by its title */
-  if ((FindWindowA(NULL,sz_MainWindowTitle) == NULL) || DebugHook_AllowSecondInstance()) {
+  if ((FindWindowA(nullptr,sz_MainWindowTitle) == nullptr) || DebugHook_AllowSecondInstance()) {
     if (SdlPlatform_CreateMainWindow(sz_MainWindowTitle)) {
       ProcessEntry_RunGame();
       SdlPlatform_Quit();
@@ -370,20 +370,20 @@ Bool8 GameData_LoadExternalTables(void)
   }
   if (!Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
-                     (uint16_t *)g_DatenHexPathUtf16,NULL)) {
+                     (uint16_t *)g_DatenHexPathUtf16,nullptr)) {
     return true;
   }
-  statTable = Package_LoadEntry((uint16_t *)g_StatHexPathUtf16,NULL);
+  statTable = Package_LoadEntry((uint16_t *)g_StatHexPathUtf16,nullptr);
   previousStatTable = g_GameStatTableImage;
-  if (statTable == NULL) {
+  if (statTable == nullptr) {
     return true;
   }
   LOCK();
   UNLOCK();
   g_GameStatTableImage = statTable;
   g_MemoryApi.free(previousStatTable);
-  oldUnitBuffer = (uint32_t *)Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,NULL);
-  if (oldUnitBuffer == NULL) {
+  oldUnitBuffer = (uint32_t *)Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,nullptr);
+  if (oldUnitBuffer == nullptr) {
     clearCursor = g_OldUnitPrimaryTable;
     for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
       *clearCursor = 0;
@@ -431,7 +431,7 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
   Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
-  if (resolvedProcedure != NULL) {
+  if (resolvedProcedure != nullptr) {
     *destination = (void *)resolvedProcedure;
     return 0;
   }
@@ -468,14 +468,14 @@ HINSTANCE DynDLL_Load(char *moduleName)
   {
     loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(moduleName);
     moduleSlotIndex = g_DynamicModuleCount;
-    if (loadedModule != NULL) {
+    if (loadedModule != nullptr) {
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       g_DynamicModuleCount++;
       return loadedModule;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -492,9 +492,9 @@ void DynDLL_UnloadAll(void)
   moduleEntryCursor = g_DynamicModules;
   for (modulesRemaining = g_DynamicModuleCount; modulesRemaining != 0;
       modulesRemaining = modulesRemaining - 1) {
-    if (moduleEntryCursor->module != NULL) {
+    if (moduleEntryCursor->module != nullptr) {
       loadedModule = moduleEntryCursor->module;
-      moduleEntryCursor->module = NULL;
+      moduleEntryCursor->module = nullptr;
       ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(loadedModule);
     }
     moduleEntryCursor++;
@@ -618,7 +618,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     return;
   }
   status = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
-             (g_InstallRegistryKeyHandle,g_InstallRegistryValueNameCD,0,
+             (g_InstallRegistryKeyHandle,g_InstallRegistryValueNameCD,nullptr,
               &g_InstallRegistryValueType,g_InstallRegistryValueDataA,
               &g_InstallRegistryValueDataCapacityBytes);
   if ((status == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
@@ -677,7 +677,7 @@ static void CoreAssets_MountPackages(void)
   g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
   do {
     do {
-      Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits,NULL);
+      Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits,nullptr);
       g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
     } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
@@ -725,7 +725,7 @@ static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet
   DirectSoundVoiceSet *voiceSet;
   uint32_t voiceSetError;
 
-  if (!Resource_Load(samplePath,(void **)&sample,NULL,error)) {
+  if (!Resource_Load(samplePath,(void **)&sample,nullptr,error)) {
     return false;
   }
   voiceSetError = g_SoundCreateSampleVoiceSet(sample,&voiceSet);
@@ -794,7 +794,7 @@ void Screenshot_SaveFramebufferAsPcx(void)
   uint32_t pcxError;
 
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-  if (capture == NULL) {
+  if (capture == nullptr) {
     return;
   }
   if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
@@ -1127,7 +1127,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
      written in C, graphics/resources/pcx_read.c and pcx_write.c. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
                      ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
-  if (panelTexture == NULL) {
+  if (panelTexture == nullptr) {
     return panelTextureError;
   }
   ((UiImagePanelControl *)&g_InGameRuntimeDefaultImageTemplate.resultsScreenPanel)->textureSource = panelTexture;
@@ -1171,7 +1171,7 @@ static Bool8 IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
 
   /* catch up at most three frames per pass */
   for (frameAdvanceBudget = 3; frameAdvanceBudget != 0; frameAdvanceBudget--) {
-    if (!Movie_AdvanceFrame(NULL,NULL)) {
+    if (!Movie_AdvanceFrame(nullptr,nullptr)) {
       return false;
     }
     frameHeightSnapshot = g_FramebufferHeight;
@@ -1226,10 +1226,10 @@ Bool8 Game_PlayIntroMovies(void)
     g_GraphicsFramebufferEndAccess();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
   }
-  if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == NULL) {
+  if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == nullptr) {
     /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
-    while (Movie_Open(1,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,NULL)) {
-      if (!Movie_AdvanceFrame(&introMovie,NULL)) {
+    while (Movie_Open(1,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,nullptr)) {
+      if (!Movie_AdvanceFrame(&introMovie,nullptr)) {
         Movie_Close();
         return true;
       }
@@ -1266,10 +1266,10 @@ uint32_t DynAPI_Bootstrap(void)
   char *moduleName;
   uint32_t moduleSlotIndex;
 
-  for (bindingCursor = g_BootstrapApiBindings; bindingCursor->destination != NULL; bindingCursor++) {
+  for (bindingCursor = g_BootstrapApiBindings; bindingCursor->destination != nullptr; bindingCursor++) {
     procedureName = bindingCursor->destination;
     module = GetModuleHandleA(bindingCursor->moduleName);
-    if (module == NULL) {
+    if (module == nullptr) {
       /* dynapi_9 is the string "LoadLibraryA": without its module nothing can be loaded */
       if (bindingCursor->destination == (void **)dynapi_9) {
         Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
@@ -1277,7 +1277,7 @@ uint32_t DynAPI_Bootstrap(void)
       }
       module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
-      if (module == NULL) {
+      if (module == nullptr) {
         Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         return FATAL_ERROR_DLL_LOAD_FAILED;
       }
@@ -1288,7 +1288,7 @@ uint32_t DynAPI_Bootstrap(void)
       procedureName = bindingCursor->destination;
     }
     resolvedProcedure = (void **)GetProcAddress(module,(LPCSTR)procedureName);
-    if (resolvedProcedure == NULL) {
+    if (resolvedProcedure == nullptr) {
       Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
       Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
       return FATAL_ERROR_DLL_PROCEDURE_MISSING;
@@ -1344,7 +1344,7 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
     }
     storedOption = scanCursor;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1372,7 +1372,7 @@ static char *CommandLine_FindFreeArgumentSlot(void)
   if (g_CommandLine.argument3[0] == '\0') {
     return g_CommandLine.argument3;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1387,7 +1387,7 @@ static uint8_t *CommandLine_SkipPast(uint8_t *cursor,uint8_t terminator)
     currentChar = *cursor;
     cursor++;
     if (currentChar == '\0') {
-      return NULL;
+      return nullptr;
     }
   } while (currentChar != terminator);
   return cursor;
@@ -1406,7 +1406,7 @@ static uint8_t *CommandLine_CopyUppercasedUntil(uint8_t *cursor,char *destinatio
   while (currentChar != terminator) {
     *destination = currentChar;
     if (currentChar == '\0') {
-      return NULL;
+      return nullptr;
     }
     destination++;
     cursor++;
@@ -1436,7 +1436,7 @@ static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
         *pathWrite = '\0';
         /* no closing quote: the path is discarded */
         g_CommandLine.executablePath[0] = '\0';
-        return NULL;
+        return nullptr;
       }
       *pathWrite = currentChar;
       pathWrite++;
@@ -1450,7 +1450,7 @@ static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
     while (currentChar != ' ') {
       *pathWrite = currentChar;
       if (currentChar == '\0') {
-        return NULL;
+        return nullptr;
       }
       pathWrite++;
       currentChar = *cursor;
@@ -1478,7 +1478,7 @@ static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite)
     *write = currentChar;
     write++;
     if (currentChar == '\0') {
-      return NULL;
+      return nullptr;
     }
     if (currentChar == '"') {
       do {
@@ -1487,7 +1487,7 @@ static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite)
         cursor++;
         write++;
         if (currentChar == '\0') {
-          return NULL;
+          return nullptr;
         }
       } while (currentChar != '"');
     }
@@ -1509,7 +1509,7 @@ static uint8_t *CommandLine_CopyQuotedArgument(uint8_t *cursor)
   char *argumentSlot;
 
   argumentSlot = CommandLine_FindFreeArgumentSlot();
-  if (argumentSlot == NULL) {
+  if (argumentSlot == nullptr) {
     return CommandLine_SkipPast(cursor,'"');
   }
   /* Original quirk: parsing continues ON the closing quote, which is then read again as the opening quote
@@ -1527,7 +1527,7 @@ static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
   char *argumentSlot;
 
   argumentSlot = CommandLine_FindFreeArgumentSlot();
-  if (argumentSlot == NULL) {
+  if (argumentSlot == nullptr) {
     return CommandLine_SkipPast(cursor,' ');
   }
   argumentSlot[0] = CommandLine_UppercaseAscii(firstChar);
@@ -1553,7 +1553,7 @@ void CommandLine_Parse(void)
   commandLineCursor = CommandLine_CopyExecutablePath((uint8_t *)GetCommandLineA());
   optionWrite = g_CommandLine.optionBuffer;
   /* options and positional arguments, until the terminating NUL (a NULL cursor: it ended inside one) */
-  while (commandLineCursor != NULL) {
+  while (commandLineCursor != nullptr) {
     currentChar = *commandLineCursor;
     commandLineCursor++;
     if (currentChar == '\0') {

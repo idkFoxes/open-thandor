@@ -24,41 +24,41 @@ THANDOR_ALIGN(4) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = TH
 
 THANDOR_ALIGN(8) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = THANDOR_FN(NetworkBackendFallback_FormatPeerAddress);
 
-NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = 0;
+NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = nullptr;
 
 NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = THANDOR_FN(NetworkBackendFallback_ReceiveDatagram);
 
 NetworkBackendSendCallback *g_NetworkBackendSlot5 = THANDOR_FN(NetworkBackendFallback_SendDatagram);
 
-WinSock_bindProc *g_WinSock_bind = 0;
+WinSock_bindProc *g_WinSock_bind = nullptr;
 
-WinSock_closesocketProc *g_WinSock_closesocket = 0;
+WinSock_closesocketProc *g_WinSock_closesocket = nullptr;
 
-WinSock_htonsProc *g_WinSock_htons = 0;
+WinSock_htonsProc *g_WinSock_htons = nullptr;
 
-WinSock_inet_addrProc *g_WinSock_inet_addr = 0;
+WinSock_inet_addrProc *g_WinSock_inet_addr = nullptr;
 
-WinSock_inet_ntoaProc *g_WinSock_inet_ntoa = 0;
+WinSock_inet_ntoaProc *g_WinSock_inet_ntoa = nullptr;
 
-WinSock_ioctlsocketProc *g_WinSock_ioctlsocket = 0;
+WinSock_ioctlsocketProc *g_WinSock_ioctlsocket = nullptr;
 
-WinSock_recvfromProc *g_WinSock_recvfrom = 0;
+WinSock_recvfromProc *g_WinSock_recvfrom = nullptr;
 
-WinSock_sendtoProc *g_WinSock_sendto = 0;
+WinSock_sendtoProc *g_WinSock_sendto = nullptr;
 
-WinSock_setsockoptProc *g_WinSock_setsockopt = 0;
+WinSock_setsockoptProc *g_WinSock_setsockopt = nullptr;
 
-WinSock_socketProc *g_WinSock_socket = 0;
+WinSock_socketProc *g_WinSock_socket = nullptr;
 
-WinSock_gethostbynameProc *g_WinSock_gethostbyname = 0;
+WinSock_gethostbynameProc *g_WinSock_gethostbyname = nullptr;
 
-WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError = 0;
+WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError = nullptr;
 
-static NetworkSessionContext *g_NetworkBackendSessionContext = 0;
+static NetworkSessionContext *g_NetworkBackendSessionContext = nullptr;
 
-static WinSock_WSACleanupProc *g_WinSock_WSACleanup = 0;
+static WinSock_WSACleanupProc *g_WinSock_WSACleanup = nullptr;
 
-static WinSock_WSAStartupProc *g_WinSock_WSAStartup = 0;
+static WinSock_WSAStartupProc *g_WinSock_WSAStartup = nullptr;
 
 static char s_Wsock32ModuleName[8] = "WSOCK32";
 
@@ -113,7 +113,7 @@ uint32_t __cdecl Network_Init(void)
   uint32_t resolveError;
 
   module = DynDLL_Load(s_Wsock32ModuleName);
-  if (module == NULL) return FATAL_ERROR_DLL_LOAD_FAILED;
+  if (module == nullptr) return FATAL_ERROR_DLL_LOAD_FAILED;
   resolveError = DynAPI_Resolve((void **)&g_WinSock_bind,module,s_Wsock32Export_bind);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve((void **)&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);

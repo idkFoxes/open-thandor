@@ -20,12 +20,12 @@ static SelectionPlayerRuntimeBlock *FieldGridEdit_PlayerBlock(PlayerRuntimeId pl
   static Bool8 s_missingBlockLogged = false;
   SelectionPlayerRuntimeBlock *playerBlock;
 
-  playerBlock = NULL;
+  playerBlock = nullptr;
   if (playerRuntimeId <
       sizeof(g_SelectionPlayerRuntimeBlockPointers) / sizeof(g_SelectionPlayerRuntimeBlockPointers[0])) {
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   }
-  if ((playerBlock == NULL) && !s_missingBlockLogged) {
+  if ((playerBlock == nullptr) && !s_missingBlockLogged) {
     s_missingBlockLogged = true;
     Thandor_Log("terrain editor: command for player %u without a selection block, ignored",
                 (unsigned)playerRuntimeId);
@@ -43,11 +43,11 @@ int *FieldGridEdit_PlayerHeightPlane(PlayerRuntimeId playerRuntimeId)
   int *heightPlane;
 
   playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
-  if (playerBlock == NULL) {
-    return NULL;
+  if (playerBlock == nullptr) {
+    return nullptr;
   }
   heightPlane = playerBlock->terrainHeightScratchPlane;
-  if ((heightPlane == NULL) && !s_missingPlaneLogged) {
+  if ((heightPlane == nullptr) && !s_missingPlaneLogged) {
     s_missingPlaneLogged = true;
     Thandor_Log("terrain editor: player %u has no terrain height plane, height edit ignored",
                 (unsigned)playerRuntimeId);
@@ -63,11 +63,11 @@ uint32_t *FieldGridEdit_PlayerMaterialPlane(PlayerRuntimeId playerRuntimeId)
   uint32_t *materialPlane;
 
   playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
-  if (playerBlock == NULL) {
-    return NULL;
+  if (playerBlock == nullptr) {
+    return nullptr;
   }
   materialPlane = playerBlock->terrainMaterialEditPlane;
-  if ((materialPlane == NULL) && !s_missingPlaneLogged) {
+  if ((materialPlane == nullptr) && !s_missingPlaneLogged) {
     s_missingPlaneLogged = true;
     Thandor_Log("terrain editor: player %u has no material edit plane, material edit ignored",
                 (unsigned)playerRuntimeId);
@@ -157,7 +157,7 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   int *accumulatorPlane;
 
   accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (accumulatorPlane == NULL) {
+  if (accumulatorPlane == nullptr) {
     return;
   }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -245,7 +245,7 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   int *accumulatorPlane;
 
   accumulatorPlane = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (accumulatorPlane == NULL) {
+  if (accumulatorPlane == nullptr) {
     return;
   }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -324,7 +324,7 @@ void FieldGrid_RebuildLocalInfluenceState
   int *scratchHeightCursor;
   Bool8 containsAnchorPair;
   
-  if (FieldGridEdit_PlayerHeightPlane(playerRuntimeId) == NULL) {
+  if (FieldGridEdit_PlayerHeightPlane(playerRuntimeId) == nullptr) {
     return;
   }
   playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
@@ -403,7 +403,7 @@ void FieldGrid_ApplyLocalCellUpdate
   Bool8 containsAnchorPair;
   
   playerBlock = FieldGridEdit_PlayerBlock(playerRuntimeId);
-  if (playerBlock == NULL) {
+  if (playerBlock == nullptr) {
     return;
   }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -535,7 +535,7 @@ void FieldGrid_ClearPlayerScratchPlane
   FieldGridAsset *fieldGrid;
   
   scratchHeightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (scratchHeightCursor == NULL) {
+  if (scratchHeightCursor == nullptr) {
     return;
   }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -562,7 +562,7 @@ void FieldGrid_ResetLocalInfluenceState
   FieldGridAsset *fieldGrid;
   
   scratchHeightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (scratchHeightCursor == NULL) {
+  if (scratchHeightCursor == nullptr) {
     return;
   }
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;

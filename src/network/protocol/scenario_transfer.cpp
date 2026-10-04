@@ -33,7 +33,7 @@ static uintptr_t FrontendScenarioTransfer_AllocateOrExit(uint32_t byteCount)
 static Bool8 FrontendScenarioTransfer_DecodeFieldGrid
           (uint32_t decodedBytes,FieldGridAsset *destinationGrid,uint32_t encodedBytes,uint8_t *encodedGrid)
 {
-  return PckCodec_DecodeFieldGrid(decodedBytes,destinationGrid,encodedBytes,encodedGrid,NULL,NULL) &&
+  return PckCodec_DecodeFieldGrid(decodedBytes,destinationGrid,encodedBytes,encodedGrid,nullptr,nullptr) &&
          FieldGrid_ValidateLoadedImage(destinationGrid,decodedBytes);
 }
 
@@ -41,12 +41,12 @@ static Bool8 FrontendScenarioTransfer_DecodeFieldGrid
    the loaded field grid once one was attached (values above 0xFFFF are pointers). */
 void FrontendScenarioTransfer_ReleaseLoadedLevelAsset(void)
 {
-  if ((g_FrontendLoadedLevelAsset != NULL) &&
+  if ((g_FrontendLoadedLevelAsset != nullptr) &&
      (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
     Resource_Release(Thandor_U32ToPointer<void>((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
-  g_FrontendLoadedLevelAsset = NULL;
+  g_FrontendLoadedLevelAsset = nullptr;
 }
 
 /* Frees the received mailbox buffer and ends the transfer. */
@@ -185,7 +185,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
   int maskSlot;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-  if (receivedDwords == NULL) {
+  if (receivedDwords == nullptr) {
     return;
   }
   if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords < SCENARIO_CATALOG_HEADER_SIZE)) {
@@ -201,7 +201,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
   previousCatalogUsedBytes = g_ScenarioCatalogUsedBytes;
   g_ScenarioCatalog = (ScenarioCatalogHeader *)checkedValue;
   g_ScenarioCatalogUsedBytes = payloadSizeBytes;
-  if (!PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),NULL,NULL) ||
+  if (!PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),nullptr,nullptr) ||
       !FrontendScenarioTransfer_CatalogFits(g_ScenarioCatalog,payloadSizeBytes)) {
     /* keep the previous catalog */
     g_MemoryApi.free(g_ScenarioCatalog);
@@ -213,7 +213,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
   /* Mark every received level record (up to 96) that the previous catalog did not contain. */
   newRecordsRemaining = g_ScenarioCatalog->levelRecordCount;
-  if (previousCatalog != NULL) {
+  if (previousCatalog != nullptr) {
     oldRecordCount = previousCatalog->levelRecordCount;
     receivedRecord = (uint32_t *)((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
     oldLevelRecords = (uint32_t *)((uint8_t *)previousCatalog + previousCatalog->levelRecordsOffset);
@@ -248,7 +248,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevel(void)
   uint32_t payloadSizeBytes;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-  if (receivedDwords == NULL) {
+  if (receivedDwords == nullptr) {
     return;
   }
   if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords < sizeof(FrontendLoadedLevelAsset))) {
@@ -260,11 +260,11 @@ static void FrontendScenarioTransfer_ProcessReceivedLevel(void)
   g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(payloadSizeBytes);
   if (!PckCodec_DecodeHuffmanRle
             (payloadSizeBytes,(uint8_t *)g_FrontendLoadedLevelAsset,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),
-             NULL,NULL) ||
+             nullptr,nullptr) ||
       !FrontendScenarioTransfer_LevelPathFits(g_FrontendLoadedLevelAsset,payloadSizeBytes)) {
     /* the path offset field may hold anything: free the level alone */
     g_MemoryApi.free(g_FrontendLoadedLevelAsset);
-    g_FrontendLoadedLevelAsset = NULL;
+    g_FrontendLoadedLevelAsset = nullptr;
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"level");
     return;
   }
@@ -289,10 +289,10 @@ static void FrontendScenarioTransfer_ProcessReceivedFieldGrid(void)
   uint32_t previousPathState;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-  if (receivedDwords == NULL) {
+  if (receivedDwords == nullptr) {
     return;
   }
-  if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords == 0) || (g_FrontendLoadedLevelAsset == NULL)) {
+  if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords == 0) || (g_FrontendLoadedLevelAsset == nullptr)) {
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"field grid");
     return;
   }
@@ -336,7 +336,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
   bool decodeOk;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-  if (receivedDwords == NULL) {
+  if (receivedDwords == nullptr) {
     return;
   }
   bundle = (ScenarioCampaignBundleHeader *)receivedDwords;
@@ -354,19 +354,19 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
        (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(bundle->levelDecodedBytes);
   decodeOk = PckCodec_DecodeHuffmanRle
                  (bundle->levelDecodedBytes,(uint8_t *)g_FrontendLoadedLevelAsset,bundle->levelEncodedBytes,
-                  (uint8_t *)(bundle + 1),NULL,NULL) &&
+                  (uint8_t *)(bundle + 1),nullptr,nullptr) &&
              FrontendScenarioTransfer_LevelPathFits(g_FrontendLoadedLevelAsset,bundle->levelDecodedBytes);
   campaignStream = (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes;
   g_FrontendLoadedCampaignAsset = FrontendScenarioTransfer_AllocateOrExit(bundle->campaignDecodedBytes);
   decodeOk = decodeOk &&
              PckCodec_DecodeHuffmanRle(bundle->campaignDecodedBytes,(uint8_t *)g_FrontendLoadedCampaignAsset,
-                                       bundle->campaignEncodedBytes,campaignStream,NULL,NULL) &&
+                                       bundle->campaignEncodedBytes,campaignStream,nullptr,nullptr) &&
              FrontendScenarioTransfer_CampaignFits((CampaignAsset *)g_FrontendLoadedCampaignAsset,
                                                    bundle->campaignDecodedBytes);
   if (!decodeOk) {
     /* the level's path offset field may hold anything: free the level alone */
     g_MemoryApi.free(g_FrontendLoadedLevelAsset);
-    g_FrontendLoadedLevelAsset = NULL;
+    g_FrontendLoadedLevelAsset = nullptr;
     g_MemoryApi.free(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
     g_FrontendLoadedCampaignAsset = 0;
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
@@ -426,7 +426,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
   uintptr_t checkedValue;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-  if (receivedDwords == NULL) {
+  if (receivedDwords == nullptr) {
     return;
   }
   bundle = (ScenarioLevelBundleHeader *)receivedDwords;
@@ -441,11 +441,11 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
   levelAsset = (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(bundle->levelDecodedBytes);
   g_FrontendLoadedLevelAsset = levelAsset;
   if (!PckCodec_DecodeHuffmanRle(bundle->levelDecodedBytes,(uint8_t *)levelAsset,bundle->levelEncodedBytes,
-                                 (uint8_t *)(bundle + 1),NULL,NULL) ||
+                                 (uint8_t *)(bundle + 1),nullptr,nullptr) ||
       !FrontendScenarioTransfer_LevelPathFits(levelAsset,bundle->levelDecodedBytes)) {
     /* the path offset field may hold anything: free the level alone */
     g_MemoryApi.free(levelAsset);
-    g_FrontendLoadedLevelAsset = NULL;
+    g_FrontendLoadedLevelAsset = nullptr;
     FrontendScenarioTransfer_AbortReceive(receivedDwords,"level bundle");
     return;
   }

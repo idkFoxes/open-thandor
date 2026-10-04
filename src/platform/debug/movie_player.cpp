@@ -63,7 +63,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     Thandor_SleepMs(1500);
     return;
   }
-  if (!Movie_AdvanceFrame(&movie,NULL)) {
+  if (!Movie_AdvanceFrame(&movie,nullptr)) {
     Thandor_Log("debug movie %d/%d %s: first frame failed", index, count, name);
     Movie_Close();
     return;
@@ -86,7 +86,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       int burst = 3;
       int ended = 0;
       do {
-        if (!Movie_AdvanceFrame(NULL,NULL)) { ended = 1; break; }
+        if (!Movie_AdvanceFrame(nullptr,nullptr)) { ended = 1; break; }
         g_IntroMoviePendingTicks--;
       } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
       if (ended) break;
@@ -143,7 +143,7 @@ void DebugMovie_ExportOne(const char *name)
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
-  CreateDirectoryA((LPCSTR)"moviedump", NULL);
+  CreateDirectoryA((LPCSTR)"moviedump", nullptr);
   if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
     Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;
@@ -156,19 +156,19 @@ void DebugMovie_ExportOne(const char *name)
   for (;;) {
     int attempts = 0;
     do {
-      frameDecoded = Movie_AdvanceFrame(NULL,NULL);
+      frameDecoded = Movie_AdvanceFrame(nullptr,nullptr);
       if (frameDecoded) break;
       Thandor_SleepMs(5); /* the refill worker may not have loaded the next frame yet */
-    } while (++attempts < 200 && g_ActiveMovie != NULL &&
+    } while (++attempts < 200 && g_ActiveMovie != nullptr &&
              g_ActiveMovie->currentFrameIndex < g_ActiveMovie->fileHeader->frameCount);
     if (!frameDecoded) break;
-    if (video != NULL) fwrite(g_ActiveMovie->argbPixels, 4, width * height, video);
+    if (video != nullptr) fwrite(g_ActiveMovie->argbPixels, 4, width * height, video);
     frames++;
   }
-  if (video != NULL) fclose(video);
+  if (video != nullptr) fclose(video);
   sprintf(fileName, "moviedump\\%s.txt", name);
   info = fopen(fileName, "w");
-  if (info != NULL) {
+  if (info != nullptr) {
     fprintf(info, "%u %u %u %u\n", width, height, frames, playbackRateHz);
     fclose(info);
   }
@@ -182,24 +182,24 @@ void DebugMovie_ExportOne(const char *name)
 void DebugMovie_Run(const char *which)
 {
   const char *stretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
-  int stretch = (stretchValue != NULL) && (stretchValue[0] == '1');
+  int stretch = (stretchValue != nullptr) && (stretchValue[0] == '1');
   if (strcmp(which, "all") == 0) {
     static char names[256][24];
     int count = 0;
     int i;
     FILE *list = fopen("movies.txt", "r");
-    if (list == NULL) {
+    if (list == nullptr) {
       Thandor_Log("debug movie: movies.txt not found");
       ExitProcess(1);
     }
-    while ((count < 256) && (fgets(names[count], sizeof names[count], list) != NULL)) {
+    while ((count < 256) && (fgets(names[count], sizeof names[count], list) != nullptr)) {
       char *end = names[count] + strlen(names[count]);
       while ((end > names[count]) && ((end[-1] == '\n') || (end[-1] == '\r') || (end[-1] == ' '))) *--end = 0;
       if (names[count][0] != 0) count++;
     }
     fclose(list);
     /* OPEN_THANDOR_MOVIE_START=<n> resumes the list at movie n (1-based). */
-    i = (getenv("OPEN_THANDOR_MOVIE_START") != NULL) ? atoi(getenv("OPEN_THANDOR_MOVIE_START")) - 1 : 0;
+    i = (getenv("OPEN_THANDOR_MOVIE_START") != nullptr) ? atoi(getenv("OPEN_THANDOR_MOVIE_START")) - 1 : 0;
     if (i < 0) i = 0;
     for (; i < count; i++) {
       DebugMovie_PlayOne(names[i], i + 1, count, stretch);

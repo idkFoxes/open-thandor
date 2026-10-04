@@ -13,7 +13,7 @@
 
 /* Module data. */
 
-uint8_t *g_TerrainByteClampLookup = 0;
+uint8_t *g_TerrainByteClampLookup = nullptr;
 
 /* For every field cell, maps the fog-of-war lighting index (visibilityLightingIndex) through the
    256x256 terrain clamp lookup, keyed by the cell's occupancy byte of the given faction, and writes the result

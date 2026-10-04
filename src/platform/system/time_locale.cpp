@@ -10,33 +10,33 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate = 0;
+THANDOR_ALIGN(4) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate = nullptr;
 
-THANDOR_ALIGN(8) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = 0;
+THANDOR_ALIGN(8) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = nullptr;
 
 /* the periodic timers, installed by SdlPlatform_InstallTimersAndPump (SDL timers instead of the original's WinMM
    timeSetEvent timers) */
-THANDOR_ALIGN(8) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
+THANDOR_ALIGN(8) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = nullptr;
 
-THANDOR_ALIGN(4) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
+THANDOR_ALIGN(4) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = nullptr;
 
-THANDOR_ALIGN(4) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = 0;
+THANDOR_ALIGN(4) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = nullptr;
 
-static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = 0;
+static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = nullptr;
 
-static CpuDetectFeaturesProc *g_CPUDetectFeatures = 0;
+static CpuDetectFeaturesProc *g_CPUDetectFeatures = nullptr;
 
 static uint8_t g_LocaleInfoScratch[16] = {0};
 
 static LocaleSystemState g_LocaleSystemState = {0};
 
-LocaleFormatCurrentDateUtf16Proc *g_LocaleFormatCurrentDateUtf16 = 0;
+LocaleFormatCurrentDateUtf16Proc *g_LocaleFormatCurrentDateUtf16 = nullptr;
 
-LocaleFormatTimeFieldsUtf16Proc *g_LocaleFormatTimeFieldsUtf16 = 0;
+LocaleFormatTimeFieldsUtf16Proc *g_LocaleFormatTimeFieldsUtf16 = nullptr;
 
-LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16 = 0;
+LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16 = nullptr;
 
-LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = 0;
+LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = nullptr;
 
 /* Implementation ownership: platform/system/time_locale. */
 

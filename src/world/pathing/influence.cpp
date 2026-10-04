@@ -167,7 +167,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
     stateMaskCursor = stateMaskCursor + 32;
     cellsRemaining = cellsRemaining - 16;
   } while (cellsRemaining > 0);
-  for (entityNode = entityListHead; entityNode != NULL; entityNode = entityNode->nextNode) {
+  for (entityNode = entityListHead; entityNode != nullptr; entityNode = entityNode->nextNode) {
     if (entityNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       entityDefinition = (ModelDefinition *)(((GameEntityRuntime *)entityNode->runtimePayload)->common).ownership.
                          definitionOrClassRecord;

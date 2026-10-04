@@ -23,11 +23,11 @@ typedef struct GridPathCostQueueState {
 
 /* Module data. */
 
-GridScratchCell **g_GridPathCostQueueBegin = 0;
+GridScratchCell **g_GridPathCostQueueBegin = nullptr;
 
-GridScratchCell **g_GridPathCostQueueEnd = 0;
+GridScratchCell **g_GridPathCostQueueEnd = nullptr;
 
-static GridScratchCell **g_GridPathCostQueuePassBoundary = 0;
+static GridScratchCell **g_GridPathCostQueuePassBoundary = nullptr;
 
 uint32_t g_GridPathEntityClassMask = 0;
 
@@ -45,7 +45,7 @@ static GridScratchCell *GridPathCost_FindCheaperHexNeighbor(GridScratchCell *cel
 
   rowAboveCell = cell - scratchWidth;
   bestNeighborCost = cell->pathCost;
-  bestNeighborCell = NULL;
+  bestNeighborCell = nullptr;
   if (rowAboveCell->pathCost < bestNeighborCost) {
     bestNeighborCost = rowAboveCell->pathCost;
     bestNeighborCell = rowAboveCell;
@@ -101,9 +101,9 @@ Bool8 GridPathCost_BacktrackBestHexRoute
       callerBlockingMask = 0;
     }
     nextCell = GridPathCost_FindCheaperHexNeighbor(currentCell,scratchWidth);
-  } while ((nextCell != NULL) &&
+  } while ((nextCell != nullptr) &&
            !GridPathLine_TestHexSegmentBlocked(callerBlockingMask,startRow,startColumn,startCell,nextCell));
-  if ((nextCell != NULL) && (currentCell == startCell)) {
+  if ((nextCell != nullptr) && (currentCell == startCell)) {
     /* blocked on the first step: take that step anyway */
     currentCell = nextCell;
   }
@@ -141,15 +141,15 @@ static GridScratchCell *GridPathCost_DequeueUnvisitedCell(GridPathCostQueueState
       /* end of a pass */
       g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
       if (GridPathCost_OriginOrNeighborReached(queue->originCell,queue->scratchWidth)) {
-        return NULL;
+        return nullptr;
       }
       queue->remainingPasses--;
       if (queue->remainingPasses == 0) {
-        return NULL;
+        return nullptr;
       }
     }
     if (queue->readCursor == queue->writeCursor) {
-      return NULL;
+      return nullptr;
     }
     cell = *queue->readCursor;
     queue->readCursor++;
@@ -211,7 +211,7 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
   g_GridPathCostQueuePassBoundary = queue.readCursor;
   startCell->pathCost = 0;
   g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
-  while ((currentCell = GridPathCost_DequeueUnvisitedCell(&queue)) != NULL) {
+  while ((currentCell = GridPathCost_DequeueUnvisitedCell(&queue)) != nullptr) {
     /* the six neighbours: two in the row above, right, left, two in the row below */
     currentCost = currentCell->pathCost;
     GridPathCost_RelaxNeighbor(&queue,currentCell - scratchWidth,currentCost);

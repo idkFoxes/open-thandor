@@ -253,7 +253,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
         playerRecord = playerRecord + 1;
       } while (playersRemaining != 0);
       g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
-      UiTransferMailbox_SetOutgoingBuffer(0,NULL);
+      UiTransferMailbox_SetOutgoingBuffer(0,nullptr);
       return;
     }
     playerRecord = playerRecord + 1;
@@ -334,18 +334,18 @@ static void FrontendTransfer_SendSessionAdvertisement
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
   RichTextCommandStream_PatchPayloadBySelector(0,g_GameVersionUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
-            (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText,NULL);
+            (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText,nullptr);
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
   /* the game name typed into gameNameEdit */
   RichTextCommandStream_PatchPayloadBySelector
             (0,((UiTextEditControl *)FRONTEND_UI(frontendRootNode,gameNameEdit))->textBuffer,resolvedText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
-            (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,NULL);
+            (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,nullptr);
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
   RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
-  RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText,NULL);
+  RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText,nullptr);
   g_FrontendPacket50001Buffer.header.packedTypeAndUnitCount =
        FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT;
   g_FrontendPacket50001Buffer.payloadByteCount = 32;

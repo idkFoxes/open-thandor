@@ -35,7 +35,7 @@ Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
   uint32_t gridRow;
   uint32_t gridColumn;
 
-  if (fieldGrid != NULL) {
+  if (fieldGrid != nullptr) {
     TerrainProjectedScan_SetStepLimitFromRadius(radiusWorldUnits);
     g_TerrainScanReferenceHeight = cellValue;
     g_TerrainScanSharedSelectorValue.fieldCellFlagMask = cellFlagMask;
@@ -94,7 +94,7 @@ Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
   uint32_t gridRow;
   uint32_t gridColumn;
 
-  if (fieldGrid != NULL) {
+  if (fieldGrid != nullptr) {
     TerrainProjectedScan_SetStepLimitFromRadius(radiusWorldUnits);
     g_TerrainScanReferenceHeight = cellValue;
     g_TerrainScanSharedSelectorValue.fieldCellFlagMask = cellFlagMask;

@@ -17,7 +17,7 @@
 
 /* Module data. */
 
-static EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY] = {0};
+static EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY] = {};
 
 static uint32_t g_EntityPathingPriorityPairCount = 0;
 
@@ -146,7 +146,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = modelDefinition->runtimeClassId;
-  if (overlappedEntity != NULL) {
+  if (overlappedEntity != nullptr) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
       [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
               (overlappedEntity);
@@ -247,7 +247,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = ((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId;
-  if (overlappedEntity != NULL) {
+  if (overlappedEntity != nullptr) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
       [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
               (overlappedEntity);
@@ -344,7 +344,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
       }
     }
     ownerNode = ownerNode->nextNode;
-  } while (ownerNode != NULL);
+  } while (ownerNode != nullptr);
   if (1 < g_EntityPathingPriorityPairCount) {
     /* priority: 0 when bit 1 of the runtime record's movementStateFlags is set, 1 for another faction
        (factionIndex), 2 for the own faction, plus the definition's movementSpeed weight when flag bit 0 is clear */
