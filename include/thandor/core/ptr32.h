@@ -30,14 +30,14 @@ references to it.
 #endif
 
 #ifdef __cplusplus
-/* THANDOR_FN(function) / THANDOR_PTR(pointer) values (core/contracts.h). */
-struct ThandorAnyFn {
-    void (*fn)();
-    template <class F> operator F *() const { return (F *)fn; }
-};
+/* THANDOR_PTR(pointer) values (core/contracts.h): an untyped object address. They convert to object pointers
+   only; a function-pointer slot takes a typed THANDOR_SLOT(function) (core/slot.h), so a mismatched signature
+   does not compile. */
 struct ThandorAnyPtr {
     void *ptr;
-    template <class T> operator T *() const { return (T *)ptr; }
+    template <class T>
+        requires(!std::is_function_v<T>)
+    operator T *() const { return (T *)ptr; }
 };
 /* THANDOR_SLOT(function) values (core/slot.h). */
 template <auto Fn> struct ThandorSlot;
@@ -59,14 +59,16 @@ template <class T> struct Ptr32 {
 
     Ptr32() = default;
     Ptr32(T *pointer) : value(thandor_ptr32_pack((const void *)pointer)) {}
-    Ptr32(ThandorAnyPtr pointer) : value(thandor_ptr32_pack(pointer.ptr)) {}
-    Ptr32(ThandorAnyFn function) : value(thandor_ptr32_pack((const void *)function.fn)) {}
+    Ptr32(ThandorAnyPtr pointer)
+        requires(!std::is_function_v<T>)
+        : value(thandor_ptr32_pack(pointer.ptr)) {}
     /* field = THANDOR_SLOT(function), also as an element of an array initialiser (an exact match, so MSVC does not
        weigh it against Ptr32(T *) over the slot's function-pointer conversion) */
     template <auto Fn> Ptr32(ThandorSlot<Fn>) : Ptr32(ThandorSlot<Fn>::template pick<T>()) {}
     Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack((const void *)pointer); return *this; }
-    Ptr32 &operator=(ThandorAnyPtr pointer) { value = thandor_ptr32_pack(pointer.ptr); return *this; }
-    Ptr32 &operator=(ThandorAnyFn function) { value = thandor_ptr32_pack((const void *)function.fn); return *this; }
+    Ptr32 &operator=(ThandorAnyPtr pointer)
+        requires(!std::is_function_v<T>)
+    { value = thandor_ptr32_pack(pointer.ptr); return *this; }
     /* field = THANDOR_SLOT(function) (the conversions alone would be ambiguous between operator=(T *) and the
        copy assignment) */
     template <auto Fn> Ptr32 &operator=(ThandorSlot<Fn>) { return *this = ThandorSlot<Fn>::template pick<T>(); }
