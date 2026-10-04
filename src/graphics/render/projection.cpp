@@ -29,8 +29,6 @@ static GraphicsViewAngle16 g_ViewAngle1 = 0;
 
 static uint32_t g_ProjectionShift = 0;
 
-static uint32_t g_ProjectionScaleProduct = 0;
-
 static GraphicsWideFixed g_ProjectionNumerator = {0};
 
 static GraphicsFixedVec2 g_ProjectionCenterFixed = {0};
@@ -38,10 +36,6 @@ static GraphicsFixedVec2 g_ProjectionCenterFixed = {0};
 static GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed = {0};
 
 static GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed = {0};
-
-static GraphicsWideFixed g_ProjectionAngleFactors[2] = {0};
-
-static GraphicsFixedVec2 g_AuxiliaryOrientation = {0};
 
 static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {0};
 
@@ -106,8 +100,8 @@ void Graphics_SetProjectionClipRect
 
 /* Sets up the camera for the next scene: stores the eye position (Q12 world coordinates), projection scale and
    view angles, builds the view rotation, the camera matrix (identity rotation, translation to the eye) and
-   their composition g_ViewProjectionMatrixFixed, and stores the sin/cos pairs of the view azimuth plus and minus
-   the half view angle atan2(1 << (12 - projectionShift), projectionScale).
+   their composition g_ViewProjectionMatrixFixed. (The original also stored the sin/cos pairs of the view azimuth
+   plus and minus the half view angle atan2(1 << (12 - projectionShift), projectionScale); nothing read them.)
    The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaled, which
    Graphics_RebuildFrustumPlanes feeds with the same two angles.
 */
@@ -118,9 +112,6 @@ void Graphics_SetViewProjectionParameters
           GraphicsWorldCoordinateQ12 originX)
 
 {
-  uint32_t halfViewAngle16;
-  FixedSinCos sinCosQ28;
-
   g_ViewOriginFixed.x = originX;
   g_ViewOriginFixed.y = originY;
   g_ViewOriginFixed.z = originZ;
@@ -148,15 +139,6 @@ void Graphics_SetViewProjectionParameters
   FixedTransform_Compose
             (&g_ViewProjectionMatrixFixed,&g_CameraTransformMatrixFixed,&g_ViewRotationMatrixFixed);
   g_ProjectionShift = projectionShift;
-  halfViewAngle16 =
-       FixedMath_Atan2Angle16(1 << (12U - (char)projectionShift & SHIFT_COUNT_MASK),projectionScale);
-  /* each factor: low = cos, high = sin (Q28) */
-  sinCosQ28 = FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & FIXED_ANGLE16_MASK);
-  g_ProjectionAngleFactors[0].low = (uint32_t)sinCosQ28.cosValue;
-  g_ProjectionAngleFactors[0].high = sinCosQ28.sinValue;
-  sinCosQ28 = FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & FIXED_ANGLE16_MASK);
-  g_ProjectionAngleFactors[1].low = (uint32_t)sinCosQ28.cosValue;
-  g_ProjectionAngleFactors[1].high = sinCosQ28.sinValue;
 }
 
 /* Maps the view onto a screen rectangle in pixels: the projection centre
@@ -170,6 +152,7 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
 {
   int projectionShiftDelta;
   int64_t projectionScaleProduct;
+  uint32_t shiftedScaleProduct;
   uint8_t rightShiftAmount;
 
   /* (a + b) * 0x800 = the midpoint (a + b) / 2 in Q12 */
@@ -177,24 +160,24 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
   g_ProjectionCenterFixed.component1 = (top + bottom) * (Q12_ONE / 2);
   projectionShiftDelta = g_ProjectionShift - 1;
   projectionScaleProduct = (int64_t)(right - left) * (int64_t)(int)g_ProjectionScaleFixed;
-  g_ProjectionScaleProduct = (uint32_t)projectionScaleProduct;
+  shiftedScaleProduct = (uint32_t)projectionScaleProduct;
   if (projectionShiftDelta != 0) {
     if (projectionShiftDelta < 0) {
       rightShiftAmount = -(uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK;
-      g_ProjectionScaleProduct =
-           g_ProjectionScaleProduct >> rightShiftAmount |
+      shiftedScaleProduct =
+           shiftedScaleProduct >> rightShiftAmount |
            (int)((uint64_t)projectionScaleProduct >> 32) << (32 - rightShiftAmount);
     }
     else {
-      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK);
+      shiftedScaleProduct = shiftedScaleProduct << ((uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK);
     }
   }
   /* 64-bit numerator = sign-extended product << 12 */
-  g_ProjectionNumerator.low = g_ProjectionScaleProduct << Q12_SHIFT;
-  g_ProjectionNumerator.high = (int)g_ProjectionScaleProduct >> (32 - Q12_SHIFT);
+  g_ProjectionNumerator.low = shiftedScaleProduct << Q12_SHIFT;
+  g_ProjectionNumerator.high = (int)shiftedScaleProduct >> (32 - Q12_SHIFT);
 }
 
-/* Sets the scene's second direction (elevation/azimuth): stores the angles, their unit direction
+/* Sets the scene's second direction (elevation/azimuth): stores its unit direction
    g_AuxiliaryForwardDirectionFixed and a rotation built like the view rotation. The model renderer transforms the
    direction into each model's space and passes it to ModelRender_ComputeVertexIntensity* as the light direction;
    the rotation is used by the generated-texture shading code.
@@ -202,8 +185,6 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
 void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  g_AuxiliaryOrientation.component0 = azimuthAngle;
-  g_AuxiliaryOrientation.component1 = elevationAngle;
   FixedMath_WriteDirectionQ28(&g_AuxiliaryForwardDirectionFixed,elevationAngle,azimuthAngle);
   FixedTransform_BuildRotationBasis
             (&g_AuxiliaryRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - azimuthAngle & FIXED_ANGLE16_MASK,elevationAngle,

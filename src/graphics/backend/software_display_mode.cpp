@@ -59,8 +59,8 @@ Bool8 SoftwarePixelFormat_BaseDisplayModeHook
 }
 
 /* g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one
-   allocation, the 0x10-byte SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
-   the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.cpp).
+   allocation, the SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
+   the pixels, which are zeroed (one g_MemoryApi.free releases both). Used for the off-screen buffers of the display setup (platform/input/devices.cpp).
    Returns the framebuffer, or NULL when the allocation fails; then the allocator error is stored in
    *outError (the mouse display-mode hook passes it on as its own error value).
 */
@@ -94,16 +94,6 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
     cursor++;
   }
   return framebuffer;
-}
-
-/* g_SoftwareFramebufferDestroy: frees a framebuffer made by SoftwareFramebuffer_Create
-   (header and pixels are one allocation).
-*/
-void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
-
-{
-  g_MemoryApi.free(framebuffer);
-  return;
 }
 
 /* g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit
@@ -155,7 +145,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
 }
 
 /* Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the
-   chained mode switch succeeds it installs the queue renderer and replaces the depth buffer
+   chained mode switch succeeds it replaces the depth buffer
    with one of the new size (the original also rebuilt the MMX colour constants of its 16-bit paths). Returns true on
    success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
 */
@@ -173,7 +163,6 @@ Bool8 SoftwareRenderer_SetDisplayMode
   }
   {
     g_SoftwareDepthRowStrideBytes = width * 4; /* one int32 depth value per pixel */
-    g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue32Bit; /* the original chose by depth (16-bit queue) */
     depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height,&depthAllocationPayload);
     previousDepthBuffer = g_SoftwareDepthBuffer;
     if (depthAllocationError != 0) {
@@ -192,7 +181,7 @@ Bool8 SoftwareRenderer_SetDisplayMode
 }
 
 /* Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of
-   the current g_GraphicsSetDisplayMode, installs the queue renderer and allocates the
+   the current g_GraphicsSetDisplayMode and allocates the
    depth buffer (one int32 per pixel) for the current framebuffer size. Returns 0 on success, or the arena error
    when the allocation fails.
 */
@@ -207,7 +196,6 @@ uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook()
   LOCK();
   g_GraphicsSetDisplayMode = SoftwareRenderer_SetDisplayMode;
   UNLOCK();
-  g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue32Bit; /* the original chose by depth (16-bit queue) */
   depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
                                            (void **)&allocatedDepthBuffer);
   if (depthAllocationError == 0) {

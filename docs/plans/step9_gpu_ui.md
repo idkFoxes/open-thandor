@@ -317,7 +317,7 @@ These findings arrived after sections 1-5 were written. Where they disagree with
 - That is about 15 UI gfx files. Their sizes need the game data, which is not in the repo.
 
 **Unused refresh hooks**
-- `g_GraphicsRefreshTextureAlpha` and `g_GraphicsRebuildAllStagingTextures` are no-ops (texture_set.cpp:153-171). They can serve as GPU re-upload hooks.
+- `g_GraphicsRefreshTextureAlpha` is a no-op (texture_set.cpp, `GraphicsTextureSet_RefreshNoOp`); it can serve as a GPU re-upload hook. The rebuild-all slot the texture quality settings called (`g_GraphicsRebuildAllStagingTextures`) was removed in step 8; a GPU renderer that caches downsampled textures needs a new hook there.
 
 **Results graph**
 - The faction colours are packed through the LUT (results.cpp:216-227).

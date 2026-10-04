@@ -408,7 +408,6 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
             (control->sceneBound7,control->sceneBound6,control->sceneBound5,control->sceneBound4,
              control->sceneBound3,control->sceneBound2,control->sceneBound1,control->sceneBound0);
   Graphics_RebuildFrustumPlanes();
-  g_GraphicsBeginScene();
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
   GraphicsShadingRuntime_RebuildCompactLightingRecords();

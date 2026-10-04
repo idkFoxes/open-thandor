@@ -97,14 +97,3 @@ void GraphicsFramebuffer_InitCaptureAsset
   (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
 }
 
-
-/* Expands one channel of a packed pixel to 8 bits: isolates it with its mask, shifts it down to bit 0 and
-   then up so its top bit lands on bit 7 (the low bits stay zero, no replication). */
-uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
-          (uint32_t pixel,GraphicsPackedPixelMask channelMask,GraphicsPixelChannelBitShift channelShift,
-          GraphicsPixelChannelBitCount channelBitCount)
-
-{
-  return (uint8_t)(((pixel & channelMask) >> ((uint8_t)channelShift & SHIFT_COUNT_MASK)) <<
-                   (8U - (char)channelBitCount & SHIFT_COUNT_MASK));
-}

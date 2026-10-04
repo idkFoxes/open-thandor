@@ -229,12 +229,14 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,frameDivisor,
                g_PrimitiveDrawCallCount,g_FrontendDebugOverlayTextSlot01Utf16);
+    /* texture binds and texture reloads: the original's hardware counters; the software renderer has
+       neither, so both print 0 */
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,frameDivisor,
-               g_TextureBindStateChangeCount,g_FrontendDebugOverlayTextSlot02Utf16);
+               0,g_FrontendDebugOverlayTextSlot02Utf16);
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,frameDivisor,
-               g_TextureDeviceReloadCount,g_FrontendDebugOverlayTextSlot03Utf16);
+               0,g_FrontendDebugOverlayTextSlot03Utf16);
     /* bit 0 of g_InGameReadyStateToggleFlags: the slow state is currently reported */
     if ((g_InGameReadyStateToggleFlags & 1) == 0) {
       if (g_RenderedFrameCountSinceDebugRefresh < 13) {
@@ -248,8 +250,6 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
     }
     g_RenderedFrameCountSinceDebugRefresh = 0;
     g_PrimitiveDrawCallCount = 0;
-    g_TextureBindStateChangeCount = 0;
-    g_TextureDeviceReloadCount = 0;
   }
   runtimeRoot = g_InGameRuntimeRoot;
   world = &g_InGameRuntimeRoot->worldRuntime;

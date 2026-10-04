@@ -420,7 +420,6 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
       (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->low);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
-  g_GraphicsRebuildAllStagingTextures();
   return;
 }
 

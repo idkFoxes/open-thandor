@@ -520,7 +520,6 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
       THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityLowButton));
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel;
-  g_GraphicsRebuildAllStagingTextures();
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   return;
 }

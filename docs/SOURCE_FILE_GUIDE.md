@@ -149,7 +149,7 @@ Module header: [`math.h`](../include/thandor/core/math.h) · Changelog: `fixed` 
 
 - [`fixed_point.h`](source_guide/core.md#file-core-math-fixed-point) - Fixed-point formats and helpers shared by the fixed-point math files and their users.
 - [`fixed_transform.cpp / fixed_transform.h`](source_guide/core.md#file-core-math-fixed-transform) - no file comment; main functions `FixedTransform_ApplyPoint`, `FixedTransform_Compose`, `FixedTransform_BuildRotationBasis`
-- [`fixed_trig.cpp / fixed_trig.h`](source_guide/core.md#file-core-math-fixed-trig) - no file comment; main functions `FixedMath_Atan2Angle16`, `FixedMath_DirectionFromAnglesScaled`, `FixedMath_Vector2AngleAndLength`
+- [`fixed_trig.cpp / fixed_trig.h`](source_guide/core.md#file-core-math-fixed-trig) - no file comment; main functions `FixedMath_DirectionFromAnglesScaled`, `FixedMath_Atan2Angle16`, `FixedMath_Vector2AngleAndLength`
 - [`fixed_vector.cpp / fixed_vector.h`](source_guide/core.md#file-core-math-fixed-vector) - no file comment; main functions `FixedMath_Length2`, `FixedMath_Length3`, `FixedVec3_DotQ28`
 - [`geometry.cpp / geometry.h`](source_guide/core.md#file-core-math-geometry) - no file comment; main functions `FixedGeometry_SolveTriangleJointAngles`
 - [`random.cpp / random.h`](source_guide/core.md#file-core-math-random) - no file comment; main functions `Random_NextPrimary`, `Random_SetBothSeeds`, `Random_SelectSecondaryStream`
@@ -270,8 +270,8 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
 - [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`
 - [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
-- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_SetWorldRuntimeFlag`, `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameRuntime_RunSessionUntilExit`
-- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_PeriodicCountdownAndClockTick`, `InGameRuntime_UpdateSimulationAndNetworkTick`
+- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameRuntime_RunSessionUntilExit`, `InGameSession_SetWorldRuntimeFlag`
+- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_UpdateSimulationAndNetworkTick`, `InGameRuntime_PeriodicCountdownAndClockTick`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-session-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-technology"></a>
@@ -292,7 +292,7 @@ Renderer backends, framebuffer, textures, palettes and the render pipeline.
 Module header: [`backend.h`](../include/thandor/graphics/backend.h) · Changelog: `direct3d` [full](../CHANGELOG_FULL.md#module-graphics-backend-direct3d); `directdraw` [full](../CHANGELOG_FULL.md#module-graphics-backend-directdraw); `glide` [dev](../CHANGELOG.md#module-graphics-backend-glide) · [full](../CHANGELOG_FULL.md#module-graphics-backend-glide); `software` [full](../CHANGELOG_FULL.md#module-graphics-backend-software)
 
 - [`directdraw.cpp / directdraw.h`](source_guide/graphics.md#file-graphics-backend-directdraw) - The display-mode and adapter tables (the framebuffer publication of a mode switch is in graphics/core/device).
-- [`software.cpp / software.h`](source_guide/graphics.md#file-graphics-backend-software) - no file comment; main functions `SoftwareRenderer_BuildFactorTables`, `SoftwareGraphicsDispatch_NoOp`, `SoftwareGraphicsDispatch_SuccessNoOp`
+- [`software.cpp / software.h`](source_guide/graphics.md#file-graphics-backend-software) - no file comment; main functions `SoftwareRenderer_BuildFactorTables`, `SoftwareGraphicsDispatch_NoOp`
 - [`software_blit.cpp / software_blit.h`](source_guide/graphics.md#file-graphics-backend-software-blit) - Software blits into the 32-bit framebuffer: texture source blits (alpha, half, bilinear stretch, integer scale, palette bank, saturated add, modulated), rectangle fill and the region copies.
 - [`software_blit_helpers.h`](source_guide/graphics.md#file-graphics-backend-software-blit-helpers) - ---- Texture-source blits and rectangle fills ---------------------------------------------
 - [`software_display_mode.cpp / software_display_mode.h`](source_guide/graphics.md#file-graphics-backend-software-display-mode) - Software renderer display mode: the pixel format and channel pack tables of a mode, the display mode hook chain and the owned memory framebuffer.
@@ -389,7 +389,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 
 - [`cipher.cpp / cipher.h`](source_guide/network.md#file-network-protocol-cipher) - no file comment; main functions `UiTransfer_EncryptPacketBlocks`, `UiTransfer_DecryptPacketBlocks`
 - [`command_exchange.cpp / command_exchange.h`](source_guide/network.md#file-network-protocol-command-exchange) - no file comment; main functions `FrontendTransfer_CopyCommandRecord`, `FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`, `FrontendTransfer_HostHandleCommandSubmitOrWaitAck`
-- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `InGameCommand_Issue`
+- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommand_Issue`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `InGameCommandQueue_AppendLocalPlayerCommand`
 - [`frontend_session.cpp / frontend_session.h`](source_guide/network.md#file-network-protocol-frontend-session) - no file comment; main functions `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`, `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
 - [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - no file comment; main functions `Lockstep_AllClientsSubmitted`, `Lockstep_ClearClientSubmissions`, `Lockstep_ResendBatchOrWait`
@@ -506,6 +506,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
 - [`selectable.cpp / selectable.h`](source_guide/ui.md#file-ui-controls-selectable) - no file comment; main functions `UiSelectableGroup_SelectExclusive`, `UiSelectableControl_SuppressIfActionId`, `UiSelectableControl_UnsuppressIfActionId`
+- [`settings_option.h`](source_guide/ui.md#file-ui-controls-settings-option) - no file comment; main functions `PersistentOption_ApplyCheckbox`, `PersistentOption_ApplyCheckbox`, `PersistentOption_StoreSlider`
 - [`slider.cpp / slider.h`](source_guide/ui.md#file-ui-controls-slider) - no file comment; main functions `UiRangeSliderControl_DrawTrackAndThumb`, `UiRangeSliderControl_BeginThumbDrag`, `UiRangeSliderControl_EndThumbDrag`
 - [`text.cpp / text.h`](source_guide/ui.md#file-ui-controls-text) - no file comment; main functions `UiSingleLineTextControl_DrawClipped`, `UiWrappedTextControl_DrawClipped`, `UiWrappedTextControl_RelocateAndApplyDeferredOffset`
 - [`text_buttons.cpp / text_buttons.h`](source_guide/ui.md#file-ui-controls-text-buttons) - no file comment; main functions `UiFramedTextButtonControl_NonRightPress`, `UiFramedTextButtonControl_NonRightRelease`, `UiFramedTextButtonControl_NonRightDrag`

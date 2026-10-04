@@ -19,13 +19,10 @@
 /* Builds the bilinear and alpha blend factor tables (the original carried them precomputed); once at startup. */
 void SoftwareRenderer_BuildFactorTables();
 
-void SoftwareGraphicsDispatch_SuccessNoOp();
-
 void SoftwareGraphicsDispatch_NoOp();
 
 extern GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth;
 extern GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue;
-extern GraphicsBeginSceneProc *g_GraphicsBeginScene;
 
 extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257];
 extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257];
@@ -33,8 +30,6 @@ extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];
 extern SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256];
 extern GraphicsEndSceneProc *g_GraphicsEndScene;
 extern GraphicsDiagnosticCounter g_PrimitiveDrawCallCount;
-extern GraphicsDiagnosticCounter g_TextureBindStateChangeCount;
-extern GraphicsDiagnosticCounter g_TextureDeviceReloadCount;
 
 extern int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
 

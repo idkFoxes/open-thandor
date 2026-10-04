@@ -1171,7 +1171,7 @@ using PlayerStateLookupValue1 = int;
 
 using PlayerStateLookupValue0 = int;
 
-/* cos(angle) and sin(angle), scaled (FixedMath_SinCosScaled) or in Q28 (FixedMath_SinCosQ28). */
+/* cos(angle) and sin(angle), scaled (FixedMath_SinCosScaled). */
 typedef struct FixedSinCos {
     int32_t cosValue;
     int32_t sinValue;
