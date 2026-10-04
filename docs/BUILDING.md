@@ -141,8 +141,8 @@ Windows SDK and with the Windows `dxc.exe` when it finds it (`THANDOR_DXC`, the 
 otherwise uses the headers fxc and dxc made, committed in
 [`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`gpu_shader_<name>.h` DXBC,
 `gpu_shader_<name>_spirv.h` SPIR-V; `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON` forces them). After a change of
-`primitives.hlsl` regenerate them: build the MSVC preset `test` with fxc and dxc found and copy
-`<build dir>\gpu_shaders\gpu_shader_*.h` there.
+a shader source (`primitives.hlsl`, `ui2d.hlsl`) regenerate them: build the MSVC preset `test` with fxc and dxc
+found and copy `<build dir>\gpu_shaders\gpu_shader_*.h` there.
 
 ## Running
 
