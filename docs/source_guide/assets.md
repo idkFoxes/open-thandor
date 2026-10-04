@@ -136,8 +136,8 @@ No file comment; function families: `Package_*` (4).
 
 **Functions** (2 public, 2 file-local):
 
-- [`Package_UpsertEntry`](../../src/assets/package/archive_write.cpp#L23) - Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry ...
-- [`Package_DeleteEntry`](../../src/assets/package/archive_write.cpp#L185) - Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as deleted): the archive header loses one entry and its size, everything behind the entry is moved ...
+- [`Package_UpsertEntry`](../../src/assets/package/archive_write.cpp#L24) - Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry ...
+- [`Package_DeleteEntry`](../../src/assets/package/archive_write.cpp#L177) - Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as deleted): the archive header loses one entry and its size, everything behind the entry is moved ...
 
 **Called from** (2 files): [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_WritePackageContents`, `InGameSaveGame_WriteRuntimeEntries`); [`gameplay/session/campaign_carryover`](gameplay.md#file-gameplay-session-campaign-carryover) (`InGameSaveGame_WriteOldUnitEntry`).
 
@@ -158,8 +158,8 @@ No file comment; function families: `PckCodec_*` (25).
 - [`PckCodec_DecodeFieldGrid`](../../src/assets/package/codec.cpp#L193) - PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image, restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and ...
 - [`PckCodec_EncodeStored`](../../src/assets/package/codec.cpp#L242) - PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable.
 - [`PckCodec_DecodeStored`](../../src/assets/package/codec.cpp#L270) - PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable.
-- [`PckCodec_EncodeHuffmanRle`](../../src/assets/package/codec.cpp#L565) - PCK compression method 0 writer.
-- [`PckCodec_DecodeHuffmanRle`](../../src/assets/package/codec.cpp#L716) - PCK compression method 0 reader.
+- [`PckCodec_EncodeHuffmanRle`](../../src/assets/package/codec.cpp#L561) - PCK compression method 0 writer.
+- [`PckCodec_DecodeHuffmanRle`](../../src/assets/package/codec.cpp#L711) - PCK compression method 0 reader.
 
 **Data** (2 shared, 2 file-local): `g_PckEncoderTable`, `g_PckDecoderTable`.
 
