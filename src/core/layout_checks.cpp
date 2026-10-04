@@ -1597,9 +1597,12 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiImage) == 0x5AC8 && /* 0x5954 + the display mode kind nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x71A0 && /* 0x5954 + the display mode kind and resolution list nodes of open-thandor */
               offsetof(FrontendUiImage, displayModeKindGroup) == 0x5954 &&
-              offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68,
+              offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68 &&
+              offsetof(FrontendUiImage, displayResolutionScrollBox) == 0x5AC8 &&
+              offsetof(FrontendUiImage, displayResolutionRowPanel) == 0x5B58 &&
+              offsetof(FrontendUiImage, displayResolutionExtraOptions) == 0x5BB0,
               "FrontendUiImage keeps its 32-bit layout");
 static_assert(sizeof(InGameUiImage) == 0xC3E4,
               "InGameUiImage keeps its 32-bit layout");

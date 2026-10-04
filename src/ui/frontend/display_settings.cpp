@@ -9,6 +9,10 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <cstring>
+
 /* Module data. */
 
 FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
@@ -38,34 +42,164 @@ static void FrontendDisplaySettingsPage_FillAdapterRow
   source->adapterRows.rows[adapterIndex].deviceNameUtf16 = SdlVideo_AdapterDetailUtf16(adapterIndex);
 }
 
+/* Not in the original: the resolution list of the display settings page. The original listed the ten smallest
+   distinct resolutions in ten fixed radio rows (displayResolutionOption1..10); here every distinct resolution
+   of the mode table is listed, in a scroll frame (displayResolutionScrollBox) inside the "Aufloesung" box whose
+   content (displayResolutionRowPanel) holds the same radio rows: displayResolutionOption1..10, then as many
+   displayResolutionExtraOptions as needed, each a copy of displayResolutionOption1 one row lower. */
+
+/* the number of resolution rows listed (the distinct resolutions of the mode table) */
+static uint32_t s_resolutionRowCount = 0;
+
+static const std::size_t kTemplateResolutionRowOffsets[FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS] = {
+    offsetof(FrontendUiImage,displayResolutionOption1),offsetof(FrontendUiImage,displayResolutionOption2),
+    offsetof(FrontendUiImage,displayResolutionOption3),offsetof(FrontendUiImage,displayResolutionOption4),
+    offsetof(FrontendUiImage,displayResolutionOption5),offsetof(FrontendUiImage,displayResolutionOption6),
+    offsetof(FrontendUiImage,displayResolutionOption7),offsetof(FrontendUiImage,displayResolutionOption8),
+    offsetof(FrontendUiImage,displayResolutionOption9),offsetof(FrontendUiImage,displayResolutionOption10)};
+
+/* Resolution row rowIndex (0 .. FRONTEND_DISPLAY_RESOLUTION_OPTIONS - 1) of the frontend root. */
+static UiNumericPairTextButton *FrontendDisplaySettingsPage_ResolutionRow(UiNodeBase *frontendRoot,uint32_t rowIndex)
+{
+  if (rowIndex < FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS) {
+    return (UiNumericPairTextButton *)((uint8_t *)frontendRoot + kTemplateResolutionRowOffsets[rowIndex]);
+  }
+  return &(*FRONTEND_UI(frontendRoot,displayResolutionExtraOptions))
+              [rowIndex - FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS];
+}
+
+/* Fills the resolution rows: the distinct resolutions of g_GraphicsDisplayModes (all adapters, 32 bits per
+   pixel), ascending by width, then height; with more than FRONTEND_DISPLAY_RESOLUTION_OPTIONS the smallest ones
+   are left out. The rows used are linked as the panel's children in this order and the panel gets their height.
+   An extra row is made from displayResolutionOption1 the first time it is needed (the mode table does not change
+   while the game runs) and takes action FRONTEND_ACTION_RESOLUTION_OPTION1. */
+static void FrontendDisplaySettingsPage_BuildResolutionRows(UiNodeBase *frontendRoot)
+{
+  uint32_t resolutions[GRAPHICS_DISPLAY_MODE_CAPACITY];
+  uint32_t resolutionCount;
+  uint32_t firstListed;
+  uint32_t rowIndex;
+  uint32_t modeIndex;
+  UiNumericPairTextButton *row;
+  UiNumericPairTextButton *templateRow;
+  UiNodeBase *rowPanel;
+  UiNodeBase *previousRow;
+  int32_t rowTop;
+
+  resolutionCount = 0;
+  for (modeIndex = 0; (modeIndex < g_GraphicsDisplayModeCount) && (modeIndex < GRAPHICS_DISPLAY_MODE_CAPACITY);
+       modeIndex++) {
+    if (g_GraphicsDisplayModes[modeIndex].bitsPerPixel == PERSISTENT_DEFAULT_BITS_PER_PIXEL) {
+      resolutions[resolutionCount++] = g_GraphicsDisplayModes[modeIndex].width * UI_DISPLAY_MODE_WIDTH_SCALE +
+                                       g_GraphicsDisplayModes[modeIndex].height;
+    }
+  }
+  std::sort(resolutions,resolutions + resolutionCount);
+  resolutionCount = (uint32_t)(std::unique(resolutions,resolutions + resolutionCount) - resolutions);
+  firstListed = 0;
+  if (resolutionCount > FRONTEND_DISPLAY_RESOLUTION_OPTIONS) {
+    firstListed = resolutionCount - FRONTEND_DISPLAY_RESOLUTION_OPTIONS;
+    resolutionCount = FRONTEND_DISPLAY_RESOLUTION_OPTIONS;
+  }
+  rowPanel = FRONTEND_UI(frontendRoot,displayResolutionRowPanel);
+  templateRow = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,0);
+  previousRow = UI_NODE_NONE;
+  for (rowIndex = 0; rowIndex < resolutionCount; rowIndex++) {
+    row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
+    if ((rowIndex >= FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS) &&
+        (row->base.selectable.base.vtable == nullptr)) {
+      std::memcpy(static_cast<void *>(row),templateRow,sizeof *row);
+      row->base.selectable.base.firstChild = UI_NODE_NONE;
+      row->base.selectable.base.nodeFlags &= ~(UI_NODE_HAS_KEYBOARD_FOCUS | UI_NODE_REPEAT_OR_DOUBLE_CLICK);
+      row->base.selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+      row->base.selectable.actionId = FRONTEND_ACTION_RESOLUTION_OPTION1;
+      rowTop = FRONTEND_DISPLAY_RESOLUTION_ROW_INSET + (int32_t)rowIndex * FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT;
+      row->base.selectable.base.topOffset = rowTop;
+      row->base.selectable.base.bottomOffset = rowTop + FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT;
+    }
+    row->base.selectable.base.parent = rowPanel;
+    row->firstValue = (int32_t)(resolutions[firstListed + rowIndex] >> 16);
+    row->secondValue = (int32_t)(resolutions[firstListed + rowIndex] & UI_DISPLAY_MODE_HEIGHT_MASK);
+    if (previousRow == UI_NODE_NONE) {
+      rowPanel->firstChild = &row->base.selectable.base;
+    }
+    else {
+      previousRow->nextSibling = &row->base.selectable.base;
+    }
+    previousRow = &row->base.selectable.base;
+  }
+  if (previousRow != UI_NODE_NONE) {
+    previousRow->nextSibling = UI_NODE_NONE;
+  }
+  else {
+    rowPanel->firstChild = UI_NODE_NONE;
+  }
+  if ((resolutionCount != 0) && (resolutionCount != s_resolutionRowCount)) {
+    Thandor_Log("display settings: %u resolutions listed, %ux%u .. %ux%u",resolutionCount,
+                resolutions[firstListed] >> 16,resolutions[firstListed] & UI_DISPLAY_MODE_HEIGHT_MASK,
+                resolutions[firstListed + resolutionCount - 1] >> 16,
+                resolutions[firstListed + resolutionCount - 1] & UI_DISPLAY_MODE_HEIGHT_MASK);
+  }
+  s_resolutionRowCount = resolutionCount;
+  rowPanel->bottomOffset =
+       2 * FRONTEND_DISPLAY_RESOLUTION_ROW_INSET + (int32_t)resolutionCount * FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT;
+}
+
+/* Lays the resolution list out (the scroll frame decides whether it needs its bar; the rows are as wide as the
+   view beside the bar) and, with scrollToSelected, scrolls it so the selected row is in the middle of the view
+   as far as the list allows. */
+static void FrontendDisplaySettingsPage_LayoutResolutionList(UiNodeBase *frontendRoot,bool scrollToSelected)
+{
+  UiScrollableControl *scrollBox;
+  UiNodeBase *rowPanel;
+  UiNumericPairTextButton *row;
+  uint32_t rowIndex;
+
+  scrollBox = (UiScrollableControl *)FRONTEND_UI(frontendRoot,displayResolutionScrollBox);
+  rowPanel = FRONTEND_UI(frontendRoot,displayResolutionRowPanel);
+  rowPanel->rightOffset = scrollBox->base.right - scrollBox->base.left;
+  scrollBox->base.vtable->layout(&scrollBox->base);
+  rowPanel->rightOffset = scrollBox->viewportWidth;
+  scrollBox->base.vtable->layout(&scrollBox->base);
+  if (scrollToSelected) {
+    scrollBox->scrollOffsetY = 0;
+    for (rowIndex = 0; rowIndex < s_resolutionRowCount; rowIndex++) {
+      row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
+      if ((row->base.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+        scrollBox->scrollOffsetY =
+             ((int32_t)scrollBox->viewportHeight - FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT) / 2 -
+             row->base.selectable.base.topOffset;
+        break;
+      }
+    }
+    UiScrollableControl_RefreshChildAndScrollThumbs(scrollBox);
+  }
+  UiNode_InvalidateRoot(&scrollBox->base);
+}
+
 /* Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
-   "Graphics" button: opens the display settings page and fills its choices: the ten smallest distinct
-   resolutions (width << 16 | height) of g_GraphicsDisplayModes, collected by an insertion into a sorted list with
-   0xFFFFFFFF as the empty mark, and the name and device of up to five adapters. The saved adapter and resolution
-   become the current selection. Not in the original: there is no colour depth choice any more (the original
-   listed the four smallest distinct colour depths); the colour depth is always 32 bits.
+   "Graphics" button: opens the display settings page and fills its choices: the resolutions and the name and
+   device of up to five adapters. The saved adapter and resolution become the current selection. Not in the
+   original: there is no colour depth choice any more (the original listed the four smallest distinct colour
+   depths), the colour depth is always 32 bits; and the original listed only the ten smallest distinct
+   resolutions (width << 16 | height, inserted into a sorted list with 0xFFFFFFFF as the empty mark), here all
+   of them are listed in the scrollable list (FrontendDisplaySettingsPage_BuildResolutionRows), which opens
+   scrolled to the selected resolution.
 */
 void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source)
 
 {
   FrontendModelPointerContextFlags *menuRoomContextFlags;
-  uint32_t *candidates;
+  UiNodeBase *frontendRoot;
   uint32_t adapterIndex;
-  uint32_t rowIndex;
-  GraphicsDisplayModeCount remainingModes;
-  GraphicsDisplayMode *displayMode;
 
-  candidates = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues;
   /* source is the frontend template's graphicsSettingsButton */
+  frontendRoot = (UiNodeBase *)((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton));
   UiPageStack_SetActiveIndex
-            (FRONTEND_PAGE_DISPLAY_SETTINGS,
-             (UiPageStackControl *)FRONTEND_UI((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton),
-                                               frontendPageStack));
+            (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContext *)
-           FRONTEND_UI((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton),menuRoomModelView))->
-         contextFlags;
+         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   /* name and device of up to five adapters (the first one is always listed) */
@@ -73,22 +207,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   for (adapterIndex = 1; (adapterIndex < 5) && (adapterIndex < g_GraphicsAdapterCount); adapterIndex++) {
     FrontendDisplaySettingsPage_FillAdapterRow(source,adapterIndex);
   }
-  /* the ten smallest distinct resolutions */
-  for (rowIndex = 0; rowIndex < 10; rowIndex++) {
-    candidates[rowIndex] = UI_DISPLAY_MODE_NONE;
-  }
-  remainingModes = g_GraphicsDisplayModeCount;
-  displayMode = g_GraphicsDisplayModes;
-  do {
-    UiDisplayModeCandidates_InsertSortedUnique
-              (candidates,10,displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height);
-    displayMode++;
-    remainingModes--;
-  } while (remainingModes != 0);
-  for (rowIndex = 0; rowIndex < 10; rowIndex++) {
-    source->resolutionRows.rows[rowIndex].width = candidates[rowIndex] >> 16;
-    source->resolutionRows.rows[rowIndex].height = candidates[rowIndex] & UI_DISPLAY_MODE_HEIGHT_MASK;
-  }
+  FrontendDisplaySettingsPage_BuildResolutionRows(frontendRoot);
   /* Not in the original: the adapter is the saved renderer (the original read its adapter index here), and the
      display mode kind choice */
   FrontendDisplaySettingsPage_ReadSavedRendererAndKind();
@@ -98,7 +217,8 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
        PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
   bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)source);
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability(frontendRoot);
+  FrontendDisplaySettingsPage_LayoutResolutionList(frontendRoot,true);
   return;
 }
 
@@ -134,8 +254,8 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
   return;
 }
 
-/* Handler of the ten resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
-   g_FrontendUiActionHandlersPage20): takes the clicked button's width/height pair as the pending resolution and
+/* Handler of the resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
+   g_FrontendUiActionHandlersPage20; the extra rows of open-thandor use 0x2022): takes the clicked button's width/height pair as the pending resolution and
    refreshes which choices are available. Nothing is applied before the apply action (0x2031).
 */
 void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
@@ -270,12 +390,13 @@ void FrontendDisplaySettings_ApplyMode(void *control)
    on top (without earlier shifts: that group's last choice) is taken as the selected control but is not in the
    list, so it keeps its state; the group's other choices plus the next group's first choice are deselected, and
    every later group works on a stack shifted by one entry (two matches in one group shift it the other way).
-   modeStack models that stack exactly. Once a shift reaches past the pushed controls the original also deselects
-   and redraws whatever the values saved below them on its stack point at; this C leaves those entries out
-   (listCount is cut at the last control). Not in the original: the colour depth group (32-bit colour only) is
-   gone, so the stack starts with the resolution choices.
+   modeStack models that stack for the adapter group. Once a shift reaches past the pushed controls the original
+   also deselects and redraws whatever the values saved below them on its stack point at; this C leaves those
+   entries out (listCount is cut at the last control). Not in the original: the colour depth group (32-bit
+   colour only) is gone, and the resolution group is the scrollable list: any number of rows, the one matching
+   the pending resolution selected and every other one deselected, so no stack shift comes from it.
 */
-#define DISPLAY_MODE_STACK_CONTROLS 15 /* adapter 1..5, resolution 1..10 */
+#define DISPLAY_MODE_STACK_CONTROLS 5 /* adapter 1..5 */
 #define DISPLAY_MODE_STACK_BASE DISPLAY_MODE_STACK_CONTROLS /* room for the pushed matches above the controls */
 #define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + DISPLAY_MODE_STACK_CONTROLS)
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
@@ -286,6 +407,8 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   uint32_t pendingHeight;
   uint32_t bitsPerPixel;
   uint32_t persistedValue;
+  uint32_t rowIndex;
+  UiNumericPairTextButton *row;
   Bool8 modeCheckCarry;
   /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the controls stand
      for the values the original saved below them */
@@ -304,171 +427,34 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   while (frontendRoot->parent != UI_NODE_NONE) {
     frontendRoot = frontendRoot->parent;
   }
-  /* push all 15 choices */
+  /* the resolution rows: offered when the pending adapter has the mode, selected when it is the pending one */
+  for (rowIndex = 0; rowIndex < s_resolutionRowCount; rowIndex++) {
+    row = FrontendDisplaySettingsPage_ResolutionRow(frontendRoot,rowIndex);
+    modeCheckCarry = DisplayModeTable_ContainsExactMode
+                      (bitsPerPixel,(FrontendDisplayDimensionPixels)row->secondValue,
+                       (FrontendDisplayDimensionPixels)row->firstValue,adapterIndex);
+    if (modeCheckCarry) {
+      UiSelectableControl_SuppressIfActionId(row->base.selectable.actionId,&row->base.selectable);
+    }
+    else {
+      UiSelectableControl_UnsuppressIfActionId(row->base.selectable.actionId,&row->base.selectable);
+    }
+    UiSelectableControl_SetSelected
+              ((pendingWidth == (uint32_t)row->firstValue) && (pendingHeight == (uint32_t)row->secondValue),
+               &row->base.selectable);
+  }
+  /* push the 5 adapter choices */
   modeStackTop = DISPLAY_MODE_STACK_BASE;
-  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
-  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
-  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
-  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
-  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
-  modeStack[DISPLAY_MODE_STACK_BASE + 5] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
-  modeStack[DISPLAY_MODE_STACK_BASE + 6] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 7] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 8] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 9] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
-  modeStack[DISPLAY_MODE_STACK_BASE + 10] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
-  modeStack[DISPLAY_MODE_STACK_BASE + 11] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
-  modeStack[DISPLAY_MODE_STACK_BASE + 12] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
-  modeStack[DISPLAY_MODE_STACK_BASE + 13] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
-  modeStack[DISPLAY_MODE_STACK_BASE + 14] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
+  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   modeStack[DISPLAY_MODE_STACK_END + 0] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 1] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 2] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 3] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 4] = NULL;
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->secondValue,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->firstValue,
-                     adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,
-                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->secondValue,
-                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->firstValue,
-                     adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,(FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->secondValue,
-                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->secondValue,
-                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->firstValue,adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
-  }
-  modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->secondValue,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->firstValue,
-                     adapterIndex);
-  if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
-  }
-  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->firstValue) &&
-     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->secondValue)) {
-    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
-  }
-  /* SelectExclusive(10, top, next 10), then pop 1 + 10 */
-  listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
-  if (listCount > 10) {
-    listCount = 10;
-  }
-  UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
-      modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
-      modeStack[modeStackTop + 4],modeStack[modeStackTop + 5],modeStack[modeStackTop + 6],
-      modeStack[modeStackTop + 7],modeStack[modeStackTop + 8],modeStack[modeStackTop + 9],
-      modeStack[modeStackTop + 10]);
-  modeStackTop = modeStackTop + 11;
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,0);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);

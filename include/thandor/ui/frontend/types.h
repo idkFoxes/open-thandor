@@ -966,7 +966,16 @@ typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * ar
 typedef void ScenarioCatalogRefreshSelectedRecordCallback(uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex);
 #pragma pack(push, 1)
 
-/* g_FrontendRootInitializationTemplate: 226 UI nodes. FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+/* Not in the original: the resolution rows of the display settings page: displayResolutionOption1..10 and the
+   extra rows (FrontendUiImage displayResolutionExtraOptions), 24 pixels apart in displayResolutionRowPanel */
+#define FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS 10
+#define FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS 54
+#define FRONTEND_DISPLAY_RESOLUTION_OPTIONS \
+          (FRONTEND_DISPLAY_RESOLUTION_TEMPLATE_OPTIONS + FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS)
+#define FRONTEND_DISPLAY_RESOLUTION_ROW_HEIGHT 24
+#define FRONTEND_DISPLAY_RESOLUTION_ROW_INSET 3 /* the rows' left/top/right offsets in the panel */
+
+/* g_FrontendRootInitializationTemplate: 226 UI nodes (open-thandor: 232 plus the extra resolution rows). FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FrontendUiImage {
     UiNodeBase frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
@@ -1433,6 +1442,15 @@ typedef struct FrontendUiImage {
     uint32_t displayModeKindBorderless_fields[5];
     UiNodeBase displayModeKindFullscreen; /* +5A68 g_UiTextButtonControlVtable: "Vollbild" (action FRONTEND_ACTION_DISPLAY_MODE_KIND_FULLSCREEN). */
     uint32_t displayModeKindFullscreen_fields[5];
+    /* Not in the original (open-thandor): the resolution choices as a scrollable list. displayResolutionGroup
+       holds the scroll frame, the frame scrolls the row panel, the panel holds displayResolutionOption1..10
+       followed by the extra rows (built at run time from displayResolutionOption1 when the page opens; zero
+       in the template). */
+    UiNodeBase displayResolutionScrollBox; /* +5AC8 g_UiScrollableControlVtable: Scroll frame inside displayResolutionGroup (vertical bar only). */
+    uint32_t displayResolutionScrollBox_fields[17];
+    UiNodeBase displayResolutionRowPanel; /* +5B58 g_UiPanelControlVtable: Scrolled content: one radio row per resolution, size set at run time. */
+    uint32_t displayResolutionRowPanel_fields[3];
+    UiNumericPairTextButton displayResolutionExtraOptions[FRONTEND_DISPLAY_RESOLUTION_EXTRA_OPTIONS]; /* +5BB0 g_UiNumericPairTextButtonVtable: Resolution choices 11.. (action 0x2022). */
 } FrontendUiImage;
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
 #define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))
