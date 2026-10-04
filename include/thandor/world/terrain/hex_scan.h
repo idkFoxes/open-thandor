@@ -81,14 +81,24 @@ inline TerrainHexScan_CellPolicy<true,VisitFn> TerrainHexScan_TestPolicy(VisitFn
   return TerrainHexScan_CellPolicy<true,VisitFn>{test};
 }
 
-/* One cell of a walk: true when the walk ends here (an edge cell, or a failing cell of a test policy). */
+/* One cell of a walk: true when the walk ends here (an edge cell, or a failing cell of a test policy).
+   A policy whose visit also takes the cell's scan step (visit(cell, scanStep), e.g. the line-of-sight policy
+   that scales heights by distance) gets it: the leg cell's own step, s for a spine cell, s+4 for the cell
+   between two spine cells. */
 template <class Policy>
-inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,Policy &policy)
+inline bool TerrainHexScan_EndsAt(FieldGridCell *cell,TerrainDirectionalScanStep scanStep,Policy &policy)
 {
   if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
     return true;
   }
-  if constexpr (Policy::IsTest) {
+  if constexpr (requires { policy.visit(cell,scanStep); }) {
+    if constexpr (Policy::IsTest) {
+      return policy.visit(cell,scanStep);
+    } else {
+      policy.visit(cell,scanStep);
+      return false;
+    }
+  } else if constexpr (Policy::IsTest) {
     return policy.visit(cell);
   } else {
     policy.visit(cell);
@@ -102,7 +112,7 @@ template <int Direction,class Policy>
 inline Bool8 TerrainHexScan_Leg(TerrainDirectionalScanStep scanStep,FieldGridCell *cell,Policy policy)
 {
   while (scanStep < g_TerrainScanStepLimit) {
-    if (TerrainHexScan_EndsAt(cell,policy)) {
+    if (TerrainHexScan_EndsAt(cell,scanStep,policy)) {
       return Policy::IsTest;
     }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
@@ -124,7 +134,7 @@ inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGrid
   FieldGridCell *betweenCell;
 
   while (scanStep < g_TerrainScanStepLimit) {
-    if (TerrainHexScan_EndsAt(cell,policy)) {
+    if (TerrainHexScan_EndsAt(cell,scanStep,policy)) {
       return Policy::IsTest;
     }
     if (TerrainHexScan_Leg<DirectionA>(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
@@ -135,7 +145,7 @@ inline Bool8 TerrainHexScan_Sector(TerrainDirectionalScanStep scanStep,FieldGrid
       return false;
     }
     betweenCell = TerrainHexScan_Neighbor<DirectionB>(cell);
-    if (TerrainHexScan_EndsAt(betweenCell,policy)) {
+    if (TerrainHexScan_EndsAt(betweenCell,scanStep + TERRAIN_SCAN_STEP_STRAIGHT,policy)) {
       return Policy::IsTest;
     }
     scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
