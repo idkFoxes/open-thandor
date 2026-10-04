@@ -20,7 +20,7 @@ THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
 
 THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
 
-THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = THANDOR_FN(Keyboard_FlushEvents);
+THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = &Keyboard_FlushEvents;
 
 THANDOR_ALIGN(8) uint32_t g_KeyboardStateMask = 0;
 
@@ -62,7 +62,7 @@ UiPixelCoordinate g_MouseY = 0;
 
 GraphicsCursorButtonState g_MouseButtonMask = 0;
 
-KeyboardReadEventProc *g_KeyboardReadEvent = THANDOR_FN(Keyboard_ReadNextEvent);
+KeyboardReadEventProc *g_KeyboardReadEvent = &Keyboard_ReadNextEvent;
 
 uint32_t g_CursorUseOverridePosition = 0;
 
@@ -504,6 +504,6 @@ uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 /* Class vtables. */
 
 KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3 = {
-    .compareCaseInsensitiveFlags = THANDOR_FN(Keyboard_CompareAsciiCaseInsensitiveFlags),
-    .toUpper = THANDOR_FN(Keyboard_ToUpperAscii),
-    .toLower = THANDOR_FN(Keyboard_ToLowerAscii)};
+    .compareCaseInsensitiveFlags = THANDOR_SLOT(Keyboard_CompareAsciiCaseInsensitiveFlags),
+    .toUpper = THANDOR_SLOT(Keyboard_ToUpperAscii),
+    .toLower = THANDOR_SLOT(Keyboard_ToLowerAscii)};

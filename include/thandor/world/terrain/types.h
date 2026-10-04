@@ -202,8 +202,8 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    Ptr32<Bool8 (uint32_t, Q12, Q12, Q12, struct FieldGridAsset *)> placementTests[5]; // Exact immutable callback partition; the bool result is true on reject.
-    Ptr32<Bool8 (uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *)> overlayCallbacks[5]; // Exact immutable callback partition.
+    Ptr32<Bool8 (FieldGridRadiusUnits, Q12, Q12, Q12, struct FieldGridAsset *)> placementTests[5]; // Exact immutable callback partition; the bool result is true on reject.
+    Ptr32<Bool8 (FieldCellFlagMask, TerrainOverlayCellRuntimeValue, FieldGridRadiusUnits, Q12, Q12, struct FieldGridAsset *)> overlayCallbacks[5]; // Exact immutable callback partition.
 };
 
 #endif /* THANDOR_WORLD_TERRAIN_TYPES_H */
