@@ -297,7 +297,6 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
       AiCandidateWorkspace_AddOrAccumulateWeightedEntry(bestArmyAsset->registryId,weightRange,1);
     }
   }
-  return;
 }
 
 /* Attack: while there are targets (workspace 07) and workspace 01 has at most 10 entries, scores the eligible
@@ -341,7 +340,6 @@ void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRu
       AiCandidateWorkspace_AddOrAccumulateWeightedEntry(bestArmyAsset->registryId,weightRange,1);
     }
   }
-  return;
 }
 
 /* True when technologyIndex is one of the research slots researchTechnologyIds[1..28] of the structure
@@ -474,7 +472,6 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
            g_AiPurchaseAppliedArmyClassMask | armyAsset[1].selectionDetailTemplateVariantIndex;
     }
   }
-  return;
 }
 
 /* Proposes a resource storage building when the faction's free storage runs low (ARM 331 for Xenite, the
@@ -541,7 +538,6 @@ void AiStructureCandidate_AddResourceStorage
       return;
     }
   }
-  return;
 }
 
 /* Proposes ARM 310 (0x136) once an ARM 330 exists and no ARM 310 is unassigned, when baseline Energy supply
@@ -581,7 +577,6 @@ void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex)
       }
     }
   }
-  return;
 }
 
 /* Pressure-weighted damage score of one weapon (a linked child definition) for

@@ -98,7 +98,6 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
     *controlNodeFlags = *controlNodeFlags | UI_NODE_SUPPRESSED;
     UiKeyboardFocus_ReleaseNode(&control->base);
   }
-  return;
 }
 
 /* Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
@@ -117,7 +116,6 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
     *controlNodeFlags = *controlNodeFlags & ~UI_NODE_SUPPRESSED;
     UiKeyboardFocus_AcquireIfNone(&control->base);
   }
-  return;
 }
 
 /* Finds the first enabled (not suppressed), selected control of a group (controlCount control pointers
@@ -206,7 +204,6 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
     controlIndex++;
   } while (controlIndex < controlCount);
   va_end(controlArgs);
-  return;
 }
 
 /* Tells whether a selectable control counts as selected/checked: only a visible (not suppressed)
@@ -233,5 +230,4 @@ void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableContr
     control->stateFlags = control->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
   }
   UiNode_InvalidateRoot(&control->base);
-  return;
 }

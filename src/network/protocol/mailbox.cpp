@@ -363,7 +363,6 @@ void UiTransferMailbox_ClearReceivedState()
   g_UiTransferMailbox.receivedByteCount = 0;
   g_UiTransferMailbox.receivedRemainingBytes = 0;
   g_UiTransferMailbox.receiveRetryTicks = 0;
-  return;
 }
 
 /* Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
@@ -394,7 +393,6 @@ void UiTransferMailbox_RandomizeSequenceToken()
   
   randomValue = Random_NextPrimary();
   g_UiTransferSequenceToken = g_UiTransferSequenceToken ^ randomValue & 0xffff;
-  return;
 }
 
 /* Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
@@ -407,7 +405,6 @@ void UiTransferMailbox_MarkUnavailable()
   g_UiTransferMailbox.receivedByteCount = 1;
   g_UiTransferMailbox.receivedRemainingBytes = 1;
   g_UiTransferMailbox.receiveRetryTicks = 1;
-  return;
 }
 
 /* Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
@@ -418,7 +415,6 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
 {
   g_UiTransferMailbox.outgoingAllocation = allocation;
   g_UiTransferMailbox.outgoingByteCount = byteCount;
-  return;
 }
 
 /* Sends one packet to endpoint; every packet of the game goes through here. Stamps the header with this

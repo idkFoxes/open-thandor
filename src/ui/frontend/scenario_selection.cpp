@@ -30,7 +30,6 @@ static void FrontendScenarioSelection_LogRejectedRowIndex(UiListRowIndex rowInde
     s_loggedRejectedRowIndex = 1;
     Thandor_Log("scenario selection: row index %u out of range, ignored",(unsigned)rowIndex);
   }
-  return;
 }
 
 /* Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):
@@ -51,7 +50,6 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
   FrontendScenarioSelection_ActivateSelectedRecord
             ((FrontendScenarioSelectionControlAddress32)
              (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,savedGamesList,gameSelectStartButton));
-  return;
 }
 
 /* Handler of FRONTEND_ACTION_SELECT_SINGLE_GAME, the single-games list (slot 58 of
@@ -73,7 +71,6 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
   FrontendScenarioSelection_ActivateSelectedRecord
             ((FrontendScenarioSelectionControlAddress32)
              (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,missionsList,gameSelectStartButton));
-  return;
 }
 
 /* Handler of FRONTEND_ACTION_SELECT_CAMPAIGN, the campaigns list (slot 59 of
@@ -95,7 +92,6 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
   FrontendScenarioSelection_ActivateSelectedRecord
             ((FrontendScenarioSelectionControlAddress32)
              (uintptr_t)THANDOR_UI_SIBLING(listControl,FrontendUiImage,campaignsList,gameSelectStartButton));
-  return;
 }
 
 /* Compares unitCount UTF-16 code units, stopping at the first difference. */
@@ -288,7 +284,6 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
   *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-  return;
 }
 
 /* Handler of the "Load game" tab (actions 0x2035 and 0x2052, slots 53 and 82 of
@@ -308,7 +303,6 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildSaveRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectSavedGameAndShowDescription>(0,0,0);
-  return;
 }
 
 /* Handler of the "Single game" tab (actions 0x2036 and 0x2053, slots 54 and 83 of
@@ -328,7 +322,6 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildLevelRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectLevelAndShowDescription>(0,0,0);
-  return;
 }
 
 /* Handler of the "Campaigns" tab (actions 0x2037 and 0x2054, slots 55 and 84 of
@@ -347,7 +340,6 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
        (uint16_t *)(uintptr_t)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   FrontendCommand_Issue<ScenarioCatalog_RebuildCampaignRecordListPage>(0,0,0);
   FrontendCommand_Issue<ScenarioCatalog_SelectCampaignAndShowDescription>(0,0,0);
-  return;
 }
 
 /* Shows the "Load game" tab: selects its tab button and page and fills the saved-games list with the save
@@ -399,7 +391,6 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   UiPointerList_InitializeColumnLayout
             (0,nullptr,(UiPointerListControl *)FRONTEND_UI(firstNode,savedGamesList));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
-  return;
 }
 
 /* Shows the "Single game" tab: selects its tab button and page and fills the single-games list with the level
@@ -480,7 +471,6 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
-  return;
 }
 
 /* Shows the "Campaigns" tab: selects its tab button and page and fills the campaigns list with the campaign
@@ -551,7 +541,6 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
   UiNodeList_SuppressActionId(FRONTEND_ACTION_SELECT_CAMPAIGN,firstNode);
-  return;
 }
 
 /* Selection callback of the saved-games list: selects the row and shows the saved game's description, the
@@ -605,7 +594,6 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
            (uint16_t *)(uintptr_t)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
     }
   }
-  return;
 }
 
 /* Selection callback of the campaigns list: selects the row and shows the campaign's description text
@@ -639,7 +627,6 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
                         titleTextResourceId +
                       TEXT_ID_CAMPAIGN_DESCRIPTION_BASE);
   }
-  return;
 }
 
 /* Handler of FRONTEND_ACTION_START_SELECTED_GAME, the Start button of the "Choose game" page (slot 56 of
@@ -700,7 +687,6 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
              (uint16_t *)g_SaveDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_FrontendScenarioPathScratchUtf16);
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,2);
-  return;
 }
 
 /* Selection callback of the single-game (missions) list: selects the row and shows the level's description
@@ -733,5 +719,4 @@ void ScenarioCatalog_SelectLevelAndShowDescription
                         scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +
                       TEXT_ID_LEVEL_DESCRIPTION_BASE);
   }
-  return;
 }

@@ -95,7 +95,6 @@ void Keyboard_FlushEvents()
 
 {
   g_KeyboardWriteIndex = g_KeyboardReadIndex;
-  return;
 }
 
 
@@ -420,7 +419,6 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }
-  return;
 }
 
 
@@ -454,7 +452,6 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
   if (navigationCode != 0) {
     g_KeyboardSpecialKeyDown[navigationCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
   }
-  return;
 }
 
 
@@ -483,7 +480,6 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }
-  return;
 }
 
 

@@ -329,7 +329,6 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
              (g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryAzimuthAngle,lightElevationAngle,
              deltaAzimuthAngle + g_InGameRuntimeRoot->lightAzimuthAngle & FIXED_ANGLE16_MASK,
              &g_InGameRuntimeRoot->worldRuntime);
-  return;
 }
 
 /* Not a function of its own in the original: the inlined MMX sequence that blends one colour pair of
@@ -507,7 +506,6 @@ void WorldRuntime_TurnAuxiliaryAnglesClamped
              g_InGameRuntimeRoot->lightElevationAngle,
              g_InGameRuntimeRoot->lightAzimuthAngle,
              &g_InGameRuntimeRoot->worldRuntime);
-  return;
 }
 
 /* Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
@@ -529,7 +527,6 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
   worldRuntime->lighting.baseColorArgb = baseColorArgb;
   worldRuntime->lighting.secondaryColorArgb = secondaryColorArgb;
   TerrainLighting_BuildColorRampAndSetBaseColor(secondaryColorArgb,baseColorArgb,rampStepColorArgb);
-  return;
 }
 
 /* Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
@@ -553,5 +550,4 @@ void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);
   worldRuntime->fieldRegion.auxiliaryAzimuthAngle = auxiliaryAzimuthAngle;
   worldRuntime->fieldRegion.auxiliaryElevationAngle = auxiliaryElevationAngle;
-  return;
 }

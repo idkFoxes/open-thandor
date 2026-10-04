@@ -458,5 +458,4 @@ void UiCatalogEntryControl_NonRightRelease
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }
-  return;
 }

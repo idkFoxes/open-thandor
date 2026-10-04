@@ -300,7 +300,6 @@ void InGameWorldInput_BeginPointerCapture
   g_InGameCommandPointerCaptureY =
        THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressY;
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED;
-  return;
 }
 
 /* Selection-mode capture of InGameWorldInput_UpdateDragSelectionAndCamera: once the pointer travelled more than
@@ -327,7 +326,6 @@ static void InGameWorldInput_BeginDragSelectionIfMoved(WorldRuntimeContext *inGa
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_DRAG_SELECTING;
     InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
   }
-  return;
 }
 
 /* Stores one rebased army offset in a 12-dword drag-selection batch and counts it.
@@ -345,7 +343,6 @@ static void InGameWorldInput_AppendDragSelectionBatchValue
   if (slotIndex < 11) {
     *batchCount = *batchCount + 1;
   }
-  return;
 }
 
 /* Drag selection: clears both batches, then sorts every own model's army into the insert batch (inside the
@@ -397,7 +394,6 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
                 (g_InGameSelectionRemoveTripletDwords,&g_InGameSelectionRemoveTripletDwordCount,payloadValue);
     }
   }
-  return;
 }
 
 /* Drag selection: sends the remove batch, then the insert batch, three values per command. The counters end
@@ -428,7 +424,6 @@ static void InGameWorldInput_FlushDragSelectionBatches()
       g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount - 3;
     } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < countBeforeTriplet);
   }
-  return;
 }
 
 /* Placement / command mode heading drag: without button bit 4 the horizontal pointer travel since the capture
@@ -452,7 +447,6 @@ static void InGameWorldInput_RotateHeadingByPointerTravel
     *captureX = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX;
     *captureY = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerY;
   }
-  return;
 }
 
 /* Pointer-move callback while the pointer is captured. In selection mode a press that moved more than 23 pixels
@@ -497,7 +491,6 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
   }
   InGameWorldInput_CollectDragSelectionBatches(inGameRuntime);
   InGameWorldInput_FlushDragSelectionBatches();
-  return;
 }
 
 /* Command-mode release of InGameWorldInput_CommitPointerAction: when the press captured the pointer over the
@@ -543,7 +536,6 @@ static void InGameWorldInput_CommitCommandModeRelease
             ((CommandQueueHandlerProc *)modeHandler,g_InGameCommandPreviewHeading16,pointerWorldXQ12,
              pointerWorldYQ12);
   InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
-  return;
 }
 
 /* Selection-mode click: adds the candidate army to the selection (INGAME_COMMAND_SELECT_ARMY). */
@@ -551,7 +543,6 @@ static void InGameWorldInput_SelectCandidateArmy(GameEntityRuntime *entry)
 
 {
   InGameCommand_Issue<InGamePlayerSelection_SelectArmyRuntimeIndex>(0,0,ArmyRuntime_Token(entry));
-  return;
 }
 
 /* Selection-mode click on an own candidate army: selects it alone, or replaces the selection with it when the
@@ -572,7 +563,6 @@ static void InGameWorldInput_SelectOwnCandidateArmy
   else {
     InGameCommand_Issue<InGamePlayerSelection_ReplaceWithArmyRuntimeIndex>(0,0,armyRuntimeIndex);
   }
-  return;
 }
 
 /* Selection-mode click on a candidate while no selected entry has a nonnegative weapon damage: a candidate whose
@@ -595,7 +585,6 @@ static void InGameWorldInput_CommitCandidateConditionClick
     return;
   }
   InGameWorldInput_SelectOwnCandidateArmy(inGameRuntime,ownerIndex,entry);
-  return;
 }
 
 /* Shift/Alt-click (with or without Ctrl) on a candidate: toggles an own army in the selection
@@ -617,7 +606,6 @@ static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntim
   else {
     InGameCommand_Issue<FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection>(0,0,ArmyRuntime_Token(entry));
   }
-  return;
 }
 
 /* Selection-mode release of InGameWorldInput_CommitPointerAction: resolves the army under the pointer and turns
@@ -705,7 +693,6 @@ static void InGameWorldInput_CommitSelectionModeRelease
   if (entry != nullptr) {
     InGameWorldInput_ToggleCandidateArmy(ownerIndex,entry);
   }
-  return;
 }
 
 /* Release handling of InGameWorldInput_CommitPointerAction except the final end of the selection-mode capture,
@@ -740,7 +727,6 @@ static void InGameWorldInput_DispatchPointerRelease
   }
   InGameWorldInput_CommitSelectionModeRelease
             (pickedHeightQ12,pointerWorldXQ12,pointerWorldYQ12,candidateHeightQ12,candidateNode,inGameRuntime);
-  return;
 }
 
 /* Pointer-release callback of the world view: places the pending army, issues the command-mode command chosen by
@@ -757,7 +743,6 @@ void InGameWorldInput_CommitPointerAction
   InGameWorldInput_DispatchPointerRelease
             (pickedHeightQ12,pointerWorldXQ12,pointerWorldYQ12,candidateHeightQ12,candidateNode,inGameRuntime);
   g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_SELECTION_CAPTURE;
-  return;
 }
 
 /* Drag selection test: projects the node's world position to the screen and returns true when that pixel

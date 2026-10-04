@@ -129,7 +129,6 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
     }
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
@@ -199,7 +198,6 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     }
   }
   UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipBottom,clipRight,clipTop,clipLeft,control);
-  return;
 }
 
 UiNodeVtable g_UiTransferProgressGaugeVtable = {

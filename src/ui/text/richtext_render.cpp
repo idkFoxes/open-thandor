@@ -140,7 +140,6 @@ void RichTextCommandStream_DrawWrappedBlock
                 (clipBottom,clipRight,clipTop,clipLeft,maximumWidth,drawY,drawX,&lineHeight)) {
     drawY = drawY + lineHeight;
   }
-  return;
 }
 
 /* Draws one rich-text line: measures it first to align it (right or centred on penX, per the packed style) and

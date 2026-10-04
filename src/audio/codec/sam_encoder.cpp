@@ -1003,7 +1003,6 @@ void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,sh
     *(MmxPackedValue64 *)outputCoefficients = mm0PackedValue64;
     outputCoefficients = outputCoefficients + SAM_MMX_OUTPUTS_PER_PASS;
   } while (outputPassesRemaining != 0);
-  return;
 }
 
 /* Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock

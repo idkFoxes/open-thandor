@@ -324,7 +324,6 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
       return;
     }
   }
-  return;
 }
 
 /* Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime

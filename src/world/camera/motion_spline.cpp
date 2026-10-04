@@ -199,5 +199,4 @@ void WorldMotionSpline_ClearCachedDerivatives()
     *derivativeCursor = 0.0;
     derivativeCursor++;
   }
-  return;
 }

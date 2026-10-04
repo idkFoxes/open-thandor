@@ -167,7 +167,6 @@ FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
 void FrontendCallback_NoOpArg1(void *source)
 
 {
-  return;
 }
 
 /* Handler of action 0x2034 (slot 52 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Choose game"
@@ -186,7 +185,6 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
   else {
     FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,4);
   }
-  return;
 }
 
 /* Handler of action 0x2033 (slot 51 of g_FrontendUiActionHandlersPage20.handlers00_54), the quit dialog's "no"
@@ -197,7 +195,6 @@ void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
-  return;
 }
 
 /* Handler of action 0x2010 (slot 16 of g_FrontendUiActionHandlersPage20.handlers00_54), shared by the options
@@ -227,5 +224,4 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
     *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);
-  return;
 }

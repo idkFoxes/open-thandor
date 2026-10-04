@@ -85,7 +85,6 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   g_UiTooltipState.targetNode = nullptr;
-  return;
 }
 
 /* Closes the dialog or screen that contains root (any node of it may be passed): its close callback may
@@ -199,7 +198,6 @@ void UiRootStack_Relayout()
     (*((rootNode->base).vtable)->layout)(&rootNode->base);
     rootNode = rootNode->previousRoot;
   }
-  return;
 }
 
 /* Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
@@ -216,7 +214,6 @@ void UiRootStack_InvalidateAll()
       UiNode_InvalidateRoot(&root->base);
     }
   }
-  return;
 }
 
 /* Action handler 0 of the root-stack page: pops the source's root. The action queue calls handlers as

@@ -423,7 +423,6 @@ void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
   }
-  return;
 }
 
 

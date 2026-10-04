@@ -61,7 +61,6 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
-  return;
 }
 
 /* Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
@@ -71,7 +70,6 @@ void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRun
 void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
-  return;
 }
 
 /* Ends the effect: releases its shading record over the definition's release time and unlinks the model node. */

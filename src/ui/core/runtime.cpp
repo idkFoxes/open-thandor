@@ -104,7 +104,6 @@ void UiRuntimeRecordRing_Clear()
 
 {
   g_UiRuntimeRecordReadIndex = g_UiRuntimeRecordWriteIndex;
-  return;
 }
 
 /* Returns true when a pending received packet carries sessionToken in its header, i.e. when the
@@ -152,7 +151,6 @@ void UiRuntime_SetSynchronizationHooks
 {
   g_UiRuntimeFrameLock = frameLock;
   g_UiRuntimePostUnlockCallback = postUnlockCallback;
-  return;
 }
 
 /* Sets up the UI runtime at startup: registers the 20 Hz frame-tick timer and the 125 Hz transfer-mailbox
@@ -196,7 +194,6 @@ void UiRuntime_Initialize()
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;
-  return;
 }
 
 /* Counterpart of UiRuntime_Initialize at program end: stops the network receive timer and the frame-tick
@@ -223,7 +220,6 @@ void UiRuntime_Shutdown()
     g_TimerUnregisterPeriodic(UiRuntime_IncrementPeriodicTickCounter);
     g_UiRuntimeInitializationCount--;
   }
-  return;
 }
 
 /* Frame-tick timer (20 Hz, registered by UiRuntime_Initialize): counts the pending frame ticks that the
@@ -233,7 +229,6 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter()
 
 {
   g_UiPendingFrameTicks.fetch_add(1);
-  return;
 }
 
 /* Runs the queued UI actions (button clicks, list selections, ...) in order, under the frame lock. An
@@ -269,7 +264,6 @@ void __cdecl UiActionQueue_DispatchPending()
     actionHandler(actionSource);
   }
   g_SpinLockReleaseAndInvoke(g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
-  return;
 }
 
 /* Default method04 vtable slot of the UI node classes: does nothing. Installed statically in 40
@@ -278,7 +272,6 @@ void __cdecl UiActionQueue_DispatchPending()
 void UiNode_DefaultMethod04_NoOp(UiNodeBase *node)
 
 {
-  return;
 }
 
 /* Default nonRightPress (left/middle button press) of the UI node classes: ignores the
@@ -288,7 +281,6 @@ void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
           UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Default nonRightRelease (left/middle button release) of the UI node classes: ignores
@@ -298,7 +290,6 @@ void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordin
           UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Default rightPress of the UI node classes: passes the right-button press up to the
@@ -319,7 +310,6 @@ void UiNode_ForwardRightPressToParent
     g_UiPointerCaptureTarget->vtable->rightPress
               (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
   }
-  return;
 }
 
 /* Default rightRelease of the UI node classes: ignores the right-button release.
@@ -329,7 +319,6 @@ void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate
           UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Default nonRightDrag (pointer motion while a left/middle press holds the capture) of the
@@ -340,7 +329,6 @@ void UiNode_DefaultNonRightDrag
                UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Default rightDrag (pointer motion while a right press holds the capture) of the UI
@@ -350,7 +338,6 @@ void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate po
           UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Default applyFlags of the UI node classes: sets nodeFlags to
@@ -369,7 +356,6 @@ void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask
       childControl = childControl->nextSibling) {
     childControl->vtable->applyFlags(setMask,retainMask,childControl);
   }
-  return;
 }
 
 /* Default tick (per-frame update) of the UI node classes: does nothing. Installed
@@ -378,7 +364,6 @@ void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask
 void UiNode_DefaultTick(UiNodeBase *control)
 
 {
-  return;
 }
 
 /* Installs the handler page for action ids pageIndex * 256 .. pageIndex * 256 + 255, so a UI module can register
@@ -391,7 +376,6 @@ void UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandler
     g_UiActionHandlerPages[pageIndex] = page;
     return;
   }
-  return;
 }
 
 /* Returns the root (window) node of the UI tree containing node: the ancestor whose parent is UI_NODE_NONE.
@@ -440,7 +424,6 @@ void UiNode_InvalidateRoot(UiNodeBase *node)
       g_UiDirtyRectCount++;
     }
   }
-  return;
 }
 
 /* Queues action actionId of the control source for UiActionQueue_DispatchPending (at the end of the
@@ -459,5 +442,4 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
       g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + sizeof(UiActionQueueEntry);
     }
   }
-  return;
 }

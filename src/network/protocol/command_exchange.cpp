@@ -244,7 +244,6 @@ void FrontendTransfer_SendCommandSubmit()
   InGameCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10021Buffer);
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
-  return;
 }
 
 /* Host side of the in-game command exchange: finds the player the packet came from (sequence token and
@@ -318,7 +317,6 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
            (commandRecord->command.packedCommandAndPlayerId & 0xffffff00) | (playerRecord->playerRuntimeId & 0xff);
     }
   }
-  return;
 }
 
 /* Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on

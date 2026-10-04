@@ -115,7 +115,6 @@ void TerrainCompositeTexture_Destroy()
   allocationBase = g_GraphicsTextureSourceResolveAllocationBase
                      (&g_TerrainCompositeTexture->textureSource);
   g_MemoryApi.free(allocationBase);
-  return;
 }
 
 /* Renders plane 1 of the terrain composite texture (the minimap image, one ARGB pixel per field cell):

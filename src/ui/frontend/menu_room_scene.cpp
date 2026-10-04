@@ -205,7 +205,6 @@ void FrontendRomTransition_RequestStop()
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     g_FrontendRomTransitionElapsedTicks = FRONTEND_ROM_TRANSITION_SKIP_TICKS;
   }
-  return;
 }
 
 /* Shows a registered ROM record's runtime root node again (clears ROM_NODE_FLAG_HIDDEN) and creates all of its
@@ -460,7 +459,6 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
   WorldMotionSpline_BuildSixChannelCurves
             (g_FrontendRomTransitionSplineKeyframeCount,
              (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes);
-  return;
 }
 
 /* Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
@@ -494,5 +492,4 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
       descriptorCursor = descriptorCursor + 4;
     }
   }
-  return;
 }

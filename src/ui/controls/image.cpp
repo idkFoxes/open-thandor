@@ -62,7 +62,6 @@ void UiImageControl_LayoutChildrenToParent(UiImageControl *control)
   (control->selectable).base.bottom = savedBottom;
   (control->selectable).base.layoutWidth = savedRight - savedLeft;
   (control->selectable).base.layoutHeight = savedBottom - savedTop;
-  return;
 }
 
 /* nonRightDrag of the image control (g_UiImageControlVtable): only for an image in persistent activation
@@ -113,7 +112,6 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
               (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
   }
   UiRootStack_InvalidateAll();
-  return;
 }
 
 /* tick of the image control (g_UiImageControlVtable): when the right mouse button goes down (latched in
@@ -156,7 +154,6 @@ void UiImageControl_TickHover(UiImageControl *control)
       *clearStateFlagsField = *clearStateFlagsField & ~UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
     }
   }
-  return;
 }
 
 /* drawClipped of the image control (g_UiImageControlVtable): in persistent activation mode the children
@@ -192,7 +189,6 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
       }
     }
   }
-  return;
 }
 
 /* nonRightPress of the image control (g_UiImageControlVtable): plays the pointer sound
@@ -245,7 +241,6 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
     *pressStateFlagsField = *pressStateFlagsField | UI_IMAGE_CONTROL_PRESS_STATE_BITS;
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
-  return;
 }
 
 /* nonRightRelease of the image control (g_UiImageControlVtable). A release while
@@ -297,7 +292,6 @@ void UiImageControl_NonRightRelease
     }
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
-  return;
 }
 
 /* Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react

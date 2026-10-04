@@ -146,7 +146,6 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
 
   sourceAsset = g_GraphicsDestroyTextureSet(set);
   Resource_Release(sourceAsset);
-  return;
 }
 
 /* g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels directly, so there is nothing to
@@ -157,7 +156,6 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
 void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
-  return;
 }
 
 /* GraphicsTextureSet_AllocateMetadata: fills set->entries from the asset's source entries (rows

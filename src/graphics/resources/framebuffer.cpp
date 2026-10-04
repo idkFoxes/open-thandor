@@ -49,7 +49,6 @@ Bool8 GraphicsFramebuffer_BeginAccessStub()
 void GraphicsFramebuffer_EndAccessStub()
 
 {
-  return;
 }
 
 

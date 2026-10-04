@@ -161,7 +161,6 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
@@ -340,7 +339,6 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Moves the local translation of the model node at vectorState along its own direction:

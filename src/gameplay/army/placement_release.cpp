@@ -70,7 +70,6 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
       activeFieldGrid->cells[cellIndex].resourceExtractionDescriptor = 0;
     }
   }
-  return;
 }
 
 /* Release handler of a resource storage (class 15): the model's storage (the definition's classParameterC4) is
@@ -109,7 +108,6 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
          (int)(((int64_t)(int)storageContribution * (int64_t)*storageStock) / (int64_t)storageLimitValue);
   }
   *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
-  return;
 }
 
 /* Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (its home

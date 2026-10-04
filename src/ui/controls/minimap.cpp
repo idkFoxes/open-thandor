@@ -309,7 +309,6 @@ void UiSelectionGeometryControl_DrawClipped
     destRowStart = destPixel;
   } while (remainingRows != 0);
   g_GraphicsFramebufferEndAccess();
-  return;
 }
 
 /* nonRightPress slot of g_UiSelectionGeometryControlVtable. Maps the clicked screen point back into
@@ -359,7 +358,6 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
        (control->sourceOriginYQ12 - stepTermX * 2 * ((boundsLeft + boundsRight >> 1) - pointerX)) -
        stepTermY * 2 * ((boundsTop + boundsBottom >> 1) - pointerY);
   UiActionQueue_Enqueue(control->actionId,control);
-  return;
 }
 
 UiNodeVtable g_UiSelectionGeometryControlVtable = {

@@ -316,7 +316,6 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
                applyButton->selectedWidth,&root->base);
     UiDisplaySettingsRoot_FormatColorReadouts(root);
   }
-  return;
 }
 
 /* Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
@@ -336,7 +335,6 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).resolutionHeight,
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,displaySettingsRoot);
-  return;
 }
 
 /* Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
@@ -356,7 +354,6 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
              (FrontendColorDepthBits)applyButton->selectedBitsPerPixel,
              (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
              (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
-  return;
 }
 
 /* Revert action (UI_DISPLAY_MODE_ACTION_REVERT, g_UiDisplayModeSelectionActionHandlers20[13]) of the "keep
@@ -409,7 +406,6 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   } while (root != (UiRootNode *)UI_NODE_NONE);
   g_CursorVisibilityToken++;
   UiDisplaySettings_OpenAndPopulateModeSelection();
-  return;
 }
 
 /* Apply action (UI_DISPLAY_MODE_ACTION_APPLY, g_UiDisplayModeSelectionActionHandlers20[0]) of the display
@@ -466,7 +462,6 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   UiRootStack_Relayout();
   g_CursorVisibilityToken++;
   UiRuntime_OpenFourValueDialog(currentAdapterIndex,currentBitsPerPixel,currentHeight,currentWidth);
-  return;
 }
 
 /* Cancel action (UI_DISPLAY_MODE_ACTION_CANCEL, g_UiDisplayModeSelectionActionHandlers20[14]) of the display
@@ -487,7 +482,6 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   colorScaleQ16 = applyButton->originalColorScaleQ16;
   UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
-  return;
 }
 
 /* frameUpdate of g_UiFourValueDialogRootCallbacks (the "keep the new display mode?" dialog): every
@@ -519,7 +513,6 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
                  countdownText->countdownTextUtf16);
     }
   }
-  return;
 }
 
 /* Inserts value into the ascending list candidates[0..candidateCount-1] (UI_DISPLAY_MODE_NONE marks empty
@@ -672,7 +665,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection()
   UiDisplayModeSelection_RefreshEnumeratedOptions
             (g_ActiveGraphicsAdapterIndex,colorDepthBits,g_FramebufferHeight,g_FramebufferWidth,(UiNodeBase *)root);
   UiRootStack_InvalidateAll();
-  return;
 }
 
 /* Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
@@ -764,7 +756,6 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   else {
     UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
   }
-  return;
 }
 
 /* Writes the two number readouts of the display settings dialog (root is a copy of
@@ -788,7 +779,6 @@ void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,applyButton->selectedColorScaleQ16,
              readout->colorScaleTextUtf16);
-  return;
 }
 
 /* Opens the "keep the new display mode?" dialog after UiDisplayModeAction_ApplyPendingMode switched modes:
@@ -836,5 +826,4 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     UiRootStack_InvalidateAll();
     return;
   }
-  return;
 }

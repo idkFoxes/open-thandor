@@ -76,7 +76,6 @@ void InGameMapAction_RecenterViewFromGridCoordinates(UiNodeBase *mapControl)
   MAP_WORLD->motion.positionYQ12 = MAP_WORLD->motion.positionYQ12 + yComponent;
   WorldRuntime_ClearFieldGridDirtyFlag(MAP_WORLD);
 #undef MAP_WORLD
-  return;
 }
 
 /* Network games: writes the roster of faction factionIndex into g_InGamePlayerListTextScratchUtf16 (player
@@ -537,7 +536,6 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
               (1,(UiPageStackControl *)
                  THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
   }
-  return;
 }
 
 /* UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
@@ -585,7 +583,6 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       InGameCommand_Issue<GameFactionRuntime_ResetPairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
   }
-  return;
 }
 
 /* Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
@@ -629,5 +626,4 @@ void InGameHud_UpdateCurrentFactionMetricCache()
   /* the extraction rate is added unshifted, as in the original */
   runtimeRoot->baselineEnergySupplyDisplay =
        ((int)baselineEnergySupplyQ4 >> 4) + tritiumExtractionRate;
-  return;
 }

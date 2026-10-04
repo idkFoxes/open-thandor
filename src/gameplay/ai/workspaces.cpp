@@ -131,7 +131,6 @@ void AiCandidateWorkspace_Clear()
 
 {
   g_AiCandidateWorkspaceEntryCount = 0;
-  return;
 }
 
 /* Keeps the first (at most three) candidates of the AI candidate workspace in the faction's runtime record
@@ -184,7 +183,6 @@ void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionIma
       candidateWorkspaceDestinationCursor++;
     }
   }
-  return;
 }
 
 /* Sorts the AI candidate workspace (workspace 13) by descending weightedScoreAndKind (signed compare), so the
@@ -238,7 +236,6 @@ void AiCandidateWorkspace_SortDescending()
       currentRecordCursor++;
     } while (comparisonsRemaining != 0);
   }
-  return;
 }
 
 /* Returns the xenite cost (Q4) of a candidate, which the purchase planner checks against the faction's xenite:
@@ -574,7 +571,6 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
       g_AiWorkspace09Count++;
     }
   }
-  return;
 }
 
 /* Adds a field cell to workspace 10 (base sites with the wider clearance, at most 256 cells) when it lies inside
@@ -597,7 +593,6 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
       g_AiWorkspace10Count++;
     }
   }
-  return;
 }
 
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset whose
@@ -705,7 +700,6 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
       candidateEntry[newEntryIndex].weightedScoreAndKind = weightedScore * AI_CANDIDATE_SCORE_ONE | entryKind;
     }
   }
-  return;
 }
 
 /* Returns false as soon as the point lies strictly inside the square extent of some assigned

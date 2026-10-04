@@ -31,7 +31,6 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
   g_FrontendLoadedCampaignAsset = 0;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
-  return;
 }
 
 
@@ -62,7 +61,6 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
   ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
-  return;
 }
 
 
@@ -81,7 +79,6 @@ void FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
   else {
     FrontendCommand_Issue<FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton>(0,0,0);
   }
-  return;
 }
 
 
@@ -97,7 +94,6 @@ void FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
   g_NetworkBackendSlot1(); /* cleanup */
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   Random_SelectPrimaryStream();
-  return;
 }
 
 
@@ -136,7 +132,6 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
   } while (recordsRemaining != 0);
   g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,1);
-  return;
 }
 
 
@@ -149,7 +144,6 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
 
 {
   ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider))->value = gameSpeedPercent;
-  return;
 }
 
 
@@ -199,7 +193,6 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   firstPlayerRecord->factionAssignment.roleStateFlags = 0;
   firstPlayerRecord->colourCycleFlags = 0;
   firstPlayerRecord->snapshotTransferFlags = 0;
-  return;
 }
 
 
@@ -268,7 +261,6 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
     destinationRecord = (FrontendSessionDiscoveryRecord *)destinationDwordCursor;
   }
   UiPointerList_RefreshSelectionAndQueueAction(&frontendRuntime->sessionDiscoveryList);
-  return;
 }
 
 
@@ -357,7 +349,6 @@ void FrontendSession_PeriodicTick()
     g_EndMoviePendingTicks++;
   }
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
-  return;
 }
 
 
@@ -517,7 +508,6 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
   displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
-  return;
 }
 
 
@@ -537,7 +527,6 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
   ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
-  return;
 }
 
 /* Handler of action 0x2043 (slot 67 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
@@ -548,7 +537,6 @@ void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackAr
 
 {
   FrontendCommand_Issue<FrontendSession_ApplyGameSpeedAndReturnToMainPage>(0,0,0);
-  return;
 }
 
 /* Handler of action 0x204F (slot 79 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Exit" button of
@@ -559,7 +547,6 @@ void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackA
 
 {
   FrontendCommand_Issue<FrontendSession_ReleaseSelectedResourceAndReturnToMainPage>(0,0,0);
-  return;
 }
 
 /* Handler of action 0x200C (slot 12 of g_FrontendUiActionHandlersPage20.handlers00_54), a selection change in
@@ -583,5 +570,4 @@ void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *player
     return;
   }
   UiNodeList_UnsuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendRoot->base);
-  return;
 }

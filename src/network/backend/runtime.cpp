@@ -166,7 +166,6 @@ void Network_Shutdown()
     g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
     return;
   }
-  return;
 }
 
 /* Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it

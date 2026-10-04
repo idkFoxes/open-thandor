@@ -443,7 +443,6 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
     remainingSubresources--;
   } while (remainingSubresources != 0);
   GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources(sourcePaletteBank,textureSource);
-  return;
 }
 
 /* Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette
@@ -480,7 +479,6 @@ void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
       remainingSubresources--;
     } while (remainingSubresources != 0);
   }
-  return;
 }
 
 /* Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and
@@ -591,5 +589,4 @@ void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
     slotSourceCursor++;
     slotDestinationCursor++;
   }
-  return;
 }

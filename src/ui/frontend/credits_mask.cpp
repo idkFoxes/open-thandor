@@ -88,7 +88,6 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
       }
     }
   }
-  return;
 }
 
 /* Zeroes the one-byte-per-pixel mask buffer of a software mask (if it has one), sized by the logical
@@ -119,7 +118,6 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
       blocksRemaining = blocksRemaining - 1;
     } while (blocksRemaining != 0);
   }
-  return;
 }
 
 /* Called by SoftwareMaskBuffer_AdvancePatternByPercentTick once per tick: adds 0x1F to every nonzero byte of
@@ -275,7 +273,6 @@ void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
     columnsRemaining = maskWidth;
     diagonalSum = rowY;
   } while (rowsRemaining != 0);
-  return;
 }
 
 /* Last reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel, 16 bytes
@@ -300,7 +297,6 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
     maskWordCursor = maskWordCursor + 4;
     maskBlocksRemaining--;
   } while (maskBlocksRemaining != 0);
-  return;
 }
 
 /* Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of one horizontal band of 15 rows,

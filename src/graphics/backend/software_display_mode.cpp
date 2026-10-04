@@ -141,7 +141,6 @@ void SoftwarePixelFormat_BuildChannelPackTables
   } while (channelIndex < 256);
   g_SoftwareColorBiasQ16 = colorBiasQ16;
   g_SoftwareColorScaleQ16 = colorScaleQ16;
-  return;
 }
 
 /* Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the

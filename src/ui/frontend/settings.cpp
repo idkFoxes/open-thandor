@@ -241,7 +241,6 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
       FRONTEND_UI(frontendUi,textureQualityLow));
   persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
-  return;
 }
 
 /* Handler of the options page's "Sound" button (soundSettingsButton, action 0x2013, slot 19 of
@@ -300,7 +299,6 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
-  return;
 }
 
 /* Handler of the graphics settings page's shading toggle (shadingEnabledCheckbox, action 0x2014, slot 20 of
@@ -327,7 +325,6 @@ void FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&control->base);
   }
   PersistentSettings_Write(isSelected & 1,PERSISTENT_SETTING_SHADING_ENABLED);
-  return;
 }
 
 /* Handler of the six shading level choices (FRONTEND_ACTION_SHADING_LEVEL, slot 21 of
@@ -375,7 +372,6 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
       (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[2],
       (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[1],
       (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[0]);
-  return;
 }
 
 /* Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
@@ -420,7 +416,6 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
       (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->low);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
-  return;
 }
 
 /* Handler of the audio settings page's effects toggle (soundEffectsEnabledCheckbox, action 0x2018, slot 24 of
@@ -487,7 +482,6 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     movieAlternateGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGain;
-  return;
 }
 
 /* Handler of the audio settings page's music toggle (musicEnabledCheckbox, action 0x2019, slot 25 of
@@ -549,7 +543,6 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
-  return;
 }
 
 /* Handler of the audio settings page's reverse stereo toggle (FRONTEND_ACTION_REVERSE_STEREO, slot 26 of

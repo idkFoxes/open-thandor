@@ -54,7 +54,6 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
     }
     rowIndex++;
   } while (rowIndex < 7);
-  return;
 }
 
 /* Handler of action 0x2045 (slot 69 of g_FrontendUiActionHandlersPage20.handlers00_54), the mode buttons of
@@ -76,7 +75,6 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
     }
     rowIndex++;
   } while (rowIndex < 7);
-  return;
 }
 
 /* Handler of action 0x2046 (slot 70 of g_FrontendUiActionHandlersPage20.handlers00_54), the "play" checkboxes
@@ -98,7 +96,6 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
     }
     rowIndex++;
   } while (rowIndex < 7);
-  return;
 }
 
 /* Handler of action 0x2040 (slot 64 of g_FrontendUiActionHandlersPage20.handlers00_54), the faction setup
@@ -109,7 +106,6 @@ void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
-  return;
 }
 
 /* Handler of frontend command FRONTEND_COMMAND_CYCLE_FACTION_COLOUR (0x650), called directly by
@@ -163,7 +159,6 @@ void FrontendFactionSetup_CycleFactionColour
     playerRecordCursor++;
     playerRecordsRemaining--;
   } while (playerRecordsRemaining != 0);
-  return;
 }
 
 /* Handler of frontend command FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE (0x6F0), called directly by
@@ -195,7 +190,6 @@ void FrontendFactionSetup_ToggleFactionActive
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + rowIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
-  return;
 }
 
 /* Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
@@ -260,5 +254,4 @@ void FrontendFactionSetup_ChooseFaction
     g_FrontendFactionAssignmentReadyStateGeneration++;
     FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
   }
-  return;
 }

@@ -79,7 +79,6 @@ void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
     return;
   }
   UiNode_ForwardPointerWheelToParent(wheelDelta,pointerY,pointerX,&control->base);
-  return;
 }
 
 /* relocate slot of g_UiFocusProxyControlVtable and g_UiCommandVisibilitySingleLineTextVtable. A label with
@@ -109,7 +108,6 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
     control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
-  return;
 }
 
 /* nonRightPress slot of g_UiFocusProxyControlVtable. Forwards the left press to the focus child; if this
@@ -136,7 +134,6 @@ void UiSingleLineTextControl_ForwardNonRightPressToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* nonRightRelease slot of g_UiFocusProxyControlVtable. Forwards the left release to the focus child,
@@ -162,7 +159,6 @@ void UiSingleLineTextControl_ForwardNonRightReleaseToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* rightPress slot of g_UiFocusProxyControlVtable. Forwards the right press to the focus child (lending it
@@ -191,7 +187,6 @@ void UiSingleLineTextControl_ForwardRightPressToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* rightRelease slot of g_UiFocusProxyControlVtable. Forwards the right release to the focus child,
@@ -217,7 +212,6 @@ void UiSingleLineTextControl_ForwardRightReleaseToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* nonRightDrag slot of g_UiFocusProxyControlVtable. Forwards the left-button drag to the focus child,
@@ -243,7 +237,6 @@ void UiSingleLineTextControl_ForwardNonRightDragToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* rightDrag slot of g_UiFocusProxyControlVtable. Forwards the right-button drag to the focus child,
@@ -269,7 +262,6 @@ void UiSingleLineTextControl_ForwardRightDragToChild
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* pointerMove slot of g_UiFocusProxyControlVtable. Returns the focus child's cursor frame (asked with the
@@ -348,7 +340,6 @@ void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control
     }
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 UiNodeVtable g_UiFocusProxyControlVtable = {

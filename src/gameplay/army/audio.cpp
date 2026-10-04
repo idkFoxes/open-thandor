@@ -34,7 +34,6 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
               (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,worldPosition,
                soundSlot);
   }
-  return;
 }
 
 /* Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index
@@ -67,7 +66,6 @@ void ArmyRuntimeAudio_UpdateTurnAndMoveSounds
   ArmyRuntimeAudio_UpdateSoundAtModel
             (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
              definition->movingLoopSoundSlotIndex);
-  return;
 }
 
 /* Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex) with the turret while it
@@ -88,7 +86,6 @@ void ArmyRuntimeAudio_UpdateTurretTurnSound
               (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
                definition->turningLoopSoundSlotIndex);
   }
-  return;
 }
 
 /* Structure factory sound (class 11): moves the looping sound (definition loopingSoundSlotIndex) with the model
@@ -110,7 +107,6 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
               (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
                definition->loopingSoundSlotIndex);
   }
-  return;
 }
 
 /* Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition
@@ -140,7 +136,6 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
       ((modelRuntime->classState).behaviorState != ARMY_FACTORY_STATE_IDLE)) {
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->positionedSoundSlotIndex);
   }
-  return;
 }
 
 /* Unconditionally moves the sound whose slot index is the definition's loopingSoundSlotIndex with the unit, when
@@ -157,7 +152,6 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
   ArmyRuntimeAudio_UpdateSoundAtModel
             (worldRuntime,definition,modelRuntime->rootModelNodeOrSavedOffset.modelNode,
              definition->loopingSoundSlotIndex);
-  return;
 }
 
 /* Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
@@ -187,7 +181,6 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
     definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
     ArmyRuntimeAudio_UpdateSoundAtModel(worldRuntime,definition,modelNode,definition->positionedSoundSlotIndex);
   }
-  return;
 }
 
 /* Runs the looping positioned-sound update only while the model researches (state flag 0x40).
@@ -200,7 +193,6 @@ void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRu
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
     ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,modelRuntime);
   }
-  return;
 }
 
 /* Keeps the model's looping sound (its definition's loopingSoundSlotIndex) at the model's position while

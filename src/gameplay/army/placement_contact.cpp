@@ -35,7 +35,6 @@ void ArmyPlacementContact_ApplyTerrainHeight
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
   }
-  return;
 }
 
 /* Contact kind 1 (water surface): sets the model node onto the interpolated water surface at the point
@@ -60,7 +59,6 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
   }
-  return;
 }
 
 /* Contact kind 2 (terrain with slope): like kind 0, but tilts the model node to the terrain normal (the two
@@ -90,7 +88,6 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
   }
-  return;
 }
 
 /* Contact kind 4 (top surface): sets the model node onto the top surface - the terrain, or the water above
@@ -115,7 +112,6 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
   }
-  return;
 }
 
 /* Contact kind 3 (articulated walker): moves the model node to the point, sets node flag 0x1 and lets the
@@ -134,7 +130,6 @@ void ArmyPlacementContact_InitializeArticulatedSuspension
   modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
   ArmyArticulatedRuntime_InitializeTerrainContactGeometry(modelNode,worldRuntime);
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(modelNode,worldRuntime);
-  return;
 }
 
 ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {

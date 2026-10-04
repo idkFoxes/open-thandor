@@ -225,5 +225,4 @@ void Frontend_PlaySelectedEndMovie()
   rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
   rootCallbacks->keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
   rootCallbacks->frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
-  return;
 }

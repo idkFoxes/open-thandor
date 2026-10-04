@@ -118,5 +118,4 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates()
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,freeArenaBytes,
              g_FrontendDebugOverlayTextSlot12Utf16); /* hexadecimal despite radix 10 */
   g_FrontendDebugOverlayTextSlot13Utf16[0] = 0;
-  return;
 }

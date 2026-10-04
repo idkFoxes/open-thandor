@@ -24,7 +24,6 @@ void ArmyRuntime_SetNonzeroActionVector
     armyRuntime->actionVector0Q12 = actionVector0;
     armyRuntime->actionVector2Q12 = actionVector2;
   }
-  return;
 }
 
 /* Resolves the world point a shooter at sourceWorld*Q12 aims its shot at: the explicit target position of the
@@ -302,7 +301,6 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
   (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = nullptr;
   (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = nullptr;
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Fires a shot of the weapon code (called directly by gameplay/army/combat): looks up the launch point
@@ -444,7 +442,6 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
     }
     localPointRecord = localPointRecord + 1;
   }
-  return;
 }
 
 /* One tick of a model whose health is gone (called directly by
@@ -547,7 +544,6 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
     }
     modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
   }
-  return;
 }
 
 /* Picks the model point of the timed effect emitter: the model (the first child for aircraft) has effect points
@@ -712,7 +708,6 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
     (modelRuntime->classState).effectEmitterPointIndex = (modelRuntime->classState).effectEmitterPointIndex + 1;
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record

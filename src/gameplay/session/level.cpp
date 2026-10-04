@@ -129,7 +129,6 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
   g_InGameLevelRuntimeGlobalBlock.conditionStorage = nullptr;
   Resource_Release(g_TechnologyAsset);
   g_TechnologyAsset = nullptr;
-  return;
 }
 
 /* Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package

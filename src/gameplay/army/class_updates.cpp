@@ -59,7 +59,6 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
     }
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }
 
 /* Class command of the structure classes (the ten non-default class slots that share it; session conditions
@@ -219,7 +218,6 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
   else {
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   }
-  return;
 }
 
 /* Segment meter of the selection panel (called directly by gameplay/selection/runtime with a model runtime):
@@ -557,5 +555,4 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
     ArmyRuntime_RebuildDerivedSelectionMetrics(modelRuntime->ownerArmyRuntime);
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }

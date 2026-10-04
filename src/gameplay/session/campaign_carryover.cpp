@@ -204,7 +204,6 @@ void OldUnitRuntime_MergeMasksAndReplayRecords()
               ((runtimeRoot->worldRuntime).activeFactionRuntimeIndex,
                (runtimeRoot->worldRuntime).fieldGrid);
   }
-  return;
 }
 
 /* Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
@@ -222,7 +221,6 @@ void OldUnitRuntime_ResetPendingTables()
     tableCursor++;
   }
   g_OldUnitRecordCount = 0;
-  return;
 }
 
 /* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table

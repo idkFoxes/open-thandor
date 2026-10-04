@@ -50,7 +50,6 @@ void InGameCommandModeG_Select0(UiSelectableControl *source)
   UiCommandModeG_SetSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
-  return;
 }
 
 /* Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1],
@@ -72,7 +71,6 @@ void InGameCommandModeG_Select1(UiSelectableControl *source)
   UiCommandModeG_ClearSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
-  return;
 }
 
 /* Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2],
@@ -95,7 +93,6 @@ void InGameCommandModeG_Select2(UiSelectableControl *source)
   UiCommandModeG_SetSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyMaskedColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
-  return;
 }
 
 /* Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5],
@@ -126,7 +123,6 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
                                                lookupError != 0);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup;
   InGameSelectionDetailPanel_Rebuild();
-  return;
 }
 
 /* Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6],
@@ -148,7 +144,6 @@ void InGameCommandModeG_Select4(UiSelectableControl *source)
   UiCommandModeG_ClearSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
-  return;
 }
 
 /* Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4],
@@ -172,7 +167,6 @@ void InGameCommandModeG_Select5(UiSelectableControl *source)
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_ShowRegionMarkers(worldRuntime);
   (runtimeRoot->worldRuntime).fieldRegion.regionToolMode = g_UiCommandModeF;
-  return;
 }
 
 /* Terrain material swatch click (action 0x1110, g_InGameUiActionHandlersPage11[16]): finds which of the
@@ -197,7 +191,6 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
       return;
     }
   }
-  return;
 }
 
 /* Hides the grid vertex markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); called
@@ -207,7 +200,6 @@ void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
-  return;
 }
 
 /* Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in
@@ -222,7 +214,6 @@ void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption0,heightToolOption0));
   g_UiCommandModeC = 0;
-  return;
 }
 
 /* Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in
@@ -237,7 +228,6 @@ void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption1,heightToolOption0));
   g_UiCommandModeC = 1;
-  return;
 }
 
 /* Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in
@@ -252,7 +242,6 @@ void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption2,heightToolOption0));
   g_UiCommandModeC = 2;
-  return;
 }
 
 /* Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in
@@ -267,7 +256,6 @@ void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,heightToolOption3,heightToolOption0));
   g_UiCommandModeC = 3;
-  return;
 }
 
 /* Material tool option 0 (action 0x110C, g_InGameUiActionHandlersPage11[12]; also the editor hotkeys in
@@ -283,7 +271,6 @@ void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption0,materialToolOption0));
   g_UiCommandModeD = 0;
-  return;
 }
 
 /* Material tool option 1 (action 0x110D, g_InGameUiActionHandlersPage11[13]; also the editor hotkeys in
@@ -299,7 +286,6 @@ void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption1,materialToolOption0));
   g_UiCommandModeD = 1;
-  return;
 }
 
 /* Material tool option 2 (action 0x110E, g_InGameUiActionHandlersPage11[14]; also the editor hotkeys in
@@ -315,7 +301,6 @@ void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption2,materialToolOption0));
   g_UiCommandModeD = 2;
-  return;
 }
 
 /* Material tool option 3 (action 0x110F, g_InGameUiActionHandlersPage11[15]; also the editor hotkeys in
@@ -331,7 +316,6 @@ void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,materialToolOption3,materialToolOption0));
   g_UiCommandModeD = 3;
-  return;
 }
 
 /* Unit placement option 0 (action 0x1111, g_InGameUiActionHandlersPage11[17]; also the editor hotkeys in
@@ -346,7 +330,6 @@ void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption0,unitPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption0,unitPlacementOption0));
   g_UiCommandModeA = 0;
-  return;
 }
 
 /* Unit placement option 1 (action 0x1112, g_InGameUiActionHandlersPage11[18]; also the editor hotkeys in
@@ -361,7 +344,6 @@ void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption1,unitPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption1,unitPlacementOption0));
   g_UiCommandModeA = 1;
-  return;
 }
 
 /* Unit placement option 2 (action 0x1113, g_InGameUiActionHandlersPage11[19]; also the editor hotkeys in
@@ -376,7 +358,6 @@ void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption2,unitPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,unitPlacementOption2,unitPlacementOption0));
   g_UiCommandModeA = 2;
-  return;
 }
 
 /* Object placement option 0 (action 0x1114, g_InGameUiActionHandlersPage11[20]; also the editor hotkeys
@@ -391,7 +372,6 @@ void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption0,objectPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption0,objectPlacementOption0));
   g_UiCommandModeB = 0;
-  return;
 }
 
 /* Object placement option 1 (action 0x1115, g_InGameUiActionHandlersPage11[21]; also the editor hotkeys
@@ -406,7 +386,6 @@ void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption1,objectPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption1,objectPlacementOption0));
   g_UiCommandModeB = 1;
-  return;
 }
 
 /* Object placement option 2 (action 0x1116, g_InGameUiActionHandlersPage11[22]; also the editor hotkeys
@@ -421,7 +400,6 @@ void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption2,objectPlacementOption2),
       THANDOR_UI_SIBLING(source,InGameUiImage,objectPlacementOption2,objectPlacementOption0));
   g_UiCommandModeB = 2;
-  return;
 }
 
 /* Smoothing tool option 0 (action 0x1117, g_InGameUiActionHandlersPage11[23]; also the editor hotkeys in
@@ -437,7 +415,6 @@ void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption0,smoothingToolOption0));
   g_UiCommandModeE = 0;
-  return;
 }
 
 /* Smoothing tool option 1 (action 0x1118, g_InGameUiActionHandlersPage11[24]; also the editor hotkeys in
@@ -452,7 +429,6 @@ void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption1,smoothingToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption1,smoothingToolOption0));
   g_UiCommandModeE = 1;
-  return;
 }
 
 /* Smoothing tool option 2 (action 0x1119, g_InGameUiActionHandlersPage11[25]; also the editor hotkeys in
@@ -467,7 +443,6 @@ void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption2,smoothingToolOption1),
       THANDOR_UI_SIBLING(source,InGameUiImage,smoothingToolOption2,smoothingToolOption0));
   g_UiCommandModeE = 2;
-  return;
 }
 
 /* Smoothing page button smoothingRelaxGatedButton (action 0x111A, g_InGameUiActionHandlersPage11[26]; also
@@ -479,7 +454,6 @@ void InGameCommandRange_DispatchState0(UiNodeBase *source)
 {
   InGameCommand_Issue<TerrainGrid_RunDirectionalRelaxationPasses>
             (0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_SIGN_GATED);
-  return;
 }
 
 /* Smoothing page button smoothingRelaxLandButton (action 0x111B, g_InGameUiActionHandlersPage11[27]; also
@@ -491,7 +465,6 @@ void InGameCommandRange_DispatchState1(UiNodeBase *source)
 {
   InGameCommand_Issue<TerrainGrid_RunDirectionalRelaxationPasses>
             (0,TERRAIN_RELAXATION_BUTTON_PASSES,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
-  return;
 }
 
 /* Region tool option 0 (action 0x111C, g_InGameUiActionHandlersPage11[28]): selects regionToolOption0 of the
@@ -507,7 +480,6 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
   g_UiCommandModeF = 0;
   ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,worldView))
        ->fieldRegion.regionToolMode = 0;
-  return;
 }
 
 /* Region tool option 1 (action 0x111D, g_InGameUiActionHandlersPage11[29]): selects regionToolOption1 and
@@ -522,7 +494,6 @@ void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
   g_UiCommandModeF = 1;
   ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,worldView))
        ->fieldRegion.regionToolMode = 1;
-  return;
 }
 
 /* Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
@@ -542,7 +513,6 @@ void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags | UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED;
-  return;
 }
 
 /* Shows the region markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); only the region tool
@@ -552,7 +522,6 @@ void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
-  return;
 }
 
 /* Texture shown by a material swatch: the first texture of the material's set, NULL for an empty entry. */
@@ -619,7 +588,6 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[9]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[10]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[11]));
-  return;
 }
 
 /* Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
@@ -629,7 +597,6 @@ void UiCommandModeG_HideSurfacePointMarker(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
-  return;
 }
 
 /* Shows the terrain point markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
@@ -639,7 +606,6 @@ void UiCommandModeG_ShowTerrainPointMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
-  return;
 }
 
 /* Sets WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY (view ray and markers use only the secondary field surface);
@@ -649,7 +615,6 @@ void UiCommandModeG_SetSecondarySurfaceOnly(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
-  return;
 }
 
 /* Shows the army metrics overlay of the world view (sets WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS); editor mode tabs
@@ -659,7 +624,6 @@ void UiCommandModeG_ShowArmyMetrics(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
-  return;
 }
 
 /* Hides the army metrics overlay and ends a drag selection (clears WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS and
@@ -670,7 +634,6 @@ void UiCommandModeG_HideArmyMetricsAndEndDragSelect(WorldRuntimeContext *context
 {
   context->runtimeFlags =
        context->runtimeFlags & ~(WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS | WORLD_RUNTIME_FLAG_DRAG_SELECTING);
-  return;
 }
 
 /* Shows the surface point marker of the world view (sets WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
@@ -680,7 +643,6 @@ void UiCommandModeG_ShowSurfacePointMarker(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
-  return;
 }
 
 /* Hides the terrain point markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
@@ -690,7 +652,6 @@ void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
-  return;
 }
 
 /* Clears WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY; editor mode tabs G1, G3-G5 and
@@ -700,7 +661,6 @@ void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
-  return;
 }
 
 /* Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
@@ -720,7 +680,6 @@ void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags & ~UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_RAW;
-  return;
 }
 
 /* Hides the region markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); every editor mode tab
@@ -730,7 +689,6 @@ void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
-  return;
 }
 
 /* Shows the grid vertex markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); every
@@ -740,7 +698,6 @@ void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
-  return;
 }
 
 /* Common part of the editor mode tabs InGameCommandModeG_Select0..5: selects the clicked tab among the six, shows

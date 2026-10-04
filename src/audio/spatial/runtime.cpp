@@ -82,7 +82,6 @@ void SpatialSound_RebuildListenerTransformFromPose
   FixedTransform_Compose
             (&g_SpatialSoundListenerTransform,
              &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);
-  return;
 }
 
 
@@ -256,7 +255,6 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
     memset(slot,0,sizeof(SpatialSoundSlot));
   }
-  return;
 }
 
 
@@ -279,7 +277,6 @@ void SpatialSoundPool_ClearDesiredGains()
     slotCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  return;
 }
 
 
@@ -319,6 +316,5 @@ void SpatialSoundPool_ApplyDesiredGains()
     slotCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  return;
 }
 

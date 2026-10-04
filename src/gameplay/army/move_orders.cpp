@@ -46,7 +46,6 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
                ,(ArmyMovementRuntime *)armyRuntime);
   }
   armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)targetRuntime;
-  return;
 }
 
 /* Helper for ArmyRuntime_ResetMovementStateFromModel (no original address: the original walks the tree
@@ -109,7 +108,6 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
     /* clear 0x218 on the whole model tree */
     ArmyRuntime_ClearModelTreeFlags218(attachedModelRuntime);
   }
-  return;
 
 }
 
@@ -129,7 +127,6 @@ void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot 
     armyRuntime->commandGeneration = commandGeneration;
     armyRuntime->commandTargetArmyRuntime = nullptr;
   }
-  return;
 }
 
 /* Starts a locked, routed move to the target with exactly one queued waypoint, whose position is given
@@ -170,7 +167,6 @@ void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
   movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   movementRuntime->queuedWaypoints[0].worldXQ12 = auxiliaryValue0;
   movementRuntime->queuedWaypoints[0].worldYQ12 = auxiliaryValue1;
-  return;
 }
 
 /* Sets a new immediate move position without path finding (ignored while the movement is locked). The
@@ -205,7 +201,6 @@ void ArmyRuntime_SetPendingMoveTarget(Q12 targetWorldY,Q12 targetWorldX,ArmyMove
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
-  return;
 }
 
 /* Class command that does nothing: model classes without their own command handling. It fills the
@@ -215,7 +210,6 @@ void ArmyRuntime_SetPendingMoveTarget(Q12 targetWorldY,Q12 targetWorldX,ArmyMove
 void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  return;
 }
 
 /* Starts a new routed move order to the target (path finding via EntityPathing), dropping any waypoint
@@ -260,7 +254,6 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
       ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
     }
   }
-  return;
 }
 
 /* Same as ArmyRuntime_StartRoutedMoveCommand, but keeps the waypoint queue and target mirroring:
@@ -302,7 +295,6 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
       ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
     }
   }
-  return;
 }
 
 /* Starts a target-following move (only when no move is active, the movement is not locked and the route-retry
@@ -350,7 +342,6 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
-  return;
 }
 
 /* Starts a direct move to the target (unless the movement is locked): drops the waypoint queue and
@@ -384,7 +375,6 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
-  return;
 }
 
 /* Called by a weapon that is aimed and ready to fire. When the shot to the target is blocked, the owning army
@@ -463,7 +453,6 @@ void ArmyRuntime_AppendWaypointOrStartMove
   else {
     ArmyRuntime_StartRoutedMoveCommand(targetWorldY,targetWorldX,movementRuntime);
   }
-  return;
 }
 
 /* Target-following move (ArmyRuntimeCommand_UpdateTargetFollowingState): unless the movement is locked,
@@ -521,7 +510,6 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
-  return;
 }
 
 /* Ends a target-following move: the move stays active only if waypoints are queued, and unless a routed
@@ -550,7 +538,6 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-  return;
 }
 
 /* Ends a clamped target-following move: without queued waypoints the move just stops being active;
@@ -577,7 +564,6 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-  return;
 }
 
 /* Per-tick movement step; always stores the position to steer to in *outWorldXQ12 / *outWorldYQ12 and
@@ -736,7 +722,6 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
     armyRuntime->commandGeneration = standardGeneration;
   }
   armyRuntime->commandTargetArmyRuntime = targetArmyRuntime;
-  return;
 }
 
 /* Gives the army a target position command (commandCoordinate0-2Q12): ends a move started by target
@@ -764,7 +749,6 @@ void ArmyRuntime_ApplyTargetPositionCommand
   armyRuntime->commandTargetArmyRuntime = nullptr;
   armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_TARGET_FOLLOWING;
   armyRuntime->commandGeneration = commandGeneration;
-  return;
 }
 
 /* Stops an entity where it stands (used by the stop command on the selection): clears the command flags
@@ -792,7 +776,6 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
   (entityRuntime->common).trackedCoordinate1Q12 = modelY;
   (entityRuntime->common).damageState.trackedCoordinate0Q12 = modelX;
   (entityRuntime->common).damageState.trackedCoordinate1Q12 = modelY;
-  return;
 }
 
 /* Where an entity's current command should take it, for the walker movement (walker.cpp): target flag

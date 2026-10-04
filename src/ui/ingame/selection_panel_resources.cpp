@@ -193,5 +193,4 @@ void SelectionInfoPanel_ShutdownResources()
   g_InfoPanelTextureSource = nullptr;
   g_SelectionPanelData = nullptr;
   g_InfoPanelData = nullptr;
-  return;
 }

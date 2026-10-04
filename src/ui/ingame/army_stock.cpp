@@ -149,7 +149,6 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
     ((UiCommandSpriteButtonControl *)THANDOR_UI_AT(node,slotOffset))->sprite.primaryTextureSource = slotTexture;
   }
   INGAME_UI(node,armyStockPanel)->vtable->layout(INGAME_UI(node,armyStockPanel));
-  return;
 }
 
 /* Army stock slot click (action 0x1001, g_InGameUiActionHandlersPage10[1]): first drops any army still waiting
@@ -202,5 +201,4 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
       }
     }
   }
-  return;
 }

@@ -194,7 +194,6 @@ void GraphicsShadingRuntime_ClearRecordTable()
     recordDwordCursor->worldXQ12 = 0;
     recordDwordCursor = (GraphicsShadingRuntimeRecord *)&recordDwordCursor->worldYQ12;
   }
-  return;
 }
 
 /* Once per rendered world frame (frontend world render in src/ui/frontend/menu_room.cpp): copies every active
@@ -230,7 +229,6 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords()
     recordsRemaining--;
   } while (recordsRemaining != 0);
   g_GraphicsShadingCompactRecordCount = compactCount;
-  return;
 }
 
 /* Copies every compact light record whose sphere overlaps the query sphere (distance^2 <= (queryRadius +
@@ -274,7 +272,6 @@ void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ1
     }
     sourceRecordCursor++;
   }
-  return;
 }
 
 /* Not in the original (it carried the table precomputed): builds g_ShadingIntensityScaleMmx. Light level l gets

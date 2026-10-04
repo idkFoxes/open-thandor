@@ -42,7 +42,6 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,Comma
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_FrontendCommandQueueEnd++;
   }
-  return;
 }
 
 
@@ -83,7 +82,6 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
     }
   }
   g_FrontendCommandQueueEnd--;
-  return;
 }
 
 
@@ -108,7 +106,6 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_InGameCommandQueueEnd++;
   }
-  return;
 }
 
 
@@ -149,7 +146,6 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
     }
   }
   g_InGameCommandQueueEnd--;
-  return;
 }
 
 

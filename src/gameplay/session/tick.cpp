@@ -24,7 +24,6 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick()
   if (g_InGameResourceRegistrationBusyCount == 0) {
     g_GameFactionRuntimeImage.tail.periodicClockTick++;
   }
-  return;
 }
 
 /* Whether the current simulation step is a network interval boundary. The original divides by
@@ -324,5 +323,4 @@ void InGameRuntime_UpdateSimulationAndNetworkTick()
     InGameTick_RunSimulationStep(inGameRoot);
   }
   g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
-  return;
 }

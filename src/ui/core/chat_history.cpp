@@ -70,7 +70,6 @@ void RecentTextHistory_SortAndBuildPointerList
     g_RecentTextEntrySerials[outputIndex] = 0;
   }
   g_RecentTextSerialCounter++;
-  return;
 }
 
 /* Adds a chat message to the recent-text history: it replaces the oldest slot (lowest serial, an empty
@@ -135,7 +134,6 @@ void RecentTextHistory_RemoveOldest()
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = 0;
   }
-  return;
 }
 
 /* Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:

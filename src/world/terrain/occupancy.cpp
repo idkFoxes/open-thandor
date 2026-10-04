@@ -259,7 +259,6 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
     currentCell->occupancyMask = currentCell->occupancyMask & occupancyHighBitMask;
     currentCell++;
   }
-  return;
 }
 
 /* Sets FIELD_CELL_OCCUPANCY_BIT0 in one faction's occupancy byte of every cell. Tick-wheel case 7 calls it
@@ -287,7 +286,6 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
       currentCell++;
     }
   }
-  return;
 }
 
 /* Counterpart of FieldGrid_SetOccupancyMaskByteBit0AllCells: clears FIELD_CELL_OCCUPANCY_BIT0 in one

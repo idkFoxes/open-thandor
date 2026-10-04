@@ -340,7 +340,6 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -399,7 +398,6 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
@@ -458,7 +456,6 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
     factionIndex++;
     factionWeights++;
   } while (factionIndex <= 6);
-  return;
 }
 
 /* Shared start of the results table column painters: draws the column header headerResourceId (style 1) at

@@ -28,7 +28,6 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 {
   InGameSevenSlotCommand_SubmitTextAndSelectionMask(source);
   InGameSevenSlotCommand_ClosePage(source);
-  return;
 }
 
 /* True when the first 32 UTF-16 units of text equal the cheat phrase g_DeveloperChatPhraseUtf16 (compared as
@@ -152,7 +151,6 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
     }
   }
   UiPageStack_SetActiveIndex(0,&THANDOR_CONTAINER_OF(commandTextEdit, InGameCommandTextEntryPage2320, commandTextEdit)->commandPageStack);
-  return;
 }
 
 /* UI action 0x1006 (g_InGameUiActionHandlersPage10[6]): the recipient tab InGameUiImage.messageRecipientPlayersTab
@@ -213,7 +211,6 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
-  return;
 }
 
 /* UI action 0x1007 (g_InGameUiActionHandlersPage10[7]): the recipient tab InGameUiImage.messageRecipientGroupsTab
@@ -261,7 +258,6 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
-  return;
 }
 
 /* UI action 0x1008 (g_InGameUiActionHandlersPage10[8]): the recipient tab InGameUiImage.messageRecipientAllTab
@@ -282,7 +278,6 @@ void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
       INGAME_UI(rootNodeCursor,messageRecipientGroupsTab),
       INGAME_UI(rootNodeCursor,messageRecipientPlayersTab));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rootNodeCursor,messageRecipientPageStack));
-  return;
 }
 
 /* UI action 0x100F (g_InGameUiActionHandlersPage10[15], InGameUiImage.messageHistoryPanel): a click on the
@@ -300,7 +295,6 @@ void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
   }
   RecentTextHistory_RemoveOldest();
   RecentTextHistory_SortAndBuildPointerList(8,&historyView->recentTextPointerList);
-  return;
 }
 
 /* Shows an in-game message line (chat, player departure, network notices): adds the UTF-16 text to the
@@ -315,7 +309,6 @@ void InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text)
   messageList = &g_InGameRuntimeRoot->recentTextHistory;
   RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(8,messageList);
-  return;
 }
 
 /* UI action 0x1002 (g_InGameUiActionHandlersPage10[2], InGameUiImage.messageCancelButton): closes the message
@@ -330,7 +323,6 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
   }
   INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
-  return;
 }
 
 /* UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
@@ -374,5 +366,4 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   for (unitIndex = 0; unitIndex < 48; unitIndex++) {
     messageTextEdit->textBuffer[unitIndex] = 0;
   }
-  return;
 }

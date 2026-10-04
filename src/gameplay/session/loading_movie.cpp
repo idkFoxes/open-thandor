@@ -44,7 +44,6 @@ void MoviePlayback_AdvanceScheduledFrameAndTick()
     }
   }
   InGameRuntime_UpdateSimulationAndNetworkTick();
-  return;
 }
 
 /* Decodes movie frames until g_MoviePlaybackCurrentFrame reaches targetFrame, then redraws the whole UI (which
@@ -69,5 +68,4 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
     UiFrame_Draw();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
   }
-  return;
 }

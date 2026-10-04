@@ -21,7 +21,6 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
     FieldGrid_RecomputeInteriorTriangleNormalAngles(asset);
     WorldRuntime_ClearFieldGridDirtyFlag(world);
   }
-  return;
 }
 
 /* Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
@@ -51,5 +50,4 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
     *array = 0;
     array = array + 1;
   }
-  return;
 }

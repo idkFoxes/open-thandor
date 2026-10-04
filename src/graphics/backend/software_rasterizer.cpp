@@ -51,7 +51,6 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
     g_GraphicsFramebufferEndAccess();
   }
   SoftwareRenderer_AdvanceDepthEpoch();
-  return;
 }
 
 /* Raster handler of a packet from one of the two 64-entry tables (index: bits 12..17 of the render flags), or
@@ -93,7 +92,6 @@ void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
     }
     packet = GraphicsPrimitiveQueue_Next(queue);
   }
-  return;
 }
 
 /* Queue renderer for an off-screen 32-bit target (GraphicsOffscreen_RenderModelListToTextureSource): like
@@ -124,7 +122,6 @@ void SoftwareRenderer_DrawQueueAuxiliary
     }
     packet = GraphicsPrimitiveQueue_Next(queue);
   }
-  return;
 }
 
 /* g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
@@ -143,7 +140,6 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
     SoftwareRenderer_DrawQueue32Bit(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
     g_GraphicsFramebufferEndAccess();
   }
-  return;
 }
 
 /* 32-bit span of the textured opaque modes 16/24: the nearest texel modulated by the
@@ -994,7 +990,6 @@ void SoftwareRenderer_AdvanceDepthEpoch()
     }
     g_SoftwareDepthEpoch = -SOFTWARE_DEPTH_EPOCH_STEP;
   }
-  return;
 }
 
 /* Exchanges two whole 0x20-byte vertices. */

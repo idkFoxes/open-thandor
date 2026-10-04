@@ -487,7 +487,6 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   articulatedRuntime->fallbackWorldYQ12 = ARMY_ARTICULATED_NORMAL_UP;
   articulatedRuntime->linkedArmyRuntimeOrSavedOffset = (ArmyRuntimeSlot *)ARMY_ARTICULATED_NORMAL_UP;
   articulatedRuntime->fallbackWorldXQ12 = ARMY_ARTICULATED_NORMAL_UP;
-  return;
 }
 
 /* Step rate of a terrain-contact step: (stride (definition classParameterC0) << 13) / (3D foot travel + 2 * lift
@@ -508,7 +507,6 @@ static void ArticulatedContact_SetStepRateFromTravel(ArmyArticulatedRuntimeSlotV
     (armyRuntime->articulatedContact).fallbackPosition1Q12 =
          (Q12)((int64_t)(uint64_t)(uint32_t)(strideLength << 13) / (int64_t)travelPlusLift);
   }
-  return;
 }
 
 /* The foot was set down beside the other foot instead of at its target: the owner's route point counts as
@@ -527,7 +525,6 @@ static void ArticulatedContact_MarkStepObstructed(ArmyArticulatedRuntimeSlotView
     *contactStateFlags = *contactStateFlags & ~(ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
   }
   *contactStateFlags = *contactStateFlags | ARMY_ARTICULATED_STEP_OBSTRUCTED;
-  return;
 }
 
 /* Left foot step rate from its 3D travel between the previous contact (movementTarget0Q12,
@@ -541,7 +538,6 @@ static void ArticulatedContact_SetLeftStepRate(ArmyArticulatedRuntimeSlotView *a
              FixedMath_Length3(footZ - armyRuntime->definitionClassValue88,
                                footY - armyRuntime->definitionClassValue80,
                                armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12));
-  return;
 }
 
 /* Obstructed left step: sets the left foot down right beside the right foot (twice the lateral offset to the
@@ -582,7 +578,6 @@ static void ArticulatedContact_PlaceLeftFootBesideRightFoot(AngleTurn32 headingA
   sampledFootZ = armyRuntime->articulatedHeightOrStateA0;
   ArticulatedContact_MarkStepObstructed(armyRuntime);
   ArticulatedContact_SetLeftStepRate(armyRuntime,sampledFootZ,sampledFootY);
-  return;
 }
 
 /* Plans a walking step of the left foot towards heading headingAngle16 (routeDistanceQ12 = distance to the
@@ -679,7 +674,6 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   }
   /* blocked or no ground at the target */
   ArticulatedContact_PlaceLeftFootBesideRightFoot(headingAngle16,armyRuntime,worldRuntime);
-  return;
 }
 
 /* Right foot step rate from its 3D travel between the previous contact (movementTarget1Q12,
@@ -693,7 +687,6 @@ static void ArticulatedContact_SetRightStepRate(ArmyArticulatedRuntimeSlotView *
              FixedMath_Length3(footZ - armyRuntime->runtimeState8C,
                                footY - armyRuntime->definitionClassValue84,
                                armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12));
-  return;
 }
 
 /* Obstructed right step: sets the right foot down right beside the left foot (twice the lateral offset to the
@@ -734,7 +727,6 @@ static void ArticulatedContact_PlaceRightFootBesideLeftFoot(AngleTurn32 headingA
   sampledFootZ = armyRuntime->runtimeStateA4;
   ArticulatedContact_MarkStepObstructed(armyRuntime);
   ArticulatedContact_SetRightStepRate(armyRuntime,sampledFootZ,sampledFootY);
-  return;
 }
 
 /* Mirror of ArmyArticulatedRuntime_UpdateLeftTerrainContact for the right foot (side angle heading - 90
@@ -825,7 +817,6 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   }
   /* blocked or no ground at the target */
   ArticulatedContact_PlaceRightFootBesideLeftFoot(headingAngle16,armyRuntime,worldRuntime);
-  return;
 }
 
 /* Footfall of an articulated walker, called by ArmyRuntimeClass_UpdateArticulatedMovement when a foot has
@@ -883,7 +874,6 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
                (footNode->worldTransform).translation.z,(footNode->worldTransform).translation.y
                ,(footNode->worldTransform).translation.x,effectDefinition,worldRuntime);
   }
-  return;
 }
 
 /* Places one foot of the articulated walker along its step: position = current + (target - current) *
@@ -1232,7 +1222,6 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
              (((rightHeading - rightStartHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) +
              rightStartHeading & FIXED_ANGLE16_MASK,rightBlendAngles);
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-  return;
 }
 
 /* Sets the step rate of a planned foot step (articulatedContact.fallbackPosition1Q12): stride length
@@ -1302,7 +1291,6 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
       }
     }
   }
-  return;
 }
 
 /* Mirror of ArmyArticulatedRuntime_InitializeLeftTerrainContact for the right foot (set beside the left
@@ -1346,7 +1334,6 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
       }
     }
   }
-  return;
 }
 
 /* Left turn of ArmyArticulatedRuntime_UpdateSelectedTerrainContact (steeringAngle16 up to 0x8000): clamps
@@ -1524,5 +1511,4 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
   else {
     ArmyArticulatedRuntime_PlanRightTurnStep(steeringAngle16,armyRuntime,worldRuntime);
   }
-  return;
 }

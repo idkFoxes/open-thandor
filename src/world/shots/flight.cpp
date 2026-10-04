@@ -73,7 +73,6 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
        pmulhw(ColorLanes_UnpackBytesShiftRight(nodeTintArgb,4),
               ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
   modelNode->tintArgb = ColorLanes_PackWordsUnsignedSaturate(tintProductWords);
-  return;
 }
 
 
@@ -83,7 +82,6 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
 void ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
-  return;
 }
 
 

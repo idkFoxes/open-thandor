@@ -202,7 +202,6 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory()
   if (g_InitialWorkingDirectory.firstTwoCodeUnits != 0) {
     Win32File_SetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
   }
-  return;
 }
 
 
@@ -637,6 +636,5 @@ void Win32File_Close(void *handle)
 
 {
   CloseHandle(handle);
-  return;
 }
 

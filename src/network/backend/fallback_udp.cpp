@@ -46,7 +46,6 @@ uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 void __cdecl NetworkBackendFallback_Cleanup()
 
 {
-  return;
 }
 
 /* Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
@@ -64,7 +63,6 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 void __cdecl NetworkBackendFallback_CloseActiveSocket()
 
 {
-  return;
 }
 
 /* Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
@@ -106,7 +104,6 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
   outputText[1] = '\0';
   outputText[2] = '\0';
   outputText[3] = '\0';
-  return;
 }
 
 /* Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
@@ -115,7 +112,6 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
 void NetworkFallback_NoOpBackendCleanup()
 
 {
-  return;
 }
 
 
@@ -261,7 +257,6 @@ void NetworkFallback_CloseActiveSocket()
     socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,INVALID_SOCKET);
     g_WinSock_closesocket(socket);
   }
-  return;
 }
 
 
@@ -381,6 +376,5 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
   outputText[1] = '\0';
   outputText[2] = '\0';
   outputText[3] = '\0';
-  return;
 }
 

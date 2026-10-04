@@ -88,7 +88,6 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
     g_UiCommandRuntimeFlags =
          g_UiCommandRuntimeFlags | (UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
   }
-  return;
 }
 
 /* UI action 0x101C (g_InGameUiActionHandlersPage10[28]): one of the three chart tabs of the results screen
@@ -121,7 +120,6 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
   UiPageStack_SetActiveIndex
             (selectedTabIndex,
              (UiPageStackControl *)INGAME_UI(rootNodeCursor,resultsChartPageStack));
-  return;
 }
 
 /* UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
@@ -166,7 +164,6 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
       InGameCommand_Issue<FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch>(0,0,modelOffset);
     }
   }
-  return;
 }
 
 InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10 = {
@@ -230,7 +227,6 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_RESULTS_READY,0,0,0);
   }
-  return;
 }
 
 /* End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie by clearing
@@ -241,7 +237,6 @@ void InGameEndMovie_Skip(void *source)
 
 {
   InGameCommand_Issue<UiCommandRuntimeFlags_ApplyClearSetToggleMasks>(0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
-  return;
 }
 
 /* Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
@@ -259,7 +254,6 @@ void InGameQuitMenu_RestartMission(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION);
-  return;
 }
 
 /* UI action 0x1200 (game menu quit button): opens the quit game window (page 4 of the in-game window page
@@ -288,7 +282,6 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
   else {
     UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
   }
-  return;
 }
 
 /* Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
@@ -298,7 +291,6 @@ void InGameResultsScreen_CloseLocally(UiNodeBase *source)
 
 {
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED;
-  return;
 }
 
 /* Results chart mode buttons (action 0x1026, g_InGameUiActionHandlersPage10[38]): selects the clicked one of the
@@ -331,7 +323,6 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
        (uint32_t)selectedIndexValue;
   ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
-  return;
 }
 
 /* UI action 0x101D (quitMenuAbortMissionButton; g_InGameUiActionHandlersPage10[29]): closes the game menu
@@ -348,7 +339,6 @@ void InGameQuitMenu_AbortMission(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
-  return;
 }
 
 /* UI action 0x101E (INGAME_ACTION_QUIT_SURRENDER, quitMenuSurrenderButton; g_InGameUiActionHandlersPage10[30]):
@@ -365,7 +355,6 @@ void InGameQuitMenu_Surrender(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
-  return;
 }
 
 /* UI action 0x1021 (missionHelpBriefingTab; g_InGameUiActionHandlersPage10[33]): selects tab 0 of the mission help
@@ -380,7 +369,6 @@ void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
       THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
       sourceNode);
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
-  return;
 }
 
 /* UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
@@ -395,7 +383,6 @@ void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
       THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
       sourceNode);
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
-  return;
 }
 
 /* UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
@@ -410,5 +397,4 @@ void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
       THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
       sourceNode);
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
-  return;
 }

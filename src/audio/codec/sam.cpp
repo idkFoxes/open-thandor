@@ -1889,7 +1889,6 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
     outputGroupsRemaining--;
     outputStereoPcm = outputStereoPcm + 8;
   } while (outputGroupsRemaining != 0);
-  return;
 }
 
 /* Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of

@@ -67,7 +67,6 @@ void ArenaHeap_Shutdown()
 {
   HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
   HeapDestroy(g_Arena.processHeap);
-  return;
 }
 
 /* The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32

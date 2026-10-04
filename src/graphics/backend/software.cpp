@@ -90,5 +90,4 @@ void SoftwareRenderer_BuildFactorTables()
 void SoftwareGraphicsDispatch_NoOp()
 
 {
-  return;
 }

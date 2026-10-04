@@ -455,7 +455,6 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache()
     inGameRoot->minimapSampleScaleQ12 =
          FIXED_MUL_HIGH((int)committedDistance,INGAME_MINIMAP_DISTANCE_SCALE_Q32);
   }
-  return;
 }
 
 /* Called before the session shutdown: remembers which info text the world view shows (text resource
@@ -469,5 +468,4 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
        (TextResourceId)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text; /* 5f-format: InGameUiImage.worldViewCyclingInfoText +0x54 (UI template text id dword) */
   FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
        INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId);
-  return;
 }

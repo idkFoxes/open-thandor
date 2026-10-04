@@ -103,7 +103,6 @@ void ShotRuntime_ShutdownGraphicsResources()
     *registryCursor = nullptr;
     registryCursor++;
   }
-  return;
 }
 
 /* Looks a shot definition up by id in the 256-slot registry (a second copy of
@@ -343,5 +342,4 @@ void ShotRuntimePool_CreateProjectileFromDefinition
                shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                shotDefinition->launchEffectDefinition,worldRuntime);
   }
-  return;
 }

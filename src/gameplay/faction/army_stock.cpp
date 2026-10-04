@@ -44,7 +44,6 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
     groupSlotIndex = 0;
     factionsRemaining--;
   } while (factionsRemaining != 0);
-  return;
 }
 
 /* Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in

@@ -126,7 +126,6 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(MdlSerializedNodeHea
               ((MdlSerializedNodeHeader *)(uintptr_t)node->childSerializedOffsets[childIndex]);
     childrenRemaining--;
   }
-  return;
 }
 
 /* Counterpart of ModelRuntimePool_Init: frees the model runtime pool, releases the resources of every

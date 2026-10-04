@@ -58,7 +58,6 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
     ModelNodeRuntime_UpdateDepthBinMasks(definition->footprintRadius,modelNode);
   }
-  return;
 }
 
 /* In-game command handler 0x30F0: turns the player's primary selected model (block placedArmyToken) by angleDelta
@@ -84,7 +83,6 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
          angleDelta + (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   }
-  return;
 }
 
 /* Removes an entity from the selections of all eight players (every matching entry of each player block's
@@ -157,7 +155,6 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     inGameRuntimeRoot->localPlayerMarkedCellCount = 0;
   }
-  return;
 }
 
 /* Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see

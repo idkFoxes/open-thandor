@@ -289,7 +289,6 @@ void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourc
 
   allocation = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
   Resource_Release(allocation);
-  return;
 }
 
 
@@ -302,7 +301,6 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
 
   allocation = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
   g_MemoryApi.free(allocation);
-  return;
 }
 
 

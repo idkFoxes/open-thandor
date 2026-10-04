@@ -170,7 +170,6 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
     entityRuntimeFlags = &(entity->common).runtimeFlags;
     *entityRuntimeFlags = *entityRuntimeFlags | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED;
   }
-  return;
 }
 
 

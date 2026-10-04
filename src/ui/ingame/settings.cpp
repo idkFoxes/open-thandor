@@ -26,7 +26,6 @@ void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
   InGameSettingsPage_ToggleAndSynchronizeControls
             ((UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
-  return;
 }
 
 /* UI action 0x1201 (gameMenuCloseButton; g_InGameUiActionHandlersPage12[1]): closes the game menu by
@@ -41,7 +40,6 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  return;
 }
 
 /* UI action 0x1218 (the Back buttons of the save, quit, graphics and sound pages;
@@ -57,7 +55,6 @@ void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(1,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
-  return;
 }
 
 /* In-game command handler (keys G / Alt+G): changes the player's simulation step batch by stepDelta, kept within
@@ -88,7 +85,6 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
       g_InGameSimulationStepTicks = stepTicks;
     } while (remainingCount != 0);
   }
-  return;
 }
 
 /* UI action 0x1216 (rightButtonNoScrollCheckbox; g_InGameUiActionHandlersPage12[22]): stores
@@ -319,7 +315,6 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
                                          PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   ((UiRangeSliderControl *)GRAPHICS_UI(modelDetailSlider))->value = settingValue;
 #undef GRAPHICS_UI
-  return;
 }
 
 /* UI action 0x1203 (gameMenuAudioButton; g_InGameUiActionHandlersPage12[3]): opens the sound settings window
@@ -373,7 +368,6 @@ void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNo
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
-  return;
 }
 
 /* UI action 0x1204 (shadingEnabledCheckbox; g_InGameUiActionHandlersPage12[4]): stores the shading switch,
@@ -400,7 +394,6 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
          ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags | WORLD_RUNTIME_FLAG_SHADING_ENABLED;
   }
   PersistentSettings_Write(selectedState & 1,PERSISTENT_SETTING_SHADING_ENABLED);
-  return;
 }
 
 /* UI action 0x1205 (INGAME_ACTION_SHADING_LEVEL, the six shading level buttons;
@@ -475,7 +468,6 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
                                                   PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   GraphicsShadingRuntime_InitializeGeneratedTexture
             (storedSubresourceCount,gridHalfSize,textureDimension);
-  return;
 }
 
 /* UI action 0x1206 (modelDetailSlider; g_InGameUiActionHandlersPage12[6]): stores the model detail slider
@@ -521,7 +513,6 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-  return;
 }
 
 /* UI action 0x1208 (effectsEnabledCheckbox; g_InGameUiActionHandlersPage12[8]): stores the effects switch,
@@ -586,7 +577,6 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     movieAlternateGainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGainQ15;
-  return;
 }
 
 /* UI action 0x1209 (musicEnabledCheckbox; g_InGameUiActionHandlersPage12[9]): stores the music switch and
@@ -638,7 +628,6 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   else {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_REVERSE_STEREO,&control->base);
   }
-  return;
 }
 
 /* UI action 0x120A (reverseStereoCheckbox; g_InGameUiActionHandlersPage12[10]): stores the reverse stereo
@@ -769,7 +758,6 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   else {
     UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_WINDOW,uiRoot);
   }
-  return;
 }
 
 /* Action slot adapters: these two handlers take the source node's address as an intptr_t; the action queue passes

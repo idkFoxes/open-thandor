@@ -277,7 +277,6 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     UiTransferMailbox_MarkUnavailable();
   }
-  return;
 }
 
 /* Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in
@@ -318,7 +317,6 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
     playerRecord = playerRecord + 1;
     playersRemaining--;
   } while (playersRemaining != 0);
-  return;
 }
 
 /* Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
@@ -738,7 +736,6 @@ void FrontendTransfer_SendCapabilityHeartbeat()
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);
-  return;
 }
 
 /* Session advertisement (0x50001): updates the known session (same sequence token and IPv4 address) in place,
@@ -882,7 +879,6 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
   if (g_SessionTransferTimeoutTicks == 0) {
     FrontendTransferPage_ResetSessionOpenAndRequestMailbox(FRONTEND_UI(frontendRoot,clientLobbyLeaveButton));
   }
-  return;
 }
 
 /* Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
@@ -922,5 +918,4 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest()
     UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10004Buffer.header);
   }
-  return;
 }

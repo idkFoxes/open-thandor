@@ -155,6 +155,5 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
     groupCursor = (SprGroupRelocationHeader *)((uint8_t *)groupCursor + groupCursor->nextGroupByteOffset);
     groupsRemaining--;
   } while (groupsRemaining != 0);
-  return;
 }
 

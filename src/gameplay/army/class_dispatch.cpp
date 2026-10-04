@@ -24,7 +24,6 @@ void ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
              (ArmyRuntimeSlot *)
              ((modelNodeRuntime->runtimePayload).armyRuntime)->linkedEntityRuntime);
   ModelNodeRuntime_UpdateStateTintRecursive(modelNodeRuntime);
-  return;
 }
 
 /* Army entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table):
@@ -36,7 +35,6 @@ void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
 
 {
   ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(worldRuntime,(ModelRuntimeSlot *)ownerNode->runtimePayload);
-  return;
 }
 
 /* Army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
@@ -73,7 +71,6 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
   if (armyRuntime->movementRetryCountdown != 0) {
     armyRuntime->movementRetryCountdown = armyRuntime->movementRetryCountdown - 1;
   }
-  return;
 }
 
 /* World owner-list callback: for a model node, clears its runtime flags 0x4 and 0x8, re-registers the owning
@@ -175,7 +172,6 @@ void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeC
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
     [armyRuntime->modelRuntimeOrSavedOffset.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId])
             (worldRuntime,armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
-  return;
 }
 
 /* Empty sound update of class 3, reached only through
@@ -184,7 +180,6 @@ void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeC
 void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  return;
 }
 
 /* Per-step update of one model runtime and, recursively, its attached children (called by
@@ -713,7 +708,6 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass5
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
-  return;
 }
 
 /* Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
@@ -723,7 +717,6 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass6
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
-  return;
 }
 
 /* Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
@@ -732,7 +725,6 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass6
 void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
 
 {
-  return;
 }
 
 /* Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
@@ -743,7 +735,6 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  return;
 }
 
 /* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
@@ -763,5 +754,4 @@ Bool8 UnifiedRuntimeDefault_TwoArgSuccess
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  return;
 }

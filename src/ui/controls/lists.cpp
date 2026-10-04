@@ -142,7 +142,6 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control,nullptr);
   UiPointerList_SelectColumnListIndex(selectedIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
-  return;
 }
 
 /* Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
@@ -184,7 +183,6 @@ void UiListControl_SelectRowFromPointer
       }
     }
   }
-  return;
 }
 
 /* Sorts the rows of a pointer list by a 64-bit key at fieldOffset in each row entry (high dword first, then
@@ -245,7 +243,6 @@ void UiPointerList_SortByDwordPairFieldDescending
   UiScrollableControl_ClampOffsetsToViewport
             (selectedRowTop + 1 + control->rowHeight,control->base.rightOffset,selectedRowTop,0,
              (UiScrollableControl *)control->base.parent);
-  return;
 }
 
 /* Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
@@ -301,7 +298,6 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
   UiScrollableControl_ClampOffsetsToViewport
             (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
              (UiScrollableControl *)(control->base).parent);
-  return;
 }
 
 /* Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
@@ -399,7 +395,6 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
       }
     }
   }
-  return;
 }
 
 /* Per-frame tick of the column list (g_UiListControlVtable tick): counts down the deferred action of a
@@ -419,7 +414,6 @@ void UiListControl_TickActivationPulse(UiListControl *control)
          (UI_LIST_FLAGS_MASK & ~(UI_LIST_DEFERRED_ACTION_PENDING|UI_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
-  return;
 }
 
 /* Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
@@ -437,7 +431,6 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
     *controlNodeFlags = *controlNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   UiContainer_UnsuppressActionId(actionId,&control->base);
-  return;
 }
 
 /* Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
@@ -455,7 +448,6 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
     *controlNodeFlags = *controlNodeFlags | UI_NODE_SUPPRESSED;
   }
   UiContainer_SuppressActionId(actionId,&control->base);
-  return;
 }
 
 /* Fills a pointer list with rowCount rows (rowPointers, one record pointer per row) and selects row 0.
@@ -500,7 +492,6 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *r
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
   parentVtable->layout(parent);
-  return;
 }
 
 /* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
@@ -519,7 +510,6 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
               (rowTop + 1 + control->rowHeight,control->base.rightOffset,rowTop,0,
                (UiScrollableControl *)control->base.parent);
   }
-  return;
 }
 
 /* Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
@@ -701,7 +691,6 @@ void UiTextListControl_DrawRowsAndSelection
       }
     }
   }
-  return;
 }
 
 /* Primary button press on a text list (nonRightPress slot of g_UiTextListControlVtable): a click on the text
@@ -919,7 +908,6 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
   parentVtable->layout(parentNode);
-  return;
 }
 
 /* Compares two rich-text streams for the pointer-list sorts: both are expanded (nested streams inlined) into

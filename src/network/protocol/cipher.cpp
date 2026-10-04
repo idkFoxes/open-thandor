@@ -379,7 +379,6 @@ void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *output
       blocksRemaining--;
     } while (blocksRemaining != 0);
   }
-  return;
 }
 
 /* Decrypts a received packet in place or into destination (they may alias): the inverse of
@@ -438,5 +437,4 @@ void UiTransfer_DecryptPacketBlocks
       blocksRemaining--;
     } while (blocksRemaining != 0);
   }
-  return;
 }

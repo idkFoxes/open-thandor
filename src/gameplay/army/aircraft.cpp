@@ -396,7 +396,6 @@ void ArmyRuntimeClass_UpdateAircraft
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
   ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(semanticDefinition->footprintRadius,modelNode);
-  return;
 }
 
 /* Takes the first queued pad asset (asset flag 8) the faction can pay for out of its secondary asset queue: the
@@ -711,5 +710,4 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     }
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-  return;
 }

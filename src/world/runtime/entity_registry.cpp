@@ -20,7 +20,6 @@ void WorldRuntime_AttachObjectArray
 {
   world->objectArray = objectArray;
   world->objectCount = count;
-  return;
 }
 
 /* Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
@@ -71,7 +70,6 @@ void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
   if (previousHeadNode != nullptr) {
     previousHeadNode->previousNode = node;
   }
-  return;
 }
 
 /* Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
@@ -100,7 +98,6 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
     }
   }
   node->runtimeFlags = 0;
-  return;
 }
 
 /* Calls callback(callbackContext, node) for every node of the world's owner list (ownerListHead), from the most
@@ -120,7 +117,6 @@ void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTra
   for (node = world->ownerListHead; node != nullptr; node = node->nextNode) {
     callback(callbackContext,node);
   }
-  return;
 }
 
 /* Callback of WorldRuntime_ForEachOwnerListNode from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
@@ -160,7 +156,6 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
          nullptr;
   }
-  return;
 }
 
 /* WorldRuntime_ForEachOwnerListNode callback run while a model runtime is destroyed
@@ -196,7 +191,6 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
            ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
     ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeState = 0;
   }
-  return;
 }
 
 /* WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
@@ -221,5 +215,4 @@ void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutd
     node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | WORLD_OBJECT_RECORD_ALLOCATED);
     ((EffectRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
-  return;
 }

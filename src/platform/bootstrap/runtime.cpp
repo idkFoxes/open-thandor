@@ -495,7 +495,6 @@ void DynDLL_UnloadAll()
     }
     moduleEntryCursor++;
   }
-  return;
 }
 
 
@@ -547,7 +546,6 @@ void __cdecl Game_Run()
   }
   g_NetworkBackendSlot3(); /* close */
   g_NetworkBackendSlot1(); /* cleanup */
-  return;
 }
 
 
@@ -1593,6 +1591,5 @@ void CommandLine_Parse()
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument3,g_CommandLineWideArguments.argument3,
              (uint8_t *)g_CommandLine.argument3);
-  return;
 }
 

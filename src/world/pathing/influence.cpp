@@ -129,7 +129,6 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 
 {
-  return;
 }
 
 
@@ -139,7 +138,6 @@ void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
 
 {
-  return;
 }
 
 

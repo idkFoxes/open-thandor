@@ -48,7 +48,6 @@ void GameFactionRelations_UpdateAllPairsForFaction
     }
     opposingFactionIndex--;
   } while (opposingFactionIndex != 0);
-  return;
 }
 
 
@@ -63,7 +62,6 @@ void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
   for (; (int)firstWorldXQ12 <= (int)lastWorldXQ12; firstWorldXQ12 = firstWorldXQ12 + FIELD_GRID_CELL_Q12) {
     PlayerPairList_InsertUnique(playerRuntimeId,0,worldYQ12,firstWorldXQ12);
   }
-  return;
 }
 
 
@@ -78,7 +76,6 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
   for (; (int)firstWorldXQ12 <= (int)lastWorldXQ12; firstWorldXQ12 = firstWorldXQ12 + FIELD_GRID_CELL_Q12) {
     PlayerPairList_RemoveFirstMatch(playerRuntimeId,0,worldYQ12,firstWorldXQ12);
   }
-  return;
 }
 
 
@@ -310,7 +307,6 @@ void GameFactionRelations_MaybeAdvancePairStateRare
     GameFactionRuntime_AdvancePairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
-  return;
 }
 
 
@@ -344,7 +340,6 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
     GameFactionRuntime_AdvancePairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
-  return;
 }
 
 
@@ -361,7 +356,6 @@ void GameFactionRelations_MaybeResetPairState
     GameFactionRuntime_ResetPairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
-  return;
 }
 
 
@@ -403,7 +397,6 @@ void PlayerPairList_InsertUnique
       inGameRuntimeRoot->localPlayerMarkedCellCount++;
     }
   }
-  return;
 }
 
 
@@ -449,7 +442,6 @@ void PlayerPairList_RemoveFirstMatch
       pairRecordCursor++;
     }
   }
-  return;
 }
 
 /* Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex
@@ -510,7 +502,6 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
     GameFactionRuntime_ApplyPairwiseRelationTransition
               (8,8,FACTION_RELATION_MERGE,FACTION_RELATION_MERGE,sourceFactionIndex,targetFactionIndex);
   }
-  return;
 }
 
 /* Moves the diplomatic relation of a faction pair back, chosen by the state of targetFactionIndex towards
@@ -547,7 +538,6 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
     GameFactionRuntime_ApplyPairwiseRelationTransition
               (19,19,8,8,sourceFactionIndex,targetFactionIndex);
   }
-  return;
 }
 
 #define FACTION_TECHNOLOGY_MASK_BITS 256u
@@ -976,5 +966,4 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
       }
     }
   }
-  return;
 }

@@ -92,7 +92,6 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
     }
   }
-  return;
 }
 
 /* Hit test of an image panel (hitTest slot of g_UiImagePanelControlVtable and g_UiArmyMetricsPanelVtable):
@@ -356,7 +355,6 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
     }
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 /* Relocation of a loaded resource gauge (relocate slot of g_UiFormattedContainerVtable): when it has a
@@ -385,7 +383,6 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
   *(uint32_t *)control->currentValueTextUtf16 = 0;
   *(uint32_t *)control->limitValueTextUtf16 = 0;
   UiContainer_RelocateChildren(relocationDelta,&control->base);
-  return;
 }
 
 /* Fill colour variant of a gauge (frame offset 3..18, three frames each) by the fill percentage: rising from
@@ -597,7 +594,6 @@ void UiFormattedContainer_DrawClipped
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,((UiFormattedContainerWithMarker *)control)->markerValue,
                ((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16);
   }
-  return;
 }
 
 /* Draws the army metrics panel (drawClipped slot of g_UiArmyMetricsPanelVtable): the aligned panel texture
@@ -683,7 +679,6 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base.base);
     }
   }
-  return;
 }
 
 /* Draws a software texture preview (drawClipped slot of g_UiSoftwareTexturePreviewControlVtable): the
@@ -711,7 +706,6 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
     }
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 /* Primary button press on a software texture preview (nonRightPress slot of
@@ -723,7 +717,6 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
 
 {
   UiActionQueue_Enqueue(control->actionId,control);
-  return;
 }
 
 /* Secondary button press on a software texture preview (rightPress slot of
@@ -735,7 +728,6 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
 
 {
   UiActionQueue_Enqueue(control->actionId,control);
-  return;
 }
 
 /* Keyboard handler of a software texture preview (keyboardEvent slot of
@@ -967,7 +959,6 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
     }
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
-  return;
 }
 
 /* hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never

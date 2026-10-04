@@ -24,7 +24,6 @@ void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
            &((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount;
   RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(5,output); /* the box shows five lines */
-  return;
 }
 
 /* Handler of action 0x200E (slot 14 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the chat
@@ -43,5 +42,4 @@ void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
   RecentTextHistory_RemoveOldest();
   RecentTextHistory_SortAndBuildPointerList
             (5,(RecentTextHistoryPointerList *)&((UiConditionalActionControl *)source)->lineCount);
-  return;
 }

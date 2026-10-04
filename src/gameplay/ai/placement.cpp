@@ -89,7 +89,6 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
       }
     }
   }
-  return;
 }
 
 

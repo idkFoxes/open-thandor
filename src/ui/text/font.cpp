@@ -86,7 +86,6 @@ void FontRuntime_Init()
     *overrideDword = TEXT_RESOURCE_ID_NONE;
     overrideDword++;
   }
-  return;
 }
 
 /* Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line

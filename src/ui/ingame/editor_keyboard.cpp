@@ -415,5 +415,4 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     InGameCommand_Issue<InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState>(0,0,EDITOR_ACTIVE_STATE_LEAVE);
     InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
   }
-  return;
 }

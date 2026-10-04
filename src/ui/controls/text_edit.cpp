@@ -675,7 +675,6 @@ void UiTextEditControl_BeginSelectionAtPointer
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
-  return;
 }
 
 /* Primary-button drag over a text edit (nonRightDrag slot of g_UiRequiredTextEditControlVtable): while a pointer
@@ -736,7 +735,6 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
     currentCodeUnit = *textCursor;
   }
   UiContainer_RelocateChildren(relocationDelta,&control->base);
-  return;
 }
 
 /* Primary button release on a text edit (nonRightRelease slot of g_UiRequiredTextEditControlVtable): ends the
@@ -752,7 +750,6 @@ void UiTextEditControl_EndSelection
      (control->activationSound != nullptr)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
-  return;
 }
 
 /* Disables a text edit whose action id matches (suppressActionId slot of g_UiRequiredTextEditControlVtable):
@@ -769,7 +766,6 @@ void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl 
     UiKeyboardFocus_ReleaseNode(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* Enables a text edit whose action id matches (unsuppressActionId slot of g_UiRequiredTextEditControlVtable):
@@ -786,7 +782,6 @@ void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditContro
     UiKeyboardFocus_AcquireIfNone(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 /* Per-frame tick of a text edit (tick slot of g_UiRequiredTextEditControlVtable): while it
@@ -812,7 +807,6 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
       UiNode_InvalidateRoot(&control->base);
     }
   }
-  return;
 }
 
 /* Width in pixels of the first prefixLength code units of a text edit's text (fewer if the text ends
@@ -888,7 +882,6 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
   else {
     control->editStateFlags = control->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
   }
-  return;
 }
 
 /* Layout of a text edit (layout slot of g_UiRequiredTextEditControlVtable; also called after

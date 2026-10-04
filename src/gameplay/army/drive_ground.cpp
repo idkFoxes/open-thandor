@@ -38,7 +38,6 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
   else {
     ArmyRuntimeClass_UpdateGroundMovement(worldRuntime,modelRuntime);
   }
-  return;
 }
 
 /* Recoil after a shot: tilts the model away from the shot direction (actionVector0Q12 + 180 degrees) by
@@ -424,7 +423,6 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   ModelNodeRuntime_RebuildTransformsFromRoot(placedRootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,placedRootNode);
-  return;
 }
 
 /* Standard ground movement (runtimeUpdate slot 1 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, and
@@ -504,7 +502,6 @@ void ArmyRuntimeClass_UpdateGroundMovement
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
-  return;
 }
 
 /* Ground movement without water damage and without notifying the blocking army on a collision (the unit just
@@ -572,5 +569,4 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
   ModelNodeRuntime_UpdateDepthBinMasks(movementDefinition->footprintRadius,rootNode);
-  return;
 }

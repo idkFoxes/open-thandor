@@ -523,7 +523,6 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
     frontendUiState->buttonVoiceSet6_4EB0 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet6_50BC = buttonVoiceSet;
   }
-  return;
 }
 
 /* Tears down what Frontend_Init built, before a session starts, before the menu is rebuilt and when the game
@@ -578,5 +577,4 @@ void FrontendRuntime_ShutdownAndReleaseResources()
   g_FrontendMusicVoiceSet = nullptr;
   SpriteAssetRegistry_Reset();
   UiFrame_FlushInputAndResetPendingTicks();
-  return;
 }
