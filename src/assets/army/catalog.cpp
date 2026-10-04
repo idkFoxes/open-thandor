@@ -19,33 +19,53 @@ THANDOR_ALIGN(4) char g_UnreferencedArmyTag[5] = "ARMY";
 
 ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {};
 
+/* Fixed name for the fatal-error box when an ARM asset is invalid (the asset's own path is not known here). */
+static uint16_t s_ArmyAssetErrorName[] = {'*', '.', 'a', 'r', 'm', 0}; /* L"*.arm" */
+
 /* Implementation ownership: assets/army/catalog. */
 
-/* Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
-   in it (the variable-size records follow the 0x200-byte header, each starting with its byte size). A wrong
-   header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
-   registration fails with that step's error code. Returns 0 on success, otherwise that (non-zero) error code.
+/* Checks that a loaded asset (assetByteCount bytes) is an 'arm' file of converter version 0x20008 and registers
+   every army record in it (the variable-size records follow the 0x200-byte header, each starting with its byte
+   size). A wrong header, or a record that is shorter than its prefix or does not fit into the asset, stores
+   "*.arm" as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed registration fails with
+   that step's error code. Returns 0 on success, otherwise that (non-zero) error code.
    (The original's success return value, the preset error code or the last registration result, was read by no
    caller.)
 */
-uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
+uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset,uint32_t assetByteCount)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ArmyAssetRecord *record;
+  uint32_t bytesLeft;
 
-  if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ARM &&
+  /* The original trusts the asset size and every record's byteSize; bounded here because the walk follows file
+     data (a byteSize of 0 loops on one record, a large one walks past the asset). */
+  if (assetByteCount >= sizeof(ArmyAssetHeader) &&
+      asset->recordCountHeader.common.magic == ASSET_MAGIC_ARM &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ARM_00020008) {
     record = (ArmyAssetRecord *)(asset + 1);
+    bytesLeft = assetByteCount - (uint32_t)sizeof(ArmyAssetHeader);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
+      if (bytesLeft < sizeof(ArmyAssetRecord) || record->byteSize < sizeof(ArmyAssetRecordPrefix) ||
+          record->byteSize > bytesLeft) {
+        Thandor_Log("ArmyAsset_PrepareRecords: record at offset 0x%X (byteSize 0x%X) does not fit the asset of "
+                    "0x%X bytes, rejected",(uint32_t)((uint8_t *)record - (uint8_t *)asset),
+                    bytesLeft < sizeof(ArmyAssetRecordPrefix) ? 0u : record->byteSize,assetByteCount);
+        Package_SetLastErrorPath(s_ArmyAssetErrorName);
+        return FATAL_ERROR_ARMY_ASSET_INVALID;
+      }
       registrationStatusCode = ArmyAssetRecord_RegisterAndRelocate(record,asset);
       if (registrationStatusCode != 0) return registrationStatusCode;
+      bytesLeft = bytesLeft - record->byteSize;
       record = (ArmyAssetRecord *)((uint8_t *)record + record->byteSize);
     }
     return 0;
   }
-  Package_SetLastErrorPath((uint16_t *)asset);
+  /* The original passes the asset header itself as the error path; replaced by a fixed name here because the
+     header words are no text (units >= 0x8000 become rich-text pointer codes in the fatal-error box). */
+  Package_SetLastErrorPath(s_ArmyAssetErrorName);
   return FATAL_ERROR_ARMY_ASSET_INVALID;
 }
 
@@ -110,10 +130,8 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
                        (factionIndex,(uintptr_t)node);
   armourSum = ((ModelDefinition *)selected)->maximumHealth;
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
-    ArmyModelTreeNode *child = node->children[childIndex];
-    if (child != nullptr) {
-      armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
-    }
+    /* children are always relocated pointers (ArmyAssetRecord_RelocateModelTree), never NULL */
+    armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,node->children[childIndex]);
   }
   return armourSum;
 }

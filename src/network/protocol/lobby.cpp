@@ -72,7 +72,7 @@ void FrontendTransfer_ExecuteLobbyCommandRecords
    pointers, others switch fonts) become '?', and a text without terminator gets one in its last unit. Returns
    whether anything was changed. Texts the original sends (typed names, "<n>ms") hold no command codes and are
    terminated within unitCount, so they stay byte-identical. */
-static Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
+Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount)
 {
   int unitIndex;
   Bool8 changed;
@@ -86,6 +86,58 @@ static Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount
       text[unitIndex] = '?';
       changed = true;
     }
+  }
+  text[unitCount - 1] = 0;
+  return true;
+}
+
+/* Not in the original: makes a rich-text stream received from a peer (the texts of the 0x50001 advertisement)
+   safe to draw. Walks it like the text renderer up to its terminator: the commands that make the renderer
+   follow an embedded pointer (opcodes 0x18/0x19 nested stream, 0x1A inline image) become '?', a payload
+   record (literal colour, inline value) that would run past the field cuts the text at its command, and a text
+   without terminator gets one in its last unit. Colour and font codes stay. Returns whether anything was
+   changed. The host builds these texts with RichTextCommandStream_CopyExpanded, which inlines 0x18/0x19,
+   terminates within the field and copies payload records whole; the session templates hold no inline image, so
+   valid advertisements stay byte-identical. */
+static Bool8 FrontendTransfer_SanitizePeerRichTextUtf16(uint16_t *text,int unitCount)
+{
+  int unitIndex;
+  int recordUnits;
+  Bool8 changed;
+
+  changed = false;
+  unitIndex = 0;
+  while (unitIndex < unitCount) {
+    if (text[unitIndex] == 0) {
+      return changed;
+    }
+    recordUnits = 1;
+    if (text[unitIndex] >= RICHTEXT_COMMAND_FLAG) {
+      switch (text[unitIndex] & RICHTEXT_OPCODE_MASK) {
+      case RICHTEXT_OP_CALL_NESTED:
+      case RICHTEXT_OP_JUMP_NESTED:
+      case RICHTEXT_OP_INLINE_IMAGE:
+        text[unitIndex] = '?';
+        changed = true;
+        break;
+      case RICHTEXT_OP_LITERAL_COLOR:
+        recordUnits = RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+        break;
+      case RICHTEXT_OP_INLINE_VALUE_0:
+      case RICHTEXT_OP_INLINE_VALUE_1:
+      case RICHTEXT_OP_INLINE_VALUE_2:
+        recordUnits = RICHTEXT_RECORD_UNITS_INLINE_VALUE;
+        break;
+      default:
+        break;
+      }
+      /* the record and at least a terminator after it must fit */
+      if (recordUnits > 1 && unitIndex + recordUnits >= unitCount) {
+        text[unitIndex] = 0;
+        return true;
+      }
+    }
+    unitIndex = unitIndex + recordUnits;
   }
   text[unitCount - 1] = 0;
   return true;
@@ -360,6 +412,11 @@ static uint32_t FrontendTransfer_FindLowestFreePlayerRuntimeId()
   FrontendPlayerRuntimeRecord *playerRecord;
 
   candidateId = 0;
+  /* The original compares record 0 before it checks the count; with no players it would walk past the 8
+     records. Bounded here because the host always counts itself (at least 1): no player means id 0 is free. */
+  if (g_FrontendPlayerRuntimeCount <= 0) {
+    return candidateId;
+  }
   do {
     /* scan every player; restart with the next candidate as soon as one uses it */
     playersRemaining = g_FrontendPlayerRuntimeCount;
@@ -444,9 +501,14 @@ static void FrontendTransfer_StoreCapabilityHeartbeat
   int playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
 
-  /* the first record is compared before the count is checked */
+  /* the first record is compared before the count is checked (the count is at least 1 here) */
   playersRemaining = (int)hostLobbyPlayerList->rowCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* The original would walk past the records with an empty list; bounded here because the host's own row is
+     always there (count at least 1). */
+  if (playersRemaining <= 0) {
+    return;
+  }
   while ((packet->packet10000Handshake.header.sequenceToken != playerRecord->peerSequenceToken) ||
          (senderEndpoint->ipv4AddressNetworkOrder != playerRecord->endpoint.ipv4AddressNetworkOrder)) {
     playerRecord++;
@@ -524,10 +586,15 @@ static void FrontendTransfer_CollectLobbyCommand
   FrontendCommandPacketRecord *commandRecord;
 
   /* the command slots run parallel to the player records; the first record is compared before the count is
-     checked */
+     checked (the count is at least 1 here) */
   commandRecord = g_FrontendPlayerCommandRecords;
   playersRemaining = g_FrontendPlayerRuntimeCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
+  /* The original would walk past the records with no players; bounded here because the host always counts
+     itself (at least 1). */
+  if (playersRemaining <= 0) {
+    return;
+  }
   while ((packet->packet10000Handshake.header.sequenceToken != playerRecord->peerSequenceToken) ||
          (senderEndpoint->ipv4AddressNetworkOrder != playerRecord->endpoint.ipv4AddressNetworkOrder)) {
     playerRecord++;
@@ -721,6 +788,19 @@ static void FrontendTransfer_StoreSessionAdvertisement
     *recordDwordCursor = *sourceDwords;
     sourceDwords++;
     recordDwordCursor++;
+  }
+  /* The original stores the three texts raw, so a peer could leave them unterminated or embed rich-text
+     commands that make the session list follow pointers. Bounded here because the original host builds them
+     with RichTextCommandStream_CopyExpanded (terminated, no pointer commands): they are cleaned in the stored
+     record, and valid advertisements are unchanged. */
+  if (FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.sessionTitleUtf16,20) |
+      FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.hostDescriptionUtf16,44) |
+      FrontendTransfer_SanitizePeerRichTextUtf16(discoveryRecord->advertisement.playerCountTextUtf16,4)) {
+    static Bool8 s_advertisementTextLogged = false;
+    if (!s_advertisementTextLogged) {
+      s_advertisementTextLogged = true;
+      Thandor_Log("network: session advertisement text with pointer commands or without terminator, cleaned");
+    }
   }
   UiPointerList_RefreshSelectionAndQueueAction(sessionList);
 }

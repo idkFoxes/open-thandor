@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = THANDOR_FN(GraphicsCursor_SetFrameIndex);
+THANDOR_ALIGN(8) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = &GraphicsCursor_SetFrameIndex;
 
 int32_t g_CursorCurrentVisibilityToken = 0;
 
@@ -44,7 +44,7 @@ GraphicsCursorFrameRecord *g_CursorFrameRecords = nullptr;
 
 GraphicsCursorFrameCount g_CursorFrameCount = 0;
 
-GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = THANDOR_FN(GraphicsCursor_ConsumeNextInputEvent);
+GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = &GraphicsCursor_ConsumeNextInputEvent;
 
 SoftwareFramebufferAccess *g_CursorSavedBackground = nullptr;
 

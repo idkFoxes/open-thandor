@@ -251,12 +251,7 @@ static void InGameEditorPointer_BeginHeightDrag
     return;
   }
   InGameEditorPointer_AnchorDrag(pointerX,pointerY,mapControl);
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
-    return;
-  }
-  InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SCRATCH,0,0,0);
+  InGameCommand_Issue<FieldGrid_ClearPlayerScratchPlane>(0,0,0);
 }
 
 /* Material tools other than 3 (tool D): 1 seeds a replacement of the matching region at the pressed grid
@@ -272,12 +267,7 @@ static void InGameEditorPointer_BeginMaterialEdit
   uint32_t snappedGridY;
 
   if ((g_UiCommandModeD != 1) && (g_UiCommandModeD != 2)) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      TerrainEditBuffer_CopyCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
-      return;
-    }
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COPY_MATERIALS,0,0,0);
+    InGameCommand_Issue<TerrainEditBuffer_CopyCellMaterialBytes>(0,0,0);
     return;
   }
   if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
@@ -287,24 +277,12 @@ static void InGameEditorPointer_BeginMaterialEdit
   snappedGridX = INGAME_SNAP_GRID_Q12(gridXQ12);
   snappedGridY = INGAME_SNAP_GRID_Q12(gridYQ12);
   if (g_UiCommandModeD == 1) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      TerrainMaterialEdit_SeedMatchingRegionReplacement
-                (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
-      return;
-    }
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_EDITOR_REPLACE_MATCHING,g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
+    InGameCommand_Issue<TerrainMaterialEdit_SeedMatchingRegionReplacement>
+              (g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
     return;
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    TerrainMaterialEdit_SeedNonTargetRegionReplacement
-              (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
-    return;
-  }
-  InGameCommandQueue_AppendLocalPlayerCommand
-            (INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET,g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
+  InGameCommand_Issue<TerrainMaterialEdit_SeedNonTargetRegionReplacement>
+            (g_UiCommandAbsoluteSelectionIndex,snappedGridY,snappedGridX);
 }
 
 /* Smoothing tab (tool E): 0 anchors a smoothing drag; 1 and the other tools sample the fluid receiver or
@@ -373,21 +351,8 @@ static void InGameEditorPointer_BeginPlacementTool
     return;
   }
   if (placementSubMode == 0) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      PlayerRuntime_SetPlacementFaction(g_LocalPlayerRuntimeId,0,0,placementFaction);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_FACTION,0,0,placementFaction);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      PlayerRuntime_CreatePlacementArmy
-                (g_LocalPlayerRuntimeId,pointerX,pointerY,lookupToken);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_CREATE_ARMY,pointerX,pointerY,lookupToken);
-    }
+    InGameCommand_Issue<PlayerRuntime_SetPlacementFaction>(0,0,placementFaction);
+    InGameCommand_Issue<PlayerRuntime_CreatePlacementArmy>(pointerX,pointerY,lookupToken);
     g_UiCommandDragReferenceX = pointerY;
     g_UiCommandDragReferenceY = pointerX;
     g_UiCommandDragStartScreenX = mapControl->pointerPressX;
@@ -398,37 +363,21 @@ static void InGameEditorPointer_BeginPlacementTool
     if (placementSubMode == 1) {
       armyToken = ArmyRuntime_Token
                   (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,armyToken);
-        return;
-      }
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_DESTROY_ARMIES,0,0,armyToken);
+      InGameCommand_Issue<FrontendPlayerSelection_ApplyEntryOrAll>(0,0,armyToken);
       return;
     }
     g_UiCommandDragStartScreenX = mapControl->pointerPressX;
     g_UiCommandDragStartScreenY = mapControl->pointerPressY;
     armyToken = ArmyRuntime_Token
                 (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      PlayerRuntime_SetPlacementArmy(g_LocalPlayerRuntimeId,0,0,armyToken);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_ARMY,0,0,armyToken);
-    }
+    InGameCommand_Issue<PlayerRuntime_SetPlacementArmy>(0,0,armyToken);
     g_UiCommandDragReferenceX = pointerY;
     g_UiCommandDragReferenceY = pointerX;
     return;
   }
   /* no army under the pointer: start a drag selection instead */
   mapControl->runtimeFlags = mapControl->runtimeFlags | WORLD_RUNTIME_FLAG_DRAG_SELECTING;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-    return;
-  }
-  InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
+  InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
 }
 
 /* Region tab: region g_UiCommandModeF owns cell flag FIELD_CELL_XENITE_SUPPORT << region; when the pressed cell
@@ -481,12 +430,7 @@ void InGameUiCommand_BeginInteractionByMode
       return;
     }
     if (g_UiCommandModeC == 2) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FieldGrid_ResetLocalInfluenceState(g_LocalPlayerRuntimeId,0,0,0);
-        return;
-      }
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_RESET_INFLUENCE,0,0,0);
+      InGameCommand_Issue<FieldGrid_ResetLocalInfluenceState>(0,0,0);
       return;
     }
     break;
@@ -511,13 +455,7 @@ void InGameUiCommand_BeginInteractionByMode
   g_UiCommandSelectionAnchorWorldXQ12 = WORLD_POINTER_NO_HIT;
   if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
     if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
-      }
+      InGameCommand_Issue<SelectionPlayerRuntime_ClearTerrainEditSelectionState>(0,0,0);
     }
     InGameEditorPointer_GetGridPoint(pointerX,pointerY,mapControl->fieldGrid,&gridXQ12,&gridYQ12);
     g_UiCommandSelectionAnchorWorldXQ12 = gridXQ12;
@@ -593,14 +531,8 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
     tripletEntry = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
     do {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,tripletEntry[2],tripletEntry[1],*tripletEntry);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_REMOVE,tripletEntry[2],tripletEntry[1],*tripletEntry);
-      }
+      InGameCommand_Issue<FrontendPlayerSelection_RemoveThreeEntriesAndRefresh>
+                (tripletEntry[2],tripletEntry[1],*tripletEntry);
       tripletDwordCount = g_InGameSelectionRemoveTripletDwordCount;
       tripletEntry += 3;
       g_InGameSelectionRemoveTripletDwordCount = g_InGameSelectionRemoveTripletDwordCount - 3;
@@ -609,14 +541,8 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
     tripletEntry = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
     do {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,tripletEntry[2],tripletEntry[1],*tripletEntry);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_INSERT,tripletEntry[2],tripletEntry[1],*tripletEntry);
-      }
+      InGameCommand_Issue<FrontendPlayerSelection_InsertThreeEntriesAndRefresh>
+                (tripletEntry[2],tripletEntry[1],*tripletEntry);
       tripletDwordCount = g_InGameSelectionInsertTripletDwordCount;
       tripletEntry += 3;
       g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount - 3;
@@ -706,13 +632,7 @@ static void InGameEditorPointer_ResizeCellRectangle(GraphicsScreenCoordinate poi
   g_UiCommandSelectionCurrentWorldYQ12 = newCornerWorldY;
   if ((int)firstColumnQ12 <= (int)lastColumnQ12) {
     for (; (int)rowQ12 <= (int)INGAME_SNAP_GRID_Q12(highWorldY); rowQ12 = rowQ12 + Q12_ONE) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerPairList_RemoveRange(g_LocalPlayerRuntimeId,lastColumnQ12,rowQ12,firstColumnQ12);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_DESELECT_RANGE,lastColumnQ12,rowQ12,firstColumnQ12);
-      }
+      InGameCommand_Issue<PlayerPairList_RemoveRange>(lastColumnQ12,rowQ12,firstColumnQ12);
     }
   }
   /* select anchor..new corner */
@@ -733,13 +653,7 @@ static void InGameEditorPointer_ResizeCellRectangle(GraphicsScreenCoordinate poi
   lastColumnQ12 = INGAME_SNAP_GRID_Q12(highWorldX);
   if ((int)firstColumnQ12 <= (int)lastColumnQ12) {
     for (; (int)rowQ12 <= (int)INGAME_SNAP_GRID_Q12(highWorldY); rowQ12 = rowQ12 + Q12_ONE) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerPairList_InsertRange(g_LocalPlayerRuntimeId,lastColumnQ12,rowQ12,firstColumnQ12);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SELECT_RANGE,lastColumnQ12,rowQ12,firstColumnQ12);
-      }
+      InGameCommand_Issue<PlayerPairList_InsertRange>(lastColumnQ12,rowQ12,firstColumnQ12);
     }
   }
 }
@@ -778,15 +692,8 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       packedDragDelta = InGameEditorPointer_PackedDragDelta(mapControl);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_EDITOR_RAISE_HEIGHTS,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
-        return;
-      }
-      FieldGrid_ApplyPositiveCellDeltas
-                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                 g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
+      InGameCommand_Issue<FieldGrid_ApplyPositiveCellDeltas>
+                (g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
       return;
     }
     if (g_UiCommandModeC == 1) {
@@ -794,15 +701,8 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       packedDragDelta = InGameEditorPointer_PackedDragDelta(mapControl);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_EDITOR_LOWER_HEIGHTS,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
-        return;
-      }
-      FieldGrid_ApplyNegativeCellDeltas
-                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                 g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
+      InGameCommand_Issue<FieldGrid_ApplyNegativeCellDeltas>
+                (g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
       return;
     }
     if (g_UiCommandModeC == 2) {
@@ -810,12 +710,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       InGameEditorPointer_GetSnappedTerrainCell(pointerX,pointerY,mapControl,&cellWorldXQ12,&cellWorldYQ12);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE,0,cellWorldYQ12,cellWorldXQ12);
-        return;
-      }
-      FieldGrid_RebuildLocalInfluenceState(g_LocalPlayerRuntimeId,0,cellWorldYQ12,cellWorldXQ12);
+      InGameCommand_Issue<FieldGrid_RebuildLocalInfluenceState>(0,cellWorldYQ12,cellWorldXQ12);
       return;
     }
     break;
@@ -835,14 +730,8 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       InGameEditorPointer_GetSnappedTerrainCell(pointerX,pointerY,mapControl,&cellWorldXQ12,&cellWorldYQ12);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_EDITOR_PAINT_MATERIAL,g_UiCommandAbsoluteSelectionIndex,cellWorldYQ12,cellWorldXQ12);
-        return;
-      }
-      FieldGrid_ApplyLocalCellUpdate
-                (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,cellWorldYQ12,cellWorldXQ12);
+      InGameCommand_Issue<FieldGrid_ApplyLocalCellUpdate>
+                (g_UiCommandAbsoluteSelectionIndex,cellWorldYQ12,cellWorldXQ12);
       return;
     }
     break;
@@ -860,15 +749,8 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       g_UiCommandDragStartScreenX = g_UiCommandDragStartScreenX + dragDeltaX;
       g_UiCommandDragStartScreenY = g_UiCommandDragStartScreenY + dragDeltaY;
       packedDragDelta = dragDeltaX & deltaXMask | dragDeltaY * INGAME_DRAG_DELTA_Y_SCALE;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_EDITOR_SMOOTH,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
-        return;
-      }
-      FieldGrid_ApplyEncodedCellUpdate
-                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                 g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
+      InGameCommand_Issue<FieldGrid_ApplyEncodedCellUpdate>
+                (g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,packedDragDelta);
       return;
     }
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
@@ -876,24 +758,12 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
     }
     InGameEditorPointer_GetSnappedTerrainCell(pointerX,pointerY,mapControl,&cellWorldXQ12,&cellWorldYQ12);
     if (g_UiCommandModeE != 1) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED,g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
-        return;
-      }
-      FieldGrid_SetCellFluidSourceExcluded
-                (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
+      InGameCommand_Issue<FieldGrid_SetCellFluidSourceExcluded>
+                (g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
       return;
     }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameCommandQueue_AppendLocalPlayerCommand
-                (INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED,g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
-      return;
-    }
-    FieldGrid_SetCellFluidReceiverExcluded
-              (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
+    InGameCommand_Issue<FieldGrid_SetCellFluidReceiverExcluded>
+              (g_UiCommandTerrainMaskToggleValue,cellWorldYQ12,cellWorldXQ12);
     return;
   case EDITOR_MODE_UNIT_PLACEMENT:
   case EDITOR_MODE_OBJECT_PLACEMENT:
@@ -916,39 +786,22 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       pointerXMoveDelta = pointerX - g_UiCommandDragReferenceY;
       g_UiCommandDragReferenceX = g_UiCommandDragReferenceX + pointerYMoveDelta;
       g_UiCommandDragReferenceY = g_UiCommandDragReferenceY + pointerXMoveDelta;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_MOVE,0,pointerXMoveDelta,pointerYMoveDelta);
-        return;
-      }
-      SelectionPlayerRuntime_MovePrimarySelectionBy
-                (g_LocalPlayerRuntimeId,0,pointerXMoveDelta,pointerYMoveDelta);
+      InGameCommand_Issue<SelectionPlayerRuntime_MovePrimarySelectionBy>(0,pointerXMoveDelta,pointerYMoveDelta);
       return;
     }
     /* The horizontal drag distance is taken before the pointer is put back to the drag start;
        g_PointerSetPosition returns nothing. */
     rotateDragDistanceX = mapControl->pointerX - g_UiCommandDragStartScreenX;
     g_PointerSetPosition(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_ROTATE,0,0,rotateDragDistanceX << 6);
-      return;
-    }
-    SelectionPlayerRuntime_RotatePrimarySelectionBy(g_LocalPlayerRuntimeId,0,0,rotateDragDistanceX << 6);
+    InGameCommand_Issue<SelectionPlayerRuntime_RotatePrimarySelectionBy>(0,0,rotateDragDistanceX << 6);
     return;
   case EDITOR_MODE_REGION:
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     InGameEditorPointer_GetSnappedTerrainCell(pointerX,pointerY,mapControl,&cellWorldXQ12,&cellWorldYQ12);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-        SESSION_NETWORK_ROLE_LOCAL) {
-      InGameCommandQueue_AppendLocalPlayerCommand
-                (INGAME_COMMAND_EDITOR_APPLY_REGION_MASK,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,cellWorldYQ12,cellWorldXQ12);
-      return;
-    }
-    FieldGrid_SetCellResourceSupportFlag
-              (g_LocalPlayerRuntimeId,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,cellWorldYQ12,cellWorldXQ12);
+    InGameCommand_Issue<FieldGrid_SetCellResourceSupportFlag>
+              (g_UiCommandModeF | g_UiCommandCallerMaskHighBit,cellWorldYQ12,cellWorldXQ12);
     return;
   }
   if ((pointerRegionCode != WORLD_POINTER_NO_HIT) && (g_UiCommandSelectionAnchorWorldXQ12 != WORLD_POINTER_NO_HIT)) {
@@ -981,24 +834,12 @@ void InGameUiCommand_EndInteractionByMode
       worldRuntime->runtimeFlags = worldRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
     }
     else if (g_UiCommandModeC == 2) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_ConvertHeightsToDeltas(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS,0,0,0);
-      }
+      InGameCommand_Issue<TerrainEditBuffer_ConvertHeightsToDeltas>(0,0,0);
     }
     break;
   case EDITOR_MODE_TERRAIN_MATERIAL:
     if (((g_UiCommandModeD != 3) && (g_UiCommandModeD != 1)) && (g_UiCommandModeD != 2)) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_SubtractCurrentCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS,0,0,0);
-      }
+      InGameCommand_Issue<TerrainEditBuffer_SubtractCurrentCellMaterialBytes>(0,0,0);
     }
     break;
   case EDITOR_MODE_UNIT_PLACEMENT:
@@ -1010,13 +851,7 @@ void InGameUiCommand_EndInteractionByMode
       placementSubMode = g_UiCommandModeB;
     }
     if (placementSubMode != 1) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerRuntime_ClearPlacementArmy(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_CLEAR_ARMY,0,0,0);
-      }
+      InGameCommand_Issue<PlayerRuntime_ClearPlacementArmy>(0,0,0);
     }
   }
   return;
@@ -1031,31 +866,13 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 {
   switch(g_UiCommandModeG) {
   case EDITOR_MODE_TERRAIN_HEIGHT:
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
-    }
+    InGameCommand_Issue<SelectionPlayerRuntime_ClearTerrainEditSelectionState>(0,0,0);
     break;
   case EDITOR_MODE_TERRAIN_MATERIAL:
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
-    }
+    InGameCommand_Issue<SelectionPlayerRuntime_ClearTerrainEditSelectionState>(0,0,0);
     break;
   case EDITOR_MODE_UNIT_PLACEMENT:
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
-    }
+    InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
   }
   return;
 }
@@ -1117,12 +934,6 @@ static void EditorSlot_RebuildTerrainOccupancyAndVisualState(void *callbackConte
 
 {
   ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback((WorldRuntimeContext *)callbackContext,node);
-}
-
-static void EditorSlot_WorldOverlay(uint32_t releaseMode,WorldRuntimeContext *worldRuntime)
-
-{
-  InGameWorldOverlay_RebuildOrReleaseTransientMarkers((GraphicsBooleanState)releaseMode,worldRuntime);
 }
 
 static void EditorSlot_ResetNotificationButtonCursor(WorldRuntimeContext *worldRuntime)
@@ -1279,7 +1090,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
     UiCommandModeG_HideSurfacePointMarker(&root->worldRuntime);
-    root->worldOverlayCallback = EditorSlot_WorldOverlay;
+    root->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
     (root->worldRuntime).selection.dispatchCommandCallback =
          InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
     (root->worldRuntime).selection.resolveContextActionPrimaryCallback =

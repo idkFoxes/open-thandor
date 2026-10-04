@@ -44,7 +44,7 @@ Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: 
 - [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_DeleteEntry`
 - [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeHuffmanRle`
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
-- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_Mount`
+- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_LoadEntryWithSize`
 - [`types.h`](source_guide/assets.md#file-assets-package-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-rom"></a>
@@ -220,6 +220,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
 - [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
+- [`model_views.h`](source_guide/gameplay.md#file-gameplay-army-model-views) - The class-specific views of the model runtime, model definition and model node as overlays of the memory they view (core/slot.h THANDOR_SLOT_OVERLAY), so the class dispatch tables ...
 - [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - no file comment; main functions `ArmyRuntime_UpdateMovementAndWaypoints`, `ArmyRuntime_StartRoutedMoveCommand`, `ArmyRuntime_ResetMovementStateFromModel`
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
 - [`placement_contact.cpp / placement_contact.h`](source_guide/gameplay.md#file-gameplay-army-placement-contact) - no file comment; main functions `ArmyPlacementContact_ApplyTerrainHeight`, `ArmyPlacementContact_ApplyWaterSurfaceHeight`, `ArmyPlacementContact_ApplyTerrainHeightAndNormal`
@@ -388,7 +389,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 
 - [`cipher.cpp / cipher.h`](source_guide/network.md#file-network-protocol-cipher) - no file comment; main functions `UiTransfer_EncryptPacketBlocks`, `UiTransfer_DecryptPacketBlocks`
 - [`command_exchange.cpp / command_exchange.h`](source_guide/network.md#file-network-protocol-command-exchange) - no file comment; main functions `FrontendTransfer_CopyCommandRecord`, `FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`, `FrontendTransfer_HostHandleCommandSubmitOrWaitAck`
-- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `CommandDispatch_ExecuteRecord`
+- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `InGameCommand_Issue`
 - [`frontend_session.cpp / frontend_session.h`](source_guide/network.md#file-network-protocol-frontend-session) - no file comment; main functions `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`, `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
 - [`lockstep.cpp / lockstep.h`](source_guide/network.md#file-network-protocol-lockstep) - no file comment; main functions `Lockstep_AllClientsSubmitted`, `Lockstep_ClearClientSubmissions`, `Lockstep_ResendBatchOrWait`
@@ -520,7 +521,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
 - [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
-- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiKeyModifiers_Match`, `UiCommandDispatch_Find`
+- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiCommandDispatch_Find`, `UiKeyModifiers_Match`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`

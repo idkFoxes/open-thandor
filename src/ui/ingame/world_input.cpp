@@ -536,7 +536,7 @@ static void InGameWorldInput_CommitCommandModeRelease
   if ((modifierModeMask & variantMask) == 0) {
     return;
   }
-  modeHandler = (InGamePointerModeHandler *)g_InGamePointerModeHandlers[modifierModeMask & variantMask];
+  modeHandler = g_InGamePointerModeHandlers[modifierModeMask & variantMask];
   /* The original pushes the same four arguments locally (local player id) and networked (the handler's code in
      the in-game command table; in the original its address minus INGAME_COMMAND_CODE_BASE). */
   InGameCommand_IssueHandler

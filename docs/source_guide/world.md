@@ -756,14 +756,14 @@ Shared state and set-up of the hexagonal radius scans around a world point (sigh
 - [`TerrainHexScan_Neighbor`](../../include/thandor/world/terrain/hex_scan.h#L45) - The neighbour of cell in direction Direction (0..5).
 - [`TerrainHexScan_MarkPolicy`](../../include/thandor/world/terrain/hex_scan.h#L73)
 - [`TerrainHexScan_TestPolicy`](../../include/thandor/world/terrain/hex_scan.h#L79)
-- [`TerrainHexScan_EndsAt`](../../include/thandor/world/terrain/hex_scan.h#L86) - One cell of a walk: true when the walk ends here (an edge cell, or a failing cell of a test policy).
-- [`TerrainHexScan_Leg`](../../include/thandor/world/terrain/hex_scan.h#L102) - Straight leg along Direction from cell: TERRAIN_SCAN_STEP_STRAIGHT steps per cell until the step limit.
-- [`TerrainHexScan_Sector`](../../include/thandor/world/terrain/hex_scan.h#L120) - Sector Sector (0..5) between directions a = Sector and b = Sector + 1 (mod 6), from its first cell C+Da of the centre C: each spine cell S is visited, a leg runs along a from S+Da (step s+4); unless ...
-- [`TerrainHexScan_AllSectors`](../../include/thandor/world/terrain/hex_scan.h#L153) - The six sectors around centerCell (not visited itself), in the order 0..5, each from scan step 0; for a test policy the first failing sector ends the scan (left-to-right \|\|).
+- [`TerrainHexScan_EndsAt`](../../include/thandor/world/terrain/hex_scan.h#L89) - One cell of a walk: true when the walk ends here (an edge cell, or a failing cell of a test policy).
+- [`TerrainHexScan_Leg`](../../include/thandor/world/terrain/hex_scan.h#L112) - Straight leg along Direction from cell: TERRAIN_SCAN_STEP_STRAIGHT steps per cell until the step limit.
+- [`TerrainHexScan_Sector`](../../include/thandor/world/terrain/hex_scan.h#L130) - Sector Sector (0..5) between directions a = Sector and b = Sector + 1 (mod 6), from its first cell C+Da of the centre C: each spine cell S is visited, a leg runs along a from S+Da (step s+4); unless ...
+- [`TerrainHexScan_AllSectors`](../../include/thandor/world/terrain/hex_scan.h#L163) - The six sectors around centerCell (not visited itself), in the order 0..5, each from scan step 0; for a test policy the first failing sector ends the scan (left-to-right \|\|).
 
 **Data** (4 shared, 0 file-local): `g_TerrainScanRowStrideBytes`, `g_TerrainScanStepLimit`, `g_TerrainScanSharedSelectorValue`, `g_TerrainScanReferenceHeight`.
 
-**Called from** (6 files): [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_ScanDirection0` +11); [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightBand_CellFails` +2); [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_LevelCell`); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`).
+**Called from** (6 files): [`world/terrain/overlay_marking`](#file-world-terrain-overlay-marking) (`FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyToCell` +2); [`world/terrain/placement_tests`](#file-world-terrain-placement-tests) (`TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightBand_CellFails` +2); [`world/terrain/field_deformation`](#file-world-terrain-field-deformation) (`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors`, `TerrainHeightDelta_LevelCell`); [`world/terrain/sight`](#file-world-terrain-sight) (`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `TerrainProjectedOcclusion_TraceSector`); [`platform/selftest/hexscan_selftest`](platform.md#file-platform-selftest-hexscan-selftest) (`Thandor_SelfTestHexScan`); [`world/terrain/occupancy`](#file-world-terrain-occupancy) (`TerrainOccupancyBit2_MarkAroundWorldPoint`).
 
 **Includes:** `thandor/platform/bootstrap/image.h`.
 
@@ -835,19 +835,9 @@ No file comment; function families: `TerrainHeightBand_*` (2), `TerrainAuxHeight
 
 Line of sight over the terrain: the occlusion mask around a world point, traced along the six hexagon wedges and directions (fog-of-war visibility, not screen projection).
 
-**Functions** (13 public):
+**Functions** (1 public, 1 file-local):
 
-- [`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`](../../src/world/terrain/sight.cpp#L43) - Line-of-sight marking for one army (occupancy rebuild): from the grid vertex nearest to the world point, ORs occupancyMaskBits (the bits of the factions that share the army's sight) into every cell ...
-- [`TerrainProjectedOcclusion_TraceWedge0`](../../src/world/terrain/sight.cpp#L106) - Line-of-sight marking for the sector between directions 0 (C+1) and 1 (C+1-W) of TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint.
-- [`TerrainProjectedOcclusion_TraceWedge1`](../../src/world/terrain/sight.cpp#L178) - Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like TerrainProjectedOcclusion_TraceWedge0: spine step C+1-2W (scan step +7), the direction-2 neighbour between ...
-- [`TerrainProjectedOcclusion_TraceWedge2`](../../src/world/terrain/sight.cpp#L250) - Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like TerrainProjectedOcclusion_TraceWedge0: spine step C-1-W (scan step +7), the direction-3 neighbour between two ...
-- [`TerrainProjectedOcclusion_TraceWedge3`](../../src/world/terrain/sight.cpp#L318) - Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like TerrainProjectedOcclusion_TraceWedge0: spine step C-2+W (scan step +7), the direction-4 neighbour between two ...
-- [`TerrainProjectedOcclusion_TraceWedge4`](../../src/world/terrain/sight.cpp#L391) - Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like TerrainProjectedOcclusion_TraceWedge0: spine step C-1+2W (scan step +7), the direction-5 neighbour between ...
-- [`TerrainProjectedOcclusion_TraceWedge5`](../../src/world/terrain/sight.cpp#L464) - Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like TerrainProjectedOcclusion_TraceWedge0: spine step C+1+W (scan step +7), the direction-0 neighbour between two ...
-- [`TerrainProjectedOcclusion_ScanDirection0`](../../src/world/terrain/sight.cpp#L533) - Line-of-sight leg along direction 0 (C+1, right): each cell's surface height (terrain plus positive water) above the eye (g_TerrainScanReferenceHeight) is scaled by the per-step table ...
-- [`TerrainProjectedOcclusion_ScanDirection1`](../../src/world/terrain/sight.cpp#L568) - Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
-- [`TerrainProjectedOcclusion_ScanDirection2`](../../src/world/terrain/sight.cpp#L602) - Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
-- 3 more: `TerrainProjectedOcclusion_ScanDirection3`, `TerrainProjectedOcclusion_ScanDirection4`, `TerrainProjectedOcclusion_ScanDirection5`
+- [`TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`](../../src/world/terrain/sight.cpp#L98) - Line-of-sight marking for one army (occupancy rebuild): from the grid vertex nearest to the world point, ORs occupancyMaskBits (the bits of the factions that share the army's sight) into every cell ...
 
 **Data** (0 shared, 1 file-local): `g_TerrainHeightDeltaScaleByStepQ12`.
 
@@ -855,7 +845,7 @@ Line of sight over the terrain: the occlusion mask around a world point, traced 
 
 **Depends on** (2 files, names used): [`world/terrain/hex_scan`](#file-world-terrain-hex-scan) (5), [`world/terrain/field_sampling`](#file-world-terrain-field-sampling) (1).
 
-**Includes:** `thandor/platform/bootstrap/image.h`.
+**Includes:** `thandor/world/terrain/hex_scan.h`, `thandor/platform/bootstrap/image.h`.
 
 <a id="file-world-terrain-types"></a>
 #### `types.h`

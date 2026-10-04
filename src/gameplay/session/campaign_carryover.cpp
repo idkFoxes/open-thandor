@@ -192,14 +192,13 @@ void OldUnitRuntime_MergeMasksAndReplayRecords()
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
       recordsRemaining--;
     } while (recordsRemaining != 0);
-    /* signature differs: the callbacks' context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
               (worldRuntime,
-               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
+               THANDOR_SLOT(ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback),
                worldRuntime);
     WorldRuntime_ForEachOwnerListNode
               (worldRuntime,
-               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+               THANDOR_SLOT(ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback),
                worldRuntime);
     FieldGrid_ClassifyCellFlagsToRuntimeByte
               ((runtimeRoot->worldRuntime).activeFactionRuntimeIndex,

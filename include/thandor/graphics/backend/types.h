@@ -134,7 +134,7 @@ using GraphicsEndSceneProc = void ();
 using GraphicsSetViewportProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);
 using SoftwareBuildPixelPackTablesProc = void (int32_t colorScaleQ16, int32_t colorBiasQ16);
 using SoftwareDrawQueueProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);
-using SoftwareFramebufferCreateProc = SoftwareFramebufferAccess * (uint32_t bytesPerPixel, uint32_t height, uint32_t width, uint32_t * outError);
+using SoftwareFramebufferCreateProc = SoftwareFramebufferAccess * (SoftwareFramebufferPixelSize bytesPerPixel, GraphicsPixelDimension height, GraphicsPixelDimension width, uint32_t * outError);
 using SoftwareRasterHandler = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_TYPES_H */

@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = THANDOR_FN(SoftwareFramebuffer_Create);
+THANDOR_ALIGN(8) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = &SoftwareFramebuffer_Create;
 
 static SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = nullptr;
 
@@ -27,9 +27,9 @@ int32_t g_SoftwareColorBiasQ16 = 0;
 
 SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {0};
 
-SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = THANDOR_FN(SoftwarePixelFormat_BaseDisplayModeHook);
+SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = &SoftwarePixelFormat_BaseDisplayModeHook;
 
-SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = THANDOR_FN(SoftwarePixelFormat_BuildChannelPackTables);
+SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = &SoftwarePixelFormat_BuildChannelPackTables;
 
 /* Initial g_GraphicsSetDisplayMode hook of the software pixel format: allocates the
    SoftwarePixelPackTables once and rebuilds them through g_SoftwareBuildPixelPackTables with the current colour

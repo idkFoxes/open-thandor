@@ -145,9 +145,8 @@ void InGameRuntime_ShutdownAndReleaseResources()
   if (inGameRoot != nullptr) {
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
-    /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
-              (world,(WorldRuntimeNodeTraversalCallback *)WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
+              (world,THANDOR_SLOT(WorldRuntimeNode_ReleaseShutdownBindingsCallback),world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi).previousRoot != nullptr) {
       UiRootStack_Pop(&inGameRoot->rootUi);
@@ -297,9 +296,7 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
     return false;
   }
   /* world input and command callbacks, camera limits, and the step hook for the world runtime */
-  /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
-  inGameRoot->worldOverlayCallback =
-       (void (*)(uint32_t, WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+  inGameRoot->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
   (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
        InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
   (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -312,9 +309,8 @@ Bool8 InGameSession_CreateRoot(SelectionInfoEntitySlots *localPlayerInfoSlots,In
        InGameWorldInput_UpdateDragSelectionAndCamera;
   (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
        InGameWorldInput_CommitPointerAction;
-  /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
   (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-       (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
+       THANDOR_SLOT(InGameUiRuntime_ResetNotificationButtonCursor);
   (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
        InGameUiRuntime_DispatchWorldContextActionCallback;
   (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;

@@ -135,29 +135,72 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
              (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
 }
 
-/* Installs the menu room's handlers on its 3D pointer-context control (menuRoomModelView); they do not all match the
-   generic callback field types, hence the casts. */
+/* Adapters from the generic model-pointer callback slots (FrontendModelPointerContext, graphics/render/types.h) to
+   the menu room's handlers, whose parameters are typed differently: the hit metric is an int in the slot and a
+   uint32_t in the handlers, the pointer context arrives as FrontendModelPointerHitContext * and the handlers take it
+   as the FrontendPointerSceneRuntimeView of the same node (or as an unused uint32_t), the pointed model node as
+   void * (hover) or as its 32-bit address (FrontendCallbackArgument5; every address is below 2 GB, core/ptr32.h).
+   The press/drag/release slots return a value nobody reads (FrontendModelPointerContext_NonRight*), so the
+   adapters of the void handlers return 0. */
+static uint32_t FrontendMenuRoomSlot_UpdatePointerContextAndSceneView
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,int hitMetric,
+          ModelRuntimeNode *pointedModelNode,FrontendModelPointerHitContext *pointerContext)
+
+{
+  return FrontendRuntime_UpdatePointerContextAndSceneView
+                   (callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,pointedModelNode,
+                    (FrontendPointerSceneRuntimeView *)pointerContext);
+}
+
+static uint32_t FrontendMenuRoomSlot_PressNoOp
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,int hitMetric,
+          ModelRuntimeNode *pointedModelNode,FrontendModelPointerHitContext *pointerContext)
+
+{
+  FrontendMenuRoom_PressNoOp(callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
+                             (uint32_t)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+  return 0;
+}
+
+static uint32_t FrontendMenuRoomSlot_DragNoOp
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,int hitMetric,
+          ModelRuntimeNode *pointedModelNode,FrontendModelPointerHitContext *pointerContext)
+
+{
+  FrontendMenuRoom_DragNoOp(callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
+                            (uint32_t)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+  return 0;
+}
+
+static uint32_t FrontendMenuRoomSlot_ExecuteClickedRomAction
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,int hitMetric,
+          ModelRuntimeNode *pointedModelNode,FrontendModelPointerHitContext *pointerContext)
+
+{
+  FrontendMenuRoom_ExecuteClickedRomAction
+            (callbackArgument1,callbackArgument2,callbackArgument3,(uint32_t)hitMetric,
+             (FrontendCallbackArgument5)(uintptr_t)pointedModelNode,(uint32_t)(uintptr_t)pointerContext);
+  return 0;
+}
+
+static void FrontendMenuRoomSlot_StopCameraFlight(FrontendModelPointerContext *pointerContext)
+
+{
+  FrontendMenuRoom_StopCameraFlight((uint32_t)(uintptr_t)pointerContext);
+}
+
+/* Installs the menu room's handlers on its 3D pointer-context control (menuRoomModelView), through the
+   FrontendMenuRoomSlot_ adapters above where the handler's parameters differ from the slot's. */
 static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerContext *pointerContext)
 {
-  using FrontendModelPointerResolvedActionProc = uint32_t
-          (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
-
-  pointerContext->keyboardFallback =
-       (Bool8 (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
-       FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
-  pointerContext->hoverCursorCallback =
-       (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-  pointerContext->heldButtonCursorCallback =
-       (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-  pointerContext->buttonPressCallback =
-       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_PressNoOp;
-  pointerContext->buttonDragCallback =
-       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_DragNoOp;
-  pointerContext->buttonReleaseCallback =
-       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_ExecuteClickedRomAction;
+  pointerContext->keyboardFallback = UI_SLOT(FrontendRuntime_DispatchCommandByCodeAndModifierFlags);
+  pointerContext->hoverCursorCallback = FrontendMenuRoomSlot_UpdatePointerContextAndSceneView;
+  pointerContext->heldButtonCursorCallback = FrontendMenuRoomSlot_UpdatePointerContextAndSceneView;
+  pointerContext->buttonPressCallback = FrontendMenuRoomSlot_PressNoOp;
+  pointerContext->buttonDragCallback = FrontendMenuRoomSlot_DragNoOp;
+  pointerContext->buttonReleaseCallback = FrontendMenuRoomSlot_ExecuteClickedRomAction;
   pointerContext->clearTransientStateCallback = 0;
-  pointerContext->rightClickCallback =
-       (void (*)(FrontendModelPointerContext *))FrontendMenuRoom_StopCameraFlight;
+  pointerContext->rightClickCallback = FrontendMenuRoomSlot_StopCameraFlight;
   pointerContext->renderSpinLock = (RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock;
   pointerContext->renderSpinLockReleaseCallback = Frontend_StateTick;
 }

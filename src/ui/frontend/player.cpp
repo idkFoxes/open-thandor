@@ -43,73 +43,25 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
   if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
     RichTextCommandStream_CopyToNarrow
               (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textBuffer);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      /* the in-game "all recipients" mask; the lobby handler ignores it */
-      FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById(g_LocalPlayerRuntimeId,0,0,PLAYER_CHAT_RECIPIENTS_ALL);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHAT_BEGIN,0,0,PLAYER_CHAT_RECIPIENTS_ALL);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[0].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payload3);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payload3);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[1].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payload3);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payload3);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[2].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payload3);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payload3);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[3].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payload3);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payload1,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payload2,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payload3);
-    }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerMessageBuffer_PublishTextById(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHAT_PUBLISH,0,0,0);
-    }
+    /* the in-game "all recipients" mask; the lobby handler ignores it */
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById>(0,0,PLAYER_CHAT_RECIPIENTS_ALL);
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
+              (g_UiSevenSlotCommandPayloadText.triples[0].payload1,
+               g_UiSevenSlotCommandPayloadText.triples[0].payload2,
+               g_UiSevenSlotCommandPayloadText.triples[0].payload3);
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
+              (g_UiSevenSlotCommandPayloadText.triples[1].payload1,
+               g_UiSevenSlotCommandPayloadText.triples[1].payload2,
+               g_UiSevenSlotCommandPayloadText.triples[1].payload3);
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
+              (g_UiSevenSlotCommandPayloadText.triples[2].payload1,
+               g_UiSevenSlotCommandPayloadText.triples[2].payload2,
+               g_UiSevenSlotCommandPayloadText.triples[2].payload3);
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_AppendTripleById>
+              (g_UiSevenSlotCommandPayloadText.triples[3].payload1,
+               g_UiSevenSlotCommandPayloadText.triples[3].payload2,
+               g_UiSevenSlotCommandPayloadText.triples[3].payload3);
+    FrontendCommand_Issue<FrontendPlayerMessageBuffer_PublishTextById>(0,0,0);
     textEditControl->cursorIndex = 0;
     textEditControl->selectionStart = 0;
     textEditControl->selectionEnd = 0;
@@ -169,13 +121,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(UiNodeBase *source)
   uint32_t consensusValue;
   
   consensusValue = ((UiSelectableControl *)source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_SetConsensusValueAndRefresh(g_LocalPlayerRuntimeId,0,0,consensusValue);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SET_CONSENSUS_VALUE,0,0,consensusValue);
-  }
+  FrontendCommand_Issue<FrontendPlayerRuntime_SetConsensusValueAndRefresh>(0,0,consensusValue);
   return;
 }
 
@@ -826,12 +772,7 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
     }
     if (g_FrontendPlayerRuntimeBlocks->factionAssignment.readyOrWaitState < 2) {
       /* always networked here, so the direct call is never taken */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
-        return;
-      }
-      FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
+      InGameCommand_Issue<FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus>(0,0,0);
       return;
     }
   }
@@ -1244,12 +1185,7 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
     }
     if (g_FrontendPlayerRuntimeBlocks->factionAssignment.readyOrWaitState < 2) {
       /* always networked here, so the direct call is never taken */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
-        return;
-      }
-      FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
+      FrontendCommand_Issue<FrontendPlayerRuntime_RecordReadyAndUpdateWaitState>(0,0,0);
       return;
     }
   }

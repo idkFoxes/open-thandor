@@ -665,10 +665,10 @@ void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,Selecti
 
 InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {
     /* 0 */ nullptr,
-    /* 1 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane1),
-    /* 2 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane2),
-    /* 3 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType3),
-    /* 4 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType4),
-    /* 5 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType5),
-    /* 6 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType6),
-    /* 7 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType7)};
+    /* 1 */ THANDOR_SLOT(InGameSelection_SetAircraftPadTargetLane1),
+    /* 2 */ THANDOR_SLOT(InGameSelection_SetAircraftPadTargetLane2),
+    /* 3 */ THANDOR_SLOT(SelectionMarkerCoordinates_ApplyType3),
+    /* 4 */ THANDOR_SLOT(SelectionMarkerCoordinates_ApplyType4),
+    /* 5 */ THANDOR_SLOT(SelectionMarkerCoordinates_ApplyType5),
+    /* 6 */ THANDOR_SLOT(SelectionMarkerCoordinates_ApplyType6),
+    /* 7 */ THANDOR_SLOT(SelectionMarkerCoordinates_ApplyType7)};

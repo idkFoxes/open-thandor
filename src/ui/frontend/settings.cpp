@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/settings.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/controls/settings_option.h>
 
 /* Module data. */
 
@@ -21,15 +22,8 @@ IDirectSoundBuffer *g_FrontendMusicActiveBuffer = nullptr;
 void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_SetGameSpeedPercent(g_LocalPlayerRuntimeId,0,0,control->boundValue);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SET_GAME_SPEED,0,0,control->boundValue);
-  }
-  PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_GAME_SPEED_PERCENT);
-  return;
+  FrontendCommand_Issue<FrontendSession_SetGameSpeedPercent>(0,0,control->boundValue);
+  PersistentOption_StoreSlider(control,PERSISTENT_SETTING_GAME_SPEED_PERCENT);
 }
 
 /* Handler of the gameplay settings checkbox with action 0x2049: stores its state as
@@ -39,20 +33,7 @@ void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *contro
 void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL);
 }
 
 /* Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
@@ -61,8 +42,7 @@ void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *c
 void FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
-  PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  return;
+  PersistentOption_StoreSlider(control,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
 }
 
 /* Handler of the "Automatic zoom off" checkbox (autoZoomOffCheckbox, action 0x203C, slot 60 of
@@ -71,20 +51,7 @@ void FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *contro
 void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF);
 }
 
 /* Handler of the "Automatic rotation off" checkbox (autoRotationOffCheckbox, action 0x203D, slot 61 of
@@ -93,20 +60,7 @@ void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF);
 }
 
 /* Handler of the "Link rotation/zoom" checkbox (FRONTEND_ACTION_LINK_ROTATION_ZOOM, slot 62 of
@@ -116,22 +70,15 @@ void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *contr
 void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
+                                 [control](Bool8 isSelected) {
+    if (isSelected) {
+      UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
+    }
+    else {
+      UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
+    }
+  });
 }
 
 /* Handler of the "Link rotation/tilt" checkbox (FRONTEND_ACTION_LINK_ROTATION_TILT, slot 63 of
@@ -141,22 +88,15 @@ void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_TILT;
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_TILT;
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_TILT,
+                                 [control](Bool8 isSelected) {
+    if (isSelected) {
+      UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
+    }
+    else {
+      UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
+    }
+  });
 }
 
 /* Handler of action 0x2051 (slot 81 of g_FrontendUiActionHandlersPage20): stores the checkbox state as
@@ -167,20 +107,7 @@ void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_HIDE_PANEL;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_HIDE_PANEL;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_HIDE_PANEL);
 }
 
 /* Opens the options page (FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) and loads its controls from the
@@ -458,12 +385,7 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 void FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
-  g_ModelLodDepthThresholdQ8 = value;
-  return;
+  g_ModelLodDepthThresholdQ8 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
 }
 
 /* Handler of the three texture quality choices (action 0x2017, slot 23 of g_FrontendUiActionHandlersPage20):
@@ -638,23 +560,9 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
-  uint32_t currentAudioFlags;
-  uint32_t reverseStereoBit;
-  int32_t reverseStereoMask;
-  Bool8 isSelected;
-
-  reverseStereoBit = 0;
-  reverseStereoMask = 0;
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    reverseStereoBit = PERSISTENT_SOUND_OPTION_REVERSE_STEREO;
-    reverseStereoMask = -1;
-  }
-  currentAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  g_ReverseStereoMask = reverseStereoMask;
-  PersistentSettings_Write(reverseStereoBit | currentAudioFlags & ~PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_SOUND_OPTION_FLAGS,PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
+                                 [](Bool8 isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
+                                 PERSISTENT_SOUND_OPTION_DEFAULT);
 }
 
 /* Handler of the effects volume slider (FRONTEND_ACTION_EFFECTS_GAIN, slot 27 of
@@ -666,11 +574,9 @@ void FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 {
   PersistentSettingsValue value;
 
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_EFFECTS_GAIN);
+  value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_SoundEffectsGainQ15 = value;
   g_UiSoundGainQ15 = value;
-  return;
 }
 
 /* Handler of the movie volume slider (FRONTEND_ACTION_MOVIE_GAIN, slot 28 of g_FrontendUiActionHandlersPage20):
@@ -679,12 +585,7 @@ void FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 void FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
-  g_MovieDefaultAudioGainQ15 = value;
-  return;
+  g_MovieDefaultAudioGainQ15 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
 }
 
 /* Handler of the movie event volume slider (FRONTEND_ACTION_MOVIE_EVENT_GAIN, slot 78 of
@@ -694,12 +595,7 @@ void FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 void FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
-  g_MovieAlternateAudioGainQ15 = value;
-  return;
+  g_MovieAlternateAudioGainQ15 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
 }
 
 /* Handler of the music volume slider (FRONTEND_ACTION_MUSIC_GAIN, slot 29 of g_FrontendUiActionHandlersPage20):
@@ -711,8 +607,6 @@ void FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 {
   PersistentSettingsValue value;
 
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MUSIC_GAIN);
+  value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MUSIC_GAIN);
   g_SoundSetVoiceGains(value,value,g_FrontendMusicActiveBuffer);
-  return;
 }

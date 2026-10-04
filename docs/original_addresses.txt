@@ -25,7 +25,7 @@
 0x004027AC  data      g_LocaleGetDefaultTelephoneCountryCode                            src/platform/system/time_locale.cpp
 0x004027B4  data      g_LocaleCopyDefaultComputerLabelUtf16                             src/platform/system/time_locale.cpp
 0x004027B8  data      g_CPUDetectFeatures                                               src/platform/system/time_locale.cpp
-0x004027BC  data      g_Utf16StringCompareAsciiCaseInsensitiveFlags                     src/ui/controls/lists.cpp
+0x004027BC  data      g_Utf16StringCompareAsciiCaseInsensitiveFlags                     (removed)
 0x004027C0  data      g_LocaleCountryCodeOverride                                       src/core/settings/persistent.cpp
 0x004027C4  data      g_CpuFeatureFlags                                                 src/platform/bootstrap/runtime.cpp
 0x004027D0  data      g_FileSystemConfigCharacterNormalizationMap                       src/platform/filesystem/win32.cpp
@@ -375,7 +375,7 @@
 0x00485830  data      g_GraphicsTextureSetReleasePackage                                src/graphics/resources/texture_set.cpp
 0x00485834  data      g_GraphicsCreateTextureSet                                        src/graphics/resources/texture_set.cpp
 0x00485838  data      g_GraphicsDestroyTextureSet                                       src/graphics/resources/texture_set.cpp
-0x0048583C  data      g_GraphicsRefreshTextureColor                                     src/graphics/resources/texture_set.cpp
+0x0048583C  data      g_GraphicsRefreshTextureColor                                     (removed)
 0x00485840  data      g_GraphicsRefreshTextureAlpha                                     src/graphics/resources/texture_set.cpp
 0x00485844  data      g_GraphicsPrimitiveQueueRadixSortProc                             src/graphics/render/primitives.cpp
 0x00485848  data      g_GraphicsOffscreenRenderModelListToTextureSource                 src/graphics/render/offscreen.cpp
@@ -467,7 +467,7 @@
 0x004A8EAC  data      g_SoftwarePixelFormatConfig                                       src/graphics/backend/software_display_mode.cpp
 0x004A8ED0  data      g_GraphicsSetDisplayMode                                          src/graphics/backend/software_display_mode.cpp
 0x004A8ED8  data      g_SoftwareFramebufferCreate                                       src/graphics/backend/software_display_mode.cpp
-0x004A8EDC  data      g_SoftwareFramebufferDestroy                                      src/graphics/backend/software.cpp
+0x004A8EDC  data      g_SoftwareFramebufferDestroy                                      (removed)
 0x004A8EE0  data      g_GraphicsFramebufferPresent                                      src/graphics/resources/framebuffer.cpp
 0x004A8EE4  data      g_GraphicsFramebufferCaptureRegion                                src/graphics/resources/framebuffer.cpp
 0x004A8EE8  data      g_SoftwareBuildPixelPackTables                                    src/graphics/backend/software_display_mode.cpp
@@ -487,7 +487,7 @@
 0x004A8F20  data      g_GraphicsTextureSourceBlitTiledSaturatedAddRgb                   (removed, unused)
 0x004A8F24  data      g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd                    (removed, unused)
 0x004A8F28  data      g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd               (removed, unused)
-0x004A8F2C  data      g_GraphicsTextureSourceDecomposeSubresourceRegionsCf              src/graphics/resources/texture_decompose.cpp
+0x004A8F2C  data      g_GraphicsTextureSourceDecomposeSubresourceRegionsCf              (removed)
 0x004A8F30  data      g_GraphicsFramebufferFillRectArgb                                 src/graphics/resources/framebuffer.cpp
 0x004A8F34  data      g_GraphicsFramebufferCopyRegionToOrigin                           (removed, unused)
 0x004A8F38  data      g_GraphicsFramebufferCopyOriginToRegion                           (removed, unused)
@@ -1146,18 +1146,18 @@
 0x005063A4  data      g_TerrainScanStepLimit                                            src/world/terrain/hex_scan.cpp
 0x005063A8  data      g_TerrainScanSharedSelectorValue                                  src/world/terrain/hex_scan.cpp
 0x005063AC  data      g_TerrainScanReferenceHeight                                      src/world/terrain/hex_scan.cpp
-0x005063B0  function  TerrainProjectedOcclusion_ScanDirection0                          src/world/terrain/sight.cpp
-0x00506430  function  TerrainProjectedOcclusion_ScanDirection1                          src/world/terrain/sight.cpp
-0x005064C0  function  TerrainProjectedOcclusion_ScanDirection2                          src/world/terrain/sight.cpp
-0x00506540  function  TerrainProjectedOcclusion_ScanDirection3                          src/world/terrain/sight.cpp
-0x005065C0  function  TerrainProjectedOcclusion_ScanDirection4                          src/world/terrain/sight.cpp
-0x00506650  function  TerrainProjectedOcclusion_ScanDirection5                          src/world/terrain/sight.cpp
-0x005066D0  function  TerrainProjectedOcclusion_TraceWedge0                             src/world/terrain/sight.cpp
-0x005067D0  function  TerrainProjectedOcclusion_TraceWedge1                             src/world/terrain/sight.cpp
-0x005068D0  function  TerrainProjectedOcclusion_TraceWedge2                             src/world/terrain/sight.cpp
-0x005069D0  function  TerrainProjectedOcclusion_TraceWedge3                             src/world/terrain/sight.cpp
-0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             src/world/terrain/sight.cpp
-0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             src/world/terrain/sight.cpp
+0x005063B0  function  TerrainProjectedOcclusion_ScanDirection0                          (merged into TerrainHexScan_Leg)
+0x00506430  function  TerrainProjectedOcclusion_ScanDirection1                          (merged into TerrainHexScan_Leg)
+0x005064C0  function  TerrainProjectedOcclusion_ScanDirection2                          (merged into TerrainHexScan_Leg)
+0x00506540  function  TerrainProjectedOcclusion_ScanDirection3                          (merged into TerrainHexScan_Leg)
+0x005065C0  function  TerrainProjectedOcclusion_ScanDirection4                          (merged into TerrainHexScan_Leg)
+0x00506650  function  TerrainProjectedOcclusion_ScanDirection5                          (merged into TerrainHexScan_Leg)
+0x005066D0  function  TerrainProjectedOcclusion_TraceWedge0                             (merged into TerrainHexScan_Sector)
+0x005067D0  function  TerrainProjectedOcclusion_TraceWedge1                             (merged into TerrainHexScan_Sector)
+0x005068D0  function  TerrainProjectedOcclusion_TraceWedge2                             (merged into TerrainHexScan_Sector)
+0x005069D0  function  TerrainProjectedOcclusion_TraceWedge3                             (merged into TerrainHexScan_Sector)
+0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             (merged into TerrainHexScan_Sector)
+0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             (merged into TerrainHexScan_Sector)
 0x00506CD0  function  TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint          src/world/terrain/sight.cpp
 0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               (merged into TerrainHexScan_Leg)
 0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               (merged into TerrainHexScan_Leg)
