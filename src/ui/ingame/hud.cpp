@@ -238,25 +238,12 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts()
     /* bit 0 of g_InGameReadyStateToggleFlags: the slow state is currently reported */
     if ((g_InGameReadyStateToggleFlags & 1) == 0) {
       if (g_RenderedFrameCountSinceDebugRefresh < 13) {
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerRuntime_SetSlowRenderingFlagById(g_LocalPlayerRuntimeId,0,0,PLAYER_SESSION_FLAG_SLOW_RENDERING);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SLOW_RENDERING,0,0,
-                                                      PLAYER_SESSION_FLAG_SLOW_RENDERING);
-        }
+        InGameCommand_Issue<FrontendPlayerRuntime_SetSlowRenderingFlagById>(0,0,PLAYER_SESSION_FLAG_SLOW_RENDERING);
         g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
       }
     }
     else if (12 < g_RenderedFrameCountSinceDebugRefresh) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_SetSlowRenderingFlagById(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SLOW_RENDERING,0,0,0);
-      }
+      InGameCommand_Issue<FrontendPlayerRuntime_SetSlowRenderingFlagById>(0,0,0);
       g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
     }
     g_RenderedFrameCountSinceDebugRefresh = 0;
@@ -591,27 +578,11 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
        reads it as rootControl[21].sprite.primaryTextureSource, see the static_assert above) */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
       rootFactionValue = ((WorldRuntimeContext *)INGAME_UI(rootControl,worldView))->activeFactionRuntimeIndex;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_AdvancePairwiseRelationState
-                  (g_LocalPlayerRuntimeId,0,rowFactionIndex,(FactionRuntimeIndex)rootFactionValue);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_ADVANCE_RELATION,0,rowFactionIndex,(CommandPayload)rootFactionValue);
-      }
+      InGameCommand_Issue<GameFactionRuntime_AdvancePairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
     else {
       rootFactionValue = ((WorldRuntimeContext *)INGAME_UI(rootControl,worldView))->activeFactionRuntimeIndex;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_ResetPairwiseRelationState
-                  (g_LocalPlayerRuntimeId,0,rowFactionIndex,(FactionRuntimeIndex)rootFactionValue);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_RESET_RELATION,0,rowFactionIndex,(CommandPayload)rootFactionValue);
-      }
+      InGameCommand_Issue<GameFactionRuntime_ResetPairwiseRelationState>(0,rowFactionIndex,rootFactionValue);
     }
   }
   return;
