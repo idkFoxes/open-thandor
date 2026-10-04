@@ -63,7 +63,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
   for (assetIndex = 0; assetIndex < g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        assetIndex++) {
     if (armyAssetRecord ==
-        Thandor_U32ToPointer<ArmyAssetRecordPrefix>(g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds[assetIndex])) { /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+        Thandor_U32ToPointer<ArmyAssetRecordPrefix>(g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds[assetIndex])) { /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
       return false;
     }
   }
@@ -78,7 +78,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
         ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) ||
          (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
         (modelPayload[46] == 1)) {
-      activeAssetRecord = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(modelPayload[24]); /* 5f-format: ModelRuntimeSlot class state word 24 (asset in production) */
+      activeAssetRecord = Thandor_U32ToPointer<ArmyAssetRecordPrefix>(modelPayload[24]); /* 32-bit format field: ModelRuntimeSlot class state word 24 (asset in production) */
       if (armyAssetRecord == activeAssetRecord) {
         return false;
       }
@@ -108,7 +108,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
     if (factionRecord->secondaryArmyAssetCount >= FACTION_ARMY_ASSET_LIST_CAPACITY) {
       return;
     }
-    factionRecord->secondaryArmyAssetPointersOrIds[factionRecord->secondaryArmyAssetCount] = Thandor_PointerToU32(resolvedAsset); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    factionRecord->secondaryArmyAssetPointersOrIds[factionRecord->secondaryArmyAssetCount] = Thandor_PointerToU32(resolvedAsset); /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     factionRecord->secondaryArmyAssetCount++;
     repetitionCount--;
   } while (repetitionCount != 0);
@@ -175,7 +175,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   writeIndex = 0;
   assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
   while (assetsRemaining != 0) {
-    if ((Thandor_PointerToU32(armyDefinition) == queuedAssets[readIndex]) && (0 < (int)requestedCount)) { /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    if ((Thandor_PointerToU32(armyDefinition) == queuedAssets[readIndex]) && (0 < (int)requestedCount)) { /* 32-bit format field: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
       readIndex++;
       secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
       *secondaryCount = *secondaryCount - 1;
@@ -235,7 +235,7 @@ static Bool8 GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRe
 
   primaryAssets = factionRecord->primaryArmyAssetPointersOrIds;
   for (assetIndex = 0; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
-    if (armyDefinition == Thandor_U32ToPointer<const ArmyAssetRecordPrefix>(primaryAssets[assetIndex])) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+    if (armyDefinition == Thandor_U32ToPointer<const ArmyAssetRecordPrefix>(primaryAssets[assetIndex])) { /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       /* close the gap */
       for (; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
         primaryAssets[assetIndex] = primaryAssets[assetIndex + 1];
@@ -310,7 +310,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   if (assetCount < FACTION_ARMY_ASSET_LIST_CAPACITY) {
     /* primaryArmyAssetPointersOrIds[assetCount] */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[assetCount] =
-         (uint32_t)pendingAsset; /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+         (uint32_t)pendingAsset; /* 32-bit format field: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount++;
   }
   if (factionIndex == runtimeRoot->worldRuntime.activeFactionRuntimeIndex) {
