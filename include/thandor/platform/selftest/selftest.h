@@ -26,6 +26,10 @@
                     hash tests: log a hash over many results of the number formatter, the fixed-point math,
                     the keyboard layer, the software triangle setup and the movie encoder/decoder, to
                     compare two builds
+     tables         hashes of the tables computed at startup (sine table built with sin(), .sam cosine
+                    matrices, lighting/shading/software factor tables), to compare builds or compilers
+     sam            the .sam decoder on LCG bytes and an encoder round trip of a synthetic waveform, one hash
+                    line (no game files needed)
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
