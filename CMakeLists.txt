@@ -167,6 +167,7 @@ add_library(thandor_curated STATIC
     src/world/terrain/field_lighting.cpp
     src/world/terrain/field_raycast.cpp
     src/world/terrain/field_sampling.cpp
+    src/world/terrain/fog_visibility.cpp
     src/world/terrain/hex_scan.cpp
     src/world/terrain/occupancy.cpp
     src/world/terrain/overlay_marking.cpp

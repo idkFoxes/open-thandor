@@ -15,6 +15,7 @@
 #include <thandor/world/terrain/field_lighting.h>
 #include <thandor/world/terrain/field_raycast.h>
 #include <thandor/world/terrain/field_sampling.h>
+#include <thandor/world/terrain/fog_visibility.h>
 #include <thandor/world/terrain/grid.h>
 #include <thandor/world/terrain/hex_scan.h>
 #include <thandor/world/terrain/occupancy.h>
