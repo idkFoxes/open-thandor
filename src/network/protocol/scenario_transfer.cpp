@@ -8,6 +8,7 @@
 #include <thandor/network/protocol/scenario_transfer.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -46,6 +47,99 @@ static void FrontendScenarioTransfer_FinishReceive(uint32_t *receivedDwords)
   g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
 }
 
+/* The original unpacked every received asset unchecked; bounded here because sizes, offsets and packed streams
+   come from the network host: a malformed transfer (sizes beyond the received bytes, a stream the decoder
+   rejects, records or a path outside the decoded asset) is logged, the received buffer is freed and the
+   transfer ends without reporting the asset as received. Valid transfers pass every check. */
+static void FrontendScenarioTransfer_AbortReceive(uint32_t *receivedDwords,const char *assetName)
+{
+  Thandor_Log("FrontendScenarioTransfer: rejected malformed %s from the host",assetName);
+  FrontendScenarioTransfer_FinishReceive(receivedDwords);
+}
+
+/* Tells whether the packed streams of a bundle (headerBytes, then the streams of the given sizes) fit into the
+   receivedByteCount bytes of the transfer. */
+static bool FrontendScenarioTransfer_StreamsFit
+          (uint32_t receivedByteCount,uint32_t headerBytes,uint32_t firstStreamBytes,uint32_t secondStreamBytes,
+           uint32_t thirdStreamBytes)
+{
+  return (uint64_t)headerBytes + firstStreamBytes + secondStreamBytes + thirdStreamBytes <= receivedByteCount;
+}
+
+/* Tells whether a decoded level of levelBytes bytes holds its header and a terminated path at its path offset
+   (an offset, at most 0xFFFF, before a field grid is attached) whose extension WidePath_SetExtensionCode can
+   replace inside the asset: it writes up to four code units from behind the last '.' of the final component,
+   or appends '.' and four code units at the terminator when there is none. */
+static bool FrontendScenarioTransfer_LevelPathFits(const FrontendLoadedLevelAsset *levelAsset,uint32_t levelBytes)
+{
+  uint32_t pathOffset;
+  uint32_t pathCodeUnits;
+  const uint16_t *path;
+  uint32_t unitIndex;
+  uint32_t lastWrittenUnit;
+  bool hasExtension;
+
+  if (levelBytes < sizeof(FrontendLoadedLevelAsset)) {
+    return false;
+  }
+  pathOffset = (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
+  if ((0xffff < pathOffset) || (levelBytes <= pathOffset)) {
+    return false;
+  }
+  path = (const uint16_t *)((const uint8_t *)levelAsset + pathOffset);
+  pathCodeUnits = (levelBytes - pathOffset) / sizeof(uint16_t);
+  hasExtension = false;
+  lastWrittenUnit = 0;
+  for (unitIndex = 0; unitIndex < pathCodeUnits; unitIndex++) {
+    if (path[unitIndex] == 0) {
+      if (!hasExtension) {
+        lastWrittenUnit = unitIndex + 4; /* '.', three characters, terminator */
+      }
+      return lastWrittenUnit < pathCodeUnits;
+    }
+    if (path[unitIndex] == '\\') {
+      hasExtension = false;
+    }
+    else if (path[unitIndex] == '.') {
+      hasExtension = true;
+      lastWrittenUnit = unitIndex + 4; /* three characters and the terminator behind the '.' */
+    }
+  }
+  return false;
+}
+
+/* Tells whether a decoded catalog of catalogBytes bytes holds its header and the level, campaign and save
+   records its header counts (each section is packed 0x100 bytes per record at its offset). */
+static bool FrontendScenarioTransfer_CatalogFits(const ScenarioCatalogHeader *catalog,uint32_t catalogBytes)
+{
+  return (catalogBytes >= SCENARIO_CATALOG_HEADER_SIZE) &&
+         ((uint64_t)catalog->levelRecordsOffset +
+              (uint64_t)catalog->levelRecordCount * SCENARIO_CATALOG_RECORD_SIZE <= catalogBytes) &&
+         ((uint64_t)catalog->campaignRecordsOffset +
+              (uint64_t)catalog->campaignRecordCount * SCENARIO_CATALOG_RECORD_SIZE <= catalogBytes) &&
+         ((uint64_t)catalog->saveRecordsOffset +
+              (uint64_t)catalog->saveRecordCount * SCENARIO_CATALOG_RECORD_SIZE <= catalogBytes);
+}
+
+/* Tells whether a decoded campaign of campaignBytes bytes holds its header, at least one level record, all
+   levelRecordCount records, and a record of its first level (the start of the campaign looks it up). */
+static bool FrontendScenarioTransfer_CampaignFits(const CampaignAsset *campaignAsset,uint32_t campaignBytes)
+{
+  int32_t recordIndex;
+
+  if ((campaignBytes < offsetof(CampaignAsset,levels)) || (campaignAsset->levelRecordCount < 1) ||
+      ((uint64_t)campaignAsset->levelRecordCount * sizeof(CampaignLevelRecord) >
+       campaignBytes - offsetof(CampaignAsset,levels))) {
+    return false;
+  }
+  for (recordIndex = 0; recordIndex < campaignAsset->levelRecordCount; recordIndex++) {
+    if (campaignAsset->levels[recordIndex].levelId == campaignAsset->firstLevelId) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* The level's relative path (asset base + path offset) becomes <exe dir>\<level>.fld in
    g_LevelResourcePathScratchUtf16, the path the game uses for the field grid. */
 static void FrontendScenarioTransfer_SetFieldGridPathOfLevel(FrontendLoadedLevelAsset *levelAsset)
@@ -72,6 +166,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
   uint32_t payloadSizeBytes;
   uintptr_t checkedValue;
   ScenarioCatalogHeader *previousCatalog;
+  uint32_t previousCatalogUsedBytes;
   ScenarioCatalogRecordCount oldRecordCount;
   ScenarioCatalogRecordCount newRecordsRemaining;
   uint32_t *oldLevelRecords;
@@ -83,15 +178,28 @@ static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
   if (receivedDwords == NULL) {
     return;
   }
+  if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords < SCENARIO_CATALOG_HEADER_SIZE)) {
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"scenario catalog");
+    return;
+  }
   payloadSizeBytes = *receivedDwords;
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(payloadSizeBytes);
   changedLevelMask[1] = 0;
   changedLevelMask[2] = 0;
   changedLevelMask[3] = 0;
   previousCatalog = g_ScenarioCatalog;
+  previousCatalogUsedBytes = g_ScenarioCatalogUsedBytes;
   g_ScenarioCatalog = (ScenarioCatalogHeader *)checkedValue;
   g_ScenarioCatalogUsedBytes = payloadSizeBytes;
-  PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),NULL,NULL);
+  if (!PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),NULL,NULL) ||
+      !FrontendScenarioTransfer_CatalogFits(g_ScenarioCatalog,payloadSizeBytes)) {
+    /* keep the previous catalog */
+    g_MemoryApi.free(g_ScenarioCatalog);
+    g_ScenarioCatalog = previousCatalog;
+    g_ScenarioCatalogUsedBytes = previousCatalogUsedBytes;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"scenario catalog");
+    return;
+  }
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
   /* Mark every received level record (up to 96) that the previous catalog did not contain. */
   newRecordsRemaining = g_ScenarioCatalog->levelRecordCount;
@@ -133,12 +241,23 @@ static void FrontendScenarioTransfer_ProcessReceivedLevel(void)
   if (receivedDwords == NULL) {
     return;
   }
+  if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords < sizeof(FrontendLoadedLevelAsset))) {
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"level");
+    return;
+  }
   payloadSizeBytes = *receivedDwords;
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
   g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(payloadSizeBytes);
-  PckCodec_DecodeHuffmanRle
+  if (!PckCodec_DecodeHuffmanRle
             (payloadSizeBytes,(uint8_t *)g_FrontendLoadedLevelAsset,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),
-             NULL,NULL);
+             NULL,NULL) ||
+      !FrontendScenarioTransfer_LevelPathFits(g_FrontendLoadedLevelAsset,payloadSizeBytes)) {
+    /* the path offset field may hold anything: free the level alone */
+    g_MemoryApi.free(g_FrontendLoadedLevelAsset);
+    g_FrontendLoadedLevelAsset = NULL;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"level");
+    return;
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkTaskAssignmentReadyById(g_LocalPlayerRuntimeId,0,0,0);
@@ -157,17 +276,29 @@ static void FrontendScenarioTransfer_ProcessReceivedFieldGrid(void)
   uint32_t receivedByteCount;
   uint32_t payloadSizeBytes;
   uintptr_t checkedValue;
+  uint32_t previousPathState;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
   if (receivedDwords == NULL) {
     return;
   }
+  if ((receivedByteCount < sizeof(uint32_t)) || (*receivedDwords == 0) || (g_FrontendLoadedLevelAsset == NULL)) {
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"field grid");
+    return;
+  }
   payloadSizeBytes = *receivedDwords;
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(payloadSizeBytes);
+  previousPathState = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
   (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid
+  if (!PckCodec_DecodeFieldGrid
             (payloadSizeBytes,(FieldGridAsset *)checkedValue,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1),
-             NULL,NULL);
+             NULL,NULL)) {
+    /* the level keeps its path offset and no grid */
+    g_MemoryApi.free((void *)checkedValue);
+    (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = previousPathState;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"field grid");
+    return;
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelReceivedById(g_LocalPlayerRuntimeId,0,0,0);
@@ -193,30 +324,59 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
   uint8_t *levelRecordCursor;
   int levelRecordsRemaining;
   uintptr_t checkedValue;
+  bool decodeOk;
 
   receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
   if (receivedDwords == NULL) {
     return;
   }
   bundle = (ScenarioCampaignBundleHeader *)receivedDwords;
+  if ((receivedByteCount < sizeof(ScenarioCampaignBundleHeader)) ||
+      !FrontendScenarioTransfer_StreamsFit(receivedByteCount,sizeof(ScenarioCampaignBundleHeader),
+                                           bundle->levelEncodedBytes,bundle->campaignEncodedBytes,
+                                           bundle->fieldGridEncodedBytes) ||
+      (bundle->levelDecodedBytes < sizeof(FrontendLoadedLevelAsset)) || (bundle->campaignDecodedBytes == 0) ||
+      (bundle->fieldGridDecodedBytes == 0)) {
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
+    return;
+  }
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
   g_FrontendLoadedLevelAsset =
        (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(bundle->levelDecodedBytes);
-  PckCodec_DecodeHuffmanRle
-            (bundle->levelDecodedBytes,(uint8_t *)g_FrontendLoadedLevelAsset,bundle->levelEncodedBytes,
-             (uint8_t *)(bundle + 1),NULL,NULL);
+  decodeOk = PckCodec_DecodeHuffmanRle
+                 (bundle->levelDecodedBytes,(uint8_t *)g_FrontendLoadedLevelAsset,bundle->levelEncodedBytes,
+                  (uint8_t *)(bundle + 1),NULL,NULL) &&
+             FrontendScenarioTransfer_LevelPathFits(g_FrontendLoadedLevelAsset,bundle->levelDecodedBytes);
   campaignStream = (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes;
   g_FrontendLoadedCampaignAsset = FrontendScenarioTransfer_AllocateOrExit(bundle->campaignDecodedBytes);
-  PckCodec_DecodeHuffmanRle(bundle->campaignDecodedBytes,(uint8_t *)g_FrontendLoadedCampaignAsset,
-                            bundle->campaignEncodedBytes,campaignStream,NULL,NULL);
+  decodeOk = decodeOk &&
+             PckCodec_DecodeHuffmanRle(bundle->campaignDecodedBytes,(uint8_t *)g_FrontendLoadedCampaignAsset,
+                                       bundle->campaignEncodedBytes,campaignStream,NULL,NULL) &&
+             FrontendScenarioTransfer_CampaignFits((CampaignAsset *)g_FrontendLoadedCampaignAsset,
+                                                   bundle->campaignDecodedBytes);
+  if (!decodeOk) {
+    /* the level's path offset field may hold anything: free the level alone */
+    g_MemoryApi.free(g_FrontendLoadedLevelAsset);
+    g_FrontendLoadedLevelAsset = NULL;
+    g_MemoryApi.free(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
+    g_FrontendLoadedCampaignAsset = 0;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
+    return;
+  }
   levelAsset = g_FrontendLoadedLevelAsset;
   fieldGridStream = campaignStream + bundle->campaignEncodedBytes;
   /* afterwards the level's path offset field holds the received field grid */
   FrontendScenarioTransfer_SetFieldGridPathOfLevel(g_FrontendLoadedLevelAsset);
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(bundle->fieldGridDecodedBytes);
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid(bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,
-                           bundle->fieldGridEncodedBytes,fieldGridStream,NULL,NULL);
+  if (!PckCodec_DecodeFieldGrid(bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,
+                                bundle->fieldGridEncodedBytes,fieldGridStream,NULL,NULL)) {
+    FrontendScenarioTransfer_ReleaseLoadedLevelAsset(); /* the level and its grid */
+    g_MemoryApi.free(THANDOR_PTR(g_FrontendLoadedCampaignAsset));
+    g_FrontendLoadedCampaignAsset = 0;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"campaign bundle");
+    return;
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);
@@ -227,8 +387,8 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
   FrontendScenarioTransfer_FinishReceive(receivedDwords);
   /* The campaign starts at its first level (stored as the current level): find that level's record
      and build level\<name>.lev. levelRecordCursor is the asset base advanced by whole
-     CampaignLevelRecords, so its levels[0] is the record under the cursor. Without a match the cursor
-     ends behind the last record, as in the original. */
+     CampaignLevelRecords, so its levels[0] is the record under the cursor. The original lets the cursor end
+     behind the last record without a match; FrontendScenarioTransfer_CampaignFits rejected such a campaign. */
   campaignAsset = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
   levelRecordCursor = (uint8_t *)campaignAsset;
   levelRecordsRemaining = campaignAsset->levelRecordCount;
@@ -261,17 +421,35 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
     return;
   }
   bundle = (ScenarioLevelBundleHeader *)receivedDwords;
+  if ((receivedByteCount < sizeof(ScenarioLevelBundleHeader)) ||
+      !FrontendScenarioTransfer_StreamsFit(receivedByteCount,sizeof(ScenarioLevelBundleHeader),
+                                           bundle->levelEncodedBytes,bundle->fieldGridEncodedBytes,0) ||
+      (bundle->levelDecodedBytes < sizeof(FrontendLoadedLevelAsset)) || (bundle->fieldGridDecodedBytes == 0)) {
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"level bundle");
+    return;
+  }
   FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
   levelAsset = (FrontendLoadedLevelAsset *)FrontendScenarioTransfer_AllocateOrExit(bundle->levelDecodedBytes);
   g_FrontendLoadedLevelAsset = levelAsset;
-  PckCodec_DecodeHuffmanRle(bundle->levelDecodedBytes,(uint8_t *)levelAsset,bundle->levelEncodedBytes,
-                            (uint8_t *)(bundle + 1),NULL,NULL);
+  if (!PckCodec_DecodeHuffmanRle(bundle->levelDecodedBytes,(uint8_t *)levelAsset,bundle->levelEncodedBytes,
+                                 (uint8_t *)(bundle + 1),NULL,NULL) ||
+      !FrontendScenarioTransfer_LevelPathFits(levelAsset,bundle->levelDecodedBytes)) {
+    /* the path offset field may hold anything: free the level alone */
+    g_MemoryApi.free(levelAsset);
+    g_FrontendLoadedLevelAsset = NULL;
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"level bundle");
+    return;
+  }
   FrontendScenarioTransfer_SetFieldGridPathOfLevel(levelAsset);
   checkedValue = FrontendScenarioTransfer_AllocateOrExit(bundle->fieldGridDecodedBytes);
   (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)checkedValue; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
-  PckCodec_DecodeFieldGrid
+  if (!PckCodec_DecodeFieldGrid
             (bundle->fieldGridDecodedBytes,(FieldGridAsset *)checkedValue,bundle->fieldGridEncodedBytes,
-             (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes,NULL,NULL);
+             (uint8_t *)(bundle + 1) + bundle->levelEncodedBytes,NULL,NULL)) {
+    FrontendScenarioTransfer_ReleaseLoadedLevelAsset(); /* the level and its grid */
+    FrontendScenarioTransfer_AbortReceive(receivedDwords,"level bundle");
+    return;
+  }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkLevelLoadedById(g_LocalPlayerRuntimeId,0,0,0);

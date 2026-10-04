@@ -54,13 +54,36 @@ static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *received
   FrontendPlayerRuntimeRecord *playerBlock;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   int remainingPayloadDwords;
+  uint32_t remainingDecodedBytes;
 
-  PckCodec_DecodeHuffmanRle
-            (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),NULL,NULL);
+  /* The original decoded the host's size into the scratch buffer unchecked and read a record per player
+     whatever was decoded; bounded here because size and stream come from the host: a transfer shorter than its
+     size dword, a size beyond the scratch buffer or a stream the decoder rejects is dropped, and the merge
+     stops (logged) where the decoded records end. Valid tables decode and merge as before. */
+  if ((receivedByteCount < sizeof(PckDecodedByteCount)) || (*receivedBuffer > PACKAGE_SCRATCH_BUFFER_BYTES) ||
+      !PckCodec_DecodeHuffmanRle
+            (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),NULL,NULL)) {
+    Thandor_Log("FrontendMainLoop_TakeReceivedSnapshots: rejected malformed snapshot table (%u bytes received)",
+                receivedByteCount);
+    UiTransferMailbox_ClearReceivedState();
+    return;
+  }
+  remainingDecodedBytes = *receivedBuffer;
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
+    if ((remainingDecodedBytes < sizeof(FrontendSnapshotTransferFlags)) ||
+        (((*receivedFlagsCursor & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) &&
+         (remainingDecodedBytes - sizeof(FrontendSnapshotTransferFlags) < FRONTEND_SNAPSHOT_PAYLOAD_BYTES))) {
+      Thandor_Log("FrontendMainLoop_TakeReceivedSnapshots: snapshot table ends early (%u bytes decoded)",
+                  *receivedBuffer);
+      break;
+    }
+    remainingDecodedBytes = remainingDecodedBytes - sizeof(FrontendSnapshotTransferFlags);
+    if ((*receivedFlagsCursor & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+      remainingDecodedBytes = remainingDecodedBytes - FRONTEND_SNAPSHOT_PAYLOAD_BYTES;
+    }
     receivedTransferFlags = *receivedFlagsCursor;
     playerBlock->snapshotTransferFlags = playerBlock->snapshotTransferFlags | receivedTransferFlags;
     receivedFlagsCursor++;
@@ -362,8 +385,10 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
             (g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
   fieldGrid = (FieldGridAsset *)Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
   if (fieldGrid == NULL) {
-    /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
-    fieldGrid = (FieldGridAsset *)(uintptr_t)packageLoadErrorCode;
+    /* The original did not check the field grid load and used the error code as the grid (a host then read
+       through it); handled here like a failed level load because the grid is required: a fatal error with the
+       load's error code. */
+    FatalError_ExitIfFailed(packageLoadErrorCode,true); /* does not return */
   }
   loadedLevelAsset = g_FrontendLoadedLevelAsset;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
