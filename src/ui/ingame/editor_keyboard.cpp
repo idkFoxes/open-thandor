@@ -8,6 +8,7 @@
 #include <thandor/ui/ingame/editor_keyboard.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/core/key_dispatch.h>
 
 /* Module data. */
 
@@ -58,21 +59,6 @@ uint32_t g_UiCommandModeGArmyAssetId = 0;
 PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId = ARM_0500_LBAUM_MDL0500;
 
 /* Implementation ownership: ui/ingame/editor_keyboard. */
-
-/* True when a g_InGameKeyboardDispatchRecords record {key code, required modifier mask, handler} matches the
-   key: a zero mask matches only while neither Ctrl nor Alt is held, otherwise any modifier of the mask must be
-   held. */
-static Bool8 InGameEditorKeyboard_RecordMatches(const uint32_t *dispatchRecord,uint32_t keyboardEventCode,
-          uint32_t keyboardStateMask)
-{
-  if (dispatchRecord[0] != keyboardEventCode) {
-    return false;
-  }
-  if (dispatchRecord[1] == 0) {
-    return (keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0;
-  }
-  return (keyboardStateMask & dispatchRecord[1]) != 0;
-}
 
 /* Selects the stepCount-th material before the current one that has a texture set, wrapping around
    (1: the previous material, MATERIAL_SWATCH_ROW_LENGTH: one swatch row up). */
@@ -190,20 +176,18 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 {
   UiNodeVtable **stack;
   UiSingleLineTextControl *infoTextControl;
-uint32_t *dispatchRecord;
+  const UiCommandDispatchRecord *dispatchRecord;
   uint32_t activePageIndex;
 
-  /* Records are {key code, required modifier mask, handler}; the table ends with a zero key code. The cases
-     below are the original handler addresses stored in the records. */
-  dispatchRecord = (uint32_t *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0);
-  while (*dispatchRecord != 0 &&
-         !InGameEditorKeyboard_RecordMatches(dispatchRecord,keyboardEventCode,keyboardStateMask)) {
-    dispatchRecord = dispatchRecord + 3;
-  }
-  if (*dispatchRecord == 0) {
+  /* First record with this key whose modifier class matches: a zero class matches only while neither Ctrl nor
+     Alt is held, otherwise any modifier of the class must be held. The table ends with a zero key code. The
+     cases below are the original handler addresses stored in the records. */
+  dispatchRecord = UiCommandDispatch_Find(g_InGameKeyboardDispatchRecords,keyboardEventCode,keyboardStateMask,
+                                          UiKeyModifierRule::AnyOfMask);
+  if (dispatchRecord == nullptr) {
     return;
   }
-  switch(dispatchRecord[2]) {
+  switch(dispatchRecord->continuationEntryAddress) {
   case 0x56e5e0: /* Alt+I: show or hide the side panel */
     stack = (struct UiNodeVtable * *)INGAME_UI(uiRoot,sidePanelStack);
     activePageIndex = UiPageStack_ActivePageIndex((UiPageStackControl *)stack);

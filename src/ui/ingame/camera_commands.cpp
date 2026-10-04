@@ -8,6 +8,7 @@
 #include <thandor/ui/ingame/camera_commands.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/ui/core/key_dispatch.h>
 
 /* Module data. */
 
@@ -148,8 +149,7 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
     requiredModifiers = currentRecord->requiredModifierMask;
     if (recordKeyCode == 0) break;
     if ((recordKeyCode != commandCode) ||
-        !((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
-                                   : ((modifierFlags & requiredModifiers) != 0))) continue;
+        !UiKeyModifiers_Match(requiredModifiers,(uint32_t)modifierFlags,UiKeyModifierRule::AnyOfMask)) continue;
     /* Matching record: run its command and stop. The original jumps to the record's continuation address; the
        cases are those addresses. */
     switch(currentRecord->continuationEntryAddress) {
