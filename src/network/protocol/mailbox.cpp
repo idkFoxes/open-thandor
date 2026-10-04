@@ -191,6 +191,20 @@ static void UiTransferMailbox_ServeChunkRequest
       return; /* not a player: drop the request */
     }
   }
+  /* The original served any requested offset, copying up to a chunk from behind the outgoing buffer; bounded
+     here because the offset comes from the peer: an offset past the outgoing size is dropped. Valid requesters
+     only ask for offsets below the size (the chunk is then clipped to the rest). Logged once: a peer may repeat
+     the request every frame. */
+  if (*(UiTransferMailboxByteOffset *)ringRecord->payload > g_UiTransferMailbox.outgoingByteCount) {
+    static Bool8 s_loggedOutOfRangeRequest = false;
+    if (!s_loggedOutOfRangeRequest) {
+      s_loggedOutOfRangeRequest = true;
+      Thandor_Log("UiTransferMailbox_ServeChunkRequest: rejected chunk request at offset %u (transfer %u bytes)",
+                  *(UiTransferMailboxByteOffset *)ringRecord->payload,
+                  (uint32_t)g_UiTransferMailbox.outgoingByteCount);
+    }
+    return;
+  }
   /* original quirk: extends the sender's receive scratch slot instead of the player record, see the timer's
      comment */
   senderEndpointSlot->transferTimeoutTicks =
