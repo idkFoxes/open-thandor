@@ -33,17 +33,20 @@ see [docs/BUILDING.md](docs/BUILDING.md#settings-file-thandorini)). Save games o
 Done so far in the current step (turning the reimplementation into a maintainable code base): clean-up and one
 switch for all developer tools, the original addresses out of the code, the module data next to its code, the
 port to C++, 64-bit only (the original structure layouts are kept with 32-bit pointer fields, `Ptr32`, so save
-games, levels and the network protocol stay compatible), the SDL3 platform layer and an optional GPU rasterizer
-on SDL_GPU. The large multi-job files of the UI, graphics and world code are split into one file per job.
+games, levels and the network protocol stay compatible), the SDL3 platform layer, the GPU renderers on SDL_GPU
+(Vulkan by default, DirectX 12, software as the reference; chosen in the game's display settings together with
+window, borderless or exclusive fullscreen), settings in a readable `thandor.ini`, a second compiler (MinGW-w64 GCC
+next to MSVC), every large multi-job file split into one file per job, duplicated code merged and the big `types.h`
+split into the modules' own type headers.
 
 Next:
 
-1. Restructuring of the remaining areas (gameplay, assets, core, network), merging duplicated code, and splitting
-   the big `types.h` into the modules' own headers.
-2. Clang (clang-cl) as a second compiler.
-3. Idiomatic C++ step by step, following the
+1. 32-bit colour only (the 16-bit display modes and their code paths go).
+2. Idiomatic C++ step by step, following the
    [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines): classes where they simplify,
    `enum class`, RAII.
+3. Step 9 (later): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
+   ([plan](docs/plans/step9_gpu_ui.md)).
 
 ### How correctness is kept
 
