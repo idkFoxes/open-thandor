@@ -29,6 +29,7 @@ THANDOR_SLOT_PREFIX(FrontendPointerSceneRuntimeView, base);
 THANDOR_SLOT_PREFIX(FrontendTaskAssignmentPageInitView, rootNode);
 THANDOR_SLOT_PREFIX(FrontendResultsColumnSequenceControl, base);
 THANDOR_SLOT_PREFIX(FrontendResultsEightColumnTemplate, base);
+THANDOR_SLOT_PREFIX(FrontendModelPointerContext, base);
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_FRONTEND_NODE_VIEWS_H */

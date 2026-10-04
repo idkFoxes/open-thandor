@@ -26,6 +26,8 @@ THANDOR_SLOT_PREFIX(InGameRuntimeRootFrameView, rootUi);
 THANDOR_SLOT_PREFIX(InGameMissionHelpTextPanel, scrollable);
 THANDOR_SLOT_PREFIX(InGameMissionHelpRootView, rootUi.base);
 THANDOR_SLOT_PREFIX(InGameTargetingRootTraversalView, base);
+/* The world view node: interaction.reserved00_47 covers its UiNodeBase up to nodeFlags. */
+THANDOR_SLOT_OVERLAY(WorldRuntimeContext, UiNodeBase);
 #endif /* __cplusplus */
 
 #endif /* THANDOR_UI_INGAME_NODE_VIEWS_H */
