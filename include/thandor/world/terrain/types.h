@@ -14,7 +14,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct FieldGridAsset FieldGridAsset, *PFieldGridAsset;
 typedef struct FieldGridCell FieldGridCell, *PFieldGridCell;
@@ -79,7 +79,7 @@ using TerrainProjectedHeightThresholdQ20 = uint32_t;
 using ArmyRuntimeSavedOffset = uint32_t;
 
 /* +0x0C..+0x3F and +0x60..+0x6B are the terrain projection pass's per-vertex work area (the same layout as
-   TerrainProjectedVertexWorkRecord, which projection.c uses as its view of a cell). */
+   TerrainProjectedVertexWorkRecord, which graphics/terrain/terrain_render.cpp uses as its view of a cell). */
 struct FieldGridCell {
     uint32_t surfacePacketIndex; // Terrain surface packet (animation phase) of the cell: random at load (FieldGrid_InitializeRuntimeCellsAndBoundaryFlags), TerrainProjectedVertexWorkRecord.surfacePacketIndex.
     PackedArgb32 overlayColor; // ARGB tint multiplied into the terrain shading (TerrainProjectedVertexWorkRecord.basePackedColor): opaque white at load, set by the terrain-class overlay callbacks and FieldGrid_SetAllCellOverlayColors.

@@ -41,7 +41,7 @@ extern UiNodeVtable g_UiImageControlVtable;
    (UiImageControl_PointerMove). */
 #define UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE 0x40
 
-/* Further UiImageControl stateFlags bits (UiImageControl_* in ui/controls/misc.c): POINTER_SOUND plays
+/* Further UiImageControl stateFlags bits (UiImageControl_* in ui/controls/image.cpp): POINTER_SOUND plays
    pointerActivationSound when the image opens/closes; RIGHT_BUTTON_LATCHED holds a right-button press until
    its release (UiImageControl_TickHover); PRESSED_ON_IMAGE is set by a press and cleared when the pointer
    leaves the image's opaque pixels; OPEN keeps the image open after the release; PRESS_STARTED is set by a

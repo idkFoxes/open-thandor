@@ -456,7 +456,7 @@ int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 }
 
 /* Returns the energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand): the
-   active part and the total. The selection panel (src/gameplay/selection/runtime.c) draws it as a stepped meter.
+   active part and the total. The selection panel (src/ui/ingame/selection_panel_metrics.cpp) draws it as a stepped meter.
 */
 ModelHierarchyEnergyDemand
 ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry)

@@ -15,7 +15,7 @@
    offset, 0 = none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the
    model transform, and lets the definition's placement contact kind (placementContactKindIndex) set its height
    before the transforms and depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode
-   (ui/ingame/runtime.c) while the pointer drags with bit 0x4 of g_CursorButtonState set.
+   (ui/ingame/editor_tools.cpp) while the pointer drags with bit 0x4 of g_CursorButtonState set.
 */
 void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12)
@@ -63,7 +63,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
 
 /* In-game command handler 0x30F0: turns the player's primary selected model (block placedArmyToken) by angleDelta
    (16-bit angle, wraps) and rebuilds its transforms. Sent by InGameUiCommand_UpdateInteractionByMode
-   (ui/ingame/runtime.c) with the horizontal pointer drag * 64.
+   (ui/ingame/editor_tools.cpp) with the horizontal pointer drag * 64.
 */
 void SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta)
@@ -143,7 +143,7 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
 /* In-game command handler 0x1ED0: empties the player's marked-cell list (the field cells collected by
    PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count
    (localPlayerMarkedCellCount). Sent by InGameUiCommand_BeginInteractionByMode and
-   InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
+   InGameUiCommand_ResetInteractionByMode (ui/ingame/editor_tools.cpp).
 */
 void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
@@ -162,7 +162,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
 
 /* Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see
    PlayerPairList_InsertUnique): false when listed, true when not. Used by the FieldGrid cell
-   updates in world/terrain/grid.c.
+   updates in world/terrain/field_edit_commands.cpp.
 */
 Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
@@ -294,7 +294,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
 }
 
 /* Tells whether target is one of the 32 entries of a selection array: false when found, true when not. Used by
-   FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection move/rotate handlers call
+   FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.cpp); the primary-selection move/rotate handlers call
    it and ignore the result.
 */
 Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)

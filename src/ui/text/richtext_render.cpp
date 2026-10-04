@@ -21,7 +21,7 @@ PackedArgb32 g_RichTextColorPaletteArgb[TEXT_STYLE_INDEX_MASK + 1] = {
     0xFF707070, /* [2] dark grey, RICHTEXT_OP_COLOR_PALETTE_2 */
     0xFFE0E0E0, /* [3] light grey, RICHTEXT_OP_COLOR_PALETTE_3 */
     0xFF209020, /* [4] green; only reachable through the packed text style's palette index */
-    0xFFF02020, /* [5] red; also technology costs the player cannot afford (ui/ingame/technology.c) */
+    0xFFF02020, /* [5] red; also technology costs the player cannot afford (ui/ingame/technology.cpp) */
     0x00000002, /* [6] Original quirk: shadow offset entry 0 */
     0x00000002, /* [7] Original quirk: shadow offset entry 1 */
 };

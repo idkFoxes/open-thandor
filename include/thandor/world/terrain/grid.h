@@ -54,7 +54,7 @@
 #define FIELD_CELL_LIGHTING_UNEXPLORED 0x00
 
 /* FieldGridAsset.runtimeStateFlags bit 0: set by every height/cell edit, cleared by the projection pass
-   (projection.c) after it rebuilt the terrain surface. */
+   (graphics/terrain/terrain_render.cpp) after it rebuilt the terrain surface. */
 #define FIELD_GRID_RUNTIME_SURFACE_DIRTY 0x01
 /* FieldGrid_RaycastTerrainSurfaceDistance / ..SecondarySurfaceDistance: at most this many cell steps per ray
    (the counter is decremented before the first step, so 1023 cells are visited), and the miss distance. */

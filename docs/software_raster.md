@@ -211,11 +211,11 @@ build, see below):
 | `SoftwareTextureSource_BlitSourceAlpha32` | 0x4A9710 | rewritten (reference) |
 | `SoftwareFramebuffer_FillRectArgb32` | 0x4AD2A0 | rewritten (reference) |
 | `SoftwareTextureSource_BlitHalfSourceRgb32` | 0x4A9E10 | rewritten |
-| `SoftwareTextureSource_BlitSourceAlphaPaletteBank32` | 0x4AB150 | rewritten |
+| `SoftwareTextureSource_BlitSourceAlphaPaletteBank32` | 0x4AB150 | removed in step 8 (nothing called it) |
 | `SoftwareTextureSource_BlitModulatedSourceAlpha32` | 0x4AC4C0 | rewritten |
-| `SoftwareTextureSource_BlitSaturatedAddRgb32` | 0x4AB750 | rewritten |
-| `SoftwareTextureSource_BlitHalfRgbSaturatedAdd32` | 0x4ABD20 | rewritten |
-| `SoftwareTextureSource_BlitIntegerScaledSourceAlpha32` | 0x4AAA40 | rewritten |
+| `SoftwareTextureSource_BlitSaturatedAddRgb32` | 0x4AB750 | removed in step 8 (nothing called it) |
+| `SoftwareTextureSource_BlitHalfRgbSaturatedAdd32` | 0x4ABD20 | removed in step 8 (nothing called it) |
+| `SoftwareTextureSource_BlitIntegerScaledSourceAlpha32` | 0x4AAA40 | removed in step 8 (nothing called it) |
 | `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | rewritten |
 
 ## ABI
@@ -225,7 +225,7 @@ preserve every register and clear CF on return. The C versions are plain cdecl a
 `false` where the header declares `bool`. Argument order:
 
 - plain blits: `(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, asset, framebuffer)`
-- `IntegerScaled`, `PaletteBank`, `Modulated`: the extra argument (scale, bank, ARGB) comes before `subresourceIndex`
+- `Modulated`: the extra argument (ARGB) comes before `subresourceIndex`
 - fills: `(clipMaxY, clipMaxX, clipMinY, clipMinX, rectMaxY, rectMaxX, rectMinY, rectMinX, argb, framebuffer)`
 
 The framebuffer (`SoftwareFramebufferAccess`) is `width, height, bytesPerPixel, pixels`, and its row
@@ -249,12 +249,12 @@ A texture source asset has the magic `ASSET_MAGIC_GFX` and, at +0xB0, `subresour
 
 Palette quirk, kept as it is: the 32-bit blits use +4 for everything: the alpha test, the blend colour, and the
 opaque write, which converts +4 through `g_SoftwarePixelPackTables` a second time. Exceptions are noted below
-(IntegerScaled, Modulated). The original's 16-bit blits tested the alpha of +4, wrote its low word when opaque,
+(Modulated). The original's 16-bit blits tested the alpha of +4, wrote its low word when opaque,
 and blended +0 using +0's own alpha.
 
 ## Common structure
 
-Every clipped blit (all except `IntegerScaled`) and the fill follow the same steps:
+Every blit and the fill follow the same steps:
 
 1. **Validate** the magic, `subresourceIndex < subresourceCount` (unsigned), `bytesPerPixel`, and
    the palette index.
@@ -299,26 +299,16 @@ fills". They reuse `RasterColor` and `Raster_MulHigh`.
 | `Blit_PackLanes32` | `PSRLW 4` (logical) + `PACKUSWB` (the alpha lane is written too) |
 | `Blit_BlendArgb32` | the source-alpha blend of one ARGB colour over one pixel |
 
-Pixel operations of the other blits, read from their asm (the rewritten code follows them):
+Pixel operations of the other blits, read from their asm (the rewritten code follows them). The palette-bank,
+saturated-add, half-RGB saturated-add and integer-scaled blits, their tiled forms and the framebuffer region
+copies were removed in step 8: nothing in the game called them.
 
 - **HalfSourceRgb**: there is no opaque shortcut, so alpha 0xFF also blends (factor index 0xFF).
   The paletted path halves the source lanes (`(c * 0x101) >> 3`); the direct-colour path uses
   `>> 2`. The destination is `Blit_ArgbLanes(d, 2)`.
-- **PaletteBank**: the same as SourceAlpha, but the palette bank argument replaces the entry's bank
-  after clipping. It is checked with `bank < paletteBankCount`. The entry's own `paletteIndex`
-  must still be valid (or -1).
 - **Modulated**: before the alpha tests, each source channel is multiplied by the matching
   modulation channel. Blue is `(b * mb) >> 8`; green, red and alpha are `((c * mc) & 0xFF00)`
   shifted into place. The rest is the same as SourceAlpha, except that a paletted texel uses +0.
-- **SaturatedAddRgb**: skip the texel if `argb & 0xFFFFFF == 0`, else `PADDUSW` of `c * 0x101` and
-  `d * 0x101`, then `PSRLW 8` + `PACKUSWB`.
-- **HalfRgbSaturatedAdd**: the same as SaturatedAddRgb, with the source lanes `>> 1` first.
-- **IntegerScaled**: no source clipping. The clip rectangle is clamped to `[0, framebuffer)`.
-  Every texel is replicated `scale x scale` times, and each written pixel is tested against the
-  clip rectangle. The destination pointer walks the unclipped image, starting at
-  `(drawY + originY * scale) * width + drawX + originX * scale`. Scale 0, or an image size of 0,
-  makes the original loop 2^32 times, so blitcmp did not generate them. A paletted texel uses the
-  original's 16-bit layout here: the alpha of +4 is tested, +0 blended, and +4 written unconverted.
 - **Mask step**: every nonzero byte of `maskPixels` gets `+ 0x1F`, saturated at 0xFF
   (`PCMPEQB` / `PAND` / `PXOR` / `PADDUSB`). It works on 32-byte blocks,
   `width * height >> 5` of them, with the size taken from `g_GraphicsTextureSourceGetLogicalSize`.

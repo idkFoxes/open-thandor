@@ -29,9 +29,10 @@ The value converts to the slot's type it initialises:
 
 UI_SLOT(function) is the same, for UI vtables and handler tables.
 
-Both GCC and MSVC deduce the slot's signature from the field's type (conversion function templates to
-Ptr32<R(A...)> and to R (*)(A...)): `.pointerMove = THANDOR_SLOT(UiImageControl_PointerMove)`. Where a context gives
-no target type (auto, a template argument, ?:), name it: ThandorSlot<&function>::pick<R(A...)>().
+Both GCC and MSVC deduce the slot's signature from the field's type (the Ptr32<R(A...)> constructor and
+assignment from a ThandorSlot in core/ptr32.h, the conversion function template to R (*)(A...)), also for the
+elements of an array: `.pointerMove = THANDOR_SLOT(UiImageControl_PointerMove)`. Where a context gives no target
+type (auto, a template argument, ?:), name it: ThandorSlot<&function>::pick<R(A...)>().
 
 The registrations of the UI node types are in ui/controls/node_views.h, ui/ingame/node_views.h and
 ui/frontend/node_views.h.
@@ -179,10 +180,6 @@ template <auto Fn> struct ThandorSlot {
     template <class R, class... A> constexpr operator ThandorSlotFunctionPointer<R, A...>() const
     {
         return pick<R(A...)>();
-    }
-    template <class R, class... A> operator Ptr32<R(A...)>() const
-    {
-        return Ptr32<R(A...)>(pick<R(A...)>());
     }
 };
 

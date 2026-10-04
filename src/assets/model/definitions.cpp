@@ -50,7 +50,7 @@ Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
    and stores its localPosition in *outLocalPosition; returns false and stores (0, 0, 0) when no entry
    matches. outLocalPosition may be NULL when only presence matters. Called directly by
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
-   army platform-lowering step in gameplay/army/runtime.c.
+   army hangar-lowering step in gameplay/army/aircraft.cpp.
 */
 Bool8 ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
@@ -139,7 +139,7 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 }
 
 /* Returns the first registered model definition whose runtime class id (requiredTechnologyBit) equals
-   runtimeClassId, or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
+   runtimeClassId, or NULL. Called directly by the AI purchasing and technology code (gameplay/ai/purchasing.cpp, technology.cpp).
 */
 ModelDefinitionRecordPrefix *
 ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)

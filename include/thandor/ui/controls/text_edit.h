@@ -15,14 +15,9 @@
 
 /* Submodule: ui/controls/text_edit. */
 
-/* editStateFlags bits of UiPathTextEditControl beyond UiTextEditStateFlags; bits 1-2 are passed on to
-   g_FileSystemValidateDos83Path. */
-#define UI_PATH_TEXT_ALLOW_WILDCARDS 0x02 /* accept '*' and '?' */
-#define UI_PATH_TEXT_NAME_ONLY 0x04 /* refuse ':' and '\' */
-
-/* Code units of the fixed text buffers (the terminator included). */
+/* Code units of the original numeric text edit buffer (the terminator included); see
+   UiTextEditControl_RecomputeLayoutAndClampScroll. */
 #define UI_NUMERIC_TEXT_BUFFER_UNITS 16
-#define UI_PATH_TEXT_BUFFER_UNITS 256
 /* Byte capacity of each expanded-text scratch buffer of UiPointerList_CompareExpandedText. */
 #define UI_POINTER_LIST_COMPARE_SCRATCH_BYTES 0x400
 
@@ -32,18 +27,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiNumericTextControl *control);
-
-Bool8 UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiPathTextEditControl *control);
-
 Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
-
-void UiNumericTextEditControl_RelocateAndRebuildText
-          (UiSerializedRelocationDelta relocationDelta,UiNumericTextControl *control);
 
 void UiTextEditControl_DrawTextSelectionAndCaret
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -56,9 +42,6 @@ void UiTextEditControl_BeginSelectionAtPointer
 void UiTextEditControl_UpdateSelectionFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control);
-
-void UiPathTextEditControl_RelocateAndValidateDos83
-          (UiSerializedRelocationDelta relocationDelta,UiPathTextEditControl *control);
 
 void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
           (UiSerializedRelocationDelta relocationDelta,UiRequiredTextEditControl *control);
@@ -73,24 +56,14 @@ void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditContro
 
 void UiTextEditControl_TickCaretBlink(UiTextEditControl *control);
 
-void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control);
-
-void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control);
-
-void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control);
-
 UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control);
 
 UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control);
-
-void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control);
 
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
 
 void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);
 
-extern UiNodeVtable g_UiNumericTextEditControlVtable;
-extern UiNodeVtable g_UiPathTextEditControlVtable;
 extern UiNodeVtable g_UiRequiredTextEditControlVtable;
 
 extern AudioMixerGainQ15 g_UiSoundGainQ15;

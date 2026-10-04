@@ -11,7 +11,7 @@
 /* The one interface between the game and the developer tools (src/platform/debug, src/platform/selftest).
 
    The tools are compiled in only with the CMake option THANDOR_DEV_TOOLS (default OFF; preset "test",
-   build-test). Then the hooks below are functions in src/platform/debug/hooks.c, and the tools are switched on
+   build-test). Then the hooks below are functions in src/platform/debug/hooks.cpp, and the tools are switched on
    at run time by OPEN_THANDOR_* environment variables (docs/BUILDING.md): self-tests, input scripts, automatic
    screenshots, the determinism state hash, campaign starts and AUTOWIN, the level-script log, movie player,
    dump and compare, windowed mode, a second instance, UDP port and datagram log. Without a variable a hook

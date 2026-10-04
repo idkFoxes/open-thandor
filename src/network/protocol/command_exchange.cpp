@@ -6,7 +6,9 @@
  */
 
 #include <thandor/network/protocol/command_exchange.h>
+#include <thandor/network/protocol/lockstep.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -25,6 +27,8 @@ FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8] = {0};
 FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8] = {0};
 
 FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};
+
+static bool s_loggedSnapshotChunkOffset = false;
 
 /* Implementation ownership: network/protocol/command_exchange. */
 
@@ -101,8 +105,12 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10007_PLAYER_REMOVAL) {
-    /* the first record is compared before the count is checked */
+    /* The original compares the first record before the count is checked; bounded here because with no
+       player block a match on the stale record 0 would close the gap with (0 - 1) records. */
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+    if (playersRemaining == 0) {
+      return false;
+    }
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
@@ -150,6 +158,19 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10009_SNAPSHOT_CHUNK_REQUEST) {
+    /* The original serves any requested offset; bounded here because the offset comes from the peer and
+       would read (and send back) memory outside the 0x1300-byte preview. Valid hosts request 0..0x1220 in
+       0xE8 steps. */
+    if ((packet->packet10009SnapshotChunkRequest.snapshotChunkOffset > FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) ||
+        (packet->packet10009SnapshotChunkRequest.snapshotChunkOffset % 0xE8 != 0)) {
+      if (!s_loggedSnapshotChunkOffset) {
+        s_loggedSnapshotChunkOffset = true;
+        Thandor_Log("network: snapshot chunk request at offset 0x%X (valid: 0..0x%X in 0xE8 steps), ignored",
+                    (unsigned)packet->packet10009SnapshotChunkRequest.snapshotChunkOffset,
+                    (unsigned)FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET);
+      }
+      return false;
+    }
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          packet->packet10009SnapshotChunkRequest.snapshotChunkOffset;
     chunkDestinationCursor = (uint32_t *)g_FrontendPacket8000ABuffer.packet10009Buffer;
@@ -176,29 +197,16 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
   return false;
 }
 
-/* Host, while clients are still missing: resends the previous command batch to every client that has not
-   submitted its command yet and COMMAND_WAIT to those that have. */
-static void FrontendTransfer_ResendBatchOrWaitToClients()
-{
-  FrontendPlayerRuntimeBlockCount peersRemaining;
-  UiTransferEndpointDescriptor *peerEndpointCursor;
-
-  peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-  for (peersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; peersRemaining != 0; peersRemaining--) {
-    /* peerEndpointCursor[1] is the 0x10 bytes after the endpoint, i.e. the same record's
-       commandSyncPending */
-    if (peerEndpointCursor[1].addressHeader.packedFamilyAndPort == 0) {
-      UiTransfer_StagePacketAndSend
-                (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
-    }
-    else {
-      g_FrontendPacket10022Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_WAIT;
-      UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendPacket10022Buffer.header);
-    }
-    /* 0x13B endpoints of 0x10 bytes = one 0x13B0-byte player record */
-    peerEndpointCursor = peerEndpointCursor + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
-  }
-}
+/* Lockstep channel of the in-game command exchange. */
+static const LockstepHostChannel g_InGameLockstepChannel = {
+  g_FrontendClientPlayerCommandRecords,
+  g_FrontendClientCommandBatchPacketBuffer,
+  FRONTEND_PACKET_COMMAND_BATCH_TYPE,
+  &g_FrontendPacket10022Buffer.header,
+  FRONTEND_PACKET_COMMAND_WAIT,
+  INGAME_COMMAND_CODE_BASE,
+  INGAME_COMMAND_HANDLER_REGION_END
+};
 
 /* Host side of the in-game command exchange. When every client (player records 1..n-1) has submitted its
    command, clears their ready flags, takes the host's own next command into slot 0, packs all non-empty
@@ -210,63 +218,17 @@ static void FrontendTransfer_ResendBatchOrWaitToClients()
 Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
-  FrontendPlayerRuntimeBlockCount peersRemaining;
-  FrontendPlayerRuntimeBlockCount slotsRemaining;
-  int clientsRemaining;
-  int batchCount;
-  FrontendCommandPacketRecord *commandRecordCursor;
-  UiTransferEndpointDescriptor *peerEndpointCursor;
-  FrontendPlayerRuntimeRecord *clientRecord;
-  FrontendCommandPacketRecord *batchCursor;
-
-  /* record 0 is the host itself, only the clients (records 1..n-1) are checked */
-  if (g_FrontendPlayerRuntimeBlockCount - 1 != 0) {
-    clientRecord = g_FrontendPlayerRuntimeBlocks + 1;
-    for (clientsRemaining = g_FrontendPlayerRuntimeBlockCount - 1; clientsRemaining != 0; clientsRemaining--) {
-      if (clientRecord->commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
-        if (notifyWaitingPeers != 0) {
-          FrontendTransfer_ResendBatchOrWaitToClients();
-        }
-        return true;
-      }
-      clientRecord++;
+  if (!Lockstep_AllClientsSubmitted()) {
+    if (notifyWaitingPeers != 0) {
+      Lockstep_ResendBatchOrWait(g_InGameLockstepChannel);
     }
-    clientRecord = g_FrontendPlayerRuntimeBlocks + 1;
-    for (clientsRemaining = g_FrontendPlayerRuntimeBlockCount - 1; clientsRemaining != 0; clientsRemaining--) {
-      clientRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_CLEAR;
-      clientRecord++;
-    }
+    return true;
   }
+  Lockstep_ClearClientSubmissions();
   g_UiTransferSenderContext++;
   InGameCommandQueue_DequeueFirstIntoRecord(g_FrontendClientPlayerCommandRecords);
-  batchCount = 0;
-  commandRecordCursor = g_FrontendClientPlayerCommandRecords;
-  batchCursor = g_FrontendClientCommandBatchPacketBuffer;
-  slotsRemaining = g_FrontendPlayerRuntimeBlockCount;
-  /* Pack every non-empty 0x20-byte command slot (handler offset != 0) into the batch. */
-  do {
-    if ((commandRecordCursor->command.packedCommandAndPlayerId & 0xffffff00) != 0) {
-      FrontendTransfer_CopyCommandRecord(batchCursor,commandRecordCursor);
-      batchCursor++;
-      batchCount++;
-    }
-    commandRecordCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
-  if (batchCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT == 0) {
-    /* Nothing pending: send the first record (the host's, empty) as a batch of one. */
-    FrontendTransfer_CopyCommandRecord(batchCursor,g_FrontendClientPlayerCommandRecords);
-    batchCount = 1;
-  }
-  /* the first packed record's header doubles as the batch header */
-  g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
-       batchCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_COMMAND_BATCH_TYPE;
-  peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-  for (peersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; peersRemaining != 0; peersRemaining--) {
-    UiTransfer_StagePacketAndSend
-              (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
-    peerEndpointCursor = peerEndpointCursor + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
-  }
+  Lockstep_PackBatch(g_InGameLockstepChannel,g_FrontendPlayerRuntimeBlockCount,LockstepEmpty::SendHostRecord);
+  Lockstep_SendBatchToClients(g_InGameLockstepChannel,g_FrontendPlayerRuntimeBlockCount);
   return false;
 }
 
@@ -368,17 +330,9 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
 void FrontendTransfer_DispatchStagedCommandRecords()
 
 {
-  uint32_t remainingCount;
-  FrontendCommandPacketRecord *commandRecord;
-
-  commandRecord = g_FrontendClientCommandBatchPacketBuffer;
-  for (remainingCount = g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount >>
-                        FRONTEND_PACKET_UNIT_COUNT_SHIFT;
-      remainingCount != 0; remainingCount--) {
-    CommandDispatch_ExecuteRecord(INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,&commandRecord->command);
-    commandRecord++;
-  }
-  return;
+  Lockstep_ExecuteRecords(g_InGameLockstepChannel,
+                          g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount >>
+                          FRONTEND_PACKET_UNIT_COUNT_SHIFT);
 }
 
 /* Client side: atomically takes and clears g_FrontendTransferResponsePending, which

@@ -188,41 +188,17 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
       }
       runtimeRecord = g_UiCommandSpriteVariantARecords[slotIndex];
       factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
-                  (g_LocalPlayerRuntimeId,0,0,factionIndex);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,(CommandPayload)factionIndex);
-      }
+      InGameCommand_Issue<GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid>(0,0,factionIndex);
       if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0)
       {
         factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
-                    (g_LocalPlayerRuntimeId,0,assetId,factionIndex);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,0,assetId,(CommandPayload)factionIndex);
-        }
+        InGameCommand_Issue<GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer>(0,assetId,factionIndex);
       }
       else {
         factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
-                    (g_LocalPlayerRuntimeId,0,assetId,factionIndex);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (INGAME_COMMAND_SELL_ARMY,0,assetId,(CommandPayload)factionIndex);
-        }
+        InGameCommand_Issue<GameFactionRuntime_SellArmyAssetAndRefundSevenEighths>(0,assetId,factionIndex);
       }
     }
   }

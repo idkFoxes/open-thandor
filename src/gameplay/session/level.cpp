@@ -136,7 +136,7 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
    scratch buffer, replaces its placement table with one 0x20-byte record per live world model, stores the
    field region and the seven camera bookmarks and writes the image back to the same path. Returns true on
    success; on failure returns false with the load or write error in *outError. Called by
-   InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/runtime.c); the field grid itself is written separately.
+   InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/editor_tools.cpp); the field grid itself is written separately.
 */
 
 Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError)

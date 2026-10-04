@@ -567,10 +567,10 @@ FieldGridCoordinates FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 
 const FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5 = {
     .callbacks = {
-        /* 0 */ &FieldGrid_InterpolateTerrainHeight,
-        /* 1 */ &FieldGrid_InterpolateWaterSurfaceHeight,
-        /* 2 */ &FieldGrid_InterpolateTerrainHeight,
-        /* 3 */ &FieldGrid_InterpolateTerrainHeight,
-        /* 4 */ &FieldGrid_InterpolateTopSurfaceHeight
+        /* 0 */ THANDOR_SLOT(FieldGrid_InterpolateTerrainHeight),
+        /* 1 */ THANDOR_SLOT(FieldGrid_InterpolateWaterSurfaceHeight),
+        /* 2 */ THANDOR_SLOT(FieldGrid_InterpolateTerrainHeight),
+        /* 3 */ THANDOR_SLOT(FieldGrid_InterpolateTerrainHeight),
+        /* 4 */ THANDOR_SLOT(FieldGrid_InterpolateTopSurfaceHeight)
     }
 };

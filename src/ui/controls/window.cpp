@@ -14,13 +14,13 @@ GraphicsTextureSourceAsset *g_UiWindowTextureSource = (GraphicsTextureSourceAsse
 
 GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = nullptr;
 
-/* int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+/* int32_t, 5: pixels from the window top to the title text line of a resizable window */
 static const int32_t g_UiResizableWindowTitleTextTopOffset = 5;
 
-/* UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+/* UiPackedTextStyle, 2: packed rich-text style of the resizable window title */
 static const UiPackedTextStyle g_UiResizableWindowTitleTextStyle = 2;
 
-/* int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+/* int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window */
 static const int32_t g_UiWindowMoveHandleWidth = 19;
 
 static const int32_t g_UiWindowResizeBorderThickness = 19;

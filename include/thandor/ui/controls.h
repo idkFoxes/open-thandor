@@ -27,7 +27,6 @@
 #include <thandor/ui/controls/text_buttons.h>
 #include <thandor/ui/controls/text_edit.h>
 #include <thandor/ui/controls/tooltip.h>
-#include <thandor/ui/controls/tree_list.h>
 #include <thandor/ui/controls/window.h>
 
 #endif /* THANDOR_UI_CONTROLS_H */

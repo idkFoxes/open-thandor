@@ -33,33 +33,6 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
-          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
-
-void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
-          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
-
-Bool8 SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
-Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
 Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -72,13 +45,5 @@ void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,Graphi
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
           SoftwareFramebufferAccess *framebuffer);
-
-void SoftwareFramebuffer_CopyRegionToOrigin(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
-          GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX,
-          SoftwareFramebufferAccess *destination,SoftwareFramebufferAccess *source);
-
-void SoftwareFramebuffer_CopyOriginToRegion(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
-          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-          SoftwareFramebufferAccess *source,SoftwareFramebufferAccess *destination);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_H */

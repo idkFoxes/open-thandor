@@ -111,8 +111,8 @@ static Bool8 ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
    against the four side planes of the view frustum and the near plane, and draws it when it lies fully in front
    of the near plane, picking the level of detail by depth. A node outside a plane by more than its subtree radius
    ends the walk; otherwise the children are visited even when the node itself was culled. Called for every
-   model by the offscreen preview renderer (src/graphics/render/projection.c) and by the frontend/in-game world
-   view (src/ui/frontend/runtime.c).
+   model by the offscreen preview renderer (src/graphics/render/offscreen.cpp) and by the frontend/in-game world
+   view (src/ui/frontend/menu_room.cpp).
 */
 void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
 
@@ -142,7 +142,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
   }
 }
 
-/* Alternate model renderer of the frontend/in-game world view (src/ui/frontend/runtime.c, chosen when the
+/* Alternate model renderer of the frontend/in-game world view (src/ui/frontend/menu_room.cpp, chosen when the
    pointer context compares hits by metric only): draws a node and all its children without culling. The centre
    of the node's local bounds is transformed into g_ModelCullViewRelative to collect the nearby shading
    records; every drawn node gets MODEL_NODE_FLAG_RENDERED.

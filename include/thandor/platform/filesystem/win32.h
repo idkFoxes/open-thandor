@@ -20,9 +20,6 @@
 #define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
 /* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
 #define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
-/* Win32Path_ValidateDos83: characters of a DOS 8.3 base name and extension */
-#define DOS83_BASE_NAME_MAX_CHARS 8
-#define DOS83_EXTENSION_MAX_CHARS 3
 /* Functions are grouped by semantic ownership. */
 
 uintptr_t __cdecl FileSystem_Init();
@@ -36,8 +33,6 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
 uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path);
 
 void __cdecl Win32FileSystem_RestoreInitialDirectory();
-
-Bool8 Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter);
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 
@@ -67,10 +62,6 @@ uint32_t Win32File_RemoveDirectory(uint16_t *path);
 
 Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLetter);
 
-uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut);
-
-Bool8 Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi);
-
 /* the number of FILESYSTEM_ENUMERATION_RECORD_BYTES records written */
 uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
           (FileSystemEnumerationMode mode,uint32_t reserved,
@@ -88,8 +79,6 @@ Bool8 Win32File_GetCurrentDirectory(uint16_t *destination);
 
 /* 0 or FATAL_ERROR_SET_DIRECTORY_FAILED */
 uint32_t Win32File_SetCurrentDirectory(uint16_t *path);
-
-EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter);
 
 /* 0 (handle in *outHandle) or FATAL_ERROR_FILE_ACCESS_FAILED */
 uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outHandle);
@@ -110,13 +99,9 @@ Bool8 FileSystem_BuildEnumerationStringTable
           uint16_t ***outTable,uint32_t *outEntryCount);
 
 extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries;
-extern FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path;
 
 extern FileSystemDeleteProc *g_FileSystemDelete;
 extern FileSystemCreateDirectoryRecursiveProc *g_FileSystemCreateDirectoryRecursive;
-extern FileSystemEnumerateDriveLettersProc *g_FileSystemEnumerateDriveLetters;
-extern FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode;
-extern FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady;
 extern uint16_t g_DefaultComputerLabelUtf16[32];
 
 extern FileSystemGetPositionProc *g_FileSystemGetPosition;

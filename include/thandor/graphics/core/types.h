@@ -13,7 +13,7 @@
 #include <thandor/core/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
 typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
@@ -26,8 +26,6 @@ typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
 using GraphicsCursorSetFrameProc = Bool8 (uint32_t frameIndex);
-using GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-using GraphicsTextureSourceBlitSourceAlphaPaletteBankProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 
 using TH_LEGACY_DWORD = uint32_t;
 

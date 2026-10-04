@@ -12,12 +12,16 @@
 
 EffectDefinition *g_EffectDefinitionRegistry[256] = {};
 
+/* Fixed name for the fatal-error box when an EFF asset has an invalid header (the asset's own path is not known
+   here). */
+static uint16_t s_EffectAssetErrorName[] = {'*', '.', 'e', 'f', 'f', 0}; /* L"*.eff" */
+
 /* Implementation ownership: assets/effect/catalog. */
 
 /* Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version
    0x40007, then hands each 0xC0-byte record after the 0x200-byte header to
-   EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves the asset
-   path in g_PackageLastErrorPath and fails with FATAL_ERROR_EFFECT_ASSET_INVALID.
+   EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves "*.eff" in
+   g_PackageLastErrorPath and fails with FATAL_ERROR_EFFECT_ASSET_INVALID.
    Returns true on success; on failure returns false with the error code in *outError (left untouched on
    success). (The original's success return value, the last loaded sprite asset, was read by no caller.)
 */
@@ -30,7 +34,9 @@ Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 
   if ((asset->entryCountHeader.common.magic != ASSET_MAGIC_EFF) ||
      (asset->entryCountHeader.common.converterVersion != PCK_CONVERTER_EFF_00040007)) {
-    Package_SetLastErrorPath((uint16_t *)asset);
+    /* The original passes the asset header itself as the error path; replaced by a fixed name here because the
+       header words are no text (units >= 0x8000 become rich-text pointer codes in the fatal-error box). */
+    Package_SetLastErrorPath(s_EffectAssetErrorName);
     *outError = FATAL_ERROR_EFFECT_ASSET_INVALID;
     return false;
   }

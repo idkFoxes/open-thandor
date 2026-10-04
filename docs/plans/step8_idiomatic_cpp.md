@@ -68,3 +68,16 @@ Main findings:
 | later | Larger merges: hex walker template (family by family, determinism check per family), key-command matching, settings handlers, lockstep channel, new vs loaded session | queued |
 
 Each package lists its files, the change, why valid data stays identical, and the checks that cover it.
+
+## Owner decisions (2026-10-04)
+
+- Scope: step 8 covers every security and crash finding of the review, the cosmetic clean-up (dead code, stale
+  comments), the global mechanical packages, typed slots, the hex walker template and the larger merges (key commands,
+  local-or-queue, settings, sessions, lockstep). The remaining idiomatic backlog (accessors, value types, RAII and
+  `enum class` everywhere, class-based subsystems) becomes a later step of its own.
+- Kept tools: `texture_decompose.cpp` and the FLM encoder join the SAM encoder, map editor, TXT2STR and palette
+  optimiser; the `scanaddr` self-test is removed.
+- Behaviour changes allowed as fixes: `EDITOR_SAVE_MAP` from a peer is ignored unless the local editor is active;
+  high instead of realtime process priority; the archive writer writes a temporary file and replaces the target;
+  a locked savegame shows an error instead of exiting; PCK archives are checked for their magic on mount.
+- The inert text override table is removed with a same-size placeholder allocation so the arena order stays.

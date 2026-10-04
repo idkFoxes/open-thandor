@@ -13,7 +13,7 @@
 #include <thandor/audio/spatial/types.h>
 #include <thandor/movie/runtime/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct PersistentSettingsRuntime PersistentSettingsRuntime, *PPersistentSettingsRuntime;
 typedef struct PersistentSettingsImage PersistentSettingsImage, *PPersistentSettingsImage;

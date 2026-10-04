@@ -52,7 +52,7 @@ Bool8 SpatialSoundPool_Init(uint32_t *outError)
 /* Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from
    the camera's view angles composed with a translation by -origin, i.e. world space to listener space, which
    the positioned-sound functions use to get distance and azimuth. Called directly by the frontend camera
-   control setup in ui/frontend/runtime.c (no callback table).
+   control setup in ui/frontend/menu_room.cpp (no callback table).
 */
 void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,

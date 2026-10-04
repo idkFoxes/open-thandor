@@ -12,8 +12,8 @@
 
 PckTechnologyIdCatalog g_InGameSelectedTechnologyId = 0;
 
-/* one rich-text stream, patched in as payload 0 of the technology label
-   (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
+/* one rich-text stream, patched in as payload 0 of the technology label:
+   [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
    [9..24] the xenite cost text (RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the interpreter reads on from the
    colour command into the text */
 static uint16_t g_InGameTechnologyCostRichText[25] = {32774};

@@ -1,0 +1,37 @@
+# Check script (run_checks.py pixel compare, page "keys"): start with -NOINTRO -KARTE="mittelpunkt"; click
+# "Weiter"/"Beginnen" until the skirmish runs. Like skirmish_pause.txt, run_checks.py pauses the game at a fixed
+# simulation tick (OPEN_THANDOR_STATEHASH_PAUSE_AT); then the key commands of the three in-game key tables (world view
+# key commands, in-game hotkeys) run over the paused world, each with its modifier class: P (pause request; the game
+# stays paused), Alt+G (slower), F (upgrade page), O (status text), 1, Ctrl+1, Shift+1 (selection groups), Shift+S,
+# Alt+S (selection orders), Alt+C (free camera), Esc (game menu); quit 8 s after the last key. Run with
+# OPEN_THANDOR_AUTOSHOT=2000: the last shots\shot_NNNN.bmp shows the result. A safety net for merging the key
+# command matchers (include/thandor/ui/core/key_dispatch.h): compare it between two builds.
+# Keys (decimal VK): 16 Shift, 17 Ctrl, 18 Alt, 27 Esc, 49 '1', 67 C, 70 F, 71 G, 79 O, 80 P, 83 S.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+25000 key 80
+25700 keydown 18
+25800 key 71
+25900 keyup 18
+26600 key 70
+27300 key 79
+28000 key 49
+28700 keydown 17
+28800 key 49
+28900 keyup 17
+29600 keydown 16
+29700 key 49
+29800 keyup 16
+30500 keydown 16
+30600 key 83
+30700 keyup 16
+31400 keydown 18
+31500 key 83
+31600 keyup 18
+32300 keydown 18
+32400 key 67
+32500 keyup 18
+33200 key 27
+41000 quit

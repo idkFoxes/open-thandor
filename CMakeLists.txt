@@ -175,6 +175,7 @@ add_executable(thandor WIN32
     src/network/protocol/commands.cpp
     src/network/protocol/frontend_session.cpp
     src/network/protocol/lobby.cpp
+    src/network/protocol/lockstep.cpp
     src/network/protocol/mailbox.cpp
     src/network/protocol/scenario_transfer.cpp
     src/platform/bootstrap/image.cpp
@@ -201,7 +202,6 @@ add_executable(thandor WIN32
     src/ui/controls/text_buttons.cpp
     src/ui/controls/text_edit.cpp
     src/ui/controls/tooltip.cpp
-    src/ui/controls/tree_list.cpp
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
@@ -494,6 +494,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
         src/platform/selftest/hexscan_selftest.cpp
+        src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
     )

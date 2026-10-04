@@ -22,7 +22,7 @@
    when no notification movie plays */
 #define INGAME_NOTIFICATION_CURSOR_CANCEL 0x1B
 
-/* Queued player command codes of the selection hotkeys (network games; see the key table in ui/ingame/runtime.c) */
+/* Queued player command codes of the selection hotkeys (network games; see the key table in ui/ingame/key_commands.cpp) */
 #define INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS 0x8F0 /* InGameSelection_SelectAllOwnAircraftPads */
 #define INGAME_COMMAND_SELECTION_RESET_MOVEMENT 0xE10 /* S: PlayerSelection_ResetMovementPruneAndRecenterEntries */
 #define INGAME_COMMAND_SELECTION_STOP_MOVEMENT 0xE30 /* Shift+S: PlayerSelection_StopMovement (stay where they are) */

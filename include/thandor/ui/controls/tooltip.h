@@ -30,8 +30,6 @@
 #define CP1252_SUPERSCRIPT_THREE 0xb3
 #define CP1252_MICRO_SIGN 0xb5
 #define CP1252_EURO_SIGN 0x80
-/* UiNumericTextEdit hexadecimal output: a bit index 0..31 rounded down to the lowest bit of its hex digit */
-#define UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK 0x1c
 
 /* Functions are grouped by semantic ownership. */
 

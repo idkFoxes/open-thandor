@@ -16,7 +16,7 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct RecentTextHistorySlot RecentTextHistorySlot, *PRecentTextHistorySlot;
 typedef struct UiRootCallbacks UiRootCallbacks, *PUiRootCallbacks;
@@ -61,7 +61,7 @@ struct UiDirtyRectEntry {
 };
 
 struct UiActionHandlerPage {
-    Ptr32<void> handlers[256]; 
+    Ptr32<void (void *)> handlers[256]; 
 };
 
 struct UiActionQueueEntry {

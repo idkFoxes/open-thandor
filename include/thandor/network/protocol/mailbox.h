@@ -62,7 +62,7 @@ Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTra
 
 extern uint32_t g_UiRuntimeRecordWriteIndex;
 extern uint32_t g_UiTransferUnitCursor;
-extern uint32_t g_UiTransferSequenceToken; /* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+extern uint32_t g_UiTransferSequenceToken; /* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value; network/protocol/mailbox.cpp, ui/frontend/network.cpp). */
 extern uint32_t g_UiTransferSenderContext;
 extern UiTransferMailboxState g_UiTransferMailbox;
 extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter;

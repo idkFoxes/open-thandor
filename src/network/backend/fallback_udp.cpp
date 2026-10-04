@@ -15,7 +15,7 @@ UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
 
 static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
 
-/* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO); network/backend/fallback_udp.c */
+/* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO) */
 static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
 
 static uint32_t g_NetworkFallbackAddressLength = 0;

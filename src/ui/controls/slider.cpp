@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider */
 static const int32_t g_UiRangeSliderDragScale = 1;
 
 /* Implementation ownership: ui/controls/slider. */

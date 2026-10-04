@@ -50,7 +50,7 @@ static uintptr_t g_LevelPackageHandle = 0;
 /* HKEY (pointer-sized on x64) */
 static uintptr_t g_InstallRegistryKeyHandle = 0;
 
-/* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
+/* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA) */
 static uint32_t g_InstallRegistryValueDataCapacityBytes = 256;
 
 static uint32_t g_InstallRegistryValueType = 0;
@@ -399,6 +399,14 @@ Bool8 GameData_LoadExternalTables()
   }
   /* oldunit.hex: the record count, then the primary and the secondary table */
   g_OldUnitRecordCount = *oldUnitBuffer;
+  /* The original takes the count unchecked; bounded here because OldUnitRuntime_MergeMasksAndReplayRecords
+     walks that many 0x20-byte records of g_OldUnitPrimaryTable (the rebuild never writes more than its
+     capacity). */
+  if (g_OldUnitRecordCount > OLD_UNIT_PRIMARY_RECORD_CAPACITY) {
+    Thandor_Log("oldunit.hex: record count %u clamped to %u", (unsigned)g_OldUnitRecordCount,
+                (unsigned)OLD_UNIT_PRIMARY_RECORD_CAPACITY);
+    g_OldUnitRecordCount = OLD_UNIT_PRIMARY_RECORD_CAPACITY;
+  }
   sourceCursor = oldUnitBuffer + 1;
   destinationCursor = g_OldUnitPrimaryTable;
   for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
@@ -1124,7 +1132,7 @@ uint32_t __cdecl Game_LoadCoreAssets()
     return aiInitError;
   }
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
-     written in C, graphics/resources/pcx_read.c and pcx_write.c. */
+     written in C, graphics/resources/pcx_read.cpp and pcx_write.cpp. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
                      ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == nullptr) {
@@ -1394,21 +1402,43 @@ static uint8_t *CommandLine_SkipPast(uint8_t *cursor,uint8_t terminator)
 }
 
 
-/* Copies the command line uppercased into destination up to terminator, which is stored as the NUL.
-   Returns the position OF the terminator (not after it), or NULL when the command line ends first (its NUL
-   copied as well). */
-static uint8_t *CommandLine_CopyUppercasedUntil(uint8_t *cursor,char *destination,uint8_t terminator)
+/* Set when a command-line part did not fit its 256-byte buffer and was truncated (logged once by
+   CommandLine_Parse). */
+static bool s_CommandLineTruncated = false;
+
+
+/* Stores character at *write and advances it when there is still room for it plus a NUL before end;
+   otherwise drops it (the part is truncated). */
+static void CommandLine_StoreBounded(char **write,char *end,uint8_t character)
+
+{
+  if (*write + 1 < end) {
+    **write = (char)character;
+    (*write)++;
+  }
+  else {
+    s_CommandLineTruncated = true;
+  }
+}
+
+
+/* Copies the command line uppercased into destination (ending at destinationEnd) up to terminator, which is
+   stored as the NUL. Returns the position OF the terminator (not after it), or NULL when the command line
+   ends first (its NUL copied as well). The original did not bound the copy; truncated here because the
+   destination is a 256-byte buffer. */
+static uint8_t *CommandLine_CopyUppercasedUntil
+          (uint8_t *cursor,char *destination,char *destinationEnd,uint8_t terminator)
 
 {
   uint8_t currentChar;
 
   currentChar = CommandLine_UppercaseAscii(*cursor);
   while (currentChar != terminator) {
-    *destination = currentChar;
     if (currentChar == '\0') {
+      *destination = '\0';
       return nullptr;
     }
-    destination++;
+    CommandLine_StoreBounded(&destination,destinationEnd,currentChar);
     cursor++;
     currentChar = CommandLine_UppercaseAscii(*cursor);
   }
@@ -1419,27 +1449,28 @@ static uint8_t *CommandLine_CopyUppercasedUntil(uint8_t *cursor,char *destinatio
 
 /* Copies the executable path (the first word, or the quoted part without its quotes) into
    g_CommandLine.executablePath. Returns the position after it, or NULL when the command line ends there
-   (a quoted path without its closing quote is discarded). */
+   (a quoted path without its closing quote is discarded). The original did not bound the copy; truncated
+   here because executablePath is a 256-byte buffer. */
 static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
 
 {
   char *pathWrite;
+  char *pathEnd;
   uint8_t currentChar;
 
   pathWrite = g_CommandLine.executablePath;
+  pathEnd = g_CommandLine.executablePath + sizeof g_CommandLine.executablePath;
   if (*cursor == '"') {
     cursor++;
     currentChar = *cursor;
     cursor++;
     while (currentChar != '"') {
       if (currentChar == '\0') {
-        *pathWrite = '\0';
         /* no closing quote: the path is discarded */
         g_CommandLine.executablePath[0] = '\0';
         return nullptr;
       }
-      *pathWrite = currentChar;
-      pathWrite++;
+      CommandLine_StoreBounded(&pathWrite,pathEnd,currentChar);
       currentChar = *cursor;
       cursor++;
     }
@@ -1448,11 +1479,11 @@ static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
     currentChar = *cursor;
     cursor++;
     while (currentChar != ' ') {
-      *pathWrite = currentChar;
       if (currentChar == '\0') {
+        *pathWrite = '\0';
         return nullptr;
       }
-      pathWrite++;
+      CommandLine_StoreBounded(&pathWrite,pathEnd,currentChar);
       currentChar = *cursor;
       cursor++;
     }
@@ -1464,8 +1495,10 @@ static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
 
 /* Copies one option (cursor just after its '/' or '-') uppercased up to the next space to *optionWrite,
    quoted parts verbatim with their quotes, and NUL-terminates it. Returns the position after the space, or
-   NULL when the command line ends inside the option (its NUL copied as well). */
-static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite)
+   NULL when the command line ends inside the option (its NUL copied as well). The original did not bound
+   the copy; here nothing is written at or after optionEnd (the option is truncated, or dropped when no byte
+   is left), so the last byte of optionBuffer stays the NUL that ends the list. */
+static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite,char *optionEnd)
 
 {
   char *write;
@@ -1475,27 +1508,37 @@ static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite)
   currentChar = CommandLine_UppercaseAscii(*cursor);
   cursor++;
   while (currentChar != ' ') {
-    *write = currentChar;
-    write++;
     if (currentChar == '\0') {
+      if (write < optionEnd) {
+        *write = '\0';
+      }
       return nullptr;
     }
+    CommandLine_StoreBounded(&write,optionEnd,currentChar);
     if (currentChar == '"') {
       do {
         currentChar = *cursor;
-        *write = currentChar;
         cursor++;
-        write++;
         if (currentChar == '\0') {
+          if (write < optionEnd) {
+            *write = '\0';
+          }
           return nullptr;
         }
+        CommandLine_StoreBounded(&write,optionEnd,currentChar);
       } while (currentChar != '"');
     }
     currentChar = CommandLine_UppercaseAscii(*cursor);
     cursor++;
   }
-  *write = '\0';
-  *optionWrite = write + 1;
+  if (write < optionEnd) {
+    *write = '\0';
+    write++;
+  }
+  else {
+    s_CommandLineTruncated = true;
+  }
+  *optionWrite = write;
   return cursor;
 }
 
@@ -1514,7 +1557,7 @@ static uint8_t *CommandLine_CopyQuotedArgument(uint8_t *cursor)
   }
   /* Original quirk: parsing continues ON the closing quote, which is then read again as the opening quote
      of a further quoted argument. */
-  return CommandLine_CopyUppercasedUntil(cursor,argumentSlot,'"');
+  return CommandLine_CopyUppercasedUntil(cursor,argumentSlot,argumentSlot + sizeof g_CommandLine.argument1,'"');
 }
 
 
@@ -1532,7 +1575,8 @@ static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
   }
   argumentSlot[0] = CommandLine_UppercaseAscii(firstChar);
   /* continues on the space after the argument, which is skipped next */
-  return CommandLine_CopyUppercasedUntil(cursor,argumentSlot + 1,' ');
+  return CommandLine_CopyUppercasedUntil
+           (cursor,argumentSlot + 1,argumentSlot + sizeof g_CommandLine.argument1,' ');
 }
 
 
@@ -1540,7 +1584,8 @@ static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
    as the lookup hook: the executable path without quotes, up to three positional arguments (quotes
    removed, further ones skipped) and every '/' or '-' option without its prefix, NUL-separated in
    optionBuffer (quoted parts kept verbatim with their quotes). Everything else is uppercased (ASCII a-z
-   only). The 256-byte buffers are not bounds-checked. The arguments are also stored as UTF-16.
+   only). The original did not bound the 256-byte buffers; longer parts are truncated here (logged once).
+   The arguments are also stored as UTF-16.
 */
 void CommandLine_Parse()
 
@@ -1560,7 +1605,10 @@ void CommandLine_Parse()
       break;
     }
     if ((currentChar == '/') || (currentChar == '-')) {
-      commandLineCursor = CommandLine_CopyOption(commandLineCursor,&optionWrite);
+      /* the last byte of optionBuffer is kept as the empty string that ends the list */
+      commandLineCursor = CommandLine_CopyOption
+                    (commandLineCursor,&optionWrite,
+                     g_CommandLine.optionBuffer + sizeof g_CommandLine.optionBuffer - 1);
     }
     else if (currentChar == '"') {
       commandLineCursor = CommandLine_CopyQuotedArgument(commandLineCursor);
@@ -1568,6 +1616,9 @@ void CommandLine_Parse()
     else if (currentChar != ' ') {
       commandLineCursor = CommandLine_CopyArgument(currentChar,commandLineCursor);
     }
+  }
+  if (s_CommandLineTruncated) {
+    Thandor_Log("CommandLine_Parse: a part longer than its 256-byte buffer was truncated");
   }
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument1,g_CommandLineWideArguments.argument1,

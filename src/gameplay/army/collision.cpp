@@ -57,7 +57,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
    (classState.linkedArmyRuntimeOrSavedOffset) and models linked to it, and whose collision circle reaches the
    point within the unit's placement radius (its definition's footprintRadius). Returns that model runtime
    (never NULL), or NULL when nothing is in the way.
-   Called directly by the ground-movement code (gameplay/army/movement.c) and by
+   Called directly by the movement code (gameplay/army/drive_ground.cpp, drive_banking.cpp, walker.cpp) and by
    ArmyPlacement_TestGridRuntimeAndFieldBlocking.
 */
 ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
@@ -353,7 +353,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
    placement radius (definition footprintRadius) plus queryRadiusQ12 of the model's position, compared
    on the 64-bit squares. Models without radius and a zero query radius never hit.
    Called directly by the runtime-list collision scans in this file and by the movement code
-   (gameplay/army/movement.c).
+   (gameplay/army/drive_ground.cpp, drive_banking.cpp, walker.cpp, class_updates.cpp).
 */
 Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime)

@@ -14,7 +14,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/frontend/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct GraphicsDisplayMode GraphicsDisplayMode, *PGraphicsDisplayMode;
 typedef struct SoftwarePixelFormatConfig SoftwarePixelFormatConfig, *PSoftwarePixelFormatConfig;
@@ -29,8 +29,6 @@ typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRa
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
 using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
-using GraphicsFramebufferCopyRegionToOriginProc = void (GraphicsPixelDimension copyHeight, GraphicsPixelDimension copyWidth, GraphicsScreenCoordinate sourceY, GraphicsScreenCoordinate sourceX, SoftwareFramebufferAccess * destination, SoftwareFramebufferAccess * source);
-using GraphicsFramebufferCopyOriginToRegionProc = void (GraphicsPixelDimension copyHeight, GraphicsPixelDimension copyWidth, GraphicsScreenCoordinate destinationY, GraphicsScreenCoordinate destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);
 using SoftwareFramebufferDestroyProc = void (SoftwareFramebufferAccess * framebuffer);
 
 enum {
@@ -50,11 +48,8 @@ using DisplayModeHookArgument1 = uint32_t;
 
 using GraphicsDisplayModeCount = uint32_t;
 
-using PaletteBankIndex = uint32_t;
 
 using GraphicsPixelChannelBitShift = uint32_t;
-
-using GraphicsIntegerScale = uint32_t;
 
 using GraphicsPixelChannelBitCount = uint32_t;
 

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+/* int32_t, 4: pixels from the gauge top to its label line */
 static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
@@ -20,9 +20,9 @@ static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 
 /* Implementation ownership: ui/controls/gauge. */
 
-/* drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
-   (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue, and with
-   gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
+/* Draws the horizontal gauge (progress bar, the drawing half of g_UiTransferProgressGaugeVtable): the track, a
+   fill proportional to (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue,
+   and with gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
    its two caps. Children are not drawn.
 */
 void UiHorizontalGaugeControl_DrawFrameFillAndLabel
@@ -131,37 +131,6 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   }
   return;
 }
-
-/* pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
-   bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
-   pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
-*/
-GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
-
-{
-  return GRAPHICS_CURSOR_FRAME_BUSY;
-}
-
-UiNodeVtable g_UiHorizontalGaugeControlVtable = {
-        .relocate = UI_SLOT(UiContainer_RelocateChildren),
-        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = UI_SLOT(UiHorizontalGaugeControl_DrawFrameFillAndLabel),
-        .layout = UI_SLOT(UiContainer_LayoutChildren),
-        .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
-        .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
-        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
-        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
-        .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
-        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
-        .pointerMove = UI_SLOT(UiHorizontalGaugeControl_PointerMoveBusyCursor),
-        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
-        .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
-        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
-        .tick = UI_SLOT(UiNode_DefaultTick),
-        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 /* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
    are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count

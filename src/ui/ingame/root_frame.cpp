@@ -13,8 +13,8 @@
 /* Module data. */
 
 THANDOR_ALIGN(16) UiRootCallbacks g_InGameUiRootCallbacks = {
-    .frameUpdate = THANDOR_FN(InGameUiRoot_UpdateFrame),
-    .keyboardFallback = THANDOR_FN(InGameHotkeys_DispatchCommandByFlags)};
+    .frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame),
+    .keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags)};
 
 IDirectSoundBuffer *g_InGameActiveEffectVoice = nullptr;
 

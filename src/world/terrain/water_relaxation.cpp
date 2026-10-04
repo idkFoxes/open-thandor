@@ -14,7 +14,7 @@
 /* In-game command INGAME_COMMAND_TERRAIN_RELAXATION (0x3200, handler at INGAME_COMMAND_CODE_BASE + code):
    runs passCount pairs of forward and reverse water relaxation sweeps over the active field grid, the
    sign-gated pair or (mode bit 0 set) the ungated land-tool pair. Queued or called directly by
-   InGameCommandRange_DispatchState0/1 (ui/ingame/commands.c) with 0x80 passes. passCount must not be 0.
+   InGameCommandRange_DispatchState0/1 (ui/ingame/editor_tool_selection.cpp) with 0x80 passes. passCount must not be 0.
 */
 void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode)

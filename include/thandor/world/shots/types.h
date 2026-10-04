@@ -15,7 +15,7 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct ShotRuntimeSlot ShotRuntimeSlot, *PShotRuntimeSlot;
 typedef union ShotModelNodeReferenceOrSavedOffset ShotModelNodeReferenceOrSavedOffset, *PShotModelNodeReferenceOrSavedOffset;

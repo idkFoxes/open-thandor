@@ -31,7 +31,7 @@ static const UQ12 g_WorldMotionAlternateMaximumDistanceQ12 = 131072;
 /* Implementation ownership: world/camera/camera_input. */
 
 /* Camera drag sideways (right-button drag of the model pointer context in camera scheme 0x8000,
-   ui/frontend/runtime.c): moves camera position and target together by screenDelta scaled with
+   ui/frontend/menu_room.cpp): moves camera position and target together by screenDelta scaled with
    k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at elevationAngle.
 */
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
@@ -54,7 +54,7 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 }
 
 /* Camera drag up/down (left+right-button drag of the model pointer context in camera scheme 0x8000,
-   ui/frontend/runtime.c): moves camera position and target together by the scaled screenDelta along the camera's
+   ui/frontend/menu_room.cpp): moves camera position and target together by the scaled screenDelta along the camera's
    up direction (pitch minus a quarter turn; past straight down the direction is mirrored with the heading turned
    by half a turn).
 */
@@ -85,7 +85,7 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
 }
 
 /* Camera drag forward/back (right-button drag of the model pointer context in camera scheme 0x8000, together with
-   the sideways move; ui/frontend/runtime.c): moves camera position and target together by the scaled
+   the sideways move; ui/frontend/menu_room.cpp): moves camera position and target together by the scaled
    screenDelta against the viewing direction (negated pitch, heading plus half a turn).
 */
 void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
@@ -109,7 +109,7 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
 }
 
 /* Orbits the camera around its target (right-button drag of the model pointer context in camera schemes 0x100 and
-   0x200, ui/frontend/runtime.c): turns the heading by headingDeltaInput * g_WorldMotionHeadingInputScale and puts
+   0x200, ui/frontend/menu_room.cpp): turns the heading by headingDeltaInput * g_WorldMotionHeadingInputScale and puts
    the camera back at targetDistanceQ12 from the unchanged target.
 */
 void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRuntimeContext *worldRuntime)
@@ -132,7 +132,7 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
 }
 
 /* Turns the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
-   ui/frontend/runtime.c): changes only the heading, in the opposite sense of
+   ui/frontend/menu_room.cpp): changes only the heading, in the opposite sense of
    WorldMotion_AdjustHeadingAndRecomputePosition; position and target stay.
 */
 void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,WorldRuntimeContext *worldRuntime)
@@ -145,7 +145,7 @@ void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,World
   return;
 }
 
-/* Camera zoom (mouse wheel and camera drags of the model pointer context, ui/frontend/runtime.c): changes
+/* Camera zoom (mouse wheel and camera drags of the model pointer context, ui/frontend/menu_room.cpp): changes
    the camera distance by distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12, clamps it to the world's camera
    distance range (with WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA only with flag 0x200, to the alternate range) and to at
    least WORLD_MOTION_MINIMUM_DISTANCE_Q12, and puts the camera at that distance from its target.
@@ -190,7 +190,7 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   return;
 }
 
-/* Ctrl + left+right-button drag of the model pointer context in camera scheme 0x8000 (ui/frontend/runtime.c):
+/* Ctrl + left+right-button drag of the model pointer context in camera scheme 0x8000 (ui/frontend/menu_room.cpp):
    changes positionMagnitudeQ12 against magnitudeDeltaInput with the same clamps as
    WorldMotion_AdjustDistanceClampAndRecomputePosition, without moving the camera.
 */
@@ -228,7 +228,7 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
 }
 
 /* Camera tilt around its target (Ctrl + mouse wheel and camera drags of the model pointer context,
-   ui/frontend/runtime.c): changes the pitch by pitchDeltaInput * g_WorldMotionPitchInputScale, clamps it like
+   ui/frontend/menu_room.cpp): changes the pitch by pitchDeltaInput * g_WorldMotionPitchInputScale, clamps it like
    the distance in WorldMotion_AdjustDistanceClampAndRecomputePosition (world pitch range or, unlimited with flag
    0x200, the alternate range) and always to +-a quarter turn, and puts the camera back around the target.
 */
@@ -275,7 +275,7 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
 }
 
 /* Tilts the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
-   ui/frontend/runtime.c): changes only the pitch, in the opposite sense of
+   ui/frontend/menu_room.cpp): changes only the pitch, in the opposite sense of
    WorldMotion_AdjustPitchClampAndRecomputePosition and with the same clamps; position and target stay.
 */
 void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,WorldRuntimeContext *worldRuntime)

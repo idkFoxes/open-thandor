@@ -12,10 +12,10 @@
 
 /* Module data. */
 
-/* SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
+/* SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software_display_mode.cpp). */
 [[maybe_unused]] static SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = &SoftwareFramebuffer_Destroy;
 
-/* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c); built by SoftwareRenderer_BuildFactorTables */
+/* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software_texture_scale.cpp); built by SoftwareRenderer_BuildFactorTables */
 int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
 
 /* Bilinear weights per 8-bit fraction f, all four lanes equal: forward (f * 0x4040) >> 8, inverse

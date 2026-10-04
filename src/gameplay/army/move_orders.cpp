@@ -134,7 +134,7 @@ void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot 
 
 /* Starts a locked, routed move to the target with exactly one queued waypoint, whose position is given
    separately by the two auxiliary values (x = auxiliaryValue0, y = auxiliaryValue1). The target becomes both
-   the route end and the final movement target. Called directly from gameplay/army/runtime.c.
+   the route end and the final movement target. Called directly from gameplay/army/factory.cpp.
 */
 void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
           (ArmyMoveAuxiliaryValue1 auxiliaryValue1,ArmyMoveAuxiliaryValue0 auxiliaryValue0,
@@ -391,7 +391,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
    (if this weapon is its primary weapon or it has none, and it is not already following) starts a
    target-following move towards the target, clamped for AI combat targets, and true is returned: the weapon
    must not fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
-   by the aim-and-fire class updates (runtime-update slots 7 and 8 here, and gameplay/army/combat.c).
+   by the aim-and-fire class updates (gameplay/army/turrets.cpp and combat.cpp).
 */
 Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)

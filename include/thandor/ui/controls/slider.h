@@ -34,7 +34,7 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
 
 extern UiNodeVtable g_UiRangeSliderControlVtable;
 
-/* UiRangeSliderControl sliderFlags (UiRangeSliderControl_* in ui/controls/input.c and misc.c). */
+/* UiRangeSliderControl sliderFlags (UiRangeSliderControl_* in ui/controls/slider.cpp). */
 #define UI_RANGE_SLIDER_VERTICAL 0x1
 #define UI_RANGE_SLIDER_DRAGGING 0x2 /* thumb drag in progress */
 #define UI_RANGE_SLIDER_CLICK_SOUND 0x4 /* play clickSound on press/release/key step */

@@ -7,6 +7,7 @@
 
 #include <thandor/world/terrain/placement_tests.h>
 #include <thandor/thandor.h>
+#include <thandor/world/terrain/hex_scan.h>
 
 /* Module data. */
 
@@ -14,10 +15,38 @@ static const int32_t g_TerrainHeightBandMaximumDelta = 1024;
 
 static const int32_t g_TerrainHeightBandMinimumDelta = -1024;
 
-/* int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
+/* int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans (0x3000) */
 static const int32_t g_TerrainAuxHeightMinimum = 12288;
 
 /* Implementation ownership: world/terrain/placement_tests. */
+
+/* Cell tests of the hexagon walks (the map-edge test is done by TerrainHexScan_EndsAt); true = the cell fails. */
+
+/* Height band: a flooded cell (waterSurfaceDelta > 0) or a height outside
+   [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta] relative to g_TerrainScanReferenceHeight. */
+static Bool8 TerrainHeightBand_CellFails(const FieldGridCell *cell)
+
+{
+  int relativeHeightQ12;
+
+  relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+  if (0 < cell->waterSurfaceDelta) {
+    return true;
+  }
+  return ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta);
+}
+
+
+/* Water-surface contact: a negative waterSurfaceDelta (Original quirk: the opposite sign of the height-band test)
+   or a triangle1NormalAngles high word below g_TerrainAuxHeightMinimum. */
+static Bool8 TerrainAuxHeightThreshold_CellFails(const FieldGridCell *cell)
+
+{
+  return (cell->waterSurfaceDelta < 0) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum);
+}
+
 
 /* Shared set-up of the two hexagon placement tests below: sets g_TerrainScanStepLimit (radius /
    TERRAIN_SCAN_RADIUS_PER_STEP clamped to 1..TERRAIN_SCAN_STEP_LIMIT_MAX), g_TerrainScanReferenceHeight and
@@ -45,6 +74,7 @@ static Bool8 TerrainScan_BeginAroundWorldPoint
     g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
   }
   g_TerrainScanReferenceHeight = referenceHeightQ12;
+  /* Original quirk: (X, Y) is passed into FieldGrid_WorldToGridQ12(worldY, worldX). */
   gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
   baseColumn = gridCoordinates.columnQ12 >> 12;
   cellRow = gridCoordinates.rowQ12 >> 12;
@@ -96,11 +126,6 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
   int centerCellIndex;
   FieldGridCell *centerCell;
   int relativeHeightQ12;
-  uint32_t gridWidth;
-  FieldGridCell *sector0Start;
-  FieldGridCell *sector1Start;
-  FieldGridCell *sector2Start;
-  FieldGridCell *sector3Start;
 
   if (fieldGrid == nullptr) {
     return true;
@@ -121,19 +146,11 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
       (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
     return true;
   }
-  /* sector n starts at the centre's neighbour in direction n (W = grid width):
-     C+1, C+1-W, C-W, C-1, C-1+W, C+W */
-  gridWidth = fieldGrid->gridWidth;
-  sector0Start = &fieldGrid->cells[centerCellIndex + 1];
-  sector1Start = sector0Start - gridWidth;
-  sector2Start = sector1Start - 1;
-  sector3Start = sector2Start + (gridWidth - 1);
-  return TerrainHeightBand_TestWedge0(0,sector0Start) ||
-         TerrainHeightBand_TestWedge1(0,sector1Start) ||
-         TerrainHeightBand_TestWedge2(0,sector2Start) ||
-         TerrainHeightBand_TestWedge3(0,(uint8_t *)sector3Start) ||
-         TerrainHeightBand_TestWedge4(0,sector3Start + gridWidth) ||
-         TerrainHeightBand_TestWedge5(0,sector3Start + gridWidth + 1);
+  /* the six sector walks, starting at C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width); a map-edge cell
+     fails, and the first failing cell ends the scan (Original quirk: later sectors are not evaluated) */
+  return TerrainHexScan_AllSectors(centerCell,TerrainHexScan_TestPolicy([](FieldGridCell *fieldCell) {
+                                     return TerrainHeightBand_CellFails(fieldCell);
+                                   }));
 }
 
 
@@ -150,11 +167,6 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
 {
   int centerCellIndex;
   FieldGridCell *centerCell;
-  uint32_t gridWidth;
-  FieldGridCell *sector0Start;
-  FieldGridCell *sector1Start;
-  FieldGridCell *sector2Start;
-  FieldGridCell *sector3Start;
 
   if (fieldGrid == nullptr) {
     return true;
@@ -163,8 +175,8 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
                                          &centerCellIndex)) {
     return true;
   }
-  /* the centre cell's threshold test reads triangle0NormalAngles; the sector tests read
-     triangle1NormalAngles. Both as in the original. */
+  /* Original quirk: the centre cell's threshold test reads triangle0NormalAngles, the sector walks
+     (TerrainAuxHeightThreshold_CellFails) read triangle1NormalAngles. */
   centerCell = &fieldGrid->cells[centerCellIndex];
   if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
     return true;
@@ -175,851 +187,12 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
   if ((int)centerCell->triangle0NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
     return true;
   }
-  /* sector n starts at the centre's neighbour in direction n (W = grid width):
-     C+1, C+1-W, C-W, C-1, C-1+W, C+W */
-  gridWidth = fieldGrid->gridWidth;
-  sector0Start = &fieldGrid->cells[centerCellIndex + 1];
-  sector1Start = sector0Start - gridWidth;
-  sector2Start = sector1Start - 1;
-  sector3Start = sector2Start + (gridWidth - 1);
-  return TerrainAuxHeightThreshold_TestWedge0(0,sector0Start) ||
-         TerrainAuxHeightThreshold_TestWedge1(0,sector1Start) ||
-         TerrainAuxHeightThreshold_TestWedge2(0,sector2Start) ||
-         TerrainAuxHeightThreshold_TestWedge3(0,sector3Start) ||
-         TerrainAuxHeightThreshold_TestWedge4(0,sector3Start + gridWidth) ||
-         TerrainAuxHeightThreshold_TestWedge5(0,sector3Start + gridWidth + 1);
+  /* the six sector walks, starting at C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width); a map-edge cell
+     fails, and the first failing cell ends the scan (Original quirk: later sectors are not evaluated) */
+  return TerrainHexScan_AllSectors(centerCell,TerrainHexScan_TestPolicy([](FieldGridCell *fieldCell) {
+                                     return TerrainAuxHeightThreshold_CellFails(fieldCell);
+                                   }));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Height-band test of one cell: true for a map-edge cell, a flooded cell (waterSurfaceDelta > 0) or a height
-   outside [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta] relative to
-   g_TerrainScanReferenceHeight. */
-static Bool8 TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
-
-{
-  int relativeHeightQ12;
-
-  if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-    return true;
-  }
-  relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-  if (0 < cell->waterSurfaceDelta) {
-    return true;
-  }
-  return ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) ||
-         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta);
-}
-
-
-/* Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the
-   sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the straight
-   tests of directions 0 and 1 that cover the sector. Returns true at the first cell outside the height
-   band, false when the step limit is reached.
-*/
-Bool8 TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *directionStartCell;
-  FieldGridCell *betweenCell;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    rowStrideBytes = g_TerrainScanRowStrideBytes;
-    if (TerrainHeightBand_IsCellOutside(cell)) {
-      return true;
-    }
-    directionStartCell = cell + 1;
-    if (TerrainHeightBand_TestDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell)) {
-      return true;
-    }
-    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-      return false;
-    }
-    /* the in-between cell is one row up from directionStartCell */
-    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes);
-    if (TerrainHeightBand_IsCellOutside(betweenCell)) {
-      return true;
-    }
-    cell = betweenCell + 1;
-    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-    if (TerrainHeightBand_TestDirection1(scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-/* Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
-   directions 1 and 2.
-*/
-Bool8 TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *directionStartCell;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    rowStrideBytes = g_TerrainScanRowStrideBytes;
-    if (TerrainHeightBand_IsCellOutside(cell)) {
-      return true;
-    }
-    if (TerrainHeightBand_TestDirection1
-              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-               FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes))) {
-      return true;
-    }
-    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-      return false;
-    }
-    /* the in-between cell is the one above */
-    if (TerrainHeightBand_IsCellOutside(FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes))) {
-      return true;
-    }
-    /* two rows up */
-    directionStartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
-    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-    cell = directionStartCell + 1;
-    if (TerrainHeightBand_TestDirection2(scanStep,directionStartCell)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-/* Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
-   directions 2 and 3.
-*/
-Bool8 TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  FieldGridCell *directionStartCell;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    if (TerrainHeightBand_IsCellOutside(cell)) {
-      return true;
-    }
-    if (TerrainHeightBand_TestDirection2
-              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes))) {
-      return true;
-    }
-    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-      return false;
-    }
-    /* the in-between cell is the left neighbour */
-    if (TerrainHeightBand_IsCellOutside(cell - 1)) {
-      return true;
-    }
-    directionStartCell = cell - 2;
-    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,-g_TerrainScanRowStrideBytes); /* up and left */
-    if (TerrainHeightBand_TestDirection3(scanStep,directionStartCell)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-/* Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
-   directions 3 and 4.
-*/
-Bool8 TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
-
-{
-  int rowStrideBytes;
-  int relativeHeightQ12;
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      /* cell is a byte pointer here */
-      if ((((((uint32_t)((FieldGridCell *)cell)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-           (0 < ((FieldGridCell *)cell)->waterSurfaceDelta)) ||
-          ((int)g_TerrainHeightBandMaximumDelta <
-           (int)((uint32_t)((FieldGridCell *)cell)->terrainHeight - g_TerrainScanReferenceHeight))) ||
-         ((int)((uint32_t)((FieldGridCell *)cell)->terrainHeight - g_TerrainScanReferenceHeight) <
-          (int)g_TerrainHeightBandMinimumDelta)) {
-        return true;
-      }
-      directionStartCell = (FieldGridCell *)cell - 1;
-      directionFailed = TerrainHeightBand_TestDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      /* the in-between cell is the one below directionStartCell (one row stride on) */
-      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      relativeHeightQ12 = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->terrainHeight - g_TerrainScanReferenceHeight;
-      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->waterSurfaceDelta) {
-        return true;
-      }
-      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
-        return true;
-      }
-      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
-        return true;
-      }
-      /* directionStartCell[-1] one row down */
-      cell = (uint8_t *)(directionStartCell - 1) + rowStrideBytes;
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      directionFailed = TerrainHeightBand_TestDirection4
-                        (scanStep,(FieldGridCell *)(cell + g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
-   directions 4 and 5.
-*/
-Bool8 TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *betweenCell;
-  FieldGridCell *direction5StartCell;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    rowStrideBytes = g_TerrainScanRowStrideBytes;
-    if (TerrainHeightBand_IsCellOutside(cell)) {
-      return true;
-    }
-    if (TerrainHeightBand_TestDirection4
-              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-               FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes))) {
-      return true;
-    }
-    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-      return false;
-    }
-    /* the in-between cell is the one below (one row stride on) */
-    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes);
-    if (TerrainHeightBand_IsCellOutside(betweenCell)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-    /* two rows down: the direction 5 start; the next diagonal cell is one left of it */
-    direction5StartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(betweenCell,g_TerrainScanRowStrideBytes);
-    cell = direction5StartCell - 1;
-    if (TerrainHeightBand_TestDirection5(scanStep,direction5StartCell)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-/* Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
-   directions 5 and 0.
-*/
-Bool8 TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  FieldGridCell *directionStartCell;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    if (TerrainHeightBand_IsCellOutside(cell)) {
-      return true;
-    }
-    if (TerrainHeightBand_TestDirection5
-              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-               FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes))) {
-      return true;
-    }
-    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-      return false;
-    }
-    /* the in-between cell is the right neighbour */
-    if (TerrainHeightBand_IsCellOutside(cell + 1)) {
-      return true;
-    }
-    directionStartCell = cell + 2;
-    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,g_TerrainScanRowStrideBytes); /* below the right cell */
-    if (TerrainHeightBand_TestDirection0(scanStep,directionStartCell)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint):
-   walks the sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the
-   straight tests of directions 0 and 1 that cover the sector. Returns true at the first failing cell,
-   false when the step limit is reached.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionStartCell = cell + 1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      /* the in-between cell is one row up from directionStartCell (flagsAndMaterial, terrainHeight,
-         waterSurfaceDelta, triangle1NormalAngles) */
-      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes)->waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes)->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell + 1,-rowStrideBytes);
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection1
-                        (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
-   of directions 1 and 2.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionFailed = TerrainAuxHeightThreshold_TestDirection1
-                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                         FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      /* the in-between cell is the one above (flagsAndMaterial, terrainHeight, waterSurfaceDelta,
-         triangle1NormalAngles) */
-      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      directionStartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = directionStartCell + 1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection2(scanStep,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
-   of directions 2 and 3.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionFailed = TerrainAuxHeightThreshold_TestDirection2
-                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (cell[-1].waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)cell[-1].triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      directionStartCell = cell - 2;
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,-g_TerrainScanRowStrideBytes);
-      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
-   of directions 3 and 4.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int rowStrideBytes;
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionStartCell = cell - 1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      /* the in-between cell is the one below directionStartCell (one row stride on) */
-      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes)->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      /* directionStartCell[-1] one row down */
-      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell - 1,rowStrideBytes);
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection4
-                        (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
-   of directions 4 and 5.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  uint8_t *cellBytes;
-  int rowStrideBytes;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionFailed = TerrainAuxHeightThreshold_TestDirection4
-                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                         FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      /* the in-between cell is the one below (one row stride on) */
-      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      /* two rows down: the next diagonal cell one left of the direction 5 start */
-      cellBytes = (uint8_t *)cell;
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)(cellBytes + g_TerrainScanRowStrideBytes + rowStrideBytes) - 1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection5
-                        (scanStep,(FieldGridCell *)
-                                  (cellBytes + g_TerrainScanRowStrideBytes + rowStrideBytes));
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
-   of directions 5 and 0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  FieldGridCell *directionStartCell;
-  Bool8 directionFailed;
-
-  if (scanStep < g_TerrainScanStepLimit) {
-    do {
-      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-        return true;
-      }
-      directionFailed = TerrainAuxHeightThreshold_TestDirection5
-                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                         FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes))
-      ;
-      if (directionFailed) {
-        return true;
-      }
-      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
-        return false;
-      }
-      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-        return true;
-      }
-      if (cell[1].waterSurfaceDelta < 0) {
-        return true;
-      }
-      if ((int)cell[1].triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
-        return true;
-      }
-      directionStartCell = cell + 2;
-      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,g_TerrainScanRowStrideBytes);
-      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep,directionStartCell);
-      if (directionFailed) {
-        return true;
-      }
-    } while (scanStep < g_TerrainScanStepLimit);
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 0 (C+1, right): returns true at the first
-   cell that is a map-edge cell, lies under water (waterSurfaceDelta > 0) or whose height relative to
-   g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
-   once the step limit is reached (4 scan steps per cell).
-*/
-Bool8 TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (scanStep < g_TerrainScanStepLimit) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if (0 < cell->waterSurfaceDelta) {
-      return true;
-    }
-    if (((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell++;
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
-*/
-Bool8 TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (g_TerrainScanStepLimit > scanStep) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
-*/
-Bool8 TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (g_TerrainScanStepLimit > scanStep) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
-*/
-Bool8 TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (g_TerrainScanStepLimit > scanStep) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell--;
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
-*/
-Bool8 TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (g_TerrainScanStepLimit > scanStep) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
-*/
-Bool8 TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  int terrainHeightDeltaQ12;
-
-  while (g_TerrainScanStepLimit > scanStep) {
-    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
-      return true;
-    }
-    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
-    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
-        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 0 (C+1, right): returns true at the first
-   cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
-   g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell++;
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
-   TerrainAuxHeightThreshold_TestDirection0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 2 (C-W, up); see
-   TerrainAuxHeightThreshold_TestDirection0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 3 (C-1, left); see
-   TerrainAuxHeightThreshold_TestDirection0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell--;
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
-   TerrainAuxHeightThreshold_TestDirection0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-/* Water-surface placement test, straight leg along direction 5 (C+W, down); see
-   TerrainAuxHeightThreshold_TestDirection0.
-*/
-Bool8 TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
-
-{
-  while (g_TerrainScanStepLimit > scanStep) {
-    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
-        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
-      return true;
-    }
-    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-    cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
-  }
-  return false;
-}
-
-
-
-
-
-
 
 
 /* Class vtables. */

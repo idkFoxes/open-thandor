@@ -19,7 +19,7 @@ static uint32_t g_InGameCommandPointerCaptureX = 0;
 
 static uint32_t g_InGameCommandPointerCaptureY = 0;
 
-/* uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
+/* uint32_t[8]: command id per pointer mode (modifier mask & variant mask) */
 static const uint32_t g_InGamePointerModeCommandIds[8] = {26, 38, 39, 40, 41, 42, 43, 44};
 
 InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12] = {0};
@@ -325,12 +325,7 @@ static void InGameWorldInput_BeginDragSelectionIfMoved(WorldRuntimeContext *inGa
   }
   if ((WORLD_DRAG_SELECTION_THRESHOLD < deltaX) || (WORLD_DRAG_SELECTION_THRESHOLD < deltaY)) {
     inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_DRAG_SELECTING;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
-    }
+    InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
   }
   return;
 }
@@ -416,14 +411,8 @@ static void InGameWorldInput_FlushDragSelectionBatches()
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
     tripletCursor = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
     do {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,tripletCursor[2],tripletCursor[1],*tripletCursor);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_SELECTION_REMOVE,tripletCursor[2],tripletCursor[1],*tripletCursor);
-      }
+      InGameCommand_Issue<FrontendPlayerSelection_RemoveThreeEntriesAndRefresh>
+                (tripletCursor[2],tripletCursor[1],*tripletCursor);
       countBeforeTriplet = g_InGameSelectionRemoveTripletDwordCount;
       tripletCursor = tripletCursor + 3;
       g_InGameSelectionRemoveTripletDwordCount = g_InGameSelectionRemoveTripletDwordCount - 3;
@@ -432,14 +421,8 @@ static void InGameWorldInput_FlushDragSelectionBatches()
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
     tripletCursor = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
     do {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,tripletCursor[2],tripletCursor[1],*tripletCursor);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_SELECTION_INSERT,tripletCursor[2],tripletCursor[1],*tripletCursor);
-      }
+      InGameCommand_Issue<FrontendPlayerSelection_InsertThreeEntriesAndRefresh>
+                (tripletCursor[2],tripletCursor[1],*tripletCursor);
       countBeforeTriplet = g_InGameSelectionInsertTripletDwordCount;
       tripletCursor = tripletCursor + 3;
       g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount - 3;
@@ -554,24 +537,12 @@ static void InGameWorldInput_CommitCommandModeRelease
     return;
   }
   modeHandler = (InGamePointerModeHandler *)g_InGamePointerModeHandlers[modifierModeMask & variantMask];
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    /* The original pushes the same four arguments as the networked command below, with the local player
-       id in place of the command id. */
-    modeHandler(g_LocalPlayerRuntimeId,g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
-  }
-  else {
-    /* the command code is the handler's code in the in-game command table (in the original its address
-       minus INGAME_COMMAND_CODE_BASE) */
-    InGameCommandQueue_AppendLocalPlayerCommand
-              ((UiActionId)CommandDispatch_CodeOfHandler(INGAME_COMMAND_CODE_BASE,(const void *)modeHandler),
-               g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
-  }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
-  }
+  /* The original pushes the same four arguments locally (local player id) and networked (the handler's code in
+     the in-game command table; in the original its address minus INGAME_COMMAND_CODE_BASE). */
+  InGameCommand_IssueHandler
+            ((CommandQueueHandlerProc *)modeHandler,g_InGameCommandPreviewHeading16,pointerWorldXQ12,
+             pointerWorldYQ12);
+  InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
   return;
 }
 
@@ -579,14 +550,7 @@ static void InGameWorldInput_CommitCommandModeRelease
 static void InGameWorldInput_SelectCandidateArmy(GameEntityRuntime *entry)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    InGamePlayerSelection_SelectArmyRuntimeIndex
-              (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
-  }
-  else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_SELECT_ARMY,0,0,ArmyRuntime_Token(entry));
-  }
+  InGameCommand_Issue<InGamePlayerSelection_SelectArmyRuntimeIndex>(0,0,ArmyRuntime_Token(entry));
   return;
 }
 
@@ -603,18 +567,10 @@ static void InGameWorldInput_SelectOwnCandidateArmy
   }
   armyRuntimeIndex = ArmyRuntime_Token(entry);
   if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_REPLACE_SELECTION) == 0) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(g_LocalPlayerRuntimeId,0,0,armyRuntimeIndex);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,armyRuntimeIndex);
-    }
-  }
-  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    InGamePlayerSelection_ReplaceWithArmyRuntimeIndex(g_LocalPlayerRuntimeId,0,0,armyRuntimeIndex);
+    InGameCommand_Issue<FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection>(0,0,armyRuntimeIndex);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_REPLACE_SELECTION,0,0,armyRuntimeIndex);
+    InGameCommand_Issue<InGamePlayerSelection_ReplaceWithArmyRuntimeIndex>(0,0,armyRuntimeIndex);
   }
   return;
 }
@@ -652,34 +608,14 @@ static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntim
   if (ownerIndex == (entry->common).ownership.ownerIndex) {
     entryAbsent = SelectionInfo_IsEntryAbsent(entry);
     if (entryAbsent) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                  (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_SELECTION_INSERT,0,0,
-                   ArmyRuntime_Token(entry));
-      }
-    }
-    else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
+      InGameCommand_Issue<FrontendPlayerSelection_InsertThreeEntriesAndRefresh>(0,0,ArmyRuntime_Token(entry));
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand
-                (INGAME_COMMAND_SELECTION_REMOVE,0,0,
-                 ArmyRuntime_Token(entry));
+      InGameCommand_Issue<FrontendPlayerSelection_RemoveThreeEntriesAndRefresh>(0,0,ArmyRuntime_Token(entry));
     }
   }
-  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-              (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
-  }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,
-               ArmyRuntime_Token(entry));
+    InGameCommand_Issue<FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection>(0,0,ArmyRuntime_Token(entry));
   }
   return;
 }
@@ -710,15 +646,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
   }
   if (!SelectionInfo_HasAnyEntry() || SelectionInfo_AllEntriesEmptyOrMatchOwner(ownerIndex)) {
     if (entry != nullptr) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-                  (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_SELECT_SINGLE_ARMY,0,0,
-                   ArmyRuntime_Token(entry));
-      }
+      InGameCommand_Issue<FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection>(0,0,ArmyRuntime_Token(entry));
     }
     return;
   }
@@ -727,18 +655,10 @@ static void InGameWorldInput_CommitSelectionModeRelease
       /* ground click: move, or position with Shift/Alt */
       if (!SelectionInfo_TestAnyActiveOrSingleClass13() && (pickedHeightQ12 != WORLD_POINTER_NO_HIT)) {
         if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-            InGamePlayerSelection_ApplyMoveCommand(g_LocalPlayerRuntimeId,0,pointerWorldXQ12,pointerWorldYQ12);
-          }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MOVE,0,pointerWorldXQ12,pointerWorldYQ12);
-          }
-        }
-        else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-          InGamePlayerSelection_ApplyPositionCommand(g_LocalPlayerRuntimeId,0,pointerWorldXQ12,pointerWorldYQ12);
+          InGameCommand_Issue<InGamePlayerSelection_ApplyMoveCommand>(0,pointerWorldXQ12,pointerWorldYQ12);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_POSITION,0,pointerWorldXQ12,pointerWorldYQ12);
+          InGameCommand_Issue<InGamePlayerSelection_ApplyPositionCommand>(0,pointerWorldXQ12,pointerWorldYQ12);
         }
       }
       return;
@@ -766,14 +686,8 @@ static void InGameWorldInput_CommitSelectionModeRelease
       if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {
         surfaceHeightQ12 = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                                 (pointerWorldXQ12,pointerWorldYQ12,inGameRuntime);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-          InGamePlayerSelection_ApplyTargetPositionCommand
-                    (g_LocalPlayerRuntimeId,surfaceHeightQ12,pointerWorldXQ12,pointerWorldYQ12);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_TARGET_POSITION,surfaceHeightQ12,
-                                                      pointerWorldXQ12,pointerWorldYQ12);
-        }
+        InGameCommand_Issue<InGamePlayerSelection_ApplyTargetPositionCommand>
+                  (surfaceHeightQ12,pointerWorldXQ12,pointerWorldYQ12);
       }
       return;
     }
@@ -811,14 +725,8 @@ static void InGameWorldInput_DispatchPointerRelease
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
     if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommand_ExecuteLocalPlacementFromSelection
-                  (g_LocalPlayerRuntimeId,g_InGamePlacementHeading16,pointerWorldXQ12,pointerWorldYQ12);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_PLACE_ARMY,g_InGamePlacementHeading16,pointerWorldXQ12,pointerWorldYQ12);
-      }
+      InGameCommand_Issue<InGameCommand_ExecuteLocalPlacementFromSelection>
+                (g_InGamePlacementHeading16,pointerWorldXQ12,pointerWorldYQ12);
     }
     return;
   }
