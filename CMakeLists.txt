@@ -72,9 +72,13 @@ add_library(thandor_curated STATIC
     src/gameplay/ai/workspaces.cpp
     src/gameplay/army/audio.cpp
     src/gameplay/army/combat.cpp
-    src/gameplay/army/movement.cpp
+    src/gameplay/army/drive_banking.cpp
+    src/gameplay/army/drive_ground.cpp
+    src/gameplay/army/move_orders.cpp
     src/gameplay/army/placement.cpp
     src/gameplay/army/runtime.cpp
+    src/gameplay/army/turrets.cpp
+    src/gameplay/army/walker.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
     src/gameplay/input/world.cpp
