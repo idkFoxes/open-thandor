@@ -494,6 +494,7 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
         src/platform/selftest/hexscan_selftest.cpp
+        src/platform/selftest/keymatch_selftest.cpp
         src/platform/selftest/raster_selftest.cpp
         src/platform/selftest/selftests.cpp
     )

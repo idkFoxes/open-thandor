@@ -10,7 +10,7 @@ further copies next to it), windowed, with its own UDP ports:
   aihash       compare_map_hash.py stromschnelle 1400: two copies of the new build, plus the --old build if
                given; all must record identical state hashes (ports 980-982)
   pixels       (only with --old) new vs old build: the paused in-game frame (skirmish_pause.txt, -KARTE=
-               "mittelpunkt") and the choose-game page (choose_game.txt, -KARTE="-"); the screenshots must be
+               "mittelpunkt"), the same after the in-game key commands of skirmish_keys.txt and the choose-game page (choose_game.txt, -KARTE="-"); the screenshots must be
                pixel-identical (ports 900-903)
   saveload     skirmish_save.txt saves a skirmish (save\\Multi Ahaggar.sve must exist and list 10 entries with
                tools/data/pck.py), then choose_load.txt loads it from the choose-game page; the loaded game must
@@ -209,6 +209,7 @@ def check_pixels():
     os.makedirs(pixels)
     folders = {'new': make_copy('pix_new', args.new), 'old': make_copy('pix_old', args.old)}
     pages = [('pause', 'skirmish_pause.txt', '-NOINTRO -KARTE="mittelpunkt"'),
+             ('keys', 'skirmish_keys.txt', '-NOINTRO -KARTE="mittelpunkt"'),
              ('choose', 'choose_game.txt', '-NOINTRO -KARTE="-"')]
     report, failed = [], False
     log = open(os.path.join(out_dir, 'pixels.txt'), 'w', encoding='utf-8', errors='replace')
@@ -222,7 +223,7 @@ def check_pixels():
             # before the script quits, so the last periodic shot shows it
             env = {'OPEN_THANDOR_SCRIPT': os.path.join(HERE, script), 'OPEN_THANDOR_AUTOSHOT': '2000',
                    'OPEN_THANDOR_WINDOW_X': str(k * 660), 'OPEN_THANDOR_WINDOW_Y': '420'}
-            if page == 'pause':
+            if page in ('pause', 'keys'):
                 # pause at a fixed simulation tick with a fixed seed: the frame no longer depends on the frame rate
                 env.update({'OPEN_THANDOR_STATEHASH': '100000', 'OPEN_THANDOR_STATEHASH_SEED': '12345',
                             'OPEN_THANDOR_STATEHASH_PAUSE_AT': '150'})

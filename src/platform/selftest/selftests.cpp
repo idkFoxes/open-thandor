@@ -1215,6 +1215,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestHexScan();
         return 1;
     }
+    if (name != nullptr && strcmp(name, "keymatch") == 0) {
+        Thandor_SelfTestKeyMatch();
+        return 1;
+    }
     if (name != nullptr && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;
