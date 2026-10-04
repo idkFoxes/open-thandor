@@ -1,6 +1,6 @@
 # Step 8: code review and idiomatic C++
 
-Status: in progress (started 2026-10-04). Step 8 combines a full code review of every area with the move to
+Status: done (2026-10-04; final run_checks: all 8 checks pass, GCC and MSVC build without new warnings). Step 8 combines a full code review of every area with the move to
 idiomatic C++ following the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 The work is done in many small packages (about 15 minutes of agent work each, one file group and one kind of change
 per package), several at a time in separate worktrees, merged in waves; after every wave both compilers build and

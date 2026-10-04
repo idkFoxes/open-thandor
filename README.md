@@ -41,7 +41,7 @@ split into the modules' own type headers.
 
 Next:
 
-1. Step 8 (in progress): a full code review and idiomatic C++ step by step, following the
+1. Step 8 (done): a full code review and idiomatic C++ step by step, following the
    [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) ([plan](docs/plans/step8_idiomatic_cpp.md)).
 2. Step 9 (later): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
    ([plan](docs/plans/step9_gpu_ui.md)).
