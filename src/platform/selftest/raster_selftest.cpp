@@ -228,7 +228,7 @@ static int RasterTest_Handlers(RasterTestState *state, GraphicsTextureSetEntry *
         uint32_t hash = 2166136261u;
         char group[48];
         int t;
-        if (table[index] == NULL) {
+        if (table[index] == nullptr) {
             continue;
         }
         RasterTest_ResetTargets(state);
