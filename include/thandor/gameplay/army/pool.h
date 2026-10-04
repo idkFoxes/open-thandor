@@ -82,4 +82,21 @@ extern const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24]; /* uint32_t[24
 
 extern void *g_ArmyRuntimeRebaseBaseMinusOne;
 
+/* Army token: an army runtime as its byte offset from g_ArmyRuntimeRebaseBaseMinusOne, i.e. slot offset + 1
+   (0 = none). The form the in-game commands and the placement state carry; CommandDispatch_IsPoolToken
+   (network/protocol/commands.cpp) checks received ones. armyRuntime may be any view of the slot. */
+static inline int32_t ArmyRuntime_Token(const void *armyRuntime)
+{
+  return (int32_t)((uintptr_t)armyRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+}
+
+/* The army runtime an army token names; NULL for token 0. */
+static inline ArmyRuntimeSlot *ArmyRuntime_FromToken(int32_t token)
+{
+  if (token == 0) {
+    return NULL;
+  }
+  return (ArmyRuntimeSlot *)((uintptr_t)(uint32_t)token + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+}
+
 #endif /* THANDOR_GAMEPLAY_ARMY_POOL_H */

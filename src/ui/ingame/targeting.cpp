@@ -60,7 +60,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
           (root->worldRuntime.activeFactionRuntimeIndex != ownerArmy->factionIndex)) {
         continue;
       }
-      modelToken = (int)((uintptr_t)ownerArmy - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+      modelToken = ArmyRuntime_Token(ownerArmy);
       armyToken = (int)((uintptr_t)ownerNode->runtimePayload - g_ModelRuntimeRebaseDelta);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
