@@ -2108,13 +2108,13 @@
 0x0053B9E0  data      g_AiTechnologyCandidateScoreCallbackTable                         src/gameplay/ai/technology.cpp
 0x0053BA00  function  ModelDefinitionRegistry_FindByRuntimeClassId                      src/assets/model/definitions.cpp
 0x0053BA50  function  AiArmyCandidate_ComputeAverageCompatibleAssetScore                src/gameplay/ai/purchasing.cpp
-0x0053BC00  function  AiTechnologyCompatibility_AcceptRuntimeClassCandidate             src/gameplay/ai/technology.cpp
+0x0053BC00  function  AiTechnologyCompatibility_AcceptRuntimeClassCandidate             (removed, unused)
 0x0053BC20  function  AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8    src/gameplay/ai/technology.cpp
 0x0053BCB0  function  AiTechnologyScore_AlwaysZero                                      src/gameplay/ai/technology.cpp
 0x0053BCC0  function  AiTechnologyScore_ComputeFactionScaledCandidateValue              src/gameplay/ai/technology.cpp
-0x0053BD60  function  AiTechnologyScore_ReturnBaseCandidateValueForKind2                src/gameplay/ai/technology.cpp
+0x0053BD60  function  AiTechnologyScore_ReturnBaseCandidateValue                        src/gameplay/ai/technology.cpp
 0x0053BD80  function  AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue     src/gameplay/ai/technology.cpp
-0x0053BEA0  function  AiTechnologyScore_ReturnBaseCandidateValueForKind4                src/gameplay/ai/technology.cpp
+0x0053BEA0  function  AiTechnologyScore_ReturnBaseCandidateValueForKind4                (merged into AiTechnologyScore_ReturnBaseCandidateValue)
 0x0053BEC0  function  AiTechnologyScore_ComputeCategoryCompatibleCandidateValue         src/gameplay/ai/technology.cpp
 0x0053BF30  function  AiTechnologyCandidate_AddBestResearch                             src/gameplay/ai/technology.cpp
 0x0053C010  function  GameFactionRelations_UpdateAllPairsForFaction                     src/gameplay/faction/relations.cpp
