@@ -168,6 +168,118 @@ static uint32_t SelfTest_Free(void *memory)
     return 0;
 }
 
+/* OPEN_THANDOR_SELFTEST=codec, after the round trips: malformed method-0 and method-2 inputs (truncated
+   stream, output size 0, fewer than two symbols, empty source, grid larger than its buffers) must fail
+   without a crash; a uniform source must encode and round-trip. Logs one line per case and a summary. */
+static void Thandor_SelfTestCodecNegative(void)
+{
+    uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
+    uint32_t (*savedFree)(void *) = g_MemoryApi.free;
+    const unsigned gridBytes = FIELD_GRID_HEADER_BYTES + 4 * FIELD_GRID_CELL_DWORDS * 4; /* 2x2 cells */
+    const unsigned compactBytes = FIELD_GRID_HEADER_BYTES + 4 * FIELD_GRID_COMPACT_CELL_BYTES;
+    std::vector<uint8_t> source(0x1000);
+    std::vector<uint8_t> packed(0x4000);
+    std::vector<uint8_t> unpacked(0x1000 + 0x10);
+    std::vector<uint32_t> grid(gridBytes / 4);
+    std::vector<uint32_t> compact(compactBytes / 4);
+    std::vector<uint32_t> decodedGrid(gridBytes / 4);
+    uint32_t value = 0;
+    uint32_t packedSize = 0;
+    unsigned failures = 0;
+    unsigned seed = 777;
+    unsigned i;
+    Bool8 ok;
+
+    g_MemoryApi.alloc = SelfTest_Alloc;
+    g_MemoryApi.free = SelfTest_Free;
+    for (i = 0; i < source.size(); i++) {
+        seed = seed * 1103515245u + 12345u;
+        source[i] = (uint8_t)(seed >> 16);
+    }
+#define CODEC_NEG_EXPECT(name, condition) \
+    do { \
+        int passed_ = (condition) ? 1 : 0; \
+        failures += passed_ ? 0 : 1; \
+        Thandor_Log("codec negative: %s %s", name, passed_ ? "ok" : "FAILED"); \
+    } while (0)
+    ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size(), packed.data(), (uint32_t)source.size(), source.data(),
+                                   &packedSize, &value);
+    CODEC_NEG_EXPECT("noisy encode", ok);
+    CODEC_NEG_EXPECT("truncated stream",
+                     !PckCodec_DecodeHuffmanRle((uint32_t)source.size(), unpacked.data(), packedSize / 2,
+                                                packed.data(), &value, &value));
+    CODEC_NEG_EXPECT("source shorter than the table",
+                     !PckCodec_DecodeHuffmanRle((uint32_t)source.size(), unpacked.data(), 0x80, packed.data(),
+                                                &value, &value));
+    CODEC_NEG_EXPECT("output size 0",
+                     !PckCodec_DecodeHuffmanRle(0, unpacked.data(), packedSize, packed.data(), &value, &value));
+    /* only symbol 0x41 weighted: the original takes the last leaf as the root */
+    memset(packed.data(), 0, PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x40);
+    packed[0x41] = 5;
+    CODEC_NEG_EXPECT("single-symbol table",
+                     !PckCodec_DecodeHuffmanRle(0x10, unpacked.data(), PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x40,
+                                                packed.data(), &value, &value));
+    memset(packed.data(), 0, PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x40);
+    CODEC_NEG_EXPECT("empty table",
+                     !PckCodec_DecodeHuffmanRle(0x10, unpacked.data(), PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x40,
+                                                packed.data(), &value, &value));
+    CODEC_NEG_EXPECT("empty encode",
+                     !PckCodec_EncodeHuffmanRle((uint32_t)packed.size(), packed.data(), 0, source.data(), &value,
+                                                &value));
+    /* a uniform source has one distinct byte value: the encoder adds a dummy second symbol */
+    memset(source.data(), 0x5A, source.size());
+    ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size(), packed.data(), (uint32_t)source.size(), source.data(),
+                                   &packedSize, &value);
+    ok = ok && PckCodec_DecodeHuffmanRle((uint32_t)source.size(), unpacked.data(), packedSize, packed.data(),
+                                         &value, &value);
+    CODEC_NEG_EXPECT("uniform round trip", ok && memcmp(source.data(), unpacked.data(), source.size()) == 0);
+    /* field grid 2x2 (header dwords 0x2E/0x2F are gridWidth/gridHeight) */
+    for (i = 0; i < grid.size(); i++) {
+        grid[i] = i * 0x9E3779B9u;
+    }
+    grid[46] = 2;
+    grid[47] = 2;
+    ok = PckCodec_EncodeFieldGrid((uint32_t)packed.size(), packed.data(), gridBytes, (FieldGridAsset *)grid.data(),
+                                  &packedSize, &value);
+    CODEC_NEG_EXPECT("grid encode", ok);
+    CODEC_NEG_EXPECT("grid decode",
+                     PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                                              packed.data(), &value, &value) &&
+                     decodedGrid[46] == 2 && decodedGrid[47] == 2);
+    CODEC_NEG_EXPECT("grid capacity too small",
+                     !PckCodec_DecodeFieldGrid(gridBytes - 1, (FieldGridAsset *)decodedGrid.data(), packedSize,
+                                               packed.data(), &value, &value));
+    CODEC_NEG_EXPECT("grid source shorter than the prefix",
+                     !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(), 8, packed.data(),
+                                               &value, &value));
+    /* a compact image of 4 cells whose header claims 100x100, and one of 0 cells */
+    for (i = 0; i < compact.size(); i++) {
+        compact[i] = i * 0x85EBCA6Bu;
+    }
+    compact[46] = 100;
+    compact[47] = 100;
+    *(uint32_t *)packed.data() = compactBytes;
+    ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
+                                   packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
+                                   (uint8_t *)compact.data(), &packedSize, &value);
+    CODEC_NEG_EXPECT("grid larger than its image",
+                     ok && !PckCodec_DecodeFieldGrid(0x7FFFFFFF, (FieldGridAsset *)decodedGrid.data(),
+                                                     packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
+                                                     &value, &value));
+    compact[46] = 0;
+    ok = PckCodec_EncodeHuffmanRle((uint32_t)packed.size() - PCK_FIELD_GRID_PREFIX_BYTES,
+                                   packed.data() + PCK_FIELD_GRID_PREFIX_BYTES, compactBytes,
+                                   (uint8_t *)compact.data(), &packedSize, &value);
+    CODEC_NEG_EXPECT("grid of 0 cells",
+                     ok && !PckCodec_DecodeFieldGrid(gridBytes, (FieldGridAsset *)decodedGrid.data(),
+                                                     packedSize + PCK_FIELD_GRID_PREFIX_BYTES, packed.data(),
+                                                     &value, &value));
+#undef CODEC_NEG_EXPECT
+    Thandor_Log("codec negative: %s", failures == 0 ? "all ok" : "FAILURES");
+    g_MemoryApi.alloc = savedAlloc;
+    g_MemoryApi.free = savedFree;
+}
+
 /* OPEN_THANDOR_SELFTEST=pcx decodes pcxtest.pcx (next to the executable) with Pcx_DecodeIndexed8 and logs
    width, height and an FNV-1a hash over the palette (0xFFRRGGBB dwords, little endian) and the pixels;
    tools/test/pcx_check.py writes the file and prints the expected line. */
@@ -924,6 +1036,7 @@ int SelfTest_Run(const char *name)
 {
     if (name != NULL && strcmp(name, "codec") == 0) {
         Thandor_SelfTestCodec();
+        Thandor_SelfTestCodecNegative();
         return 1;
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {

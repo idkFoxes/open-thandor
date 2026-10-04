@@ -7,6 +7,7 @@
 
 #include <thandor/assets/package/codec.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -106,8 +107,9 @@ Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,u
 
 /* Copies the compact image's header into destinationGrid, clears all cells and expands every 0x10-byte record
    into its cell: record dwords 0..3 go to persistedAux54, terrainHeight, waterSurfaceDelta and
-   flagsAndMaterial. The cell count comes from header dwords 0x2E/0x2F (gridWidth/gridHeight); a count of 0 is not
-   guarded (the expand loop would run 2^32 times). */
+   flagsAndMaterial. The cell count comes from header dwords 0x2E/0x2F (gridWidth/gridHeight); the caller
+   (PckCodec_DecodeFieldGrid) has checked it against both buffers and rejected a count of 0, for which the
+   expand loop would run 2^32 times. */
 static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetMagic *compactImage)
 {
   uint32_t cellCount;
@@ -182,6 +184,11 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
    or false with the error code of the allocation in *outErrorCode.
    Original quirk: when the method-0 decoder fails, the error code is not its code but what the following free
    returned (0 unless the heap is corrupt); on success the byte count is likewise the free's return value.
+   The original trusts the prefix size, the grid dimensions and destinationCapacityBytes blindly; bounded here
+   because the data comes from level packages and from the network host (scenario transfer): a source shorter
+   than the prefix, a compact image shorter than the header, a grid of 0 cells, or a grid whose cells do not fit
+   the compact image or destinationCapacityBytes fail with FATAL_ERROR_GENERAL_FAILURE. Valid grids decode as
+   before.
 */
 Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
@@ -192,7 +199,13 @@ Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,F
   AssetMagic *compactFieldImageBase;
   uint32_t allocError;
   uint32_t freeStatus;
+  uint64_t cellCount;
 
+  if (sourceSizeBytes < PCK_FIELD_GRID_PREFIX_BYTES || *(uint32_t *)source < FIELD_GRID_HEADER_BYTES) {
+    Thandor_Log("PckCodec_DecodeFieldGrid: rejected malformed field grid (source %u bytes, capacity %u)",
+                sourceSizeBytes,destinationCapacityBytes);
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
   bytes = *(uint32_t *)source;
   allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
   if (allocError != 0) {
@@ -204,6 +217,16 @@ Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,F
     /* Original quirk: reports the free's return value, not the decoder's error code */
     freeStatus = g_MemoryApi.free(compactFieldImageBase);
     return PckCodec_Fail(outErrorCode,freeStatus);
+  }
+  /* compact header dwords 0x2E/0x2F are gridWidth/gridHeight (see PckCodec_ExpandFieldGridImage) */
+  cellCount = (uint64_t)compactFieldImageBase[46] * compactFieldImageBase[47];
+  if (cellCount == 0 ||
+      FIELD_GRID_HEADER_BYTES + cellCount * FIELD_GRID_COMPACT_CELL_BYTES > bytes ||
+      FIELD_GRID_HEADER_BYTES + cellCount * (FIELD_GRID_CELL_DWORDS * 4) > destinationCapacityBytes) {
+    Thandor_Log("PckCodec_DecodeFieldGrid: rejected grid %ux%u (image %u bytes, capacity %u)",
+                compactFieldImageBase[46],compactFieldImageBase[47],bytes,destinationCapacityBytes);
+    g_MemoryApi.free(compactFieldImageBase);
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
   PckCodec_ExpandFieldGridImage(destinationGrid,compactFieldImageBase);
   PckCodec_GenerateFieldGridWorldCoordinates(destinationGrid);
@@ -272,7 +295,7 @@ typedef struct PckHuffmanBitWriter {
 } PckHuffmanBitWriter;
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
-   An empty source is not guarded: the count loop would run 2^32 times.
+   The caller rejects an empty source, for which the count loop would run 2^32 times.
    The original clears all three with one run of PCK_HUFFMAN_WORKSPACE_DWORDS dwords from the start of
    g_PckHuffmanSymbolWorkspace256, relying on the node workspace following the symbol table directly in its image. Here they are two separate
    objects whose distance is up to the linker (an AddressSanitizer build puts a redzone between them), so each
@@ -328,6 +351,30 @@ static void PckCodec_EncoderScaleFrequencies(void)
       symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)scaleShift & 31)) - 1;
       symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)scaleShift & 31);
     }
+  }
+}
+
+/* Source of a single distinct byte value: gives the next byte value ((symbol + 1) & 0xFF) a scaled count of 1,
+   so the tree gets its one internal node. The original builds no internal node then and crashes in
+   PckCodec_EncoderAssignCodes (NULL parent); fixed here because a uniform save entry or level transfer would
+   crash the writer. The dummy symbol is never emitted; the stream is a valid two-symbol stream that the
+   original decoder reads too. Sources with two or more distinct bytes are untouched. */
+static void PckCodec_EncoderEnsureTwoSymbols(void)
+{
+  int symbolIndex;
+  int usedSymbol;
+  int usedSymbolCount;
+
+  usedSymbol = 0;
+  usedSymbolCount = 0;
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    if (g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount != 0) {
+      usedSymbol = symbolIndex;
+      usedSymbolCount++;
+    }
+  }
+  if (usedSymbolCount == 1) {
+    g_PckHuffmanSymbolWorkspace256[(usedSymbol + 1) & 0xff].frequencyCount = 1;
   }
 }
 
@@ -419,8 +466,8 @@ static void PckCodec_EncoderWriteFrequencyTable(uint8_t *destination)
 
 /* Replaces each used symbol's count with its code: walking from the leaf up to the root collects the code with
    the root's bit lowest (the order the decoder reads it); each entry becomes code bits 0..23 | code length << 24.
-   Original quirk: with a single distinct byte value the tree has no internal node, the leaf's parent is NULL
-   and the walk dereferences it. */
+   With a single distinct byte value the original tree has no internal node and the walk dereferences the
+   leaf's NULL parent; PckCodec_EncoderEnsureTwoSymbols prevents that. */
 static void PckCodec_EncoderAssignCodes(void)
 {
   uint32_t symbolIndex;
@@ -511,7 +558,9 @@ static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *so
    Huffman tree from them, writes the 256-byte frequency table and then the bitstream of literal and 3..18-byte
    run tokens (format in codec.h). Returns the packed size (rounded up to 16 bytes, with at least 16 bytes of
    slack for the decoder's dword reads) in *outByteCount with true, or false with FATAL_ERROR_GENERAL_FAILURE in
-   *outErrorCode when the tree overflows or the output does not fit.
+   *outErrorCode when the tree overflows or the output does not fit. An empty source also fails (the original
+   would count 2^32 bytes); a source of one distinct byte value gets a dummy second symbol (see
+   PckCodec_EncoderEnsureTwoSymbols).
 */
 Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
@@ -523,8 +572,12 @@ Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,
   uint32_t clearDwordCount;
   PckHuffmanBitWriter output;
 
+  if (sourceSizeBytes == 0) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
   PckCodec_EncoderCountFrequencies(source,sourceSizeBytes);
   PckCodec_EncoderScaleFrequencies();
+  PckCodec_EncoderEnsureTwoSymbols();
   if (!PckCodec_EncoderBuildTree()) {
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
@@ -588,7 +641,7 @@ static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
 /* Same tree construction as PckCodec_EncodeHuffmanRle, so both sides get identical codes. Returns the root (the
    last internal node created), or NULL when all 256 internal nodes are used up. Leaves have no zeroChild.
    Original quirk: with fewer than two weighted symbols no internal node is created and the "root" is the node
-   just before the internal node workspace (the last leaf). */
+   just before the internal node workspace (the last leaf); PckCodec_DecodeHuffmanRle rejects that root. */
 static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
 {
   PckHuffmanNodePtr nextInternalNode;
@@ -650,9 +703,15 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
 /* PCK compression method 0 reader. Rebuilds the encoder's Huffman tree from the 256-byte frequency table at
    the start of source, then decodes literal and run tokens (format in codec.h) until outputSizeBytes bytes are
    written. Returns true on success; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when the tree
-   overflows the workspace. sourceSizeBytes is not checked: the bitstream is trusted.
+   overflows the workspace.
    Original quirk: the byte count reported on success is not a size but what is left of the last token: the
    unused code bits of a literal, or the run counter of a run.
+   The original trusts the bitstream: it never looks at sourceSizeBytes, writes without bound for an output size
+   of 0, and with fewer than two weighted symbols uses the last leaf as the root and dereferences its NULL
+   child. Bounded here because the streams come from packages and from the network host: those cases, and a
+   token whose dword read would pass the end of the source, fail with FATAL_ERROR_GENERAL_FAILURE (the output
+   may then be partly written). The encoder always leaves at least 16 bytes of slack behind the last token, so
+   valid streams decode as before.
 */
 Bool8 PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
@@ -670,15 +729,30 @@ Bool8 PckCodec_DecodeHuffmanRle
   /* what is left of the last token; reported as the byte count (see the quirk above) */
   PckHuffmanRunLength lastTokenLeftover;
 
+  if (outputSizeBytes == 0 || sourceSizeBytes < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 4) {
+    Thandor_Log("PckCodec_DecodeHuffmanRle: rejected stream (source %u bytes, output %u)",sourceSizeBytes,
+                outputSizeBytes);
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
   PckCodec_DecoderLoadFrequencies(source);
   root = PckCodec_DecoderBuildTree();
   if (root == NULL) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+  }
+  /* no internal node: the "root" is a leaf (see PckCodec_DecoderBuildTree) */
+  if (root < &g_PckHuffmanNodeWorkspace[PCK_HUFFMAN_SYMBOL_COUNT]) {
+    Thandor_Log("PckCodec_DecodeHuffmanRle: rejected frequency table with fewer than two symbols");
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
   /* The input is read as a dword window that advances byte by byte. */
   inputBitOffset = 0;
   inputByte = source + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES;
   do {
+    if ((uint32_t)(inputByte - source) > sourceSizeBytes - 4) {
+      Thandor_Log("PckCodec_DecodeHuffmanRle: stream ends early (source %u bytes, %u output bytes left)",
+                  sourceSizeBytes,outputSizeBytes);
+      return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
+    }
     bitWindow = *(uint32_t *)inputByte >> (inputBitOffset & 31);
     if ((bitWindow & 1) == 0) {
       /* literal token: flag bit 0, then the code of the byte */
