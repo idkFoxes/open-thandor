@@ -826,7 +826,7 @@ static void PersistentSettings_LoadImage(void)
 }
 
 /* open-thandor: the game runs in 32-bit colour only. A colour depth other than 32 from an older thandor.ini or
-   thandor.dat (the original's 16) is read as 32 and also written as 32 the next time the settings are saved. */
+   thandor.dat (the original's 16) is read as 32 and written as 32 by the next PersistentSettings_Flush. */
 static void PersistentSettings_NormalizeColorDepth(void)
 {
   if ((g_PersistentSettings.image == NULL) ||
@@ -838,6 +838,7 @@ static void PersistentSettings_NormalizeColorDepth(void)
   PersistentIni_SetDword((uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL,
                          PERSISTENT_DEFAULT_BITS_PER_PIXEL);
   s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(PERSISTENT_SETTING_BITS_PER_PIXEL, 4);
+  g_PersistentSettings.dirtyWriteCount++; /* the next Flush writes it */
 }
 
 void PersistentSettings_Load(void)
