@@ -1,24 +1,21 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/assets/resource/runtime.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/assets/resource/savegame_prepare.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_ASSETS_RESOURCE_RUNTIME_H
-#define THANDOR_ASSETS_RESOURCE_RUNTIME_H
+#ifndef THANDOR_ASSETS_RESOURCE_SAVEGAME_PREPARE_H
+#define THANDOR_ASSETS_RESOURCE_SAVEGAME_PREPARE_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/resource/runtime. */
+/* Submodule: assets/resource/savegame_prepare. */
+
 /* Functions are grouped by semantic ownership. */
 
 Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
-
-Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
-
-void Resource_Release(void *resourceBuffer);
 
 ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
 
@@ -33,4 +30,4 @@ void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *r
 extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
 extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
 
-#endif /* THANDOR_ASSETS_RESOURCE_RUNTIME_H */
+#endif /* THANDOR_ASSETS_RESOURCE_SAVEGAME_PREPARE_H */
