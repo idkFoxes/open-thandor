@@ -17,8 +17,6 @@ uint16_t g_FatalErrorDetail2Utf16[256] = {0};
 
 uint16_t g_FatalErrorDetail3Utf16[256] = {0};
 
-static FatalErrorPassThroughProc *g_FatalErrorFallbackHandler = nullptr;
-
 /* "texte\\error.str" */
 static uint16_t g_TexteErrorStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'e', 'r', 'r', 'o', 'r', '.', 's', 't', 'r'};
 
@@ -34,7 +32,7 @@ uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', 
 
 /* Implementation ownership: core/error/runtime. */
 
-/* Points all three fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
+/* Points both fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
    loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
    the built-in I/O error message; otherwise FatalError_Exit returns at once because failed is false.
 */
@@ -45,7 +43,6 @@ void __cdecl ErrorSystem_Init()
 
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
-  g_FatalErrorFallbackHandler = FatalError_Exit;
   errorTextsLoaded = TextResourcePage_Load(0,g_TexteErrorStrPathUtf16,nullptr);
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),!errorTextsLoaded);
 }

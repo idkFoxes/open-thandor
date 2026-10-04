@@ -40,8 +40,6 @@ struct ArenaState {
     void *processHeap; 
     void *rawAllocation; 
     struct ArenaBlockHeader *firstBlock; 
-    uint8_t *linearCursor; 
-    uint8_t *linearLimit; 
 };
 
 enum {
@@ -58,7 +56,6 @@ struct MemoryApiTable {
     uint32_t (*allocLargestFreeBlock)(void **outAllocation, uint32_t *outBlockSize); // ArenaHeap_AllocLargestFreeBlock
     uint32_t (*shrinkInPlace)(uint32_t newSize, void *memory); // ArenaHeap_ShrinkInPlace
     uint32_t (*queryFreeBytes)(); // ArenaHeap_QueryFreeBytes
-    uint32_t (*reserveLinear)(uint32_t bytes, void **outBase); // ArenaHeap_ReserveLinear; *outBase = previous linear cursor
 };
 using SpinLockAcquireProc = void (RuntimeSpinLockValue * lockValue);
 using SpinLockReleaseCallbackProc = void ();
