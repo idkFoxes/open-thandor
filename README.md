@@ -41,12 +41,13 @@ split into the modules' own type headers.
 
 Next:
 
-1. 32-bit colour only (the 16-bit display modes and their code paths go).
-2. Idiomatic C++ step by step, following the
+1. Idiomatic C++ step by step, following the
    [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines): classes where they simplify,
    `enum class`, RAII.
-3. Step 9 (later): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
+2. Step 9 (later): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
    ([plan](docs/plans/step9_gpu_ui.md)).
+3. Step 10 (later): a patch installer that installs Open Thandor as version 1.0.6 onto an existing Thandor
+   installation, in the style of the original Patch 5 installer ([plan](docs/plans/step10_installer.md)).
 
 ### How correctness is kept
 
