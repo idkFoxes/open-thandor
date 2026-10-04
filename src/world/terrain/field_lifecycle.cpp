@@ -273,19 +273,19 @@ FieldGridAsset *FieldGrid_LoadValidated(uint16_t *path,uint32_t *outErrorCode)
   uint32_t loadErrorCode;
 
   loadedEntry = Package_LoadEntryWithSize(path,&loadedByteCount,&loadErrorCode);
-  if (loadedEntry == NULL) {
+  if (loadedEntry == nullptr) {
     Thandor_Log("FieldGrid_LoadValidated failed: \"%ls\" (error 0x%08X)",(wchar_t *)path,loadErrorCode);
-    if (outErrorCode != NULL) {
+    if (outErrorCode != nullptr) {
       *outErrorCode = loadErrorCode;
     }
-    return NULL;
+    return nullptr;
   }
   if (!FieldGrid_ValidateLoadedImage((FieldGridAsset *)loadedEntry,loadedByteCount)) {
     g_MemoryApi.free(loadedEntry);
-    if (outErrorCode != NULL) {
+    if (outErrorCode != nullptr) {
       *outErrorCode = FATAL_ERROR_FIELD_ASSET_INVALID;
     }
-    return NULL;
+    return nullptr;
   }
   return (FieldGridAsset *)loadedEntry;
 }

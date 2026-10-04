@@ -13,9 +13,9 @@
 
 /* Module data. */
 
-static GridScratchCell *g_GridScratchSecondary = 0;
+static GridScratchCell *g_GridScratchSecondary = nullptr;
 
-GridScratchCell *g_GridScratchPrimary = 0;
+GridScratchCell *g_GridScratchPrimary = nullptr;
 
 uint32_t g_GridScratchWidth = 0;
 
@@ -151,7 +151,7 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
       }
     }
     ownerNode = ownerNode->nextNode;
-  } while (ownerNode != NULL);
+  } while (ownerNode != nullptr);
 }
 
 /* Rebuilds the terrain classification of the scratch grid (4x4 scratch cells per field cell): clears the
@@ -309,7 +309,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     promoteCursor++;
   } while (cellsToPromote != 0);
   ownerNode = worldRuntime->ownerListHead;
-  if (ownerNode != NULL) {
+  if (ownerNode != nullptr) {
     /* flood-fill from every placed runtime model through cells open for classes 28..30; every cell left
        unreached gets those classes */
     GridScratch_FloodFillFromPlacedRuntimeModels
@@ -409,9 +409,9 @@ void GridScratch_ReleaseBuffers(void)
   g_MemoryApi.free(g_GridPathCostQueueBegin);
   g_MemoryApi.free(g_GridScratchPrimary);
   g_MemoryApi.free(g_GridScratchSecondary);
-  g_GridPathCostQueueBegin = NULL;
-  g_GridScratchPrimary = NULL;
-  g_GridScratchSecondary = NULL;
+  g_GridPathCostQueueBegin = nullptr;
+  g_GridScratchPrimary = nullptr;
+  g_GridScratchSecondary = nullptr;
 }
 
 /* Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes

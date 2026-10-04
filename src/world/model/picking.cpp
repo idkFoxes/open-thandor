@@ -150,7 +150,7 @@ Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0;
        childrenRemaining = childrenRemaining - 1) {
     childNode = modelNode->childNodes[childIndex];
-    if (childNode != NULL) {
+    if (childNode != nullptr) {
       if (ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                          (pointerY,pointerX,childNode,context,outDistanceQ12)) {
         return true;
@@ -170,7 +170,7 @@ static Q12 ModelNodeRuntime_RaycastMissWithScratchNode
 
 {
   (void)scratchValue;
-  *outNearestModelNode = NULL;
+  *outNearestModelNode = nullptr;
   return MODEL_RAYCAST_NO_HIT_DISTANCE;
 }
 
@@ -276,7 +276,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   /* The original walks meshGroupCount - 1 groups unchecked, i.e. 0xFFFFFFFF of them for a node without mesh
      groups (reachable: the sphere test above uses the subtree radius); bounded here because such a node has no
      triangles: its mesh test is skipped. */
-  meshGroupCursor = NULL;
+  meshGroupCursor = nullptr;
   if (resourceView->meshGroupCount != 0) {
     meshGroupCursor = ModelResource_FindRaycastMeshGroup(resourceView);
   }
@@ -294,9 +294,9 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
 
   /* every triangle of every mesh of the mesh group */
   nearestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
-  triangle = NULL;
+  triangle = nullptr;
   meshRecordsRemaining = 0;
-  if (meshGroupCursor != NULL) {
+  if (meshGroupCursor != nullptr) {
     triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
     meshRecordsRemaining = meshGroupCursor[1];
   }
@@ -316,10 +316,10 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   }
 
   /* the children, last slot first */
-  childNearestModelNode = NULL;
+  childNearestModelNode = nullptr;
   nearestModelNode = modelNodeRuntime;
   for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
+    if (modelNodeRuntime->childNodes[childrenRemaining - 1] != nullptr) {
       childDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest
                          (modelNodeRuntime->childNodes[childrenRemaining - 1],&childNearestModelNode);
       if ((childDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE) && (childDistanceQ12 < nearestDistanceQ12)) {
@@ -369,10 +369,10 @@ Bool8 ModelRuntime_RaycastCandidateListNearest
   rayYBinMask = DepthInterval_BuildBinMask(maximumDistanceQ12,originYQ12);
   FixedMath_WriteDirectionQ28
             (&g_ModelRaycastWorldDirectionQ28,elevationAngle,azimuthAngle);
-  nearestModelNode = NULL;
+  nearestModelNode = nullptr;
   bestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
   for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-      modelNodeRuntime != NULL;
+      modelNodeRuntime != nullptr;
       modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
     if (modelNodeRuntime != excludedNode && modelNodeRuntime->ownerClassId == requiredOwnerId &&
         (modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0 &&

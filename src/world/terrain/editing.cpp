@@ -97,7 +97,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   uint32_t *editPlaneCursor;
 
   editPlaneCursor = FieldGridEdit_PlayerMaterialPlane(playerIndex);
-  if (editPlaneCursor == NULL) {
+  if (editPlaneCursor == nullptr) {
     return;
   }
   /* The original keeps the whole command value; bounded here to the material byte because it comes from any
@@ -146,7 +146,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
   uint32_t *editPlaneCursor;
 
   editPlaneCursor = FieldGridEdit_PlayerMaterialPlane(playerIndex);
-  if (editPlaneCursor == NULL) {
+  if (editPlaneCursor == nullptr) {
     return;
   }
   /* The original keeps the whole command value; bounded here to the material byte because it comes from any
@@ -196,7 +196,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   int *heightDeltaCursor;
 
   heightDeltaCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (heightDeltaCursor == NULL) {
+  if (heightDeltaCursor == nullptr) {
     return;
   }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -270,7 +270,7 @@ void TerrainEditBuffer_CopyCellMaterialBytes
   TerrainMaterialIndex *materialCursor;
 
   materialCursor = (TerrainMaterialIndex *)FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
-  if (materialCursor == NULL) {
+  if (materialCursor == nullptr) {
     return;
   }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -301,7 +301,7 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   uint32_t *materialDeltaCursor;
 
   materialDeltaCursor = FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
-  if (materialDeltaCursor == NULL) {
+  if (materialDeltaCursor == nullptr) {
     return;
   }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -332,7 +332,7 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   uint32_t *materialDeltaCursor;
 
   materialDeltaCursor = FieldGridEdit_PlayerMaterialPlane(playerRuntimeId);
-  if (materialDeltaCursor == NULL) {
+  if (materialDeltaCursor == nullptr) {
     return;
   }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -374,7 +374,7 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
   int *heightCursor;
 
   heightCursor = FieldGridEdit_PlayerHeightPlane(playerRuntimeId);
-  if (heightCursor == NULL) {
+  if (heightCursor == nullptr) {
     return;
   }
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;

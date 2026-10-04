@@ -142,7 +142,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   uint32_t targetRow;
   uint32_t targetColumn;
 
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     return;
   }
   g_TerrainScanStepLimit = heightDeltaSourceValue / TERRAIN_SCAN_RADIUS_PER_STEP;

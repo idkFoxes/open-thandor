@@ -82,7 +82,7 @@ static void EffectLifecycle_ReleaseShadingAndUnlink
   InterpolationState_SetNegatedTargetAndRescaleProgress
             (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
   WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
-  effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
+  effectSlot->modelNodeOrSavedOffset.modelNode = nullptr;
 }
 
 /* One step adds 1.0 (Q4) to the frame accumulator; a frame advances (returns 1) when it reaches the definition's
@@ -112,7 +112,7 @@ static void EffectLifecycle_UpdateShadingOnFrameAdvance
 
   modelNode->textureSubresourceBaseIndex++;
   effectSlot->shadingStartCountdownTicksRemaining--;
-  if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == NULL)) {
+  if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == nullptr)) {
     if (ModelLookupTable_FindPackedPoint
           (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
       localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
@@ -124,10 +124,10 @@ static void EffectLifecycle_UpdateShadingOnFrameAdvance
     }
   }
   effectSlot->shadingStopCountdownTicksRemaining--;
-  if ((effectSlot->shadingStopCountdownTicksRemaining == 0) && (modelNode->shadingRecord != NULL)) {
+  if ((effectSlot->shadingStopCountdownTicksRemaining == 0) && (modelNode->shadingRecord != nullptr)) {
     InterpolationState_SetNegatedTargetAndRescaleProgress
               (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
-    modelNode->shadingRecord = NULL;
+    modelNode->shadingRecord = nullptr;
   }
 }
 
@@ -249,7 +249,7 @@ static void EffectLifecycle_CountDownLinkedShot
         (shotPointIndex,MODEL_POINT_CLASS_SHOT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
     ShotRuntimePool_CreateProjectileFromDefinition
-              (0,NULL,
+              (0,nullptr,
                (localPoint.zQ12 - modelNode->worldTransform.translation.z) * 2 +
                modelNode->worldTransform.translation.z,
                (localPoint.yQ12 - modelNode->worldTransform.translation.y) * 2 +
@@ -276,7 +276,7 @@ static void EffectLifecycle_CountDownCompletionAction
   pendingCompletionAction = effectSlot->completionAction;
   owner = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner;
   if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-    if (owner.modelRuntime != NULL) {
+    if (owner.modelRuntime != nullptr) {
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,owner.modelRuntime);
     }
   }
@@ -285,7 +285,7 @@ static void EffectLifecycle_CountDownCompletionAction
   }
   else if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
     impactColumns = owner.terrainImpactColumns;
-    if ((impactColumns != NULL) && (0 < (int)impactColumns->radiusWorldUnits)) {
+    if ((impactColumns != nullptr) && (0 < (int)impactColumns->radiusWorldUnits)) {
       FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
                 (impactColumns->terrainMaterialIndex,impactColumns->radiusWorldUnits,
                  impactColumns->heightDeltaQ12,
@@ -317,7 +317,7 @@ static void EffectLifecycle_IntegrateLinearMotion
   /* each step moves rotation angle 1 a 64th of the way towards a quarter turn */
   modelNode->modelPayload.worldRotationAngle1 =
        (int)(previousRotationAngle1 * 63 + FIXED_ANGLE16_QUARTER_TURN) >> 6;
-  if (activeShadingRecord != NULL) {
+  if (activeShadingRecord != nullptr) {
     activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.x;
     activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.y;
     activeShadingRecord->worldZQ12 = activeShadingRecord->worldZQ12 + scaledDirection.z;

@@ -40,7 +40,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
   FieldGridCell *cell;
   FieldGridCell *cellCursor;
 
-  if (fieldGrid != NULL) {
+  if (fieldGrid != nullptr) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     rowLength = fieldGrid->gridWidth;
     rowsLeft = fieldGrid->gridHeight - 2;
@@ -76,7 +76,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
 
   FixedMath_WriteDirectionQ28
             (&g_TerrainLightDirection,lightElevationAngle,lightAzimuthAngle);
-  if (fieldGrid != NULL) {
+  if (fieldGrid != nullptr) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     rowLength = fieldGrid->gridWidth;
     rowsLeft = fieldGrid->gridHeight - 2;

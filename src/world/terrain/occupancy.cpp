@@ -49,7 +49,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
   FieldGridCell *wedge5Cell;
   FieldGridCoordinates gridCoordinates;
 
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     return;
   }
   g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
@@ -153,7 +153,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   uint64_t persistentOnlySums;
   FieldGridCoordinates gridCoordinates;
 
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     return 0;
   }
   /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
@@ -730,7 +730,7 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
 
   activeFieldGrid = worldRuntime->fieldGrid;
   /* The original has no field grid check here; added like the siblings (no grid: treated as outside) */
-  if (activeFieldGrid == NULL) {
+  if (activeFieldGrid == nullptr) {
     return true;
   }
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */

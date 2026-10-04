@@ -42,7 +42,7 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
     recordsRemaining--;
   }
   if (recordsRemaining == 0) {
-    return NULL;
+    return nullptr;
   }
   recordCursor->common.allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
   recordCursor->common.ownerWorld = worldRuntime;
@@ -66,9 +66,9 @@ void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
   previousHeadNode = *ownerListHeadLink;
   *ownerListHeadLink = node;
   UNLOCK();
-  node->previousNode = NULL;
+  node->previousNode = nullptr;
   node->nextNode = previousHeadNode;
-  if (previousHeadNode != NULL) {
+  if (previousHeadNode != nullptr) {
     previousHeadNode->previousNode = node;
   }
   return;
@@ -86,13 +86,13 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
   if ((node->runtimeFlags & WORLD_OWNER_NODE_LINKED) != 0) {
     previousNode = node->previousNode;
     nextNode = node->nextNode;
-    if (previousNode == NULL) {
+    if (previousNode == nullptr) {
       node->ownerWorld->ownerListHead = nextNode;
     }
     else {
       previousNode->nextNode = nextNode;
     }
-    if (nextNode != NULL) {
+    if (nextNode != nullptr) {
       nextNode->previousNode = previousNode;
     }
   }
@@ -109,7 +109,7 @@ void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTra
 {
   WorldOwnerListNode *node;
 
-  for (node = world->ownerListHead; node != NULL; node = node->nextNode) {
+  for (node = world->ownerListHead; node != nullptr; node = node->nextNode) {
     callback(callbackContext,node);
   }
   return;
@@ -139,7 +139,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
        together with the INTERRUPTED and AI_COMBAT_TARGET bits */
     if ((ownerArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
         releasedObject == ownerArmy->commandTargetArmyRuntime) {
-      ownerArmy->commandTargetArmyRuntime = NULL;
+      ownerArmy->commandTargetArmyRuntime = nullptr;
       ownerArmy->commandModeFlags =
            ownerArmy->commandModeFlags &
            ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_INTERRUPTED | ARMY_COMMAND_MODE_AI_COMBAT_TARGET);
@@ -150,7 +150,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
            ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.
            modelNode)) {
     ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
-         NULL;
+         nullptr;
   }
   return;
 }
@@ -169,18 +169,18 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
     if (detachedObject ==
         ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode) {
       ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
-           NULL;
+           nullptr;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     /* the linked model runtime and, for an aircraft, the linked base model runtime */
     modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
     if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) {
-      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
     }
     if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
         detachedObject == modelRuntime->classLinkState.modelLinkOrState.modelRuntime) {
-      modelRuntime->classLinkState.modelLinkOrState.modelRuntime = NULL;
+      modelRuntime->classLinkState.modelLinkOrState.modelRuntime = nullptr;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&

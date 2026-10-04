@@ -55,7 +55,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
   uint32_t gridRow;
   uint32_t gridColumn;
 
-  if (fieldGrid != NULL) {
+  if (fieldGrid != nullptr) {
     TerrainProjectedScan_SetStepLimitFromRadius(radiusWorldUnits);
     g_TerrainScanReferenceHeight = referenceHeightQ12;
     gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);

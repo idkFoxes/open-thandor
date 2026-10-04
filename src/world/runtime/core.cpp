@@ -34,7 +34,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
   Q12 topSurfaceHeightQ12;
 
   topSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&topSurfaceHeightQ12);
   }
   return topSurfaceHeightQ12;

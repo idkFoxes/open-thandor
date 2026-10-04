@@ -102,7 +102,7 @@ Bool8 TerrainHeightBand_TestAroundWorldPoint
   FieldGridCell *sector2Start;
   FieldGridCell *sector3Start;
 
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     return true;
   }
   if (!TerrainScan_BeginAroundWorldPoint(radiusWorldUnits,referenceHeightQ12,worldXQ12,worldYQ12,fieldGrid,
@@ -156,7 +156,7 @@ Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
   FieldGridCell *sector2Start;
   FieldGridCell *sector3Start;
 
-  if (fieldGrid == NULL) {
+  if (fieldGrid == nullptr) {
     return true;
   }
   if (!TerrainScan_BeginAroundWorldPoint(radiusWorldUnits,referenceHeightQ12,worldXQ12,worldYQ12,fieldGrid,

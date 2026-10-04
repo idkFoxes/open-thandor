@@ -213,7 +213,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
     surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                       (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthQ12,
                        worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
-                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&rayDistanceQ12,NULL);
+                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&rayDistanceQ12,nullptr);
     hitDistanceQ12 = rayDistanceQ12;
     if (surfaceHit) {
       /* terrain hit: a nearer secondary-surface hit wins */

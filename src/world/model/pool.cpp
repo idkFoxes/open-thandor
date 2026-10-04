@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-ModelRuntimeSlot *g_ModelRuntimeSlots = 0;
+ModelRuntimeSlot *g_ModelRuntimeSlots = nullptr;
 
 intptr_t g_ModelRuntimeRebaseDelta = 0;
 
@@ -144,18 +144,18 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
   MdlSerializedNodeHeader *rootNode;
 
   g_MemoryApi.free(g_ModelRuntimeSlots);
-  g_ModelRuntimeSlots = NULL;
+  g_ModelRuntimeSlots = nullptr;
   registryEntry = g_ModelDefinitionRegistry;
   for (registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryRemaining != 0; registryRemaining--) {
-    if (*registryEntry != NULL) {
+    if (*registryEntry != nullptr) {
       /* the root of the definition's node tree */
       /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
       rootNode = Thandor_U32ToPointer<MdlSerializedNodeHeader>(((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer);
-      if (rootNode != NULL) {
+      if (rootNode != nullptr) {
         ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
       }
     }
-    *registryEntry = NULL;
+    *registryEntry = nullptr;
     registryEntry++;
   }
 }
@@ -276,12 +276,12 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
   for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
     savedChildRuntime = attachment->childModelRuntimeOrSavedOffset;
     savedParentNode = attachment->parentModelNodeOrSavedOffset;
-    rebasedChildRuntime = NULL;
-    if (savedChildRuntime != NULL) {
+    rebasedChildRuntime = nullptr;
+    if (savedChildRuntime != nullptr) {
       rebasedChildRuntime = (ModelRuntimeSlot *)((uint8_t *)savedChildRuntime + g_ModelRuntimeRebaseDelta);
     }
-    rebasedParentNode = NULL;
-    if (savedParentNode != NULL) {
+    rebasedParentNode = nullptr;
+    if (savedParentNode != nullptr) {
       /* 5f-format: ModelRuntimeSlot.attachments[].parentModelNodeOrSavedOffset */
       rebasedParentNode = (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(savedParentNode));
     }
@@ -309,7 +309,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
 
   for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
     modelRuntime = &g_ModelRuntimeSlots[slotIndex];
-    if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == NULL) {
+    if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == nullptr) {
       continue;
     }
     /* saved offsets + pool deltas: the owner army (always rebased) and the linked army
@@ -324,13 +324,13 @@ void ModelRuntimePool_RebaseAfterLoad(void)
          (g_RuntimeObjectRebaseBaseMinusOne + (int)modelRuntime->rootModelNodeOrSavedOffset.modelNode);
     modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = rebasedOwnerArmy;
     savedLinkedArmy = modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime;
-    rebasedLinkedRuntime = NULL;
-    if (modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime != NULL) {
+    rebasedLinkedRuntime = nullptr;
+    if (modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime != nullptr) {
       rebasedLinkedRuntime = (ModelRuntimeSlot *)
                    ((uint8_t *)modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime + g_ModelRuntimeRebaseDelta);
     }
-    rebasedLinkedArmy = NULL;
-    if (savedLinkedArmy != NULL) {
+    rebasedLinkedArmy = nullptr;
+    if (savedLinkedArmy != nullptr) {
       /* 5f-format: ModelRuntimeSlot.classState.linkedArmyRuntimeOrSavedOffset */
       rebasedLinkedArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedLinkedArmy) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     }
@@ -339,9 +339,9 @@ void ModelRuntimePool_RebaseAfterLoad(void)
 
     registeredDefinition = ModelDefinitionRegistry_FindById
                              ((PckModelDefinitionIdCatalog)modelRuntime->definitionOrSavedId.savedIdOrOffset);
-    if (registeredDefinition == NULL) {
+    if (registeredDefinition == nullptr) {
       /* definition no longer registered: drop the instance */
-      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
       continue;
     }
     if (!ModelDefinition_HasHandledRuntimeClass((ModelDefinition *)registeredDefinition)) {
@@ -350,7 +350,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
          unregistered one. */
       Thandor_Log("model: saved instance of a definition with runtime class %d outside 0..23, dropped",
                   ((ModelDefinition *)registeredDefinition)->runtimeClassId);
-      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
       continue;
     }
     modelRuntime->definitionOrSavedId.definition = registeredDefinition;
@@ -401,7 +401,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   attachment = modelRuntime->attachments;
   for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
     childRuntime = attachment->childModelRuntimeOrSavedOffset;
-    if (childRuntime != NULL) {
+    if (childRuntime != nullptr) {
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,childRuntime);
     }
     attachment++;
@@ -416,12 +416,12 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   WorldRuntime_ForEachOwnerListNode
             (modelRuntime,WorldRuntimeNode_ClearDetachedEntityReferencesCallback,worldRuntime);
   ModelRuntimeNode_ReleaseRecursiveAndDetachParent(rootModelNode);
-  modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
-  if (parentModelNode == NULL) {
-    if (entityRuntime->common.ownership.definitionOrClassRecord != NULL) {
+  modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
+  if (parentModelNode == nullptr) {
+    if (entityRuntime->common.ownership.definitionOrClassRecord != nullptr) {
       LOCK(); /* read and cleared atomically in the original */
       ownerRecord = (int *)entityRuntime->common.ownership.definitionOrClassRecord;
-      entityRuntime->common.ownership.definitionOrClassRecord = NULL;
+      entityRuntime->common.ownership.definitionOrClassRecord = nullptr;
       UNLOCK();
       ownerDefinition = ((ModelRuntimeSlot *)ownerRecord)->definitionOrSavedId.runtimeDefinition;
       /* ownerRecord is the owner's root ModelRuntimeSlot */
@@ -431,7 +431,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
         ArmyRuntime_CreateInstanceFromAsset
                   (0,orientationAngle,translationY,translationX,0,
                    ownerDefinition->destroyedReplacementArmyAssetId,
-                   worldRuntime,NULL);
+                   worldRuntime,nullptr);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
     }
@@ -441,7 +441,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
     attachment = parentRuntime->attachments;
     for (attachmentsRemaining = parentRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
       if (attachment->childModelRuntimeOrSavedOffset == modelRuntime) {
-        attachment->childModelRuntimeOrSavedOffset = NULL;
+        attachment->childModelRuntimeOrSavedOffset = nullptr;
       }
       attachment++;
     }
@@ -470,11 +470,11 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   ModelRuntimeNode *modelNodeRuntime;
 
   /* first free slot (no root node) */
-  if (g_ModelRuntimeSlots == NULL) {
+  if (g_ModelRuntimeSlots == nullptr) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
   slotIndex = 0;
-  while (g_ModelRuntimeSlots[slotIndex].rootModelNodeOrSavedOffset.modelNode != NULL) {
+  while (g_ModelRuntimeSlots[slotIndex].rootModelNodeOrSavedOffset.modelNode != nullptr) {
     slotIndex++;
     if (slotIndex == MODEL_RUNTIME_SLOT_COUNT) {
       return FATAL_ERROR_GENERAL_FAILURE;
@@ -483,7 +483,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime = &g_ModelRuntimeSlots[slotIndex];
 
   definitionView = (ModelDefinition *)ModelDefinitionRegistry_LookupById(modelDefinitionId);
-  if (definitionView == NULL) {
+  if (definitionView == nullptr) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
     return FATAL_ERROR_MODEL_DEFINITION_MISSING;
@@ -499,7 +499,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   }
 
   modelRuntime->definitionOrSavedId.definition = (ModelDefinitionRecordPrefix *)definitionView;
-  modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+  modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
   modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = armyRuntime;
   modelRuntime->attachmentCount = 0;
   modelRuntime->health = definitionView->maximumHealth;
@@ -514,7 +514,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   for (prefixIndex = 0; prefixIndex < 32; prefixIndex++) {
     modelRuntime->classPrefixState[prefixIndex] = 0;
   }
-  modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = NULL;
+  modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = nullptr;
   modelRuntime->destructionEffectTimers[0] = definitionView->destructionEffectDelayTicks0;
   modelRuntime->destructionEffectTimers[1] = definitionView->destructionEffectDelayTicks1;
   modelRuntime->destructionEffectTimers[2] = definitionView->destructionEffectDelayTicks2;
@@ -525,7 +525,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime->destructionEffectTimers[7] = definitionView->destructionEffectDelayTicks7;
   modelRuntime->classState.shotEmitterTimerTicks = 1;
   modelRuntime->classState.effectEmitterTimerTicks = 1;
-  modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+  modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   modelRuntime->classState.energyLoadQ4 = definitionView->energyLoadQ4;
   modelRuntime->classState.stateFlags = 0;
   modelRuntime->classState.healthRegenerationDelayTicks = 0;
@@ -533,7 +533,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime->damageEffectPointIndex = 0;
   modelFlags = definitionView->modelFlags;
   /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
-  if (Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionView->rootNodeOffsetOrPointer) != NULL) {
+  if (Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionView->rootNodeOffsetOrPointer) != nullptr) {
     if (!ModelNodeRuntime_CreateHierarchyRecursive
             (paletteAsset,textureSet,modelRuntime,
              Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionView->rootNodeOffsetOrPointer),worldRuntime,
