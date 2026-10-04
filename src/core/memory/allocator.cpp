@@ -64,7 +64,7 @@ void * __cdecl ArenaHeap_Init(void)
       return rawArenaAllocation;
     }
   }
-  FatalError_Exit(THANDOR_ADDR(g_ErrorTextHeapAllocationFailed,0),true);
+  FatalError_ShowAndExit(THANDOR_ADDR(g_ErrorTextHeapAllocationFailed,0));
 }
 
 /* Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.

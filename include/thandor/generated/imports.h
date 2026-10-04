@@ -26,8 +26,8 @@ __declspec(dllimport) HANDLE __stdcall CreateSemaphoreA(LPSECURITY_ATTRIBUTES lp
 __declspec(dllimport) HANDLE __stdcall CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
 __declspec(dllimport) BOOL __stdcall DeleteFileA(LPCSTR lpFileName);
 __declspec(dllimport) BOOL __stdcall DeviceIoControl(HANDLE hDevice, DWORD dwIoControlCode, LPVOID lpInBuffer, DWORD nInBufferSize, LPVOID lpOutBuffer, DWORD nOutBufferSize, LPDWORD lpBytesReturned, LPOVERLAPPED lpOverlapped);
-__declspec(dllimport) void __stdcall ExitProcess(UINT uExitCode);
-__declspec(dllimport) void __stdcall ExitThread(DWORD dwExitCode);
+__declspec(dllimport) __declspec(noreturn) void __stdcall ExitProcess(UINT uExitCode);
+__declspec(dllimport) __declspec(noreturn) void __stdcall ExitThread(DWORD dwExitCode);
 __declspec(dllimport) BOOL __stdcall FileTimeToDosDateTime(FILETIME * lpFileTime, LPWORD lpFatDate, LPWORD lpFatTime);
 __declspec(dllimport) BOOL __stdcall FindClose(HANDLE hFindFile);
 __declspec(dllimport) HANDLE __stdcall FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);

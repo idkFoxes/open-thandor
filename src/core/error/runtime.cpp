@@ -50,22 +50,28 @@ void __cdecl ErrorSystem_Init(void)
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),!errorTextsLoaded);
 }
 
-/* The fatal-error handler: without failed it returns valueOrError unchanged; with failed it builds the error
-   message (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills
-   in the last path and the three detail strings, shuts everything down, shows the text in a message box and
-   exits the process (it does not return then).
+/* The fatal-error handler: without failed it returns valueOrError unchanged; with failed it is
+   FatalError_ShowAndExit(valueOrError) and does not return.
 */
 uintptr_t FatalError_Exit(uintptr_t valueOrError,Bool8 failed)
 
 {
-  uintptr_t error;
-  uint16_t *messageText;
-
   if (!failed) {
     return valueOrError;
   }
   /* from here on valueOrError (see FatalErrorPassThroughProc) is the error code or rich-text stream */
-  error = valueOrError;
+  FatalError_ShowAndExit(valueOrError);
+}
+
+/* The failing half of FatalError_Exit: builds the error message (a code below 0x100 selects a text of the
+   error page, anything else is a rich-text stream), fills in the last path and the three detail strings,
+   shuts everything down, shows the text in a message box and exits the process.
+*/
+void FatalError_ShowAndExit(uintptr_t error)
+
+{
+  uint16_t *messageText;
+
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08IX, last path \"%ls\"", error, (wchar_t *)g_PackageLastErrorPath);
   Thandor_LogStack("fatal error stack", (unsigned)error);
