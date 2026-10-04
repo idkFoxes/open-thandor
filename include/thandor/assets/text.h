@@ -10,5 +10,7 @@
 
 #include <thandor/assets/text/resources.h>
 #include <thandor/assets/text/richtext.h>
+#include <thandor/assets/text/richtext_markup.h>
+#include <thandor/assets/text/richtext_render.h>
 
 #endif /* THANDOR_ASSETS_TEXT_H */

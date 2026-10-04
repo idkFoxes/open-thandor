@@ -54,6 +54,8 @@ add_library(thandor_curated STATIC
     src/assets/sprite/catalog.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
+    src/assets/text/richtext_markup.cpp
+    src/assets/text/richtext_render.cpp
     src/audio/backend/runtime.cpp
     src/audio/codec/sam.cpp
     src/audio/spatial/runtime.cpp
