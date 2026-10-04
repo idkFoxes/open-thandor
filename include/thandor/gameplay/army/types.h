@@ -3129,6 +3129,6 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments[6]; // Six fixed 0x20-byte attachment descriptors.
 };
-using TerrainClassOverlayCallback = Bool8 (uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid);
+using TerrainClassOverlayCallback = Bool8 (uint32_t cellFlagMask, int cellValue, int radiusWorldUnits, Q12 worldYQ12, Q12 worldXQ12, FieldGridAsset * fieldGrid);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_TYPES_H */

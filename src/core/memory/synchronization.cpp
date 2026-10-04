@@ -12,13 +12,13 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) SpinLockAcquireProc *g_SpinLockAcquire = THANDOR_FN(SpinLock_Acquire);
+THANDOR_ALIGN(4) SpinLockAcquireProc *g_SpinLockAcquire = &SpinLock_Acquire;
 
-THANDOR_ALIGN(8) SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire = THANDOR_FN(SpinLock_TryAcquireFlags);
+THANDOR_ALIGN(8) SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire = &SpinLock_TryAcquireFlags;
 
-THANDOR_ALIGN(4) SpinLockReleaseProc *g_SpinLockRelease = THANDOR_FN(SpinLock_Release);
+THANDOR_ALIGN(4) SpinLockReleaseProc *g_SpinLockRelease = &SpinLock_Release;
 
-THANDOR_ALIGN(16) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = THANDOR_FN(SpinLock_ReleaseAndInvoke);
+THANDOR_ALIGN(16) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = &SpinLock_ReleaseAndInvoke;
 
 /* Implementation ownership: core/memory/synchronization. */
 

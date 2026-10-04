@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) WideNumberFormatUtf16Proc *g_WideNumberFormatUtf16 = THANDOR_FN(WideNumber_FormatUtf16);
+THANDOR_ALIGN(8) WideNumberFormatUtf16Proc *g_WideNumberFormatUtf16 = &WideNumber_FormatUtf16;
 
 static WideNumberFormatState g_WideNumberFormatState = {
     .decimalSeparatorLength = 1,
