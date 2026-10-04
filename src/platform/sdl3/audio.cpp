@@ -237,6 +237,16 @@ uint32_t SdlAudio_Init(void)
   if (registryAllocError != 0) {
     return registryAllocError;
   }
+  /* The original built the decoder tables after installing the backend and ignored an allocation failure (the
+     first decode then read the unset tables). Checked here before the backend goes live, in the same
+     allocation order: without the tables the game runs silent, as without a device. */
+  const uint32_t tableError = CosineDerivedLookupTables_Init();
+  if (tableError != 0) {
+    Thandor_Log("SDL audio: no memory for the sample decoder tables (error %08X, running silent)",
+                (unsigned)tableError);
+    g_MemoryApi.free(registryPayload);
+    return 0; /* the mixer stream closes with `mixer` */
+  }
   s_registry = static_cast<DirectSoundVoiceSet **>(registryPayload);
   std::fill_n(s_registry, DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY, nullptr);
   SDL_AudioStream *stream = mixer->stream.get();
@@ -249,7 +259,6 @@ uint32_t SdlAudio_Init(void)
   g_SoundStopAllVoices = SdlAudio_StopAllVoices;
   g_SoundIsVoicePlaying = SdlAudio_IsVoicePlaying;
   g_SoundSetVoiceGains = SdlAudio_SetVoiceGains;
-  CosineDerivedLookupTables_Init();
   SDL_ResumeAudioStreamDevice(stream);
   return 0;
 }
