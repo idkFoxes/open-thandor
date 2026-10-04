@@ -92,23 +92,23 @@
 0x0040B1D4  data      g_FileSystemGetPosition                                           src/platform/filesystem/win32.cpp
 0x0040B1D8  data      g_FileSystemSeek                                                  src/platform/filesystem/win32.cpp
 0x0040B1DC  data      g_FileSystemDelete                                                src/platform/filesystem/win32.cpp
-0x0040B1E0  data      g_FileSystemGetCurrentDirectory                                   src/platform/filesystem/win32.cpp
-0x0040B1E4  data      g_FileSystemSetCurrentDirectory                                   src/platform/filesystem/win32.cpp
+0x0040B1E0  data      g_FileSystemGetCurrentDirectory                                   (removed, unused)
+0x0040B1E4  data      g_FileSystemSetCurrentDirectory                                   (removed, unused)
 0x0040B1E8  data      g_FileSystemCreateDirectoryRecursive                              src/platform/filesystem/win32.cpp
-0x0040B1EC  data      g_FileSystemRemoveDirectory                                       src/platform/filesystem/win32.cpp
+0x0040B1EC  data      g_FileSystemRemoveDirectory                                       (removed, unused)
 0x0040B1F0  data      g_FileSystemEnumerateDriveLetters                                 (removed, unused)
 0x0040B1F4  data      g_FileSystemGetDriveTypeCode                                      (removed, unused)
 0x0040B1F8  data      g_FileSystemCheckDriveMediaReady                                  (removed, unused)
-0x0040B1FC  data      g_FileSystemGetFreeAndTotalBytes                                  src/platform/filesystem/win32.cpp
-0x0040B200  data      g_FileSystemGetLastWriteDosDate                                   src/platform/filesystem/win32.cpp
-0x0040B204  data      g_FileSystemGetLastWriteTimeHigh                                  src/platform/filesystem/win32.cpp
-0x0040B208  data      g_FileSystemGetVolumeSerialNumber                                 src/platform/filesystem/win32.cpp
-0x0040B20C  data      g_FileSystemMove                                                  src/platform/filesystem/win32.cpp
-0x0040B210  data      g_FileSystemCopy                                                  src/platform/filesystem/win32.cpp
+0x0040B1FC  data      g_FileSystemGetFreeAndTotalBytes                                  (removed, unused)
+0x0040B200  data      g_FileSystemGetLastWriteDosDate                                   (removed, unused)
+0x0040B204  data      g_FileSystemGetLastWriteTimeHigh                                  (removed, unused)
+0x0040B208  data      g_FileSystemGetVolumeSerialNumber                                 (removed, unused)
+0x0040B20C  data      g_FileSystemMove                                                  (removed, unused)
+0x0040B210  data      g_FileSystemCopy                                                  (removed, unused)
 0x0040B214  data      g_FileSystemEnumerateDirectoryOrVolumeEntries                     src/platform/filesystem/win32.cpp
 0x0040B218  data      g_FileSystemValidateDos83Path                                     (removed, unused)
 0x0040B21C  data      g_PackageScratchBuffer                                            src/assets/package/runtime.cpp
-0x0040B220  data      g_EnginePackageLowPriorityMountHandle                             src/platform/filesystem/win32.cpp
+0x0040B220  data      g_EnginePackageLowPriorityMountHandle                             (removed, unused)
 0x0040B224  data      g_PackageMountSlots                                               src/assets/package/runtime.cpp
 0x0040E224  data      g_PckEncoderTable                                                 src/assets/package/codec.cpp
 0x0040E230  data      g_PckDecoderTable                                                 src/assets/package/codec.cpp
@@ -130,15 +130,15 @@
 0x0040ECA0  function  Package_WildcardPathMatches                                       src/assets/package/runtime.cpp
 0x0040ED00  function  Package_LoadEntryIntoBuffer                                       src/assets/package/runtime.cpp
 0x0040EE30  function  Package_LoadEntry                                                 src/assets/package/runtime.cpp
-0x0040EF50  function  FileSystem_LoadWholeFile                                          src/platform/filesystem/win32.cpp
+0x0040EF50  function  FileSystem_LoadWholeFile                                          (removed, unused)
 0x0040F000  function  Resource_Load                                                     src/assets/package/resource_loader.cpp
-0x0040F120  function  FileSystem_LoadWholeFileAlternatePath                             src/platform/filesystem/win32.cpp
+0x0040F120  function  FileSystem_LoadWholeFileAlternatePath                             (removed, unused)
 0x0040F1D0  function  Resource_Release                                                  src/assets/package/resource_loader.cpp
 0x0040F1F0  function  FileSystem_WriteBufferToPath                                      src/platform/filesystem/win32.cpp
 0x0040F2B0  function  WidePath_SetExtensionCode                                         src/core/text/path.cpp
 0x0040F320  function  WidePath_SplitParentAndLeaf                                       src/core/text/path.cpp
 0x0040F3C0  function  WidePath_CombineDirectoryAndLeaf                                  include/thandor/core/text/path.h
-0x0040F430  function  FileSystem_BuildEnumerationStringTable                            src/platform/filesystem/win32.cpp
+0x0040F430  function  FileSystem_BuildEnumerationStringTable                            (removed, unused)
 0x0040F530  data      g_UiTimedListDriveLetters                                         (removed, unused)
 0x0040F550  data      g_UiTimedListRecordPathScratch                                    (removed, unused)
 0x0040F750  data      g_UiTimedListCombinedPathScratch                                  (removed, unused)
@@ -2998,8 +2998,8 @@
 0x005758D0  function  FatalError_Exit                                                   src/core/error/runtime.cpp
 0x00575950  data      g_Win32FileBytesTransferred                                       src/platform/filesystem/win32.cpp
 0x00575954  data      g_Win32FindDataScratch                                            src/platform/filesystem/win32.cpp
-0x00575A94  data      g_FileSystemInitComputerNameCapacityOrConfigCursor                src/platform/filesystem/win32.cpp
-0x00575A98  data      g_FileSystemConfigRemainingBytes                                  src/platform/filesystem/win32.cpp
+0x00575A94  data      g_FileSystemInitComputerNameCapacityOrConfigCursor                (removed, unused)
+0x00575A98  data      g_FileSystemConfigRemainingBytes                                  (removed, unused)
 0x00575A9C  data      g_Win32PathScratch                                                src/platform/filesystem/win32.cpp
 0x00575C9C  data      g_Win32DriveRootPathScratchA                                      src/platform/filesystem/win32.cpp
 0x00575CB0  function  FileSystem_Init                                                   src/platform/filesystem/win32.cpp
@@ -3012,16 +3012,16 @@
 0x00576140  function  Win32File_GetPosition                                             src/platform/filesystem/win32.cpp
 0x00576180  function  Win32File_Seek                                                    src/platform/filesystem/win32.cpp
 0x005761C0  function  Win32File_Delete                                                  src/platform/filesystem/win32.cpp
-0x00576210  function  Win32File_Move                                                    src/platform/filesystem/win32.cpp
-0x00576280  function  Win32File_Copy                                                    src/platform/filesystem/win32.cpp
-0x005762F0  function  Win32File_GetLastWriteDosDate                                     src/platform/filesystem/win32.cpp
-0x00576360  function  Win32File_GetLastWriteTimeHigh                                    src/platform/filesystem/win32.cpp
-0x005763C0  function  Win32Drive_GetVolumeSerialNumber                                  src/platform/filesystem/win32.cpp
+0x00576210  function  Win32File_Move                                                    (removed, unused)
+0x00576280  function  Win32File_Copy                                                    (removed, unused)
+0x005762F0  function  Win32File_GetLastWriteDosDate                                     (removed, unused)
+0x00576360  function  Win32File_GetLastWriteTimeHigh                                    (removed, unused)
+0x005763C0  function  Win32Drive_GetVolumeSerialNumber                                  (removed, unused)
 0x00576430  function  Win32File_GetCurrentDirectory                                     src/platform/filesystem/win32.cpp
 0x00576490  function  Win32File_SetCurrentDirectory                                     src/platform/filesystem/win32.cpp
 0x005764E0  function  Win32File_CreateDirectoryRecursive                                src/platform/filesystem/win32.cpp
-0x005765A0  function  Win32File_RemoveDirectory                                         src/platform/filesystem/win32.cpp
-0x005765F0  function  Win32Drive_GetFreeAndTotalBytes                                   src/platform/filesystem/win32.cpp
+0x005765A0  function  Win32File_RemoveDirectory                                         (removed, unused)
+0x005765F0  function  Win32Drive_GetFreeAndTotalBytes                                   (removed, unused)
 0x00576650  function  Win32Drive_GetEngineTypeCode                                      (removed, unused)
 0x005766B0  function  Win32Drive_EnumerateLetters                                       (removed, unused)
 0x005766F0  function  Win32Drive_CheckMediaReady                                        (removed, unused)

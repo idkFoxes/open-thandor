@@ -24,14 +24,6 @@
 
 uintptr_t __cdecl FileSystem_Init();
 
-/* 0 with the packed DOS date/time, or FATAL_ERROR_FILE_ACCESS_FAILED */
-uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime);
-
-/* 0 with the last-write FILETIME's high dword, or FATAL_ERROR_FILE_ACCESS_FAILED */
-uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTimeHigh);
-
-uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path);
-
 void __cdecl Win32FileSystem_RestoreInitialDirectory();
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
@@ -48,19 +40,8 @@ uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition d
 /* 0 or FATAL_ERROR_FILE_ACCESS_FAILED */
 uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path);
 
-/* 0 or FATAL_ERROR_FILE_ACCESS_FAILED */
-uint32_t Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath);
-
-/* 0 or FATAL_ERROR_FILE_ACCESS_FAILED */
-uint32_t Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath);
-
 /* 0 or FATAL_ERROR_FILE_WRITE_FAILED */
 uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags,uint16_t *path);
-
-/* 0 or FATAL_ERROR_REMOVE_DIRECTORY_FAILED */
-uint32_t Win32File_RemoveDirectory(uint16_t *path);
-
-Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLetter);
 
 /* the number of FILESYSTEM_ENUMERATION_RECORD_BYTES records written */
 uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
@@ -88,15 +69,6 @@ void Win32File_Close(void *handle);
 
 Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
           uint32_t *outError);
-
-Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
-
-Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
-
-/* true with the string table (NULL when empty) and its entry count */
-Bool8 FileSystem_BuildEnumerationStringTable
-          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
-          uint16_t ***outTable,uint32_t *outEntryCount);
 
 extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries;
 
