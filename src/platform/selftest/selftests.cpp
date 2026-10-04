@@ -308,8 +308,12 @@ static void Thandor_SelfTestTriangleSetup(void)
             else {
                 v->screenY = (y << 12) | (int)(SelfTest_TriangleRandom(&seed) & 0xfff);
             }
-            v->screenX = (((int)(SelfTest_TriangleRandom(&seed) % 1500) - 200) << 12) |
-                         (int)(SelfTest_TriangleRandom(&seed) & 0xfff);
+            {
+                /* two draws in one expression: their order is spelled out (operand order is unspecified) */
+                int screenXWhole = (int)(SelfTest_TriangleRandom(&seed) % 1500) - 200;
+                int screenXFraction = (int)(SelfTest_TriangleRandom(&seed) & 0xfff);
+                v->screenX = (screenXWhole << 12) | screenXFraction;
+            }
             v->depth = 0x20000000 + (int)(SelfTest_TriangleRandom(&seed) % 0x400000u) * 256;
             v->textureU = (int)(SelfTest_TriangleRandom(&seed) % 0x200000u) - 0x80000;
             v->textureV = (int)(SelfTest_TriangleRandom(&seed) % 0x200000u) - 0x80000;

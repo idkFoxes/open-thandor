@@ -28,13 +28,26 @@ if(DEFINED THANDOR_TEST_AIDS)
     unset(THANDOR_TEST_AIDS CACHE)
 endif()
 
-# The code needs MSVC (__stdcall, MSVC pragmas and intrinsics) for 64-bit x64 and SDL3. Use a preset
-# (CMakePresets.json: release, debug, test), which finds MSVC x64 by itself (cmake/msvc-x64.cmake), or configure from a
-# vcvars64 prompt. In CLion: Settings > Build > CMake, enable the presets and disable the default MinGW profile.
-if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "open-thandor must be built with MSVC for 64-bit x64 (32-bit x86 is no longer supported): "
-                        "use a CMake preset (cmake --preset release) or a vcvars64 prompt. Found: "
-                        "${CMAKE_CXX_COMPILER_ID}, ${CMAKE_SIZEOF_VOID_P}-byte pointers.")
+# Compilers: MSVC (presets release, debug, test, gpu-test; cmake/msvc-x64.cmake finds MSVC x64 without vcvars) or
+# MinGW-w64 GCC (presets mingw-release, mingw-test; cmake/mingw-x64.cmake), both for 64-bit x64 Windows with SDL3.
+# In CLion: Settings > Build > CMake, enable the presets.
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT WIN32 OR NOT (MSVC OR (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
+    message(FATAL_ERROR "open-thandor must be built with MSVC or MinGW-w64 GCC for 64-bit x64 Windows (32-bit x86 is "
+                        "no longer supported): use a CMake preset (cmake --preset release, cmake --preset "
+                        "mingw-release) or a vcvars64 prompt. Found: ${CMAKE_CXX_COMPILER_ID}, "
+                        "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # The same results as MSVC: no type-based alias analysis (the code reinterprets memory freely), signed overflow
+    # wraps, no fused multiply-add (MSVC x64 /fp:precise does not contract), MSVC struct and bit-field layout
+    # (-mms-bitfields, the MinGW default; layout_checks.cpp proves the layouts). char is signed in both.
+    # -fpermissive: the recovered code casts pointers to 32-bit integers in places ((int)pointer, MSVC warnings
+    # C4311/C4312), which g++ rejects otherwise; the cast truncates exactly as in the MSVC build and stays a warning.
+    # -Wall without the style warnings the decompiled code triggers by the hundreds (parentheses, sign compare,
+    # '/*' in comments).
+    add_compile_options(-fno-strict-aliasing -fwrapv -ffp-contract=off -mms-bitfields -fpermissive
+                        -Wall -Wno-unknown-pragmas -Wno-parentheses -Wno-sign-compare -Wno-comment)
 endif()
 
 add_library(thandor_curated STATIC
@@ -295,14 +308,34 @@ add_executable(thandor WIN32
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 # The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
 # (/LARGEADDRESSAWARE:NO) so every pointer fits.
-target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+if(MSVC)
+    target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+else()
+    # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
+    # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
+    target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
+                        -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
+                        -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+    # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
+    # clears the flag after the link and fails the build if the image came out relocatable.
+    add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
+    target_link_options(pe_not_large_address_aware PRIVATE -static)
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
+        VERBATIM)
+endif()
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
 # renderer draws the frames). SDL3 comes from find_package(SDL3): pass its install prefix in CMAKE_PREFIX_PATH (vcpkg:
-# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows), or set the environment variable VCPKG_ROOT, whose
-# installed/x64-windows is searched as well.
+# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows, MinGW: .../x64-mingw-dynamic), or set the environment variable
+# VCPKG_ROOT, whose installed/x64-windows (MinGW: installed/x64-mingw-dynamic) is searched as well.
+if(MSVC)
+    set(THANDOR_VCPKG_TRIPLET x64-windows)
+else()
+    set(THANDOR_VCPKG_TRIPLET x64-mingw-dynamic)
+endif()
 if(DEFINED ENV{VCPKG_ROOT})
-    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows" THANDOR_VCPKG_PREFIX)
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/${THANDOR_VCPKG_TRIPLET}" THANDOR_VCPKG_PREFIX)
     list(APPEND CMAKE_PREFIX_PATH "${THANDOR_VCPKG_PREFIX}")
 endif()
 # vcpkg ships Release and Debug only: RelWithDebInfo and MinSizeRel use the Release library
@@ -325,32 +358,47 @@ add_custom_command(TARGET thandor POST_BUILD
 # SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
 # switched on at run time with OPEN_THANDOR_GPU=1 or -GPU; the software renderer stays the default. The shaders
 # (src/platform/sdl3/shaders/primitives.hlsl) are compiled to DXBC shader model 5.1 with fxc from the Windows SDK.
+# A GCC build without fxc (or with THANDOR_GPU_PRECOMPILED_SHADERS) uses the headers fxc made, committed in
+# src/platform/sdl3/shaders/compiled/; after a change of primitives.hlsl regenerate them from an MSVC gpu-test build
+# (docs/BUILDING.md).
 option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU" OFF)
+option(THANDOR_GPU_PRECOMPILED_SHADERS "SDL_GPU: use the committed shader headers instead of running fxc" OFF)
 if(THANDOR_RENDERER_SDL_GPU)
     # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
     set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
     file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
     list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
-    find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+    if(THANDOR_GPU_PRECOMPILED_SHADERS)
+        # no fxc
+    elseif(MSVC)
+        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+    else()
+        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
+    endif()
     set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/primitives.hlsl)
-    set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
-    file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
     set(THANDOR_GPU_SHADER_HEADERS)
-    foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
-                   "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
-        separate_arguments(shader)
-        list(GET shader 0 shaderName)
-        list(GET shader 1 shaderProfile)
-        list(GET shader 2 shaderEntry)
-        set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
-        add_custom_command(OUTPUT ${shaderHeader}
-            COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
-                    /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
-            DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
-            COMMENT "fxc ${shaderEntry}"
-            VERBATIM)
-        list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
-    endforeach()
+    if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
+        file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
+        foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
+                       "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
+            separate_arguments(shader)
+            list(GET shader 0 shaderName)
+            list(GET shader 1 shaderProfile)
+            list(GET shader 2 shaderEntry)
+            set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
+            add_custom_command(OUTPUT ${shaderHeader}
+                COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
+                        /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
+                DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
+                COMMENT "fxc ${shaderEntry}"
+                VERBATIM)
+            list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
+        endforeach()
+    else()
+        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
+        message(STATUS "SDL_GPU shaders: the precompiled headers in ${THANDOR_GPU_SHADER_DIR}")
+    endif()
     target_sources(thandor_curated PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor_curated PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor_curated PUBLIC THANDOR_RENDERER_SDL_GPU=1)

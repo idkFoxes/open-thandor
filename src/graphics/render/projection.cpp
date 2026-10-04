@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) GraphicsFixedVec3 g_ViewOriginFixed = {0};
+THANDOR_ALIGN(4) GraphicsFixedVec3 g_ViewOriginFixed = {0};
 
 int32_t g_ProjectionScaleFixed = 0;
 

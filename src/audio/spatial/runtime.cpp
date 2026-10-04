@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) int32_t g_ReverseStereoMask = 0;
+THANDOR_ALIGN(16) int32_t g_ReverseStereoMask = 0;
 
 static GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform = {0};
 

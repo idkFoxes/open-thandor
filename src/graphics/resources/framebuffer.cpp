@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(8)) uint32_t g_FramebufferWidth = 0;
+THANDOR_ALIGN(8) uint32_t g_FramebufferWidth = 0;
 
 GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = 0;
 

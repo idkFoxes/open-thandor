@@ -1,6 +1,7 @@
 # Building
 
-The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with MSVC and SDL3. The 32-bit build and the
+The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with MSVC or MinGW-w64 GCC
+([below](#mingw-w64-gcc)) and SDL3. The 32-bit build and the
 original's Win32/DirectX platform code (DirectDraw, DirectInput, DirectSound, WinMM timers, the Win32 message pump)
 were removed once the x64 build reproduced every determinism hash and pixel of the 32-bit one; they are in the git
 history.
@@ -40,13 +41,78 @@ cmake --preset test
 cmake --build --preset test
 ```
 
-CMake stops with an error for anything but MSVC x64. Use `RelWithDebInfo` for testing: it is optimized (`/O2`) and
+CMake stops with an error for anything but MSVC x64 or MinGW-w64 GCC x64. Use `RelWithDebInfo` for testing: it is optimized (`/O2`) and
 keeps the PDB, so `crash.log` shows function names and lines. `Debug` (`/Od`) is much slower in game; `Release`
-drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.py`.
+drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.py`
+(`symbolize.py crash_raw.log <build>\thandor.map`).
 
 The original data layouts keep their pointers in 32-bit fields (`Ptr32<T>`,
 [`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format; the
 executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the fixed base `0x10000000`.
+
+### MinGW-w64 GCC
+
+The same tree builds with MinGW-w64 GCC for x64 (x86_64-w64-mingw32, SEH exceptions; tested with the MinGW-Builds
+GCC 15.2 in `C:\mingw64`). Requirements: the toolchain (`g++`, `ld`, `windres`, `addr2line`) and Ninja (the
+MinGW-Builds distribution has `ninja.exe` in its `bin`), CMake 3.25+, and SDL3 for MinGW:
+`vcpkg install sdl3:x64-mingw-dynamic` (vcpkg's `windres` step fails when the vcpkg path contains a space; build
+with `--x-buildtrees-root=C:/vcbt` or another path without spaces then).
+
+```bat
+set PATH=C:\mingw64\bin;%PATH%
+set VCPKG_ROOT=C:\path\to\vcpkg
+cmake --preset mingw-test
+cmake --build --preset mingw-test
+```
+
+| Preset | Build |
+|---|---|
+| `mingw-release` | RelWithDebInfo (`build-mingw-release`) |
+| `mingw-test` | RelWithDebInfo with the developer tools (`build-mingw-test`) |
+| `mingw-gpu-test` | as `mingw-test`, plus the SDL_GPU rasterizer (`build-mingw-gpu-test`) |
+
+[`cmake/mingw-x64.cmake`](../cmake/mingw-x64.cmake) takes the toolchain from the cache variable or environment
+variable `MINGW_ROOT` (the directory with `bin\g++.exe`), else the `g++` on the `PATH`, else `C:\mingw64`,
+`C:\msys64\mingw64` or `C:\msys64\ucrt64`. SDL3 comes from `CMAKE_PREFIX_PATH` or
+`%VCPKG_ROOT%\installed\x64-mingw-dynamic`. The C and C++ runtimes are linked statically (`-static`), so only
+`SDL3.dll` goes next to `thandor.exe`; the executable uses the Universal CRT like the MSVC build.
+
+What keeps the two builds identical in behaviour (the self-test hashes and the determinism references match):
+
+- GCC flags: `-fno-strict-aliasing` (the recovered code reinterprets memory), `-fwrapv` (signed overflow wraps as
+  on MSVC), `-ffp-contract=off` (no fused multiply-add; MSVC x64 does not contract), `-mms-bitfields` (MSVC struct
+  and bit-field layout; [`src/core/layout_checks.cpp`](../src/core/layout_checks.cpp) checks the sizes and pointer
+  offsets of every layout at compile time). `-fpermissive` lets the casts of pointers to 32-bit integers through
+  (they truncate as on MSVC, which warns C4311/C4312 for the same lines); `-Wall` without `-Wparentheses`,
+  `-Wsign-compare` and `-Wcomment`, which the decompiled code triggers by the hundreds.
+- Function arguments and operands are evaluated in an unspecified order, and MSVC and GCC differ: an expression with
+  two state-changing calls (two random draws, two reads of a stream) gets explicit temporaries in MSVC's order.
+- `THANDOR_ALIGN(n)` (core/contracts.h) instead of `__declspec(align(n))`; the crash handler's guarded stack walk
+  (`__try`) is MSVC-only; `_ReturnAddress` becomes `__builtin_return_address(0)`.
+- Linker: `--image-base=0x10000000 --disable-dynamicbase --disable-high-entropy-va`. GNU ld marks every 64-bit image
+  large-address aware (its `--disable-large-address-aware` is for 32-bit images only), so the build runs
+  [`cmake/pe_not_large_address_aware.cpp`](../cmake/pe_not_large_address_aware.cpp) on `thandor.exe` after the
+  link: it clears `IMAGE_FILE_LARGE_ADDRESS_AWARE` and fails if the image is relocatable. Check with
+  `objdump -p thandor.exe`: `Characteristics` without 0x20, `ImageBase 0000000010000000`, `DllCharacteristics`
+  only `NX_COMPAT`.
+
+Crash and hang logs of a GCC build: there is no PDB, so `crash.log`, `hang.log` and the watchdog give each frame as
+`thandor.exe+0xOFFSET` (absolute address `0x10000000 + OFFSET`, the image base is fixed and logged as `module base`).
+Symbolize with the executable's DWARF line information:
+
+```bat
+addr2line -f -C -i -e build-mingw-test\thandor.exe 0x100516AA 0x1000146C
+python tools\data\symbolize.py crash_raw.log build-mingw-test\thandor.exe
+```
+
+`symbolize.py` calls `addr2line` for an `.exe` and reads a linker map otherwise; the GCC build also writes
+`thandor.map` (`-Wl,-Map`), which lists only global symbols (no `static` functions), so prefer the executable.
+
+With `THANDOR_RENDERER_SDL_GPU` a GCC build compiles the shaders with `fxc` when it finds the Windows SDK, and
+otherwise uses the headers fxc made, committed in
+[`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`
+forces them). After a change of `primitives.hlsl` regenerate them: build the MSVC preset `gpu-test` and copy
+`<build dir>\gpu_shaders\gpu_shader_*.h` there.
 
 ## Running
 
@@ -83,7 +149,7 @@ into the framebuffer, and the overlays, the UI and the cursor are drawn on it as
 from the software rasterizer's own fixed-point setup, so the picture matches the software renderer apart from
 rounding (blend tables, 16-bit quantization, single edge pixels). The shaders
 (`src/platform/sdl3/shaders/primitives.hlsl`) are compiled to DXBC with `fxc` from the Windows SDK during the
-build. Without a Direct3D 12 device the software renderer stays (logged in `thandor.log`).
+build (a GCC build without `fxc` uses the committed headers, see [MinGW-w64 GCC](#mingw-w64-gcc)). Without a Direct3D 12 device the software renderer stays (logged in `thandor.log`).
 
 With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame, shows the software
 picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the 3D view of both as

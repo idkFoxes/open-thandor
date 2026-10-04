@@ -9,6 +9,7 @@
    THANDOR_DEV_TOOLS. Each hook hands over to the tool behind it; without its environment variable a tool does
    nothing. The level-script log is in level_script.cpp. */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/thandor.h>
@@ -45,9 +46,8 @@ void DebugHook_BeforeIntroMovies(void)
   if ((exportMovies != NULL) && (exportMovies[0] != 0)) {
     char names[256];
     char *name;
-    char *rest = NULL;
-    strncpy_s(names, sizeof names, exportMovies, _TRUNCATE);
-    for (name = strtok_s(names, ",", &rest); name != NULL; name = strtok_s(NULL, ",", &rest)) {
+    snprintf(names, sizeof names, "%s", exportMovies);
+    for (name = strtok(names, ","); name != NULL; name = strtok(NULL, ",")) {
       DebugMovie_ExportOne(name);
     }
     ExitProcess(0);

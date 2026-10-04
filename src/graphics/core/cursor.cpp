@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-__declspec(align(8)) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = THANDOR_FN(GraphicsCursor_SetFrameIndex);
+THANDOR_ALIGN(8) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = THANDOR_FN(GraphicsCursor_SetFrameIndex);
 
 int32_t g_CursorCurrentVisibilityToken = 0;
 

@@ -10,17 +10,17 @@
 
 /* Module data. */
 
-__declspec(align(4)) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate = 0;
+THANDOR_ALIGN(4) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate = 0;
 
-__declspec(align(8)) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = 0;
+THANDOR_ALIGN(8) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = 0;
 
 /* the periodic timers, installed by SdlPlatform_InstallTimersAndPump (SDL timers instead of the original's WinMM
    timeSetEvent timers) */
-__declspec(align(8)) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
+THANDOR_ALIGN(8) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
 
-__declspec(align(4)) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
+THANDOR_ALIGN(4) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
 
-__declspec(align(4)) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = 0;
+THANDOR_ALIGN(4) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = 0;
 
 static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = 0;
 

@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-__declspec(align(8)) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = THANDOR_FN(SoftwareFramebuffer_Create);
+THANDOR_ALIGN(8) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = THANDOR_FN(SoftwareFramebuffer_Create);
 
 static SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = 0;
 

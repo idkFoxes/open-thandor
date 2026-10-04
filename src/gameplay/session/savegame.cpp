@@ -20,7 +20,7 @@ uint16_t g_OldunitHexPathUtf16[12] = {'o', 'l', 'd', 'u', 'n', 'i', 't', '.', 'h
 uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
 /* L"army.hex" */
-__declspec(align(4)) uint16_t g_ArmyHexPathUtf16[9] = {'a', 'r', 'm', 'y', '.', 'h', 'e', 'x', 0};
+THANDOR_ALIGN(4) uint16_t g_ArmyHexPathUtf16[9] = {'a', 'r', 'm', 'y', '.', 'h', 'e', 'x', 0};
 
 /* L"effect.hex" */
 uint16_t g_EffectHexPathUtf16[11] = {'e', 'f', 'f', 'e', 'c', 't', '.', 'h', 'e', 'x', 0};

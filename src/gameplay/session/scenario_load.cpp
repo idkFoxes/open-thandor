@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) uintptr_t g_FrontendLoadedCampaignAsset = 0;
+THANDOR_ALIGN(4) uintptr_t g_FrontendLoadedCampaignAsset = 0;
 
 static uint16_t g_CampaignLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 

@@ -12,12 +12,12 @@
 
 /* Module data. */
 
-__declspec(align(8)) SessionNetworkRoleFlags g_SessionNetworkRoleFlags = 0;
+THANDOR_ALIGN(8) SessionNetworkRoleFlags g_SessionNetworkRoleFlags = 0;
 
 /* uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
-__declspec(align(4)) uint32_t g_SessionNetworkTickInterval = 2;
+THANDOR_ALIGN(4) uint32_t g_SessionNetworkTickInterval = 2;
 
-__declspec(align(4)) InGameRuntimeRoot *g_InGameRuntimeRoot = 0;
+THANDOR_ALIGN(4) InGameRuntimeRoot *g_InGameRuntimeRoot = 0;
 
 uint32_t g_SessionNetworkTickCounter = 0;
 

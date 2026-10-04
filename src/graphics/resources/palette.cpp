@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = THANDOR_FN(GraphicsPaletteAsset_LoadPackage);
+THANDOR_ALIGN(4) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = THANDOR_FN(GraphicsPaletteAsset_LoadPackage);
 
 static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = THANDOR_FN(GraphicsPaletteAsset_Validate);
 

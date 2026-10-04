@@ -64,6 +64,15 @@ typedef unsigned int UQ12;
 #define THANDOR_ALLOWS_OVERREAD
 #endif
 
+/* THANDOR_ALIGN(n): at least n-byte alignment for a variable (the original's data alignment); like
+   __declspec(align(n)) it never lowers the type's own alignment (alignas(n) below the natural alignment, e.g. 4 for
+   a 64-bit pointer, would be ill-formed). */
+#ifdef _MSC_VER
+#define THANDOR_ALIGN(n) __declspec(align(n))
+#else
+#define THANDOR_ALIGN(n) __attribute__((aligned(n)))
+#endif
+
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/x86_emulation.h>
 

@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) int32_t g_FrontendPlayerRuntimeCount = 0;
+THANDOR_ALIGN(16) int32_t g_FrontendPlayerRuntimeCount = 0;
 
 /* version string shown to joining players ("1.5.45") */
 static uint16_t g_GameVersionUtf16[7] = {'1', '.', '5', '.', '4', '5', 0}; /* L"1.5.45" */

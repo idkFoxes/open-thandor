@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint32_t g_FrontendPlayerMessageBuffers = 0;
+THANDOR_ALIGN(4) uint32_t g_FrontendPlayerMessageBuffers = 0;
 
 FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = 0;
 

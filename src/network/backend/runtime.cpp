@@ -10,19 +10,19 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint32_t g_NetworkBackendInstanceCount = 0;
+THANDOR_ALIGN(4) uint32_t g_NetworkBackendInstanceCount = 0;
 
-__declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = THANDOR_FN(NetworkBackendFallback_SetSessionContext);
+THANDOR_ALIGN(4) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = THANDOR_FN(NetworkBackendFallback_SetSessionContext);
 
-__declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = THANDOR_FN(NetworkBackendFallback_Cleanup);
+THANDOR_ALIGN(16) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = THANDOR_FN(NetworkBackendFallback_Cleanup);
 
-__declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = THANDOR_FN(NetworkBackendFallback_OpenAndBindUdpSocket);
+THANDOR_ALIGN(4) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = THANDOR_FN(NetworkBackendFallback_OpenAndBindUdpSocket);
 
-__declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = THANDOR_FN(NetworkBackendFallback_CloseActiveSocket);
+THANDOR_ALIGN(8) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = THANDOR_FN(NetworkBackendFallback_CloseActiveSocket);
 
-__declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = THANDOR_FN(NetworkBackendFallback_ParsePeerEndpoint);
+THANDOR_ALIGN(4) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = THANDOR_FN(NetworkBackendFallback_ParsePeerEndpoint);
 
-__declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = THANDOR_FN(NetworkBackendFallback_FormatPeerAddress);
+THANDOR_ALIGN(8) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = THANDOR_FN(NetworkBackendFallback_FormatPeerAddress);
 
 NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = 0;
 

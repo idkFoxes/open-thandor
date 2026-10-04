@@ -18,7 +18,7 @@ SOURCE_SUFFIXES = (".cpp", ".c", ".h", ".hpp")
 
 IDENT = re.compile(r"[A-Za-z_]\w*")
 QUALIFIER_TAIL = re.compile(r"\)\s*(?:const|noexcept|override|final|\s)*$")
-DECLSPEC = re.compile(r"__declspec\s*\((?:[^()]|\([^()]*\))*\)|alignas\s*\((?:[^()]|\([^()]*\))*\)|"
+DECLSPEC = re.compile(r"(?:__declspec|THANDOR_ALIGN)\s*\((?:[^()]|\([^()]*\))*\)|alignas\s*\((?:[^()]|\([^()]*\))*\)|"
                       r"__attribute__\s*\(\((?:[^()]|\([^()]*\))*\)\)")
 KEYWORDS = {
     "if", "while", "for", "switch", "return", "sizeof", "static", "const", "extern", "inline", "volatile",

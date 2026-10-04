@@ -38,8 +38,8 @@ void Thandor_Log(const char *format, ...)
     FILE *out;
     va_list args;
     executable_directory(path, sizeof path);
-    strcat_s(path, sizeof path, "thandor.log");
-    if (fopen_s(&out, path, "a") != 0) {
+    strncat(path, "thandor.log", sizeof path - strlen(path) - 1);
+    if ((out = fopen(path, "a")) == NULL) {
         return;
     }
     va_start(args, format);
@@ -47,6 +47,24 @@ void Thandor_Log(const char *format, ...)
     va_end(args);
     fputc('\n', out);
     fclose(out);
+}
+
+/* `module+0xoffset` of a code address: the fallback without a symbol (a GCC build has no PDB; its thandor.map or
+   addr2line symbolizes the offset, docs/BUILDING.md). 0 when no module contains the address. */
+static int module_offset(char *out, size_t capacity, DWORD64 address)
+{
+    HMODULE module;
+    char moduleName[MAX_PATH];
+    const char *base;
+    if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                            (LPCSTR)(uintptr_t)address, &module) ||
+        !GetModuleFileNameA(module, moduleName, sizeof moduleName)) {
+        return 0;
+    }
+    base = strrchr(moduleName, '\\');
+    snprintf(out, capacity, "%s+0x%llX", base ? base + 1 : moduleName,
+             (unsigned long long)(address - (DWORD64)(uintptr_t)module));
+    return 1;
 }
 
 /* Crash log: raw stack words below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
@@ -89,7 +107,9 @@ static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
         if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
             fprintf(out, "  %2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
         } else {
-            fprintf(out, "  %2d  %08llX  ?", depth, frame.AddrPC.Offset);
+            char where[MAX_PATH + 32];
+            fprintf(out, "  %2d  %08llX  %s", depth, frame.AddrPC.Offset,
+                    module_offset(where, sizeof where, frame.AddrPC.Offset) ? where : "?");
         }
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
             fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
@@ -114,9 +134,9 @@ const char *Thandor_SymbolName(const void *address)
     symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
     symbol->MaxNameLen = 255;
     if (SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)address, &displacement, symbol)) {
-        sprintf_s(name, sizeof name, "%s+0x%llX", symbol->Name, displacement);
-    } else {
-        sprintf_s(name, sizeof name, "%p", address);
+        snprintf(name, sizeof name, "%s+0x%llX", symbol->Name, displacement);
+    } else if (!module_offset(name, sizeof name, (DWORD64)(uintptr_t)address)) {
+        snprintf(name, sizeof name, "%p", address);
     }
     return name;
 }
@@ -128,8 +148,8 @@ void Thandor_LogStack(const char *reason, unsigned value)
     CONTEXT context;
 
     executable_directory(path, sizeof path);
-    strcat_s(path, sizeof path, "thandor.log");
-    if (fopen_s(&out, path, "a") != 0) {
+    strncat(path, "thandor.log", sizeof path - strlen(path) - 1);
+    if ((out = fopen(path, "a")) == NULL) {
         return;
     }
     fprintf(out, "%s 0x%08X\n", reason, value);
@@ -203,6 +223,47 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     CloseHandle(file);
 }
 
+/* The symbolized frames of the crashed thread (dbghelp: names and lines from the PDB of an MSVC build,
+   module+offset otherwise). */
+static void walk_crash_stack(FILE *out, HANDLE process, HANDLE thread, CONTEXT *context)
+{
+    STACKFRAME64 frame;
+    int depth;
+    memset(&frame, 0, sizeof frame);
+    frame.AddrPC.Offset = CONTEXT_PC(*context);
+    frame.AddrPC.Mode = AddrModeFlat;
+    frame.AddrFrame.Offset = CONTEXT_FP(*context);
+    frame.AddrFrame.Mode = AddrModeFlat;
+    frame.AddrStack.Offset = CONTEXT_SP(*context);
+    frame.AddrStack.Mode = AddrModeFlat;
+    for (depth = 0; depth < 64; depth++) {
+        char buffer[sizeof(SYMBOL_INFO) + 256];
+        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+        IMAGEHLP_LINE64 line;
+        DWORD64 displacement = 0;
+        DWORD lineDisplacement = 0;
+        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, context, NULL,
+                         SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
+            break;
+        }
+        memset(buffer, 0, sizeof buffer);
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol->MaxNameLen = 255;
+        line.SizeOfStruct = sizeof line;
+        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
+            fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
+        } else {
+            char where[MAX_PATH + 32];
+            fprintf(out, "%2d  %08llX  %s", depth, frame.AddrPC.Offset,
+                    module_offset(where, sizeof where, frame.AddrPC.Offset) ? where : "?");
+        }
+        if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
+            fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
+        }
+        fprintf(out, "\n");
+    }
+}
+
 static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 {
     char path[MAX_PATH];
@@ -211,12 +272,10 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     HANDLE process = GetCurrentProcess();
     HANDLE thread = GetCurrentThread();
     CONTEXT context = *info->ContextRecord;
-    STACKFRAME64 frame;
-    int depth;
 
     executable_directory(path, sizeof path);
-    strcat_s(path, sizeof path, "crash.log");
-    if (fopen_s(&out, path, "a") != 0) {
+    strncat(path, "crash.log", sizeof path - strlen(path) - 1);
+    if ((out = fopen(path, "a")) == NULL) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
     {
@@ -228,14 +287,15 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     fprintf(out, "exception 0x%08lX at 0x%p\n", info->ExceptionRecord->ExceptionCode,
             info->ExceptionRecord->ExceptionAddress);
     if (info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
-        fprintf(out, "%s address 0x%08IX\n",
+        fprintf(out, "%s address 0x%08llX\n",
                 info->ExceptionRecord->ExceptionInformation[0] == 8 ? "execute" :
                 info->ExceptionRecord->ExceptionInformation[0] == 1 ? "write" : "read",
-                info->ExceptionRecord->ExceptionInformation[1]);
+                (unsigned long long)info->ExceptionRecord->ExceptionInformation[1]);
     }
-    fprintf(out, "rax=%016llX rbx=%016llX rcx=%016llX rdx=%016llX\nrsi=%016llX rdi=%016llX rbp=%016llX rsp=%016llX\n\n",
+    fprintf(out, "rax=%016llX rbx=%016llX rcx=%016llX rdx=%016llX\nrsi=%016llX rdi=%016llX rbp=%016llX rsp=%016llX\n",
             context.Rax, context.Rbx, context.Rcx, context.Rdx, context.Rsi, context.Rdi, context.Rbp,
             context.Rsp);
+    fprintf(out, "module base 0x%p\n\n", (void *)GetModuleHandleA(NULL));
     fflush(out);
     /* Raw stack words first: the stack walk below can fault on a corrupted stack. */
     {
@@ -264,53 +324,17 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
         fprintf(out, "\n");
         fflush(out);
     }
+#ifdef _MSC_VER
     __try {
-    memset(&frame, 0, sizeof frame);
-    frame.AddrPC.Offset = CONTEXT_PC(context);
-    frame.AddrPC.Mode = AddrModeFlat;
-    frame.AddrFrame.Offset = CONTEXT_FP(context);
-    frame.AddrFrame.Mode = AddrModeFlat;
-    frame.AddrStack.Offset = CONTEXT_SP(context);
-    frame.AddrStack.Mode = AddrModeFlat;
-    for (depth = 0; depth < 64; depth++) {
-        char buffer[sizeof(SYMBOL_INFO) + 256];
-        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
-        IMAGEHLP_LINE64 line;
-        DWORD64 displacement = 0;
-        DWORD lineDisplacement = 0;
-        if (!StackWalk64(CRASH_MACHINE_TYPE, process, thread, &frame, &context, NULL,
-                         SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
-            break;
-        }
-        memset(buffer, 0, sizeof buffer);
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-        symbol->MaxNameLen = 255;
-        line.SizeOfStruct = sizeof line;
-        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
-            fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
-        } else {
-            HMODULE module;
-            char moduleName[MAX_PATH];
-            if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                                       GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                                   (LPCSTR)(uintptr_t)frame.AddrPC.Offset, &module) &&
-                GetModuleFileNameA(module, moduleName, sizeof moduleName)) {
-                const char *base = strrchr(moduleName, '\\');
-                fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset,
-                        base ? base + 1 : moduleName,
-                        frame.AddrPC.Offset - (DWORD64)(uintptr_t)module);
-            } else {
-                fprintf(out, "%2d  %08llX  ?", depth, frame.AddrPC.Offset);
-            }
-        }
-        if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
-            fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
-        }
-        fprintf(out, "\n");
-    }
+        walk_crash_stack(out, process, thread, &context);
     } __except (EXCEPTION_EXECUTE_HANDLER) {
         fprintf(out, "(stack walk faulted)\n");
     }
+#else
+    /* GCC has no __try: StackWalk64 reads the stack through ReadProcessMemory, which reports a bad address
+       instead of faulting. */
+    walk_crash_stack(out, process, thread, &context);
+#endif
     fclose(out);
     return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -329,8 +353,8 @@ static DWORD WINAPI watchdog_thread(void *parameter)
         CONTEXT context;
         Sleep(interval * 1000);
         executable_directory(path, sizeof path);
-        strcat_s(path, sizeof path, "thandor.log");
-        if (fopen_s(&out, path, "a") != 0) {
+        strncat(path, "thandor.log", sizeof path - strlen(path) - 1);
+        if ((out = fopen(path, "a")) == NULL) {
             continue;
         }
         SuspendThread(g_watchedThread);
@@ -386,8 +410,8 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
             FILE *out;
             CONTEXT context;
             executable_directory(path, sizeof path);
-            strcat_s(path, sizeof path, "hang.log");
-            if (fopen_s(&out, path, "a") != 0) {
+            strncat(path, "hang.log", sizeof path - strlen(path) - 1);
+            if ((out = fopen(path, "a")) == NULL) {
                 continue;
             }
             if (reported == 0) {

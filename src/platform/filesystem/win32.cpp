@@ -11,23 +11,23 @@
 
 /* Module data. */
 
-__declspec(align(16)) uint16_t g_ExecutableDirectoryUtf16[256] = {0};
+THANDOR_ALIGN(16) uint16_t g_ExecutableDirectoryUtf16[256] = {0};
 
-__declspec(align(16)) uint16_t g_FileSystemCombinedPathScratchUtf16[256] = {0};
+THANDOR_ALIGN(16) uint16_t g_FileSystemCombinedPathScratchUtf16[256] = {0};
 
-__declspec(align(16)) FileSystemOpenProc *g_FileSystemOpen = 0;
+THANDOR_ALIGN(16) FileSystemOpenProc *g_FileSystemOpen = 0;
 
-__declspec(align(4)) FileSystemCloseProc *g_FileSystemClose = 0;
+THANDOR_ALIGN(4) FileSystemCloseProc *g_FileSystemClose = 0;
 
-__declspec(align(8)) FileSystemReadExactProc *g_FileSystemReadExact = 0;
+THANDOR_ALIGN(8) FileSystemReadExactProc *g_FileSystemReadExact = 0;
 
-__declspec(align(4)) FileSystemWriteExactOrFlushProc *g_FileSystemWriteExactOrFlush = 0;
+THANDOR_ALIGN(4) FileSystemWriteExactOrFlushProc *g_FileSystemWriteExactOrFlush = 0;
 
-__declspec(align(16)) FileSystemGetSizeProc *g_FileSystemGetSize = 0;
+THANDOR_ALIGN(16) FileSystemGetSizeProc *g_FileSystemGetSize = 0;
 
-__declspec(align(8)) FileSystemSeekProc *g_FileSystemSeek = 0;
+THANDOR_ALIGN(8) FileSystemSeekProc *g_FileSystemSeek = 0;
 
-__declspec(align(4)) FileSystemGetPositionProc *g_FileSystemGetPosition = 0;
+THANDOR_ALIGN(4) FileSystemGetPositionProc *g_FileSystemGetPosition = 0;
 
 /* uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
 static const uint8_t g_FileSystemConfigCharacterNormalizationMap[256] = {
