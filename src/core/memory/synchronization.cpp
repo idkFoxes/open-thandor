@@ -8,6 +8,8 @@
 #include <thandor/core/memory/synchronization.h>
 #include <thandor/thandor.h>
 
+#include <atomic>
+
 /* Module data. */
 
 THANDOR_ALIGN(4) SpinLockAcquireProc *g_SpinLockAcquire = THANDOR_FN(SpinLock_Acquire);
@@ -20,38 +22,36 @@ THANDOR_ALIGN(16) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = THA
 
 /* Implementation ownership: core/memory/synchronization. */
 
-/* Busy-waits until the lock is taken: atomically swaps -1 into it until the previous value was zero. A
-   null lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the per-tick state of
-   the frontend and in-game loops against the timer callbacks.
+/* Busy-waits until the lock is taken: atomically swaps -1 into it (acquire ordering) until the previous
+   value was zero. A null lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the
+   per-tick state of the frontend and in-game loops against the timer callbacks.
    Reached through the function-pointer slot g_SpinLockAcquire.
 */
 void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 
 {
-  RuntimeSpinLockValue *previousLockValue; /* first the lock pointer (null test), then the swapped-out value */
-
-  previousLockValue = lockValue;
-  while (previousLockValue != nullptr) {
-    previousLockValue =
-         (RuntimeSpinLockValue *)(uintptr_t)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
+  if (lockValue == nullptr) {
+    return;
   }
-  return;
+  std::atomic_ref<RuntimeSpinLockValue> lockWord(*lockValue);
+  while (lockWord.exchange((RuntimeSpinLockValue)SPIN_LOCK_LOCKED,std::memory_order_acquire) !=
+         SPIN_LOCK_UNLOCKED) {
+  }
 }
 
 
-/* Tries once to take the lock by atomically swapping -1 into it. Returns false when the lock was free and
-   is now held (or the lock pointer is null), true when it was already busy, so the caller can skip its
-   work instead of waiting.
+/* Tries once to take the lock by atomically swapping -1 into it (acquire ordering). Returns false when the
+   lock was free and is now held (or the lock pointer is null), true when it was already busy, so the caller
+   can skip its work instead of waiting.
    Reached through the function-pointer slot g_SpinLockTryAcquire.
 */
 Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
-  RuntimeSpinLockValue previousLockValue;
-
   if (lockValue != nullptr) {
-    previousLockValue = (RuntimeSpinLockValue)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
-    if (previousLockValue != SPIN_LOCK_UNLOCKED) {
+    std::atomic_ref<RuntimeSpinLockValue> lockWord(*lockValue);
+    if (lockWord.exchange((RuntimeSpinLockValue)SPIN_LOCK_LOCKED,std::memory_order_acquire) !=
+        SPIN_LOCK_UNLOCKED) {
       return true;
     }
   }
@@ -59,21 +59,21 @@ Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 }
 
 
-/* Releases the lock with a plain (non-atomic) store of zero; a null lock is ignored.
+/* Releases the lock with an atomic store of zero (release ordering); a null lock is ignored. The original
+   used a plain store, which x86 orders like a release store anyway.
    Reached through the function-pointer slot g_SpinLockRelease.
 */
 void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 {
   if (lockValue != nullptr) {
-    *lockValue = SPIN_LOCK_UNLOCKED;
+    std::atomic_ref<RuntimeSpinLockValue>(*lockValue).store(SPIN_LOCK_UNLOCKED,std::memory_order_release);
   }
-  return;
 }
 
 
-/* Releases the lock (plain store of zero) and then calls the argument-less callback, if any, so deferred
-   work can run once the lock is free. With a null lock nothing happens, not even the callback.
+/* Releases the lock (atomic release store of zero) and then calls the argument-less callback, if any, so
+   deferred work can run once the lock is free. With a null lock nothing happens, not even the callback.
    Reached through the function-pointer slot g_SpinLockReleaseAndInvoke; the UI pointer and
    keyboard dispatchers use it to drop g_UiRuntimeFrameLock and run g_UiRuntimePostUnlockCallback.
 */
@@ -83,7 +83,7 @@ void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpin
   if (lockValue == nullptr) {
     return;
   }
-  *lockValue = SPIN_LOCK_UNLOCKED;
+  std::atomic_ref<RuntimeSpinLockValue>(*lockValue).store(SPIN_LOCK_UNLOCKED,std::memory_order_release);
   if (callback != nullptr) {
     callback();
   }

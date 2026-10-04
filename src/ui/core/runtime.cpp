@@ -232,7 +232,7 @@ void UiRuntime_Shutdown(void)
 void __cdecl UiRuntime_IncrementPeriodicTickCounter(void)
 
 {
-  g_UiPendingFrameTicks++;
+  g_UiPendingFrameTicks.fetch_add(1);
   return;
 }
 

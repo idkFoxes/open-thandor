@@ -14,13 +14,13 @@ uint32_t g_FrontendRomTransitionPageAction = 0;
 
 uintptr_t g_FrontendActiveRomRecord = 0;
 
-uint32_t g_FrontendRomTransitionElapsedTicks = 0;
+std::atomic<uint32_t> g_FrontendRomTransitionElapsedTicks{0};
 
 uintptr_t g_FrontendRomTransitionSplineKeyframes = 0;
 
 uint32_t g_FrontendRomTransitionSplineKeyframeCount = 0;
 
-uint32_t g_FrontendRomTransitionTargetRecordId = 0;
+std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId{0};
 
 /* the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
@@ -163,7 +163,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
   Bool8 splineStillRunning;
   uint32_t activateError;
 
-  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
+  const SpinLockGuard tickLock((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
@@ -181,8 +181,6 @@ void FrontendRomTransition_ProcessPendingRecord(void)
       }
     }
   }
-  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
-  return;
 }
 
 /* Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next

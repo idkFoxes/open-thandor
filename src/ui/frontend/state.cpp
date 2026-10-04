@@ -13,7 +13,7 @@
 
 uint32_t g_FrontendNetworkTickCounter = 0;
 
-uint32_t g_FrontendTimerCountdownTicks = 0;
+std::atomic<uint32_t> g_FrontendTimerCountdownTicks{0};
 
 /* 3 command records and the terminator record
    (commandCode 0) that ends the dispatcher's scan */
@@ -31,8 +31,12 @@ static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_
 void __cdecl FrontendRuntime_TimerCountdownTick(void)
 
 {
-  if (g_FrontendTimerCountdownTicks != 0) {
-    g_FrontendTimerCountdownTicks--;
+  uint32_t remainingTicks;
+
+  /* decrement only while nonzero; the compare-exchange keeps a concurrent reload by the main thread intact */
+  remainingTicks = g_FrontendTimerCountdownTicks.load();
+  while ((remainingTicks != 0) &&
+         !g_FrontendTimerCountdownTicks.compare_exchange_weak(remainingTicks,remainingTicks - 1)) {
   }
   return;
 }
@@ -44,7 +48,7 @@ void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
 
 {
   if (g_FrontendRomTransitionTargetRecordId != 0) {
-    g_FrontendRomTransitionElapsedTicks++;
+    g_FrontendRomTransitionElapsedTicks.fetch_add(1);
   }
   return;
 }
