@@ -176,7 +176,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
       recordsRemaining--;
     } while (recordsRemaining != 0);
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is

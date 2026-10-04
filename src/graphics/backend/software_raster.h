@@ -630,7 +630,7 @@ static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, 
     texture->vMask = ((1u << (entry->heightLog2 & 31)) - 1) << 12;
     texture->texels = asset + source->dataOffset;
     texture->palette =
-        paletteIndex < 0 ? NULL : asset + GFX_ASSET_HEADER_SIZE + (int32_t)((uint32_t)paletteIndex * GFX_PALETTE_BANK_SIZE);
+        paletteIndex < 0 ? nullptr : asset + GFX_ASSET_HEADER_SIZE + (int32_t)((uint32_t)paletteIndex * GFX_PALETTE_BANK_SIZE);
 }
 
 /* The ARGB texel at (u, v), both wrapped to the texture (nearest texel, no filtering). */
@@ -638,7 +638,7 @@ static __inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, 
 {
     uint32_t index = (((uint32_t)u & texture->uMask) >> 12) +
                   (uint32_t)(((unsigned long long)((uint32_t)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
-    if (texture->palette != NULL) {
+    if (texture->palette != nullptr) {
         return *(const uint32_t *)(texture->palette + texture->texels[index] * 8u);
     }
     return ((const uint32_t *)texture->texels)[index];

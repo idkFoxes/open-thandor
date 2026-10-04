@@ -38,17 +38,17 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint
   uint32_t errorCode;
 
   loadedPaletteAsset = (GraphicsPaletteAsset *)Package_LoadEntry(pathUtf16,&errorCode);
-  if (loadedPaletteAsset != NULL) {
+  if (loadedPaletteAsset != nullptr) {
     validatedPaletteAsset = g_GraphicsPaletteAssetValidate(loadedPaletteAsset,&errorCode);
-    if (validatedPaletteAsset != NULL) {
+    if (validatedPaletteAsset != nullptr) {
       return validatedPaletteAsset;
     }
     Resource_Release(loadedPaletteAsset);
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -95,8 +95,8 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
     sourceDword++;
     destinationDword++;
   }
-  validatedAsset = g_GraphicsPaletteAssetValidate(clonedAsset,NULL);
-  if (validatedAsset != NULL) {
+  validatedAsset = g_GraphicsPaletteAssetValidate(clonedAsset,nullptr);
+  if (validatedAsset != nullptr) {
     return validatedAsset;
   }
   /* Original quirk: the clone's result after a failed validation is the free's status (0 = NULL) */
@@ -138,10 +138,10 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *palet
     Thandor_Log("GraphicsPaletteAsset_Validate: rejected pal asset (%u bytes, %u entries)",
                 paletteAsset->allocationSizeBytes,paletteAsset->paletteBankCount);
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = FATAL_ERROR_PALETTE_ASSET_INVALID;
   }
-  return NULL;
+  return nullptr;
 }
 
 

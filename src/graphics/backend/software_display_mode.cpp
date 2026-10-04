@@ -17,9 +17,9 @@
 
 THANDOR_ALIGN(8) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = THANDOR_FN(SoftwareFramebuffer_Create);
 
-static SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = 0;
+static SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = nullptr;
 
-SoftwarePixelPackTables *g_SoftwarePixelPackTables = 0;
+SoftwarePixelPackTables *g_SoftwarePixelPackTables = nullptr;
 
 int32_t g_SoftwareColorScaleQ16 = 0x10000;
 
@@ -46,7 +46,7 @@ Bool8 SoftwarePixelFormat_BaseDisplayModeHook
   uint32_t tableAllocationError;
 
   packTables = g_SoftwarePixelPackTables;
-  if (g_SoftwarePixelPackTables == NULL) {
+  if (g_SoftwarePixelPackTables == nullptr) {
     tableAllocationError = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables),(void **)&packTables); /* 3 x 256 dwords */
     if (tableAllocationError != 0) {
       *errorCode = tableAllocationError;
@@ -80,7 +80,7 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
                                            (void **)&framebuffer);
   if (frameAllocationError != 0) {
     *outError = frameAllocationError;
-    return NULL;
+    return nullptr;
   }
   /* the pixels follow the header */
   framebuffer->bytesPerPixel = bytesPerPixel;

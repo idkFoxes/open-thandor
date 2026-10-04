@@ -149,7 +149,7 @@ void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixel
 
   ModelProjectedBounds_AccumulateNode(bounds,modelNode);
   for (remainingChildCount = modelNode->childCount; remainingChildCount != 0; remainingChildCount--) {
-    if (modelNode->childNodes[0] != NULL) {
+    if (modelNode->childNodes[0] != nullptr) {
       ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[0]);
     }
     /* moves the node pointer by one dword, so childNodes[0] reads the next child slot */
@@ -332,8 +332,8 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
             (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
              triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
   nodeTextureSet = (modelNode->modelPayload).textureSet;
-  textureEntry = NULL;
-  if ((nodeTextureSet != NULL) &&
+  textureEntry = nullptr;
+  if ((nodeTextureSet != nullptr) &&
      (triangle->subresourceIndex < nodeTextureSet->subresourceCount)) {
     textureEntry = nodeTextureSet->entries +
                    triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
@@ -341,7 +341,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   /* the palette bank's colour, opaque white without a palette or with a bank out of range */
   materialColor = ARGB8888_OPAQUE_WHITE;
   nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-  if (nodePaletteAsset != NULL) {
+  if (nodePaletteAsset != nullptr) {
     paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK;
     if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {
       materialColor = nodePaletteAsset->paletteEntries[paletteBankIndex].argb8888;
@@ -495,7 +495,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
              triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
   nodeTextureSet = (modelNode->modelPayload).textureSet;
   subresourceIndex = triangle->subresourceIndex;
-  textureEntry = NULL;
+  textureEntry = nullptr;
   /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
   if (subresourceIndex != UINT32_MAX &&
       subresourceIndex < nodeTextureSet->subresourceCount) {
@@ -505,7 +505,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   /* the palette bank's alternate modulation colour, 0 without a palette or with a bank out of range */
   modulationColor = 0;
   nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-  if (nodePaletteAsset != NULL) {
+  if (nodePaletteAsset != nullptr) {
     /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
     paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK;
     if (paletteBankIndex < nodePaletteAsset->paletteBankCount) {

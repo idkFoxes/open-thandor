@@ -75,7 +75,7 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
   uint8_t code;
   int colorIndex;
 
-  outImage->pixels = NULL;
+  outImage->pixels = nullptr;
   if ((int32_t)fileByteCount < PCX_HEADER_BYTES + PCX_PALETTE_TRAILER_BYTES) {
     return false;
   }
@@ -116,7 +116,7 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
   }
   lineBufferBytes = bytesPerLine < outImage->width ? outImage->width : bytesPerLine;
   if (g_MemoryApi.alloc((uint32_t)pixelCount,(void **)&outImage->pixels) != 0) {
-    outImage->pixels = NULL;
+    outImage->pixels = nullptr;
     return false;
   }
   if (g_MemoryApi.alloc(lineBufferBytes,(void **)&lineBuffer) != 0) {
@@ -170,8 +170,8 @@ fail:
 void Pcx_FreeIndexed8(PcxIndexedImage *image)
 
 {
-  if (image->pixels != NULL) {
+  if (image->pixels != nullptr) {
     g_MemoryApi.free(image->pixels);
-    image->pixels = NULL;
+    image->pixels = nullptr;
   }
 }

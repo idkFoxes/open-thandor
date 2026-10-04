@@ -180,7 +180,7 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
             subresourceIndex;
     if (entry->paletteIndex == -1) {
         region->texelBytes = 4;
-        region->palette = NULL;
+        region->palette = nullptr;
     }
     else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         region->texelBytes = 1;
@@ -290,7 +290,7 @@ static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAss
             subresourceIndex;
     if (entry->paletteIndex < 0) {
         image->texelBytes = 4;
-        image->palette = NULL;
+        image->palette = nullptr;
     }
     else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         image->texelBytes = 1;
@@ -325,7 +325,7 @@ static __inline int BlitScaled_ColumnVisible(const BlitScaledImage *image, int x
    (+4) and blends the entry's ARGB colour (+0), in both depths; a direct texel is both. */
 static __inline uint32_t BlitScaled_TexelColor(const BlitScaledImage *image, const uint8_t *texel, uint32_t *blendColor)
 {
-    if (image->palette != NULL) {
+    if (image->palette != nullptr) {
         *blendColor = *(const uint32_t *)(image->palette + *texel * 8u);
         return *(const uint32_t *)(image->palette + *texel * 8u + 4u);
     }

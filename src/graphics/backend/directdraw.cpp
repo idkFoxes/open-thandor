@@ -17,11 +17,11 @@
 /* uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
 uint32_t g_ActiveGraphicsAdapterIndex = 4294967295u;
 
-GraphicsDisplayMode *g_GraphicsDisplayModes = 0;
+GraphicsDisplayMode *g_GraphicsDisplayModes = nullptr;
 
 GraphicsDisplayModeCount g_GraphicsDisplayModeCount = 0;
 
-GraphicsAdapterRecord *g_GraphicsAdapters = 0;
+GraphicsAdapterRecord *g_GraphicsAdapters = nullptr;
 
 uint32_t g_GraphicsAdapterCount = 0;
 

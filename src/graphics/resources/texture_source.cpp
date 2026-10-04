@@ -18,13 +18,13 @@ THANDOR_ALIGN(16) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureS
 
 THANDOR_ALIGN(4) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = THANDOR_FN(GraphicsTextureSource_LoadPackageAsset);
 
-GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = 0;
+GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = nullptr;
 
-GraphicsTextureSourceStretchDirectColorBilinearProc *g_GraphicsTextureSourceStretchDirectColorBilinear = 0;
+GraphicsTextureSourceStretchDirectColorBilinearProc *g_GraphicsTextureSourceStretchDirectColorBilinear = nullptr;
 
-GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAddRgb = 0;
+GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAddRgb = nullptr;
 
-GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = 0;
+GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = nullptr;
 
 GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = THANDOR_FN(GraphicsTextureSource_ConvertPaletteEntries);
 
@@ -34,9 +34,9 @@ GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize =
 
 GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = THANDOR_FN(GraphicsTextureSource_TestOpaquePixel);
 
-GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = 0;
+GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = nullptr;
 
-GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = 0;
+GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = nullptr;
 
 /* Implementation ownership: graphics/resources/texture_source. */
 
@@ -145,7 +145,7 @@ Bool8 GraphicsTextureSource_ValidateAsset(const GraphicsTextureSourceAsset *sour
   uint32_t subresourceCount;
   uint32_t entryIndex;
 
-  if (sourceAsset == NULL || (sourceAsset->common).magic != ASSET_MAGIC_GFX) {
+  if (sourceAsset == nullptr || (sourceAsset->common).magic != ASSET_MAGIC_GFX) {
     return false;
   }
   byteSize = (sourceAsset->common).allocationSizeBytes;
@@ -196,7 +196,7 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
   uint32_t loadError;
 
   loadedSource = (GraphicsPaletteTextureSourceAsset *)Package_LoadEntry(pathUtf16,&loadError);
-  if (loadedSource != NULL) {
+  if (loadedSource != nullptr) {
     loadError = FATAL_ERROR_GFX_ASSET_INVALID;
     if (GraphicsTextureSource_ValidateAsset((GraphicsTextureSourceAsset *)loadedSource)) {
       loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
@@ -206,10 +206,10 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
     }
     Resource_Release(loadedSource);
   }
-  if (outError != NULL) {
+  if (outError != nullptr) {
     *outError = loadError;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -263,7 +263,7 @@ uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourc
   GraphicsTexturePaletteEntry *paletteEntryCursor;
   uint32_t argb8888;
   
-  if ((sourceAsset != NULL) &&
+  if ((sourceAsset != nullptr) &&
      (sourceAsset->magic == GRAPHICS_PALETTE_TEXTURE_MAGIC_GFX)) {
     paletteEntryCursor = sourceAsset->paletteEntries;
     for (paletteEntriesRemaining = sourceAsset->paletteBankCount << 8; paletteEntriesRemaining != 0;

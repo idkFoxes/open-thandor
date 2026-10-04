@@ -23,7 +23,7 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
   GraphicsTransitionTickCount rescaledElapsed;
   PackedRgb24 switchOffValue; /* the value the switch-off path stores into all four fields */
 
-  if (shadingRecord == NULL) {
+  if (shadingRecord == nullptr) {
     return;
   }
   negatedDuration = -fadeOutTicks;

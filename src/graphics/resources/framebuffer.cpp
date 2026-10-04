@@ -13,23 +13,23 @@
 
 THANDOR_ALIGN(8) uint32_t g_FramebufferWidth = 0;
 
-GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = 0;
+GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = nullptr;
 
 SoftwareFramebufferAccess g_DisplayFramebufferAccess = {0};
 
-SoftwareFramebufferAccess *g_FramebufferAccess = 0;
+SoftwareFramebufferAccess *g_FramebufferAccess = nullptr;
 
 uint32_t g_FramebufferRowStrideBytes = 0;
 
 uint32_t g_FramebufferHeight = 0;
 
-GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent = 0;
+GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent = nullptr;
 
 GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess = THANDOR_FN(GraphicsFramebuffer_BeginAccessStub);
 
 GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess = THANDOR_FN(GraphicsFramebuffer_EndAccessStub);
 
-GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = 0;
+GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = nullptr;
 
 /* Implementation ownership: graphics/resources/framebuffer. */
 

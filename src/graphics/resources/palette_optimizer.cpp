@@ -302,7 +302,7 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
 
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - GRAPHICS_PALETTE_BANKS_OFFSET;
   if (g_MemoryApi.alloc(bytes,(void **)&combinedAsset) != 0) {
-    return NULL;
+    return nullptr;
   }
   /* the header */
   destinationDword = GraphicsPaletteTextureSource_CopyDwords

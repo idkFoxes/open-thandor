@@ -49,7 +49,7 @@ Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -82,12 +82,12 @@ Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMax
                              clipMinY, clipMinX, &region)) {
     return false;
   }
-  sourceShift = region.palette != NULL ? 3 : 2;
+  sourceShift = region.palette != nullptr ? 3 : 2;
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -274,7 +274,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
                   *pixel = Blit_BlendArgb32(blendColor, *pixel);
                 }
                 else {
-                  *pixel = image.palette != NULL ? color : Blit_ConvertArgb(color);
+                  *pixel = image.palette != nullptr ? color : Blit_ConvertArgb(color);
                 }
               }
               x++;
@@ -311,7 +311,7 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
                              clipMinY, clipMinX, &region)) {
     return;
   }
-  if (region.palette != NULL) {
+  if (region.palette != nullptr) {
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
@@ -323,7 +323,7 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t color = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -357,7 +357,7 @@ Bool8 SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipM
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t argb = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 0);
       }
@@ -390,7 +390,7 @@ Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
+      uint32_t argb = region.palette != nullptr ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 1);
       }
@@ -425,7 +425,7 @@ Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
     const uint8_t *texel = region.texels + y * region.texelStride;
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
+      uint32_t argb = Blit_Modulate(region.palette != nullptr ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
                                  modulationArgb8888);
       if (Blit_IsTransparent(argb)) {
         continue;
