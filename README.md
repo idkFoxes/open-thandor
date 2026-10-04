@@ -93,7 +93,7 @@ Public headers under [`include/thandor`](include/thandor), implementations under
 
 - [Module tree](docs/MODULE_TREE.md) - every module with its `.cpp` and `.h` files.
 - [Source file guide](docs/SOURCE_FILE_GUIDE.md) - what each source/header pair owns, its callers and dependencies.
-- [Types](include/thandor/generated/types.h) - the game structures, still shared by all modules (to be split up).
+- Types: each module's structures are in `include/thandor/<area>/<module>/types.h`, the common ones in [core/types.h](include/thandor/core/types.h).
 - File formats: [levels](docs/level_format.md), [field grids](docs/field_grid_format.md).
 
 ## Contributors

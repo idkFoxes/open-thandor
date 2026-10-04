@@ -2,7 +2,7 @@
 
 This changelog is compared directly against the still-public V523 `open-thandor-main` baseline. V524–V536 are validation history only; unpublished intermediate working trees are not used as the comparison baseline.
 
-[README](README.md) · [Short developer changelog](CHANGELOG.md) · [Generated types](include/thandor/generated/types.h) · [Module tree](docs/MODULE_TREE.md) · [Source file guide](docs/SOURCE_FILE_GUIDE.md)
+[README](README.md) · [Short developer changelog](CHANGELOG.md) · [Common types](include/thandor/core/types.h) · [Module tree](docs/MODULE_TREE.md) · [Source file guide](docs/SOURCE_FILE_GUIDE.md)
 
 Decompiler-noise changes and generic semantic signature/type refinements are summarized once per submodule. Function-level entries are developer notes only: concrete gameplay/state semantics, body/field recovery, meaningful structure/typedef propagation, owner corrections, or specific old interpretation → corrected interpretation. Generic register ABI and generic semantic-signature cleanup do not get individual function bullets.
 

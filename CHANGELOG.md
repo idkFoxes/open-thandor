@@ -11,7 +11,7 @@ This is the compact developer-facing view of the V523 → V537 recovery. It keep
 
 ## Navigation
 
-[README](README.md) · V537 GZF · V537 raw C · [Generated types](include/thandor/generated/types.h) · [Full recovery changelog](CHANGELOG_FULL.md) · [Module tree](docs/MODULE_TREE.md) · [Source file guide](docs/SOURCE_FILE_GUIDE.md)
+[README](README.md) · V537 GZF · V537 raw C · [Common types](include/thandor/core/types.h) · [Full recovery changelog](CHANGELOG_FULL.md) · [Module tree](docs/MODULE_TREE.md) · [Source file guide](docs/SOURCE_FILE_GUIDE.md)
 
 ## Gameplay mechanics & simulation
 

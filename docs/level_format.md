@@ -4,7 +4,7 @@ Sources: `src/gameplay/session/level.cpp` (InGameLevelRuntime_LoadResourcesAfter
 savegame loader 0x00532020, the editor saver InGameLevelRuntime_SaveLevelAssetImageFromWorldState 0x00532CA0,
 LevelAsset_PrepareEndingMoviePath 0x00531080), `src/gameplay/session/runtime.cpp`
 (InGameConditionRuntime_UpdateScheduledRecords, InGameRuntime_InitializeNewSession), `src/assets/scenario/catalog.cpp`,
-`src/ui/frontend/player.cpp`, `src/world/runtime/core.cpp`; types in `include/thandor/generated/types.h`
+`src/ui/frontend/player.cpp`, `src/world/runtime/core.cpp`; types in the module type headers `include/thandor/<area>/<module>/types.h`
 (LevelAssetHeader, LevelPlayerSlotRecord, LevelWorldSettings, InGameConditionSchedule,
 LevelInitialArmyPlacementRecord20). Verified against all 55 stock levels of LEVEL.PCK (19 skirmish, 25 hansolo,
 4 luke, 5 nimm2, 3 tutorial) with `tools/data/lev.py check`: every file parses, every section fits, and every file

@@ -18,6 +18,7 @@ Asset loading, catalogs and resource formats.
 Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAsset_PrepareRecords`
+- [`types.h`](source_guide/assets.md#file-assets-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-effect"></a>
 ### `assets/effect`
@@ -25,6 +26,7 @@ Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catal
 Module header: [`effect.h`](../include/thandor/assets/effect.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-effect-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-effect-catalog) - no file comment; main functions `EffectDefinitionRegistry_FindById`, `EffectDefinitions_ResolveCrossReferences`, `EffectAsset_PrepareEntries`
+- [`types.h`](source_guide/assets.md#file-assets-effect-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-model"></a>
 ### `assets/model`
@@ -32,6 +34,7 @@ Module header: [`effect.h`](../include/thandor/assets/effect.h) · Changelog: `c
 Module header: [`model.h`](../include/thandor/assets/model.h) · Changelog: `definitions` [dev](../CHANGELOG.md#module-assets-model-definitions) · [full](../CHANGELOG_FULL.md#module-assets-model-definitions)
 
 - [`definitions.cpp / definitions.h`](source_guide/assets.md#file-assets-model-definitions) - no file comment; main functions `ModelLookupTable_FindPackedPoint`, `ModelDefinitionRegistry_FindById`, `ModelLookupTable_GetPackedPointPosition`
+- [`types.h`](source_guide/assets.md#file-assets-model-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-package"></a>
 ### `assets/package`
@@ -42,6 +45,7 @@ Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: 
 - [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeHuffmanRle`
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
 - [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_Mount`
+- [`types.h`](source_guide/assets.md#file-assets-package-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-rom"></a>
 ### `assets/rom`
@@ -49,6 +53,7 @@ Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: 
 Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-assets-rom-runtime)
 
 - [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-rom-runtime) - no file comment; main functions `RomAsset_PrepareRecords`, `FrontendRomRegistry_ClearAndReleaseNestedResources`, `RomRegistry_FindRecordBySlotValue`
+- [`types.h`](source_guide/assets.md#file-assets-rom-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-scenario"></a>
 ### `assets/scenario`
@@ -56,6 +61,7 @@ Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime
 Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`, `ScenarioCatalog_MergeRecordsByName`
+- [`types.h`](source_guide/assets.md#file-assets-scenario-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-shot"></a>
 ### `assets/shot`
@@ -63,6 +69,7 @@ Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog
 Module header: [`shot.h`](../include/thandor/assets/shot.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-shot-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-shot-catalog) - no file comment; main functions `ShotDefinitions_ValidateTerrainMaterialReferences`, `ShotDefinitionRegistry_FindByIdWithError`, `ShotAsset_PrepareEntries`
+- [`types.h`](source_guide/assets.md#file-assets-shot-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-sprite"></a>
 ### `assets/sprite`
@@ -70,6 +77,7 @@ Module header: [`shot.h`](../include/thandor/assets/shot.h) · Changelog: `catal
 Module header: [`sprite.h`](../include/thandor/assets/sprite.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-sprite-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-sprite-catalog) - no file comment; main functions `SpriteAssetRegistry_FindById`, `SpriteAsset_RegisterAndRelocatePointers`, `SpriteAssetRegistry_Reset`
+- [`types.h`](source_guide/assets.md#file-assets-sprite-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-text"></a>
 ### `assets/text`
@@ -79,6 +87,7 @@ Module header: [`text.h`](../include/thandor/assets/text.h) · Changelog: `resou
 - [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResourcePage_LoadCompatibilityAliases`
 - [`richtext.cpp / richtext.h`](source_guide/assets.md#file-assets-text-richtext) - no file comment; main functions `RichTextCommandStream_PatchPayloadBySelector`, `RichTextCommandStream_CopyExpanded`, `RichTextCommandStream_CopyToNarrow`
 - [`richtext_markup.cpp / richtext_markup.h`](source_guide/assets.md#file-assets-text-richtext-markup) - no file comment; main functions `RichTextMarkup_ParseAndBuildStringAsset`
+- [`types.h`](source_guide/assets.md#file-assets-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Audio](source_guide/audio.md)
 
@@ -91,6 +100,7 @@ Module header: [`backend.h`](../include/thandor/audio/backend.h) · Changelog: `
 
 - [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_CreateSampleVoiceSet`, `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`
 - [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-backend-runtime) - The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend.
+- [`types.h`](source_guide/audio.md#file-audio-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-audio-codec"></a>
 ### `audio/codec`
@@ -99,6 +109,7 @@ Module header: [`codec.h`](../include/thandor/audio/codec.h) · Changelog: `sam`
 
 - [`sam.cpp / sam.h`](source_guide/audio.md#file-audio-codec-sam) - no file comment; main functions `SoundSample_DecodeCoefficientBlockToPcmMmx`, `SoundSample_DecodePackedCoefficientBlock`, `CosineDerivedLookupTables_Init`
 - [`sam_encoder.cpp / sam_encoder.h`](source_guide/audio.md#file-audio-codec-sam-encoder) - no file comment; main functions `SoundSample_TransformPcmBlockToCoefficientsMmx`, `SoundSample_EncodePackedCoefficientBlock`
+- [`types.h`](source_guide/audio.md#file-audio-codec-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-audio-spatial"></a>
 ### `audio/spatial`
@@ -106,6 +117,7 @@ Module header: [`codec.h`](../include/thandor/audio/codec.h) · Changelog: `sam`
 Module header: [`spatial.h`](../include/thandor/audio/spatial.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-audio-spatial-runtime)
 
 - [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-spatial-runtime) - no file comment; main functions `SpatialSound_PlayPositionedOneShot`, `SpatialSound_UpdateDesiredPositionedGains`, `SpatialSoundSlot_CreateFromSampleAsset`
+- [`types.h`](source_guide/audio.md#file-audio-spatial-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Core](source_guide/core.md)
 
@@ -115,8 +127,9 @@ Error handling, fixed-point maths, memory, settings and strings.
 ### `core` (area-level files)
 
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
-- [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of generated/types.h and generated/ui_templates.h are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile ...
+- [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
+- [`types.h`](source_guide/core.md#file-core-types) - The common types: Bool8, the fixed-point scalars, angles, vectors, ids and the other small types used all over the program, in the original's 32-bit layouts.
 - [`x86_emulation.h`](source_guide/core.md#file-core-x86-emulation) - Helpers that reproduce what the original's x86 code does, expressed in portable C: container-of, atomic exchange, x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and ...
 
 <a id="module-core-error"></a>
@@ -125,6 +138,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 Module header: [`error.h`](../include/thandor/core/error.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-core-error-runtime) · [full](../CHANGELOG_FULL.md#module-core-error-runtime)
 
 - [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `FatalError_Exit`, `ErrorSystem_Init`
+- [`types.h`](source_guide/core.md#file-core-error-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-math"></a>
 ### `core/math`
@@ -138,6 +152,7 @@ Module header: [`math.h`](../include/thandor/core/math.h) · Changelog: `fixed` 
 - [`geometry.cpp / geometry.h`](source_guide/core.md#file-core-math-geometry) - no file comment; main functions `FixedGeometry_SolveTriangleJointAngles`
 - [`random.cpp / random.h`](source_guide/core.md#file-core-math-random) - no file comment; main functions `Random_NextPrimary`, `Random_SetBothSeeds`, `Random_SelectSecondaryStream`
 - [`spline.cpp / spline.h`](source_guide/core.md#file-core-math-spline) - no file comment; main functions `CubicSpline_SolveCoefficientSystem`, `CubicSpline_BuildNaturalCoefficientSystem`, `CubicSpline_EvaluateValueQ12`
+- [`types.h`](source_guide/core.md#file-core-math-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-memory"></a>
 ### `core/memory`
@@ -146,6 +161,7 @@ Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `all
 
 - [`allocator.cpp / allocator.h`](source_guide/core.md#file-core-memory-allocator) - no file comment; main functions `ArenaHeap_Alloc`, `ArenaHeap_Init`, `ArenaHeap_Shutdown`
 - [`synchronization.cpp / synchronization.h`](source_guide/core.md#file-core-memory-synchronization) - no file comment; main functions `Runtime_Shutdown`, `SpinLock_Acquire`, `SpinLock_TryAcquireFlags`
+- [`types.h`](source_guide/core.md#file-core-memory-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-settings"></a>
 ### `core/settings`
@@ -153,6 +169,7 @@ Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `all
 Module header: [`settings.h`](../include/thandor/core/settings.h) · Changelog: `persistent` [full](../CHANGELOG_FULL.md#module-core-settings-persistent)
 
 - [`persistent.cpp / persistent.h`](source_guide/core.md#file-core-settings-persistent) - no file comment; main functions `PersistentSettings_Read`, `PersistentSettings_Write`, `PersistentSettings_Flush`
+- [`types.h`](source_guide/core.md#file-core-settings-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-core-text"></a>
 ### `core/text`
@@ -161,6 +178,7 @@ Module header: [`text.h`](../include/thandor/core/text.h) · Changelog: `path` [
 
 - [`path.cpp / path.h`](source_guide/core.md#file-core-text-path) - no file comment; main functions `WidePath_SetExtensionCode`, `WidePath_CombineDirectoryAndLeaf`, `WidePath_SplitParentAndLeaf`
 - [`string.cpp / string.h`](source_guide/core.md#file-core-text-string) - no file comment; main functions `Text_CopyNarrowToUtf16`, `WideNumber_FormatUtf16`, `Utf16String_CompareAsciiCaseInsensitiveFlags`
+- [`types.h`](source_guide/core.md#file-core-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Gameplay](source_guide/gameplay.md)
 
@@ -178,6 +196,7 @@ Module header: [`ai.h`](../include/thandor/gameplay/ai.h) · Changelog: `combat`
 - [`planning.cpp / planning.h`](source_guide/gameplay.md#file-gameplay-ai-planning) - no file comment; main functions `AiFactionRuntime_RebuildPlanningCapacityState`, `AiPlanning_CollectActiveGridMaskClasses`, `AiFactionRuntime_TestPlanningCapacityExceeded`
 - [`purchasing.cpp / purchasing.h`](source_guide/gameplay.md#file-gameplay-ai-purchasing) - no file comment; main functions `AiArmyCandidate_ComputeAverageCompatibleAssetScore`, `AiPurchasePlanner_ExecuteAffordableCandidates`, `AiArmyCandidate_AddBestDefenseAsset`
 - [`technology.cpp / technology.h`](source_guide/gameplay.md#file-gameplay-ai-technology) - no file comment; main functions `AiTechnologyCandidate_IsCurrentlyAvailable`, `AiTechnologyPlanning_AddCandidateRecord`, `AiTechnologyCandidate_AddBestResearch`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-ai-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`units.cpp / units.h`](source_guide/gameplay.md#file-gameplay-ai-units) - no file comment; main functions `AiUnitBehavior_UpdateOwnUnits`, `AiUnitBehavior_UpdatePioneerVehicle`, `AiUnitBehavior_SelectBestAnchorAction`
 - [`workspaces.cpp / workspaces.h`](source_guide/gameplay.md#file-gameplay-ai-workspaces) - no file comment; main functions `AiPrimaryWorkspace_HasEntryById`, `AiCandidateWorkspace_AddOrAccumulateWeightedEntry`, `AiHostileWorkspace_GetNearestVisibleHostileDistance`
 
@@ -206,6 +225,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntime_InitializePoolAndGraphics`
 - [`preview.cpp / preview.h`](source_guide/gameplay.md#file-gameplay-army-preview) - no file comment; main functions `ArmyAssetRegistry_ResolveOrCreatePreviewTexture`, `ArmyRuntime_RenderPreviewTexture`, `ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected`
 - [`turrets.cpp / turrets.h`](source_guide/gameplay.md#file-gameplay-army-turrets) - no file comment; main functions `ArmyRuntimeClass_UpdateSingleBarrelTurret`, `ArmyRuntimeClass_UpdateTwinBarrelTurret`, `FixedVector_StepBackwardAlongOwnDirection`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`walker.cpp / walker.h`](source_guide/gameplay.md#file-gameplay-army-walker) - no file comment; main functions `ArmyRuntimeClass_UpdateArticulatedMovement`, `ArmyArticulatedRuntime_InitializeTerrainContactGeometry`, `ArmyArticulatedRuntime_UpdateSuspensionHierarchy`
 - [`weapons.cpp / weapons.h`](source_guide/gameplay.md#file-gameplay-army-weapons) - no file comment; main functions `ArmyRuntime_UpdateTimedShotAndEffectEmitters`, `ArmyRuntime_TestHasNoWeaponDamage`, `ArmyRuntime_SetNonzeroActionVector`
 
@@ -218,6 +238,7 @@ Module header: [`faction.h`](../include/thandor/gameplay/faction.h) · Changelog
 - [`economy.cpp / economy.h`](source_guide/gameplay.md#file-gameplay-faction-economy) - no file comment; main functions `InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState`
 - [`relations.cpp / relations.h`](source_guide/gameplay.md#file-gameplay-faction-relations) - no file comment; main functions `PlayerPairList_InsertRange`, `PlayerPairList_RemoveRange`, `GameFactionRuntime_AdvancePairwiseRelationState`
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-faction-runtime) - no file comment; main functions `GameFactionRuntime_TestCapabilityBitClear`, `GameFactionRuntime_RecomputeProgressAndScoreMetrics`, `GameFactionRuntime_GetPackedStateNibble`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-faction-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-selection"></a>
 ### `gameplay/selection`
@@ -227,6 +248,7 @@ Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Chang
 - [`commands.cpp / commands.h`](source_guide/gameplay.md#file-gameplay-selection-commands) - no file comment; main functions `InGameSelection_SelectAllOwnAircraftPads`, `InGamePlayerSelection_ReplaceWithArmyRuntimeIndex`, `InGamePlayerSelection_ApplyMoveCommand`
 - [`queries.cpp / queries.h`](source_guide/gameplay.md#file-gameplay-selection-queries) - no file comment; main functions `SelectionInfo_IsEntryAbsent`, `SelectionInfo_AllEntriesEmptyOrMatchOwner`, `SelectionInfo_TestNotOwnAircraftPadsWithAircraft`
 - [`selection_set.cpp / selection_set.h`](source_guide/gameplay.md#file-gameplay-selection-selection-set) - no file comment; main functions `SelectionPlayerRuntime_MovePrimarySelectionBy`, `SelectionPlayerRuntime_RotatePrimarySelectionBy`, `SelectionPlayerRuntime_ClearTerrainEditSelectionState`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-selection-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-session"></a>
 ### `gameplay/session`
@@ -247,6 +269,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
 - [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_SetWorldRuntimeFlag`, `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameRuntime_RunSessionUntilExit`
 - [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_PeriodicCountdownAndClockTick`, `InGameRuntime_UpdateSimulationAndNetworkTick`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-session-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-gameplay-technology"></a>
 ### `gameplay/technology`
@@ -254,6 +277,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 Module header: [`technology.h`](../include/thandor/gameplay/technology.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-gameplay-technology-runtime)
 
 - [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-technology-runtime) - no file comment; main functions `ModelDefinition_SelectFactionUnlockedLinkedDefinition`, `Technology_IsAvailableForFaction`, `Technology_ApplyRecordToEntity`
+- [`types.h`](source_guide/gameplay.md#file-gameplay-technology-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Graphics](source_guide/graphics.md)
 
@@ -272,6 +296,7 @@ Module header: [`backend.h`](../include/thandor/graphics/backend.h) · Changelog
 - [`software_raster.h`](source_guide/graphics.md#file-graphics-backend-software-raster) - Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h).
 - [`software_rasterizer.cpp / software_rasterizer.h`](source_guide/graphics.md#file-graphics-backend-software-rasterizer) - Software triangle rasterizer: the primitive queue walkers per pixel family (16-bit, non-16-bit, auxiliary target), the 64-entry raster mode handler tables, the triangle packet set-up and the depth ...
 - [`software_texture_scale.cpp / software_texture_scale.h`](source_guide/graphics.md#file-graphics-backend-software-texture-scale) - Bilinear down-scaling of texture subresources for the software renderer (texture quality setting).
+- [`types.h`](source_guide/graphics.md#file-graphics-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-graphics-core"></a>
 ### `graphics/core`
@@ -281,6 +306,7 @@ Module header: [`core.h`](../include/thandor/graphics/core.h) · Changelog: `run
 - [`cursor.cpp / cursor.h`](source_guide/graphics.md#file-graphics-core-cursor) - The mouse cursor: frame animation (the cursor timer) and the input event ring with double clicks.
 - [`device.cpp`](source_guide/graphics.md#file-graphics-core-device) - no file comment; main functions `Graphics_AllocateTables`, `Graphics_Shutdown`, `GraphicsDirectDraw_PublishFramebuffer`
 - [`runtime.h`](source_guide/graphics.md#file-graphics-core-runtime)
+- [`types.h`](source_guide/graphics.md#file-graphics-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-graphics-render"></a>
 ### `graphics/render`
@@ -298,6 +324,7 @@ Module header: [`render.h`](../include/thandor/graphics/render.h) · Changelog: 
 - [`projection.cpp / projection.h`](source_guide/graphics.md#file-graphics-render-projection) - View projection: the view and projection parameters, the projection viewport and clip rectangle, the frustum planes, the auxiliary orientation and the point projection used by the renderers.
 - [`shading_lanes.h`](source_guide/graphics.md#file-graphics-render-shading-lanes) - Private helpers shared by the graphics/render sources (static inline).
 - [`shadow_texture.cpp / shadow_texture.h`](source_guide/graphics.md#file-graphics-render-shadow-texture) - no file comment; main functions `GraphicsShadingRuntime_InitializeGeneratedTexture`, `GraphicsShadingRuntime_Shutdown`, `GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`
+- [`types.h`](source_guide/graphics.md#file-graphics-render-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-graphics-resources"></a>
 ### `graphics/resources`
@@ -315,6 +342,7 @@ Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Chang
 - [`texture_set.cpp / texture_set.h`](source_guide/graphics.md#file-graphics-resources-texture-set) - Texture sets: creation and destruction through the device slots, package load/release, the set metadata and the texture slot registry.
 - [`texture_source.cpp`](source_guide/graphics.md#file-graphics-resources-texture-source) - no file comment; main functions `GraphicsTextureSource_GetLogicalSize`, `GraphicsTextureSource_TestOpaquePixel`, `GraphicsTextureSource_LoadPackageAsset`
 - [`tiled_blit.cpp / tiled_blit.h`](source_guide/graphics.md#file-graphics-resources-tiled-blit) - Tiled texture source blits: a texture source repeated over a rectangle with one of the blit slots (source alpha, half source RGB, saturated add, half RGB saturated add).
+- [`types.h`](source_guide/graphics.md#file-graphics-resources-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-graphics-terrain"></a>
 ### `graphics/terrain`
@@ -323,6 +351,7 @@ Module header: [`terrain.h`](../include/thandor/graphics/terrain.h)
 
 - [`terrain_render.cpp / terrain_render.h`](source_guide/graphics.md#file-graphics-terrain-terrain-render) - no file comment; main functions `TerrainProjectedGrid_TransformShadeAndQueue`, `TerrainProjectedQuad_QueueAsTwoTriangles`, `TerrainProjectedVertex_TransformProjectAndShade`
 - [`terrain_resources.cpp / terrain_resources.h`](source_guide/graphics.md#file-graphics-terrain-terrain-resources) - no file comment; main functions `TerrainVisualResources_LoadPrimary`, `TerrainVisualResources_LoadAndClearCellOverlayFlags`, `TerrainVisualResources_Shutdown`
+- [`types.h`](source_guide/graphics.md#file-graphics-terrain-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Movie](source_guide/movie.md)
 
@@ -336,6 +365,7 @@ Module header: [`runtime.h`](../include/thandor/movie/runtime.h) · Changelog: `
 - [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - no file comment; main functions `Movie_DecodeFrame4x4Delta`, `Movie_BuildChromaLumaTable`
 - [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - no file comment; main functions `Movie_EncodeFrame4x4Keyframe`, `Movie_EncodeFrame4x4Delta`, `Movie_EncodeFlmBufferFromFrameProvider`
 - [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - no file comment; main functions `Movie_Close`, `Movie_AdvanceFrame`, `Movie_Open`
+- [`types.h`](source_guide/movie.md#file-movie-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Network](source_guide/network.md)
 
@@ -348,6 +378,7 @@ Module header: [`backend.h`](../include/thandor/network/backend.h) · Changelog:
 
 - [`fallback_udp.cpp / fallback_udp.h`](source_guide/network.md#file-network-backend-fallback-udp) - no file comment; main functions `NetworkBackendFallback_SetSessionContext`, `NetworkBackendFallback_Cleanup`, `NetworkBackendFallback_OpenAndBindUdpSocket`
 - [`runtime.cpp / runtime.h`](source_guide/network.md#file-network-backend-runtime) - no file comment; main functions `Network_Init`, `Network_Shutdown`, `NetworkBackend_SetSessionContext`
+- [`types.h`](source_guide/network.md#file-network-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-network-protocol"></a>
 ### `network/protocol`
@@ -361,6 +392,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
 - [`mailbox.cpp / mailbox.h`](source_guide/network.md#file-network-protocol-mailbox) - no file comment; main functions `UiTransfer_StagePacketAndSend`, `UiTransferMailbox_SetOutgoingBuffer`, `UiTransferMailbox_ClearReceivedState`
 - [`scenario_transfer.cpp / scenario_transfer.h`](source_guide/network.md#file-network-protocol-scenario-transfer) - no file comment; main functions `FrontendScenarioTransfer_ReleaseLoadedLevelAsset`, `FrontendScenarioTransfer_ProcessReceivedAsset`, `DwordBlock64Array_ContainsExactRecord`
+- [`types.h`](source_guide/network.md#file-network-protocol-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [Platform](source_guide/platform.md)
 
@@ -376,9 +408,10 @@ Start-up, SDL3 platform layer, file system, system services and developer tools.
 
 Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-platform-bootstrap-runtime) · [full](../CHANGELOG_FULL.md#module-platform-bootstrap-runtime)
 
-- [`image.cpp / image.h`](source_guide/platform.md#file-platform-bootstrap-image) - Own translation unit: uses the real Windows SDK headers, not generated/types.h.
+- [`image.cpp / image.h`](source_guide/platform.md#file-platform-bootstrap-image) - Own translation unit: uses the real Windows SDK headers, not the game's type headers.
 - [`main.cpp`](source_guide/platform.md#file-platform-bootstrap-main) - The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess.
 - [`runtime.cpp / runtime.h`](source_guide/platform.md#file-platform-bootstrap-runtime) - no file comment; main functions `ProcessEntry`, `GameData_ResetDefaults`, `GameData_LoadExternalTables`
+- [`types.h`](source_guide/platform.md#file-platform-bootstrap-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-debug"></a>
 ### `platform/debug`
@@ -392,13 +425,15 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 - [`movie_player.cpp / movie_player.h`](source_guide/platform.md#file-platform-debug-movie-player) - Debug tool: movie test player.
 - [`script.cpp / script.h`](source_guide/platform.md#file-platform-debug-script) - Scripted input (test aid).
 - [`statehash.cpp / statehash.h`](source_guide/platform.md#file-platform-debug-statehash) - Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
-- [`test_aids.cpp / test_aids.h`](source_guide/platform.md#file-platform-debug-test-aids) - Own translation unit: uses the real Windows SDK headers, not generated/types.h.
+- [`test_aids.cpp / test_aids.h`](source_guide/platform.md#file-platform-debug-test-aids) - Own translation unit: uses the real Windows SDK headers, not the game's type headers.
+- [`types.h`](source_guide/platform.md#file-platform-debug-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-filesystem"></a>
 ### `platform/filesystem`
 
 Module header: [`filesystem.h`](../include/thandor/platform/filesystem.h) · Changelog: `win32` [full](../CHANGELOG_FULL.md#module-platform-filesystem-win32)
 
+- [`types.h`](source_guide/platform.md#file-platform-filesystem-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`win32.cpp / win32.h`](source_guide/platform.md#file-platform-filesystem-win32) - no file comment; main functions `FileSystem_WriteBufferToPath`, `FileSystem_Init`, `Win32FileSystem_RestoreInitialDirectory`
 
 <a id="module-platform-input"></a>
@@ -407,6 +442,7 @@ Module header: [`filesystem.h`](../include/thandor/platform/filesystem.h) · Cha
 Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `devices` [full](../CHANGELOG_FULL.md#module-platform-input-devices)
 
 - [`devices.cpp / devices.h`](source_guide/platform.md#file-platform-input-devices) - no file comment; main functions `Keyboard_OnKeyDown`, `Keyboard_OnKeyUp`, `Keyboard_OnChar`
+- [`types.h`](source_guide/platform.md#file-platform-input-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-sdl3"></a>
 ### `platform/sdl3`
@@ -417,6 +453,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 - [`platform.cpp / platform.h`](source_guide/platform.md#file-platform-sdl3-platform) - SDL3 backend: the main window, its renderer and the event pump (g_Win32PumpMessages).
 - [`sdl_objects.h`](source_guide/platform.md#file-platform-sdl3-sdl-objects) - Shared declarations of the SDL3 backend's source files (src/platform/sdl3): owning handles for SDL objects and the functions one file calls in another.
 - [`timer.cpp`](source_guide/platform.md#file-platform-sdl3-timer) - SDL3 backend: the periodic timers of g_TimerRegisterPeriodic / g_TimerUnregisterPeriodic on SDL timers instead of WinMM's timeSetEvent.
+- [`types.h`](source_guide/platform.md#file-platform-sdl3-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`video.cpp`](source_guide/platform.md#file-platform-sdl3-video) - SDL3 backend: video.
 
 <a id="module-platform-selftest"></a>
@@ -431,6 +468,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 Module header: [`system.h`](../include/thandor/platform/system.h) · Changelog: `time-locale` [dev](../CHANGELOG.md#module-platform-system-time-locale) · [full](../CHANGELOG_FULL.md#module-platform-system-time-locale); `win32` [full](../CHANGELOG_FULL.md#module-platform-system-win32)
 
 - [`time_locale.cpp / time_locale.h`](source_guide/platform.md#file-platform-system-time-locale) - no file comment; main functions `Locale_Init`, `Locale_FormatDateFieldsUtf16`, `Locale_FormatCurrentDateUtf16`
+- [`types.h`](source_guide/platform.md#file-platform-system-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`win32.cpp / win32.h`](source_guide/platform.md#file-platform-system-win32) - The message pump slot the game calls every frame and the close counter.
 
 ## [Ui](source_guide/ui.md)
@@ -460,6 +498,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`text_edit.cpp / text_edit.h`](source_guide/ui.md#file-ui-controls-text-edit) - no file comment; main functions `UiTextControl_UpdateNonEmptyValidity`, `UiNumericTextEditControl_HandleKeyboardAndCommit`, `UiPathTextEditControl_HandleKeyboardAndValidate`
 - [`tooltip.cpp / tooltip.h`](source_guide/ui.md#file-ui-controls-tooltip) - no file comment; main functions `UiTooltip_TickCountdown`, `UiTooltip_Draw`, `UiTooltip_UpdateHoverTarget`
 - [`tree_list.cpp / tree_list.h`](source_guide/ui.md#file-ui-controls-tree-list) - no file comment; main functions `UiTimedListControl_HandleKeyboardNavigation`, `UiTimedListControl_SelectRowFromPointer`, `UiTimedListTree_FindRecordByLabel`
+- [`types.h`](source_guide/ui.md#file-ui-controls-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`window.cpp / window.h`](source_guide/ui.md#file-ui-controls-window) - no file comment; main functions `UiWindow_BlitTiledHorizontalEdge`, `UiWindow_BlitTiledVerticalEdge`, `UiWindow_BlitTiledInterior`
 
 <a id="module-ui-core"></a>
@@ -472,6 +511,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
+- [`types.h`](source_guide/ui.md#file-ui-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-ui-dialogs"></a>
 ### `ui/dialogs`
@@ -480,6 +520,7 @@ Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
 - [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateColorDepthSelection`, `UiDisplayModeAction_UpdateResolutionSelection`
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
+- [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-ui-frontend"></a>
 ### `ui/frontend`
@@ -509,6 +550,7 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-frontend-settings) - no file comment; main functions `FrontendGameplaySettings_SetGameSpeedPercent`, `FrontendGameplaySettings_SetRightButtonDoesNotScroll`, `FrontendGameplaySettings_SetCameraScrollStep`
 - [`state.cpp / state.h`](source_guide/ui.md#file-ui-frontend-state) - no file comment; main functions `FrontendState_DispatchCode`, `FrontendRuntime_TimerCountdownTick`, `FrontendRomTransition_AdvanceElapsedTicks`
 - [`task_assignment.cpp / task_assignment.h`](source_guide/ui.md#file-ui-frontend-task-assignment) - no file comment; main functions `FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls`, `FrontendTaskAssignmentPage_Initialize`
+- [`types.h`](source_guide/ui.md#file-ui-frontend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-frontend-ui-template)
 
 <a id="module-ui-ingame"></a>
@@ -546,6 +588,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-ingame-settings) - no file comment; main functions `InGameSettingsPage_ToggleAndSynchronizeControls`, `InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks`, `InGameSettingsAction_CloseAlternatePanel`
 - [`targeting.cpp / targeting.h`](source_guide/ui.md#file-ui-ingame-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
 - [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - no file comment; main functions `InGameTechnologyPanel_ResetAndSelectCurrentArea`, `InGameTechnologyAreaTab_SelectAndRebuild`, `InGameTechnologyResearch_StartSelected`
+- [`types.h`](source_guide/ui.md#file-ui-ingame-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-ingame-ui-template)
 - [`world_input.cpp / world_input.h`](source_guide/ui.md#file-ui-ingame-world-input) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`
 
@@ -556,6 +599,7 @@ Module header: [`text.h`](../include/thandor/ui/text.h)
 
 - [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeActiveFont`, `FontGlyph_GetLogicalSizeForStyle`, `FontRuntime_Init`
 - [`richtext_render.cpp / richtext_render.h`](source_guide/ui.md#file-ui-text-richtext-render) - no file comment; main functions `RichTextCommandStream_DrawSingleLine`, `RichTextCommandStream_MeasureLine`, `RichTextCommandStream_MeasureWrappedBlock`
+- [`types.h`](source_guide/ui.md#file-ui-text-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 ## [World](source_guide/world.md)
 
@@ -569,6 +613,7 @@ Module header: [`camera.h`](../include/thandor/world/camera.h) · Changelog: `wo
 - [`camera.cpp / camera.h`](source_guide/world.md#file-world-camera-camera) - Camera state of the world runtime: position, angles and distance, the target point on the field surface and snapshots of the motion state.
 - [`camera_input.cpp / camera_input.h`](source_guide/world.md#file-world-camera-camera-input) - no file comment; main functions `WorldRuntime_TranslateCameraByScreenDelta`, `WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn`, `WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn`
 - [`motion_spline.cpp / motion_spline.h`](source_guide/world.md#file-world-camera-motion-spline) - no file comment; main functions `WorldMotionSpline_BuildSixChannelCurves`, `WorldMotionSpline_EvaluateAndApplyAtTime`, `WorldMotionSpline_ClearCachedDerivatives`
+- [`types.h`](source_guide/world.md#file-world-camera-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-effects"></a>
 ### `world/effects`
@@ -578,6 +623,7 @@ Module header: [`effects.h`](../include/thandor/world/effects.h) · Changelog: `
 - [`lifecycle.cpp / lifecycle.h`](source_guide/world.md#file-world-effects-lifecycle) - no file comment; main functions `EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint`, `EffectRuntimeMaintenance_OccupancyRebuildNoOp`, `EffectRuntimeMaintenance_AudioRefreshNoOp`
 - [`pool.cpp`](source_guide/world.md#file-world-effects-pool) - no file comment; main functions `EffectRuntimePool_CreateInstanceFromDefinition`, `EffectRuntime_InitGraphicsResources`, `EffectRuntime_RebaseSlotsAfterLoad`
 - [`runtime.h`](source_guide/world.md#file-world-effects-runtime)
+- [`types.h`](source_guide/world.md#file-world-effects-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-model"></a>
 ### `world/model`
@@ -589,6 +635,7 @@ Module header: [`model.h`](../include/thandor/world/model.h) · Changelog: `hier
 - [`picking.cpp / picking.h`](source_guide/world.md#file-world-model-picking) - Model picking: the pointer hit test against the projected bounds of a model hierarchy and the nearest ray hit on its mesh triangles.
 - [`pool.cpp`](source_guide/world.md#file-world-model-pool) - no file comment; main functions `ModelRuntimePool_DestroyHierarchyAndDetach`, `ModelRuntimePool_Init`, `ModelRuntimePool_RebaseAfterLoad`
 - [`runtime.h`](source_guide/world.md#file-world-model-runtime)
+- [`types.h`](source_guide/world.md#file-world-model-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-pathing"></a>
 ### `world/pathing`
@@ -601,6 +648,7 @@ Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `
 - [`reachability.cpp / reachability.h`](source_guide/world.md#file-world-pathing-reachability) - Reachability on the scratch grid: connected regions around a world point, unreachable-region marking and the hex line-of-passage test of a segment.
 - [`route.cpp / route.h`](source_guide/world.md#file-world-pathing-route) - Entity routes: destination resolution and route rebuilds for one entity or an overlapping group, route segment updates and the footprint traversal flags around a world point.
 - [`scratch_grid.cpp / scratch_grid.h`](source_guide/world.md#file-world-pathing-scratch-grid) - The pathing scratch grid: allocation for a field grid, terrain and runtime classification of its cells, occupancy propagation, flood fills and the primary/secondary copy and swap.
+- [`types.h`](source_guide/world.md#file-world-pathing-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-runtime"></a>
 ### `world/runtime`
@@ -609,6 +657,7 @@ Module header: [`runtime.h`](../include/thandor/world/runtime.h) · Changelog: `
 
 - [`core.cpp / core.h`](source_guide/world.md#file-world-runtime-core) - no file comment; main functions `WorldRuntime_AttachFieldGridAsset`, `WorldRuntime_AttachAndClearDwordArray`, `WorldRuntime_InterpolateTopSurfaceHeightOrSentinel`
 - [`entity_registry.cpp / entity_registry.h`](source_guide/world.md#file-world-runtime-entity-registry) - World object registry: the object array and its free-record allocation, the owner list of model, shot and effect nodes and the owner-list callbacks that clear references when an object goes away.
+- [`types.h`](source_guide/world.md#file-world-runtime-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-shots"></a>
 ### `world/shots`
@@ -619,6 +668,7 @@ Module header: [`shots.h`](../include/thandor/world/shots.h) · Changelog: `main
 - [`flight.cpp / flight.h`](source_guide/world.md#file-world-shots-flight) - no file comment; main functions `ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint`, `ShotRuntimeMaintenance_OccupancyRebuildNoOp`, `ShotRuntimeMaintenance_UpdateHierarchyProjectedSound`
 - [`pool.cpp`](source_guide/world.md#file-world-shots-pool) - no file comment; main functions `ShotRuntime_InitGraphicsResources`, `ShotRuntime_RebaseSlotsAfterLoad`, `ShotRuntimePool_CreateProjectileFromDefinition`
 - [`runtime.h`](source_guide/world.md#file-world-shots-runtime)
+- [`types.h`](source_guide/world.md#file-world-shots-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-world-terrain"></a>
 ### `world/terrain`
@@ -639,16 +689,14 @@ Module header: [`terrain.h`](../include/thandor/world/terrain.h) · Changelog: `
 - [`overlay_marking.cpp / overlay_marking.h`](source_guide/world.md#file-world-terrain-overlay-marking) - Terrain overlay marking around a world point (variants A and B): marks the cells of the hexagon wedges and directions within a radius.
 - [`placement_tests.cpp / placement_tests.h`](source_guide/world.md#file-world-terrain-placement-tests) - no file comment; main functions `TerrainHeightBand_TestAroundWorldPoint`, `TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightBand_TestWedge0`
 - [`sight.cpp / sight.h`](source_guide/world.md#file-world-terrain-sight) - Line of sight over the terrain: the occlusion mask around a world point, traced along the six hexagon wedges and directions (fog-of-war visibility, not screen projection).
+- [`types.h`](source_guide/world.md#file-world-terrain-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`water_relaxation.cpp / water_relaxation.h`](source_guide/world.md#file-world-terrain-water-relaxation) - Editor water relaxation (command 0x3200): directional passes that relax neighbour heights.
 
 ## [Generated](source_guide/generated.md)
 
-The shared game structures and UI templates (still used by all modules).
+The remaining Windows import declarations.
 
 <a id="module-generated"></a>
 ### `generated` (area-level files)
 
 - [`imports.h`](source_guide/generated.md#file-generated-imports) - Declarations of the Windows API functions the remaining code calls (the original's import table, KERNEL32 and friends).
-- [`proc_types.h`](source_guide/generated.md#file-generated-proc-types) - Function pointer types of the data tables and callbacks (once generated together with the address macros of the original image; edited by hand since step 4c).
-- [`types.h`](source_guide/generated.md#file-generated-types) - The game structures, unions and enums recovered from the original, in their 32-bit layouts (pointer fields as Ptr32, core/ptr32.h); still shared by all modules.
-- [`ui_templates.h`](source_guide/generated.md#file-generated-ui-templates) - Layouts of the UI node templates of the original image (one member per node); the templates themselves are variables in the "Module data" section of the .cpp file that owns each of them.
