@@ -516,7 +516,7 @@ No file comment; function families: `UiResizableWindowControl_*` (11), `UiWindow
 <a id="module-ui-core"></a>
 ### `ui/core`
 
-Module header: [`core.h`](../../include/thandor/ui/core.h) · Changelog: `runtime` [full](../../CHANGELOG_FULL.md#module-ui-core-runtime) · Files: [`chat_history`](#file-ui-core-chat-history), [`frame_loop`](#file-ui-core-frame-loop), [`model_tint`](#file-ui-core-model-tint), [`pcx_preview`](#file-ui-core-pcx-preview), [`runtime`](#file-ui-core-runtime), [`types`](#file-ui-core-types)
+Module header: [`core.h`](../../include/thandor/ui/core.h) · Changelog: `runtime` [full](../../CHANGELOG_FULL.md#module-ui-core-runtime) · Files: [`chat_history`](#file-ui-core-chat-history), [`frame_loop`](#file-ui-core-frame-loop), [`key_dispatch`](#file-ui-core-key-dispatch), [`model_tint`](#file-ui-core-model-tint), [`pcx_preview`](#file-ui-core-pcx-preview), [`runtime`](#file-ui-core-runtime), [`types`](#file-ui-core-types)
 
 <a id="file-ui-core-chat-history"></a>
 #### `chat_history.cpp / chat_history.h`
@@ -560,6 +560,22 @@ No file comment; function families: `UiFrame_*` (5).
 **Called from** (13 files): [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_RunSessionUntilExit`, `InGameRuntime_ShutdownAndReleaseResources`); [`ui/dialogs/display_settings`](#file-ui-dialogs-display-settings) (`UiDisplayModeAction_ApplyPendingMode`, `UiDisplayModeAction_RevertAndReopenSettings`); [`ui/frontend/end_movie`](#file-ui-frontend-end-movie) (`FrontendEndMovie_ShowResultsPage`, `Frontend_PlaySelectedEndMovie`); [`ui/frontend/lifecycle`](#file-ui-frontend-lifecycle) (`FrontendRuntime_ShutdownAndReleaseResources`, `Frontend_Init`); [`ui/frontend/main_loop`](#file-ui-frontend-main-loop) (`FrontendMainLoop_PresentFramesUntilPageAction`, `FrontendMainLoop_RunSession`); [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameRuntime_InitializeLoadedSession`); [`gameplay/session/loading_movie`](gameplay.md#file-gameplay-session-loading-movie) (`MoviePlayback_AdvanceToFrameAndPresent`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_ReportReadyAndWaitForPlayers`); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`Game_PlayIntroMovies`); [`platform/debug/movie_player`](platform.md#file-platform-debug-movie-player) (`DebugMovie_PlayOne`); 3 more: [`ui/core/runtime`](#file-ui-core-runtime), [`ui/dialogs/fatal_error`](#file-ui-dialogs-fatal-error), [`ui/frontend/credits`](#file-ui-frontend-credits).
 
 **Depends on** (10 files, names used): [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (4), [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer) (4), [`ui/controls/input`](#file-ui-controls-input) (3), [`ui/core/runtime`](#file-ui-core-runtime) (3), [`platform/input/devices`](platform.md#file-platform-input-devices) (2), [`ui/controls/tooltip`](#file-ui-controls-tooltip) (2), [`platform/system/win32`](platform.md#file-platform-system-win32) (1), [`ui/controls/buttons`](#file-ui-controls-buttons) (1), [`ui/controls/focus_proxy`](#file-ui-controls-focus-proxy) (1), [`ui/controls/root_stack`](#file-ui-controls-root-stack) (1).
+
+<a id="file-ui-core-key-dispatch"></a>
+#### `key_dispatch.h`
+
+[Header](../../include/thandor/ui/core/key_dispatch.h)
+
+No file comment; function families: `UiKeyModifiers_*` (1), `UiCommandDispatch_*` (1).
+
+**Functions** (2 public):
+
+- [`UiKeyModifiers_Match`](../../include/thandor/ui/core/key_dispatch.h#L30) - True when the held modifiers fit the record's modifier class under the rule.
+- [`UiCommandDispatch_Find`](../../include/thandor/ui/core/key_dispatch.h#L67) - The first record with this key code whose modifier class matches, or nullptr when the scan reaches the terminator (commandCode 0; its other fields are never read).
+
+**Called from** (1 files): [`platform/selftest/keymatch_selftest`](platform.md#file-platform-selftest-keymatch-selftest) (`Thandor_SelfTestKeyMatch`).
+
+**Includes:** `thandor/platform/input/devices.h`.
 
 <a id="file-ui-core-model-tint"></a>
 #### `model_tint.cpp / model_tint.h`
@@ -673,7 +689,7 @@ No file comment; function families: `FatalErrorDialog_*` (3), `FatalErrorRuntime
 
 - [`FatalErrorDialog_BlockMissedPointerPress`](../../src/ui/dialogs/fatal_error.cpp#L56) - method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so a pointer event that misses the dialog ends the root-stack hit test there instead of ...
 - [`FatalErrorDialog_BlockMissedPointerMotion`](../../src/ui/dialogs/fatal_error.cpp#L66) - pointerMissPolicy of g_FatalErrorDialogRootCallbacks (the fatal-error dialog root): the non-negative result stops the pointer traversal at the dialog, so the roots below it get no pointer input.
-- [`FatalErrorDialog_DismissAndPopRoot`](../../src/ui/dialogs/fatal_error.cpp#L76) - Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI setup in ui/controls/layout.c): closes the fatal-error dialog root and counts the dismissal, ...
+- [`FatalErrorDialog_DismissAndPopRoot`](../../src/ui/dialogs/fatal_error.cpp#L76) - Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI setup in ui/controls/root_stack.cpp): closes the fatal-error dialog root and counts the ...
 - [`FatalErrorRuntime_DispatchPendingError`](../../src/ui/dialogs/fatal_error.cpp#L89) - The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by ErrorRuntime_InstallUiHandlerAndAllocateState): returns valueOrError unchanged.
 - [`ErrorRuntime_InstallUiHandlerAndAllocateState`](../../src/ui/dialogs/fatal_error.cpp#L159) - Allocates the 0x110-byte root node of the fatal-error dialog (FatalErrorRuntime_DispatchPendingError fills it from g_FatalErrorUiRootTemplateImage) and, if that worked, switches ...
 
@@ -752,7 +768,7 @@ The 8-bit reveal mask of the credits and scenario screen transitions (SoftwareMa
 
 **Functions** (7 public):
 
-- [`SoftwareMaskBuffer_AdvancePatternByPercentTick`](../../src/ui/frontend/credits_mask.cpp#L20) - One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/scenario.c while the credits page is open): pixels already revealed brighten by 0x1F, and the tick's ...
+- [`SoftwareMaskBuffer_AdvancePatternByPercentTick`](../../src/ui/frontend/credits_mask.cpp#L20) - One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/state.cpp while the credits page is open): pixels already revealed brighten by 0x1F, and the tick's position ...
 - [`SoftwareMaskBuffer_Clear`](../../src/ui/frontend/credits_mask.cpp#L97) - Zeroes the one-byte-per-pixel mask buffer of a software mask (if it has one), sized by the logical width x height of its texture source, 64 bytes per step (eight MMX qword stores).
 - [`SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31`](../../src/ui/frontend/credits_mask.cpp#L132) - Called by SoftwareMaskBuffer_AdvancePatternByPercentTick once per tick: adds 0x1F to every nonzero byte of the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR / PADDUSB); zero bytes stay ...
 - [`SoftwareMaskBuffer_ApplyCircularRegionBit`](../../src/ui/frontend/credits_mask.cpp#L161) - Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel inside the circle of radius radiusStep * 28 around (centerX, centerY), i.e. a circle growing with the ...
@@ -1463,16 +1479,16 @@ No file comment; function families: `UiCommandModeG_*` (15), `InGameCommandModeG
 
 **Functions** (44 public, 1 file-local):
 
-- [`InGameCommandModeG_Select0`](../../src/ui/ingame/editor_tool_selection.cpp#L38) - Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0], g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/runtime.c).
-- [`InGameCommandModeG_Select1`](../../src/ui/ingame/editor_tool_selection.cpp#L60) - Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1], g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/runtime.c).
-- [`InGameCommandModeG_Select2`](../../src/ui/ingame/editor_tool_selection.cpp#L83) - Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2], g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/runtime.c).
-- [`InGameCommandModeG_Select3`](../../src/ui/ingame/editor_tool_selection.cpp#L106) - Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5], g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/runtime.c).
-- [`InGameCommandModeG_Select4`](../../src/ui/ingame/editor_tool_selection.cpp#L136) - Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6], g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/runtime.c).
-- [`InGameCommandModeG_Select5`](../../src/ui/ingame/editor_tool_selection.cpp#L159) - Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4], g_UiCommandModeGHandlers[5]; also called by ui/ingame/runtime.c).
-- [`InGameCommandModeC_Select0`](../../src/ui/ingame/editor_tool_selection.cpp#L216) - Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in ui/ingame/runtime.c): selects heightToolOption0 among the four height tool buttons and sets ...
-- [`InGameCommandModeC_Select1`](../../src/ui/ingame/editor_tool_selection.cpp#L231) - Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in ui/ingame/runtime.c): selects heightToolOption1 among the four height tool buttons and sets ...
-- [`InGameCommandModeC_Select2`](../../src/ui/ingame/editor_tool_selection.cpp#L246) - Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in ui/ingame/runtime.c): selects heightToolOption2 among the four height tool buttons and sets ...
-- [`InGameCommandModeC_Select3`](../../src/ui/ingame/editor_tool_selection.cpp#L261) - Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in ui/ingame/runtime.c): selects heightToolOption3 among the four height tool buttons and sets ...
+- [`InGameCommandModeG_Select0`](../../src/ui/ingame/editor_tool_selection.cpp#L38) - Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0], g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeG_Select1`](../../src/ui/ingame/editor_tool_selection.cpp#L60) - Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1], g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeG_Select2`](../../src/ui/ingame/editor_tool_selection.cpp#L83) - Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2], g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeG_Select3`](../../src/ui/ingame/editor_tool_selection.cpp#L106) - Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5], g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeG_Select4`](../../src/ui/ingame/editor_tool_selection.cpp#L136) - Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6], g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeG_Select5`](../../src/ui/ingame/editor_tool_selection.cpp#L159) - Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4], g_UiCommandModeGHandlers[5]; also called by ui/ingame/editor_keyboard.cpp).
+- [`InGameCommandModeC_Select0`](../../src/ui/ingame/editor_tool_selection.cpp#L216) - Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in ui/ingame/editor_keyboard.cpp): selects heightToolOption0 among the four height tool buttons and ...
+- [`InGameCommandModeC_Select1`](../../src/ui/ingame/editor_tool_selection.cpp#L231) - Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in ui/ingame/editor_keyboard.cpp): selects heightToolOption1 among the four height tool buttons and ...
+- [`InGameCommandModeC_Select2`](../../src/ui/ingame/editor_tool_selection.cpp#L246) - Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in ui/ingame/editor_keyboard.cpp): selects heightToolOption2 among the four height tool buttons and ...
+- [`InGameCommandModeC_Select3`](../../src/ui/ingame/editor_tool_selection.cpp#L261) - Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in ui/ingame/editor_keyboard.cpp): selects heightToolOption3 among the four height tool buttons and ...
 - 34 more: `InGameCommandMatrix_SelectMappedControl`, `UiCommandModeG_HideGridVertexMarkers`, `InGameCommandModeD_Select0`, `InGameCommandModeD_Select1`, `InGameCommandModeD_Select2`, `InGameCommandModeD_Select3`, `InGameCommandModeA_Select0`, `InGameCommandModeA_Select1`, `InGameCommandModeA_Select2`, `InGameCommandModeB_Select0`, `InGameCommandModeB_Select1`, `InGameCommandModeB_Select2`, `InGameCommandModeE_Select0`, `InGameCommandModeE_Select1`, `InGameCommandModeE_Select2`, `InGameCommandRange_DispatchState0`, `InGameCommandRange_DispatchState1`, `InGameCommandModeF_Select0`, `InGameCommandModeF_Select1`, `UiCommandModeG_ApplyMaskedColorVariant`, `UiCommandModeG_ShowRegionMarkers`, `UiCommandMatrix_SelectIndex`, `UiCommandModeG_HideSurfacePointMarker`, `UiCommandModeG_ShowTerrainPointMarkers`, `UiCommandModeG_SetSecondarySurfaceOnly`, `UiCommandModeG_ShowArmyMetrics`, `UiCommandModeG_HideArmyMetricsAndEndDragSelect`, `UiCommandModeG_ShowSurfacePointMarker`, `UiCommandModeG_HideTerrainPointMarkers`, `UiCommandModeG_ClearSecondarySurfaceOnly`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_HideRegionMarkers`, `UiCommandModeG_ShowGridVertexMarkers`, `UiCommandModeG_SelectAndSyncPages`
 
 **Data** (6 shared, 2 file-local): `g_UiCommandModeGColorVariantLimit`, `g_UiCommandModeGColorVariantFlags`, `g_UiCommandModeE`, `g_UiCommandModeA`, `g_UiCommandModeB`, `g_UiCommandModeF`.

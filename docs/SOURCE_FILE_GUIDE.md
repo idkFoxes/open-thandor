@@ -421,7 +421,7 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 - [`campaign.cpp / campaign.h`](source_guide/platform.md#file-platform-debug-campaign) - Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor/platform/debug/hooks.h from the scenario catalog and the in-game session runtime.
 - [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - 5x7 debug font: each entry is the character followed by its 7 rows of 5 pixels, top row first; in a row the leftmost pixel is bit 4.
 - [`hooks.cpp / hooks.h`](source_guide/platform.md#file-platform-debug-hooks) - The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option THANDOR_DEV_TOOLS.
-- [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/runtime.c).
+- [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/level_script.cpp).
 - [`movie_decoder.cpp / movie_decoder.h`](source_guide/platform.md#file-platform-debug-movie-decoder) - Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to ...
 - [`movie_player.cpp / movie_player.h`](source_guide/platform.md#file-platform-debug-movie-player) - Debug tool: movie test player.
 - [`script.cpp / script.h`](source_guide/platform.md#file-platform-debug-script) - Scripted input (test aid).
@@ -468,6 +468,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 ### `platform/selftest`
 
 - [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
+- [`keymatch_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keymatch-selftest) - OPEN_THANDOR_SELFTEST=keymatch: the safety net for merging the six key command matchers into UiKeyModifiers_Match / UiCommandDispatch_Find (include/thandor/ui/core/key_dispatch.h).
 - [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
@@ -519,6 +520,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
 - [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
+- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiKeyModifiers_Match`, `UiCommandDispatch_Find`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
@@ -700,7 +702,7 @@ Module header: [`terrain.h`](../include/thandor/world/terrain.h) · Changelog: `
 - [`hex_scan.cpp / hex_scan.h`](source_guide/world.md#file-world-terrain-hex-scan) - Shared state and set-up of the hexagonal radius scans around a world point (sight, overlay marking): the step limit from the radius, the nearest grid vertex and the scan globals.
 - [`occupancy.cpp / occupancy.h`](source_guide/world.md#file-world-terrain-occupancy) - no file comment; main functions `TerrainGrid_TestProjectedCellMaskBits01`, `TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`, `TerrainOccupancyMask_ResolveRuntimeClassFlags`
 - [`overlay_marking.cpp / overlay_marking.h`](source_guide/world.md#file-world-terrain-overlay-marking) - Terrain overlay marking around a world point (variants A and B): marks the cells of the hexagon wedges and directions within a radius.
-- [`placement_tests.cpp / placement_tests.h`](source_guide/world.md#file-world-terrain-placement-tests) - no file comment; main functions `TerrainHeightBand_TestAroundWorldPoint`, `TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightBand_TestWedge0`
+- [`placement_tests.cpp / placement_tests.h`](source_guide/world.md#file-world-terrain-placement-tests) - no file comment; main functions `TerrainHeightBand_TestAroundWorldPoint`, `TerrainAuxHeightThreshold_TestAroundWorldPoint`
 - [`sight.cpp / sight.h`](source_guide/world.md#file-world-terrain-sight) - Line of sight over the terrain: the occlusion mask around a world point, traced along the six hexagon wedges and directions (fog-of-war visibility, not screen projection).
 - [`types.h`](source_guide/world.md#file-world-terrain-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 - [`water_relaxation.cpp / water_relaxation.h`](source_guide/world.md#file-world-terrain-water-relaxation) - Editor water relaxation (command 0x3200): directional passes that relax neighbour heights.

@@ -1174,31 +1174,31 @@
 0x00507460  function  TerrainOccupancyBit2_MarkAroundWorldPoint                         src/world/terrain/occupancy.cpp
 0x00507580  function  TerrainGrid_TestProjectedCellMaskBits01                           src/world/terrain/occupancy.cpp
 0x00507610  function  TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint             src/world/terrain/occupancy.cpp
-0x005077F0  function  TerrainHeightBand_TestDirection0                                  src/world/terrain/placement_tests.cpp
-0x00507860  function  TerrainHeightBand_TestDirection1                                  src/world/terrain/placement_tests.cpp
-0x005078E0  function  TerrainHeightBand_TestDirection2                                  src/world/terrain/placement_tests.cpp
-0x00507950  function  TerrainHeightBand_TestDirection3                                  src/world/terrain/placement_tests.cpp
-0x005079C0  function  TerrainHeightBand_TestDirection4                                  src/world/terrain/placement_tests.cpp
-0x00507A40  function  TerrainHeightBand_TestDirection5                                  src/world/terrain/placement_tests.cpp
-0x00507AB0  function  TerrainHeightBand_TestWedge0                                      src/world/terrain/placement_tests.cpp
-0x00507BA0  function  TerrainHeightBand_TestWedge1                                      src/world/terrain/placement_tests.cpp
-0x00507C80  function  TerrainHeightBand_TestWedge2                                      src/world/terrain/placement_tests.cpp
-0x00507D60  function  TerrainHeightBand_TestWedge3                                      src/world/terrain/placement_tests.cpp
-0x00507E40  function  TerrainHeightBand_TestWedge4                                      src/world/terrain/placement_tests.cpp
-0x00507F20  function  TerrainHeightBand_TestWedge5                                      src/world/terrain/placement_tests.cpp
+0x005077F0  function  TerrainHeightBand_TestDirection0                                  (merged into TerrainHexScan_Leg)
+0x00507860  function  TerrainHeightBand_TestDirection1                                  (merged into TerrainHexScan_Leg)
+0x005078E0  function  TerrainHeightBand_TestDirection2                                  (merged into TerrainHexScan_Leg)
+0x00507950  function  TerrainHeightBand_TestDirection3                                  (merged into TerrainHexScan_Leg)
+0x005079C0  function  TerrainHeightBand_TestDirection4                                  (merged into TerrainHexScan_Leg)
+0x00507A40  function  TerrainHeightBand_TestDirection5                                  (merged into TerrainHexScan_Leg)
+0x00507AB0  function  TerrainHeightBand_TestWedge0                                      (merged into TerrainHexScan_Sector)
+0x00507BA0  function  TerrainHeightBand_TestWedge1                                      (merged into TerrainHexScan_Sector)
+0x00507C80  function  TerrainHeightBand_TestWedge2                                      (merged into TerrainHexScan_Sector)
+0x00507D60  function  TerrainHeightBand_TestWedge3                                      (merged into TerrainHexScan_Sector)
+0x00507E40  function  TerrainHeightBand_TestWedge4                                      (merged into TerrainHexScan_Sector)
+0x00507F20  function  TerrainHeightBand_TestWedge5                                      (merged into TerrainHexScan_Sector)
 0x00508000  function  TerrainHeightBand_TestAroundWorldPoint                            src/world/terrain/placement_tests.cpp
-0x005081D0  function  TerrainAuxHeightThreshold_TestDirection0                          src/world/terrain/placement_tests.cpp
-0x00508240  function  TerrainAuxHeightThreshold_TestDirection1                          src/world/terrain/placement_tests.cpp
-0x005082B0  function  TerrainAuxHeightThreshold_TestDirection2                          src/world/terrain/placement_tests.cpp
-0x00508320  function  TerrainAuxHeightThreshold_TestDirection3                          src/world/terrain/placement_tests.cpp
-0x00508390  function  TerrainAuxHeightThreshold_TestDirection4                          src/world/terrain/placement_tests.cpp
-0x00508400  function  TerrainAuxHeightThreshold_TestDirection5                          src/world/terrain/placement_tests.cpp
-0x00508470  function  TerrainAuxHeightThreshold_TestWedge0                              src/world/terrain/placement_tests.cpp
-0x00508540  function  TerrainAuxHeightThreshold_TestWedge1                              src/world/terrain/placement_tests.cpp
-0x00508600  function  TerrainAuxHeightThreshold_TestWedge2                              src/world/terrain/placement_tests.cpp
-0x005086C0  function  TerrainAuxHeightThreshold_TestWedge3                              src/world/terrain/placement_tests.cpp
-0x00508790  function  TerrainAuxHeightThreshold_TestWedge4                              src/world/terrain/placement_tests.cpp
-0x00508850  function  TerrainAuxHeightThreshold_TestWedge5                              src/world/terrain/placement_tests.cpp
+0x005081D0  function  TerrainAuxHeightThreshold_TestDirection0                          (merged into TerrainHexScan_Leg)
+0x00508240  function  TerrainAuxHeightThreshold_TestDirection1                          (merged into TerrainHexScan_Leg)
+0x005082B0  function  TerrainAuxHeightThreshold_TestDirection2                          (merged into TerrainHexScan_Leg)
+0x00508320  function  TerrainAuxHeightThreshold_TestDirection3                          (merged into TerrainHexScan_Leg)
+0x00508390  function  TerrainAuxHeightThreshold_TestDirection4                          (merged into TerrainHexScan_Leg)
+0x00508400  function  TerrainAuxHeightThreshold_TestDirection5                          (merged into TerrainHexScan_Leg)
+0x00508470  function  TerrainAuxHeightThreshold_TestWedge0                              (merged into TerrainHexScan_Sector)
+0x00508540  function  TerrainAuxHeightThreshold_TestWedge1                              (merged into TerrainHexScan_Sector)
+0x00508600  function  TerrainAuxHeightThreshold_TestWedge2                              (merged into TerrainHexScan_Sector)
+0x005086C0  function  TerrainAuxHeightThreshold_TestWedge3                              (merged into TerrainHexScan_Sector)
+0x00508790  function  TerrainAuxHeightThreshold_TestWedge4                              (merged into TerrainHexScan_Sector)
+0x00508850  function  TerrainAuxHeightThreshold_TestWedge5                              (merged into TerrainHexScan_Sector)
 0x00508920  function  TerrainAuxHeightThreshold_TestAroundWorldPoint                    src/world/terrain/placement_tests.cpp
 0x00508AE0  function  TerrainHeightDelta_ApplyDirection0                                (merged into TerrainHexScan_Leg)
 0x00508B40  function  TerrainHeightDelta_ApplyDirection1                                (merged into TerrainHexScan_Leg)
