@@ -29,8 +29,8 @@ typedef struct SoftwareRasterColorFixed4 SoftwareRasterColorFixed4, *PSoftwareRa
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
 using SoftwareDisplayModeHookProc = Bool8 (uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
-using GraphicsFramebufferCopyRegionToOriginProc = void (int32_t copyHeight, int32_t copyWidth, int32_t sourceY, int32_t sourceX, SoftwareFramebufferAccess * destination, SoftwareFramebufferAccess * source);
-using GraphicsFramebufferCopyOriginToRegionProc = void (int32_t copyHeight, int32_t copyWidth, int32_t destinationY, int32_t destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);
+using GraphicsFramebufferCopyRegionToOriginProc = void (GraphicsPixelDimension copyHeight, GraphicsPixelDimension copyWidth, GraphicsScreenCoordinate sourceY, GraphicsScreenCoordinate sourceX, SoftwareFramebufferAccess * destination, SoftwareFramebufferAccess * source);
+using GraphicsFramebufferCopyOriginToRegionProc = void (GraphicsPixelDimension copyHeight, GraphicsPixelDimension copyWidth, GraphicsScreenCoordinate destinationY, GraphicsScreenCoordinate destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);
 using SoftwareFramebufferDestroyProc = void (SoftwareFramebufferAccess * framebuffer);
 
 enum {
@@ -139,7 +139,7 @@ using GraphicsEndSceneProc = void ();
 using GraphicsSetViewportProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);
 using SoftwareBuildPixelPackTablesProc = void (int32_t colorScaleQ16, int32_t colorBiasQ16);
 using SoftwareDrawQueueProc = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);
-using SoftwareFramebufferCreateProc = SoftwareFramebufferAccess * (uint32_t bytesPerPixel, uint32_t height, uint32_t width, uint32_t * outError);
+using SoftwareFramebufferCreateProc = SoftwareFramebufferAccess * (SoftwareFramebufferPixelSize bytesPerPixel, GraphicsPixelDimension height, GraphicsPixelDimension width, uint32_t * outError);
 using SoftwareRasterHandler = void (int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_TYPES_H */

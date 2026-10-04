@@ -11,16 +11,16 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = THANDOR_FN(GraphicsPaletteAsset_LoadPackage);
+THANDOR_ALIGN(4) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = &GraphicsPaletteAsset_LoadPackage;
 
-static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = THANDOR_FN(GraphicsPaletteAsset_Validate);
+static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = &GraphicsPaletteAsset_Validate;
 
-static GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase = THANDOR_FN(GraphicsPaletteAsset_ResolveAllocationBase);
+static GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase = &GraphicsPaletteAsset_ResolveAllocationBase;
 
 GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3 = {
-    .releasePackage = THANDOR_FN(GraphicsPaletteAsset_ReleasePackage),
-    .clone = THANDOR_FN(GraphicsPaletteAsset_Clone),
-    .releaseClone = THANDOR_FN(GraphicsPaletteAsset_ReleaseClone)};
+    .releasePackage = THANDOR_SLOT(GraphicsPaletteAsset_ReleasePackage),
+    .clone = THANDOR_SLOT(GraphicsPaletteAsset_Clone),
+    .releaseClone = THANDOR_SLOT(GraphicsPaletteAsset_ReleaseClone)};
 
 /* Implementation ownership: graphics/resources/palette. */
 

@@ -19,10 +19,10 @@
 static const uint64_t g_SoftwareBilinearPackedByteClampMask = 0xFFFFFFFFull;
 
 /* GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
-static GraphicsFramebufferCopyRegionToOriginProc *g_GraphicsFramebufferCopyRegionToOrigin = THANDOR_FN(SoftwareFramebuffer_CopyRegionToOrigin);
+[[maybe_unused]] static GraphicsFramebufferCopyRegionToOriginProc *g_GraphicsFramebufferCopyRegionToOrigin = &SoftwareFramebuffer_CopyRegionToOrigin;
 
 /* GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
-static GraphicsFramebufferCopyOriginToRegionProc *g_GraphicsFramebufferCopyOriginToRegion = THANDOR_FN(SoftwareFramebuffer_CopyOriginToRegion);
+[[maybe_unused]] static GraphicsFramebufferCopyOriginToRegionProc *g_GraphicsFramebufferCopyOriginToRegion = &SoftwareFramebuffer_CopyOriginToRegion;
 
 /* Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is converted through

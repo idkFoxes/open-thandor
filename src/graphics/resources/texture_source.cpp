@@ -12,11 +12,11 @@
 /* Module data. */
 
 THANDOR_ALIGN(16) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
-    .releasePackage = THANDOR_FN(GraphicsTextureSource_ReleasePackageAsset),
-    .clone = THANDOR_FN(GraphicsTextureSource_CloneAsset),
-    .releaseClone = THANDOR_FN(GraphicsTextureSource_ReleaseClonedAsset)};
+    .releasePackage = THANDOR_SLOT(GraphicsTextureSource_ReleasePackageAsset),
+    .clone = THANDOR_SLOT(GraphicsTextureSource_CloneAsset),
+    .releaseClone = THANDOR_SLOT(GraphicsTextureSource_ReleaseClonedAsset)};
 
-THANDOR_ALIGN(4) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = THANDOR_FN(GraphicsTextureSource_LoadPackageAsset);
+THANDOR_ALIGN(4) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = &GraphicsTextureSource_LoadPackageAsset;
 
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = nullptr;
 
@@ -26,13 +26,13 @@ GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAd
 
 GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = nullptr;
 
-GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = THANDOR_FN(GraphicsTextureSource_ConvertPaletteEntries);
+GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = &GraphicsTextureSource_ConvertPaletteEntries;
 
-GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase = THANDOR_FN(GraphicsTextureSource_ResolveAllocationBase);
+GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase = &GraphicsTextureSource_ResolveAllocationBase;
 
-GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = THANDOR_FN(GraphicsTextureSource_GetLogicalSize);
+GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = &GraphicsTextureSource_GetLogicalSize;
 
-GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = THANDOR_FN(GraphicsTextureSource_TestOpaquePixel);
+GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = &GraphicsTextureSource_TestOpaquePixel;
 
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = nullptr;
 

@@ -14,21 +14,21 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = THANDOR_FN(GraphicsTextureSet_LoadPackage);
+THANDOR_ALIGN(4) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = &GraphicsTextureSet_LoadPackage;
 
-THANDOR_ALIGN(16) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = THANDOR_FN(GraphicsTextureSet_ReleasePackage);
+THANDOR_ALIGN(16) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = &GraphicsTextureSet_ReleasePackage;
 
-GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
+GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = &GraphicsTextureSet_RefreshNoOp;
 
 GraphicsTextureResource **g_GraphicsTextureSlots = nullptr;
 
-static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
+[[maybe_unused]] static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = &GraphicsTextureSet_RefreshNoOp;
 
-GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = THANDOR_FN(GraphicsTextureSet_AllocateMetadata);
+GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = &GraphicsTextureSet_AllocateMetadata;
 
-GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = THANDOR_FN(GraphicsTextureSet_FreeMetadata);
+GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = &GraphicsTextureSet_FreeMetadata;
 
-GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = THANDOR_FN(GraphicsTexture_RebuildNoOp);
+GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = &GraphicsTexture_RebuildNoOp;
 
 /* Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per
    subresource, registered in g_GraphicsTextureSlots. Nothing reads the resources any more (they held the

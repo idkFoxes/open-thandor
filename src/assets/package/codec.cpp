@@ -789,13 +789,29 @@ Bool8 PckCodec_DecodeHuffmanRle
 
 /* Class vtables. */
 
+/* Slot adapters of the field-grid codecs: the PckCodecProc slot passes the grid side as a byte buffer, which the
+   field-grid codec reads/writes as the FieldGridAsset it holds. */
+static Bool8 PckCodec_EncodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+          uint32_t sourceImageSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
+{
+  return PckCodec_EncodeFieldGrid(destinationCapacityBytes,destination,sourceImageSizeBytes,
+                                  reinterpret_cast<FieldGridAsset *>(source),outByteCount,outErrorCode);
+}
+
+static Bool8 PckCodec_DecodeFieldGridSlot(uint32_t destinationCapacityBytes,uint8_t *destination,
+          uint32_t sourceSizeBytes,uint8_t *source,uint32_t *outByteCount,uint32_t *outErrorCode)
+{
+  return PckCodec_DecodeFieldGrid(destinationCapacityBytes,reinterpret_cast<FieldGridAsset *>(destination),
+                                  sourceSizeBytes,source,outByteCount,outErrorCode);
+}
+
 /* PCK codecs by compression method (PckEntryHeader.compressionMethod): 0 Huffman/RLE, 1 stored, 2 field grid. */
 PckCodecProc *const g_PckEncoderTable[3] = {
-    /* 0 */ THANDOR_FN(PckCodec_EncodeHuffmanRle),
-    /* 1 */ THANDOR_FN(PckCodec_EncodeStored),
-    /* 2 */ THANDOR_FN(PckCodec_EncodeFieldGrid)};
+    /* 0 */ THANDOR_SLOT(PckCodec_EncodeHuffmanRle),
+    /* 1 */ THANDOR_SLOT(PckCodec_EncodeStored),
+    /* 2 */ THANDOR_SLOT(PckCodec_EncodeFieldGridSlot)};
 
 PckCodecProc *const g_PckDecoderTable[3] = {
-    /* 0 */ THANDOR_FN(PckCodec_DecodeHuffmanRle),
-    /* 1 */ THANDOR_FN(PckCodec_DecodeStored),
-    /* 2 */ THANDOR_FN(PckCodec_DecodeFieldGrid)};
+    /* 0 */ THANDOR_SLOT(PckCodec_DecodeHuffmanRle),
+    /* 1 */ THANDOR_SLOT(PckCodec_DecodeStored),
+    /* 2 */ THANDOR_SLOT(PckCodec_DecodeFieldGridSlot)};

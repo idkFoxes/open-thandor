@@ -351,12 +351,12 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
 /* Class vtables. */
 
 AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6] = {
-    /* 0 */ THANDOR_FN(AiTechnologyScore_AlwaysZero),
-    /* 1 */ THANDOR_FN(AiTechnologyScore_ComputeFactionScaledCandidateValue),
-    /* 2 */ THANDOR_FN(AiTechnologyScore_ReturnBaseCandidateValueForKind2),
-    /* 3 */ THANDOR_FN(AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue),
-    /* 4 */ THANDOR_FN(AiTechnologyScore_ReturnBaseCandidateValueForKind4),
-    /* 5 */ THANDOR_FN(AiTechnologyScore_ComputeCategoryCompatibleCandidateValue)};
+    /* 0 */ THANDOR_SLOT(AiTechnologyScore_AlwaysZero),
+    /* 1 */ THANDOR_SLOT(AiTechnologyScore_ComputeFactionScaledCandidateValue),
+    /* 2 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValueForKind2),
+    /* 3 */ THANDOR_SLOT(AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue),
+    /* 4 */ THANDOR_SLOT(AiTechnologyScore_ReturnBaseCandidateValueForKind4),
+    /* 5 */ THANDOR_SLOT(AiTechnologyScore_ComputeCategoryCompatibleCandidateValue)};
 
 /* Research planning: once the faction has an ARM 330 (0x14A) structure, scores every available technology of
    workspace 12 with the score callback of its kind and proposes the best one (entry kind 2) with

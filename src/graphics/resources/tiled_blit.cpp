@@ -15,14 +15,14 @@
 /* Module data. */
 
 /* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledSaturatedAddRgb (texture.c). */
-static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledSaturatedAddRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledSaturatedAddRgb);
+[[maybe_unused]] static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledSaturatedAddRgb = &GraphicsTextureSource_BlitTiledSaturatedAddRgb;
 
 /* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd (texture.c). */
-static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd);
+[[maybe_unused]] static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd = &GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd;
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfSourceRgb);
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = &GraphicsTextureSource_BlitTiledHalfSourceRgb;
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = THANDOR_FN(GraphicsTextureSource_BlitTiledSourceAlpha);
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = &GraphicsTextureSource_BlitTiledSourceAlpha;
 
 /* The tile stepping below never ends for a zero (or, as int, negative) logical size, which
    g_GraphicsTextureSourceGetLogicalSize returns for an invalid asset or index; the original looped forever there.
