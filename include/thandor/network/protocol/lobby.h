@@ -83,6 +83,11 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest();
 void FrontendTransfer_ExecuteLobbyCommandRecords
           (const FrontendCommandPacketRecord *commandRecord,uint32_t commandCount);
 
+/* Not in the original: makes a plain UTF-16 text received from a peer (a typed name, a ping text) safe to draw;
+   every rich-text command code becomes '?' and a missing terminator is added in the last unit. Returns whether
+   anything was changed. */
+Bool8 FrontendTransfer_SanitizePeerTextUtf16(uint16_t *text,int unitCount);
+
 extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint;
 extern uint32_t g_FrontendSessionToken;
 extern SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks;
