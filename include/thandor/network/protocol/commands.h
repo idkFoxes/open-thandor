@@ -13,6 +13,9 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
+#include <thandor/gameplay/session/runtime.h>
+#include <thandor/ui/ingame/editor_tools.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Submodule: network/protocol/commands. */
 
@@ -154,5 +157,70 @@ void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,
 
 /* Rebuild helper: the command code of handler in the table of codeBase, or 0xFFFFFFFF. */
 uint32_t CommandDispatch_CodeOfHandler(uint32_t codeBase,const void *handler);
+
+/* Rebuild helper: the command code of Handler in the table of CodeBase, looked up once and cached (one cache
+   per handler). A handler missing from the table yields 0xFFFFFFFF and is logged once. */
+template<uint32_t CodeBase,auto Handler>
+inline uint32_t CommandDispatch_CachedCodeOf()
+
+{
+  static const uint32_t s_code = CommandDispatch_CodeOfHandler(CodeBase,(const void *)Handler);
+  static Bool8 s_loggedMissing;
+
+  if (s_code == 0xFFFFFFFFu && s_loggedMissing == 0) {
+    s_loggedMissing = 1;
+    Thandor_Log("network: handler %p is not in the command table of base 0x%08X, command dropped",
+                (const void *)Handler,CodeBase);
+  }
+  return s_code;
+}
+
+/* Rebuild helper ("call locally or queue", the pattern of every command site in the original): a local
+   session calls Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3) directly; a networked session
+   queues Handler's in-game command code (its entry in the in-game command table) with the three payloads as
+   CommandPayload dwords for the next command batch. A handler without a table entry is not queued (logged). */
+template<auto Handler,typename P1,typename P2,typename P3>
+inline void InGameCommand_Issue(P1 payload1,P2 payload2,P3 payload3)
+
+{
+  uint32_t code;
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+  }
+  else {
+    code = CommandDispatch_CachedCodeOf<INGAME_COMMAND_CODE_BASE,Handler>();
+    if (code != 0xFFFFFFFFu) {
+      InGameCommandQueue_AppendLocalPlayerCommand
+                ((UiActionId)code,(CommandPayload)payload1,(CommandPayload)payload2,(CommandPayload)payload3);
+    }
+  }
+}
+
+/* The same for a lobby (frontend) command: Handler's code in the frontend command table, queued with
+   FrontendCommandQueue_EnqueueLocalPlayerCommand. */
+template<auto Handler,typename P1,typename P2,typename P3>
+inline void FrontendCommand_Issue(P1 payload1,P2 payload2,P3 payload3)
+
+{
+  uint32_t code;
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3);
+  }
+  else {
+    code = CommandDispatch_CachedCodeOf<FRONTEND_COMMAND_CODE_BASE,Handler>();
+    if (code != 0xFFFFFFFFu) {
+      FrontendCommandQueue_EnqueueLocalPlayerCommand
+                ((UiActionId)code,(CommandPayload)payload1,(CommandPayload)payload2,(CommandPayload)payload3);
+    }
+  }
+}
+
+/* InGameCommand_Issue for a handler chosen at run time (the pointer-mode handlers of the world input): the
+   code is looked up in the in-game command table on every networked call (not cached); a handler without a
+   table entry is not queued (logged once). */
+void InGameCommand_IssueHandler(CommandQueueHandlerProc *handler,CommandPayload payload1,CommandPayload payload2,
+          CommandPayload payload3);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_COMMANDS_H */
