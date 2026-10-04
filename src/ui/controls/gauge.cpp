@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+/* int32_t, 4: pixels from the gauge top to its label line */
 static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
@@ -203,22 +203,22 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
 }
 
 UiNodeVtable g_UiTransferProgressGaugeVtable = {
-    .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-    .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-    .drawClipped = THANDOR_FN(UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw),
-    .layout = THANDOR_FN(UiContainer_LayoutChildren),
-    .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-    .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-    .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-    .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-    .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-    .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-    .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-    .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-    .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-    .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-    .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-    .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-    .tick = THANDOR_FN(UiNode_DefaultTick),
-    .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+    .relocate = UI_SLOT(UiContainer_RelocateChildren),
+    .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+    .drawClipped = UI_SLOT(UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw),
+    .layout = UI_SLOT(UiContainer_LayoutChildren),
+    .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
+    .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
+    .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+    .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+    .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
+    .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+    .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+    .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+    .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
+    .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+    .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+    .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+    .tick = UI_SLOT(UiNode_DefaultTick),
+    .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent),
 };

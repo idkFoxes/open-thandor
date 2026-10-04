@@ -21,7 +21,7 @@
    with the end-movie bilinear stretch. The process exits after the last movie. */
 
 /* Fills the framebuffer with opaque black and presents it (called twice to clear both page buffers). */
-static void DebugMovie_ClearScreen(void)
+static void DebugMovie_ClearScreen()
 {
   if (!g_GraphicsFramebufferBeginAccess()) {
     g_GraphicsFramebufferFillRectArgb

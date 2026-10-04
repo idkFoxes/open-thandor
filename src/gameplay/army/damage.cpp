@@ -140,7 +140,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
 
 /* Splits a shot impact between the hit army and the army it is mounted on: half (rounded down) goes to the
    hit army, the rest to the parent model node's army, or to the hit army again when it has no parent. Called
-   directly by the shot impact handling in world/shots/maintenance.c.
+   directly by the shot impact handling in world/shots/flight.cpp.
 */
 void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,ModelRuntimeSlot *targetModelRuntime)

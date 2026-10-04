@@ -15,7 +15,7 @@ UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
 
 static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
 
-/* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO); network/backend/fallback_udp.c */
+/* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO) */
 static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
 
 static uint32_t g_NetworkFallbackAddressLength = 0;
@@ -43,7 +43,7 @@ uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 
 /* Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
 */
-void __cdecl NetworkBackendFallback_Cleanup(void)
+void __cdecl NetworkBackendFallback_Cleanup()
 
 {
   return;
@@ -61,7 +61,7 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 
 /* Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
 */
-void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
+void __cdecl NetworkBackendFallback_CloseActiveSocket()
 
 {
   return;
@@ -112,7 +112,7 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
 /* Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
    NetworkFallback_CloseActiveSocket and WinSock itself by Network_Shutdown.
 */
-void NetworkFallback_NoOpBackendCleanup(void)
+void NetworkFallback_NoOpBackendCleanup()
 
 {
   return;
@@ -124,7 +124,7 @@ void NetworkFallback_NoOpBackendCleanup(void)
    option's last character (or never closed), or the host name is unknown. The quoted text is copied into
    g_PackageScratchBuffer.
 */
-static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress(void)
+static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress()
 
 {
   uint8_t copiedByte;
@@ -251,7 +251,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 /* Closes the UDP socket, if one is open. The handle is swapped out atomically before
    closesocket so that nobody uses the socket while it is being closed.
 */
-void NetworkFallback_CloseActiveSocket(void)
+void NetworkFallback_CloseActiveSocket()
 
 {
   NetworkSocketHandle32 socket;

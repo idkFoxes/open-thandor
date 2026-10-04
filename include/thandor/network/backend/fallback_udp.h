@@ -18,11 +18,11 @@
 
 uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 
-void __cdecl NetworkBackendFallback_Cleanup(void);
+void __cdecl NetworkBackendFallback_Cleanup();
 
 uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
 
-void __cdecl NetworkBackendFallback_CloseActiveSocket(void);
+void __cdecl NetworkBackendFallback_CloseActiveSocket();
 
 Bool8 NetworkBackendFallback_ReceiveDatagram(WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
@@ -32,11 +32,11 @@ Bool8 NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *end
 
 void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
-void NetworkFallback_NoOpBackendCleanup(void);
+void NetworkFallback_NoOpBackendCleanup();
 
 uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
 
-void NetworkFallback_CloseActiveSocket(void);
+void NetworkFallback_CloseActiveSocket();
 
 Bool8 NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer);

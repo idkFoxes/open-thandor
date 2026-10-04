@@ -21,7 +21,7 @@ int32_t g_CursorCurrentVisibilityToken = 0;
 
 SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = nullptr;
 
-/* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
+/* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0). */
 static uint32_t g_GraphicsCursorAnimationCountdown = 2;
 
 static uint32_t g_CursorButtonReleaseClock[3] = {0};
@@ -54,7 +54,7 @@ SoftwareFramebufferAccess *g_CursorCompositeBuffer = nullptr;
    game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor
    frame (wrapping to the first one). The cursor itself is drawn by the present (SdlVideo_Present).
 */
-void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
+void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer()
 
 {
   GraphicsCursorFrameRecord *frameRecords;
@@ -105,7 +105,7 @@ Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 /* The software cursor frame selected by GraphicsCursor_SetFrameIndex (for backends that compose the cursor
    themselves, such as the SDL3 backend). */
-GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex(void)
+GraphicsCursorFrameIndex GraphicsCursor_GetFrameIndex()
 
 {
   return g_CursorFrameIndex;

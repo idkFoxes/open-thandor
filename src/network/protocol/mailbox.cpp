@@ -23,7 +23,7 @@ uint32_t g_UiRuntimeRecordWriteIndex = 0;
 
 uint32_t g_UiTransferUnitCursor = 0;
 
-/* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+/* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value; network/protocol/mailbox.cpp, ui/frontend/network.cpp). */
 uint32_t g_UiTransferSequenceToken = 0x12340000;
 
 uint32_t g_UiTransferSenderContext = 0;
@@ -288,7 +288,7 @@ static void UiTransferMailbox_StorePingRoundTrip
    scratch dword is never read, so the host's heartbeat countdown is not extended by chunk requests. The client
    branch (0x80030) extends g_SessionTransferTimeoutTicks as intended.
 */
-void UiTransferMailbox_ServiceAndRetransmitTimer(void)
+void UiTransferMailbox_ServiceAndRetransmitTimer()
 
 {
   uint32_t slotIndex;
@@ -356,7 +356,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 /* Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a
    new transfer can be received; the outgoing buffer is left alone. Consumers call it after taking a buffer.
 */
-void UiTransferMailbox_ClearReceivedState(void)
+void UiTransferMailbox_ClearReceivedState()
 
 {
   g_UiTransferMailbox.receivedAllocation = nullptr;
@@ -387,7 +387,7 @@ void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount)
    16-bit value into the low word of the transfer sequence token. The high word stays (a host answers the
    discovery probe only for 0x1234).
 */
-void UiTransferMailbox_RandomizeSequenceToken(void)
+void UiTransferMailbox_RandomizeSequenceToken()
 
 {
   uint32_t randomValue;
@@ -400,7 +400,7 @@ void UiTransferMailbox_RandomizeSequenceToken(void)
 /* Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
    byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor receivable.
 */
-void UiTransferMailbox_MarkUnavailable(void)
+void UiTransferMailbox_MarkUnavailable()
 
 {
   g_UiTransferMailbox.receivedAllocation = UI_TRANSFER_MAILBOX_UNAVAILABLE;

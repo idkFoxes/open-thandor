@@ -11,7 +11,7 @@
 Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers.
 
 thandor.exe keeps code and data in one writable .text section at fixed addresses. The rebuilt executable
-compiles that data in as ordinary C variables (src/<area>/<module>/data.c); nothing of the original image
+compiles that data in as ordinary variables (the "Module data." sections of src/<area>/<module>/*.cpp); nothing of the original image
 is mapped.
 */
 
@@ -31,7 +31,7 @@ void Thandor_LogStack(const char *reason, unsigned value);
 
 /* Nonzero when [address, address + size) is committed, readable memory (diagnostics). */
 int Thandor_IsReadable(const void *address, unsigned size);
-unsigned Thandor_TickCount(void);
+unsigned Thandor_TickCount();
 void Thandor_SleepMs(unsigned milliseconds);
 /* Returns nonzero when the UTF-16 path names an existing directory. */
 int Thandor_DirectoryExistsW(const unsigned short *path);
@@ -43,7 +43,7 @@ const char *Thandor_SymbolName(const void *address);
 
 /* Writes crash.log next to the executable with a symbolized stack on unhandled exceptions, and
    hang.log when no frame has been presented for a few seconds (see g_ThandorFrameHeartbeat). */
-void Thandor_InstallCrashHandler(void);
+void Thandor_InstallCrashHandler();
 
 /* Incremented on every presented frame; the hang detector watches it. */
 extern volatile long g_ThandorFrameHeartbeat;

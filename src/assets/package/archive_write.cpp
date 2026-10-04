@@ -18,7 +18,7 @@
    the entry's typeTag. The in-memory directory is reloaded afterwards. Returns true on success, false when
    deleting the old entry, a seek/read/write, the encoder or the directory reload fails (the error code is
    dropped: no caller uses it).
-   Called directly by the save-game writer in ui/ingame/runtime.c (no callback table).
+   Called directly by the save-game writer in gameplay/session/savegame.cpp (no callback table).
 */
 Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
@@ -179,7 +179,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
    it through g_PackageScratchBuffer, the file is truncated there and the in-memory directory is reloaded.
    Returns true on success; on failure returns false with the file-system error code (or
    FATAL_ERROR_GENERAL_FAILURE when the tail does not fit the scratch buffer) in *outErrorCode, which may be
-   NULL. Called directly by Package_UpsertEntry and the save-game writer in ui/ingame/runtime.c (no callback
+   NULL. Called directly by Package_UpsertEntry and the save-game writer in gameplay/session/savegame.cpp (no callback
    table).
 */
 Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)

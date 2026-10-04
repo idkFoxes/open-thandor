@@ -1590,3 +1590,23 @@ static_assert(sizeof(FrontendUiImage) == 0x71A0 && /* 0x5954 + the display mode 
               "FrontendUiImage keeps its 32-bit layout");
 static_assert(sizeof(InGameUiImage) == 0xC3E4,
               "InGameUiImage keeps its 32-bit layout");
+
+/* Typed table entries (core/slot.h): a function of exactly the slot's signature is the entry itself; one taking a
+   registered prefixed type (ui/controls/node_views.h), a view of the prefix chain or void * gets a thunk. Other
+   arities, return types and scalar parameter types do not compile. */
+static_assert(ThandorSlot<&UiNode_ApplyFlagsRecursive>::pick<void(UiNodeFlagMask, UiNodeFlagMask, UiNodeBase *)>() ==
+                  &UiNode_ApplyFlagsRecursive,
+              "THANDOR_SLOT of an exact signature is the function itself");
+static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrameIndex(UiPixelCoordinate, UiPixelCoordinate,
+                                                                                      UiNodeBase *)>() != nullptr,
+              "THANDOR_SLOT of UiImageControl * (prefix chain over UiSelectableControl) for a UiNodeBase * slot");
+static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<Bool8(UiKeyboardStateMask, UiKeyboardEventCode,
+                                                                          UiNodeBase *)>() != nullptr,
+              "THANDOR_SLOT of UiSoundSelectableControl * for a UiNodeBase * slot");
+static_assert(ThandorSlot<&InGameUiRuntime_ResetNotificationButtonCursor>::pick<void(WorldRuntimeContext *)>() != nullptr,
+              "THANDOR_SLOT of void * for a typed pointer slot");
+static_assert(thandor_slot_is_view_of<UiCatalogEntryControl, UiNodeBase>() &&
+                  thandor_slot_is_view_of<InGameMissionHelpRootView, UiNodeBase>() &&
+                  thandor_slot_is_view_of<UiSelectableOptionRow68, UiNodeBase>() &&
+                  !thandor_slot_is_view_of<UiNodeBase, UiImageControl>(),
+              "UI node prefix registrations reach UiNodeBase");

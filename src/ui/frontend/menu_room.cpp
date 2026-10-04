@@ -19,22 +19,34 @@ static const UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 
 static const int g_WorldMotionPointerWheelInputScale = -64;
 
-static const RuntimeModelClassPriorityTable24 g_RuntimeModelClassPriorityByModelClassId = {
-    .modelClass01Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass02Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass03Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass05Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass06Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass07Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass08Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass09Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass11Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
-    .modelClass13Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
-    .modelClass17Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass18Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass19Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
-    .modelClass22Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
-    .modelClass23Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM};
+/* hit priority of a model under the pointer, by its model runtime class id (24 classes; the original laid it
+   out as RuntimeModelClassPriorityTable24) */
+static const RuntimeModelClassPriority g_RuntimeModelClassPriorityByModelClassId[24] = {
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /*  0 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  1 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  2 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  3 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /*  4 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  5 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  6 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  7 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  8 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /*  9 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 10 */
+    RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM, /* 11 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 12 */
+    RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM, /* 13 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 14 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 15 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 16 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /* 17 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /* 18 */
+    RUNTIME_MODEL_CLASS_PRIORITY_HIGH, /* 19 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 20 */
+    RUNTIME_MODEL_CLASS_PRIORITY_LOW, /* 21 */
+    RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM, /* 22 */
+    RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM  /* 23 */
+};
 
 /* two spline keyframes (0 = current camera, 1 = target record's camera), passed as an array to
    WorldMotionSpline_BuildSixChannelCurves */
@@ -1007,6 +1019,24 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
   return;
 }
 
+/* FrontendModelPointerContext_FindBestEligibleModelHitTarget: the hit priority of model runtime class
+   modelClassId. The original indexed the 24-entry table unchecked; bounded here because the class id comes from
+   the model's runtime definition: an id outside the table counts as RUNTIME_MODEL_CLASS_PRIORITY_LOW (logged once). */
+static int FrontendModelPointerContext_ModelClassPriority(ModelRuntimeClassId modelClassId)
+{
+  static Bool8 s_loggedClassIdOutOfRange;
+
+  if ((uint32_t)modelClassId < sizeof(g_RuntimeModelClassPriorityByModelClassId) /
+                                 sizeof(g_RuntimeModelClassPriorityByModelClassId[0])) {
+    return g_RuntimeModelClassPriorityByModelClassId[modelClassId];
+  }
+  if (!s_loggedClassIdOutOfRange) {
+    s_loggedClassIdOutOfRange = true;
+    Thandor_Log("FrontendModelPointerContext: model class id %d outside the priority table, taken as low",modelClassId);
+  }
+  return RUNTIME_MODEL_CLASS_PRIORITY_LOW;
+}
+
 /* Finds the model under the pointer for the model pointer context's press, release, drag and move handlers:
    hit-tests every candidate model node with flag 2 that is a runtime model (and has flag 0x20 unless the
    context allows models without it). The winner is the nearest hit, or, unless the context compares by metric
@@ -1038,12 +1068,10 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       }
       else if (bestModelNode != nullptr) {
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
-        candidatePriority =
-             (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)
-                  [modelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
-        bestPriority =
-             (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)
-                  [bestModelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
+        candidatePriority = FrontendModelPointerContext_ModelClassPriority
+                                 (modelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId);
+        bestPriority = FrontendModelPointerContext_ModelClassPriority
+                            (bestModelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId);
         if (candidatePriority < bestPriority) continue;
         if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitDistanceQ12))
         continue;
@@ -1057,21 +1085,21 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
 
 /* unaligned in the original; one NOP byte after it dropped */
 UiNodeVtable g_FrontendModelPointerContextVtable = {
-        .relocate = THANDOR_FN(FrontendModelPointerContext_Relocate),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(FrontendModelPointerContext_RenderWorldViewQueuesClipped),
-        .layout = THANDOR_FN(FrontendModelPointerContext_Layout),
-        .nonRightPress = THANDOR_FN(FrontendModelPointerContext_NonRightPress),
-        .nonRightRelease = THANDOR_FN(FrontendModelPointerContext_NonRightRelease),
-        .rightPress = THANDOR_FN(FrontendModelPointerContext_RightPress),
-        .rightRelease = THANDOR_FN(FrontendModelPointerContext_RightRelease),
-        .nonRightDrag = THANDOR_FN(FrontendModelPointerContext_NonRightDrag),
-        .rightDrag = THANDOR_FN(FrontendModelPointerContext_DispatchWorldCameraPointerInput),
-        .pointerMove = THANDOR_FN(FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(FrontendModelPointerContext_KeyboardEvent),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(FrontendModelPointerContext_Tick),
-        .pointerWheel = THANDOR_FN(FrontendModelPointerContext_PointerWheel)};
+        .relocate = UI_SLOT(FrontendModelPointerContext_Relocate),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(FrontendModelPointerContext_RenderWorldViewQueuesClipped),
+        .layout = UI_SLOT(FrontendModelPointerContext_Layout),
+        .nonRightPress = UI_SLOT(FrontendModelPointerContext_NonRightPress),
+        .nonRightRelease = UI_SLOT(FrontendModelPointerContext_NonRightRelease),
+        .rightPress = UI_SLOT(FrontendModelPointerContext_RightPress),
+        .rightRelease = UI_SLOT(FrontendModelPointerContext_RightRelease),
+        .nonRightDrag = UI_SLOT(FrontendModelPointerContext_NonRightDrag),
+        .rightDrag = UI_SLOT(FrontendModelPointerContext_DispatchWorldCameraPointerInput),
+        .pointerMove = UI_SLOT(FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(FrontendModelPointerContext_KeyboardEvent),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+        .tick = UI_SLOT(FrontendModelPointerContext_Tick),
+        .pointerWheel = UI_SLOT(FrontendModelPointerContext_PointerWheel)};

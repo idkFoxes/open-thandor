@@ -11,17 +11,17 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct SpatialSoundSlot SpatialSoundSlot, *PSpatialSoundSlot;
 typedef struct DirectSoundVoiceSet DirectSoundVoiceSet;
 typedef struct IDirectSoundBuffer IDirectSoundBuffer;
 
-typedef uint32_t SpatialSoundGainQ15;
+using SpatialSoundGainQ15 = uint32_t;
 
-typedef uint32_t SpatialSoundMaximumDistanceQ12;
+using SpatialSoundMaximumDistanceQ12 = uint32_t;
 
-typedef uint32_t AudioMixerGainQ15;
+using AudioMixerGainQ15 = uint32_t;
 
 /* Runtime only (native pointers): the sound code reads voiceSet through DirectSoundVoiceSet ** slot pointers. */
 struct SpatialSoundSlot {

@@ -41,7 +41,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid);
 void FieldGrid_RecomputeInteriorDirectionalLighting
           (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid);
 
-void TerrainDirectionTable_AdvanceAndRebuildVectors(void);
+void TerrainDirectionTable_AdvanceAndRebuildVectors();
 
 void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell);
 
@@ -59,7 +59,7 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
           (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
           uint32_t deltaAzimuthAngle);
 
-void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void);
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
 
 void WorldRuntime_TurnAuxiliaryAnglesClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle);

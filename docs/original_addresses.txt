@@ -1159,18 +1159,18 @@
 0x00506AD0  function  TerrainProjectedOcclusion_TraceWedge4                             src/world/terrain/sight.cpp
 0x00506BD0  function  TerrainProjectedOcclusion_TraceWedge5                             src/world/terrain/sight.cpp
 0x00506CD0  function  TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint          src/world/terrain/sight.cpp
-0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               src/world/terrain/occupancy.cpp
-0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               src/world/terrain/occupancy.cpp
-0x00506F50  function  TerrainOccupancyBit2_MarkDirection2                               src/world/terrain/occupancy.cpp
-0x00506FA0  function  TerrainOccupancyBit2_MarkDirection3                               src/world/terrain/occupancy.cpp
-0x00506FF0  function  TerrainOccupancyBit2_MarkDirection4                               src/world/terrain/occupancy.cpp
-0x00507050  function  TerrainOccupancyBit2_MarkDirection5                               src/world/terrain/occupancy.cpp
-0x005070A0  function  TerrainOccupancyBit2_MarkWedge0                                   src/world/terrain/occupancy.cpp
-0x00507140  function  TerrainOccupancyBit2_MarkWedge1                                   src/world/terrain/occupancy.cpp
-0x005071E0  function  TerrainOccupancyBit2_MarkWedge2                                   src/world/terrain/occupancy.cpp
-0x00507280  function  TerrainOccupancyBit2_MarkWedge3                                   src/world/terrain/occupancy.cpp
-0x00507320  function  TerrainOccupancyBit2_MarkWedge4                                   src/world/terrain/occupancy.cpp
-0x005073C0  function  TerrainOccupancyBit2_MarkWedge5                                   src/world/terrain/occupancy.cpp
+0x00506EA0  function  TerrainOccupancyBit2_MarkDirection0                               (merged into TerrainHexScan_Leg)
+0x00506EF0  function  TerrainOccupancyBit2_MarkDirection1                               (merged into TerrainHexScan_Leg)
+0x00506F50  function  TerrainOccupancyBit2_MarkDirection2                               (merged into TerrainHexScan_Leg)
+0x00506FA0  function  TerrainOccupancyBit2_MarkDirection3                               (merged into TerrainHexScan_Leg)
+0x00506FF0  function  TerrainOccupancyBit2_MarkDirection4                               (merged into TerrainHexScan_Leg)
+0x00507050  function  TerrainOccupancyBit2_MarkDirection5                               (merged into TerrainHexScan_Leg)
+0x005070A0  function  TerrainOccupancyBit2_MarkWedge0                                   (merged into TerrainHexScan_Sector)
+0x00507140  function  TerrainOccupancyBit2_MarkWedge1                                   (merged into TerrainHexScan_Sector)
+0x005071E0  function  TerrainOccupancyBit2_MarkWedge2                                   (merged into TerrainHexScan_Sector)
+0x00507280  function  TerrainOccupancyBit2_MarkWedge3                                   (merged into TerrainHexScan_Sector)
+0x00507320  function  TerrainOccupancyBit2_MarkWedge4                                   (merged into TerrainHexScan_Sector)
+0x005073C0  function  TerrainOccupancyBit2_MarkWedge5                                   (merged into TerrainHexScan_Sector)
 0x00507460  function  TerrainOccupancyBit2_MarkAroundWorldPoint                         src/world/terrain/occupancy.cpp
 0x00507580  function  TerrainGrid_TestProjectedCellMaskBits01                           src/world/terrain/occupancy.cpp
 0x00507610  function  TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint             src/world/terrain/occupancy.cpp
@@ -1200,46 +1200,46 @@
 0x00508790  function  TerrainAuxHeightThreshold_TestWedge4                              src/world/terrain/placement_tests.cpp
 0x00508850  function  TerrainAuxHeightThreshold_TestWedge5                              src/world/terrain/placement_tests.cpp
 0x00508920  function  TerrainAuxHeightThreshold_TestAroundWorldPoint                    src/world/terrain/placement_tests.cpp
-0x00508AE0  function  TerrainHeightDelta_ApplyDirection0                                src/world/terrain/field_deformation.cpp
-0x00508B40  function  TerrainHeightDelta_ApplyDirection1                                src/world/terrain/field_deformation.cpp
-0x00508BA0  function  TerrainHeightDelta_ApplyDirection2                                src/world/terrain/field_deformation.cpp
-0x00508C00  function  TerrainHeightDelta_ApplyDirection3                                src/world/terrain/field_deformation.cpp
-0x00508C60  function  TerrainHeightDelta_ApplyDirection4                                src/world/terrain/field_deformation.cpp
-0x00508CC0  function  TerrainHeightDelta_ApplyDirection5                                src/world/terrain/field_deformation.cpp
-0x00508D20  function  TerrainHeightDelta_ApplyWedge0                                    src/world/terrain/field_deformation.cpp
-0x00508DC0  function  TerrainHeightDelta_ApplyWedge1                                    src/world/terrain/field_deformation.cpp
-0x00508E60  function  TerrainHeightDelta_ApplyWedge2                                    src/world/terrain/field_deformation.cpp
-0x00508F00  function  TerrainHeightDelta_ApplyWedge3                                    src/world/terrain/field_deformation.cpp
-0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    src/world/terrain/field_deformation.cpp
-0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    src/world/terrain/field_deformation.cpp
+0x00508AE0  function  TerrainHeightDelta_ApplyDirection0                                (merged into TerrainHexScan_Leg)
+0x00508B40  function  TerrainHeightDelta_ApplyDirection1                                (merged into TerrainHexScan_Leg)
+0x00508BA0  function  TerrainHeightDelta_ApplyDirection2                                (merged into TerrainHexScan_Leg)
+0x00508C00  function  TerrainHeightDelta_ApplyDirection3                                (merged into TerrainHexScan_Leg)
+0x00508C60  function  TerrainHeightDelta_ApplyDirection4                                (merged into TerrainHexScan_Leg)
+0x00508CC0  function  TerrainHeightDelta_ApplyDirection5                                (merged into TerrainHexScan_Leg)
+0x00508D20  function  TerrainHeightDelta_ApplyWedge0                                    (merged into TerrainHexScan_Sector)
+0x00508DC0  function  TerrainHeightDelta_ApplyWedge1                                    (merged into TerrainHexScan_Sector)
+0x00508E60  function  TerrainHeightDelta_ApplyWedge2                                    (merged into TerrainHexScan_Sector)
+0x00508F00  function  TerrainHeightDelta_ApplyWedge3                                    (merged into TerrainHexScan_Sector)
+0x00508FA0  function  TerrainHeightDelta_ApplyWedge4                                    (merged into TerrainHexScan_Sector)
+0x00509040  function  TerrainHeightDelta_ApplyWedge5                                    (merged into TerrainHexScan_Sector)
 0x005090E0  function  FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors              src/world/terrain/field_deformation.cpp
 0x005092A0  function  FieldGrid_ClearDebugMarkInAllCells                                src/world/terrain/field_lifecycle.cpp
 0x005092E0  function  FieldGrid_SetAllCellOverlayColors                                 src/world/terrain/field_lifecycle.cpp
-0x00509320  function  FieldGridTerrainOverlayVariantA_ApplyDirection0                   src/world/terrain/overlay_marking.cpp
-0x00509380  function  FieldGridTerrainOverlayVariantA_ApplyDirection1                   src/world/terrain/overlay_marking.cpp
-0x005093F0  function  FieldGridTerrainOverlayVariantA_ApplyDirection2                   src/world/terrain/overlay_marking.cpp
-0x00509450  function  FieldGridTerrainOverlayVariantA_ApplyDirection3                   src/world/terrain/overlay_marking.cpp
-0x005094B0  function  FieldGridTerrainOverlayVariantA_ApplyDirection4                   src/world/terrain/overlay_marking.cpp
-0x00509520  function  FieldGridTerrainOverlayVariantA_ApplyDirection5                   src/world/terrain/overlay_marking.cpp
-0x00509580  function  FieldGridTerrainOverlayVariantA_ApplyWedge0                       src/world/terrain/overlay_marking.cpp
-0x00509640  function  FieldGridTerrainOverlayVariantA_ApplyWedge1                       src/world/terrain/overlay_marking.cpp
-0x005096F0  function  FieldGridTerrainOverlayVariantA_ApplyWedge2                       src/world/terrain/overlay_marking.cpp
-0x005097A0  function  FieldGridTerrainOverlayVariantA_ApplyWedge3                       src/world/terrain/overlay_marking.cpp
-0x00509860  function  FieldGridTerrainOverlayVariantA_ApplyWedge4                       src/world/terrain/overlay_marking.cpp
-0x00509910  function  FieldGridTerrainOverlayVariantA_ApplyWedge5                       src/world/terrain/overlay_marking.cpp
+0x00509320  function  FieldGridTerrainOverlayVariantA_ApplyDirection0                   (merged into TerrainHexScan_Leg)
+0x00509380  function  FieldGridTerrainOverlayVariantA_ApplyDirection1                   (merged into TerrainHexScan_Leg)
+0x005093F0  function  FieldGridTerrainOverlayVariantA_ApplyDirection2                   (merged into TerrainHexScan_Leg)
+0x00509450  function  FieldGridTerrainOverlayVariantA_ApplyDirection3                   (merged into TerrainHexScan_Leg)
+0x005094B0  function  FieldGridTerrainOverlayVariantA_ApplyDirection4                   (merged into TerrainHexScan_Leg)
+0x00509520  function  FieldGridTerrainOverlayVariantA_ApplyDirection5                   (merged into TerrainHexScan_Leg)
+0x00509580  function  FieldGridTerrainOverlayVariantA_ApplyWedge0                       (merged into TerrainHexScan_Sector)
+0x00509640  function  FieldGridTerrainOverlayVariantA_ApplyWedge1                       (merged into TerrainHexScan_Sector)
+0x005096F0  function  FieldGridTerrainOverlayVariantA_ApplyWedge2                       (merged into TerrainHexScan_Sector)
+0x005097A0  function  FieldGridTerrainOverlayVariantA_ApplyWedge3                       (merged into TerrainHexScan_Sector)
+0x00509860  function  FieldGridTerrainOverlayVariantA_ApplyWedge4                       (merged into TerrainHexScan_Sector)
+0x00509910  function  FieldGridTerrainOverlayVariantA_ApplyWedge5                       (merged into TerrainHexScan_Sector)
 0x005099D0  function  FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint             src/world/terrain/overlay_marking.cpp
-0x00509B90  function  FieldGridTerrainOverlayVariantB_ApplyDirection0                   src/world/terrain/overlay_marking.cpp
-0x00509BF0  function  FieldGridTerrainOverlayVariantB_ApplyDirection1                   src/world/terrain/overlay_marking.cpp
-0x00509C50  function  FieldGridTerrainOverlayVariantB_ApplyDirection2                   src/world/terrain/overlay_marking.cpp
-0x00509CB0  function  FieldGridTerrainOverlayVariantB_ApplyDirection3                   src/world/terrain/overlay_marking.cpp
-0x00509D10  function  FieldGridTerrainOverlayVariantB_ApplyDirection4                   src/world/terrain/overlay_marking.cpp
-0x00509D70  function  FieldGridTerrainOverlayVariantB_ApplyDirection5                   src/world/terrain/overlay_marking.cpp
-0x00509DD0  function  FieldGridTerrainOverlayVariantB_ApplyWedge0                       src/world/terrain/overlay_marking.cpp
-0x00509E70  function  FieldGridTerrainOverlayVariantB_ApplyWedge1                       src/world/terrain/overlay_marking.cpp
-0x00509F10  function  FieldGridTerrainOverlayVariantB_ApplyWedge2                       src/world/terrain/overlay_marking.cpp
-0x00509FB0  function  FieldGridTerrainOverlayVariantB_ApplyWedge3                       src/world/terrain/overlay_marking.cpp
-0x0050A050  function  FieldGridTerrainOverlayVariantB_ApplyWedge4                       src/world/terrain/overlay_marking.cpp
-0x0050A0F0  function  FieldGridTerrainOverlayVariantB_ApplyWedge5                       src/world/terrain/overlay_marking.cpp
+0x00509B90  function  FieldGridTerrainOverlayVariantB_ApplyDirection0                   (merged into TerrainHexScan_Leg)
+0x00509BF0  function  FieldGridTerrainOverlayVariantB_ApplyDirection1                   (merged into TerrainHexScan_Leg)
+0x00509C50  function  FieldGridTerrainOverlayVariantB_ApplyDirection2                   (merged into TerrainHexScan_Leg)
+0x00509CB0  function  FieldGridTerrainOverlayVariantB_ApplyDirection3                   (merged into TerrainHexScan_Leg)
+0x00509D10  function  FieldGridTerrainOverlayVariantB_ApplyDirection4                   (merged into TerrainHexScan_Leg)
+0x00509D70  function  FieldGridTerrainOverlayVariantB_ApplyDirection5                   (merged into TerrainHexScan_Leg)
+0x00509DD0  function  FieldGridTerrainOverlayVariantB_ApplyWedge0                       (merged into TerrainHexScan_Sector)
+0x00509E70  function  FieldGridTerrainOverlayVariantB_ApplyWedge1                       (merged into TerrainHexScan_Sector)
+0x00509F10  function  FieldGridTerrainOverlayVariantB_ApplyWedge2                       (merged into TerrainHexScan_Sector)
+0x00509FB0  function  FieldGridTerrainOverlayVariantB_ApplyWedge3                       (merged into TerrainHexScan_Sector)
+0x0050A050  function  FieldGridTerrainOverlayVariantB_ApplyWedge4                       (merged into TerrainHexScan_Sector)
+0x0050A0F0  function  FieldGridTerrainOverlayVariantB_ApplyWedge5                       (merged into TerrainHexScan_Sector)
 0x0050A190  function  FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint             src/world/terrain/overlay_marking.cpp
 0x0050A350  data      g_GraphicsTransformScratchMatrix3x4                               src/graphics/render/model_submit.cpp
 0x0050A380  data      g_GraphicsTransformInputScratchVec3                               src/graphics/render/model_submit.cpp
@@ -2789,7 +2789,7 @@
 0x0056D77C  data      g_UiCommandModeGSecondaryPageIndices                              src/ui/ingame/editor_tools.cpp
 0x0056D794  data      g_UiCommandModeGTertiaryPageIndices                               src/ui/ingame/editor_tools.cpp
 0x0056D7AC  data      g_UiCommandModeGControlOffsets                                    src/ui/ingame/editor_tools.cpp
-0x0056D7C4  data      g_UiCommandModeGHandlers                                          src/ui/ingame/editor_tool_selection.cpp
+0x0056D7C4  data      g_UiCommandModeGHandlers                                          (removed)
 0x0056D7DC  data      g_UiMappedCommandControlOffsets                                   src/ui/ingame/editor_tool_selection.cpp
 0x0056D80C  data      g_UiCommandSelectionAnchorWorldXQ12                               src/ui/ingame/editor_tools.cpp
 0x0056D810  data      g_UiCommandSelectionAnchorWorldYQ12                               src/ui/ingame/editor_tools.cpp

@@ -16,7 +16,7 @@
 
 /* Submodule: gameplay/ai/units. */
 
-/* ArmyRuntimeSlot.aiUnitState value the AI stores whenever it gives a unit a command (units.c, combat.c) */
+/* ArmyRuntimeSlot.aiUnitState value the AI stores whenever it gives a unit a command (units.cpp, combat.cpp) */
 #define AI_UNIT_COMMANDED_STATE 8
 /* ArmyRuntimeSlot.aiUnitFlags bit 0: set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit
    to a group target, cleared by the direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */

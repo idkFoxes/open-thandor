@@ -14,7 +14,7 @@
 #include <thandor/core/types.h>
 #include <thandor/gameplay/army/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct WorldRuntimeNodeCommon WorldRuntimeNodeCommon, *PWorldRuntimeNodeCommon;
 typedef struct WorldRuntimeNodeModelPayload WorldRuntimeNodeModelPayload, *PWorldRuntimeNodeModelPayload;
@@ -29,9 +29,9 @@ typedef struct GraphicsPaletteAsset GraphicsPaletteAsset;
 typedef struct GraphicsTextureSet GraphicsTextureSet;
 typedef struct WorldRuntimeContext WorldRuntimeContext;
 
-typedef uint32_t ModelMeshGroupMask;
+using ModelMeshGroupMask = uint32_t;
 
-typedef uint32_t WorldRuntimeNodeFlags;
+using WorldRuntimeNodeFlags = uint32_t;
 
 struct WorldRuntimeNodeCommon {
     Ptr32<struct WorldRuntimeNode> previousNode; 
@@ -68,15 +68,15 @@ struct WorldRuntimeNode {
     WorldRuntimeNodeFlags runtimeFlags; 
 };
 
-typedef uintptr_t RomRegistrySlotValue; /* a model node address (5f) */
+using RomRegistrySlotValue = uintptr_t; /* a model node address (5f) */
 
-typedef uint32_t RomRecordByteSize;
+using RomRecordByteSize = uint32_t;
 
-typedef uint32_t RomRecordId;
+using RomRecordId = uint32_t;
 
-typedef uint32_t RomRecordTableIndex;
+using RomRecordTableIndex = uint32_t;
 
-typedef uint32_t RomRecordTableCount;
+using RomRecordTableCount = uint32_t;
 
 struct RomAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;

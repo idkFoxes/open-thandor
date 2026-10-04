@@ -27,7 +27,7 @@ typedef struct GraphicsTextureDecomposeState {
 
 /* Module data. */
 
-/* GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions (texture.c). */
+/* GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions */
 static GraphicsTextureSourceDecomposeSubresourceProc *g_GraphicsTextureSourceDecomposeSubresourceRegionsCf = THANDOR_FN(GraphicsTextureSource_DecomposeSubresourceRegions);
 
 /* Takes `amount` bytes of the work area's free bytes. Returns false (taking nothing) unless at least one byte

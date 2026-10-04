@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/results.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -261,6 +262,23 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 }
 
 
+/* The results graph columns below: true when the sample has no weight even after the active-faction fallback.
+   The original divided by the total regardless (a division by zero when no faction 1..7 is active); bounded here
+   because the column is then skipped (logged once). */
+static Bool8 FrontendResultsGraph_RejectZeroWeightTotal(uint32_t weightTotal)
+{
+  static Bool8 s_loggedZeroWeightTotal;
+
+  if (weightTotal != 0) {
+    return false;
+  }
+  if (!s_loggedZeroWeightTotal) {
+    s_loggedZeroWeightTotal = true;
+    Thandor_Log("FrontendResultsGraph: sample without weight and no active faction, column skipped");
+  }
+  return true;
+}
+
 /* factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
    stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
@@ -296,6 +314,9 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
       }
       factionIndex++;
     } while (factionIndex < 8);
+  }
+  if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
+    return;
   }
   pixelCursor = framebufferAccess->pixels +
            (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
@@ -353,6 +374,9 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
       factionIndex++;
     } while (factionIndex < 8);
   }
+  if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
+    return;
+  }
   pixelCursor = framebufferAccess->pixels +
            (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
   factionIndex = 0;
@@ -408,6 +432,9 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
       }
       factionIndex++;
     } while (factionIndex < 8);
+  }
+  if (FrontendResultsGraph_RejectZeroWeightTotal(weightTotal)) {
+    return;
   }
   pixelCursor = framebufferAccess->pixels +
            (int32_t)((spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel);
@@ -717,22 +744,22 @@ void FrontendResultsTable_DrawPlayerColumn
 /* Class vtables. */
 
 UiNodeVtable g_FrontendResultsTableVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(FrontendResultsTable_DrawColumnSequenceByType),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+        .relocate = UI_SLOT(UiContainer_RelocateChildren),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(FrontendResultsTable_DrawColumnSequenceByType),
+        .layout = UI_SLOT(UiContainer_LayoutChildren),
+        .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
+        .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent),
 };

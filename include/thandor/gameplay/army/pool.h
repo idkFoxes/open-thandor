@@ -62,7 +62,7 @@
 
 Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 
-void ArmyRuntime_ShutdownPoolAndGraphics(void);
+void ArmyRuntime_ShutdownPoolAndGraphics();
 
 void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime);
 

@@ -28,7 +28,7 @@ void RecentTextHistory_SortAndBuildPointerList
 
 void RecentTextHistory_Insert(uint16_t *text);
 
-void RecentTextHistory_RemoveOldest(void);
+void RecentTextHistory_RemoveOldest();
 
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex);
 

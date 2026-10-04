@@ -17,7 +17,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct ModelRuntimeNode ModelRuntimeNode, *PModelRuntimeNode;
 typedef union ModelRuntimePayloadReference4 ModelRuntimePayloadReference4, *PModelRuntimePayloadReference4;
@@ -31,7 +31,7 @@ typedef struct ModelRelativeDirectionAngles ModelRelativeDirectionAngles, *PMode
 typedef struct EffectRuntimeSlot EffectRuntimeSlot;
 typedef struct ShotRuntimeSlot ShotRuntimeSlot;
 
-typedef uint32_t SprAttachmentPackedKey;
+using SprAttachmentPackedKey = uint32_t;
 
 struct ModelAttachmentTransformRecord {
     SprAttachmentPackedKey packedKindAndSelector; 
@@ -77,11 +77,11 @@ struct ModelRuntimeNode {
     Ptr32<struct ModelRuntimeNode> childNodes[13]; 
 };
 
-typedef uint32_t ModelRuntimePoolRelativeOffset;
+using ModelRuntimePoolRelativeOffset = uint32_t;
 
-typedef uint32_t ModelRuntimeAttachmentIndex;
+using ModelRuntimeAttachmentIndex = uint32_t;
 
-typedef uint32_t ModelNodePoolRelativeOffset;
+using ModelNodePoolRelativeOffset = uint32_t;
 
 struct ModelRaycastTriangleDescriptor {
     Ptr32<struct GraphicsFixedVec3> vertex0; 

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-/* uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+/* uint32_t[8]: preview army asset id per pointer mode (0 = none); ui/ingame/world_input.cpp */
 const uint32_t g_InGamePointerModePreviewArmyIds[8] = {0, 240, 242, 240, 244, 240, 242, 240};
 
 /* Origin X/Y/Z, projection scale, view angles 0/1, projection shift; passed whole to
@@ -41,7 +41,7 @@ static GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents = {
 
 static ModelRuntimeNode *g_ArmyPreviewModelNode = nullptr;
 
-/* uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
+/* uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview */
 static const uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256] = {
     /*   0 */ 0, 0x1000100010ull, 0x2000200020ull, 0x3000300030ull, 0x4000400040ull, 0x5000500050ull, 0x6000600060ull, 0x7000700070ull,
     /*   8 */ 0x8000800080ull, 0x9000900090ull, 0xA000A000A0ull, 0xB000B000B0ull, 0xC000C000C0ull, 0xD000D000D0ull, 0xE000E000E0ull, 0xF000F000F0ull,
@@ -76,7 +76,7 @@ static const uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256] = {
     /* 240 */ 0xF0F0F0F0F0Full, 0xF1F0F1F0F1Full, 0xF2F0F2F0F2Full, 0xF3F0F3F0F3Full, 0xF4F0F4F0F4Full, 0xF5F0F5F0F5Full, 0xF6F0F6F0F6Full, 0xF7F0F7F0F7Full,
     /* 248 */ 0xF8F0F8F0F8Full, 0xF9F0F9F0F9Full, 0xFAF0FAF0FAFull, 0xFBF0FBF0FBFull, 0xFCF0FCF0FCFull, 0xFDF0FDF0FDFull, 0xFEF0FEF0FEFull, 0xFFF0FFF0FFFull};
 
-/* uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
+/* uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel */
 static const uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256] = {
     /*   0 */ 0, 0x13FF03FF03FF0ull, 0x21FF81FF81FF8ull, 0x3155015501550ull, 0x40FFC0FFC0FFCull, 0x50CC90CC90CC9ull, 0x60AA80AA80AA8ull, 0x7092209220922ull,
     /*   8 */ 0x807FE07FE07FEull, 0x9071A071A071Aull, 0xA066406640664ull, 0xB05D005D005D0ull, 0xC055405540554ull, 0xD04EB04EB04EBull, 0xE049104910491ull, 0xF044304430443ull,

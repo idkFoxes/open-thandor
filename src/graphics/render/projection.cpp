@@ -247,7 +247,7 @@ void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
    1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross
    products of neighbouring rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
 */
-void Graphics_RebuildFrustumPlanes(void)
+void Graphics_RebuildFrustumPlanes()
 
 {
   uint32_t forwardX;

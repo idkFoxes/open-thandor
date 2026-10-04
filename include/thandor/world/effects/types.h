@@ -16,7 +16,7 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct EffectRuntimeSlot EffectRuntimeSlot, *PEffectRuntimeSlot;
 typedef union EffectModelNodeReferenceOrSavedOffset EffectModelNodeReferenceOrSavedOffset, *PEffectModelNodeReferenceOrSavedOffset;
@@ -28,9 +28,9 @@ typedef struct EffectModelRuntimeNode EffectModelRuntimeNode, *PEffectModelRunti
 typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 
-typedef uint32_t EffectAnimationFrameCount;
+using EffectAnimationFrameCount = uint32_t;
 
-typedef uint32_t DefinitionReferencePresentFlag;
+using DefinitionReferencePresentFlag = uint32_t;
 
 enum {
     EFFECT_RUNTIME_COMPLETION_NONE=0,
@@ -38,17 +38,17 @@ enum {
     EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER=2,
     EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL=3
 };
-typedef int EffectRuntimeCompletionAction;
+using EffectRuntimeCompletionAction = int;
 
-typedef uint32_t EffectShadingCountdownTicks;
+using EffectShadingCountdownTicks = uint32_t;
 
-typedef uint32_t EffectPeriodicIntervalTicks;
+using EffectPeriodicIntervalTicks = uint32_t;
 
-typedef uint32_t EffectAgeTicks;
+using EffectAgeTicks = uint32_t;
 
-typedef uint32_t EffectAnimationFrameAccumulatorQ4;
+using EffectAnimationFrameAccumulatorQ4 = uint32_t;
 
-typedef uint32_t ShotTerrainImpactHeightDeltaQ12;
+using ShotTerrainImpactHeightDeltaQ12 = uint32_t;
 
 union EffectRuntimeOwnerReference {
     Ptr32<struct ModelRuntimeNode> modelNode;

@@ -13,8 +13,8 @@
 /* Module data. */
 
 THANDOR_ALIGN(16) UiRootCallbacks g_InGameUiRootCallbacks = {
-    .frameUpdate = THANDOR_FN(InGameUiRoot_UpdateFrame),
-    .keyboardFallback = THANDOR_FN(InGameHotkeys_DispatchCommandByFlags)};
+    .frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame),
+    .keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags)};
 
 IDirectSoundBuffer *g_InGameActiveEffectVoice = nullptr;
 
@@ -431,7 +431,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
         copies its heading and a zoom value derived from the committed distance
    (distance * 3/128) into the in-game root's view cache.
 */
-void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
+void InGameRuntime_UpdateCursorGridAndViewScaleCache()
 
 {
   UQ12 committedDistance;

@@ -48,9 +48,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-uint32_t Graphics_AllocateTables(void);
+uint32_t Graphics_AllocateTables();
 
-void Graphics_Shutdown(void);
+void Graphics_Shutdown();
 
 extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize;
 extern int32_t g_GraphicsBackendAccessState;

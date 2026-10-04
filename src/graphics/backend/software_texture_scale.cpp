@@ -33,7 +33,7 @@ static uint8_t SoftwareTexture_CrossFadeByte(uint8_t a, uint8_t b, uint8_t facto
 
 /* Fills g_SoftwarePixelIntensityToNativeColorLut256 with native grey pixels of the current
    framebuffer format. The table runs from white down to black: entry i is intensity 255 - i. */
-static void SoftwareTexture_BuildIntensityLut(void)
+static void SoftwareTexture_BuildIntensityLut()
 {
     const SoftwarePixelFormatConfig *format = &g_SoftwarePixelFormatConfig;
     uint32_t entry;
@@ -67,7 +67,7 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
 /* Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
    destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
    framebuffer (32 bit), as grey levels. Called by
-   UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/text.c).
+   UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/panels.cpp).
    1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
       factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
    2. g_SoftwarePixelIntensityToNativeColorLut256 is rebuilt for the current pixel format.

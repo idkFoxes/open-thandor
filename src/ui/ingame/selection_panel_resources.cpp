@@ -37,7 +37,7 @@ void *g_InfoPanelData = nullptr;
 /* Implementation ownership: ui/ingame/selection_panel_resources. */
 
 /* Empties the 32 selection entries of all eight player blocks. */
-static void SelectionInfoPanel_ClearAllPlayerSelections(void)
+static void SelectionInfoPanel_ClearAllPlayerSelections()
 
 {
   int blockIndex;
@@ -182,7 +182,7 @@ Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uin
 /* Counterpart of SelectionInfoPanel_InitResources: releases both panel textures and both .dat tables and clears
    the four resource pointers.
 */
-void SelectionInfoPanel_ShutdownResources(void)
+void SelectionInfoPanel_ShutdownResources()
 
 {
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_SelectionPanelTextureSource);

@@ -38,7 +38,7 @@ uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', 
    loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
    the built-in I/O error message; otherwise FatalError_Exit returns at once because failed is false.
 */
-void __cdecl ErrorSystem_Init(void)
+void __cdecl ErrorSystem_Init()
 
 {
   Bool8 errorTextsLoaded;

@@ -22,7 +22,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
 
-void FrontendRuntime_ShutdownAndReleaseResources(void);
+void FrontendRuntime_ShutdownAndReleaseResources();
 
 extern uint32_t g_FrontendRuntimeFlags;
 extern uintptr_t g_FrontendCentralTextureSet;
@@ -34,6 +34,6 @@ extern uint32_t g_FrontendStateTickSpinLock;
 extern DirectSoundVoiceSet *g_FrontendMusicVoiceSet;
 extern uint16_t g_FrontendMusic00SamPathUtf16[18];
 
-void FrontendMusic_StartMenuMusic(void);
+void FrontendMusic_StartMenuMusic();
 
 #endif /* THANDOR_UI_FRONTEND_LIFECYCLE_H */

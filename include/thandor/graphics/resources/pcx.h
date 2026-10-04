@@ -19,7 +19,7 @@ Writing: screenshots (Alt+P in game, the movie screenshot command). Reading: the
 #include <thandor/platform/sdl3/types.h>
 #include <thandor/core/contracts.h>
 
-/* pcx_write.c and pcx_read.c declare their functions below this line. */
+/* pcx_write.cpp and pcx_read.cpp declare their functions below this line. */
 
 /* pcx.fnc export 3: encodes a GFX texture source (a framebuffer capture) as a PCX file (8-bit RLE; 3 planes for
    direct colour, 1 plane plus 256-colour palette for a palette source). true: *outBytes (release with

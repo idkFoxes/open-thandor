@@ -16,8 +16,8 @@ static UiRootNode *g_FatalErrorUiRootTemplate = nullptr;
 static uint32_t g_FatalErrorDialogDismissed = 0;
 
 static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
-    .method08 = THANDOR_FN(FatalErrorDialog_BlockMissedPointerPress),
-    .pointerMissPolicy = THANDOR_FN(FatalErrorDialog_BlockMissedPointerMotion)};
+    .method08 = UI_SLOT(FatalErrorDialog_BlockMissedPointerPress),
+    .pointerMissPolicy = UI_SLOT(FatalErrorDialog_BlockMissedPointerMotion)};
 
 static FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
@@ -70,7 +70,7 @@ int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root)
 }
 
 /* Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI
-   setup in ui/controls/layout.c): closes the fatal-error dialog root and counts the dismissal, which ends
+   setup in ui/controls/root_stack.cpp): closes the fatal-error dialog root and counts the dismissal, which ends
    the modal frame loop in FatalErrorRuntime_DispatchPendingError.
 */
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
@@ -156,7 +156,7 @@ uintptr_t FatalErrorRuntime_DispatchPendingError(uintptr_t valueOrError,Bool8 fa
    fills it from g_FatalErrorUiRootTemplateImage) and, if that worked, switches FatalError_ReportIfFailed
    from FatalError_Exit to the in-game dialog. Without the allocation errors keep ending the process.
 */
-void ErrorRuntime_InstallUiHandlerAndAllocateState(void)
+void ErrorRuntime_InstallUiHandlerAndAllocateState()
 
 {
   void *allocPayload;

@@ -52,7 +52,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
 
 uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
-GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void);
+GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal();
 
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 

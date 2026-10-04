@@ -21,7 +21,7 @@
    InGameConditionRuntime_UpdateScheduledRecords does for that trigger. From there the original code runs:
    the end movie, OldUnitRuntime_RebuildScenarioReplayTables (collects the units in the exit zone), the next
    level and OldUnitRuntime_MergeMasksAndReplayRecords. Called once per frame by InGameRuntime_RunSessionUntilExit. */
-void DebugCampaign_AutoWinTick(void)
+void DebugCampaign_AutoWinTick()
 {
   static unsigned sessionSeen;
   static unsigned sessionStart;
@@ -205,7 +205,7 @@ static const char *DebugCampaign_RowName(const uint16_t *text, char *out, unsign
                                    like its Start button, once per process; OPEN_THANDOR_CAMPAIGN_LEVEL picks
                                    the level (see DebugCampaign_SelectCampaignLevel).
    Returns nonzero when a campaign was started. */
-int DebugCampaign_ApplyScenarioOptions(void)
+int DebugCampaign_ApplyScenarioOptions()
 {
   static int used;
   const char *wanted;

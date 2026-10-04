@@ -12,7 +12,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/scenario.c while
+/* One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/state.cpp while
    the credits page is open): pixels already revealed brighten by 0x1F, and the tick's position in a 100-tick
    cycle grows one of the reveal shapes (circles, diagonal wipes, horizontal bands, or everything), step by
    step. At the start of each cycle the mask is cleared and the two pattern counters (capped at 13) advance.

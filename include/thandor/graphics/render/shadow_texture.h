@@ -42,11 +42,11 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension);
 
-void GraphicsShadingRuntime_Shutdown(void);
+void GraphicsShadingRuntime_Shutdown();
 
-void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void);
+void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
 
-void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
+void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
 
 void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
@@ -65,9 +65,9 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
 void GraphicsShadingGeneratedTexture_TransformPointXY
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
-void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void);
+void GraphicsShadingGeneratedTexture_AdvanceTileCursor();
 
-void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
+void GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
 
 Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 

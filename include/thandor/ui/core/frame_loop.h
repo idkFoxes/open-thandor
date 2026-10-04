@@ -18,15 +18,15 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void);
+void __cdecl UiFrame_ProcessAndPresentWithLockTransition();
 
-void UiFrame_ProcessAndPresent(void);
+void UiFrame_ProcessAndPresent();
 
-void UiFrame_FlushInputAndResetPendingTicks(void);
+void UiFrame_FlushInputAndResetPendingTicks();
 
 void UiFrame_Update(UiStopMessageCode stopMessageCode);
 
-void UiFrame_Draw(void);
+void UiFrame_Draw();
 
 extern std::atomic<uint32_t> g_UiPendingFrameTicks; /* incremented by the 20 Hz frame-tick timer thread */
 

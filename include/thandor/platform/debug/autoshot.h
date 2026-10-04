@@ -12,9 +12,9 @@
    framebuffer is saved to shots\shot_NNNN.bmp. */
 
 /* Called from the message pump (SdlPlatform_PumpEvents); saves a shot when the interval has passed. */
-void DebugAutoShot_Tick(void);
+void DebugAutoShot_Tick();
 
 /* Saves the framebuffer now as shots\script_NNNN.bmp (the script command "shot"); creates the folder. */
-void DebugAutoShot_SaveNow(void);
+void DebugAutoShot_SaveNow();
 
 #endif /* THANDOR_PLATFORM_DEBUG_AUTOSHOT_H */

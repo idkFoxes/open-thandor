@@ -12,21 +12,21 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct WorldMotionSplineKeyframe WorldMotionSplineKeyframe, *PWorldMotionSplineKeyframe;
 typedef struct WorldCameraOrientation WorldCameraOrientation, *PWorldCameraOrientation;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
 
-typedef int WorldMotionSplineKeyframeCount;
+using WorldMotionSplineKeyframeCount = int;
 
-typedef int WorldMotionSplineValueQ12;
+using WorldMotionSplineValueQ12 = int;
 
-typedef int WorldMotionSplineTimeQ12;
+using WorldMotionSplineTimeQ12 = int;
 
-typedef uint32_t WorldMotionValue78;
+using WorldMotionValue78 = uint32_t;
 
-typedef int CameraScreenDeltaPixels;
+using CameraScreenDeltaPixels = int;
 
 struct WorldMotionSplineKeyframe {
     WorldMotionSplineValueQ12 channel0Q12; 

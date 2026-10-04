@@ -52,7 +52,7 @@ Bool8 SpatialSoundPool_Init(uint32_t *outError)
 /* Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from
    the camera's view angles composed with a translation by -origin, i.e. world space to listener space, which
    the positioned-sound functions use to get distance and azimuth. Called directly by the frontend camera
-   control setup in ui/frontend/runtime.c (no callback table).
+   control setup in ui/frontend/menu_room.cpp (no callback table).
 */
 void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,
@@ -262,7 +262,7 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 /* Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
    sounds whose gains are set again this frame keep playing when SpatialSoundPool_ApplyDesiredGains runs.
 */
-void SpatialSoundPool_ClearDesiredGains(void)
+void SpatialSoundPool_ClearDesiredGains()
 
 {
   int slotsRemaining;
@@ -285,7 +285,7 @@ void SpatialSoundPool_ClearDesiredGains(void)
 /* End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
    is not playing, stops the voice when both gains are 0, and otherwise updates the voice's gains.
 */
-void SpatialSoundPool_ApplyDesiredGains(void)
+void SpatialSoundPool_ApplyDesiredGains()
 
 {
   IDirectSoundBuffer *existingVoice;

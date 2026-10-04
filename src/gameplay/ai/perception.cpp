@@ -125,7 +125,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
 /* Own structures of class 11 / 22 / 13 (among the 00 entries present before this step): the asset in production
    (slot word 24) counts as an unassigned entry (00 for class 11, 01 otherwise) while their state word (46, 43 for
    class 22) is 1. */
-static void AiPlanningRebuild_AddAssetsInProduction(void)
+static void AiPlanningRebuild_AddAssetsInProduction()
 
 {
   AiStructureWorkspaceEntry *structureEntry;
@@ -316,7 +316,7 @@ static void AiPlanningRebuild_ScanFieldGridSites(FactionRuntimeIndex factionInde
 
 /* Production mask of the own structures: class 13 contributes its classParameterC4 mask, class 22 bit 3,
    class 11 bit 4. */
-static uint32_t AiPlanningRebuild_CollectProductionMask(void)
+static uint32_t AiPlanningRebuild_CollectProductionMask()
 
 {
   uint32_t productionMask;
@@ -377,7 +377,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
 }
 
 /* Workspace 07: the targets of workspace 02 with their model node and world position. */
-static void AiPlanningRebuild_CollectTargets(void)
+static void AiPlanningRebuild_CollectTargets()
 
 {
   AiRuntimeWorkspaceEntry *hostileEntry;

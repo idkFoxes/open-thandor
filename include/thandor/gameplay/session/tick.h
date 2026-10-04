@@ -19,8 +19,8 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
+void __cdecl InGameRuntime_PeriodicCountdownAndClockTick();
 
-void InGameRuntime_UpdateSimulationAndNetworkTick(void);
+void InGameRuntime_UpdateSimulationAndNetworkTick();
 
 #endif /* THANDOR_GAMEPLAY_SESSION_TICK_H */

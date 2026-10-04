@@ -39,7 +39,7 @@ GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount = 0;
    +/- GRAPHICS_INTENSITY_CLAMP_MAX_STEP. The table is aligned to 64 KiB so the original can index it with a
    16-bit register pair. Returns 0, or the (non-zero) arena error code when the allocation fails.
 */
-uint32_t GraphicsIntensityClampTable_Initialize(void)
+uint32_t GraphicsIntensityClampTable_Initialize()
 
 {
   int rowsRemaining;
@@ -91,7 +91,7 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
    GraphicsShadingRuntime_RebuildCompactLightingRecords) whose sphere contains worldPointQ12 to the packed
    light accumulator (four 16-bit lanes), with unsigned saturation, and returns the new accumulator. The
    strength comes from g_PackedLightingLookupTable indexed by (radius^2 - distance^2) / radius^2, so it falls
-   off towards the sphere edge. Used by the terrain vertex shading in src/world/terrain/projection.c.
+   off towards the sphere edge. Used by the terrain vertex shading in src/graphics/terrain/terrain_render.cpp.
 */
 MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator)
@@ -182,7 +182,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
 /* Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is
    active; GraphicsShadingRuntime_RebuildCompactLightingRecords only picks up records with a colour set.
 */
-void GraphicsShadingRuntime_ClearRecordTable(void)
+void GraphicsShadingRuntime_ClearRecordTable()
 
 {
   int recordDwordsRemaining;
@@ -197,11 +197,11 @@ void GraphicsShadingRuntime_ClearRecordTable(void)
   return;
 }
 
-/* Once per rendered world frame (frontend world render in src/ui/frontend/runtime.c): copies every active
+/* Once per rendered world frame (frontend world render in src/ui/frontend/menu_room.cpp): copies every active
    runtime light record (colour set) into the compact table with its position transformed into view space,
    and publishes the count, so the per-vertex and per-model light queries only walk the live lights.
 */
-void GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
+void GraphicsShadingRuntime_RebuildCompactLightingRecords()
 
 {
   GraphicsRadiusQ12 targetRadius;
@@ -235,8 +235,8 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
 
 /* Copies every compact light record whose sphere overlaps the query sphere (distance^2 <= (queryRadius +
    lightRadius)^2, compared in 64 bits) into g_GraphicsShadingNearbyRecords and publishes
-   g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model.c) only tests
-   the lights near the model. Called per model node by the hierarchy renderers in src/world/model/runtime.c.
+   g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model_lighting.cpp) only tests
+   the lights near the model. Called per model node by the hierarchy renderers in src/graphics/render/model_draw.cpp.
 */
 void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
@@ -280,7 +280,7 @@ void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ1
 /* Not in the original (it carried the table precomputed): builds g_ShadingIntensityScaleMmx. Light level l gets
    (l * 0x1010) >> 8 = l * 16 + l / 16 (0..0x0FFF) in the alpha lane and zero in the B/G/R lanes. This reproduces
    every entry of the original table. Called once at startup. */
-void GraphicsShading_BuildIntensityScaleTable(void)
+void GraphicsShading_BuildIntensityScaleTable()
 {
   int level;
 
@@ -296,7 +296,7 @@ void GraphicsShading_BuildIntensityScaleTable(void)
    (512 entries). Each entry holds one light level as four Q12 words for PMULHW: the
    same factor in the three colour lanes and 0x1000 (1.0) in the alpha lane. Levels 0..255 map to
    (level * 0x101) >> 4, i.e. 0..0x0FFF; levels 256..511 saturate at 0x1000. Called once at startup. */
-void GraphicsLighting_BuildPackedLookupTable(void)
+void GraphicsLighting_BuildPackedLookupTable()
 {
   int level;
 

@@ -54,7 +54,7 @@ Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
    not registered. (The original's success return value, the last resolved definition, was read by no
    caller.)
 */
-uint32_t EffectDefinitions_ResolveCrossReferences(void)
+uint32_t EffectDefinitions_ResolveCrossReferences()
 
 {
   uint32_t lookupError;

@@ -23,9 +23,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-uint32_t __cdecl Network_Init(void);
+uint32_t __cdecl Network_Init();
 
-void Network_Shutdown(void);
+void Network_Shutdown();
 
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex);
 

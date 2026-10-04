@@ -46,15 +46,15 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void UiTransferMailbox_ServiceAndRetransmitTimer(void);
+void UiTransferMailbox_ServiceAndRetransmitTimer();
 
-void UiTransferMailbox_ClearReceivedState(void);
+void UiTransferMailbox_ClearReceivedState();
 
 void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount); /* NULL while nothing complete */
 
-void UiTransferMailbox_RandomizeSequenceToken(void);
+void UiTransferMailbox_RandomizeSequenceToken();
 
-void UiTransferMailbox_MarkUnavailable(void);
+void UiTransferMailbox_MarkUnavailable();
 
 void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation);
 
@@ -62,7 +62,7 @@ Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTra
 
 extern uint32_t g_UiRuntimeRecordWriteIndex;
 extern uint32_t g_UiTransferUnitCursor;
-extern uint32_t g_UiTransferSequenceToken; /* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+extern uint32_t g_UiTransferSequenceToken; /* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value; network/protocol/mailbox.cpp, ui/frontend/network.cpp). */
 extern uint32_t g_UiTransferSenderContext;
 extern UiTransferMailboxState g_UiTransferMailbox;
 extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter;

@@ -234,7 +234,7 @@ static uint32_t MovieColor_ClampChannel(int value)
 /* Not in the original: fills g_MovieChromaLumaToArgb (the 1024 chroma codes x 32 lumas that
    Movie_DecodeFrame4x4Delta looks up) from the two tables above. Called once at startup by WinMain (src/platform/bootstrap/main.cpp),
    before any movie is decoded. */
-void Movie_BuildChromaLumaTable(void)
+void Movie_BuildChromaLumaTable()
 {
   int saturation;
   int hue;

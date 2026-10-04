@@ -31,7 +31,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
 void WorldMotionSpline_BuildSixChannelCurves
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes);
 
-void WorldMotionSpline_ClearCachedDerivatives(void);
+void WorldMotionSpline_ClearCachedDerivatives();
 
 extern float *g_WorldMotionSplineMatrixWorkspaces[6];
 extern float *g_WorldMotionSplineCoefficientTables[6];

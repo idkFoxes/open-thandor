@@ -24,6 +24,6 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void);
+void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
 
 #endif /* THANDOR_GAMEPLAY_FACTION_ECONOMY_H */

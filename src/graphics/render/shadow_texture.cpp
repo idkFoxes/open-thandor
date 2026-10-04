@@ -484,7 +484,7 @@ static void GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(GraphicsPro
 }
 
 /* Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000,
-   called per candidate model from the frontend world render in src/ui/frontend/runtime.c). While the
+   called per candidate model from the frontend world render in src/ui/frontend/menu_room.cpp). While the
    generated shadow textures still have a free tile, a model inside the view frustum gets twelve sample
    points (corners and edge midpoints of its light-space bounds plus four inner points); each point is moved
    along the light direction (renderContext angles) onto the terrain, and the 14 reserved projected point blocks
@@ -689,7 +689,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
 /* Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated
    gfx asset and the scratch grid, and clears the three pointers.
 */
-void GraphicsShadingRuntime_Shutdown(void)
+void GraphicsShadingRuntime_Shutdown()
 
 {
   g_GraphicsDestroyTextureSet(g_GraphicsShadingTextureSet);
@@ -702,12 +702,12 @@ void GraphicsShadingRuntime_Shutdown(void)
 }
 
 
-/* Starts a shadow pass (frontend world render in src/ui/frontend/runtime.c, before the per-model
+/* Starts a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp, before the per-model
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls): puts the tile cursor on the first
    tile of subresource 0 (the pixel cursor at the tile centre), clears the tile/subresource counters and the
    "all tiles used" count, and zeroes the 8-bit pixels of every generated shadow texture.
 */
-void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
+void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes()
 
 {
   AssetRelativeOffset tableOffset;
@@ -747,11 +747,11 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 }
 
 
-/* Ends a shadow pass (frontend world render in src/ui/frontend/runtime.c): uploads the alpha of every
+/* Ends a shadow pass (frontend world render in src/ui/frontend/menu_room.cpp): uploads the alpha of every
    generated shadow texture the pass filled, i.e. all subresources before the current one plus the current
    one when it has at least one used tile (and not every tile ran out).
 */
-void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
+void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources()
 
 {
   uint32_t subresourceIndex;
@@ -1103,7 +1103,7 @@ void GraphicsShadingGeneratedTexture_TransformPointXY
    tile row, then on to the next generated texture. When the last texture is full the completed count
    becomes nonzero and further models get no shadow until the next pass.
 */
-void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void)
+void GraphicsShadingGeneratedTexture_AdvanceTileCursor()
 
 {
   g_GraphicsShadingGeneratedTextureTileX =
@@ -1183,7 +1183,7 @@ static uint64_t ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int
    the zero-bordered scratch grid, then writes back to every texel the byte-saturated weighted sum of its
    neighbourhood (centre x4, taps gridHalfSize / 16 texels apart), 32 texels per step with MMX.
 */
-void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
+void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
 
 {
   uint64_t threeBitMask;

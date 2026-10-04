@@ -25,7 +25,7 @@
 
 /* Diagnostics: OPEN_THANDOR_SELFTEST=codec round-trips synthetic save-sized data through the PCK
    encoder/decoder tables, checks guard bytes behind the output and logs the result. */
-static void Thandor_SelfTestCodec(void)
+static void Thandor_SelfTestCodec()
 {
     static const unsigned sizes[3] = {MODEL_RUNTIME_POOL_BYTES, ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot), EFFECT_RUNTIME_POOL_BYTES};
     unsigned t;
@@ -84,7 +84,7 @@ static void Thandor_SelfTestCodec(void)
 }
 
 
-static void Thandor_SelfTestPathSplit(void)
+static void Thandor_SelfTestPathSplit()
 {
     static const wchar_t *cases[4] = {L"C:\\Games\\ot-run\\thandor.exe", L"thandor.exe",
                                        L"C:\\Games\\ot-run\\save\\Mission 1.sve", L"C:\\"};
@@ -110,7 +110,7 @@ static void Thandor_SelfTestPathSplit(void)
 }
 
 
-static void Thandor_SelfTestStretch(void)
+static void Thandor_SelfTestStretch()
 {
     /* 4x2 ARGB source with a horizontal red ramp, stretched to 8x4. */
     /* header, the subresource record in the header's unused text, pixels behind the header */
@@ -172,7 +172,7 @@ static uint32_t SelfTest_Free(void *memory)
 /* OPEN_THANDOR_SELFTEST=codec, after the round trips: malformed method-0 and method-2 inputs (truncated
    stream, output size 0, fewer than two symbols, empty source, grid larger than its buffers) must fail
    without a crash; a uniform source must encode and round-trip. Logs one line per case and a summary. */
-static void Thandor_SelfTestCodecNegative(void)
+static void Thandor_SelfTestCodecNegative()
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
     uint32_t (*savedFree)(void *) = g_MemoryApi.free;
@@ -284,7 +284,7 @@ static void Thandor_SelfTestCodecNegative(void)
 /* OPEN_THANDOR_SELFTEST=pcx decodes pcxtest.pcx (next to the executable) with Pcx_DecodeIndexed8 and logs
    width, height and an FNV-1a hash over the palette (0xFFRRGGBB dwords, little endian) and the pixels;
    tools/test/pcx_check.py writes the file and prints the expected line. */
-static void Thandor_SelfTestPcx(void)
+static void Thandor_SelfTestPcx()
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
     uint32_t (*savedFree)(void *) = g_MemoryApi.free;
@@ -350,7 +350,7 @@ static uint32_t SelfTest_MovieEncodePixel(uint32_t frame, uint32_t x, uint32_t y
     }
 }
 
-static void Thandor_SelfTestMovieEncode(void)
+static void Thandor_SelfTestMovieEncode()
 {
     static uint32_t reference[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
     static uint32_t current[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
@@ -402,7 +402,7 @@ static uint32_t SelfTest_TriangleRandom(uint32_t *seed)
     return *seed >> 8;
 }
 
-static void Thandor_SelfTestTriangleSetup(void)
+static void Thandor_SelfTestTriangleSetup()
 {
     static GraphicsPrimitivePacket packet;
     uint32_t textureEntry[8];
@@ -470,7 +470,7 @@ static uint32_t SelfTest_KeymapDrain(uint32_t hash)
     return hash;
 }
 
-static void Thandor_SelfTestKeymap(void)
+static void Thandor_SelfTestKeymap()
 {
     static const uint32_t modifiers[] = {0, 0x10, 0x11, 0x12, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0x14, 0x90, 0x91};
     uint32_t hash = 2166136261u;
@@ -514,7 +514,7 @@ static uint32_t SelfTest_HashBytes(uint32_t hash, const void *bytes, uint32_t co
     return hash;
 }
 
-static void Thandor_SelfTestFixedMath(void)
+static void Thandor_SelfTestFixedMath()
 {
     static const int32_t edges[] = {0, 1, -1, 2, -2, 0x7fffffff, (int32_t)0x80000000, 0x1000, -0x1000, 0x10000,
                                     0xffff, 0x7fff, -0x8000, 0x40000000, -0x40000000};
@@ -603,7 +603,7 @@ static void SelfTest_FreeSamCosineTables(uint32_t (*savedAlloc)(uint32_t, void *
    the executable: the Q28 sine table (built with the C library's sin(), so a compiler or C runtime change
    could move it), the two .sam cosine matrices derived from it, and the lighting, shading and software
    renderer factor tables. Compare it between two builds or compilers. */
-static void Thandor_SelfTestTables(void)
+static void Thandor_SelfTestTables()
 {
     uint32_t (*savedAlloc)(uint32_t, void **);
     uint32_t (*savedFree)(void *);
@@ -638,7 +638,7 @@ static void Thandor_SelfTestTables(void)
    table plus LCG noise, with a ramped amplitude so all code lengths occur) through the kept encoder
    (forward transform, packing) and back through the decoder. Logs one FNV-1a hash per part over the
    consumed byte counts, coefficients and PCM. */
-static void Thandor_SelfTestSam(void)
+static void Thandor_SelfTestSam()
 {
     enum { BLOCKS = 64, BLOCK_BYTES = 512 };
     uint32_t (*savedAlloc)(uint32_t, void **);
@@ -718,7 +718,7 @@ static void Thandor_SelfTestSam(void)
 /* OPEN_THANDOR_SELFTEST=numberformat formats random and edge values with WideNumber_FormatUtf16 under random flag
    combinations, digit counts and denominators (into a zeroed 256-unit buffer) and logs an FNV-1a hash over the
    returned lengths and every buffer. Run it with two builds to check that a rewrite kept the formatting. */
-static void Thandor_SelfTestNumberFormat(void)
+static void Thandor_SelfTestNumberFormat()
 {
     static const int32_t edges[] = {0, 1, -1, 9, 10, 99, 100, 999, 1000, 1234, -1234, 12345, 999999, 1000000,
                                     0x7fffffff, (int32_t)0x80000000, 0x7fff, -0x8000};
@@ -790,7 +790,7 @@ static unsigned SelfTest_CompareSettingsImages(const char *what, const uint8_t *
    missing keys) and checks the image; then, when thandor.dat is in the current directory, writes its image as
    ini text, parses that back and compares (the migration), and when thandor.ini is there too, compares it
    with thandor.dat (an ini the game wrote from that thandor.dat). Logs one line per check. */
-static void Thandor_SelfTestSettings(void)
+static void Thandor_SelfTestSettings()
 {
     static const char fixedText[] =
         "\xEF\xBB\xBF; comment\r\n[display]\r\nwidth = 1024\r\nheight=768 ; trailing comment\r\nrenderer = D3D12\r\n"
@@ -879,7 +879,7 @@ static void Thandor_SelfTestSettings(void)
     }
 }
 
-static void Thandor_SelfTestScanAddresses(void)
+static void Thandor_SelfTestScanAddresses()
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
     uint32_t (*savedFree)(void *) = g_MemoryApi.free;
@@ -1081,7 +1081,7 @@ std::vector<std::byte> IconTest_File(const std::vector<IconTestImage> &images, i
 
 } // namespace
 
-static void Thandor_SelfTestIcon(void)
+static void Thandor_SelfTestIcon()
 {
     using thandor::sdl3::IconFile;
     unsigned checks = 0;
@@ -1213,6 +1213,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "hexscan") == 0) {
         Thandor_SelfTestHexScan();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "keymatch") == 0) {
+        Thandor_SelfTestKeyMatch();
         return 1;
     }
     if (name != nullptr && strcmp(name, "movieenc") == 0) {

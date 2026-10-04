@@ -21,8 +21,8 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
 
 Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
-void ArmyRuntimePool_RebaseAfterLoad(void);
+void ArmyRuntimePool_RebaseAfterLoad();
 
-void GameFactionRuntime_RebaseLoadedArmyReferences(void);
+void GameFactionRuntime_RebaseLoadedArmyReferences();
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_LOAD_H */

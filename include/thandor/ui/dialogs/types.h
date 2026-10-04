@@ -14,7 +14,7 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct UiDisplayModeSelectionActionHandlerTable UiDisplayModeSelectionActionHandlerTable, *PUiDisplayModeSelectionActionHandlerTable;
 typedef struct UiRootCallbacks UiRootCallbacks;
@@ -23,7 +23,7 @@ struct UiDisplayModeSelectionActionHandlerTable {
     Ptr32<void (struct UiNodeBase *)> handlers[20]; 
 };
 
-typedef uint32_t DisplayModeScratchWord;
+using DisplayModeScratchWord = uint32_t;
 
 /* Class fields a template stores behind a node's UiNodeBase. A template keeps only the fields up to the next
    node of the original image; the class fields after them (a button's activationSound, a slider's clickSound)

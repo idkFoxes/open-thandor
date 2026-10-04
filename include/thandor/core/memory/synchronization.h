@@ -23,7 +23,7 @@ void SpinLock_Release(RuntimeSpinLockValue *lockValue);
 
 void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue);
 
-void Runtime_Shutdown(void);
+void Runtime_Shutdown();
 
 extern SpinLockAcquireProc *g_SpinLockAcquire;
 extern SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire;

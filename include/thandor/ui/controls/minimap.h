@@ -24,7 +24,7 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           UiSelectionGeometryControl *control);
 
 /* Not in the original: builds the bilinear scaler weight tables (called once at startup). */
-void UiScaler_BuildPixelWeightTables(void);
+void UiScaler_BuildPixelWeightTables();
 
 extern UiNodeVtable g_UiSelectionGeometryControlVtable;
 

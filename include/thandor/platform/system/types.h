@@ -12,7 +12,7 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/platform/bootstrap/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
 typedef union _union_518 _union_518, *P_union_518;
@@ -29,15 +29,15 @@ typedef struct LocaleSystemState LocaleSystemState, *PLocaleSystemState;
 typedef struct _FILETIME _FILETIME;
 typedef struct _WIN32_FIND_DATAA _WIN32_FIND_DATAA;
 
-typedef uint32_t DWORD;
+using DWORD = uint32_t;
 
-typedef DWORD LCTYPE;
+using LCTYPE = DWORD;
 
-typedef uintptr_t ULONG_PTR; /* pointer-sized, as in the Windows SDK */
+using ULONG_PTR = uintptr_t; /* pointer-sized, as in the Windows SDK */
 
-typedef void *HANDLE;
+using HANDLE = void *;
 
-typedef void *PVOID;
+using PVOID = void *;
 
 struct _struct_519 {
     DWORD Offset;
@@ -56,9 +56,9 @@ struct _OVERLAPPED {
     HANDLE hEvent;
 };
 
-typedef void *LPVOID;
+using LPVOID = void *;
 
-typedef int BOOL;
+using BOOL = int;
 
 struct _SECURITY_ATTRIBUTES {
     DWORD nLength;
@@ -66,7 +66,7 @@ struct _SECURITY_ATTRIBUTES {
     BOOL bInheritHandle;
 };
 
-typedef uint16_t WORD;
+using WORD = uint16_t;
 
 struct _SYSTEMTIME {
     WORD wYear;
@@ -79,13 +79,13 @@ struct _SYSTEMTIME {
     WORD wMilliseconds;
 };
 
-typedef char CHAR;
+using CHAR = char;
 
 typedef struct _OVERLAPPED *LPOVERLAPPED;
 
-typedef DWORD (__stdcall *PTHREAD_START_ROUTINE)(LPVOID);
+using PTHREAD_START_ROUTINE = DWORD (__stdcall *)(LPVOID);
 
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
+using LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
 
 typedef struct _SECURITY_ATTRIBUTES *LPSECURITY_ATTRIBUTES;
 
@@ -93,7 +93,7 @@ typedef struct _WIN32_FIND_DATAA *LPWIN32_FIND_DATAA;
 
 typedef struct _SYSTEMTIME *LPSYSTEMTIME;
 
-typedef short SHORT;
+using SHORT = short;
 
 struct _COORD {
     SHORT X;
@@ -121,7 +121,7 @@ struct _CONSOLE_SCREEN_BUFFER_INFO {
 
 typedef struct _CONSOLE_READCONSOLE_CONTROL *PCONSOLE_READCONSOLE_CONTROL;
 
-typedef uint32_t ULONG;
+using ULONG = uint32_t;
 
 struct _CONSOLE_READCONSOLE_CONTROL {
     ULONG nLength;
@@ -132,25 +132,25 @@ struct _CONSOLE_READCONSOLE_CONTROL {
 
 typedef struct _CONSOLE_SCREEN_BUFFER_INFO *PCONSOLE_SCREEN_BUFFER_INFO;
 
-typedef char *va_list;
+using va_list = char *;
 
 typedef struct HWND__ *HWND;
 
-typedef uint32_t UINT;
+using UINT = uint32_t;
 
-typedef long LONG;
+using LONG = long;
 
 struct HWND__ {
     int unused;
 };
 
-typedef CHAR *LPCSTR;
+using LPCSTR = CHAR *;
 
-typedef LONG *PLONG;
+using PLONG = LONG *;
 
-typedef CHAR *LPSTR;
+using LPSTR = CHAR *;
 
-typedef DWORD LCID;
+using LCID = DWORD;
 
 enum {
     LOCALE_COUNTRY_GENERIC=0,
@@ -165,33 +165,33 @@ enum {
     LOCALE_COUNTRY_DENMARK=45,
     LOCALE_COUNTRY_GERMANY=49
 };
-typedef int LocaleTelephoneCountryCode;
+using LocaleTelephoneCountryCode = int;
 
-typedef uint16_t Win32CalendarYear16;
+using Win32CalendarYear16 = uint16_t;
 
-typedef uint32_t LocaleCalendarDayStack32;
+using LocaleCalendarDayStack32 = uint32_t;
 
-typedef uint16_t Win32CalendarMonth16;
+using Win32CalendarMonth16 = uint16_t;
 
-typedef uint16_t Win32CalendarDay16;
+using Win32CalendarDay16 = uint16_t;
 
-typedef uint16_t Win32Millisecond16;
+using Win32Millisecond16 = uint16_t;
 
-typedef uint32_t LocaleClockHourStack32;
+using LocaleClockHourStack32 = uint32_t;
 
-typedef uint16_t Win32Hour16;
+using Win32Hour16 = uint16_t;
 
-typedef uint16_t Win32DayOfWeek16;
+using Win32DayOfWeek16 = uint16_t;
 
-typedef uint32_t LocaleClockMinuteStack32;
+using LocaleClockMinuteStack32 = uint32_t;
 
-typedef uint16_t Win32Second16;
+using Win32Second16 = uint16_t;
 
-typedef uint32_t LocaleCalendarMonthStack32;
+using LocaleCalendarMonthStack32 = uint32_t;
 
-typedef uint32_t LocaleCalendarYearStack32;
+using LocaleCalendarYearStack32 = uint32_t;
 
-typedef uint16_t Win32Minute16;
+using Win32Minute16 = uint16_t;
 
 struct Win32SystemTime16 {
     Win32CalendarYear16 year; 
@@ -219,35 +219,35 @@ struct LocaleSystemState {
     uint16_t pmDesignator[16]; 
 };
 
-typedef ULONG_PTR SIZE_T;
+using SIZE_T = ULONG_PTR;
 
-typedef DWORD *LPDWORD;
+using LPDWORD = DWORD *;
 
-typedef HINSTANCE HMODULE;
+using HMODULE = HINSTANCE;
 
-typedef HANDLE HLOCAL;
+using HLOCAL = HANDLE;
 
-typedef long *LPLONG;
+using LPLONG = long *;
 
 typedef struct _FILETIME *LPFILETIME;
 
-typedef int (*FARPROC)(void);
+using FARPROC = int (*)();
 
-typedef WORD *LPWORD;
+using LPWORD = WORD *;
 
-typedef void *LPCVOID;
-typedef uint32_t __cdecl CpuDetectFeaturesProc(void);
-typedef void LocaleCopyDefaultComputerLabelUtf16Proc(uint16_t * destination);
-typedef uint32_t LocaleFormatCurrentDateUtf16Proc(uint16_t * destination);
-typedef uint32_t LocaleFormatCurrentTimeUtf16Proc(uint16_t * destination);
-typedef uint32_t LocaleFormatDateFieldsUtf16Proc(uint32_t year, uint32_t month, uint32_t day, uint16_t * destination);
-typedef uint32_t LocaleFormatTimeFieldsUtf16Proc(uint32_t hour, uint32_t minute, uint16_t * destination);
-typedef uint32_t LocaleGetPackedCurrentDateProc(void);
-typedef uint32_t LocaleGetPackedCurrentTimeProc(void);
-typedef uint32_t LocaleGetTelephoneCountryCodeProc(void);
-typedef void __cdecl TimerCallbackProc(void);
-typedef void TimerRegisterPeriodicProc(uint32_t frequencyHz, TimerCallbackProc * callback);
-typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * callback);
-typedef void __cdecl Win32PumpMessagesProc(void);
+using LPCVOID = void *;
+using CpuDetectFeaturesProc = uint32_t __cdecl ();
+using LocaleCopyDefaultComputerLabelUtf16Proc = void (uint16_t * destination);
+using LocaleFormatCurrentDateUtf16Proc = uint32_t (uint16_t * destination);
+using LocaleFormatCurrentTimeUtf16Proc = uint32_t (uint16_t * destination);
+using LocaleFormatDateFieldsUtf16Proc = uint32_t (uint32_t year, uint32_t month, uint32_t day, uint16_t * destination);
+using LocaleFormatTimeFieldsUtf16Proc = uint32_t (uint32_t hour, uint32_t minute, uint16_t * destination);
+using LocaleGetPackedCurrentDateProc = uint32_t ();
+using LocaleGetPackedCurrentTimeProc = uint32_t ();
+using LocaleGetTelephoneCountryCodeProc = uint32_t ();
+using TimerCallbackProc = void __cdecl ();
+using TimerRegisterPeriodicProc = void (uint32_t frequencyHz, TimerCallbackProc * callback);
+using TimerUnregisterPeriodicProc = void (TimerCallbackProc * callback);
+using Win32PumpMessagesProc = void __cdecl ();
 
 #endif /* THANDOR_PLATFORM_SYSTEM_TYPES_H */

@@ -13,7 +13,7 @@
 #include <thandor/audio/spatial/types.h>
 #include <thandor/movie/runtime/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct PersistentSettingsRuntime PersistentSettingsRuntime, *PPersistentSettingsRuntime;
 typedef struct PersistentSettingsImage PersistentSettingsImage, *PPersistentSettingsImage;
@@ -22,65 +22,65 @@ enum {
     PERSISTENT_TOGGLE_DISABLED=0,
     PERSISTENT_TOGGLE_ENABLED=1
 };
-typedef int PersistentToggleState;
+using PersistentToggleState = int;
 
 enum {
     PERSISTENT_MOUSE_LINK_ROTATION_ZOOM=1,
     PERSISTENT_MOUSE_LINK_ROTATION_TILT=2,
     PERSISTENT_UI_HIDE_PANEL=4
 };
-typedef int PersistentMouseLinkPanelOptionFlags;
+using PersistentMouseLinkPanelOptionFlags = int;
 
 enum {
     PERSISTENT_MAP_AUTOMATIC_ZOOM_OFF=1,
     PERSISTENT_MAP_AUTOMATIC_ROTATION_OFF=2,
     PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL=4
 };
-typedef int PersistentMapMouseOptionFlags;
+using PersistentMapMouseOptionFlags = int;
 
-typedef uint32_t PersistentSettingsValue;
+using PersistentSettingsValue = uint32_t;
 
-typedef uint32_t PersistentDisplayAdapterIndex;
+using PersistentDisplayAdapterIndex = uint32_t;
 
-typedef uint32_t PersistentDisplayDimensionPixels;
+using PersistentDisplayDimensionPixels = uint32_t;
 
-typedef uint32_t PersistentShadingSubresourceCount;
+using PersistentShadingSubresourceCount = uint32_t;
 
-typedef uint32_t NetworkPlayerCount;
+using NetworkPlayerCount = uint32_t;
 
-typedef int PersistentModelLodDepthQ8;
+using PersistentModelLodDepthQ8 = int;
 
-typedef uint32_t PersistentShadingTextureDimension;
+using PersistentShadingTextureDimension = uint32_t;
 
-typedef uint32_t LocaleCountryCode;
+using LocaleCountryCode = uint32_t;
 
-typedef int CameraScrollStepPixels;
+using CameraScrollStepPixels = int;
 
-typedef uint32_t PersistentSettingsMutationCount;
+using PersistentSettingsMutationCount = uint32_t;
 
-typedef uint32_t GameSpeedPercent;
+using GameSpeedPercent = uint32_t;
 
-typedef uint32_t PersistentColorDepthBits;
+using PersistentColorDepthBits = uint32_t;
 
-typedef uint32_t PersistentSettingsByteOffset;
+using PersistentSettingsByteOffset = uint32_t;
 
-typedef uint32_t PersistentSettingsByteCount;
+using PersistentSettingsByteCount = uint32_t;
 
-typedef uint32_t PersistentShadingGridHalfSize;
+using PersistentShadingGridHalfSize = uint32_t;
 
 enum {
     SOUND_OPTIONS_EFFECTS_ENABLED=1,
     SOUND_OPTIONS_MUSIC_ENABLED=2,
     SOUND_OPTIONS_REVERSE_STEREO=4
 };
-typedef int PersistentSoundOptionFlags;
+using PersistentSoundOptionFlags = int;
 
 enum {
     TEXTURE_QUALITY_HIGH=0,
     TEXTURE_QUALITY_MEDIUM=1,
     TEXTURE_QUALITY_LOW=2
 };
-typedef int PersistentTextureQualityLevel;
+using PersistentTextureQualityLevel = int;
 
 struct PersistentSettingsRuntime {
     Ptr32<struct PersistentSettingsImage> image; 

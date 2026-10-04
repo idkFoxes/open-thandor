@@ -32,6 +32,9 @@
      hexscan        golden hashes of the hexagonal radius scans in src/world/terrain (hexscan_selftest.cpp): the
                     overlay A/B, occupancy, flatten, height-band, auxiliary placement and sight drivers at seeded
                     points on a synthetic field grid, one hash line per driver
+     keymatch       the key command modifier matcher (keymatch_selftest.cpp): literal copies of the four old
+                    predicates against UiKeyModifiers_Match for every table class and held 0..0x3F, and
+                    UiCommandDispatch_Find against the old scan; logs mismatches and one hash line
      tables         hashes of the tables computed at startup (sine table built with sin(), .sam cosine
                     matrices, lighting/shading/software factor tables), to compare builds or compilers
      sam            the .sam decoder on LCG bytes and an encoder round trip of a synthetic waveform, one hash
@@ -46,9 +49,12 @@
 int SelfTest_Run(const char *name);
 
 /* OPEN_THANDOR_SELFTEST=raster (raster_selftest.cpp), called by SelfTest_Run. */
-void Thandor_SelfTestRaster(void);
+void Thandor_SelfTestRaster();
 
 /* OPEN_THANDOR_SELFTEST=hexscan (hexscan_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestHexScan(void);
+
+/* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestKeyMatch(void);
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

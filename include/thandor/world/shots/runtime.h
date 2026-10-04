@@ -25,11 +25,11 @@
 
 Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
-void ShotRuntime_ShutdownGraphicsResources(void);
+void ShotRuntime_ShutdownGraphicsResources();
 
 ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId);
 
-void ShotRuntime_RebaseSlotsAfterLoad(void);
+void ShotRuntime_RebaseSlotsAfterLoad();
 
 void ShotRuntimePool_CreateProjectileFromDefinition
           (ShotTargetModelReference targetModelReference,ArmyRuntimeSlot *ownerArmyRuntime,

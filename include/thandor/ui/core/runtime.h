@@ -54,22 +54,22 @@ Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
 
 Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 
-void UiRuntimeRecordRing_Clear(void);
+void UiRuntimeRecordRing_Clear();
 
 Bool8 UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 
 void UiRuntime_SetSynchronizationHooks
           (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock);
 
-void UiRuntime_Initialize(void);
+void UiRuntime_Initialize();
 
-void UiRuntime_Shutdown(void);
+void UiRuntime_Shutdown();
 
-void __cdecl UiRuntime_IncrementPeriodicTickCounter(void);
+void __cdecl UiRuntime_IncrementPeriodicTickCounter();
 
-void __cdecl UiActionQueue_DispatchPending(void);
+void __cdecl UiActionQueue_DispatchPending();
 
-void UiNode_DefaultMethod04_NoOp(void *node);
+void UiNode_DefaultMethod04_NoOp(UiNodeBase *node);
 
 void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);

@@ -24,7 +24,7 @@ void UiWindowControl_DrawFramedTextAndChrome
 extern UiNodeVtable g_UiWindowControlVtable;
 
 /* UiRootNode.rootFlags of panels (g_UiPanelControlVtable) and resizable windows
-   (g_UiResizableWindowControlVtable), from their draw and pointer methods in ui/controls/layout.c.
+   (g_UiResizableWindowControlVtable), from their draw and pointer methods in ui/controls/panels.cpp and window.cpp.
    0x100 is UI_ROOT_DISABLE_POINTER_HIT_TEST (generated UiRootFlags enum). */
 #define UI_ROOT_TILED_BACKGROUND 0x1
 #define UI_ROOT_FRAME 0x2
@@ -136,7 +136,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-void UiWindowResources_Init(void);
+void UiWindowResources_Init();
 
 void UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,

@@ -16,7 +16,7 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct ModelDefinitionRecordPrefix ModelDefinitionRecordPrefix, *PModelDefinitionRecordPrefix;
 typedef struct ModelDefinition ModelDefinition, *PModelDefinition;
@@ -31,9 +31,9 @@ struct ModelDefinitionRecordPrefix {
     PckModelDefinitionIdCatalog definitionId;
 };
 
-typedef int ModelLookupKeyIndex;
+using ModelLookupKeyIndex = int;
 
-typedef uint32_t ModelLookupKeyClass;
+using ModelLookupKeyClass = uint32_t;
 
 struct ModelDefinition {
     AssetRecordByteCount byteSize;

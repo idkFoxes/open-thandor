@@ -91,7 +91,7 @@ extern SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256]; 
 
 /* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
    SelectionMarkerCoordinates_ApplyType3..7): four arguments. */
-typedef void InGamePointerModeHandler
+using InGamePointerModeHandler = void
           (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
           SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
 

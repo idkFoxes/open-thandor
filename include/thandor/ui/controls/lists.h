@@ -76,7 +76,7 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText);
 
 extern UiNodeVtable g_UiListOffsetControlVtable;
 
-extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.cpp). */
 extern const uint32_t g_UiListTextStyle;
 
 #endif /* THANDOR_UI_CONTROLS_LISTS_H */

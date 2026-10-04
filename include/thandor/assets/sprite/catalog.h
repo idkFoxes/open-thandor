@@ -14,7 +14,7 @@
 /* Submodule: assets/sprite/catalog. */
 /* Functions are grouped by semantic ownership. */
 
-void SpriteAssetRegistry_Reset(void);
+void SpriteAssetRegistry_Reset();
 
 SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId);
 

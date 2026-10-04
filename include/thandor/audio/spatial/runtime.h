@@ -38,9 +38,9 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
 
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot);
 
-void SpatialSoundPool_ClearDesiredGains(void);
+void SpatialSoundPool_ClearDesiredGains();
 
-void SpatialSoundPool_ApplyDesiredGains(void);
+void SpatialSoundPool_ApplyDesiredGains();
 
 extern AudioMixerGainQ15 g_SoundEffectsGainQ15;
 

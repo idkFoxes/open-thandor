@@ -127,7 +127,7 @@ void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,Pc
 
 /* Empties the AI candidate workspace (workspace 13) by resetting its entry count.
 */
-void AiCandidateWorkspace_Clear(void)
+void AiCandidateWorkspace_Clear()
 
 {
   g_AiCandidateWorkspaceEntryCount = 0;
@@ -191,7 +191,7 @@ void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionIma
    purchase planner tries the best candidates first. Selection sort: each pass swaps every higher entry into the
    pass's first slot, carrying the id/multiplicity dword along.
 */
-void AiCandidateWorkspace_SortDescending(void)
+void AiCandidateWorkspace_SortDescending()
 
 {
   int currentRecordScore;

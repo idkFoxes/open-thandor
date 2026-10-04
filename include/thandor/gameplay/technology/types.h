@@ -15,7 +15,7 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct TechnologyCategoryMasks TechnologyCategoryMasks, *PTechnologyCategoryMasks;
 typedef struct TechnologyRecord TechnologyRecord, *PTechnologyRecord;
@@ -28,9 +28,9 @@ enum {
     TECHNOLOGY_CATEGORY_C=2,
     TECHNOLOGY_CATEGORY_D=3
 };
-typedef int TechnologyCategory;
+using TechnologyCategory = int;
 
-typedef uint32_t TechnologyId;
+using TechnologyId = uint32_t;
 
 struct TechnologyCategoryMasks {
     uint32_t category2[8]; 

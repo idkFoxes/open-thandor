@@ -165,7 +165,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
    army texture set and palette, frees the two preview textures (armyAsset[1].rootNodeOffsetOrPointer and
    .registryId) of every registered army asset and clears the asset registry.
 */
-void ArmyRuntime_ShutdownPoolAndGraphics(void)
+void ArmyRuntime_ShutdownPoolAndGraphics()
 
 {
   ArmyAssetRecordPrefix *armyAsset;
@@ -241,7 +241,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
 }
 
 /* The first free army slot (model node NULL), or NULL when there is no army pool or no free slot. */
-static ArmyRuntimeSlot *ArmyRuntimePool_FindFreeSlot(void)
+static ArmyRuntimeSlot *ArmyRuntimePool_FindFreeSlot()
 
 {
   ArmyRuntimeSlot *armyRuntime;

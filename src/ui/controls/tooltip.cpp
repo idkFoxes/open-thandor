@@ -22,7 +22,7 @@ static const uint32_t g_UiTooltipTextStyle = 0;
    delay down and prepares the tooltip text when it expires. While a node has captured the pointer or the
    hovered control is disabled, re-evaluates the hover target at the last pointer position instead.
 */
-void UiTooltip_TickCountdown(void)
+void UiTooltip_TickCountdown()
 
 {
   if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&

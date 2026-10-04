@@ -56,6 +56,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
   FrontendLoadedLevelAsset *loadedLevel;
+  uint32_t activeFactionCount;
+  uint32_t assignableFactionCount;
   uint32_t activeFactionsLeft;
   uint32_t assignableFactionsLeft;
   uint32_t localPlayerRow;
@@ -74,11 +76,29 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
-  activeFactionsLeft = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
-  assignableFactionsLeft = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
-  /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer".
-     Original quirk: at least one row is always set up (a level without assignable factions would wrap the
-     counter). */
+  activeFactionCount = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
+  assignableFactionCount = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
+  /* The original trusts the level's counts (valid levels have 1 <= assignable <= active <= 7); bounded here
+     because an assignable count of 0 wraps the do-while counter below, an active count below the assignable one
+     underflows activeFactionsLeft, and more than 7 factions run past the seven-entry row tables. Such counts
+     are clamped into that range so the page still opens. */
+  if (assignableFactionCount == 0 || activeFactionCount > 7 || assignableFactionCount > activeFactionCount) {
+    Thandor_Log("faction setup: invalid level counts (assignable %u, active %u), bounded",
+                (unsigned)assignableFactionCount,(unsigned)activeFactionCount);
+    if (activeFactionCount > 7) {
+      activeFactionCount = 7;
+    }
+    if (assignableFactionCount == 0) {
+      assignableFactionCount = 1;
+    }
+    if (assignableFactionCount > activeFactionCount) {
+      assignableFactionCount = activeFactionCount != 0 ? activeFactionCount : 1;
+      activeFactionCount = assignableFactionCount;
+    }
+  }
+  activeFactionsLeft = activeFactionCount;
+  assignableFactionsLeft = assignableFactionCount;
+  /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer". */
   rowCursor = 0;
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
@@ -204,8 +224,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     }
     assignmentIndex++;
     playerRecord++;
-    if (loadedLevel->worldSettings.assignableFactionCount < assignmentIndex) {
-      assignmentIndex = assignmentIndex - loadedLevel->worldSettings.assignableFactionCount;
+    if (assignableFactionCount < assignmentIndex) {
+      assignmentIndex = assignmentIndex - assignableFactionCount;
     }
     remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);

@@ -776,7 +776,7 @@ static void GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(GraphicsPrimi
    coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
    with g_TerrainPrimaryTextureSet when the index is in range, modulated by g_TerrainPrimaryPalette. Returns the
    packet, or NULL when the queue is full (one slot is always left unused). Called by
-   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured.
 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
@@ -853,7 +853,7 @@ static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitive
    texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
    of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
    packet, or NULL when the queue is full (one slot is always left unused). Called by
-   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured.
 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,

@@ -14,7 +14,7 @@
 #include <thandor/platform/debug/test_aids.h>
 
 /* Test aid (not in the original): see test_aids.h. */
-int Thandor_TestAidScriptActive(void)
+int Thandor_TestAidScriptActive()
 {
     static int active = -1;
     if (active < 0) {
@@ -25,7 +25,7 @@ int Thandor_TestAidScriptActive(void)
 }
 
 /* Test aid (not in the original): see test_aids.h. */
-int Thandor_TestAidStateHashActive(void)
+int Thandor_TestAidStateHashActive()
 {
     static int active = -1;
     if (active < 0) {
@@ -58,7 +58,7 @@ void Thandor_TestAidNoteOutsideStep(const char *what, void *caller)
 }
 
 /* Test aid (not in the original): see test_aids.h. */
-int Thandor_TestAidAllowSecondInstance(void)
+int Thandor_TestAidAllowSecondInstance()
 {
     const char *value = getenv("OPEN_THANDOR_MULTI_INSTANCE");
     return value != nullptr && value[0] == '1';
@@ -100,7 +100,7 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
 }
 
 /* Test aid (not in the original): see test_aids.h. */
-int Thandor_TestAidWindowed(void)
+int Thandor_TestAidWindowed()
 {
     static int enabled = -1;
     if (enabled < 0) {

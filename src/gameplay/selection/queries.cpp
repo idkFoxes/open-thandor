@@ -58,7 +58,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
 
 /* Returns true when the local selection holds at least one entity, false when it is empty.
 */
-Bool8 SelectionInfo_HasAnyEntry(void)
+Bool8 SelectionInfo_HasAnyEntry()
 
 {
   int entriesRemaining;
@@ -138,7 +138,7 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
    definition has a non-zero accelerationPerTick, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
-Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void)
+Bool8 SelectionInfo_TestAnyActiveOrSingleClass13()
 
 {
   int entryIndex;
@@ -250,7 +250,7 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
    ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value
    stateOrTechnologyId is positive); true when none does.
 */
-Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void)
+Bool8 SelectionInfo_TestNoEntryHasWeaponDamage()
 
 {
   GameEntityRuntime *armyRuntime;
@@ -280,7 +280,7 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void)
 /* Returns true when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
-Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
+Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative()
 
 {
   int entriesRemaining;
@@ -305,7 +305,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
 /* Returns the first entity of the local player's selection (the first non-NULL entry), or NULL when nothing is
    selected; the in-game panels use it as the representative of the selection.
 */
-GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
+GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry()
 
 {
   GameEntityRuntime *firstEntry;
@@ -352,7 +352,7 @@ Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 /* Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
    ArmyRuntime_GetAttachmentEffectVariantMask).
 */
-uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
+uint32_t SelectionInfo_CollectAttachmentEffectVariantMask()
 
 {
   uint32_t effectVariantMask;
@@ -374,7 +374,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 /* Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
    0x0D the capability dword classParameterC4 of its definition; other classes contribute nothing.
 */
-uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
+uint32_t __cdecl SelectionInfo_CollectCapabilityFlags()
 
 {
   uint32_t capabilityMask;

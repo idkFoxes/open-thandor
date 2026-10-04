@@ -18,7 +18,7 @@
 
 /* g_UiCommandRuntimeFlags bits that end the in-game session loop (InGameRuntime_RunSessionUntilExit) */
 #define UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING 0x800 /* an end trigger fired and chose the end movie
-                                                           (set in gameplay/session/runtime.c) */
+                                                           (set in gameplay/session/level_script.cpp) */
 #define UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED 0x10000 /* command 150 with flag bit 1: the session is closed
                                                           (InGameCommand_HandlePlayerDeparture) */
 #define UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT 0x20000 /* command 150 reported the local player's departure */
@@ -59,7 +59,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 
 void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl *control);
 
-void UiCommandRuntime_CallbackNoOp(void);
+void UiCommandRuntime_CallbackNoOp();
 
 void InGameCommand_HandlePlayerDeparture
           (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,

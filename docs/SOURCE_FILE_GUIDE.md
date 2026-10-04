@@ -130,6 +130,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
 - [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
+- [`slot.h`](source_guide/core.md#file-core-slot) - Typed table entries (step 8): THANDOR_SLOT(function) for a function-pointer slot of a vtable or callback table (a Ptr32&lt;R(A...)&gt; field or a plain R (*)(A...)), replacing the untyped ...
 - [`types.h`](source_guide/core.md#file-core-types) - The common types: Bool8, the fixed-point scalars, angles, vectors, ids and the other small types used all over the program, in the original's 32-bit layouts.
 - [`x86_emulation.h`](source_guide/core.md#file-core-x86-emulation) - Helpers that reproduce what the original's x86 code does, expressed in portable C: container-of, atomic exchange, x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and ...
 
@@ -420,7 +421,7 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 - [`campaign.cpp / campaign.h`](source_guide/platform.md#file-platform-debug-campaign) - Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor/platform/debug/hooks.h from the scenario catalog and the in-game session runtime.
 - [`font.cpp / font.h`](source_guide/platform.md#file-platform-debug-font) - 5x7 debug font: each entry is the character followed by its 7 rows of 5 pixels, top row first; in a row the leftmost pixel is bit 4.
 - [`hooks.cpp / hooks.h`](source_guide/platform.md#file-platform-debug-hooks) - The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option THANDOR_DEV_TOOLS.
-- [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/runtime.c).
+- [`level_script.cpp`](source_guide/platform.md#file-platform-debug-level-script) - Level-script log (developer tools): hooks of InGameConditionRuntime_UpdateScheduledRecords (gameplay/session/level_script.cpp).
 - [`movie_decoder.cpp / movie_decoder.h`](source_guide/platform.md#file-platform-debug-movie-decoder) - Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to ...
 - [`movie_player.cpp / movie_player.h`](source_guide/platform.md#file-platform-debug-movie-player) - Debug tool: movie test player.
 - [`script.cpp / script.h`](source_guide/platform.md#file-platform-debug-script) - Scripted input (test aid).
@@ -467,6 +468,7 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 ### `platform/selftest`
 
 - [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
+- [`keymatch_selftest.cpp`](source_guide/platform.md#file-platform-selftest-keymatch-selftest) - OPEN_THANDOR_SELFTEST=keymatch: the safety net for merging the six key command matchers into UiKeyModifiers_Match / UiCommandDispatch_Find (include/thandor/ui/core/key_dispatch.h).
 - [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
@@ -497,6 +499,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`input.cpp / input.h`](source_guide/ui.md#file-ui-controls-input) - no file comment; main functions `UiNode_DefaultKeyboardEventMoveFocusNext`, `UiNode_ForwardPointerWheelToParent`, `UiNode_DefaultPointerMove`
 - [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_RefreshSelectionAndQueueAction`, `UiPointerList_SelectColumnListIndex`
 - [`minimap.cpp / minimap.h`](source_guide/ui.md#file-ui-controls-minimap) - no file comment; main functions `UiScaler_BuildPixelWeightTables`, `UiSelectionGeometryControl_DrawClipped`, `UiSelectionGeometryControl_ConvertPointerAndEnqueueAction`
+- [`node_views.h`](source_guide/ui.md#file-ui-controls-node-views) - The UI control types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX): a vtable slot taking a UiNodeBase * (or UiSelectableControl *, ...) accepts a function taking the control ...
 - [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren`
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
 - [`scrollable.cpp / scrollable.h`](source_guide/ui.md#file-ui-controls-scrollable) - no file comment; main functions `UiScrollableControl_ClampOffsetsToViewport`, `UiScrollableControl_RebuildViewportAndScrollbars`, `UiScrollableControl_GetViewportSize`
@@ -516,6 +519,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
 - [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
+- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiKeyModifiers_Match`, `UiCommandDispatch_Find`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`
@@ -550,7 +554,8 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`menu_room_scene.cpp / menu_room_scene.h`](source_guide/ui.md#file-ui-frontend-menu-room-scene) - no file comment; main functions `FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ActivateRecordById`, `FrontendRomTransition_RequestStop`
 - [`mission_briefing.cpp / mission_briefing.h`](source_guide/ui.md#file-ui-frontend-mission-briefing) - no file comment; main functions `FrontendMissionBriefingPage_Initialize`
 - [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkGamePage_Show`, `FrontendNetworkGamePage_ClearSessionList`, `FrontendNetworkSetupPage_InitializeBackendMode`
-- [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
+- [`node_views.h`](source_guide/ui.md#file-ui-frontend-node-views) - The frontend UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
+- [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - Slot adapters for the handlers below whose own signature differs from the handler slot's void (void *) (calling through the slot type directly would be undefined behaviour).
 - [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
 - [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
@@ -583,6 +588,7 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 - [`layout.cpp / layout.h`](source_guide/ui.md#file-ui-ingame-layout) - no file comment; main functions `InGameUiRuntime_InitializeControlTreeResources`
 - [`minimap_texture.cpp / minimap_texture.h`](source_guide/ui.md#file-ui-ingame-minimap-texture) - The minimap composite texture of the field grid: a gfx asset with three ARGB planes (terrain/water colours, panel colours, faction presence) built from the cells.
 - [`music_choice.cpp / music_choice.h`](source_guide/ui.md#file-ui-ingame-music-choice) - no file comment; main functions `InGameMusic_ComputeTrackSuitabilityScore`
+- [`node_views.h`](source_guide/ui.md#file-ui-ingame-node-views) - The in-game UI node types as prefixed views of their base node (core/slot.h THANDOR_SLOT_PREFIX), for the vtable and callback slots (see ui/controls/node_views.h).
 - [`notifications.cpp / notifications.h`](source_guide/ui.md#file-ui-ingame-notifications) - no file comment; main functions `InGameRuntime_ProcessQueuedSessionNotificationTimer`
 - [`pages.cpp / pages.h`](source_guide/ui.md#file-ui-ingame-pages) - no file comment; main functions `InGameQuitMenu_OpenAndRefreshButtons`, `InGameMissionHelpPage_Toggle`, `InGameTechnologyPanel_ToggleForSelection`
 - [`preview_markers.cpp / preview_markers.h`](source_guide/ui.md#file-ui-ingame-preview-markers) - no file comment; main functions `InGameWorldOverlay_RebuildOrReleaseTransientMarkers`, `InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint`

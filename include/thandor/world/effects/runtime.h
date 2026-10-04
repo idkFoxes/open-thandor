@@ -27,9 +27,9 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
 
 Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
-void EffectRuntime_ShutdownGraphicsResources(void);
+void EffectRuntime_ShutdownGraphicsResources();
 
-void EffectRuntime_RebaseSlotsAfterLoad(void);
+void EffectRuntime_RebaseSlotsAfterLoad();
 
 EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference ownerRuntime,

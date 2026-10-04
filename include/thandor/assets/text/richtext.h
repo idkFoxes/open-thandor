@@ -20,7 +20,7 @@
    positive code unit is a glyph (the font's subresource index, i.e. the character), and a code unit with bit 15
    set is a command whose low five bits are the opcode. Some commands carry payload code units; the
    RICHTEXT_RECORD_UNITS_* values are the full record lengths including the command code unit. The opcodes are
-   taken from the interpreters in richtext.c and TextResourcePage_Load. */
+   taken from the interpreters in assets/text/richtext.cpp, ui/text/richtext_render.cpp and TextResourcePage_Load. */
 #define RICHTEXT_COMMAND_FLAG 0x8000
 #define RICHTEXT_OPCODE_MASK 0x1F
 #define RICHTEXT_OP_COLOR_PALETTE_0 0x00 /* 0x00..0x03: colour and shadow from palette entry 0..3 */

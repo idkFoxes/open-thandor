@@ -100,7 +100,7 @@ Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 /* Discards every received network packet still waiting in the record ring (read index = write index),
    e.g. before a new session is opened.
 */
-void UiRuntimeRecordRing_Clear(void)
+void UiRuntimeRecordRing_Clear()
 
 {
   g_UiRuntimeRecordReadIndex = g_UiRuntimeRecordWriteIndex;
@@ -160,7 +160,7 @@ void UiRuntime_SetSynchronizationHooks
    in-game error handler and allocates the UI queues and the network transfer buffers. Every allocation
    failure is fatal.
 */
-void UiRuntime_Initialize(void)
+void UiRuntime_Initialize()
 
 {
   uint32_t allocError;
@@ -203,7 +203,7 @@ void UiRuntime_Initialize(void)
    timer and frees the network rings/buffers, the dirty-rectangle list and the action queue. Does nothing if
    the UI runtime was never initialized.
 */
-void UiRuntime_Shutdown(void)
+void UiRuntime_Shutdown()
 
 {
   if (g_UiRuntimeInitializationCount != 0) {
@@ -229,7 +229,7 @@ void UiRuntime_Shutdown(void)
 /* Frame-tick timer (20 Hz, registered by UiRuntime_Initialize): counts the pending frame ticks that the
    frame loop waits for and consumes.
 */
-void __cdecl UiRuntime_IncrementPeriodicTickCounter(void)
+void __cdecl UiRuntime_IncrementPeriodicTickCounter()
 
 {
   g_UiPendingFrameTicks.fetch_add(1);
@@ -241,7 +241,7 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter(void)
    byte; the handler gets the control that queued it. Each entry is removed (the rest moved down) before its
    handler runs, so handlers may queue further actions.
 */
-void __cdecl UiActionQueue_DispatchPending(void)
+void __cdecl UiActionQueue_DispatchPending()
 
 {
   void *actionSource;
@@ -256,8 +256,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
-    actionHandler = (void (*)(void *))
-                    g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
+    actionHandler = g_UiActionHandlerPages[(int32_t)((uint32_t)queueHead->actionId >> 8)]->handlers
                     [(int32_t)((uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1))];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
@@ -277,7 +276,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
 /* Default method04 vtable slot of the UI node classes: does nothing. Installed statically in 40
    UiNodeVtable tables; no caller of the slot is known yet.
 */
-void UiNode_DefaultMethod04_NoOp(void *node)
+void UiNode_DefaultMethod04_NoOp(UiNodeBase *node)
 
 {
   return;

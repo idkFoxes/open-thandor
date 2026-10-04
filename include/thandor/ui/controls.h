@@ -9,6 +9,7 @@
 #define THANDOR_UI_CONTROLS_H
 
 #include <thandor/ui/controls/types.h>
+#include <thandor/ui/controls/node_views.h>
 #include <thandor/ui/controls/buttons.h>
 #include <thandor/ui/controls/container.h>
 #include <thandor/ui/controls/focus_proxy.h>

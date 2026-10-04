@@ -101,7 +101,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
    both 16-bit angles advance by their rates, and the scaled sine/cosine of angle A and one component of
    angle B are stored, computed from the angles before this step.
 */
-void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
+void TerrainDirectionTable_AdvanceAndRebuildVectors()
 
 {
   uint32_t previousPackedAngles;
@@ -297,7 +297,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
 }
 
 /* In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
-   ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
+   ui/ingame/editor_keyboard.cpp with steps of +-0x400): turns the terrain light and relights the field region. The
    elevation (the root's lightElevationAngle) is kept between -0x4000 (straight down) and -0x1000, the
    azimuth (lightAzimuthAngle) wraps around.
 */
@@ -380,7 +380,7 @@ static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t al
    At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
    256-entry factor tables (as in the original).
 */
-void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting()
 
 {
   SoftwareBgraWordLanes forwardFactors;

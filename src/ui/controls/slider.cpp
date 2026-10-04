@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider */
 static const int32_t g_UiRangeSliderDragScale = 1;
 
 /* Implementation ownership: ui/controls/slider. */
@@ -216,24 +216,24 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
 }
 
 UiNodeVtable g_UiRangeSliderControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiRangeSliderControl_DrawTrackAndThumb),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiRangeSliderControl_BeginThumbDrag),
-        .nonRightRelease = THANDOR_FN(UiRangeSliderControl_EndThumbDrag),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiRangeSliderControl_UpdateValueFromPointer),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiRangeSliderControl_HandleKeyboard),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiRangeSliderControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiRangeSliderControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiRangeSliderControl_HandlePointerWheel)};
+        .relocate = UI_SLOT(UiContainer_RelocateChildren),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiRangeSliderControl_DrawTrackAndThumb),
+        .layout = UI_SLOT(UiContainer_LayoutChildren),
+        .nonRightPress = UI_SLOT(UiRangeSliderControl_BeginThumbDrag),
+        .nonRightRelease = UI_SLOT(UiRangeSliderControl_EndThumbDrag),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiRangeSliderControl_UpdateValueFromPointer),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(UiRangeSliderControl_HandleKeyboard),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiRangeSliderControl_SuppressIfActionId),
+        .unsuppressActionId = UI_SLOT(UiRangeSliderControl_UnsuppressIfActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiRangeSliderControl_HandlePointerWheel)};
 
 /* keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
    value by stepValue, with Ctrl straight to the minimum/maximum; each step plays the click sound, queues

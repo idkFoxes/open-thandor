@@ -28,7 +28,7 @@ static const int32_t g_AiStrategicClassTerrainWeights[5][3] = {
    is stored.
    Called on tick-wheel cases 2 and 6.
 */
-void AiFactionRuntime_RebuildPlanningCapacityState(void)
+void AiFactionRuntime_RebuildPlanningCapacityState()
 
 {
   GameSpeedQ8 currentGameSpeedQ8;
@@ -127,7 +127,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState(void)
    a general site when its scratch neighbourhood avoids every bit of one of these masks. Without any unit
    class 0 falls back to 0x90000100 (band bit 8, terrain bit 28).
 */
-void AiPlanning_CollectActiveGridMaskClasses(void)
+void AiPlanning_CollectActiveGridMaskClasses()
 
 {
   ModelDefinition *unitDefinition;

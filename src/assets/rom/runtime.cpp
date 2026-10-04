@@ -91,7 +91,7 @@ static void RomSerializedNodeTree_ReleaseSprites(RomSerializedNodeHeader *node)
 
 /* Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
 */
-void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
+void FrontendRomRegistry_ClearAndReleaseNestedResources()
 
 {
   int slotsRemaining;

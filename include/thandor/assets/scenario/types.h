@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef union Utf16DecimalDigitPair4 Utf16DecimalDigitPair4, *PUtf16DecimalDigitPair4;
 typedef struct ScenarioCampaignDataPathTemplate2A ScenarioCampaignDataPathTemplate2A, *PScenarioCampaignDataPathTemplate2A;
@@ -25,11 +25,11 @@ union Utf16DecimalDigitPair4 {
     uint32_t packedDigits; 
 };
 
-typedef uint32_t ScenarioCatalogByteOffset;
+using ScenarioCatalogByteOffset = uint32_t;
 
-typedef uint32_t ScenarioCatalogSourceByteCount;
+using ScenarioCatalogSourceByteCount = uint32_t;
 
-typedef uint32_t ScenarioCatalogRecordCount;
+using ScenarioCatalogRecordCount = uint32_t;
 #pragma pack(push, 1) /* packed layout: no alignment padding */
 struct ScenarioCampaignDataPathTemplate2A {
     uint16_t prefixCodeUnits[14]; 

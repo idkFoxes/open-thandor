@@ -38,12 +38,12 @@
 
 Bool8 TerrainCompositeTexture_Create(uint32_t *outError);
 
-void TerrainCompositeTexture_Destroy(void);
+void TerrainCompositeTexture_Destroy();
 
-void TerrainCompositeTexture_FillPlane1(void);
+void TerrainCompositeTexture_FillPlane1();
 
-void TerrainCompositeTexture_FillPlane2(void);
+void TerrainCompositeTexture_FillPlane2();
 
-void TerrainCompositeTexture_RebuildPlane0(void);
+void TerrainCompositeTexture_RebuildPlane0();
 
 #endif /* THANDOR_UI_INGAME_MINIMAP_TEXTURE_H */

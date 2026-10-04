@@ -25,9 +25,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void AiFactionRuntime_RebuildPlanningCapacityState(void);
+void AiFactionRuntime_RebuildPlanningCapacityState();
 
-void AiPlanning_CollectActiveGridMaskClasses(void);
+void AiPlanning_CollectActiveGridMaskClasses();
 
 void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InGameRuntimeRoot *inGameRoot);
 

@@ -22,7 +22,7 @@
 #define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
 /* Functions are grouped by semantic ownership. */
 
-uintptr_t __cdecl FileSystem_Init(void);
+uintptr_t __cdecl FileSystem_Init();
 
 /* 0 with the packed DOS date/time, or FATAL_ERROR_FILE_ACCESS_FAILED */
 uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime);
@@ -32,7 +32,7 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
 
 uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path);
 
-void __cdecl Win32FileSystem_RestoreInitialDirectory(void);
+void __cdecl Win32FileSystem_RestoreInitialDirectory();
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 

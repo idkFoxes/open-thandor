@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct SoundCoefficientBlock SoundCoefficientBlock, *PSoundCoefficientBlock;
 
@@ -19,6 +19,6 @@ struct SoundCoefficientBlock {
     short coefficients[256]; 
 };
 
-typedef uint64_t MmxPackedValue64;
+using MmxPackedValue64 = uint64_t;
 
 #endif /* THANDOR_AUDIO_CODEC_TYPES_H */

@@ -19,7 +19,7 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/world/effects/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct EffectDefinition EffectDefinition, *PEffectDefinition;
 typedef struct EffectDefinitionTransitionPrefix EffectDefinitionTransitionPrefix, *PEffectDefinitionTransitionPrefix;
@@ -27,17 +27,17 @@ typedef struct GeneratedAssetEntryCountHeader GeneratedAssetEntryCountHeader, *P
 typedef struct EffectAssetHeader EffectAssetHeader, *PEffectAssetHeader;
 typedef struct ShotDefinition ShotDefinition;
 
-typedef Q12 EffectMovementSpeedQ12;
+using EffectMovementSpeedQ12 = Q12;
 
-typedef uint32_t EffectFrameAdvanceThresholdQ4;
+using EffectFrameAdvanceThresholdQ4 = uint32_t;
 
 enum {
     EFFECT_CREATION_RANDOMIZE_ORIENTATION=1,
     EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET=2
 };
-typedef int EffectCreationFlagBits;
+using EffectCreationFlagBits = int;
 
-typedef uint32_t EffectAlphaFadeTicks;
+using EffectAlphaFadeTicks = uint32_t;
 
 struct EffectDefinitionTransitionPrefix {
     EffectLifecycleTransitionKind transitionKind; 

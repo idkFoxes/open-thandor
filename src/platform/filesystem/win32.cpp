@@ -90,7 +90,7 @@ static uint32_t g_FileSystemConfigRemainingBytes = 0;
    with a long game directory the cut-off path named a different file or directory. */
 static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {0};
 
-/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA; platform/filesystem/win32.c */
+/* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
 FileSystemDeleteProc *g_FileSystemDelete = nullptr;
@@ -202,7 +202,7 @@ Bool8 FileSystem_BuildEnumerationStringTable
    directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
    The original never reports failure to its caller; the return value is the result of the engine.pck mount.
 */
-uintptr_t __cdecl FileSystem_Init(void)
+uintptr_t __cdecl FileSystem_Init()
 
 {
   uint8_t configByte;
@@ -411,7 +411,7 @@ uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path)
 
 /* Changes back to the working directory FileSystem_Init found at startup, if one was captured.
 */
-void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
+void __cdecl Win32FileSystem_RestoreInitialDirectory()
 
 {
   if (g_InitialWorkingDirectory.firstTwoCodeUnits != 0) {

@@ -14,13 +14,13 @@ GraphicsTextureSourceAsset *g_UiWindowTextureSource = (GraphicsTextureSourceAsse
 
 GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = nullptr;
 
-/* int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+/* int32_t, 5: pixels from the window top to the title text line of a resizable window */
 static const int32_t g_UiResizableWindowTitleTextTopOffset = 5;
 
-/* UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+/* UiPackedTextStyle, 2: packed rich-text style of the resizable window title */
 static const UiPackedTextStyle g_UiResizableWindowTitleTextStyle = 2;
 
-/* int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+/* int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window */
 static const int32_t g_UiWindowMoveHandleWidth = 19;
 
 static const int32_t g_UiWindowResizeBorderThickness = 19;
@@ -263,24 +263,24 @@ void UiWindowControl_DrawFramedTextAndChrome
 }
 
 UiNodeVtable g_UiWindowControlVtable = {
-        .relocate = THANDOR_FN(UiWindowControl_RelocateWithFrameInset),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiWindowControl_DrawFramedTextAndChrome),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiFramedTextButtonControl_NonRightPress),
-        .nonRightRelease = THANDOR_FN(UiFramedTextButtonControl_NonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiFramedTextButtonControl_NonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiFramedTextButtonControl_HitTestRect),
-        .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .relocate = UI_SLOT(UiWindowControl_RelocateWithFrameInset),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiWindowControl_DrawFramedTextAndChrome),
+        .layout = UI_SLOT(UiContainer_LayoutChildren),
+        .nonRightPress = UI_SLOT(UiFramedTextButtonControl_NonRightPress),
+        .nonRightRelease = UI_SLOT(UiFramedTextButtonControl_NonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiFramedTextButtonControl_NonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiFramedTextButtonControl_HitTestRect),
+        .keyboardEvent = UI_SLOT(UiSelectableControl_KeyboardEvent),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiSelectableControl_SuppressIfActionId),
+        .unsuppressActionId = UI_SLOT(UiSelectableControl_UnsuppressIfActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 /* drawClipped of g_UiResizableWindowControlVtable: draws the window chrome selected by rootFlags (tiled
    background, frame, title bar with the centred title text, close button top left, maximize/restore button
@@ -861,7 +861,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
    (texte\winclass.str as text page 1), installs the root-stack actions as action-handler page 0 and starts
    with an empty root stack. A missing file is fatal.
 */
-void UiWindowResources_Init(void)
+void UiWindowResources_Init()
 
 {
   GraphicsTextureSourceAsset *loadedTexture;
@@ -1086,41 +1086,41 @@ void UiWindow_BlitTiledHorizontalEdge
 }
 
 UiNodeVtable g_UiTitledWindowControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiTitledWindowControl_DrawFrameTitleAndChildren),
-        .layout = THANDOR_FN(UiTitledWindowControl_LayoutFrameTitleAndChildren),
-        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .relocate = UI_SLOT(UiContainer_RelocateChildren),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiTitledWindowControl_DrawFrameTitleAndChildren),
+        .layout = UI_SLOT(UiTitledWindowControl_LayoutFrameTitleAndChildren),
+        .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
+        .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 UiNodeVtable g_UiResizableWindowControlVtable = {
-        .relocate = THANDOR_FN(UiResizableWindowControl_RelocateAndRefreshInteractionState),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiResizableWindowControl_DrawFrameTitleAndChildren),
-        .layout = THANDOR_FN(UiContainer_LayoutWithOptionalWindowHeaderOffset),
-        .nonRightPress = THANDOR_FN(UiResizableWindowControl_BeginMoveResizeOrWindowAction),
-        .nonRightRelease = THANDOR_FN(UiResizableWindowControl_EndMoveResizeAndHandleWindowActions),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiResizableWindowControl_UpdateMoveOrResize),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiResizableWindowControl_QueryResizeCursorCode),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiResizableWindowControl_HandleWindowHotkeys),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .relocate = UI_SLOT(UiResizableWindowControl_RelocateAndRefreshInteractionState),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiResizableWindowControl_DrawFrameTitleAndChildren),
+        .layout = UI_SLOT(UiContainer_LayoutWithOptionalWindowHeaderOffset),
+        .nonRightPress = UI_SLOT(UiResizableWindowControl_BeginMoveResizeOrWindowAction),
+        .nonRightRelease = UI_SLOT(UiResizableWindowControl_EndMoveResizeAndHandleWindowActions),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiResizableWindowControl_UpdateMoveOrResize),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiResizableWindowControl_QueryResizeCursorCode),
+        .hitTest = UI_SLOT(UiContainer_HitTestChildren),
+        .keyboardEvent = UI_SLOT(UiResizableWindowControl_HandleWindowHotkeys),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiContainer_SuppressActionId),
+        .unsuppressActionId = UI_SLOT(UiContainer_UnsuppressActionId),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};

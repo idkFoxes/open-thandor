@@ -19,7 +19,7 @@ static uint32_t g_InGameCommandPointerCaptureX = 0;
 
 static uint32_t g_InGameCommandPointerCaptureY = 0;
 
-/* uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
+/* uint32_t[8]: command id per pointer mode (modifier mask & variant mask) */
 static const uint32_t g_InGamePointerModeCommandIds[8] = {26, 38, 39, 40, 41, 42, 43, 44};
 
 InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12] = {0};
@@ -407,7 +407,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
 
 /* Drag selection: sends the remove batch, then the insert batch, three values per command. The counters end
    at or below zero (they are cleared again before the next collection). */
-static void InGameWorldInput_FlushDragSelectionBatches(void)
+static void InGameWorldInput_FlushDragSelectionBatches()
 
 {
   CommandPayload *tripletCursor;

@@ -32,13 +32,15 @@ references to it.
 #ifdef __cplusplus
 /* THANDOR_FN(function) / THANDOR_PTR(pointer) values (core/contracts.h). */
 struct ThandorAnyFn {
-    void (*fn)(void);
+    void (*fn)();
     template <class F> operator F *() const { return (F *)fn; }
 };
 struct ThandorAnyPtr {
     void *ptr;
     template <class T> operator T *() const { return (T *)ptr; }
 };
+/* THANDOR_SLOT(function) values (core/slot.h). */
+template <auto Fn> struct ThandorSlot;
 
 /* Stops the game with a log entry: a pointer of 2 GB or more was stored in a 32-bit field. */
 [[noreturn]] void Thandor_Ptr32Overflow(uintptr_t value);
@@ -62,6 +64,9 @@ template <class T> struct Ptr32 {
     Ptr32 &operator=(T *pointer) { value = thandor_ptr32_pack((const void *)pointer); return *this; }
     Ptr32 &operator=(ThandorAnyPtr pointer) { value = thandor_ptr32_pack(pointer.ptr); return *this; }
     Ptr32 &operator=(ThandorAnyFn function) { value = thandor_ptr32_pack((const void *)function.fn); return *this; }
+    /* field = THANDOR_SLOT(function) (the conversions alone would be ambiguous between operator=(T *) and the
+       copy assignment) */
+    template <auto Fn> Ptr32 &operator=(ThandorSlot<Fn>) { return *this = ThandorSlot<Fn>::template pick<T>(); }
 
     T *get() const { return (T *)(intptr_t)value; }
     operator T *() const { return get(); }

@@ -306,7 +306,7 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
    one due movie frame in g_EndMoviePendingTicks per step. The host executes the staged command batch at each
    interval boundary and broadcasts the next one half an interval later; a client waits for the host's batch.
 */
-void FrontendSession_PeriodicTick(void)
+void FrontendSession_PeriodicTick()
 
 {
   InGameRuntimeRoot *inGameRoot;
@@ -397,7 +397,7 @@ void FrontendSession_PeriodicTick(void)
    players start at block 1, and the 0x10007 packets go out in reverse drop order (the dropped players'
    playerRuntimeId values are stacked while scanning and taken back one per packet).
 */
-void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
+void FrontendHostSession_TickPeerTimeoutsAndDropPlayers()
 
 {
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
@@ -473,7 +473,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
    pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
    player, with id 0.
 */
-void FrontendClientSession_TickHostTimeout(void)
+void FrontendClientSession_TickHostTimeout()
 
 {
   PlayerRuntimeId previousLocalPlayerId;

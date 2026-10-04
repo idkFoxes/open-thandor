@@ -60,7 +60,7 @@ Bool8 SoftwarePixelFormat_BaseDisplayModeHook
 
 /* g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one
    allocation, the 0x10-byte SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
-   the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.c).
+   the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.cpp).
    Returns the framebuffer, or NULL when the allocation fails; then the allocator error is stored in
    *outError (the mouse display-mode hook passes it on as its own error value).
 */
@@ -109,7 +109,7 @@ void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 /* g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit
    channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and bias
    (brightness), both Q16: value = 64 + (channel - 64) * scale + bias, clamped to 0..255. Called by the
-   display-mode hook and by the display settings dialog (ui/controls/misc.c), which is why it also stores the two
+   display-mode hook and by the display settings dialog (ui/dialogs/display_settings.cpp), which is why it also stores the two
    values in g_SoftwareColorScaleQ16/g_SoftwareColorBiasQ16.
 */
 void SoftwarePixelFormat_BuildChannelPackTables
@@ -196,7 +196,7 @@ Bool8 SoftwareRenderer_SetDisplayMode
    depth buffer (one int32 per pixel) for the current framebuffer size. Returns 0 on success, or the arena error
    when the allocation fails.
 */
-uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
+uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook()
 
 {
   int32_t *allocatedDepthBuffer;

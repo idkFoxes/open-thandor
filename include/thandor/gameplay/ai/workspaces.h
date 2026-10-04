@@ -47,13 +47,13 @@
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-void AiCandidateWorkspace_Clear(void);
+void AiCandidateWorkspace_Clear();
 
 void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImageByteOffset);
 
 void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset);
 
-void AiCandidateWorkspace_SortDescending(void);
+void AiCandidateWorkspace_SortDescending();
 
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 

@@ -18,7 +18,7 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
 typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
@@ -88,7 +88,7 @@ typedef struct GameEntityRuntime GameEntityRuntime;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 typedef struct WorldRuntimeContext WorldRuntimeContext;
 
-typedef int TerrainGridMaskIndex;
+using TerrainGridMaskIndex = int;
 
 /* The three payload dwords of a queued command, in memory order (see UiCommandQueueRecord). */
 struct UiCommandPayloadTriple {
@@ -102,11 +102,11 @@ union UiCommandPayloadTextBatch48 {
     struct UiCommandPayloadTriple triples[4];
 };
 
-typedef int FrontendDisplayAdapterIndex;
+using FrontendDisplayAdapterIndex = int;
 
-typedef uint32_t FrontendDisplayDimensionPixels;
+using FrontendDisplayDimensionPixels = uint32_t;
 
-typedef uint32_t FrontendColorDepthBits;
+using FrontendColorDepthBits = uint32_t;
 
 struct FrontendTaskAssignmentFactionTextRow {
     uint16_t textUtf16[40]; 
@@ -151,40 +151,40 @@ enum {
     FRONTEND_COMMAND_SYNC_CLEAR=0,
     FRONTEND_COMMAND_SYNC_PENDING=1
 };
-typedef int FrontendCommandSyncPendingState;
+using FrontendCommandSyncPendingState = int;
 
 enum {
     RUNTIME_MODEL_CLASS_PRIORITY_LOW=0,
     RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM=1,
     RUNTIME_MODEL_CLASS_PRIORITY_HIGH=2
 };
-typedef int RuntimeModelClassPriority;
+using RuntimeModelClassPriority = int;
 
-typedef uint32_t FrontendSelectionTransferModeFlags;
+using FrontendSelectionTransferModeFlags = uint32_t;
 
-typedef uint32_t UiListRowIndex;
+using UiListRowIndex = uint32_t;
 
-typedef uint32_t FrontendMessageValueA;
+using FrontendMessageValueA = uint32_t;
 
-typedef uint32_t FrontendMessageValueB;
+using FrontendMessageValueB = uint32_t;
 
-typedef uint32_t FrontendMessageValueC;
+using FrontendMessageValueC = uint32_t;
 
-typedef uint32_t RomVisibilityFrontendValue;
+using RomVisibilityFrontendValue = uint32_t;
 
-typedef uint32_t FrontendReadyFlagMask;
+using FrontendReadyFlagMask = uint32_t;
 
-typedef uint32_t FrontendRoleStateFlags;
+using FrontendRoleStateFlags = uint32_t;
 
-typedef int SoftwareMaskRadiusStep;
+using SoftwareMaskRadiusStep = int;
 
-typedef uint32_t FrontendResultsFactionFieldByteOffset;
+using FrontendResultsFactionFieldByteOffset = uint32_t;
 
-typedef uint32_t FrontendReturnCallbackContext32;
+using FrontendReturnCallbackContext32 = uint32_t;
 
-typedef uint32_t FrontendScenarioAvailabilityMask2;
+using FrontendScenarioAvailabilityMask2 = uint32_t;
 
-typedef uint32_t FrontendPackedTextCommandState;
+using FrontendPackedTextCommandState = uint32_t;
 
 typedef struct UiNodeBase *FrontendPersistentSettingsPageSourceNodePtr; /* interior pointer: points at FrontendPersistentSettingsPage.sourceNode; the containing FrontendPersistentSettingsPage is found by subtracting the field offset */
 
@@ -208,21 +208,21 @@ struct FrontendPersistentSettingsPage {
     struct UiNumericTextControl musicGainControl; 
 };
 
-typedef int SoftwareMaskThresholdStep;
+using SoftwareMaskThresholdStep = int;
 
-typedef uint32_t FrontendTextCommandValue0;
+using FrontendTextCommandValue0 = uint32_t;
 
-typedef uint32_t FrontendTextCommandValue2;
+using FrontendTextCommandValue2 = uint32_t;
 
-typedef uint32_t FrontendTextCommandValue1;
+using FrontendTextCommandValue1 = uint32_t;
 
-typedef uint32_t UiBooleanState32;
+using UiBooleanState32 = uint32_t;
 
-typedef uint32_t FrontendScenarioAvailabilityMask0;
+using FrontendScenarioAvailabilityMask0 = uint32_t;
 
-typedef uint32_t FrontendScenarioAvailabilityMask1;
+using FrontendScenarioAvailabilityMask1 = uint32_t;
 
-typedef uint32_t FrontendCallbackArgument5;
+using FrontendCallbackArgument5 = uint32_t;
 
 typedef struct UiPointerListControl *FrontendNetworkSetupPageBackendListPtr; /* interior pointer: points at FrontendNetworkSetupPageState.backendList; the containing FrontendNetworkSetupPageState is found by subtracting the field offset */
 
@@ -238,17 +238,17 @@ struct FrontendNetworkSetupPageState {
     struct UiPointerListControl sessionList; 
 };
 
-typedef int UiPixelMetric;
+using UiPixelMetric = int;
 
-typedef intptr_t FrontendScenarioSelectionControlAddress32; /* address of the gameSelectStartButton node (5f) */
+using FrontendScenarioSelectionControlAddress32 = intptr_t; /* address of the gameSelectStartButton node (5f) */
 
-typedef uint32_t TechnologyIndexOrRestoreCode;
+using TechnologyIndexOrRestoreCode = uint32_t;
 
-typedef uint32_t FrontendIndexedSelectionArgument;
+using FrontendIndexedSelectionArgument = uint32_t;
 
-typedef int FrontendBooleanState32;
+using FrontendBooleanState32 = int;
 
-typedef uint32_t FrontendPlayerRuntimeBlockCount;
+using FrontendPlayerRuntimeBlockCount = uint32_t;
 
 struct FrontendRootPageState {
     struct UiNodeBase rootNode; 
@@ -610,7 +610,7 @@ struct FrontendPointerSceneRuntimeView {
     Ptr32<struct GraphicsPrimitiveQueue> activePrimitiveQueue;
     uint32_t runtimeControlFlags;
     Ptr32<RuntimeSpinLockValue> renderSpinLock;
-    Ptr32<void (void)> renderSpinLockReleaseCallback;
+    Ptr32<void ()> renderSpinLockReleaseCallback;
     Ptr32<struct ModelRuntimeNode> candidateModelListHead;
     uint32_t activePlayerRuntimeId;
     Ptr32<struct ModelRuntimeNode> selectedModelNode;
@@ -962,8 +962,8 @@ struct ScenarioCatalogDisplayRecord {
     uint8_t opaqueGap008A_00FF[118]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 #pragma pack(pop)
-typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0);
-typedef void ScenarioCatalogRefreshSelectedRecordCallback(uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex);
+using InGameWorldTransientStateClearCallbackProc = void (WorldRuntimeContext * arg0);
+using ScenarioCatalogRefreshSelectedRecordCallback = void (uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex);
 #pragma pack(push, 1)
 
 /* Not in the original: the resolution rows of the display settings page: displayResolutionOption1..10 and the

@@ -21,7 +21,7 @@ UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
-Bool8 UiRootStack_PopUntilWindowTextureBoundary(void)
+Bool8 UiRootStack_PopUntilWindowTextureBoundary()
 
 {
   Bool8 popStopped;
@@ -168,7 +168,7 @@ Bool8 UiRootStack_BringToFront(UiRootNode *root)
    at least one open root; with none it is a no-op here because the do-while would dereference
    UI_ROOT_STACK_END.
 */
-void UiRootStack_Relayout(void)
+void UiRootStack_Relayout()
 
 {
   int64_t edgeAnchorPixelProductQ31;
@@ -205,7 +205,7 @@ void UiRootStack_Relayout(void)
 /* Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
    root stack, top to bottom. Does nothing while invalidation is suppressed.
 */
-void UiRootStack_InvalidateAll(void)
+void UiRootStack_InvalidateAll()
 
 {
   UiRootNode *root;
@@ -219,4 +219,13 @@ void UiRootStack_InvalidateAll(void)
   return;
 }
 
-THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {.handlers = {THANDOR_FN(UiRootStack_Pop), THANDOR_FN(FatalErrorDialog_DismissAndPopRoot)}};
+/* Action handler 0 of the root-stack page: pops the source's root. The action queue calls handlers as
+   void (void *) and ignores any result, so UiRootStack_Pop's veto result is dropped here as it always was. */
+static void UiRootStackAction_Pop(void *source)
+
+{
+  UiRootStack_Pop((UiRootNode *)source);
+}
+
+/* (handlers) without the designator: MSVC rejects UI_SLOT elements of a designated array member (C2440). */
+THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {{UI_SLOT(UiRootStackAction_Pop), UI_SLOT(FatalErrorDialog_DismissAndPopRoot)}};

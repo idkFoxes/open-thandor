@@ -91,7 +91,7 @@ Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUn
 /* Discards every queued keyboard event by moving the ring's write index back onto its read index.
    Reached through the g_KeyboardFlushEvents pointer.
 */
-void Keyboard_FlushEvents(void)
+void Keyboard_FlushEvents()
 
 {
   g_KeyboardWriteIndex = g_KeyboardReadIndex;
@@ -201,7 +201,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
 
 /* First half of the mouse display-mode hook (SdlInput_SetDisplayMode): blocks backend access (timer cursor
    drawing) for the switch and frees the three cursor buffers. */
-void GraphicsCursor_FreeBuffers(void)
+void GraphicsCursor_FreeBuffers()
 
 {
   g_GraphicsBackendAccessState = -1; /* blocks backend access (timer cursor drawing) during the switch */

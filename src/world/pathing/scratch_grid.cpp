@@ -24,7 +24,7 @@ int32_t g_GridScratchHeight = 0;
 /* int32_t[17] terrain-class thresholds, one table in the original
    (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
    ModelDefinition_CopyTerrainClassValues indexes from several entries into their neighbours by the model's
-   terrainTraversalClass (assets/model/definitions.c). Followed by 12 bytes of 0x90 padding in the original. */
+   terrainTraversalClass (assets/model/definitions.cpp). Followed by 12 bytes of 0x90 padding in the original. */
 const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT] = {
     0, /* [0] bit 24 max water surface delta (Q12) */
     11500, /* [1] bit 24 max triangle 1 normal angle (high 16) */
@@ -403,7 +403,7 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
 /* Frees the path-cost queue and both scratch grids allocated by GridScratch_AllocateForFieldGrid and
    clears the three pointers, so a later session starts without stale buffers.
 */
-void GridScratch_ReleaseBuffers(void)
+void GridScratch_ReleaseBuffers()
 
 {
   g_MemoryApi.free(g_GridPathCostQueueBegin);
@@ -573,7 +573,7 @@ Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t
 
 /* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell), so pathing can plan on a copy and swap back afterwards.
 */
-void __cdecl GridScratch_CopyPrimaryToSecondary(void)
+void __cdecl GridScratch_CopyPrimaryToSecondary()
 
 {
   int scratchDwordsRemaining;
@@ -594,7 +594,7 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
 /* Swaps the primary and secondary scratch grid pointers, making the copy made by
    GridScratch_CopyPrimaryToSecondary the working grid, or restoring the original afterwards.
 */
-void GridScratch_SwapPrimarySecondary(void)
+void GridScratch_SwapPrimarySecondary()
 
 {
   GridScratchCell *previousSecondaryBuffer;
@@ -654,7 +654,7 @@ void GridScratch_FloodFillConnectedCells
 /* Prepares the scratch grid for a cost propagation: clears the visited bit and sets pathCost to
    GRID_PATH_COST_UNREACHED in every cell, sixteen cells per unrolled iteration.
 */
-void GridScratch_ResetTraversalFlagsAndCosts(void)
+void GridScratch_ResetTraversalFlagsAndCosts()
 
 {
   uint32_t cellsRemaining;

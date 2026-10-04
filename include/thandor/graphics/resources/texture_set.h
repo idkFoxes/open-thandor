@@ -41,7 +41,7 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
 
 void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
-void __cdecl GraphicsTexture_RebuildNoOp(void);
+void __cdecl GraphicsTexture_RebuildNoOp();
 
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 

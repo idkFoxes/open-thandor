@@ -42,7 +42,7 @@ static GraphicsTextureSourceAsset *FontTextureSource_Get(uint32_t fontIndex)
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
    override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
 */
-void FontRuntime_Init(void)
+void FontRuntime_Init()
 
 {
   wchar_t pathChar;
@@ -172,7 +172,7 @@ uint32_t FontGlyph_DrawBottomAligned
    is lineHeight pixels high, clipped to the given rectangle, in the current rich-text colour (with the
    half-transparent shadow copy first when a shadow offset is set). Returns the glyph width (0 without a loaded
    font) so the caller can advance. Called directly by the wrapped-line drawing of rich text
-   (assets/text/richtext.c) for glyphs, spaces and the wrap hyphen.
+   (ui/text/richtext_render.cpp) for glyphs, spaces and the wrap hyphen.
 */
 uint32_t FontGlyph_DrawVerticallyCentered
                (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

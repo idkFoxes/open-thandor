@@ -167,7 +167,7 @@ void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Gr
    rebuild after a display mode or texture detail change (the original's hardware renderers installed their own
    rebuild here).
 */
-void __cdecl GraphicsTexture_RebuildNoOp(void)
+void __cdecl GraphicsTexture_RebuildNoOp()
 
 {
   return;

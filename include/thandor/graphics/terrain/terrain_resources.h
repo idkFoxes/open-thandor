@@ -41,7 +41,7 @@ Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 
-void TerrainVisualResources_Shutdown(void);
+void TerrainVisualResources_Shutdown();
 
 extern GraphicsTextureSet *g_TerrainPrimaryTextureSet;
 extern void *g_TerrainSoilPacketTablePayload;

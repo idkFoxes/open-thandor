@@ -64,7 +64,7 @@ static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t b
   g_CursorInputWriteIndex = next;
 }
 
-void DebugScript_Tick(void)
+void DebugScript_Tick()
 {
   static FILE *script;
   static int state = -1;

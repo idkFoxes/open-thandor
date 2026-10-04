@@ -16,7 +16,7 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct RecentTextHistorySlot RecentTextHistorySlot, *PRecentTextHistorySlot;
 typedef struct UiRootCallbacks UiRootCallbacks, *PUiRootCallbacks;
@@ -27,17 +27,17 @@ typedef struct UiRuntimeRecord UiRuntimeRecord, *PUiRuntimeRecord;
 typedef struct PcxPreview64 PcxPreview64, *PPcxPreview64;
 typedef struct PcxRgb24 PcxRgb24, *PPcxRgb24;
 
-typedef int UiStopMessageCode;
+using UiStopMessageCode = int;
 
-typedef uint32_t UiActionHandlerPageIndex;
+using UiActionHandlerPageIndex = uint32_t;
 
-typedef uint32_t RecentTextSerialCounter;
+using RecentTextSerialCounter = uint32_t;
 
-typedef uint32_t RecentTextHistoryEntryLimit;
+using RecentTextHistoryEntryLimit = uint32_t;
 
-typedef uint32_t UiDirtyRectCount;
+using UiDirtyRectCount = uint32_t;
 
-typedef uint32_t UiActionQueueUsedBytes;
+using UiActionQueueUsedBytes = uint32_t;
 
 struct RecentTextHistorySlot {
     uint16_t text[128]; 
@@ -61,7 +61,7 @@ struct UiDirtyRectEntry {
 };
 
 struct UiActionHandlerPage {
-    Ptr32<void> handlers[256]; 
+    Ptr32<void (void *)> handlers[256]; 
 };
 
 struct UiActionQueueEntry {
@@ -84,6 +84,6 @@ struct PcxPreview64 {
     struct PcxRgb24 palette[256]; 
     uint8_t pixels[4096]; 
 };
-typedef void UiRuntimePostUnlockCallbackProc(void);
+using UiRuntimePostUnlockCallbackProc = void ();
 
 #endif /* THANDOR_UI_CORE_TYPES_H */
