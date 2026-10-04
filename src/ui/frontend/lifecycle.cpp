@@ -26,8 +26,8 @@ DirectSoundVoiceSet *g_FrontendMusicVoiceSet = nullptr;
 uint16_t g_FrontendMusic00SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\music00.sam" */
 
 static UiRootCallbacks g_FrontendUiRootCallbacks = {
-    .frameUpdate = THANDOR_FN(FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState),
-    .keyboardFallback = THANDOR_FN(FrontendRuntime_DispatchCommandByCodeAndModifierFlags)};
+    .frameUpdate = UI_SLOT(FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState),
+    .keyboardFallback = UI_SLOT(FrontendRuntime_DispatchCommandByCodeAndModifierFlags)};
 
 /* row pointer table of the frontend network backend list (display
    names), one entry per network backend; Frontend_Init fills it and hands it to the backend list control. The

@@ -19,6 +19,15 @@ static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
 
 /* Implementation ownership: ui/frontend/end_movie. */
 
+/* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns Bool8, but its only
+   caller (UiKeyboard_DispatchPendingEvents) ignores the result, so false is returned. */
+static Bool8 EndMovieSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)
+
+{
+  EndMovieUiRuntime_DispatchCommandByFlags(keyboardStateMask,keyCode,uiRoot);
+  return false;
+}
+
 /* Campaign level records (CampaignLevelRecord) as in OldUnitRuntime_RebuildScenarioReplayTables: finds the
    current level's record and points g_EndMoviePath at flm\endeNNNN.flm with its end movie number for the
    outcome g_EndMovieSelectionIndex (separate numbers for a nonzero / zero variant index). */
@@ -167,11 +176,8 @@ void Frontend_PlaySelectedEndMovie()
   g_CursorVisibilityToken--;
   if ((runtimeRoot != nullptr) && (g_EndMoviePath != nullptr)) {
     rootCallbacks = runtimeRoot->rootUi.callbacks;
-    /* signature differs: the fallback returns void and takes void *, the slot returns Bool8 and takes
-       UiRootNode *; the frame update takes void *, the slot UiRootNode * */
-    rootCallbacks->keyboardFallback =
-         (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))EndMovieUiRuntime_DispatchCommandByFlags;
-    rootCallbacks->frameUpdate = (void (*)(UiRootNode *))EndMovieUiRuntime_HandleModeTransition;
+    rootCallbacks->keyboardFallback = UI_SLOT(EndMovieSlot_KeyboardFallback);
+    rootCallbacks->frameUpdate = UI_SLOT(EndMovieUiRuntime_HandleModeTransition);
     if (g_FrontendLoadedCampaignAsset != 0) {
       FrontendEndMovie_SelectCampaignMoviePath((CampaignAsset *)g_FrontendLoadedCampaignAsset);
     }
@@ -217,9 +223,7 @@ void Frontend_PlaySelectedEndMovie()
     g_CursorVisibilityToken++;
   }
   rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
-  /* signature differs: both callbacks take InGameRuntimeRootFrameView *, the slots UiRootNode * */
-  rootCallbacks->keyboardFallback =
-       (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))InGameHotkeys_DispatchCommandByFlags;
-  rootCallbacks->frameUpdate = (void (*)(UiRootNode *))InGameUiRoot_UpdateFrame;
+  rootCallbacks->keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags);
+  rootCallbacks->frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame);
   return;
 }

@@ -11,10 +11,10 @@
 /* Module data. */
 
 static UiRootCallbacks g_UiDisplaySettingsRootCallbacks = {
-    .vetoClose = THANDOR_FN(UiRootCallbacks_Free),
-    .frameUpdate = THANDOR_FN(UiDisplaySettingsRoot_RefreshModeSelection),
-    .method08 = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerPress),
-    .pointerMissPolicy = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerMotion)};
+    .vetoClose = UI_SLOT(UiRootCallbacks_Free),
+    .frameUpdate = UI_SLOT(UiDisplaySettingsRoot_RefreshModeSelection),
+    .method08 = UI_SLOT(UiModalDialogRoot_BlockMissedPointerPress),
+    .pointerMissPolicy = UI_SLOT(UiModalDialogRoot_BlockMissedPointerMotion)};
 
 /* the display settings dialog, copied and linked by
    UiDisplaySettings_OpenAndPopulateModeSelection. */
@@ -247,10 +247,10 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
 static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
 static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
-    .vetoClose = THANDOR_FN(UiRootCallbacks_Free),
-    .frameUpdate = THANDOR_FN(UiFourValueDialog_TickCountdownAndRequestClose),
-    .method08 = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerPress),
-    .pointerMissPolicy = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerMotion)};
+    .vetoClose = UI_SLOT(UiRootCallbacks_Free),
+    .frameUpdate = UI_SLOT(UiFourValueDialog_TickCountdownAndRequestClose),
+    .method08 = UI_SLOT(UiModalDialogRoot_BlockMissedPointerPress),
+    .pointerMissPolicy = UI_SLOT(UiModalDialogRoot_BlockMissedPointerMotion)};
 
 static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
