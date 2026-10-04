@@ -219,4 +219,13 @@ void UiRootStack_InvalidateAll()
   return;
 }
 
-THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {.handlers = {THANDOR_FN(UiRootStack_Pop), THANDOR_FN(FatalErrorDialog_DismissAndPopRoot)}};
+/* Action handler 0 of the root-stack page: pops the source's root. The action queue calls handlers as
+   void (void *) and ignores any result, so UiRootStack_Pop's veto result is dropped here as it always was. */
+static void UiRootStackAction_Pop(void *source)
+
+{
+  UiRootStack_Pop((UiRootNode *)source);
+}
+
+/* (handlers) without the designator: MSVC rejects UI_SLOT elements of a designated array member (C2440). */
+THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {{UI_SLOT(UiRootStackAction_Pop), UI_SLOT(FatalErrorDialog_DismissAndPopRoot)}};
