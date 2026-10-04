@@ -26,8 +26,6 @@ typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess;
 
 /* Callback/function-definition ABIs. */
 typedef Bool8 GraphicsCursorSetFrameProc(uint32_t frameIndex);
-typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 
 typedef uint32_t TH_LEGACY_DWORD;
 

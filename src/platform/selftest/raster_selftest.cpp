@@ -273,31 +273,37 @@ static int RasterTest_Handlers(RasterTestState *state, GraphicsTextureSetEntry *
 
 /* ---- blits ---- */
 
+/* The values are the group numbers of the original list and seed the groups (0xB117000 + kind), so the hashes of
+   the remaining groups stay comparable after the unused blits (saturated add, half RGB saturated add, palette bank,
+   integer scaled, their tiled forms and the region copies) were removed. */
 enum {
-    RASTER_BLIT_SOURCE_ALPHA,
-    RASTER_BLIT_HALF_SOURCE_RGB,
-    RASTER_BLIT_SATURATED_ADD,
-    RASTER_BLIT_HALF_RGB_SATURATED_ADD,
-    RASTER_BLIT_MODULATED,
-    RASTER_BLIT_PALETTE_BANK,
-    RASTER_BLIT_INTEGER_SCALED,
-    RASTER_BLIT_STRETCH,
-    RASTER_BLIT_FILL_RECT,
-    RASTER_BLIT_TILED_SOURCE_ALPHA,
-    RASTER_BLIT_TILED_HALF_SOURCE_RGB,
-    RASTER_BLIT_TILED_SATURATED_ADD,
-    RASTER_BLIT_TILED_HALF_RGB_SATURATED_ADD,
-    RASTER_BLIT_COPY_REGIONS,
-    RASTER_BLIT_BILINEAR_BLEND_SCALE,
-    RASTER_BLIT_MASK_STEP,
-    RASTER_BLIT_COUNT
+    RASTER_BLIT_SOURCE_ALPHA = 0,
+    RASTER_BLIT_HALF_SOURCE_RGB = 1,
+    RASTER_BLIT_MODULATED = 4,
+    RASTER_BLIT_STRETCH = 7,
+    RASTER_BLIT_FILL_RECT = 8,
+    RASTER_BLIT_TILED_SOURCE_ALPHA = 9,
+    RASTER_BLIT_TILED_HALF_SOURCE_RGB = 10,
+    RASTER_BLIT_BILINEAR_BLEND_SCALE = 14,
+    RASTER_BLIT_MASK_STEP = 15
 };
 
-static const char *const g_RasterTestBlitNames[RASTER_BLIT_COUNT] = {
-    "blit source-alpha", "blit half-source-rgb", "blit saturated-add", "blit half-rgb-saturated-add",
-    "blit modulated", "blit palette-bank", "blit integer-scaled", "blit stretch", "blit fill-rect",
-    "blit tiled-source-alpha", "blit tiled-half-source-rgb", "blit tiled-saturated-add",
-    "blit tiled-half-rgb-saturated-add", "blit copy-regions", "blit bilinear-blend-scale", "blit mask-step"};
+static const struct {
+    int kind;
+    const char *name;
+} g_RasterTestBlitGroups[] = {
+    {RASTER_BLIT_SOURCE_ALPHA, "blit source-alpha"},
+    {RASTER_BLIT_HALF_SOURCE_RGB, "blit half-source-rgb"},
+    {RASTER_BLIT_MODULATED, "blit modulated"},
+    {RASTER_BLIT_STRETCH, "blit stretch"},
+    {RASTER_BLIT_FILL_RECT, "blit fill-rect"},
+    {RASTER_BLIT_TILED_SOURCE_ALPHA, "blit tiled-source-alpha"},
+    {RASTER_BLIT_TILED_HALF_SOURCE_RGB, "blit tiled-half-source-rgb"},
+    {RASTER_BLIT_BILINEAR_BLEND_SCALE, "blit bilinear-blend-scale"},
+    {RASTER_BLIT_MASK_STEP, "blit mask-step"},
+};
+
+#define RASTER_BLIT_GROUP_COUNT ((int)(sizeof g_RasterTestBlitGroups / sizeof g_RasterTestBlitGroups[0]))
 
 /* Images of the blit asset (bank count 3). 0 is the mask step's size (40 x 30, logical size of subresource 0),
    5 and 6 the paletted pair of the bilinear blend scale, 7 has an invalid palette index (rejected). */
@@ -309,8 +315,7 @@ static const RasterTestImage g_RasterTestBlitImages[] = {
 
 #define RASTER_TEST_BLIT_IMAGE_COUNT ((int)(sizeof g_RasterTestBlitImages / sizeof g_RasterTestBlitImages[0]))
 
-static void RasterTest_BlitOnce(int kind, uint64_t *seed, RasterTestState *state, RasterTestAsset *asset,
-                                SoftwareFramebufferAccess *saveBuffer)
+static void RasterTest_BlitOnce(int kind, uint64_t *seed, RasterTestState *state, RasterTestAsset *asset)
 {
     SoftwareFramebufferAccess *fb = &state->framebuffer;
     GraphicsTextureSourceAsset *source = asset->header;
@@ -337,26 +342,9 @@ static void RasterTest_BlitOnce(int kind, uint64_t *seed, RasterTestState *state
         g_GraphicsTextureSourceBlitHalfSourceRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, image, source,
                                                  fb);
         break;
-    case RASTER_BLIT_SATURATED_ADD:
-        g_GraphicsTextureSourceBlitSaturatedAddRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, image, source,
-                                                   fb);
-        break;
-    case RASTER_BLIT_HALF_RGB_SATURATED_ADD:
-        g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, image,
-                                                       source, fb);
-        break;
     case RASTER_BLIT_MODULATED:
         g_GraphicsTextureSourceBlitModulatedSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
                                                         RasterTest_Random(seed), image, source, fb);
-        break;
-    case RASTER_BLIT_PALETTE_BANK:
-        /* bank 3 is out of range (rejected for paletted images) */
-        SoftwareTextureSource_BlitSourceAlphaPaletteBank32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
-                                                           RasterTest_Random(seed) % 4, image, source, fb);
-        break;
-    case RASTER_BLIT_INTEGER_SCALED:
-        SoftwareTextureSource_BlitIntegerScaledSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
-                                                             1 + RasterTest_Random(seed) % 4, image, source, fb);
         break;
     case RASTER_BLIT_STRETCH: {
         /* no clipping: the destination stays inside; sizes of at least 2 (the steps divide by size - 1) */
@@ -377,9 +365,7 @@ static void RasterTest_BlitOnce(int kind, uint64_t *seed, RasterTestState *state
         break;
     }
     case RASTER_BLIT_TILED_SOURCE_ALPHA:
-    case RASTER_BLIT_TILED_HALF_SOURCE_RGB:
-    case RASTER_BLIT_TILED_SATURATED_ADD:
-    case RASTER_BLIT_TILED_HALF_RGB_SATURATED_ADD: {
+    case RASTER_BLIT_TILED_HALF_SOURCE_RGB: {
         int repeatEndX = (RasterTest_Random(seed) % 3) == 0 ? GRAPHICS_TILED_BLIT_ONE_TILE
                                                              : RasterTest_Range(seed, 0, RASTER_TEST_WIDTH + 30);
         int repeatEndY = (RasterTest_Random(seed) % 3) == 0 ? GRAPHICS_TILED_BLIT_ONE_TILE
@@ -391,27 +377,10 @@ static void RasterTest_BlitOnce(int kind, uint64_t *seed, RasterTestState *state
             GraphicsTextureSource_BlitTiledSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, repeatEndY, repeatEndX,
                                                        drawY, drawX, image, source, fb);
         }
-        else if (kind == RASTER_BLIT_TILED_HALF_SOURCE_RGB) {
+        else {
             GraphicsTextureSource_BlitTiledHalfSourceRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, repeatEndY,
                                                          repeatEndX, drawY, drawX, image, source, fb);
         }
-        else if (kind == RASTER_BLIT_TILED_SATURATED_ADD) {
-            GraphicsTextureSource_BlitTiledSaturatedAddRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, repeatEndY,
-                                                           repeatEndX, drawY, drawX, image, source, fb);
-        }
-        else {
-            GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd(clipMaxY, clipMaxX, clipMinY, clipMinX, repeatEndY,
-                                                               repeatEndX, drawY, drawX, image, source, fb);
-        }
-        break;
-    }
-    case RASTER_BLIT_COPY_REGIONS: {
-        int copyWidth = RasterTest_Range(seed, 1, (int)saveBuffer->width + 1);
-        int copyHeight = RasterTest_Range(seed, 1, (int)saveBuffer->height + 1);
-        SoftwareFramebuffer_CopyRegionToOrigin((uint32_t)copyHeight, (uint32_t)copyWidth, drawY, drawX, saveBuffer,
-                                               fb);
-        SoftwareFramebuffer_CopyOriginToRegion((uint32_t)copyHeight, (uint32_t)copyWidth, clipMinY, clipMinX,
-                                               saveBuffer, fb);
         break;
     }
     default:
@@ -463,19 +432,13 @@ static uint32_t RasterTest_MaskStep(uint64_t *seed, RasterTestAsset *asset, uint
 
 static int RasterTest_Blits(RasterTestState *state, RasterTestAsset *asset)
 {
-    std::vector<uint32_t> savePixels(64 * 48);
-    SoftwareFramebufferAccess saveBuffer;
-    int kind;
-    saveBuffer.width = 64;
-    saveBuffer.height = 48;
-    saveBuffer.bytesPerPixel = 4;
-    saveBuffer.pixels = (uint8_t *)savePixels.data();
-    for (kind = 0; kind < RASTER_BLIT_COUNT; kind++) {
+    int group;
+    for (group = 0; group < RASTER_BLIT_GROUP_COUNT; group++) {
+        int kind = g_RasterTestBlitGroups[group].kind;
         uint64_t seed = 0xB117000u + (uint64_t)kind;
         uint32_t hash = 2166136261u;
         int i;
         RasterTest_ResetTargets(state);
-        memset(savePixels.data(), 0, savePixels.size() * 4);
         if (kind == RASTER_BLIT_BILINEAR_BLEND_SCALE) {
             RasterTest_BilinearBlendScale(&seed, state, asset);
         }
@@ -484,16 +447,13 @@ static int RasterTest_Blits(RasterTestState *state, RasterTestAsset *asset)
         }
         else {
             for (i = 0; i < RASTER_TEST_BLITS; i++) {
-                RasterTest_BlitOnce(kind, &seed, state, asset, &saveBuffer);
+                RasterTest_BlitOnce(kind, &seed, state, asset);
             }
         }
         hash = RasterTest_Hash(hash, state->pixels.data(), state->pixels.size() * 4);
-        if (kind == RASTER_BLIT_COPY_REGIONS) {
-            hash = RasterTest_Hash(hash, savePixels.data(), savePixels.size() * 4);
-        }
-        RasterTest_LogHash(g_RasterTestBlitNames[kind], hash, RasterTest_ChangedPixels(state->pixels, state->resetPixels));
+        RasterTest_LogHash(g_RasterTestBlitGroups[group].name, hash, RasterTest_ChangedPixels(state->pixels, state->resetPixels));
     }
-    return RASTER_BLIT_COUNT;
+    return RASTER_BLIT_GROUP_COUNT;
 }
 
 void Thandor_SelfTestRaster(void)
@@ -521,8 +481,6 @@ void Thandor_SelfTestRaster(void)
     SoftwarePixelFormatConfig savedFormat = g_SoftwarePixelFormatConfig;
     GraphicsTextureSourceBlitProc *savedSourceAlpha = g_GraphicsTextureSourceBlitSourceAlpha;
     GraphicsTextureSourceBlitProc *savedHalfSourceRgb = g_GraphicsTextureSourceBlitHalfSourceRgb;
-    GraphicsTextureSourceSaturatedAddRgbProc *savedSaturatedAdd = g_GraphicsTextureSourceBlitSaturatedAddRgb;
-    GraphicsTextureSourceSaturatedAddRgbProc *savedHalfSaturatedAdd = g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd;
     GraphicsTextureSourceBlitModulatedSourceAlphaProc *savedModulated = g_GraphicsTextureSourceBlitModulatedSourceAlpha;
     GraphicsTextureSourceStretchDirectColorBilinearProc *savedStretch = g_GraphicsTextureSourceStretchDirectColorBilinear;
     GraphicsFramebufferFillRectArgbProc *savedFill = g_GraphicsFramebufferFillRectArgb;
@@ -545,8 +503,6 @@ void Thandor_SelfTestRaster(void)
     SoftwarePixelFormat_BuildChannelPackTables(0x10000, 0);
     g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
     g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32;
-    g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32;
-    g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha = SoftwareTextureSource_BlitModulatedSourceAlpha32;
     g_GraphicsTextureSourceStretchDirectColorBilinear = SoftwareTextureSource_StretchDirectColorBilinear32;
     g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
@@ -591,8 +547,6 @@ void Thandor_SelfTestRaster(void)
     g_SoftwarePixelFormatConfig = savedFormat;
     g_GraphicsTextureSourceBlitSourceAlpha = savedSourceAlpha;
     g_GraphicsTextureSourceBlitHalfSourceRgb = savedHalfSourceRgb;
-    g_GraphicsTextureSourceBlitSaturatedAddRgb = savedSaturatedAdd;
-    g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = savedHalfSaturatedAdd;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha = savedModulated;
     g_GraphicsTextureSourceStretchDirectColorBilinear = savedStretch;
     g_GraphicsFramebufferFillRectArgb = savedFill;

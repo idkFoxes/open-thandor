@@ -35,7 +35,8 @@ sections 1-5. Paths are relative to `src/` unless they say otherwise.
 
 ### 1.3 Slots with no callers (do not port)
 
-These are only defined and installed; nothing on the live path calls them:
+These were only defined and installed; nothing on the live path called them. Step 8 removed them (with their
+raster self-test groups):
 
 - `BlitSaturatedAddRgb` and `BlitHalfRgbSaturatedAdd`, including their tiled slots (static in tiled_blit.cpp:17 and :20).
 - `BlitIntegerScaledSourceAlpha` and `BlitSourceAlphaPaletteBank` (static in device.cpp:22 and :24).

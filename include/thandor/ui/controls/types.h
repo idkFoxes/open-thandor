@@ -23,9 +23,6 @@ typedef struct UiNumericTextControl UiNumericTextControl, *PUiNumericTextControl
 typedef struct UiNodeVtable UiNodeVtable, *PUiNodeVtable;
 typedef struct UiPointerListControl UiPointerListControl, *PUiPointerListControl;
 typedef struct UiTextEditControl UiTextEditControl, *PUiTextEditControl;
-typedef struct UiTimedListControl UiTimedListControl, *PUiTimedListControl;
-typedef struct UiTimedListTreeRecord UiTimedListTreeRecord, *PUiTimedListTreeRecord;
-typedef struct UiTimedListTreeControl UiTimedListTreeControl, *PUiTimedListTreeControl;
 typedef struct UiTextListControl UiTextListControl, *PUiTextListControl;
 typedef struct UiListControl UiListControl, *PUiListControl;
 typedef struct UiScrollableControl UiScrollableControl, *PUiScrollableControl;
@@ -38,7 +35,6 @@ typedef struct UiImageControl UiImageControl, *PUiImageControl;
 typedef struct UiFramedTextButtonControl UiFramedTextButtonControl, *PUiFramedTextButtonControl;
 typedef struct UiTooltipState UiTooltipState, *PUiTooltipState;
 typedef struct UiRequiredTextEditControl UiRequiredTextEditControl, *PUiRequiredTextEditControl;
-typedef struct UiPathTextEditControl UiPathTextEditControl, *PUiPathTextEditControl;
 typedef struct UiSelectionGeometryControl UiSelectionGeometryControl, *PUiSelectionGeometryControl;
 typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
 typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix;
@@ -96,11 +92,6 @@ enum {
 typedef int UiNodeFlags;
 
 enum {
-    UI_TIMED_LIST_ACTION_DELAY_PENDING=2
-};
-typedef int UiTimedListStateFlags;
-
-enum {
     UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE=1,
     UI_SELECTABLE_SELECTED_OR_CHECKED=2,
     UI_SELECTABLE_TOGGLE_ON_ACTIVATION=16,
@@ -136,13 +127,6 @@ enum {
     UI_LIST_PLAY_SELECTION_SOUND=8
 };
 typedef int UiListStateFlags;
-
-enum {
-    UI_TIMED_LIST_RECORD_EXPANDABLE=1,
-    UI_TIMED_LIST_RECORD_EXPANDED=2,
-    UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY=2147483648
-};
-typedef int UiTimedListRecordFlags;
 
 enum {
     UI_NUMERIC_TEXT_VALUE_VALID=1,
@@ -325,43 +309,6 @@ struct UiTextEditControl {
     UiTextCodeUnitIndex selectionEnd; 
     Ptr32<struct DirectSoundVoiceSet> activationSound; 
     uint16_t textBuffer[10]; 
-};
-
-/* One 16-byte entry (32-bit build) of a timed-list tree. A record block is an array of these: element 0 is the block
-   header (count = number of rows that follow, parentBlockOrIcon = parent block, link = parent row record,
-   flags has UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY), elements 1..count are rows (payload00 = label text,
-   parentBlockOrIcon = icon subresource, link = child block when flags 1|2 say expanded).
-   The two value-or-pointer words are UPtr32 (4 bytes on both architectures). */
-struct UiTimedListTreeRecord {
-    UPtr32 countOrLabelText;
-    UPtr32 parentBlockOrIcon;
-    Ptr32<struct UiTimedListTreeRecord> childBlockOrParentRecord;
-    UiTimedListRecordFlags flags;
-};
-
-/* Tree list (g_UiTimedListControlVtable), e.g. the directory browser; the full object is
-   UiTimedListTreeControl (0x88 bytes). No UI template instantiates it. */
-struct UiTimedListControl {
-    struct UiNodeBase base;
-    UiTimedListStateFlags listStateAndDelay;
-    Ptr32<struct UiTimedListTreeRecord> recordTree;
-    UiListRowCount rowCount;
-    UiPixelExtent rowHeight;
-    UiActionId actionId;
-    Ptr32<struct UiTimedListTreeRecord> selectedRecord;
-    Ptr32<void (struct UiTimedListTreeRecord *, struct UiTimedListTreeControl *)> recordSelectionCallback;
-    Ptr32<struct GraphicsTextureSourceAsset> rowTextureSource;
-    uint32_t collapsedIconSubresource; // subresource of the collapsed-node icon (expandable row, flag 2 clear)
-};
-
-struct UiTimedListTreeControl {
-    struct UiTimedListControl base;
-    uint32_t expandedIconSubresource; // subresource of the expanded-node icon
-    uint32_t ancestorConnectorSubresource; // subresource of the vertical connector of an ancestor level
-    uint32_t siblingConnectorSubresource; // subresource of the connector of a row with more siblings below
-    uint32_t lastRowConnectorSubresource; // subresource of the connector of the last row of a block
-    uint32_t indentPixelsPerLevel; // indent width in pixels per tree level
-    uint32_t iconColumnPixels; // horizontal space in pixels reserved for the row icon
 };
 
 struct UiTextListControl {
@@ -594,19 +541,6 @@ struct UiRequiredTextEditControl {
     uint16_t textBuffer[10]; 
 };
 
-struct UiPathTextEditControl {
-    struct UiNodeBase base; 
-    UiTextEditStateFlags editStateFlags; 
-    UiActionId actionId; 
-    UiPixelOffset horizontalScrollPixels; 
-    uint32_t bufferCapacityCodeUnits; 
-    UiTextCodeUnitIndex cursorIndex; 
-    UiTextCodeUnitIndex selectionStart; 
-    UiTextCodeUnitIndex selectionEnd; 
-    Ptr32<struct DirectSoundVoiceSet> activationSound; 
-    uint16_t pathBuffer[256]; 
-};
-
 struct UiSelectionGeometryControl {
     struct UiNodeBase base; // Common UI-node prefix.
     uint32_t reserved4C; // Serialized/runtime slot not required by the two recovered methods; intentionally unresolved.
@@ -659,8 +593,9 @@ struct UiRangeSliderControl {
 };
 
 /* Horizontal progress gauge drawing a framed fill for value within minimumValue..maximumValue, optionally with a
-   centered percent label (g_UiHorizontalGaugeControlVtable). g_UiTransferProgressGaugeVtable is a subclass with no extra
-   fields that first reloads the range from the network transfer mailbox (file-transfer progress). 0x5C bytes. */
+   centered percent label. Only g_UiTransferProgressGaugeVtable uses it (the original's plain gauge vtable had no
+   instance and was removed); it first reloads the range from the network transfer mailbox (file-transfer
+   progress). 0x5C bytes. */
 typedef struct UiHorizontalGaugeControl UiHorizontalGaugeControl;
 struct UiHorizontalGaugeControl {
     struct UiNodeBase base;

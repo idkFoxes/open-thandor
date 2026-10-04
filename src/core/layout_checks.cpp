@@ -400,19 +400,6 @@ static_assert(sizeof(FrontendRootPageState) == 0x26C4,
               "FrontendRootPageState keeps its 32-bit layout");
 static_assert(sizeof(TerrainDirectionRecord) == 0x20,
               "TerrainDirectionRecord keeps its 32-bit layout");
-static_assert(sizeof(UiTimedListTreeRecord) == 0x10 &&
-              offsetof(UiTimedListTreeRecord, countOrLabelText) == 0x0 &&
-              offsetof(UiTimedListTreeRecord, parentBlockOrIcon) == 0x4 &&
-              offsetof(UiTimedListTreeRecord, childBlockOrParentRecord) == 0x8,
-              "UiTimedListTreeRecord keeps its 32-bit layout");
-static_assert(sizeof(UiTimedListControl) == 0x70 &&
-              offsetof(UiTimedListControl, recordTree) == 0x50 &&
-              offsetof(UiTimedListControl, selectedRecord) == 0x60 &&
-              offsetof(UiTimedListControl, recordSelectionCallback) == 0x64 &&
-              offsetof(UiTimedListControl, rowTextureSource) == 0x68,
-              "UiTimedListControl keeps its 32-bit layout");
-static_assert(sizeof(UiTimedListTreeControl) == 0x88,
-              "UiTimedListTreeControl keeps its 32-bit layout");
 static_assert(sizeof(UiTransferPacketHeader) == 0x10,
               "UiTransferPacketHeader keeps its 32-bit layout");
 static_assert(sizeof(FrontendPacket50001SessionAdvertisement) == 0xA0,
@@ -933,9 +920,6 @@ static_assert(sizeof(InGamePlayerStatusTextSlot) == 0x80,
 static_assert(sizeof(UiRequiredTextEditControl) == 0x80 &&
               offsetof(UiRequiredTextEditControl, activationSound) == 0x68,
               "UiRequiredTextEditControl keeps its 32-bit layout");
-static_assert(sizeof(UiPathTextEditControl) == 0x26C &&
-              offsetof(UiPathTextEditControl, activationSound) == 0x68,
-              "UiPathTextEditControl keeps its 32-bit layout");
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");

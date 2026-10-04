@@ -20,9 +20,9 @@ static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 
 /* Implementation ownership: ui/controls/gauge. */
 
-/* drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
-   (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue, and with
-   gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
+/* Draws the horizontal gauge (progress bar, the drawing half of g_UiTransferProgressGaugeVtable): the track, a
+   fill proportional to (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue,
+   and with gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
    its two caps. Children are not drawn.
 */
 void UiHorizontalGaugeControl_DrawFrameFillAndLabel
@@ -131,37 +131,6 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   }
   return;
 }
-
-/* pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
-   bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
-   pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
-*/
-GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
-
-{
-  return GRAPHICS_CURSOR_FRAME_BUSY;
-}
-
-UiNodeVtable g_UiHorizontalGaugeControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiHorizontalGaugeControl_DrawFrameFillAndLabel),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiHorizontalGaugeControl_PointerMoveBusyCursor),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-        .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
 
 /* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
    are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count

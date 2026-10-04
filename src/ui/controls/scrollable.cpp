@@ -463,8 +463,7 @@ void UiScrollableControl_HandlePointerWheel
   firstChildNode = (control->base).firstChild;
   scrollStep = g_UiScrollWheelDefaultStep;
   if ((firstChildNode != UI_NODE_NONE) &&
-     ((firstChildNode->vtable == &g_UiTimedListControlVtable) ||
-      (firstChildNode->vtable == &g_UiTextListControlVtable) ||
+     ((firstChildNode->vtable == &g_UiTextListControlVtable) ||
       (firstChildNode->vtable == &g_UiListControlVtable))) {
     scrollStep = g_UiScrollWheelListStep;
   }

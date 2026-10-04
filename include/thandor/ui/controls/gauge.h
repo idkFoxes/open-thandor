@@ -19,11 +19,6 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control);
 
-GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
-
-extern UiNodeVtable g_UiHorizontalGaugeControlVtable;
-
 void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control);
 

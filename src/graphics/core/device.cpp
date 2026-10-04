@@ -19,10 +19,6 @@ int32_t g_GraphicsBackendAccessState = -0x1;
 /* allocated by Graphics_AllocateTables but no longer read (see there) */
 static DirectDrawPaletteEntry *g_TexturePaletteEntries = nullptr;
 
-static GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = nullptr;
-
-static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = nullptr;
-
 /* Implementation ownership: graphics/core/device. */
 
 /* The first step of the original's Graphics_Init, called by SdlVideo_Init: allocates and clears the texture-slot
@@ -112,10 +108,6 @@ void GraphicsDirectDraw_PublishFramebuffer
   g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
   g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32;
   g_GraphicsTextureSourceStretchDirectColorBilinear = SoftwareTextureSource_StretchDirectColorBilinear32;
-  g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = SoftwareTextureSource_BlitIntegerScaledSourceAlpha32;
-  g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = SoftwareTextureSource_BlitSourceAlphaPaletteBank32;
   g_GraphicsTextureSourceBlitModulatedSourceAlpha = SoftwareTextureSource_BlitModulatedSourceAlpha32;
-  g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32;
-  g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
   g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
 }

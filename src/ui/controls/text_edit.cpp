@@ -23,306 +23,6 @@ static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
 
 /* Implementation ownership: ui/controls/text_edit. */
 
-/* Removes the selected range of the numeric text edit: the code units from selectionEnd up to the buffer
-   end move down to selectionStart and the freed tail is zero-filled. Cursor and selection collapse at
-   selectionStart. */
-static void UiNumericTextEdit_RemoveSelectedRange(UiNumericTextControl *control)
-
-{
-  UiTextCodeUnitIndex selectionEnd;
-  int removedCount;
-  int movedCount;
-  uint16_t *sourceCursor;
-  uint16_t *destinationCursor;
-
-  selectionEnd = control->selectionEnd;
-  removedCount = selectionEnd - control->selectionStart;
-  sourceCursor = control->textBuffer + selectionEnd;
-  destinationCursor = control->textBuffer + control->selectionStart;
-  for (movedCount = UI_NUMERIC_TEXT_BUFFER_UNITS - selectionEnd; movedCount != 0; movedCount--) {
-    *destinationCursor = *sourceCursor;
-    sourceCursor++;
-    destinationCursor++;
-  }
-  for (; removedCount != 0; removedCount--) {
-    *destinationCursor = 0;
-    destinationCursor++;
-  }
-  control->cursorIndex = control->selectionStart;
-  control->selectionEnd = control->selectionStart;
-}
-
-/* Keyboard handler of the numeric text edit (keyboardEvent slot of g_UiNumericTextEditControlVtable): inserts
-   digits, '-' (signed values) and A-F (hexadecimal values), edits and moves the cursor and Shift selection,
-   and after every handled key parses and commits the value. Enter queues the action when the control acts on
-   Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
-*/
-Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiNumericTextControl *control)
-
-{
-  UiTextCodeUnitIndex *selectionBoundary;
-  uint16_t displacedCodeUnit;
-  Bool8 characterAccepted;
-  Bool8 recomputeLayout;
-  Bool8 normalizeSelection;
-  UiTextCodeUnitIndex codeUnitIndex;
-  int shiftCount;
-  uint32_t insertIndex;
-  uint16_t *sourceCursor;
-  uint16_t *destinationCursor;
-  Bool8 delegatedResult;
-
-  if ((((control->editStateFlags & UI_NUMERIC_TEXT_READ_ONLY) != 0) ||
-      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0)) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedResult;
-  }
-  /* Handled keys end in the shared tail: optional layout recompute, then parse/commit, invalidate
-     and the interaction sound. */
-  recomputeLayout = true;
-  normalizeSelection = false;
-  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
-    /* Character: digits always, '-' for signed values, A-F/a-f for hexadecimal ones. */
-    if (keyCode == '-') {
-      characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0;
-    }
-    else if (keyCode < '0') {
-      characterAccepted = false;
-    }
-    else if (keyCode <= '9') {
-      characterAccepted = true;
-    }
-    else if ((keyCode < 'A') || (('F' < keyCode && ((keyCode < 'a' || ('f' < keyCode)))))) {
-      characterAccepted = false;
-    }
-    else {
-      characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) != 0;
-    }
-    if (!characterAccepted) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-      return delegatedResult;
-    }
-    insertIndex = control->cursorIndex;
-    if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
-      UiNumericTextEdit_RemoveSelectedRange(control);
-      insertIndex = control->selectionStart;
-    }
-    /* At most 14 code units: the insertion shifts the text up to index 13 only. */
-    if (insertIndex < UI_NUMERIC_TEXT_BUFFER_UNITS - 2) {
-      control->cursorIndex++;
-      control->selectionStart++;
-      control->selectionEnd++;
-      if ((control->editStateFlags & UI_NUMERIC_TEXT_OVERWRITE_MODE) == 0) {
-        do {
-          LOCK();
-          displacedCodeUnit = control->textBuffer[insertIndex];
-          control->textBuffer[insertIndex] = (uint16_t)keyCode;
-          keyCode = (UiKeyboardEventCode)displacedCodeUnit;
-          UNLOCK();
-          insertIndex++;
-        } while (insertIndex < UI_NUMERIC_TEXT_BUFFER_UNITS - 2);
-      }
-      else {
-        control->textBuffer[insertIndex] = (uint16_t)keyCode;
-      }
-    }
-  }
-  else {
-    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-      /* Ctrl+Left/Right act as Home/End (with or without Shift); other Ctrl keys are not handled. */
-      if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
-        keyCode = KEYBOARD_KEY_CODE_HOME;
-      }
-      else if (keyCode == KEYBOARD_KEY_CODE_RIGHT) {
-        keyCode = KEYBOARD_KEY_CODE_END;
-      }
-      else {
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
-    }
-    if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) == 0) {
-      switch (keyCode) {
-      case KEYBOARD_KEY_CODE_BACKSPACE:
-      case KEYBOARD_KEY_CODE_DELETE:
-        codeUnitIndex = control->cursorIndex;
-        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
-          /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
-          UiNumericTextEdit_RemoveSelectedRange(control);
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_BACKSPACE) {
-          /* Backspace: remove the code unit before the cursor. */
-          if (control->cursorIndex == 0) {
-            recomputeLayout = false;
-            break;
-          }
-          sourceCursor = control->textBuffer + codeUnitIndex;
-          destinationCursor = control->textBuffer + (codeUnitIndex - 1);
-          for (shiftCount = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCount != 0; shiftCount--) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-          control->cursorIndex--;
-          control->selectionStart = control->cursorIndex;
-          control->selectionEnd = control->cursorIndex;
-        }
-        else {
-          /* Delete: remove the code unit at the cursor. */
-          if (control->textBuffer[codeUnitIndex] == 0) {
-            recomputeLayout = false;
-            break;
-          }
-          sourceCursor = control->textBuffer + codeUnitIndex + 1;
-          destinationCursor = control->textBuffer + codeUnitIndex;
-          for (shiftCount = UI_NUMERIC_TEXT_BUFFER_UNITS - 1 - codeUnitIndex; shiftCount != 0; shiftCount--) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-        }
-        break;
-      case KEYBOARD_KEY_CODE_INSERT:
-        control->editStateFlags = control->editStateFlags ^ UI_NUMERIC_TEXT_OVERWRITE_MODE;
-        recomputeLayout = false;
-        break;
-      case KEYBOARD_KEY_CODE_HOME:
-      case KEYBOARD_KEY_CODE_END:
-      case KEYBOARD_KEY_CODE_LEFT:
-      case KEYBOARD_KEY_CODE_RIGHT:
-        /* Cursor movement (Home/End/Left/Right) collapses the selection at the cursor. */
-        if (keyCode == KEYBOARD_KEY_CODE_HOME) {
-          control->cursorIndex = 0;
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_END) {
-          while (control->textBuffer[control->cursorIndex] != 0) {
-            control->cursorIndex++;
-          }
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
-          if (control->cursorIndex != 0) {
-            control->cursorIndex--;
-          }
-        }
-        else if (control->textBuffer[control->cursorIndex] != 0) {
-          control->cursorIndex++;
-        }
-        control->selectionStart = control->cursorIndex;
-        control->selectionEnd = control->cursorIndex;
-        break;
-      case KEYBOARD_KEY_CODE_ENTER:
-        if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-          return delegatedResult;
-        }
-        UiActionQueue_Enqueue(control->actionId,control);
-        if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-           (control->activationSound != nullptr)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
-        }
-        return false;
-      default:
-        /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-        if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
-          return false;
-        }
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
-    }
-    else {
-      /* Shift: extend the selection from the cursor. */
-      switch (keyCode) {
-      case KEYBOARD_KEY_CODE_HOME:
-        codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex = 0;
-        if (codeUnitIndex == control->selectionStart) {
-          control->selectionStart = 0;
-        }
-        else {
-          control->selectionEnd = 0;
-        }
-        normalizeSelection = true;
-        break;
-      case KEYBOARD_KEY_CODE_END:
-        codeUnitIndex = control->cursorIndex;
-        if (control->textBuffer[codeUnitIndex] == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        /* NOTE: as in the original, the cursor restarts at 0 and ends at the number of code units
-           that followed it, not at the end of the text. */
-        control->cursorIndex = 0;
-        selectionBoundary = &control->selectionStart;
-        if (codeUnitIndex == control->selectionEnd) {
-          selectionBoundary = &control->selectionEnd;
-        }
-        do {
-          *selectionBoundary = *selectionBoundary + 1;
-          control->cursorIndex++;
-          codeUnitIndex++;
-        } while (control->textBuffer[codeUnitIndex] != 0);
-        normalizeSelection = true;
-        break;
-      case KEYBOARD_KEY_CODE_LEFT:
-        codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex--;
-        if (codeUnitIndex == control->selectionStart) {
-          control->selectionStart--;
-        }
-        else {
-          control->selectionEnd--;
-        }
-        break;
-      case KEYBOARD_KEY_CODE_RIGHT:
-        codeUnitIndex = control->cursorIndex;
-        if (control->textBuffer[codeUnitIndex] == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex++;
-        if (codeUnitIndex == control->selectionEnd) {
-          control->selectionEnd++;
-        }
-        else {
-          control->selectionStart++;
-        }
-        break;
-      default:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
-      if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
-        /* Home/End may cross the anchor: keep selectionStart <= selectionEnd. */
-        LOCK();
-        codeUnitIndex = control->selectionEnd;
-        control->selectionEnd = control->selectionStart;
-        UNLOCK();
-        control->selectionStart = codeUnitIndex;
-      }
-    }
-  }
-  if (recomputeLayout) {
-    UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
-  }
-  UiNumericTextControl_ParseAndCommitValue(control);
-  UiNode_InvalidateRoot(&control->base);
-  if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != nullptr)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
-  }
-  return false;
-}
-
 /* Helpers of the text edit keyboard handlers. The text edit controls share the UiTextEditControl header
    (flags, cursor, selection); only their code unit buffers differ, so the buffer and its size in code units
    are passed separately. */
@@ -567,210 +267,6 @@ static Bool8 UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint1
   return true;
 }
 
-/* Path characters: letters, digits, '-' and '.'; '*' and '?' only with UI_PATH_TEXT_ALLOW_WILDCARDS,
-   ':' and the backslash not with UI_PATH_TEXT_NAME_ONLY. */
-static Bool8 UiPathTextEdit_IsPathCharacterAccepted(const UiPathTextEditControl *control,UiKeyboardEventCode keyCode)
-
-{
-  if ((keyCode == '*') || (keyCode == '?')) {
-    return (control->editStateFlags & UI_PATH_TEXT_ALLOW_WILDCARDS) != 0;
-  }
-  if ((keyCode == '-') || (keyCode == '.')) {
-    return true;
-  }
-  if (keyCode < '0') {
-    return false;
-  }
-  if (keyCode <= '9') {
-    return true;
-  }
-  if ((keyCode == ':') || (keyCode == '\\')) {
-    return (control->editStateFlags & UI_PATH_TEXT_NAME_ONLY) == 0;
-  }
-  if (keyCode < 'A') {
-    return false;
-  }
-  if (keyCode <= 'Z') {
-    return true;
-  }
-  return ('a' <= keyCode) && (keyCode <= 'z');
-}
-
-/* Start of the path segment before the cursor (cursorIndex != 0): just after the nearest '\' or '.' at
-   index cursorIndex - 2 down to 1, else 0. */
-static UiTextCodeUnitIndex UiPathTextEdit_FindPreviousSegmentStart(const uint16_t *pathBuffer,
-          UiTextCodeUnitIndex cursorIndex)
-
-{
-  UiTextCodeUnitIndex scanIndex;
-
-  if (cursorIndex == 1) {
-    return 0;
-  }
-  for (scanIndex = cursorIndex - 2; scanIndex != 0; scanIndex--) {
-    if ((pathBuffer[scanIndex] == '\\') || (pathBuffer[scanIndex] == '.')) {
-      return scanIndex + 1;
-    }
-  }
-  return 0;
-}
-
-/* Start of the next path segment: just after the first '\' or '.' at or after the cursor, else the end of
-   the text. */
-static UiTextCodeUnitIndex UiPathTextEdit_FindNextSegmentStart(const uint16_t *pathBuffer,
-          UiTextCodeUnitIndex cursorIndex)
-
-{
-  UiTextCodeUnitIndex scanIndex;
-
-  for (scanIndex = cursorIndex; pathBuffer[scanIndex] != 0; scanIndex++) {
-    if ((pathBuffer[scanIndex] == '\\') || (pathBuffer[scanIndex] == '.')) {
-      return scanIndex + 1;
-    }
-  }
-  return scanIndex;
-}
-
-/* Ctrl+Left/Right: moves the cursor to the previous/next path segment start. Without Shift the selection
-   collapses there; with Shift the selection end at the cursor moves along and the selection is reordered.
-   Ctrl+Left at the text start does nothing. */
-static void UiPathTextEdit_JumpToSegment(UiPathTextEditControl *control,Bool8 towardsStart,Bool8 extendSelection)
-
-{
-  UiTextCodeUnitIndex formerCursorIndex;
-  UiTextCodeUnitIndex segmentStart;
-  UiTextCodeUnitIndex *selectionBoundary;
-
-  formerCursorIndex = control->cursorIndex;
-  if (towardsStart && (formerCursorIndex == 0)) {
-    return;
-  }
-  /* The selection end at the cursor moves. */
-  selectionBoundary = &control->selectionStart;
-  if (formerCursorIndex != control->selectionStart) {
-    selectionBoundary = &control->selectionEnd;
-  }
-  if (towardsStart) {
-    segmentStart = UiPathTextEdit_FindPreviousSegmentStart(control->pathBuffer,formerCursorIndex);
-  }
-  else {
-    segmentStart = UiPathTextEdit_FindNextSegmentStart(control->pathBuffer,formerCursorIndex);
-  }
-  control->cursorIndex = segmentStart;
-  if (extendSelection) {
-    *selectionBoundary = segmentStart;
-    UiTextEdit_OrderSelection((UiTextEditControl *)control);
-  }
-  else {
-    control->selectionStart = segmentStart;
-    control->selectionEnd = segmentStart;
-  }
-}
-
-/* Plays the activation sound when the control has UI_TEXT_EDIT_PLAY_INTERACTION_SOUND and a sound. */
-static void UiPathTextEdit_PlayInteractionSound(UiPathTextEditControl *control)
-
-{
-  if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != nullptr)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
-  }
-}
-
-/* Keyboard handler of the DOS path edit (keyboardEvent slot of g_UiPathTextEditControlVtable): inserts the
-   characters a DOS 8.3 path may contain, edits and moves the cursor and Shift selection, and Ctrl+Left/Right
-   jump between path segments. After every handled key the path is validated and, unless the control acts on
-   Enter only, its action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext.
-   Returns false: consumed.
-*/
-Bool8 UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiPathTextEditControl *control)
-
-{
-  UiTextEditControl *edit;
-  Bool8 isAltGrCharacter;
-  Bool8 recomputeLayout;
-
-  edit = (UiTextEditControl *)control;
-  if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) ||
-     (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-  }
-  /* AltGr characters skip the modifier checks; of them, only the backslash passes the path character
-     filter below. */
-  isAltGrCharacter = UiTextEdit_IsAltGrCharacter(keyCode);
-  if (!isAltGrCharacter && UiTextEdit_IsModifierShortcut(keyboardStateMask,keyCode)) {
-    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-  }
-  /* Handled keys end in the shared tail: optional layout recompute, then validity update, action,
-     invalidate and the interaction sound. */
-  recomputeLayout = true;
-  if ((isAltGrCharacter) || ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0)) {
-    if (!UiPathTextEdit_IsPathCharacterAccepted(control,keyCode)) {
-      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    }
-    UiTextEdit_InsertCodeUnit(edit,control->pathBuffer,UI_PATH_TEXT_BUFFER_UNITS,UI_PATH_TEXT_BUFFER_UNITS - 2,
-                              (control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0,(uint16_t)keyCode);
-  }
-  else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
-    /* Ctrl+Left/Right: jump to the previous/next path segment ('\' or '.'), Shift extends. */
-    if ((keyCode != KEYBOARD_KEY_CODE_LEFT) && (keyCode != KEYBOARD_KEY_CODE_RIGHT)) {
-      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    }
-    UiPathTextEdit_JumpToSegment(control,keyCode == KEYBOARD_KEY_CODE_LEFT,
-                                 (keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0);
-  }
-  else if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
-    /* Shift: extend the selection from the cursor. */
-    if (!UiTextEdit_IsCursorMovementKey(keyCode)) {
-      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    }
-    recomputeLayout = UiTextEdit_ExtendSelectionByKey(edit,control->pathBuffer,keyCode);
-  }
-  else {
-    switch (keyCode) {
-    case KEYBOARD_KEY_CODE_BACKSPACE:
-    case KEYBOARD_KEY_CODE_DELETE:
-      recomputeLayout = UiTextEdit_DeleteAtCursor(edit,control->pathBuffer,UI_PATH_TEXT_BUFFER_UNITS,
-                                                  keyCode == KEYBOARD_KEY_CODE_BACKSPACE);
-      break;
-    case KEYBOARD_KEY_CODE_INSERT:
-      control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_OVERWRITE_MODE;
-      recomputeLayout = false;
-      break;
-    case KEYBOARD_KEY_CODE_HOME:
-    case KEYBOARD_KEY_CODE_END:
-    case KEYBOARD_KEY_CODE_LEFT:
-    case KEYBOARD_KEY_CODE_RIGHT:
-      UiTextEdit_MoveCursorAndCollapseSelection(edit,control->pathBuffer,keyCode);
-      break;
-    case KEYBOARD_KEY_CODE_ENTER:
-      if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) == 0) {
-        return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-      }
-      UiActionQueue_Enqueue(control->actionId,control);
-      UiPathTextEdit_PlayInteractionSound(control);
-      return false;
-    default:
-      /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-      if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
-        return false;
-      }
-      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    }
-  }
-  if (recomputeLayout) {
-    UiTextEditControl_RecomputeLayoutAndClampScroll(edit);
-  }
-  UiPathTextControl_UpdateDos83Validity(control);
-  if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) == 0) {
-    UiActionQueue_Enqueue(control->actionId,control);
-  }
-  UiNode_InvalidateRoot(&control->base);
-  UiPathTextEdit_PlayInteractionSound(control);
-  return false;
-}
-
 /* Ctrl+Left target from cursorIndex != 0. After a space: back over the spaces, stopping just after the
    previous word. Otherwise: back to the start of the current word; when that start lies after a single
    space (the code unit before the space is not a space), the target is that space instead. */
@@ -984,40 +480,7 @@ Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
   return false;
 }
 
-/* Relocation of a loaded numeric text edit (relocate slot of g_UiNumericTextEditControlVtable): makes it a
-   fallback focus target unless it is the preferred one, hides the caret, rebuilds the text from the value,
-   selects all of it and relocates the children.
-*/
-void UiNumericTextEditControl_RelocateAndRebuildText
-          (UiSerializedRelocationDelta relocationDelta,UiNumericTextControl *control)
-
-{
-  uint16_t *textCursor;
-  uint16_t currentCodeUnit;
-  UiNodeFlags *nodeFlagsField;
-  
-  if (((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) == 0) {
-    nodeFlagsField = &(control->base).nodeFlags;
-    *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
-  }
-  /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
-  UiNumericTextControl_RebuildTextFromValue(control);
-  textCursor = control->textBuffer;
-  control->cursorIndex = 0;
-  control->selectionStart = 0;
-  control->selectionEnd = 0;
-  currentCodeUnit = *textCursor;
-  while (currentCodeUnit != 0) {
-    textCursor++;
-    control->selectionEnd++;
-    currentCodeUnit = *textCursor;
-  }
-  UiContainer_RelocateChildren(relocationDelta,&control->base);
-  return;
-}
-
-/* Draws a text edit (drawClipped slot of g_UiNumericTextEditControlVtable, g_UiPathTextEditControlVtable and
+/* Draws a text edit (drawClipped slot of
    g_UiRequiredTextEditControlVtable): the optional win.gfx frame and tiled interior, the selection highlight,
    the text in the active, invalid-value or disabled style, and in the visible caret phase the insert or
    overwrite caret with its shadow. The clip rectangle is narrowed to the text area first.
@@ -1190,9 +653,9 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   g_GraphicsFramebufferEndAccess();
 }
 
-/* Primary button press on a text edit (nonRightPress slot of the numeric, path and required text edit
-   vtables): unless read-only, starts a pointer selection by placing the cursor and an empty selection at the
-   pointer; plays the interaction sound when enabled.
+/* Primary button press on a text edit (nonRightPress slot of g_UiRequiredTextEditControlVtable): unless read-only,
+   starts a pointer selection by placing the cursor and an empty selection at the pointer; plays the interaction
+   sound when enabled.
 */
 void UiTextEditControl_BeginSelectionAtPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -1215,9 +678,9 @@ void UiTextEditControl_BeginSelectionAtPointer
   return;
 }
 
-/* Primary-button drag over a text edit (nonRightDrag slot of the numeric, path and required text edit
-   vtables): while a pointer selection is active, moves the cursor and the selection end it sits on to the
-   pointer, keeps selectionStart <= selectionEnd, lays the control out again (scroll) and redraws it.
+/* Primary-button drag over a text edit (nonRightDrag slot of g_UiRequiredTextEditControlVtable): while a pointer
+   selection is active, moves the cursor and the selection end it sits on to the pointer, keeps selectionStart <=
+   selectionEnd, lays the control out again (scroll) and redraws it.
 */
 void UiTextEditControl_UpdateSelectionFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -1241,39 +704,6 @@ void UiTextEditControl_UpdateSelectionFromPointer
     (control->base).vtable->layout(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-}
-
-/* Relocation of a loaded DOS path edit (relocate slot of g_UiPathTextEditControlVtable): makes it a fallback
-   focus target unless it is the preferred one, hides the caret, validates the path, selects all of it and
-   relocates the children.
-*/
-void UiPathTextEditControl_RelocateAndValidateDos83
-          (UiSerializedRelocationDelta relocationDelta,UiPathTextEditControl *control)
-
-{
-  uint16_t *textCursor;
-  UiNodeFlags *nodeFlagsField;
-  uint16_t currentCodeUnit;
-  
-  if (((control->base).nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) == 0) {
-    nodeFlagsField = &(control->base).nodeFlags;
-    *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
-  }
-  /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
-  UiPathTextControl_UpdateDos83Validity(control);
-  textCursor = control->pathBuffer;
-  control->cursorIndex = 0;
-  control->selectionStart = 0;
-  control->selectionEnd = 0;
-  currentCodeUnit = *textCursor;
-  while (currentCodeUnit != 0) {
-    textCursor++;
-    control->selectionEnd++;
-    currentCodeUnit = *textCursor;
-  }
-  UiContainer_RelocateChildren(relocationDelta,&control->base);
-  return;
 }
 
 /* Relocation of a loaded required text edit (relocate slot of g_UiRequiredTextEditControlVtable): makes it a
@@ -1309,8 +739,8 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
   return;
 }
 
-/* Primary button release on a text edit (nonRightRelease slot of the numeric, path and required text edit
-   vtables): ends the pointer selection and plays the interaction sound when enabled.
+/* Primary button release on a text edit (nonRightRelease slot of g_UiRequiredTextEditControlVtable): ends the
+   pointer selection and plays the interaction sound when enabled.
 */
 void UiTextEditControl_EndSelection
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -1325,8 +755,8 @@ void UiTextEditControl_EndSelection
   return;
 }
 
-/* Disables a text edit whose action id matches (suppressActionId slot of the numeric, path and required text
-   edit vtables): suppresses it, takes the keyboard focus away from it and redraws. Children are not visited.
+/* Disables a text edit whose action id matches (suppressActionId slot of g_UiRequiredTextEditControlVtable):
+   suppresses it, takes the keyboard focus away from it and redraws. Children are not visited.
 */
 void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
 
@@ -1342,8 +772,8 @@ void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl 
   return;
 }
 
-/* Enables a text edit whose action id matches (unsuppressActionId slot of the numeric, path and required text
-   edit vtables): clears the suppression, gives it the keyboard focus if nothing has it and redraws.
+/* Enables a text edit whose action id matches (unsuppressActionId slot of g_UiRequiredTextEditControlVtable):
+   clears the suppression, gives it the keyboard focus if nothing has it and redraws.
 */
 void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
 
@@ -1359,7 +789,7 @@ void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditContro
   return;
 }
 
-/* Per-frame tick of a text edit (tick slot of the numeric, path and required text edit vtables): while it
+/* Per-frame tick of a text edit (tick slot of g_UiRequiredTextEditControlVtable): while it
    has the keyboard focus, counts the blink frames in the top byte of editStateFlags down; when they run out
    the caret phase flips, the counter restarts at g_UiTextEditCaretBlinkPhaseStep and the edit is redrawn.
 */
@@ -1382,192 +812,6 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
       UiNode_InvalidateRoot(&control->base);
     }
   }
-  return;
-}
-
-/* Rewrites the text of a numeric text edit from currentValue: clears the 16-code-unit buffer, writes a '-'
-   for a negative signed value, then the magnitude in decimal or upper-case hexadecimal, and updates the
-   range validity. Called by UiNumericTextEditControl_RelocateAndRebuildText.
-*/
-void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
-
-{
-  uint32_t remainingValue;
-  int8_t rotateShift;
-  uint32_t highBitIndex;
-  uint32_t hexDigitsLeft;
-  uint32_t digitCodeUnit;
-  uint16_t *outputCursor;
-  
-  outputCursor = control->textBuffer;
-  remainingValue = control->currentValue;
-  outputCursor[0] = 0;
-  outputCursor[1] = 0;
-  control->textBuffer[2] = 0;
-  control->textBuffer[3] = 0;
-  control->textBuffer[4] = 0;
-  control->textBuffer[5] = 0;
-  control->textBuffer[6] = 0;
-  control->textBuffer[7] = 0;
-  control->textBuffer[8] = 0;
-  control->textBuffer[9] = 0;
-  control->textBuffer[10] = 0;
-  control->textBuffer[11] = 0;
-  control->textBuffer[12] = 0;
-  control->textBuffer[13] = 0;
-  control->textBuffer[14] = 0;
-  control->textBuffer[15] = 0;
-  if (((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0) && ((int)remainingValue < 0)) {
-    *outputCursor = '-';
-    remainingValue = 0 - remainingValue;
-    outputCursor = control->textBuffer + 1;
-  }
-  if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
-  }
-  else {
-    highBitIndex = 31;
-    if (remainingValue != 0) {
-      while (remainingValue >> highBitIndex == 0) {
-        highBitIndex--;
-      }
-    }
-    if (remainingValue != 0) {
-      /* NOTE: faithful to the original (highest set bit, masked to a multiple of 4, rotate right, digit
-         count = masked bit / 4): the leading nonzero hex digit is dropped, and a value below 0x10 gives a
-         digit count of 0, which the count-down loop wraps (runaway write). */
-      rotateShift = (int8_t)(highBitIndex & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK);
-      hexDigitsLeft = (highBitIndex & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK) >> 2;
-      remainingValue = remainingValue >> rotateShift | remainingValue << (32 - rotateShift);
-      do {
-        digitCodeUnit = (remainingValue >> 28) + '0';
-        if ('9' < digitCodeUnit) {
-          digitCodeUnit = digitCodeUnit + ('A' - '9' - 1);
-        }
-        *outputCursor = (uint16_t)digitCodeUnit;
-        hexDigitsLeft--;
-        remainingValue = remainingValue << 4;
-        outputCursor++;
-      } while (hexDigitsLeft != 0);
-    }
-    else {
-      *outputCursor = '0';
-    }
-  }
-  UiNumericTextControl_UpdateRangeValidity(control);
-  return;
-}
-
-/* Digit value of a hexadecimal digit '0'-'9', 'A'-'F' or 'a'-'f'; false for any other code unit. */
-static Bool8 UiNumericTextControl_TryHexDigitValue(uint32_t codeUnit,uint32_t *digitValue)
-
-{
-  uint32_t value;
-
-  if (codeUnit < '0') {
-    return false;
-  }
-  value = codeUnit - '0';
-  if (9 < value) {
-    value = codeUnit - ('A' - 10);
-    if (value < 10) {
-      return false;
-    }
-    if (15 < value) {
-      value = codeUnit - ('a' - 10);
-      if ((value < 10) || (15 < value)) {
-        return false;
-      }
-    }
-  }
-  *digitValue = value;
-  return true;
-}
-
-/* Parses the text of a numeric text edit (optional '-', then decimal or hexadecimal digits) into
-   currentValue, queues the action unless the control acts on Enter only, and updates the range validity.
-   Empty text, a bad digit or a '-' on an unsigned control only clears UI_NUMERIC_TEXT_VALUE_VALID (the value
-   stays). Called after every handled key by UiNumericTextEditControl_HandleKeyboardAndCommit.
-*/
-void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
-
-{
-  uint32_t parsedValue;
-  uint32_t codeUnit;
-  uint32_t digitValue;
-  int sign;
-  uint16_t *textCursor;
-
-  textCursor = control->textBuffer;
-  sign = 1;
-  if (*textCursor == 0) {
-    /* Empty text: invalid. */
-    control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-    return;
-  }
-  if (*textCursor == '-') {
-    sign = -1;
-    textCursor = control->textBuffer + 1;
-  }
-  parsedValue = 0;
-  if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-    for (; *textCursor != 0; textCursor++) {
-      codeUnit = (uint32_t)*textCursor;
-      if ((codeUnit < '0') || (9 < codeUnit - '0')) {
-        control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-        return;
-      }
-      parsedValue = parsedValue * 10 + (codeUnit - '0');
-    }
-  }
-  else {
-    for (; *textCursor != 0; textCursor++) {
-      if (!UiNumericTextControl_TryHexDigitValue((uint32_t)*textCursor,&digitValue)) {
-        control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-        return;
-      }
-      parsedValue = parsedValue << 4 | digitValue & 0xf;
-    }
-  }
-  if (sign < 0) {
-    parsedValue = 0 - parsedValue;
-    if ((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) == 0) {
-      /* A negative value for an unsigned control: invalid. */
-      control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-      return;
-    }
-  }
-  control->currentValue = parsedValue;
-  if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-    UiActionQueue_Enqueue(control->actionId,control);
-  }
-  UiNumericTextControl_UpdateRangeValidity(control);
-}
-
-/* Sets UI_NUMERIC_TEXT_VALUE_VALID exactly when currentValue lies within minimumValue..maximumValue,
-   compared signed for UI_NUMERIC_TEXT_SIGNED_VALUE and unsigned otherwise. Called by
-   UiNumericTextControl_RebuildTextFromValue and UiNumericTextControl_ParseAndCommitValue.
-*/
-void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control)
-
-{
-  uint32_t currentNumericValue;
-  Bool8 outOfRange;
-
-  currentNumericValue = control->currentValue;
-  if ((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) == 0) {
-    outOfRange = (currentNumericValue < (uint32_t)control->minimumValue) ||
-                 ((uint32_t)control->maximumValue < currentNumericValue);
-  }
-  else {
-    outOfRange = ((int)currentNumericValue < control->minimumValue) ||
-                 (control->maximumValue < (int)currentNumericValue);
-  }
-  if (outOfRange) {
-    control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-    return;
-  }
-  control->editStateFlags = control->editStateFlags | UI_NUMERIC_TEXT_VALUE_VALID;
   return;
 }
 
@@ -1633,26 +877,6 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   return currentTextIndex;
 }
 
-/* Sets UI_TEXT_EDIT_VALUE_VALID of a DOS path edit from g_FileSystemValidateDos83Path, which gets the
-   control's UI_PATH_TEXT_ALLOW_WILDCARDS and UI_PATH_TEXT_NAME_ONLY bits shifted down to bits 0-1. Called by
-   the path edit's keyboard handler and relocation.
-*/
-void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
-
-{
-  Bool8 validatorRejected;
-
-  validatorRejected = g_FileSystemValidateDos83Path
-                          (control->editStateFlags >> 1 & 3,(uint8_t *)control->pathBuffer);
-  if (validatorRejected) {
-    control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
-  }
-  else {
-    control->editStateFlags = control->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
-  }
-  return;
-}
-
 /* A text control's value is valid (UI_TEXT_EDIT_VALUE_VALID) exactly when its text is not empty.
 */
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
@@ -1667,7 +891,7 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
   return;
 }
 
-/* Layout of a text edit (layout slot of the numeric, path and required text edit vtables; also called after
+/* Layout of a text edit (layout slot of g_UiRequiredTextEditControlVtable; also called after
    every edit): refreshes the layout size and scrolls horizontally just enough to keep the glyphs before and
    after the cursor visible, or not at all while the whole text (plus caret and frame) fits.
 */
@@ -1698,8 +922,8 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
     glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],nullptr);
     cursorOverflow = cursorOverflow + glyphWidth;
   }
-  /* NOTE: as in the original (a fixed count of 16), only the first 16 code units (the numeric text buffer)
-     count, also for the longer path and required text edits. */
+  /* NOTE: as in the original (a fixed count of 16, the buffer size of its numeric text edit), only the first
+     16 code units count, also for the longer required text edit. */
   fullTextWidth = UiTextEditControl_MeasurePrefixWidth(UI_NUMERIC_TEXT_BUFFER_UNITS,control);
   decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE,g_UiWindowTextureSource);
   minScrollOffset = cursorOverflow + decorationSize.logicalWidthPixels;
@@ -1722,46 +946,6 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
     control->horizontalScrollPixels = 0;
   }
 }
-
-UiNodeVtable g_UiNumericTextEditControlVtable = {
-        .relocate = THANDOR_FN(UiNumericTextEditControl_RelocateAndRebuildText),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiTextEditControl_DrawTextSelectionAndCaret),
-        .layout = THANDOR_FN(UiTextEditControl_RecomputeLayoutAndClampScroll),
-        .nonRightPress = THANDOR_FN(UiTextEditControl_BeginSelectionAtPointer),
-        .nonRightRelease = THANDOR_FN(UiTextEditControl_EndSelection),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiTextEditControl_UpdateSelectionFromPointer),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiNumericTextEditControl_HandleKeyboardAndCommit),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiTextEditControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiTextEditControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiTextEditControl_TickCaretBlink),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
-
-UiNodeVtable g_UiPathTextEditControlVtable = {
-        .relocate = THANDOR_FN(UiPathTextEditControl_RelocateAndValidateDos83),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiTextEditControl_DrawTextSelectionAndCaret),
-        .layout = THANDOR_FN(UiTextEditControl_RecomputeLayoutAndClampScroll),
-        .nonRightPress = THANDOR_FN(UiTextEditControl_BeginSelectionAtPointer),
-        .nonRightRelease = THANDOR_FN(UiTextEditControl_EndSelection),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiTextEditControl_UpdateSelectionFromPointer),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiPathTextEditControl_HandleKeyboardAndValidate),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiTextEditControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiTextEditControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiTextEditControl_TickCaretBlink),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
 
 UiNodeVtable g_UiRequiredTextEditControlVtable = {
         .relocate = THANDOR_FN(UiRequiredTextEditControl_RelocateAndValidateNonEmpty),

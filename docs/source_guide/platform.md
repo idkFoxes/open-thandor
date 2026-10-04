@@ -43,7 +43,7 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 
 **Data** (1 shared, 6 file-local): `g_ThandorFrameHeartbeat`.
 
-**Called from** (31 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +11); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +2); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_UseLocalMovieFolder`, `Game_Run` +1); [`platform/debug/autoshot`](#file-platform-debug-autoshot) (`DebugAutoShot_Save`, `DebugAutoShot_SaveNow` +1); [`platform/debug/level_script`](#file-platform-debug-level-script) (`DebugHook_LevelScriptAfterEvaluation`, `DebugHook_LevelScriptBeforeEvaluation` +1); [`platform/debug/movie_player`](#file-platform-debug-movie-player) (`DebugMovie_ExportOne`, `DebugMovie_PlayOne` +1); [`platform/debug/test_aids`](#file-platform-debug-test-aids) (`Thandor_TestAidLogDatagram`, `Thandor_TestAidNetworkBindPort` +1); 21 more: [`assets/text/resources`](assets.md#file-assets-text-resources), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`assets/package/runtime`](assets.md#file-assets-package-runtime), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/ptr32`](core.md#file-core-ptr32), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/commands`](network.md#file-network-protocol-commands), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands).
+**Called from** (75 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +14); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +3); [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_DecodeEntryInto`, `Package_LoadEntry` +2); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`ui/frontend/player`](ui.md#file-ui-frontend-player) (`FrontendPlayerMessageBuffer_AppendTripleById`, `FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers` +2); [`world/terrain/field_edit_commands`](world.md#file-world-terrain-field-edit-commands) (`FieldGridEdit_PlayerBlock`, `FieldGridEdit_PlayerHeightPlane` +2); [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog) (`ScenarioCatalog_CopyDataFileIntoSection`, `ScenarioCatalog_MergeRecordsByName` +1); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_UseLocalMovieFolder`, `Game_Run` +1); 65 more: [`platform/debug/autoshot`](#file-platform-debug-autoshot), [`platform/debug/level_script`](#file-platform-debug-level-script), [`platform/debug/movie_player`](#file-platform-debug-movie-player), [`platform/debug/test_aids`](#file-platform-debug-test-aids), [`assets/model/definitions`](assets.md#file-assets-model-definitions), [`assets/package/codec`](assets.md#file-assets-package-codec), [`assets/text/resources`](assets.md#file-assets-text-resources), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`core/text/path`](core.md#file-core-text-path), [`graphics/terrain/terrain_render`](graphics.md#file-graphics-terrain-terrain-render), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/commands`](network.md#file-network-protocol-commands), [`network/protocol/lobby`](network.md#file-network-protocol-lobby), [`network/protocol/mailbox`](network.md#file-network-protocol-mailbox), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud), [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page), [`world/model/pool`](world.md#file-world-model-pool), [`world/terrain/field_lifecycle`](world.md#file-world-terrain-field-lifecycle), [`assets/army/catalog`](assets.md#file-assets-army-catalog), [`assets/rom/runtime`](assets.md#file-assets-rom-runtime), [`assets/shot/catalog`](assets.md#file-assets-shot-catalog), [`assets/text/richtext`](assets.md#file-assets-text-richtext), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/math/spline`](core.md#file-core-math-spline), [`core/ptr32`](core.md#file-core-ptr32), [`gameplay/selection/selection_set`](gameplay.md#file-gameplay-selection-selection-set), [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer), [`graphics/resources/palette`](graphics.md#file-graphics-resources-palette), [`graphics/resources/texture_set`](graphics.md#file-graphics-resources-texture-set), [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source), [`graphics/resources/tiled_blit`](graphics.md#file-graphics-resources-tiled-blit), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon), [`ui/controls/container`](ui.md#file-ui-controls-container), [`ui/controls/gauge`](ui.md#file-ui-controls-gauge), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/controls/panels`](ui.md#file-ui-controls-panels), [`ui/controls/text`](ui.md#file-ui-controls-text), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/faction_setup`](ui.md#file-ui-frontend-faction-setup), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`ui/frontend/session`](ui.md#file-ui-frontend-session), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/frontend/task_assignment`](ui.md#file-ui-frontend-task-assignment), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands), [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers), [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame), [`ui/text/font`](ui.md#file-ui-text-font), [`ui/text/richtext_render`](ui.md#file-ui-text-richtext-render), [`world/model/hierarchy`](world.md#file-world-model-hierarchy), [`world/shots/flight`](world.md#file-world-shots-flight).
 
 **Includes:** `windows.h`, `dbghelp.h`, `stdarg.h`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/core/ptr32.h`.
 
@@ -73,17 +73,17 @@ No file comment; function families: `CommandLine_*` (10), `CoreAssets_*` (9), `G
 
 **Functions** (16 public, 20 file-local):
 
-- [`ProcessEntry`](../../src/platform/bootstrap/runtime.cpp#L246) - Process entry: raises the process to real-time priority, creates the full-screen main window (only one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
-- [`GameData_ResetDefaults`](../../src/platform/bootstrap/runtime.cpp#L274) - Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction records, gives every faction its own capability bit, the base technology, a rotated relation ...
-- [`GameData_LoadExternalTables`](../../src/platform/bootstrap/runtime.cpp#L353) - Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image, stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) ...
-- [`DynAPI_Resolve`](../../src/platform/bootstrap/runtime.cpp#L424) - Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0.
-- [`DynDLL_Load`](../../src/platform/bootstrap/runtime.cpp#L457) - Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that DynDLL_UnloadAll frees it; returns the (non-NULL) module.
-- [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L484) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
-- [`CPU_DetectFeatures`](../../src/platform/bootstrap/runtime.cpp#L508) - Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it (FATAL_ERROR_CPU_WITHOUT_MMX).
-- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L526) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
-- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L766) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
-- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L785) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
-- 6 more: `GameRuntime_InitializeSpatialAudioAndRendering`, `Game_LoadCoreAssets`, `Game_PlayIntroMovies`, `DynAPI_Bootstrap`, `CommandLine_FindOption`, `CommandLine_Parse`
+- [`ProcessEntry`](../../src/platform/bootstrap/runtime.cpp#L247) - Process entry: raises the process to real-time priority, creates the full-screen main window (only one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
+- [`GameData_ResetDefaults`](../../src/platform/bootstrap/runtime.cpp#L275) - Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction records, gives every faction its own capability bit, the base technology, a rotated relation ...
+- [`GameData_LoadExternalTables`](../../src/platform/bootstrap/runtime.cpp#L354) - Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image, stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) ...
+- [`DynAPI_Resolve`](../../src/platform/bootstrap/runtime.cpp#L425) - Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0.
+- [`DynDLL_Load`](../../src/platform/bootstrap/runtime.cpp#L458) - Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that DynDLL_UnloadAll frees it; returns the (non-NULL) module.
+- [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L485) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
+- [`CPU_DetectFeatures`](../../src/platform/bootstrap/runtime.cpp#L509) - Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it (FATAL_ERROR_CPU_WITHOUT_MMX).
+- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L527) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
+- [`GameRuntime_InitializeSpatialAudioAndRendering`](../../src/platform/bootstrap/runtime.cpp#L579) - Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables, the software renderer's display-mode hook and the global primitive queue (0xA000 packets), ...
+- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L788) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
+- 6 more: `Screenshot_AdvanceFileName`, `Game_LoadCoreAssets`, `Game_PlayIntroMovies`, `DynAPI_Bootstrap`, `CommandLine_FindOption`, `CommandLine_Parse`
 
 **Data** (11 shared, 53 file-local): `g_CommandLineFindOption`, `g_LooseMoviePathPrefix`, `g_DatenHexPathUtf16`, `g_StatHexPathUtf16`, `g_GameStatTableImage`, `g_GameDataAuxState`, `g_FrontendPlayerListRows`, `g_IntroMoviePendingTicks` and 3 more.
 
@@ -273,13 +273,13 @@ Scripted input (test aid). Reads OPEN_THANDOR_SCRIPT=&lt;file&gt; and replays it
 
 Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
 
-**Functions** (3 public, 6 file-local):
+**Functions** (3 public, 7 file-local):
 
-- [`DebugStateHash_SessionInitializing`](../../src/platform/debug/statehash.cpp#L44)
-- [`DebugStateHash_SessionStart`](../../src/platform/debug/statehash.cpp#L65)
-- [`DebugStateHash_AfterStep`](../../src/platform/debug/statehash.cpp#L240)
+- [`DebugStateHash_SessionInitializing`](../../src/platform/debug/statehash.cpp#L53)
+- [`DebugStateHash_SessionStart`](../../src/platform/debug/statehash.cpp#L81)
+- [`DebugStateHash_AfterStep`](../../src/platform/debug/statehash.cpp#L258)
 
-**Data** (0 shared, 7 file-local): `s_stepsWanted`, `s_stepsDone`, `s_detailTick`, `s_pauseTick`, `s_output`, `s_armyHomeX`, `s_armyHomeY`.
+**Data** (0 shared, 8 file-local): `s_stepsWanted`, `s_stepsDone`, `s_detailTick`, `s_pauseTick`, `s_output`, `s_speedStepTicks`, `s_armyHomeX`, `s_armyHomeY`.
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_SessionInitializing`, `DebugHook_SessionStarted` +1).
 
@@ -340,25 +340,25 @@ The types of the module (structs, unions, enums and scalar typedefs in the origi
 
 [Source](../../src/platform/filesystem/win32.cpp) · [Header](../../include/thandor/platform/filesystem/win32.h)
 
-No file comment; function families: `Win32File_*` (16), `FileSystem_*` (7), `Win32Drive_*` (5), `Win32FileSystem_*` (4).
+No file comment; function families: `Win32File_*` (16), `FileSystem_*` (7), `Win32FileSystem_*` (4), `Win32Drive_*` (2).
 
-**Functions** (30 public, 4 file-local):
+**Functions** (26 public, 4 file-local):
 
-- [`FileSystem_BuildEnumerationStringTable`](../../src/platform/filesystem/win32.cpp#L163) - Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, ...
-- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L213) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
-- [`Win32File_GetLastWriteDosDate`](../../src/platform/filesystem/win32.cpp#L333) - Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in the low word) in *outDosDateTime and returns 0.
-- [`Win32File_GetLastWriteTimeHigh`](../../src/platform/filesystem/win32.cpp#L366) - Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes per step) in *outLastWriteTimeHigh and returns 0.
-- [`Win32Drive_GetVolumeSerialNumber`](../../src/platform/filesystem/win32.cpp#L395) - Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of ...
-- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L426) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
-- [`Win32Drive_CheckMediaReady`](../../src/platform/filesystem/win32.cpp#L440) - Reports whether a drive has usable media: returns false (ready) for fixed, network and other drives, true (not ready) for removable and CD-ROM drives.
-- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L456) - The whole-file load of FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath (see there), also used for loose files by Package_LoadEntry and Resource_Load (assets/package).
-- [`FileSystem_LoadWholeFile`](../../src/platform/filesystem/win32.cpp#L509) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
-- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L530) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
-- 20 more: `FileSystem_LoadWholeFileAlternatePath`, `Win32File_WriteExactOrFlush`, `Win32File_GetPosition`, `Win32File_Seek`, `Win32File_Delete`, `Win32File_Move`, `Win32File_Copy`, `Win32File_CreateDirectoryRecursive`, `Win32File_RemoveDirectory`, `Win32Drive_GetFreeAndTotalBytes`, `Win32Drive_EnumerateLetters`, `Win32Path_ValidateDos83`, `Win32FileSystem_EnumerateDirectoryOrVolumeEntries`, `Win32File_ReadExact`, `Win32File_GetSize`, `Win32File_GetCurrentDirectory`, `Win32File_SetCurrentDirectory`, `Win32Drive_GetEngineTypeCode`, `Win32File_Open`, `Win32File_Close`
+- [`FileSystem_BuildEnumerationStringTable`](../../src/platform/filesystem/win32.cpp#L155) - Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, ...
+- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L205) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
+- [`Win32File_GetLastWriteDosDate`](../../src/platform/filesystem/win32.cpp#L321) - Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in the low word) in *outDosDateTime and returns 0.
+- [`Win32File_GetLastWriteTimeHigh`](../../src/platform/filesystem/win32.cpp#L354) - Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes per step) in *outLastWriteTimeHigh and returns 0.
+- [`Win32Drive_GetVolumeSerialNumber`](../../src/platform/filesystem/win32.cpp#L383) - Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of ...
+- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L414) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
+- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L427) - The whole-file load of FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath (see there), also used for loose files by Package_LoadEntry and Resource_Load (assets/package).
+- [`FileSystem_LoadWholeFile`](../../src/platform/filesystem/win32.cpp#L480) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
+- [`FileSystem_LoadWholeFileAlternatePath`](../../src/platform/filesystem/win32.cpp#L490) - Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in the original is that it also returns the file size.
+- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L501) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
+- 16 more: `Win32File_WriteExactOrFlush`, `Win32File_GetPosition`, `Win32File_Seek`, `Win32File_Delete`, `Win32File_Move`, `Win32File_Copy`, `Win32File_CreateDirectoryRecursive`, `Win32File_RemoveDirectory`, `Win32Drive_GetFreeAndTotalBytes`, `Win32FileSystem_EnumerateDirectoryOrVolumeEntries`, `Win32File_ReadExact`, `Win32File_GetSize`, `Win32File_GetCurrentDirectory`, `Win32File_SetCurrentDirectory`, `Win32File_Open`, `Win32File_Close`
 
-**Data** (17 shared, 20 file-local): `g_ExecutableDirectoryUtf16`, `g_FileSystemCombinedPathScratchUtf16`, `g_FileSystemOpen`, `g_FileSystemClose`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `g_FileSystemGetSize`, `g_FileSystemSeek` and 9 more.
+**Data** (13 shared, 20 file-local): `g_ExecutableDirectoryUtf16`, `g_FileSystemCombinedPathScratchUtf16`, `g_FileSystemOpen`, `g_FileSystemClose`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `g_FileSystemGetSize`, `g_FileSystemSeek` and 5 more.
 
-**Called from** (22 files): [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_DecodeEntryInto`, `Package_LoadEntryIntoBuffer` +4); [`movie/runtime/playback`](movie.md#file-movie-runtime-playback) (`Movie_AdvanceFrame`, `Movie_Close` +4); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_AdvanceScreenshotName`, `CoreAssets_UseLocalMovieFolder` +2); [`assets/package/archive_write`](assets.md#file-assets-package-archive-write) (`Package_MoveTailOverEntry`, `Package_ShrinkArchiveHeader` +1); [`core/settings/persistent`](core.md#file-core-settings-persistent) (`PersistentSettings_Flush`, `PersistentSettings_LoadImage` +1); [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_CreatePackage`, `InGameSaveGame_OpenNewPackage` +1); [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page) (`InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog`, `InGameSaveGamePage_RebuildCatalog` +1); [`gameplay/session/scenario_load`](gameplay.md#file-gameplay-session-scenario-load) (`FrontendScenarioSession_LoadFieldGridOfLevel`, `FrontendScenarioSession_LoadOrRequestCampaignBundle`); [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog) (`ScenarioCatalog_Rebuild`); [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (`Runtime_Shutdown`); 12 more: [`gameplay/session/level`](gameplay.md#file-gameplay-session-level), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/level_saved`](gameplay.md#file-gameplay-session-level-saved), [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/system/time_locale`](#file-platform-system-time-locale), [`ui/controls/text_edit`](ui.md#file-ui-controls-text-edit), [`ui/controls/tree_list`](ui.md#file-ui-controls-tree-list), [`ui/core/pcx_preview`](ui.md#file-ui-core-pcx-preview), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/ingame/editor_keyboard`](ui.md#file-ui-ingame-editor-keyboard), [`world/terrain/field_lifecycle`](world.md#file-world-terrain-field-lifecycle).
+**Called from** (19 files): [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_DecodeEntryInto`, `Package_LoadEntryIntoBuffer` +4); [`movie/runtime/playback`](movie.md#file-movie-runtime-playback) (`Movie_AdvanceFrame`, `Movie_Close` +4); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_AdvanceScreenshotName`, `CoreAssets_UseLocalMovieFolder` +2); [`assets/package/archive_write`](assets.md#file-assets-package-archive-write) (`Package_MoveTailOverEntry`, `Package_ShrinkArchiveHeader` +1); [`core/settings/persistent`](core.md#file-core-settings-persistent) (`PersistentSettings_Flush`, `PersistentSettings_LoadImage` +1); [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_CreatePackage`, `InGameSaveGame_OpenNewPackage` +1); [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page) (`InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog`, `InGameSaveGamePage_RebuildCatalog` +1); [`gameplay/session/scenario_load`](gameplay.md#file-gameplay-session-scenario-load) (`FrontendScenarioSession_LoadFieldGridOfLevel`, `FrontendScenarioSession_LoadOrRequestCampaignBundle`); [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog) (`ScenarioCatalog_Rebuild`); [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (`Runtime_Shutdown`); 9 more: [`gameplay/session/level`](gameplay.md#file-gameplay-session-level), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/level_saved`](gameplay.md#file-gameplay-session-level-saved), [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/system/time_locale`](#file-platform-system-time-locale), [`ui/core/pcx_preview`](ui.md#file-ui-core-pcx-preview), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`world/terrain/field_lifecycle`](world.md#file-world-terrain-field-lifecycle).
 
 **Depends on** (7 files, names used): [`assets/package/runtime`](assets.md#file-assets-package-runtime) (4), [`core/error/runtime`](core.md#file-core-error-runtime) (3), [`core/memory/allocator`](core.md#file-core-memory-allocator) (3), [`core/text/string`](core.md#file-core-text-string) (3), [`core/text/path`](core.md#file-core-text-path) (2), [`assets/text/richtext`](assets.md#file-assets-text-richtext) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
 
@@ -420,15 +420,15 @@ SDL3 backend: audio. One SDL audio stream (22050 Hz, 16-bit, stereo, as DirectSo
 **Functions** (10 public, 6 file-local):
 
 - [`SdlAudio_Init`](../../src/platform/sdl3/audio.cpp#L220)
-- [`SdlAudio_Shutdown`](../../src/platform/sdl3/audio.cpp#L257)
-- [`SdlAudio_CreateSampleVoiceSet`](../../src/platform/sdl3/audio.cpp#L276)
-- [`SdlAudio_ReleaseSampleVoiceSet`](../../src/platform/sdl3/audio.cpp#L326)
-- [`SdlAudio_PlayOneShot`](../../src/platform/sdl3/audio.cpp#L352)
-- [`SdlAudio_PlayLooping`](../../src/platform/sdl3/audio.cpp#L358)
-- [`SdlAudio_StopVoice`](../../src/platform/sdl3/audio.cpp#L364)
-- [`SdlAudio_IsVoicePlaying`](../../src/platform/sdl3/audio.cpp#L375)
-- [`SdlAudio_SetVoiceGains`](../../src/platform/sdl3/audio.cpp#L385)
-- [`SdlAudio_StopAllVoices`](../../src/platform/sdl3/audio.cpp#L396)
+- [`SdlAudio_Shutdown`](../../src/platform/sdl3/audio.cpp#L266)
+- [`SdlAudio_CreateSampleVoiceSet`](../../src/platform/sdl3/audio.cpp#L285)
+- [`SdlAudio_ReleaseSampleVoiceSet`](../../src/platform/sdl3/audio.cpp#L335)
+- [`SdlAudio_PlayOneShot`](../../src/platform/sdl3/audio.cpp#L361)
+- [`SdlAudio_PlayLooping`](../../src/platform/sdl3/audio.cpp#L367)
+- [`SdlAudio_StopVoice`](../../src/platform/sdl3/audio.cpp#L373)
+- [`SdlAudio_IsVoicePlaying`](../../src/platform/sdl3/audio.cpp#L384)
+- [`SdlAudio_SetVoiceGains`](../../src/platform/sdl3/audio.cpp#L394)
+- [`SdlAudio_StopAllVoices`](../../src/platform/sdl3/audio.cpp#L405)
 
 **Data** (0 shared, 6 file-local): `kSampleRate`, `kChannels`, `kSamplesPerDecodedBlock`, `kVoicesPerSet`, `s_mixer`, `s_registry`.
 
@@ -588,13 +588,13 @@ Shared declarations of the SDL3 backend's source files (src/platform/sdl3): owni
 
 SDL3 backend: the periodic timers of g_TimerRegisterPeriodic / g_TimerUnregisterPeriodic on SDL timers instead of WinMM's timeSetEvent. Like the original's TimerSystem_RegisterPeriodic there are 32 slots, the period is 1000 / frequency ms (truncated) and the callbacks run on a timer thread (SDL's).
 
-**Functions** (3 public, 1 file-local):
+**Functions** (3 public, 2 file-local):
 
-- [`SdlTimer_RegisterPeriodic`](../../src/platform/sdl3/timer.cpp#L66)
-- [`SdlTimer_UnregisterPeriodic`](../../src/platform/sdl3/timer.cpp#L92)
-- [`SdlTimer_Shutdown`](../../src/platform/sdl3/timer.cpp#L105)
+- [`SdlTimer_RegisterPeriodic`](../../src/platform/sdl3/timer.cpp#L89)
+- [`SdlTimer_UnregisterPeriodic`](../../src/platform/sdl3/timer.cpp#L115)
+- [`SdlTimer_Shutdown`](../../src/platform/sdl3/timer.cpp#L134)
 
-**Data** (0 shared, 5 file-local): `kTimerSlotCount`, `kNanosecondsPerMillisecond`, `s_timerMutex`, `s_timerSlots`, `s_registrations`.
+**Data** (0 shared, 6 file-local): `kTimerSlotCount`, `kNanosecondsPerMillisecond`, `s_timerMutex`, `s_timerSlots`, `s_registrations`, `t_inTimerDispatch`.
 
 **Called from** (2 files): [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (`Runtime_Shutdown`); [`platform/sdl3/platform`](#file-platform-sdl3-platform) (`SdlPlatform_InstallTimersAndPump`).
 
@@ -665,7 +665,45 @@ SDL3 backend: the window and taskbar icon from thandor.ico (see thandor/platform
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
 
-Files: [`selftest`](#file-platform-selftest-selftest), [`selftests`](#file-platform-selftest-selftests)
+Files: [`hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`raster_selftest`](#file-platform-selftest-raster-selftest), [`selftest`](#file-platform-selftest-selftest), [`selftests`](#file-platform-selftest-selftests)
+
+<a id="file-platform-selftest-hexscan-selftest"></a>
+#### `hexscan_selftest.cpp`
+
+[Source](../../src/platform/selftest/hexscan_selftest.cpp)
+
+OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the flatten brush, the two placement tests and the line-of-sight accumulation), a safety net for merging those walkers.
+
+**Functions** (1 public, 11 file-local):
+
+- [`Thandor_SelfTestHexScan`](../../src/platform/selftest/hexscan_selftest.cpp#L351)
+
+**Data** (0 shared, 1 file-local): `g_HexscanTestDriverNames`.
+
+**Called from** (1 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_Run`).
+
+**Depends on** (7 files, names used): [`world/terrain/hex_scan`](world.md#file-world-terrain-hex-scan) (4), [`world/terrain/overlay_marking`](world.md#file-world-terrain-overlay-marking) (2), [`world/terrain/placement_tests`](world.md#file-world-terrain-placement-tests) (2), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`world/terrain/field_deformation`](world.md#file-world-terrain-field-deformation) (1), [`world/terrain/occupancy`](world.md#file-world-terrain-occupancy) (1), [`world/terrain/sight`](world.md#file-world-terrain-sight) (1).
+
+**Includes:** `stddef.h`, `stdint.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `thandor/world/terrain/field_deformation.h`, `thandor/world/terrain/grid.h`, `thandor/world/terrain/hex_scan.h`, `thandor/world/terrain/occupancy.h`, `thandor/world/terrain/overlay_marking.h`, `thandor/world/terrain/placement_tests.h`, `thandor/world/terrain/sight.h`.
+
+<a id="file-platform-selftest-raster-selftest"></a>
+#### `raster_selftest.cpp`
+
+[Source](../../src/platform/selftest/raster_selftest.cpp)
+
+OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md). No game data is needed: the framebuffer, depth buffer and texture-source assets are synthetic and filled from a local seeded LCG (not the game's Random_* streams).
+
+**Functions** (1 public, 14 file-local):
+
+- [`Thandor_SelfTestRaster`](../../src/platform/selftest/raster_selftest.cpp#L459)
+
+**Data** (0 shared, 1 file-local): `g_RasterTestBlitImages`.
+
+**Called from** (1 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_Run`).
+
+**Depends on** (9 files, names used): [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (7), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (5), [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source) (5), [`graphics/backend/software_display_mode`](graphics.md#file-graphics-backend-software-display-mode) (3), [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer) (3), [`graphics/resources/tiled_blit`](graphics.md#file-graphics-resources-tiled-blit) (2), [`graphics/backend/software_texture_scale`](graphics.md#file-graphics-backend-software-texture-scale) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`ui/frontend/credits_mask`](ui.md#file-ui-frontend-credits-mask) (1).
+
+**Includes:** `stddef.h`, `stdio.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `vector`.
 
 <a id="file-platform-selftest-selftest"></a>
 #### `selftest.h`
@@ -679,17 +717,17 @@ Self-tests and data tools, started from WinMain (after the precomputed tables ar
 
 [Source](../../src/platform/selftest/selftests.cpp)
 
-No file comment; function families: `Thandor_*` (12), `SelfTest_*` (9), `IconTest_*` (4).
+No file comment; function families: `Thandor_*` (15), `SelfTest_*` (11), `IconTest_*` (4).
 
-**Functions** (1 public, 24 file-local):
+**Functions** (1 public, 29 file-local):
 
-- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L923) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
+- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L1175) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_RunSelfTest`).
 
-**Depends on** (17 files, names used): [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (3), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (3), [`assets/package/codec`](assets.md#file-assets-package-codec) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
+**Depends on** (23 files, names used): [`assets/package/codec`](assets.md#file-assets-package-codec) (6), [`audio/codec/sam`](audio.md#file-audio-codec-sam) (6), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (5), [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (4), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (3), [`audio/codec/sam_encoder`](audio.md#file-audio-codec-sam-encoder) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest) (1), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest) (1).
 
-**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `thandor/platform/sdl3/window_icon.h`, `vector`.
+**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `thandor/platform/sdl3/window_icon.h`, `algorithm`, `vector`.
 
 <a id="module-platform-system"></a>
 ### `platform/system`
@@ -718,7 +756,7 @@ No file comment; function families: `Locale_*` (10).
 
 **Data** (9 shared, 4 file-local): `g_LocaleGetPackedCurrentDate`, `g_LocaleGetPackedCurrentTime`, `g_TimerRegisterPeriodic`, `g_TimerUnregisterPeriodic`, `g_LocaleCopyDefaultComputerLabelUtf16`, `g_LocaleFormatCurrentDateUtf16`, `g_LocaleFormatTimeFieldsUtf16`, `g_LocaleFormatCurrentTimeUtf16` and 1 more.
 
-**Called from** (20 files): [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameLoadedSession_ResetSessionState`, `InGameRuntime_InitializeLoadedSession`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_QueueIntroNotifications`, `InGameNewSession_ResetSessionState`); [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_CreatePackage`, `InGameSaveGame_WritePackageHeader`); [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_RunSessionUntilExit`, `InGameRuntime_ShutdownAndReleaseResources`); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`Game_PlayIntroMovies`, `ProcessEntry_RunGame`); [`platform/sdl3/input`](#file-platform-sdl3-input) (`SdlInput_Init`, `SdlInput_Shutdown`); [`ui/core/runtime`](ui.md#file-ui-core-runtime) (`UiRuntime_Initialize`, `UiRuntime_Shutdown`); [`ui/frontend/end_movie`](ui.md#file-ui-frontend-end-movie) (`FrontendEndMovie_ShowResultsPage`, `Frontend_PlaySelectedEndMovie`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`FrontendRuntime_ShutdownAndReleaseResources`, `Frontend_Init`); [`assets/text/resources`](assets.md#file-assets-text-resources) (`TextResourcePage_Load`); 10 more: [`assets/text/richtext_markup`](assets.md#file-assets-text-richtext-markup), [`graphics/render/offscreen`](graphics.md#file-graphics-render-offscreen), [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer), [`graphics/resources/texture_decompose`](graphics.md#file-graphics-resources-texture-decompose), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`platform/debug/movie_player`](#file-platform-debug-movie-player), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`ui/controls/tree_list`](ui.md#file-ui-controls-tree-list), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud).
+**Called from** (19 files): [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameLoadedSession_ResetSessionState`, `InGameRuntime_InitializeLoadedSession`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_QueueIntroNotifications`, `InGameNewSession_ResetSessionState`); [`gameplay/session/savegame`](gameplay.md#file-gameplay-session-savegame) (`InGameSaveGame_CreatePackage`, `InGameSaveGame_WritePackageHeader`); [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_RunSessionUntilExit`, `InGameRuntime_ShutdownAndReleaseResources`); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`Game_PlayIntroMovies`, `ProcessEntry_RunGame`); [`platform/sdl3/input`](#file-platform-sdl3-input) (`SdlInput_Init`, `SdlInput_Shutdown`); [`ui/core/runtime`](ui.md#file-ui-core-runtime) (`UiRuntime_Initialize`, `UiRuntime_Shutdown`); [`ui/frontend/end_movie`](ui.md#file-ui-frontend-end-movie) (`FrontendEndMovie_ShowResultsPage`, `Frontend_PlaySelectedEndMovie`); [`ui/frontend/lifecycle`](ui.md#file-ui-frontend-lifecycle) (`FrontendRuntime_ShutdownAndReleaseResources`, `Frontend_Init`); [`assets/text/resources`](assets.md#file-assets-text-resources) (`TextResourcePage_Load`); 9 more: [`assets/text/richtext_markup`](assets.md#file-assets-text-richtext-markup), [`graphics/render/offscreen`](graphics.md#file-graphics-render-offscreen), [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer), [`graphics/resources/texture_decompose`](graphics.md#file-graphics-resources-texture-decompose), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`platform/debug/movie_player`](#file-platform-debug-movie-player), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud).
 
 **Depends on** (3 files, names used): [`core/text/string`](core.md#file-core-text-string) (3), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/filesystem/win32`](#file-platform-filesystem-win32) (1).
 

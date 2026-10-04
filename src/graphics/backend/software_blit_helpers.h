@@ -208,7 +208,7 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
     return 1;
 }
 
-/* ---- B1: clipped blend variants (HalfSourceRgb, PaletteBank, Modulated) ------------------- */
+/* ---- B1: clipped blend variants (HalfSourceRgb, Modulated) -------------------------------- */
 
 /* The BlitModulatedSourceAlpha channel product, as the original's four IMULs: every channel of argb is
    multiplied by the matching channel of modulation. Blue keeps (b * mb) >> 8; green, red and alpha keep
@@ -223,119 +223,6 @@ static __inline uint32_t Blit_Modulate(uint32_t argb, uint32_t modulation)
     uint32_t red = (((argb >> 16) & 0xff) * ((modulation >> 16) & 0xff)) & 0xff00u;
     uint32_t alpha = ((argb >> 24) * (modulation >> 24)) & 0xff00u;
     return blue | green | (red << 8) | (alpha << 16);
-}
-
-/* ---- B2: saturated add (BlitSaturatedAddRgb, BlitHalfRgbSaturatedAdd) ------------------------ */
-
-/* PADDUSW of one lane: unsigned 16-bit add, clamped at 0xFFFF. */
-static __inline uint16_t Blit_AddSaturateWord(uint16_t a, uint16_t b)
-{
-    uint32_t sum = (uint32_t)a + b;
-    return (uint16_t)(sum > 0xffffu ? 0xffffu : sum);
-}
-
-/* Adds an ARGB colour to a 32-bit pixel: both as lanes c * 0x101 (the source >> sourceShift),
-   PADDUSW, PSRLW 8 and PACKUSWB. All four bytes, alpha included, are summed and written. */
-static __inline uint32_t Blit_AddArgb32(uint32_t argb, uint32_t destination, int sourceShift)
-{
-    RasterColor source = Blit_ArgbLanes(argb, sourceShift);
-    RasterColor target = Blit_ArgbLanes(destination, 0);
-    int channel[RASTER_LANE_COUNT];
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        channel[i] = Blit_AddSaturateWord((uint16_t)target.lane[i], (uint16_t)source.lane[i]) >> 8;
-    }
-    return Raster_Pack32(channel);
-}
-
-/* ---- B3: integer-scaled blit ---------------------------------------------------------------- */
-/*
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha32 does not clip the source. It walks the whole
-image, replicates every texel scale x scale times, and tests each written pixel against the clip
-rectangle, which is first clamped to [0, framebuffer size) (signed compares). The original's
-destination pointer walks the unclipped image; a pixel at (x, y) is at pixels + (y * width + x) *
-pixelBytes, which is what BlitScaled_Pixel computes, and only for pixels that pass the clip test.
-*/
-typedef struct BlitScaledImage {
-    const uint8_t *texels;  /* first texel of the subresource */
-    int texelBytes;      /* 1 (palette index) or 4 (ARGB) */
-    const uint8_t *palette; /* palette bank of a paletted image, else NULL */
-    uint32_t width;         /* source size in texels (the original's loop counters; 0 would mean 2^32) */
-    uint32_t height;
-    int left;            /* framebuffer position of the scaled image: draw + origin * scale */
-    int top;
-    int clipMinX;        /* clip rectangle clamped to the framebuffer */
-    int clipMinY;
-    int clipMaxX;
-    int clipMaxY;
-} BlitScaledImage;
-
-/* Validates and places an integer-scaled subresource. Differences to Blit_SetupSubresource: any
-   negative paletteIndex (a sign test), not only -1, means ARGB texels, and the origin is scaled. */
-static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAsset,
-                                     GraphicsSubresourceIndex subresourceIndex,
-                                     const SoftwareFramebufferAccess *framebuffer, int pixelBytes, uint32_t scale,
-                                     int drawX, int drawY, int clipMaxY, int clipMaxX, int clipMinY, int clipMinX,
-                                     BlitScaledImage *image)
-{
-    const uint8_t *asset = (const uint8_t *)sourceAsset;
-    const GraphicsTextureSourceEntry *entry;
-
-    if (sourceAsset->common.magic != ASSET_MAGIC_GFX ||
-        subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount ||
-        (int)framebuffer->bytesPerPixel != pixelBytes) {
-        return 0;
-    }
-    entry = (const GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset) +
-            subresourceIndex;
-    if (entry->paletteIndex < 0) {
-        image->texelBytes = 4;
-        image->palette = nullptr;
-    }
-    else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
-        image->texelBytes = 1;
-        image->palette = asset + GFX_ASSET_HEADER_SIZE + (int32_t)((uint32_t)entry->paletteIndex * GFX_PALETTE_BANK_SIZE);
-    }
-    else {
-        return 0;
-    }
-    image->texels = asset + entry->dataOffset;
-    image->width = entry->pixelWidth;
-    image->height = entry->pixelHeight;
-    image->left = (int)((uint32_t)drawX + (uint32_t)entry->originX * scale);
-    image->top = (int)((uint32_t)drawY + (uint32_t)entry->originY * scale);
-    image->clipMinX = clipMinX < 0 ? 0 : clipMinX;
-    image->clipMinY = clipMinY < 0 ? 0 : clipMinY;
-    image->clipMaxX = clipMaxX > (int)framebuffer->width ? (int)framebuffer->width : clipMaxX;
-    image->clipMaxY = clipMaxY > (int)framebuffer->height ? (int)framebuffer->height : clipMaxY;
-    return 1;
-}
-
-static __inline int BlitScaled_RowVisible(const BlitScaledImage *image, int y)
-{
-    return y >= image->clipMinY && y < image->clipMaxY;
-}
-
-static __inline int BlitScaled_ColumnVisible(const BlitScaledImage *image, int x)
-{
-    return x >= image->clipMinX && x < image->clipMaxX;
-}
-
-/* The texel's alpha-test colour and blend colour. A paletted texel tests the entry's converted pixel
-   (+4) and blends the entry's ARGB colour (+0), in both depths; a direct texel is both. */
-static __inline uint32_t BlitScaled_TexelColor(const BlitScaledImage *image, const uint8_t *texel, uint32_t *blendColor)
-{
-    if (image->palette != nullptr) {
-        *blendColor = *(const uint32_t *)(image->palette + *texel * 8u);
-        return *(const uint32_t *)(image->palette + *texel * 8u + 4u);
-    }
-    *blendColor = *(const uint32_t *)texel;
-    return *blendColor;
-}
-
-static __inline uint8_t *BlitScaled_Pixel(const SoftwareFramebufferAccess *framebuffer, int pixelBytes, int x, int y)
-{
-    return framebuffer->pixels + (y * (int)framebuffer->width + x) * pixelBytes;
 }
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_HELPERS_H */

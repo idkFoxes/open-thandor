@@ -201,7 +201,6 @@ add_executable(thandor WIN32
     src/ui/controls/text_buttons.cpp
     src/ui/controls/text_edit.cpp
     src/ui/controls/tooltip.cpp
-    src/ui/controls/tree_list.cpp
     src/ui/controls/window.cpp
     src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
