@@ -10,7 +10,7 @@
 
 #include <thandor/graphics/render/light_records.h>
 #include <thandor/thandor.h>
-#include "shading_lanes.h"
+#include <thandor/core/color_lanes.h>
 
 /* Module data. */
 
@@ -123,7 +123,7 @@ MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
             radiusScale = (uint32_t)((uint64_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT);
             if (radiusScale != 0) {
               /* bits 5..36 of the remainder, divided unsigned */
-              scaledLight = pmulhw(Shading_DuplicateBytesToWordLanes(packedColor,2),
+              scaledLight = pmulhw(ColorLanes_UnpackBytesShiftRight(packedColor,2),
                               g_PackedLightingLookupTable[(int32_t)((uint32_t)(remainingQ24 >> 5) / radiusScale)]);
               packedLightAccumulator = paddusw(packedLightAccumulator,scaledLight);
             }

@@ -10,6 +10,7 @@
 
 #include <thandor/world/terrain/field_lighting.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -322,20 +323,6 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
   return;
 }
 
-/* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b
-   of value as the words ((b << 8) | b) >> shift (b * 0x101 widens a byte to the full 16-bit range). */
-static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
 /* Not a function of its own in the original: the inlined MMX sequence that blends one colour pair of
    WorldLightingRuntime_UpdateInterpolatedTerrainLighting per byte, color * forward + alternateColor * inverse
    with unsigned saturation (PUNPCKLBW/PSRLW 6 of both colours, PMULHW by the factors, PADDW, PACKUSWB). */
@@ -350,8 +337,8 @@ static __inline uint32_t WorldLighting_BlendColors
   short sum;
   int lane;
 
-  forwardTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(color,6),forwardFactors);
-  inverseTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(alternateColor,6),inverseFactors);
+  forwardTerm.q = pmulhw(ColorLanes_UnpackBytesShiftRight(color,6),forwardFactors);
+  inverseTerm.q = pmulhw(ColorLanes_UnpackBytesShiftRight(alternateColor,6),inverseFactors);
   packed = 0;
   for (lane = 0; lane < 4; lane++) {
     sum = (short)(forwardTerm.sw[lane] + inverseTerm.sw[lane]);

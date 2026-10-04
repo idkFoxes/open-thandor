@@ -7,7 +7,7 @@
 
 #include <thandor/graphics/render/shadow_texture.h>
 #include <thandor/thandor.h>
-#include "shading_lanes.h"
+#include <thandor/core/color_lanes.h>
 
 /* the original offsets of the render context view and the 0x80-byte primitive blocks */
 static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
@@ -65,28 +65,6 @@ static const uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask = 0x707070707070
 uint32_t g_TextureDownsampleShift = 0;
 
 /* Implementation ownership: graphics/render/shadow_texture. */
-
-/* Not in the original: C stand-in for PACKUSWB mm,mm; MOVD dword,mm. Saturates the four signed word
-   lanes to unsigned bytes (<= 0 -> 0, > 0xff -> 0xff) and packs them into one dword (word lane k ->
-   byte k), i.e. turns scaled colour lanes back into a packed ARGB colour. */
-static __inline uint32_t Shading_PackWordLanesUnsignedSaturate(uint64_t lanes)
-{
-  uint32_t packed;
-  short laneValue;
-  int lane;
-
-  packed = 0;
-  for (lane = 0; lane < 4; lane++) {
-    laneValue = (short)(lanes >> (lane * 16));
-    if (ARGB8888_CHANNEL_MAX < laneValue) {
-      packed = packed | (0xffu << (lane * 8));
-    }
-    else if (0 < laneValue) {
-      packed = packed | ((uint32_t)laneValue << (lane * 8));
-    }
-  }
-  return packed;
-}
 
 /* Not in the original: adds a direction vector to a point. */
 static void Shading_AddDirectionToPoint(GraphicsFixedVec3 *point,FixedDirection direction)
@@ -398,7 +376,7 @@ static uint32_t Shading_ShadowVertexColour(Q12 terrainRayDistanceQ12,uint64_t ti
   if (GRAPHICS_SHADING_INTENSITY_MAX < intensity) {
     intensity = GRAPHICS_SHADING_INTENSITY_MAX;
   }
-  return Shading_PackWordLanesUnsignedSaturate
+  return ColorLanes_PackWordsUnsignedSaturate
                    (pmulhw(*(uint64_t *)&g_ShadingIntensityScaleMmx[intensity],tintLanes));
 }
 
@@ -440,7 +418,7 @@ static void GraphicsShadingGeneratedTexture_FillShadowPatchVertices
   textureU[10] = quarterStep + middleU;
   textureU[11] = quarterStep + middleU;
   /* Lanes 0..2 = 0x0fff, lane 3 = the halved tint alpha duplicated to a word, >> 4. */
-  tintLanes = Shading_DuplicateBytesToWordLanes(modelNode->tintArgb >> 1 | ARGB8888_RGB_MASK,4);
+  tintLanes = ColorLanes_UnpackBytesShiftRight(modelNode->tintArgb >> 1 | ARGB8888_RGB_MASK,4);
   for (sampleIndex = 0; sampleIndex < 12; sampleIndex++) {
     vertex = projectedBlocks + s_ShadowSampleVertexPair[sampleIndex];
     vertex[2].projectedY = textureU[sampleIndex];

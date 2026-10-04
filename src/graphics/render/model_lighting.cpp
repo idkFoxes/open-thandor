@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/render/model.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -897,17 +898,6 @@ static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
 
 /* The same lane operations on 64-bit MMX register images (ThandorMmx, core/x86_emulation.h). */
 
-/* movd + punpcklbw mm,mm + psrlw mm,shift: byte k of packed becomes word lane k = (b * 0x101) >> shift. */
-static __inline uint64_t ModelLighting_UnpackBytesMmx(uint32_t packed, int shift)
-{
-  ThandorMmx lanes;
-  int i;
-  for (i = 0; i < 4; i++) {
-    lanes.uw[i] = (uint16_t)((((packed >> (8 * i)) & ARGB8888_CHANNEL_MASK) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
 /* paddw (wrapping word add) */
 static __inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
 {
@@ -920,26 +910,6 @@ static __inline uint64_t ModelLighting_AddWordsMmx(uint64_t a, uint64_t b)
   }
   return r.q;
 }
-
-/* packuswb mm,mm + movd */
-static __inline PackedArgb32 ModelLighting_PackUnsignedMmx(uint64_t lanes)
-{
-  ThandorMmx x;
-  x.q = lanes;
-  return ModelLighting_PackUnsigned(x.sw);
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* Original quirk: ModelRender_ComputeVertexIntensityDefaultPath reads its directional weight (the PMULHW
    multiplier row) at distanceAttenuationTable (0x004CB1A0, row MODEL_DISTANCE_ATTENUATION_ROW0 of
@@ -1238,12 +1208,12 @@ ModelRender_ComputeVertexIntensityDefaultPath
 
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
   directionalLanes =
-       pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
+       pmulhw(ColorLanes_UnpackBytesShiftRight(scenePackedColor1,2),
               ModelLighting_ReadDistanceAttenuationRow(distanceAttenuationTable,lightFacingDotQ12 >> 21));
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
-       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
-              ModelLighting_UnpackBytesMmx(materialPackedColor,2));
+       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ColorLanes_UnpackBytesShiftRight(scenePackedColor0,4)),
+              ColorLanes_UnpackBytesShiftRight(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
@@ -1278,7 +1248,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
-                   pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
+                   pmulhw(ColorLanes_UnpackBytesShiftRight(lightPackedColor,2),
                           g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
                                                       lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
@@ -1290,8 +1260,8 @@ ModelRender_ComputeVertexIntensityDefaultPath
     }
     shadingRecord = shadingRecord + 1;
   }
-  accumulatedLanes = pmulhw(accumulatedLanes,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
-  return ModelLighting_PackUnsignedMmx(accumulatedLanes);
+  accumulatedLanes = pmulhw(accumulatedLanes,ColorLanes_UnpackBytesShiftRight(vertexPackedColor,2));
+  return ColorLanes_PackWordsUnsignedSaturate(accumulatedLanes);
 }
 
 /* The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
@@ -1331,13 +1301,13 @@ ModelRender_ComputeVertexIntensityScaledPath
 
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
   directionalLanes =
-       pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
+       pmulhw(ColorLanes_UnpackBytesShiftRight(scenePackedColor1,2),
               ModelLighting_ReadMultiplierQword
                 (((int32_t)MODEL_LIGHTING_SCALE_ROW0 + (lightFacingDotQ12 / lightingScaleQ12 >> 9)) * 8));
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
-       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
-              ModelLighting_UnpackBytesMmx(materialPackedColor,2));
+       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ColorLanes_UnpackBytesShiftRight(scenePackedColor0,4)),
+              ColorLanes_UnpackBytesShiftRight(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
       /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
@@ -1372,7 +1342,7 @@ ModelRender_ComputeVertexIntensityScaledPath
             if (lookupDivisor != 0) {
               /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
-                   pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
+                   pmulhw(ColorLanes_UnpackBytesShiftRight(lightPackedColor,2),
                           g_PackedLightingLookupTable[(int32_t)((remainderHigh * (1 << 27) | remainderLow >> 5) /
                                                       lookupDivisor)]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
@@ -1384,8 +1354,8 @@ ModelRender_ComputeVertexIntensityScaledPath
     }
     shadingRecord = shadingRecord + 1;
   }
-  resultLanes = pmulhw(accumulatedLanes,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
-  return ModelLighting_PackUnsignedMmx(resultLanes);
+  resultLanes = pmulhw(accumulatedLanes,ColorLanes_UnpackBytesShiftRight(vertexPackedColor,2));
+  return ColorLanes_PackWordsUnsignedSaturate(resultLanes);
 }
 
 /* Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient

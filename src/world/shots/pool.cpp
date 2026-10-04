@@ -7,6 +7,7 @@
 
 #include <thandor/world/shots/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 
 /* Module data. */
 
@@ -19,36 +20,6 @@ ShotRuntimeSlot *g_ShotRuntimeSlots = 0;
 uint8_t *g_ShotRuntimeRebaseBaseMinusOne = 0;
 
 /* Implementation ownership: world/shots/pool. */
-
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
 
 /* Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
    allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
@@ -356,9 +327,9 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   nodeTintArgb = ModelRuntimeNode_GetStateTintArgb((ModelRuntimeNode *)shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
-  tintProduct = pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
-                       ShotTint_UnpackBytesShiftRight(definitionTintArgb,4));
-  shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
+  tintProduct = pmulhw(ColorLanes_UnpackBytesShiftRight(nodeTintArgb,4),
+                       ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
+  shotModelNode->tintArgb = ColorLanes_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   if (ModelLookupTable_FindPackedPoint

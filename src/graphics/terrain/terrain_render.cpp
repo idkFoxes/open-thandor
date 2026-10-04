@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/terrain/terrain_render.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -45,41 +46,6 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260] = {
 Bool8 g_Triangle2DBarycentricOutside;
 
 /* Implementation ownership: graphics/terrain/terrain_render. */
-
-/* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b of value
-   as the words ((b << 8) | b) >> shift (the MMX colour unpack of the terrain shading). */
-static __inline uint64_t TerrainProjection_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* Not a function of its own in the original: PACKUSWB mm,mm (low dword), the four signed words saturated to
-   unsigned bytes. */
-static __inline uint32_t TerrainProjection_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane++) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
-
-
-
 
 /* Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
    the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the visible column span of
@@ -296,12 +262,12 @@ static PackedArgb32 TerrainProjectedVertex_ShadeColor
   uint64_t shadedProduct;
 
   baseColor = vertex->basePackedColor;
-  lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
+  lightingFactors = ColorLanes_UnpackBytesShiftRight(vertexColor,6);
   if (vertex->lightingLookupIndexOrSentinel == FIELD_CELL_LIGHTING_VISIBLE) {
     lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPoint(viewPoint,lightingFactors);
   }
-  shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
-  return TerrainProjection_PackWordsUnsignedSaturate(shadedProduct);
+  shadedProduct = pmulhw(lightingFactors,ColorLanes_UnpackBytesShiftRight(baseColor,2));
+  return ColorLanes_PackWordsUnsignedSaturate(shadedProduct);
 }
 
 /* Point B of a terrain vertex (shared by the two vertex updates below): point B = terrain point + secondaryOffset
@@ -525,15 +491,15 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
   vertex1Color = vertex1->shadedColorA;
   vertex2Color = vertex2->shadedColorA;
   /* PUNPCKLBW/PSRLW 4 of each color, PMULHW by its lighting level, PACKUSWB */
-  litProduct0 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex0Color,4),
+  litProduct0 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex0Color,4),
                        g_PackedLightingLookupTable[TerrainProjectedTriangle_SoilLightingLevel(vertex0)]);
-  litProduct1 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex1Color,4),
+  litProduct1 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex1Color,4),
                        g_PackedLightingLookupTable[TerrainProjectedTriangle_SoilLightingLevel(vertex1)]);
-  litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
+  litProduct2 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex2Color,4),
                        g_PackedLightingLookupTable[TerrainProjectedTriangle_SoilLightingLevel(vertex2)]);
-  vertex0Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct0);
-  vertex1Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct1);
-  vertex2Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct2);
+  vertex0Color = ColorLanes_PackWordsUnsignedSaturate(litProduct0);
+  vertex1Color = ColorLanes_PackWordsUnsignedSaturate(litProduct1);
+  vertex2Color = ColorLanes_PackWordsUnsignedSaturate(litProduct2);
   /* soil packet table: 0x800 bytes per material, 0x100 per variant (flag bits 8..10); +0x20..+0xA0 are the
      blend packets towards other materials */
   materialOffset0 = (vertex0->projectionFlags & TERRAIN_VERTEX_MATERIAL_MASK) * TERRAIN_SOIL_PACKET_MATERIAL_BYTES;
@@ -633,18 +599,18 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex0Color = vertex0->shadedColorB;
       vertex1Color = vertex1->shadedColorB;
       vertex2Color = vertex2->shadedColorB;
-      litProduct0 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex0Color,4),
+      litProduct0 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex0Color,4),
                            g_PackedLightingLookupTable[vertex0->lightingLookupIndexOrSentinel]);
-      litProduct1 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex1Color,4),
+      litProduct1 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex1Color,4),
                            g_PackedLightingLookupTable[vertex1->lightingLookupIndexOrSentinel]);
-      litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
+      litProduct2 = pmulhw(ColorLanes_UnpackBytesShiftRight(vertex2Color,4),
                            g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
                 ((uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload +
                               surfacePacketIndex * TERRAIN_SURFACE_PACKET_BYTES),
-                 TerrainProjection_PackWordsUnsignedSaturate(litProduct2),
-                 TerrainProjection_PackWordsUnsignedSaturate(litProduct1),
-                 TerrainProjection_PackWordsUnsignedSaturate(litProduct0),
+                 ColorLanes_PackWordsUnsignedSaturate(litProduct2),
+                 ColorLanes_PackWordsUnsignedSaturate(litProduct1),
+                 ColorLanes_PackWordsUnsignedSaturate(litProduct0),
                  (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
                  (GraphicsProjectedVertexSource *)vertex0,renderContext);
     }

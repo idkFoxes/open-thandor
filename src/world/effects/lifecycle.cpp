@@ -7,39 +7,9 @@
 
 #include <thandor/world/effects/lifecycle.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 
 /* Implementation ownership: world/effects/lifecycle. */
-
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.
-   With shift 4 each colour channel becomes a Q12 factor (0xFF -> 0x0FFF) for the PMULHW tint modulation. */
-static __inline uint64_t EffectTint_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane++) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
 
 /* Modulates two ARGB tints channel by channel: PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB. */
 static uint32_t EffectTint_Modulate(uint32_t effectTintArgb,uint32_t definitionTintArgb)
@@ -47,9 +17,9 @@ static uint32_t EffectTint_Modulate(uint32_t effectTintArgb,uint32_t definitionT
 {
   uint64_t modulatedLanes;
 
-  modulatedLanes = pmulhw(EffectTint_UnpackBytesShiftRight(effectTintArgb,4),
-                          EffectTint_UnpackBytesShiftRight(definitionTintArgb,4));
-  return EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
+  modulatedLanes = pmulhw(ColorLanes_UnpackBytesShiftRight(effectTintArgb,4),
+                          ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
+  return ColorLanes_PackWordsUnsignedSaturate(modulatedLanes);
 }
 
 /* Effect entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
