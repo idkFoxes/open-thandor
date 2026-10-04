@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/command_exchange.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -25,6 +26,8 @@ FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8] = {0};
 FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8] = {0};
 
 FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};
+
+static bool s_loggedSnapshotChunkOffset = false;
 
 /* Implementation ownership: network/protocol/command_exchange. */
 
@@ -101,8 +104,12 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10007_PLAYER_REMOVAL) {
-    /* the first record is compared before the count is checked */
+    /* The original compares the first record before the count is checked; bounded here because with no
+       player block a match on the stale record 0 would close the gap with (0 - 1) records. */
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+    if (playersRemaining == 0) {
+      return false;
+    }
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
@@ -150,6 +157,19 @@ Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
     return false;
   }
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10009_SNAPSHOT_CHUNK_REQUEST) {
+    /* The original serves any requested offset; bounded here because the offset comes from the peer and
+       would read (and send back) memory outside the 0x1300-byte preview. Valid hosts request 0..0x1220 in
+       0xE8 steps. */
+    if ((packet->packet10009SnapshotChunkRequest.snapshotChunkOffset > FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) ||
+        (packet->packet10009SnapshotChunkRequest.snapshotChunkOffset % 0xE8 != 0)) {
+      if (!s_loggedSnapshotChunkOffset) {
+        s_loggedSnapshotChunkOffset = true;
+        Thandor_Log("network: snapshot chunk request at offset 0x%X (valid: 0..0x%X in 0xE8 steps), ignored",
+                    (unsigned)packet->packet10009SnapshotChunkRequest.snapshotChunkOffset,
+                    (unsigned)FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET);
+      }
+      return false;
+    }
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          packet->packet10009SnapshotChunkRequest.snapshotChunkOffset;
     chunkDestinationCursor = (uint32_t *)g_FrontendPacket8000ABuffer.packet10009Buffer;
