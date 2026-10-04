@@ -26,17 +26,17 @@ typedef struct ShotModelRuntimeNode ShotModelRuntimeNode, *PShotModelRuntimeNode
 typedef struct GraphicsShadingRuntimeRecord GraphicsShadingRuntimeRecord;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 
-typedef uint32_t ShotAnimationFrameAccumulatorQ4;
+using ShotAnimationFrameAccumulatorQ4 = uint32_t;
 
-typedef uint32_t ShotImpactEffectEmissionFlags;
+using ShotImpactEffectEmissionFlags = uint32_t;
 
-typedef uint32_t ShotProjectileAgeTicks;
+using ShotProjectileAgeTicks = uint32_t;
 
-typedef uint32_t ShotLifetimeRemainingTicks;
+using ShotLifetimeRemainingTicks = uint32_t;
 
-typedef uint32_t ShotAnimationFrameIndex;
+using ShotAnimationFrameIndex = uint32_t;
 
-typedef uint32_t ShotSecondaryEffectCountdownTicks;
+using ShotSecondaryEffectCountdownTicks = uint32_t;
 
 struct ShotRuntimeOwnerAndTrajectoryState {
     Ptr32<struct ArmyRuntimeSlot> ownerArmyRuntime; 

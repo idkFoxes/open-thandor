@@ -14,6 +14,6 @@
 
 /* Types (split from generated/types.h by tools/dev/split_types.py). */
 
-typedef uintptr_t FatalErrorPassThroughProc(uintptr_t valueOrError, Bool8 failed); /* value or pointer (5f) */
+using FatalErrorPassThroughProc = uintptr_t (uintptr_t valueOrError, Bool8 failed); /* value or pointer (5f) */
 
 #endif /* THANDOR_CORE_ERROR_TYPES_H */

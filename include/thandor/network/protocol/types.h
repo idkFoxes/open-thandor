@@ -44,13 +44,13 @@ enum {
     FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE=2,
     FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY=4
 };
-typedef int FrontendSnapshotTransferFlags;
+using FrontendSnapshotTransferFlags = int;
 
 enum {
     UI_TRANSFER_JOIN_UNAVAILABLE=0,
     UI_TRANSFER_JOIN_AVAILABLE=4294967295
 };
-typedef int UiTransferJoinAvailability;
+using UiTransferJoinAvailability = int;
 
 enum {
     FRONTEND_PACKET_10000_HANDSHAKE=65536,
@@ -75,72 +75,72 @@ enum {
     FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK=524298,
     FRONTEND_PACKET_80030_MAILBOX_CHUNK=524336
 };
-typedef int UiTransferPacketPackedType;
+using UiTransferPacketPackedType = int;
 
-typedef uint32_t FrontendRandomSeed;
+using FrontendRandomSeed = uint32_t;
 
-typedef int FrontendFactionAssignmentIndex;
+using FrontendFactionAssignmentIndex = int;
 
-typedef uint32_t UiTransferXorChecksum;
+using UiTransferXorChecksum = uint32_t;
 
-typedef uint32_t FrontendReadyOrWaitState;
+using FrontendReadyOrWaitState = uint32_t;
 
-typedef uint32_t FrontendConsensusValue;
+using FrontendConsensusValue = uint32_t;
 
-typedef uint32_t UiTransferRemainingByteCount;
+using UiTransferRemainingByteCount = uint32_t;
 
-typedef uint32_t UiTransferMailboxTickCounter;
+using UiTransferMailboxTickCounter = uint32_t;
 
-typedef uint32_t UiTransferSequenceToken;
+using UiTransferSequenceToken = uint32_t;
 
-typedef int FrontendPlayerRuntimeId;
+using FrontendPlayerRuntimeId = int;
 
-typedef uint32_t PackedUiCommandAndPlayerId;
+using PackedUiCommandAndPlayerId = uint32_t;
 
-typedef uint32_t UiTransferSenderContext;
+using UiTransferSenderContext = uint32_t;
 
-typedef uint32_t FrontendBackendSessionValue;
+using FrontendBackendSessionValue = uint32_t;
 
-typedef uint32_t FrontendNetworkTickInterval;
+using FrontendNetworkTickInterval = uint32_t;
 
-typedef uint32_t SessionTransferTimeoutTicks;
+using SessionTransferTimeoutTicks = uint32_t;
 
-typedef uint32_t FrontendSnapshotChunkByteOffset;
+using FrontendSnapshotChunkByteOffset = uint32_t;
 
-typedef uint32_t UiTransferMailboxByteOffset;
+using UiTransferMailboxByteOffset = uint32_t;
 
-typedef uint32_t FrontendPlayerIndex;
+using FrontendPlayerIndex = uint32_t;
 
 /* One payload dword of a queued player command (UiCommandQueueRecord). */
-typedef uint32_t CommandPayload;
+using CommandPayload = uint32_t;
 
-typedef int InGameCommandHandlerAddress32;
+using InGameCommandHandlerAddress32 = int;
 
 /* A queued player command handler: the command code is the handler's code offset from the queue
    function (see CommandDispatch_ResolveHandler); called with the player runtime id and the three payload dwords
    (UiCommandQueueRecord.payload1..payload3). */
-typedef void CommandQueueHandlerProc(uint32_t playerRuntimeId,uint32_t payload1,uint32_t payload2,
+using CommandQueueHandlerProc = void (uint32_t playerRuntimeId,uint32_t payload1,uint32_t payload2,
                                      uint32_t payload3);
 
-typedef uint32_t UiTransferPayloadByteCount;
+using UiTransferPayloadByteCount = uint32_t;
 
-typedef uint32_t UiTransferMailboxByteCount;
+using UiTransferMailboxByteCount = uint32_t;
 
-typedef uint32_t FrontendHeartbeatTickCount;
+using FrontendHeartbeatTickCount = uint32_t;
 
-typedef int DwordBlockRecordCount;
+using DwordBlockRecordCount = int;
 
-typedef uint32_t FrontendPlayerCount;
+using FrontendPlayerCount = uint32_t;
 
-typedef uint32_t FrontendStatusCode;
+using FrontendStatusCode = uint32_t;
 
-typedef uint32_t FrontendCapabilityFlags;
+using FrontendCapabilityFlags = uint32_t;
 
-typedef uint32_t FrontendProtocolMagic;
+using FrontendProtocolMagic = uint32_t;
 
-typedef int FrontendRootRuntimeAddress32;
+using FrontendRootRuntimeAddress32 = int;
 
-typedef uint32_t UiTransferRetryTickCount;
+using UiTransferRetryTickCount = uint32_t;
 
 struct UiTransferPacketHeader {
     UiTransferPacketPackedType packedTypeAndUnitCount; 

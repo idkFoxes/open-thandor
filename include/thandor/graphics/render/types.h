@@ -46,11 +46,11 @@ typedef struct GraphicsTextureSourceAsset GraphicsTextureSourceAsset;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 typedef struct WorldRuntimeContext WorldRuntimeContext;
 
-typedef uint32_t PackedRgb24;
+using PackedRgb24 = uint32_t;
 
-typedef int GraphicsTransitionTickCount;
+using GraphicsTransitionTickCount = int;
 
-typedef int GraphicsRadiusQ12;
+using GraphicsRadiusQ12 = int;
 
 struct GraphicsShadingRuntimeRecord {
     GraphicsWorldCoordinateQ12 worldXQ12; 
@@ -79,61 +79,61 @@ enum {
     FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_ZOOM=1073741824, /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM */
     FRONTEND_MODEL_POINTER_CONTEXT_LINK_ROTATION_TILT=2147483648 /* = WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT */
 };
-typedef int FrontendModelPointerContextFlags;
+using FrontendModelPointerContextFlags = int;
 
 enum {
     GRAPHICS_STATE_DISABLED=0,
     GRAPHICS_STATE_ENABLED=1
 };
-typedef int GraphicsBooleanState;
+using GraphicsBooleanState = int;
 
-typedef int GraphicsSceneExtentFixed;
+using GraphicsSceneExtentFixed = int;
 
-typedef int DepthIntervalRadius32;
+using DepthIntervalRadius32 = int;
 
-typedef int GraphicsPrimitiveBackendCoordinate;
+using GraphicsPrimitiveBackendCoordinate = int;
 
-typedef uint32_t GraphicsProjectionShift;
+using GraphicsProjectionShift = uint32_t;
 
-typedef uint32_t GraphicsViewAngle16;
+using GraphicsViewAngle16 = uint32_t;
 
-typedef int GraphicsScreenCoordinate;
+using GraphicsScreenCoordinate = int;
 
-typedef int GraphicsPlaneNormalFixed;
+using GraphicsPlaneNormalFixed = int;
 
-typedef uint32_t GraphicsPrimitiveDispatchFlags;
+using GraphicsPrimitiveDispatchFlags = uint32_t;
 
-typedef uint32_t DepthBinMask32;
+using DepthBinMask32 = uint32_t;
 
-typedef int GraphicsPrimitiveTextureCoordinateFixed;
+using GraphicsPrimitiveTextureCoordinateFixed = int;
 
-typedef uint32_t GraphicsPrimitiveQueueCapacity;
+using GraphicsPrimitiveQueueCapacity = uint32_t;
 
-typedef intptr_t ModelMeshGroupAddress32; /* address of a mesh group / record, pointer-sized (5f) */
+using ModelMeshGroupAddress32 = intptr_t; /* address of a mesh group / record, pointer-sized (5f) */
 
-typedef uint32_t GraphicsAssetSubresourceCount;
+using GraphicsAssetSubresourceCount = uint32_t;
 
-typedef int GraphicsPrimitiveScreenCoordinate;
+using GraphicsPrimitiveScreenCoordinate = int;
 
-typedef uint32_t GraphicsElapsedTickCount;
+using GraphicsElapsedTickCount = uint32_t;
 
-typedef uint32_t ModelRuntimeCount;
+using ModelRuntimeCount = uint32_t;
 
-typedef intptr_t GraphicsDistanceAttenuationTableAddress32; /* pointer-sized (5f) */
+using GraphicsDistanceAttenuationTableAddress32 = intptr_t; /* pointer-sized (5f) */
 
-typedef int GraphicsProjectedCoordinate;
+using GraphicsProjectedCoordinate = int;
 
-typedef int DepthIntervalCenter32;
+using DepthIntervalCenter32 = int;
 
-typedef uint32_t GraphicsShadingRecordCount;
+using GraphicsShadingRecordCount = uint32_t;
 
-typedef uint32_t GraphicsProjectionScale;
+using GraphicsProjectionScale = uint32_t;
 
-typedef int GraphicsPrimitiveDepthFixed;
+using GraphicsPrimitiveDepthFixed = int;
 
-typedef uint32_t GraphicsRenderFlagMask;
+using GraphicsRenderFlagMask = uint32_t;
 
-typedef uint32_t GraphicsPixelDimension;
+using GraphicsPixelDimension = uint32_t;
 
 struct GraphicsProjectedPointPair { /* defined here because FieldGridCell embeds it */
     GraphicsPrimitiveBackendCoordinate projectedX; // First projected component.
@@ -376,7 +376,7 @@ struct GeneratedTextureScratchRuntime {
     struct GraphicsFixedVec3 currentModelOriginQ12;
     uint32_t reserved1A4;
 };
-typedef GraphicsTextureSourceAsset * GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, AngleTurn32 * auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes);
-typedef void GraphicsPrimitiveQueueRadixSortProc(GraphicsBooleanState halveVertexRgb, GraphicsPrimitiveQueue * queue);
+using GraphicsOffscreenRenderModelListToTextureSourceProc = GraphicsTextureSourceAsset * (GraphicsOffscreenSceneExtents * sceneExtents, AngleTurn32 * auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes);
+using GraphicsPrimitiveQueueRadixSortProc = void (GraphicsBooleanState halveVertexRgb, GraphicsPrimitiveQueue * queue);
 
 #endif /* THANDOR_GRAPHICS_RENDER_TYPES_H */

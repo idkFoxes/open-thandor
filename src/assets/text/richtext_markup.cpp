@@ -19,7 +19,7 @@ enum {
   RICHTEXT_MARKUP_PARSE_OUT_OF_SPACE,     /* the output buffer or the tag table is full */
   RICHTEXT_MARKUP_PARSE_INVALID_CHARACTER
 };
-typedef int RichTextMarkupParseResult;
+using RichTextMarkupParseResult = int;
 
 /* Parser state of RichTextMarkup_ParseAndBuildStringAsset. tagStarts/tagKeys receive the (string start, key)
    pair of every '#<' in order (the original pushes these pairs on the machine stack). */

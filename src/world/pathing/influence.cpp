@@ -180,7 +180,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
 
 /* One of the eight band walkers (GridInfluence_{Set,Clear}{Low,High}DistanceBandsDiagonal{Positive,Negative}):
    updates the cells of one vertical walk and returns how many it touched (0: the start cell is inside no ring). */
-typedef int GridInfluenceBandWalker
+using GridInfluenceBandWalker = int
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchCell);
 

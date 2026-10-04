@@ -16,19 +16,19 @@
 
 typedef struct WideNumberFormatState WideNumberFormatState, *PWideNumberFormatState;
 
-typedef uint32_t WideNumberFormatCodeUnitCount;
+using WideNumberFormatCodeUnitCount = uint32_t;
 
-typedef uint32_t TextOutputCapacityBytes;
+using TextOutputCapacityBytes = uint32_t;
 
-typedef uint32_t PackedFileExtensionCode32;
+using PackedFileExtensionCode32 = uint32_t;
 
-typedef uint32_t WideNumberIntegerDigitLimit;
+using WideNumberIntegerDigitLimit = uint32_t;
 
-typedef int WideNumberSignedValue32;
+using WideNumberSignedValue32 = int;
 
-typedef uint32_t WideNumberFractionalDigitCount;
+using WideNumberFractionalDigitCount = uint32_t;
 
-typedef uint32_t WideNumberDenominator32;
+using WideNumberDenominator32 = uint32_t;
 
 struct WideNumberFormatState {
     WideNumberFormatCodeUnitCount decimalSeparatorLength; 
@@ -48,6 +48,6 @@ struct WideNumberFormatState {
     uint16_t reservedZero[16]; 
     uint16_t digitAlphabet[16]; 
 };
-typedef uint32_t WideNumberFormatUtf16Proc(WideNumberFormatFlags flags, uint32_t fractionalDigits, uint32_t integerDigitLimit, uint32_t denominator, int32_t value, uint16_t * destination);
+using WideNumberFormatUtf16Proc = uint32_t (WideNumberFormatFlags flags, uint32_t fractionalDigits, uint32_t integerDigitLimit, uint32_t denominator, int32_t value, uint16_t * destination);
 
 #endif /* THANDOR_CORE_TEXT_TYPES_H */

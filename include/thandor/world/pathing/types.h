@@ -24,20 +24,20 @@ typedef struct GameEntityRuntime GameEntityRuntime;
 typedef struct ModelDefinition ModelDefinition;
 typedef struct ModelRuntimeNode ModelRuntimeNode;
 
-typedef int PriorityPairHeapCount;
+using PriorityPairHeapCount = int;
 
-typedef uint32_t GridPathUnreachableReferenceColumn32;
+using GridPathUnreachableReferenceColumn32 = uint32_t;
 
-typedef int GridPathPassCount;
+using GridPathPassCount = int;
 
-typedef uint32_t GridPathUnreachableReferenceRow32;
+using GridPathUnreachableReferenceRow32 = uint32_t;
 
 struct EntityPathingPriorityPair {
     Ptr32<struct GameEntityRuntime> entity;
     int32_t priority;
 };
 
-typedef uint32_t GridPathCost;
+using GridPathCost = uint32_t;
 
 enum { 
     GRID_SCRATCH_TRAVERSAL_VISITED=1,
@@ -49,7 +49,7 @@ enum {
     GRID_SCRATCH_TERRAIN_CLASS_BIT29=536870912,
     GRID_SCRATCH_TERRAIN_CLASS_BIT30=1073741824
 };
-typedef int GridScratchStateMask;
+using GridScratchStateMask = int;
 
 struct GridScratchCell {
     GridScratchStateMask stateMask; 

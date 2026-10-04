@@ -28,7 +28,7 @@
 #define LEVEL_LOAD_MOVIE_SPAN_HOLD 0x10000
 
 /* Prepares one loaded file of a LEV file list; false with the step's error code in *outError. */
-typedef Bool8 (*NewLevelPrepareAssetFn)(void *asset,uint32_t *outError);
+using NewLevelPrepareAssetFn = Bool8 (*)(void *asset,uint32_t *outError);
 
 /* Functions are grouped by semantic ownership. */
 

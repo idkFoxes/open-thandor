@@ -22,7 +22,7 @@ typedef struct GameFactionRuntimeImage GameFactionRuntimeImage, *PGameFactionRun
 typedef struct GameFactionRuntimeImageTail GameFactionRuntimeImageTail, *PGameFactionRuntimeImageTail;
 typedef struct ArmyRuntimeSlot ArmyRuntimeSlot;
 
-typedef uint32_t GameRelationUiFlags;
+using GameRelationUiFlags = uint32_t;
 
 enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_INACTIVE=0, /* slot unused, or absorbed by a merge (state 11 relation) */
@@ -30,59 +30,59 @@ enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING=2,
     FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED=3
 };
-typedef uint8_t FactionRuntimeLifecycleObservedState;
+using FactionRuntimeLifecycleObservedState = uint8_t;
 
 enum {
     FACTION_RELATION_MERGE=11
 };
-typedef int FactionRelationState;
+using FactionRelationState = int;
 
-typedef uint32_t FactionRuntimeFlags;
+using FactionRuntimeFlags = uint32_t;
 
-typedef uint32_t TerrainExploredPercent;
+using TerrainExploredPercent = uint32_t;
 
-typedef uint32_t FactionActiveMask;
+using FactionActiveMask = uint32_t;
 
-typedef uint32_t FactionNotificationCodeBase;
+using FactionNotificationCodeBase = uint32_t;
 
-typedef uint32_t FactionPackedRelationStates;
+using FactionPackedRelationStates = uint32_t;
 
-typedef int FactionRelationCounter;
+using FactionRelationCounter = int;
 
-typedef uint32_t FactionAnchorCooldownTicks;
+using FactionAnchorCooldownTicks = uint32_t;
 
-typedef int FactionProgressScore;
+using FactionProgressScore = int;
 
-typedef uint32_t FactionArmyAssetCount;
+using FactionArmyAssetCount = uint32_t;
 
-typedef int FactionAiPressureScore;
+using FactionAiPressureScore = int;
 
-typedef uint32_t FactionCapabilityFlags;
+using FactionCapabilityFlags = uint32_t;
 
-typedef uint32_t FactionRelationTick;
+using FactionRelationTick = uint32_t;
 
-typedef uint32_t FactionRelationCapabilityState;
+using FactionRelationCapabilityState = uint32_t;
 
-typedef int FactionResourceScoreComponent;
+using FactionResourceScoreComponent = int;
 
-typedef uint32_t FactionTechnologyCount;
+using FactionTechnologyCount = uint32_t;
 
-typedef uint32_t FactionContributionScaleQ8;
+using FactionContributionScaleQ8 = uint32_t;
 
-typedef uint32_t FactionRelationStateNibble;
+using FactionRelationStateNibble = uint32_t;
 
-typedef uint32_t XeniteAmountQ4;
+using XeniteAmountQ4 = uint32_t;
 
-typedef uint32_t TritiumAmountQ4;
+using TritiumAmountQ4 = uint32_t;
 
 struct AiCandidateWorkspaceEntry {
     uint32_t weightedScoreAndKind; 
     uint32_t entityIdAndMultiplicity; 
 };
 
-typedef uint32_t EnergyAmountQ4;
+using EnergyAmountQ4 = uint32_t;
 
-typedef uint32_t ResourceExtractionRateQ4PerTick;
+using ResourceExtractionRateQ4PerTick = uint32_t;
 
 struct AiFactionCandidateCacheState {
     struct AiCandidateWorkspaceEntry savedEntries[3]; 
@@ -145,13 +145,13 @@ struct GameFactionRuntimeRecord {
     int32_t aiPressureValues[8]; 
 };
 
-typedef uint32_t InGameSimulationTick;
+using InGameSimulationTick = uint32_t;
 
-typedef uint32_t InGamePresentationTick;
+using InGamePresentationTick = uint32_t;
 
-typedef uint32_t InGamePeriodicClockTick;
+using InGamePeriodicClockTick = uint32_t;
 
-typedef uint32_t GameSpeedQ8;
+using GameSpeedQ8 = uint32_t;
 
 struct GameFactionRuntimeImageTail {
     uint32_t activeFactionCount; // Total active faction count copied from the loaded level runtime tail; faction loops and owner-faction UI cycling use it as their upper index/count.
@@ -168,6 +168,6 @@ struct GameFactionRuntimeImage {
     struct GameFactionRuntimeImageTail tail; 
 };
 
-typedef uint32_t SelectionPlayerPairValue;
+using SelectionPlayerPairValue = uint32_t;
 
 #endif /* THANDOR_GAMEPLAY_FACTION_TYPES_H */

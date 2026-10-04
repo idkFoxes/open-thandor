@@ -40,19 +40,19 @@ struct FixedDirection {
     uint32_t z; // sin(elevation) part
 };
 
-typedef int CubicSplineSegmentIndex;
+using CubicSplineSegmentIndex = int;
 
-typedef uint32_t CubicSplineEquationCount;
+using CubicSplineEquationCount = uint32_t;
 
-typedef uint32_t UInt64Half32;
+using UInt64Half32 = uint32_t;
 
-typedef int FixedMathVectorComponent32;
+using FixedMathVectorComponent32 = int;
 
-typedef uint32_t CubicSplineMatrixIndex;
+using CubicSplineMatrixIndex = uint32_t;
 
-typedef uint32_t RandomSeed;
+using RandomSeed = uint32_t;
 
-typedef uint32_t WorldMotionSplineChannelByteOffset;
+using WorldMotionSplineChannelByteOffset = uint32_t;
 
 struct RandomGeneratorState {
     Ptr32<uint32_t ()> next; 

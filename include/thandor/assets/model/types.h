@@ -31,9 +31,9 @@ struct ModelDefinitionRecordPrefix {
     PckModelDefinitionIdCatalog definitionId;
 };
 
-typedef int ModelLookupKeyIndex;
+using ModelLookupKeyIndex = int;
 
-typedef uint32_t ModelLookupKeyClass;
+using ModelLookupKeyClass = uint32_t;
 
 struct ModelDefinition {
     AssetRecordByteCount byteSize;

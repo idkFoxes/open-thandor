@@ -19,40 +19,40 @@ typedef struct MovieRuntime MovieRuntime, *PMovieRuntime;
 typedef struct MovieFileHeader MovieFileHeader, *PMovieFileHeader;
 typedef struct FrameProviderResult FrameProviderResult, *PFrameProviderResult;
 
-typedef uint32_t MovieFrameIndex;
+using MovieFrameIndex = uint32_t;
 
-typedef uint32_t MovieWorkerActiveFlag;
+using MovieWorkerActiveFlag = uint32_t;
 
-typedef uint32_t MoviePaletteBankCount;
+using MoviePaletteBankCount = uint32_t;
 
-typedef uint32_t MovieAudioGainQ15;
+using MovieAudioGainQ15 = uint32_t;
 
-typedef uint32_t MovieSubresourceCount;
+using MovieSubresourceCount = uint32_t;
 
-typedef uint32_t MovieSubresourceTableOffset;
+using MovieSubresourceTableOffset = uint32_t;
 
-typedef uint32_t MovieOpenFlags;
+using MovieOpenFlags = uint32_t;
 
-typedef uint32_t MovieSharedStreamHandleFlag;
+using MovieSharedStreamHandleFlag = uint32_t;
 
-typedef uint32_t MovieFrameCount;
+using MovieFrameCount = uint32_t;
 
-typedef uint32_t MovieStreamOffset;
+using MovieStreamOffset = uint32_t;
 
-typedef uint32_t MovieStreamFileOffset;
+using MovieStreamFileOffset = uint32_t;
 
-typedef uint32_t MovieFrameIntervalMilliseconds;
+using MovieFrameIntervalMilliseconds = uint32_t;
 
-typedef uint32_t MoviePixelDimension;
+using MoviePixelDimension = uint32_t;
 
 typedef struct MovieFrameDimensions {
     AssetDimension width;
     AssetDimension height;
 } MovieFrameDimensions;
 
-typedef uint32_t MovieAudioTrackCount;
+using MovieAudioTrackCount = uint32_t;
 
-typedef uint32_t MovieStreamByteCount;
+using MovieStreamByteCount = uint32_t;
 
 enum {
     MOVIE_STREAM_IDLE=0,
@@ -60,7 +60,7 @@ enum {
     MOVIE_STREAM_READ_FAILED=2,
     MOVIE_STREAM_SHUTDOWN=3
 };
-typedef int MovieStreamState;
+using MovieStreamState = int;
 
 struct MovieFileHeader {
     struct GeneratedAssetCommonPrefix common; 
@@ -105,6 +105,6 @@ struct FrameProviderResult {
     Ptr32<void> frameOrError; // frame pointer when noFrame is false; error-coded value when it is true
     Bool8 noFrame; // true when no frame is returned
 };
-typedef FrameProviderResult MovieFrameProviderProc(void * frameToReleaseOrNull);
+using MovieFrameProviderProc = FrameProviderResult (void * frameToReleaseOrNull);
 
 #endif /* THANDOR_MOVIE_RUNTIME_TYPES_H */

@@ -24,15 +24,15 @@ typedef struct TextResourceOverrideTable TextResourceOverrideTable, *PTextResour
 
 #define TEXT_RESOURCE_MISSING_SENTINEL_0x33 0x33
 
-typedef uint32_t TextResourceStringCount;
+using TextResourceStringCount = uint32_t;
 
-typedef int RichTextCommandSelector;
+using RichTextCommandSelector = int;
 
-typedef uint32_t TextResourceLocaleBlockByteSize;
+using TextResourceLocaleBlockByteSize = uint32_t;
 
-typedef uint32_t TextResourceId;
+using TextResourceId = uint32_t;
 
-typedef uint32_t TextResourcePageIndex;
+using TextResourcePageIndex = uint32_t;
 
 struct TextResourceLocaleCountHeader {
     struct GeneratedAssetCommonPrefix common;

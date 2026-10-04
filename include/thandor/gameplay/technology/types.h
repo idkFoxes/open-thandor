@@ -28,9 +28,9 @@ enum {
     TECHNOLOGY_CATEGORY_C=2,
     TECHNOLOGY_CATEGORY_D=3
 };
-typedef int TechnologyCategory;
+using TechnologyCategory = int;
 
-typedef uint32_t TechnologyId;
+using TechnologyId = uint32_t;
 
 struct TechnologyCategoryMasks {
     uint32_t category2[8]; 

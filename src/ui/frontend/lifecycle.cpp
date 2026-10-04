@@ -139,7 +139,7 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
    generic callback field types, hence the casts. */
 static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerContext *pointerContext)
 {
-  typedef uint32_t FrontendModelPointerResolvedActionProc
+  using FrontendModelPointerResolvedActionProc = uint32_t
           (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
 
   pointerContext->keyboardFallback =

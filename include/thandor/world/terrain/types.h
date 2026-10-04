@@ -27,56 +27,56 @@ typedef struct TerrainOccupancyResolvedMasks TerrainOccupancyResolvedMasks, *PTe
 typedef struct FieldGridCellSaveImageView FieldGridCellSaveImageView, *PFieldGridCellSaveImageView;
 
 /* Recovered semantic scalar types used by canonical records. */
-typedef uint32_t ResourceExtractionDescriptor32;
+using ResourceExtractionDescriptor32 = uint32_t;
 
-typedef uint32_t FieldGridRegionMask;
+using FieldGridRegionMask = uint32_t;
 
-typedef int TerrainMaterialIndex;
+using TerrainMaterialIndex = int;
 
-typedef uint32_t FieldGridFlags;
+using FieldGridFlags = uint32_t;
 
-typedef uint32_t FieldGridRuntimeFlags;
+using FieldGridRuntimeFlags = uint32_t;
 
-typedef uint32_t PackedTerrainNormalAngles;
+using PackedTerrainNormalAngles = uint32_t;
 
-typedef uint32_t FieldCellPersistedAux;
+using FieldCellPersistedAux = uint32_t;
 
-typedef uint64_t TerrainOccupancyMask;
+using TerrainOccupancyMask = uint64_t;
 
-typedef int FieldGridCellCoordinate;
+using FieldGridCellCoordinate = int;
 
 enum {
     TERRAIN_RELAXATION_SIGN_GATED=0,
     TERRAIN_RELAXATION_UNGATED_LAND_TOOL=1
 };
-typedef int TerrainRelaxationMode;
+using TerrainRelaxationMode = int;
 
-typedef uint32_t TerrainRelaxationPassCount;
+using TerrainRelaxationPassCount = uint32_t;
 
-typedef uint32_t FieldCellFlagMask;
+using FieldCellFlagMask = uint32_t;
 
 struct FieldGridCoordinates {
     Q12 columnQ12;
     Q12 rowQ12;
 };
 
-typedef int TerrainOverlayCellRuntimeValue;
+using TerrainOverlayCellRuntimeValue = int;
 
-typedef int FieldGridDimensionCells;
+using FieldGridDimensionCells = int;
 
-typedef uint32_t TerrainHeightBrushDeltaSource;
+using TerrainHeightBrushDeltaSource = uint32_t;
 
-typedef uint32_t TerrainDirectionalScanStep;
+using TerrainDirectionalScanStep = uint32_t;
 
-typedef uint32_t TerrainRegionCollectionCount;
+using TerrainRegionCollectionCount = uint32_t;
 
-typedef uint32_t TerrainDirectionRecordCount;
+using TerrainDirectionRecordCount = uint32_t;
 
-typedef uint32_t TerrainMaterialByteValue;
+using TerrainMaterialByteValue = uint32_t;
 
-typedef uint32_t TerrainProjectedHeightThresholdQ20;
+using TerrainProjectedHeightThresholdQ20 = uint32_t;
 
-typedef uint32_t ArmyRuntimeSavedOffset;
+using ArmyRuntimeSavedOffset = uint32_t;
 
 /* +0x0C..+0x3F and +0x60..+0x6B are the terrain projection pass's per-vertex work area (the same layout as
    TerrainProjectedVertexWorkRecord, which projection.c uses as its view of a cell). */
@@ -118,7 +118,7 @@ struct FieldGridAsset {
     struct FieldGridCell cells[1]; 
 };
 
-typedef uint32_t FieldGridOccupancyBlockCount;
+using FieldGridOccupancyBlockCount = uint32_t;
 
 struct TerrainDirectionRecord {
     uint32_t angleAComponent0ScaledQ28;
@@ -132,7 +132,7 @@ struct TerrainDirectionRecord {
     uint32_t reserved1C;
 };
 
-typedef int FieldGridOccupancyByteIndex;
+using FieldGridOccupancyByteIndex = int;
 
 union TerrainScanSelectorUnion {
     FieldGridOccupancyByteIndex occupancyMaskByteIndex; 
@@ -140,23 +140,23 @@ union TerrainScanSelectorUnion {
     uint32_t raw; 
 };
 
-typedef int FieldGridRadiusUnits;
+using FieldGridRadiusUnits = int;
 
-typedef int FieldGridAccumulatorValue;
+using FieldGridAccumulatorValue = int;
 
-typedef uint32_t FieldGridTransitionValue;
+using FieldGridTransitionValue = uint32_t;
 
-typedef int FieldGridRowStrideBytes;
+using FieldGridRowStrideBytes = int;
 
-typedef uint32_t FieldGridCommandReservedValue;
+using FieldGridCommandReservedValue = uint32_t;
 
-typedef int FieldGridMaterialBitIndex;
+using FieldGridMaterialBitIndex = int;
 
-typedef int FieldGridByteOffset;
+using FieldGridByteOffset = int;
 
-typedef int FieldGridHeightDeltaUnits;
+using FieldGridHeightDeltaUnits = int;
 
-typedef uint32_t PackedFieldGridDeltaXY16;
+using PackedFieldGridDeltaXY16 = uint32_t;
 
 struct FieldGridInterpolationCallbackTable5 {
     Ptr32<Bool8 (Q12, Q12, struct FieldGridAsset *, Q12 *)> callbacks[5]; // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.

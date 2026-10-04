@@ -327,7 +327,7 @@ enum {
   SHOT_NEAREST_HIT_ARMY,
   SHOT_NEAREST_HIT_TERRAIN
 };
-typedef int ShotNearestHitKind;
+using ShotNearestHitKind = int;
 
 static ShotNearestHitKind ShotModel_SelectNearestHit(const ShotRayHits *hits)
 

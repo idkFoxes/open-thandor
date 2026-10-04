@@ -18,15 +18,15 @@ typedef struct WorldMotionSplineKeyframe WorldMotionSplineKeyframe, *PWorldMotio
 typedef struct WorldCameraOrientation WorldCameraOrientation, *PWorldCameraOrientation;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
 
-typedef int WorldMotionSplineKeyframeCount;
+using WorldMotionSplineKeyframeCount = int;
 
-typedef int WorldMotionSplineValueQ12;
+using WorldMotionSplineValueQ12 = int;
 
-typedef int WorldMotionSplineTimeQ12;
+using WorldMotionSplineTimeQ12 = int;
 
-typedef uint32_t WorldMotionValue78;
+using WorldMotionValue78 = uint32_t;
 
-typedef int CameraScreenDeltaPixels;
+using CameraScreenDeltaPixels = int;
 
 struct WorldMotionSplineKeyframe {
     WorldMotionSplineValueQ12 channel0Q12; 

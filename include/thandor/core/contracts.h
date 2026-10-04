@@ -18,8 +18,8 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 
 #include <stdint.h>
 
-typedef int Q12;
-typedef unsigned int UQ12;
+using Q12 = int;
+using UQ12 = unsigned int;
 
 /* Compile-time checks, in C and C++. */
 #ifdef __cplusplus

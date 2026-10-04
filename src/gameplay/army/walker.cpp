@@ -27,7 +27,7 @@ enum {
   ARTICULATED_ROUTE_STEP_CLOSE_FEET,       /* walking ended off the walk-on angle: close the feet */
   ARTICULATED_ROUTE_STEP_ADVANCE_WAYPOINT  /* the route point is reached */
 };
-typedef int ArticulatedRouteStep;
+using ArticulatedRouteStep = int;
 
 /* Implementation ownership: gameplay/army/walker. */
 

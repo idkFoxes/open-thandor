@@ -13,6 +13,6 @@
 
 /* Types (split from generated/types.h by tools/dev/split_types.py). */
 
-typedef uint32_t UiPixelExtent;
+using UiPixelExtent = uint32_t;
 
 #endif /* THANDOR_UI_TEXT_TYPES_H */

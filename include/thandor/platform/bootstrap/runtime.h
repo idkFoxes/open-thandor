@@ -100,13 +100,13 @@ g_BootstrapApiBindings is resolved at startup from {name, module} pairs; each sl
 holds the __stdcall entry of that Win32 API. Calls must use these types: calling a slot through a
 cdecl function type would leave the stack unbalanced after every call.
 */
-typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
-typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */
-typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(uintptr_t key, char *subKey, uint32_t options, uint32_t access,
+using BootstrapLoadLibraryAProc = HINSTANCE (__stdcall *)(char *moduleName);                 /* [0] */
+using BootstrapFreeLibraryProc = BOOL (__stdcall *)(HINSTANCE module);                        /* [1] */
+using BootstrapRegOpenKeyExAProc = long (__stdcall *)(uintptr_t key, char *subKey, uint32_t options, uint32_t access,
                                                      uintptr_t *result);                       /* [2] */
-typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uintptr_t key, void *valueName, uint32_t *reserved,
+using BootstrapRegQueryValueExAProc = long (__stdcall *)(uintptr_t key, void *valueName, uint32_t *reserved,
                                                         void *type, void *data, void *size); /* [3] */
-typedef long (__stdcall *BootstrapRegCloseKeyProc)(uintptr_t key);                               /* [4] */
+using BootstrapRegCloseKeyProc = long (__stdcall *)(uintptr_t key);                               /* [4] */
 
 extern WidePathBuffer256 g_LooseMoviePathPrefix;
 extern uint16_t g_DatenHexPathUtf16[10];

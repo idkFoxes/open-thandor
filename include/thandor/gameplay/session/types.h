@@ -45,14 +45,14 @@ typedef struct InGameLevelConditionStorage InGameLevelConditionStorage;
 typedef struct ShotRuntimeSlot ShotRuntimeSlot;
 typedef struct SpriteAssetHeader SpriteAssetHeader;
 
-typedef uint32_t LevelLightingCycleDurationTicks;
-typedef uint32_t LevelFactionRelationGroupMasks32;
-typedef uint32_t LevelMusicSampleNumber;
-typedef uint32_t LevelEffectSampleNumber;
-typedef uint32_t LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset;
-typedef uint32_t LevelPlayerSlotByteOffset32;
+using LevelLightingCycleDurationTicks = uint32_t;
+using LevelFactionRelationGroupMasks32 = uint32_t;
+using LevelMusicSampleNumber = uint32_t;
+using LevelEffectSampleNumber = uint32_t;
+using LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset = uint32_t;
+using LevelPlayerSlotByteOffset32 = uint32_t;
 
-typedef uint32_t WorldObjectAllocationFlags;
+using WorldObjectAllocationFlags = uint32_t;
 
 union ResourceRegistrationRuntimePayloadReference4 {
     Ptr32<struct ArmyRuntimeSlot> armyRuntime;
@@ -77,25 +77,25 @@ struct WorldObjectRecord {
 enum {
     RUNTIME_REGISTRATION_RECORD_ALLOCATED=1073741824
 };
-typedef int RuntimeRegistrationRecordFlags;
+using RuntimeRegistrationRecordFlags = int;
 
-typedef uint32_t LevelCampaignAssociationIndex;
+using LevelCampaignAssociationIndex = uint32_t;
 
-typedef uint32_t LevelAssetRelativeByteOffset;
+using LevelAssetRelativeByteOffset = uint32_t;
 
-typedef uint32_t LevelPackedHeadingPitch;
+using LevelPackedHeadingPitch = uint32_t;
 
-typedef uint32_t LevelStartCameraMagnitudeQ12;
+using LevelStartCameraMagnitudeQ12 = uint32_t;
 
-typedef uint32_t InGameLoadedResourcePointerCount;
+using InGameLoadedResourcePointerCount = uint32_t;
 
-typedef uint32_t LevelPlayerAiClassOrMode;
+using LevelPlayerAiClassOrMode = uint32_t;
 
-typedef int LevelStartCameraCoordinateQ12;
+using LevelStartCameraCoordinateQ12 = int;
 
-typedef uint32_t LevelAssetRecordCount;
+using LevelAssetRecordCount = uint32_t;
 
-typedef uint32_t OldUnitRecordCount;
+using OldUnitRecordCount = uint32_t;
 
 struct LevelAssetResourceTables {
     LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset runtimePrefixByteSizeAndInitialArmyPlacementOffset; // Dual-use LEV header value: exact byte count copied from file start into mutable level runtime storage, and file-relative offset of the 0x20-byte initial army placement table.
@@ -189,7 +189,7 @@ enum {
     RESOURCE_DOMAIN_SHOT_RUNTIME=1,
     RESOURCE_DOMAIN_EFFECT_RUNTIME=2
 };
-typedef int ResourceRegistrationDomainIndex;
+using ResourceRegistrationDomainIndex = int;
 
 struct ResourceRegistrationRecordSavedView {
     uint32_t primarySavedIdOrOffset; 
@@ -257,15 +257,15 @@ struct InGameFieldImageSaveContext58 {
     Ptr32<struct FieldGridAsset> fieldGridAsset; 
 };
 
-typedef uint32_t PckArchiveByteCount;
+using PckArchiveByteCount = uint32_t;
 
-typedef uint32_t PckArchiveVersion;
+using PckArchiveVersion = uint32_t;
 
-typedef uint32_t PckArchiveFormat;
+using PckArchiveFormat = uint32_t;
 
-typedef uint32_t PckPackedDate;
+using PckPackedDate = uint32_t;
 
-typedef uint32_t PckPackedTime;
+using PckPackedTime = uint32_t;
 
 struct PckArchiveHeader {
     uint8_t magic[4]; 
@@ -297,7 +297,7 @@ struct ResourceRegistrationRuntimeImage {
     Ptr32<struct ResourceRegistrationRecord> tailRecord; 
 };
 
-typedef uint64_t ResourceRegistrationImagePair;
+using ResourceRegistrationImagePair = uint64_t;
 
 /* One runtime save-segment image: the block to write and its byte size. */
 typedef struct RuntimeHexSegmentImage {
@@ -352,19 +352,19 @@ enum {
     INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A=24,
     INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION=26
 };
-typedef int InGameScheduledConditionKind;
+using InGameScheduledConditionKind = int;
 
 enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
     INGAME_END_CONDITION_TRIGGER_ACTIVE=1,
     INGAME_END_CONDITION_TRIGGER_PROCESSED=2
 };
-typedef uint8_t InGameEndConditionTriggerStateFlags;
+using InGameEndConditionTriggerStateFlags = uint8_t;
 
 enum {
     INGAME_SCHEDULED_CONDITION_SATISFIED=1,
     INGAME_SCHEDULED_CONDITION_KIND_MASK=254
 };
-typedef int InGameScheduledConditionStatusFlags;
+using InGameScheduledConditionStatusFlags = int;
 
 struct InGameEndConditionTriggerRecord8 {
     uint8_t stateFlags;

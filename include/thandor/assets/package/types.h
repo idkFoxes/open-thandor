@@ -19,9 +19,9 @@ typedef struct PckHuffmanNode PckHuffmanNode, *PPckHuffmanNode;
 typedef struct PckEntryHeader PckEntryHeader, *PPckEntryHeader;
 typedef struct PckMountSlot PckMountSlot, *PPckMountSlot;
 
-typedef uint32_t PckHuffmanFrequencyCount;
+using PckHuffmanFrequencyCount = uint32_t;
 
-typedef uint32_t PckHuffmanPackedCodeAndBitLength;
+using PckHuffmanPackedCodeAndBitLength = uint32_t;
 
 union PckHuffmanSymbolState {
     PckHuffmanFrequencyCount frequencyCount; 
@@ -33,7 +33,7 @@ enum {
     PCK_COMPRESSION_STORED=1,
     PCK_COMPRESSION_FIELD_GRID=2
 };
-typedef int PckCompressionMethod;
+using PckCompressionMethod = int;
 
 enum {
     PCK_ASSET_TYPE_TEC=6514036,
@@ -53,29 +53,29 @@ enum {
     PCK_ASSET_TYPE_LEV=7759212,
     PCK_ASSET_TYPE_GFX=7890535
 };
-typedef int PckAssetTypeTag;
+using PckAssetTypeTag = int;
 
-typedef uint32_t PckDecodedByteCount;
+using PckDecodedByteCount = uint32_t;
 
-typedef uint32_t PckEntryCount;
+using PckEntryCount = uint32_t;
 
-typedef uint32_t PckStoredByteCount;
+using PckStoredByteCount = uint32_t;
 
-typedef uint32_t PckOutputCapacityBytes;
+using PckOutputCapacityBytes = uint32_t;
 
-typedef uint32_t PckHuffmanRunLength;
+using PckHuffmanRunLength = uint32_t;
 
-typedef uint32_t PckHeaderDwordCount;
+using PckHeaderDwordCount = uint32_t;
 
-typedef uintptr_t EngineFileHandle; /* Win32 HANDLE (pointer-sized, 5f) */
+using EngineFileHandle = uintptr_t; /* Win32 HANDLE (pointer-sized, 5f) */
 
-typedef uint32_t PckDwordCopyCount;
+using PckDwordCopyCount = uint32_t;
 
-typedef uint32_t PckCompactFieldImageByteCount;
+using PckCompactFieldImageByteCount = uint32_t;
 
 typedef struct PckHuffmanNode *PckHuffmanNodePtr;
 
-typedef uint32_t PckHuffmanWeight;
+using PckHuffmanWeight = uint32_t;
 
 struct PckHuffmanNode {
     PckHuffmanWeight weight; 
@@ -84,11 +84,11 @@ struct PckHuffmanNode {
     PckHuffmanNodePtr parent; 
 };
 
-typedef uint32_t PckRuntimePayloadOffset;
+using PckRuntimePayloadOffset = uint32_t;
 
-typedef uint32_t PckLoadCapacityFlags;
+using PckLoadCapacityFlags = uint32_t;
 
-typedef uint8_t PckHuffmanBitOffset;
+using PckHuffmanBitOffset = uint8_t;
 
 struct PckEntryHeader {
     uint16_t path[246]; 
@@ -104,6 +104,6 @@ struct PckMountSlot {
     struct PckEntryHeader *entryHeaders; 
     PckEntryCount entryCount; 
 };
-typedef Bool8 PckCodecProc(uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
+using PckCodecProc = Bool8 (uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
 
 #endif /* THANDOR_ASSETS_PACKAGE_TYPES_H */

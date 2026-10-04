@@ -21,7 +21,7 @@ typedef struct SprRelocationBlockHeader SprRelocationBlockHeader, *PSprRelocatio
 typedef struct SprPointerRelocationRecord SprPointerRelocationRecord, *PSprPointerRelocationRecord;
 typedef struct SprGroupRelocationHeader SprGroupRelocationHeader, *PSprGroupRelocationHeader;
 
-typedef uint32_t SpriteAssetId;
+using SpriteAssetId = uint32_t;
 
 struct GeneratedAssetRegistryHeader {
     struct GeneratedAssetCommonPrefix common;
@@ -35,9 +35,9 @@ struct SpriteAssetHeader {
     uint8_t reservedBC_1FF[324];
 };
 
-typedef uint32_t SerializedRelativeByteOffset;
+using SerializedRelativeByteOffset = uint32_t;
 
-typedef uint32_t SprRelocationCount;
+using SprRelocationCount = uint32_t;
 
 struct SprRelocationBlockHeader {
     SerializedRelativeByteOffset blockByteSize;
