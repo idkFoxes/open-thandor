@@ -9,36 +9,25 @@
    (sprites, fills, streamed image regions) into the frame target with the software blits' rules
    (src/graphics/backend/software_blit.cpp); one fragment entry point per blend mode, one pipeline each.
 
-   Vertices are not read from a vertex buffer: GpuUi2D_Draw is called inside a render pass, where no copy pass can
-   upload a buffer, so it pushes the vertices as vertex uniform data in chunks of at most 4 KiB (the range SDL_GPU's
-   Vulkan backend binds per uniform slot) and the vertex shader fetches its vertex by SV_VertexID. One vertex is six
-   32-bit words, as struct GpuUiVertex in gpu_ui2d.h:
-     0 x, 1 y   float  position in target pixels (top-left origin; pixel centres at +0.5)
-     2 u, 3 v   float  normalized texture coordinates in the page texture
-     4 tint     uint   ARGB colour (Modulated: the modulation; Fill: the colour)
-     5 flags    uint   GPU_UI_VERTEX_FLAG_* (bit 0: the source is paletted)
+   Vertices come from a vertex buffer (GpuUi2D_Upload copies the frame's vertices into it before the render pass;
+   step 9 WP4 replaced the first design, which pushed them as vertex uniform data in 4 KiB chunks: on Direct3D 12
+   that drew quads with other quads' corners and dropped runs of glyphs). One vertex is struct GpuUiVertex in
+   gpu_ui2d.h, attribute n = TEXCOORDn as SDL_GPU binds them on D3D12 (SPIR-V: location n):
+     0 x, y     float2  position in target pixels (top-left origin; pixel centres at +0.5)
+     1 u, v     float2  normalized texture coordinates in the page texture
+     2 tint     uint    ARGB colour (Modulated: the modulation; Fill: the colour)
+     3 flags    uint    GPU_UI_VERTEX_FLAG_* (bit 0: the source is paletted)
 
    Compiled like primitives.hlsl: fxc to DXBC shader model 5.1 (Direct3D 12) and dxc -spirv (Vulkan). SDL_GPU's
    resource conventions: vertex uniform buffers are (b[n], space1) / descriptor set 1, fragment textures and
    samplers (t0/s0, space2) / set 2 as one combined image sampler at binding 0. */
 
-#define UI2D_CHUNK_WORDS 1024 /* 4 KiB */
-#define UI2D_VERTEX_WORDS 6
 #define UI2D_FLAG_PALETTED 1u
 
 #ifdef __spirv__
-[[vk::binding(0, 1)]] cbuffer Ui2dVertices : register(b0, space1)
+[[vk::binding(0, 1)]] cbuffer Ui2dTarget : register(b0, space1)
 #else
-cbuffer Ui2dVertices : register(b0, space1)
-#endif
-{
-    uint4 g_VertexWords[UI2D_CHUNK_WORDS / 4];
-};
-
-#ifdef __spirv__
-[[vk::binding(1, 1)]] cbuffer Ui2dTarget : register(b1, space1)
-#else
-cbuffer Ui2dTarget : register(b1, space1)
+cbuffer Ui2dTarget : register(b0, space1)
 #endif
 {
     float4 g_Target; /* 2 / width, 2 / height, 0, 0 */
@@ -52,6 +41,13 @@ Texture2D<float4> g_Page : register(t0, space2);
 SamplerState g_PageSampler : register(s0, space2);
 #endif
 
+struct Ui2dVertexInput {
+    float2 position : TEXCOORD0;
+    float2 uv : TEXCOORD1;
+    uint tint : TEXCOORD2;
+    uint flags : TEXCOORD3;
+};
+
 struct Ui2dVaryings {
     float4 position : SV_Position;
     float2 uv : TEXCOORD0;
@@ -59,26 +55,13 @@ struct Ui2dVaryings {
     nointerpolation uint flags : TEXCOORD2;
 };
 
-uint VertexWord(uint word)
+Ui2dVaryings Ui2dVertexMain(Ui2dVertexInput input)
 {
-    const uint4 words = g_VertexWords[word >> 2];
-    switch (word & 3) {
-    case 0: return words.x;
-    case 1: return words.y;
-    case 2: return words.z;
-    default: return words.w;
-    }
-}
-
-Ui2dVaryings Ui2dVertexMain(uint vertexId : SV_VertexID)
-{
-    const uint base = vertexId * UI2D_VERTEX_WORDS;
-    const float2 pixel = float2(asfloat(VertexWord(base + 0)), asfloat(VertexWord(base + 1)));
     Ui2dVaryings output;
-    output.position = float4(pixel.x * g_Target.x - 1.0, 1.0 - pixel.y * g_Target.y, 0.0, 1.0);
-    output.uv = float2(asfloat(VertexWord(base + 2)), asfloat(VertexWord(base + 3)));
-    output.tint = VertexWord(base + 4);
-    output.flags = VertexWord(base + 5);
+    output.position = float4(input.position.x * g_Target.x - 1.0, 1.0 - input.position.y * g_Target.y, 0.0, 1.0);
+    output.uv = input.uv;
+    output.tint = input.tint;
+    output.flags = input.flags;
     return output;
 }
 

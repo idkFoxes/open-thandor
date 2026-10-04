@@ -15,8 +15,8 @@
    with factor 1 and writes the source exactly, which is the software blits' opaque write (without the brightness
    LUT, see the plan, 5.3).
 
-   Vertices go through vertex uniform slot 0 (4 KiB per chunk, fetched by SV_VertexID), the target scale through
-   slot 1: GpuUi2D_Draw runs inside the caller's render pass, where SDL_GPU allows uniform pushes but no copy pass. */
+   Vertices come from the module's vertex buffer, filled once per frame by GpuUi2D_Upload (its own copy pass before
+   the render passes); the target scale goes through vertex uniform slot 0. */
 
 #include "gpu_ui2d.h"
 
@@ -57,21 +57,21 @@ struct ShaderBlobs {
   size_t spirvSize;
 };
 
-/* Vertex uniform slot 1 (ui2d.hlsl Ui2dTarget). */
+/* Vertex uniform slot 0 (ui2d.hlsl Ui2dTarget). */
 struct TargetUniform {
   float scaleX; /* 2 / width */
   float scaleY; /* 2 / height */
   float unused[2];
 };
 
-constexpr uint32_t kChunkBytes = 4096;
-static_assert(GPU_UI_VERTICES_PER_CHUNK * sizeof(GpuUiVertex) <= kChunkBytes);
-static_assert(GPU_UI_VERTICES_PER_CHUNK % 6 == 0);
-
 struct Ui2dState {
   SDL_GPUDevice *device = nullptr;
   SDL_GPUSampler *sampler = nullptr;
   SDL_GPUGraphicsPipeline *pipelines[GPU_UI_BLEND_COUNT] = {};
+  SDL_GPUBuffer *vertexBuffer = nullptr; /* the frame's vertices (GpuUi2D_Upload) */
+  Uint32 vertexBufferBytes = 0;
+  SDL_GPUTransferBuffer *transfer = nullptr;
+  Uint32 transferBytes = 0;
 };
 
 Ui2dState s_ui2d;
@@ -152,7 +152,7 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
       {THANDOR_SHADER_BLOBS(Ui2dFillMain), "Ui2dFillMain", 0},
   };
   SDL_GPUShader *vertexShader = CreateShader(device, format, THANDOR_SHADER_BLOBS(Ui2dVertexMain), "Ui2dVertexMain",
-                                             SDL_GPU_SHADERSTAGE_VERTEX, 0, 2);
+                                             SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
 #undef THANDOR_SHADER_BLOBS
 
   SDL_GPUSamplerCreateInfo samplerInfo;
@@ -164,6 +164,18 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
   samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   samplerInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
   s_ui2d.sampler = SDL_CreateGPUSampler(device, &samplerInfo);
+
+  SDL_GPUVertexBufferDescription bufferDescription;
+  SDL_zero(bufferDescription);
+  bufferDescription.slot = 0;
+  bufferDescription.pitch = sizeof(GpuUiVertex);
+  bufferDescription.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+  const SDL_GPUVertexAttribute attributes[] = {
+      {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(GpuUiVertex, x)},
+      {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(GpuUiVertex, u)},
+      {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_UINT, offsetof(GpuUiVertex, tint)},
+      {3, 0, SDL_GPU_VERTEXELEMENTFORMAT_UINT, offsetof(GpuUiVertex, flags)},
+  };
 
   bool created = (vertexShader != nullptr) && (s_ui2d.sampler != nullptr);
   for (int blend = 0; created && (blend < GPU_UI_BLEND_COUNT); blend++) {
@@ -192,6 +204,10 @@ bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target)
     SDL_zero(info);
     info.vertex_shader = vertexShader;
     info.fragment_shader = fragmentShader;
+    info.vertex_input_state.vertex_buffer_descriptions = &bufferDescription;
+    info.vertex_input_state.num_vertex_buffers = 1;
+    info.vertex_input_state.vertex_attributes = attributes;
+    info.vertex_input_state.num_vertex_attributes = SDL_arraysize(attributes);
     info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
     info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
     info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
@@ -224,15 +240,69 @@ void GpuUi2D_Shutdown(SDL_GPUDevice *device)
     pipeline = nullptr;
   }
   SDL_ReleaseGPUSampler(device, s_ui2d.sampler);
-  s_ui2d.sampler = nullptr;
-  s_ui2d.device = nullptr;
+  SDL_ReleaseGPUBuffer(device, s_ui2d.vertexBuffer);
+  SDL_ReleaseGPUTransferBuffer(device, s_ui2d.transfer);
+  s_ui2d = Ui2dState{};
+}
+
+bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vertices, uint32_t count)
+{
+  if ((s_ui2d.device == nullptr) || (commandBuffer == nullptr) || ((vertices == nullptr) && (count != 0))) {
+    return false;
+  }
+  if (count == 0) {
+    return true;
+  }
+  const Uint32 byteCount = count * static_cast<Uint32>(sizeof(GpuUiVertex));
+  if ((s_ui2d.vertexBuffer == nullptr) || (s_ui2d.vertexBufferBytes < byteCount)) {
+    /* released buffers live on until the command buffers that use them are done */
+    SDL_ReleaseGPUBuffer(s_ui2d.device, s_ui2d.vertexBuffer);
+    SDL_ReleaseGPUTransferBuffer(s_ui2d.device, s_ui2d.transfer);
+    s_ui2d.vertexBuffer = nullptr;
+    s_ui2d.transfer = nullptr;
+    s_ui2d.vertexBufferBytes = 0;
+    s_ui2d.transferBytes = 0;
+    Uint32 size = 64 * 1024;
+    while (size < byteCount) {
+      size *= 2;
+    }
+    SDL_GPUBufferCreateInfo bufferInfo;
+    SDL_zero(bufferInfo);
+    bufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+    bufferInfo.size = size;
+    s_ui2d.vertexBuffer = SDL_CreateGPUBuffer(s_ui2d.device, &bufferInfo);
+    SDL_GPUTransferBufferCreateInfo transferInfo;
+    SDL_zero(transferInfo);
+    transferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    transferInfo.size = size;
+    s_ui2d.transfer = SDL_CreateGPUTransferBuffer(s_ui2d.device, &transferInfo);
+    if ((s_ui2d.vertexBuffer == nullptr) || (s_ui2d.transfer == nullptr)) {
+      Thandor_Log("GPU 2D: vertex buffer of %u bytes failed (%s)", size, SDL_GetError());
+      return false;
+    }
+    s_ui2d.vertexBufferBytes = size;
+    s_ui2d.transferBytes = size;
+  }
+  /* cycle both: the previous frame may still read them */
+  void *mapped = SDL_MapGPUTransferBuffer(s_ui2d.device, s_ui2d.transfer, true);
+  if (mapped == nullptr) {
+    return false;
+  }
+  SDL_memcpy(mapped, vertices, byteCount);
+  SDL_UnmapGPUTransferBuffer(s_ui2d.device, s_ui2d.transfer);
+  SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commandBuffer);
+  const SDL_GPUTransferBufferLocation source{s_ui2d.transfer, 0};
+  const SDL_GPUBufferRegion destination{s_ui2d.vertexBuffer, 0, byteCount};
+  SDL_UploadToGPUBuffer(copyPass, &source, &destination, true);
+  SDL_EndGPUCopyPass(copyPass);
+  return true;
 }
 
 void GpuUi2D_Draw(SDL_GPURenderPass *renderPass, SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *page,
-                  const GpuUiVertex *vertices, uint32_t count, SDL_Rect scissor, uint8_t blend, int targetW,
-                  int targetH)
+                  uint32_t firstVertex, uint32_t count, SDL_Rect scissor, uint8_t blend, int targetW, int targetH)
 {
-  if ((s_ui2d.device == nullptr) || (renderPass == nullptr) || (commandBuffer == nullptr) || (vertices == nullptr) ||
+  if ((s_ui2d.device == nullptr) || (renderPass == nullptr) || (commandBuffer == nullptr) ||
+      (s_ui2d.vertexBuffer == nullptr) ||
       (blend >= GPU_UI_BLEND_COUNT) || ((page == nullptr) && (blend != GPU_UI_BLEND_FILL)) || (targetW <= 0) ||
       (targetH <= 0)) {
     return;
@@ -261,10 +331,8 @@ void GpuUi2D_Draw(SDL_GPURenderPass *renderPass, SDL_GPUCommandBuffer *commandBu
     SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
   }
   const TargetUniform targetUniform{2.0f / (float)targetW, 2.0f / (float)targetH, {0.0f, 0.0f}};
-  SDL_PushGPUVertexUniformData(commandBuffer, 1, &targetUniform, sizeof targetUniform);
-  for (uint32_t first = 0; first < count; first += GPU_UI_VERTICES_PER_CHUNK) {
-    const uint32_t chunk = std::min(count - first, GPU_UI_VERTICES_PER_CHUNK);
-    SDL_PushGPUVertexUniformData(commandBuffer, 0, vertices + first, chunk * (Uint32)sizeof(GpuUiVertex));
-    SDL_DrawGPUPrimitives(renderPass, chunk, 1, 0, 0);
-  }
+  SDL_PushGPUVertexUniformData(commandBuffer, 0, &targetUniform, sizeof targetUniform);
+  const SDL_GPUBufferBinding binding{s_ui2d.vertexBuffer, 0};
+  SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
+  SDL_DrawGPUPrimitives(renderPass, count, 1, firstVertex, 0);
 }

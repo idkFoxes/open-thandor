@@ -9,7 +9,9 @@
    32-bit colour only) that stays published in g_DisplayFramebufferAccess, so the framebuffer access hooks
    are the no-op stubs. A present composes the software cursor into the framebuffer (as GraphicsFramebuffer_Present
    does into the DirectDraw back surface), presents it letterboxed and removes the cursor again. Screen captures
-   read the memory framebuffer.
+   read the memory framebuffer. With a GPU renderer (step 9) the 2D draw list records the frame instead, the GPU
+   draws it into its frame target and puts the cursor on top at present (PresentGpuFrame); captures download the
+   frame target (ReadGpuFrame).
 
    Renderers: the graphics adapters of the display settings are the renderers - "Vulkan (GPU)", "DirectX 12 (GPU)"
    (only when the driver is available) and "Software (CPU)", each with the same display modes - so the original's
@@ -237,6 +239,30 @@ void ComposeCursor() noexcept
                                          g_CursorSourceAsset, g_CursorCompositeBuffer);
   CopyCursorRectangle(*g_CursorCompositeBuffer, drawY, drawX, false);
 }
+
+#ifdef THANDOR_RENDERER_SDL_GPU
+/* The GPU frame's cursor (as ComposeCursor draws it, latching the visibility token); false when it is hidden. */
+bool CursorSprite(thandor::sdl3::GpuCursorSprite &outCursor) noexcept
+{
+  g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
+  if ((g_CursorVisibilityToken < 0) || (g_CursorSourceAsset == nullptr)) {
+    return false;
+  }
+  UiPixelCoordinate cursorX = g_MouseX;
+  UiPixelCoordinate cursorY = g_MouseY;
+  if (g_CursorUseOverridePosition != 0) {
+    cursorX = g_CursorOverrideX;
+    cursorY = g_CursorOverrideY;
+  }
+  const GraphicsCursorFrameRecord &cursorFrame = g_CursorFrameRecords[GraphicsCursor_GetFrameIndex()];
+  outCursor.asset = g_CursorSourceAsset;
+  outCursor.subresource = ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) ? cursorFrame.idleSubresourceIndex
+                                                                         : cursorFrame.activeSubresourceIndex;
+  outCursor.drawX = cursorX - cursorFrame.hotspotX;
+  outCursor.drawY = cursorY - cursorFrame.hotspotY;
+  return true;
+}
+#endif
 
 /* GraphicsCursor_RestoreAfterPresent: writes the saved background back over the cursor. */
 void RestoreCursor() noexcept
@@ -737,6 +763,16 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
     return;
   }
   if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
+#ifdef THANDOR_RENDERER_SDL_GPU
+    if (GpuFrameActive()) {
+      /* the frame was recorded by the 2D draw list: the GPU draws it and the cursor (no CPU framebuffer pixels) */
+      GpuCursorSprite cursor{};
+      const bool cursorShown = CursorSprite(cursor);
+      PresentGpuFrame(cursorShown ? &cursor : nullptr);
+      g_GraphicsBackendAccessState--;
+      return;
+    }
+#endif
     ComposeCursor();
 #ifdef THANDOR_RENDERER_SDL_GPU
     if (GpuDeviceRunning()) {
@@ -764,6 +800,13 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
   if ((capturedAsset == nullptr) || (captureHeight == 0) || (captureWidth == 0) || s_video.framebuffer.empty()) {
     return capturedAsset;
   }
+#ifdef THANDOR_RENDERER_SDL_GPU
+  /* the GPU frame: the frame target holds the picture (synchronous download) */
+  if (GpuFrameActive() && ReadGpuFrame(sourceX, sourceY, static_cast<int>(captureWidth), static_cast<int>(captureHeight),
+                                       capturedAsset->argb8888Pixels)) {
+    return capturedAsset;
+  }
+#endif
   const std::byte *sourceRow = s_video.framebuffer.data() + (sourceY * static_cast<int32_t>(g_FramebufferWidth) + sourceX) * 4;
   uint32_t *destinationPixel = capturedAsset->argb8888Pixels;
   for (uint32_t row = 0; row < captureHeight; row++) {

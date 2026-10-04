@@ -20,6 +20,8 @@
 #include <cstdint>
 #include <memory>
 
+struct GraphicsTextureSourceAsset;
+
 namespace thandor::sdl3 {
 
 /* Owning handles (RAII) for the SDL objects the backend creates. */
@@ -65,12 +67,25 @@ void UpdateMouseMode() noexcept;
    StartGpuDevice creates the device, claims the window for its swapchain and installs the GPU rasterization of the
    primitive queues (compare: the developer tools' compare mode); false (logged, nothing left behind) when any step
    fails. StopGpuDevice puts the software rasterizer back and releases the window and the device.
-   PresentWithGpu uploads the framebuffer (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into
-   the swapchain. */
+   Step 9: without compare the whole frame is drawn on the GPU (GpuFrameActive): the 2D draw list records the UI
+   (graphics/core/draw2d.h) and PresentGpuFrame draws it with the frame's 3D scenes into the persistent frame target
+   (framebuffer size), then presents that letterboxed with the cursor on top (cursor nullptr: hidden).
+   ReadGpuFrame downloads a rectangle of the frame target (the last presented frame without the cursor) as
+   0xFFRRGGBB pixels, synchronously (captures). PresentWithGpu (compare mode) uploads the software framebuffer
+   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. */
+struct GpuCursorSprite {
+  const GraphicsTextureSourceAsset *asset;
+  uint32_t subresource;
+  int drawX; /* draw position: the entry origin is added, as the blits do */
+  int drawY;
+};
 bool GpuRendererSupported(uint32_t renderer) noexcept;
 bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept;
 void StopGpuDevice() noexcept;
 bool GpuDeviceRunning() noexcept;
+bool GpuFrameActive() noexcept;
+bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;
+bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept;
 bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
