@@ -170,8 +170,6 @@ Bool8 SoftwareRenderer_SetDisplayMode
       return false;
     }
     {
-      LOCK();
-      UNLOCK();
       g_SoftwareDepthBuffer = (int32_t *)depthAllocationPayload;
       g_MemoryApi.free(previousDepthBuffer);
       g_SoftwareDepthEpoch = 0;
@@ -193,9 +191,7 @@ uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook()
 
   g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
-  LOCK();
   g_GraphicsSetDisplayMode = SoftwareRenderer_SetDisplayMode;
-  UNLOCK();
   depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
                                            (void **)&allocatedDepthBuffer);
   if (depthAllocationError == 0) {

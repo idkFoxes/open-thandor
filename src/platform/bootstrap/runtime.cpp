@@ -319,8 +319,6 @@ uint32_t GameData_ResetDefaults()
   if (allocError != 0) {
     return allocError;
   }
-  LOCK();
-  UNLOCK();
   g_GameStatTableImage = allocPayload;
   g_MemoryApi.free(previousStatTable);
   statTableCursor = (uint32_t *)allocPayload;
@@ -366,8 +364,6 @@ Bool8 GameData_LoadExternalTables()
   if (statTable == nullptr) {
     return true;
   }
-  LOCK();
-  UNLOCK();
   g_GameStatTableImage = statTable;
   g_MemoryApi.free(previousStatTable);
   oldUnitBuffer = (uint32_t *)Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,nullptr);

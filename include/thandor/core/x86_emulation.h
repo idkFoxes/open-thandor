@@ -22,16 +22,11 @@ x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around
 /* The structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
 
-/* LOCK()/UNLOCK(): no-op markers where the original swaps memory atomically (XCHG); the swap itself is
-   spelled out. */
-#define LOCK() ((void)0)
-#define UNLOCK() ((void)0)
-
 /*
 THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit
 location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and
 returns the previous contents as uint32_t, in one atomic step. Compiles to XCHG. Sites whose memory only
-one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
+one thread touches use a plain load and store.
 A pointer-sized location (a pointer or uintptr_t/handle slot, 8 bytes) is swapped as a whole and the
 previous contents come back as uintptr_t.
 */

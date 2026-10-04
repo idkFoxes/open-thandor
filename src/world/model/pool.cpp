@@ -416,10 +416,8 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   modelRuntime->rootModelNodeOrSavedOffset.modelNode = nullptr;
   if (parentModelNode == nullptr) {
     if (entityRuntime->common.ownership.definitionOrClassRecord != nullptr) {
-      LOCK(); /* read and cleared atomically in the original */
       ownerRecord = (int *)entityRuntime->common.ownership.definitionOrClassRecord;
       entityRuntime->common.ownership.definitionOrClassRecord = nullptr;
-      UNLOCK();
       ownerDefinition = ((ModelRuntimeSlot *)ownerRecord)->definitionOrSavedId.runtimeDefinition;
       /* ownerRecord is the owner's root ModelRuntimeSlot */
       if ((((ModelRuntimeSlot *)ownerRecord)->classState.stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0 &&
