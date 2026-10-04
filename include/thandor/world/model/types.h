@@ -17,7 +17,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct ModelRuntimeNode ModelRuntimeNode, *PModelRuntimeNode;
 typedef union ModelRuntimePayloadReference4 ModelRuntimePayloadReference4, *PModelRuntimePayloadReference4;

@@ -12,7 +12,7 @@
    scripted-input detection, a local two-instance network test and
    a windowed mode. Environment switches: OPEN_THANDOR_SCRIPT, OPEN_THANDOR_MULTI_INSTANCE,
    OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG, OPEN_THANDOR_WINDOWED, OPEN_THANDOR_WINDOW_X,
-   OPEN_THANDOR_WINDOW_Y. The script test aid counters are defined in platform/debug/script.c. */
+   OPEN_THANDOR_WINDOW_Y. The script test aid counters are defined in platform/debug/script.cpp. */
 
 /* Test aid (OPEN_THANDOR_SCRIPT `ingame`): counts in-game session frames, i.e. frames after the
    level has finished loading. */

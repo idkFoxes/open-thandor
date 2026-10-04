@@ -14,7 +14,7 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 /* Graphics/display result records. */
 typedef struct GraphicsTextureLogicalSize GraphicsTextureLogicalSize, *PGraphicsTextureLogicalSize;

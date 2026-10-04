@@ -11,7 +11,7 @@
 Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers.
 
 thandor.exe keeps code and data in one writable .text section at fixed addresses. The rebuilt executable
-compiles that data in as ordinary C variables (src/<area>/<module>/data.c); nothing of the original image
+compiles that data in as ordinary variables (the "Module data." sections of src/<area>/<module>/*.cpp); nothing of the original image
 is mapped.
 */
 

@@ -64,16 +64,16 @@
 #define FATAL_ERROR_FILE_SEEK_FAILED 0x09 /* SetFilePointer failed */
 #define FATAL_ERROR_SET_DIRECTORY_FAILED 0x0A /* SetCurrentDirectoryA failed */
 #define FATAL_ERROR_REMOVE_DIRECTORY_FAILED 0x0B /* RemoveDirectoryA failed */
-/* Level loading (gameplay/session/level.c); the level path is left in g_PackageLastErrorPath */
+/* Level loading (gameplay/session/level_new.cpp, level_saved.cpp); the level path is left in g_PackageLastErrorPath */
 #define FATAL_ERROR_LEVEL_ASSET_INVALID 0x39 /* not a 'lev' asset of converter version 0x70001 */
 #define FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES 0x3A /* the EFF/SHT/MDL/ARM lists name 0x200 or more files */
 #define FATAL_ERROR_TECHNOLOGY_ASSET_INVALID 0x4F /* the level's technology file is not a 'tec' asset of
                                                      converter version 0x20000 */
-/* Terrain visuals (world/terrain/visuals.c) */
+/* Terrain visuals (graphics/terrain/terrain_resources.cpp) */
 #define FATAL_ERROR_FIELD_ASSET_INVALID 0x38 /* TerrainVisualResources_Load*: the field grid is not an 'fld' asset of
                                                 converter version 0x60006, or its dimensions do not fit
                                                 (FieldGrid_ValidateLoadedImage, also for loaded/received grids) */
-/* Model definitions (assets/model/definitions.c) */
+/* Model definitions (assets/model/definitions.cpp) */
 #define FATAL_ERROR_MODEL_ASSET_INVALID 0x3D /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
                                                 0x8000A */
 #define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindById: the id is not in the
@@ -89,7 +89,7 @@
 #define FATAL_ERROR_ROM_REGISTRY_FULL 0x3B /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
                                               path "engine\zentrale.rom" is left in g_PackageLastErrorPath */
 #define FATAL_ERROR_ROM_RECORD_NOT_REGISTERED 0x3C /* RomRegistry_FindRecordById/FindSlotValueByRecordId miss */
-/* Shot and effect catalogs (assets/shot/catalog.c, assets/effect/catalog.c). An invalid asset leaves its path,
+/* Shot and effect catalogs (assets/shot/catalog.cpp, assets/effect/catalog.cpp). An invalid asset leaves its path,
    the other codes leave the offending definition id (or registry index / slot count) in g_PackageLastErrorPath. */
 #define FATAL_ERROR_SHOT_ASSET_INVALID 0x43 /* not a 'sht' asset of converter version 0x60006 */
 #define FATAL_ERROR_SHOT_ID_NOT_FOUND 0x44 /* ShotDefinitionRegistry_FindByIdWithError: id not registered */
@@ -104,7 +104,7 @@
 /* Movie_Open: the file is not an 'flm' of converter version 0x20001 (Movie_AdvanceFrame also returns it as a
    failure when no movie is open) */
 #define FATAL_ERROR_MOVIE_INVALID 0x30
-/* Army catalog (assets/army/catalog.c), same scheme as the shot/effect codes above */
+/* Army catalog (assets/army/catalog.cpp), same scheme as the shot/effect codes above */
 #define FATAL_ERROR_ARMY_ASSET_INVALID 0x40 /* ArmyAsset_PrepareRecords: not an 'arm' asset of converter version
                                                0x20008 (the path is left in g_PackageLastErrorPath) */
 #define FATAL_ERROR_ARMY_ID_NOT_FOUND 0x41 /* ArmyAssetRegistry_FindById: id not registered (the id is left in

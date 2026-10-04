@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct SoundCoefficientBlock SoundCoefficientBlock, *PSoundCoefficientBlock;
 

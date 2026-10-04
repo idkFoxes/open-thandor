@@ -52,12 +52,12 @@ extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
                                                             (FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus) */
 #define UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED 0x100 /* set with LOCAL_FACTION_ENDED; the world input
 
-                                                              handlers (gameplay/input/world.c) then ignore the map */
+                                                              handlers (ui/ingame/world_input.cpp) then ignore the map */
 /* g_UiCommandRuntimeFlags bit that ends the results screen after the end movie (Frontend_PlaySelectedEndMovie) */
 #define UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED 0x1000 /* set by the results buttons (actions 0x101B and 0x1025,
 
-                                                         ui/ingame/commands.c) */
-/* further g_UiCommandRuntimeFlags bits (gameplay/session/runtime.c, gameplay/ai/planning.c) */
+                                                         ui/ingame/pages.cpp) */
+/* further g_UiCommandRuntimeFlags bits (gameplay/session/tick.cpp, gameplay/ai/planning.cpp) */
 #define UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF 0x02 /* skips the AI planning phase in local games; no writer
 
                                                         with a constant mask in the original, so it can only come

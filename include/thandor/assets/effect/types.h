@@ -19,7 +19,7 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/world/effects/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct EffectDefinition EffectDefinition, *PEffectDefinition;
 typedef struct EffectDefinitionTransitionPrefix EffectDefinitionTransitionPrefix, *PEffectDefinitionTransitionPrefix;

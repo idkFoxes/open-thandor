@@ -131,7 +131,7 @@ void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context);
 
 InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source);
 
-extern uint32_t g_UiCommandModeGColorVariantFlags; /* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+extern uint32_t g_UiCommandModeGColorVariantFlags; /* uint32_t render-state flag word copied into terrain packets (graphics/terrain/terrain_render.cpp); the mode-G handlers in ui/ingame/editor_tool_selection.cpp set/clear the masked G-colour variant bit */
 extern uint32_t g_UiCommandModeE;
 extern uint32_t g_UiCommandModeA;
 extern uint32_t g_UiCommandModeB; /* followed in the original by an all-zero dword no code reaches (dropped) */

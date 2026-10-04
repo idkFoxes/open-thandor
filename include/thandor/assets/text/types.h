@@ -14,7 +14,7 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/platform/system/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct TextResourceAssetHeader TextResourceAssetHeader, *PTextResourceAssetHeader;
 typedef struct TextResourceLocaleCountHeader TextResourceLocaleCountHeader, *PTextResourceLocaleCountHeader;

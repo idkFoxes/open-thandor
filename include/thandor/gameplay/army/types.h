@@ -19,7 +19,7 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
@@ -957,7 +957,7 @@ struct ModelRuntimeSlotClassState {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/runtime.h); constructor-cleared.
+    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.
@@ -2936,7 +2936,7 @@ struct ModelRuntimeClass21State {
     uint32_t effectEmitterPointIndex; // Next model effect point of the timed effect emitter (ArmyRuntime_UpdateTimedShotAndEffectEmitters).
     uint32_t shotEmitterTimerTicks; // Timed shot emitter countdown; constructor sets 1.
     uint32_t effectEmitterTimerTicks; // Timed effect emitter countdown; constructor sets 1, 0x7FFFFFFF = never.
-    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/runtime.h); constructor-cleared.
+    uint32_t stateFlags; // ARMY_MODEL_STATE_* bits (gameplay/army/pool.h); constructor-cleared.
     union ArmyRuntimeReferenceOrSavedOffset linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
     uint32_t energyLoadQ4; // Energy demand: the definition's energyLoadQ4 plus loads held while building/researching.
     uint32_t healthRegenerationDelayTicks; // Counts down to the next health step; damage sets it to 0x200.

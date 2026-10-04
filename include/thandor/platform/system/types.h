@@ -12,7 +12,7 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/platform/bootstrap/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
 typedef union _union_518 _union_518, *P_union_518;

@@ -18,7 +18,7 @@
 #include <thandor/ui/text/types.h>
 #include <thandor/world/terrain/types.h>
 
-/* Types (split from generated/types.h by tools/dev/split_types.py). */
+/* Types (split out by tools/dev/split_types.py). */
 
 typedef struct WorldRuntimeContext WorldRuntimeContext, *PWorldRuntimeContext;
 typedef struct WorldRuntimeInteractionState WorldRuntimeInteractionState, *PWorldRuntimeInteractionState;
@@ -504,7 +504,7 @@ struct RuntimeModelFactionPrefix {
     FactionRuntimeIndex factionIndex; // Faction/owner index consumed by faction-runtime lookup.
 };
 #pragma pack(push, 1) /* packed layout: no alignment padding */
-/* InGameRuntimeRoot as seen by the build catalog / army stock grid rebuilds (ui/ingame/technology.c): the same
+/* InGameRuntimeRoot as seen by the build catalog / army stock grid rebuilds (ui/ingame/build_catalog.cpp, army_stock.cpp): the same
    layout, with the grid panels between +0x4D0C and +0x9A6C named (InGameUiImage template names). */
 struct InGameRuntimeRootUiGridView {
     struct UiRootNode rootUi;
