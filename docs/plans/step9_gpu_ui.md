@@ -1,6 +1,6 @@
 # Step 9 (later): UI and 2D overlays on the GPU (SDL_GPU)
 
-Status: planned, not started. Step 9 moves the drawing of the UI and the 2D overlays from the software blitters to
+Status: done (2026-10-04; GCC and MSVC without new warnings, golden and software pixels identical, gpu_compare Vulkan and D3D12 23/23 PASS). Step 9 moves the drawing of the UI and the 2D overlays from the software blitters to
 SDL_GPU (the same device as the 3D rasterizer of step 7), so the whole frame is made on the GPU and the UI can be
 scaled for modern resolutions (2x at 1440p, 3x at 4K). The software renderer stays the reference: the checks keep
 comparing its pixels.

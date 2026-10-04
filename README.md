@@ -43,7 +43,7 @@ Next:
 
 1. Step 8 (done): a full code review and idiomatic C++ step by step, following the
    [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) ([plan](docs/plans/step8_idiomatic_cpp.md)).
-2. Step 9 (later): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
+2. Step 9 (done): the UI and the 2D overlays drawn on the GPU as well, the basis for UI scaling at 1440p and 4K
    ([plan](docs/plans/step9_gpu_ui.md)).
 3. Step 10 (later): a patch installer (Inno Setup 7, classic style) that installs Open Thandor as version 1.0.6 onto an existing Thandor
    installation, in the style of the original Patch 5 installer ([plan](docs/plans/step10_installer.md)).
