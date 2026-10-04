@@ -61,13 +61,7 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
   ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = nullptr;
   ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   return;
 }
 
@@ -81,21 +75,11 @@ void FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendSession_ApplyGameSpeedAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,1);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_APPLY_GAME_SPEED,0,0,1);
-    }
+    FrontendCommand_Issue<FrontendSession_ApplyGameSpeedAndReturnToMainPage>(0,0,1);
   }
   /* the client branch repeats the network test although a client is always networked */
-  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-           SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton(g_LocalPlayerRuntimeId,0,0,0);
-  }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_BRIEFING_READY,0,0,0);
+    FrontendCommand_Issue<FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton>(0,0,0);
   }
   return;
 }
@@ -111,13 +95,7 @@ void FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
   g_NetworkBackendSlot3(); /* close */
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   g_NetworkBackendSlot1(); /* cleanup */
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   Random_SelectPrimaryStream();
   return;
 }
@@ -157,13 +135,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
     recordsRemaining--;
   } while (recordsRemaining != 0);
   g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,1);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,1);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,1);
   return;
 }
 
@@ -502,13 +474,7 @@ void FrontendClientSession_TickHostTimeout()
   do {
     if (playerRecord->factionAssignment.readyOrWaitState == 0) {
       /* always true here, the role was cleared above */
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
-      }
+      InGameCommand_Issue<FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus>(0,0,0);
       break;
     }
     playerRecord++;
@@ -581,13 +547,7 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
 void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ApplyGameSpeedAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_APPLY_GAME_SPEED,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ApplyGameSpeedAndReturnToMainPage>(0,0,0);
   return;
 }
 
@@ -598,13 +558,7 @@ void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackAr
 void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReleaseSelectedResourceAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RELEASE_CAMPAIGN,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReleaseSelectedResourceAndReturnToMainPage>(0,0,0);
   return;
 }
 
