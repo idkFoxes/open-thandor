@@ -1059,6 +1059,10 @@ int SelfTest_Run(const char *name)
         Thandor_SelfTestTriangleSetup();
         return 1;
     }
+    if (name != NULL && strcmp(name, "raster") == 0) {
+        Thandor_SelfTestRaster();
+        return 1;
+    }
     if (name != NULL && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;

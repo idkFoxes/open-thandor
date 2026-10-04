@@ -26,6 +26,9 @@
                     hash tests: log a hash over many results of the number formatter, the fixed-point math,
                     the keyboard layer, the software triangle setup and the movie encoder/decoder, to
                     compare two builds
+     raster         golden hashes of the software renderer (raster_selftest.cpp): every entry of the 32-bit and
+                    auxiliary triangle handler tables and every blit/fill/copy path draws seeded random
+                    primitives with synthetic textures into a synthetic framebuffer, one hash line per group
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -34,5 +37,8 @@
 /* Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects.
    Returns nonzero when a test ran (the caller then exits), 0 for NULL, "crash" or an unknown name. */
 int SelfTest_Run(const char *name);
+
+/* OPEN_THANDOR_SELFTEST=raster (raster_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestRaster(void);
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */
