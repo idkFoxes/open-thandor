@@ -29,28 +29,10 @@
 /* Memory_ZeroDwords size used for WaveFormat_PCM_22050_Stereo16: sizeof(WAVEFORMATEX), the 18 bytes of fields
    and the two bytes of tail padding */
 #define DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES 0x14
+
 /* Functions are grouped by semantic ownership. */
 
 void DirectSound_Shutdown(void);
-
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
-
-void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
-
-Bool8 SoundBackendDisabled_PlayOneShot
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-Bool8 SoundBackendDisabled_PlayLooping
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
-
-Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
-
-void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          IDirectSoundBuffer *voice);
 
 uint32_t DirectSound_Init(void);
 
@@ -72,8 +54,6 @@ void DirectSound_StopAllVoices(void);
 
 void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
-
-void SoundBackendDisabled_StopAllVoices(void);
 
 extern SoundPlayVoiceProc *g_SoundPlayOneShot;
 

@@ -60,6 +60,7 @@ add_library(thandor_curated STATIC
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
     src/assets/text/richtext_render.cpp
+    src/audio/backend/null_backend.cpp
     src/audio/backend/runtime.cpp
     src/audio/codec/sam.cpp
     src/audio/spatial/runtime.cpp
