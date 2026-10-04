@@ -52,6 +52,7 @@ add_library(thandor_curated STATIC
     src/assets/scenario/session_load.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
+    src/assets/text/font.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
