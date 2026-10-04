@@ -46,6 +46,8 @@ add_library(thandor_curated STATIC
     src/assets/resource/runtime.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
+    src/assets/scenario/frontend_selection.cpp
+    src/assets/scenario/session_load.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
     src/assets/text/resources.cpp
@@ -128,6 +130,7 @@ add_library(thandor_curated STATIC
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
     src/network/protocol/commands.cpp
+    src/network/protocol/scenario_transfer.cpp
     src/network/protocol/transfer.cpp
     src/platform/bootstrap/runtime.cpp
     src/platform/filesystem/win32.cpp
