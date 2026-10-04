@@ -162,22 +162,12 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     break;
   }
   case 0x5675e0: /* P: pause */
-    if (localSession) {
-      InGameCommand_TogglePauseRequest(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_TOGGLE_PAUSE,0,0,0);
-    }
+    InGameCommand_Issue<InGameCommand_TogglePauseRequest>(0,0,0);
     break;
   case 0x567620: /* G: faster */
   case 0x567660: /* Alt+G: slower */ {
     int step = (target == 0x567620) ? 1 : -1;
-    if (localSession) {
-      InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks(g_LocalPlayerRuntimeId,0,0,step);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_ADJUST_GAME_SPEED,0,0,step);
-    }
+    InGameCommand_Issue<InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks>(0,0,step);
     break;
   }
   case 0x5676a0: { /* Tab: hide or show the side panel; bit 2 of the map/mouse settings remembers it */
@@ -208,12 +198,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != 0) {
       break;
     }
-    if (localSession) {
-      InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
-    }
+    InGameCommand_Issue<InGameCommand_HandlePlayerDeparture>(0,0,0);
     break;
   default:
     Thandor_Log("EndGameResults dispatch: unhandled continuation %08x",target);
