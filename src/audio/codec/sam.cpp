@@ -21,6 +21,11 @@ static const uint64_t g_SoundDecodeMmxWordLaneMask3 = 0xFFFF000000000000ull;
 /* Two 32-bit MMX lanes as one qword (high lane in the upper half), as PUNPCKLDQ builds them. */
 #define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))
 
+/* the two cosine matrices of the .sam codec, set by CosineDerivedLookupTables_Init */
+short *g_CosineDerivedLookupAllocation = 0;
+
+short *g_CosineDerivedLookupSecondTable = 0;
+
 /* Implementation ownership: audio/codec/sam. */
 
 /* Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256
@@ -3063,3 +3068,72 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
   return (uint32_t)(((uintptr_t)inputCursor & ~(uintptr_t)3) - (uintptr_t)encodedBlock);
 }
 
+/* Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
+   DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
+   cos((2k+1) * u * pi / 512), row 0 being 1/sqrt(2); the second (g_CosineDerivedLookupSecondTable, Q14) is
+   its transpose, row m, entry k = cos(k * (2m+1) * pi / 512), entry 0 being 1/sqrt(2). Angles are 16-bit
+   (65536 = full turn), so 0x40 is pi/512. On allocation failure the pointers stay unset.
+*/
+void __cdecl CosineDerivedLookupTables_Init(void)
+
+{
+  short *outputCursor;
+  int entriesRemainingInRow;
+  uint32_t angleStep16;
+  uint32_t secondAngleStep16;
+  int entriesRemaining;
+  uint32_t angleIndex16;
+  uint32_t secondAngleIndex16;
+  uint32_t allocError;
+
+  allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),(void **)&outputCursor);
+  if (allocError != 0) {
+    outputCursor = (short *)(uintptr_t)allocError;
+  }
+  else {
+    g_CosineDerivedLookupAllocation = outputCursor;
+    /* row 0: 256 entries of 1/sqrt(2) in Q12, written as 128 pairs */
+    for (entriesRemainingInRow = COSINE_DERIVED_TABLE_ORDER / 2; entriesRemainingInRow != 0; entriesRemainingInRow--) {
+      outputCursor[0] = COSINE_DERIVED_INV_SQRT2_Q12;
+      outputCursor[1] = COSINE_DERIVED_INV_SQRT2_Q12;
+      outputCursor = outputCursor + 2;
+    }
+    /* rows 1..255: angleStep16 = u * 0x40, entries at the odd multiples (2k+1) * angleStep16 */
+    angleIndex16 = COSINE_DERIVED_TABLE_ANGLE_STEP;
+    angleStep16 = COSINE_DERIVED_TABLE_ANGLE_STEP;
+    entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
+    do {
+      do {
+        *outputCursor = (short)((uint32_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + angleIndex16] >> 16); /* Q28 -> Q12 */
+        outputCursor++;
+        angleIndex16 = (angleIndex16 + angleStep16 * 2) & FIXED_ANGLE16_MASK;
+        entriesRemaining--;
+      } while (entriesRemaining != 0);
+      angleStep16 = angleStep16 + COSINE_DERIVED_TABLE_ANGLE_STEP;
+      entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
+      angleIndex16 = angleStep16 & FIXED_ANGLE16_MASK;
+    } while (angleStep16 < COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ANGLE_STEP);
+    /* rows m = 0..255: secondAngleStep16 = (2m+1) * 0x40, entries at k * secondAngleStep16 */
+    secondAngleIndex16 = 0;
+    entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
+    secondAngleStep16 = COSINE_DERIVED_TABLE_ANGLE_STEP;
+    g_CosineDerivedLookupSecondTable = outputCursor;
+    do {
+      do {
+        if (entriesRemaining == COSINE_DERIVED_TABLE_ORDER) {
+          *outputCursor = COSINE_DERIVED_INV_SQRT2_Q14; /* entry 0 */
+        }
+        else {
+          *outputCursor = (short)(g_FixedSineQ28[FIXED_SINE_TABLE_COS + secondAngleIndex16] >> 14); /* Q28 -> Q14 */
+        }
+        outputCursor++;
+        secondAngleIndex16 = (secondAngleIndex16 + secondAngleStep16) & FIXED_ANGLE16_MASK;
+        entriesRemaining--;
+      } while (entriesRemaining != 0);
+      secondAngleStep16 = secondAngleStep16 + 2 * COSINE_DERIVED_TABLE_ANGLE_STEP;
+      entriesRemaining = COSINE_DERIVED_TABLE_ORDER;
+      secondAngleIndex16 = 0;
+    } while (secondAngleStep16 < 2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ANGLE_STEP);
+  }
+  return;
+}

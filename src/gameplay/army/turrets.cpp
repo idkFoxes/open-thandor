@@ -342,3 +342,25 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
+
+/* Moves the local translation of the model node at vectorState along its own direction:
+   vector -= direction(vector) * directionScale * stepMultiplier. The army movement code uses it for weapon
+   attachment nodes with the weapon's backward-step scale and -elapsedTicks, which moves the offset outward
+   along its direction.
+*/
+void FixedVector_StepBackwardAlongOwnDirection
+          (FixedVectorStepMultiplier32 stepMultiplier,FixedMathScale32 directionScale,
+          FixedVectorStateAddress32 vectorState)
+
+{
+  FixedDirection stepDirection;
+  FixedElevationAzimuth vectorAngles;
+  ModelRuntimeNode *node = (ModelRuntimeNode *)vectorState;
+
+  vectorAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
+  stepDirection = FixedMath_DirectionFromAnglesScaled(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,
+                                                          directionScale);
+  node->modelPayload.localTranslationXQ12 -= stepDirection.x * stepMultiplier;
+  node->modelPayload.localTranslationYQ12 -= stepDirection.y * stepMultiplier;
+  node->modelPayload.localTranslationZQ12 -= stepDirection.z * stepMultiplier;
+}

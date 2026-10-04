@@ -65,7 +65,9 @@ add_library(thandor_curated STATIC
     src/audio/spatial/runtime.cpp
     src/core/error/runtime.cpp
     src/core/layout_checks.cpp
-    src/core/math/fixed.cpp
+    src/core/math/fixed_transform.cpp
+    src/core/math/fixed_trig.cpp
+    src/core/math/fixed_vector.cpp
     src/core/math/geometry.cpp
     src/core/math/interpolation.cpp
     src/core/math/random.cpp

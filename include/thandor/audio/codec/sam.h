@@ -30,4 +30,19 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
 
 uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);
 
+/* CosineDerivedLookupTables_Init: two 256x256 tables of shorts (the .sam codec's cosine transform) */
+#define COSINE_DERIVED_TABLE_ORDER 256
+
+#define COSINE_DERIVED_TABLE_ANGLE_STEP 0x40 /* pi/512 in angle16 units */
+
+#define COSINE_DERIVED_INV_SQRT2_Q12 2896 /* 1/sqrt(2) in Q12: row 0 of the first table */
+
+#define COSINE_DERIVED_INV_SQRT2_Q14 11585 /* 1/sqrt(2) in Q14: entry 0 of each row of the second table */
+
+void __cdecl CosineDerivedLookupTables_Init(void);
+
+/* the two cosine matrices of the .sam codec (CosineDerivedLookupTables_Init) */
+extern short *g_CosineDerivedLookupAllocation;
+extern short *g_CosineDerivedLookupSecondTable;
+
 #endif /* THANDOR_AUDIO_CODEC_SAM_H */

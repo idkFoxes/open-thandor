@@ -19,4 +19,8 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret (WorldRuntimeContext *worldRuntim
 
 void ArmyRuntimeClass_UpdateTwinBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
+void FixedVector_StepBackwardAlongOwnDirection
+          (FixedVectorStepMultiplier32 stepMultiplier,FixedMathScale32 directionScale,
+          FixedVectorStateAddress32 vectorState);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_TURRETS_H */

@@ -8,7 +8,10 @@
 #ifndef THANDOR_CORE_MATH_H
 #define THANDOR_CORE_MATH_H
 
-#include <thandor/core/math/fixed.h>
+#include <thandor/core/math/fixed_point.h>
+#include <thandor/core/math/fixed_transform.h>
+#include <thandor/core/math/fixed_trig.h>
+#include <thandor/core/math/fixed_vector.h>
 #include <thandor/core/math/geometry.h>
 #include <thandor/core/math/interpolation.h>
 #include <thandor/core/math/random.h>
