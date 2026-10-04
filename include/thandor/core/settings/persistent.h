@@ -47,6 +47,7 @@
    writes the whole image back unchanged, so the file stays compatible). A file without them reads 0, the defaults. */
 #define PERSISTENT_SETTING_RENDERER 0xB0 /* PERSISTENT_RENDERER_*: the display settings' renderer */
 #define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* PERSISTENT_DISPLAY_MODE_*: fullscreen, borderless or window */
+#define PERSISTENT_SETTING_GPU_RASTERIZATION 0xB8 /* PERSISTENT_GPU_RASTERIZATION_*: how the GPU renderers draw */
 #define PERSISTENT_RENDERER_VULKAN 0 /* default: SDL_GPU on Vulkan */
 #define PERSISTENT_RENDERER_DIRECT3D12 1 /* SDL_GPU on Direct3D 12 */
 #define PERSISTENT_RENDERER_SOFTWARE 2 /* the software rasterizer, presented through an SDL_Renderer */
@@ -56,6 +57,10 @@
 #define PERSISTENT_DISPLAY_MODE_BORDERLESS 1 /* "Vollbildfenster": borderless window over the whole display, letterboxed */
 #define PERSISTENT_DISPLAY_MODE_WINDOW 2 /* "Fenster": normal window in the size of the display mode */
 #define PERSISTENT_DISPLAY_MODE_COUNT 3
+#define PERSISTENT_GPU_RASTERIZATION_SMOOTH 0 /* default: sub-pixel corners, perspective-correct textures (as the
+                                                 original's Direct3D renderer) */
+#define PERSISTENT_GPU_RASTERIZATION_EXACT 1  /* the software rasterizer's triangles (pixel-snapped, affine) */
+#define PERSISTENT_GPU_RASTERIZATION_COUNT 2
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
 /* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
 #define PERSISTENT_SOUND_OPTION_EFFECTS 0x1

@@ -184,6 +184,8 @@ shading_depth = 32
 texture_quality = high
 ; model detail distance, 8.8 fixed point (default 65536)
 model_detail = 262144
+; Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) or exact (the software renderer's look)
+gpu_rasterization = smooth
 
 [sound]
 ; sound effects (default true)
@@ -279,9 +281,18 @@ With the CMake option `THANDOR_RENDERER_SDL_GPU` (default `ON`; a build director
 the old default `OFF` is switched on once) the build contains the GPU renderers
 (`src/platform/sdl3/gpu_renderer.cpp`). Only the rasterization of the primitive queues moves: lighting, fog,
 projection, sorting and the simulation stay on the CPU, the finished 3D view is copied back into the framebuffer,
-and the overlays, the UI and the cursor are drawn on it as before. Each triangle is rebuilt from the software
-rasterizer's own fixed-point setup, so the picture matches the software renderer apart from rounding (blend
-tables, 16-bit quantization, single edge pixels; 0.1-0.3 % of the pixels differ by more than 8 on both APIs). The
+and the overlays, the UI and the cursor are drawn on it as before. How the GPU draws a triangle is set by
+`[graphics] gpu_rasterization` in `thandor.ini` (or `OPEN_THANDOR_GPU_RASTER=smooth|exact`, which wins):
+
+- `smooth` (default): as the original game's Direct3D renderer did - the triangle corners keep their sub-pixel
+  screen position and the view depth is passed as w, so textures and colours are interpolated perspective-correctly.
+  Textures stay on the geometry and edges stay put while the camera moves.
+- `exact`: each triangle is rebuilt from the software rasterizer's own fixed-point setup (corners snapped to whole
+  pixels, affine texture coordinates, its edge stepping), so the picture matches the software renderer apart from
+  rounding (blend tables, 16-bit quantization, single edge pixels; 0.1-0.3 % of the pixels differ by more than 8 on
+  both APIs) - including its swimming textures and jumping edges (the original's software look).
+
+The software renderer always keeps its own look (it is the pixel reference of the tests). The
 shaders (`src/platform/sdl3/shaders/primitives.hlsl`) are compiled during the build to DXBC with `fxc` (Windows SDK,
 DirectX 12) and to SPIR-V with `dxc -spirv` (Vulkan). When `fxc` or `dxc` is not found (fxc is required for MSVC),
 or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers committed in
@@ -290,7 +301,7 @@ or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers commi
 the software renderer exists.
 
 With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame (on the first GPU API that
-runs), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
+runs; with the `exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
 3D view of both as `shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the
 difference; the GPU renderers log their per-scene times every 10 seconds.
 

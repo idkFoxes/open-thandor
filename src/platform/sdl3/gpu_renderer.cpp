@@ -19,9 +19,15 @@
 
    - g_GraphicsSetViewportAndClearDepth: the software clear (black rectangle, new depth epoch) and a new scene.
    - g_GraphicsDrawPrimitiveQueue: copies the sorted queue at once (the packet pool is reused by the next pass) into
-     32-byte vertices and runs of equal pipeline and clip rectangle. Each packet becomes the triangle the software
-     rasterizer would draw, rebuilt from its fixed-point setup (edges, depth, U/V and colour planes; see
-     SoftwareTriangleSetup), so the GPU fills the same pixels with the same attributes. Each texture used by a packet is looked up in
+     36-byte vertices and runs of equal pipeline and clip rectangle. How a packet becomes GPU triangles is the
+     rasterization ([graphics] gpu_rasterization, OPEN_THANDOR_GPU_RASTER; see ChooseRasterization):
+       smooth (default): the packet's own triangle as the original's Direct3D renderer drew it - corners at their
+         Q12 sub-pixel screen position, w = the view depth, so textures and colours are interpolated
+         perspective-correctly (AppendSmoothTriangle). Textures stay put on the geometry while the camera moves.
+       exact (compare mode): the triangle the software rasterizer would draw, rebuilt from its fixed-point setup
+         (corners snapped to whole pixels; edges, depth, U/V and colour planes, see SoftwareTriangleSetup), so the
+         GPU fills the same pixels with the same affine attributes - and swims and jitters like it.
+     Each texture used by a packet is looked up in
      an RGBA atlas (4096 x 4096, B8G8R8A8); its texels and palette are hashed once per scene and converted again when
      they changed (the generated shadow textures change every frame).
    - g_GraphicsEndScene: uploads vertices and changed atlas regions, draws the runs into an offscreen colour + depth
@@ -35,7 +41,8 @@
      4/6/12/14, 20/22/28/30          source-alpha blend, then a depth-only draw of the same run that writes depth
                                      where the modulated alpha is >= 128 (runs split where packets overlap)
      3/5/7/... (empty table entries) not drawn
-   The depth test is <= on depth / 2^32. Not reproduced exactly: the blend tables (and their over-reads), the
+   The depth test is <= on depth / 2^32 (interpolated linearly in screen space in both rasterizations). Not
+   reproduced exactly (exact rasterization): the blend tables (and their over-reads), the
    16-bit quantization after each blend, the 16-bit lane wrap and per-pixel rounding of the MMX interpolation,
    GPU sub-pixel snapping of the rebuilt edges (1/256 pixel).
 
@@ -87,9 +94,10 @@ constexpr uint32_t kUploadPitchPixels = 256 / 4;
 
 /* One packet corner as the vertex shader reads it (primitives.hlsl). */
 struct GpuVertex {
-  float x;
+  float x; /* clip space: normalized device coordinates times w */
   float y;
   float z;
+  float w; /* 1 (software-exact: affine) or the view depth (smooth: perspective-correct) */
   float u;
   float v;
   uint32_t colorArgb;
@@ -98,7 +106,7 @@ struct GpuVertex {
   uint16_t widthMask;
   uint16_t heightMask;
 };
-static_assert(sizeof(GpuVertex) == 32);
+static_assert(sizeof(GpuVertex) == 36);
 
 enum GpuPipelineIndex : int {
   GPU_PIPELINE_OPAQUE,
@@ -182,8 +190,15 @@ struct GpuTimes {
 
 enum GpuMode : int { GPU_MODE_OFF, GPU_MODE_ON, GPU_MODE_COMPARE };
 
+/* How a packet becomes GPU triangles (see AppendPacket). */
+enum GpuRasterization : int {
+  GPU_RASTERIZATION_SMOOTH, /* the packet's own triangle: sub-pixel corners, perspective-correct (default) */
+  GPU_RASTERIZATION_EXACT   /* the software rasterizer's triangle (pixel-snapped, affine); compare mode */
+};
+
 struct GpuState {
   GpuMode mode = GPU_MODE_OFF;
+  GpuRasterization rasterization = GPU_RASTERIZATION_SMOOTH;
   SDL_GPUDevice *device = nullptr;
   SDL_GPUShaderFormat shaderFormat = SDL_GPU_SHADERFORMAT_INVALID;
   SDL_Window *window = nullptr; /* the claimed window */
@@ -474,6 +489,7 @@ GpuVertex SoftwareVertexAt(const SoftwareTriangleSetup &setup, const SoftwarePoi
   vertex.y = static_cast<float>(1.0 - pixelY * 2.0 / s_gpu.targetHeight);
   vertex.z = static_cast<float>((setup.depth0 + k * setup.longDepthStep + fromLongEdge * setup.depthStepX) *
                                 kDepthScale);
+  vertex.w = 1.0f;
   vertex.u = static_cast<float>((setup.u0 + k * setup.longUStep + fromLongEdge * setup.uStepX) / 4096.0);
   vertex.v = static_cast<float>((setup.v0 + k * setup.longVStep + fromLongEdge * setup.vStepX) / 4096.0);
   uint32_t color = 0;
@@ -576,6 +592,60 @@ Uint32 AppendSoftwareTriangle(const GraphicsPrimitivePacket *packet, const Atlas
   return static_cast<Uint32>(pointCount);
 }
 
+/* Texel coordinate of a packet U/V (Q12 of a 256-texel range) for a texture of 2^sizeLog2 texels: the
+   software rasterizer's scaling (SoftwareRenderer_PrepareTrianglePacket shifts right by 8 - sizeLog2) without
+   dropping the fraction bits. */
+double PacketTexel(int coordinate, uint32_t sizeLog2) noexcept
+{
+  if (sizeLog2 <= 8) {
+    return static_cast<double>(coordinate) / (4096.0 * static_cast<double>(1u << (8 - sizeLog2)));
+  }
+  /* wider than 256 texels: the software rasterizer's masked shift count, as it samples them */
+  return static_cast<double>(coordinate >> ((8 - sizeLog2) & 31)) / 4096.0;
+}
+
+/* Smooth rasterization: the packet's triangle as the original Direct3D renderer handed it to the device
+   (D3DTLVERTEX sx/sy = screen X/Y / 4096, sz = depth, rhw = 1 / depth, tu/tv = U/V, Gouraud colour): corners
+   with their full Q12 sub-pixel position (the software rasterizer snaps them to whole pixels), the depth
+   interpolated linearly in screen space like the software and Direct3D depth buffers, and w = the view depth
+   (the packet depth is the view-space Z of the corner, see GraphicsPrimitiveQueue_AppendTriangle and the terrain
+   packet builders), so the GPU interpolates U/V and colour perspective-correctly instead of affinely. The pixel
+   grid is the software rasterizer's (sample point (px + 1, py) = GPU pixel centre (px + 0.5, py + 0.5)), so the
+   picture lines up with the overlays the CPU draws afterwards. Always appends three vertices. */
+Uint32 AppendSmoothTriangle(const GraphicsPrimitivePacket *packet, const AtlasSlot &slot, uint16_t widthMask,
+                            uint16_t heightMask) noexcept
+{
+  uint32_t widthLog2 = 0;
+  uint32_t heightLog2 = 0;
+  const bool textured = (widthMask != kUntexturedMask);
+  if (textured) {
+    widthLog2 = packet->textureEntry->widthLog2;
+    heightLog2 = packet->textureEntry->heightLog2;
+  }
+  for (int corner = 0; corner < 3; corner++) {
+    const GraphicsPrimitiveVertexRaw &source = packet->vertices[corner];
+    const double pixelX = static_cast<double>(source.screenX) / 4096.0 - 0.5;
+    const double pixelY = static_cast<double>(source.screenY) / 4096.0 + 0.5;
+    const double depth = static_cast<double>(static_cast<uint32_t>(source.depth));
+    /* the near plane keeps the view depth positive; the shadow patches' depth bias could bring it to 0 */
+    const double w = std::max(depth, 1.0);
+    GpuVertex vertex;
+    vertex.x = static_cast<float>((pixelX * 2.0 / s_gpu.targetWidth - 1.0) * w);
+    vertex.y = static_cast<float>((1.0 - pixelY * 2.0 / s_gpu.targetHeight) * w);
+    vertex.z = static_cast<float>(depth * kDepthScale * w);
+    vertex.w = static_cast<float>(w);
+    vertex.u = textured ? static_cast<float>(PacketTexel(source.textureU, widthLog2)) : 0.0f;
+    vertex.v = textured ? static_cast<float>(PacketTexel(source.textureV, heightLog2)) : 0.0f;
+    vertex.colorArgb = source.diffuseColor;
+    vertex.atlasX = slot.x;
+    vertex.atlasY = slot.y;
+    vertex.widthMask = widthMask;
+    vertex.heightMask = heightMask;
+    s_gpu.vertices.push_back(vertex);
+  }
+  return 3;
+}
+
 /* Appends one packet: its texture's atlas slot and its triangle as the software rasterizer draws it. Depths
    beyond 0..2^32 are clamped by the GPU (depth clip off). */
 void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor) noexcept
@@ -597,7 +667,9 @@ void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor
     heightMask = static_cast<uint16_t>((1u << entry->heightLog2) - 1);
   }
   const Uint32 firstVertex = static_cast<Uint32>(s_gpu.vertices.size());
-  const Uint32 vertexCount = AppendSoftwareTriangle(packet, slot, widthMask, heightMask);
+  const Uint32 vertexCount = (s_gpu.rasterization == GPU_RASTERIZATION_SMOOTH)
+                                 ? AppendSmoothTriangle(packet, slot, widthMask, heightMask)
+                                 : AppendSoftwareTriangle(packet, slot, widthMask, heightMask);
   if (vertexCount == 0) {
     return;
   }
@@ -608,10 +680,12 @@ void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor
   if (kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
     for (Uint32 index = firstVertex; index < firstVertex + vertexCount; index++) {
       const GpuVertex &vertex = s_gpu.vertices[index];
-      bounds.minX = std::min(bounds.minX, vertex.x);
-      bounds.minY = std::min(bounds.minY, vertex.y);
-      bounds.maxX = std::max(bounds.maxX, vertex.x);
-      bounds.maxY = std::max(bounds.maxY, vertex.y);
+      const float x = vertex.x / vertex.w;
+      const float y = vertex.y / vertex.w;
+      bounds.minX = std::min(bounds.minX, x);
+      bounds.minY = std::min(bounds.minY, y);
+      bounds.maxX = std::max(bounds.maxX, x);
+      bounds.maxY = std::max(bounds.maxY, y);
     }
   }
   if (!s_gpu.runs.empty()) {
@@ -708,7 +782,7 @@ bool CreatePipelines() noexcept
   bufferDescription.pitch = sizeof(GpuVertex);
   bufferDescription.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
   const SDL_GPUVertexAttribute attributes[] = {
-      {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(GpuVertex, x)},
+      {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(GpuVertex, x)},
       {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(GpuVertex, u)},
       {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM, offsetof(GpuVertex, colorArgb)},
       {3, 0, SDL_GPU_VERTEXELEMENTFORMAT_USHORT4, offsetof(GpuVertex, atlasX)},
@@ -1117,6 +1191,34 @@ void CompareScene() noexcept
 }
 #endif
 
+/* The rasterization of a starting device: OPEN_THANDOR_GPU_RASTER=smooth|exact, else the ini key [graphics]
+   gpu_rasterization (PERSISTENT_SETTING_GPU_RASTERIZATION, smooth by default); compare mode measures the
+   difference to the software picture and takes the exact one unless the variable asks for smooth. */
+GpuRasterization ChooseRasterization(bool compare) noexcept
+{
+  if (const char *value = SDL_getenv("OPEN_THANDOR_GPU_RASTER")) {
+    if (SDL_strcasecmp(value, "exact") == 0) {
+      return GPU_RASTERIZATION_EXACT;
+    }
+    if (SDL_strcasecmp(value, "smooth") == 0) {
+      return GPU_RASTERIZATION_SMOOTH;
+    }
+    Thandor_Log("SDL_GPU renderer: OPEN_THANDOR_GPU_RASTER=%s ignored (smooth or exact)", value);
+  }
+  if (compare) {
+    return GPU_RASTERIZATION_EXACT;
+  }
+  return (PersistentSettings_Read(PERSISTENT_GPU_RASTERIZATION_SMOOTH, PERSISTENT_SETTING_GPU_RASTERIZATION) ==
+          PERSISTENT_GPU_RASTERIZATION_EXACT)
+             ? GPU_RASTERIZATION_EXACT
+             : GPU_RASTERIZATION_SMOOTH;
+}
+
+const char *RasterizationName(GpuRasterization rasterization) noexcept
+{
+  return (rasterization == GPU_RASTERIZATION_EXACT) ? "software-exact" : "smooth";
+}
+
 double TicksToMs(uint64_t ticks) noexcept
 {
   return static_cast<double>(ticks) * 1000.0 / static_cast<double>(SDL_GetPerformanceFrequency());
@@ -1139,9 +1241,9 @@ void LogStatistics() noexcept
   if (s_gpu.mode == GPU_MODE_COMPARE) {
     std::snprintf(software, sizeof software, ", software %.2f ms", TicksToMs(s_gpu.times.software) / scenes);
   }
-  Thandor_Log("SDL_GPU renderer (%s): %u scenes in %.1f s, per scene: collect %.2f ms, GPU %.2f ms%s, %.0f GPU "
+  Thandor_Log("SDL_GPU renderer (%s, %s): %u scenes in %.1f s, per scene: collect %.2f ms, GPU %.2f ms%s, %.0f GPU "
               "triangles, %.0f runs, %.0f texels converted",
-              SDL_GetGPUDeviceDriver(s_gpu.device), s_gpu.times.scenes, TicksToMs(now - s_gpu.statsStart) / 1000.0, TicksToMs(s_gpu.times.collect) / scenes,
+              SDL_GetGPUDeviceDriver(s_gpu.device), RasterizationName(s_gpu.rasterization), s_gpu.times.scenes, TicksToMs(now - s_gpu.statsStart) / 1000.0, TicksToMs(s_gpu.times.collect) / scenes,
               TicksToMs(s_gpu.times.submit) / scenes, software, s_gpu.times.vertices / scenes / 3.0,
               s_gpu.times.runs / scenes, s_gpu.times.uploadedTexels / scenes);
   s_gpu.times = GpuTimes{};
@@ -1372,6 +1474,7 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     return false;
   }
   s_gpu.mode = compare ? GPU_MODE_COMPARE : GPU_MODE_ON;
+  s_gpu.rasterization = ChooseRasterization(compare);
 #ifdef THANDOR_DEV_TOOLS
   if (const char *interval = SDL_getenv("OPEN_THANDOR_GPU_COMPARE_MS")) {
     s_gpu.compareIntervalMs = static_cast<uint32_t>(std::max(1, SDL_atoi(interval)));
@@ -1381,9 +1484,9 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
   g_GraphicsSetViewportAndClearDepth = GpuRenderer_SetViewportAndClearDepth;
   g_GraphicsDrawPrimitiveQueue = GpuRenderer_DrawPrimitiveQueue;
   g_GraphicsEndScene = GpuRenderer_EndScene;
-  Thandor_Log("SDL_GPU renderer: %s on %s (%s shaders), presenting through SDL_GPU%s",
+  Thandor_Log("SDL_GPU renderer: %s (%s) on %s (%s shaders), presenting through SDL_GPU%s",
               (s_gpu.mode == GPU_MODE_COMPARE) ? "compare mode" : "primitive rasterization",
-              SDL_GetGPUDeviceDriver(s_gpu.device),
+              RasterizationName(s_gpu.rasterization), SDL_GetGPUDeviceDriver(s_gpu.device),
               (s_gpu.shaderFormat == SDL_GPU_SHADERFORMAT_SPIRV) ? "SPIR-V" : "DXBC",
               (s_gpu.mode == GPU_MODE_COMPARE) ? " (software picture shown, shots\\gpucmp_*)" : "");
   return true;

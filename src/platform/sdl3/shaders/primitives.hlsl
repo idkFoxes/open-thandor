@@ -9,14 +9,18 @@
    THANDOR_RENDERER_SDL_GPU). They rasterize the software renderer's primitive packets: the CPU has already lit,
    projected, clipped and sorted them, so the shaders only interpolate and sample.
 
-   Vertex input (one 32-byte vertex per packet corner, attribute n = TEXCOORDn as SDL_GPU binds them on D3D12):
-     0 position  float3  x/y in normalized device coordinates of the triangle the software rasterizer would draw
-                         (rebuilt on the CPU in its sample space, see gpu_renderer.cpp), z = depth / 2^32
-     1 texel     float2  U/V in texels of the packet's texture (Q12 / 4096), not wrapped
+   Vertex input (one 36-byte vertex per triangle corner, attribute n = TEXCOORDn as SDL_GPU binds them on D3D12):
+     0 position  float4  clip-space position, built on the CPU (gpu_renderer.cpp) for one of two rasterizations:
+                         smooth (default): the packet's corner with its sub-pixel screen position, z = depth / 2^32
+                         and w = the view depth, all times w, so the GPU interpolates texel and colour
+                         perspective-correctly (the original's Direct3D renderer passed rhw = 1 / depth);
+                         exact: a corner of the triangle the software rasterizer would draw (rebuilt in its sample
+                         space), w = 1, so every attribute is interpolated affinely in screen space like the
+                         software rasterizer
+     1 texel     float2  U/V in texels of the packet's texture, not wrapped
      2 colour    unorm4  the packet's ARGB diffuse colour as stored in memory (B, G, R, A)
      3 atlas     uint4   the texture's origin in the atlas and its wrap masks (width - 1, height - 1); a width mask
                          of 0xFFFF marks an untextured packet
-   w is 1 everywhere, so every attribute is interpolated affinely in screen space like the software rasterizer.
 
    Compiled twice: with fxc to DXBC shader model 5.1 (SDL_GPU_SHADERFORMAT_DXBC, the Direct3D 12 backend) and with
    dxc -spirv to SPIR-V (SDL_GPU_SHADERFORMAT_SPIRV, the Vulkan backend). SDL_GPU's resource conventions: the
@@ -26,7 +30,7 @@
    outputs get their Vulkan locations in declaration order (attribute n = location n). */
 
 struct VertexInput {
-    float3 position : TEXCOORD0;
+    float4 position : TEXCOORD0;
     float2 texel : TEXCOORD1;
     float4 colorBgra : TEXCOORD2;
     uint4 atlas : TEXCOORD3;
@@ -50,7 +54,7 @@ SamplerState g_AtlasSampler : register(s0, space2);
 VertexOutput VertexMain(VertexInput input)
 {
     VertexOutput output;
-    output.position = float4(input.position, 1.0);
+    output.position = input.position;
     output.texel = input.texel;
     output.color = input.colorBgra.zyxw;
     output.atlas = input.atlas;
