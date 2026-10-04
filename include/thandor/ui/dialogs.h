@@ -9,5 +9,6 @@
 #define THANDOR_UI_DIALOGS_H
 
 #include <thandor/ui/dialogs/display_settings.h>
+#include <thandor/ui/dialogs/fatal_error.h>
 
 #endif /* THANDOR_UI_DIALOGS_H */

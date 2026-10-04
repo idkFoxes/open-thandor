@@ -39,7 +39,6 @@ endif()
 
 add_library(thandor_curated STATIC
     src/assets/army/catalog.cpp
-    src/assets/army/editor_cycling.cpp
     src/assets/effect/catalog.cpp
     src/assets/model/definitions.cpp
     src/assets/model/mesh_raycast.cpp
@@ -47,23 +46,18 @@ add_library(thandor_curated STATIC
     src/assets/package/codec.cpp
     src/assets/package/resource_loader.cpp
     src/assets/package/runtime.cpp
-    src/assets/rom/menu_room.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
-    src/assets/scenario/frontend_selection.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
-    src/assets/text/font.cpp
     src/assets/text/resources.cpp
     src/assets/text/richtext.cpp
     src/assets/text/richtext_markup.cpp
-    src/assets/text/richtext_render.cpp
     src/audio/backend/null_backend.cpp
     src/audio/backend/runtime.cpp
     src/audio/codec/sam.cpp
     src/audio/codec/sam_encoder.cpp
     src/audio/spatial/runtime.cpp
-    src/core/error/fatal_dialog.cpp
     src/core/error/runtime.cpp
     src/core/layout_checks.cpp
     src/core/math/fixed_transform.cpp
@@ -112,15 +106,7 @@ add_library(thandor_curated STATIC
     src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
-    src/gameplay/input/camera_commands.cpp
-    src/gameplay/input/targeting.cpp
-    src/gameplay/input/world.cpp
     src/gameplay/selection/commands.cpp
-    src/gameplay/selection/overlay.cpp
-    src/gameplay/selection/panel_cells.cpp
-    src/gameplay/selection/panel_metrics.cpp
-    src/gameplay/selection/panel_resources.cpp
-    src/gameplay/selection/preview_markers.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/campaign_carryover.cpp
@@ -138,7 +124,6 @@ add_library(thandor_curated STATIC
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
     src/graphics/backend/software_blit.cpp
-    src/graphics/backend/software_credits_mask.cpp
     src/graphics/backend/software_display_mode.cpp
     src/graphics/backend/software_rasterizer.cpp
     src/graphics/backend/software_texture_scale.cpp
@@ -161,10 +146,8 @@ add_library(thandor_curated STATIC
     src/graphics/resources/texture_set.cpp
     src/graphics/resources/texture_source.cpp
     src/graphics/resources/tiled_blit.cpp
-    src/graphics/terrain/minimap_composite.cpp
     src/graphics/terrain/terrain_render.cpp
     src/graphics/terrain/terrain_resources.cpp
-    src/movie/runtime/end_movie_ui.cpp
     src/movie/runtime/flm_decoder.cpp
     src/movie/runtime/flm_encoder.cpp
     src/movie/runtime/playback.cpp
@@ -207,20 +190,25 @@ add_library(thandor_curated STATIC
     src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
+    src/ui/dialogs/fatal_error.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/credits.cpp
+    src/ui/frontend/credits_mask.cpp
     src/ui/frontend/debug_overlay.cpp
     src/ui/frontend/display_settings.cpp
     src/ui/frontend/end_movie.cpp
+    src/ui/frontend/end_movie_commands.cpp
     src/ui/frontend/faction_setup.cpp
     src/ui/frontend/lifecycle.cpp
     src/ui/frontend/main_loop.cpp
     src/ui/frontend/menu_room.cpp
+    src/ui/frontend/menu_room_scene.cpp
     src/ui/frontend/mission_briefing.cpp
     src/ui/frontend/network.cpp
     src/ui/frontend/page_actions.cpp
     src/ui/frontend/player.cpp
     src/ui/frontend/results.cpp
+    src/ui/frontend/scenario_selection.cpp
     src/ui/frontend/session.cpp
     src/ui/frontend/settings.cpp
     src/ui/frontend/state.cpp
@@ -228,10 +216,12 @@ add_library(thandor_curated STATIC
     src/ui/frontend/ui_template.cpp
     src/ui/ingame/army_stock.cpp
     src/ui/ingame/build_catalog.cpp
+    src/ui/ingame/camera_commands.cpp
     src/ui/ingame/catalog_entry.cpp
     src/ui/ingame/chat.cpp
     src/ui/ingame/command_buttons.cpp
     src/ui/ingame/commands.cpp
+    src/ui/ingame/editor_army_cycling.cpp
     src/ui/ingame/editor_keyboard.cpp
     src/ui/ingame/editor_tool_selection.cpp
     src/ui/ingame/editor_tools.cpp
@@ -239,15 +229,25 @@ add_library(thandor_curated STATIC
     src/ui/ingame/hud.cpp
     src/ui/ingame/key_commands.cpp
     src/ui/ingame/layout.cpp
+    src/ui/ingame/minimap_texture.cpp
     src/ui/ingame/music_choice.cpp
     src/ui/ingame/notifications.cpp
     src/ui/ingame/pages.cpp
+    src/ui/ingame/preview_markers.cpp
     src/ui/ingame/root_frame.cpp
     src/ui/ingame/savegame_page.cpp
     src/ui/ingame/selection_detail.cpp
+    src/ui/ingame/selection_overlay.cpp
+    src/ui/ingame/selection_panel_cells.cpp
+    src/ui/ingame/selection_panel_metrics.cpp
+    src/ui/ingame/selection_panel_resources.cpp
     src/ui/ingame/settings.cpp
+    src/ui/ingame/targeting.cpp
     src/ui/ingame/technology.cpp
     src/ui/ingame/ui_template.cpp
+    src/ui/ingame/world_input.cpp
+    src/ui/text/font.cpp
+    src/ui/text/richtext_render.cpp
     src/world/camera/camera.cpp
     src/world/camera/camera_input.cpp
     src/world/effects/lifecycle.cpp

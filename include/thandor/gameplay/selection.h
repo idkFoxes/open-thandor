@@ -9,11 +9,6 @@
 #define THANDOR_GAMEPLAY_SELECTION_H
 
 #include <thandor/gameplay/selection/commands.h>
-#include <thandor/gameplay/selection/overlay.h>
-#include <thandor/gameplay/selection/panel_cells.h>
-#include <thandor/gameplay/selection/panel_metrics.h>
-#include <thandor/gameplay/selection/panel_resources.h>
-#include <thandor/gameplay/selection/preview_markers.h>
 #include <thandor/gameplay/selection/queries.h>
 #include <thandor/gameplay/selection/selection_set.h>
 
