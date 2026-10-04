@@ -19,25 +19,31 @@ THANDOR_ALIGN(4) uint16_t g_PackageLastErrorPath[256] = {0};
 
 /* Implementation ownership: assets/package/runtime. */
 
-/* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
-   nameDestination, two code units per dword.
-   Original quirk: the full field is copied (0x7B whole dwords = 492 bytes) whatever the path's length,
-   so for the short save-game entry names (g_ArmyHexPathUtf16 ... g_OldunitHexPathUtf16, 0x12-0x1A bytes
-   each) it reads up to 0x1EC bytes past the string: through the following names and on into
-   g_InGameResourceRegistrationBusyCount and the variables after it, which change at run time, so the
-   original bytes cannot be kept by making the names one table. The extra bytes only land behind the
-   terminator in the path field of the entry header written to the save file; every reader stops at the
-   terminator (Package_FindEntryInMount / Package_FindEntryAcrossMounts compare up to it, Package_FindEntry's
-   copy is then used as a string), so they never reach a result. */
-THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
+/* Package_UpsertEntry: fills the PCK_ENTRY_PATH_UNITS code-unit path field (PckEntryHeader.path) at
+   nameDestination with path: its code units up to and including the terminator (at most the whole field),
+   then zeros.
+   The original copied the full field (0x7B whole dwords = 492 bytes) whatever the path's length, so for the
+   short save-game entry names (g_ArmyHexPathUtf16 ... g_OldunitHexPathUtf16, 0x12-0x1A bytes each) it read
+   up to 0x1EC bytes past the string, into whatever variables follow it. Bounded here because that read runs
+   past the caller's object; only the bytes behind the terminator in the path field of the entry header
+   written to the save file change (zeros instead of memory contents). Every reader stops at the terminator
+   (Package_FindEntryInMount / Package_FindEntryAcrossMounts compare up to it, Package_FindEntry's copy is
+   then used as a string), so the save format and every result are unchanged. */
+void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
 
 {
-  int dwordsRemaining;
+  uint16_t *nameUnits;
+  int unitIndex;
 
-  for (dwordsRemaining = PCK_ENTRY_PATH_UNITS / 2; dwordsRemaining != 0; dwordsRemaining--) {
-    *(uint32_t *)nameDestination = *(uint32_t *)path;
-    path = path + 2;
-    nameDestination = nameDestination + 4;
+  nameUnits = (uint16_t *)nameDestination;
+  unitIndex = 0;
+  while (unitIndex < PCK_ENTRY_PATH_UNITS) {
+    nameUnits[unitIndex] = path[unitIndex];
+    unitIndex++;
+    if (path[unitIndex - 1] == 0) break;
+  }
+  for (; unitIndex < PCK_ENTRY_PATH_UNITS; unitIndex++) {
+    nameUnits[unitIndex] = 0;
   }
 }
 
@@ -130,8 +136,8 @@ Bool8 Package_LoadEntryIntoBuffer
 
 /* Package_Mount and Package_MountLowPriority, once a free slot is chosen: opens path for writing (next to the
    executable first, then as given), allocates the entry-header array and reads the directory into
-   mountSlot. Stores the file handle or the open/allocation error code in *outFileHandleOrError (may be
-   NULL); returns true on success. */
+   mountSlot. Stores the file handle or the open/allocation/directory error code in *outFileHandleOrError (may
+   be NULL); returns true on success. On a failed directory read the file is closed and the slot left free. */
 static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintptr_t *outFileHandleOrError)
 
 {
@@ -158,14 +164,25 @@ static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uintpt
       mountSlot->fileHandle = (EngineFileHandle)handle;
       mountSlot->entryHeaders = allocatedEntryHeaders;
       mountSlot->entryCount = 0;
-      Package_ReadDirectory((EngineFileHandle)handle,NULL); /* its result is ignored */
-      if (outFileHandleOrError != NULL) {
-        *outFileHandleOrError = (uintptr_t)handle;
+      /* The original ignored the result and kept the package mounted with whatever the directory read
+         left. Rejected here because an unread directory is not usable: the mount fails as for a missing
+         file. Every valid archive (the game's packages, saves, a freshly created save package) reads. */
+      if (Package_ReadDirectory((EngineFileHandle)handle,&errorCode)) {
+        if (outFileHandleOrError != NULL) {
+          *outFileHandleOrError = (uintptr_t)handle;
+        }
+        return true;
       }
-      return true;
+      Thandor_Log("Package_Mount: \"%ls\" has no readable directory (error 0x%08X)",(wchar_t *)path,errorCode);
+      g_MemoryApi.free(allocatedEntryHeaders);
+      mountSlot->fileHandle = 0;
+      mountSlot->entryHeaders = NULL;
+      mountSlot->entryCount = 0;
+    }
+    else {
+      errorCode = allocError;
     }
     g_FileSystemClose(handle);
-    errorCode = allocError;
   }
   if (outFileHandleOrError != NULL) {
     *outFileHandleOrError = errorCode;
@@ -275,8 +292,9 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
 /* Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
    and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array. Lookups scan the slots in
    the same order, so earlier mounts win. Returns true and stores the file handle in *outFileHandleOrError;
-   returns false with an error code there instead when no slot is free, the file cannot be opened or the
-   allocation fails. outFileHandleOrError may be NULL.
+   returns false with an error code there instead when no slot is free, the file cannot be opened, the
+   allocation fails or the directory cannot be read (see Package_MountIntoSlot). outFileHandleOrError may be
+   NULL.
 */
 Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError)
 
@@ -478,10 +496,28 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
   PckCompressionMethod entryCompression;
   uint32_t decoderStatusCode;
 
+  /* The original indexed g_PckDecoderTable with the file's method unchecked and let the stored decoder copy
+     packedSize bytes into the unpackedSize buffer. Bounded here because both come from the file: an unknown
+     method fails, and so does a stored entry whose packed size exceeds its unpacked size rounded up to whole
+     dwords (Package_UpsertEntry writes stored entries dword-aligned, and the allocations round up further, so
+     those few bytes behind the data are written as in the original). */
+  entryCompression = entry->compressionMethod;
+  if ((uint32_t)entryCompression >= sizeof g_PckDecoderTable / sizeof g_PckDecoderTable[0] ||
+      (entryCompression == PCK_COMPRESSION_STORED &&
+       entry->packedSize > (entry->unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK))) {
+    Thandor_Log("Package_DecodeEntryInto: \"%ls\" has method %d, packed %u, unpacked %u; entry rejected",
+                (wchar_t *)entry->path,entryCompression,(unsigned)entry->packedSize,
+                (unsigned)entry->unpackedSize);
+    decoderStatusCode = FATAL_ERROR_GENERAL_FAILURE;
+    Package_SetLastErrorPath(entry->path);
+    if (outErrorCode != NULL) {
+      *outErrorCode = decoderStatusCode;
+    }
+    return false;
+  }
   decoderStatusCode = g_FileSystemSeek
                     (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,THANDOR_PTR(fileHandle));
   if (decoderStatusCode == 0) {
-    entryCompression = entry->compressionMethod;
     decoderStatusCode = g_FileSystemReadExact(entry->packedSize,g_PackageScratchBuffer,THANDOR_PTR(fileHandle));
     if (decoderStatusCode == 0) {
       /* the decoder stores its byte count straight into *outByteCount (NULL is allowed) */
@@ -499,42 +535,33 @@ Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineF
   return false;
 }
 
-/* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
-   in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
-   many code units as the path has, running past the terminator and, for paths
-   over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer. That neighbour is explicit
-   here: the variables are no longer adjacent, and the units past the buffer overwrote whatever the compiler
-   placed behind it (the package mount table and g_PackageScratchBuffer in the GCC build).
-*/
-THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
+/* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load: its code units up to
+   and including the terminator, at most 0x100 (a longer path is cut and terminated in the last unit), then
+   zeros to the end of the buffer.
+   The original measured the length in code units (at most 0x100, terminator included) but used it as a byte
+   count, copying twice as many code units as the path has: past the caller's string (some callers pass an
+   asset buffer, whose magic then becomes the text) and, for paths over 0x80 units, on into
+   g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer. Bounded here because both reads and the write run
+   past their objects. Only units behind the terminator change, which no reader looks at; the
+   g_FatalErrorDetail1Utf16 spill is dropped (it only showed the bytes behind the path as garbage in the
+   fatal-error box), and a path of 0x100 units or more now ends in a terminator. */
+void Package_SetLastErrorPath(uint16_t *path)
 
 {
-  uint16_t codeUnit;
-  int remainingCount;
-  uint16_t *scanEnd;
-  uint16_t *wordCursor;
-  
-  remainingCount = 256;
-  wordCursor = path;
-  do {
-    scanEnd = wordCursor;
-    if (remainingCount == 0) break;
-    remainingCount--;
-    scanEnd = wordCursor + 1;
-    codeUnit = *wordCursor;
-    wordCursor = scanEnd;
-  } while (codeUnit != 0);
-  remainingCount = (int)((uint8_t *)scanEnd - (uint8_t *)path); /* bytes, used as a code-unit count below */
-  wordCursor = g_PackageLastErrorPath;
-  for (; remainingCount != 0; remainingCount--) {
-    if (wordCursor == g_PackageLastErrorPath + 256) {
-      wordCursor = g_FatalErrorDetail1Utf16; /* behind the buffer in the original image (at most 0x100 units) */
-    }
-    *wordCursor = *path;
-    path++;
-    wordCursor++;
+  int unitIndex;
+
+  unitIndex = 0;
+  while (unitIndex < 256) {
+    g_PackageLastErrorPath[unitIndex] = path[unitIndex];
+    unitIndex++;
+    if (path[unitIndex - 1] == 0) break;
   }
-  return;
+  if (unitIndex == 256) {
+    g_PackageLastErrorPath[255] = 0;
+  }
+  for (; unitIndex < 256; unitIndex++) {
+    g_PackageLastErrorPath[unitIndex] = 0;
+  }
 }
 
 /* Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in
@@ -665,16 +692,23 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 }
 
 /* Package_ReadDirectory, once the slot is found: reads the archive header and every entry header of
-   fileHandle into mountSlot. Returns 0 or the file-system error code of the failed seek/read. */
+   fileHandle into mountSlot. Returns 0 or the file-system error code of the failed seek/read, or
+   FATAL_ERROR_GENERAL_FAILURE when the archive has more entries than the PACKAGE_DIRECTORY_BYTES array holds.
+   The original stored the entry count before the reads and wrote any count into the array; on a failure it
+   left the count with the headers not read (uninitialised in a fresh array). Bounded here because the count
+   comes from the file: a failure leaves the slot with no entries, and the count is only stored once every
+   header is read. The game's archives hold at most 423 entries. */
 static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFileHandle fileHandle)
 
 {
   uint32_t statusCode;
+  PckEntryCount entryCount;
   PckEntryCount entriesRemaining;
   FileSystemFilePosition entryHeaderOffset;
   PckEntryHeader *entryHeader;
 
   entryHeader = mountSlot->entryHeaders;
+  mountSlot->entryCount = 0;
   statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,THANDOR_PTR(fileHandle));
   if (statusCode != 0) {
     return statusCode;
@@ -683,13 +717,19 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
   if (statusCode != 0) {
     return statusCode;
   }
-  entriesRemaining = ((PckArchiveHeader *)g_PackageScratchBuffer)->entryCount;
-  mountSlot->entryCount = entriesRemaining;
+  entryCount = ((PckArchiveHeader *)g_PackageScratchBuffer)->entryCount;
+  if (entryCount > PACKAGE_DIRECTORY_BYTES / PCK_ENTRY_HEADER_BYTES) {
+    Thandor_Log("Package_ReadDirectory: %u entries, at most %u fit; package rejected",
+                (unsigned)entryCount,(unsigned)(PACKAGE_DIRECTORY_BYTES / PCK_ENTRY_HEADER_BYTES));
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
   /* each entry is its header followed directly by its packed payload */
   entryHeaderOffset = PCK_ENTRY_HEADER_BYTES;
-  for (; entriesRemaining != 0; entriesRemaining--) {
+  for (entriesRemaining = entryCount; entriesRemaining != 0; entriesRemaining--) {
     statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,THANDOR_PTR(fileHandle));
     if (statusCode != 0) {
+      Thandor_Log("Package_ReadDirectory: entry header %u of %u not read (error 0x%08X); package rejected",
+                  (unsigned)(entryCount - entriesRemaining),(unsigned)entryCount,statusCode);
       return statusCode;
     }
     entryHeader->runtimePayloadOffset = entryHeaderOffset;
@@ -700,6 +740,7 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
       return statusCode;
     }
   }
+  mountSlot->entryCount = entryCount;
   return 0;
 }
 
