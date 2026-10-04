@@ -732,7 +732,7 @@ static void FrontendPlayerRuntime_EndInGameStartPause()
 }
 
 
-/* Handler of INGAME_COMMAND_PLAYER_READY (a player has loaded the level): counts the report in the player's
+/* Handler of in-game command 0x550 (a player has loaded the level): counts the report in the player's
    readyOrWaitState. When every player has reported, the host sends the command a second time; once the host's
    count reaches 2 (or at once in a local game), the session's start pause ends
    (UI_COMMAND_RUNTIME_FLAG_PAUSED and _WAITING_FOR_PLAYERS cleared). A client ends it when the host's

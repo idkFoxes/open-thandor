@@ -232,13 +232,13 @@ static const CommandTableEntry g_InGameCommandTable[] = {
     {INGAME_COMMAND_PLAYER_DEPARTURE, THANDOR_PTR(&InGameCommand_HandlePlayerDeparture)},
     {INGAME_COMMAND_APPLY_UI_FLAG_MASKS, THANDOR_PTR(&UiCommandRuntimeFlags_ApplyClearSetToggleMasks)},
     {INGAME_COMMAND_SET_SLOW_RENDERING, THANDOR_PTR(&FrontendPlayerRuntime_SetSlowRenderingFlagById)},
-    {0x370, THANDOR_PTR(&InGameCommand_TogglePauseRequest)},
-    {0x3F0, THANDOR_PTR(&InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks)},
+    {0x370, THANDOR_PTR(&InGameCommand_TogglePauseRequest)}, /* toggle pause (hotkey) */
+    {0x3F0, THANDOR_PTR(&InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks)}, /* adjust game speed (hotkey) */
     {INGAME_COMMAND_RESULTS_READY, THANDOR_PTR(&FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton)},
-    {0x550, THANDOR_PTR(&FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus)},
+    {0x550, THANDOR_PTR(&FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus)}, /* player ready: level loaded */
     {INGAME_COMMAND_ADVANCE_RELATION, THANDOR_PTR(&GameFactionRuntime_AdvancePairwiseRelationState)},
     {INGAME_COMMAND_RESET_RELATION, THANDOR_PTR(&GameFactionRuntime_ResetPairwiseRelationState)},
-    {0x8F0, THANDOR_PTR(&InGameSelection_SelectAllOwnAircraftPads)},
+    {0x8F0, THANDOR_PTR(&InGameSelection_SelectAllOwnAircraftPads)}, /* select own aircraft pads (hotkey) */
     {INGAME_COMMAND_SELECT_SINGLE_ARMY, THANDOR_PTR(&FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection)},
     {INGAME_COMMAND_REPLACE_SELECTION, THANDOR_PTR(&InGamePlayerSelection_ReplaceWithArmyRuntimeIndex)},
     {INGAME_COMMAND_SELECTION_INSERT, THANDOR_PTR(&FrontendPlayerSelection_InsertThreeEntriesAndRefresh)},
@@ -249,10 +249,10 @@ static const CommandTableEntry g_InGameCommandTable[] = {
     {INGAME_COMMAND_POSITION, THANDOR_PTR(&InGamePlayerSelection_ApplyPositionCommand)},
     {INGAME_COMMAND_SELECT_ARMY, THANDOR_PTR(&InGamePlayerSelection_SelectArmyRuntimeIndex)},
     {INGAME_COMMAND_TARGET_POSITION, THANDOR_PTR(&InGamePlayerSelection_ApplyTargetPositionCommand)},
-    {0xE10, THANDOR_PTR(&PlayerSelection_ResetMovementPruneAndRecenterEntries)},
-    {0xE30, THANDOR_PTR(&PlayerSelection_StopMovement)},
-    {0xE50, THANDOR_PTR(&PlayerSelection_CancelTargets)},
-    {0xE70, THANDOR_PTR(&PlayerSelection_SelfDestruct)},
+    {0xE10, THANDOR_PTR(&PlayerSelection_ResetMovementPruneAndRecenterEntries)}, /* S: reset movement */
+    {0xE30, THANDOR_PTR(&PlayerSelection_StopMovement)}, /* Shift+S: stop movement (stay where they are) */
+    {0xE50, THANDOR_PTR(&PlayerSelection_CancelTargets)}, /* Alt+S: cancel targets */
+    {0xE70, THANDOR_PTR(&PlayerSelection_SelfDestruct)}, /* Alt+D: self destruct */
     {0xE90, THANDOR_PTR(&InGameSelection_SetAircraftPadTargetLane1)},
     {0xEC0, THANDOR_PTR(&InGameSelection_SetAircraftPadTargetLane2)},
     {0xEF0, THANDOR_PTR(&SelectionMarkerCoordinates_ApplyType3)},
