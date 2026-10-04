@@ -47,7 +47,10 @@ def link_tree():
         else:
             if os.path.exists(target):
                 os.remove(target)
-            os.link(source, target)
+            if name.lower() in ('thandor.dat', 'thandor.ini'):
+                shutil.copy(source, target)  # the game writes thandor.ini: no link into the host's copy
+            else:
+                os.link(source, target)
 
 
 def log_lines(directory):

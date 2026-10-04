@@ -18,6 +18,8 @@
                     scanaddr.txt (OPEN_THANDOR_SCANFILES=a;b;... scans those files instead,
                     OPEN_THANDOR_DUMPTEXT=<dir> also writes the decoded *.str / *.txt entries there)
      pcx            decodes pcxtest.pcx next to the executable, logs size and hash (tools/test/pcx_check.py)
+     settings       thandor.ini parser/writer on a fixed text; thandor.dat of the current directory -> ini ->
+                    image must be identical (migration), and a thandor.ini there must match that thandor.dat
      numberformat, fixedmath, keymap, trianglesetup, movieenc
                     hash tests: log a hash over many results of the number formatter, the fixed-point math,
                     the keyboard layer, the software triangle setup and the movie encoder/decoder, to

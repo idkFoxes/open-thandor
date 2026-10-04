@@ -60,7 +60,7 @@ import cpu_load
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'sdl3.dll', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log',
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log', 'crash_raw.log',
            'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
@@ -123,8 +123,10 @@ def make_copy(name, exe):
         if os.path.exists(dll):
             shutil.copy(dll, os.path.join(target, 'SDL3.dll'))
             break
-    if os.path.exists(os.path.join(game, 'thandor.dat')):
-        shutil.copy(os.path.join(game, 'thandor.dat'), os.path.join(target, 'thandor.dat'))
+    # settings: own copies (the game writes thandor.ini; thandor.dat alone is migrated to it)
+    for entry in ('thandor.dat', 'thandor.ini'):
+        if os.path.exists(os.path.join(game, entry)):
+            shutil.copy(os.path.join(game, entry), os.path.join(target, entry))
     return target
 
 

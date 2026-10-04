@@ -7,8 +7,9 @@ change the graphics API, fix sound and so on. I hope some of you want to join th
 
 **All of `thandor.exe` is reimplemented in readable C++ (C++20), as a 64-bit program on SDL3.** No original machine
 code is executed and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in
-as ordinary variables of the modules; only the game's data files (`*.PCK`, `thandor.dat`, movies) come from an
-installation. Save games of the original game load, and the game writes them in the original format.
+as ordinary variables of the modules; only the game's data files (`*.PCK`, movies) come from an
+installation. The settings are kept in a readable `thandor.ini` (the original `thandor.dat` is taken over once,
+see [docs/BUILDING.md](docs/BUILDING.md#settings-file-thandorini)). Save games of the original game load, and the game writes them in the original format.
 
 - 1,919 original functions in about 160,000 lines (198 source files, 52 modules).
 - Every function has a header comment (what it does, who calls it); names, constants and structure types are

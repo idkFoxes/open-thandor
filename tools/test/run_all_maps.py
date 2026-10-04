@@ -92,7 +92,8 @@ if args.missions:
         raise SystemExit('unknown missions: ' + ', '.join(sorted(unknown)))
     missions = [m for m in missions if m[0] in wanted]
 
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log')
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
+           'crash_raw.log', 'hang.log')
 
 
 def make_worker_dir(k):
@@ -108,7 +109,12 @@ def make_worker_dir(k):
             os.link(source, link)
         elif os.path.isdir(source) and name.lower() in ('flm', 'setup') and not os.path.exists(link):
             subprocess.run('mklink /J "%s" "%s"' % (link, source), shell=True, capture_output=True)
-    for name in ('thandor.exe', 'thandor.pdb', 'thandor.dat'):
+    # settings: a thandor.ini the game wrote in an earlier run would override the fresh thandor.dat (and may not be
+    # a hard link into the game dir)
+    for name in ('thandor.dat', 'thandor.ini'):
+        if os.path.exists(os.path.join(target, name)):
+            os.remove(os.path.join(target, name))
+    for name in ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(game, name)):
             shutil.copy(os.path.join(game, name), os.path.join(target, name))
     return target

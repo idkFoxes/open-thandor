@@ -27,7 +27,8 @@ import threading
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
+           'crash_raw.log', 'hang.log',
            'statehash.txt')
 # mission page (1280x800): "Beginnen", then wait until the level runs; the scenarios need no further input
 SCRIPT = "0 layout 1280 800\n6000 clickuntilingame 839 539 3000\n0 ingame\n900000 quit\n"
@@ -45,7 +46,12 @@ def make_copy(game, k):
             os.link(source, link)
         elif os.path.isdir(source) and name.lower() in ('flm', 'setup', 'level') and not os.path.exists(link):
             subprocess.run('mklink /J "%s" "%s"' % (link, source), shell=True, capture_output=True)
-    for name in ('thandor.exe', 'thandor.pdb', 'thandor.dat'):
+    # settings: a thandor.ini the game wrote in an earlier run would override the fresh thandor.dat (and may not be
+    # a hard link into the game dir)
+    for name in ('thandor.dat', 'thandor.ini'):
+        if os.path.exists(os.path.join(target, name)):
+            os.remove(os.path.join(target, name))
+    for name in ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(game, name)):
             shutil.copy(os.path.join(game, name), os.path.join(target, name))
     return target
