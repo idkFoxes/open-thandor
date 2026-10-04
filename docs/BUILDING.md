@@ -1,7 +1,9 @@
 # Building
 
-The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with MSVC or MinGW-w64 GCC
-([below](#mingw-w64-gcc)) and SDL3. The 32-bit build and the
+The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with SDL3. The main compiler is MinGW-w64 GCC
+([below](#mingw-w64-gcc)): the automated checks run with its build (`mingw-test`, `build-mingw-test`) and the
+reference builds are GCC builds. MSVC is the second compiler: it must keep building without warnings (for the Visual
+Studio debugger and PDB symbols in crash logs), but the checks are not run with it. The 32-bit build and the
 original's Win32/DirectX platform code (DirectDraw, DirectInput, DirectSound, WinMM timers, the Win32 message pump)
 were removed once the x64 build reproduced every determinism hash and pixel of the 32-bit one; they are in the git
 history.
@@ -62,7 +64,7 @@ keeps a pointer in a plain 32-bit integer (a field holding a pointer or an offse
 The same tree builds with MinGW-w64 GCC for x64 (x86_64-w64-mingw32, SEH exceptions; tested with the MinGW-Builds
 GCC 15.2 in `C:\mingw64`). Requirements: the toolchain (`g++`, `ld`, `windres`, `addr2line`) and Ninja (the
 MinGW-Builds distribution has `ninja.exe` in its `bin`), CMake 3.25+, and SDL3 for MinGW:
-`vcpkg install sdl3:x64-mingw-dynamic` (vcpkg's `windres` step fails when the vcpkg path contains a space; build
+`vcpkg install sdl3[vulkan]:x64-mingw-dynamic` (vcpkg's `windres` step fails when the vcpkg path contains a space; build
 with `--x-buildtrees-root=C:/vcbt` or another path without spaces then).
 
 ```bat

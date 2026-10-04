@@ -68,29 +68,27 @@ water flow, double clicks, spinlocks that were not atomic).
 
 ## Building
 
-Requirements: Windows, Visual Studio 2022 or newer with the C++ workload (MSVC x64 and Windows SDK), CMake 3.25+
-and Ninja on the `PATH` (a "Developer Command Prompt" is not needed; [`cmake/msvc-x64.cmake`](cmake/msvc-x64.cmake)
-finds the compiler via `vswhere`), SDL3 for x64 with Vulkan, e.g. `vcpkg install sdl3[vulkan]:x64-windows`, and dxc for
-the Vulkan shaders, `vcpkg install directx-dxc:x64-windows`. CMake finds both through
-the environment variable `VCPKG_ROOT` (the vcpkg directory) or `-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`.
+The main compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2): CMake 3.25+, Ninja, `g++` on the `PATH` or
+`MINGW_ROOT` set ([`cmake/mingw-x64.cmake`](cmake/mingw-x64.cmake)), SDL3 with Vulkan from
+`vcpkg install sdl3[vulkan]:x64-mingw-dynamic`, and dxc for the Vulkan shaders, `vcpkg install directx-dxc:x64-windows`.
+CMake finds them through the environment variable `VCPKG_ROOT` (the vcpkg directory).
 
 ```bat
+set PATH=C:\mingw64\bin;%PATH%
 set VCPKG_ROOT=C:\path\to\vcpkg
-cmake --preset release
-cmake --build --preset release
+cmake --preset mingw-release
+cmake --build --preset mingw-release
 ```
 
-The result is `cmake-build-msvc-release\thandor.exe` (x64) with `SDL3.dll` next to it. Other presets: `debug`,
-`test` (`THANDOR_DEV_TOOLS=ON`, builds into `build-test` and adds the developer tools: self-tests, windowed mode,
-several instances, scripted input, starting any campaign level, winning a level automatically, the determinism
-state hash; the default build has none of them) and `gpu-test` (the same as `test` now that the SDL_GPU renderers,
-`THANDOR_RENDERER_SDL_GPU`, are on by default). CLion and Visual Studio pick the presets up from
-[`CMakePresets.json`](CMakePresets.json).
+The result is `build-mingw-release\thandor.exe` (x64) with `SDL3.dll` next to it. `mingw-test` (`build-mingw-test`)
+adds the developer tools: self-tests, windowed mode, several instances, scripted input, starting any campaign level,
+winning a level automatically, the determinism state hash (the default build has none of them); the automated checks
+use this build.
 
-The second compiler is MinGW-w64 GCC (x86_64, SEH; tested with GCC 15.2) with SDL3 from
-`vcpkg install sdl3:x64-mingw-dynamic`: presets `mingw-release`, `mingw-test` (`build-mingw-test`) and
-`mingw-gpu-test`, with `g++` on the `PATH` or `MINGW_ROOT` set ([`cmake/mingw-x64.cmake`](cmake/mingw-x64.cmake));
-see [docs/BUILDING.md](docs/BUILDING.md#mingw-w64-gcc).
+MSVC (Visual Studio 2022 or newer with the C++ workload, SDL3 from `vcpkg install sdl3[vulkan]:x64-windows`) is the
+second compiler, kept building for the Visual Studio debugger: presets `release`, `debug`, `test` (`build-test`) and
+`gpu-test`; CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json). Details in
+[docs/BUILDING.md](docs/BUILDING.md).
 
 To play, copy `thandor.exe` and `SDL3.dll` into a **copy** of an installed Thandor directory (the game data is not
 part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are

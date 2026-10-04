@@ -33,7 +33,8 @@ further copies next to it), windowed, with its own UDP ports:
                path (segments: 12 parts, 33 levels). Every level runs 2 minutes, then the auto-win fires the end
                trigger; every level must be won and units carried over where the campaign does it, without
                crash or hang (ports 910-921)
---new defaults to build-test/thandor.exe of this repository (CMake preset "test"); each copy gets the SDL3.dll next
+--new defaults to build-mingw-test/thandor.exe of this repository (CMake preset "mingw-test", the main compiler),
+else build-test/thandor.exe (preset "test", MSVC); each copy gets the SDL3.dll next
 to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
@@ -408,8 +409,11 @@ def main():
     global args, game, out_dir
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('game_dir')
-    parser.add_argument('--new', default=os.path.join(REPO, 'build-test', 'thandor.exe'),
-                        help='test build to check (default: build-test/thandor.exe)')
+    default_new = os.path.join(REPO, 'build-mingw-test', 'thandor.exe')
+    if not os.path.exists(default_new):
+        default_new = os.path.join(REPO, 'build-test', 'thandor.exe')
+    parser.add_argument('--new', default=default_new,
+                        help='test build to check (default: build-mingw-test/thandor.exe, else build-test/thandor.exe)')
     parser.add_argument('--old', help='previous test build (comparison for aihash and pixels)')
     parser.add_argument('--map-jobs', type=int, help='parallel missions (default: 16 minus the other instances, '
                                                        'at least 4, growing to 16 as the other checks finish; a '
