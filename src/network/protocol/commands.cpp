@@ -310,6 +310,81 @@ static const CommandTableEntry g_InGameCommandTable[] = {
 
 #define COMMAND_TABLE_COUNT(table) (sizeof(table) / sizeof((table)[0]))
 
+/* Validation of received command records (no original counterpart). The original calls the handler with
+   whatever a peer sent; the handlers index fixed arrays with payload values and turn tokens into pointers.
+   Each payload dword of a code below gets one check; every other payload dword is passed on unchecked. The
+   checks read only the record and state every peer shares (player blocks, field grid, the scenario lists of
+   the lobby), so every peer drops the same records. Valid peers (the original game included) never send a
+   value that fails a check, so valid sessions take the identical path. */
+typedef enum CommandPayloadCheck {
+  COMMAND_CHECK_NONE = 0,
+  COMMAND_CHECK_FACTION,          /* faction index: GameFactionRuntimeImage.records[8] */
+  COMMAND_CHECK_FACTION_ROW,      /* faction setup row 0..6 (the seven rows of the faction setup page) */
+  COMMAND_CHECK_SELECTION_GROUP,  /* selection group 0..SELECTION_GROUP_COUNT - 1 */
+  COMMAND_CHECK_ARMY_TOKEN,       /* 0 (none) or an army slot as offset from g_ArmyRuntimeRebaseBaseMinusOne */
+  COMMAND_CHECK_ARMY_TOKEN_SET,   /* as COMMAND_CHECK_ARMY_TOKEN, but not 0 (the handler rebases it unconditionally) */
+  COMMAND_CHECK_MODEL_TOKEN,      /* 0 (none) or a model slot as offset from g_ModelRuntimeRebaseDelta */
+  COMMAND_CHECK_TECHNOLOGY,       /* 0 (none), negative (cancel) or a technology record index */
+  COMMAND_CHECK_GRID_ROW,         /* Q12 field grid row, one cell of margin around the grid */
+  COMMAND_CHECK_GRID_COLUMN,      /* Q12 field grid column, one cell of margin around the grid */
+  COMMAND_CHECK_RELAXATION_PASSES,/* 1..TERRAIN_RELAXATION_BUTTON_PASSES (0 wraps the do/while) */
+  COMMAND_CHECK_MISSION_ROW,      /* row of the missions list (frontend) */
+  COMMAND_CHECK_CAMPAIGN_ROW,     /* row of the campaigns list (frontend) */
+  COMMAND_CHECK_SAVED_GAME_ROW    /* row of the saved games list (frontend) */
+} CommandPayloadCheck;
+
+typedef struct CommandValidationEntry {
+  uint32_t code;
+  uint8_t payloadChecks[3]; /* CommandPayloadCheck of payload1, payload2, payload3 (handler argument order) */
+} CommandValidationEntry;
+
+static const CommandValidationEntry g_FrontendCommandValidation[] = {
+    {FRONTEND_COMMAND_CYCLE_FACTION_COLOUR, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION_ROW}},
+    {FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION_ROW}},
+    {FRONTEND_COMMAND_CHOOSE_FACTION, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION_ROW}},
+    {FRONTEND_COMMAND_LOAD_LEVEL, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_MISSION_ROW}},
+    {FRONTEND_COMMAND_LOAD_CAMPAIGN, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_CAMPAIGN_ROW}},
+    {FRONTEND_COMMAND_SELECT_SAVED_GAME, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_SAVED_GAME_ROW}},
+    {FRONTEND_COMMAND_SELECT_SINGLE_GAME, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_MISSION_ROW}},
+    {FRONTEND_COMMAND_SELECT_CAMPAIGN, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_CAMPAIGN_ROW}},
+};
+
+static const CommandValidationEntry g_InGameCommandValidation[] = {
+    {INGAME_COMMAND_ADVANCE_RELATION, {COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_RESET_RELATION, {COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_SELECT_SINGLE_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_REPLACE_SELECTION, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_SELECTION_INSERT, {COMMAND_CHECK_ARMY_TOKEN,COMMAND_CHECK_ARMY_TOKEN,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_SELECTION_REMOVE, {COMMAND_CHECK_ARMY_TOKEN,COMMAND_CHECK_ARMY_TOKEN,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_SELECTION_GROUP, {COMMAND_CHECK_FACTION,COMMAND_CHECK_NONE,COMMAND_CHECK_SELECTION_GROUP}},
+    {INGAME_COMMAND_SELECT_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_QUEUE_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_CANCEL_QUEUED_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_CONSUME_PENDING_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    {INGAME_COMMAND_SELL_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    /* crossed names in the handler: payload2 is the model token, payload3 the army token */
+    {INGAME_COMMAND_SELECT_MODEL_AND_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_MODEL_TOKEN,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_ASSIGN_ARMY_TOKEN, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_MODEL_TOKEN}},
+    {INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE, {COMMAND_CHECK_NONE,COMMAND_CHECK_TECHNOLOGY,COMMAND_CHECK_MODEL_TOKEN}},
+    /* marked editor cells: (last column, row, first column); the range loop wraps for a column near INT32_MAX */
+    {INGAME_COMMAND_EDITOR_SELECT_RANGE, {COMMAND_CHECK_GRID_COLUMN,COMMAND_CHECK_GRID_ROW,COMMAND_CHECK_GRID_COLUMN}},
+    {INGAME_COMMAND_EDITOR_DESELECT_RANGE, {COMMAND_CHECK_GRID_COLUMN,COMMAND_CHECK_GRID_ROW,COMMAND_CHECK_GRID_COLUMN}},
+    {0x1D80, {COMMAND_CHECK_NONE,COMMAND_CHECK_GRID_ROW,COMMAND_CHECK_GRID_COLUMN}}, /* PlayerPairList_InsertUnique */
+    /* the anchor cell (row, column) indexes the grid cells unclipped (FieldGrid_ProcessHorizontalSpan) */
+    {INGAME_COMMAND_EDITOR_RAISE_HEIGHTS, {COMMAND_CHECK_GRID_ROW,COMMAND_CHECK_GRID_COLUMN,COMMAND_CHECK_NONE}},
+    {INGAME_COMMAND_EDITOR_LOWER_HEIGHTS, {COMMAND_CHECK_GRID_ROW,COMMAND_CHECK_GRID_COLUMN,COMMAND_CHECK_NONE}},
+    {INGAME_COMMAND_DESTROY_ARMIES, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_ARMY_TOKEN_SET}},
+    {INGAME_COMMAND_PLACEMENT_SET_FACTION, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_FACTION}},
+    /* stored as placedArmyToken and rebased by the placement move/rotate commands */
+    {INGAME_COMMAND_PLACEMENT_SET_ARMY, {COMMAND_CHECK_NONE,COMMAND_CHECK_NONE,COMMAND_CHECK_ARMY_TOKEN}},
+    {INGAME_COMMAND_TERRAIN_RELAXATION, {COMMAND_CHECK_NONE,COMMAND_CHECK_RELAXATION_PASSES,COMMAND_CHECK_NONE}},
+};
+
+/* Logged-once flags, parallel to the validation tables. */
+static uint8_t g_FrontendCommandValidationLogged[COMMAND_TABLE_COUNT(g_FrontendCommandValidation)];
+static uint8_t g_InGameCommandValidationLogged[COMMAND_TABLE_COUNT(g_InGameCommandValidation)];
+
 /* False for the table entries that are no four-argument command handlers: the queue functions and the queue
    lookup helper, listed only because they start in the handler regions. */
 static Bool8 CommandDispatch_IsCommandHandler(const void *handler)
@@ -376,6 +451,157 @@ CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint
     Thandor_Log("network: command code 0x%X (base 0x%08X) is no command handler, ignored",code,codeBase);
   }
   return NULL;
+}
+
+
+/* True when token is 0 (allowZero) or a slot start of a pool of slotCount slotBytes-sized slots, given as
+   the slot's offset from pool base - 1 (the protocol's token form, see g_ArmyRuntimeRebaseBaseMinusOne and
+   g_ModelRuntimeRebaseDelta). */
+static Bool8 CommandDispatch_IsPoolToken(uint32_t token,uint32_t slotBytes,uint32_t slotCount,Bool8 allowZero)
+
+{
+  if (token == 0) {
+    return allowZero;
+  }
+  return (token - 1) % slotBytes == 0 && (token - 1) / slotBytes < slotCount;
+}
+
+/* True when the Q12 grid coordinate names a cell index in -1..cellCount (one cell of margin: the snapped
+   editor rectangle can end one cell outside the grid; the original reads such cells, too). */
+static Bool8 CommandDispatch_IsGridCoordinate(uint32_t coordinateQ12,FieldGridDimension cellCount)
+
+{
+  int cellIndex;
+
+  cellIndex = (int)coordinateQ12 >> Q12_SHIFT;
+  return -1 <= cellIndex && cellIndex <= (int)cellCount;
+}
+
+/* True when rowIndex names a row of the frontend list control, or the list has no rows at all (rowSlots NULL:
+   the select handlers then only reset the description, as in the original). */
+static Bool8 CommandDispatch_IsListRow(const UiNodeBase *listNode,uint32_t rowIndex)
+
+{
+  const UiListControl *list;
+
+  list = (const UiListControl *)listNode;
+  return list->rowSlots == NULL || rowIndex < list->rowCount;
+}
+
+/* Applies one CommandPayloadCheck to a payload dword. */
+static Bool8 CommandDispatch_IsPayloadValid(CommandPayloadCheck check,uint32_t value)
+
+{
+  const FieldGridAsset *fieldGrid;
+
+  switch (check) {
+  case COMMAND_CHECK_NONE:
+    return true;
+  case COMMAND_CHECK_FACTION:
+    return value < COMMAND_TABLE_COUNT(g_GameFactionRuntimeImage.records);
+  case COMMAND_CHECK_FACTION_ROW:
+    return value < COMMAND_TABLE_COUNT(g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets);
+  case COMMAND_CHECK_SELECTION_GROUP:
+    return value < SELECTION_GROUP_COUNT;
+  case COMMAND_CHECK_ARMY_TOKEN:
+  case COMMAND_CHECK_ARMY_TOKEN_SET:
+    return CommandDispatch_IsPoolToken(value,sizeof(ArmyRuntimeSlot),ARMY_RUNTIME_SLOT_COUNT,
+                                       check == COMMAND_CHECK_ARMY_TOKEN);
+  case COMMAND_CHECK_MODEL_TOKEN:
+    return CommandDispatch_IsPoolToken(value,sizeof(ModelRuntimeSlot),MODEL_RUNTIME_SLOT_COUNT,true);
+  case COMMAND_CHECK_TECHNOLOGY:
+    return (int)value < TECHNOLOGY_RECORD_COUNT;
+  case COMMAND_CHECK_GRID_ROW:
+  case COMMAND_CHECK_GRID_COLUMN:
+    fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+    return CommandDispatch_IsGridCoordinate
+                     (value,check == COMMAND_CHECK_GRID_ROW ? fieldGrid->gridHeight : fieldGrid->gridWidth);
+  case COMMAND_CHECK_RELAXATION_PASSES:
+    return value != 0 && value <= TERRAIN_RELAXATION_BUTTON_PASSES;
+  case COMMAND_CHECK_MISSION_ROW:
+    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,missionsList),value);
+  case COMMAND_CHECK_CAMPAIGN_ROW:
+    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,campaignsList),value);
+  case COMMAND_CHECK_SAVED_GAME_ROW:
+    return CommandDispatch_IsListRow(FRONTEND_UI(g_FrontendRootNode,savedGamesList),value);
+  }
+  return true;
+}
+
+/* Rebuild helper (no original counterpart): whether a received record of codeBase may reach its handler. An
+   in-game record must name a player with a selection block (every in-game handler may index
+   g_SelectionPlayerRuntimeBlockPointers with it; the frontend handlers search the player list instead), and
+   the payload dwords must pass the checks of the code's validation entry. A rejected record is logged once per
+   code (the player id once overall). */
+static Bool8 CommandDispatch_ValidateRecord(uint32_t codeBase,const UiCommandQueueRecord *record)
+
+{
+  static int s_loggedUnknownPlayer;
+  const CommandValidationEntry *table;
+  uint8_t *loggedFlags;
+  uint32_t count;
+  uint32_t index;
+  uint32_t code;
+  uint32_t playerId;
+
+  code = record->packedCommandAndPlayerId >> 8;
+  playerId = record->packedCommandAndPlayerId & 0xff;
+  if (codeBase == INGAME_COMMAND_CODE_BASE) {
+    if (g_SelectionPlayerRuntimeBlockPointers[playerId] == NULL) {
+      if (s_loggedUnknownPlayer == 0) {
+        s_loggedUnknownPlayer = 1;
+        Thandor_Log("network: command 0x%X names player %u without a player block, dropped",code,playerId);
+      }
+      return false;
+    }
+    table = g_InGameCommandValidation;
+    loggedFlags = g_InGameCommandValidationLogged;
+    count = COMMAND_TABLE_COUNT(g_InGameCommandValidation);
+  }
+  else {
+    table = g_FrontendCommandValidation;
+    loggedFlags = g_FrontendCommandValidationLogged;
+    count = COMMAND_TABLE_COUNT(g_FrontendCommandValidation);
+  }
+  for (index = 0; index < count; index++) {
+    if (table[index].code != code) {
+      continue;
+    }
+    if (CommandDispatch_IsPayloadValid((CommandPayloadCheck)table[index].payloadChecks[0],record->payload1) &&
+        CommandDispatch_IsPayloadValid((CommandPayloadCheck)table[index].payloadChecks[1],record->payload2) &&
+        CommandDispatch_IsPayloadValid((CommandPayloadCheck)table[index].payloadChecks[2],record->payload3)) {
+      return true;
+    }
+    if (loggedFlags[index] == 0) {
+      loggedFlags[index] = 1;
+      Thandor_Log("network: command 0x%X (base 0x%08X) payload 0x%X 0x%X 0x%X out of range, dropped",code,
+                  codeBase,record->payload1,record->payload2,record->payload3);
+    }
+    return false;
+  }
+  return true;
+}
+
+
+/* Rebuild helper (no original counterpart): executes one received command record of codeBase. The original
+   calls codeBase + code with (player id, payload1, payload2, payload3) when the code is not 0 and lies below
+   the handler region end; here the code is resolved by CommandDispatch_ResolveHandler and the record must
+   pass CommandDispatch_ValidateRecord. */
+void CommandDispatch_ExecuteRecord(uint32_t codeBase,uint32_t originalRegionEnd,const UiCommandQueueRecord *record)
+
+{
+  CommandQueueHandlerProc *commandHandler;
+  uint32_t code;
+
+  code = record->packedCommandAndPlayerId >> 8;
+  if (code == 0) {
+    return;
+  }
+  commandHandler = CommandDispatch_ResolveHandler(codeBase,originalRegionEnd,code);
+  if (commandHandler == NULL || !CommandDispatch_ValidateRecord(codeBase,record)) {
+    return;
+  }
+  (*commandHandler)(record->packedCommandAndPlayerId & 0xff,record->payload1,record->payload2,record->payload3);
 }
 
 
