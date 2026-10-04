@@ -96,6 +96,9 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
 void Win32File_Close(void *handle);
 
 
+Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+          uint32_t *outError);
+
 Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
 
 Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);

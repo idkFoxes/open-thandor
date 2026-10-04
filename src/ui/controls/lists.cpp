@@ -130,24 +130,6 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   return;
 }
 
-/* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
-   parent so the row is visible. Out-of-range indices are ignored.
-*/
-void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control)
-
-{
-  int rowTop;
-  
-  if (index < control->rowCount) {
-    control->selectedRowSlot = control->rowSlots + index;
-    rowTop = control->rowHeight * index;
-    UiScrollableControl_ClampOffsetsToViewport
-              (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
-               (UiScrollableControl *)(control->base).parent);
-  }
-  return;
-}
-
 /* Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
    pointer, scrolls it into view, queues the list's action and plays the selection sound. A double click
    also marks the selection confirmed (UI_LIST_SELECTION_CONFIRMED) and re-queues even for the same row; a
@@ -307,23 +289,6 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
   return;
 }
 
-/* Returns the index of the selected row of a pointer list. The original also reports whether
-   UI_LIST_SELECTION_CONFIRMED is set, which this C signature does not carry (both branches return the index).
-   No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode passes the index straight to the backend
-   call, and FrontendNetworkSetup_OpenSelectedBackend ignores the flag.
-*/
-UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
-
-{
-  UiListRowIndex selectedRowIndex;
-  
-  selectedRowIndex = control->selectedRowSlot - control->rowSlots;
-  if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
-    return selectedRowIndex;
-  }
-  return selectedRowIndex;
-}
-
 /* Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
    the selected row (with end caps while the list has the keyboard focus), then each column's text of the
    row record. A column with a negative width is right-aligned in |width| pixels.
@@ -443,7 +408,9 @@ void UiListControl_TickActivationPulse(UiListControl *control)
 }
 
 /* Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
-   passes the request on to its children like any container.
+   passes the request on to its children like any container. Also the unsuppressActionId of the text list
+   (g_UiTextListControlVtable; UiTextListControl has actionId at the same offset): the original has a copy
+   for it (UiTextListControl_UnsuppressIfActionId).
 */
 void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
 
@@ -460,7 +427,8 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
 
 /* Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
    passes the request on to its children like any container. Unlike the selectable controls it keeps the
-   keyboard focus.
+   keyboard focus. Also the suppressActionId of the text list (g_UiTextListControlVtable; the original has a
+   copy for it, UiTextListControl_SuppressIfActionId).
 */
 void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
 
@@ -521,8 +489,8 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *r
 }
 
 /* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
-   parent so the row is visible; the same as UiPointerList_SelectTextListIndex. Out-of-range indices are
-   ignored.
+   parent so the row is visible. Out-of-range indices are ignored. The original has a second copy for the
+   text lists (UiPointerList_SelectTextListIndex).
 */
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control)
 
@@ -541,6 +509,8 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 
 /* Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
    whether the selection was confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
+   The original has a second copy for the text lists (UiPointerList_GetSelectedIndex) that reports the flag
+   in a register no caller reads.
 */
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed)
 
@@ -892,38 +862,6 @@ void UiTextListControl_TickActivationPulse(UiTextListControl *control)
          (UI_LIST_FLAGS_MASK & ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
-}
-
-/* Enables a text list whose action id matches (unsuppressActionId slot of g_UiTextListControlVtable), then
-   passes the id on to the children.
-*/
-void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control)
-
-{
-  UiNodeFlags *controlNodeFlags;
-  
-  if (actionId == control->actionId) {
-    controlNodeFlags = &(control->base).nodeFlags;
-    *controlNodeFlags = *controlNodeFlags & ~UI_NODE_SUPPRESSED;
-  }
-  UiContainer_UnsuppressActionId(actionId,&control->base);
-  return;
-}
-
-/* Disables a text list whose action id matches (suppressActionId slot of g_UiTextListControlVtable), then
-   passes the id on to the children.
-*/
-void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control)
-
-{
-  UiNodeFlags *controlNodeFlags;
-  
-  if (actionId == control->actionId) {
-    controlNodeFlags = &(control->base).nodeFlags;
-    *controlNodeFlags = *controlNodeFlags | UI_NODE_SUPPRESSED;
-  }
-  UiContainer_SuppressActionId(actionId,&control->base);
-  return;
 }
 
 /* Fills a pointer list whose rows are rich-text strings (rowPointers, one per row) and selects row 0. The

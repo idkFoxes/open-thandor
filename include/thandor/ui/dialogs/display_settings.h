@@ -114,6 +114,9 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode);
 
 void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 
+void UiDisplayModeCandidates_InsertSortedUnique
+          (DisplayModeScratchWord *candidates,uint32_t candidateCount,DisplayModeScratchWord value);
+
 void UiDisplaySettings_OpenAndPopulateModeSelection(void);
 
 void UiDisplayModeSelection_RefreshEnumeratedOptions

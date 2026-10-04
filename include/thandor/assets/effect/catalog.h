@@ -24,6 +24,8 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void);
 
 Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
 
+EffectDefinition *EffectDefinitionRegistry_LookupById(PckEffectDefinitionIdCatalog definitionId);
+
 uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definitionId,EffectDefinition **outDefinition);
 
 extern EffectDefinition *g_EffectDefinitionRegistry[256];

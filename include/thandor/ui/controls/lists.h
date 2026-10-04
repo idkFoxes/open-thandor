@@ -29,8 +29,6 @@ Bool8 UiListControl_HandleKeyboardNavigation
 
 void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
 
-void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control);
-
 void UiListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiListControl *control);
@@ -39,8 +37,6 @@ void UiPointerList_SortByDwordPairFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
 void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
-
-UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
 
 void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiListControl *control);
 
@@ -73,9 +69,6 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
 
 void UiTextListControl_TickActivationPulse(UiTextListControl *control);
 
-void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
-
-void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
 void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control);
 

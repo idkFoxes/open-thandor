@@ -45,6 +45,8 @@ ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(Model
 Bool8 ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
 
+ModelDefinitionRecordPrefix *ModelDefinitionRegistry_LookupById(PckModelDefinitionIdCatalog definitionId);
+
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId);
 
 extern ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768];

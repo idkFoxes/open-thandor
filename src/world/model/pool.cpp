@@ -252,21 +252,6 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
   }
 }
 
-/* First registered model definition with the given id, or NULL. */
-static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
-{
-  int registryIndex;
-  ModelDefinitionRecordPrefix *registeredDefinition;
-
-  for (registryIndex = 0; registryIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
-    registeredDefinition = g_ModelDefinitionRegistry[registryIndex];
-    if ((registeredDefinition != NULL) && (registeredDefinition->definitionId == definitionId)) {
-      return registeredDefinition;
-    }
-  }
-  return NULL;
-}
-
 /* Turns the saved offsets of the used attachment descriptors back into pointers: children get
    g_ModelRuntimeRebaseDelta, parent nodes g_RuntimeObjectRebaseBaseMinusOne; zero offsets stay NULL. */
 static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRuntime)
@@ -479,7 +464,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   }
   modelRuntime = &g_ModelRuntimeSlots[slotIndex];
 
-  definitionView = (ModelDefinition *)ModelDefinitionRegistry_FindById(modelDefinitionId);
+  definitionView = (ModelDefinition *)ModelDefinitionRegistry_LookupById(modelDefinitionId);
   if (definitionView == NULL) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);

@@ -543,20 +543,28 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   return;
 }
 
-/* One step of the sorted insert in UiDisplaySettings_OpenAndPopulateModeSelection: a value below the slot
-   takes the slot and the displaced slot value moves on to the next slot; otherwise the value itself moves on.
-   Returns the value that continues to the next slot. */
-static DisplayModeScratchWord UiDisplaySettings_InsertIntoSortedSlot(DisplayModeScratchWord *slot,
-                                                                     DisplayModeScratchWord value)
+/* Inserts value into the ascending list candidates[0..candidateCount-1] (UI_DISPLAY_MODE_NONE marks empty
+   slots) unless it is already listed; the largest entry falls off the end. Used by the display settings
+   dialog (UiDisplaySettings_OpenAndPopulateModeSelection) and the frontend display settings page
+   (FrontendDisplaySettingsAction_OpenPageAndListModes). */
+void UiDisplayModeCandidates_InsertSortedUnique
+          (DisplayModeScratchWord *candidates,uint32_t candidateCount,DisplayModeScratchWord value)
 {
-  DisplayModeScratchWord carriedValue;
+  uint32_t candidateIndex;
+  DisplayModeScratchWord displacedValue;
 
-  carriedValue = value;
-  if (value < *slot) {
-    carriedValue = *slot;
-    *slot = value;
+  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
+    if (value == candidates[candidateIndex]) {
+      return;
+    }
   }
-  return carriedValue;
+  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
+    if (value < candidates[candidateIndex]) {
+      displacedValue = candidates[candidateIndex];
+      candidates[candidateIndex] = value;
+      value = displacedValue;
+    }
+  }
 }
 
 /* Opens the display settings dialog (only when more than one display mode was enumerated): copies
@@ -576,7 +584,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   int32_t colorScaleQ16;
   int32_t colorBiasQ16;
   UiRootNode *root;
-  uint32_t insertValue;
   int copyCount;
   int redGreenBits;
   UiNodeFlags colorDepthBits;
@@ -640,14 +647,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   g_UiDisplayModeDistinctValueScratch[3] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
-    insertValue = displayMode->bitsPerPixel;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3]) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
-    }
+    UiDisplayModeCandidates_InsertSortedUnique(g_UiDisplayModeDistinctValueScratch,4,displayMode->bitsPerPixel);
     displayMode = displayMode + 1;
   }
   /* Each option button's mode value(s) sit in its <button>_prefix, the dwords just before the button (read
@@ -668,20 +668,9 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   g_UiDisplayModeDistinctValueScratch[7] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
-    insertValue = displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[4] && insertValue != g_UiDisplayModeDistinctValueScratch[5] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[6] && insertValue != g_UiDisplayModeDistinctValueScratch[7]) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[4],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[5],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[6],insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[7],insertValue);
-    }
+    UiDisplayModeCandidates_InsertSortedUnique
+              (g_UiDisplayModeDistinctValueScratch,8,
+               displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height);
     displayMode = displayMode + 1;
   }
   /* Resolution buttons: width at -8, height at -0xC. */
@@ -710,16 +699,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   g_UiDisplayModeDistinctValueScratch[4] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
-    insertValue = displayMode->adapterIndex;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3] &&
-        insertValue != g_UiDisplayModeDistinctValueScratch[4]) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[4],insertValue);
-    }
+    UiDisplayModeCandidates_InsertSortedUnique(g_UiDisplayModeDistinctValueScratch,5,displayMode->adapterIndex);
     displayMode = displayMode + 1;
   }
   /* Adapter buttons: adapter index at -8. */

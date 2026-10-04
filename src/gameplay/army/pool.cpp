@@ -260,26 +260,6 @@ static ArmyRuntimeSlot *ArmyRuntimePool_FindFreeSlot(void)
   return NULL;
 }
 
-/* The registered army asset record with this id, or NULL when there is none. */
-static ArmyAssetRecordPrefix *ArmyAssetRegistry_FindRecordById(PckArmyAssetIdCatalog armyAssetId)
-
-{
-  ArmyAssetRecordPrefix **registryCursor;
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix *armyAssetRecord;
-
-  registryCursor = g_ArmyAssetRecordRegistry;
-  for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
-       registrySlotsRemaining--) {
-    armyAssetRecord = *registryCursor;
-    if ((armyAssetRecord != NULL) && (armyAssetRecord->registryId == armyAssetId)) {
-      return armyAssetRecord;
-    }
-    registryCursor++;
-  }
-  return NULL;
-}
-
 /* Stores the error in *outError (when outError is not NULL) and returns the failure result NULL. */
 static ArmyRuntimeSlot *ArmyRuntime_FailCreateInstance(uint32_t error,uint32_t *outError)
 

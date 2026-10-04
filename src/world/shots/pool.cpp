@@ -7,6 +7,7 @@
 
 #include <thandor/world/shots/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 
 /* Module data. */
 
@@ -19,36 +20,6 @@ ShotRuntimeSlot *g_ShotRuntimeSlots = 0;
 uint8_t *g_ShotRuntimeRebaseBaseMinusOne = 0;
 
 /* Implementation ownership: world/shots/pool. */
-
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
 
 /* Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
    allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
@@ -144,23 +115,17 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
 
 {
   ShotDefinition *registryDefinition;
-  int registrySlotsRemaining;
-  ShotDefinition **registryCursor;
 
-  registryCursor = g_ShotDefinitionRegistry;
-  registryDefinition = NULL;
-  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
-       registrySlotsRemaining--) {
-    registryDefinition = *registryCursor;
-    if (registryDefinition != NULL && registryDefinition->definitionId == definitionId) {
-      return registryDefinition;
-    }
-    registryCursor++;
+  registryDefinition = ShotDefinitionRegistry_LookupById(definitionId);
+  if (registryDefinition == NULL) {
+    /* Original quirk: the original formats the last registry slot (what its scan loaded last), not the
+       missing id */
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+               (int32_t)(intptr_t)g_ShotDefinitionRegistry[SHOT_DEFINITION_REGISTRY_SLOT_COUNT - 1],
+               g_PackageLastErrorPath);
   }
-  /* Original quirk: the original formats registryDefinition, i.e. the last registry slot, not the missing id */
-  g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registryDefinition,g_PackageLastErrorPath);
-  return NULL;
+  return registryDefinition;
 }
 
 /* Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):
@@ -362,9 +327,9 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   nodeTintArgb = ModelRuntimeNode_GetStateTintArgb((ModelRuntimeNode *)shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
-  tintProduct = pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
-                       ShotTint_UnpackBytesShiftRight(definitionTintArgb,4));
-  shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
+  tintProduct = pmulhw(ColorLanes_UnpackBytesShiftRight(nodeTintArgb,4),
+                       ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
+  shotModelNode->tintArgb = ColorLanes_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   if (ModelLookupTable_FindPackedPoint

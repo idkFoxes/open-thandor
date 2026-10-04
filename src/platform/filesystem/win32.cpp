@@ -437,9 +437,11 @@ Bool8 Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 }
 
 
-/* The whole-file load shared by FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath
-   (see there). */
-static Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+/* The whole-file load of FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath (see there),
+   also used for loose files by Package_LoadEntry and Resource_Load (assets/package). On success also stores
+   the file size in *outByteCount (outByteCount may be NULL). */
+Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outByteCount,
+          uint32_t *outError)
 
 {
   void *handle;
@@ -473,6 +475,9 @@ static Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **o
     if (loadError == 0) {
       g_FileSystemClose(handle);
       *outBuffer = fileBuffer;
+      if (outByteCount != NULL) {
+        *outByteCount = fileSize;
+      }
       return true;
     }
     g_MemoryApi.free(fileBuffer);
@@ -491,7 +496,7 @@ static Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **o
 Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
-  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,NULL,outError);
 }
 
 /* Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
@@ -501,7 +506,7 @@ Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *ou
 Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
-  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,NULL,outError);
 }
 
 /* Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write

@@ -28,19 +28,17 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
 
 {
   EffectDefinition *registryDefinition;
-  int registryIndex;
 
-  registryDefinition = NULL;
-  for (registryIndex = 0; registryIndex < EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
-    registryDefinition = g_EffectDefinitionRegistry[registryIndex];
-    if (registryDefinition != NULL && registryDefinition->definitionId == definitionId) {
-      return registryDefinition;
-    }
+  registryDefinition = EffectDefinitionRegistry_LookupById(definitionId);
+  if (registryDefinition == NULL) {
+    /* Original quirk: the error text gets the last registry slot's pointer (what the original's scan loaded
+       last), not the requested id */
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+               (int32_t)(intptr_t)g_EffectDefinitionRegistry[EFFECT_DEFINITION_REGISTRY_SLOT_COUNT - 1],
+               g_PackageLastErrorPath);
   }
-  /* Original quirk: the error text gets the last registry slot's pointer, not the requested id */
-  g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registryDefinition,g_PackageLastErrorPath);
-  return NULL;
+  return registryDefinition;
 }
 
 

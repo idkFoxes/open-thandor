@@ -31,6 +31,8 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset);
 
 uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void);
 
+ShotDefinition *ShotDefinitionRegistry_LookupById(PckShotDefinitionIdCatalog definitionId);
+
 uint32_t ShotDefinitionRegistry_FindByIdWithError
           (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition);
 

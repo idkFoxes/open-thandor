@@ -87,35 +87,9 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   }
   switch (target) {
-  case 0x5658f0: { /* screenshot */
-    GraphicsCapturedTextureSourceAsset *capture =
-         g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    void *pcxBytes;
-    uint32_t pcxByteCount;
-    uint32_t pcxError;
-    uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
-    uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
-    if (capture == NULL) {
-      break;
-    }
-    if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
-      g_MemoryApi.free(capture);
-      break;
-    }
-    FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,g_ScreenshotFileNameUtf16);
-    g_MemoryApi.free(pcxBytes);
-    g_MemoryApi.free(capture);
-    /* two-digit counter in the file name, wrapping from 99 to 00 */
-    (*digitLow)++;
-    if (*digitLow > '9') {
-      (*digitHigh)++;
-      *digitLow = *digitLow - 10;
-      if (*digitHigh > '9') {
-        *digitHigh = *digitHigh - 10;
-      }
-    }
+  case 0x5658f0: /* screenshot */
+    Screenshot_SaveFramebufferAsPcx();
     break;
-  }
   case 0x565990: /* skip the end movie */
     /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
     if (((INGAME_UI(endMovieRuntime,resultsContinueButton)->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||

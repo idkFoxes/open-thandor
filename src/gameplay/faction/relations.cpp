@@ -163,34 +163,6 @@ static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask facti
 }
 
 
-/* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition on a bit stack: 0xFF OR, 0xFE AND, 0xFD NOT, 0xFC end,
-   anything else pushes the satisfied bit of the condition with that index. Returns the bit stack; bit 0 is the
-   result. The stack keeps the signed int width of the original (a condition-kind enum value). */
-static int GameFactionRelations_EvaluatePostfixExpression
-          (InGameLevelConditionStorage *levelConditionStorage,const uint8_t *expression)
-{
-  int bitStack;
-  uint8_t token;
-
-  bitStack = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
-  for (token = *expression++; token != INGAME_CONDITION_TOKEN_END; token = *expression++) {
-    if (token == INGAME_CONDITION_TOKEN_OR) {
-      bitStack = bitStack >> 1 | bitStack & 1;
-    }
-    else if (token == INGAME_CONDITION_TOKEN_AND) {
-      bitStack = bitStack >> 1 & (bitStack | ~1u);
-    }
-    else if (token == INGAME_CONDITION_TOKEN_NOT) {
-      bitStack = bitStack ^ 1;
-    }
-    else {
-      bitStack = ((levelConditionStorage->schedule).conditions[token].statusAndKind.raw &
-                  INGAME_SCHEDULED_CONDITION_SATISFIED) + bitStack * 2;
-    }
-  }
-  return bitStack;
-}
-
 
 /* Whether a scheduled condition of the given kind would hold if only the factions in activeFactionMask were
    left (GameFactionRelations_EvaluateTransitionRules). Unknown kinds never hold. */
@@ -213,7 +185,8 @@ static Bool8 GameFactionRelations_PredictConditionHolds
   case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
     return condition->payload.operands[1] == 0;
   case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-    return (GameFactionRelations_EvaluatePostfixExpression
+    /* the stack keeps the signed int width of the original (a condition-kind enum value) */
+    return (InGameScheduledCondition_EvaluatePostfixExpression<int>
               (levelConditionStorage,&condition->statusAndKind.kindAndExpression[1]) & 1) != 0;
   default:
     return false;

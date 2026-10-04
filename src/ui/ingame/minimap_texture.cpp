@@ -10,43 +10,12 @@
 
 #include <thandor/ui/ingame/minimap_texture.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
 static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = 0;
-
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.
-   Spreads an ARGB colour into four 16-bit channels for the PMULHW shading in the composite texture fill. */
-static __inline uint64_t TerrainColor_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes, i.e. four shaded 16-bit
-   channels packed back into one ARGB pixel. */
-static __inline uint32_t TerrainColor_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane++) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
 
 /* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1: per channel the average of the
    new colour and the pixel already in the plane (used to blend water over the ground colour). */
@@ -192,9 +161,9 @@ void TerrainCompositeTexture_FillPlane1(void)
         }
         /* PUNPCKLBW/PSRLW 3, PMULHW by the lighting level, PACKUSWB */
         mm0PackedValue0 =
-             pmulhw(TerrainColor_UnpackBytesShiftRight(materialColorArgb,3),
+             pmulhw(ColorLanes_UnpackBytesShiftRight(materialColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       else {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -211,9 +180,9 @@ void TerrainCompositeTexture_FillPlane1(void)
           lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
         mm0PackedValue1 =
-             pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
+             pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue1);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue1);
       }
       fieldCell++;
       planePixelCursor = planePixelCursor + 4;
@@ -272,9 +241,9 @@ void TerrainCompositeTexture_FillPlane2(void)
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
           mm0PackedValue3 =
-               pmulhw(TerrainColor_UnpackBytesShiftRight(soilColorArgb,3),
+               pmulhw(ColorLanes_UnpackBytesShiftRight(soilColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue3);
+          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue3);
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
@@ -289,9 +258,9 @@ void TerrainCompositeTexture_FillPlane2(void)
             lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
           mm0PackedValue2 =
-               pmulhw(TerrainColor_UnpackBytesShiftRight(tritiumColorArgb,3),
+               pmulhw(ColorLanes_UnpackBytesShiftRight(tritiumColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue2);
+          *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue2);
         }
       }
       else {
@@ -307,9 +276,9 @@ void TerrainCompositeTexture_FillPlane2(void)
           lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
         }
         mm0PackedValue0 =
-             pmulhw(TerrainColor_UnpackBytesShiftRight(xeniteColorArgb,3),
+             pmulhw(ColorLanes_UnpackBytesShiftRight(xeniteColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = ColorLanes_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
@@ -327,11 +296,11 @@ void TerrainCompositeTexture_FillPlane2(void)
         }
         existingPixelArgb = *(uint32_t *)planePixelCursor;
         mm0PackedValue1 =
-             pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
+             pmulhw(ColorLanes_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
         /* PADDW with the existing pixel's bytes (PUNPCKLBW/PSRLW 8), PSRLW 1, PACKUSWB */
         *(uint32_t *)planePixelCursor =
-             TerrainColor_PackWordsUnsignedSaturate
+             ColorLanes_PackWordsUnsignedSaturate
                        (TerrainColor_AverageWordsWithPixelBytes(mm0PackedValue1,existingPixelArgb));
       }
       fieldCell++;

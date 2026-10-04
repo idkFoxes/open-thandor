@@ -368,6 +368,23 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   return true;
 }
 
+/* First registered model definition with the given id in the 768-slot registry, or NULL. No side effects
+   (ModelDefinitionRegistry_FindById also reports a miss). */
+ModelDefinitionRecordPrefix *ModelDefinitionRegistry_LookupById(PckModelDefinitionIdCatalog definitionId)
+
+{
+  int registryIndex;
+  ModelDefinitionRecordPrefix *registeredDefinition;
+
+  for (registryIndex = 0; registryIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
+    registeredDefinition = g_ModelDefinitionRegistry[registryIndex];
+    if ((registeredDefinition != NULL) && (registeredDefinition->definitionId == definitionId)) {
+      return registeredDefinition;
+    }
+  }
+  return NULL;
+}
+
 /* Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
    g_PackageLastErrorPath for the error message and returns NULL (the original returned
    FATAL_ERROR_MODEL_DEFINITION_MISSING with a failure flag; callers that passed that code on now supply it
@@ -377,21 +394,15 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
-  int registrySlotsRemaining;
-  ModelDefinitionRecordPrefix **registryCursor;
 
-  registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-  registeredDefinition = NULL;
-  for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
-    registeredDefinition = *registryCursor;
-    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
-      return registeredDefinition;
-    }
-    registryCursor++;
+  registeredDefinition = ModelDefinitionRegistry_LookupById(definitionId);
+  if (registeredDefinition == NULL) {
+    /* Original quirk: the number formatted is the last registry slot's content (what the scan loaded last),
+       not the missing id */
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+               (int32_t)(intptr_t)g_ModelDefinitionRegistry[MODEL_DEFINITION_REGISTRY_SLOT_COUNT - 1],
+               g_PackageLastErrorPath);
   }
-  /* Original quirk: the number formatted is the last registry slot's content, not the missing id */
-  g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registeredDefinition,g_PackageLastErrorPath);
-  return NULL;
+  return registeredDefinition;
 }

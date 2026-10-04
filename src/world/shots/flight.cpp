@@ -7,38 +7,9 @@
 
 #include <thandor/world/shots/flight.h>
 #include <thandor/thandor.h>
+#include <thandor/core/color_lanes.h>
 
 /* Implementation ownership: world/shots/flight. */
-
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)
-
-{
-  ThandorMmx lanes;
-  int lane;
-
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
-  }
-  return lanes.q;
-}
-
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
-
-{
-  ThandorMmx lanes;
-  uint32_t packed;
-  int lane;
-
-  lanes.q = words;
-  packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
-    packed = packed |
-             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
-  }
-  return packed;
-}
 
 /* g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.shot: works out which factions are around the shot
    (for a direct-line shot also at the middle and the end of its beam), turns that into the
@@ -98,9 +69,9 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   definitionTintArgb = shotRuntime->definitionOrSavedId.definition->stateTintArgb;
   /* per channel (a * 0x101 >> 4) * (b * 0x101 >> 4) >> 16, about a * b / 256 (MMX in the original) */
   tintProductWords =
-       pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
-              ShotTint_UnpackBytesShiftRight(definitionTintArgb,4));
-  modelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProductWords);
+       pmulhw(ColorLanes_UnpackBytesShiftRight(nodeTintArgb,4),
+              ColorLanes_UnpackBytesShiftRight(definitionTintArgb,4));
+  modelNode->tintArgb = ColorLanes_PackWordsUnsignedSaturate(tintProductWords);
   return;
 }
 

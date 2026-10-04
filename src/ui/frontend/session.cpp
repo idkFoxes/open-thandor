@@ -211,14 +211,8 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,clientLobbyLeaveButton));
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
-         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
-  }
-  UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
-  UiPointerList_InitializeColumnLayout
-            (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+  FrontendNetworkGamePage_Show(frontendUi);
+  FrontendNetworkGamePage_ClearSessionList(frontendUi);
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
   UiTransfer_SendDiscoveryProbe();
