@@ -795,15 +795,15 @@ static void PersistentSettings_LoadImage(void)
       Thandor_Log("settings: no thandor.ini or thandor.dat, defaults");
       return;
     }
-    /* Original quirk: the original continues with the return value of the path copy below (the byte
-       count, or FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle, not the handle from this open.
-       Kept as is. */
-    if (!RichTextCommandStream_CopyExpanded
+    /* The original continues with the return value of this path copy (the byte count, or
+       FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle instead of the handle from the open above:
+       GetFileSize and CloseHandle then run on an arbitrary handle number (on the second load in Game_Run
+       possibly an open PCK package, which gets read as settings and closed under its owner), the real handle
+       leaks and the migration practically always fails. Fixed here because of that: the real handle is used,
+       so a thandor.dat in the executable directory is migrated like one at its plain path. */
+    (void)RichTextCommandStream_CopyExpanded
            (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
-            g_FileSystemCombinedPathScratchUtf16,&pathByteCount)) {
-      pathByteCount = FATAL_ERROR_GENERAL_FAILURE;
-    }
-    fileHandle = THANDOR_PTR((uintptr_t)pathByteCount);
+            g_FileSystemCombinedPathScratchUtf16,&pathByteCount);
   }
   if (g_FileSystemGetSize(fileHandle,&fileSize)) {
     byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;

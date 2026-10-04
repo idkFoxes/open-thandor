@@ -7,24 +7,33 @@
 
 #include <thandor/core/text/path.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: core/text/path. */
 
 /* Replaces the extension of the final path component with the packed code (one character per byte, first
    character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
-   loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns false (success).
+   loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Returns false (success).
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
    pass three-character codes).
+   The original neither bounds the scan nor checks the writes (up to 5 units past the old terminator); bounded
+   here because a malformed asset path could be overwritten past its buffer: the path must be terminated
+   within pathCapacity code units and the new extension with its terminator must fit in them, otherwise
+   nothing is written and true (failure) is returned (logged once). pathCapacity defaults to
+   WIDE_PATH_MAX_CODE_UNITS (path.h).
 */
-Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
+Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path,size_t pathCapacity)
 
 {
+  static Bool8 s_RejectionLogged = false;
+  uint16_t *pathStart;
   uint16_t *extension;
   uint16_t currentCodeUnit;
 
   /* A backslash restarts the search, so only a '.' in the last component counts. */
+  pathStart = path;
   extension = NULL;
-  while (*path != 0) {
+  while ((size_t)(path - pathStart) < pathCapacity && *path != 0) {
     currentCodeUnit = *path;
     path++;
     if (currentCodeUnit == '\\') {
@@ -33,6 +42,15 @@ Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t
     else if (currentCodeUnit == '.') {
       extension = path;
     }
+  }
+  /* path is at the terminator; the last write is extension[3] (path[4] when '.' is appended) */
+  if (((size_t)(path - pathStart) >= pathCapacity) ||
+      ((size_t)(((extension != NULL) ? extension : path + 1) + 3 - pathStart) >= pathCapacity)) {
+    if (!s_RejectionLogged) {
+      s_RejectionLogged = true;
+      Thandor_Log("path: extension does not fit in a %u-unit path, path left unchanged",(unsigned)pathCapacity);
+    }
+    return true;
   }
   if (extension == NULL) {
     *path = '.';
@@ -106,11 +124,17 @@ Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t
    unless it already ends in one (nothing for an empty directory), then copies the leaf with its terminator.
    The loaders use it to try a file relative to the executable directory before the plain path. A directory
    without a terminator in its first WIDE_PATH_MAX_CODE_UNITS units writes nothing; such a leaf leaves the
-   directory part unterminated. The destination size is not checked (up to 2 * 256 units).
+   directory part unterminated. The destination may be the directory itself (appending in place).
+   The original does not check the destination size (it writes up to 2 * 256 units); bounded here because
+   ui/controls/tree_list.cpp combines nested directory labels into 256-unit buffers: a result that does not
+   fit in destinationCapacity code units is cut off and terminated (logged once). Callers go through the
+   WidePath_CombineDirectoryAndLeaf template (path.h), which passes the destination array's size.
 */
-void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory)
+void WidePath_CombineDirectoryAndLeafBounded
+          (uint16_t *destination,size_t destinationCapacity,uint16_t *leaf,uint16_t *directory)
 
 {
+  static Bool8 s_TruncationLogged = false;
   int codeUnitsRemaining;
   int copyCodeUnitsRemaining;
   int leafCodeUnitsRemaining;
@@ -118,7 +142,15 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
   uint16_t *leafScanCursor;
   Bool8 terminatorFound;
   Bool8 leafTerminatorFound;
+  Bool8 endsInBackslash;
+  Bool8 truncated;
+  size_t written;
 
+  if (destinationCapacity == 0) {
+    return;
+  }
+  truncated = false;
+  written = 0;
   /* find the directory's terminator (at most WIDE_PATH_MAX_CODE_UNITS code units) */
   terminatorFound = true;
   codeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS;
@@ -133,14 +165,25 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
     /* directory length without the terminator */
     copyCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - 1 - codeUnitsRemaining;
     if (copyCodeUnitsRemaining != 0) {
+      /* the directory's last unit decides the backslash (the copy may be cut off before it) */
+      endsInBackslash = directory[copyCodeUnitsRemaining - 1] == '\\';
       for (; copyCodeUnitsRemaining != 0; copyCodeUnitsRemaining--) {
-        *destination = *directory;
+        /* one unit always stays free for the terminator */
+        if (written + 1 < destinationCapacity) {
+          destination[written++] = *directory;
+        }
+        else {
+          truncated = true;
+        }
         directory++;
-        destination++;
       }
-      if (destination[-1] != '\\') {
-        *destination = '\\';
-        destination++;
+      if (!endsInBackslash) {
+        if (written + 1 < destinationCapacity) {
+          destination[written++] = '\\';
+        }
+        else {
+          truncated = true;
+        }
       }
     }
     leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS;
@@ -153,14 +196,26 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
       leafScanCursor++;
     } while (!leafTerminatorFound);
     if (leafTerminatorFound) {
-      /* leaf length including the terminator */
-      for (leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0;
-           leafCodeUnitsRemaining--) {
-        *destination = *leaf;
+      /* leaf length without the terminator, then the terminator (it always fits, see above) */
+      for (leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - 1 - leafCodeUnitsRemaining;
+           leafCodeUnitsRemaining != 0; leafCodeUnitsRemaining--) {
+        if (written + 1 < destinationCapacity) {
+          destination[written++] = *leaf;
+        }
+        else {
+          truncated = true;
+        }
         leaf++;
-        destination++;
       }
+      destination[written] = 0;
     }
+    else if (truncated) {
+      destination[written] = 0;
+    }
+  }
+  if (truncated && !s_TruncationLogged) {
+    s_TruncationLogged = true;
+    Thandor_Log("path: combined path longer than %u code units cut off",(unsigned)destinationCapacity);
   }
 }
 
@@ -189,6 +244,11 @@ uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path)
     currentCodeUnit = *scanCursor;
     scanCursor++;
     if (currentCodeUnit == 0) break;
+  }
+  /* The original reads before the path when it is shorter than 5 code units (no room for "N.ext");
+     bounded here because the digits would come from memory before the buffer: no number. */
+  if (scanCursor - path < 6) {
+    return 0;
   }
   /* one past the terminator minus 6: the last code unit before the ".ext". The digit count continues
      the terminator search's count, so the digits stop at the start of the string (the first digit is

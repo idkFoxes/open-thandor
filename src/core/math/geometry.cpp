@@ -31,7 +31,14 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q
   FixedTriangleJointAngles fallbackAngles;
   int64_t cosineNumerator0;
 
-  /* Original quirk: this divides by s2 before the s2 > 16 check below, so s2 == 0 would fault. */
+  /* The original divides by s2 here, before the s2 > 16 check below, so s2 == 0 faults; bounded here
+     because of that: s2 == 0 takes the fallback of a base of at most 16 (s0 < s2 cannot hold unsigned, so
+     the half turn). Every caller passes the leg geometry, never 0, so valid results are unchanged. */
+  if (sideLength2Q12 == 0) {
+    fallbackAngles.jointAngle0 = FIXED_ANGLE16_HALF_TURN;
+    fallbackAngles.jointAngle1 = FIXED_ANGLE16_HALF_TURN;
+    return fallbackAngles;
+  }
   projection = (int)(((int64_t)sideLength0Q12 * (int64_t)sideLength0Q12 -
                 (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12) / (int64_t)sideLength2Q12);
   projectionSquared = (int64_t)projection * (int64_t)projection;
