@@ -37,8 +37,6 @@ void ShotRuntimePool_CreateProjectileFromDefinition
           Q12 launchWorldYQ12,Q12 launchWorldXQ12,ShotDefinition *shotDefinition,
           WorldRuntimeContext *worldRuntime);
 
-void ShotRuntime_PostImpactRelationNotificationNoOp(ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime);
-
 extern GraphicsTextureSet *g_ShotTextureSet;
 extern GraphicsPaletteAsset *g_ShotPalette;
 extern ShotRuntimeSlot *g_ShotRuntimeSlots;

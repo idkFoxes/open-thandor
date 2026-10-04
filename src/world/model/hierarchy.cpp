@@ -336,14 +336,6 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
 }
 
 
-
-
-
-
-
-
-
-
 /* Builds the child models of a new model hierarchy from its MDL definition node: every linked definition list
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. Returns true when a child cannot be created.
@@ -445,8 +437,6 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntim
     attachment++;
   }
 }
-
-
 
 
 /* Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
@@ -715,8 +705,6 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
   WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)node);
   return;
 }
-
-
 
 
 /* Sets the packed ARGB tint of a model node and of all its descendants (the state tint of a whole model,

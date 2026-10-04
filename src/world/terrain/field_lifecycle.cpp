@@ -112,24 +112,6 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   } while (rowsRemaining != 0);
 }
 
-/* Clears the debug mark (FIELD_CELL_DEBUG_MARKED, bit 15) in every cell of the grid. No caller
-   found in src/ or the image tables, and no code in the game sets the mark.
-*/
-void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid)
-
-{
-  int cellsRemaining;
-  FieldGridCell *currentCell;
-  
-  cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
-  currentCell = fieldGrid->cells;
-  do {
-    currentCell->flagsAndMaterial = currentCell->flagsAndMaterial & ~FIELD_CELL_DEBUG_MARKED;
-    currentCell++;
-    cellsRemaining--;
-  } while (cellsRemaining != 0);
-}
-
 /* Sets the overlay colour (ARGB, FieldGridCell.overlayColor) of every field-grid cell to one value.
 */
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)

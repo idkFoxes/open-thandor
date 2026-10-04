@@ -352,8 +352,8 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
 }
 
 /* Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
-   records): allocates the primary and secondary scratch grids and the 0x180000-byte path-cost pointer queue
-   (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns true on success;
+   records): allocates the primary and secondary scratch grids and the GRID_PATH_COST_QUEUE_BYTES path-cost
+   pointer queue (g_GridPathCostQueueBegin..End; 0x180000 bytes in the original, 0x300000 with 8-byte pointers), each replacing and freeing the previous buffer. Returns true on success;
    on failure returns false and writes the allocator error to *outError (untouched on success).
 */
 Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)

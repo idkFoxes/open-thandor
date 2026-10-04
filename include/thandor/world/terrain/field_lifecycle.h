@@ -16,8 +16,6 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 
 void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
 
-void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid);
-
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
 Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
