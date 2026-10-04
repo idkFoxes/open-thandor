@@ -23,7 +23,6 @@
 
 typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
-typedef struct IMAGE_DOS_HEADER IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
 typedef struct ArmyRuntimeSlot ArmyRuntimeSlot, *PArmyRuntimeSlot;
 typedef struct GameEntityRuntime GameEntityRuntime, *PGameEntityRuntime;
 typedef struct ArmyRuntimeMovementControlState ArmyRuntimeMovementControlState, *PArmyRuntimeMovementControlState;
@@ -135,30 +134,6 @@ struct ModelWorldPoint {
 };
 typedef uint32_t ArmyPlacementContactKindIndex32;
 typedef int WeaponAimCountdownTicks;
-#pragma pack(push, 1) /* packed layout: no alignment padding */
-struct IMAGE_DOS_HEADER {
-    char e_magic[2]; 
-    uint16_t e_cblp; 
-    uint16_t e_cp; 
-    uint16_t e_crlc; 
-    uint16_t e_cparhdr; 
-    uint16_t e_minalloc; 
-    uint16_t e_maxalloc; 
-    uint16_t e_ss; 
-    uint16_t e_sp; 
-    uint16_t e_csum; 
-    uint16_t e_ip; 
-    uint16_t e_cs; 
-    uint16_t e_lfarlc; 
-    uint16_t e_ovno; 
-    uint16_t e_res[4]; /* 4 reserved words */
-    uint16_t e_oemid; 
-    uint16_t e_oeminfo; 
-    uint16_t e_res2[10]; /* 10 reserved words */
-    uint32_t e_lfanew; 
-    uint8_t e_program[64]; 
-};
-#pragma pack(pop)
 
 typedef uint32_t ArmyMovementStateFlags;
 

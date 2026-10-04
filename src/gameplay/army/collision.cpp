@@ -169,23 +169,26 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
   return false;
 }
 
-/* Tests whether a placed model collides with another army at a point. candidateRuntimeOrRadiusQ12 is either
-   the model runtime itself (a value at or above the image base 0x400000: its placement radius footprintRadius is
-   used, the depth bins of its node must overlap, and it, its linked model
-   (classState.linkedArmyRuntimeOrSavedOffset) and models linked to it are skipped) or a bare radius below
-   0x400000 (used as radius + 1, no depth-bin pre-test). excludedWorldObject is skipped as well; armies of
-   class 0 and 12 never block, class-13 armies also block near their (1,5) anchor. Returns true on a collision.
-   Called directly by ArmyPlacementCollision_TestCurrentRuntime and
-   ArmyPlacement_TestModelTerrainAndRuntimeClearance.
+/* Tests whether a placed model collides with another army at a point. The candidate is either a model runtime
+   (candidateRuntime != NULL: its placement radius footprintRadius is used, the depth bins of its node must
+   overlap, and it, its linked model (classState.linkedArmyRuntimeOrSavedOffset) and models linked to it are
+   skipped) or a bare radius (candidateRuntime == NULL: radiusQ12 + 1 is used, no depth-bin pre-test; radiusQ12
+   is ignored for a runtime). excludedWorldObject is skipped as well; armies of class 0 and 12 never block,
+   class-13 armies also block near their (1,5) anchor. Returns true on a collision.
+   Called directly by ArmyPlacementCollision_TestCurrentRuntime (runtime) and
+   ArmyPlacement_TestModelTerrainAndRuntimeClearance (radius ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12).
+   The original (0x00529F30) passed both kinds in one dword and told them apart with `cmp esi,0x400000; jae`
+   (the image base: a radius below it, a model runtime at or above it). Its only two callers pass a model runtime
+   and the constant 0xC00, so the kind is known at the call site; it is passed explicitly here because an x64
+   heap address is not guaranteed to lie at or above 0x400000. The decisions are the original's.
 */
 
 Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
-          IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime)
+          ModelRuntimeSlot *candidateRuntime,Q12 radiusQ12,WorldRuntimeContext *worldRuntime)
 
 {
   ModelRuntimeSlot *ownerModelRuntime;
-  ModelRuntimeSlot *candidateRuntime;
   uint32_t modelClassId;
   WorldOwnerListNode *candidateNode;
   intptr_t queryRadiusQ12;
@@ -193,17 +196,14 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   Bool8 hit;
   WorldOwnerListNode *ownerNode;
 
-  /* the IMAGE_DOS_HEADER type only serves the compare against the original image base 0x400000: below it
-     the "pointer" is a radius (e_magic + 1 is that value plus one), above it a model runtime whose +4 (e_cp)
-     is the root node and whose first dword is the definition */
-  candidateIsRuntime = candidateRuntimeOrRadiusQ12 >= (IMAGE_DOS_HEADER *)0x400000;
-  candidateRuntime = (ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12;
+  candidateIsRuntime = candidateRuntime != NULL;
   if (!candidateIsRuntime) {
-    queryRadiusQ12 = (intptr_t)candidateRuntimeOrRadiusQ12 + 1; /* the radius value plus one */
+    queryRadiusQ12 = (intptr_t)(uint32_t)radiusQ12 + 1; /* the radius value plus one */
     candidateNode = NULL;
   }
   else {
-    candidateNode = THANDOR_PTR32_AT(WorldOwnerListNode, &candidateRuntimeOrRadiusQ12->e_cp);
+    /* the runtime's root node is also its world owner-list node */
+    candidateNode = (WorldOwnerListNode *)candidateRuntime->rootModelNodeOrSavedOffset.modelNode;
     queryRadiusQ12 = (intptr_t)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
   }
   if (queryRadiusQ12 == 0) {
@@ -295,7 +295,7 @@ Bool8 ArmyPlacementCollision_TestCurrentRuntime
   }
   blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
                     ((WorldOwnerListNode *)rootNode,(rootNode->worldTransform).translation.y,
-                     (rootNode->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
+                     (rootNode->worldTransform).translation.x,(ModelRuntimeSlot *)modelRuntime,0,
                      worldRuntime);
   if (blocked) {
     return true;

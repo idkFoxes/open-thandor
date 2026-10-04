@@ -267,6 +267,10 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
   recordsRemaining = g_AiWorkspace07Count;
   workspaceRecordCursor = g_AiWorkspace07Targets;
   if (g_AiWorkspace07Count == 0) {
+    /* Original quirk: workspace 03 holds 8-byte AiRuntimeWorkspaceEntry records but the original walks it with
+       the 16-byte workspace-07 stride (0x0053B3C0 `add edi,0x10`) and reads its (+0, +4) as world X/Y, i.e. the
+       (modelRuntime, armyAssetId) of ws03[2i]: the second half of the walk reads stale entries of an earlier
+       rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI hash. */
     recordsRemaining = g_AiWorkspace03Count;
     workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
   }
