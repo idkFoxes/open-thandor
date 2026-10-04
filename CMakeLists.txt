@@ -139,7 +139,11 @@ add_library(thandor_curated STATIC
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
     src/graphics/resources/texture.cpp
+    src/movie/runtime/end_movie_ui.cpp
+    src/movie/runtime/flm_decoder.cpp
+    src/movie/runtime/flm_encoder.cpp
     src/movie/runtime/playback.cpp
+    src/movie/runtime/session_schedule.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
     src/network/protocol/commands.cpp
