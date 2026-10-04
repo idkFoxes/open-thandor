@@ -182,17 +182,11 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
 
 {
   WorldRuntimeContext *world;
-  uint32_t linkOptionFlags;
 
   world = &inGameRoot->worldRuntime;
   g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   InGameSession_RebuildUiGrids(inGameRoot);
-  linkOptionFlags = InGameSession_InitShadingAndMirrorViewOptions(world);
-  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uintptr_t)world->fieldGrid) != 0) {
-    /* Original quirk: this (unreachable) failure reports the mouse/panel option flags as its error code. */
-    *outError = linkOptionFlags;
-    return false;
-  }
+  InGameSession_InitShadingAndMirrorViewOptions(world);
   if (!InGameSession_AllocateGridScratchAndRebuildDerived(world,outError)) {
     return false;
   }

@@ -26,8 +26,6 @@ void InGameRuntime_ShutdownAndReleaseResources();
 
 void InGameRuntime_ReleaseFactionScratchBuffers();
 
-uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uintptr_t unusedArgument);
-
 void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,Bool8 enabled);
 
 /* Shared steps of InGameRuntime_InitializeNewSession and InGameRuntime_InitializeLoadedSession. */
@@ -44,7 +42,7 @@ Bool8 InGameSession_OpenLoadingMovieAndAttachObjects(uint16_t *levelMoviePath,Le
 
 Bool8 InGameSession_ClearNotificationsAndCreateTerrainTexture(InGameRuntimeRoot *inGameRoot,uint32_t *outError);
 
-uint32_t InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world);
+void InGameSession_InitShadingAndMirrorViewOptions(WorldRuntimeContext *world);
 
 Bool8 InGameSession_AllocateGridScratchAndRebuildDerived(WorldRuntimeContext *world,uint32_t *outError);
 
