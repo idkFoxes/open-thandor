@@ -39,8 +39,6 @@ MovieFrameDimensions Movie_GetFrameDimensions();
 
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
 
-uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
-
 void Movie_Rewind();
 
 void Movie_Close();

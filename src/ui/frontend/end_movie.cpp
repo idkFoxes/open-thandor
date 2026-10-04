@@ -185,7 +185,7 @@ void Frontend_PlaySelectedEndMovie()
     /* clear both buffers to black */
     FrontendEndMovie_ClearAndPresentBlackFrame();
     FrontendEndMovie_ClearAndPresentBlackFrame();
-    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,nullptr);
+    movieOpened = Movie_Open(MOVIE_OPEN_STREAM,g_EndMoviePath,&playbackRateHz,nullptr);
     runtimeRoot = g_InGameRuntimeRoot;
     if (movieOpened) {
       g_EndMoviePendingTicks = 0;
