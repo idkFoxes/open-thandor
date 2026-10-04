@@ -93,7 +93,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
       restartSpeed = (modelRuntime->linkedChildSpawnParameters).parameter0;
       modelRuntime->stepStartHeading = modelRuntime->stepEndHeading;
       modelRuntime->linkedArmyRuntimeOrSavedOffset =
-           (ArmyRuntimeSlot *)modelRuntime->fallbackWorldXQ12; /* 5f-format: ArmyRuntimeSlot.linkedArmyRuntimeOrSavedOffset (Q12 overlay) */
+           Thandor_U32ToPointer<ArmyRuntimeSlot>(modelRuntime->fallbackWorldXQ12); /* 5f-format: ArmyRuntimeSlot.linkedArmyRuntimeOrSavedOffset (Q12 overlay) */
       (modelRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = footHeading;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = restartSpeed;
       ArmyArticulatedRuntime_UpdateContactChildAndEffects

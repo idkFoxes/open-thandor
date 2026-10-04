@@ -892,9 +892,9 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
         /* 5f-format: GraphicsTriangleInput.vertex0/vertex1/vertex2 (MDL mesh triangle record, 32-bit vertex
            addresses; vertex0 read as recordCursor->x) */
         GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                  ((GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-                   (GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-                   (GraphicsFixedVec2 *)(recordCursor->x + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
+                  (Thandor_U32ToPointer<GraphicsFixedVec2>((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+                   Thandor_U32ToPointer<GraphicsFixedVec2>((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+                   Thandor_U32ToPointer<GraphicsFixedVec2>(recordCursor->x + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
         recordCursor = (GraphicsFixedVec3 *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
       }
       result = 1;

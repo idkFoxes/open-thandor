@@ -207,7 +207,7 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
   if (linkedArmyRuntime != NULL) {
     /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntime->classLinkState.armyLinkOrState.armyRuntime =
-         (ArmyRuntimeSlot *)((int)linkedArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
+         Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
   return;
 }
@@ -225,7 +225,7 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
   if (linkedArmyRuntime != NULL) {
     /* 5f-format: ModelRuntimeSlot.classLinkState.armyLinkOrState (saved offset) */
     modelRuntimeSlot->classLinkState.armyLinkOrState.armyRuntime =
-         (ArmyRuntimeSlot *)((int)linkedArmyRuntime + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+         Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(linkedArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
   }
   return;
 }
@@ -377,7 +377,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
   if (linkedModelRuntime != NULL) {
     /* 5f-format: ModelRuntimeSlot.classLinkState.modelLinkOrState (saved offset) */
     modelRuntime->classLinkState.modelLinkOrState.modelRuntime =
-         (ModelRuntimeSlot *)((int)linkedModelRuntime - g_ModelRuntimeRebaseDelta);
+         (ModelRuntimeSlot *)(Thandor_PointerToI32(linkedModelRuntime) - g_ModelRuntimeRebaseDelta);
   }
   return;
 }

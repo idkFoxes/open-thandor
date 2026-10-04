@@ -150,7 +150,7 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
     if (*registryEntry != NULL) {
       /* the root of the definition's node tree */
       /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
-      rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer;
+      rootNode = Thandor_U32ToPointer<MdlSerializedNodeHeader>(((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer);
       if (rootNode != NULL) {
         ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
       }
@@ -190,9 +190,9 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   ModelNodePoolRelativeOffset parentNodeOffset;
 
   /* 5f-format: ModelRuntimeSlot.ownerArmyRuntimeOrSavedOffset/rootModelNodeOrSavedOffset/linkedModelRuntimeOrSavedOffset/classState.linkedArmyRuntimeOrSavedOffset/attachments (unrebase before save) */
-  ownerArmyOffset = modelRuntime->ownerArmyRuntimeSavedOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+  ownerArmyOffset = modelRuntime->ownerArmyRuntimeSavedOffset - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne);
   modelRuntime->rootModelNodeSavedOffset =
-       modelRuntime->rootModelNodeSavedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+       modelRuntime->rootModelNodeSavedOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne);
   modelRuntime->ownerArmyRuntimeSavedOffset = ownerArmyOffset;
   linkedModelOffset = modelRuntime->linkedModelRuntimeSavedOffset;
   linkedArmyOffset = modelRuntime->classState.linkedArmyRuntimeSavedOffset;
@@ -201,7 +201,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
   }
   if (linkedArmyOffset != 0) {
     /* 5f-format: ModelRuntimeSlot.classState.linkedArmyRuntimeOrSavedOffset */
-    linkedArmyOffset = linkedArmyOffset - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+    linkedArmyOffset = linkedArmyOffset - Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne);
   }
   modelRuntime->linkedModelRuntimeSavedOffset = linkedModelOffset;
   modelRuntime->classState.linkedArmyRuntimeSavedOffset = linkedArmyOffset;
@@ -219,7 +219,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
     }
     if (parentNodeOffset != 0) {
       /* 5f-format: ModelRuntimeSlot.attachments[].parentModelNodeOrSavedOffset */
-      parentNodeOffset = parentNodeOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      parentNodeOffset = parentNodeOffset - Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne);
     }
     attachment->childModelRuntimeSavedOffset = childRuntimeOffset;
     attachment->parentModelNodeSavedOffset = parentNodeOffset;
@@ -274,7 +274,7 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
     rebasedParentNode = NULL;
     if (savedParentNode != NULL) {
       /* 5f-format: ModelRuntimeSlot.attachments[].parentModelNodeOrSavedOffset */
-      rebasedParentNode = (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)savedParentNode);
+      rebasedParentNode = (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(savedParentNode));
     }
     attachment->childModelRuntimeOrSavedOffset = rebasedChildRuntime;
     attachment->parentModelNodeOrSavedOffset = rebasedParentNode;
@@ -308,8 +308,8 @@ void ModelRuntimePool_RebaseAfterLoad(void)
        attachment parent nodes g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime and attachment children
        g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
     /* 5f-format: ModelRuntimeSlot.ownerArmyRuntimeOrSavedOffset/rootModelNodeOrSavedOffset (rebase after load) */
-    rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
-                                           (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    rebasedOwnerArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
+                                           Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     modelRuntime->rootModelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)
          (g_RuntimeObjectRebaseBaseMinusOne + (int)modelRuntime->rootModelNodeOrSavedOffset.modelNode);
@@ -323,7 +323,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     rebasedLinkedArmy = NULL;
     if (savedLinkedArmy != NULL) {
       /* 5f-format: ModelRuntimeSlot.classState.linkedArmyRuntimeOrSavedOffset */
-      rebasedLinkedArmy = (ArmyRuntimeSlot *)((int)savedLinkedArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+      rebasedLinkedArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedLinkedArmy) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     }
     modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = rebasedLinkedRuntime;
     modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
@@ -344,8 +344,8 @@ void ModelRuntimePool_RebaseAfterLoad(void)
       /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
       ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                 (modelRuntime,
-                 (MdlSerializedNodeHeader *)
-                 modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer);
+                 Thandor_U32ToPointer<MdlSerializedNodeHeader>(
+                 modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer));
     }
   }
 }
@@ -506,10 +506,10 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   modelRuntime->damageEffectPointIndex = 0;
   modelFlags = definitionView->modelFlags;
   /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
-  if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
+  if (Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionView->rootNodeOffsetOrPointer) != NULL) {
     if (!ModelNodeRuntime_CreateHierarchyRecursive
             (paletteAsset,textureSet,modelRuntime,
-             (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,worldRuntime,
+             Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionView->rootNodeOffsetOrPointer),worldRuntime,
              &modelNodeRuntime)) {
       /* the hierarchy's error code: no free world object record */
       return FATAL_ERROR_GENERAL_FAILURE;

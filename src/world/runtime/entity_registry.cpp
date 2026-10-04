@@ -132,7 +132,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (pool offset in saves) */
-    if (releasedObject == (void *)ownerArmy->assignedTargetArmyRuntime) {
+    if (releasedObject == Thandor_U32ToPointer<void>(ownerArmy->assignedTargetArmyRuntime)) {
       ownerArmy->assignedTargetArmyRuntime = 0;
     }
     /* the command target is only a live reference while ARMY_COMMAND_MODE_TARGET_ARMY is set; it is cleared

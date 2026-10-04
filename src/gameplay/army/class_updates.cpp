@@ -49,7 +49,7 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
         if ((fieldGrid->cells[cellIndex].flagsAndMaterial & supportFlagMask) != 0) {
           /* the cell supports this extractor: register it (as a saved offset) and run its emitters */
           fieldGrid->cells[cellIndex].armyRuntimeSavedOffset =
-               (int)modelRuntime - g_ModelRuntimeRebaseDelta; /* 5f-format: FieldGridCell.armyRuntimeSavedOffset */
+               Thandor_PointerToI32(modelRuntime) - g_ModelRuntimeRebaseDelta; /* 5f-format: FieldGridCell.armyRuntimeSavedOffset */
           ArmyRuntime_UpdateTimedShotAndEffectEmitters
                     (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
           ArmyRuntime_UpdateAnimatedModelSubnodes

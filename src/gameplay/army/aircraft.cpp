@@ -107,7 +107,7 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
   uint32_t healthDifference;
 
   definition = modelRuntime->modelDefinition;
-  homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset; /* 5f-format: ModelRuntimeSlot.definitionOrSavedId */
+  homeDefinitionSlot = Thandor_U32ToPointer<ModelRuntimeSlot>((homeModelRuntime->definitionOrSavedId).savedIdOrOffset); /* 5f-format: ModelRuntimeSlot.definitionOrSavedId */
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
   ModelRuntime_PlayDefinitionOneShotSound
             (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
@@ -235,7 +235,7 @@ static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRu
   if (definition->modelPointStep == 0) {
     return;
   }
-  modelPointTable = (void *)((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]; /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
+  modelPointTable = Thandor_U32ToPointer<void>(((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0]); /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
   for (modelPointOrdinal = 7; modelPointOrdinal != 0; modelPointOrdinal = modelPointOrdinal - 1) {
     if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
       ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
@@ -433,7 +433,7 @@ static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpa
   for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
     /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
        (energyLoadQ4), the sums of its model definitions' build metrics */
-    candidateAsset = (ArmyAssetRecord *)*queueEntry; /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
+    candidateAsset = Thandor_U32ToPointer<ArmyAssetRecord>(*queueEntry); /* 5f-format: GameFactionRuntimeRecord.secondaryArmyAssetPointersOrIds */
     if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
        (g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 < candidateAsset->xeniteCostQ4)) {
       continue;

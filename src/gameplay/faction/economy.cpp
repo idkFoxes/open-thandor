@@ -201,7 +201,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
          MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0)) {
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
-        attachedRuntime = (int *)attachmentSlot[80]; /* 5f-format: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
+        attachedRuntime = Thandor_U32ToPointer<int>(attachmentSlot[80]); /* 5f-format: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
         if (((attachedRuntime != NULL) && (attachedRuntime[61] != 0)) && (consumerCount < 256)) {
           InGameFactionEconomy_FillEnergyConsumer(&consumers[consumerCount],attachedRuntime);
           consumerCount++;
@@ -285,7 +285,7 @@ static void InGameFactionEconomy_AllocateFactionEnergy
   /* fixed demand: 1 energy (0x10 Q4) per army asset, 5 (0x50) when its definitionClassValue74 is set */
   armyAssetDemand = 0;
   for (assetIndex = 0; assetIndex < factionRecord->primaryArmyAssetCount; assetIndex++) {
-    if (((ArmyAssetRecord *)factionRecord->primaryArmyAssetPointersOrIds[assetIndex])->definitionClassValue74 == 0) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
+    if (Thandor_U32ToPointer<ArmyAssetRecord>(factionRecord->primaryArmyAssetPointersOrIds[assetIndex])->definitionClassValue74 == 0) { /* 5f-format: GameFactionRuntimeRecord.primaryArmyAssetPointersOrIds */
       armyAssetDemand = armyAssetDemand + 16;
     }
     else {

@@ -488,8 +488,8 @@ Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
         childWalked =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntime,
-                        (MdlSerializedNodeHeader *)
-                        definitionNode->childSerializedOffsets[childIndex]);
+                        Thandor_U32ToPointer<MdlSerializedNodeHeader>(
+                        definitionNode->childSerializedOffsets[childIndex]));
         if (!childWalked) {
           attachmentSlot = modelRuntime->attachmentCount;
           if (attachmentSlot < 6) {
@@ -631,7 +631,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
       /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets (relocated to 32-bit addresses) */
       if (!ModelNodeRuntime_CreateHierarchyRecursive
               (paletteAsset,textureSet,modelRuntime,
-               (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex],worldRuntime,
+               Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionNode->childSerializedOffsets[childIndex]),worldRuntime,
                &childNode)) {
         return false;
       }
@@ -645,7 +645,7 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
           modelRuntime->attachments[attachmentSlot].childNodeIndex = childIndex;
           modelRuntime->attachments[attachmentSlot].parentModelNodeOrSavedOffset = newNode;
           /* 5f-format: MdlSerializedNodeHeader.childSerializedOffsets */
-          childDefinition = (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex];
+          childDefinition = Thandor_U32ToPointer<MdlSerializedNodeHeader>(definitionNode->childSerializedOffsets[childIndex]);
           modelRuntime->attachments[attachmentSlot].childModelRuntimeOrSavedOffset = NULL;
           rotationAngleA = childDefinition->localRotationAngle0;
           rotationAngleB = childDefinition->localRotationAngle1;

@@ -101,7 +101,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
+    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     AiPlanningRebuild_AddUnassignedStructureEntry(assetId);
     AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace04RequestedAssets,&g_AiWorkspace04Count,
                                       AI_WORKSPACE04_CAPACITY,NULL,assetId);
@@ -110,7 +110,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   for (armyAssetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
-    assetId = *(PckArmyAssetIdCatalog *)(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
+    assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     if (assetId < ARM_0300_BUILDING_MDL0301) {
       AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,NULL,
                                         assetId);

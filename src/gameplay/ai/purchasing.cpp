@@ -102,7 +102,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||
               (nestedLinkedDefinitions =
-               (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address, /* 5f-format: ArmyModelTreeNode.childList0Address */
+               Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address), /* 5f-format: ArmyModelTreeNode.childList0Address */
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
                 ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[1] &&
@@ -113,7 +113,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
               ((secondNestedLinkedDefinitions =
-                (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address, /* 5f-format: ArmyModelTreeNode.childList1Address */
+                Thandor_U32ToPointer<AiLinkedDefinitionListView>(((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address), /* 5f-format: ArmyModelTreeNode.childList1Address */
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
@@ -634,7 +634,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   int weightedDefinitionScore;
   AiLinkedDefinitionListView *linkedDefinitionList;
 
-  linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+  linkedDefinitionList = Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAssetRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
   /* the original tests the selector's status after each of the three selections below, but it is always
      "found" */
   selectedModelDefinition = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition

@@ -49,8 +49,8 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       /* 16x16 tiling of the 256 direction records over the world */
       /* 5f-format: FieldGridCell.persistedAux54 (direction record address in a 32-bit FLD field) */
       cell->persistedAux54 =
-           (FieldCellPersistedAux)
-           (g_TerrainDirectionRecordTable256 + (int32_t)(cellWorldYQ12 & 0xfU) + (int32_t)((cellWorldXQ12 & 0xfU) * 16));
+           Thandor_PointerToU32(
+           g_TerrainDirectionRecordTable256 + (int32_t)(cellWorldYQ12 & 0xfU) + (int32_t)((cellWorldXQ12 & 0xfU) * 16));
       cell->armyRuntimeSavedOffset = 0;
       materialVariantRandomBits = Random_NextPrimary();
       cell->overlayColor = 0xffffffff; /* ARGB opaque white */
@@ -101,8 +101,8 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
     do {
       /* 5f-format: FieldGridCell.persistedAux54 */
       currentCell->persistedAux54 =
-           (FieldCellPersistedAux)
-           (g_TerrainDirectionRecordTable256 +
+           Thandor_PointerToU32(
+           g_TerrainDirectionRecordTable256 +
            (int32_t)(currentCell->worldY & 0xfU) + (int32_t)((currentCell->worldX & 0xfU) * 16));
       currentCell++;
       columnsRemaining--;
