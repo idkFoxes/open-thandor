@@ -600,7 +600,8 @@ uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 
 /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first. Only done with the
-   arena heap allocator. */
+   arena heap allocator. The 32-bit setup of 1999 wrote the key, so the 64-bit build reads the 32-bit registry view
+   (WOW6432Node) like the original did. */
 static void CoreAssets_ReadCdPathFromRegistry(void)
 
 {
@@ -610,7 +611,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     return;
   }
   status = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
-             (HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ,&g_InstallRegistryKeyHandle);
+             (HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ | KEY_WOW64_32KEY,&g_InstallRegistryKeyHandle);
   if (status != ERROR_SUCCESS) {
     return;
   }

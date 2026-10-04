@@ -387,6 +387,9 @@
 #ifndef KEY_READ
 #define KEY_READ 0x00020019
 #endif
+#ifndef KEY_WOW64_32KEY
+#define KEY_WOW64_32KEY 0x0200
+#endif
 #ifndef REG_SZ
 #define REG_SZ 1
 #endif
