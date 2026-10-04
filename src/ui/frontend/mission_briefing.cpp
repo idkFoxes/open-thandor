@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/mission_briefing.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -94,14 +95,17 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = nullptr;
   }
   else {
-    /* Original quirk: the result is not checked; when no frame comes the end code becomes the texture source */
     if (Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
       ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
            (GraphicsTextureSourceAsset *)firstFrameMovie;
     }
     else {
-      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
-           (GraphicsTextureSourceAsset *)(uintptr_t)movieEndCode;
+      /* The original did not check the result and used the end code as the texture source; bounded here
+         because the image would draw through that code as a pointer: no frame shows no image (logged), like a
+         movie that does not open. */
+      Thandor_Log("FrontendMissionBriefingPage_Initialize: briefing movie gave no frame (end code %u)",
+                  (uint32_t)movieEndCode);
+      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = nullptr;
     }
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->subresource = 0;
   }
