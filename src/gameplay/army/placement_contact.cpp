@@ -139,9 +139,9 @@ void ArmyPlacementContact_InitializeArticulatedSuspension
 
 ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
     .callbacks = {
-        /* 0 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeight),
-        /* 1 */ THANDOR_FN(ArmyPlacementContact_ApplyWaterSurfaceHeight),
-        /* 2 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeightAndNormal),
-        /* 3 */ THANDOR_FN(ArmyPlacementContact_InitializeArticulatedSuspension),
-        /* 4 */ THANDOR_FN(ArmyPlacementContact_ApplyTopSurfaceHeight)
+        /* 0 */ THANDOR_SLOT(ArmyPlacementContact_ApplyTerrainHeight),
+        /* 1 */ THANDOR_SLOT(ArmyPlacementContact_ApplyWaterSurfaceHeight),
+        /* 2 */ THANDOR_SLOT(ArmyPlacementContact_ApplyTerrainHeightAndNormal),
+        /* 3 */ THANDOR_SLOT(ArmyPlacementContact_InitializeArticulatedSuspension),
+        /* 4 */ THANDOR_SLOT(ArmyPlacementContact_ApplyTopSurfaceHeight)
     }};
