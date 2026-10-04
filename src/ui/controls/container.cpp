@@ -485,24 +485,24 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
 }
 
 UiNodeVtable g_UiLayoutContainerControlVtable = {
-        .relocate = THANDOR_FN(UiLayoutContainerControl_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiContainer_DrawIntersectingChildren),
-        .layout = THANDOR_FN(UiLayoutContainerControl_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-        .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiLayoutContainerControl_HitTestChildrenOnly),
-        .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-        .applyFlags = THANDOR_FN(UiLayoutContainerControl_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiLayoutContainerControl_SuppressActionIdRecursive),
-        .unsuppressActionId = THANDOR_FN(UiLayoutContainerControl_UnsuppressActionIdRecursive),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .relocate = UI_SLOT(UiLayoutContainerControl_RelocateChildren),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiContainer_DrawIntersectingChildren),
+        .layout = UI_SLOT(UiLayoutContainerControl_LayoutChildren),
+        .nonRightPress = UI_SLOT(UiNode_DefaultNonRightPress),
+        .nonRightRelease = UI_SLOT(UiNode_DefaultNonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiNode_DefaultNonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
+        .pointerMove = UI_SLOT(UiNode_DefaultPointerMove),
+        .hitTest = UI_SLOT(UiLayoutContainerControl_HitTestChildrenOnly),
+        .keyboardEvent = UI_SLOT(UiNode_DefaultKeyboardEventMoveFocusNext),
+        .applyFlags = UI_SLOT(UiLayoutContainerControl_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiLayoutContainerControl_SuppressActionIdRecursive),
+        .unsuppressActionId = UI_SLOT(UiLayoutContainerControl_UnsuppressActionIdRecursive),
+        .tick = UI_SLOT(UiNode_DefaultTick),
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 /* Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
    unsuppressActionId method clears UI_NODE_SUPPRESSED when the action matches (containers recurse).

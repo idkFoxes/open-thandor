@@ -69,7 +69,7 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter();
 
 void __cdecl UiActionQueue_DispatchPending();
 
-void UiNode_DefaultMethod04_NoOp(void *node);
+void UiNode_DefaultMethod04_NoOp(UiNodeBase *node);
 
 void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);

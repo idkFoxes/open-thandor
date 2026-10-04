@@ -342,24 +342,24 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
 }
 
 UiNodeVtable g_UiImageControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiImageControl_DrawClipped),
-        .layout = THANDOR_FN(UiImageControl_LayoutChildrenToParent),
-        .nonRightPress = THANDOR_FN(UiImageControl_NonRightPress),
-        .nonRightRelease = THANDOR_FN(UiImageControl_NonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiImageControl_NonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+        .relocate = UI_SLOT(UiContainer_RelocateChildren),
+        .method04 = UI_SLOT(UiNode_DefaultMethod04_NoOp),
+        .drawClipped = UI_SLOT(UiImageControl_DrawClipped),
+        .layout = UI_SLOT(UiImageControl_LayoutChildrenToParent),
+        .nonRightPress = UI_SLOT(UiImageControl_NonRightPress),
+        .nonRightRelease = UI_SLOT(UiImageControl_NonRightRelease),
+        .rightPress = UI_SLOT(UiNode_ForwardRightPressToParent),
+        .rightRelease = UI_SLOT(UiNode_DefaultRightRelease),
+        .nonRightDrag = UI_SLOT(UiImageControl_NonRightDrag),
+        .rightDrag = UI_SLOT(UiNode_DefaultRightDrag),
         .pointerMove = UI_SLOT(UiImageControl_PointerMove),
-        .hitTest = THANDOR_FN(UiImageControl_HitTestOpaque),
-        .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
+        .hitTest = UI_SLOT(UiImageControl_HitTestOpaque),
+        .keyboardEvent = UI_SLOT(UiSelectableControl_KeyboardEvent),
+        .applyFlags = UI_SLOT(UiNode_ApplyFlagsRecursive),
+        .suppressActionId = UI_SLOT(UiSelectableControl_SuppressIfActionId),
+        .unsuppressActionId = UI_SLOT(UiSelectableControl_UnsuppressIfActionId),
         .tick = UI_SLOT(UiImageControl_TickHover),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+        .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent)};
 
 /* pointerMove slot of g_UiImageControlVtable. Over an opaque pixel of the image the arrow
    is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
