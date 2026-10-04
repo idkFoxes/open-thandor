@@ -9,7 +9,6 @@
    interpolation over the triangle lattice. */
 
 #include <thandor/world/terrain/field_sampling.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 

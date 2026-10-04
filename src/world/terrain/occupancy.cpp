@@ -24,6 +24,8 @@ static const uint64_t g_TerrainOccupancyMmxCurrentWeights = 0x40000400400004ull;
 
 static const uint64_t g_FieldGridOccupancyMmxHighBitMask = 0x8080808080808080ull;
 
+uint8_t *g_TerrainByteClampLookup = 0;
+
 /* Implementation ownership: world/terrain/occupancy. */
 
 /* Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
@@ -839,4 +841,71 @@ Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldR
        ((uint8_t *)&activeFieldGrid->cells[(int32_t)(activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex)].occupancyMask)
        [worldRuntime->activeFactionRuntimeIndex];
   return (occupancyByte & FIELD_CELL_OCCUPANCY_BITS01) == 0;
+}
+
+/* Fills one 256-byte row of g_TerrainByteClampLookup: for every runtime byte 0..0xFF the byte moved one
+   TERRAIN_RUNTIME_BYTE_FADE_STEP towards targetLevel, stopping at targetLevel from either side. Returns the
+   position after the row. */
+static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLevel)
+
+{
+  int inputValue;
+
+  for (inputValue = 0; inputValue < 256; inputValue++) {
+    if (inputValue <= targetLevel) {
+      if (inputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < targetLevel) {
+        *rowCursor = (uint8_t)(inputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
+      }
+      else {
+        *rowCursor = (uint8_t)targetLevel;
+      }
+    }
+    else if (inputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP <= targetLevel) {
+      *rowCursor = (uint8_t)targetLevel;
+    }
+    else {
+      *rowCursor = (uint8_t)(inputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
+    }
+    rowCursor++;
+  }
+  return rowCursor;
+}
+
+/* Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
+   fade each cell's runtime byte (visibilityLightingIndex) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the
+   level its occupancy byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB
+   aligned so the original can index it with the two bytes as the low 16 address bits. Returns true on success; false when the allocation fails,
+   with the allocator error in *outError.
+*/
+Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
+
+{
+  void *lookupAllocationBase;
+  int rowPair;
+  int row;
+  uint8_t *lookupWriteCursor;
+  uint32_t allocError;
+
+  /* twice the size, so a 64-KiB aligned table fits inside */
+  allocError = g_MemoryApi.alloc(TERRAIN_BYTE_CLAMP_LOOKUP_BYTES * 2,&lookupAllocationBase);
+  if (allocError != 0) {
+    *outError = allocError;
+    return false;
+  }
+  lookupWriteCursor = (uint8_t *)(((uintptr_t)lookupAllocationBase + 0xffff) & ~(uintptr_t)0xffff);
+  g_TerrainByteClampLookup = lookupWriteCursor;
+  /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
+  for (rowPair = 0; rowPair < 64; rowPair++) {
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_NONE);
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  }
+  /* row 0x80: PERSISTENT, row 0x81: FULL, row 0x82: PERSISTENT */
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT);
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT);
+  /* rows 0x83..0xFF: FULL */
+  for (row = 0x83; row < 0x100; row++) {
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  }
+  return true;
 }

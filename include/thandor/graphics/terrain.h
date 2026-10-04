@@ -8,6 +8,8 @@
 #ifndef THANDOR_GRAPHICS_TERRAIN_H
 #define THANDOR_GRAPHICS_TERRAIN_H
 
+#include <thandor/graphics/terrain/minimap_composite.h>
 #include <thandor/graphics/terrain/terrain_render.h>
+#include <thandor/graphics/terrain/terrain_resources.h>
 
 #endif /* THANDOR_GRAPHICS_TERRAIN_H */

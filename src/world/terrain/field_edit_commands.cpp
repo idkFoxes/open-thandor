@@ -9,7 +9,6 @@
    updates, flag setters, the player scratch plane and the masked/rectangular transitions. */
 
 #include <thandor/world/terrain/field_edit_commands.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 

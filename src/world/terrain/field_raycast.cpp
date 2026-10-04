@@ -9,7 +9,6 @@
    terrain triangles. */
 
 #include <thandor/world/terrain/field_raycast.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 

@@ -21,7 +21,6 @@
 #include <thandor/world/terrain/overlay_marking.h>
 #include <thandor/world/terrain/placement_tests.h>
 #include <thandor/world/terrain/sight.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/world/terrain/water_relaxation.h>
 
 #endif /* THANDOR_WORLD_TERRAIN_H */

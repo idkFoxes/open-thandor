@@ -96,7 +96,9 @@ add_library(thandor_curated STATIC
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
     src/graphics/resources/texture.cpp
+    src/graphics/terrain/minimap_composite.cpp
     src/graphics/terrain/terrain_render.cpp
+    src/graphics/terrain/terrain_resources.cpp
     src/movie/runtime/playback.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
@@ -149,7 +151,6 @@ add_library(thandor_curated STATIC
     src/world/terrain/overlay_marking.cpp
     src/world/terrain/placement_tests.cpp
     src/world/terrain/sight.cpp
-    src/world/terrain/visuals.cpp
     src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

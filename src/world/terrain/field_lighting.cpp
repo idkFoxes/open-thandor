@@ -9,7 +9,6 @@
    direction record table. */
 
 #include <thandor/world/terrain/field_lighting.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -19,6 +18,13 @@
 static GraphicsFixedVec3 g_TerrainLightDirection = {0};
 
 TerrainDirectionRecord g_TerrainDirectionRecordTable256[256] = {0};
+
+/* entries 0..255 the shaded colour ramp (originally
+   g_TerrainLightingColorRampArgb256), entries 256..512 the lit half; indexed by the signed dot
+   product -256..256 from entry 256 */
+PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {0};
+
+uint32_t g_TerrainDirectionalLightSecondaryColor = 0;
 
 /* Recomputes the packed normal angles of both terrain triangles of every interior cell (the one-cell
    border ring is skipped) after the heights changed, and marks the field grid dirty (runtimeStateFlags
@@ -223,4 +229,95 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
          16)];
   cell->secondarySurfaceDirectionalLightColor = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor = directionalLightColor;
+}
+
+/* Sets up the terrain lighting colours: the shaded half of g_TerrainDirectionalLightColorLut gets
+   [i] = base + ramp * (256 - i) / 256 per colour channel (saturated at 0xFF, alpha taken from base), the lit
+   half (from TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX) is filled with the base colour and the secondary colour
+   is stored in g_TerrainDirectionalLightSecondaryColor.
+*/
+void TerrainLighting_BuildColorRampAndSetBaseColor
+          (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb
+          )
+
+{
+  uint32_t channelValue;
+  int rampStepsRemaining;
+  uint32_t *rampEntryCursor;
+  PackedArgb32 *lightLutCursor;
+  
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
+  do {
+    channelValue = ((rampStepColorArgb & ARGB8888_BLUE_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_BLUE_MASK);
+    if (ARGB8888_BLUE_MASK < channelValue) {
+      channelValue = ARGB8888_BLUE_MASK;
+    }
+    *rampEntryCursor = channelValue;
+    rampEntryCursor++;
+    rampStepsRemaining--;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
+  do {
+    channelValue = ((rampStepColorArgb & ARGB8888_GREEN_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_GREEN_MASK);
+    if (0xffff < channelValue) {
+      channelValue = ARGB8888_GREEN_MASK;
+    }
+    *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_GREEN_MASK;
+    rampEntryCursor++;
+    rampStepsRemaining--;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
+  do {
+    channelValue = ((rampStepColorArgb & ARGB8888_RED_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_RED_MASK);
+    if (0xffffff < channelValue) {
+      channelValue = ARGB8888_RED_MASK;
+    }
+    *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_RED_MASK;
+    rampEntryCursor++;
+    rampStepsRemaining--;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
+  do {
+    *rampEntryCursor = *rampEntryCursor | baseColorArgb & ARGB8888_ALPHA_MASK;
+    rampEntryCursor++;
+    rampStepsRemaining--;
+  } while (rampStepsRemaining != 0);
+  g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
+  lightLutCursor = &g_TerrainDirectionalLightColorLut[TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX];
+  for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT; rampStepsRemaining != 0;
+       rampStepsRemaining--) {
+    *lightLutCursor = baseColorArgb;
+    lightLutCursor++;
+  }
+}
+
+/* In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
+   ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
+   elevation (the root's lightElevationAngle) is kept between -0x4000 (straight down) and -0x1000, the
+   azimuth (lightAzimuthAngle) wraps around.
+*/
+void TerrainLighting_AdjustDirectionAndRecomputeField
+          (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
+          uint32_t deltaAzimuthAngle)
+
+{
+  Q12 lightElevationAngle;
+
+  lightElevationAngle = deltaElevationAngle + g_InGameRuntimeRoot->lightElevationAngle;
+  if (-TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16 < lightElevationAngle) {
+    lightElevationAngle = -TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16;
+  }
+  if (lightElevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+    lightElevationAngle = -FIXED_ANGLE16_QUARTER_TURN;
+  }
+  WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+            ((g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryElevationAngle,
+             (g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryAzimuthAngle,lightElevationAngle,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->lightAzimuthAngle & FIXED_ANGLE16_MASK,
+             &g_InGameRuntimeRoot->worldRuntime);
+  return;
 }

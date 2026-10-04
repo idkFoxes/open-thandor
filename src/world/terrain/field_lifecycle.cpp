@@ -9,7 +9,6 @@
    and the asset image written back from the runtime state. */
 
 #include <thandor/world/terrain/field_lifecycle.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 

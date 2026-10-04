@@ -9,7 +9,6 @@
    (levelling under a unit), with the neighbour refresh. */
 
 #include <thandor/world/terrain/field_deformation.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 

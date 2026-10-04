@@ -8,7 +8,6 @@
 /* Editor water relaxation (command 0x3200): directional passes that relax neighbour heights. */
 
 #include <thandor/world/terrain/water_relaxation.h>
-#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
