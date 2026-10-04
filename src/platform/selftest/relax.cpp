@@ -21,7 +21,7 @@ thandor_original.exe must be next to the exe.
 
 #include "thandor/platform/bootstrap/image.h"
 #include "thandor/platform/debug/original_code.h"
-#include "thandor/world/terrain/grid.h"
+#include "thandor/world/terrain/water_relaxation.h"
 
 typedef void (__stdcall *OriginalRelaxProc)(void *fieldGrid);
 typedef void (*CurrentRelaxProc)(FieldGridAsset *fieldGrid);

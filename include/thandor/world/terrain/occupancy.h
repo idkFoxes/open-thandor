@@ -61,4 +61,18 @@ void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,Fie
 
 void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
+void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid);
+
+void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
+
+void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);
+
+void FieldGrid_SetOccupancyMaskByteBit0AllCells
+          (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
+
+void FieldGrid_ClearOccupancyMaskByteBit0AllCells
+          (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
+
+Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
+
 #endif /* THANDOR_WORLD_TERRAIN_OCCUPANCY_H */

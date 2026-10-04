@@ -137,11 +137,17 @@ add_library(thandor_curated STATIC
     src/world/shots/maintenance.cpp
     src/world/shots/runtime.cpp
     src/world/terrain/editing.cpp
-    src/world/terrain/grid.cpp
+    src/world/terrain/field_deformation.cpp
+    src/world/terrain/field_edit_commands.cpp
+    src/world/terrain/field_lifecycle.cpp
+    src/world/terrain/field_lighting.cpp
+    src/world/terrain/field_raycast.cpp
+    src/world/terrain/field_sampling.cpp
     src/world/terrain/height.cpp
     src/world/terrain/occupancy.cpp
     src/world/terrain/projection.cpp
     src/world/terrain/visuals.cpp
+    src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
