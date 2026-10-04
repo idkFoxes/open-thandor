@@ -84,20 +84,18 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
   return 0;
 }
 
-/* Menu music of Frontend_Init: when music is enabled, loads sound\music00.sam and plays it looping at the
-   saved music gain (g_FrontendMusicVoiceSet / g_FrontendMusicActiveBuffer). Failures leave the menu silent. */
-static void FrontendInit_StartMenuMusic(void)
+/* Menu music: loads sound\music00.sam and plays it looping at the saved music gain (g_FrontendMusicVoiceSet /
+   g_FrontendMusicActiveBuffer). Failures leave the menu silent. Used by Frontend_Init (when music is enabled)
+   and by FrontendAudioSettings_SetMusicEnabled (when music is switched on). */
+void FrontendMusic_StartMenuMusic(void)
 {
-  uint32_t soundOptions;
   uint32_t musicGain;
   SoundSampleAsset *loadedSample;
   DirectSoundVoiceSet *musicVoiceSet;
   IDirectSoundBuffer *musicBuffer;
 
-  soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   musicBuffer = g_FrontendMusicActiveBuffer;
-  if (((soundOptions & PERSISTENT_SOUND_OPTION_MUSIC) != 0) &&
-      Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
+  if (Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
     if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
@@ -297,7 +295,10 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   }
   FrontendMenu_BindSharedResources(frontendUiState);
   UiRootStack_Push(&g_FrontendUiRootCallbacks,(UiRootNode *)frontendUiState);
-  FrontendInit_StartMenuMusic();
+  if ((PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS) &
+       PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
+    FrontendMusic_StartMenuMusic();
+  }
   FrontendInit_FillNetworkBackendList(frontendUiState);
   /* the 3D pointer-context control of the menu room is the world runtime menuRoomModelView */
   FrontendInit_InstallMenuRoomPointerCallbacks((FrontendModelPointerContext *)worldRuntime);

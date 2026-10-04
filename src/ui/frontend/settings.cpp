@@ -578,40 +578,17 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  IDirectSoundBuffer *activeMusicBuffer;
-  SoundSampleAsset *musicSample;
-  DirectSoundVoiceSet *musicVoiceSet;
-  uint32_t musicGain;
   uint32_t savedAudioFlags;
   uint32_t musicEnabledBit;
   uint32_t newAudioFlags;
   Bool8 isSelected;
-  Bool8 musicLoaded;
 
   musicEnabledBit = 0;
   isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-    musicLoaded = Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&musicSample,NULL,NULL);
-    activeMusicBuffer = g_FrontendMusicActiveBuffer;
-    if (musicLoaded) {
-      if (g_SoundCreateSampleVoiceSet(musicSample,&musicVoiceSet) != 0) {
-        Resource_Release(musicSample);
-        activeMusicBuffer = g_FrontendMusicActiveBuffer;
-      }
-      else {
-        g_FrontendMusicVoiceSet = musicVoiceSet;
-        Resource_Release(musicSample);
-        musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-        if (!g_SoundPlayLooping(musicGain,musicGain,musicVoiceSet,&activeMusicBuffer)) {
-          g_SoundReleaseSampleVoiceSet(musicVoiceSet);
-          g_FrontendMusicVoiceSet = NULL;
-          activeMusicBuffer = g_FrontendMusicActiveBuffer;
-        }
-      }
-    }
-    g_FrontendMusicActiveBuffer = activeMusicBuffer;
+    FrontendMusic_StartMenuMusic();
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   }
   else {
