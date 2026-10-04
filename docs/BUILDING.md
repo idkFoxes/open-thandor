@@ -52,7 +52,10 @@ drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/d
 
 The original data layouts keep their pointers in 32-bit fields (`Ptr32<T>`,
 [`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format; the
-executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the fixed base `0x10000000`.
+executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the fixed base `0x10000000`. Code that
+keeps a pointer in a plain 32-bit integer (a field holding a pointer or an offset/id, a saved offset) converts with
+`Thandor_PointerToU32`/`Thandor_PointerToI32` (stops the game for a pointer that does not fit) and
+`Thandor_U32ToPointer<T>` (sign-extended like `Ptr32`), never with a plain cast.
 
 ### MinGW-w64 GCC
 
@@ -86,9 +89,10 @@ What keeps the two builds identical in behaviour (the self-test hashes and the d
 - GCC flags: `-fno-strict-aliasing` (the recovered code reinterprets memory), `-fwrapv` (signed overflow wraps as
   on MSVC), `-ffp-contract=off` (no fused multiply-add; MSVC x64 does not contract), `-mms-bitfields` (MSVC struct
   and bit-field layout; [`src/core/layout_checks.cpp`](../src/core/layout_checks.cpp) checks the sizes and pointer
-  offsets of every layout at compile time). `-fpermissive` lets the casts of pointers to 32-bit integers through
-  (they truncate as on MSVC, which warns C4311/C4312 for the same lines); `-Wall` without `-Wparentheses`,
-  `-Wsign-compare` and `-Wcomment`, which the decompiled code triggers by the hundreds.
+  offsets of every layout at compile time). No `-fpermissive`: a pointer kept in a plain 32-bit value goes through
+  the checked conversions of `core/ptr32.h` (`Thandor_PointerToU32`/`Thandor_PointerToI32`, `Thandor_U32ToPointer`),
+  never through a truncating cast; `-Wall` without `-Wparentheses`, `-Wsign-compare` and `-Wcomment`, which the
+  decompiled code triggers by the hundreds.
 - Function arguments and operands are evaluated in an unspecified order, and MSVC and GCC differ: an expression with
   two state-changing calls (two random draws, two reads of a stream) gets explicit temporaries in MSVC's order.
 - `THANDOR_ALIGN(n)` (core/contracts.h) instead of `__declspec(align(n))`; the crash handler's guarded stack walk
@@ -100,9 +104,13 @@ What keeps the two builds identical in behaviour (the self-test hashes and the d
   `objdump -p thandor.exe`: `Characteristics` without 0x20, `ImageBase 0000000010000000`, `DllCharacteristics`
   only `NX_COMPAT`.
 
-Crash and hang logs of a GCC build: there is no PDB, so `crash.log`, `hang.log` and the watchdog give each frame as
-`thandor.exe+0xOFFSET` (absolute address `0x10000000 + OFFSET`, the image base is fixed and logged as `module base`).
-Symbolize with the executable's DWARF line information:
+Crash and hang logs of a GCC build: there is no PDB for dbghelp; instead the build writes `thandor.sym` next to
+`thandor.exe` (the code symbols from `nm -C`, [`cmake/symbol_table.cmake`](../cmake/symbol_table.cmake)), which the
+crash handler reads at start, so `crash.log`, `hang.log` and the watchdog give each frame as
+`Function+0xNN [thandor.exe+0xOFFSET]` (keep `thandor.sym` with the executable; a table of another build is ignored
+with a note in `thandor.log`, and the frames then show only `thandor.exe+0xOFFSET`). The absolute address is
+`0x10000000 + OFFSET` (the image base is fixed and logged as `module base`). Source lines come from the
+executable's DWARF line information:
 
 ```bat
 addr2line -f -C -i -e build-mingw-test\thandor.exe 0x100516AA 0x1000146C

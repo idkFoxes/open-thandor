@@ -323,6 +323,12 @@ else()
     add_custom_command(TARGET thandor POST_BUILD
         COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
         VERBATIM)
+    # thandor.sym next to thandor.exe: the code symbols for the function names in crash.log, hang.log and the
+    # watchdog (src/platform/bootstrap/image.cpp reads it at start; a GCC build has no PDB for dbghelp).
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DEXECUTABLE=$<TARGET_FILE:thandor>
+                -DOUTPUT=$<TARGET_FILE_DIR:thandor>/thandor.sym -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/symbol_table.cmake
+        VERBATIM)
 endif()
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software

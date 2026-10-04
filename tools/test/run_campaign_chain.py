@@ -54,7 +54,7 @@ SEGMENTS = [('hansolo', 2, 3, False), ('hansolo', 5, 3, False), ('hansolo', 8, 3
 # quick: 5 levels in 3 parts - two levels that take over the previous level's units (tutorial 2, hansolo 23) through
 # a real level change, and a campaign end (nimm2)
 QUICK_SEGMENTS = [('tutorial', 1, 2, False), ('hansolo', 22, 2, False), ('nimm2', 5, 1, True)]
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log',
            'crash_raw.log', 'hang.log')
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -104,7 +104,7 @@ def make_worker_dir(k):
     for name in ('thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(target, name)):
             os.remove(os.path.join(target, name))
-    for name in ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.ini'):
+    for name in ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'thandor.dat', 'thandor.ini'):
         if os.path.exists(os.path.join(game, name)):
             shutil.copy(os.path.join(game, name), os.path.join(target, name))
     return target

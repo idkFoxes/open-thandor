@@ -61,8 +61,8 @@ from game_env import game_env
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log', 'crash.log', 'crash_raw.log',
-           'hang.log', 'statehash.txt')
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.sym', 'sdl3.dll', 'thandor.dat', 'thandor.ini', 'thandor.log',
+           'crash.log', 'crash_raw.log', 'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
 # timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
@@ -116,9 +116,11 @@ def make_copy(name, exe):
         if os.path.exists(os.path.join(target, entry)):
             os.remove(os.path.join(target, entry))
     shutil.copy(exe, os.path.join(target, 'thandor.exe'))
-    pdb = os.path.splitext(exe)[0] + '.pdb'
-    if os.path.exists(pdb):
-        shutil.copy(pdb, os.path.join(target, 'thandor.pdb'))
+    # the build's symbols for the crash and hang logs (MSVC: thandor.pdb, GCC: thandor.sym)
+    for extension in ('.pdb', '.sym'):
+        symbols = os.path.splitext(exe)[0] + extension
+        if os.path.exists(symbols):
+            shutil.copy(symbols, os.path.join(target, 'thandor' + extension))
     # the build's SDL3.dll (next to the exe, the build copies it there), else the game dir's
     for dll in (os.path.join(os.path.dirname(exe), 'SDL3.dll'), os.path.join(game, 'SDL3.dll')):
         if os.path.exists(dll):
