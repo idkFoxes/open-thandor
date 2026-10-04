@@ -1247,7 +1247,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];
       if (armyAsset != NULL) {
-        g_MemoryApi.free((void *)armyAsset[2].byteSize); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
+        g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[2].byteSize)); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
         armyAsset[2].byteSize = 0;
       }
     }

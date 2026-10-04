@@ -101,7 +101,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightSumColumn, /* 5f-format: InGameUiImage.resultsChart1_fields (UI template pointer dword) */
+            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightSumColumn), /* 5f-format: InGameUiImage.resultsChart1_fields (UI template pointer dword) */
             0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000007, 0x00000002, 0x00000006, 0x00000003,
             0x00000004, 0x00000005},
         { /* +0484 resultsChart2 g_FrontendResultsTableVtable */
@@ -112,7 +112,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane0Column, /* 5f-format: InGameUiImage.resultsChart2_fields (UI template pointer dword) */
+            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightLane0Column), /* 5f-format: InGameUiImage.resultsChart2_fields (UI template pointer dword) */
             0x00000006, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x00000008, 0x00000009, 0x0000000A,
             0x0000000B, 0x00000003},
         { /* +0500 resultsChart3 g_FrontendResultsTableVtable */
@@ -123,7 +123,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane1Column, /* 5f-format: InGameUiImage.resultsChart3_fields (UI template pointer dword) */
+            0x00000000, Thandor_PointerToU32(FrontendResultsGraph_DrawFactionWeightLane1Column), /* 5f-format: InGameUiImage.resultsChart3_fields (UI template pointer dword) */
             0x00000008, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x0000000C, 0x0000000D, 0x0000000E,
             0x0000000F, 0x00000010, 0x00000011, 0x00000004},
         { /* +0584 resultsTabMilitary g_UiFramedTextButtonControlVtable */
@@ -214,14 +214,14 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000, (uint32_t)&g_InGamePlayerStatusTextSlots, /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x80), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x100), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x180), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x200), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x280), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x300), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
-            (uint32_t)((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x380)}, /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000, Thandor_PointerToU32(&g_InGamePlayerStatusTextSlots), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x80), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x100), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x180), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x200), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x280), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x300), /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
+            Thandor_PointerToU32((uint8_t *)&g_InGamePlayerStatusTextSlots + 0x380)}, /* 5f-format: InGameUiImage.playerStatusBox_fields (UI template pointer dword) */
         { /* +0960 messageHistoryPanel g_UiConditionalActionControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4530), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9DC),
             .vtable = THANDOR_PTR(&g_UiConditionalActionControlVtable),
@@ -1571,7 +1571,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000015, 0x00000000, (uint32_t)&g_InGameCountdownTextUtf16}, /* 5f-format: InGameUiImage.countdownText_fields (UI template pointer dword) */
+            0x00000015, 0x00000000, Thandor_PointerToU32(&g_InGameCountdownTextUtf16)}, /* 5f-format: InGameUiImage.countdownText_fields (UI template pointer dword) */
         { /* +4530 resourceBarModeStack g_UiLayoutContainerControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4644), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x9DC),
             .vtable = THANDOR_PTR(&g_UiLayoutContainerControlVtable),
@@ -1694,7 +1694,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000312, 0x00000000, (uint32_t)&g_FrontendCurrentFactionPrimaryResourceTextUtf16, /* 5f-format: InGameUiImage.xeniteAmountText_fields (UI template pointer dword) */
+            0x00000312, 0x00000000, Thandor_PointerToU32(&g_FrontendCurrentFactionPrimaryResourceTextUtf16), /* 5f-format: InGameUiImage.xeniteAmountText_fields (UI template pointer dword) */
             0x01010000, 0x00180014},
         { /* +4BA4 editorModeTabTerrainHeight g_UiSpriteButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4C1C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x45E8),
@@ -1992,7 +1992,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow1PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow1PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5824 diplomacyRow2PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5AC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4E2C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2001,7 +2001,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow2PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow2PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5880 diplomacyRow3PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5B44), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4E84),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2010,7 +2010,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow3PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow3PlayerNameLabel_fields (UI template pointer dword) */
         { /* +58DC diplomacyRow4PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5BC0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4EDC),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2019,7 +2019,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow4PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow4PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5938 diplomacyRow5PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5C3C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4F34),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2028,7 +2028,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow5PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow5PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5994 diplomacyRow6PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5CB8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4F8C),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2037,7 +2037,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow6PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow6PlayerNameLabel_fields (UI template pointer dword) */
         { /* +59F0 diplomacyRow7PlayerNameLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5D34), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4FE4),
             .vtable = THANDOR_PTR(&g_UiFocusProxyControlVtable),
@@ -2046,7 +2046,7 @@ THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000010, 0x00000000, (uint32_t)&g_EmptyFrontendPlayerNameUtf16}, /* 5f-format: InGameUiImage.diplomacyRow7PlayerNameLabel_fields (UI template pointer dword) */
+            0x00000010, 0x00000000, Thandor_PointerToU32(&g_EmptyFrontendPlayerNameUtf16)}, /* 5f-format: InGameUiImage.diplomacyRow7PlayerNameLabel_fields (UI template pointer dword) */
         { /* +5A4C diplomacyRow1RelationButton g_UiCommandSpriteButtonWithDetailsVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4DD4),
             .vtable = THANDOR_PTR(&g_UiCommandSpriteButtonWithDetailsVtable),

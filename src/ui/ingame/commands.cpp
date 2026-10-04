@@ -109,7 +109,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
                    ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
-                   (EffectDefinition *)slotModelRuntime->attachments[2].childLocalRotationAngle0, /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
+                   Thandor_U32ToPointer<EffectDefinition>(slotModelRuntime->attachments[2].childLocalRotationAngle0), /* 5f-format: ModelRuntimeSlot.attachments[2].childLocalRotationAngle0 (saved model pool) */
                    worldRuntime);
         InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
         InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);

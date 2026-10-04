@@ -226,7 +226,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
      linkedArmyAsset) */
   ArmyAssetRegistry_FindById(classRecordWords[24],&linkedArmyAsset);
-  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+  linkedDefinitionListView = Thandor_U32ToPointer<ArmyModelTreeNodeAddressView>(linkedArmyAsset->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
     ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
          (uint16_t *)((uintptr_t)((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text +
@@ -267,7 +267,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
          foundArmyAsset) */
       ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
       ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->base.textureSource =
-           (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId; /* 5f-format: ArmyAssetRecord +0x18 (dword read as texture source) */
+           Thandor_U32ToPointer<GraphicsTextureSourceAsset>(foundArmyAsset[1].registryId); /* 5f-format: ArmyAssetRecord +0x18 (dword read as texture source) */
       remainingCells--;
       gridCellOffset++;
     }
@@ -317,7 +317,7 @@ static void InGameSelectionDetailPanel_ShowHoverRecord
   statsTemplateTextId = hoverRecord->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
   ((UiWrappedTextControl *)INGAME_UI(root,hoverItemStatsText))->text = (uint16_t *)(uintptr_t)statsTemplateTextId;
   ((UiWrappedTextControl *)INGAME_UI(root,unitPlacementStatsText))->text = (uint16_t *)(uintptr_t)statsTemplateTextId;
-  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)hoverRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer (UiCommandRuntimeRecordPrefix view) */
+  linkedDefinitionListView = Thandor_U32ToPointer<ArmyModelTreeNodeAddressView>(hoverRecord->rootNodeOffsetOrPointer); /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer (UiCommandRuntimeRecordPrefix view) */
   unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                      (root->worldRuntime.activeFactionRuntimeIndex,
                       (uintptr_t)linkedDefinitionListView);
