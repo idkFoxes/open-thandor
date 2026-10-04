@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_CORE_PCX_PREVIEW_H
 #define THANDOR_UI_CORE_PCX_PREVIEW_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/core/pcx_preview. */

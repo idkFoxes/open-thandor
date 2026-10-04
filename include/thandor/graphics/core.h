@@ -8,6 +8,7 @@
 #ifndef THANDOR_GRAPHICS_CORE_H
 #define THANDOR_GRAPHICS_CORE_H
 
+#include <thandor/graphics/core/types.h>
 #include <thandor/graphics/core/cursor.h>
 #include <thandor/graphics/core/runtime.h>
 

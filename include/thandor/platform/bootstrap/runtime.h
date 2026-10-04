@@ -8,7 +8,10 @@
 #ifndef THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
 #define THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/platform/bootstrap/types.h>
+#include <thandor/platform/system/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/bootstrap/runtime. */

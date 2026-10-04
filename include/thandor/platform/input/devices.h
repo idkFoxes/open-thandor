@@ -8,7 +8,11 @@
 #ifndef THANDOR_PLATFORM_INPUT_DEVICES_H
 #define THANDOR_PLATFORM_INPUT_DEVICES_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/platform/input/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/input/devices. */

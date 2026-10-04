@@ -7,7 +7,9 @@
 #ifndef THANDOR_GENERATED_IMPORTS_H
 #define THANDOR_GENERATED_IMPORTS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/platform/filesystem/types.h>
+#include <thandor/platform/system/types.h>
 
 #ifdef __cplusplus
 extern "C" {

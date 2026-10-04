@@ -8,7 +8,7 @@
 #ifndef THANDOR_UI_FRONTEND_CREDITS_H
 #define THANDOR_UI_FRONTEND_CREDITS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/credits. */

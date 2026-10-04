@@ -15,7 +15,8 @@ Writing: screenshots (Alt+P in game, the movie screenshot command). Reading: the
 <name>.pcx sent in network games.
 */
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/platform/sdl3/types.h>
 #include <thandor/core/contracts.h>
 
 /* pcx_write.c and pcx_read.c declare their functions below this line. */

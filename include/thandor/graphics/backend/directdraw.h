@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_DIRECTDRAW_H
 #define THANDOR_GRAPHICS_BACKEND_DIRECTDRAW_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/core/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/directdraw. */

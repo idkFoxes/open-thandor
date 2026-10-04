@@ -24,10 +24,6 @@ static_assert(sizeof(ModelWorldPoint) == 0xC,
               "ModelWorldPoint keeps its 32-bit layout");
 static_assert(sizeof(FixedDirection) == 0xC,
               "FixedDirection keeps its 32-bit layout");
-static_assert(sizeof(HBRUSH__) == 0x4,
-              "HBRUSH__ keeps its 32-bit layout");
-static_assert(sizeof(HICON__) == 0x4,
-              "HICON__ keeps its 32-bit layout");
 static_assert(sizeof(HINSTANCE__) == 0x4,
               "HINSTANCE__ keeps its 32-bit layout");
 static_assert(sizeof(ModelResource) == 0x210,
@@ -302,15 +298,6 @@ static_assert(sizeof(FrontendTaskAssignmentFactionTexts) == 0x280,
               "FrontendTaskAssignmentFactionTexts keeps its 32-bit layout");
 static_assert(sizeof(FrontendUiScratch) == 0x280,
               "FrontendUiScratch keeps its 32-bit layout");
-static_assert(sizeof(GridPathBacktrackRegisterResult) == 0xC,
-              "GridPathBacktrackRegisterResult keeps its 32-bit layout");
-static_assert(sizeof(EntityPathingDestinationRegisterResult) == 0x10,
-              "EntityPathingDestinationRegisterResult keeps its 32-bit layout");
-static_assert(sizeof(ModelRaycastNearestHitRegisterResult) == 0x8 &&
-              offsetof(ModelRaycastNearestHitRegisterResult, nearestModelNode) == 0x4,
-              "ModelRaycastNearestHitRegisterResult keeps its 32-bit layout");
-static_assert(sizeof(AiWorkspace09AnchorRegisterResult) == 0x8,
-              "AiWorkspace09AnchorRegisterResult keeps its 32-bit layout");
 static_assert(sizeof(UiGridDimensions) == 0x8,
               "UiGridDimensions keeps its 32-bit layout");
 static_assert(sizeof(FieldGridCoordinates) == 0x8,
@@ -426,26 +413,6 @@ static_assert(sizeof(UiTimedListControl) == 0x70 &&
               "UiTimedListControl keeps its 32-bit layout");
 static_assert(sizeof(UiTimedListTreeControl) == 0x88,
               "UiTimedListTreeControl keeps its 32-bit layout");
-static_assert(sizeof(FrontendResultsColumnDrawDispatchTable) == 0x48 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, spacer0Target) == 0x0 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, spacer1Target) == 0x4 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, colourTarget) == 0x8 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, economyTarget) == 0xC &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, militaryTarget) == 0x10 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, pointsTarget) == 0x14 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, playerTarget) == 0x18 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, factionTarget) == 0x1C &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, exploredTerrainPercentTarget) == 0x20 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, unlockedTechnologyCountTarget) == 0x24 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, primaryResourceTarget) == 0x28 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, secondaryResourceTarget) == 0x2C &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterATarget) == 0x30 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterBTarget) == 0x34 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterCTarget) == 0x38 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterDTarget) == 0x3C &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterETarget) == 0x40 &&
-              offsetof(FrontendResultsColumnDrawDispatchTable, relationCounterFTarget) == 0x44,
-              "FrontendResultsColumnDrawDispatchTable keeps its 32-bit layout");
 static_assert(sizeof(UiTransferPacketHeader) == 0x10,
               "UiTransferPacketHeader keeps its 32-bit layout");
 static_assert(sizeof(FrontendPacket50001SessionAdvertisement) == 0xA0,
@@ -469,12 +436,6 @@ static_assert(sizeof(UiTextListControl) == 0x68 &&
               "UiTextListControl keeps its 32-bit layout");
 static_assert(sizeof(SprRelocationBlockHeader) == 0x20,
               "SprRelocationBlockHeader keeps its 32-bit layout");
-static_assert(sizeof(InGameConditionPayloadPointer) == 0x4 &&
-              offsetof(InGameConditionPayloadPointer, modelRuntime) == 0x0 &&
-              offsetof(InGameConditionPayloadPointer, shotRuntime) == 0x0 &&
-              offsetof(InGameConditionPayloadPointer, effectRuntime) == 0x0 &&
-              offsetof(InGameConditionPayloadPointer, raw) == 0x0,
-              "InGameConditionPayloadPointer keeps its 32-bit layout");
 static_assert(sizeof(InGameNotificationPayload) == 0x18,
               "InGameNotificationPayload keeps its 32-bit layout");
 static_assert(sizeof(UiTransferSenderEndpointSlot) == 0x80,
@@ -528,8 +489,6 @@ static_assert(sizeof(UiTransferPacket) == 0x40,
               "UiTransferPacket keeps its 32-bit layout");
 static_assert(sizeof(UiScrollableControl) == 0x90,
               "UiScrollableControl keeps its 32-bit layout");
-static_assert(sizeof(InGameTargetingContext) == 0x100,
-              "InGameTargetingContext keeps its 32-bit layout");
 static_assert(sizeof(ModelRaycastTriangleDescriptor) == 0x40 &&
               offsetof(ModelRaycastTriangleDescriptor, vertex0) == 0x0 &&
               offsetof(ModelRaycastTriangleDescriptor, vertex1) == 0xC &&
@@ -587,22 +546,6 @@ static_assert(sizeof(UiRootCallbacks) == 0x14 &&
               offsetof(UiRootCallbacks, keyboardFallback) == 0xC &&
               offsetof(UiRootCallbacks, pointerMissPolicy) == 0x10,
               "UiRootCallbacks keeps its 32-bit layout");
-static_assert(sizeof(InGameScheduledConditionDispatchTable14) == 0x38 &&
-              offsetof(InGameScheduledConditionDispatchTable14, noneOrUnused) == 0x0 &&
-              offsetof(InGameScheduledConditionDispatchTable14, noActiveEntityWithDefinition) == 0x4 &&
-              offsetof(InGameScheduledConditionDispatchTable14, noActiveEntityWithDefinitionAndClassCommandGroupA) == 0x8 &&
-              offsetof(InGameScheduledConditionDispatchTable14, noActiveEntityWithDefinitionAndRuntimeId) == 0xC &&
-              offsetof(InGameScheduledConditionDispatchTable14, factionInactiveOrRelationAtLeast8) == 0x10 &&
-              offsetof(InGameScheduledConditionDispatchTable14, primaryResourceCurrentAtLeast) == 0x14 &&
-              offsetof(InGameScheduledConditionDispatchTable14, secondaryResourceCurrentAtLeast) == 0x18 &&
-              offsetof(InGameScheduledConditionDispatchTable14, activeArmyScaleValueAtLeast) == 0x1C &&
-              offsetof(InGameScheduledConditionDispatchTable14, matchingDefinitionAndRuntimeIdActiveEntityCountAtLeast) == 0x20 &&
-              offsetof(InGameScheduledConditionDispatchTable14, factionTerrainOccupancyMaskF9PercentAtLeast) == 0x24 &&
-              offsetof(InGameScheduledConditionDispatchTable14, countdownElapsed) == 0x28 &&
-              offsetof(InGameScheduledConditionDispatchTable14, primaryResourceLimitAtMost0FA0) == 0x2C &&
-              offsetof(InGameScheduledConditionDispatchTable14, noActiveEntityWithClassIdOutsideClassCommandGroupA) == 0x30 &&
-              offsetof(InGameScheduledConditionDispatchTable14, booleanPostfixExpression) == 0x34,
-              "InGameScheduledConditionDispatchTable14 keeps its 32-bit layout");
 static_assert(sizeof(ScenarioLevelDataPathTemplate24) == 0x24,
               "ScenarioLevelDataPathTemplate24 keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeAttachmentSavedDescriptor) == 0x20 &&
@@ -610,10 +553,6 @@ static_assert(sizeof(ModelRuntimeAttachmentSavedDescriptor) == 0x20 &&
               "ModelRuntimeAttachmentSavedDescriptor keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeSlotClassStateSerializedScalar) == 0x7C,
               "ModelRuntimeSlotClassStateSerializedScalar keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeSlotSavedView) == 0x200,
-              "ModelRuntimeSlotSavedView keeps its 32-bit layout");
-static_assert(sizeof(EffectRuntimeSlotSerializedScalarView) == 0x40,
-              "EffectRuntimeSlotSerializedScalarView keeps its 32-bit layout");
 static_assert(sizeof(ResourceRegistrationRecordSavedView) == 0x100,
               "ResourceRegistrationRecordSavedView keeps its 32-bit layout");
 static_assert(sizeof(ResourceRegistrationPointerOrSavedOffset4) == 0x4 &&
@@ -628,11 +567,6 @@ static_assert(sizeof(ResourceRegistrationRecord) == 0x100 &&
               offsetof(ResourceRegistrationRecord, textureSet) == 0x34 &&
               offsetof(ResourceRegistrationRecord, spriteAsset) == 0x40,
               "ResourceRegistrationRecord keeps its 32-bit layout");
-static_assert(sizeof(ShotRuntimeOwnerAndTrajectorySerializedState) == 0x18 &&
-              offsetof(ShotRuntimeOwnerAndTrajectorySerializedState, ownerArmyRuntime) == 0x0,
-              "ShotRuntimeOwnerAndTrajectorySerializedState keeps its 32-bit layout");
-static_assert(sizeof(ShotRuntimeSlotSerializedScalarView) == 0x40,
-              "ShotRuntimeSlotSerializedScalarView keeps its 32-bit layout");
 static_assert(sizeof(ArmyArticulatedRuntimeSlotView) == 0x120 &&
               offsetof(ArmyArticulatedRuntimeSlotView, definitionOrAsset) == 0x0 &&
               offsetof(ArmyArticulatedRuntimeSlotView, modelNodeRuntime) == 0x4 &&
@@ -653,40 +587,10 @@ static_assert(sizeof(ArmyRuntimeLinkedChildMaskSlotView) == 0x120 &&
               offsetof(ArmyRuntimeLinkedChildMaskSlotView, linkedArmyRuntimeOrSavedOffset) == 0x6C &&
               offsetof(ArmyRuntimeLinkedChildMaskSlotView, linkedArmyRuntime) == 0xF0,
               "ArmyRuntimeLinkedChildMaskSlotView keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeMovementCountdownSlotView) == 0x120 &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, definitionOrAsset) == 0x0 &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, linkedArmyRuntimeOrSavedOffset) == 0x6C &&
-              offsetof(ArmyRuntimeMovementCountdownSlotView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeMovementCountdownSlotView keeps its 32-bit layout");
-static_assert(sizeof(GameEntityMovementCountdownDamageState2C) == 0x2C,
-              "GameEntityMovementCountdownDamageState2C keeps its 32-bit layout");
-static_assert(sizeof(GameEntityMovementCountdownRuntimeCommon) == 0x104,
-              "GameEntityMovementCountdownRuntimeCommon keeps its 32-bit layout");
-static_assert(sizeof(GameEntityMovementCountdownRuntime) == 0x200,
-              "GameEntityMovementCountdownRuntime keeps its 32-bit layout");
 static_assert(sizeof(ArmyGraphicsBinding) == 0x8 &&
               offsetof(ArmyGraphicsBinding, textureSet) == 0x0 &&
               offsetof(ArmyGraphicsBinding, paletteAsset) == 0x4,
               "ArmyGraphicsBinding keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeWaypointCoordinateState) == 0x10,
-              "ArmyRuntimeWaypointCoordinateState keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeWaypointCoordinateSlotView) == 0x120 &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, definitionOrAsset) == 0x0 &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, linkedArmyRuntimeOrSavedOffset) == 0x6C &&
-              offsetof(ArmyRuntimeWaypointCoordinateSlotView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeWaypointCoordinateSlotView keeps its 32-bit layout");
-static_assert(sizeof(ArmyTerrainContactDispatchTable2) == 0x8 &&
-              offsetof(ArmyTerrainContactDispatchTable2, acquireOrInitializeContactSlotEntry) == 0x0 &&
-              offsetof(ArmyTerrainContactDispatchTable2, advanceActiveContactAndReleaseEntry) == 0x4,
-              "ArmyTerrainContactDispatchTable2 keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeLinkedChildDefinitionState) == 0x10,
-              "ArmyRuntimeLinkedChildDefinitionState keeps its 32-bit layout");
 static_assert(sizeof(WorldPointXYQ12) == 0x8,
               "WorldPointXYQ12 keeps its 32-bit layout");
 static_assert(sizeof(ArmyMovementRuntime) == 0x120 &&
@@ -696,32 +600,9 @@ static_assert(sizeof(ArmyMovementRuntime) == 0x120 &&
               offsetof(ArmyMovementRuntime, commandTargetArmyRuntime) == 0x1C &&
               offsetof(ArmyMovementRuntime, linkedArmyRuntimeOrSavedOffset) == 0x6C,
               "ArmyMovementRuntime keeps its 32-bit layout");
-static_assert(sizeof(ArmyPlacementAssetClassDispatchCallbackTable24) == 0x60 &&
-              offsetof(ArmyPlacementAssetClassDispatchCallbackTable24, callbacks) == 0x0,
-              "ArmyPlacementAssetClassDispatchCallbackTable24 keeps its 32-bit layout");
 static_assert(sizeof(InGameFieldImageSaveContext58) == 0x58 &&
               offsetof(InGameFieldImageSaveContext58, fieldGridAsset) == 0x54,
               "InGameFieldImageSaveContext58 keeps its 32-bit layout");
-static_assert(sizeof(RuntimeClassFamilyMap24) == 0x18,
-              "RuntimeClassFamilyMap24 keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeClassCallbackPartitions) == 0x120 &&
-              offsetof(ArmyRuntimeClassCallbackPartitions, runtimeUpdate) == 0x0 &&
-              offsetof(ArmyRuntimeClassCallbackPartitions, classMethodD) == 0x60 &&
-              offsetof(ArmyRuntimeClassCallbackPartitions, modelUnrebase) == 0xC0,
-              "ArmyRuntimeClassCallbackPartitions keeps its 32-bit layout");
-static_assert(sizeof(RuntimeMaintenanceObjectReference4) == 0x4 &&
-              offsetof(RuntimeMaintenanceObjectReference4, modelNodeRuntime) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectReference4, worldNode) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectReference4, armyRuntime) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectReference4, shotRuntime) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectReference4, effectRuntime) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectReference4, opaqueRuntime) == 0x0,
-              "RuntimeMaintenanceObjectReference4 keeps its 32-bit layout");
-static_assert(sizeof(RuntimeMaintenanceObjectCallbacks) == 0xC &&
-              offsetof(RuntimeMaintenanceObjectCallbacks, army) == 0x0 &&
-              offsetof(RuntimeMaintenanceObjectCallbacks, shot) == 0x4 &&
-              offsetof(RuntimeMaintenanceObjectCallbacks, effect) == 0x8,
-              "RuntimeMaintenanceObjectCallbacks keeps its 32-bit layout");
 static_assert(sizeof(RuntimeMaintenanceAudioRefreshCallbacks) == 0xC &&
               offsetof(RuntimeMaintenanceAudioRefreshCallbacks, army) == 0x0 &&
               offsetof(RuntimeMaintenanceAudioRefreshCallbacks, shot) == 0x4 &&
@@ -737,16 +618,6 @@ static_assert(sizeof(RuntimeMaintenanceTerrainStateRefreshCallbacks) == 0xC &&
               offsetof(RuntimeMaintenanceTerrainStateRefreshCallbacks, shot) == 0x4 &&
               offsetof(RuntimeMaintenanceTerrainStateRefreshCallbacks, effect) == 0x8,
               "RuntimeMaintenanceTerrainStateRefreshCallbacks keeps its 32-bit layout");
-static_assert(sizeof(RuntimeMaintenanceTargetTypeDescriptor8) == 0x8 &&
-              offsetof(RuntimeMaintenanceTargetTypeDescriptor8, callbackTarget) == 0x4,
-              "RuntimeMaintenanceTargetTypeDescriptor8 keeps its 32-bit layout");
-static_assert(sizeof(ArmyPlacementClassCallbackPartitions) == 0xC0 &&
-              offsetof(ArmyPlacementClassCallbackPartitions, modelRelease) == 0x0 &&
-              offsetof(ArmyPlacementClassCallbackPartitions, placementValidation) == 0x60,
-              "ArmyPlacementClassCallbackPartitions keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeClassCommandTable) == 0x60 &&
-              offsetof(ArmyRuntimeClassCommandTable, callbacks) == 0x0,
-              "ArmyRuntimeClassCommandTable keeps its 32-bit layout");
 static_assert(sizeof(RuntimeMaintenanceOccupancyRebuildCallbacks) == 0xC &&
               offsetof(RuntimeMaintenanceOccupancyRebuildCallbacks, army) == 0x0 &&
               offsetof(RuntimeMaintenanceOccupancyRebuildCallbacks, shot) == 0x4 &&
@@ -754,16 +625,6 @@ static_assert(sizeof(RuntimeMaintenanceOccupancyRebuildCallbacks) == 0xC &&
               "RuntimeMaintenanceOccupancyRebuildCallbacks keeps its 32-bit layout");
 static_assert(sizeof(RuntimeMaintenanceCallbackPhasesTyped) == 0x30,
               "RuntimeMaintenanceCallbackPhasesTyped keeps its 32-bit layout");
-static_assert(sizeof(RuntimeMaintenanceCallbackPhases) == 0x30,
-              "RuntimeMaintenanceCallbackPhases keeps its 32-bit layout");
-static_assert(sizeof(RuntimeMaintenanceTargetTypeMatrix4x3) == 0x60,
-              "RuntimeMaintenanceTargetTypeMatrix4x3 keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeSlotPointerRebaseCallbackTable24) == 0x60 &&
-              offsetof(ModelRuntimeSlotPointerRebaseCallbackTable24, callbacks) == 0x0,
-              "ModelRuntimeSlotPointerRebaseCallbackTable24 keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeSlotClassInitializeCallbackTable24) == 0x60 &&
-              offsetof(ModelRuntimeSlotClassInitializeCallbackTable24, callbacks) == 0x0,
-              "ModelRuntimeSlotClassInitializeCallbackTable24 keeps its 32-bit layout");
 static_assert(sizeof(NetworkBackendInstanceDescriptorPrefix) == 0x38,
               "NetworkBackendInstanceDescriptorPrefix keeps its 32-bit layout");
 static_assert(sizeof(PersistentSettingsRuntime) == 0x20C &&
@@ -797,12 +658,6 @@ static_assert(sizeof(AiTechnologyPlanningCandidate) == 0x10 &&
               "AiTechnologyPlanningCandidate keeps its 32-bit layout");
 static_assert(sizeof(SoundSampleAsset) == 0x200,
               "SoundSampleAsset keeps its 32-bit layout");
-static_assert(sizeof(GridInfluenceAddCallbackTable24) == 0x60 &&
-              offsetof(GridInfluenceAddCallbackTable24, callbacks) == 0x0,
-              "GridInfluenceAddCallbackTable24 keeps its 32-bit layout");
-static_assert(sizeof(GridInfluenceRemoveCallbackTable24) == 0x60 &&
-              offsetof(GridInfluenceRemoveCallbackTable24, callbacks) == 0x0,
-              "GridInfluenceRemoveCallbackTable24 keeps its 32-bit layout");
 static_assert(sizeof(SelectionPointerArray32) == 0x80 &&
               offsetof(SelectionPointerArray32, entries) == 0x0,
               "SelectionPointerArray32 keeps its 32-bit layout");
@@ -816,16 +671,8 @@ static_assert(sizeof(PckArchiveHeader) == 0x200,
               "PckArchiveHeader keeps its 32-bit layout");
 static_assert(sizeof(PckEntryHeader) == 0x200,
               "PckEntryHeader keeps its 32-bit layout");
-static_assert(sizeof(ShotRayDistanceOrDefinitionReference) == 0x4 &&
-              offsetof(ShotRayDistanceOrDefinitionReference, definition) == 0x0,
-              "ShotRayDistanceOrDefinitionReference keeps its 32-bit layout");
-static_assert(sizeof(GraphicsGeneratedTextureAssetOrEntry) == 0x200,
-              "GraphicsGeneratedTextureAssetOrEntry keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeSlotUnrebaseView) == 0x200,
               "ModelRuntimeSlotUnrebaseView keeps its 32-bit layout");
-static_assert(sizeof(ArmyAssetReferenceOrSavedId4) == 0x4 &&
-              offsetof(ArmyAssetReferenceOrSavedId4, record) == 0x0,
-              "ArmyAssetReferenceOrSavedId4 keeps its 32-bit layout");
 static_assert(sizeof(ArmyAssetRecordPrefix) == 0x10,
               "ArmyAssetRecordPrefix keeps its 32-bit layout");
 static_assert(sizeof(ArmyAssetRecord) == 0x80 &&
@@ -849,35 +696,8 @@ static_assert(sizeof(ModelDefinitionResolveView) == 0x280 &&
               offsetof(ModelDefinitionResolveView, removalEffectDefinitionReference) == 0x190 &&
               offsetof(ModelDefinitionResolveView, damageEffectDefinitionReference) == 0x254,
               "ModelDefinitionResolveView keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeTerrainContactLinkedChildState) == 0x14,
-              "ArmyRuntimeTerrainContactLinkedChildState keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeTerrainContactLinkedChildClassView) == 0x120 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildClassView, definitionOrAsset) == 0x0 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildClassView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildClassView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildClassView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildClassView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeTerrainContactLinkedChildClassView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeLinkedChildClassStateView) == 0x7C,
-              "ModelRuntimeLinkedChildClassStateView keeps its 32-bit layout");
 static_assert(sizeof(ShotTerrainImpactDeformationColumns) == 0x104,
               "ShotTerrainImpactDeformationColumns keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeLinkedChildClassView) == 0x200,
-              "ModelRuntimeLinkedChildClassView keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeTerrainContactLinkedChildModelView) == 0x120 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildModelView, modelRuntime) == 0x0 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildModelView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildModelView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildModelView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildModelView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeTerrainContactLinkedChildModelView keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeTerrainContactLinkedChildSlotView) == 0x120 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildSlotView, modelRuntime) == 0x0 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildSlotView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildSlotView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildSlotView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeTerrainContactLinkedChildSlotView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeTerrainContactLinkedChildSlotView keeps its 32-bit layout");
 static_assert(sizeof(EffectModelRuntimeNode) == 0x100 &&
               offsetof(EffectModelRuntimeNode, effectRuntime) == 0x48 &&
               offsetof(EffectModelRuntimeNode, shadingRecord) == 0x5C &&
@@ -889,15 +709,9 @@ static_assert(sizeof(ResourceRegistrationRuntimeImage) == 0xDC &&
               offsetof(ResourceRegistrationRuntimeImage, records) == 0x58 &&
               offsetof(ResourceRegistrationRuntimeImage, tailRecord) == 0xD8,
               "ResourceRegistrationRuntimeImage keeps its 32-bit layout");
-static_assert(sizeof(ResourceRegistrationImagePairComponents8) == 0x8 &&
-              offsetof(ResourceRegistrationImagePairComponents8, runtimeImageBase) == 0x0,
-              "ResourceRegistrationImagePairComponents8 keeps its 32-bit layout");
 static_assert(sizeof(RuntimeHexSegmentImage) == 0x8 &&
               offsetof(RuntimeHexSegmentImage, image) == 0x0,
               "RuntimeHexSegmentImage keeps its 32-bit layout");
-static_assert(sizeof(ResourceRegistrationDomainPairDispatchTable3) == 0xC &&
-              offsetof(ResourceRegistrationDomainPairDispatchTable3, callbacks) == 0x0,
-              "ResourceRegistrationDomainPairDispatchTable3 keeps its 32-bit layout");
 static_assert(sizeof(InGameEndConditionTriggerRecord8) == 0x8,
               "InGameEndConditionTriggerRecord8 keeps its 32-bit layout");
 static_assert(sizeof(InGameScheduledConditionStatusAndKind4) == 0x4,
@@ -910,65 +724,8 @@ static_assert(sizeof(InGameEndConditionTriggerRecord8ReferenceView) == 0x8,
               "InGameEndConditionTriggerRecord8ReferenceView keeps its 32-bit layout");
 static_assert(sizeof(InGameConditionSchedule) == 0x480,
               "InGameConditionSchedule keeps its 32-bit layout");
-static_assert(sizeof(InGameConditionRuntimeStorageView) == 0x800,
-              "InGameConditionRuntimeStorageView keeps its 32-bit layout");
-static_assert(sizeof(SprMeshRecordHeader) == 0x20,
-              "SprMeshRecordHeader keeps its 32-bit layout");
-static_assert(sizeof(RuntimeHexSegment) == 0x100,
-              "RuntimeHexSegment keeps its 32-bit layout");
-static_assert(sizeof(InGameActiveNotificationPayload18) == 0x18,
-              "InGameActiveNotificationPayload18 keeps its 32-bit layout");
-static_assert(sizeof(FileSystemEntryNameUtf16_200) == 0x200,
-              "FileSystemEntryNameUtf16_200 keeps its 32-bit layout");
 static_assert(sizeof(MdlDefinitionSemanticPrefix) == 0x80,
               "MdlDefinitionSemanticPrefix keeps its 32-bit layout");
-static_assert(sizeof(RomRecordTableEntry200) == 0x200,
-              "RomRecordTableEntry200 keeps its 32-bit layout");
-static_assert(sizeof(InGameRuntimeRootPartialView) == 0x9E70,
-              "InGameRuntimeRootPartialView keeps its 32-bit layout");
-static_assert(sizeof(ShotDefinitionDisk) == 0x2E0,
-              "ShotDefinitionDisk keeps its 32-bit layout");
-static_assert(sizeof(CubicSplineCoefficientTable80) == 0x80,
-              "CubicSplineCoefficientTable80 keeps its 32-bit layout");
-static_assert(sizeof(FrontendNetworkSettingsControl) == 0x250,
-              "FrontendNetworkSettingsControl keeps its 32-bit layout");
-static_assert(sizeof(GraphicsAdapterEnumerationContext) == 0x40,
-              "GraphicsAdapterEnumerationContext keeps its 32-bit layout");
-static_assert(sizeof(SprVertexRecord) == 0x40,
-              "SprVertexRecord keeps its 32-bit layout");
-static_assert(sizeof(FrontendPointerHitContext) == 0x118 &&
-              offsetof(FrontendPointerHitContext, candidateNodeListHead) == 0xD8 &&
-              offsetof(FrontendPointerHitContext, selectedHitNode) == 0xE0 &&
-              offsetof(FrontendPointerHitContext, hoverCursorCallback) == 0x104 &&
-              offsetof(FrontendPointerHitContext, heldButtonCursorCallback) == 0x108 &&
-              offsetof(FrontendPointerHitContext, buttonPressCallback) == 0x10C &&
-              offsetof(FrontendPointerHitContext, buttonDragCallback) == 0x110 &&
-              offsetof(FrontendPointerHitContext, buttonReleaseCallback) == 0x114,
-              "FrontendPointerHitContext keeps its 32-bit layout");
-static_assert(sizeof(TechnologyMask256) == 0x20,
-              "TechnologyMask256 keeps its 32-bit layout");
-static_assert(sizeof(EffectDefinitionDisk) == 0xC0,
-              "EffectDefinitionDisk keeps its 32-bit layout");
-static_assert(sizeof(RomRecordTableHeader200) == 0x200,
-              "RomRecordTableHeader200 keeps its 32-bit layout");
-static_assert(sizeof(SprAttachmentRecord) == 0x10,
-              "SprAttachmentRecord keeps its 32-bit layout");
-static_assert(sizeof(CubicSplineMatrixWorkspace1000) == 0x1000,
-              "CubicSplineMatrixWorkspace1000 keeps its 32-bit layout");
-static_assert(sizeof(LevelPlacementRecord) == 0x20,
-              "LevelPlacementRecord keeps its 32-bit layout");
-static_assert(sizeof(SprLodGroupHeader) == 0x20,
-              "SprLodGroupHeader keeps its 32-bit layout");
-static_assert(sizeof(FieldGridCompactCell) == 0x10,
-              "FieldGridCompactCell keeps its 32-bit layout");
-static_assert(sizeof(FieldGridAux54LifetimeUnion) == 0x4,
-              "FieldGridAux54LifetimeUnion keeps its 32-bit layout");
-static_assert(sizeof(FieldGridRuntimeCellView) == 0x80,
-              "FieldGridRuntimeCellView keeps its 32-bit layout");
-static_assert(sizeof(SprTriangleRecord) == 0x40,
-              "SprTriangleRecord keeps its 32-bit layout");
-static_assert(sizeof(TechnologyRecordDisk40) == 0x40,
-              "TechnologyRecordDisk40 keeps its 32-bit layout");
 static_assert(sizeof(TextResourceLocaleCountHeader) == 0xB4,
               "TextResourceLocaleCountHeader keeps its 32-bit layout");
 static_assert(sizeof(TextResourceAssetHeader) == 0x200,
@@ -1025,8 +782,6 @@ static_assert(sizeof(SoftwareRgbWordLanes) == 0x8,
 static_assert(sizeof(SoftwareFramebufferAccess) == 0x10 &&
               offsetof(SoftwareFramebufferAccess, pixels) == 0xC,
               "SoftwareFramebufferAccess keeps its 32-bit layout");
-static_assert(sizeof(GraphicsCursorInputEvent) == 0x18,
-              "GraphicsCursorInputEvent keeps its 32-bit layout");
 static_assert(sizeof(SoftwareMaskRuntimeView) == 0x6C &&
               offsetof(SoftwareMaskRuntimeView, textureSource) == 0x50 &&
               offsetof(SoftwareMaskRuntimeView, maskPixels) == 0x60 &&
@@ -1067,10 +822,6 @@ static_assert(sizeof(GridScratchCell) == 0x8,
               "GridScratchCell keeps its 32-bit layout");
 static_assert(sizeof(TerrainScanSelectorUnion) == 0x4,
               "TerrainScanSelectorUnion keeps its 32-bit layout");
-static_assert(sizeof(FncModuleExportBindingDescriptor) == 0x10,
-              "FncModuleExportBindingDescriptor keeps its 32-bit layout");
-static_assert(sizeof(FncModuleHeader) == 0x200,
-              "FncModuleHeader keeps its 32-bit layout");
 static_assert(sizeof(SoundCoefficientBlock) == 0x200,
               "SoundCoefficientBlock keeps its 32-bit layout");
 static_assert(sizeof(AiFactionCandidateCacheState) == 0x20,
@@ -1169,8 +920,6 @@ static_assert(sizeof(FrontendDisplayColorDepthRows) == 0x1A0,
               "FrontendDisplayColorDepthRows keeps its 32-bit layout");
 static_assert(sizeof(FrontendDisplaySettingsPageOptionState) == 0x1010,
               "FrontendDisplaySettingsPageOptionState keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiDisplayModeAndTaskAssignmentScratch) == 0x280,
-              "FrontendUiDisplayModeAndTaskAssignmentScratch keeps its 32-bit layout");
 static_assert(sizeof(UiSelectableOptionRow60) == 0x60,
               "UiSelectableOptionRow60 keeps its 32-bit layout");
 static_assert(sizeof(FrontendTextureResolutionRows) == 0x120,
@@ -1211,8 +960,6 @@ static_assert(sizeof(FrontendTaskAssignmentControlOffsetTables) == 0x8C,
               "FrontendTaskAssignmentControlOffsetTables keeps its 32-bit layout");
 static_assert(sizeof(UiCommandDispatchRecord) == 0xC,
               "UiCommandDispatchRecord keeps its 32-bit layout");
-static_assert(sizeof(CommandLineState) == 0x500,
-              "CommandLineState keeps its 32-bit layout");
 static_assert(sizeof(ArmyPlacementContactCallbackTable5) == 0x14 &&
               offsetof(ArmyPlacementContactCallbackTable5, callbacks) == 0x0,
               "ArmyPlacementContactCallbackTable5 keeps its 32-bit layout");
@@ -1258,17 +1005,8 @@ static_assert(sizeof(ModelPackedPointRecord) == 0x10,
               "ModelPackedPointRecord keeps its 32-bit layout");
 static_assert(sizeof(ModelAssetHeader) == 0x200,
               "ModelAssetHeader keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeSlotAssetView) == 0x200,
-              "ModelRuntimeSlotAssetView keeps its 32-bit layout");
 static_assert(sizeof(EffectAssetHeader) == 0x200,
               "EffectAssetHeader keeps its 32-bit layout");
-static_assert(sizeof(EffectLifecycleTransitionDispatchTable) == 0x14 &&
-              offsetof(EffectLifecycleTransitionDispatchTable, spawnLinkedEffectAfterCountdownEntry) == 0x0 &&
-              offsetof(EffectLifecycleTransitionDispatchTable, advancePeriodicEmissionAndCompletionActionEntry) == 0x4 &&
-              offsetof(EffectLifecycleTransitionDispatchTable, integrateLinearMotionAndShadingPositionEntry) == 0x8 &&
-              offsetof(EffectLifecycleTransitionDispatchTable, noAdditionalActionEntry) == 0xC &&
-              offsetof(EffectLifecycleTransitionDispatchTable, advanceTerrainRelativeMotionAndTerminateOnContactEntry) == 0x10,
-              "EffectLifecycleTransitionDispatchTable keeps its 32-bit layout");
 static_assert(sizeof(ShotAssetHeader) == 0x200,
               "ShotAssetHeader keeps its 32-bit layout");
 static_assert(sizeof(CommandLineArgumentMirrorState500) == 0x500,
@@ -1349,10 +1087,6 @@ static_assert(sizeof(ScenarioCatalogHeader) == 0x18,
               "ScenarioCatalogHeader keeps its 32-bit layout");
 static_assert(sizeof(ScenarioCatalogRecord) == 0x100,
               "ScenarioCatalogRecord keeps its 32-bit layout");
-static_assert(sizeof(HMENU__) == 0x4,
-              "HMENU__ keeps its 32-bit layout");
-static_assert(sizeof(Misc) == 0x4,
-              "Misc keeps its 32-bit layout");
 static_assert(sizeof(FieldGridInterpolationCallbackTable5) == 0x14 &&
               offsetof(FieldGridInterpolationCallbackTable5, callbacks) == 0x0,
               "FieldGridInterpolationCallbackTable5 keeps its 32-bit layout");
@@ -1362,21 +1096,12 @@ static_assert(sizeof(FixedPlanarPointQ12) == 0x8,
               "FixedPlanarPointQ12 keeps its 32-bit layout");
 static_assert(sizeof(PathingDestination) == 0x10,
               "PathingDestination keeps its 32-bit layout");
-static_assert(sizeof(StatusResult) == 0x8,
-              "StatusResult keeps its 32-bit layout");
 static_assert(sizeof(WorldCameraOrientation) == 0xC,
               "WorldCameraOrientation keeps its 32-bit layout");
 static_assert(sizeof(ShotLaunchAngles) == 0x8,
               "ShotLaunchAngles keeps its 32-bit layout");
-static_assert(sizeof(WorldPositionResult) == 0x10,
-              "WorldPositionResult keeps its 32-bit layout");
 static_assert(sizeof(FixedRollAzimuthElevation) == 0xC,
               "FixedRollAzimuthElevation keeps its 32-bit layout");
-static_assert(sizeof(SelectableNodeResult) == 0x8 &&
-              offsetof(SelectableNodeResult, node) == 0x0,
-              "SelectableNodeResult keeps its 32-bit layout");
-static_assert(sizeof(InputEventResult) == 0x8,
-              "InputEventResult keeps its 32-bit layout");
 static_assert(sizeof(WorldCameraPosition) == 0xC,
               "WorldCameraPosition keeps its 32-bit layout");
 static_assert(sizeof(FixedLengthAzimuthElevation) == 0xC,
@@ -1399,8 +1124,6 @@ static_assert(sizeof(FixedAzimuthElevationRoll) == 0xC,
 static_assert(sizeof(AiSecondaryWorkspaceDistanceSelection) == 0x8 &&
               offsetof(AiSecondaryWorkspaceDistanceSelection, selectedEntry) == 0x4,
               "AiSecondaryWorkspaceDistanceSelection keeps its 32-bit layout");
-static_assert(sizeof(TerrainOccupancyFlagsAndCombinedMask) == 0x8,
-              "TerrainOccupancyFlagsAndCombinedMask keeps its 32-bit layout");
 static_assert(sizeof(TerrainOccupancyResolvedMasks) == 0xC,
               "TerrainOccupancyResolvedMasks keeps its 32-bit layout");
 static_assert(sizeof(AiGeneralSiteDistanceSelection) == 0x8 &&
@@ -1423,12 +1146,6 @@ static_assert(sizeof(ModelProjectedBoundsPixels) == 0x10,
 static_assert(sizeof(FrameProviderResult) == 0x8 &&
               offsetof(FrameProviderResult, frameOrError) == 0x0,
               "FrameProviderResult keeps its 32-bit layout");
-static_assert(sizeof(PcxDecodeResult) == 0x8 &&
-              offsetof(PcxDecodeResult, decodedImageOrError) == 0x0,
-              "PcxDecodeResult keeps its 32-bit layout");
-static_assert(sizeof(PcxEncodeResult) == 0xC &&
-              offsetof(PcxEncodeResult, encodedBytesOrError) == 0x0,
-              "PcxEncodeResult keeps its 32-bit layout");
 static_assert(sizeof(RuntimeModelFactionPrefix) == 0x10 &&
               offsetof(RuntimeModelFactionPrefix, modelRuntime) == 0x0 &&
               offsetof(RuntimeModelFactionPrefix, modelNode) == 0x4,
@@ -1459,8 +1176,6 @@ static_assert(sizeof(InGameRuntimeRootUiGridView) == 0xC3E4 &&
               "InGameRuntimeRootUiGridView keeps its 32-bit layout");
 static_assert(sizeof(InGameRuntimeRootFrameView) == 0x44C4,
               "InGameRuntimeRootFrameView keeps its 32-bit layout");
-static_assert(sizeof(WidePathPrefix4) == 0x4,
-              "WidePathPrefix4 keeps its 32-bit layout");
 static_assert(sizeof(FrontendModelPointerContext) == 0x17C &&
               offsetof(FrontendModelPointerContext, fieldGrid) == 0x54 &&
               offsetof(FrontendModelPointerContext, activePrimitiveQueue) == 0xC8 &&
@@ -1637,8 +1352,6 @@ static_assert(sizeof(FieldGridCellSaveImageView) == 0x80,
 static_assert(sizeof(AiStructureWorkspaceEntry) == 0x8 &&
               offsetof(AiStructureWorkspaceEntry, runtimeSlotAddressOrZero) == 0x0,
               "AiStructureWorkspaceEntry keeps its 32-bit layout");
-static_assert(sizeof(LevelPlacedModelRecord20) == 0x20,
-              "LevelPlacedModelRecord20 keeps its 32-bit layout");
 static_assert(sizeof(FrontendLoadedLevelPathOffsets) == 0x28,
               "FrontendLoadedLevelPathOffsets keeps its 32-bit layout");
 static_assert(sizeof(FrontendLoadedLevelHeader) == 0x200,
@@ -1647,9 +1360,6 @@ static_assert(sizeof(FrontendLoadedLevelAsset) == 0x370,
               "FrontendLoadedLevelAsset keeps its 32-bit layout");
 static_assert(sizeof(FrontendNetworkListsRuntimeView) == 0x5650,
               "FrontendNetworkListsRuntimeView keeps its 32-bit layout");
-static_assert(sizeof(FrontendResultsSixColumnTemplate) == 0x7C &&
-              offsetof(FrontendResultsSixColumnTemplate, factionWeightRaster) == 0x50,
-              "FrontendResultsSixColumnTemplate keeps its 32-bit layout");
 static_assert(sizeof(FrontendResultsFactionWeightPair) == 0x8,
               "FrontendResultsFactionWeightPair keeps its 32-bit layout");
 static_assert(sizeof(FrontendResultsColumnSequenceControl) == 0x68 &&
@@ -1681,13 +1391,6 @@ static_assert(sizeof(ArmyWeaponDefinitionView) == 0x68 &&
               offsetof(ArmyWeaponDefinitionView, shotDefinition) == 0x2C &&
               offsetof(ArmyWeaponDefinitionView, rootNode) == 0x64,
               "ArmyWeaponDefinitionView keeps its 32-bit layout");
-static_assert(sizeof(ArmyWeaponRuntimeSlotView) == 0x120 &&
-              offsetof(ArmyWeaponRuntimeSlotView, weaponDefinition) == 0x0 &&
-              offsetof(ArmyWeaponRuntimeSlotView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyWeaponRuntimeSlotView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyWeaponRuntimeSlotView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyWeaponRuntimeSlotView, linkedArmyRuntime) == 0xF0,
-              "ArmyWeaponRuntimeSlotView keeps its 32-bit layout");
 static_assert(sizeof(RuntimeCollisionQueryView) == 0xF4 &&
               offsetof(RuntimeCollisionQueryView, modelDefinition) == 0x0 &&
               offsetof(RuntimeCollisionQueryView, modelNodeRuntime) == 0x4 &&
@@ -1712,9 +1415,6 @@ static_assert(sizeof(ModelRuntimePlacementClass14View) == 0x200 &&
               "ModelRuntimePlacementClass14View keeps its 32-bit layout");
 static_assert(sizeof(InGameTargetingRootTraversalView) == 0x9E60,
               "InGameTargetingRootTraversalView keeps its 32-bit layout");
-static_assert(sizeof(TextResourceOverrideParallelWord4) == 0x4 &&
-              offsetof(TextResourceOverrideParallelWord4, textPointer) == 0x0,
-              "TextResourceOverrideParallelWord4 keeps its 32-bit layout");
 static_assert(sizeof(ShotModelRuntimeNode) == 0x100 &&
               offsetof(ShotModelRuntimeNode, shotRuntime) == 0x48 &&
               offsetof(ShotModelRuntimeNode, shadingRecord) == 0x5C &&
@@ -1727,19 +1427,6 @@ static_assert(sizeof(ModelRuntimeClass14UpdateView) == 0x200 &&
               offsetof(ModelRuntimeClass14UpdateView, rootModelNode) == 0x4 &&
               offsetof(ModelRuntimeClass14UpdateView, ownerArmyRuntime) == 0x8,
               "ModelRuntimeClass14UpdateView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeArticulatedUpdateView) == 0x200 &&
-              offsetof(ModelRuntimeArticulatedUpdateView, modelDefinition) == 0x0 &&
-              offsetof(ModelRuntimeArticulatedUpdateView, rootModelNode) == 0x4 &&
-              offsetof(ModelRuntimeArticulatedUpdateView, ownerArmyRuntime) == 0x8 &&
-              offsetof(ModelRuntimeArticulatedUpdateView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ModelRuntimeArticulatedUpdateView, linkedArmyRuntimeOrSavedOffset) == 0x6C &&
-              offsetof(ModelRuntimeArticulatedUpdateView, linkedArmyRuntime) == 0xF0,
-              "ModelRuntimeArticulatedUpdateView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeWeaponUpdateView) == 0x200 &&
-              offsetof(ModelRuntimeWeaponUpdateView, modelDefinition) == 0x0 &&
-              offsetof(ModelRuntimeWeaponUpdateView, rootModelNode) == 0x4 &&
-              offsetof(ModelRuntimeWeaponUpdateView, ownerArmyRuntime) == 0x8,
-              "ModelRuntimeWeaponUpdateView keeps its 32-bit layout");
 static_assert(sizeof(ModelRaycastNearestNodeOrScratch4) == 0x4 &&
               offsetof(ModelRaycastNearestNodeOrScratch4, nearestModelNode) == 0x0,
               "ModelRaycastNearestNodeOrScratch4 keeps its 32-bit layout");
@@ -1755,14 +1442,10 @@ static_assert(sizeof(TerrainClassPlacementAndOverlayCallbackTable10) == 0x28 &&
               "TerrainClassPlacementAndOverlayCallbackTable10 keeps its 32-bit layout");
 static_assert(sizeof(TerrainProjectedRowSpan) == 0x8,
               "TerrainProjectedRowSpan keeps its 32-bit layout");
-static_assert(sizeof(NetworkBackendSocketAddress16) == 0x10,
-              "NetworkBackendSocketAddress16 keeps its 32-bit layout");
 static_assert(sizeof(ModelRelativeDirectionAngles) == 0x8,
               "ModelRelativeDirectionAngles keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeLinkedChildSpawnInheritedState) == 0xC,
               "ModelRuntimeLinkedChildSpawnInheritedState keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimePositionedSoundClassState) == 0x7C,
-              "ModelRuntimePositionedSoundClassState keeps its 32-bit layout");
 static_assert(sizeof(ModelDefinitionVerticalDeploymentView) == 0x280,
               "ModelDefinitionVerticalDeploymentView keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeTimedEffectsUpdateView) == 0x200 &&
@@ -1772,34 +1455,12 @@ static_assert(sizeof(ModelRuntimeTimedEffectsUpdateView) == 0x200 &&
               "ModelRuntimeTimedEffectsUpdateView keeps its 32-bit layout");
 static_assert(sizeof(ModelDefinitionTimedEffectsUpdateView) == 0x280,
               "ModelDefinitionTimedEffectsUpdateView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimePositionedSoundLinkState) == 0x24,
-              "ModelRuntimePositionedSoundLinkState keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeGroundMovementPositionedSoundView) == 0x200,
-              "ModelRuntimeGroundMovementPositionedSoundView keeps its 32-bit layout");
 static_assert(sizeof(ModelDefinitionLinkedChildStateView) == 0x280,
               "ModelDefinitionLinkedChildStateView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeLinkedChildDefinitionView) == 0x200 &&
-              offsetof(ModelRuntimeLinkedChildDefinitionView, modelDefinition) == 0x0,
-              "ModelRuntimeLinkedChildDefinitionView keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeTimedTargetState) == 0x28,
               "ModelRuntimeTimedTargetState keeps its 32-bit layout");
 static_assert(sizeof(ModelDefinitionDestroyEffectsView) == 0x280,
               "ModelDefinitionDestroyEffectsView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeResourceStorageClass15View) == 0x200 &&
-              offsetof(ModelRuntimeResourceStorageClass15View, modelDefinition) == 0x0 &&
-              offsetof(ModelRuntimeResourceStorageClass15View, rootModelNode) == 0x4 &&
-              offsetof(ModelRuntimeResourceStorageClass15View, ownerArmyRuntime) == 0x8,
-              "ModelRuntimeResourceStorageClass15View keeps its 32-bit layout");
-static_assert(sizeof(ModelDefinitionResourceStorageClass15View) == 0x280,
-              "ModelDefinitionResourceStorageClass15View keeps its 32-bit layout");
-static_assert(sizeof(ArmyRuntimeGroundMovementPositionedSoundView) == 0x120 &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, modelRuntime) == 0x0 &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, modelNodeRuntime) == 0x4 &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, linkedEntityRuntime) == 0x8 &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, commandTargetArmyRuntime) == 0x1C &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, linkedArmyRuntimeOrSavedOffset) == 0x6C &&
-              offsetof(ArmyRuntimeGroundMovementPositionedSoundView, linkedArmyRuntime) == 0xF0,
-              "ArmyRuntimeGroundMovementPositionedSoundView keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeDestroyEffectsView) == 0x200 &&
               offsetof(ModelRuntimeDestroyEffectsView, modelDefinition) == 0x0 &&
               offsetof(ModelRuntimeDestroyEffectsView, rootModelNode) == 0x4 &&
@@ -1839,18 +1500,11 @@ static_assert(sizeof(ModelRuntimeTimedTargetProjectileView) == 0x200 &&
               offsetof(ModelRuntimeTimedTargetProjectileView, rootModelNode) == 0x4 &&
               offsetof(ModelRuntimeTimedTargetProjectileView, ownerArmyRuntime) == 0x8,
               "ModelRuntimeTimedTargetProjectileView keeps its 32-bit layout");
-static_assert(sizeof(ModelDefinitionResourceExtractorClass14View) == 0x280,
-              "ModelDefinitionResourceExtractorClass14View keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeWeaponAimStateView) == 0x200 &&
               offsetof(ModelRuntimeWeaponAimStateView, modelDefinition) == 0x0 &&
               offsetof(ModelRuntimeWeaponAimStateView, rootModelNode) == 0x4 &&
               offsetof(ModelRuntimeWeaponAimStateView, ownerArmyRuntime) == 0x8,
               "ModelRuntimeWeaponAimStateView keeps its 32-bit layout");
-static_assert(sizeof(ModelRuntimeResourceExtractorClass14View) == 0x200 &&
-              offsetof(ModelRuntimeResourceExtractorClass14View, modelDefinition) == 0x0 &&
-              offsetof(ModelRuntimeResourceExtractorClass14View, rootModelNode) == 0x4 &&
-              offsetof(ModelRuntimeResourceExtractorClass14View, ownerArmyRuntime) == 0x8,
-              "ModelRuntimeResourceExtractorClass14View keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeVerticalDeploymentLinkState) == 0x24,
               "ModelRuntimeVerticalDeploymentLinkState keeps its 32-bit layout");
 static_assert(sizeof(ModelRuntimeVerticalDeploymentView) == 0x200 &&

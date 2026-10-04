@@ -8,7 +8,10 @@
 #ifndef THANDOR_WORLD_MODEL_PICKING_H
 #define THANDOR_WORLD_MODEL_PICKING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/frontend/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
 /* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */

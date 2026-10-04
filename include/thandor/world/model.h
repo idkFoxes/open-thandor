@@ -8,6 +8,7 @@
 #ifndef THANDOR_WORLD_MODEL_H
 #define THANDOR_WORLD_MODEL_H
 
+#include <thandor/world/model/types.h>
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/world/model/mesh_raycast.h>
 #include <thandor/world/model/picking.h>

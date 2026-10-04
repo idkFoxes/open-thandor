@@ -8,7 +8,7 @@
 #ifndef THANDOR_UI_INGAME_MINIMAP_TEXTURE_H
 #define THANDOR_UI_INGAME_MINIMAP_TEXTURE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* TerrainCompositeTexture_Create: the minimap texture is a 0x200-byte gfx header, three 0x20-byte source entries

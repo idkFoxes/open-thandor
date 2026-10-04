@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_DISPLAY_MODE_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_DISPLAY_MODE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 extern SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate;

@@ -8,7 +8,7 @@
 #ifndef THANDOR_PLATFORM_SYSTEM_TIME_LOCALE_H
 #define THANDOR_PLATFORM_SYSTEM_TIME_LOCALE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/platform/system/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/system/time_locale. */

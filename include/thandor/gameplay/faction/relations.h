@@ -8,7 +8,11 @@
 #ifndef THANDOR_GAMEPLAY_FACTION_RELATIONS_H
 #define THANDOR_GAMEPLAY_FACTION_RELATIONS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/gameplay/faction/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/faction/relations. */

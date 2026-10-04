@@ -8,7 +8,9 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_SAVEGAME_LOAD_H
 #define THANDOR_GAMEPLAY_SESSION_SAVEGAME_LOAD_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/session/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/savegame_load. */

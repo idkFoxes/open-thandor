@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_INGAME_ARMY_STOCK_H
 #define THANDOR_UI_INGAME_ARMY_STOCK_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/army_stock. */

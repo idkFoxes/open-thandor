@@ -7,6 +7,10 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_HELPERS_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_HELPERS_H
 
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include "software_raster.h"
 
 /* ---- Texture-source blits and rectangle fills --------------------------------------------- */

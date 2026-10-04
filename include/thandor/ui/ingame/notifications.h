@@ -8,7 +8,6 @@
 #ifndef THANDOR_UI_INGAME_NOTIFICATIONS_H
 #define THANDOR_UI_INGAME_NOTIFICATIONS_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/notifications. */

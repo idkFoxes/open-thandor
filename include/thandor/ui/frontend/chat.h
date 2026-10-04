@@ -8,7 +8,7 @@
 #ifndef THANDOR_UI_FRONTEND_CHAT_H
 #define THANDOR_UI_FRONTEND_CHAT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/chat. */

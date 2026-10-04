@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_CONTROLS_TEXT_EDIT_H
 #define THANDOR_UI_CONTROLS_TEXT_EDIT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/audio/spatial/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/text_edit. */

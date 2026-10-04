@@ -8,7 +8,8 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_MODEL_SLOTS_H
 #define THANDOR_GAMEPLAY_ARMY_MODEL_SLOTS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/model/types.h>
+#include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/model_slots. */

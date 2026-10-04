@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_RESOURCES_TILED_BLIT_H
 #define THANDOR_GRAPHICS_RESOURCES_TILED_BLIT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* repeatEndY/repeatEndX value of the tiled blits (GraphicsTextureSource_BlitTiled*): repeat along that axis

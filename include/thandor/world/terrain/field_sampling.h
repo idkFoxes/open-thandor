@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_TERRAIN_FIELD_SAMPLING_H
 #define THANDOR_WORLD_TERRAIN_FIELD_SAMPLING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);

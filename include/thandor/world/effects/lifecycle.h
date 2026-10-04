@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_EFFECTS_LIFECYCLE_H
 #define THANDOR_WORLD_EFFECTS_LIFECYCLE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/effects/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/effects/lifecycle. */

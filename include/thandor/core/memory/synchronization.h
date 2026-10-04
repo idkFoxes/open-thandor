@@ -8,7 +8,8 @@
 #ifndef THANDOR_CORE_MEMORY_SYNCHRONIZATION_H
 #define THANDOR_CORE_MEMORY_SYNCHRONIZATION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/memory/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/memory/synchronization. */

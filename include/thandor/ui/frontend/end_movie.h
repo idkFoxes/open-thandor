@@ -8,7 +8,6 @@
 #ifndef THANDOR_UI_FRONTEND_END_MOVIE_H
 #define THANDOR_UI_FRONTEND_END_MOVIE_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/end_movie. */

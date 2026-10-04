@@ -8,6 +8,7 @@
 #ifndef THANDOR_WORLD_TERRAIN_H
 #define THANDOR_WORLD_TERRAIN_H
 
+#include <thandor/world/terrain/types.h>
 #include <thandor/world/terrain/editing.h>
 #include <thandor/world/terrain/field_deformation.h>
 #include <thandor/world/terrain/field_edit_commands.h>

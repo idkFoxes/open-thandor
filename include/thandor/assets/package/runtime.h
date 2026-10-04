@@ -8,7 +8,8 @@
 #ifndef THANDOR_ASSETS_PACKAGE_RUNTIME_H
 #define THANDOR_ASSETS_PACKAGE_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/package/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/package/runtime. */

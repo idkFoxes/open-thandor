@@ -8,6 +8,7 @@
 #ifndef THANDOR_MOVIE_RUNTIME_H
 #define THANDOR_MOVIE_RUNTIME_H
 
+#include <thandor/movie/runtime/types.h>
 #include <thandor/movie/runtime/flm_decoder.h>
 #include <thandor/movie/runtime/flm_encoder.h>
 #include <thandor/movie/runtime/playback.h>

@@ -12,6 +12,7 @@ Helpers that reproduce what the original's x86 code does, expressed in portable 
 x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
 */
 
+#include <thandor/core/types.h>
 #include <stddef.h>
 #include <intrin.h>
 #include <math.h>

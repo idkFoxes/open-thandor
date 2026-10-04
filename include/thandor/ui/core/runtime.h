@@ -8,7 +8,11 @@
 #ifndef THANDOR_UI_CORE_RUNTIME_H
 #define THANDOR_UI_CORE_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/memory/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/protocol/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/core/runtime. */

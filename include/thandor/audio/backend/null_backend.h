@@ -8,7 +8,8 @@
 #ifndef THANDOR_AUDIO_BACKEND_NULL_BACKEND_H
 #define THANDOR_AUDIO_BACKEND_NULL_BACKEND_H
 
-#include <thandor/generated/types.h>
+#include <thandor/audio/spatial/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/backend/null_backend. */

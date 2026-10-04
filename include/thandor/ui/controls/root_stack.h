@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_CONTROLS_ROOT_STACK_H
 #define THANDOR_UI_CONTROLS_ROOT_STACK_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/root_stack. */

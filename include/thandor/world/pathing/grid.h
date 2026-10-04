@@ -8,7 +8,6 @@
 #ifndef THANDOR_WORLD_PATHING_GRID_H
 #define THANDOR_WORLD_PATHING_GRID_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/pathing/grid. */

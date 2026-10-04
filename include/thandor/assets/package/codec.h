@@ -8,7 +8,9 @@
 #ifndef THANDOR_ASSETS_PACKAGE_CODEC_H
 #define THANDOR_ASSETS_PACKAGE_CODEC_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/package/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/package/codec. */

@@ -8,7 +8,8 @@
 #ifndef THANDOR_NETWORK_PROTOCOL_MAILBOX_H
 #define THANDOR_NETWORK_PROTOCOL_MAILBOX_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/mailbox. */

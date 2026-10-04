@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_INGAME_SELECTION_PANEL_RESOURCES_H
 #define THANDOR_UI_INGAME_SELECTION_PANEL_RESOURCES_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/selection/types.h>
+#include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/selection_panel_resources. */

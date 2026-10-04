@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_FRONTEND_MAIN_LOOP_H
 #define THANDOR_UI_FRONTEND_MAIN_LOOP_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/rom/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/main_loop. */

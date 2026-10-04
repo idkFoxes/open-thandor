@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_TERRAIN_FIELD_EDIT_COMMANDS_H
 #define THANDOR_WORLD_TERRAIN_FIELD_EDIT_COMMANDS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,

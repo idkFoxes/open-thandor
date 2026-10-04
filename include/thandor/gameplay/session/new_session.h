@@ -8,7 +8,8 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_NEW_SESSION_H
 #define THANDOR_GAMEPLAY_SESSION_NEW_SESSION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/session/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/new_session. */

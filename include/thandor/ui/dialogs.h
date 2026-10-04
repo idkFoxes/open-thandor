@@ -8,6 +8,7 @@
 #ifndef THANDOR_UI_DIALOGS_H
 #define THANDOR_UI_DIALOGS_H
 
+#include <thandor/ui/dialogs/types.h>
 #include <thandor/ui/dialogs/display_settings.h>
 #include <thandor/ui/dialogs/fatal_error.h>
 

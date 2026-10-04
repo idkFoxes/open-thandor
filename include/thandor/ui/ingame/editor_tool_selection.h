@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_INGAME_EDITOR_TOOL_SELECTION_H
 #define THANDOR_UI_INGAME_EDITOR_TOOL_SELECTION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/editor_tool_selection. */

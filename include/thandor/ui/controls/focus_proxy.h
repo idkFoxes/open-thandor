@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_CONTROLS_FOCUS_PROXY_H
 #define THANDOR_UI_CONTROLS_FOCUS_PROXY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/focus_proxy. */

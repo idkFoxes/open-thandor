@@ -8,6 +8,7 @@
 #ifndef THANDOR_CORE_H
 #define THANDOR_CORE_H
 
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 #include <thandor/core/error.h>
 #include <thandor/core/math.h>

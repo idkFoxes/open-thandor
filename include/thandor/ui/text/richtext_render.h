@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_TEXT_RICHTEXT_RENDER_H
 #define THANDOR_UI_TEXT_RICHTEXT_RENDER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/text/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/text/richtext_render. */

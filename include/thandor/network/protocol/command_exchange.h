@@ -8,7 +8,10 @@
 #ifndef THANDOR_NETWORK_PROTOCOL_COMMAND_EXCHANGE_H
 #define THANDOR_NETWORK_PROTOCOL_COMMAND_EXCHANGE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/backend/types.h>
+#include <thandor/network/protocol/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/command_exchange. */

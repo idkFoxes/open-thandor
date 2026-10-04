@@ -8,7 +8,10 @@
 #ifndef THANDOR_WORLD_TERRAIN_EDITING_H
 #define THANDOR_WORLD_TERRAIN_EDITING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/network/protocol/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/editing. */

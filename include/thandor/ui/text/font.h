@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_TEXT_FONT_H
 #define THANDOR_UI_TEXT_FONT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/text/font. */

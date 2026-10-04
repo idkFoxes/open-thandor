@@ -8,7 +8,7 @@
 #ifndef THANDOR_CORE_SETTINGS_PERSISTENT_H
 #define THANDOR_CORE_SETTINGS_PERSISTENT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/settings/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/settings/persistent. */

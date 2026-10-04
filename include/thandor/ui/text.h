@@ -8,6 +8,7 @@
 #ifndef THANDOR_UI_TEXT_H
 #define THANDOR_UI_TEXT_H
 
+#include <thandor/ui/text/types.h>
 #include <thandor/ui/text/font.h>
 #include <thandor/ui/text/richtext_render.h>
 

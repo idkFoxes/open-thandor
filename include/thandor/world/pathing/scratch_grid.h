@@ -8,7 +8,10 @@
 #ifndef THANDOR_WORLD_PATHING_SCRATCH_GRID_H
 #define THANDOR_WORLD_PATHING_SCRATCH_GRID_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/pathing/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 #include <thandor/world/pathing/grid.h>
 

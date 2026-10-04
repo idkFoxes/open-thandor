@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_RENDER_OFFSCREEN_H
 #define THANDOR_GRAPHICS_RENDER_OFFSCREEN_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/offscreen. */

@@ -8,7 +8,9 @@
 #ifndef THANDOR_NETWORK_PROTOCOL_FRONTEND_SESSION_H
 #define THANDOR_NETWORK_PROTOCOL_FRONTEND_SESSION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/backend/types.h>
+#include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/frontend_session. */

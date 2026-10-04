@@ -8,7 +8,7 @@
 #ifndef THANDOR_GRAPHICS_RESOURCES_PALETTE_H
 #define THANDOR_GRAPHICS_RESOURCES_PALETTE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/resources/palette. */

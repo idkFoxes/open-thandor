@@ -8,6 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_AI_H
 #define THANDOR_GAMEPLAY_AI_H
 
+#include <thandor/gameplay/ai/types.h>
 #include <thandor/gameplay/ai/combat.h>
 #include <thandor/gameplay/ai/construction.h>
 #include <thandor/gameplay/ai/perception.h>

@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_TERRAIN_WATER_RELAXATION_H
 #define THANDOR_WORLD_TERRAIN_WATER_RELAXATION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/network/protocol/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,

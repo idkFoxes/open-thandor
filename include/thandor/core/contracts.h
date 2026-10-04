@@ -66,10 +66,6 @@ typedef unsigned int UQ12;
 
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/x86_emulation.h>
-/* The function pointer types and the UI template layouts. The data of the original image are ordinary C
-   variables of the modules, declared in the module headers. */
-#include <thandor/generated/proc_types.h>
-#include <thandor/generated/ui_templates.h>
 
 /* Address of `offset` bytes into an object, as an integer: for code that steps through a table or record by
    byte offsets like the original. */
@@ -88,16 +84,6 @@ typedef unsigned int UQ12;
    copy (ImageType is the template struct, e.g. InGameUiImage): the nodes' fixed distance in the template. */
 #define THANDOR_UI_SIBLING(self, ImageType, selfNode, node) \
     THANDOR_UI_AT(self, (int)offsetof(ImageType, node) - (int)offsetof(ImageType, selfNode))
-
-/* The top-level UI node: follow parent links until the -1 sentinel (the original's inline loop). */
-static __inline UiNodeBase *Thandor_UiRoot(const void *node)
-{
-    UiNodeBase *current = (UiNodeBase *)node;
-    while (current->parent != UI_TEMPLATE_NO_LINK) {
-        current = current->parent;
-    }
-    return current;
-}
 
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

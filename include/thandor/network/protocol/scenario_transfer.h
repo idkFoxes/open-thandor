@@ -8,7 +8,8 @@
 #ifndef THANDOR_NETWORK_PROTOCOL_SCENARIO_TRANSFER_H
 #define THANDOR_NETWORK_PROTOCOL_SCENARIO_TRANSFER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/scenario_transfer. */

@@ -8,7 +8,8 @@
 #ifndef THANDOR_NETWORK_BACKEND_RUNTIME_H
 #define THANDOR_NETWORK_BACKEND_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/network/backend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/backend/runtime. */

@@ -8,6 +8,7 @@
 #ifndef THANDOR_NETWORK_PROTOCOL_H
 #define THANDOR_NETWORK_PROTOCOL_H
 
+#include <thandor/network/protocol/types.h>
 #include <thandor/network/protocol/cipher.h>
 #include <thandor/network/protocol/command_exchange.h>
 #include <thandor/network/protocol/commands.h>

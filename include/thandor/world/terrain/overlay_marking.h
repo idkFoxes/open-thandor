@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_TERRAIN_OVERLAY_MARKING_H
 #define THANDOR_WORLD_TERRAIN_OVERLAY_MARKING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint

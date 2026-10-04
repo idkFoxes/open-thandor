@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_TEXTURE_SCALE_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_TEXTURE_SCALE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 void SoftwareTexture_BilinearBlendScaleSubresources

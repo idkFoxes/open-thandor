@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_TERRAIN_FIELD_RAYCAST_H
 #define THANDOR_WORLD_TERRAIN_FIELD_RAYCAST_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 FieldGrid_RaycastTerrainSurfaceDistance

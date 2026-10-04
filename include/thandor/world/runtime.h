@@ -8,6 +8,7 @@
 #ifndef THANDOR_WORLD_RUNTIME_H
 #define THANDOR_WORLD_RUNTIME_H
 
+#include <thandor/world/runtime/types.h>
 #include <thandor/world/runtime/core.h>
 #include <thandor/world/runtime/entity_registry.h>
 

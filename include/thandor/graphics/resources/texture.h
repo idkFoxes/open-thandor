@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_RESOURCES_TEXTURE_H
 #define THANDOR_GRAPHICS_RESOURCES_TEXTURE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/resources/texture. */

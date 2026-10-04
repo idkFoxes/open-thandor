@@ -8,7 +8,7 @@
 #ifndef THANDOR_ASSETS_PACKAGE_RESOURCE_LOADER_H
 #define THANDOR_ASSETS_PACKAGE_RESOURCE_LOADER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/package/resource_loader. */

@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_CONTROLS_SLIDER_H
 #define THANDOR_UI_CONTROLS_SLIDER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/slider. */

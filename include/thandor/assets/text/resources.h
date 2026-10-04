@@ -8,7 +8,8 @@
 #ifndef THANDOR_ASSETS_TEXT_RESOURCES_H
 #define THANDOR_ASSETS_TEXT_RESOURCES_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/text/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/text/resources. */

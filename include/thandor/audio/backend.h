@@ -8,6 +8,7 @@
 #ifndef THANDOR_AUDIO_BACKEND_H
 #define THANDOR_AUDIO_BACKEND_H
 
+#include <thandor/audio/backend/types.h>
 #include <thandor/audio/backend/null_backend.h>
 #include <thandor/audio/backend/runtime.h>
 

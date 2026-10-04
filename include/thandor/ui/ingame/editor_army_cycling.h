@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_INGAME_EDITOR_ARMY_CYCLING_H
 #define THANDOR_UI_INGAME_EDITOR_ARMY_CYCLING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/army/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/editor_army_cycling. */

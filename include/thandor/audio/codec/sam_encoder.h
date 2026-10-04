@@ -8,7 +8,6 @@
 #ifndef THANDOR_AUDIO_CODEC_SAM_ENCODER_H
 #define THANDOR_AUDIO_CODEC_SAM_ENCODER_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/codec/sam_encoder. */

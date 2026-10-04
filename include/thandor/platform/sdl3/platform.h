@@ -16,7 +16,10 @@
    DirectSound_Init. This header has no SDL types; the backend's own shared declarations are in
    thandor/platform/sdl3/sdl_objects.h. */
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/platform/sdl3/types.h>
+#include <thandor/platform/system/types.h>
 
 /* --- window and event pump (src/platform/sdl3/platform.cpp) --- */
 

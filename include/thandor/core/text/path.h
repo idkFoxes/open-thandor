@@ -8,7 +8,8 @@
 #ifndef THANDOR_CORE_TEXT_PATH_H
 #define THANDOR_CORE_TEXT_PATH_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/text/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/text/path. */

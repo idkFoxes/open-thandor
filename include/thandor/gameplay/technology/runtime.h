@@ -8,7 +8,11 @@
 #ifndef THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H
 #define THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/model/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/ai/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/gameplay/technology/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/technology/runtime. */

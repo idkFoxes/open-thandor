@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_RESOURCES_PALETTE_OPTIMIZER_H
 #define THANDOR_GRAPHICS_RESOURCES_PALETTE_OPTIMIZER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(intptr_t textureSourceBase);

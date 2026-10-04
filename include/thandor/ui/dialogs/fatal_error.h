@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_DIALOGS_FATAL_ERROR_H
 #define THANDOR_UI_DIALOGS_FATAL_ERROR_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/dialogs/fatal_error. */

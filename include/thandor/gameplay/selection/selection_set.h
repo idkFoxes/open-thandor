@@ -8,7 +8,10 @@
 #ifndef THANDOR_GAMEPLAY_SELECTION_SELECTION_SET_H
 #define THANDOR_GAMEPLAY_SELECTION_SELECTION_SET_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/gameplay/faction/types.h>
+#include <thandor/gameplay/selection/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/selection/selection_set. */

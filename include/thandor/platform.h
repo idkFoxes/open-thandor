@@ -8,6 +8,8 @@
 #ifndef THANDOR_PLATFORM_H
 #define THANDOR_PLATFORM_H
 
+#include <thandor/platform/sdl3/types.h>
+#include <thandor/platform/debug/types.h>
 #include <thandor/platform/bootstrap.h>
 #include <thandor/platform/filesystem.h>
 #include <thandor/platform/input.h>

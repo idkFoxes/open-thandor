@@ -8,7 +8,9 @@
 #ifndef THANDOR_CORE_TEXT_STRING_H
 #define THANDOR_CORE_TEXT_STRING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/text/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/text/string. */

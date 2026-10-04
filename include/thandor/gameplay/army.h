@@ -8,6 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_H
 #define THANDOR_GAMEPLAY_ARMY_H
 
+#include <thandor/gameplay/army/types.h>
 #include <thandor/gameplay/army/aircraft.h>
 #include <thandor/gameplay/army/audio.h>
 #include <thandor/gameplay/army/class_dispatch.h>

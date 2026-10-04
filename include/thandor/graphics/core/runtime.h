@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_CORE_RUNTIME_H
 #define THANDOR_GRAPHICS_CORE_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/core/runtime. */

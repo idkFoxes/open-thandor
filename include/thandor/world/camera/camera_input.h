@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_CAMERA_CAMERA_INPUT_H
 #define THANDOR_WORLD_CAMERA_CAMERA_INPUT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/camera/camera_input. */

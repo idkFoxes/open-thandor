@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_FRONTEND_CREDITS_MASK_H
 #define THANDOR_UI_FRONTEND_CREDITS_MASK_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* SoftwareMaskBuffer: a revealed mask byte brightens by this much per tick, saturating at 0xFF */

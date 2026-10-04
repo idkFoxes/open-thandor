@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_TERRAIN_FIELD_DEFORMATION_H
 #define THANDOR_WORLD_TERRAIN_FIELD_DEFORMATION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface

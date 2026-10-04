@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_SHOTS_BALLISTICS_H
 #define THANDOR_WORLD_SHOTS_BALLISTICS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/shot/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/shots/ballistics. */

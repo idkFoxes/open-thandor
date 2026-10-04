@@ -8,7 +8,10 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_MODEL_RULES_H
 #define THANDOR_GAMEPLAY_ARMY_MODEL_RULES_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
 /* Aim tolerance of ModelNodeRuntime_SmoothYaw/PitchTowardTarget: outsideTolerance beyond +-0x3FF */

@@ -8,7 +8,8 @@
 #ifndef THANDOR_PLATFORM_FILESYSTEM_WIN32_H
 #define THANDOR_PLATFORM_FILESYSTEM_WIN32_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/platform/filesystem/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/filesystem/win32. */

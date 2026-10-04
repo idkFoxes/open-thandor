@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_RUNTIME_ENTITY_REGISTRY_H
 #define THANDOR_WORLD_RUNTIME_ENTITY_REGISTRY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/gameplay/session/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/runtime/types.h>
 #include <thandor/core/contracts.h>
 
 /* WorldObjectRecord.common.allocationFlags value of a record in use (WorldObjectArray_AllocateFreeRecord). */

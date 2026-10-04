@@ -8,7 +8,7 @@
 #ifndef THANDOR_UI_INGAME_SELECTION_DETAIL_H
 #define THANDOR_UI_INGAME_SELECTION_DETAIL_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/selection_detail. */

@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_INGAME_PREVIEW_MARKERS_H
 #define THANDOR_UI_INGAME_PREVIEW_MARKERS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/preview_markers. */

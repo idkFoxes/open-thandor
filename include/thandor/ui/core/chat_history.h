@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_CORE_CHAT_HISTORY_H
 #define THANDOR_UI_CORE_CHAT_HISTORY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/core/types.h>
+#include <thandor/ui/frontend/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/core/chat_history. */

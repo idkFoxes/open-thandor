@@ -8,7 +8,6 @@
 #ifndef THANDOR_UI_FRONTEND_COMMON_H
 #define THANDOR_UI_FRONTEND_COMMON_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files. */

@@ -8,7 +8,9 @@
 #ifndef THANDOR_MOVIE_RUNTIME_FLM_ENCODER_H
 #define THANDOR_MOVIE_RUNTIME_FLM_ENCODER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: movie/runtime/flm_encoder. */

@@ -8,7 +8,11 @@
 #ifndef THANDOR_UI_FRONTEND_MENU_ROOM_SCENE_H
 #define THANDOR_UI_FRONTEND_MENU_ROOM_SCENE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/rom/types.h>
+#include <thandor/core/types.h>
+#include <thandor/ui/frontend/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 #include <thandor/assets/rom/runtime.h>
 

@@ -8,7 +8,7 @@
 #ifndef THANDOR_WORLD_TERRAIN_HEX_SCAN_H
 #define THANDOR_WORLD_TERRAIN_HEX_SCAN_H
 
-#include <thandor/generated/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* Hexagonal radius scans (TerrainHeightDelta_*, TerrainHeightBand_*, TerrainAuxHeightThreshold_*): the scan step

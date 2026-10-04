@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_FRONTEND_SCENARIO_SELECTION_H
 #define THANDOR_UI_FRONTEND_SCENARIO_SELECTION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/scenario_selection. */

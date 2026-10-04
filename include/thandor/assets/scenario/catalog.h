@@ -8,7 +8,9 @@
 #ifndef THANDOR_ASSETS_SCENARIO_CATALOG_H
 #define THANDOR_ASSETS_SCENARIO_CATALOG_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/package/types.h>
+#include <thandor/assets/scenario/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/scenario/catalog. */

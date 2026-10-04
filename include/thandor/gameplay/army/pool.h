@@ -8,7 +8,11 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_POOL_H
 #define THANDOR_GAMEPLAY_ARMY_POOL_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/gameplay/session/types.h>
+#include <thandor/network/protocol/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/pool. */

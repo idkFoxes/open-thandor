@@ -22,7 +22,9 @@
    Game code calls only these hooks; it has no #ifdef THANDOR_DEV_TOOLS of its own. */
 
 #include <stdint.h>
-#include <thandor/generated/types.h>
+#include <thandor/movie/runtime/types.h>
+#include <thandor/network/backend/types.h>
+#include <thandor/platform/debug/types.h>
 
 #ifdef THANDOR_DEV_TOOLS
 

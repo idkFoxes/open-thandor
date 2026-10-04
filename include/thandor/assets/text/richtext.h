@@ -8,7 +8,10 @@
 #ifndef THANDOR_ASSETS_TEXT_RICHTEXT_H
 #define THANDOR_ASSETS_TEXT_RICHTEXT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/text/types.h>
+#include <thandor/core/text/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/text/richtext. */

@@ -8,7 +8,10 @@
 #ifndef THANDOR_GAMEPLAY_SELECTION_COMMANDS_H
 #define THANDOR_GAMEPLAY_SELECTION_COMMANDS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/gameplay/selection/types.h>
+#include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/selection/commands. */

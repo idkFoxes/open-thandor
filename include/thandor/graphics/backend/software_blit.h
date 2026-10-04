@@ -8,7 +8,11 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_BLIT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,

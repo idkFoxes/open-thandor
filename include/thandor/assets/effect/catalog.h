@@ -8,7 +8,8 @@
 #ifndef THANDOR_ASSETS_EFFECT_CATALOG_H
 #define THANDOR_ASSETS_EFFECT_CATALOG_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/effect/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/effect/catalog. */

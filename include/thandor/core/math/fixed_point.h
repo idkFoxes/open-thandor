@@ -8,7 +8,6 @@
 #ifndef THANDOR_CORE_MATH_FIXED_POINT_H
 #define THANDOR_CORE_MATH_FIXED_POINT_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Fixed-point formats and helpers shared by the fixed-point math files and their users. */

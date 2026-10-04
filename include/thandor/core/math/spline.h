@@ -8,7 +8,8 @@
 #ifndef THANDOR_CORE_MATH_SPLINE_H
 #define THANDOR_CORE_MATH_SPLINE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/math/types.h>
+#include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/math/spline. */

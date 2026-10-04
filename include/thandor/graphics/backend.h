@@ -8,6 +8,7 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_H
 #define THANDOR_GRAPHICS_BACKEND_H
 
+#include <thandor/graphics/backend/types.h>
 #include <thandor/graphics/backend/directdraw.h>
 #include <thandor/graphics/backend/software.h>
 #include <thandor/graphics/backend/software_blit.h>

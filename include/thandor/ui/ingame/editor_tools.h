@@ -8,7 +8,9 @@
 #ifndef THANDOR_UI_INGAME_EDITOR_TOOLS_H
 #define THANDOR_UI_INGAME_EDITOR_TOOLS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/editor_tools. */

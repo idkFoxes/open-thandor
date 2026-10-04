@@ -8,7 +8,10 @@
 #ifndef THANDOR_UI_INGAME_SELECTION_OVERLAY_H
 #define THANDOR_UI_INGAME_SELECTION_OVERLAY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/ui/controls/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/selection_overlay. */

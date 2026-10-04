@@ -8,7 +8,9 @@
 #ifndef THANDOR_GRAPHICS_RENDER_LIGHT_RECORDS_H
 #define THANDOR_GRAPHICS_RENDER_LIGHT_RECORDS_H
 
-#include <thandor/generated/types.h>
+#include <thandor/audio/codec/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
 /* Number of runtime light records in g_GraphicsShadingRuntimeRecords (0x40 bytes each) */

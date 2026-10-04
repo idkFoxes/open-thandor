@@ -9,7 +9,7 @@
 #define THANDOR_PLATFORM_DEBUG_MOVIE_DECODER_H
 
 #include <stdint.h>
-#include <thandor/generated/types.h>
+#include <thandor/movie/runtime/types.h>
 
 /* Debug tool for the movie frame decoder, hooked into Movie_AdvanceFrame after Movie_DecodeFrame4x4Delta:
    OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame and writes every tenth frame to moviedump\frame_NNNN.bmp. It

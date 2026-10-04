@@ -8,7 +8,7 @@
 #ifndef THANDOR_UI_INGAME_MUSIC_CHOICE_H
 #define THANDOR_UI_INGAME_MUSIC_CHOICE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/music_choice. */

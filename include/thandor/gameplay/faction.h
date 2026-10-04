@@ -8,6 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_FACTION_H
 #define THANDOR_GAMEPLAY_FACTION_H
 
+#include <thandor/gameplay/faction/types.h>
 #include <thandor/gameplay/faction/army_stock.h>
 #include <thandor/gameplay/faction/economy.h>
 #include <thandor/gameplay/faction/relations.h>

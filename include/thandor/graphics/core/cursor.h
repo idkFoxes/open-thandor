@@ -8,7 +8,11 @@
 #ifndef THANDOR_GRAPHICS_CORE_CURSOR_H
 #define THANDOR_GRAPHICS_CORE_CURSOR_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/core/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */

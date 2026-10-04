@@ -8,7 +8,6 @@
 #ifndef THANDOR_UI_FRONTEND_DEBUG_OVERLAY_H
 #define THANDOR_UI_FRONTEND_DEBUG_OVERLAY_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/debug_overlay. */

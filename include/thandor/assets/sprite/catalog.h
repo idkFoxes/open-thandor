@@ -8,7 +8,7 @@
 #ifndef THANDOR_ASSETS_SPRITE_CATALOG_H
 #define THANDOR_ASSETS_SPRITE_CATALOG_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/sprite/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/sprite/catalog. */

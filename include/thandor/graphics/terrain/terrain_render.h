@@ -8,7 +8,10 @@
 #ifndef THANDOR_GRAPHICS_TERRAIN_TERRAIN_RENDER_H
 #define THANDOR_GRAPHICS_TERRAIN_TERRAIN_RENDER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/terrain/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/terrain/terrain_render. */

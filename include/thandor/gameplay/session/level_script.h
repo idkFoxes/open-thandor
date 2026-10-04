@@ -8,7 +8,6 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_LEVEL_SCRIPT_H
 #define THANDOR_GAMEPLAY_SESSION_LEVEL_SCRIPT_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/level_script. */

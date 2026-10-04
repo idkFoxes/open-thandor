@@ -8,6 +8,7 @@
 #ifndef THANDOR_WORLD_EFFECTS_H
 #define THANDOR_WORLD_EFFECTS_H
 
+#include <thandor/world/effects/types.h>
 #include <thandor/world/effects/lifecycle.h>
 #include <thandor/world/effects/runtime.h>
 

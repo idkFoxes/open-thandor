@@ -8,7 +8,11 @@
 #ifndef THANDOR_WORLD_EFFECTS_RUNTIME_H
 #define THANDOR_WORLD_EFFECTS_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/effect/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/effects/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/effects/runtime. */

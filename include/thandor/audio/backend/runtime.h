@@ -8,7 +8,7 @@
 #ifndef THANDOR_AUDIO_BACKEND_RUNTIME_H
 #define THANDOR_AUDIO_BACKEND_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/audio/backend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/backend/runtime. */

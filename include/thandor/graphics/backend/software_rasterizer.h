@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTERIZER_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTERIZER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
 /* g_SoftwareDepthEpoch drops by one step (the top byte) per frame (SoftwareRenderer_AdvanceDepthEpoch) */

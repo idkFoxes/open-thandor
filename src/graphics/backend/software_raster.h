@@ -7,6 +7,11 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H
 
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+
 /*
 Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in
 software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h). Internal to

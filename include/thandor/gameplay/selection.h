@@ -8,6 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_SELECTION_H
 #define THANDOR_GAMEPLAY_SELECTION_H
 
+#include <thandor/gameplay/selection/types.h>
 #include <thandor/gameplay/selection/commands.h>
 #include <thandor/gameplay/selection/queries.h>
 #include <thandor/gameplay/selection/selection_set.h>

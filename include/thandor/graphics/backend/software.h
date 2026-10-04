@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_BACKEND_SOFTWARE_H
 #define THANDOR_GRAPHICS_BACKEND_SOFTWARE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/software. */

@@ -8,6 +8,7 @@
 #ifndef THANDOR_GRAPHICS_RENDER_H
 #define THANDOR_GRAPHICS_RENDER_H
 
+#include <thandor/graphics/render/types.h>
 #include <thandor/graphics/render/light_records.h>
 #include <thandor/graphics/render/light_transitions.h>
 #include <thandor/graphics/render/model.h>

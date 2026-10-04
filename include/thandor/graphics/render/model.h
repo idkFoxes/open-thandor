@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_RENDER_MODEL_H
 #define THANDOR_GRAPHICS_RENDER_MODEL_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/model. */

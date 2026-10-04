@@ -8,7 +8,8 @@
 #ifndef THANDOR_MOVIE_RUNTIME_PLAYBACK_H
 #define THANDOR_MOVIE_RUNTIME_PLAYBACK_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: movie/runtime/playback. */

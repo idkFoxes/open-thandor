@@ -8,7 +8,8 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_DRIVE_BANKING_H
 #define THANDOR_GAMEPLAY_ARMY_DRIVE_BANKING_H
 
-#include <thandor/generated/types.h>
+#include <thandor/gameplay/army/types.h>
+#include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/drive_banking. */

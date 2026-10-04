@@ -8,7 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_LOADING_MOVIE_H
 #define THANDOR_GAMEPLAY_SESSION_LOADING_MOVIE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/loading_movie. */

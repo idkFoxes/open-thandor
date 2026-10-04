@@ -8,7 +8,7 @@
 #ifndef THANDOR_PLATFORM_SYSTEM_WIN32_H
 #define THANDOR_PLATFORM_SYSTEM_WIN32_H
 
-#include <thandor/generated/types.h>
+#include <thandor/platform/system/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/system/win32. */

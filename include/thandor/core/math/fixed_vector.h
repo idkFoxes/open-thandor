@@ -8,7 +8,8 @@
 #ifndef THANDOR_CORE_MATH_FIXED_VECTOR_H
 #define THANDOR_CORE_MATH_FIXED_VECTOR_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/math/types.h>
+#include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/math/fixed_vector. */

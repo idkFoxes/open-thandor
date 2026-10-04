@@ -8,7 +8,8 @@
 #ifndef THANDOR_GRAPHICS_RENDER_PROJECTION_H
 #define THANDOR_GRAPHICS_RENDER_PROJECTION_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
 #include <thandor/core/contracts.h>
 
 extern GraphicsFixedVec3 g_ViewOriginFixed;

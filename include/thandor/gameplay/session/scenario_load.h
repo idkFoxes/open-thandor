@@ -8,7 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H
 #define THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/scenario_load. */

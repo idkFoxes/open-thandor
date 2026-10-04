@@ -8,7 +8,6 @@
 #ifndef THANDOR_GAMEPLAY_FACTION_ECONOMY_H
 #define THANDOR_GAMEPLAY_FACTION_ECONOMY_H
 
-#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/faction/economy. */

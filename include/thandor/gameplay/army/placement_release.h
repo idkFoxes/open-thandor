@@ -8,7 +8,8 @@
 #ifndef THANDOR_GAMEPLAY_ARMY_PLACEMENT_RELEASE_H
 #define THANDOR_GAMEPLAY_ARMY_PLACEMENT_RELEASE_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/model/types.h>
+#include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/placement_release. */

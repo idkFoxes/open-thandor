@@ -8,7 +8,11 @@
 #ifndef THANDOR_GRAPHICS_RESOURCES_FRAMEBUFFER_H
 #define THANDOR_GRAPHICS_RESOURCES_FRAMEBUFFER_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/backend/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/graphics/resources/types.h>
+#include <thandor/platform/sdl3/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/resources/framebuffer. */

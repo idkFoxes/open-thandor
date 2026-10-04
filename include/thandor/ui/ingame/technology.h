@@ -8,7 +8,8 @@
 #ifndef THANDOR_UI_INGAME_TECHNOLOGY_H
 #define THANDOR_UI_INGAME_TECHNOLOGY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/gameplay/ai/types.h>
+#include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/technology. */

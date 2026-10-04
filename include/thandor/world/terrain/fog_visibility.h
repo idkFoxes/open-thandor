@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_TERRAIN_FOG_VISIBILITY_H
 #define THANDOR_WORLD_TERRAIN_FOG_VISIBILITY_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 /* g_TerrainByteClampLookup (TerrainByteClampLookup_Initialize): 256 rows of 256 bytes, row = a cell's

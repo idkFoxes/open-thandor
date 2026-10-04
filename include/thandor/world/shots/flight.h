@@ -8,7 +8,8 @@
 #ifndef THANDOR_WORLD_SHOTS_FLIGHT_H
 #define THANDOR_WORLD_SHOTS_FLIGHT_H
 
-#include <thandor/generated/types.h>
+#include <thandor/ui/ingame/types.h>
+#include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/shots/flight. */

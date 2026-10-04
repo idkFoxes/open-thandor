@@ -8,7 +8,10 @@
 #ifndef THANDOR_ASSETS_ROM_RUNTIME_H
 #define THANDOR_ASSETS_ROM_RUNTIME_H
 
-#include <thandor/generated/types.h>
+#include <thandor/assets/rom/types.h>
+#include <thandor/core/types.h>
+#include <thandor/graphics/render/types.h>
+#include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/rom/runtime. */

@@ -8,6 +8,7 @@
 #ifndef THANDOR_GAMEPLAY_SESSION_H
 #define THANDOR_GAMEPLAY_SESSION_H
 
+#include <thandor/gameplay/session/types.h>
 #include <thandor/gameplay/session/campaign_carryover.h>
 #include <thandor/gameplay/session/level.h>
 #include <thandor/gameplay/session/level_new.h>

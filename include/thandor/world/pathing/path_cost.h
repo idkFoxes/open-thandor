@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_PATHING_PATH_COST_H
 #define THANDOR_WORLD_PATHING_PATH_COST_H
 
-#include <thandor/generated/types.h>
+#include <thandor/core/types.h>
+#include <thandor/world/pathing/types.h>
+#include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
 Bool8 GridPathCost_BacktrackBestHexRoute
