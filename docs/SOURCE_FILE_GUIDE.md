@@ -223,7 +223,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
 - [`placement_contact.cpp / placement_contact.h`](source_guide/gameplay.md#file-gameplay-army-placement-contact) - no file comment; main functions `ArmyPlacementContact_ApplyTerrainHeight`, `ArmyPlacementContact_ApplyWaterSurfaceHeight`, `ArmyPlacementContact_ApplyTerrainHeightAndNormal`
 - [`placement_release.cpp / placement_release.h`](source_guide/gameplay.md#file-gameplay-army-placement-release) - no file comment; main functions `ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation`, `ArmyPlacement_ReleaseFactionCapacity`, `ArmyPlacement_ReleaseClassStateReservation`
-- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntime_InitializePoolAndGraphics`
+- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntime_Token`
 - [`preview.cpp / preview.h`](source_guide/gameplay.md#file-gameplay-army-preview) - no file comment; main functions `ArmyAssetRegistry_ResolveOrCreatePreviewTexture`, `ArmyRuntime_RenderPreviewTexture`, `ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected`
 - [`turrets.cpp / turrets.h`](source_guide/gameplay.md#file-gameplay-army-turrets) - no file comment; main functions `ArmyRuntimeClass_UpdateSingleBarrelTurret`, `ArmyRuntimeClass_UpdateTwinBarrelTurret`, `FixedVector_StepBackwardAlongOwnDirection`
 - [`types.h`](source_guide/gameplay.md#file-gameplay-army-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
@@ -340,7 +340,7 @@ Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Chang
 - [`texture.h`](source_guide/graphics.md#file-graphics-resources-texture)
 - [`texture_decompose.cpp / texture_decompose.h`](source_guide/graphics.md#file-graphics-resources-texture-decompose) - Subresource decomposition of a texture source: cuts the ARGB or indexed pixels of every subresource into rectangular regions (asset conversion).
 - [`texture_set.cpp / texture_set.h`](source_guide/graphics.md#file-graphics-resources-texture-set) - Texture sets: creation and destruction through the device slots, package load/release, the set metadata and the texture slot registry.
-- [`texture_source.cpp`](source_guide/graphics.md#file-graphics-resources-texture-source) - no file comment; main functions `GraphicsTextureSource_GetLogicalSize`, `GraphicsTextureSource_TestOpaquePixel`, `GraphicsTextureSource_LoadPackageAsset`
+- [`texture_source.cpp`](source_guide/graphics.md#file-graphics-resources-texture-source) - no file comment; main functions `GraphicsTextureSource_ValidateAsset`, `GraphicsTextureSource_ConvertPaletteEntries`, `GraphicsTextureSource_GetLogicalSize`
 - [`tiled_blit.cpp / tiled_blit.h`](source_guide/graphics.md#file-graphics-resources-tiled-blit) - Tiled texture source blits: a texture source repeated over a rectangle with one of the blit slots (source alpha, half source RGB, saturated add, half RGB saturated add).
 - [`types.h`](source_guide/graphics.md#file-graphics-resources-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -387,7 +387,7 @@ Module header: [`protocol.h`](../include/thandor/network/protocol.h) · Changelo
 
 - [`cipher.cpp / cipher.h`](source_guide/network.md#file-network-protocol-cipher) - no file comment; main functions `UiTransfer_EncryptPacketBlocks`, `UiTransfer_DecryptPacketBlocks`
 - [`command_exchange.cpp / command_exchange.h`](source_guide/network.md#file-network-protocol-command-exchange) - no file comment; main functions `FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`, `FrontendTransfer_HostHandleCommandSubmitOrWaitAck`, `FrontendTransfer_DispatchStagedCommandRecords`
-- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `CommandDispatch_ResolveHandler`
+- [`commands.cpp / commands.h`](source_guide/network.md#file-network-protocol-commands) - no file comment; main functions `InGameCommandQueue_AppendLocalPlayerCommand`, `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `CommandDispatch_ExecuteRecord`
 - [`frontend_session.cpp / frontend_session.h`](source_guide/network.md#file-network-protocol-frontend-session) - no file comment; main functions `FrontendNetwork_HandleCommandBatchAndPlayerTimeout`, `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`
 - [`lobby.cpp / lobby.h`](source_guide/network.md#file-network-protocol-lobby) - no file comment; main functions `UiTransfer_SendDiscoveryProbe`, `FrontendTransfer_ExecuteLobbyCommandRecords`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`
 - [`mailbox.cpp / mailbox.h`](source_guide/network.md#file-network-protocol-mailbox) - no file comment; main functions `UiTransfer_StagePacketAndSend`, `UiTransferMailbox_SetOutgoingBuffer`, `UiTransferMailbox_ClearReceivedState`
@@ -466,6 +466,8 @@ Module header: [`input.h`](../include/thandor/platform/input.h) · Changelog: `d
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
 
+- [`hexscan_selftest.cpp`](source_guide/platform.md#file-platform-selftest-hexscan-selftest) - OPEN_THANDOR_SELFTEST=hexscan: golden hashes of the hexagonal radius scans in src/world/terrain (the six sector walkers and six straight legs of overlay marking A and B, occupancy marking, the ...
+- [`raster_selftest.cpp`](source_guide/platform.md#file-platform-selftest-raster-selftest) - OPEN_THANDOR_SELFTEST=raster: golden hashes of the software renderer's output, a safety net for rewrites of the triangle handlers and the 2D blits (docs/software_raster.md).
 - [`selftest.h`](source_guide/platform.md#file-platform-selftest-selftest) - Self-tests and data tools, started from WinMain (after the precomputed tables are built) when the environment variable OPEN_THANDOR_SELFTEST names one; the process then exits without entering ...
 - [`selftests.cpp`](source_guide/platform.md#file-platform-selftest-selftests) - no file comment; main functions `SelfTest_Run`
 
