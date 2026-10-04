@@ -13,6 +13,7 @@
 #include <thandor/platform/selftest/selftest.h>
 #include <thandor/platform/sdl3/window_icon.h>
 
+#include <algorithm>
 #include <vector>
 
 /* Self-test data */
@@ -575,6 +576,144 @@ static void Thandor_SelfTestFixedMath(void)
                 hashTriangle, hashLength, hashAngleLength);
 }
 
+/* Builds the two .sam cosine matrices (normally done by SdlAudio_Init) with malloc, for the tables and sam
+   self-tests; SelfTest_FreeSamCosineTables releases them and restores the memory API. */
+static void SelfTest_BuildSamCosineTables(uint32_t (**savedAlloc)(uint32_t, void **), uint32_t (**savedFree)(void *))
+{
+    *savedAlloc = g_MemoryApi.alloc;
+    *savedFree = g_MemoryApi.free;
+    g_MemoryApi.alloc = SelfTest_Alloc;
+    g_MemoryApi.free = SelfTest_Free;
+    g_CosineDerivedLookupAllocation = nullptr;
+    g_CosineDerivedLookupSecondTable = nullptr;
+    CosineDerivedLookupTables_Init();
+}
+
+static void SelfTest_FreeSamCosineTables(uint32_t (*savedAlloc)(uint32_t, void **), uint32_t (*savedFree)(void *))
+{
+    free(g_CosineDerivedLookupAllocation);
+    g_CosineDerivedLookupAllocation = nullptr;
+    g_CosineDerivedLookupSecondTable = nullptr;
+    g_MemoryApi.alloc = savedAlloc;
+    g_MemoryApi.free = savedFree;
+}
+
+/* OPEN_THANDOR_SELFTEST=tables logs an FNV-1a hash of each table computed at startup instead of shipped with
+   the executable: the Q28 sine table (built with the C library's sin(), so a compiler or C runtime change
+   could move it), the two .sam cosine matrices derived from it, and the lighting, shading and software
+   renderer factor tables. Compare it between two builds or compilers. */
+static void Thandor_SelfTestTables(void)
+{
+    uint32_t (*savedAlloc)(uint32_t, void **);
+    uint32_t (*savedFree)(void *);
+    uint32_t hashSine = SelfTest_HashBytes(2166136261u, g_FixedSineQ28, sizeof g_FixedSineQ28);
+    uint32_t hashSamCosine = 2166136261u;
+    uint32_t hashLighting = SelfTest_HashBytes(2166136261u, g_PackedLightingLookupTable,
+                                               sizeof g_PackedLightingLookupTable);
+    uint32_t hashShading = SelfTest_HashBytes(2166136261u, g_ShadingIntensityScaleMmx, sizeof g_ShadingIntensityScaleMmx);
+    uint32_t hashSoftware = 2166136261u;
+    hashSoftware = SelfTest_HashBytes(hashSoftware, g_SoftwareBilinearForwardFactors,
+                                      sizeof g_SoftwareBilinearForwardFactors);
+    hashSoftware = SelfTest_HashBytes(hashSoftware, g_SoftwareBilinearInverseFactors,
+                                      sizeof g_SoftwareBilinearInverseFactors);
+    hashSoftware = SelfTest_HashBytes(hashSoftware, g_SoftwareBlendAlphaFactors, sizeof g_SoftwareBlendAlphaFactors);
+    hashSoftware = SelfTest_HashBytes(hashSoftware, g_SoftwareBlendInverseAlphaFactors,
+                                      sizeof g_SoftwareBlendInverseAlphaFactors);
+    hashSoftware = SelfTest_HashBytes(hashSoftware, g_SoftwareBilinearPackedInterpolationWeights256,
+                                      sizeof g_SoftwareBilinearPackedInterpolationWeights256);
+    SelfTest_BuildSamCosineTables(&savedAlloc, &savedFree);
+    if (g_CosineDerivedLookupAllocation != nullptr) {
+        hashSamCosine = SelfTest_HashBytes(hashSamCosine, g_CosineDerivedLookupAllocation,
+                                           2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short));
+    }
+    SelfTest_FreeSamCosineTables(savedAlloc, savedFree);
+    Thandor_Log("tables: sine hash %08X, sam cosine hash %08X, lighting hash %08X, shading hash %08X, "
+                "software factor hash %08X", hashSine, hashSamCosine, hashLighting, hashShading, hashSoftware);
+}
+
+/* OPEN_THANDOR_SELFTEST=sam runs the .sam sound decoder without game files: (1) 64 blocks of LCG bytes
+   through SoundSample_DecodePackedCoefficientBlock (one after the other, as SdlAudio_CreateSampleVoiceSet
+   does) and both inverse transforms (stereo and mono); (2) a synthetic waveform (two tones from the sine
+   table plus LCG noise, with a ramped amplitude so all code lengths occur) through the kept encoder
+   (forward transform, packing) and back through the decoder. Logs one FNV-1a hash per part over the
+   consumed byte counts, coefficients and PCM. */
+static void Thandor_SelfTestSam(void)
+{
+    enum { BLOCKS = 64, BLOCK_BYTES = 512 };
+    uint32_t (*savedAlloc)(uint32_t, void **);
+    uint32_t (*savedFree)(void *);
+    uint32_t seed = 4242;
+    uint32_t hashRandom = 2166136261u;
+    uint32_t hashRoundTrip = 2166136261u;
+    std::vector<uint8_t> stream((size_t)BLOCKS * BLOCK_BYTES + 64, 0);
+    short coefficients[SAM_BLOCK_SAMPLE_COUNT];
+    short stereo[2 * SAM_BLOCK_SAMPLE_COUNT];
+    SoundCoefficientBlock monoInput;
+    short mono[SAM_BLOCK_SAMPLE_COUNT];
+    short pcm[SAM_BLOCK_SAMPLE_COUNT];
+    uint32_t offset;
+    uint32_t block;
+    uint32_t i;
+    SelfTest_BuildSamCosineTables(&savedAlloc, &savedFree);
+    if (g_CosineDerivedLookupAllocation == nullptr) {
+        Thandor_Log("sam: cosine table allocation FAILED");
+        SelfTest_FreeSamCosineTables(savedAlloc, savedFree);
+        return;
+    }
+    /* (1) random packed bytes */
+    for (i = 0; i < stream.size(); i++) {
+        stream[i] = (uint8_t)(SelfTest_FixedRandom(&seed) >> 24);
+    }
+    offset = 0;
+    for (block = 0; block < BLOCKS; block++) {
+        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset);
+        offset += consumed;
+        memcpy(monoInput.coefficients, coefficients, sizeof coefficients);
+        SoundSample_DecodeCoefficientBlockToPcmMmx(stereo, coefficients);
+        SoundCoefficientTransform_ApplyCosineBanksMmx(mono, &monoInput);
+        hashRandom = SelfTest_HashBytes(hashRandom, &consumed, 4);
+        hashRandom = SelfTest_HashBytes(hashRandom, coefficients, sizeof coefficients);
+        hashRandom = SelfTest_HashBytes(hashRandom, stereo, sizeof stereo);
+        hashRandom = SelfTest_HashBytes(hashRandom, mono, sizeof mono);
+    }
+    /* (2) encoder round trip of a synthetic waveform */
+    std::fill(stream.begin(), stream.end(), (uint8_t)0);
+    offset = 0;
+    for (block = 0; block < BLOCKS; block++) {
+        int32_t amplitude = 256 + (int32_t)block * 500; /* up to ~31800 */
+        for (i = 0; i < SAM_BLOCK_SAMPLE_COUNT; i++) {
+            uint32_t t = block * SAM_BLOCK_SAMPLE_COUNT + i;
+            int32_t tone = (int32_t)(((int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + ((t * 1031u) & 0xffffu)] * 3 +
+                                      (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN + ((t * 7919u) & 0xffffu)]) >> 2);
+            int32_t noise = (int32_t)(SelfTest_FixedRandom(&seed) >> 22) - 512;
+            int32_t sample = (int32_t)(((int64_t)tone * amplitude) >> 28) + noise;
+            if (sample > 32767) {
+                sample = 32767;
+            }
+            if (sample < -32768) {
+                sample = -32768;
+            }
+            pcm[i] = (short)sample;
+        }
+        SoundSample_TransformPcmBlockToCoefficientsMmx(coefficients, pcm);
+        hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, coefficients, sizeof coefficients);
+        offset += SoundSample_EncodePackedCoefficientBlock(stream.data() + offset, coefficients);
+    }
+    hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, &offset, 4);
+    hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, stream.data(), offset);
+    offset = 0;
+    for (block = 0; block < BLOCKS; block++) {
+        uint32_t consumed = SoundSample_DecodePackedCoefficientBlock(coefficients, stream.data() + offset);
+        offset += consumed;
+        SoundSample_DecodeCoefficientBlockToPcmMmx(stereo, coefficients);
+        hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, &consumed, 4);
+        hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, coefficients, sizeof coefficients);
+        hashRoundTrip = SelfTest_HashBytes(hashRoundTrip, stereo, sizeof stereo);
+    }
+    SelfTest_FreeSamCosineTables(savedAlloc, savedFree);
+    Thandor_Log("sam: random decode hash %08X, round trip hash %08X", hashRandom, hashRoundTrip);
+}
+
 /* OPEN_THANDOR_SELFTEST=numberformat formats random and edge values with WideNumber_FormatUtf16 under random flag
    combinations, digit counts and denominators (into a zeroed 256-unit buffer) and logs an FNV-1a hash over the
    returned lengths and every buffer. Run it with two builds to check that a rewrite kept the formatting. */
@@ -1049,6 +1188,14 @@ int SelfTest_Run(const char *name)
     }
     if (name != nullptr && strcmp(name, "fixedmath") == 0) {
         Thandor_SelfTestFixedMath();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "tables") == 0) {
+        Thandor_SelfTestTables();
+        return 1;
+    }
+    if (name != nullptr && strcmp(name, "sam") == 0) {
+        Thandor_SelfTestSam();
         return 1;
     }
     if (name != nullptr && strcmp(name, "keymap") == 0) {
