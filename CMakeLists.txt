@@ -65,6 +65,8 @@ add_library(thandor_curated STATIC
     src/core/text/path.cpp
     src/core/text/string.cpp
     src/gameplay/ai/combat.cpp
+    src/gameplay/ai/construction.cpp
+    src/gameplay/ai/perception.cpp
     src/gameplay/ai/placement.cpp
     src/gameplay/ai/planning.cpp
     src/gameplay/ai/technology.cpp

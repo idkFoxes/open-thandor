@@ -357,3 +357,69 @@ AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6]
     /* 3 */ THANDOR_FN(AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue),
     /* 4 */ THANDOR_FN(AiTechnologyScore_ReturnBaseCandidateValueForKind4),
     /* 5 */ THANDOR_FN(AiTechnologyScore_ComputeCategoryCompatibleCandidateValue)};
+
+/* Research planning: once the faction has an ARM 330 (0x14A) structure, scores every available technology of
+   workspace 12 with the score callback of its kind and proposes the best one (entry kind 2) with
+   workspace12BestCandidateBaseWeight, halved while the faction's primary anchor cooldown runs.
+*/
+void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+
+{
+  AiTechnologyCandidateScore candidateScore;
+  int wordIndex;
+  AiTechnologyCandidateScore bestScore;
+  AiTechnologyPlanningCandidateCount candidatesRemaining;
+  AiTechnologyPlanningCandidate *candidateCursor;
+  uint32_t weightRange;
+  RuntimeToken entityId;
+
+  if (!AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303)) {
+    return;
+  }
+  /* Category mask for the category score callback: bit 2 / bit 4 when the faction owns any
+     technology of category 2 / 3. */
+  g_AiTechnologyScoreCategoryMask = 0;
+  for (wordIndex = 0; wordIndex < 8; wordIndex++) {
+    uint32_t owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndex];
+    if ((g_TechnologyCategoryMasks.category2[wordIndex] & owned) != 0) {
+      g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 2;
+    }
+    if ((g_TechnologyCategoryMasks.category3[wordIndex] & owned) != 0) {
+      g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 4;
+    }
+  }
+  if (g_AiWorkspace12Count == 0) {
+    return;
+  }
+  bestScore = 0;
+  weightRange = g_AiKnowledgeData->parameters.workspace12BestCandidateBaseWeight;
+  entityId = 0;
+  candidateCursor = g_AiWorkspace12TechnologyCandidates;
+  for (candidatesRemaining = g_AiWorkspace12Count; candidatesRemaining != 0; candidatesRemaining--) {
+    candidateScore = g_AiTechnologyCandidateScoreCallbackTable[candidateCursor->scoreKind08]
+                      (factionIndex,candidateCursor->technologyId00,worldRuntime);
+    if (bestScore < candidateScore) {
+      entityId = candidateCursor->technologyId00;
+      bestScore = candidateScore;
+    }
+    candidateCursor++;
+  }
+  if (bestScore != 0) {
+    if (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown != 0) {
+      weightRange = weightRange >> 1;
+    }
+    AiCandidateWorkspace_AddOrAccumulateWeightedEntry(entityId,weightRange,2 /* technology */);
+  }
+}
+
+/* Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0],
+   called by AiTechnologyCandidate_AddBestResearch): a technology of this kind always scores 0, so it
+   is never chosen for research.
+*/
+AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  return 0;
+}

@@ -35,22 +35,11 @@
 #define AI_CANDIDATE_ID_MASK 0xFFFF
 #define AI_CANDIDATE_MULTIPLICITY_ONE 0x10000
 #define AI_CANDIDATE_SCORE_ONE 16 /* weightedScoreAndKind: one score unit above the 4 kind bits */
-/* AiPlanning_RebuildFactionWorkspaces site scan: scratch-grid state bits (world/pathing/grid.h) that rule a
-   site out - map edge and terrain classes 28..30 - and the low distance bands of grid classes 0..5 */
-#define AI_SITE_SCRATCH_OBSTACLE_BITS \
-  (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 | \
-   GRID_SCRATCH_TERRAIN_CLASS_BIT28) /* 0xf0000000 */
-#define AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5 (0x3f * GRID_SCRATCH_LOW_BAND0) /* 0x3f00 */
+
 /* Functions are grouped by semantic ownership. */
 
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
-
-void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
-          FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
-          WorldRuntimeContext *worldRuntime);
-
-void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 void AiCandidateWorkspace_Clear(void);
 
@@ -73,14 +62,6 @@ int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX);
 int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX);
 
 int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
-
-void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
-          (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
-          WorldRuntimeContext *worldRuntime);
-
-AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
-          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
-          WorldRuntimeContext *worldRuntime);
 
 Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode);
 
@@ -126,5 +107,7 @@ extern uint32_t g_AiWorkspace11Count;
 extern AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates;
 extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count;
 extern ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies;
+extern AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles;
+extern uint32_t g_AiWorkspace02Count;
 
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */
