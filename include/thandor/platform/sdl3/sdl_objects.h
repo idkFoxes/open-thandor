@@ -75,7 +75,11 @@ void UpdateMouseMode() noexcept;
    (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. CompareGpuFrame (compare mode,
    called by the present before the cursor is composed; does nothing otherwise) draws the recorded frame into the
    frame target without showing it and every OPEN_THANDOR_GPU_COMPARE_MS compares it with the framebuffer
-   (shots\gpucmp_NNNN_*.bmp, statistics in thandor.log). */
+   (shots\gpucmp_NNNN_*.bmp, statistics in thandor.log). Without a swapchain texture (minimized window, dropped
+   mailbox frame) the frame is drawn and submitted without being presented. A window that could not get its
+   swapchain yet (Vulkan, minimized at the start) is claimed again once it is not minimized; GpuWindowChanged (the
+   pump, on window restore / show / size events) makes that happen at the next present. Fullscreen and size
+   switches need nothing from here: SDL recreates a claimed window's swapchain itself. */
 struct GpuCursorSprite {
   const GraphicsTextureSourceAsset *asset;
   uint32_t subresource;
@@ -85,6 +89,7 @@ struct GpuCursorSprite {
 bool GpuRendererSupported(uint32_t renderer) noexcept;
 bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept;
 void StopGpuDevice() noexcept;
+void GpuWindowChanged() noexcept;
 bool GpuDeviceRunning() noexcept;
 bool GpuFrameActive() noexcept;
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;
