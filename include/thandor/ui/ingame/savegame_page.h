@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/session/savegame.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/ingame/savegame_page.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_GAMEPLAY_SESSION_SAVEGAME_H
-#define THANDOR_GAMEPLAY_SESSION_SAVEGAME_H
+#ifndef THANDOR_UI_INGAME_SAVEGAME_PAGE_H
+#define THANDOR_UI_INGAME_SAVEGAME_PAGE_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/savegame. */
+/* Submodule: ui/ingame/savegame_page. */
 
 /* In-game save page action (ui_templates.h: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
    enables it only for a valid typed save name. */
@@ -36,4 +36,4 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl);
 extern uint16_t g_SaveDirectoryUtf16[5];
 extern uint16_t g_ScenarioCatalogPathScratchUtf16[256];
 
-#endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */
+#endif /* THANDOR_UI_INGAME_SAVEGAME_PAGE_H */

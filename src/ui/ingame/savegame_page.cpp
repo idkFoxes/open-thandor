@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/savegame.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/ingame/savegame_page.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/gameplay/session/savegame.h>
+#include <thandor/ui/ingame/savegame_page.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -15,7 +15,7 @@ uint16_t g_SaveDirectoryUtf16[5] = {'s', 'a', 'v', 'e', 0};
 
 uint16_t g_ScenarioCatalogPathScratchUtf16[256] = {0};
 
-/* Implementation ownership: gameplay/session/savegame. */
+/* Implementation ownership: ui/ingame/savegame_page. */
 
 /* Shows an existing save's description: its level title text alone, or, while a campaign is loaded, the level and
    campaign titles patched into the saved-game template text. The text box holds a text id, not a string. Shared by

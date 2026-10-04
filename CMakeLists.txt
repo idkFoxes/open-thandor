@@ -82,7 +82,6 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/runtime.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/runtime.cpp
-    src/gameplay/session/savegame.cpp
     src/gameplay/technology/runtime.cpp
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
@@ -122,6 +121,7 @@ add_library(thandor_curated STATIC
     src/ui/frontend/settings.cpp
     src/ui/ingame/commands.cpp
     src/ui/ingame/runtime.cpp
+    src/ui/ingame/savegame_page.cpp
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
     src/ui/support/runtime.cpp
