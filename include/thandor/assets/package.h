@@ -8,6 +8,7 @@
 #ifndef THANDOR_ASSETS_PACKAGE_H
 #define THANDOR_ASSETS_PACKAGE_H
 
+#include <thandor/assets/package/archive_write.h>
 #include <thandor/assets/package/codec.h>
 #include <thandor/assets/package/resource_loader.h>
 #include <thandor/assets/package/runtime.h>
