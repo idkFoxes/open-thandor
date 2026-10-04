@@ -9,6 +9,7 @@
 #define THANDOR_GAMEPLAY_SESSION_LEVEL_SCRIPT_H
 
 #include <thandor/core/contracts.h>
+#include <thandor/gameplay/session/types.h> /* InGameScheduledCondition* for the postfix evaluator */
 
 /* Submodule: gameplay/session/level_script. */
 

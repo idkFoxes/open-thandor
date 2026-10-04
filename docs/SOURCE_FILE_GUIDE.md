@@ -126,6 +126,7 @@ Error handling, fixed-point maths, memory, settings and strings.
 <a id="module-core"></a>
 ### `core` (area-level files)
 
+- [`color_lanes.h`](source_guide/core.md#file-core-color-lanes) - Not functions of the original: C stand-ins for the MMX colour sequences the original inlines wherever it shades a packed ARGB colour (shot and effect tints, world and model lighting, terrain ...
 - [`contracts.h`](source_guide/core.md#file-core-contracts) - Core contracts shared by the split submodules.
 - [`layout_checks.cpp`](source_guide/core.md#file-core-layout-checks) - The structs of the type headers (&lt;area&gt;/&lt;module&gt;/types.h) are the original's 32-bit layouts on x86 and x64 (core/ptr32.h): their sizes and the offsets of their pointer fields, checked at compile time.
 - [`ptr32.h`](source_guide/core.md#file-core-ptr32) - 32-bit pointer fields of the original data layouts (step 5f).
@@ -206,7 +207,7 @@ Module header: [`ai.h`](../include/thandor/gameplay/ai.h) · Changelog: `combat`
 Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `audio` [dev](../CHANGELOG.md#module-gameplay-army-audio) · [full](../CHANGELOG_FULL.md#module-gameplay-army-audio); `combat` [dev](../CHANGELOG.md#module-gameplay-army-combat) · [full](../CHANGELOG_FULL.md#module-gameplay-army-combat); `movement` [dev](../CHANGELOG.md#module-gameplay-army-movement) · [full](../CHANGELOG_FULL.md#module-gameplay-army-movement); `placement` [dev](../CHANGELOG.md#module-gameplay-army-placement) · [full](../CHANGELOG_FULL.md#module-gameplay-army-placement); `runtime` [dev](../CHANGELOG.md#module-gameplay-army-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-army-runtime)
 
 - [`aircraft.cpp / aircraft.h`](source_guide/gameplay.md#file-gameplay-army-aircraft) - no file comment; main functions `ArmyRuntimeClass_UpdateAircraft`, `ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode`, `ArmyRuntime_TestWorldPointAllowedDefault`
-- [`audio.cpp / audio.h`](source_guide/gameplay.md#file-gameplay-army-audio) - no file comment; main functions `ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds`, `ArmyRuntimeAudio_DispatchPositionedSoundVariant`, `ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds`
+- [`audio.cpp / audio.h`](source_guide/gameplay.md#file-gameplay-army-audio) - no file comment; main functions `ArmyRuntimeAudio_UpdateTurnAndMoveSounds`, `ArmyRuntimeAudio_UpdateTurretTurnSound`, `ArmyRuntimeAudio_UpdateStructureFactorySound`
 - [`class_dispatch.cpp / class_dispatch.h`](source_guide/gameplay.md#file-gameplay-army-class-dispatch) - no file comment; main functions `ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback`, `ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback`, `ArmyRuntimeNode_DispatchTypedCallback`
 - [`class_updates.cpp / class_updates.h`](source_guide/gameplay.md#file-gameplay-army-class-updates) - no file comment; main functions `ArmyRuntime_ClassCommandHandlerGroupA`, `ArmyRuntime_UpdateAnimatedModelSubnodes`, `ArmyRuntime_RebuildDerivedSelectionMetrics`
 - [`collision.cpp / collision.h`](source_guide/gameplay.md#file-gameplay-army-collision) - no file comment; main functions `ArmyCollision_FindBlockingRuntimeForCurrentUnit`, `ArmyCollision_TestPointWithinExpandedRuntimeRadius`, `ArmyPlacementCollision_TestCurrentRuntime`
@@ -214,7 +215,7 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`damage.cpp / damage.h`](source_guide/gameplay.md#file-gameplay-army-damage) - no file comment; main functions `ArmyRuntime_EmitDamageThresholdEffect`, `ArmyRuntime_ApplyDamageAndPropagateToParent`, `ArmyRuntime_ApplyImpactDamageAndFinalizeState`
 - [`drive_banking.cpp / drive_banking.h`](source_guide/gameplay.md#file-gameplay-army-drive-banking) - no file comment; main functions `ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation`
 - [`drive_common.cpp / drive_common.h`](source_guide/gameplay.md#file-gameplay-army-drive-common) - no file comment; main functions `ArmyRuntime_HandleCollisionPartner`, `ArmyRuntime_UpdateActivationMetricAndPlayStartSound`
-- [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`, `ArmyRuntimeClass_UpdateGroundMovement`
+- [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyGroundMovement_ApplyRecoilTilt`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
 - [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
 - [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
@@ -259,7 +260,7 @@ Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog
 - [`level.cpp / level.h`](source_guide/gameplay.md#file-gameplay-session-level) - no file comment; main functions `LevelAsset_PrepareEndingMoviePath`, `InGameLevelRuntime_ShutdownLoadedAssetResources`, `InGameLevelRuntime_SaveLevelAssetImageFromWorldState`
 - [`level_new.cpp / level_new.h`](source_guide/gameplay.md#file-gameplay-session-level-new) - no file comment; main functions `NewLevel_Fail`, `NewLevel_CopyRuntimePrefix`, `NewLevel_LoadTechnology`
 - [`level_saved.cpp / level_saved.h`](source_guide/gameplay.md#file-gameplay-session-level-saved) - no file comment; main functions `InGameLevelRuntime_LoadResourcesAfterExternalTables`
-- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameConditionRuntime_UpdateScheduledRecords`
+- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameScheduledCondition_EvaluatePostfixExpression`, `InGameConditionRuntime_UpdateScheduledRecords`
 - [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
 - [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
 - [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
@@ -322,7 +323,6 @@ Module header: [`render.h`](../include/thandor/graphics/render.h) · Changelog: 
 - [`offscreen.cpp / offscreen.h`](source_guide/graphics.md#file-graphics-render-offscreen) - no file comment; main functions `GraphicsOffscreen_RenderModelListToTextureSource`
 - [`primitives.cpp / primitives.h`](source_guide/graphics.md#file-graphics-render-primitives) - no file comment; main functions `DepthInterval_BuildBinMask`, `DepthBinMasks_Overlap`, `GraphicsPrimitiveQueue_ResetGlobal`
 - [`projection.cpp / projection.h`](source_guide/graphics.md#file-graphics-render-projection) - View projection: the view and projection parameters, the projection viewport and clip rectangle, the frustum planes, the auxiliary orientation and the point projection used by the renderers.
-- [`shading_lanes.h`](source_guide/graphics.md#file-graphics-render-shading-lanes) - Private helpers shared by the graphics/render sources (static inline).
 - [`shadow_texture.cpp / shadow_texture.h`](source_guide/graphics.md#file-graphics-render-shadow-texture) - no file comment; main functions `GraphicsShadingRuntime_InitializeGeneratedTexture`, `GraphicsShadingRuntime_Shutdown`, `GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`
 - [`types.h`](source_guide/graphics.md#file-graphics-render-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -410,7 +410,7 @@ Module header: [`bootstrap.h`](../include/thandor/platform/bootstrap.h) · Chang
 
 - [`image.cpp / image.h`](source_guide/platform.md#file-platform-bootstrap-image) - Own translation unit: uses the real Windows SDK headers, not the game's type headers.
 - [`main.cpp`](source_guide/platform.md#file-platform-bootstrap-main) - The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess.
-- [`runtime.cpp / runtime.h`](source_guide/platform.md#file-platform-bootstrap-runtime) - no file comment; main functions `ProcessEntry`, `GameData_ResetDefaults`, `GameData_LoadExternalTables`
+- [`runtime.cpp / runtime.h`](source_guide/platform.md#file-platform-bootstrap-runtime) - no file comment; main functions `Screenshot_SaveFramebufferAsPcx`, `ProcessEntry`, `GameData_ResetDefaults`
 - [`types.h`](source_guide/platform.md#file-platform-bootstrap-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-platform-debug"></a>
@@ -486,7 +486,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 - [`gauge.cpp / gauge.h`](source_guide/ui.md#file-ui-controls-gauge) - no file comment; main functions `UiHorizontalGaugeControl_DrawFrameFillAndLabel`, `UiHorizontalGaugeControl_PointerMoveBusyCursor`, `UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw`
 - [`image.cpp / image.h`](source_guide/ui.md#file-ui-controls-image) - no file comment; main functions `UiImageControl_HitTestOpaque`, `UiImageControl_LayoutChildrenToParent`, `UiImageControl_NonRightDrag`
 - [`input.cpp / input.h`](source_guide/ui.md#file-ui-controls-input) - no file comment; main functions `UiNode_DefaultKeyboardEventMoveFocusNext`, `UiNode_ForwardPointerWheelToParent`, `UiNode_DefaultPointerMove`
-- [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_RefreshSelectionAndQueueAction`, `UiPointerList_SortByDwordPairFieldDescending`
+- [`lists.cpp / lists.h`](source_guide/ui.md#file-ui-controls-lists) - no file comment; main functions `UiPointerList_InitializeColumnLayout`, `UiPointerList_RefreshSelectionAndQueueAction`, `UiPointerList_SelectColumnListIndex`
 - [`minimap.cpp / minimap.h`](source_guide/ui.md#file-ui-controls-minimap) - no file comment; main functions `UiScaler_BuildPixelWeightTables`, `UiSelectionGeometryControl_DrawClipped`, `UiSelectionGeometryControl_ConvertPointerAndEnqueueAction`
 - [`panels.cpp / panels.h`](source_guide/ui.md#file-ui-controls-panels) - no file comment; main functions `UiImagePanelControl_DrawAlignedTextureAndChildren`, `UiImagePanelControl_HitTestAlignedTextureAndChildren`, `UiFillPanelControl_DrawColorOrTiledTextureAndChildren`
 - [`root_stack.cpp / root_stack.h`](source_guide/ui.md#file-ui-controls-root-stack) - no file comment; main functions `UiRootStack_InvalidateAll`, `UiRootStack_Push`, `UiRootStack_Pop`
@@ -518,7 +518,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
-- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateColorDepthSelection`, `UiDisplayModeAction_UpdateResolutionSelection`
+- [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplayModeCandidates_InsertSortedUnique`, `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateColorDepthSelection`
 - [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`types.h`](source_guide/ui.md#file-ui-dialogs-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
@@ -536,12 +536,12 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`end_movie.cpp / end_movie.h`](source_guide/ui.md#file-ui-frontend-end-movie) - no file comment; main functions `Frontend_PlaySelectedEndMovie`
 - [`end_movie_commands.cpp / end_movie_commands.h`](source_guide/ui.md#file-ui-frontend-end-movie-commands) - no file comment; main functions `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
 - [`faction_setup.cpp / faction_setup.h`](source_guide/ui.md#file-ui-frontend-faction-setup) - no file comment; main functions `FrontendFactionSetupAction_CycleFactionColour`, `FrontendFactionSetupAction_ToggleFactionActive`, `FrontendFactionSetupAction_ChooseFaction`
-- [`lifecycle.cpp / lifecycle.h`](source_guide/ui.md#file-ui-frontend-lifecycle) - no file comment; main functions `Frontend_Init`, `FrontendRuntime_ShutdownAndReleaseResources`, `FrontendMenu_BindSharedResources`
+- [`lifecycle.cpp / lifecycle.h`](source_guide/ui.md#file-ui-frontend-lifecycle) - no file comment; main functions `FrontendMusic_StartMenuMusic`, `Frontend_Init`, `FrontendRuntime_ShutdownAndReleaseResources`
 - [`main_loop.cpp / main_loop.h`](source_guide/ui.md#file-ui-frontend-main-loop) - no file comment; main functions `Frontend_MainLoop`
 - [`menu_room.cpp / menu_room.h`](source_guide/ui.md#file-ui-frontend-menu-room) - no file comment; main functions `FrontendRuntime_UpdatePointerContextAndSceneView`, `FrontendMenuRoom_PressNoOp`, `FrontendMenuRoom_DragNoOp`
 - [`menu_room_scene.cpp / menu_room_scene.h`](source_guide/ui.md#file-ui-frontend-menu-room-scene) - no file comment; main functions `FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ActivateRecordById`, `FrontendRomTransition_RequestStop`
 - [`mission_briefing.cpp / mission_briefing.h`](source_guide/ui.md#file-ui-frontend-mission-briefing) - no file comment; main functions `FrontendMissionBriefingPage_Initialize`
-- [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkSetupPage_InitializeBackendMode`, `FrontendTeardown_SaveStatusTextAndHostAddress`, `FrontendTransferPage_ValidateInputAndRequestMailbox`
+- [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkGamePage_Show`, `FrontendNetworkGamePage_ClearSessionList`, `FrontendNetworkSetupPage_InitializeBackendMode`
 - [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
 - [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
