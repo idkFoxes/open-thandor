@@ -149,6 +149,7 @@ add_library(thandor_curated STATIC
     src/network/protocol/cipher.cpp
     src/network/protocol/command_exchange.cpp
     src/network/protocol/commands.cpp
+    src/network/protocol/frontend_session.cpp
     src/network/protocol/lobby.cpp
     src/network/protocol/mailbox.cpp
     src/network/protocol/scenario_transfer.cpp
