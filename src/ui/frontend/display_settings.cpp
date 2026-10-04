@@ -337,8 +337,9 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   selectedAdapterIndex = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
           adapterIndex;
   previousAdapterIndex = g_ActiveGraphicsAdapterIndex;
-  previousHeight = g_FramebufferHeight;
-  previousWidth = g_FramebufferWidth;
+  /* not in the original: the mode's size, not the framebuffer's (a GPU UI scale divides it) */
+  previousHeight = SdlVideo_DisplayModeHeight();
+  previousWidth = SdlVideo_DisplayModeWidth();
   /* not in the original: the display mode kind is applied by the same switch */
   previousDisplayModeKind = SdlVideo_DisplayModeKind();
   SdlVideo_SetDisplayModeKind(s_pendingDisplayModeKind);
@@ -569,7 +570,7 @@ void FrontendDisplaySettingsAction_SelectDisplayModeKind(UiNodeBase *sourceNode)
 /* Not in the original: the advanced settings page ("Erweitert", displayPageStack page 1, opened by the options
    page's fourth button). Every choice applies and saves its value at once: "3D-Kanten" ([graphics]
    gpu_rasterization, a running GPU renderer draws its next scene with it), "UI-Skalierung" ([graphics] ui_scale;
-   with a GPU renderer running the display mode is set again at once, as "Anwenden" does: frame target at the new
+   with a GPU renderer running the display mode is set again at once, as "Anwenden" does: same window size, UI at the new
    scale, the UI laid out again), "Bildratenbegrenzung"
    and "VSync" (SdlVideo_SetFrameLimit / SdlVideo_SetVsync). Edges and UI scale only matter for the GPU renderers:
    with the software renderer running they can still be chosen (kept for a later switch to Vulkan or DirectX 12;
@@ -671,9 +672,10 @@ void FrontendAdvancedSettingsAction_SelectEdges(UiNodeBase *sourceNode)
 }
 
 /* Handler of FRONTEND_ACTION_ADVANCED_UI_SCALE ("Auto", "1x", "2x", "3x"): saves the scale and, with a GPU
-   renderer running and a scale that differs from the one in use (OPEN_THANDOR_UI_SCALE wins), sets the current
-   display mode (same renderer, size and kind) again, which makes the frame target at the new scale (auto: the
-   largest whole one at which the mode fits the display), and finishes as "Anwenden" does. The page stays open. */
+   renderer running and a scale that differs from the one in use (OPEN_THANDOR_UI_SCALE wins; auto and the 640x480
+   floor resolved), sets the current display mode (same renderer, physical size and kind: the window or the
+   fullscreen mode does not change) again, which divides it by the new scale into the UI resolution, and finishes
+   as "Anwenden" does. The page stays open. */
 void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
 {
   UiNodeBase *frontendRoot = FrontendAdvancedSettingsPage_Root(sourceNode);
@@ -695,8 +697,8 @@ void FrontendAdvancedSettingsAction_SelectUiScale(UiNodeBase *sourceNode)
   SdlVideo_SaveUiScale(scale);
   if (SdlVideo_GpuRendererActive() && SdlVideo_UiScaleChangePending()) {
     g_CursorVisibilityToken--;
-    if (!g_GraphicsSetDisplayMode(g_ActiveGraphicsAdapterIndex,PERSISTENT_DEFAULT_BITS_PER_PIXEL,g_FramebufferHeight,
-                                  g_FramebufferWidth,&modeError)) {
+    if (!g_GraphicsSetDisplayMode(g_ActiveGraphicsAdapterIndex,PERSISTENT_DEFAULT_BITS_PER_PIXEL,
+                                  SdlVideo_DisplayModeHeight(),SdlVideo_DisplayModeWidth(),&modeError)) {
       FatalError_ExitIfFailed(modeError,true); /* the mode in use could not be set again */
     }
     FrontendDisplaySettings_FinishModeSwitch(sourceNode);

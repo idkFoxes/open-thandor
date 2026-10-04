@@ -51,10 +51,15 @@ bool VulkanWindow() noexcept;
 void DestroyMainWindow() noexcept;
 
 /* video.cpp: the presentation geometry. LetterboxRect is the largest rectangle of the inner size's aspect
-   centred in the outer size; the window <-> framebuffer mappings use it with the window size (in window
-   coordinates) and the framebuffer size. AbsoluteMouse: the display mode kind is a normal window, so the
+   centred in the outer size. PresentRect is where a frame of the inner size (N x the framebuffer at UI scale
+   N = scale) goes: centred unscaled when it fits with less than scale pixels to spare on both axes (the remainder
+   of the display mode divided by N), else LetterboxRect. The presents and the window <-> framebuffer mappings
+   use it with the window / swapchain size and the frame size. AppliedUiScale: the UI scale N of the running
+   display mode (1 for the software renderer). AbsoluteMouse: the display mode kind is a normal window, so the
    pointer follows the system mouse position instead of SDL's relative mouse mode. */
 SDL_FRect LetterboxRect(float outerWidth, float outerHeight, float innerWidth, float innerHeight) noexcept;
+SDL_FRect PresentRect(float outerWidth, float outerHeight, float innerWidth, float innerHeight, int scale) noexcept;
+int AppliedUiScale() noexcept;
 void WindowToFramebuffer(float windowX, float windowY, float &outX, float &outY) noexcept;
 void FramebufferToWindow(float x, float y, float &outWindowX, float &outWindowY) noexcept;
 bool AbsoluteMouse() noexcept;
@@ -98,8 +103,8 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
 bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept;
 void CompareGpuFrame() noexcept;
 /* Step 9 WP8, UI scaling: the GPU frame target (and the 3D targets) are scale x the framebuffer size, which stays
-   the logical UI resolution (layout, hit tests, mouse, captures); the 2D quads and the 3D view are drawn at that
-   resolution and the frame is presented letterboxed. Takes effect at the next frame (the targets are made anew);
+   the logical UI resolution (layout, hit tests, mouse, captures; the display mode divided by the scale); the 2D
+   quads and the 3D view are drawn at that resolution and the frame is presented centred (PresentRect). Takes effect at the next frame (the targets are made anew);
    clamped to 1..kMaxGpuUiScale. video.cpp sets it at every display mode switch (1 for the software renderer). */
 constexpr int kMaxGpuUiScale = 8;
 void SetGpuUiScale(int scale) noexcept;

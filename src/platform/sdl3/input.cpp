@@ -19,6 +19,7 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <span>
@@ -304,11 +305,14 @@ void MoveToEventPosition(const SDL_Event &event) noexcept
   g_MouseY = static_cast<UiPixelCoordinate>(std::floor(y));
 }
 
-/* Relative mode (fullscreen): moves the position by the raw device delta, as DirectInput's relative axes. */
+/* Relative mode (fullscreen): moves the position by the raw device delta, as DirectInput's relative axes. At UI
+   scale N a framebuffer pixel is N display pixels, so the delta is divided by N (the pointer keeps its speed on
+   the screen). */
 void MoveByRelativeMotion(const SDL_MouseMotionEvent &motion) noexcept
 {
-  s_relativeRemainderX += motion.xrel;
-  s_relativeRemainderY += motion.yrel;
+  const auto scale = static_cast<float>(std::max(AppliedUiScale(), 1));
+  s_relativeRemainderX += motion.xrel / scale;
+  s_relativeRemainderY += motion.yrel / scale;
   const float wholeX = std::trunc(s_relativeRemainderX);
   const float wholeY = std::trunc(s_relativeRemainderY);
   s_relativeRemainderX -= wholeX;
@@ -504,7 +508,8 @@ Bool8 SdlInput_SetDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32
   if (!s_chainedSetDisplayMode(adapterIndex, bitsPerPixel, height, width, errorCode)) {
     return false; /* the chained hook's error is passed through */
   }
-  if (!GraphicsCursor_CreateBuffersAndCenter(height, width, errorCode)) {
+  /* the framebuffer size: at a GPU UI scale N > 1 the mode (height x width) is N x it */
+  if (!GraphicsCursor_CreateBuffersAndCenter(g_FramebufferHeight, g_FramebufferWidth, errorCode)) {
     return false;
   }
   g_GraphicsBackendAccessState = 0;

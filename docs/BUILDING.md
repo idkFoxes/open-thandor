@@ -208,7 +208,7 @@ texture_quality = high
 model_detail = 262144
 ; Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) or exact (the software renderer's look)
 gpu_rasterization = smooth
-; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)
+; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor that keeps the UI at least 1280x720) or 1, 2, 3; the UI resolution is the display mode divided by it, the window / fullscreen size stays the mode
 ui_scale = auto
 ; vsync: on (default; frames wait for the display's refresh, no tearing) or off
 vsync = on
@@ -310,17 +310,23 @@ not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a w
 and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
 unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).
 
-**UI scale** (Vulkan / DirectX 12 only): the chosen display mode is the logical UI resolution - layout, hit tests,
-the mouse and captures stay in its pixels - and the GPU draws the whole frame at N times that size (the UI with
-nearest sampling, so it stays crisp; the 3D view at the full resolution), then presents it letterboxed. The window
-or the exclusive fullscreen mode gets N x the mode's size. N is `[graphics] ui_scale` in `thandor.ini` (or
-`OPEN_THANDOR_UI_SCALE=auto|1..8`, which wins): `auto` (default) takes the largest whole N at which N x the mode
-fits the display (a window: its usable area), so 1280x720 runs at 2x on a 1440p and at 3x on a 4K display; with a
-fixed `2` or `3` the GPU renderers' resolution list offers the display's sizes divided by N (from 640x480 on). The
-software renderer always runs at N = 1. There is no choice on the display settings page yet (`thandor.ini` or the
-variable only); `thandor.log` names the scale (`display mode 1280x720x32, window, renderer Vulkan, UI scale 2
-(auto)`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the frame at N x and
-point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the caller sets it.
+**UI scale** (Vulkan / DirectX 12 only): the scale never changes the window or the display. The chosen display mode
+is the physical size - the window's size, or the exclusive fullscreen mode - and the resolution list on the
+"Anzeige" page always lists the display's sizes. The game's logical UI resolution is that size divided by N,
+rounded down (2560x1440 at 2x: 1280x720; at 3x: 853x480) - layout, hit tests, the mouse and captures use its
+pixels - and the GPU draws the whole frame at N times that (the UI with nearest sampling, so it stays crisp; the 3D
+view at the full physical resolution). The frame is presented unscaled and centred; the remainder of the division
+(less than N pixels, 1 column at 2560 / 3) stays black at the edge. Window mouse positions are divided by N, and in
+fullscreen (relative mouse) the movement is divided by N too, so the pointer keeps its speed on the screen. N is
+`[graphics] ui_scale` in `thandor.ini` (or `OPEN_THANDOR_UI_SCALE=auto|1..8`, which wins), chosen on the
+"Erweitert" page ("UI-Skalierung": Auto, 1x, 2x, 3x; it applies at once, the page stays open): `auto` (default)
+takes the largest whole N at which the UI is still at least 1280x720 (1 below 2560x1440, 2 at 2560x1440, 3 at
+3840x2160); a fixed N that would make the UI smaller than 640x480 is lowered until it fits (1920x1080 at 3x runs at
+2x, logged). The software renderer always runs at N = 1 (the setting is only saved). `thandor.log` names the
+scale, the UI size and the window size (`display mode 2560x1440x32, window, renderer Vulkan, UI scale 2 (fixed):
+UI 1280x720, window 2560x1440`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the
+frame at N x and point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the
+caller sets it.
 
 **VSync and frame limit** (all renderers; the render rate only - the game's timers are untouched, see below for the
 steps): `[graphics] vsync = on|off` (default `on`; `OPEN_THANDOR_VSYNC=0|1` wins) - on, Vulkan / DirectX 12

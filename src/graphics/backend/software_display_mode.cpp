@@ -160,9 +160,14 @@ Bool8 SoftwareRenderer_SetDisplayMode
   if (!g_SoftwareChainedSetDisplayMode(adapterIndex,bitsPerPixel,height,width,errorCode)) {
     return false;
   }
+  /* not in the original: the framebuffer size, not width x height (the SDL3 backend's GPU UI scale N makes the
+     framebuffer the mode divided by N; without it they are equal) */
+  (void)height;
+  (void)width;
   {
-    g_SoftwareDepthRowStrideBytes = width * 4; /* one int32 depth value per pixel */
-    depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height,&depthAllocationPayload);
+    g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4; /* one int32 depth value per pixel */
+    depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
+                                             &depthAllocationPayload);
     previousDepthBuffer = g_SoftwareDepthBuffer;
     if (depthAllocationError != 0) {
       *errorCode = depthAllocationError;

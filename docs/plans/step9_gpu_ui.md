@@ -225,7 +225,7 @@ The existing functions, executed immediately. Output stays bit-identical and the
   - `WindowToFramebuffer` (video.cpp:524) already maps window coordinates to logical framebuffer coordinates; fullscreen relative mouse mode (input.cpp:307) is unchanged.
 - **GPU frame target:** N x the logical size, with N an integer (2 at 1440p, 3 at 4K). 2D destination rectangles and scissors are multiplied by N. Sprites use nearest sampling, so scaled UI stays crisp; bilinear ops keep linear sampling.
 - **3D pass at N x:** scale the rebuilt vertex positions in `SoftwareVertexAt` (gpu_renderer.cpp:474) and the scissors by N. The 3D view then renders at native resolution and is no longer comparable pixel for pixel with software at N > 1.
-- **Setting:** "UI scale" (auto / 1 / 2 / 3) in thandor.ini, plus `OPEN_THANDOR_UI_SCALE`. The display mode list then offers logical sizes = native / N.
+- **Setting:** "UI scale" (auto / 1 / 2 / 3) in thandor.ini, plus `OPEN_THANDOR_UI_SCALE`. As built (after the WP8 fix): the display mode stays the physical window / fullscreen size and the list keeps the display's sizes; the logical size is mode / N (floor), the frame target N x that, presented centred; auto = largest N keeping at least 1280x720, a fixed N is lowered to keep at least 640x480.
 - **Software renderer:** stays at N = 1. Its present is today's linear letterbox.
 
 ## 6. Risks, expected differences and work packages

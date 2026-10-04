@@ -61,7 +61,7 @@
                                                  original's Direct3D renderer) */
 #define PERSISTENT_GPU_RASTERIZATION_EXACT 1  /* the software rasterizer's triangles (pixel-snapped, affine) */
 #define PERSISTENT_GPU_RASTERIZATION_COUNT 2
-#define PERSISTENT_UI_SCALE_AUTO 0 /* default: the largest integer scale at which the display mode fits the display */
+#define PERSISTENT_UI_SCALE_AUTO 0 /* default: the largest integer scale that keeps the UI (mode / scale) at least 1280x720 */
 #define PERSISTENT_UI_SCALE_MAX 3  /* values 1..3: that scale */
 #define PERSISTENT_VSYNC_ON 0  /* default */
 #define PERSISTENT_VSYNC_OFF 1
