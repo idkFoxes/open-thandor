@@ -28,18 +28,18 @@ Module header: [`bootstrap.h`](../../include/thandor/platform/bootstrap.h) · Ch
 
 Own translation unit: uses the real Windows SDK headers, not the game's type headers.
 
-**Functions** (10 public, 7 file-local):
+**Functions** (10 public, 9 file-local):
 
 - [`Thandor_Log`](../../src/platform/bootstrap/image.cpp#L35)
-- [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L101)
-- [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L124)
-- [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L145) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
-- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L414)
-- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L423)
-- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L438)
-- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L443)
-- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L448)
-- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L454)
+- [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L121)
+- [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L144)
+- [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L165) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
+- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L438)
+- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L447)
+- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L462)
+- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L467)
+- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L472)
+- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L478)
 
 **Data** (1 shared, 1 file-local): `g_ThandorFrameHeartbeat`.
 
@@ -173,9 +173,9 @@ The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compil
 
 **Functions** (22 public):
 
-- [`DebugHook_RunSelfTest`](../../src/platform/debug/hooks.cpp#L28) - --- process ---
-- [`DebugHook_MessagePump`](../../src/platform/debug/hooks.cpp#L33)
-- [`DebugHook_BeforeIntroMovies`](../../src/platform/debug/hooks.cpp#L41) - OPEN_THANDOR_MOVIEEXPORT=&lt;name&gt;[,&lt;name&gt;...] exports those movies and exits; OPEN_THANDOR_MOVIE=&lt;name&gt;\|all plays them in the debug movie player (which exits the process when done).
+- [`DebugHook_RunSelfTest`](../../src/platform/debug/hooks.cpp#L29) - --- process ---
+- [`DebugHook_MessagePump`](../../src/platform/debug/hooks.cpp#L34)
+- [`DebugHook_BeforeIntroMovies`](../../src/platform/debug/hooks.cpp#L42) - OPEN_THANDOR_MOVIEEXPORT=&lt;name&gt;[,&lt;name&gt;...] exports those movies and exits; OPEN_THANDOR_MOVIE=&lt;name&gt;\|all plays them in the debug movie player (which exits the process when done).
 - [`DebugHook_AllowSecondInstance`](../../src/platform/debug/hooks.cpp#L60)
 - [`DebugHook_ProcessPriorityClass`](../../src/platform/debug/hooks.cpp#L65)
 - [`DebugHook_Windowed`](../../src/platform/debug/hooks.cpp#L72) - --- windowed mode ---
@@ -191,7 +191,7 @@ The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compil
 
 **Depends on** (10 files, names used): [`platform/debug/test_aids`](#file-platform-debug-test-aids) (8), [`platform/debug/campaign`](#file-platform-debug-campaign) (4), [`platform/debug/script`](#file-platform-debug-script) (3), [`platform/debug/statehash`](#file-platform-debug-statehash) (3), [`platform/debug/movie_player`](#file-platform-debug-movie-player) (2), [`gameplay/session/runtime`](gameplay.md#file-gameplay-session-runtime) (1), [`network/backend/runtime`](network.md#file-network-backend-runtime) (1), [`platform/debug/autoshot`](#file-platform-debug-autoshot) (1), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder) (1), [`platform/selftest/selftests`](#file-platform-selftest-selftests) (1).
 
-**Includes:** `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/autoshot.h`, `thandor/platform/debug/campaign.h`, `thandor/platform/debug/movie_decoder.h`, `thandor/platform/debug/movie_player.h`, `thandor/platform/debug/script.h`, `thandor/platform/debug/statehash.h`, `thandor/platform/debug/test_aids.h`, `thandor/platform/selftest/selftest.h`.
+**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/autoshot.h`, `thandor/platform/debug/campaign.h`, `thandor/platform/debug/movie_decoder.h`, `thandor/platform/debug/movie_player.h`, `thandor/platform/debug/script.h`, `thandor/platform/debug/statehash.h`, `thandor/platform/debug/test_aids.h`, `thandor/platform/selftest/selftest.h`.
 
 <a id="file-platform-debug-level-script"></a>
 #### `level_script.cpp`
@@ -408,7 +408,7 @@ The types of the module (structs, unions, enums and scalar typedefs in the origi
 <a id="module-platform-sdl3"></a>
 ### `platform/sdl3`
 
-Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video)
+Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`gpu_shader_fragment`](#file-platform-sdl3-gpu-shader-fragment), [`gpu_shader_fragment_alpha_test`](#file-platform-sdl3-gpu-shader-fragment-alpha-test), [`gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video)
 
 <a id="file-platform-sdl3-audio"></a>
 #### `audio.cpp`
@@ -457,6 +457,27 @@ SDL3 backend, stage 2: rasterizes the primitive queues on the GPU through SDL_GP
 **Depends on** (6 files, names used): [`graphics/resources/framebuffer`](graphics.md#file-graphics-resources-framebuffer) (7), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (5), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (4), [`graphics/render/primitives`](graphics.md#file-graphics-render-primitives) (3), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (2), [`graphics/backend/software_display_mode`](graphics.md#file-graphics-backend-software-display-mode) (1).
 
 **Includes:** `SDL3/SDL_gpu.h`, `SDL3/SDL_stdinc.h`, `SDL3/SDL_timer.h`, `algorithm`, `cstdint`, `cstdio`, `cstdlib`, `cmath`, `cstring`, `unordered_map`, `vector`, `thandor/platform/bootstrap/image.h`, `thandor/platform/sdl3/platform.h`, `thandor/platform/system/win32.h`, `gpu_shader_vertex.h`, `gpu_shader_fragment.h`, `gpu_shader_fragment_alpha_test.h`.
+
+<a id="file-platform-sdl3-gpu-shader-fragment"></a>
+#### `gpu_shader_fragment.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_fragment.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+<a id="file-platform-sdl3-gpu-shader-fragment-alpha-test"></a>
+#### `gpu_shader_fragment_alpha_test.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_fragment_alpha_test.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+<a id="file-platform-sdl3-gpu-shader-vertex"></a>
+#### `gpu_shader_vertex.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_vertex.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
 
 <a id="file-platform-sdl3-input"></a>
 #### `input.cpp`
@@ -597,7 +618,7 @@ No file comment; function families: `Thandor_*` (10), `SelfTest_*` (8).
 
 **Functions** (1 public, 17 file-local):
 
-- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L620) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
+- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L624) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_RunSelfTest`).
 
