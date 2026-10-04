@@ -145,15 +145,14 @@ add_library(thandor_curated STATIC
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): crash logs and the self-tests that run
-# copies of original code rely on stable addresses.
+# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
 add_executable(thandor WIN32
     src/platform/bootstrap/main.cpp
     src/platform/bootstrap/image.cpp
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
-# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): on x64 the process stays
-# below 2 GB (/LARGEADDRESSAWARE:NO) so every pointer fits.
+# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
+# (/LARGEADDRESSAWARE:NO) so every pointer fits.
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
@@ -227,7 +226,6 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
-        src/platform/debug/windowed.cpp
         src/platform/selftest/selftests.cpp
     )
     target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)

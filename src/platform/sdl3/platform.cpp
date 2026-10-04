@@ -6,7 +6,7 @@
  */
 
 /* SDL3 backend: the main window, its renderer and the event pump (g_Win32PumpMessages). The pump does what
-   Win32_PumpMessages and MainWindowProc do for the DirectX backend: the developer tools' pump hook first, then
+   the original's Win32_PumpMessages and MainWindowProc do: the developer tools' pump hook first, then
    keys, characters, mouse and focus changes, and a quit request ends the game. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
@@ -38,7 +38,7 @@ int WindowCoordinateFromEnvironment(const char *name) noexcept
   return (value != nullptr) ? std::atoi(value) : 0;
 }
 
-/* The DirectX backend's Win32_ShutdownAndExit: shuts the game down and ends the process (does not return). */
+/* The original's Win32_ShutdownAndExit: shuts the game down and ends the process (does not return). */
 [[noreturn]] void ShutdownAndExit()
 {
   Runtime_Shutdown();

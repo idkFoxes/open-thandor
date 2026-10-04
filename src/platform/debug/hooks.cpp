@@ -7,7 +7,7 @@
 
 /* The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option
    THANDOR_DEV_TOOLS. Each hook hands over to the tool behind it; without its environment variable a tool does
-   nothing. The windowed-mode hooks are in windowed.c, the level-script log in level_script.c. */
+   nothing. The level-script log is in level_script.cpp. */
 
 #include <stdlib.h>
 #include <string.h>
@@ -65,6 +65,13 @@ int DebugHook_AllowSecondInstance(void)
 unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass)
 {
   return DebugHook_Windowed() ? NORMAL_PRIORITY_CLASS : priorityClass;
+}
+
+/* --- windowed mode --- */
+
+int DebugHook_Windowed(void)
+{
+  return Thandor_TestAidWindowed();
 }
 
 /* --- input --- */

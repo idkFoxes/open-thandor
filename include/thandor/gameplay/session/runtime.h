@@ -13,7 +13,7 @@
 
 /* Submodule: gameplay/session/runtime. */
 
-/* Timer rate of InGameRuntime_PeriodicCountdownAndClockTick (TimerSystem_RegisterPeriodic takes a frequency). */
+/* Timer rate of InGameRuntime_PeriodicCountdownAndClockTick (g_TimerRegisterPeriodic takes a frequency). */
 #define INGAME_PERIODIC_TIMER_HZ 80
 /* Reload value of g_InGameNetworkTickCountdown: the periodic timer counts it down, and a simulation step only
    runs at zero, so the game advances at most 80 / 4 = 20 steps per second. */

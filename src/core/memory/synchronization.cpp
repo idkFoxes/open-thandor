@@ -109,7 +109,6 @@ void Runtime_Shutdown(void)
   Network_Shutdown();
   SdlAudio_Shutdown();
   SdlTimer_Shutdown();
-  TimerSystem_Shutdown();
   DynDLL_UnloadAll();
   Win32FileSystem_RestoreInitialDirectory();
   ArenaHeap_Shutdown();

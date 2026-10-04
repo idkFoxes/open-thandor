@@ -277,7 +277,7 @@ void UiRuntime_SetSynchronizationHooks
 
 
 /* Sets up the UI runtime at startup: registers the 20 Hz frame-tick timer and the 125 Hz transfer-mailbox
-   timer (TimerSystem_RegisterPeriodic takes a frequency), loads fonts and window resources, installs the
+   timer (g_TimerRegisterPeriodic takes a frequency), loads fonts and window resources, installs the
    in-game error handler and allocates the UI queues and the network transfer buffers. Every allocation
    failure is fatal.
 */

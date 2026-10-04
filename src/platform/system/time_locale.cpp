@@ -14,6 +14,8 @@ __declspec(align(4)) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDat
 
 __declspec(align(8)) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = 0;
 
+/* the periodic timers, installed by SdlPlatform_InstallTimersAndPump (SDL timers instead of the original's WinMM
+   timeSetEvent timers) */
 __declspec(align(8)) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
 
 __declspec(align(4)) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
@@ -23,8 +25,6 @@ __declspec(align(4)) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaul
 static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = 0;
 
 static CpuDetectFeaturesProc *g_CPUDetectFeatures = 0;
-
-static TimerSystemState g_TimerSystemState = {0};
 
 static uint8_t g_LocaleInfoScratch[16] = {0};
 
@@ -39,26 +39,6 @@ LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16 = 0;
 LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = 0;
 
 /* Implementation ownership: platform/system/time_locale. */
-
-/* Stops every periodic timer: unregisters each callback still present in the 32 slots (which also
-   kills its WinMM timer).
-*/
-void TimerSystem_Shutdown(void)
-
-{
-  uint32_t callbackSlotByteOffset;
-
-  /* the slots are walked by byte offset, as the WinMM dwUser values are */
-  callbackSlotByteOffset = 0;
-  do {
-    if (TIMER_CALLBACK_AT(callbackSlotByteOffset) != NULL) {
-      TimerSystem_UnregisterPeriodic(TIMER_CALLBACK_AT(callbackSlotByteOffset));
-    }
-    callbackSlotByteOffset = callbackSlotByteOffset + 4;
-  } while (callbackSlotByteOffset < sizeof g_TimerSystemState.callbacks);
-  return;
-}
-
 
 /* Detects the CPU features, installs the date/time/locale services in their function pointers and
    caches the user's locale settings (language id, number separators, date/time separators and order,
@@ -106,66 +86,6 @@ void Locale_Init(void)
   /* 0 = 12-hour clock with AM/PM, 1 = 24-hour clock */
   GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_ITIME,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   g_LocaleSystemState.timeFormat24Hour = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
-}
-
-
-/* Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
-   It cannot fail: the original always reports success, which ProcessEntry relies on.
-*/
-void __cdecl TimerSystem_Init(void)
-
-{
-  g_TimerRegisterPeriodic = (TimerRegisterPeriodicProc *)TimerSystem_RegisterPeriodic;
-  g_TimerUnregisterPeriodic = (TimerUnregisterPeriodicProc *)TimerSystem_UnregisterPeriodic;
-  g_Win32PumpMessages = Win32_PumpMessages;
-}
-
-/* The WinMM timer procedure every periodic timer of TimerSystem_RegisterPeriodic runs through, on WinMM's
-   timer thread: dwUser (slotOffset) is the byte offset of the timer's callbacks[] slot, and a valid, occupied
-   slot's engine callback is called without arguments.
-*/
-void __stdcall WinMM_TimerDispatchCallback
-          (WinMmTimerId timerId,uint32_t message,TimerCallbackSlotByteOffset slotOffset,
-          uint32_t reserved1,uint32_t reserved2)
-
-{
-  /* slotOffset is the byte offset of the callbacks[] entry */
-  if ((slotOffset & 3) == 0 && slotOffset < sizeof g_TimerSystemState.callbacks &&
-      TIMER_CALLBACK_AT(slotOffset) != NULL) {
-    TIMER_CALLBACK_AT(slotOffset)();
-  }
-  return;
-}
-
-
-/* Starts a periodic timer: puts callback into the first free of the 32 slots and has WinMM call it
-   frequencyHz times per second (period 1000 / frequencyHz ms, truncated) through
-   WinMM_TimerDispatchCallback, on WinMM's timer thread. With all slots taken the request is ignored.
-*/
-void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
-
-{
-  WinMmTimerPeriodMilliseconds intervalMilliseconds;
-  WinMmTimerId winmmTimerId;
-  TimerCallbackSlotByteOffset callbackSlotByteOffset;
-
-  intervalMilliseconds = (WinMmTimerPeriodMilliseconds)(1000 / (uint64_t)frequencyHz);
-  callbackSlotByteOffset = 0;
-  do {
-    if (TIMER_CALLBACK_AT(callbackSlotByteOffset) == NULL) {
-      TIMER_CALLBACK_AT(callbackSlotByteOffset) = callback;
-      /* dwUser is the slot's byte offset */
-      winmmTimerId = ((BootstrapTimeSetEventProc)g_BootstrapApiBindings[BOOTSTRAP_API_TIME_SET_EVENT].destination)
-                               (intervalMilliseconds,0,WinMM_TimerDispatchCallback,
-                                callbackSlotByteOffset,TIME_PERIODIC);
-      /* the ID is stored at the callback's slot index, not at intervalMilliseconds: the ID pairs with
-         the callback slot (see TimerSystem_UnregisterPeriodic). */
-      TIMER_WINMM_ID_AT(callbackSlotByteOffset) = winmmTimerId;
-      return;
-    }
-    callbackSlotByteOffset = callbackSlotByteOffset + 4;
-  } while (callbackSlotByteOffset < sizeof g_TimerSystemState.callbacks);
-  return;
 }
 
 
@@ -508,28 +428,6 @@ void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
   }
-  return;
-}
-
-
-/* Stops the periodic timer of callback: clears its slot (the first match) and kills the paired WinMM
-   timer; the stale timer id stays in the table. An unknown callback is ignored.
-*/
-void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
-
-{
-  int callbackSlotByteOffset;
-
-  callbackSlotByteOffset = 0;
-  do {
-    if (TIMER_CALLBACK_AT(callbackSlotByteOffset) == callback) {
-      TIMER_CALLBACK_AT(callbackSlotByteOffset) = NULL;
-      ((BootstrapTimeKillEventProc)g_BootstrapApiBindings[BOOTSTRAP_API_TIME_KILL_EVENT].destination)
-                (TIMER_WINMM_ID_AT(callbackSlotByteOffset));
-      return;
-    }
-    callbackSlotByteOffset = callbackSlotByteOffset + 4;
-  } while (callbackSlotByteOffset != (int)sizeof g_TimerSystemState.callbacks);
   return;
 }
 

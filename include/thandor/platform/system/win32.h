@@ -14,10 +14,6 @@
 /* Submodule: platform/system/win32. */
 /* Functions are grouped by semantic ownership. */
 
-void Win32_PumpMessages(void);
-
-Bool8 Win32_ShouldTranslateMessageFlags(Win32Message32 *message);
-
 extern Win32PumpMessagesProc *g_Win32PumpMessages;
 extern uint32_t g_WindowDestroyDepth;
 

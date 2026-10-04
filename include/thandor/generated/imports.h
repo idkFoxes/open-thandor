@@ -77,25 +77,12 @@ __declspec(dllimport) BOOL __stdcall WriteConsoleA(HANDLE hConsoleOutput, void *
 __declspec(dllimport) BOOL __stdcall WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped);
 
 /* USER32.DLL */
-__declspec(dllimport) HWND __stdcall CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-__declspec(dllimport) LRESULT __stdcall DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 __declspec(dllimport) BOOL __stdcall DestroyWindow(HWND hWnd);
-__declspec(dllimport) LRESULT __stdcall DispatchMessageA(MSG * lpMsg);
 __declspec(dllimport) HWND __stdcall FindWindowA(LPCSTR lpClassName, LPCSTR lpWindowName);
 __declspec(dllimport) HWND __stdcall GetDesktopWindow(void);
-__declspec(dllimport) SHORT __stdcall GetKeyState(int nVirtKey);
-__declspec(dllimport) int __stdcall GetSystemMetrics(int nIndex);
-__declspec(dllimport) HCURSOR __stdcall LoadCursorA(HINSTANCE hInstance, LPCSTR lpCursorName);
-__declspec(dllimport) HICON __stdcall LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName);
 __declspec(dllimport) UINT __stdcall MapVirtualKeyA(UINT uCode, UINT uMapType);
 __declspec(dllimport) int __stdcall MessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
 __declspec(dllimport) DWORD __stdcall MsgWaitForMultipleObjects(DWORD nCount, HANDLE * pHandles, BOOL fWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask);
-__declspec(dllimport) BOOL __stdcall PeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg);
-__declspec(dllimport) ATOM __stdcall RegisterClassA(WNDCLASSA * lpWndClass);
-__declspec(dllimport) HCURSOR __stdcall SetCursor(HCURSOR hCursor);
-__declspec(dllimport) BOOL __stdcall ShowWindow(HWND hWnd, int nCmdShow);
-__declspec(dllimport) BOOL __stdcall TranslateMessage(MSG * lpMsg);
-__declspec(dllimport) BOOL __stdcall UpdateWindow(HWND hWnd);
 
 #ifdef __cplusplus
 }

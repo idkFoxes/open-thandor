@@ -65,8 +65,8 @@ static Bool8 UiPointer_ReleaseCapture
   return true;
 }
 
-/* Delivers the queued mouse events to the UI under the frame lock (polling DirectInput first when it is
-   the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
+/* Delivers the queued mouse events to the UI under the frame lock (the original polled its DirectInput mouse
+   first; the SDL3 backend queues the events from the message pump). Presses and motion go to the node under the pointer; a release goes to the node
    that captured the pointer with that button, which then loses the capture and the pointer position is
    dispatched again as motion. A release without a matching capture is dropped.
    Original quirk: a captured middle-button release also steps the primary random stream (a call of
@@ -88,9 +88,6 @@ void UiPointer_DispatchPendingEvents(void)
   CursorPointerEvent pointerEvent;
 
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
-  if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
-    DirectInputMouse_PollBufferedEvents();
-  }
   while (g_GraphicsCursorConsumeEvent(&pointerEvent)) {
     control = g_UiPointerCaptureTarget; /* the consume call does not touch the capture */
     pointerX = pointerEvent.pointerX;

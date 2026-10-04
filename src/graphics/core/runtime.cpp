@@ -28,7 +28,7 @@ int32_t g_CursorCurrentVisibilityToken = 0;
 
 int32_t g_GraphicsBackendAccessState = -0x1;
 
-/* allocated by Graphics_Init but no longer read (see there) */
+/* allocated by Graphics_AllocateTables but no longer read (see there) */
 static DirectDrawPaletteEntry *g_TexturePaletteEntries = 0;
 
 SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = 0;
@@ -66,21 +66,6 @@ static GraphicsFixedVec2 g_AuxiliaryOrientation = {0};
 
 static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {0};
 
-static DirectDrawEnumerateA *pDirectDrawEnumerateA = 0;
-
-static char sz_DDRAW[6] = "DDRAW";
-
-static char sz_DirectDrawCreate[17] = "DirectDrawCreate";
-
-static char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
-
-/* scratch descriptor the cursor save/restore Lock fills (lPitch, lpSurface) */
-static DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc = {0};
-
-static int32_t g_CursorCurrentDrawX = 0;
-
-static int32_t g_CursorCurrentDrawY = 0;
-
 GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {0};
 
 uint32_t g_CursorInputReadIndex = 0;
@@ -104,10 +89,6 @@ GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
 SoftwareFramebufferAccess *g_CursorSavedBackground = 0;
 
 SoftwareFramebufferAccess *g_CursorCompositeBuffer = 0;
-
-DirectDrawCreate *pDirectDrawCreate = 0;
-
-uint32_t g_MouseEventsProcessed = 0;
 
 /* Implementation ownership: graphics/core/runtime. */
 
@@ -521,9 +502,11 @@ void Graphics_RebuildFrustumPlanes(void)
 }
 
 
-/* Graphics_Init's first step, shared with the SDL3 backend (SdlVideo_Init): allocates and clears the texture-slot
-   and palette tables and allocates the empty adapter and display-mode tables, in this order (the arena layout
-   the texture-set sort depends on). Returns 0 or the allocator's error code. */
+/* The first step of the original's Graphics_Init, called by SdlVideo_Init: allocates and clears the texture-slot
+   and palette tables and allocates the empty adapter and display-mode tables, in this order. The palette table is
+   no longer read (only the original's hardware texture upload used it); it is still allocated, like the texture
+   slots, so the arena layout and with it the texture-set addresses that GraphicsPrimitiveQueue_RadixSortForRendering
+   sorts opaque packets by stay as they were. Returns 0 or the allocator's error code. */
 uint32_t Graphics_AllocateTables(void)
 
 {
@@ -569,89 +552,8 @@ uint32_t Graphics_AllocateTables(void)
 }
 
 
-/* Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the DirectDraw adapters
-   (every one is a software renderer device) and their display modes and installs the DirectDraw surface
-   backend in the g_Graphics* slots. The display-mode hook installed before (the software renderer's) is kept
-   as g_GraphicsDisplayModeFinalize. Returns 0 on success, otherwise the error code of the failing step (never
-   0). The palette table is no longer read (only the original's hardware texture upload used it); it is still
-   allocated, like the texture slots, so the arena layout and with it the texture-set addresses that
-   GraphicsPrimitiveQueue_RadixSortForRendering sorts opaque packets by stay as they were.
-*/
-uint32_t __cdecl Graphics_Init(void)
-
-{
-  TH_LEGACY_HRESULT hresult;
-  SoftwareDisplayModeHookProc *displayModeHook;
-  uint32_t remainingAdapters;
-  uint32_t displayAdapterIndex;
-  GraphicsAdapterRecord *adapter;
-  struct TH_LEGACY_GUID *driverGuid;
-  HINSTANCE ddrawModule;
-  uint32_t allocError;
-  uint32_t resolveError;
-  IDirectDraw *directDraw;
-
-  allocError = Graphics_AllocateTables();
-  if (allocError != 0) {
-    return allocError;
-  }
-  ddrawModule = DynDLL_Load(sz_DDRAW);
-  if (ddrawModule == NULL) {
-    return FATAL_ERROR_DLL_LOAD_FAILED;
-  }
-  resolveError = DynAPI_Resolve((void **)&pDirectDrawCreate,ddrawModule,sz_DirectDrawCreate);
-  if (resolveError != 0) {
-    return resolveError;
-  }
-  resolveError = DynAPI_Resolve((void **)&pDirectDrawEnumerateA,ddrawModule,sz_DirectDrawEnumerateA);
-  if (resolveError != 0) {
-    return resolveError;
-  }
-  hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
-  if ((hresult != 0) || (g_GraphicsAdapterCount == 0)) {
-    return FATAL_ERROR_DIRECTDRAW_NO_ADAPTER;
-  }
-  /* collect the display modes, tagged with the adapter index */
-  displayAdapterIndex = 0;
-  remainingAdapters = g_GraphicsAdapterCount;
-  adapter = g_GraphicsAdapters;
-  do {
-    driverGuid = &adapter->adapterGuid;
-    if ((adapter->adapterGuid).Data1 == 0) {
-      driverGuid = NULL; /* primary display driver: NULL GUID */
-    }
-    hresult = pDirectDrawCreate(driverGuid,&directDraw,NULL);
-    if (hresult == 0) {
-      directDraw->lpVtbl->EnumDisplayModes
-                (directDraw,0,NULL,displayAdapterIndex,
-                 /* signature differs: the callback takes the context as FrontendDisplayAdapterIndex (int) */
-                 (int32_t (__stdcall *)(DDSURFACEDESC_DX6 *,uint32_t))DirectDraw_EnumDisplayModeCallback);
-      directDraw->lpVtbl->Release(directDraw);
-    }
-    displayAdapterIndex++;
-    adapter++;
-    remainingAdapters--;
-  } while (remainingAdapters != 0);
-  /* the display-mode hook installed before (the software renderer's) */
-  displayModeHook = g_GraphicsSetDisplayMode;
-  if (g_GraphicsDisplayModeCount == 0) {
-    return FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE;
-  }
-  /* g_GraphicsSetViewportAndClearDepth, g_GraphicsDrawPrimitiveQueue, g_GraphicsBeginScene/EndScene and the
-     texture refresh/rebuild slots keep their software renderer defaults */
-  /* signature differs: the adapter index is FrontendDisplayAdapterIndex (int), not uint32_t */
-  g_GraphicsSetDisplayMode = (SoftwareDisplayModeHookProc *)GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
-  g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
-  g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
-  g_GraphicsCreateTextureSet = GraphicsTextureSet_Create;
-  g_GraphicsDestroyTextureSet = GraphicsTextureSet_Destroy;
-  g_GraphicsDisplayModeFinalize = displayModeHook;
-  return 0;
-}
-
-
-/* Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer, frees the software
-   cursor buffers and releases every DirectDraw surface, primary surface last.
+/* Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer and frees the software
+   cursor buffers (SdlVideo_Shutdown then releases the framebuffer and the window).
 */
 void Graphics_Shutdown(void)
 
@@ -664,216 +566,5 @@ void Graphics_Shutdown(void)
   g_CursorSavedBackground = NULL;
   g_CursorCompositeBuffer = NULL;
   g_CursorAlternateSavedBackground = NULL;
-  if (g_BackSurface3 != NULL) {
-    g_BackSurface3->lpVtbl->Release(g_BackSurface3);
-    g_BackSurface3 = NULL;
-  }
-  if (g_BackSurfaceBase != NULL) {
-    g_BackSurfaceBase->lpVtbl->Release(g_BackSurfaceBase);
-    g_BackSurfaceBase = NULL;
-  }
-  if (g_PrimarySurface3 != NULL) {
-    g_PrimarySurface3->lpVtbl->Release(g_PrimarySurface3);
-    g_PrimarySurface3 = NULL;
-  }
-  if (g_PrimarySurfaceBase != NULL) {
-    g_PrimarySurfaceBase->lpVtbl->Release(g_PrimarySurfaceBase);
-    g_PrimarySurfaceBase = NULL;
-  }
   return;
 }
-
-
-/* Draws the software mouse cursor into backSurface before it is presented (the animation timer also redraws it
-   on the primary surface when it moved): the background under the cursor is saved twice (once to draw on, once
-   for GraphicsCursor_RestoreAfterPresent), the cursor frame is blended onto the first copy (the pressed image
-   while a mouse button is down) and that copy is written back.
-   The visibility token is latched so the restore matches what was drawn.
-*/
-void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
-
-{
-  UiPixelCoordinate cursorX;
-  uint32_t cursorSubresourceIndex;
-  GraphicsCursorFrameRecord *cursorFrame;
-  UiPixelCoordinate cursorY;
-  int drawY;
-
-  g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
-  if (-1 < g_CursorVisibilityToken) { /* a negative token hides the cursor */
-    cursorX = g_MouseX;
-    cursorY = g_MouseY;
-    if (g_CursorUseOverridePosition != 0) {
-      cursorX = g_CursorOverrideX;
-      cursorY = g_CursorOverrideY;
-    }
-    cursorFrame = g_CursorFrameRecords + g_CursorFrameIndex;
-    cursorX = cursorX - cursorFrame->hotspotX;
-    drawY = cursorY - cursorFrame->hotspotY;
-    g_CursorCurrentDrawX = cursorX;
-    g_CursorCurrentDrawY = drawY;
-    GraphicsCursor_SaveSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
-    GraphicsCursor_SaveSurfaceBackground(g_CursorSavedBackground,drawY,cursorX,backSurface);
-    cursorSubresourceIndex = cursorFrame->activeSubresourceIndex;
-    if ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) { /* none of the three mouse buttons is down */
-      cursorSubresourceIndex = cursorFrame->idleSubresourceIndex;
-    }
-    /* the composite buffer holds the saved rectangle at its origin, so the cursor is drawn at (0,0) */
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (g_FramebufferHeight,g_FramebufferWidth,0,0,0,0,cursorSubresourceIndex,g_CursorSourceAsset,
-               g_CursorCompositeBuffer);
-    GraphicsCursor_RestoreSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
-  }
-  return;
-}
-
-
-/* Removes the software cursor from backSurface again by writing back the background that
-   GraphicsCursor_ComposeBeforePresent saved, so the surface is clean again (for the next frame or for drawing
-   the cursor at its new position). Skipped when the cursor was hidden at compose time.
-*/
-void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
-
-{
-  if (-1 < g_CursorCurrentVisibilityToken) {
-    GraphicsCursor_RestoreSurfaceBackground
-              (g_CursorSavedBackground,g_CursorCurrentDrawY,g_CursorCurrentDrawX,backSurface);
-  }
-  return;
-}
-
-
-/* Saves the screen rectangle under the software cursor: copies the part of sourceSurface at (drawX, drawY)
-   that lies on screen into destinationBuffer (same layout, 16 or 32 bits per pixel), so the cursor can later
-   be removed again with GraphicsCursor_RestoreSurfaceBackground. The surface is restored first if it was lost.
-*/
-void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface)
-
-{
-  /* Copies a clipped rectangle of the locked surface into the buffer origin. */
-  int bytesPerPixel;
-  int rowPixels;
-  int copyWidth;
-  int copyHeight;
-  uint8_t *destination;
-  uint8_t *source;
-  uint8_t *surfacePixels;
-  TH_LEGACY_HRESULT result;
-
-  bytesPerPixel = destinationBuffer->bytesPerPixel == 2 ? 2 : 4;
-  rowPixels = (int)destinationBuffer->width;
-  copyWidth = (int)destinationBuffer->width;
-  copyHeight = (int)destinationBuffer->height;
-  destination = destinationBuffer->pixels;
-  if (drawX < 0) {
-    destination = destination + -drawX * bytesPerPixel;
-    copyWidth = copyWidth + drawX;
-    drawX = 0;
-  }
-  if (drawY < 0) {
-    copyHeight = copyHeight + drawY;
-    destination = destination + -drawY * rowPixels * bytesPerPixel;
-    drawY = 0;
-  }
-  if (copyWidth + drawX - (int)g_FramebufferWidth > 0) {
-    copyWidth = copyWidth - (copyWidth + drawX - (int)g_FramebufferWidth);
-  }
-  if (copyHeight + drawY - (int)g_FramebufferHeight > 0) {
-    copyHeight = copyHeight - (copyHeight + drawY - (int)g_FramebufferHeight);
-  }
-  if (copyWidth <= 0 || copyHeight <= 0) {
-    return;
-  }
-  result = sourceSurface->lpVtbl->IsLost(sourceSurface);
-  if (result != 0) {
-    result = sourceSurface->lpVtbl->Restore(sourceSurface);
-  }
-  if (result == 0) {
-    /* the scratch DDSURFACEDESC: cleared, then dwSize set */
-    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDesc);
-    g_GraphicsCursorSurfaceDesc.dwSize = sizeof(DDSURFACEDESC_DX6);
-    result = sourceSurface->lpVtbl->Lock
-                       (sourceSurface,NULL,&g_GraphicsCursorSurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
-  }
-  if (result != 0) {
-    return;
-  }
-  surfacePixels = (uint8_t *)g_GraphicsCursorSurfaceDesc.lpSurface;
-  source = surfacePixels + drawY * (int)g_GraphicsCursorSurfaceDesc.lPitch + drawX * bytesPerPixel;
-  for (; copyHeight != 0; copyHeight--) {
-    memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
-    destination = destination + rowPixels * bytesPerPixel;
-    source = source + (int)g_GraphicsCursorSurfaceDesc.lPitch;
-  }
-  sourceSurface->lpVtbl->Unlock(sourceSurface,surfacePixels);
-}
-
-
-/* Writes a buffer filled by GraphicsCursor_SaveSurfaceBackground (or the composed cursor image) back into
-   destinationSurface at (drawX, drawY), clipped to the screen exactly like the save. Used to draw the
-   composed cursor and to remove it again after the present.
-*/
-void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface)
-
-{
-  /* Mirror of GraphicsCursor_SaveSurfaceBackground: buffer rows back into the locked surface. */
-  int bytesPerPixel;
-  int rowPixels;
-  int copyWidth;
-  int copyHeight;
-  uint8_t *source;
-  uint8_t *destination;
-  uint8_t *surfacePixels;
-  TH_LEGACY_HRESULT result;
-
-  bytesPerPixel = sourceBuffer->bytesPerPixel == 2 ? 2 : 4;
-  rowPixels = (int)sourceBuffer->width;
-  copyWidth = (int)sourceBuffer->width;
-  copyHeight = (int)sourceBuffer->height;
-  source = sourceBuffer->pixels;
-  if (drawX < 0) {
-    source = source + -drawX * bytesPerPixel;
-    copyWidth = copyWidth + drawX;
-    drawX = 0;
-  }
-  if (drawY < 0) {
-    copyHeight = copyHeight + drawY;
-    source = source + -drawY * rowPixels * bytesPerPixel;
-    drawY = 0;
-  }
-  if (copyWidth + drawX - (int)g_FramebufferWidth > 0) {
-    copyWidth = copyWidth - (copyWidth + drawX - (int)g_FramebufferWidth);
-  }
-  if (copyHeight + drawY - (int)g_FramebufferHeight > 0) {
-    copyHeight = copyHeight - (copyHeight + drawY - (int)g_FramebufferHeight);
-  }
-  if (copyWidth <= 0 || copyHeight <= 0) {
-    return;
-  }
-  result = destinationSurface->lpVtbl->IsLost(destinationSurface);
-  if (result != 0) {
-    result = destinationSurface->lpVtbl->Restore(destinationSurface);
-  }
-  if (result == 0) {
-    /* the scratch DDSURFACEDESC: cleared, then dwSize set */
-    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDesc);
-    g_GraphicsCursorSurfaceDesc.dwSize = sizeof(DDSURFACEDESC_DX6);
-    /* write-only lock (DDLOCK_WAIT | DDLOCK_WRITEONLY), as in the original */
-    result = destinationSurface->lpVtbl->Lock
-                       (destinationSurface,NULL,&g_GraphicsCursorSurfaceDesc,DDLOCK_WAIT | DDLOCK_WRITEONLY,NULL);
-  }
-  if (result != 0) {
-    return;
-  }
-  surfacePixels = (uint8_t *)g_GraphicsCursorSurfaceDesc.lpSurface;
-  destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfaceDesc.lPitch + drawX * bytesPerPixel;
-  for (; copyHeight != 0; copyHeight--) {
-    memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
-    destination = destination + (int)g_GraphicsCursorSurfaceDesc.lPitch;
-    source = source + rowPixels * bytesPerPixel;
-  }
-  destinationSurface->lpVtbl->Unlock(destinationSurface,surfacePixels);
-}
-

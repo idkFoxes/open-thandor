@@ -305,7 +305,7 @@ FixedTransform_RotateScaledDirection
 
 
 /* Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
-   DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
+   SdlAudio_Init, as by the original's DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
    cos((2k+1) * u * pi / 512), row 0 being 1/sqrt(2); the second (g_CosineDerivedLookupSecondTable, Q14) is
    its transpose, row m, entry k = cos(k * (2m+1) * pi / 512), entry 0 being 1/sqrt(2). Angles are 16-bit
    (65536 = full turn), so 0x40 is pi/512. On allocation failure the pointers stay unset.

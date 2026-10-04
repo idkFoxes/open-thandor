@@ -6,7 +6,7 @@
  */
 
 /* SDL3 backend: the periodic timers of g_TimerRegisterPeriodic / g_TimerUnregisterPeriodic on SDL timers instead
-   of WinMM's timeSetEvent. Like TimerSystem_RegisterPeriodic there are 32 slots, the period is 1000 / frequency ms
+   of WinMM's timeSetEvent. Like the original's TimerSystem_RegisterPeriodic there are 32 slots, the period is 1000 / frequency ms
    (truncated) and the callbacks run on a timer thread (SDL's). The period is kept without drift: each callback
    asks SDL for the time left to its next due point, as a periodic WinMM timer fires on a fixed grid. */
 
@@ -25,7 +25,7 @@
 
 namespace {
 
-constexpr std::size_t kTimerSlotCount = 32; /* the 32 callbacks of g_TimerSystemState */
+constexpr std::size_t kTimerSlotCount = 32; /* the original's 32 timer callback slots */
 constexpr Uint64 kNanosecondsPerMillisecond = 1000000;
 
 /* One registration. It stays allocated until the backend ends, so a callback still running on the timer thread
@@ -86,7 +86,7 @@ void SdlTimer_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *c
     s_registrations.push_back(std::move(registration));
     return;
   }
-  /* all slots taken: ignored, as TimerSystem_RegisterPeriodic */
+  /* all slots taken: ignored, as in the original */
 }
 
 void SdlTimer_UnregisterPeriodic(TimerCallbackProc *callback)

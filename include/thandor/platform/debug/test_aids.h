@@ -39,16 +39,9 @@ unsigned Thandor_TestAidNetworkBindPort(unsigned gamePort);
 void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, unsigned byteCount,
                                 const void *buffer);
 /* Windowed test aid (not in the original), so two instances fit side by side on one monitor:
-   OPEN_THANDOR_WINDOWED=1 runs the game in a normal captioned window at OPEN_THANDOR_WINDOW_X /
-   OPEN_THANDOR_WINDOW_Y (default 0,0) instead of full-screen exclusive. DirectDraw stays at DDSCL_NORMAL,
-   the display mode is not changed (the desktop colour depth is used), the software renderer blits into the
-   client area through a clipper and DirectInput takes the mouse non-exclusively. Off by default. */
+   OPEN_THANDOR_WINDOWED=1 runs the game in a normal window at OPEN_THANDOR_WINDOW_X / OPEN_THANDOR_WINDOW_Y
+   (default 0,0) instead of full screen, sized to the display mode, in the desktop's colour depth (the SDL3
+   backend: platform/sdl3/platform.cpp, video.cpp). Off by default. */
 int Thandor_TestAidWindowed(void);
-/* Creates the windowed main window (client 640x480 until the first display mode sizes it). */
-void *Thandor_TestAidCreateWindowedMainWindow(const char *className, const char *title, void *instance);
-/* Resizes the window so that its client area is width x height. */
-void Thandor_TestAidSetWindowClientSize(void *window, unsigned width, unsigned height);
-/* Screen position of the window's client origin. */
-void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y);
 
 #endif /* THANDOR_PLATFORM_DEBUG_TEST_AIDS_H */

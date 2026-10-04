@@ -13,8 +13,8 @@
 
 /* Submodule: graphics/core/runtime. */
 
-/* Capacity of g_GraphicsAdapters (Graphics_Init allocates 16 records of 0x80 bytes) and of g_GraphicsDisplayModes
-   (the enumeration callbacks stop at 256 modes). */
+/* Capacity of g_GraphicsAdapters (Graphics_AllocateTables allocates 16 records of 0x80 bytes) and of
+   g_GraphicsDisplayModes (the mode list stops at 256 modes). */
 #define GRAPHICS_ADAPTER_CAPACITY 16
 #define GRAPHICS_DISPLAY_MODE_CAPACITY 256
 /* g_ActiveGraphicsAdapterIndex before the first display mode is set (and while the backend is being recreated). */
@@ -101,19 +101,7 @@ void Graphics_RebuildFrustumPlanes(void);
 
 uint32_t Graphics_AllocateTables(void);
 
-uint32_t __cdecl Graphics_Init(void);
-
 void Graphics_Shutdown(void);
-
-void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);
-
-void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface);
-
-void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface);
-
-void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
-          GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface);
 
 extern GraphicsCursorInputEvent18 g_CursorInputEvents[256];
 extern uint32_t g_CursorInputReadIndex;
@@ -127,8 +115,6 @@ extern GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4];
 extern GraphicsSceneBounds8 g_SceneBoundsFixed;
 extern SoftwareFramebufferAccess *g_CursorSavedBackground;
 extern SoftwareFramebufferAccess *g_CursorCompositeBuffer;
-extern DirectDrawCreate *pDirectDrawCreate;
-extern uint32_t g_MouseEventsProcessed;
 
 extern SoftwareFramebufferAccess *g_CursorAlternateSavedBackground;
 

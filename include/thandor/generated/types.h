@@ -120,20 +120,9 @@ typedef union ModelRuntimeSlotLinkOrState ModelRuntimeSlotLinkOrState, *PModelRu
 typedef union ModelRuntimeArmyLinkOrState ModelRuntimeArmyLinkOrState, *PModelRuntimeArmyLinkOrState;
 typedef struct ModelAttachmentTransformRecord ModelAttachmentTransformRecord, *PModelAttachmentTransformRecord;
 typedef struct GeneratedAssetBuildMetadata GeneratedAssetBuildMetadata, *PGeneratedAssetBuildMetadata;
-typedef struct IDirectDrawSurface IDirectDrawSurface, *PIDirectDrawSurface;
-typedef struct IDirectDrawSurface3 IDirectDrawSurface3, *PIDirectDrawSurface3;
-typedef struct DDPIXELFORMAT DDPIXELFORMAT, *PDDPIXELFORMAT;
 typedef struct AssetBuildTimestampSet AssetBuildTimestampSet, *PAssetBuildTimestampSet;
 typedef struct AssetProducerSourceNames AssetProducerSourceNames, *PAssetProducerSourceNames;
-typedef struct IDirectDrawSurface_Vtbl IDirectDrawSurface_Vtbl, *PIDirectDrawSurface_Vtbl;
 typedef struct TH_LEGACY_GUID TH_LEGACY_GUID, *PTH_LEGACY_GUID;
-typedef struct TH_LEGACY_RECT TH_LEGACY_RECT, *PTH_LEGACY_RECT;
-typedef struct DDSCAPS DDSCAPS, *PDDSCAPS;
-typedef struct DDCOLORKEY DDCOLORKEY, *PDDCOLORKEY;
-typedef struct DDSURFACEDESC_DX6 DDSURFACEDESC_DX6, *PDDSURFACEDESC_DX6;
-typedef struct IDirectDraw IDirectDraw, *PIDirectDraw;
-typedef struct IDirectDrawSurface3_Vtbl IDirectDrawSurface3_Vtbl, *PIDirectDrawSurface3_Vtbl;
-typedef struct IDirectDraw_Vtbl IDirectDraw_Vtbl, *PIDirectDraw_Vtbl;
 typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
 typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
 typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
@@ -164,11 +153,6 @@ typedef struct UiNumericTextControl UiNumericTextControl, *PUiNumericTextControl
 typedef struct UiNodeVtable UiNodeVtable, *PUiNodeVtable;
 typedef struct DirectSoundVoiceSet DirectSoundVoiceSet, *PDirectSoundVoiceSet;
 typedef struct IDirectSoundBuffer IDirectSoundBuffer, *PIDirectSoundBuffer;
-typedef struct IDirectSoundBuffer_Vtbl IDirectSoundBuffer_Vtbl, *PIDirectSoundBuffer_Vtbl;
-typedef struct WAVEFORMATEX WAVEFORMATEX, *PWAVEFORMATEX;
-typedef struct IDirectSound IDirectSound, *PIDirectSound;
-typedef struct DSBUFFERDESC_DX6 DSBUFFERDESC_DX6, *PDSBUFFERDESC_DX6;
-typedef struct IDirectSound_Vtbl IDirectSound_Vtbl, *PIDirectSound_Vtbl;
 typedef struct UiPointerListControl UiPointerListControl, *PUiPointerListControl;
 typedef struct FrontendPersistentSettingsPage FrontendPersistentSettingsPage, *PFrontendPersistentSettingsPage;
 typedef struct FrontendNetworkSetupPageState FrontendNetworkSetupPageState, *PFrontendNetworkSetupPageState;
@@ -454,30 +438,13 @@ typedef struct UiCommandDispatchRecord UiCommandDispatchRecord, *PUiCommandDispa
 typedef struct DynamicModuleEntry DynamicModuleEntry, *PDynamicModuleEntry;
 typedef struct DynamicApiBinding DynamicApiBinding, *PDynamicApiBinding;
 typedef struct ArenaBlockHeader ArenaBlockHeader, *PArenaBlockHeader;
-typedef struct TimerCallbackTable TimerCallbackTable, *PTimerCallbackTable;
 typedef struct CommandLineState CommandLineState, *PCommandLineState;
 typedef struct ArenaState ArenaState, *PArenaState;
 typedef struct TH_WNDCLASSA TH_WNDCLASSA, *PTH_WNDCLASSA;
 typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
 typedef struct ArmyPlacementContactCallbackTable5 ArmyPlacementContactCallbackTable5, *PArmyPlacementContactCallbackTable5;
-typedef struct DIPROPHEADER DIPROPHEADER, *PDIPROPHEADER;
-typedef struct PALETTEENTRY_DX6 PALETTEENTRY_DX6, *PPALETTEENTRY_DX6;
-typedef struct DIDATAFORMAT DIDATAFORMAT, *PDIDATAFORMAT;
-typedef struct DIOBJECTDATAFORMAT DIOBJECTDATAFORMAT, *PDIOBJECTDATAFORMAT;
-typedef struct DIMOUSESTATE_4BUTTON DIMOUSESTATE_4BUTTON, *PDIMOUSESTATE_4BUTTON;
-typedef struct DIDEVICEOBJECTDATA_DX6 DIDEVICEOBJECTDATA_DX6, *PDIDEVICEOBJECTDATA_DX6;
-typedef struct DIDEVICEOBJECTDATA_DX3 DIDEVICEOBJECTDATA_DX3, *PDIDEVICEOBJECTDATA_DX3;
-typedef struct DIPROPDWORD DIPROPDWORD, *PDIPROPDWORD;
-typedef struct IDirectDraw2 IDirectDraw2, *PIDirectDraw2;
-typedef struct IDirectDraw2_Vtbl IDirectDraw2_Vtbl, *PIDirectDraw2_Vtbl;
-typedef struct IDirectInputDeviceA IDirectInputDeviceA, *PIDirectInputDeviceA;
-typedef struct IDirectInputDeviceA_Vtbl IDirectInputDeviceA_Vtbl, *PIDirectInputDeviceA_Vtbl;
-typedef struct IDirectInputA_Vtbl IDirectInputA_Vtbl, *PIDirectInputA_Vtbl;
-typedef struct IDirectInputA IDirectInputA, *PIDirectInputA;
 typedef struct Win32SystemTime16 Win32SystemTime16, *PWin32SystemTime16;
 typedef struct LocaleSystemState LocaleSystemState, *PLocaleSystemState;
-typedef struct TimerSystemState TimerSystemState, *PTimerSystemState;
-typedef struct Win32Message32 Win32Message32, *PWin32Message32;
 typedef struct PcxPreview64 PcxPreview64, *PPcxPreview64;
 typedef struct PcxRgb24 PcxRgb24, *PPcxRgb24;
 typedef struct TerrainClassPlacementAndOverlayCallbackTable10 TerrainClassPlacementAndOverlayCallbackTable10, *PTerrainClassPlacementAndOverlayCallbackTable10;
@@ -695,11 +662,6 @@ typedef int LocaleRegionTagPacked;
 
 /* DirectX/DirectInput entry points resolved at runtime via GetProcAddress (HRESULT results). The interface
    out-parameters are the address of the interface pointer variable. */
-typedef long __stdcall DirectDrawCreate(TH_LEGACY_GUID *driverGuid, void *outDirectDraw, void *outerUnknown);
-typedef long __stdcall DirectDrawEnumerateA
-          (int (__stdcall *callback)(TH_LEGACY_GUID *, char *, char *, void *), void *context);
-typedef long __stdcall DirectInputCreateA(void *instance, uint32_t version, void *outDirectInput, void *outerUnknown);
-typedef long __stdcall DirectSoundCreate(const TH_LEGACY_GUID *deviceGuid, void *outDirectSound, void *outerUnknown);
 
 #define FIELD_GRID_WORLD_Y_Q20_MULTIPLIER 0x1c6e9c
 #define FIELD_GRID_WORLD_X_Q21_MULTIPLIER_NEG 0xffdf3734
@@ -2454,49 +2416,6 @@ struct GraphicsFixedMatrix3x4 {
     struct GraphicsFixedVec3 translation; 
 };
 
-struct IDirectDrawSurface3_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawSurface3 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *AddAttachedSurface)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *AddOverlayDirtyRect)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *);
-    TH_LEGACY_HRESULT (__stdcall *Blt)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *BltBatch)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *BltFast)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *DeleteAttachedSurface)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *EnumAttachedSurfaces)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *EnumOverlayZOrders)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *Flip)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetAttachedSurface)(struct IDirectDrawSurface3 *, struct DDSCAPS *, struct IDirectDrawSurface3 **);
-    TH_LEGACY_HRESULT (__stdcall *GetBltStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDrawSurface3 *, struct DDSCAPS *);
-    TH_LEGACY_HRESULT (__stdcall *GetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (__stdcall *GetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (__stdcall *GetDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE *);
-    TH_LEGACY_HRESULT (__stdcall *GetFlipStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (__stdcall *GetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (__stdcall *GetPixelFormat)(struct IDirectDrawSurface3 *, struct DDPIXELFORMAT *);
-    TH_LEGACY_HRESULT (__stdcall *GetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDrawSurface3 *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *IsLost)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *ReleaseDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *SetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *SetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (__stdcall *SetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (__stdcall *SetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlay)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayDisplay)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayZOrder)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (__stdcall *GetDDInterface)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (__stdcall *PageLock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *PageUnlock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD);
-};
-
 struct ModelDefinitionRecordPrefix {
     AssetRecordByteCount byteSize;
     uint32_t nameTextIndex; // Model name text: TEXT_ID_MODEL_NAME_BASE (0x18004F) + nameTextIndex.
@@ -2674,12 +2593,12 @@ union ArmyRuntimeCoordinateCommandOrHistoryValue {
     uint32_t raw; 
 };
 
-/* One DirectDraw adapter; every adapter is drawn by the software renderer. */
+/* One display adapter (SdlVideo_Init lists one; the original listed its DirectDraw adapters). */
 struct GraphicsAdapterRecord {
     struct TH_LEGACY_GUID adapterGuid;
     uint16_t driverDescriptionUtf16[21];
     /* where the original kept the device GUID and name and the hardware renderer device data: keeps the record
-       at 0x80 bytes, so the arena allocation of g_GraphicsAdapters (Graphics_Init) keeps its size */
+       at 0x80 bytes, so the arena allocation of g_GraphicsAdapters (Graphics_AllocateTables) keeps its size */
     uint8_t reserved3A[0x46];
 };
 
@@ -2689,11 +2608,6 @@ union ResourceRegistrationRuntimePayloadReference4 {
     Ptr32<struct ShotRuntimeSlot> shotRuntime;
     uint32_t savedOffset;
     uint32_t raw;
-};
-
-struct DDCOLORKEY {
-    TH_LEGACY_DWORD dwColorSpaceLowValue;
-    TH_LEGACY_DWORD dwColorSpaceHighValue;
 };
 
 struct ModelAttachmentTransformRecord {
@@ -2901,41 +2815,11 @@ union ShotDefinitionReferenceOrSavedId {
     uint32_t raw; 
 };
 
-struct IDirectDrawSurface {
-    struct IDirectDrawSurface_Vtbl *lpVtbl;
-};
-
 union ModelRuntimeSlotLinkOrState {
     Ptr32<struct ModelRuntimeSlot> modelRuntime; // Class-selected model-runtime link.
     uint32_t classState; // Class-selected scalar state.
     uint32_t serializedOffset; // Saved model-pool offset.
     int signedScalarState; // Signed 32-bit scalar interpretation for polymorphic class state when machine code performs arithmetic, signed comparison, or class-index use rather than pointer dereference.
-};
-
-struct IDirectDraw_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDraw *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDraw *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (__stdcall *CreateClipper)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    int32_t (__stdcall *EnumDisplayModes)(struct IDirectDraw *, uint32_t, struct DDSURFACEDESC_DX6 *, uint32_t, int32_t (__stdcall *)(struct DDSURFACEDESC_DX6 *, uint32_t)); 
-    TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetDisplayMode)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *GetFourCCCodes)(struct IDirectDraw *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetGDISurface)(struct IDirectDraw *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (__stdcall *GetMonitorFrequency)(struct IDirectDraw *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetScanLine)(struct IDirectDraw *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetVerticalBlankStatus)(struct IDirectDraw *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDraw *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (__stdcall *RestoreDisplayMode)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectDraw *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *WaitForVerticalBlank)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
 };
 
 struct GraphicsTextureSetEntry {
@@ -3279,13 +3163,6 @@ struct WorldRuntimeNode {
     WorldRuntimeNodeFlags runtimeFlags; 
 };
 
-struct TH_LEGACY_RECT {
-    TH_LEGACY_LONG left;
-    TH_LEGACY_LONG top;
-    TH_LEGACY_LONG right;
-    TH_LEGACY_LONG bottom;
-};
-
 struct GraphicsTextureSourceEntry {
     AssetDimension logicalWidth;
     AssetDimension logicalHeight;
@@ -3297,87 +3174,10 @@ struct GraphicsTextureSourceEntry {
     AssetDimension pixelHeight;
 };
 
-struct IDirectDraw {
-    struct IDirectDraw_Vtbl *lpVtbl;
-};
-
 struct GraphicsTextureSourceTableDescriptor {
     AssetSubresourceCount subresourceCount;
     AssetPaletteBankCount paletteBankCount;
     AssetRelativeOffset subresourceTableOffset;
-};
-
-struct DDPIXELFORMAT {
-    TH_LEGACY_DWORD dwSize;
-    TH_LEGACY_DWORD dwFlags;
-    TH_LEGACY_DWORD dwFourCC; 
-    TH_LEGACY_DWORD dwRGBBitCount; 
-    TH_LEGACY_DWORD dwRBitMask; 
-    TH_LEGACY_DWORD dwGBitMask; 
-    TH_LEGACY_DWORD dwBBitMask; 
-    TH_LEGACY_DWORD dwRGBAlphaBitMask; 
-};
-
-struct IDirectDrawSurface_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawSurface *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawSurface *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *AddAttachedSurface)(struct IDirectDrawSurface *, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *AddOverlayDirtyRect)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *);
-    TH_LEGACY_HRESULT (__stdcall *Blt)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *BltBatch)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *BltFast)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *DeleteAttachedSurface)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *EnumAttachedSurfaces)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *EnumOverlayZOrders)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *Flip)(struct IDirectDrawSurface *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetAttachedSurface)(struct IDirectDrawSurface *, struct DDSCAPS *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (__stdcall *GetBltStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDrawSurface *, struct DDSCAPS *);
-    TH_LEGACY_HRESULT (__stdcall *GetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (__stdcall *GetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (__stdcall *GetDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE *);
-    TH_LEGACY_HRESULT (__stdcall *GetFlipStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (__stdcall *GetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (__stdcall *GetPixelFormat)(struct IDirectDrawSurface *, struct DDPIXELFORMAT *);
-    TH_LEGACY_HRESULT (__stdcall *GetSurfaceDesc)(struct IDirectDrawSurface *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDrawSurface *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *IsLost)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *ReleaseDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *SetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *SetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (__stdcall *SetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (__stdcall *SetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlay)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayDisplay)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayZOrder)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
-};
-
-struct DDSCAPS {
-    TH_LEGACY_DWORD dwCaps;
-};
-
-struct DDSURFACEDESC_DX6 {
-    TH_LEGACY_DWORD dwSize;
-    TH_LEGACY_DWORD dwFlags;
-    TH_LEGACY_DWORD dwHeight;
-    TH_LEGACY_DWORD dwWidth;
-    TH_LEGACY_LONG lPitch; 
-    TH_LEGACY_DWORD dwBackBufferCount;
-    TH_LEGACY_DWORD dwMipMapCount; 
-    TH_LEGACY_DWORD dwAlphaBitDepth;
-    TH_LEGACY_DWORD dwReserved;
-    TH_LEGACY_LPVOID lpSurface;
-    struct DDCOLORKEY ddckCKDestOverlay;
-    struct DDCOLORKEY ddckCKDestBlt;
-    struct DDCOLORKEY ddckCKSrcOverlay;
-    struct DDCOLORKEY ddckCKSrcBlt;
-    struct DDPIXELFORMAT ddpfPixelFormat;
-    struct DDSCAPS ddsCaps;
 };
 
 union EffectDefinitionReferenceOrSavedId {
@@ -3397,10 +3197,6 @@ struct GraphicsShadingRuntimeRecord {
     GraphicsRadiusQ12 targetRadiusQ12; 
     uint8_t opaque24_3B[24]; 
     uint32_t serializationToggleDword; 
-};
-
-struct IDirectDrawSurface3 {
-    struct IDirectDrawSurface3_Vtbl *lpVtbl;
 };
 
 struct EffectRuntimeSlot {
@@ -3620,7 +3416,6 @@ enum {
     DSBCAPS_CTRLPAN=64,
     DSBCAPS_CTRLVOLUME=128
 };
-typedef int DirectSoundBufferCaps;
 
 enum {
     ARENA_BLOCK_ALLOCATED=1515870810,
@@ -3864,7 +3659,6 @@ typedef int UiTransferJoinAvailability;
 enum /* WaveFormatTag, stored in 2 byte(s) */ {
     WAVE_FORMAT_PCM=1
 };
-typedef uint16_t WaveFormatTag;
 
 enum {
     FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
@@ -4466,19 +4260,12 @@ typedef uint16_t AudioBlockAlignBytes;
 
 typedef uint16_t AudioBitsPerSample;
 
-typedef uint16_t WaveFormatExtraByteCount;
 
-typedef uint32_t DirectSoundBufferDescriptionByteSize;
 
 typedef uint32_t AudioBufferByteCount;
 
-struct IDirectSound {
-    struct IDirectSound_Vtbl *lpVtbl;
-};
-
-struct IDirectSoundBuffer {
-    struct IDirectSoundBuffer_Vtbl *lpVtbl;
-};
+/* struct IDirectSoundBuffer stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
+   voice object behind it (the original's DirectSound buffer). */
 
 struct DirectSoundVoiceSet {
     struct IDirectSoundBuffer *voices[8]; 
@@ -4521,20 +4308,6 @@ struct UiNumericTextControl {
     UiNumericValue32 maximumValue; 
 };
 
-struct IDirectSound_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSound *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectSound *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectSound *);
-    TH_LEGACY_HRESULT (__stdcall *CreateSoundBuffer)(struct IDirectSound *, struct DSBUFFERDESC_DX6 *, struct IDirectSoundBuffer **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectSound *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *DuplicateSoundBuffer)(struct IDirectSound *, struct IDirectSoundBuffer *, struct IDirectSoundBuffer **);
-    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectSound *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectSound *);
-    TH_LEGACY_HRESULT (__stdcall *GetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *SetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectSound *, struct TH_LEGACY_GUID *);
-};
-
 struct UiSelectableControl {
     struct UiNodeBase base;
     UiSelectableStateFlags stateFlags;
@@ -4571,50 +4344,6 @@ struct UiNodeVtable {
     Ptr32<void (UiActionId, struct UiNodeBase *)> unsuppressActionId; 
     Ptr32<void (struct UiNodeBase *)> tick; 
     Ptr32<void (UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *)> pointerWheel; 
-};
-
-/* Natural alignment as in the original: sizeof 20 (18 bytes of fields + 2 bytes tail padding); DirectSound_Init
-   and the voice-set creators clear WaveFormat_PCM_22050_Stereo16 with Memory_ZeroDwords(0x14). */
-struct WAVEFORMATEX {
-    WaveFormatTag wFormatTag;
-    AudioChannelCount nChannels;
-    AudioSampleRateHz nSamplesPerSec;
-    AudioByteRate nAvgBytesPerSec;
-    AudioBlockAlignBytes nBlockAlign;
-    AudioBitsPerSample wBitsPerSample;
-    WaveFormatExtraByteCount cbSize;
-};
-
-struct IDirectSoundBuffer_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSoundBuffer *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectSoundBuffer *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectSoundBuffer *);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (__stdcall *GetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (__stdcall *GetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetStatus)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectSoundBuffer *, struct IDirectSound *, struct DSBUFFERDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Play)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *);
-    TH_LEGACY_HRESULT (__stdcall *SetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (__stdcall *SetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (__stdcall *SetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Stop)(struct IDirectSoundBuffer *);
-    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectSoundBuffer *);
-};
-
-struct DSBUFFERDESC_DX6 {
-    DirectSoundBufferDescriptionByteSize dwSize; 
-    DirectSoundBufferCaps dwFlags; 
-    AudioBufferByteCount dwBufferBytes; 
-    TH_LEGACY_DWORD dwReserved;
-    struct WAVEFORMATEX *lpwfxFormat;
 };
 
 struct UiPageStackControl {
@@ -4805,7 +4534,6 @@ typedef intptr_t ModelMeshGroupAddress32; /* address of a mesh group / record, p
 
 typedef uint32_t GraphicsAssetAllocationByteSize;
 
-typedef uint32_t WinMmTimerPeriodMilliseconds;
 
 typedef uint32_t FactionArmyContributionValue;
 
@@ -4863,7 +4591,6 @@ typedef int GraphicsPrimitiveScreenCoordinate;
 
 typedef int ModelLookupKeyIndex;
 
-typedef uint32_t TimerCallbackSlotByteOffset;
 
 typedef int AiCandidateScore32;
 
@@ -4995,7 +4722,6 @@ typedef uint64_t MmxPacked64;
 
 typedef uint32_t FactionAnchorCooldownTicks;
 
-typedef uint32_t Win32WindowMessageId;
 
 typedef uint32_t PckHeaderDwordCount;
 
@@ -5210,7 +4936,6 @@ typedef uint16_t WinSockProtocolNumber16;
 
 typedef uint32_t FrontendCapturedStateFlag;
 
-typedef uint32_t WinMmTimerId;
 
 typedef uint32_t GraphicsProjectionScale;
 
@@ -9131,10 +8856,6 @@ struct ArenaBlockHeader {
     uint8_t alignmentPadding[24 - 2 * sizeof(void *)]; /* header stays 0x20 bytes on x64 (5f) */
 };
 
-struct TimerCallbackTable {
-    Ptr32<void (void)> callbacks[32]; 
-};
-
 struct CommandLineState {
     char executablePath[256];
     char argument1[256];
@@ -9169,135 +8890,7 @@ struct ArmyPlacementContactCallbackTable5 {
     Ptr32<void (Q12, Q12, Q12, struct ModelRuntimeNode *, struct WorldRuntimeContext *)> callbacks[5]; 
 };
 
-struct DIPROPHEADER {
-    TH_LEGACY_DWORD dwSize;
-    TH_LEGACY_DWORD dwHeaderSize;
-    TH_LEGACY_DWORD dwObj;
-    TH_LEGACY_DWORD dwHow;
-};
-
-struct PALETTEENTRY_DX6 {
-    ColorChannelByte peRed; 
-    ColorChannelByte peGreen; 
-    ColorChannelByte peBlue; 
-    PaletteEntryFlagsByte peFlags; 
-};
-
-struct DIOBJECTDATAFORMAT {
-    struct TH_LEGACY_GUID *pguid;
-    TH_LEGACY_DWORD dwOfs;
-    TH_LEGACY_DWORD dwType;
-    TH_LEGACY_DWORD dwFlags;
-};
-
-struct DIDATAFORMAT {
-    TH_LEGACY_DWORD dwSize;
-    TH_LEGACY_DWORD dwObjSize;
-    TH_LEGACY_DWORD dwFlags;
-    TH_LEGACY_DWORD dwDataSize;
-    TH_LEGACY_DWORD dwNumObjs;
-    struct DIOBJECTDATAFORMAT *rgodf;
-};
-
-struct DIMOUSESTATE_4BUTTON {
-    TH_LEGACY_LONG lX;
-    TH_LEGACY_LONG lY;
-    TH_LEGACY_LONG lZ;
-    TH_LEGACY_BYTE rgbButtons[4];
-};
-
-struct DIDEVICEOBJECTDATA_DX6 {
-    TH_LEGACY_DWORD dwOfs;
-    TH_LEGACY_DWORD dwData;
-    TH_LEGACY_DWORD dwTimeStamp;
-    TH_LEGACY_DWORD dwSequence;
-    TH_LEGACY_ULONG uAppData; 
-};
-
-struct DIDEVICEOBJECTDATA_DX3 {
-    TH_LEGACY_DWORD dwOfs;
-    TH_LEGACY_DWORD dwData;
-    TH_LEGACY_DWORD dwTimeStamp;
-    TH_LEGACY_DWORD dwSequence;
-};
-
-struct DIPROPDWORD {
-    struct DIPROPHEADER diph;
-    TH_LEGACY_DWORD dwData;
-};
-
-struct IDirectDraw2_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDraw2 *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (__stdcall *CreateClipper)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw2 *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    int32_t (__stdcall *EnumDisplayModes)(struct IDirectDraw2 *, uint32_t, struct DDSURFACEDESC_DX6 *, uint32_t, int32_t (__stdcall *)(struct DDSURFACEDESC_DX6 *, uint32_t)); 
-    TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw2 *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetDisplayMode)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (__stdcall *GetFourCCCodes)(struct IDirectDraw2 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetGDISurface)(struct IDirectDraw2 *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (__stdcall *GetMonitorFrequency)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetScanLine)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *GetVerticalBlankStatus)(struct IDirectDraw2 *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (__stdcall *RestoreDisplayMode)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectDraw2 *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD); /* width, height, bpp, refresh rate, flags */
-    TH_LEGACY_HRESULT (__stdcall *WaitForVerticalBlank)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *GetAvailableVidMem)(struct IDirectDraw2 *, struct DDSCAPS *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-};
-
-struct IDirectDraw2 {
-    struct IDirectDraw2_Vtbl *lpVtbl;
-};
-
 typedef void *TH_LEGACY_HINSTANCE;
-
-struct IDirectInputDeviceA {
-    struct IDirectInputDeviceA_Vtbl *lpVtbl;
-};
-
-struct IDirectInputDeviceA_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectInputDeviceA *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (__stdcall *GetCapabilities)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *EnumObjects)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
-    TH_LEGACY_HRESULT (__stdcall *SetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
-    TH_LEGACY_HRESULT (__stdcall *Acquire)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (__stdcall *Unacquire)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (__stdcall *GetDeviceState)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetDeviceData)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, struct DIDEVICEOBJECTDATA_DX3 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetDataFormat)(struct IDirectInputDeviceA *, struct DIDATAFORMAT *);
-    TH_LEGACY_HRESULT (__stdcall *SetEventNotification)(struct IDirectInputDeviceA *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetObjectInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetDeviceInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *RunControlPanel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectInputDeviceA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD, struct TH_LEGACY_GUID *);
-};
-
-struct IDirectInputA_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectInputA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectInputA *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectInputA *);
-    TH_LEGACY_HRESULT (__stdcall *CreateDevice)(struct IDirectInputA *, struct TH_LEGACY_GUID *, struct IDirectInputDeviceA **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *EnumDevices)(struct IDirectInputA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetDeviceStatus)(struct IDirectInputA *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (__stdcall *RunControlPanel)(struct IDirectInputA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectInputA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD);
-};
-
-struct IDirectInputA {
-    struct IDirectInputA_Vtbl *lpVtbl;
-};
 
 typedef uint8_t FactionRuntimeLifecycleState;
 
@@ -9371,50 +8964,6 @@ enum {
     SPIN_LOCK_LOCKED=4294967295
 };
 typedef int RuntimeSpinLockValue;
-
-struct TimerSystemState {
-    Ptr32<void (void)> callbacks[32]; 
-    uint32_t winmmTimerIds[32]; 
-};
-
-struct Win32Message32 {
-    void *hwnd; 
-    Win32MessageId32 message; 
-    Win32WParam32 wParam; 
-    Win32LParam32 lParam; 
-    Win32MessageTimestamp32 time; 
-    Win32CursorCoordinate32 pointX;
-    Win32CursorCoordinate32 pointY;
-};
-
-/* WNDCLASSA as the image stores it (the main window's class, see g_MainMessageStorage.overlay.windowClass). */
-typedef struct Win32WindowClass32 Win32WindowClass32;
-struct Win32WindowClass32 {
-    uint32_t style;
-    void *windowProc;
-    int classExtraBytes;
-    int windowExtraBytes;
-    HINSTANCE instance;
-    HICON icon;
-    HCURSOR cursor;
-    void *backgroundBrush;
-    char *menuName;
-    char *className;
-};
-
-/* The original overlaps the main window's class with its message buffer: the class starts at
-   MSG.pt.y. The first PeekMessageA overwrites the style only after RegisterClassA copied the class. */
-typedef struct Win32MessageWindowClassOverlay Win32MessageWindowClassOverlay;
-struct Win32MessageWindowClassOverlay {
-    uint32_t messageHead[6];
-    struct Win32WindowClass32 windowClass;
-};
-
-typedef union Win32MainMessageStorage Win32MainMessageStorage;
-union Win32MainMessageStorage {
-    struct Win32MessageWindowClassOverlay overlay;
-    struct Win32Message32 message;
-};
 
 struct PcxRgb24 {
     ColorChannelByte red; 

@@ -6,7 +6,7 @@
  */
 
 /* SDL3 backend: audio. One SDL audio stream (22050 Hz, 16-bit, stereo, as DirectSound's primary buffer) whose
-   callback mixes every playing voice. The g_Sound* slots behave like the DirectSound ones (audio/backend/runtime.c):
+   callback mixes every playing voice. The g_Sound* slots behave like the original's DirectSound ones:
    a voice set holds one decoded .sam sample and up to eight voices playing it (the first idle voice plays, a new one
    is added while fewer than eight exist), one-shot or looping; a stopped voice keeps its position and resumes there,
    one that played to its end starts again from the beginning. The two Q15 channel gains become DirectSound's
