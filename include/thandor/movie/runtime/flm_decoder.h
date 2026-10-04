@@ -43,9 +43,10 @@
 
 /* Functions are grouped by semantic ownership. */
 
+/* Decodes one frame from encodedFrame, reading nothing at or after encodedEnd (see flm_decoder.cpp). */
 uint32_t Movie_DecodeFrame4x4Delta
           (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
-          uint8_t *encodedFrame);
+          const uint8_t *encodedFrame,const uint8_t *encodedEnd);
 
 /* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */
 void Movie_BuildChromaLumaTable(void);

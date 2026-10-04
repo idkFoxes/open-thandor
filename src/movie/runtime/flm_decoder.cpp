@@ -15,8 +15,16 @@
 
 /* Module data. */
 
-/* filled at startup by Movie_BuildChromaLumaTable */
-static uint32_t g_MovieChromaLumaToArgb[1024][32] = {0};
+/* Entries per chroma code (one per 5-bit luma) and the number of chroma codes */
+#define MOVIE_CHROMA_LUMA_ROW 32
+#define MOVIE_CHROMA_CODES 1024
+/* Entries behind the last row: a colour block reads up to base luma 24 + 7 * 2 = 38, past its row */
+#define MOVIE_CHROMA_LUMA_PADDING 16
+
+/* filled at startup by Movie_BuildChromaLumaTable; row = chroma code, column = luma. The original's
+   precomputed table was read past the end of a row (into the next one) by malformed colour blocks, which is
+   kept; the padding bounds the last row, whose spill reads the zero padding here. */
+static uint32_t g_MovieChromaLumaToArgb[MOVIE_CHROMA_CODES * MOVIE_CHROMA_LUMA_ROW + MOVIE_CHROMA_LUMA_PADDING] = {0};
 
 /* Implementation ownership: movie/runtime/flm_decoder. */
 
@@ -44,29 +52,48 @@ static void Movie_DecodeColorBlock(uint32_t *blockTopLeft,MoviePixelDimension wi
     else {
       lumaStep = blockWord1 >> ((pixelIndex - 9) * 3) & 7;
     }
-    destinationRow[pixelIndex & 3] = g_MovieChromaLumaToArgb[0][tableIndex + lumaStep * lumaStepScale];
+    destinationRow[pixelIndex & 3] = g_MovieChromaLumaToArgb[tableIndex + lumaStep * lumaStepScale];
     if ((pixelIndex & 3) == 3) {
       destinationRow = destinationRow + widthPixels;
     }
   }
 }
 
+/* Not in the original: the stream dword at cursor, or the bytes left before end (fewer than four) padded with
+   zeros. The token and the skip counts of the short skip tokens only use the bytes they occupy, so the padding
+   never changes a token that fits before end. */
+static uint32_t Movie_LoadStreamDword(const uint8_t *cursor,const uint8_t *end)
+{
+  uint32_t value = 0;
+  size_t available = (size_t)(end - cursor);
+
+  memcpy(&value,cursor,available < 4 ? available : 4);
+  return value;
+}
+
 /* Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order. A colour block
    (token 0..24 = base luma) holds a 10-bit chroma code and sixteen 3-bit luma steps that index
    g_MovieChromaLumaToArgb; the skip tokens leave runs of blocks unchanged. Returns the encoded bytes consumed,
-   rounded up to eight, so the caller can advance the stream.
+   rounded up to eight, so the caller can advance the stream. heightPixels and widthPixels must be at least 4
+   (Movie_Open checks the header).
+   The original read the stream without an end. Bounded here because the stream comes from the file: a token
+   that does not fit before encodedEnd stops the frame (the rest of the image keeps the previous frame) and the
+   result counts only the bytes up to encodedEnd. Every token of a well-formed frame lies before the end, so
+   its result is unchanged.
 */
 uint32_t Movie_DecodeFrame4x4Delta
           (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
-          uint8_t *encodedFrame)
+          const uint8_t *encodedFrame,const uint8_t *encodedEnd)
 
 {
   uint32_t blockWord0;
   uint32_t token;
-  uint8_t *streamCursor;
+  uint32_t tokenBytes;
+  const uint8_t *streamCursor;
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
   uint32_t skipRemaining;
+  static Bool8 s_truncationLogged;
 
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;
@@ -78,25 +105,31 @@ uint32_t Movie_DecodeFrame4x4Delta
         skipRemaining--;
       }
       else {
-        blockWord0 = *(uint32_t *)streamCursor;
+        if (streamCursor >= encodedEnd) {
+          goto truncated;
+        }
+        blockWord0 = Movie_LoadStreamDword(streamCursor,encodedEnd);
         token = blockWord0 & MOVIE_TOKEN_MASK;
+        tokenBytes = token < MOVIE_TOKEN_SKIP_SHORT ? 8 :
+                     (token == MOVIE_TOKEN_SKIP_SHORT ? 1 : (token < MOVIE_TOKEN_SKIP_LONG ? 2 : 4));
+        if ((size_t)(encodedEnd - streamCursor) < tokenBytes) {
+          goto truncated;
+        }
         if (token < MOVIE_TOKEN_SKIP_SHORT) {
-          Movie_DecodeColorBlock(destinationArgb,widthPixels,blockWord0,*(uint32_t *)(streamCursor + 4));
-          streamCursor = streamCursor + 8;
+          Movie_DecodeColorBlock(destinationArgb,widthPixels,blockWord0,
+                                 Movie_LoadStreamDword(streamCursor + 4,encodedEnd));
         }
         /* skip tokens: this block plus skipRemaining further blocks keep the previous frame */
         else if (token == MOVIE_TOKEN_SKIP_SHORT) {
-          streamCursor = streamCursor + 1;
           skipRemaining = (blockWord0 & 0xff) >> 5;
         }
         else if (token < MOVIE_TOKEN_SKIP_LONG) {
-          streamCursor = streamCursor + 2;
           skipRemaining = ((blockWord0 & 0xffff) >> 5) + MOVIE_SKIP_SHORT_MAX_BLOCKS;
         }
         else {
-          streamCursor = streamCursor + 4;
           skipRemaining = (blockWord0 >> 5) + MOVIE_SKIP_MEDIUM_MAX_BLOCKS;
         }
+        streamCursor = streamCursor + tokenBytes;
       }
       destinationArgb = destinationArgb + 4;
       blocksLeftInRow--;
@@ -107,6 +140,12 @@ uint32_t Movie_DecodeFrame4x4Delta
     blocksLeftInRow = widthPixels >> 2;
   } while (blockRowsLeft != 0);
   return (uint32_t)(streamCursor - encodedFrame + 7) & ~7u;
+truncated:
+  if (!s_truncationLogged) {
+    s_truncationLogged = true;
+    Thandor_Log("Movie_DecodeFrame4x4Delta: frame data ends inside a frame; frame truncated");
+  }
+  return (uint32_t)(encodedEnd - encodedFrame);
 }
 
 /* Not in the original: the original executable carries g_MovieChromaLumaToArgb precomputed
@@ -193,7 +232,7 @@ static uint32_t MovieColor_ClampChannel(int value)
 }
 
 /* Not in the original: fills g_MovieChromaLumaToArgb (the 1024 chroma codes x 32 lumas that
-   Movie_DecodeFrame4x4Delta looks up) from the two tables above. Called once at startup by WinMain (src/platform/bootstrap/main.c),
+   Movie_DecodeFrame4x4Delta looks up) from the two tables above. Called once at startup by WinMain (src/platform/bootstrap/main.cpp),
    before any movie is decoded. */
 void Movie_BuildChromaLumaTable(void)
 {
@@ -205,7 +244,7 @@ void Movie_BuildChromaLumaTable(void)
     for (hue = 0; hue < 32; hue++) {
       int cosTerm = k_MovieChromaCosTerm[saturation][hue];
       int sinTerm = k_MovieChromaSinTerm[saturation][hue];
-      uint32_t *row = g_MovieChromaLumaToArgb[saturation * 32 + hue];
+      uint32_t *row = &g_MovieChromaLumaToArgb[(saturation * 32 + hue) * MOVIE_CHROMA_LUMA_ROW];
       for (luma = 0; luma < 32; luma++) {
         int grey = luma * 8;
         row[luma] = ARGB8888_ALPHA_MASK | MovieColor_ClampChannel(grey - 2 * cosTerm) << 16 |

@@ -380,7 +380,8 @@ static void Thandor_SelfTestMovieEncode(void)
             hash = (hash ^ ((const uint8_t *)reference)[i]) * 16777619u;
         }
         /* decode the frame on top of the previous decoded picture, as the player does */
-        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, (uint8_t *)encoded);
+        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, (const uint8_t *)encoded,
+                                             (const uint8_t *)encoded + sizeof encoded);
         hash = (hash ^ consumed) * 16777619u;
         for (i = 0; i < sizeof decoded; i++) {
             hash = (hash ^ ((const uint8_t *)decoded)[i]) * 16777619u;

@@ -1975,9 +1975,11 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
    SdlAudio_Init, as by the original's DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
    cos((2k+1) * u * pi / 512), row 0 being 1/sqrt(2); the second (g_CosineDerivedLookupSecondTable, Q14) is
    its transpose, row m, entry k = cos(k * (2m+1) * pi / 512), entry 0 being 1/sqrt(2). Angles are 16-bit
-   (65536 = full turn), so 0x40 is pi/512. On allocation failure the pointers stay unset.
+   (65536 = full turn), so 0x40 is pi/512. Returns 0, or the allocation error; on allocation failure the
+   pointers stay unset. The original returned nothing and its caller decoded with the unset tables; the
+   result lets SdlAudio_Init run silent instead.
 */
-void __cdecl CosineDerivedLookupTables_Init(void)
+uint32_t __cdecl CosineDerivedLookupTables_Init(void)
 
 {
   short *outputCursor;
@@ -1991,7 +1993,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
 
   allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),(void **)&outputCursor);
   if (allocError != 0) {
-    outputCursor = (short *)(uintptr_t)allocError;
+    return allocError;
   }
   else {
     g_CosineDerivedLookupAllocation = outputCursor;
@@ -2038,5 +2040,5 @@ void __cdecl CosineDerivedLookupTables_Init(void)
       secondAngleIndex16 = 0;
     } while (secondAngleStep16 < 2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ANGLE_STEP);
   }
-  return;
+  return 0;
 }
