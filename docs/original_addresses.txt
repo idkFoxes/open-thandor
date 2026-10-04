@@ -1672,11 +1672,11 @@
 0x005200BC  data      g_ModelRuntimeRebaseDelta                                         src/world/model/pool.cpp
 0x005200C0  function  ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices  src/gameplay/army/model_slots.cpp
 0x00520140  function  ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation   src/gameplay/army/drive_ground.cpp
-0x00520740  function  ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds                   src/gameplay/army/audio.cpp
+0x00520740  function  ArmyRuntimeAudio_UpdateTurnAndMoveSounds                          src/gameplay/army/audio.cpp
 0x00520840  function  ArmyRuntimeClass_UpdateGroundMovement                             src/gameplay/army/drive_ground.cpp
-0x00520CF0  function  ArmyRuntimeClass_UpdateGroundPositionedSounds                     src/gameplay/army/audio.cpp
+0x00520CF0  function  ArmyRuntimeClass_UpdateGroundPositionedSounds                     (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00520DF0  function  ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement           src/gameplay/army/drive_ground.cpp
-0x00520E60  function  ArmyRuntimeAudio_DispatchPositionedSoundVariant                   src/gameplay/army/audio.cpp
+0x00520E60  function  ArmyRuntimeAudio_DispatchPositionedSoundVariant                   (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00520EB0  data      g_ArmySuspensionBlendVectorA                                      src/gameplay/army/walker.cpp
 0x00520EBC  data      g_ArmySuspensionBlendVectorB                                      src/gameplay/army/walker.cpp
 0x00520EC8  data      g_ArmySuspensionRotationMatrixScratchA                            src/gameplay/army/walker.cpp
@@ -1696,7 +1696,7 @@
 0x00522B70  function  ArmyRuntimeClass_NoOpUpdate                                       src/gameplay/army/class_dispatch.cpp
 0x00522B90  function  ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform             src/gameplay/army/model_slots.cpp
 0x00522C00  function  ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation           src/gameplay/army/drive_banking.cpp
-0x00523240  function  ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds                    src/gameplay/army/audio.cpp
+0x00523240  function  ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds                    (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00523340  function  ArmyRuntimeCommand_UpdateTargetFollowingState                     src/gameplay/army/move_orders.cpp
 0x005233F0  function  ArmyRuntimeClass_NoOpTickUpdateForClass5                          src/gameplay/army/class_dispatch.cpp
 0x00523400  function  ArmyRuntimeClass_NoOpTickUpdateForClass6                          src/gameplay/army/class_dispatch.cpp
@@ -1730,7 +1730,7 @@
 0x00525420  function  ArmyPlacement_ReleaseFactionCapacity                              src/gameplay/army/placement_release.cpp
 0x005254B0  function  ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity  src/gameplay/army/model_slots.cpp
 0x005254F0  function  ArmyRuntimeClass_UpdateWaterSurfaceMovement                       src/gameplay/army/drive_ground.cpp
-0x00525960  function  ArmyRuntimeClass_UpdateWaterPositionedSounds                      src/gameplay/army/audio.cpp
+0x00525960  function  ArmyRuntimeClass_UpdateWaterPositionedSounds                      (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00525A60  function  ArmyRuntimeClass_UpdateAircraft                                   src/gameplay/army/aircraft.cpp
 0x00526340  function  ModelRuntimeSlot_UnrebaseClassModelLinkOffset60                   src/gameplay/army/model_slots.cpp
 0x00526370  function  ModelRuntimeSlot_RebaseClassModelLinkOffset60                     src/gameplay/army/model_slots.cpp
@@ -1745,8 +1745,8 @@
 0x00527010  function  ArmyRuntimeSpawner_CreateLinkedChildInstance                      src/gameplay/army/factory.cpp
 0x00527150  function  ArmyRuntime_GetAttachmentEffectVariantMask                        src/gameplay/army/class_updates.cpp
 0x005271A0  function  ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric              src/gameplay/army/factory.cpp
-0x00527230  function  ModelRuntime_PlayDefinitionSecondaryOneShotSound                  src/gameplay/army/audio.cpp
-0x005272B0  function  ModelRuntime_PlayDefinitionPrimaryOneShotSound                    src/gameplay/army/audio.cpp
+0x00527230  function  ModelRuntime_PlayDefinitionSecondaryOneShotSound                  (merged into ModelRuntime_PlayDefinitionOneShotSound)
+0x005272B0  function  ModelRuntime_PlayDefinitionPrimaryOneShotSound                    (merged into ModelRuntime_PlayDefinitionOneShotSound)
 0x00527330  function  GridInfluence_AddLowDistanceBands                                 src/world/pathing/influence.cpp
 0x00527380  function  GridInfluence_RemoveLowDistanceBands                              src/world/pathing/influence.cpp
 0x005273D0  function  ArmyRuntime_TestPositionDistanceWithinCombinedRadius              src/gameplay/army/class_updates.cpp

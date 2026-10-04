@@ -15,12 +15,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
-
-void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
-
-void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
+void ArmyRuntimeAudio_UpdateTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 void ArmyRuntimeAudio_UpdateTurretTurnSound
@@ -38,17 +33,12 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
 
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-void ArmyRuntimeClass_UpdateGroundPositionedSounds(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
-
-void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
-
 void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
           SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext);
 
-void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime);
-
-void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldContext);
+void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint32_t soundAssetIndex,
+          WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_AUDIO_H */

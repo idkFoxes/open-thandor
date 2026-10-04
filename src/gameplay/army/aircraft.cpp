@@ -109,7 +109,9 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
   definition = modelRuntime->modelDefinition;
   homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset; /* 5f-format: ModelRuntimeSlot.definitionOrSavedId */
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-  ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
+  ModelRuntime_PlayDefinitionOneShotSound
+            (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
+             worldRuntime);
   scaledPadHealth = (int)(((int64_t)(int)homeModelRuntime->health * (int64_t)definition->maximumHealth) /
                           (int64_t)(homeDefinitionSlot->classLinkState).modelLinkOrState.signedScalarState);
   healthDifference = scaledPadHealth - modelRuntime->health;
@@ -144,7 +146,9 @@ static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,Model
   (modelRuntime->classLinkState).classState64 = (modelRuntime->classLinkState).classState64 - 1;
   if (((modelRuntime->classLinkState).classState64 == 0) && (homeModelRuntime != NULL)) {
     (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-    ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
+    ModelRuntime_PlayDefinitionOneShotSound
+            (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
+             worldRuntime);
   }
   (modelRuntime->classLinkState).classState68 = (modelRuntime->classLinkState).classState68 - 1;
   if ((int)(modelRuntime->classLinkState).classState68 < 0) {
@@ -315,7 +319,9 @@ static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,Model
     return;
   }
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_OPENING;
-  ModelRuntime_PlayDefinitionPrimaryOneShotSound(homeModelRuntime,worldRuntime);
+  ModelRuntime_PlayDefinitionOneShotSound
+            (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->primarySoundIndex,
+             worldRuntime);
   padHeading = (padNode->modelPayload).worldRotationAngle2;
   sinCosStep = FixedMath_SinCosScaled
                      (padHeading ^ FIXED_ANGLE16_HALF_TURN,definition->movementStepQ12 * definition->phaseDuration);
