@@ -27,6 +27,8 @@ void *g_TerrainSurfacePacketTablePayload = 0;
 
 GraphicsPaletteAsset *g_TerrainPrimaryPalette = 0;
 
+GraphicsPaletteAsset *g_TerrainSecondaryPalette = 0;
+
 /* Implementation ownership: graphics/terrain/terrain_resources. */
 
 
@@ -306,10 +308,3 @@ void TerrainVisualResources_Shutdown(void)
   g_TerrainSoilPacketTablePayload = NULL;
   g_TerrainSurfacePacketTablePayload = NULL;
 }
-
-
-
-
-
-
-

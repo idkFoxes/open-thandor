@@ -752,21 +752,149 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
   return;
 }
 
+/* Fills one packet vertex from a terrain vertex's second screen/depth block for
+   GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle; the colour is masked with
+   g_UiCommandModeGColorVariantLimit when the vertex's secondary projection depth is negative. */
+static void GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(GraphicsPrimitiveVertexRaw *vertex,
+                                                                   const TerrainProjectedVertexWorkRecord *source,
+                                                                   PackedArgb32 diffuseColor)
+{
+  if (source->secondaryProjectionDepthQ12 < 0) {
+    diffuseColor = diffuseColor & g_UiCommandModeGColorVariantLimit;
+  }
+  vertex->screenX = source->projectedPointB.projectedX;
+  vertex->screenY = source->projectedPointB.projectedY;
+  vertex->diffuseColor = diffuseColor;
+  vertex->backendCoord0 = source->viewPointB.x;
+  vertex->backendCoord1 = source->viewPointB.y;
+  vertex->depth = source->viewPointB.z;
+}
 
+/* Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
+   appends a packet from the terrain vertices' second screen/depth block (projectedPointB, viewPointB), the per-vertex
+   colours (masked with g_UiCommandModeGColorVariantLimit for vertices whose secondaryProjectionDepthQ12 is
+   negative) and the texture
+   coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
+   with g_TerrainPrimaryTextureSet when the index is in range, modulated by g_TerrainPrimaryPalette. Returns the
+   packet, or NULL when the queue is full (one slot is always left unused). Called by
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
+*/
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
+          GraphicsProjectedVertexSource *vertex1Projected,
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContext *renderContext)
 
+{
+  GraphicsPrimitiveQueue *primitiveQueue;
+  uint32_t packetIndex;
+  uint32_t textureEntryIndex;
+  GraphicsTextureSet *terrainTextureSet;
+  PackedArgb32 paletteModulationColor;
+  GraphicsPrimitivePacket *newPacket;
 
+  primitiveQueue = renderContext->activePrimitiveQueue;
+  packetIndex = primitiveQueue->count;
+  if (packetIndex + 1 >= primitiveQueue->capacity) {
+    /* Queue full (the original returned no packet here; no caller reads the result) */
+    return NULL;
+  }
+  primitiveQueue->count = packetIndex + 1;
+  newPacket = primitiveQueue->packetPool + packetIndex;
+  primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
+  /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[0],
+          (const TerrainProjectedVertexWorkRecord *)vertex0Projected,vertex0DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[1],
+          (const TerrainProjectedVertexWorkRecord *)vertex1Projected,vertex1DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(&newPacket->vertices[2],
+          (const TerrainProjectedVertexWorkRecord *)vertex2Projected,vertex2DiffuseColor);
+  newPacket->vertices[0].textureU = terrainPacketRecord[0];
+  newPacket->vertices[1].textureU = terrainPacketRecord[2];
+  newPacket->vertices[2].textureU = terrainPacketRecord[4];
+  newPacket->vertices[0].textureV = terrainPacketRecord[1];
+  newPacket->vertices[1].textureV = terrainPacketRecord[3];
+  newPacket->vertices[2].textureV = terrainPacketRecord[5];
+  paletteModulationColor = 0;
+  if (g_TerrainPrimaryPalette != NULL) {
+    paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
+            alternateModulationColorArgb;
+  }
+  newPacket->renderFlags = GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
+  newPacket->modulationColor = paletteModulationColor;
+  terrainTextureSet = g_TerrainPrimaryTextureSet;
+  textureEntryIndex = terrainPacketRecord[6];
+  newPacket->textureEntry = NULL;
+  if ((terrainTextureSet != NULL) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
+    newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
+    newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
+  }
+  return newPacket;
+}
 
+/* Fills one packet vertex for GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle: the five projected
+   attribute dwords (texturedPacketAttributes[0..4]) are screenX, screenY, backendCoord0, backendCoord1 and depth. */
+static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitiveVertexRaw *vertex,
+                                                               const GraphicsProjectedVertexSource *source,
+                                                               PackedArgb32 diffuseColor)
+{
+  vertex->screenX = (GraphicsPrimitiveScreenCoordinate)source->texturedPacketAttributes[0];
+  vertex->screenY = (GraphicsPrimitiveScreenCoordinate)source->texturedPacketAttributes[1];
+  vertex->diffuseColor = diffuseColor;
+  vertex->backendCoord0 = (GraphicsPrimitiveBackendCoordinate)source->texturedPacketAttributes[2];
+  vertex->backendCoord1 = (GraphicsPrimitiveBackendCoordinate)source->texturedPacketAttributes[3];
+  vertex->depth = (GraphicsPrimitiveDepthFixed)source->texturedPacketAttributes[4];
+}
 
+/* Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
+   depth (texturedPacketAttributes) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
+   texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
+   of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
+   packet, or NULL when the queue is full (one slot is always left unused). Called by
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
+*/
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
+          GraphicsProjectedVertexSource *vertex1Projected,
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContext *renderContext)
 
+{
+  GraphicsPrimitiveQueue *primitiveQueue;
+  uint32_t packetIndex;
+  GraphicsTextureSet *materialTextureSet;
+  PackedArgb32 paletteModulationColor;
+  GraphicsPrimitivePacket *newPacket;
 
-
-
-
-
-
-
-
-
-
-
-
+  primitiveQueue = renderContext->activePrimitiveQueue;
+  packetIndex = primitiveQueue->count;
+  if (packetIndex + 1 >= primitiveQueue->capacity) {
+    return NULL;
+  }
+  primitiveQueue->count = packetIndex + 1;
+  newPacket = primitiveQueue->packetPool + packetIndex;
+  primitiveQueue->primaryNodes[packetIndex].packet = newPacket;
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[0],vertex0Projected,vertex0DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[1],vertex1Projected,vertex1DiffuseColor);
+  GraphicsPrimitiveVertex_SetFromProjectedAttributes(&newPacket->vertices[2],vertex2Projected,vertex2DiffuseColor);
+  newPacket->vertices[0].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[0];
+  newPacket->vertices[1].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[2];
+  newPacket->vertices[2].textureU = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[4];
+  newPacket->vertices[0].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[1];
+  newPacket->vertices[1].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[3];
+  newPacket->vertices[2].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[5];
+  paletteModulationColor = 0;
+  if (g_TerrainSecondaryPalette != NULL) {
+    paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
+            alternateModulationColorArgb;
+  }
+  newPacket->modulationColor = paletteModulationColor;
+  materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
+  newPacket->renderFlags = g_UiCommandModeGColorVariantFlags;
+  newPacket->textureEntry = materialTextureSet->entries;
+  return newPacket;
+}

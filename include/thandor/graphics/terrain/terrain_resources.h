@@ -48,4 +48,6 @@ extern GraphicsPaletteAsset *g_TerrainPrimaryPalette;
 
 extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
 
+extern GraphicsPaletteAsset *g_TerrainSecondaryPalette;
+
 #endif /* THANDOR_GRAPHICS_TERRAIN_TERRAIN_RESOURCES_H */

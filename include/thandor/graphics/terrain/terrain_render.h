@@ -85,4 +85,20 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
 
 void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal);
 
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
+          GraphicsProjectedVertexSource *vertex1Projected,
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContext *renderContext);
+
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
+          GraphicsProjectedVertexSource *vertex1Projected,
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContext *renderContext);
+
 #endif /* THANDOR_GRAPHICS_TERRAIN_TERRAIN_RENDER_H */

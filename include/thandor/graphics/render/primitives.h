@@ -72,22 +72,6 @@ void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTex
 void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue);
 
-GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
-          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
-          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
-          GraphicsProjectedVertexSource *vertex2Projected,
-          GraphicsProjectedVertexSource *vertex1Projected,
-          GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContext *renderContext);
-
-GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
-          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
-          GraphicsProjectedVertexSource *vertex2Projected,
-          GraphicsProjectedVertexSource *vertex1Projected,
-          GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContext *renderContext);
-
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
 Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
@@ -95,6 +79,5 @@ Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMa
 
 extern GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc;
 extern GraphicsPrimitiveQueue *g_PrimitiveQueueStorage;
-extern GraphicsPaletteAsset *g_TerrainSecondaryPalette;
 
 #endif /* THANDOR_GRAPHICS_RENDER_PRIMITIVES_H */
