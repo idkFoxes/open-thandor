@@ -11,7 +11,6 @@
 #include <thandor/ui/frontend/credits_mask.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include "software_raster.h"
 
 /* One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/scenario.c while
    the credits page is open): pixels already revealed brighten by 0x1F, and the tick's position in a 100-tick
