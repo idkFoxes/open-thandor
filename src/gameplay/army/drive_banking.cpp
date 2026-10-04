@@ -167,25 +167,6 @@ static void ArmyRuntimeClass_PlaceBankingUnitInPlace
              (rootNode->worldTransform).translation.x,rootNode,worldRuntime);
 }
 
-/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: tilts the root node back by the recoil
-   after a shot, as in ArmyRuntimeClass_UpdateGroundMovement. */
-static void ArmyRuntimeClass_ApplyBankingRecoilTilt
-          (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,int recoilTilt)
-{
-  FixedAzimuthElevationRoll composedAngles;
-
-  composedAngles = FixedTransform_ComposeEulerAngles
-                     (0,FIXED_ANGLE16_QUARTER_TURN - recoilTilt,
-                      (modelRuntime->ownerArmyRuntime->actionVector0Q12 + FIXED_ANGLE16_HALF_TURN) -
-                      (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK,
-                      (rootNode->modelPayload).worldRotationAngle2,
-                      (rootNode->modelPayload).worldRotationAngle1,
-                      (rootNode->modelPayload).worldRotationAngle0);
-  (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
-  (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
-  (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
-}
-
 /* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: the unit is destroyed or has arrived.
    Stops it, places it where it stands and applies a pending recoil. Returns the root node. */
 static ModelRuntimeNode *ArmyRuntimeClass_PlaceBankingUnitStationary
@@ -207,7 +188,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_PlaceBankingUnitStationary
   recoilTilt = recoilTilt * ownerArmy->actionVector2Q12;
   ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
   ArmyRuntimeClass_PlaceBankingUnitInPlace(worldRuntime,modelRuntime,rootNode);
-  ArmyRuntimeClass_ApplyBankingRecoilTilt(modelRuntime,rootNode,recoilTilt);
+  ArmyGroundMovement_ApplyRecoilTilt(modelRuntime,rootNode,recoilTilt);
   return rootNode;
 }
 
@@ -306,7 +287,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   if (recoilTilt >= 0) {
     recoilTilt = recoilTilt * ownerArmy->actionVector2Q12;
     ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
-    ArmyRuntimeClass_ApplyBankingRecoilTilt(modelRuntime,rootNode,recoilTilt);
+    ArmyGroundMovement_ApplyRecoilTilt(modelRuntime,rootNode,recoilTilt);
   }
   return rootNode;
 }
