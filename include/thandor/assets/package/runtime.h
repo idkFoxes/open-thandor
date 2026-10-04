@@ -36,6 +36,8 @@ Bool8 Package_LoadEntryIntoBuffer
 
 Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError);
 
+void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *outErrorCode);
+
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
 Bool8 Package_Mount(uint16_t *path,uintptr_t *outFileHandleOrError);

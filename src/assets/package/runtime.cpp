@@ -198,62 +198,15 @@ Bool8 Package_MountLowPriority(uint16_t *path,uintptr_t *outFileHandleOrError)
   return Package_MountIntoSlot(mountSlot,path,outFileHandleOrError);
 }
 
-/* Package_LoadEntry for a path in no mounted package: opens the loose file (relative to the executable
-   directory first, then as given) and reads it whole into a newly allocated buffer. Returns the buffer, or
-   NULL with the open, size, allocation or read error code in *outErrorCode. */
-static void *Package_LoadLooseFile(uint16_t *path,uint32_t *outErrorCode)
-
-{
-  void *handle;
-  void *fileBuffer;
-  uint32_t byteCount;
-  uint32_t openError;
-  uint32_t readError;
-  uint32_t errorCode;
-
-  WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
-  openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
-  if (openError != 0) {
-    openError = g_FileSystemOpen(0,path,&handle);
-    if (openError != 0) {
-      *outErrorCode = openError;
-      return NULL;
-    }
-  }
-  if (!g_FileSystemGetSize(handle,&byteCount)) {
-    errorCode = byteCount; /* a failed size query leaves 0 in byteCount, which becomes the error code */
-  }
-  else if (g_MemoryApi.alloc(byteCount,&fileBuffer) != 0) {
-    /* the requested size becomes the detail of the out-of-memory message */
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCount,g_FatalErrorDetail1Utf16);
-    errorCode = FATAL_ERROR_OUT_OF_MEMORY;
-  }
-  else {
-    readError = g_FileSystemReadExact((FileIoByteCount)byteCount,fileBuffer,handle);
-    if (readError == 0) {
-      g_FileSystemClose(handle);
-      return fileBuffer;
-    }
-    g_MemoryApi.free(fileBuffer);
-    errorCode = readError;
-  }
-  g_FileSystemClose(handle);
-  *outErrorCode = errorCode;
-  return NULL;
-}
-
 /* Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
-   a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
-   callers cast it to their gfx, fld, lev, mdl, sound, text, ... layout. Returns the buffer (never NULL on
-   success); on failure returns NULL and stores the error code in *outErrorCode (outErrorCode may be NULL).
+   a loose file (first relative to the executable directory, then as given; FileSystem_LoadWholeFileNearExecutable).
+   Returns the buffer (never NULL on success) and stores its byte count in *outByteCount; on failure returns
+   NULL and stores the error code in *outErrorCode and leaves *outByteCount unchanged. Both pointers may be
+   NULL. The core of Package_LoadEntry and Resource_Load (the original has the code twice).
 */
-void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
+void *Package_LoadEntryWithSize(uint16_t *path,uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
-  static int loggedFailures; /* open-thandor diagnostics: first failed loads with their caller stack */
   PckEntryHeader *entry;
   EngineFileHandle entryFileHandle;
   void *buffer;
@@ -263,8 +216,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
 
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   if (entry == NULL) {
-    buffer = Package_LoadLooseFile(path,&errorCode);
-    if (buffer != NULL) {
+    if (FileSystem_LoadWholeFileNearExecutable(path,&buffer,outByteCount,&errorCode)) {
       return buffer;
     }
   }
@@ -278,12 +230,37 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
       }
       else {
         if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,NULL,&decodeErrorCode)) {
+          if (outByteCount != NULL) {
+            *outByteCount = entry->unpackedSize;
+          }
           return buffer;
         }
         errorCode = decodeErrorCode;
         g_MemoryApi.free(buffer);
       }
     }
+  }
+  if (outErrorCode != NULL) {
+    *outErrorCode = errorCode;
+  }
+  return NULL;
+}
+
+/* Loads an asset into a newly allocated buffer (Package_LoadEntryWithSize without the byte count). The buffer
+   is untyped here; callers cast it to their gfx, fld, lev, mdl, sound, text, ... layout. Returns the buffer
+   (never NULL on success); on failure returns NULL and stores the error code in *outErrorCode (outErrorCode
+   may be NULL).
+*/
+void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
+
+{
+  static int loggedFailures; /* open-thandor diagnostics: first failed loads with their caller stack */
+  void *buffer;
+  uint32_t errorCode;
+
+  buffer = Package_LoadEntryWithSize(path,NULL,&errorCode);
+  if (buffer != NULL) {
+    return buffer;
   }
   if (loggedFailures++ < 8) {
     Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, errorCode);
