@@ -98,7 +98,7 @@ Sound backend slots, sample codec and positioned sound.
 
 Module header: [`backend.h`](../include/thandor/audio/backend.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-audio-backend-runtime)
 
-- [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`, `SoundBackendDisabled_PlayLooping`
+- [`null_backend.cpp / null_backend.h`](source_guide/audio.md#file-audio-backend-null-backend) - no file comment; main functions `SoundBackendDisabled_CreateSampleVoiceSet`, `SoundBackendDisabled_ReleaseSampleVoiceSet`, `SoundBackendDisabled_PlayOneShot`
 - [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-backend-runtime) - The sound slots (g_Sound*) the game plays through, with the silent backend that fills them until SdlAudio_Init installs the SDL3 audio backend.
 - [`types.h`](source_guide/audio.md#file-audio-backend-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
