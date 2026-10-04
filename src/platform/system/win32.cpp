@@ -14,7 +14,7 @@
 
 /* Module data. */
 
-Win32PumpMessagesProc *g_Win32PumpMessages = nullptr;
+PlatformPumpEventsProc *g_PlatformPumpEvents = nullptr;
 
 /* nonzero once the window was asked to close: the pump then shuts the game down */
 uint32_t g_WindowDestroyDepth = 0;

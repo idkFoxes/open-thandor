@@ -686,11 +686,11 @@ static void CoreAssets_MountPackages()
 /* Loads one UI button sample and creates its voice set in *voiceSetSlot; the sample is released again
    either way once loaded. Returns false with the error code in *error when the sample cannot be loaded or
    the voice set cannot be created. */
-static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet **voiceSetSlot,uint32_t *error)
+static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,SoundVoiceSet **voiceSetSlot,uint32_t *error)
 
 {
   SoundSampleAsset *sample;
-  DirectSoundVoiceSet *voiceSet;
+  SoundVoiceSet *voiceSet;
   uint32_t voiceSetError;
 
   if (!Resource_Load(samplePath,(void **)&sample,nullptr,error)) {
@@ -1113,7 +1113,7 @@ static Bool8 IntroMovie_PollSkipRequest()
   uint32_t keyStateMask;
   CursorPointerEvent cursorEvent;
 
-  g_Win32PumpMessages();
+  g_PlatformPumpEvents();
   if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) {
     /* [9] is the digit of "flm\intro0.flm" */
     if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {

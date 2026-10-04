@@ -801,8 +801,8 @@ static_assert(sizeof(SoftwareRasterScanState) == 0x74,
               "SoftwareRasterScanState keeps its 32-bit layout");
 static_assert(sizeof(TerrainCompositeTextureRuntime) == 0x264,
               "TerrainCompositeTextureRuntime keeps its 32-bit layout");
-static_assert(sizeof(DirectDrawPaletteEntry) == 0x4,
-              "DirectDrawPaletteEntry keeps its 32-bit layout");
+static_assert(sizeof(GraphicsPaletteEntry) == 0x4,
+              "GraphicsPaletteEntry keeps its 32-bit layout");
 static_assert(sizeof(GridScratchCell) == 0x8,
               "GridScratchCell keeps its 32-bit layout");
 static_assert(sizeof(TerrainScanSelectorUnion) == 0x4,

@@ -15,16 +15,16 @@
    audio backend, and for good when there is no audio device). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
    *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.
 */
-uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet)
 
 {
-  *outVoiceSet = (DirectSoundVoiceSet *)(intptr_t)-1;
+  *outVoiceSet = (SoundVoiceSet *)(intptr_t)-1;
   return 0;
 }
 
 /* Silent-backend stub in slot g_SoundReleaseSampleVoiceSet: nothing to release.
 */
-void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
+void SoundBackendDisabled_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet)
 
 {
   return;
@@ -37,7 +37,7 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 */
 Bool8 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
+          SoundVoiceSet *voiceSet,SoundVoice **outVoice)
 
 {
   if (outVoice != nullptr) {
@@ -54,7 +54,7 @@ Bool8 SoundBackendDisabled_PlayOneShot
 */
 Bool8 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
+          SoundVoiceSet *voiceSet,SoundVoice **outVoice)
 
 {
   if (outVoice != nullptr) {
@@ -65,16 +65,16 @@ Bool8 SoundBackendDisabled_PlayLooping
 
 /* Silent-backend stub in slot g_SoundStopVoice: nothing plays, so nothing to stop.
 */
-void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
+void SoundBackendDisabled_StopVoice(SoundVoice *voice)
 
 {
   return;
 }
 
-/* Silent-backend stub in slot g_SoundIsVoicePlaying: always returns true, meaning the voice is not
+/* Silent-backend stub in slot g_SoundIsVoiceFinished: always returns true, meaning the voice is not
    playing.
 */
-Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
+Bool8 SoundBackendDisabled_IsVoiceFinished(SoundVoice *voice)
 
 {
   return true;
@@ -83,7 +83,7 @@ Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 /* Silent-backend stub in slot g_SoundSetVoiceGains: ignores the new left/right gains.
 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          IDirectSoundBuffer *voice)
+          SoundVoice *voice)
 
 {
   return;

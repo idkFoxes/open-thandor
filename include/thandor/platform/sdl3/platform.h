@@ -10,7 +10,7 @@
 
 /* The SDL3 platform backend: window, event pump, keyboard, mouse, periodic timers, video presentation and audio on
    SDL3, in place of the original's Win32 window, DirectDraw, DirectInput, WinMM and DirectSound. The game reaches it
-   through the original's function slots (g_Win32PumpMessages, g_TimerRegisterPeriodic, g_GraphicsSetDisplayMode,
+   through the original's function slots (g_PlatformPumpEvents, g_TimerRegisterPeriodic, g_GraphicsSetDisplayMode,
    g_GraphicsFramebufferPresent, g_Sound*, g_Pointer*, ...); ProcessEntry (platform/bootstrap/runtime.cpp) and
    Runtime_Shutdown call the entry points below where the original called Graphics_Init, DirectInputMouse_Init and
    DirectSound_Init. This header has no SDL types; the backend's own shared declarations are in
@@ -29,9 +29,9 @@
    shows the window. Returns false (logged) when SDL or the window cannot be started. */
 Bool8 SdlPlatform_CreateMainWindow(const char *title);
 /* Where the original's TimerSystem_Init ran: installs the SDL timers in g_TimerRegisterPeriodic/g_TimerUnregisterPeriodic and
-   SdlPlatform_PumpEvents in g_Win32PumpMessages. */
+   SdlPlatform_PumpEvents in g_PlatformPumpEvents. */
 void SdlPlatform_InstallTimersAndPump();
-/* g_Win32PumpMessages: runs the developer tools' pump hook, then handles every pending SDL event (keyboard,
+/* g_PlatformPumpEvents: runs the developer tools' pump hook, then handles every pending SDL event (keyboard,
    text, mouse, focus); a quit request shuts the game down and ends the process. */
 void SdlPlatform_PumpEvents();
 /* End of ProcessEntry, after Runtime_Shutdown: stops SDL. */
@@ -113,16 +113,16 @@ void SdlInput_FlushEvents();
 uint32_t SdlAudio_Init();
 /* Runtime_Shutdown: closes the audio stream and frees the voice-set registry. */
 void SdlAudio_Shutdown();
-uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
-void SdlAudio_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
-Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,DirectSoundVoiceSet *voiceSet,
-                           IDirectSoundBuffer **outVoice);
-Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,DirectSoundVoiceSet *voiceSet,
-                           IDirectSoundBuffer **outVoice);
-void SdlAudio_StopVoice(IDirectSoundBuffer *voice);
+uint32_t SdlAudio_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,SoundVoiceSet **outVoiceSet);
+void SdlAudio_ReleaseSampleVoiceSet(SoundVoiceSet *voiceSet);
+Bool8 SdlAudio_PlayOneShot(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+                           SoundVoice **outVoice);
+Bool8 SdlAudio_PlayLooping(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoiceSet *voiceSet,
+                           SoundVoice **outVoice);
+void SdlAudio_StopVoice(SoundVoice *voice);
 /* Inverted like the original's DirectSound_IsVoicePlaying: false while the voice plays, true when it is NULL or stopped. */
-Bool8 SdlAudio_IsVoicePlaying(IDirectSoundBuffer *voice);
-void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,IDirectSoundBuffer *voice);
+Bool8 SdlAudio_IsVoiceFinished(SoundVoice *voice);
+void SdlAudio_SetVoiceGains(uint32_t leftChannelGainQ15,uint32_t rightChannelGainQ15,SoundVoice *voice);
 void SdlAudio_StopAllVoices();
 
 #endif /* THANDOR_PLATFORM_SDL3_PLATFORM_H */

@@ -78,7 +78,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     uint32_t keyCode;
     uint32_t keyStateMask;
     CursorPointerEvent cursor;
-    g_Win32PumpMessages();
+    g_PlatformPumpEvents();
     if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;
     if (g_GraphicsCursorConsumeEvent(&cursor) && RIGHT_PRESS < cursor.eventType) break;
     if (Thandor_TickCount() - start > 10000) break;

@@ -165,7 +165,7 @@ static Bool8 SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 
    the position is out of range or the attenuated gain is not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15.
 */
 void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
-          GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef)
+          GraphicsFixedVec3 *worldPosition,SoundVoiceSet **voiceSetRef)
 
 {
   uint32_t volumeQ15;
@@ -221,7 +221,7 @@ void SpatialSound_UpdateDesiredPositionedGains
 SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 {
-  DirectSoundVoiceSet *voiceSet;
+  SoundVoiceSet *voiceSet;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
 
@@ -289,8 +289,8 @@ void SpatialSoundPool_ClearDesiredGains()
 void SpatialSoundPool_ApplyDesiredGains()
 
 {
-  IDirectSoundBuffer *existingVoice;
-  IDirectSoundBuffer *activeVoice;
+  SoundVoice *existingVoice;
+  SoundVoice *activeVoice;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
 

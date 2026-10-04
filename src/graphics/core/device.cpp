@@ -17,7 +17,7 @@ SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize = nullptr;
 int32_t g_GraphicsBackendAccessState = -0x1;
 
 /* allocated by Graphics_AllocateTables but no longer read (see there) */
-static DirectDrawPaletteEntry *g_TexturePaletteEntries = nullptr;
+static GraphicsPaletteEntry *g_TexturePaletteEntries = nullptr;
 
 /* Implementation ownership: graphics/core/device. */
 
@@ -45,11 +45,11 @@ uint32_t Graphics_AllocateTables()
     *zeroCursor = 0;
     zeroCursor++;
   }
-  allocError = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry),&allocation); /* 256 palette entries */
+  allocError = g_MemoryApi.alloc(256 * sizeof(GraphicsPaletteEntry),&allocation); /* 256 palette entries */
   if (allocError != 0) {
     return allocError;
   }
-  g_TexturePaletteEntries = (DirectDrawPaletteEntry *)allocation;
+  g_TexturePaletteEntries = (GraphicsPaletteEntry *)allocation;
   zeroCursor = (uint32_t *)allocation;
   for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
     *zeroCursor = 0;
@@ -93,7 +93,7 @@ void Graphics_Shutdown()
    Called by SdlVideo_ApplyDisplayMode, which then installs its present and capture functions and the framebuffer
    pixels. The original chose the 16-bit (RGB565) blitters for a depth of 16 bits or less; 16-bit colour is gone,
    so bitsPerPixel is not looked at. */
-void GraphicsDirectDraw_PublishFramebuffer
+void GraphicsDisplay_PublishFramebuffer
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 {

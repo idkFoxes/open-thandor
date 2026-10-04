@@ -83,8 +83,8 @@ struct MovieRuntime {
     Ptr32<struct MovieFileHeader> fileHeader; 
     MovieFrameIndex currentFrameIndex; 
     MovieStreamOffset videoStreamOffset; 
-    Ptr32<struct DirectSoundVoiceSet> audioVoiceSet; 
-    Ptr32<struct IDirectSoundBuffer> activeAudioBuffer; 
+    Ptr32<struct SoundVoiceSet> audioVoiceSet; 
+    Ptr32<struct SoundVoice> activeAudioBuffer; 
     Ptr32<void> streamHandle; 
     MovieSharedStreamHandleFlag streamHandleIsSharedPackage; 
     Ptr32<uint8_t> loadedVideoEnd; 

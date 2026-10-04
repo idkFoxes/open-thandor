@@ -201,6 +201,6 @@ using LocaleGetTelephoneCountryCodeProc = uint32_t ();
 using TimerCallbackProc = void ();
 using TimerRegisterPeriodicProc = void (uint32_t frequencyHz, TimerCallbackProc * callback);
 using TimerUnregisterPeriodicProc = void (TimerCallbackProc * callback);
-using Win32PumpMessagesProc = void ();
+using PlatformPumpEventsProc = void ();
 
 #endif /* THANDOR_PLATFORM_SYSTEM_TYPES_H */

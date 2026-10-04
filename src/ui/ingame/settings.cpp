@@ -539,7 +539,7 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
   isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
-    g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveEffectVoice);
+    g_SoundStopVoice((SoundVoice *)g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = nullptr;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
@@ -606,7 +606,7 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
   }
   else {
-    g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveMusicVoice);
+    g_SoundStopVoice((SoundVoice *)g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = nullptr;
     g_InGameMusicNextTrackCountdown = 1;
   }
@@ -663,7 +663,7 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
   value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_UiSoundGainQ15 = value;
   g_SoundEffectsGainQ15 = value;
-  g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveEffectVoice);
+  g_SoundSetVoiceGains(value,value,(SoundVoice *)g_InGameActiveEffectVoice);
 }
 
 /* UI action 0x120C (movieVolumeSlider; g_InGameUiActionHandlersPage12[12]): stores the movie volume and
@@ -684,7 +684,7 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
   PersistentSettingsValue value;
 
   value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MUSIC_GAIN);
-  g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveMusicVoice);
+  g_SoundSetVoiceGains(value,value,(SoundVoice *)g_InGameActiveMusicVoice);
 }
 
 /* UI action 0x121A (messageMovieVolumeSlider; g_InGameUiActionHandlersPage12[26]): stores the volume of the

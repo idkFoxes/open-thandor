@@ -841,7 +841,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   /* the footstep sound index is the class parameter classParameterCC of the walker's definition */
   ModelDefinition *definition;
   uint32_t soundIndex;
-  DirectSoundVoiceSet **voiceSetRef;
+  SoundVoiceSet **voiceSetRef;
   int32_t waterDelta;
   EffectDefinition *effectDefinition;
   Bool8 cellMasked;
@@ -851,7 +851,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   soundIndex = definition->classParameterCC;
   voiceSetRef = nullptr;
   if ((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount) && (worldRuntime->dwordArray != nullptr)) {
-    voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+    voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
   }
   if (voiceSetRef != nullptr) {
     worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;

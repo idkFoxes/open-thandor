@@ -14,7 +14,7 @@
 /* Submodule: platform/system/win32. */
 /* Functions are grouped by semantic ownership. */
 
-extern Win32PumpMessagesProc *g_Win32PumpMessages;
+extern PlatformPumpEventsProc *g_PlatformPumpEvents;
 extern uint32_t g_WindowDestroyDepth;
 
 #endif /* THANDOR_PLATFORM_SYSTEM_WIN32_H */

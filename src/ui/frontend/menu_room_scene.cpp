@@ -25,7 +25,7 @@ std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId{0};
 
 /* the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
-DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {};
+SoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {};
 
 /* Implementation ownership: ui/frontend/menu_room_scene. */
 

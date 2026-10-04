@@ -77,6 +77,6 @@ void FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control
 
 void FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control);
 
-extern IDirectSoundBuffer *g_FrontendMusicActiveBuffer;
+extern SoundVoice *g_FrontendMusicActiveBuffer;
 
 #endif /* THANDOR_UI_FRONTEND_SETTINGS_H */

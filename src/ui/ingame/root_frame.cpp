@@ -16,11 +16,11 @@ THANDOR_ALIGN(16) UiRootCallbacks g_InGameUiRootCallbacks = {
     .frameUpdate = UI_SLOT(InGameUiRoot_UpdateFrame),
     .keyboardFallback = UI_SLOT(InGameHotkeys_DispatchCommandByFlags)};
 
-IDirectSoundBuffer *g_InGameActiveEffectVoice = nullptr;
+SoundVoice *g_InGameActiveEffectVoice = nullptr;
 
 uint32_t g_InGameEffectsEnabled = 0;
 
-IDirectSoundBuffer *g_InGameActiveMusicVoice = nullptr;
+SoundVoice *g_InGameActiveMusicVoice = nullptr;
 
 uint32_t g_InGameMusicNextTrackCountdown = 0;
 
@@ -122,7 +122,7 @@ static void InGameUiRoot_UpdateEffectSounds
   WorldOwnerListNode *ownerNode;
   uint32_t randomValue;
   uint32_t effectsGain;
-  IDirectSoundBuffer *playedVoice;
+  SoundVoice *playedVoice;
 
   worldRuntime = &inGameRoot->worldRuntime;
   if ((currentPresentationTick & 7) == 0) {
@@ -135,7 +135,7 @@ static void InGameUiRoot_UpdateEffectSounds
     InGameSelectionDetailPanel_Rebuild();
   }
   if (g_InGameEffectsEnabled == 0) {
-    if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveEffectVoice)) {
+    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveEffectVoice)) {
       g_InGameActiveEffectVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -169,7 +169,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
   uint32_t bestTrackScore;
   uint32_t musicGain;
   LevelMusicSampleNumber selectedMusicTrackId;
-  IDirectSoundBuffer *playedVoice;
+  SoundVoice *playedVoice;
 
   soundOptionFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
@@ -177,7 +177,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     return;
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
-    if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveMusicVoice)) {
+    if (g_SoundIsVoiceFinished((SoundVoice *)g_InGameActiveMusicVoice)) {
       g_InGameActiveMusicVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;

@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/directdraw.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/display_modes.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/graphics/backend/directdraw.h>
+#include <thandor/graphics/backend/display_modes.h>
 #include <thandor/thandor.h>
 
 /* The display-mode and adapter tables (the framebuffer publication of a mode switch is in graphics/core/device).
@@ -25,7 +25,7 @@ GraphicsAdapterRecord *g_GraphicsAdapters = nullptr;
 
 uint32_t g_GraphicsAdapterCount = 0;
 
-/* Implementation ownership: graphics/backend/directdraw. */
+/* Implementation ownership: graphics/backend/display_modes. */
 
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
    (g_GraphicsDisplayModes, filled by SdlVideo_Init): returns false when it was, true

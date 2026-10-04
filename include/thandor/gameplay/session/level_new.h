@@ -59,8 +59,8 @@ void NewLevel_LoadLevelSamples();
 
 extern uint32_t g_InGameLevelTitleTextResourceIndex;
 extern uint32_t g_InGameLevelCampaignAssociationIndex;
-extern DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4];
-extern DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4];
+extern SoundVoiceSet *g_InGameLevelEffectVoiceSets[4];
+extern SoundVoiceSet *g_InGameLevelMusicVoiceSets[4];
 extern InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock;
 extern uint32_t g_MoviePlaybackBaseFrameGroup;
 extern uint32_t g_MoviePlaybackScheduleCounter;

@@ -14,9 +14,9 @@ uint32_t g_InGameLevelTitleTextResourceIndex = 0;
 
 uint32_t g_InGameLevelCampaignAssociationIndex = 0;
 
-DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
+SoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
 
-DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
+SoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {nullptr, nullptr, nullptr, nullptr};
 
 InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock = {.playerSlotByteOffsets = {0, 32, 64, 96, 128, 160, 192}};
 
@@ -501,11 +501,11 @@ static Bool8 NewLevel_LoadSpatialSounds
 /* Loads one level sample (sound\level%02d.sam or sound\music%02d.sam: sampleNumber is written into the
    template path at character 11) into a voice set; 0 means none. A failed load or voice set leaves
    *outVoiceSet unchanged. */
-static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplate,DirectSoundVoiceSet **outVoiceSet)
+static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplate,SoundVoiceSet **outVoiceSet)
 
 {
   void *loadedSampleBuffer;
-  DirectSoundVoiceSet *createdVoiceSet;
+  SoundVoiceSet *createdVoiceSet;
 
   if (sampleNumber == 0) {
     return;

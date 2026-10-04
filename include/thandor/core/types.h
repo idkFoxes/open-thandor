@@ -15,8 +15,8 @@
 
 typedef struct GraphicsFixedMatrix3x4 GraphicsFixedMatrix3x4, *PGraphicsFixedMatrix3x4;
 typedef struct GraphicsFixedVec3 GraphicsFixedVec3, *PGraphicsFixedVec3;
-typedef struct DirectSoundVoiceSet DirectSoundVoiceSet, *PDirectSoundVoiceSet;
-typedef struct IDirectSoundBuffer IDirectSoundBuffer, *PIDirectSoundBuffer;
+typedef struct SoundVoiceSet SoundVoiceSet, *PSoundVoiceSet;
+typedef struct SoundVoice SoundVoice, *PSoundVoice;
 typedef struct SoundSampleAsset SoundSampleAsset, *PSoundSampleAsset;
 typedef struct SoftwareBgraWordLanes SoftwareBgraWordLanes, *PSoftwareBgraWordLanes;
 typedef struct SoftwareRgbWordLanes SoftwareRgbWordLanes, *PSoftwareRgbWordLanes;
@@ -626,11 +626,11 @@ enum {
 };
 using SessionNetworkRoleFlags = int;
 
-/* struct IDirectSoundBuffer stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
+/* struct SoundVoice stays incomplete: a voice handle of the audio slots (g_Sound*), the SDL3 backend's
    voice object behind it (the original's DirectSound buffer). */
 
-struct DirectSoundVoiceSet {
-    struct IDirectSoundBuffer *voices[8]; 
+struct SoundVoiceSet {
+    struct SoundVoice *voices[8]; 
 };
 
 using SoftwareColorLaneUnsigned16 = uint16_t;

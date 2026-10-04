@@ -274,7 +274,7 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
           ModelDefinitionVerticalDeploymentView *deploymentDefinition,ModelRuntimeNode *rootNode)
 {
   uint32_t soundAssetIndex;
-  DirectSoundVoiceSet **soundVoiceSet;
+  SoundVoiceSet **soundVoiceSet;
   Bool8 cellMasked;
 
   soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex;
@@ -282,7 +282,7 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  soundVoiceSet = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
   if (soundVoiceSet == nullptr) {
     return;
   }
