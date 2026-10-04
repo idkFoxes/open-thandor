@@ -7,30 +7,41 @@
 
 #include <thandor/ui/text/richtext_render.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
 /* rich-text colour palette, indexed by the 3-bit palette field of the packed text style and set by
-   RICHTEXT_OP_COLOR_PALETTE_0..3. The original's palette field has 3 bits; entries 6 and 7 would read on into
-   the shadow offsets (the original's next object), so the two tables stay defined back to back. */
-PackedArgb32 g_RichTextColorPaletteArgb[6] = {
+   RICHTEXT_OP_COLOR_PALETTE_0..3. The original's table has six entries and its palette field 3 bits: entries 6
+   and 7 read on into the shadow offset table (the original's next object). Both tables have eight entries here,
+   so every index stays inside them; entries 6 and 7 hold what the original reads there. */
+PackedArgb32 g_RichTextColorPaletteArgb[TEXT_STYLE_INDEX_MASK + 1] = {
     0xFFB0B0B0, /* [0] grey; also the normal cost colour of the technology panel */
     0xFFE0E0E0, /* [1] light grey, RICHTEXT_OP_COLOR_PALETTE_1 */
     0xFF707070, /* [2] dark grey, RICHTEXT_OP_COLOR_PALETTE_2 */
     0xFFE0E0E0, /* [3] light grey, RICHTEXT_OP_COLOR_PALETTE_3 */
     0xFF209020, /* [4] green; only reachable through the packed text style's palette index */
     0xFFF02020, /* [5] red; also technology costs the player cannot afford (ui/ingame/technology.c) */
+    0x00000002, /* [6] Original quirk: shadow offset entry 0 */
+    0x00000002, /* [7] Original quirk: shadow offset entry 1 */
 };
 
-/* text shadow offset in pixels per colour palette entry, indexed like g_RichTextColorPaletteArgb. */
-static uint32_t g_RichTextShadowOffsetPalette[6] = {
+/* text shadow offset in pixels per colour palette entry, indexed like g_RichTextColorPaletteArgb (through
+   RichTextStyle_ShadowOffset for the style's palette field). The original's table has six entries; entries 6
+   and 7 read on into g_ActiveFontIndex and g_RichTextCurrentColorArgb (its next objects). */
+static uint32_t g_RichTextShadowOffsetPalette[TEXT_STYLE_INDEX_MASK + 1] = {
     2, /* [0] */
     2, /* [1] */
     1, /* [2] */
     2, /* [3] */
     0, /* [4] */
     0, /* [5] */
+    0, /* [6] Original quirk: g_ActiveFontIndex, read by RichTextStyle_ShadowOffset instead of this entry */
+    2, /* [7] Original quirk: g_RichTextCurrentColorArgb, set just before to palette entry 7 (2) */
 };
+
+/* the stream entered by a nested-stream command without a target: just a terminator */
+static uint16_t g_RichTextEmptyStream[1] = {0};
 
 static uint32_t g_RichTextSavedColorArgb = 0;
 
@@ -43,6 +54,37 @@ uint32_t g_RichTextCurrentColorArgb = 0;
 uint32_t g_RichTextCurrentShadowOffset = 0;
 
 /* Implementation ownership: ui/text/richtext_render. */
+
+/* Shadow offset for the palette field of a packed text style; called right after g_ActiveFontIndex and
+   g_RichTextCurrentColorArgb were set from the same style. Original quirk: palette entry 6 reads its shadow
+   offset from g_ActiveFontIndex (the object behind the original's shadow table); entry 7 reads
+   g_RichTextCurrentColorArgb, which the table holds as its constant value 2. */
+static uint32_t RichTextStyle_ShadowOffset(uint32_t paletteIndex)
+{
+  if (paletteIndex == 6) {
+    return g_ActiveFontIndex;
+  }
+  return g_RichTextShadowOffsetPalette[paletteIndex];
+}
+
+/* Target of a nested-stream command (RICHTEXT_OP_CALL_NESTED / RICHTEXT_OP_JUMP_NESTED) from its payload. The
+   original enters the pointer unchecked; bounded here because a null target only comes from malformed text:
+   it enters an empty stream (logged once). */
+static uint16_t *RichTextCommand_NestedTarget(uint16_t *payload)
+{
+  static int s_loggedNullNestedStream;
+  uint16_t *target;
+
+  target = THANDOR_PTR32_AT(uint16_t, payload);
+  if (target == NULL) {
+    if (s_loggedNullNestedStream == 0) {
+      s_loggedNullNestedStream = 1;
+      Thandor_Log("rich text: nested-stream command without a target, skipped");
+    }
+    target = g_RichTextEmptyStream;
+  }
+  return target;
+}
 
 /* Measures a text block wrapped to maximumWidth: flattens the stream into the font runtime buffer, sets the
    style's font and colour, and sums the heights of all wrapped lines. Returns maximumWidth itself as the width
@@ -61,7 +103,7 @@ RichTextExtent RichTextCommandStream_MeasureWrappedBlock
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[colorPaletteIndex];
-  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = RichTextStyle_ShadowOffset(colorPaletteIndex);
   totalHeight = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
@@ -91,7 +133,7 @@ void RichTextCommandStream_DrawWrappedBlock
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[colorPaletteIndex];
-  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = RichTextStyle_ShadowOffset(colorPaletteIndex);
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while (RichTextCommandStream_DrawNextWrappedLine
@@ -135,7 +177,7 @@ Bool8 RichTextCommandStream_DrawSingleLine
   paletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[paletteIndex];
-  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[paletteIndex];
+  g_RichTextCurrentShadowOffset = RichTextStyle_ShadowOffset(paletteIndex);
   nestedDepth = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
@@ -221,10 +263,10 @@ Bool8 RichTextCommandStream_DrawSingleLine
         return false;
       }
       nestedReturnStack[nestedDepth++] = commandStream;
-      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
+      commandStream = RichTextCommand_NestedTarget(commandStream);
       break;
     case RICHTEXT_OP_JUMP_NESTED:
-      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
+      commandStream = RichTextCommand_NestedTarget(commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3; the image sits on the
@@ -314,10 +356,10 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
         return extent;
       }
       returnStack[nesting++] = commandStream;
-      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
+      commandStream = RichTextCommand_NestedTarget(commandStream);
       break;
     case RICHTEXT_OP_JUMP_NESTED:
-      commandStream = THANDOR_PTR32_AT(uint16_t, commandStream);
+      commandStream = RichTextCommand_NestedTarget(commandStream);
       break;
     case RICHTEXT_OP_INLINE_IMAGE:
       textureSize = g_GraphicsTextureSourceGetLogicalSize

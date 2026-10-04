@@ -46,7 +46,7 @@ Bool8 RichTextCommandStream_DrawNextWrappedLine
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX,UiPixelExtent *lineAdvance);
 
-extern PackedArgb32 g_RichTextColorPaletteArgb[6];
+extern PackedArgb32 g_RichTextColorPaletteArgb[TEXT_STYLE_INDEX_MASK + 1];
 extern uint32_t g_ActiveFontIndex;
 extern uint32_t g_RichTextCurrentColorArgb;
 extern uint32_t g_RichTextCurrentShadowOffset;

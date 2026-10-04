@@ -15,9 +15,28 @@
    FontRuntime_Init scans past the first terminator to reach the second */
 static uint16_t g_FontTexturePathsUtf16[33] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'f', 'o', 'n', 't', '.', 'g', 'f', 'x', 0, 'e', 'n', 'g', 'i', 'n', 'e', '\\', 'f', 'o', 'n', 't', 'k', '.', 'g', 'f', 'x', 0}; /* L"engine\\font.gfx\0engine\\fontk.gfx" */
 
-GraphicsTextureSourceAsset *g_FontTextureSources[2] = {0};
+GraphicsTextureSourceAsset *g_FontTextureSources[FONT_TEXTURE_SOURCE_COUNT] = {0};
 
 /* Implementation ownership: ui/text/font. */
+
+/* Returns the texture source of font fontIndex. The font index comes from the 3-bit font field of a packed text
+   style (0..7) or from a font-select command (opcode & 0xF, 8..15). The original indexes its two-entry table
+   with it unchecked and reads on into the font path text for anything above 1; bounded here because such an
+   index only comes from malformed text or styles (the game's texts use fonts 0 and 1): it falls back to font 0
+   and is logged once. */
+static GraphicsTextureSourceAsset *FontTextureSource_Get(uint32_t fontIndex)
+{
+  static int s_loggedInvalidFontIndex;
+
+  if (fontIndex >= FONT_TEXTURE_SOURCE_COUNT) {
+    if (s_loggedInvalidFontIndex == 0) {
+      s_loggedInvalidFontIndex = 1;
+      Thandor_Log("font: invalid font index %u, using font 0",fontIndex);
+    }
+    fontIndex = 0;
+  }
+  return g_FontTextureSources[fontIndex];
+}
 
 /* Loads the two font texture sources from the consecutive UTF-16 paths in g_FontTexturePathsUtf16, allocates
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
@@ -79,13 +98,12 @@ uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubres
 {
   uint32_t glyphWidth;
   GraphicsTextureLogicalSize textureSize;
-  uint32_t fontIndex;
+  GraphicsTextureSourceAsset *fontTexture;
 
-  fontIndex = g_ActiveFontIndex;
-  textureSize = g_GraphicsTextureSourceGetLogicalSize
-                    (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
+  fontTexture = FontTextureSource_Get(g_ActiveFontIndex);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
   glyphWidth = textureSize.logicalWidthPixels; /* 0 for a missing glyph */
-  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,fontTexture);
   if (outLineHeight != NULL) {
     *outLineHeight = textureSize.logicalHeightPixels;
   }
@@ -101,13 +119,13 @@ uint32_t FontGlyph_GetLogicalSizeForStyle
 
 {
   uint32_t glyphWidth;
-  uint32_t fontIndex;
+  GraphicsTextureSourceAsset *fontTexture;
   GraphicsTextureLogicalSize textureSize;
 
-  fontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
-  textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,g_FontTextureSources[fontIndex]);
+  fontTexture = FontTextureSource_Get(packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
   glyphWidth = textureSize.logicalWidthPixels; /* 0 for a missing glyph */
-  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,fontTexture);
   if (outLineHeight != NULL) {
     *outLineHeight = textureSize.logicalHeightPixels;
   }
@@ -130,7 +148,7 @@ uint32_t FontGlyph_DrawBottomAligned
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
 
-  fontTexture = g_FontTextureSources[g_ActiveFontIndex];
+  fontTexture = FontTextureSource_Get(g_ActiveFontIndex);
   if (fontTexture != NULL) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
     drawY = baselineY - textureSize.logicalHeightPixels;
@@ -168,7 +186,7 @@ uint32_t FontGlyph_DrawVerticallyCentered
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
 
-  fontTexture = g_FontTextureSources[g_ActiveFontIndex];
+  fontTexture = FontTextureSource_Get(g_ActiveFontIndex);
   if (fontTexture != NULL) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
     /* line top plus half the space the glyph leaves free */
