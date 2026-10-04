@@ -157,6 +157,11 @@ Next to `thandor.exe` the game needs:
 
 Nothing of the original executable is needed: its data (globals, tables, UI templates) is compiled in.
 
+In a game, **Ctrl+I** steps through the original's developer info line at the bottom left of the world view:
+render statistics (`bps` frames per second, `dpb` draw calls per frame, `tpb`/`fpb` texture binds and reloads per
+frame, always 0 here), camera position, camera orientation, cursor position, free arena memory, then off again.
+The original had this key only in the hidden map editor; the choice is kept for the next game.
+
 ### Settings file (`thandor.ini`)
 
 The settings live in `thandor.ini`, a text file with one commented key per setting

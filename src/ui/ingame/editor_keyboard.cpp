@@ -160,7 +160,6 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 
 {
   UiNodeVtable **stack;
-  UiSingleLineTextControl *infoTextControl;
   const UiCommandDispatchRecord *dispatchRecord;
   uint32_t activePageIndex;
 
@@ -192,11 +191,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     break;
   case 0x56e670: /* Ctrl+I: next of the world view info texts (the text field holds the text resource id) */
-    infoTextControl = (UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText);
-    infoTextControl->text = (uint16_t *)(intptr_t)((int32_t)infoTextControl->text + 1);
-    if (TEXT_ID_WORLD_VIEW_INFO_LAST < (uint32_t)infoTextControl->text) {
-      infoTextControl->text = (uint16_t *)TEXT_ID_WORLD_VIEW_INFO_FIRST;
-    }
+    InGameWorldView_ShowNextInfoText((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText));
     break;
   case 0x56e6a0: /* F2: save the map */
     InGameCommand_Issue<InGameUiCommand_SaveFieldAndLevelAssetImages>(0,0,0);
