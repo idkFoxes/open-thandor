@@ -337,7 +337,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
     localPoint = ModelNodeRuntime_TransformLocalPoint
                        (packedPoint,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                shotModelNode->modelPayload.worldRotationAngle2,
                shotModelNode->modelPayload.worldRotationAngle1,
                shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
