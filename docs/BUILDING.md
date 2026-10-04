@@ -208,6 +208,8 @@ texture_quality = high
 model_detail = 262144
 ; Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) or exact (the software renderer's look)
 gpu_rasterization = smooth
+; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)
+ui_scale = auto
 
 [sound]
 ; sound effects (default true)
@@ -303,6 +305,18 @@ not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a w
 (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_GPU=0` unless the caller sets it, so the pixel
 and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
 unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).
+
+**UI scale** (Vulkan / DirectX 12 only): the chosen display mode is the logical UI resolution - layout, hit tests,
+the mouse and captures stay in its pixels - and the GPU draws the whole frame at N times that size (the UI with
+nearest sampling, so it stays crisp; the 3D view at the full resolution), then presents it letterboxed. The window
+or the exclusive fullscreen mode gets N x the mode's size. N is `[graphics] ui_scale` in `thandor.ini` (or
+`OPEN_THANDOR_UI_SCALE=auto|1..8`, which wins): `auto` (default) takes the largest whole N at which N x the mode
+fits the display (a window: its usable area), so 1280x720 runs at 2x on a 1440p and at 3x on a 4K display; with a
+fixed `2` or `3` the GPU renderers' resolution list offers the display's sizes divided by N (from 640x480 on). The
+software renderer always runs at N = 1. There is no choice on the display settings page yet (`thandor.ini` or the
+variable only); `thandor.log` names the scale (`display mode 1280x720x32, window, renderer Vulkan, UI scale 2
+(auto)`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the frame at N x and
+point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the caller sets it.
 
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 

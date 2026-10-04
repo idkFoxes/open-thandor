@@ -259,8 +259,9 @@ struct GpuState {
   SDL_GPUTexture *atlas = nullptr;
   SDL_GPUTexture *colorTarget = nullptr;
   SDL_GPUTexture *depthTarget = nullptr;
-  Uint32 targetWidth = 0;
+  Uint32 targetWidth = 0; /* target pixels: the framebuffer size x targetScale */
   Uint32 targetHeight = 0;
+  int targetScale = 1; /* the UI scale the 3D targets were made for (step 9 WP8) */
   SDL_GPUBuffer *vertexBuffer = nullptr;
   Uint32 vertexBufferBytes = 0;
   SDL_GPUTransferBuffer *uploadBuffer = nullptr;
@@ -318,8 +319,9 @@ struct GpuState {
      loaded every frame, so screens that draw only part of the frame keep the rest) and presents it. */
   SDL_GPUTexture *frameTarget = nullptr;
   SDL_GPUTexture *presentTarget = nullptr; /* frame target + cursor, blitted into the swapchain */
-  Uint32 frameTargetWidth = 0;
+  Uint32 frameTargetWidth = 0; /* target pixels: the framebuffer size x frameScale */
   Uint32 frameTargetHeight = 0;
+  int frameScale = 1; /* the UI scale N the frame target was made for (step 9 WP8) */
   bool frameTargetFresh = false; /* cleared to black by its first render pass */
   std::vector<PendingScene> pendingScenes;
   std::vector<PendingScene> scenePool; /* drawn scenes, kept for their vectors' capacity */
@@ -339,6 +341,18 @@ struct GpuState {
   uint32_t compareNumber = 0;
 };
 GpuState s_gpu;
+
+/* Step 9 WP8: the UI scale N (SetGpuUiScale; outside s_gpu, which a device restart resets). The GPU targets are N x
+   the framebuffer (logical) size; everything recorded stays in logical pixels and is scaled when it becomes
+   vertices and scissors: the 2D quads' corners x N (AppendUiQuad, AppendRotatedQuad), the 3D vertices' clip-space
+   positions from the logical size (so the GPU rasterizes the world at N x), the 3D scissors x N (ScaledScissor). */
+int s_uiScale = 1;
+
+/* A logical-pixel rectangle as target pixels of a target made for scale. */
+SDL_Rect ScaledScissor(const SDL_Rect &logical, int scale) noexcept
+{
+  return SDL_Rect{logical.x * scale, logical.y * scale, logical.w * scale, logical.h * scale};
+}
 
 /* --- hashing and texture conversion ------------------------------------------------------------------------ */
 
@@ -573,8 +587,11 @@ GpuVertex SoftwareVertexAt(const SoftwareTriangleSetup &setup, const SoftwarePoi
      edge in) */
   const double pixelX = point.x / 4096.0 - 0.5 + 1.0 / 256.0;
   const double pixelY = static_cast<double>(point.row) + 0.5;
-  vertex.x = static_cast<float>(pixelX * 2.0 / s_gpu.targetWidth - 1.0);
-  vertex.y = static_cast<float>(1.0 - pixelY * 2.0 / s_gpu.targetHeight);
+  /* clip space from the logical size: a target of N x that size rasterizes the same triangle at N x */
+  const double logicalWidth = static_cast<double>(s_gpu.targetWidth) / s_gpu.targetScale;
+  const double logicalHeight = static_cast<double>(s_gpu.targetHeight) / s_gpu.targetScale;
+  vertex.x = static_cast<float>(pixelX * 2.0 / logicalWidth - 1.0);
+  vertex.y = static_cast<float>(1.0 - pixelY * 2.0 / logicalHeight);
   vertex.z = static_cast<float>((setup.depth0 + k * setup.longDepthStep + fromLongEdge * setup.depthStepX) *
                                 kDepthScale);
   vertex.w = 1.0f;
@@ -706,6 +723,8 @@ Uint32 AppendSmoothTriangle(const GraphicsPrimitivePacket *packet, const AtlasSl
   uint32_t widthLog2 = 0;
   uint32_t heightLog2 = 0;
   const bool textured = (widthMask != kUntexturedMask);
+  const double logicalWidth = static_cast<double>(s_gpu.targetWidth) / s_gpu.targetScale;
+  const double logicalHeight = static_cast<double>(s_gpu.targetHeight) / s_gpu.targetScale;
   if (textured) {
     widthLog2 = packet->textureEntry->widthLog2;
     heightLog2 = packet->textureEntry->heightLog2;
@@ -718,8 +737,8 @@ Uint32 AppendSmoothTriangle(const GraphicsPrimitivePacket *packet, const AtlasSl
     /* the near plane keeps the view depth positive; the shadow patches' depth bias could bring it to 0 */
     const double w = std::max(depth, 1.0);
     GpuVertex vertex;
-    vertex.x = static_cast<float>((pixelX * 2.0 / s_gpu.targetWidth - 1.0) * w);
-    vertex.y = static_cast<float>((1.0 - pixelY * 2.0 / s_gpu.targetHeight) * w);
+    vertex.x = static_cast<float>((pixelX * 2.0 / logicalWidth - 1.0) * w);
+    vertex.y = static_cast<float>((1.0 - pixelY * 2.0 / logicalHeight) * w);
     vertex.z = static_cast<float>(depth * kDepthScale * w);
     vertex.w = static_cast<float>(w);
     vertex.u = textured ? static_cast<float>(PacketTexel(source.textureU, widthLog2)) : 0.0f;
@@ -956,12 +975,14 @@ SDL_GPUTexture *CreateTexture(SDL_GPUTextureFormat format, SDL_GPUTextureUsageFl
   return SDL_CreateGPUTexture(s_gpu.device, &info);
 }
 
-/* Colour and depth target in framebuffer size. */
+/* Colour and depth target in framebuffer size x the UI scale. */
 bool EnsureTargets() noexcept
 {
-  const Uint32 width = g_FramebufferWidth;
-  const Uint32 height = g_FramebufferHeight;
-  if ((s_gpu.colorTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height)) {
+  const int scale = s_uiScale;
+  const Uint32 width = g_FramebufferWidth * static_cast<Uint32>(scale);
+  const Uint32 height = g_FramebufferHeight * static_cast<Uint32>(scale);
+  if ((s_gpu.colorTarget != nullptr) && (s_gpu.targetWidth == width) && (s_gpu.targetHeight == height) &&
+      (s_gpu.targetScale == scale)) {
     return true;
   }
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.colorTarget);
@@ -983,6 +1004,7 @@ bool EnsureTargets() noexcept
   }
   s_gpu.targetWidth = width;
   s_gpu.targetHeight = height;
+  s_gpu.targetScale = scale;
   return true;
 }
 
@@ -1330,11 +1352,13 @@ void GpuRenderer_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY, Gra
   s_gpu.vertices.clear();
   s_gpu.runs.clear();
   s_gpu.runBounds.clear();
-  const int minX = std::clamp(static_cast<int>(clipMinX), 0, static_cast<int>(s_gpu.targetWidth));
-  const int minY = std::clamp(static_cast<int>(clipMinY), 0, static_cast<int>(s_gpu.targetHeight));
-  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, static_cast<int>(s_gpu.targetWidth));
-  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, static_cast<int>(s_gpu.targetHeight));
-  s_gpu.sceneClip = SDL_Rect{minX, minY, maxX - minX, maxY - minY};
+  const int logicalWidth = static_cast<int>(s_gpu.targetWidth) / s_gpu.targetScale;
+  const int logicalHeight = static_cast<int>(s_gpu.targetHeight) / s_gpu.targetScale;
+  const int minX = std::clamp(static_cast<int>(clipMinX), 0, logicalWidth);
+  const int minY = std::clamp(static_cast<int>(clipMinY), 0, logicalHeight);
+  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, logicalWidth);
+  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, logicalHeight);
+  s_gpu.sceneClip = SDL_Rect{minX, minY, maxX - minX, maxY - minY}; /* logical, as the EXTERNAL_3D item's clip */
 }
 
 void GpuRenderer_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
@@ -1346,11 +1370,13 @@ void GpuRenderer_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY, GraphicsS
     return;
   }
   const uint64_t start = SDL_GetPerformanceCounter();
-  const int minX = std::clamp(static_cast<int>(clipMinX), 0, static_cast<int>(s_gpu.targetWidth));
-  const int minY = std::clamp(static_cast<int>(clipMinY), 0, static_cast<int>(s_gpu.targetHeight));
-  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, static_cast<int>(s_gpu.targetWidth));
-  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, static_cast<int>(s_gpu.targetHeight));
-  const SDL_Rect scissor{minX, minY, maxX - minX, maxY - minY};
+  const int logicalWidth = static_cast<int>(s_gpu.targetWidth) / s_gpu.targetScale;
+  const int logicalHeight = static_cast<int>(s_gpu.targetHeight) / s_gpu.targetScale;
+  const int minX = std::clamp(static_cast<int>(clipMinX), 0, logicalWidth);
+  const int minY = std::clamp(static_cast<int>(clipMinY), 0, logicalHeight);
+  const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, logicalWidth);
+  const int maxY = std::clamp(static_cast<int>(clipMaxY), minY, logicalHeight);
+  const SDL_Rect scissor = ScaledScissor(SDL_Rect{minX, minY, maxX - minX, maxY - minY}, s_gpu.targetScale);
   if ((scissor.w > 0) && (scissor.h > 0)) {
     /* walk the sorted nodes without moving the queue's own cursor, so the software renderer can still walk it */
     GraphicsPrimitiveQueueNode *const cursor = queue->traversalCursor;
@@ -1437,13 +1463,14 @@ void RecordSpriteRegion(uint32_t itemIndex, const Draw2DItem *item)
 }
 
 /* The frame target (colour target, sampled by the present blit, copied by captures) and the present target in
-   framebuffer size. A new frame target starts black. */
+   framebuffer size x the UI scale. A new frame target starts black. */
 bool EnsureFrameTargets() noexcept
 {
-  const Uint32 width = g_FramebufferWidth;
-  const Uint32 height = g_FramebufferHeight;
+  const int scale = s_uiScale;
+  const Uint32 width = g_FramebufferWidth * static_cast<Uint32>(scale);
+  const Uint32 height = g_FramebufferHeight * static_cast<Uint32>(scale);
   if ((s_gpu.frameTarget != nullptr) && (s_gpu.presentTarget != nullptr) && (s_gpu.frameTargetWidth == width) &&
-      (s_gpu.frameTargetHeight == height)) {
+      (s_gpu.frameTargetHeight == height) && (s_gpu.frameScale == scale)) {
     return true;
   }
   SDL_ReleaseGPUTexture(s_gpu.device, s_gpu.frameTarget);
@@ -1464,6 +1491,7 @@ bool EnsureFrameTargets() noexcept
   }
   s_gpu.frameTargetWidth = width;
   s_gpu.frameTargetHeight = height;
+  s_gpu.frameScale = scale;
   s_gpu.frameTargetFresh = true;
   return true;
 }
@@ -1471,7 +1499,8 @@ bool EnsureFrameTargets() noexcept
 /* Appends the quad of dst (logical pixels, x1/y1 exclusive) cut to clip, sampling region (whose w x h texels cover
    dst one to one; page nullptr for fills), to the batch of (page, blend) - the last batch when it matches, else a
    new one. Cutting the quad instead of a scissor per item keeps the batches long; with 1:1 texels and nearest
-   sampling the cut is exact. */
+   sampling the cut is exact. The corners become target pixels (x the frame's UI scale N): each texel covers N x N
+   target pixels, still sampled nearest, so the scaled UI stays crisp. */
 void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion *region, uint32_t tint,
                   uint32_t flags, uint8_t blend) noexcept
 {
@@ -1500,10 +1529,11 @@ void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion 
       (s_gpu.uiBatches.back().blend != blend)) {
     s_gpu.uiBatches.push_back(UiBatch{page, blend, false, static_cast<uint32_t>(s_gpu.uiVertices.size()), 0, {}});
   }
-  const auto fx0 = static_cast<float>(x0);
-  const auto fy0 = static_cast<float>(y0);
-  const auto fx1 = static_cast<float>(x1);
-  const auto fy1 = static_cast<float>(y1);
+  const auto scale = static_cast<float>(s_gpu.frameScale);
+  const float fx0 = static_cast<float>(x0) * scale;
+  const float fy0 = static_cast<float>(y0) * scale;
+  const float fx1 = static_cast<float>(x1) * scale;
+  const float fy1 = static_cast<float>(y1) * scale;
   const GpuUiVertex corners[6] = {
       {fx0, fy0, u0, v0, tint, flags}, {fx1, fy0, u1, v0, tint, flags}, {fx0, fy1, u0, v1, tint, flags},
       {fx1, fy0, u1, v0, tint, flags}, {fx1, fy1, u1, v1, tint, flags}, {fx0, fy1, u0, v1, tint, flags},
@@ -1516,7 +1546,9 @@ void AppendUiQuad(const int32_t *dst, const int32_t *clip, const GpuUiTexRegion 
    clipped rectangle, each corner with the texture position the software sampler's Q12 walk gives there. Pixel
    (dst[0] + i, dst[1] + j) samples start + i * pixelStep + j * rowStep, texel (c, r) at (c << 12, r << 12); the GPU
    samples pixel centres, so a corner at offset (x, y) from dst's corner maps to start + (x - 0.5) * pixelStep +
-   (y - 0.5) * rowStep, and texel c's centre is u0 + (c + 0.5) * du in the region. */
+   (y - 0.5) * rowStep, and texel c's centre is u0 + (c + 0.5) * du in the region. The corners become target
+   pixels (x the UI scale N); the texture position stays a linear function of the logical position, so at N > 1 the
+   target pixels between sample the bilinear weights in between. */
 void AppendRotatedQuad(const Draw2DItem &item, const GpuUiTexRegion &region) noexcept
 {
   const int32_t x0 = std::max(item.dst[0], item.clip[0]);
@@ -1534,7 +1566,7 @@ void AppendRotatedQuad(const Draw2DItem &item, const GpuUiTexRegion &region) noe
     const double offsetY = static_cast<double>(y - item.dst[1]) - 0.5;
     const double texelU = (item.q12[0] + offsetX * item.q12[2] + offsetY * item.q12[4]) * kQ12;
     const double texelV = (item.q12[1] + offsetX * item.q12[3] + offsetY * item.q12[5]) * kQ12;
-    return GpuUiVertex{static_cast<float>(x), static_cast<float>(y),
+    return GpuUiVertex{static_cast<float>(x * s_gpu.frameScale), static_cast<float>(y * s_gpu.frameScale),
                        static_cast<float>(region.u0 + (texelU + 0.5) * du),
                        static_cast<float>(region.v0 + (texelV + 0.5) * dv), ARGB8888_OPAQUE_WHITE, 0u};
   };
@@ -2002,6 +2034,11 @@ bool GpuFrameActive() noexcept
   return (s_gpu.device != nullptr) && (s_gpu.mode == GPU_MODE_ON);
 }
 
+void SetGpuUiScale(int scale) noexcept
+{
+  s_uiScale = std::clamp(scale, 1, kMaxGpuUiScale);
+}
+
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 {
   if ((s_gpu.device == nullptr) || (s_gpu.mode == GPU_MODE_OFF)) {
@@ -2020,6 +2057,8 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   const size_t frameBatches = s_gpu.uiBatches.size();
   const int targetWidth = static_cast<int>(s_gpu.frameTargetWidth);
   const int targetHeight = static_cast<int>(s_gpu.frameTargetHeight);
+  const int logicalWidth = targetWidth / s_gpu.frameScale;
+  const int logicalHeight = targetHeight / s_gpu.frameScale;
 
   /* the cursor: its image is looked up before the uploads are recorded, its quad is the last batch (drawn at
      present, BlitSourceAlpha = DRAW2D_BLEND_SRC_ALPHA_SKIP0) */
@@ -2035,7 +2074,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
     const int32_t cursorRect[4] = {cursor->drawX + entry->originX, cursor->drawY + entry->originY,
                                    cursor->drawX + entry->originX + cursorRegion.w,
                                    cursor->drawY + entry->originY + cursorRegion.h};
-    const int32_t screen[4] = {0, 0, targetWidth, targetHeight};
+    const int32_t screen[4] = {0, 0, logicalWidth, logicalHeight};
     s_gpu.uiBatches.push_back(UiBatch{nullptr, 0, true, static_cast<uint32_t>(s_gpu.uiVertices.size()), 0, {}});
     AppendUiQuad(cursorRect, screen, &cursorRegion, ARGB8888_OPAQUE_WHITE,
                  (entry->paletteIndex != -1) ? GPU_UI_VERTEX_FLAG_PALETTED : 0u, GPU_UI_BLEND_SRC_ALPHA_SKIP0);
@@ -2202,16 +2241,23 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 
 bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept
 {
+  /* x, y, width, height in logical pixels; the frame target holds N x N target pixels per logical pixel (UI scale
+     N, step 9 WP8): the region is downloaded at N x and point-sampled back to logical size (the target pixel
+     (N - 1) / 2 of each block: the centre one for odd N), so captures, autoshots and the compare mode keep the
+     logical size at every scale */
+  const int scale = s_gpu.frameScale;
   if ((s_gpu.device == nullptr) || (s_gpu.mode == GPU_MODE_OFF) || (s_gpu.frameTarget == nullptr) || (outArgb == nullptr) || (x < 0) || (y < 0) ||
-      (width <= 0) || (height <= 0) || (static_cast<Uint32>(x + width) > s_gpu.frameTargetWidth) ||
-      (static_cast<Uint32>(y + height) > s_gpu.frameTargetHeight)) {
+      (width <= 0) || (height <= 0) || (static_cast<Uint32>((x + width) * scale) > s_gpu.frameTargetWidth) ||
+      (static_cast<Uint32>((y + height) * scale) > s_gpu.frameTargetHeight)) {
     return false;
   }
+  const int targetW = width * scale;
+  const int targetH = height * scale;
   /* D3D12 wants 256-byte download rows */
   const Uint32 rowPixels =
-      (static_cast<Uint32>(width) + kUploadPitchPixels - 1) / kUploadPitchPixels * kUploadPitchPixels;
+      (static_cast<Uint32>(targetW) + kUploadPitchPixels - 1) / kUploadPitchPixels * kUploadPitchPixels;
   if (!EnsureTransferBuffer(s_gpu.captureDownload, s_gpu.captureDownloadBytes, SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
-                            rowPixels * static_cast<Uint32>(height) * 4)) {
+                            rowPixels * static_cast<Uint32>(targetH) * 4)) {
     return false;
   }
   SDL_GPUCommandBuffer *commands = SDL_AcquireGPUCommandBuffer(s_gpu.device);
@@ -2222,16 +2268,16 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
   SDL_GPUTextureRegion source;
   SDL_zero(source);
   source.texture = s_gpu.frameTarget;
-  source.x = static_cast<Uint32>(x);
-  source.y = static_cast<Uint32>(y);
-  source.w = static_cast<Uint32>(width);
-  source.h = static_cast<Uint32>(height);
+  source.x = static_cast<Uint32>(x * scale);
+  source.y = static_cast<Uint32>(y * scale);
+  source.w = static_cast<Uint32>(targetW);
+  source.h = static_cast<Uint32>(targetH);
   source.d = 1;
   SDL_GPUTextureTransferInfo destination;
   SDL_zero(destination);
   destination.transfer_buffer = s_gpu.captureDownload;
   destination.pixels_per_row = rowPixels;
-  destination.rows_per_layer = static_cast<Uint32>(height);
+  destination.rows_per_layer = static_cast<Uint32>(targetH);
   SDL_DownloadFromGPUTexture(copyPass, &source, &destination);
   SDL_EndGPUCopyPass(copyPass);
   /* the frames submitted before draw first (one queue), so this is the last presented frame without the cursor */
@@ -2247,13 +2293,31 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
     return false;
   }
   /* B8G8R8A8 in memory is 0xAARRGGBB, the framebuffer's layout; the alpha byte is forced as the CPU capture does */
+  const int sample = (scale - 1) / 2;
   for (int row = 0; row < height; row++) {
-    const uint32_t *sourceRow = pixels + static_cast<size_t>(row) * rowPixels;
+    const uint32_t *sourceRow = pixels + static_cast<size_t>(row * scale + sample) * rowPixels + sample;
     uint32_t *destinationRow = outArgb + static_cast<size_t>(row) * static_cast<size_t>(width);
     for (int column = 0; column < width; column++) {
-      destinationRow[column] = sourceRow[column] | ARGB8888_ALPHA_MASK;
+      destinationRow[column] = sourceRow[static_cast<size_t>(column) * scale] | ARGB8888_ALPHA_MASK;
     }
   }
+#ifdef THANDOR_DEV_TOOLS
+  /* OPEN_THANDOR_GPU_NATIVE_SHOTS=1 (developer tools): a whole-frame capture at a UI scale N > 1 also writes the
+     frame at its full resolution, shots\gpunative_NNNN.bmp, to check the scaled UI and 3D view by eye */
+  if ((scale > 1) && (x == 0) && (y == 0) && (width * scale == static_cast<int>(s_gpu.frameTargetWidth)) &&
+      (height * scale == static_cast<int>(s_gpu.frameTargetHeight)) && (SDL_getenv("OPEN_THANDOR_GPU_NATIVE_SHOTS") != nullptr)) {
+    static unsigned nativeShotNumber = 0;
+    std::vector<uint32_t> native(static_cast<size_t>(targetW) * targetH);
+    for (int row = 0; row < targetH; row++) {
+      std::memcpy(native.data() + static_cast<size_t>(row) * targetW, pixels + static_cast<size_t>(row) * rowPixels,
+                  static_cast<size_t>(targetW) * 4);
+    }
+    CreateDirectoryA((LPCSTR) "shots", nullptr);
+    char path[64];
+    std::snprintf(path, sizeof path, "shots\\gpunative_%04u.bmp", nativeShotNumber++);
+    WriteBmp(path, native.data(), targetW, targetH);
+  }
+#endif
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.captureDownload);
   return true;
 }
@@ -2281,8 +2345,9 @@ void CompareGpuFrame() noexcept
   if (now - s_gpu.lastCompareTick < s_gpu.compareIntervalMs) {
     return;
   }
-  const int width = static_cast<int>(s_gpu.frameTargetWidth);
-  const int height = static_cast<int>(s_gpu.frameTargetHeight);
+  /* logical size: ReadGpuFrame point-samples a UI scale N > 1 back to it */
+  const int width = static_cast<int>(s_gpu.frameTargetWidth) / s_gpu.frameScale;
+  const int height = static_cast<int>(s_gpu.frameTargetHeight) / s_gpu.frameScale;
   if ((width <= 0) || (height <= 0) || (static_cast<uint32_t>(width) != g_DisplayFramebufferAccess.width) ||
       (static_cast<uint32_t>(height) != g_DisplayFramebufferAccess.height) ||
       (g_DisplayFramebufferAccess.pixels == nullptr)) {

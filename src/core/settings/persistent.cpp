@@ -80,6 +80,7 @@ static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};
 static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
+static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 
@@ -112,6 +113,10 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_GPU_RASTERIZATION, INI_KIND_ENUM, "graphics", "gpu_rasterization",
    "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
    "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
+  {PERSISTENT_SETTING_UI_SCALE, INI_KIND_ENUM, "graphics", "ui_scale",
+   "Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the "
+   "display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)", 0, 0,
+   INI_ENUM(s_IniUiScaleNames)},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
@@ -151,7 +156,6 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xBC, INI_KIND_RAW, "reserved", "dword_bc", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };

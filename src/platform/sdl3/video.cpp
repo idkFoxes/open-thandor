@@ -30,7 +30,15 @@
    Display mode kinds (PERSISTENT_SETTING_DISPLAY_MODE_KIND, chosen on the display settings page): exclusive
    fullscreen in the mode or the closest larger one (default, "Vollbild"), borderless fullscreen over the desktop
    ("Vollbildfenster"), or a normal window in the mode's size ("Fenster"); the frame is letterboxed in all three. The developer tools' window (OPEN_THANDOR_WINDOWED) is
-   always a window at OPEN_THANDOR_WINDOW_X/Y. */
+   always a window at OPEN_THANDOR_WINDOW_X/Y.
+
+   UI scale (step 9 WP8, GPU renderers only): the display mode is the logical UI resolution (g_FramebufferWidth /
+   Height: layout, hit tests, mouse, captures); the GPU draws the frame at N x that size (SetGpuUiScale) and the
+   window or the exclusive fullscreen mode gets N x the mode's size. N comes from OPEN_THANDOR_UI_SCALE=auto|1..8
+   (wins) or [graphics] ui_scale (auto, 1, 2, 3): auto is the largest whole N at which N x the mode fits the display
+   (fullscreen kinds: the desktop size; a window: the display's usable area), a number is taken as it is. With a
+   fixed N > 1 the GPU adapters list the display's sizes divided by N; auto and 1 list the display's sizes. The
+   software renderer always runs at N = 1. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
 
@@ -83,6 +91,7 @@ struct RendererState {
   bool shown = false;
   int windowWidth = 0; /* the size last given to the normal window */
   int windowHeight = 0;
+  bool modesListedWithSettings = false;
 };
 RendererState s_renderer;
 
@@ -132,10 +141,31 @@ void ChannelOfMask(Uint32 mask, GraphicsPackedPixelMask &outMask, GraphicsPixelC
   outBitCount = (highestBit + 1) - shift;
 }
 
+/* The requested UI scale: OPEN_THANDOR_UI_SCALE=auto|1..kMaxGpuUiScale (wins), else [graphics] ui_scale
+   (PERSISTENT_SETTING_UI_SCALE); 0 = auto. */
+int RequestedUiScale() noexcept
+{
+  if (const char *value = SDL_getenv("OPEN_THANDOR_UI_SCALE")) {
+    if (SDL_strcasecmp(value, "auto") == 0) {
+      return PERSISTENT_UI_SCALE_AUTO;
+    }
+    const int scale = SDL_atoi(value);
+    if ((scale >= 1) && (scale <= thandor::sdl3::kMaxGpuUiScale)) {
+      return scale;
+    }
+  }
+  const uint32_t saved = PersistentSettings_Read(PERSISTENT_UI_SCALE_AUTO, PERSISTENT_SETTING_UI_SCALE);
+  return (saved <= PERSISTENT_UI_SCALE_MAX) ? static_cast<int>(saved) : PERSISTENT_UI_SCALE_AUTO;
+}
+
 /* The display modes: every distinct fullscreen size of the primary display from 640x480 up to the desktop size
-   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer). */
+   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer) - except that with a
+   fixed UI scale N > 1 (RequestedUiScale) the GPU renderers list those sizes divided by N (logical sizes from
+   640x480 on, 640x480 always). */
 void ListDisplayModes()
 {
+  g_GraphicsDisplayModeCount = 0;
+  const int requestedScale = RequestedUiScale();
   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
   const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display);
   const int desktopWidth = (desktop != nullptr) ? std::max(desktop->w, kMinimumModeWidth) : kMinimumModeWidth;
@@ -155,8 +185,20 @@ void ListDisplayModes()
   sizes.emplace_back(desktopWidth, desktopHeight);
   std::sort(sizes.begin(), sizes.end());
   sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
-  for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
+  std::vector<std::pair<int, int>> scaledSizes{{kMinimumModeWidth, kMinimumModeHeight}};
+  if (requestedScale > 1) {
     for (const auto &[width, height] : sizes) {
+      if ((width / requestedScale >= kMinimumModeWidth) && (height / requestedScale >= kMinimumModeHeight)) {
+        scaledSizes.emplace_back(width / requestedScale, height / requestedScale);
+      }
+    }
+    std::sort(scaledSizes.begin(), scaledSizes.end());
+    scaledSizes.erase(std::unique(scaledSizes.begin(), scaledSizes.end()), scaledSizes.end());
+  }
+  for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
+    const bool scaled = (requestedScale > 1) && (adapterIndex < s_renderer.adapterCount) &&
+                        (s_renderer.adapters[adapterIndex] != PERSISTENT_RENDERER_SOFTWARE);
+    for (const auto &[width, height] : scaled ? scaledSizes : sizes) {
       if (g_GraphicsDisplayModeCount >= GRAPHICS_DISPLAY_MODE_CAPACITY) {
         return;
       }
@@ -421,6 +463,38 @@ bool CreateSdlRenderer() noexcept
   return true;
 }
 
+/* The UI scale of a renderer for a width x height display mode shown as kind: 1 for the software renderer, else
+   the requested one, and for auto the largest whole N at which N x the mode fits the output (fullscreen kinds:
+   the desktop size; a window: the display's usable area). */
+int UiScaleFor(uint32_t renderer, uint32_t kind, int width, int height) noexcept
+{
+  if ((renderer == PERSISTENT_RENDERER_SOFTWARE) || (width <= 0) || (height <= 0)) {
+    return 1;
+  }
+  const int requested = RequestedUiScale();
+  if (requested != PERSISTENT_UI_SCALE_AUTO) {
+    return requested;
+  }
+  SDL_Window *window = thandor::sdl3::MainWindow();
+  SDL_DisplayID display = SDL_GetDisplayForWindow(window);
+  if (display == 0) {
+    display = SDL_GetPrimaryDisplay();
+  }
+  int outputWidth = 0;
+  int outputHeight = 0;
+  SDL_Rect usable;
+  if ((thandor::sdl3::Windowed() || (kind == PERSISTENT_DISPLAY_MODE_WINDOW)) &&
+      SDL_GetDisplayUsableBounds(display, &usable)) {
+    outputWidth = usable.w;
+    outputHeight = usable.h;
+  }
+  else if (const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display)) {
+    outputWidth = desktop->w;
+    outputHeight = desktop->h;
+  }
+  return std::clamp(std::min(outputWidth / width, outputHeight / height), 1, thandor::sdl3::kMaxGpuUiScale);
+}
+
 /* Stops the running renderer and starts this one; false (logged) when it cannot start. */
 bool StartRenderer(uint32_t renderer) noexcept
 {
@@ -464,7 +538,7 @@ uint32_t SwitchRenderer(uint32_t requested) noexcept
 
 /* --- window ----------------------------------------------------------------------------------------------- */
 
-/* Applies the display mode kind for a width x height framebuffer. */
+/* Applies the display mode kind for a width x height output (the framebuffer size x the UI scale). */
 void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
 {
   SDL_Window *window = thandor::sdl3::MainWindow();
@@ -683,6 +757,11 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
     s_renderer.pendingKind = SdlVideo_SavedDisplayModeKind();
     s_renderer.kindChosen = true;
   }
+  if (!s_renderer.modesListedWithSettings) {
+    /* the UI scale setting is known now: list the display modes again (SdlVideo_Init ran before the load) */
+    ListDisplayModes();
+    s_renderer.modesListedWithSettings = true;
+  }
   if (adapterIndex >= s_renderer.adapterCount) {
     adapterIndex = 0;
   }
@@ -703,8 +782,12 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   constexpr int bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
   constexpr SDL_PixelFormat pixelFormat = SDL_PIXELFORMAT_XRGB8888;
-  ApplyDisplayModeKind(Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind, static_cast<int>(width),
-                       static_cast<int>(height));
+  const uint32_t kind = Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind;
+  const int uiScale = UiScaleFor(renderer, kind, static_cast<int>(width), static_cast<int>(height));
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SetGpuUiScale(uiScale);
+#endif
+  ApplyDisplayModeKind(kind, static_cast<int>(width) * uiScale, static_cast<int>(height) * uiScale);
   if (renderer == PERSISTENT_RENDERER_SOFTWARE) {
     SDL_Renderer *sdlRenderer = s_renderer.sdlRenderer.get();
     thandor::sdl3::TexturePtr texture(SDL_CreateTexture(sdlRenderer, pixelFormat, SDL_TEXTUREACCESS_STREAMING,
@@ -727,8 +810,9 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   s_video.height = static_cast<int>(height);
   s_video.pitchBytes = static_cast<int>(width) * bytesPerPixel;
   s_video.framebuffer.assign(static_cast<std::size_t>(s_video.pitchBytes) * height, std::byte{0});
-  Thandor_Log("display mode %ux%ux%u, %s, renderer %s", width, height, bitsPerPixel,
-              DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer));
+  Thandor_Log("display mode %ux%ux%u, %s, renderer %s, UI scale %d (%s)", width, height, bitsPerPixel,
+              DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer), uiScale,
+              (RequestedUiScale() == PERSISTENT_UI_SCALE_AUTO) ? "auto" : "fixed");
   if (!s_renderer.shown) {
     SDL_ShowWindow(MainWindow());
     s_renderer.shown = true;
