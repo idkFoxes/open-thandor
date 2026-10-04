@@ -1619,8 +1619,8 @@ static_assert(ThandorSlot<&UiImageControl_PointerMove>::pick<GraphicsCursorFrame
 static_assert(ThandorSlot<&UiSelectableControl_KeyboardEvent>::pick<Bool8(UiKeyboardStateMask, UiKeyboardEventCode,
                                                                           UiNodeBase *)>() != nullptr,
               "THANDOR_SLOT of UiSoundSelectableControl * for a UiNodeBase * slot");
-static_assert(ThandorSlot<&UiNode_DefaultMethod04_NoOp>::pick<void(UiNodeBase *)>() != nullptr,
-              "THANDOR_SLOT of void * for a UiNodeBase * slot");
+static_assert(ThandorSlot<&InGameUiRuntime_ResetNotificationButtonCursor>::pick<void(WorldRuntimeContext *)>() != nullptr,
+              "THANDOR_SLOT of void * for a typed pointer slot");
 static_assert(thandor_slot_is_view_of<UiCatalogEntryControl, UiNodeBase>() &&
                   thandor_slot_is_view_of<InGameMissionHelpRootView, UiNodeBase>() &&
                   thandor_slot_is_view_of<UiSelectableOptionRow68, UiNodeBase>() &&
