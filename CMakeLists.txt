@@ -314,8 +314,15 @@ else()
     # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
     # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
     target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
-                        -Wl,--disable-high-entropy-va -Wl,--disable-large-address-aware
-                        -static -static-libgcc -static-libstdc++ -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+                        -Wl,--disable-high-entropy-va -static -static-libgcc -static-libstdc++
+                        -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
+    # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
+    # clears the flag after the link and fails the build if the image came out relocatable.
+    add_executable(pe_not_large_address_aware cmake/pe_not_large_address_aware.cpp)
+    target_link_options(pe_not_large_address_aware PRIVATE -static)
+    add_custom_command(TARGET thandor POST_BUILD
+        COMMAND pe_not_large_address_aware $<TARGET_FILE:thandor>
+        VERBATIM)
 endif()
 
 # Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
