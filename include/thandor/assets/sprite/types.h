@@ -13,8 +13,6 @@
 #include <thandor/assets/army/types.h>
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct SpriteAssetHeader SpriteAssetHeader, *PSpriteAssetHeader;
 typedef struct GeneratedAssetRegistryHeader GeneratedAssetRegistryHeader, *PGeneratedAssetRegistryHeader;
 typedef struct SprRelocationBlockHeader SprRelocationBlockHeader, *PSprRelocationBlockHeader;

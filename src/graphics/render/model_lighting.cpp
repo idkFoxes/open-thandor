@@ -850,8 +850,6 @@ GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch = {0};
 
 GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch = {0};
 
-/* Implementation ownership: graphics/render/model_lighting. */
-
 
 /* MMX lane helpers for the rewritten lighting routines (Intel SDM semantics). These are C helpers, not
    functions of the original executable. */

@@ -15,8 +15,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/pool. */
-
 /* ArmyRuntimeSlot.runtimeFlags bit set when the army's health (actionVector2Q12) drops to zero
    (ArmyRuntime_ApplyImpactDamageAndFinalizeState and the other damage helpers). */
 #define ARMY_RUNTIME_FLAG_DESTROYED 0x8
@@ -57,8 +55,6 @@
 #define ARMY_GRAPHICS_PALETTE_TABLE_OFFSET 0x200    /* first palette, from the asset start */
 #define ARMY_GRAPHICS_PALETTE_BYTES 0x800           /* 256 entries of 8 bytes */
 #define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 

@@ -14,8 +14,6 @@
 #include <thandor/world/camera/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/factory. */
-
 /* Production state in model runtime classState.behaviorState of the unit factory (class 13) and production
    class 11 (0/1 only) */
 #define ARMY_FACTORY_STATE_IDLE 0
@@ -28,8 +26,6 @@
    and production class 11 */
 #define ARMY_FACTORY_NOTIFICATION_HEADING_OFFSET_ANGLE16 0x8800U
 #define ARMY_PRODUCTION_NOTIFICATION_HEADING_OFFSET_ANGLE16 0x1800
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateUnitFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);

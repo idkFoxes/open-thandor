@@ -16,8 +16,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/model/hierarchy. */
-
 /* ModelRuntimeSlot.attachments[]: the attachment points one model runtime can record
    (ModelNodeRuntime_CreateHierarchyRecursive drops further ones). */
 #define MODEL_RUNTIME_ATTACHMENT_CAPACITY 6
@@ -26,7 +24,6 @@
 #define MODEL_BOUNDS_CORNER_BIT(corner) (1 << (corner))
 #define MODEL_BOUNDS_TRIANGLE_CORNERS(a,b,c) \
   (MODEL_BOUNDS_CORNER_BIT(a) | MODEL_BOUNDS_CORNER_BIT(b) | MODEL_BOUNDS_CORNER_BIT(c))
-/* Functions are grouped by semantic ownership. */
 
 void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime);
 

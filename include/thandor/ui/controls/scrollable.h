@@ -11,8 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/scrollable. */
-
 /* Scrollbar pieces in g_UiWindowTextureSource (UiScrollableControl_RefreshChildAndScrollThumbs): the arrow
    buttons give the bar thickness and arrow length, a thumb is at least two thumb pieces long. */
 #define UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW 0x5A
@@ -67,8 +65,6 @@
    UiScrollableControl layout */
 #define UI_SCROLL_ALLOWED_HORIZONTAL_BARS 0x30
 #define UI_SCROLL_ALLOWED_VERTICAL_BARS 0xC0
-
-/* Functions are grouped by semantic ownership. */
 
 void UiScrollableControl_BeginPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,

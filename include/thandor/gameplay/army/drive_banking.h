@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/drive_banking. */
-
 /* Glider banking (runtime class 17, classLinkState.modelLinkOrState): the bank elevation is level at the quarter turn,
    drops by ARMY_GLIDER_BANK_STEP_ANGLE16 per tick while turning down to ARMY_GLIDER_BANK_MAX_ANGLE16
    and recovers by ARMY_GLIDER_BANK_RECOVER_ANGLE16; the bank heading turns at most
@@ -26,8 +24,6 @@
 /* ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: the three child parts spin by this angle16 per tick
    (about 1/96 turn) while behaviour bit 0 is set */
 #define ARMY_SPIN_CHILD_STEP_ANGLE16 0x2aa
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime );
 

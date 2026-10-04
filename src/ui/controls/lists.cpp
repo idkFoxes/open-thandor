@@ -25,8 +25,6 @@ static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {0};
 /* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {0};
 
-/* Implementation ownership: ui/controls/lists. */
-
 /* True for the keys that move a list's selection (Home/End, Page Up/Down, Up/Down). */
 static bool UiList_IsNavigationKey(UiKeyboardEventCode keyCode)
 {

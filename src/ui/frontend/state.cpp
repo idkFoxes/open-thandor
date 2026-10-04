@@ -37,8 +37,6 @@ static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_
     /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = FRONTEND_HOTKEY_CLASS_CTRL, .continuationEntryAddress = 0x548140},
     /* 3 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
-/* Implementation ownership: ui/frontend/state. */
-
 /* Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
    Frontend_StateTick uses the countdown to pace its network polling.
 */

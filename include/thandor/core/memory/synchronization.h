@@ -12,9 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/memory/synchronization. */
-/* Functions are grouped by semantic ownership. */
-
 void SpinLock_Acquire(RuntimeSpinLockValue *lockValue);
 
 Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue);

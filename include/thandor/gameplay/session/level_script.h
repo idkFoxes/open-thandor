@@ -11,8 +11,6 @@
 #include <thandor/core/contracts.h>
 #include <thandor/gameplay/session/types.h> /* InGameScheduledCondition* for the postfix evaluator */
 
-/* Submodule: gameplay/session/level_script. */
-
 /* Level script (InGameLevelConditionStorage.schedule): 64 condition records of 16 bytes and 16 end
    triggers of 8 bytes, evaluated by InGameConditionRuntime_UpdateScheduledRecords. */
 #define INGAME_SCHEDULED_CONDITION_COUNT 64
@@ -23,8 +21,6 @@
 #define INGAME_CONDITION_TOKEN_NOT 0xFD
 #define INGAME_CONDITION_TOKEN_AND 0xFE
 #define INGAME_CONDITION_TOKEN_OR 0xFF
-
-/* Functions are grouped by semantic ownership. */
 
 /* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition: the tokens after its kind byte run on a bit stack.
    0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes the satisfied bit of the condition with that index.

@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <stdarg.h>
 
-/* Implementation ownership: ui/controls/selectable. */
-
 /* Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
    g_UiSpriteButtonControlVtable, g_UiImageControlVtable, g_UiWindowControlVtable, g_UiFramedTextButtonControlVtable,
    g_UiCatalogEntryControlVtable, g_UiCommandSpriteButtonControlVtable and

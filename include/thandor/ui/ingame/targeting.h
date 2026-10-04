@@ -11,10 +11,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/targeting. */
-
-/* Functions are grouped by semantic ownership. */
-
 void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext);
 
 void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext);

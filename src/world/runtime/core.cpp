@@ -8,8 +8,6 @@
 #include <thandor/world/runtime/core.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/runtime/core. */
-
 /* Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
    ignored.
 */

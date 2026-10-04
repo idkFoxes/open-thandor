@@ -13,10 +13,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/window. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiWindowControl_DrawFramedTextAndChrome
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiWindowControl *control);

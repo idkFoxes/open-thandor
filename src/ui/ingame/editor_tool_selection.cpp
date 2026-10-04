@@ -28,8 +28,6 @@ uint32_t g_UiCommandModeB = 0;
 
 uint32_t g_UiCommandModeF = 0;
 
-/* Implementation ownership: ui/ingame/editor_tool_selection. */
-
 /* Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
    g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/editor_keyboard.cpp). Selects the tab, shows
    the tool's pages and switches the world view to the height tool overlays: surface point, terrain point, grid

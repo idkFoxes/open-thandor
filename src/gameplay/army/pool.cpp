@@ -22,8 +22,6 @@ const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24] = {
     /*  0 */ 136, 192, 192, 192, 144, 136, 136, 136, 136, 136, 136, 144, 136, 144, 144, 144,
     /* 16 */ 144, 192, 160, 192, 144, 192, 144, 144};
 
-/* Implementation ownership: gameplay/army/pool. */
-
 /* Level start: allocates and zeroes the 0x48000-byte army runtime pool, loads the army graphics (texture set and
    palette, "<graphicsBasePath><suffix>.gfx/.pal") of slot 0 and of every existing faction, and renders the two
    panel preview textures of every army asset that has a selection panel entry. The movie schedule is ticked in between, since this

@@ -13,8 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/editor_tools. */
-
 /* Editor tools of the in-game map callbacks: a Q12 grid coordinate (world point through
    FIELD_GRID_WORLD_*_Q20) is rounded to a whole cell by adding the bias and dropping the fraction
    (INGAME_SNAP_GRID_Q12, or + bias >> Q12_SHIFT for the cell index). */
@@ -43,8 +41,6 @@
 #define INGAME_WORLD_FLAG_EDITOR 0x400000u
 
 #define INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE 0x25
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,

@@ -15,8 +15,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/level_new. */
-
 /* g_InGameLoadedResourcePointers: the level loaders allocate room for 512 loaded EFF/SHT/MDL/ARM file pointers and
    fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. The pointers are kept as Ptr32 (4 bytes each, like the
    original's 32-bit pointers), so the original's 512 * 4-byte arena block holds all of them on x64 too. */
@@ -30,8 +28,6 @@
 /* Prepares one loaded file of a LEV file list (assetByteCount: the loaded byte count); false with the step's
    error code in *outError. */
 using NewLevelPrepareAssetFn = Bool8 (*)(void *asset,uint32_t assetByteCount,uint32_t *outError);
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);

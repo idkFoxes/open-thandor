@@ -13,7 +13,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/package/codec. */
 /* PCK compression method 0 (PckCodec_EncodeHuffmanRle / PckCodec_DecodeHuffmanRle): a 256-byte table of
    8-bit symbol frequencies, then an LSB-first bitstream of tokens. Token = flag bit 0 + Huffman code of a
    literal byte, or flag bit 1 + 4-bit (runLength - 3) + Huffman code of the repeated byte. */
@@ -36,7 +35,6 @@
 #define FIELD_GRID_WORLD_ROW_STEP_X 0x480 /* 1152, about half a column */
 #define FIELD_GRID_WORLD_ROW_STEP_Y (-1999)
 
-/* Functions are grouped by semantic ownership. */
 /* All six codecs share the g_PckEncoderTable / g_PckDecoderTable slot interface (PckCodecProc): they return
    true on success and store the result byte count in *outByteCount (encoders: the packed size; decoders: an
    incidental leftover value, see each decoder), or return false and store the error code in *outErrorCode.

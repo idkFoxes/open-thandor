@@ -47,8 +47,6 @@ uint32_t g_FrontendPendingSessionPlayerCount = 0;
 
 uint32_t g_FrontendExpectedPlayerRuntimeBlockCount = 0;
 
-/* Implementation ownership: network/protocol/lobby. */
-
 /* Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a
    count of 0 wraps). Command dword = handler offset << 8 | player id; offsets past the command handlers are
    ignored and records with out-of-range payloads dropped (CommandDispatch_ExecuteRecord). */

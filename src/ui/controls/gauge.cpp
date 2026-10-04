@@ -18,8 +18,6 @@ static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
 
 static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 
-/* Implementation ownership: ui/controls/gauge. */
-
 /* Draws the horizontal gauge (progress bar, the drawing half of g_UiTransferProgressGaugeVtable): the track, a
    fill proportional to (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue,
    and with gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than

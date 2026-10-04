@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct GraphicsCapturedTextureSourceAsset GraphicsCapturedTextureSourceAsset, *PGraphicsCapturedTextureSourceAsset;
 
 using TimerFrequencyHz = uint32_t;

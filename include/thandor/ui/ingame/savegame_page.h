@@ -13,8 +13,6 @@
 #include <thandor/core/contracts.h>
 #include <thandor/core/text/path.h>
 
-/* Submodule: ui/ingame/savegame_page. */
-
 /* In-game save page action (InGameUiImage: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
    enables it only for a valid typed save name. */
 #define INGAME_ACTION_SAVE_GAME_SAVE 0x1210
@@ -23,7 +21,6 @@
 #define INGAME_ACTION_SAVE_GAME_DELETE 0x1219
 /* Caption of the last row of the save list, the "new savegame" entry (InGameSaveGamePage_RebuildCatalog). */
 #define TEXT_ID_SAVE_GAME_NEW_ROW 0x2151
-/* Functions are grouped by semantic ownership. */
 
 void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList);
 

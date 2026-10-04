@@ -13,10 +13,6 @@
 #include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/shots/ballistics. */
-
-/* Functions are grouped by semantic ownership. */
-
 ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition);

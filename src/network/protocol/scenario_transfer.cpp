@@ -14,8 +14,6 @@
 
 uint32_t g_FrontendScenarioTransferState = 0;
 
-/* Implementation ownership: network/protocol/scenario_transfer. */
-
 /* Allocates byteCount bytes through g_MemoryApi; FatalError_ExitIfFailed does not return on failure. */
 static uintptr_t FrontendScenarioTransfer_AllocateOrExit(uint32_t byteCount)
 {

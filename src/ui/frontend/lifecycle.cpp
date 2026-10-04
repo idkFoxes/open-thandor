@@ -46,8 +46,6 @@ static uint16_t g_SoundMenue01SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\',
 
 static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'm', 'e', 'n', 'u', 'e', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\menue.gfx" */
 
-/* Implementation ownership: ui/frontend/lifecycle. */
-
 /* Menu sounds of Frontend_Init: counts the two digits of "sound\menue01.sam" from 01 up to 99 into the
    voice-set table slots 1..99 and stops at the first file that does not exist. Returns 0, or the voice-set
    creation error. */

@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/class_updates. */
-
 /* Runtime update of the resource extractor class (14), reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[14]. While it has health left and is active,
    it stamps its faction and resource-field selector into the grid cell under it (inner cells only) and, when

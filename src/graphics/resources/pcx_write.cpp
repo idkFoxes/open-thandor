@@ -10,8 +10,6 @@
 #include <thandor/core/error/runtime.h>
 #include <string.h>
 
-/* Implementation ownership: graphics/resources/pcx (encoder). */
-
 /*
 PCX encoder, replacing export 3 (module offset 0x980) of engine\pcx.fnc together with its helper at module
 offset 0x850 (canvas build). The output is byte for byte what the module produced.

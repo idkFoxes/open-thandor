@@ -9,8 +9,6 @@
 #include <thandor/core/math/fixed_vector.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: core/math/fixed_vector. */
-
 /* Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12
    world coordinates cannot overflow, and the result has the same fixed-point scale as the components.
 */

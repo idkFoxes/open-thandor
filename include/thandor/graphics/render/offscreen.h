@@ -14,9 +14,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/offscreen. */
-/* Functions are grouped by semantic ownership. */
-
 GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,

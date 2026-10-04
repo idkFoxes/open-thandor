@@ -71,8 +71,6 @@ uint32_t g_AiWorkspace02Count = 0;
 /* L"engine\\ki.dat" */
 static uint16_t g_EngineKiDatPathUtf16[14] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'k', 'i', '.', 'd', 'a', 't', 0};
 
-/* Implementation ownership: gameplay/ai/workspaces. */
-
 /* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740) */
 #define AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset) \
   ((AiFactionCandidateCacheState *)((uint8_t *)&g_GameFactionRuntimeImage.records[0].candidateCache + \

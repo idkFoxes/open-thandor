@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: audio/backend/null_backend. */
-
 /* Silent-backend stub in slot g_SoundCreateSampleVoiceSet (until SdlAudio_Init switches the slots to the SDL3
    audio backend, and for good when there is no audio device). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
    *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.

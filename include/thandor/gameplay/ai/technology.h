@@ -15,12 +15,9 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/technology. */
-
 /* Score factor of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue:
    score = (relationScaleQ8 * 40000 >> 8) * baseCandidateScore >> 8. */
 #define AI_TECHNOLOGY_RELATION_SCORE_FACTOR 40000
-/* Functions are grouped by semantic ownership. */
 
 Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset

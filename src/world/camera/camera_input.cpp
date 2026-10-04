@@ -28,8 +28,6 @@ static const UQ12 g_WorldMotionAlternateMinimumDistanceQ12 = 32768;
 
 static const UQ12 g_WorldMotionAlternateMaximumDistanceQ12 = 131072;
 
-/* Implementation ownership: world/camera/camera_input. */
-
 /* Camera drag sideways (right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/menu_room.cpp): moves camera position and target together by screenDelta scaled with
    k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at elevationAngle.

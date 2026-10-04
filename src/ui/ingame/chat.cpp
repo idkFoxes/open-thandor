@@ -17,8 +17,6 @@ static uint16_t g_DeveloperChatPhraseUtf16[32] = {'O', 'h', ' ', 'g', 'r', 'o', 
 
 static uint16_t g_HmmNaGutChatPhraseUtf16[20] = {'H', 'm', 'm', 'm', ',', ' ', 'n', 'a', ' ', 'g', 'u', 't', '.', '.', '.', ' ', ';', '-', ')', 0}; /* L"Hmmm, na gut... ;-)" */
 
-/* Implementation ownership: ui/ingame/chat. */
-
 /* UI action 0x1005 (g_InGameUiActionHandlersPage10[5], InGameUiImage.messageSendAndCloseButton): sends the
    typed message to the chosen recipients (InGameSevenSlotCommand_SubmitTextAndSelectionMask) and closes the
    message window.

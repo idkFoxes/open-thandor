@@ -17,8 +17,6 @@ static uint16_t g_FrontendEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n'
 
 static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
 
-/* Implementation ownership: ui/frontend/end_movie. */
-
 /* The end movie's keyboard fallback returns nothing; the root keyboard fallback slot returns Bool8, but its only
    caller (UiKeyboard_DispatchPendingEvents) ignores the result, so false is returned. */
 static Bool8 EndMovieSlot_KeyboardFallback(UiKeyboardStateMask keyboardStateMask,UiActionId keyCode,UiRootNode *uiRoot)

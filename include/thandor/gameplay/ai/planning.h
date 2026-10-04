@@ -13,8 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/planning. */
-
 /* g_AiActiveGridMaskClasses[0..3] (AiPlanning_CollectActiveGridMaskClasses): an unused slot */
 #define AI_GRID_MASK_CLASS_FREE 0xffffffff
 /* Random terms of the strategic building choice: 14 bits of g_RandomGeneratorState.next added to each
@@ -22,8 +20,6 @@
    pressure score as jitter (AiStrategicClass_SelectPressureWeightedBuilding) */
 #define AI_STRATEGIC_TIE_BREAK_MASK 0x3fff
 #define AI_STRATEGIC_SCORE_JITTER_MASK 0x7f
-
-/* Functions are grouped by semantic ownership. */
 
 void AiFactionRuntime_RebuildPlanningCapacityState();
 

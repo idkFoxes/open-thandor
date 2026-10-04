@@ -10,10 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/debug_overlay. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
 
 extern uint32_t g_DebugOverlayCounterRefreshCountdown; /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */

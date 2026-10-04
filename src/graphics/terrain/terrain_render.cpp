@@ -50,8 +50,6 @@ static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[TERRAIN_PROJECTED_ROW_
 
 Bool8 g_Triangle2DBarycentricOutside;
 
-/* Implementation ownership: graphics/terrain/terrain_render. */
-
 /* Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
    the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the visible column span of
    every grid row from the four frustum side planes, marks all vertices as not projected and widens each span to

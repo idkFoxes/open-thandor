@@ -14,8 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/preview. */
-
 /* ArmyRuntime_RenderPreviewTexture: the temporary preview army is created far off the field at this world
    position (both axes, Q12), and the preview texture allocation is its pixels behind a 0x200-byte gfx header
    and one 0x20-byte subresource record */
@@ -30,8 +28,6 @@
 #define ARMY_PREVIEW_VIEW_ANGLE0 (0U - FIXED_ANGLE16_HALF_TURN)
 /* a byte * this repeats it in both halves of a 16-bit MMX lane (PUNPCKLBW mm,mm) */
 #define ARMY_PREVIEW_BYTE_TO_WORD_REPEAT 0x101u
-
-/* Functions are grouped by semantic ownership. */
 
 GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,

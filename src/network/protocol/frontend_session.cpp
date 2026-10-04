@@ -28,8 +28,6 @@ static FrontendPacket10009SnapshotChunkRequest g_FrontendPacket10009Buffer = {0}
 
 static FrontendPacket10012SyncPending g_FrontendPacket10012Buffer = {0};
 
-/* Implementation ownership: network/protocol/frontend_session. */
-
 /* Returns the player record whose peer sequence token and IPv4 address match the sender, or NULL. Record 0 is
    always compared (the player count is at least 1). */
 static FrontendPlayerRuntimeRecord *FrontendNetwork_FindPlayerBySender

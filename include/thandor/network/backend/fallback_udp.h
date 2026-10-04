@@ -13,9 +13,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/backend/fallback_udp. */
-/* Functions are grouped by semantic ownership. */
-
 uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 
 void NetworkBackendFallback_Cleanup();

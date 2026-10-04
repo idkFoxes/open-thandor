@@ -22,8 +22,6 @@ static uint32_t g_PrimitiveRadixBucketWords[256] = {0};
 
 static uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
-/* Implementation ownership: graphics/render/primitives. */
-
 /* Sort key of one queued packet for GraphicsPrimitiveQueue_RadixSortForRendering. */
 static uint32_t GraphicsPrimitiveQueue_RenderSortKey(const GraphicsPrimitivePacket *packet)
 {

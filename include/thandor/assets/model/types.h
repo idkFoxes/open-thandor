@@ -16,8 +16,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/ui/ingame/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct ModelDefinitionRecordPrefix ModelDefinitionRecordPrefix, *PModelDefinitionRecordPrefix;
 typedef struct ModelDefinition ModelDefinition, *PModelDefinition;
 typedef struct ModelDefinitionResolveView ModelDefinitionResolveView, *PModelDefinitionResolveView;

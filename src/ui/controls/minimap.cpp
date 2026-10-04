@@ -17,8 +17,6 @@
 static SoftwareBgraWordLanes g_UiScalerFirstPixelWeights[256];
 static SoftwareBgraWordLanes g_UiScalerSecondPixelWeights[256];
 
-/* Implementation ownership: ui/controls/minimap. */
-
 /* Not in the original (it carried the tables precomputed): builds the scaler weights. Fractions 0..63 take
    only the first pixel (0x4000), 64..191 blend in steps t = 2 * (fraction - 64) of 0x4040 / 256 (the pair
    sums to 0x4040 or 0x403F, not 0x4000), 192..255 take only the second pixel (0x4000). This reproduces every

@@ -53,8 +53,6 @@ uint32_t g_RichTextCurrentColorArgb = 0;
 
 uint32_t g_RichTextCurrentShadowOffset = 0;
 
-/* Implementation ownership: ui/text/richtext_render. */
-
 /* Shadow offset for the palette field of a packed text style; called right after g_ActiveFontIndex and
    g_RichTextCurrentColorArgb were set from the same style. Original quirk: palette entry 6 reads its shadow
    offset from g_ActiveFontIndex (the object behind the original's shadow table); entry 7 reads

@@ -12,8 +12,6 @@
 #include <thandor/movie/runtime/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: movie/runtime/playback. */
-
 /* Movie_Open flags. Intro and end movies are streamed; in-game and briefing movies are loaded from the packages
    only. Movie_Open clears MOVIE_OPEN_PACKAGE_ONLY when the loose path was not used, so a nonzero
    MovieRuntime.openFlags means streaming. */
@@ -30,8 +28,6 @@
 #define MOVIE_REFILL_CHUNK_BYTES 0x1E000 /* bytes per refill; also the minimum buffered ahead of a decode */
 #define MOVIE_COMPACT_SHIFT_BYTES 0x1E0000 /* played bytes dropped from the buffer front at once */
 #define MOVIE_MAX_AUDIO_TRACKS 14 /* MovieFileHeader.audioTrackBytes; Movie_Open plays no audio for larger counts */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 

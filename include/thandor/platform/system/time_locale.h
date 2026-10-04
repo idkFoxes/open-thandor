@@ -11,13 +11,10 @@
 #include <thandor/platform/system/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: platform/system/time_locale. */
-
 /* Locale_Init: output capacity passed for every locale string (8 UTF-16 units, half of each 16-unit field) */
 #define LOCALE_STRING_COPY_CAPACITY_BYTES 0x10
 /* Primary language bits the original keeps from GetUserDefaultLCID (9 bits; PRIMARYLANGID keeps 10, 0x3ff) */
 #define LOCALE_PRIMARY_LANGUAGE_MASK 0x1ff
-/* Functions are grouped by semantic ownership. */
 
 void Locale_Init();
 

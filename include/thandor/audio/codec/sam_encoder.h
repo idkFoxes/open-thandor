@@ -10,10 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: audio/codec/sam_encoder. */
-
-/* Functions are grouped by semantic ownership. */
-
 void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm);
 
 uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);

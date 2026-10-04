@@ -13,16 +13,12 @@
 #include <thandor/ui/text/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/text/richtext_render. */
-
 /* UiPackedTextStyle fields as the rich-text interpreters decode them. */
 #define TEXT_STYLE_ALIGN_RIGHT 0x1 /* the line ends at the given x */
 #define TEXT_STYLE_ALIGN_CENTER 0x2 /* the line is centred on the given x (ignored with ALIGN_RIGHT) */
 #define TEXT_STYLE_PALETTE_SHIFT 16 /* bits 16-18: colour/shadow palette entry */
 #define TEXT_STYLE_FONT_SHIFT 24 /* bits 24-26: font index */
 #define TEXT_STYLE_INDEX_MASK 7
-
-/* Functions are grouped by semantic ownership. */
 
 RichTextExtent RichTextCommandStream_MeasureWrappedBlock
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);

@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/camera_commands. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime);
 

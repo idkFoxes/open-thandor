@@ -14,10 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/selection/queries. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
 Bool8 SelectionInfo_HasAnyEntry();

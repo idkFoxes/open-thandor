@@ -13,16 +13,12 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/input. */
-
 /* Bit 31 of a press event's button mask: a repeated (double) click. UiPointer_DispatchLeftPress/RightPress
    copy it into the pressed node's UI_NODE_REPEAT_OR_DOUBLE_CLICK flag. */
 #define UI_POINTER_BUTTON_REPEAT_CLICK 0x80000000
 /* UiImageControl stateFlags bits 0, 1, 9 and 10, cleared when a hovered image control loses the pointer
    (UiPointer_Dispatch*Press, UiImageControl pointer handlers). */
 #define UI_IMAGE_CONTROL_HOVER_STATE_BITS 0x603
-
-/* Functions are grouped by semantic ownership. */
 
 void UiPointer_DispatchPendingEvents();
 

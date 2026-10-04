@@ -12,10 +12,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/display_settings. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source);
 
 void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);

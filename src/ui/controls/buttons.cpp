@@ -8,8 +8,6 @@
 #include <thandor/ui/controls/buttons.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: ui/controls/buttons. */
-
 /* Depth-first walk over node, its descendants and its following siblings: each node's subtree is
    visited before its next sibling, at every depth. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {

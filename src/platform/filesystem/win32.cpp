@@ -77,8 +77,6 @@ uint16_t g_DefaultComputerLabelUtf16[32] = {'C', 'o', 'm', 'p', 'u', 't', 'e', '
 
 FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = nullptr;
 
-/* Implementation ownership: platform/filesystem/win32. */
-
 /* open-thandor: converts a UTF-16 path into one of the g_Win32PathScratch buffers for the ANSI file APIs.
    False when it does not fit; the original cut the path off at 0xFF bytes and used it anyway. */
 static Bool8 Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)

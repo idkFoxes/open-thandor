@@ -8,8 +8,6 @@
 #include <thandor/gameplay/faction/relations.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/faction/relations. */
-
 /* Random drift of the diplomatic relations between sourceFactionIndex and every other active faction 7..1
    (faction 0 is never visited). When the pair may change state and sits in state 3, 6 or 10, the relation may
    be reset (GameFactionRelations_IsNotResetEligibleState returns false for exactly those states); otherwise it may

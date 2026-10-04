@@ -12,12 +12,9 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/model_slots. */
-
 /* ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming: value of the classLinkState words classState68..classState74 that
    hold no coordinate yet (INT32_MIN bit pattern, never a real world coordinate) */
 #define MODEL_CLASS_STATE_UNSET_COORDINATE 0x80000000
-/* Functions are grouped by semantic ownership. */
 
 void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
           (ModelDefinition *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot

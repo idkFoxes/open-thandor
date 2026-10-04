@@ -12,8 +12,6 @@
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
 #include <thandor/core/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef union NetworkEndpointAddressHeader4 NetworkEndpointAddressHeader4, *PNetworkEndpointAddressHeader4;
 typedef struct NetworkEndpointFamilyPortFields4 NetworkEndpointFamilyPortFields4, *PNetworkEndpointFamilyPortFields4;
 typedef struct WinSockHostEnt32 WinSockHostEnt32, *PWinSockHostEnt32;

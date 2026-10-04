@@ -29,8 +29,6 @@ enum {
 };
 using ArticulatedRouteStep = int;
 
-/* Implementation ownership: gameplay/army/walker. */
-
 /* Advances the running step of the articulated walker: walking speed rises in the first half of the step
    and falls in the second; the step progress grows by previous speed * step rate (fallbackPosition1Q12) *
    ticks. When the progress reaches the end, the foot target becomes the foot position. */

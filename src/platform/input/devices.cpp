@@ -68,8 +68,6 @@ uint32_t g_CursorUseOverridePosition = 0;
 
 UiPointerWheelDelta g_CursorWheelDelta = 0;
 
-/* Implementation ownership: platform/input/devices. */
-
 /* Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
    g_KeyboardAsciiCaseTransformCallbacks3. Both 16-bit code units are upper-cased; returns true when
    upper(right) < upper(left).

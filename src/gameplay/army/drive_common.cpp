@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/drive_common. */
-
 /* Accelerates a moving model (called directly by the movement class updates in drive_ground.cpp and
    drive_banking.cpp): the speed limit is the definition's movementSpeed. While the pitch (worldRotationAngle1) is
    below the first class threshold it is cut to 5/16, unless the pitch is at least the second threshold: then it

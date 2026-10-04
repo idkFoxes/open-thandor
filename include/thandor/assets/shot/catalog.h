@@ -12,8 +12,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/shot/catalog. */
-
 /* Slots of g_ShotDefinitionRegistry (256 pointers; a null slot is free). */
 #define SHOT_DEFINITION_REGISTRY_SLOT_COUNT 256
 /* Entries of ShotDefinition.terrainMaterialIndices31 (one per terrain-material reference of a shot). */
@@ -22,8 +20,6 @@
 #define SHOT_TARGET_CLASS_IMPACT_COUNT 8
 /* Entries of g_TerrainMaterialTextureSets: valid terrain-material indices are 0..25. */
 #define TERRAIN_MATERIAL_COUNT 26
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset);
 

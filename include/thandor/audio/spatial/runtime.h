@@ -12,14 +12,12 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: audio/spatial/runtime. */
 /* Capacity of g_SpatialSoundSlots (SpatialSoundPool_Init allocates SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot)) */
 #define SPATIAL_SOUND_SLOT_COUNT 0x100
 /* Channel gains are Q15 (0x8000 = full volume, the clamp before playback); positioned sounds whose
    attenuated gain is not above 0x100 are not played (SpatialSound_PlayPositionedOneShot) */
 #define SPATIAL_SOUND_GAIN_Q15_FULL 0x8000
 #define SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 0x100
-/* Functions are grouped by semantic ownership. */
 
 Bool8 SpatialSoundPool_Init(uint32_t *outError);
 

@@ -16,8 +16,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/ui/controls/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct RecentTextHistorySlot RecentTextHistorySlot, *PRecentTextHistorySlot;
 typedef struct UiRootCallbacks UiRootCallbacks, *PUiRootCallbacks;
 typedef struct UiDirtyRectEntry UiDirtyRectEntry, *PUiDirtyRectEntry;

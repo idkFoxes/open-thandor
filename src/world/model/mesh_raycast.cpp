@@ -16,8 +16,6 @@ GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
 /* Q28 ray direction in the tested node's frame */
 GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
 
-/* Implementation ownership: world/model/mesh_raycast. */
-
 /* Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
    limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane
    through the weighted centre (2*v0 + v1 + v2) / 4), then an inside test of the hit point against the edges.

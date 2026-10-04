@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/audio. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyRuntimeAudio_UpdateTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 

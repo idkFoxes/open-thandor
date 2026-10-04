@@ -13,12 +13,8 @@
 #include <thandor/gameplay/session/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/campaign_carryover. */
-
 /* g_OldUnitPrimaryTable: 0x20-byte carry-over unit records (OLD_UNIT_PRIMARY_TABLE_BYTES / 0x20). */
 #define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
-
-/* Functions are grouped by semantic ownership. */
 
 void OldUnitRuntime_RebuildScenarioReplayTables();
 

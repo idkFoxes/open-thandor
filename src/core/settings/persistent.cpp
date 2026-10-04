@@ -672,8 +672,6 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
   return presentMask;
 }
 
-/* Implementation ownership: core/settings/persistent. */
-
 /* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
    last load or save, writes thandor.ini (open-thandor; the original wrote the 200-byte image to thandor.dat)
    with every key that was loaded or written. The save result is not checked.

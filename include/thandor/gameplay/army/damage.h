@@ -13,15 +13,11 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/damage. */
-
 /* healthRegenerationDelayTicks after every hit: health regenerates again this many ticks later */
 #define ARMY_DAMAGE_REGENERATION_DELAY_TICKS 0x200
 
 /* packed point key class of a model's damage-effect emitter points (ArmyRuntime_EmitDamageThresholdEffect) */
 #define ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER 3
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateTransformAndDamageEffect
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);

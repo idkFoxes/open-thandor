@@ -14,11 +14,8 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/pathing/influence. */
-
 /* The influence radius is ModelDefinition.footprintRadius; 0 = no grid influence.
    Placement and selection read the same field. */
-/* Functions are grouped by semantic ownership. */
 
 void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime);
 

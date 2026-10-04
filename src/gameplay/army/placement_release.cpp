@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/placement_release. */
-
 /* Release handler of a resource extractor (class 14): gives back the storage it added to its faction (see
    ArmyPlacement_ReleaseFactionCapacity) and clears the extractor markers (armyRuntimeSavedOffset,
    resourceExtractionDescriptor) of the field-grid cell it stood on, so the deposit can be built on again.

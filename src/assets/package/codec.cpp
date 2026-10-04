@@ -17,8 +17,6 @@ static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {0};
    nodes; the tree-building scans run over both halves as one array. */
 static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
 
-/* Implementation ownership: assets/package/codec. */
-
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
 static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 {

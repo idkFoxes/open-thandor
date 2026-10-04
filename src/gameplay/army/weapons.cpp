@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/weapons. */
-
 /* Called by the weapon code (combat/movement) after a shot has been fired: stores the launch heading and the
    weapon definition's two post-launch values as the army's action vector, but only when both of those values
    are nonzero; otherwise the previous vector is kept.

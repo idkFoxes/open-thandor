@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/collision. */
-
 /* Tests whether a model of this definition, with its placement radius (footprintRadius), would overlap any
    army in the world's owner list: a cheap depth-bin mask overlap first, then the exact circle test
    ArmyCollision_TestPointWithinExpandedRuntimeRadius. Returns true when an army is in the way (a

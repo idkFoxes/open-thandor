@@ -8,8 +8,6 @@
 #include <thandor/gameplay/session/level_saved.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/session/level_saved. */
-
 /* Loading stages 1 to 5 of a saved game: as NewLevel_InitTerrainAndGraphics, but the terrain loader also clears
    the cell overlay flags, and the army references of the saved faction image are rebased before the terrain
    lighting is set. */

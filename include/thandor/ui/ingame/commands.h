@@ -14,8 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/commands. */
-
 /* g_UiCommandRuntimeFlags bits that end the in-game session loop (InGameRuntime_RunSessionUntilExit) */
 #define UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING 0x800 /* an end trigger fired and chose the end movie
                                                            (set in gameplay/session/level_script.cpp) */
@@ -46,8 +44,6 @@
 
 /* Message history text of another player's departure (rich text: selector 0 = player name) */
 #define TEXT_ID_PLAYER_DEPARTED 0xFF08
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameCommand_TogglePauseRequest
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);

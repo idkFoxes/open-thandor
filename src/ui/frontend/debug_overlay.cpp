@@ -46,8 +46,6 @@ uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
 
 uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
 
-/* Implementation ownership: ui/frontend/debug_overlay. */
-
 /* Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the
    draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
    the menu camera's position and orientation, the cursor override position and the free arena bytes.

@@ -15,8 +15,6 @@ RomRegistrySlot *g_RomRegistrySlots = nullptr;
 
 uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'r', 'o', 'm', 0}; /* L"engine\\zentrale.rom" */
 
-/* Implementation ownership: assets/rom/runtime. */
-
 /* Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
    records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
    invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with

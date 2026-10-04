@@ -11,9 +11,6 @@
 #include <thandor/platform/system/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: platform/system/win32. */
-/* Functions are grouped by semantic ownership. */
-
 extern PlatformPumpEventsProc *g_PlatformPumpEvents;
 extern uint32_t g_WindowDestroyDepth;
 

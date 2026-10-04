@@ -19,8 +19,6 @@ static GraphicsFixedVec3 g_ModelTransformInput = {0};
 
 GraphicsFixedVec3 g_ModelTransformOutput = {0};
 
-/* Implementation ownership: core/math/fixed_transform. */
-
 /* Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into
    g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and extracts the angles
    of the product again. Used by the army movement code to add a local rotation to a heading.

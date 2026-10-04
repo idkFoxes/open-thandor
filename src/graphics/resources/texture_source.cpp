@@ -34,8 +34,6 @@ GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = nullptr;
 
 GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = nullptr;
 
-/* Implementation ownership: graphics/resources/texture_source. */
-
 
 
 

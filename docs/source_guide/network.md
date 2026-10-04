@@ -18,16 +18,16 @@ No file comment; function families: `NetworkFallback_*` (9), `NetworkBackendFall
 
 **Functions** (15 public, 2 file-local):
 
-- [`NetworkBackendFallback_SetSessionContext`](../../src/network/backend/fallback_udp.cpp#L37) - Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init installs the WinSock backend: every backend index fails, returning ...
-- [`NetworkBackendFallback_Cleanup`](../../src/network/backend/fallback_udp.cpp#L46) - Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
-- [`NetworkBackendFallback_OpenAndBindUdpSocket`](../../src/network/backend/fallback_udp.cpp#L55) - Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can be opened, so it returns FATAL_ERROR_NETWORK_UNAVAILABLE.
-- [`NetworkBackendFallback_CloseActiveSocket`](../../src/network/backend/fallback_udp.cpp#L64) - Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
-- [`NetworkBackendFallback_ReceiveDatagram`](../../src/network/backend/fallback_udp.cpp#L73) - Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so UiTransfer receive loops stop at once.
-- [`NetworkBackendFallback_SendDatagram`](../../src/network/backend/fallback_udp.cpp#L83) - Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend: drops the packet and returns true (success) so a session without network keeps running.
-- [`NetworkBackendFallback_ParsePeerEndpoint`](../../src/network/backend/fallback_udp.cpp#L92) - Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (returns true).
-- [`NetworkBackendFallback_FormatPeerAddress`](../../src/network/backend/fallback_udp.cpp#L102) - Default g_NetworkBackendSlot7 (format a peer address as text) in the image data: writes an empty UTF-16 string (one zero dword) to outputText and ignores the address.
-- [`NetworkFallback_NoOpBackendCleanup`](../../src/network/backend/fallback_udp.cpp#L115) - Cleanup slot of the WinSock UDP backend.
-- [`NetworkFallback_OpenAndBindUdpSocket`](../../src/network/backend/fallback_udp.cpp#L193) - Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking I/O.
+- [`NetworkBackendFallback_SetSessionContext`](../../src/network/backend/fallback_udp.cpp#L35) - Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init installs the WinSock backend: every backend index fails, returning ...
+- [`NetworkBackendFallback_Cleanup`](../../src/network/backend/fallback_udp.cpp#L44) - Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
+- [`NetworkBackendFallback_OpenAndBindUdpSocket`](../../src/network/backend/fallback_udp.cpp#L53) - Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can be opened, so it returns FATAL_ERROR_NETWORK_UNAVAILABLE.
+- [`NetworkBackendFallback_CloseActiveSocket`](../../src/network/backend/fallback_udp.cpp#L62) - Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
+- [`NetworkBackendFallback_ReceiveDatagram`](../../src/network/backend/fallback_udp.cpp#L71) - Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so UiTransfer receive loops stop at once.
+- [`NetworkBackendFallback_SendDatagram`](../../src/network/backend/fallback_udp.cpp#L81) - Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend: drops the packet and returns true (success) so a session without network keeps running.
+- [`NetworkBackendFallback_ParsePeerEndpoint`](../../src/network/backend/fallback_udp.cpp#L90) - Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (returns true).
+- [`NetworkBackendFallback_FormatPeerAddress`](../../src/network/backend/fallback_udp.cpp#L100) - Default g_NetworkBackendSlot7 (format a peer address as text) in the image data: writes an empty UTF-16 string (one zero dword) to outputText and ignores the address.
+- [`NetworkFallback_NoOpBackendCleanup`](../../src/network/backend/fallback_udp.cpp#L113) - Cleanup slot of the WinSock UDP backend.
+- [`NetworkFallback_OpenAndBindUdpSocket`](../../src/network/backend/fallback_udp.cpp#L191) - Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking I/O.
 - 5 more: `NetworkFallback_CloseActiveSocket`, `NetworkFallback_ReceiveDatagram`, `NetworkFallback_SendDatagram`, `NetworkFallback_ParsePeerEndpoint`, `NetworkFallback_FormatPeerAddress`
 
 **Data** (1 shared, 6 file-local): `g_NetworkLocalEndpoint`.
@@ -47,9 +47,9 @@ No file comment; function families: `Network_*` (2), `NetworkBackend_*` (1).
 
 **Functions** (3 public):
 
-- [`Network_Init`](../../src/network/backend/runtime.cpp#L106) - Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and installs the UDP fallback backend (NetworkFallback_*) as the only network backend instance.
-- [`Network_Shutdown`](../../src/network/backend/runtime.cpp#L161) - Stops WinSock at program end: WSACleanup of the DLL that Network_Init started.
-- [`NetworkBackend_SetSessionContext`](../../src/network/backend/runtime.cpp#L176) - Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it accepts any backendIndex and always returns 0 (success).
+- [`Network_Init`](../../src/network/backend/runtime.cpp#L104) - Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and installs the UDP fallback backend (NetworkFallback_*) as the only network backend instance.
+- [`Network_Shutdown`](../../src/network/backend/runtime.cpp#L159) - Stops WinSock at program end: WSACleanup of the DLL that Network_Init started.
+- [`NetworkBackend_SetSessionContext`](../../src/network/backend/runtime.cpp#L174) - Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it accepts any backendIndex and always returns 0 (success).
 
 **Data** (22 shared, 20 file-local): `g_NetworkBackendInstanceCount`, `g_NetworkBackendSlot0`, `g_NetworkBackendSlot1`, `g_NetworkBackendSlot2`, `g_NetworkBackendSlot3`, `g_NetworkBackendSlot6`, `g_NetworkBackendSlot7`, `g_NetworkBackendInstanceTable` and 14 more.
 
@@ -80,8 +80,8 @@ No file comment; function families: `UiTransfer_*` (2).
 
 **Functions** (2 public):
 
-- [`UiTransfer_EncryptPacketBlocks`](../../src/network/protocol/cipher.cpp#L313) - Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the ...
-- [`UiTransfer_DecryptPacketBlocks`](../../src/network/protocol/cipher.cpp#L389) - Decrypts a received packet in place or into destination (they may alias): the inverse of UiTransfer_EncryptPacketBlocks, running the 16 rounds backwards with the second table set ...
+- [`UiTransfer_EncryptPacketBlocks`](../../src/network/protocol/cipher.cpp#L311) - Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the ...
+- [`UiTransfer_DecryptPacketBlocks`](../../src/network/protocol/cipher.cpp#L387) - Decrypts a received packet in place or into destination (they may alias): the inverse of UiTransfer_EncryptPacketBlocks, running the 16 rounds backwards with the second table set ...
 
 **Data** (1 shared, 2 file-local): `g_UiTransferRoundKeys`.
 
@@ -96,13 +96,13 @@ No file comment; function families: `FrontendTransfer_*` (7).
 
 **Functions** (7 public):
 
-- [`FrontendTransfer_CopyCommandRecord`](../../src/network/protocol/command_exchange.cpp#L36) - Copies one 0x20-byte command packet record dword by dword.
-- [`FrontendTransfer_HandleGameplayCommandAndRosterPackets`](../../src/network/protocol/command_exchange.cpp#L58) - Client side of the session start: executes a new command batch from the host (a repeated batch only re-sends the last 0x10011 answer), answers 0x10012 with 0x10013, removes a player on 0x10007, ...
-- [`FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`](../../src/network/protocol/command_exchange.cpp#L218) - Host side of the in-game command exchange.
-- [`FrontendTransfer_SendCommandSubmit`](../../src/network/protocol/command_exchange.cpp#L239) - Client side of the lockstep exchange: sends the host its next in-game command (FRONTEND_PACKET_COMMAND_SUBMIT) with the oldest queued command, or an empty record when none is queued.
-- [`FrontendTransfer_HostHandleCommandSubmitOrWaitAck`](../../src/network/protocol/command_exchange.cpp#L255) - Host side of the in-game command exchange: finds the player the packet came from (sequence token and IPv4 address) and refreshes its timeout.
-- [`FrontendTransfer_DispatchStagedCommandRecords`](../../src/network/protocol/command_exchange.cpp#L330) - Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on the local simulation, so host and clients run the same commands in the same tick.
-- [`FrontendTransfer_ConsumeProcessedFlag`](../../src/network/protocol/command_exchange.cpp#L342) - Client side: atomically takes and clears g_FrontendTransferResponsePending, which FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch.
+- [`FrontendTransfer_CopyCommandRecord`](../../src/network/protocol/command_exchange.cpp#L34) - Copies one 0x20-byte command packet record dword by dword.
+- [`FrontendTransfer_HandleGameplayCommandAndRosterPackets`](../../src/network/protocol/command_exchange.cpp#L56) - Client side of the session start: executes a new command batch from the host (a repeated batch only re-sends the last 0x10011 answer), answers 0x10012 with 0x10013, removes a player on 0x10007, ...
+- [`FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`](../../src/network/protocol/command_exchange.cpp#L216) - Host side of the in-game command exchange.
+- [`FrontendTransfer_SendCommandSubmit`](../../src/network/protocol/command_exchange.cpp#L237) - Client side of the lockstep exchange: sends the host its next in-game command (FRONTEND_PACKET_COMMAND_SUBMIT) with the oldest queued command, or an empty record when none is queued.
+- [`FrontendTransfer_HostHandleCommandSubmitOrWaitAck`](../../src/network/protocol/command_exchange.cpp#L253) - Host side of the in-game command exchange: finds the player the packet came from (sequence token and IPv4 address) and refreshes its timeout.
+- [`FrontendTransfer_DispatchStagedCommandRecords`](../../src/network/protocol/command_exchange.cpp#L328) - Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on the local simulation, so host and clients run the same commands in the same tick.
+- [`FrontendTransfer_ConsumeProcessedFlag`](../../src/network/protocol/command_exchange.cpp#L340) - Client side: atomically takes and clears g_FrontendTransferResponsePending, which FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch.
 
 **Data** (6 shared, 4 file-local): `g_FrontendPacket10022Buffer`, `g_FrontendTransferResponsePending`, `g_FrontendLocalPlayerPcxPreview`, `g_FrontendClientPlayerCommandRecords`, `g_FrontendClientCommandBatchPacketBuffer`, `g_FrontendPacket10021Buffer`.
 
@@ -121,16 +121,16 @@ No file comment; function families: `CommandDispatch_*` (12), `InGameCommandQueu
 
 **Functions** (12 public, 8 file-local):
 
-- [`FrontendCommandQueue_EnqueueLocalPlayerCommand`](../../src/network/protocol/commands.cpp#L29) - Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte record of (commandCode &lt;&lt; 8 \| local player id) and three payload dwords.
-- [`FrontendCommandQueue_DequeueFirstIntoRecord`](../../src/network/protocol/commands.cpp#L53) - Takes the oldest queued lobby command for the outgoing network batch: copies the first 16-byte queue record into outputRecord-&gt;command and shifts the remaining records down by one.
-- [`InGameCommandQueue_AppendLocalPlayerCommand`](../../src/network/protocol/commands.cpp#L95) - Queues an in-game command of the local player for the next lockstep command batch: one 16-byte record of (commandCode &lt;&lt; 8 \| local player id) and three payload dwords.
-- [`InGameCommandQueue_DequeueFirstIntoRecord`](../../src/network/protocol/commands.cpp#L119) - Takes the oldest queued in-game command into outputRecord-&gt;command (offset 0x10 of the packet record) and moves the remaining records one slot down.
-- [`InGameCommandQueue_ContainsTripletValue`](../../src/network/protocol/commands.cpp#L160) - Tells whether the local player already queued the command whose handler lives at commandHandlerAddress with payloadValue in any of its three payload dwords, so input handlers do not queue a selection ...
-- [`CommandDispatch_CachedCodeOf`](../../include/thandor/network/protocol/commands.h#L164) - Rebuild helper: the command code of Handler in the table of CodeBase, looked up once and cached (one cache per handler).
-- [`InGameCommand_Issue`](../../include/thandor/network/protocol/commands.h#L183) - Rebuild helper ("call locally or queue", the pattern of every command site in the original): a local session calls Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3) directly; a networked ...
-- [`FrontendCommand_Issue`](../../include/thandor/network/protocol/commands.h#L203) - The same for a lobby (frontend) command: Handler's code in the frontend command table, queued with FrontendCommandQueue_EnqueueLocalPlayerCommand.
-- [`CommandDispatch_ExecuteRecord`](../../src/network/protocol/commands.cpp#L595) - Rebuild helper (no original counterpart): executes one received command record of codeBase.
-- [`InGameCommand_IssueHandler`](../../src/network/protocol/commands.cpp#L635) - Rebuild helper (no original counterpart), declared in commands.h: InGameCommand_Issue for a handler chosen at run time.
+- [`FrontendCommandQueue_EnqueueLocalPlayerCommand`](../../src/network/protocol/commands.cpp#L27) - Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte record of (commandCode &lt;&lt; 8 \| local player id) and three payload dwords.
+- [`FrontendCommandQueue_DequeueFirstIntoRecord`](../../src/network/protocol/commands.cpp#L51) - Takes the oldest queued lobby command for the outgoing network batch: copies the first 16-byte queue record into outputRecord-&gt;command and shifts the remaining records down by one.
+- [`InGameCommandQueue_AppendLocalPlayerCommand`](../../src/network/protocol/commands.cpp#L93) - Queues an in-game command of the local player for the next lockstep command batch: one 16-byte record of (commandCode &lt;&lt; 8 \| local player id) and three payload dwords.
+- [`InGameCommandQueue_DequeueFirstIntoRecord`](../../src/network/protocol/commands.cpp#L117) - Takes the oldest queued in-game command into outputRecord-&gt;command (offset 0x10 of the packet record) and moves the remaining records one slot down.
+- [`InGameCommandQueue_ContainsTripletValue`](../../src/network/protocol/commands.cpp#L158) - Tells whether the local player already queued the command whose handler lives at commandHandlerAddress with payloadValue in any of its three payload dwords, so input handlers do not queue a selection ...
+- [`CommandDispatch_CachedCodeOf`](../../include/thandor/network/protocol/commands.h#L161) - Rebuild helper: the command code of Handler in the table of CodeBase, looked up once and cached (one cache per handler).
+- [`InGameCommand_Issue`](../../include/thandor/network/protocol/commands.h#L180) - Rebuild helper ("call locally or queue", the pattern of every command site in the original): a local session calls Handler(g_LocalPlayerRuntimeId,payload1,payload2,payload3) directly; a networked ...
+- [`FrontendCommand_Issue`](../../include/thandor/network/protocol/commands.h#L200) - The same for a lobby (frontend) command: Handler's code in the frontend command table, queued with FrontendCommandQueue_EnqueueLocalPlayerCommand.
+- [`CommandDispatch_ExecuteRecord`](../../src/network/protocol/commands.cpp#L593) - Rebuild helper (no original counterpart): executes one received command record of codeBase.
+- [`InGameCommand_IssueHandler`](../../src/network/protocol/commands.cpp#L633) - Rebuild helper (no original counterpart), declared in commands.h: InGameCommand_Issue for a handler chosen at run time.
 - 2 more: `CommandDispatch_ResolveHandler`, `CommandDispatch_CodeOfHandler`
 
 **Data** (0 shared, 9 file-local): `g_FrontendCommandQueueRecords`, `g_FrontendCommandQueueEnd`, `g_InGameCommandQueueRecords`, `g_InGameCommandQueueEnd`, `g_FrontendCommandTable`, `g_InGameCommandTable`, `g_FrontendCommandValidation`, `g_InGameCommandValidation` and 1 more.
@@ -150,10 +150,10 @@ No file comment; function families: `FrontendNetwork_*` (7).
 
 **Functions** (4 public, 3 file-local):
 
-- [`FrontendNetwork_HandleHandshakeAndPlayerStatePackets`](../../src/network/protocol/frontend_session.cpp#L60) - Host-side packet handler of the frontend session, for packets from known players (matched by sequence token and IPv4 address): 0x10011 stores the player's next command record (and marks it pending ...
-- [`FrontendNetwork_HostTickCommandAndSnapshotTransfer`](../../src/network/protocol/frontend_session.cpp#L283) - Host tick of the frontend session.
-- [`FrontendNetwork_TickDisconnectTimeoutAndResetSession`](../../src/network/protocol/frontend_session.cpp#L313) - Host timeout of a client while the session starts, called by FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState is FRONTEND_NETWORK_STATE_CLIENT_STARTING: when ...
-- [`FrontendNetwork_HandleCommandBatchAndPlayerTimeout`](../../src/network/protocol/frontend_session.cpp#L374) - Client side of the in-game command exchange, for one received packet from the host of this session.
+- [`FrontendNetwork_HandleHandshakeAndPlayerStatePackets`](../../src/network/protocol/frontend_session.cpp#L58) - Host-side packet handler of the frontend session, for packets from known players (matched by sequence token and IPv4 address): 0x10011 stores the player's next command record (and marks it pending ...
+- [`FrontendNetwork_HostTickCommandAndSnapshotTransfer`](../../src/network/protocol/frontend_session.cpp#L281) - Host tick of the frontend session.
+- [`FrontendNetwork_TickDisconnectTimeoutAndResetSession`](../../src/network/protocol/frontend_session.cpp#L311) - Host timeout of a client while the session starts, called by FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState is FRONTEND_NETWORK_STATE_CLIENT_STARTING: when ...
+- [`FrontendNetwork_HandleCommandBatchAndPlayerTimeout`](../../src/network/protocol/frontend_session.cpp#L372) - Client side of the in-game command exchange, for one received packet from the host of this session.
 
 **Data** (5 shared, 4 file-local): `g_FrontendPacket10023Buffer`, `g_FrontendSelectedPlayerToken`, `g_FrontendHostSnapshotTransferCountdown`, `g_FrontendPlayerCommandRecords`, `g_FrontendCommandBatchPacketBuffer`.
 
@@ -172,16 +172,16 @@ No file comment; function families: `FrontendTransfer_*` (20), `UiTransfer_*` (2
 
 **Functions** (14 public, 9 file-local):
 
-- [`FrontendTransfer_ExecuteLobbyCommandRecords`](../../src/network/protocol/lobby.cpp#L55) - Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a count of 0 wraps).
-- [`FrontendTransfer_HandleHostSessionAndCommandBatchPackets`](../../src/network/protocol/lobby.cpp#L159) - Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the player's name; a non-zero expected block count starts the session and switches to ...
-- [`FrontendTransfer_MarkUnavailableIfModeBit0Callback`](../../src/network/protocol/lobby.cpp#L274) - Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player snapshots and executed ...
-- [`FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady`](../../src/network/protocol/lobby.cpp#L289) - Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every ...
-- [`UiTransfer_SendDiscoveryProbe`](../../src/network/protocol/lobby.cpp#L328) - Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address.
-- [`UiTransfer_SendPlayerDescriptor`](../../src/network/protocol/lobby.cpp#L345) - Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units) whose last unit is replaced by flags: bit 0 = a 64x64 picture &lt;name&gt;.pcx was found (loaded into ...
-- [`FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets`](../../src/network/protocol/lobby.cpp#L620) - Host side of the lobby.
-- [`FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands`](../../src/network/protocol/lobby.cpp#L709) - Host lobby tick.
-- [`FrontendTransfer_SendCapabilityHeartbeat`](../../src/network/protocol/lobby.cpp#L732) - Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat value of 0x40, which the host stores in this player's record.
-- [`FrontendTransfer_HandleSessionListAndJoinAckPackets`](../../src/network/protocol/lobby.cpp#L812) - Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over ...
+- [`FrontendTransfer_ExecuteLobbyCommandRecords`](../../src/network/protocol/lobby.cpp#L53) - Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a count of 0 wraps).
+- [`FrontendTransfer_HandleHostSessionAndCommandBatchPackets`](../../src/network/protocol/lobby.cpp#L157) - Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the player's name; a non-zero expected block count starts the session and switches to ...
+- [`FrontendTransfer_MarkUnavailableIfModeBit0Callback`](../../src/network/protocol/lobby.cpp#L272) - Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player snapshots and executed ...
+- [`FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady`](../../src/network/protocol/lobby.cpp#L287) - Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every ...
+- [`UiTransfer_SendDiscoveryProbe`](../../src/network/protocol/lobby.cpp#L326) - Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address.
+- [`UiTransfer_SendPlayerDescriptor`](../../src/network/protocol/lobby.cpp#L343) - Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units) whose last unit is replaced by flags: bit 0 = a 64x64 picture &lt;name&gt;.pcx was found (loaded into ...
+- [`FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets`](../../src/network/protocol/lobby.cpp#L618) - Host side of the lobby.
+- [`FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands`](../../src/network/protocol/lobby.cpp#L707) - Host lobby tick.
+- [`FrontendTransfer_SendCapabilityHeartbeat`](../../src/network/protocol/lobby.cpp#L730) - Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat value of 0x40, which the host stores in this player's record.
+- [`FrontendTransfer_HandleSessionListAndJoinAckPackets`](../../src/network/protocol/lobby.cpp#L810) - Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over ...
 - 4 more: `FrontendTransfer_SanitizePeerTextUtf16`, `FrontendTransfer_TickRequestTimeoutAndResetPage`, `FrontendTransfer_ConsumeProcessedFlagForMenuTick`, `FrontendTransfer_SendLobbyCommandAndSnapshotRequest`
 
 **Data** (7 shared, 11 file-local): `g_FrontendPlayerRuntimeCount`, `g_FrontendPacket10011Buffer`, `g_FrontendSelectedNetworkEndpoint`, `g_FrontendSessionToken`, `g_SessionTransferTimeoutTicks`, `g_FrontendPendingSessionPlayerCount`, `g_FrontendExpectedPlayerRuntimeBlockCount`.
@@ -197,16 +197,16 @@ No file comment; function families: `FrontendTransfer_*` (20), `UiTransfer_*` (2
 
 [Source](../../src/network/protocol/lockstep.cpp) · [Header](../../include/thandor/network/protocol/lockstep.h)
 
-No file comment; function families: `Lockstep_*` (6).
+Host side of the lockstep command exchange, shared by the in-game exchange (command_exchange) and the frontend/lobby exchange (frontend_session, lobby). Player record 0 is the host, records 1..n-1 are the clients; each player has one 0x20-byte command slot parallel to its record.
 
 **Functions** (6 public):
 
-- [`Lockstep_AllClientsSubmitted`](../../src/network/protocol/lockstep.cpp#L21)
-- [`Lockstep_ClearClientSubmissions`](../../src/network/protocol/lockstep.cpp#L39)
-- [`Lockstep_ResendBatchOrWait`](../../src/network/protocol/lockstep.cpp#L53)
-- [`Lockstep_PackBatch`](../../src/network/protocol/lockstep.cpp#L71)
-- [`Lockstep_SendBatchToClients`](../../src/network/protocol/lockstep.cpp#L107)
-- [`Lockstep_ExecuteRecords`](../../src/network/protocol/lockstep.cpp#L119)
+- [`Lockstep_AllClientsSubmitted`](../../src/network/protocol/lockstep.cpp#L19)
+- [`Lockstep_ClearClientSubmissions`](../../src/network/protocol/lockstep.cpp#L37)
+- [`Lockstep_ResendBatchOrWait`](../../src/network/protocol/lockstep.cpp#L51)
+- [`Lockstep_PackBatch`](../../src/network/protocol/lockstep.cpp#L69)
+- [`Lockstep_SendBatchToClients`](../../src/network/protocol/lockstep.cpp#L105)
+- [`Lockstep_ExecuteRecords`](../../src/network/protocol/lockstep.cpp#L117)
 
 **Called from** (3 files): [`network/protocol/command_exchange`](#file-network-protocol-command-exchange) (`FrontendTransfer_BroadcastPendingCommandBatchAndSyncState`, `FrontendTransfer_DispatchStagedCommandRecords`); [`network/protocol/lobby`](#file-network-protocol-lobby) (`FrontendTransfer_BroadcastAndExecuteLobbyCommands`, `FrontendTransfer_ExecuteLobbyCommandRecords`); [`network/protocol/frontend_session`](#file-network-protocol-frontend-session) (`FrontendNetwork_HostTickCommandAndSnapshotTransfer`).
 
@@ -223,13 +223,13 @@ No file comment; function families: `UiTransferMailbox_*` (11), `UiTransfer_*` (
 
 **Functions** (7 public, 5 file-local):
 
-- [`UiTransferMailbox_ServiceAndRetransmitTimer`](../../src/network/protocol/mailbox.cpp#L289) - Network receive timer (125 Hz, so one tick is 8 ms).
-- [`UiTransferMailbox_ClearReceivedState`](../../src/network/protocol/mailbox.cpp#L357) - Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a new transfer can be received; the outgoing buffer is left alone.
-- [`UiTransferMailbox_GetReceivedBuffer`](../../src/network/protocol/mailbox.cpp#L372) - Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in outByteCount once an allocation exists and no bytes are outstanding.
-- [`UiTransferMailbox_RandomizeSequenceToken`](../../src/network/protocol/mailbox.cpp#L388) - Gives this machine a new random session identity before it opens or looks for a session: XORs a random 16-bit value into the low word of the transfer sequence token.
-- [`UiTransferMailbox_MarkUnavailable`](../../src/network/protocol/mailbox.cpp#L401) - Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor ...
-- [`UiTransferMailbox_SetOutgoingBuffer`](../../src/network/protocol/mailbox.cpp#L414) - Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it).
-- [`UiTransfer_StagePacketAndSend`](../../src/network/protocol/mailbox.cpp#L428) - Sends one packet to endpoint; every packet of the game goes through here.
+- [`UiTransferMailbox_ServiceAndRetransmitTimer`](../../src/network/protocol/mailbox.cpp#L287) - Network receive timer (125 Hz, so one tick is 8 ms).
+- [`UiTransferMailbox_ClearReceivedState`](../../src/network/protocol/mailbox.cpp#L355) - Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a new transfer can be received; the outgoing buffer is left alone.
+- [`UiTransferMailbox_GetReceivedBuffer`](../../src/network/protocol/mailbox.cpp#L370) - Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in outByteCount once an allocation exists and no bytes are outstanding.
+- [`UiTransferMailbox_RandomizeSequenceToken`](../../src/network/protocol/mailbox.cpp#L386) - Gives this machine a new random session identity before it opens or looks for a session: XORs a random 16-bit value into the low word of the transfer sequence token.
+- [`UiTransferMailbox_MarkUnavailable`](../../src/network/protocol/mailbox.cpp#L399) - Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor ...
+- [`UiTransferMailbox_SetOutgoingBuffer`](../../src/network/protocol/mailbox.cpp#L412) - Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it).
+- [`UiTransfer_StagePacketAndSend`](../../src/network/protocol/mailbox.cpp#L426) - Sends one packet to endpoint; every packet of the game goes through here.
 
 **Data** (6 shared, 2 file-local): `g_UiTransferMailboxTickCounter`, `g_UiRuntimeRecordWriteIndex`, `g_UiTransferUnitCursor`, `g_UiTransferSequenceToken`, `g_UiTransferSenderContext`, `g_UiTransferMailbox`.
 
@@ -248,9 +248,9 @@ No file comment; function families: `FrontendScenarioTransfer_*` (16), `DwordBlo
 
 **Functions** (3 public, 14 file-local):
 
-- [`FrontendScenarioTransfer_ReleaseLoadedLevelAsset`](../../src/network/protocol/scenario_transfer.cpp#L42) - Frees g_FrontendLoadedLevelAsset and the field grid attached to it: the level's path offset field holds the loaded field grid once one was attached (values above 0xFFFF are pointers).
-- [`FrontendScenarioTransfer_ProcessReceivedAsset`](../../src/network/protocol/scenario_transfer.cpp#L454) - Network client, once per frontend frame: when the asset announced in g_FrontendScenarioTransferState has arrived in the transfer mailbox, unpacks it (scenario catalog, level, field grid, or a ...
-- [`DwordBlock64Array_ContainsExactRecord`](../../src/network/protocol/scenario_transfer.cpp#L482) - Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to candidateRecord.
+- [`FrontendScenarioTransfer_ReleaseLoadedLevelAsset`](../../src/network/protocol/scenario_transfer.cpp#L40) - Frees g_FrontendLoadedLevelAsset and the field grid attached to it: the level's path offset field holds the loaded field grid once one was attached (values above 0xFFFF are pointers).
+- [`FrontendScenarioTransfer_ProcessReceivedAsset`](../../src/network/protocol/scenario_transfer.cpp#L452) - Network client, once per frontend frame: when the asset announced in g_FrontendScenarioTransferState has arrived in the transfer mailbox, unpacks it (scenario catalog, level, field grid, or a ...
+- [`DwordBlock64Array_ContainsExactRecord`](../../src/network/protocol/scenario_transfer.cpp#L480) - Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to candidateRecord.
 
 **Data** (1 shared, 0 file-local): `g_FrontendScenarioTransferState`.
 

@@ -15,8 +15,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/placement. */
-
 /* placementMode bits of the placement asset-class dispatch (ArmyPlacement_CanPlaceAssetAtFieldPoint passes
    the mode as the first argument of every g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
    placementAssetClassDispatch handler; the player uses 0/1, the AI 0, 3, 4 and 7). */
@@ -41,8 +39,6 @@
    0 terrain height, 1 water surface, 2 terrain height and normal, 3 articulated suspension, 4 top surface. */
 #define ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE 1
 #define ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION 3
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 

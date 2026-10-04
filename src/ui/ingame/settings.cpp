@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/ui/controls/settings_option.h>
 
-/* Implementation ownership: ui/ingame/settings. */
-
 /* UI action 0x1020 (missionHelpCloseButton; g_InGameUiActionHandlersPage10[32]): closes the mission help
    window by releasing the missionObjectivesButton toggle and running the settings page toggle on it, which
    hides the window and resumes a game that the window paused.

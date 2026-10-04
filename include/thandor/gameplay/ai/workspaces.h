@@ -17,8 +17,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/workspaces. */
-
 /* Entry capacities of the AI workspace buffers allocated by AiRuntime_InitWorkspace (buffer size / entry size). */
 #define AI_WORKSPACE00_CAPACITY 128 /* own structures: 0x400 bytes of 8-byte entries */
 #define AI_WORKSPACE01_CAPACITY 64 /* own units: 0x200 bytes of 8-byte AiRuntimeWorkspaceEntry */
@@ -41,8 +39,6 @@
 #define AI_CANDIDATE_ID_MASK 0xFFFF
 #define AI_CANDIDATE_MULTIPLICITY_ONE 0x10000
 #define AI_CANDIDATE_SCORE_ONE 16 /* weightedScoreAndKind: one score unit above the 4 kind bits */
-
-/* Functions are grouped by semantic ownership. */
 
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

@@ -30,8 +30,6 @@ uint32_t g_UiTransferSenderContext = 0;
 
 UiTransferMailboxState g_UiTransferMailbox = {};
 
-/* Implementation ownership: network/protocol/mailbox. */
-
 /* Header bytes of the mailbox chunk packet g_UiTransferChunkPacket; its payload holds the chunk
    offset (+0), the transfer byte count (+4) and the chunk data (+8). The packed type is written byte by byte:
    0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 = FRONTEND_PACKET_80030_MAILBOX_CHUNK.

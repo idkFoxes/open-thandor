@@ -26,8 +26,6 @@ typedef struct SelectionPanelMetricFrame {
   SelectionPanelCellAdvance bottomRight;
 } SelectionPanelMetricFrame;
 
-/* Implementation ownership: ui/ingame/selection_panel_metrics. */
-
 /* Four plain corner cells (entities of other factions). */
 static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *frame)
 {

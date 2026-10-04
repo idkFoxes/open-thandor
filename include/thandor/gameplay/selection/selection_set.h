@@ -14,15 +14,11 @@
 #include <thandor/gameplay/selection/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/selection/selection_set. */
-
 /* Entries of a SelectionPointerArray32 / SelectionInfoEntitySlots (empty entries are NULL). */
 #define SELECTION_ENTRY_CAPACITY 32
 /* One count in byte lane laneByte of a packed per-byte counter (SelectionPointerArray_SetAircraftPadTargets: lane 0
    bits 0-7, lane 1 bits 8-15, lane 2 bits 16-23) */
 #define SELECTION_PACKED_LANE_ONE(laneByte) (1 << ((laneByte) * 8))
-
-/* Functions are grouped by semantic ownership. */
 
 void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12);

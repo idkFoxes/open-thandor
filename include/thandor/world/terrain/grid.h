@@ -10,9 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/terrain/grid. */
-/* Functions are grouped by semantic ownership. */
-
 /* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the FIELD_CELL_* enum
    (FieldCellPackedFlagsAndMaterial) in core/types.h. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the
    four map-edge bits on the outermost ring of cells; neighbour loops test them before touching a neighbour. */

@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/drive_ground.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/drive_ground. */
-
 /* Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
    behaviour while the owner has movement flag 0x100 (set by that behaviour), then moves the unit with ground

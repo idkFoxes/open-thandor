@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/math/fixed_vector. */
-
 /* FixedMath_SqrtQ12Approx: the normalizing shift is even (a mask over bits 1..4), and the cubic in the
    normalized input is ((C3 * x - C2) * x + C1) * x + C0, each product a FIXED_MUL_HIGH */
 #define FIXED_SQRT_EVEN_SHIFT_MASK 0x1e
@@ -21,8 +19,6 @@
 #define FIXED_SQRT_POLY_C2 0x1c71c71
 #define FIXED_SQRT_POLY_C1 0xb1c71c
 #define FIXED_SQRT_POLY_C0 0x66b75U
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);

@@ -10,8 +10,6 @@
 
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/faction/economy. */
-
 /* Faction statistics table sampling (InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState):
    row simulationTick >> 7 is written while these tick bits are clear (8 of every 128 steps) */
 #define INGAME_STAT_SAMPLE_TICK_MASK 0x78
@@ -21,8 +19,6 @@
 #define RESOURCE_EXTRACTION_FACTION_SHIFT 13
 #define RESOURCE_EXTRACTION_FACTION_MASK 0x7FF /* after the shift: bits 13..23 */
 #define RESOURCE_EXTRACTION_SHARE_SHIFT 24
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
 

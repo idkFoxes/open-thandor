@@ -17,8 +17,6 @@ static uint16_t g_FontTexturePathsUtf16[33] = {'e', 'n', 'g', 'i', 'n', 'e', '\\
 
 GraphicsTextureSourceAsset *g_FontTextureSources[FONT_TEXTURE_SOURCE_COUNT] = {};
 
-/* Implementation ownership: ui/text/font. */
-
 /* Returns the texture source of font fontIndex. The font index comes from the 3-bit font field of a packed text
    style (0..7) or from a font-select command (opcode & 0xF, 8..15). The original indexes its two-entry table
    with it unchecked and reads on into the font path text for anything above 1; bounded here because such an

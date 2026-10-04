@@ -287,8 +287,6 @@ static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
 };
 
-/* Implementation ownership: ui/dialogs/display_settings. */
-
 /* frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
    colour scale slider has moved, stores the new values, rebuilds the pixel packing tables at once (a live
    preview), refreshes which mode buttons are available and rewrites the two number readouts.

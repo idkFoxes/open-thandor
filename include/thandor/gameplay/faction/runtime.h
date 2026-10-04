@@ -14,10 +14,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/faction/runtime. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 FactionRelationState GameFactionRuntime_GetPackedStateNibble

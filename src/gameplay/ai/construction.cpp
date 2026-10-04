@@ -14,8 +14,6 @@ ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime = nullptr;
 
 static uint32_t g_AiConstructionPendingAssetConsumedCount = 0;
 
-/* Implementation ownership: gameplay/ai/construction. */
-
 /* Builds a pending resource structure (ARM_0330/ARM_0332) of the AI faction: at the first workspace-08 site of
    this asset where the mode-0 placement test passes it creates the structure with the site's heading, rebuilds
    its model transforms, dispatches its class command, starts the effect referenced by its model runtime and

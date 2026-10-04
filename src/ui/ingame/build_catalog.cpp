@@ -14,8 +14,6 @@ UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48] = {};
 
 UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42] = {};
 
-/* Implementation ownership: ui/ingame/build_catalog. */
-
 /* Build catalog entry click (action 0x100B, g_InGameUiActionHandlersPage10[11]): finds the entry among the 48
    build catalog slots of the current column layout and queues its army asset for the active faction, or with Ctrl
    (activationInputState & KEYBOARD_STATE_CTRL) cancels a queued one with refund. Ignored while paused or while the

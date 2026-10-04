@@ -8,9 +8,7 @@
 #include <thandor/gameplay/army/model_slots.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/model_slots.
-
-   Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed
+/* Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, indexed
    by the model definition's class id (runtimeClassId): modelClassInitialize (run by
    ModelRuntimePool_CreateInstanceByDefinitionId), modelReleaseOrCommit (ModelRuntimePool_DestroyHierarchyAndDetach),
    modelUnrebase (ModelRuntimePool_UnrebaseBeforeSave) and modelRebaseOrLoadRepair

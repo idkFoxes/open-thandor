@@ -17,8 +17,6 @@ GraphicsPaletteAsset *g_EffectPalette = nullptr;
 
 EffectRuntimeSlot *g_EffectRuntimeSlots = nullptr;
 
-/* Implementation ownership: world/effects/pool. */
-
 /* Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
    catalog to reject duplicate ids). Returns the registered definition (never NULL), or NULL on a miss; a miss
    also writes a number into the package error text (the original returned FATAL_ERROR_EFFECT_ID_NOT_FOUND as

@@ -13,16 +13,12 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/perception. */
-
 /* AiPlanning_RebuildFactionWorkspaces site scan: scratch-grid state bits (world/pathing/grid.h) that rule a
    site out - map edge and terrain classes 28..30 - and the low distance bands of grid classes 0..5 */
 #define AI_SITE_SCRATCH_OBSTACLE_BITS \
   (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 | \
    GRID_SCRATCH_TERRAIN_CLASS_BIT28) /* 0xf0000000 */
 #define AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5 (0x3f * GRID_SCRATCH_LOW_BAND0) /* 0x3f00 */
-
-/* Functions are grouped by semantic ownership. */
 
 void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
           FactionRuntimeIndex unusedFactionIndex,FactionRuntimeIndex factionIndex,

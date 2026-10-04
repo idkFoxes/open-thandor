@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/text/resources. */
-
 /* Text resource ids: a compact id (bits 16-23 zero) is page << 8 | index, an extended id page << 16 | index
    with a 16-bit index. TEXT_RESOURCE_ID_NONE resolves to the shared empty string; FontRuntime_Init
    fills the whole override table with it. */
@@ -34,8 +32,6 @@
 #define TEXT_ID_DISPLAY_MODE_KIND_BORDERLESS (TEXT_ID_PROJECT_BASE + 2) /* "Vollbildfenster" */
 #define TEXT_ID_DISPLAY_MODE_KIND_FULLSCREEN (TEXT_ID_PROJECT_BASE + 3) /* "Vollbild" */
 #define TEXT_ID_PROJECT_COUNT 4
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 

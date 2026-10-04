@@ -11,8 +11,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/ui_template. */
-
 extern InGameUiImage g_InGameRuntimeDefaultImageTemplate;
 
 #endif /* THANDOR_UI_INGAME_UI_TEMPLATE_H */

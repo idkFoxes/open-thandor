@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/construction. */
-
-/* Functions are grouped by semantic ownership. */
-
 void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);

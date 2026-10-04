@@ -44,8 +44,6 @@ uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {0};
 
 uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {0};
 
-/* Implementation ownership: gameplay/session/level_new. */
-
 /* LEV level file ('lev', converter version 0x70001) as read by the two level loaders below. Offsets are
    byte offsets from the start of the file image; every "path" field holds the offset of a UTF-16 path string.
      +0x000  common asset prefix (magic, allocation size, format and converter version, build metadata)

@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 
-/* Implementation ownership: world/effects/lifecycle. */
-
 /* Modulates two ARGB tints channel by channel: PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB. */
 static uint32_t EffectTint_Modulate(uint32_t effectTintArgb,uint32_t definitionTintArgb)
 

@@ -12,10 +12,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/task_assignment. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *frontendRootPage);
 
 void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot);

@@ -14,12 +14,12 @@ Module header: [`runtime.h`](../../include/thandor/movie/runtime.h) · Changelog
 
 [Source](../../src/movie/runtime/flm_decoder.cpp) · [Header](../../include/thandor/movie/runtime/flm_decoder.h)
 
-No file comment; function families: `Movie_*` (4), `MovieColor_*` (1).
+The decoder treats every token &gt;= MOVIE_TOKEN_SKIP_LONG as a long skip, so the unused tokens 0x1C..0x1F (never written by the encoder) decode like 0x1B.
 
 **Functions** (2 public, 3 file-local):
 
-- [`Movie_DecodeFrame4x4Delta`](../../src/movie/runtime/flm_decoder.cpp#L84) - Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order.
-- [`Movie_BuildChromaLumaTable`](../../src/movie/runtime/flm_decoder.cpp#L237) - Not in the original: fills g_MovieChromaLumaToArgb (the 1024 chroma codes x 32 lumas that Movie_DecodeFrame4x4Delta looks up) from the two tables above.
+- [`Movie_DecodeFrame4x4Delta`](../../src/movie/runtime/flm_decoder.cpp#L82) - Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order.
+- [`Movie_BuildChromaLumaTable`](../../src/movie/runtime/flm_decoder.cpp#L235) - Not in the original: fills g_MovieChromaLumaToArgb (the 1024 chroma codes x 32 lumas that Movie_DecodeFrame4x4Delta looks up) from the two tables above.
 
 **Data** (0 shared, 3 file-local): `g_MovieChromaLumaToArgb`, `k_MovieChromaCosTerm`, `k_MovieChromaSinTerm`.
 
@@ -34,15 +34,15 @@ No file comment; function families: `Movie_*` (4), `MovieColor_*` (1).
 
 [Source](../../src/movie/runtime/flm_encoder.cpp) · [Header](../../include/thandor/movie/runtime/flm_encoder.h)
 
-No file comment; function families: `MovieDeltaEncode_*` (7), `Movie_*` (6), `MovieColor_*` (2).
+Encoder-only constants (the decoder does not need them).
 
 **Functions** (5 public, 10 file-local):
 
-- [`Movie_EncodeFlmBufferFromFrameProvider`](../../src/movie/runtime/flm_encoder.cpp#L80) - Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame the provider returns as a keyframe and every further frame as a delta against it (the delta ...
-- [`Movie_EncodeFrame4x4Keyframe`](../../src/movie/runtime/flm_encoder.cpp#L170) - Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in Movie_EncodeFlmBufferFromFrameProvider, its only caller.
-- [`Movie_EncodeFrame4x4Delta`](../../src/movie/runtime/flm_encoder.cpp#L379) - Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by Movie_EncodeFlmBufferFromFrameProvider for every frame after the first).
-- [`MovieColor_ComputeChromaCodeFromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L432) - FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the ...
-- [`MovieColor_ComputeLuma5FromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L451) - FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8), rounded: ((red + green + blue) * 0x5555 + 2^18) &gt;&gt; 19.
+- [`Movie_EncodeFlmBufferFromFrameProvider`](../../src/movie/runtime/flm_encoder.cpp#L78) - Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame the provider returns as a keyframe and every further frame as a delta against it (the delta ...
+- [`Movie_EncodeFrame4x4Keyframe`](../../src/movie/runtime/flm_encoder.cpp#L168) - Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in Movie_EncodeFlmBufferFromFrameProvider, its only caller.
+- [`Movie_EncodeFrame4x4Delta`](../../src/movie/runtime/flm_encoder.cpp#L377) - Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by Movie_EncodeFlmBufferFromFrameProvider for every frame after the first).
+- [`MovieColor_ComputeChromaCodeFromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L430) - FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the ...
+- [`MovieColor_ComputeLuma5FromRgb888`](../../src/movie/runtime/flm_encoder.cpp#L449) - FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8), rounded: ((red + green + blue) * 0x5555 + 2^18) &gt;&gt; 19.
 
 **Data** (0 shared, 1 file-local): `g_MovieDeltaRgbHighNibbleMask2Pixels`.
 
@@ -61,13 +61,13 @@ No file comment; function families: `Movie_*` (15), `IntroMovie_*` (1).
 
 **Functions** (7 public, 9 file-local):
 
-- [`Movie_Open`](../../src/movie/runtime/playback.cpp#L158) - Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a mounted package, the executable directory or the plain path, in that order.
-- [`Movie_GetFrameDimensions`](../../src/movie/runtime/playback.cpp#L355) - Returns the frame size of the active movie, so callers can place and scale the movie texture.
-- [`Movie_SetAudioGainQ15`](../../src/movie/runtime/playback.cpp#L372) - Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame with this gain on both channels).
-- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L443) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
-- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L465) - Closes g_ActiveMovie.
-- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L507) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
-- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L560) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
+- [`Movie_Open`](../../src/movie/runtime/playback.cpp#L156) - Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a mounted package, the executable directory or the plain path, in that order.
+- [`Movie_GetFrameDimensions`](../../src/movie/runtime/playback.cpp#L353) - Returns the frame size of the active movie, so callers can place and scale the movie texture.
+- [`Movie_SetAudioGainQ15`](../../src/movie/runtime/playback.cpp#L370) - Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame with this gain on both channels).
+- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L441) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
+- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L463) - Closes g_ActiveMovie.
+- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L505) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
+- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L558) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
 
 **Data** (3 shared, 0 file-local): `g_MovieDefaultAudioGainQ15`, `g_MovieAlternateAudioGainQ15`, `g_ActiveMovie`.
 

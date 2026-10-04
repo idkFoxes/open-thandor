@@ -11,10 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/minimap. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiSelectionGeometryControl_DrawClipped
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiSelectionGeometryControl *control
           );

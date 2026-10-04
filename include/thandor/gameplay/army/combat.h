@@ -13,8 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/combat. */
-
 /* launch attachments (reload timers, projectile mesh bits) of the turret-weapon class */
 #define ARMY_WEAPON_ATTACHMENT_COUNT 8
 /* meshGroupMask bit of the barrel node that shows the projectile of attachment slot 0-7 */
@@ -23,8 +21,6 @@
 #define ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 (-(2 * Q12_ONE / 3))
 /* a ground shot without an entity target may hit the terrain this close to the aim distance */
 #define ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 0x400
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 

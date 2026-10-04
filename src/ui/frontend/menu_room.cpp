@@ -55,8 +55,6 @@ static WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, /* keyframe 1 */
 };
 
-/* Implementation ownership: ui/frontend/menu_room. */
-
 /* Pointer-move handler of the model pointer context (pointerMove of g_FrontendModelPointerContextVtable): stores
    the best model hit under the pointer, then returns the cursor frame. While a non-right button is held
    (ROUTE_TO_SECONDARY_CALLBACK) heldButtonCursorCallback decides it, with no button hoverCursorCallback;

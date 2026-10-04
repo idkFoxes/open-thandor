@@ -8,8 +8,6 @@
 #include <thandor/ui/ingame/editor_army_cycling.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: ui/ingame/editor_army_cycling. */
-
 /* Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.

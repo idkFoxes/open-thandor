@@ -12,9 +12,7 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/lockstep.
-
-   Host side of the lockstep command exchange, shared by the in-game exchange (command_exchange) and the
+/* Host side of the lockstep command exchange, shared by the in-game exchange (command_exchange) and the
    frontend/lobby exchange (frontend_session, lobby). Player record 0 is the host, records 1..n-1 are the
    clients; each player has one 0x20-byte command slot parallel to its record. Every tick the host waits until
    every client has submitted (commandSyncPending), clears the flags, takes its own next command into slot 0,

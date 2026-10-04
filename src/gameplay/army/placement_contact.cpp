@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/army/placement_contact. */
-
 /* Contact kind 0 (terrain): sets the model node onto the interpolated terrain height at the point, plus
    heightOffsetQ12 and the model resource's own height offset, stands it upright (angle 1 = quarter turn)
    and sets node flag 0x1. Nothing changes without a field grid or when the point is off the grid.

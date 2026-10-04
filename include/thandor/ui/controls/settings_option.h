@@ -13,7 +13,7 @@
 #include <thandor/ui/controls/selectable.h>
 #include <thandor/ui/frontend/types.h>
 
-/* Submodule: ui/controls/settings_option. Shared bodies of the frontend and in-game settings handlers that store
+/* Shared bodies of the frontend and in-game settings handlers that store
    a checkbox as one bit of a persistent option word or a slider value as a persistent setting. */
 
 /* Stores the checkbox state as bit of the option word at setting: reads the word (defaultValue when it is not

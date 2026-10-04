@@ -25,8 +25,6 @@ static const UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[3] = {
     /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0},
     /* 2 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090}};
 
-/* Implementation ownership: ui/frontend/end_movie_commands. */
-
 /* Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
    movie plays by running the session tick of the local role. Does nothing in a local game. Note that the
    SESSION_NETWORK_ROLE_CLIENT bit selects the host tick and the HOST bit the client tick: either the enum or

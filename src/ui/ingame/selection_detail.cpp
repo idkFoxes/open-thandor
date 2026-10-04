@@ -33,8 +33,6 @@ UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {0};
 
 int g_InGameSelectionDetailGridCellOffsets[12] = {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520};
 
-/* Implementation ownership: ui/ingame/selection_detail. */
-
 /* Copies a 64-character name text into one of the selection detail text slots. */
 static void InGameSelectionDetailPanel_CopyName(uint16_t *destination,const uint16_t *source)
 {

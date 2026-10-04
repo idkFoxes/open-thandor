@@ -12,15 +12,11 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/math/random. */
-
 /* Both random streams step their seed as seed = seed * 33 + 101 (mod 2^32), see Random_NextPrimary. */
 #define RANDOM_LCG_MULTIPLIER 33
 #define RANDOM_LCG_INCREMENT 101
 /* The output is (first step * 2^14) ^ (second step >> 2): the first step's factor */
 #define RANDOM_OUTPUT_FIRST_STEP_SCALE 0x4000
-
-/* Functions are grouped by semantic ownership. */
 
 uint32_t Random_NextPrimary();
 

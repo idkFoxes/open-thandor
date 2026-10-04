@@ -25,8 +25,6 @@ TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount = 0;
 
 uintptr_t g_TerrainRegionCollectionEntries = 0;
 
-/* Implementation ownership: world/terrain/editing. */
-
 /* Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks
    them visited) the horizontal run of cells around cell that carry one of requiredCellFlags, then recurses into
    matching cells of the rows above and below that run. Edge-ring and already visited cells stop the fill.

@@ -94,8 +94,6 @@ static WinSockData11 g_WinSockStartupData = {0};
 
 static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = {'W', 'i', 'n', 'S', 'o', 'c', 'k', '3', '2', ' ', '1', '.', '1', ' ', '-', ' ', 'U', 'D', 'P', 0}}; /* L"WinSock32 1.1 - UDP" */
 
-/* Implementation ownership: network/backend/runtime. */
-
 /* Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and
    installs the UDP fallback backend
    (NetworkFallback_*) as the only network backend instance. Returns 0 on success, otherwise the

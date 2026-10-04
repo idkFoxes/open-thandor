@@ -12,10 +12,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/page_actions. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendCallback_NoOpArg1(void *source);
 
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);

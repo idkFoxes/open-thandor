@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/text_buttons. */
-
 /* Pieces of g_UiWindowTextureSource (win.gfx) drawn by the text controls. A frame is UI_WINDOW_FRAME_PIECE_COUNT
    consecutive pieces: top-left, top-right, bottom-left and bottom-right corner, then the top, left, right and
    bottom edge. */
@@ -51,8 +49,6 @@
    the font byte and the palette byte of the state style (UI_BUTTON_OWN_STYLE_*, UI_LABEL_OWN_STYLE_*). */
 #define UI_TEXT_STYLE_FONT_BYTE 0xff000000u
 #define UI_TEXT_STYLE_PALETTE_BYTE 0x00ff0000u
-
-/* Functions are grouped by semantic ownership. */
 
 void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

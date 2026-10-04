@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: gameplay/selection/selection_set. */
-
 /* In-game command handler 0x2F20: moves the player's primary selected model (block placedArmyToken, rebased
    offset, 0 = none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the
    model transform, and lets the definition's placement contact kind (placementContactKindIndex) set its height

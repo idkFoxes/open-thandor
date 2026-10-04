@@ -22,8 +22,6 @@ THANDOR_ALIGN(16) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 
 MovieRuntime *g_ActiveMovie = nullptr;
 
-/* Implementation ownership: movie/runtime/playback. */
-
 /* Largest frame width and height Movie_Open accepts (the stock movies are at most 800x600) */
 #define MOVIE_MAX_FRAME_DIMENSION 4096
 

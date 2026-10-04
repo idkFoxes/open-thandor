@@ -13,14 +13,11 @@
 #include <thandor/core/contracts.h>
 #include <thandor/core/text/path.h>
 
-/* Submodule: platform/filesystem/win32. */
-
 /* Size of one UTF-16 name record written by Win32FileSystem_EnumerateDirectoryOrVolumeEntries (0x100 code
    units, NUL-padded); returned to the caller as the record stride */
 #define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
 /* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
 #define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
-/* Functions are grouped by semantic ownership. */
 
 uintptr_t FileSystem_Init();
 

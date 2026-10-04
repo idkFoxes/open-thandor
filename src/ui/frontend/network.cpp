@@ -32,8 +32,6 @@ uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {0};
 
 uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {0};
 
-/* Implementation ownership: ui/frontend/network. */
-
 /* Scans the value of a quoted command-line option (valueText follows the opening quote) for its closing quote:
    at most maxChars characters, stopping at the terminator or a control character. Returns the closing quote, or
    NULL when there is none within the limit. */

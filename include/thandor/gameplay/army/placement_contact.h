@@ -14,10 +14,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/placement_contact. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyPlacementContact_ApplyTerrainHeight
           (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);

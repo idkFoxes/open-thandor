@@ -52,8 +52,6 @@ UiNodeVtable g_UiCommandVisibilityWrappedTextVtable = {
     .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent),
 };
 
-/* Implementation ownership: ui/ingame/command_buttons. */
-
 /* Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiCommandSpriteButtonWithDetailsVtable,
    g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable): shows the button pressed and starts a new
    activationInputState, marking a double click when the node reports one.

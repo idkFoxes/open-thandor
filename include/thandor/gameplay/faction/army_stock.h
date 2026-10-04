@@ -14,13 +14,9 @@
 #include <thandor/gameplay/faction/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/faction/army_stock. */
-
 /* GameFactionRuntimeRecord army-asset lists (64 entries each): secondaryArmyAssetPointersOrIds is the production
    queue, primaryArmyAssetPointersOrIds the finished armies waiting for placement. */
 #define FACTION_ARMY_ASSET_LIST_CAPACITY 64
-
-/* Functions are grouped by semantic ownership. */
 
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 

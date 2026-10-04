@@ -113,8 +113,6 @@ static const uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256] = {
 
 static const uint64_t g_ArmyPreviewDownsampleAlphaRoundingBiasMmx = 0x100000000000000ull;
 
-/* Implementation ownership: gameplay/army/preview. */
-
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
 #define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
   ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * ARMY_PREVIEW_BYTE_TO_WORD_REPEAT >> 4) << ((byteIndex) * 16))

@@ -37,8 +37,6 @@ static const AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantA15 = {
     .armyRecord78Weight = 256,
     .nonzeroDefinition18Bonus = -256};
 
-/* Implementation ownership: gameplay/ai/purchasing. */
-
 /* Average faction-weighted score (AiArmyCandidate_ComputeFactionWeightedScore) of the enabled army assets
    that can carry the model definition of runtimeClassId: those whose own linked-definition list names it,
    or, once the technology of the asset's first linked definition is unlocked, one of its (up to two) child

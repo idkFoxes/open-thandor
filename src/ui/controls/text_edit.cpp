@@ -21,8 +21,6 @@ static const uint32_t g_UiTextEditDisabledTextStyle = 0;
 /* UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags */
 static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
 
-/* Implementation ownership: ui/controls/text_edit. */
-
 /* Helpers of the text edit keyboard handlers. The text edit controls share the UiTextEditControl header
    (flags, cursor, selection); only their code unit buffers differ, so the buffer and its size in code units
    are passed separately. */

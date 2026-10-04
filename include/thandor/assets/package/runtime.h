@@ -12,8 +12,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/package/runtime. */
-
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
    load/enumeration buffer (the original repeats the literal 0x800000 at every use). */
 #define PACKAGE_SCRATCH_BUFFER_BYTES 0x800000
@@ -28,8 +26,6 @@
 #define PACKAGE_LOAD_CAPACITY_MASK 0x3FFFFFFF
 #define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
 #define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,

@@ -12,8 +12,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/technology. */
-
 /* Technology window actions (InGameUiImage.technologyResearchButton, technologyAreaTab1..7) */
 #define INGAME_ACTION_TECHNOLOGY_RESEARCH 0x1013
 #define INGAME_ACTION_TECHNOLOGY_AREA_TAB1 0x1014
@@ -41,8 +39,6 @@
    technologyAreaTabN_prefix)) is declared with the template in ui/ingame/types.h. */
 /* The UiTechnologyAreaTabPrefix in front of a technology area tab the code has only as a node pointer. */
 #define TECHNOLOGY_AREA_TAB_PREFIX(tab) UI_TEMPLATE_NODE_PREFIX(UiTechnologyAreaTabPrefix,tab)
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl);
 

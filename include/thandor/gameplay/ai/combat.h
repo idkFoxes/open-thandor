@@ -14,12 +14,9 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/combat. */
-
 /* AiUnitGroup_AssignCollectedEntitiesToBestTarget: the collected armies attack once the sum of their hierarchy
    scale ratios (256 = one intact army) reaches two full armies. */
 #define AI_UNIT_GROUP_ATTACK_STRENGTH 0x200
-/* Functions are grouped by semantic ownership. */
 
 void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 

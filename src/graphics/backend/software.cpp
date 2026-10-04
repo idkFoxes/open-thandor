@@ -39,8 +39,6 @@ GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth = &SoftwareRenderer_
 
 GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue = &SoftwareRenderer_DrawPrimitiveQueueBridge;
 
-/* Implementation ownership: graphics/backend/software. */
-
 /* Not in the original (it carried the tables precomputed): builds the bilinear and alpha blend factor tables.
    Per 8-bit fraction or alpha f the forward factor is (f * 0x4040) >> 8 and the inverse ((256 - f) * 0x4040) >> 8
    (the pair sums to 0x4040 or 0x403F): g_SoftwareBilinearForwardFactors / g_SoftwareBilinearInverseFactors in all

@@ -10,8 +10,6 @@
 #include <thandor/core/color_lanes.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: world/shots/flight. */
-
 /* g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.shot: works out which factions are around the shot
    (for a direct-line shot also at the middle and the end of its beam), turns that into the
    TERRAIN_OCCUPANCY_FLAG_* visibility flags for the active faction and refreshes the state tint, then

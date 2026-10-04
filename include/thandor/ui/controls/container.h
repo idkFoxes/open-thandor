@@ -11,8 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/container. */
-
 /* "No node" in the UI tree links (firstChild, nextSibling, parent) and the node-list pointers. The same
    all-bits-set value as UI_TEMPLATE_NO_LINK, which the templates store (0xffffffff in the original). */
 #ifndef UI_NODE_NONE
@@ -21,8 +19,6 @@
 /* nodeFlags bit 0 (not in the UiNodeFlags enum): set on every node of the top root of the stack by
    UiRootStack_Push/Pop/BringToFront through applyFlags; window frames draw their inactive variant without it. */
 #define UI_NODE_IN_FRONT_ROOT 0x01u
-
-/* Functions are grouped by semantic ownership. */
 
 void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack);
 

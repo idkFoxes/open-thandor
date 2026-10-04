@@ -104,8 +104,6 @@ enum InGameKeyCommandContinuation {
   INGAME_KEY_CHEAT_OCCUPANCY_TOGGLE = 0x5681b0       /* Ctrl+Alt+V */
 };
 
-/* Implementation ownership: ui/ingame/key_commands. */
-
 /* In-game key commands (the world view's dispatchCommandCallback): the first record of
    g_InGameCommandDispatchRecords whose key code matches and whose modifier class
    (Shift / Ctrl / Alt, left or right) equals the held modifiers selects the command. Selection commands are

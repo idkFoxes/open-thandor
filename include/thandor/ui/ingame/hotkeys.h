@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/hotkeys. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot);
 

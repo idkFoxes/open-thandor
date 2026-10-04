@@ -15,8 +15,6 @@
 #include <thandor/ui/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/core/runtime. */
-
 /* Receive ring of network packets (g_UiRuntimeRecordRing, 0x100-byte UiRuntimeRecord slots) with a parallel
    array of 0x80-byte sender-endpoint slots (g_UiRuntimeRecordEndpointSlots); indices wrap after 256. */
 #define UI_RUNTIME_RECORD_RING_LAST_INDEX 0xff
@@ -45,8 +43,6 @@
 #define UI_ACTION_PAGE_INGAME_COMMAND_MODE 0x11 /* g_InGameUiActionHandlersPage11 */
 #define UI_ACTION_PAGE_INGAME_MENU 0x12         /* g_InGameUiActionHandlersPage12: settings and save pages, 0x12xx */
 #define UI_ACTION_PAGE_FRONTEND 0x20            /* g_FrontendUiActionHandlersPage20: frontend menus, 0x20xx */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 UiRootCallbacks_Free(UiRootNode *root);
 

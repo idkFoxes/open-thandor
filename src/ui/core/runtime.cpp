@@ -38,8 +38,6 @@ RuntimeSpinLockValue *g_UiRuntimeFrameLock = nullptr;
 
 UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = nullptr;
 
-/* Implementation ownership: ui/core/runtime. */
-
 /* vetoClose callback of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: frees the
    heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (returns true) only when
    the free fails.

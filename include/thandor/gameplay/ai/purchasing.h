@@ -15,10 +15,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/ai/purchasing. */
-
-/* Functions are grouped by semantic ownership. */
-
 AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex, ModelRuntimeClassId runtimeClassId);
 
 Bool8 AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);

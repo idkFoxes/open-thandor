@@ -13,10 +13,6 @@
 #include <thandor/graphics/resources/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/selection_panel_resources. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
 void SelectionInfoPanel_ShutdownResources();

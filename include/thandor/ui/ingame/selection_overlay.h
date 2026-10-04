@@ -14,8 +14,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/selection_overlay. */
-
 /* Subresources of g_SelectionPanelTextureSource drawn by the SelectionOverlay_* functions: the eight pieces of
    the bounds frame and the map-view markers. */
 #define SELECTION_OVERLAY_FRAME_TOP_LEFT 0xA4
@@ -36,8 +34,6 @@
 /* Initial g_ModelProjectedBoundsPixels: an empty (inverted) rectangle for ModelProjectedBounds_AccumulateHierarchyRecursive. */
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MIN 0x10000
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MAX (-0x10000)
-
-/* Functions are grouped by semantic ownership. */
 
 void SelectionOverlay_RenderSelectedArmyMetrics
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

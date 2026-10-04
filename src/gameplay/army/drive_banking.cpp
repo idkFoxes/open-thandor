@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/drive_banking.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/drive_banking. */
-
 /* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model
    (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint radius and this unit is
    still within it. When the link is dropped while class state bit 4 is set and the root node has at least three

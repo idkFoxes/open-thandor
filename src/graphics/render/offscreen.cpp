@@ -17,8 +17,6 @@ GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderMo
 #define GFX_SUBRESOURCE_DWORD(field) ((GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_##field) / 4)
 
 
-/* Implementation ownership: graphics/render/offscreen. */
-
 /* Renders a list of model hierarchies off screen into a new texture-source asset (used for the army preview,
    g_GraphicsOffscreenRenderModelListToTextureSource). The asset holds one direct-colour subresource of
    outputWidth x outputHeight ARGB pixels at +0x220; it is drawn with the software rasterizer's auxiliary

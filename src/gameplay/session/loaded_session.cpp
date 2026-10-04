@@ -14,8 +14,6 @@
 
 SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = nullptr;
 
-/* Implementation ownership: gameplay/session/loaded_session. */
-
 /* Failure exit of InGameRuntime_InitializeLoadedSession: closes the level movie, releases the level entry and
    unmounts the save package (levelAsset is NULL and saveHandle 0 when they were not loaded yet), stores the error
    in *outError and returns false.

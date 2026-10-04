@@ -13,8 +13,6 @@
 #include <thandor/world/terrain/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/terrain/terrain_resources. */
-
 /* g_TerrainMaterialTextureSets: one texture set per terrain material, loaded from the secondary path with
    the suffix letter a..z (TerrainVisualResources_LoadPrimary). */
 #define TERRAIN_MATERIAL_TEXTURE_SET_COUNT 26
@@ -30,8 +28,6 @@
 #define TERRAIN_DIRECTION_SCALE_RANDOM_MASK 0x1f
 #define TERRAIN_DIRECTION_RATE_MIN_ANGLE16 0x200
 #define TERRAIN_DIRECTION_RATE_RANDOM_MASK 0x7f
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,

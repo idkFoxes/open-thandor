@@ -14,8 +14,6 @@
 
 static uint16_t g_CreditsTexturePathUtf16[22] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'c', 'r', 'e', 'd', 'i', 't', 's', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\credits.gfx" */
 
-/* Implementation ownership: ui/frontend/credits. */
-
 /* Opens the credits screen (FRONTEND_PAGE_ACTION_CREDITS): loads gfx\panel\credits.gfx and two work buffers of
    its width * height bytes for the mask effect, then switches the frontend view to the credits page and hides
    the cursor. On any failure the partial resources are released and the menu stays as it was.

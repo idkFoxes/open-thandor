@@ -12,10 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/build_catalog. */
-
-/* Functions are grouped by semantic ownership. */
-
 void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source);
 
 void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source);

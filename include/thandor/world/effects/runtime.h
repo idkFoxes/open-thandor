@@ -15,13 +15,9 @@
 #include <thandor/world/effects/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/effects/runtime. */
-
 /* g_EffectRuntimeSlots: a 0x40000-byte pool of 0x40-byte EffectRuntimeSlot entries (EffectRuntime_InitGraphicsResources) */
 #define EFFECT_RUNTIME_SLOT_COUNT 0x1000
 #define EFFECT_RUNTIME_POOL_BYTES 0x40000 /* EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot) */
-
-/* Functions are grouped by semantic ownership. */
 
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 

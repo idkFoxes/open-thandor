@@ -11,10 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/end_movie_commands. */
-
-/* Functions are grouped by semantic ownership. */
-
 void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime);
 
 void EndMovieUiRuntime_DispatchCommandByFlags

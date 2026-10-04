@@ -13,8 +13,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/frontend_session. */
-
 /* In-game notice shown when the host removes a player (FRONTEND_PACKET_10007_PLAYER_REMOVAL); the player's
    name is patched into it. Earlier notes tie it to the network timeout ("Zeitueberschreitung") path. */
 #define TEXT_ID_NETWORK_PLAYER_REMOVED 0xFF00
@@ -32,8 +30,6 @@
 #define FRONTEND_SNAPSHOT_LAST_CHUNK_BYTES 0xE0
 #define FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS 4
 #define FRONTEND_SNAPSHOT_FLAGS_BYTES 4 /* the snapshotTransferFlags dword in front of each packed payload */
-
-/* Functions are grouped by semantic ownership. */
 
 void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,

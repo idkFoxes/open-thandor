@@ -12,8 +12,6 @@
 
 static int32_t g_UiAction100AControlOffsets[8] = {45584, 45712, 45840, 45968, 46096, 46224, 46352, 46480};
 
-/* Implementation ownership: ui/ingame/commands. */
-
 /* In-game command handler 0x370 (key P): toggles the player's pause request, then toggles the global pause once
    every player agrees - the game pauses when all players request it and resumes when none does any more.
 */

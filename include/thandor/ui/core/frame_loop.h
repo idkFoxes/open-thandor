@@ -14,10 +14,6 @@
 
 #include <atomic>
 
-/* Submodule: ui/core/frame_loop. */
-
-/* Functions are grouped by semantic ownership. */
-
 void UiFrame_ProcessAndPresentWithLockTransition();
 
 void UiFrame_ProcessAndPresent();

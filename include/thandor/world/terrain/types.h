@@ -14,8 +14,6 @@
 #include <thandor/graphics/render/types.h>
 #include <thandor/graphics/resources/types.h>
 
-/* Types (split out by tools/dev/split_types.py). */
-
 typedef struct FieldGridAsset FieldGridAsset, *PFieldGridAsset;
 typedef struct FieldGridCell FieldGridCell, *PFieldGridCell;
 typedef struct TerrainDirectionRecord TerrainDirectionRecord, *PTerrainDirectionRecord;

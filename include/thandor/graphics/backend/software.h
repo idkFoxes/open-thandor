@@ -12,10 +12,6 @@
 #include <thandor/graphics/backend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/backend/software. */
-
-/* Functions are grouped by semantic ownership. */
-
 /* Builds the bilinear and alpha blend factor tables (the original carried them precomputed); once at startup. */
 void SoftwareRenderer_BuildFactorTables();
 

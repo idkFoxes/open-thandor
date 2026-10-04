@@ -11,13 +11,9 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/tick. */
-
 /* Reduced update (paused world): the grid refresh runs on even ticks with these bits clear, alternating the
    influence bands and the classification masks by tick bit 1 */
 #define INGAME_REDUCED_GRID_REFRESH_TICK_MASK 0xC
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameRuntime_PeriodicCountdownAndClockTick();
 

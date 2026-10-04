@@ -11,10 +11,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/credits. */
-
-/* Functions are grouped by semantic ownership. */
-
 void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView);
 
 #endif /* THANDOR_UI_FRONTEND_CREDITS_H */

@@ -13,10 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/turrets. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyRuntimeClass_UpdateSingleBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
 void ArmyRuntimeClass_UpdateTwinBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);

@@ -8,8 +8,6 @@
 #include <thandor/audio/codec/sam_encoder.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: audio/codec/sam_encoder. */
-
 /* Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the
    other direction): turns 256 mono 16-bit PCM samples into 256 coefficients,
    coefficient u = sum over k of (sample[k] >> 4) * cos((2k+1) * u * pi / 512) with g_CosineDerivedLookupAllocation

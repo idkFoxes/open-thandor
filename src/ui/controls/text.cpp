@@ -9,8 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Implementation ownership: ui/controls/text. */
-
 /* The label's rich-text command stream: the text itself, or the resolved text resource. */
 static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextControl *control)
 

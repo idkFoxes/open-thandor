@@ -13,8 +13,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/aircraft. */
-
 /* Aircraft (class 21) state in model runtime classState.behaviorState (ArmyRuntimeClass_UpdateAircraft) */
 #define ARMY_AIRCRAFT_STATE_NO_PAD 0       /* no home pad left: stays where it is */
 #define ARMY_AIRCRAFT_STATE_PARKED 1       /* parked on the home pad */
@@ -47,8 +45,6 @@
 /* impact damage of a model crushed by a structure placed over it or run over by a vehicle
    (ArmyRuntime_ClassCommandHandlerGroupA, ArmyRuntime_HandleCollisionPartner) */
 #define ARMY_CRUSH_IMPACT_DAMAGE 0x100000
-
-/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime);
 

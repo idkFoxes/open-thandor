@@ -13,11 +13,8 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: core/text/string. */
-
 /* ASCII/UTF-16 letter case bit: 'A' | this = 'a' (Utf16String_CompareAsciiCaseInsensitiveFlags) */
 #define TEXT_ASCII_LOWER_CASE_BIT 0x20
-/* Functions are grouped by semantic ownership. */
 
 uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractionalDigitCount fractionalDigits,
           WideNumberIntegerDigitLimit integerDigitLimit,WideNumberDenominator32 denominator,

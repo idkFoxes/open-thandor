@@ -14,8 +14,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: platform/bootstrap/runtime. */
-
 /* Game data tables (GameData_ResetDefaults, GameData_LoadExternalTables, Game_LoadCoreAssets). */
 #define GAME_FACTION_IMAGE_BYTES 0x3A20 /* sizeof(GameFactionRuntimeImage): 8 records of 0x740 bytes + 0x20 tail;
                                            daten.hex holds exactly this image */
@@ -55,8 +53,6 @@
 #define BOOTSTRAP_API_REG_OPEN_KEY_EX_A 2 /* ADVAPI32 */
 #define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 3 /* ADVAPI32 */
 #define BOOTSTRAP_API_REG_CLOSE_KEY 4 /* ADVAPI32 */
-
-/* Functions are grouped by semantic ownership. */
 
 void ProcessEntry();
 

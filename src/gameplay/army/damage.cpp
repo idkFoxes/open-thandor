@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/damage.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/damage. */
-
 /* Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15]):
    moves the storage's fill-level child node between the heights definition runtimeValue24 and runtimeValue28 in
    proportion to the owner faction's current Xenite (or Tritium when definition classParameterC0 is 1) over its

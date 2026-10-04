@@ -11,10 +11,6 @@
 #include <thandor/core/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/package/resource_loader. */
-
-/* Functions are grouped by semantic ownership. */
-
 Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void Resource_Release(void *resourceBuffer);

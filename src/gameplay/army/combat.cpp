@@ -8,8 +8,6 @@
 #include <thandor/gameplay/army/combat.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/army/combat. */
-
 /* Counts down the reload timers of the eight launch attachments; a slot whose reload is done shows its
    projectile again (mesh group bit i of the barrel node). Then counts down the shared inter-shot timer. */
 static void ArmyWeaponRuntime_CountDownReloadTimers

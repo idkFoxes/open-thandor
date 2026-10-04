@@ -31,8 +31,6 @@ static uint16_t g_ProjectTextVollbild[] = {PROJECT_TEXT_BRIGHT,'V','o','l','l','
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
     g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild};
 
-/* Implementation ownership: assets/text/resources. */
-
 /* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
    description and 14 further description lines reachable under the global ids the frontend uses for that
    level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE *

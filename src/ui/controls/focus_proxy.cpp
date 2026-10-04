@@ -13,8 +13,6 @@
 
 UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
 
-/* Implementation ownership: ui/controls/focus_proxy. */
-
 /* keyboardEvent slot of g_UiFocusProxyControlVtable. Hands the key to the framed focus child and redraws
    when the child consumed it. Tab goes to the default handler (passed on); with UI_LABEL_SWALLOW_CHARACTERS
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. Returns false

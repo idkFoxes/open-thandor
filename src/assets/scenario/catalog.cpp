@@ -31,8 +31,6 @@ uint32_t g_ScenarioCatalogUsedBytes = 0;
 
 uint16_t g_SaveSvePatternUtf16[11] = {'s', 'a', 'v', 'e', '\\', '*', '.', 's', 'v', 'e', 0}; /* L"save\\*.sve" */
 
-/* Implementation ownership: assets/scenario/catalog. */
-
 /* The catalog may use SCENARIO_CATALOG_CAPACITY minus the dword in which the host's network copy stores its
    unpacked size (ui/frontend/main_loop.cpp packs the catalog into the rest of the same allocation). */
 #define SCENARIO_CATALOG_USABLE_BYTES ((uint32_t)(SCENARIO_CATALOG_CAPACITY - sizeof(uint32_t)))

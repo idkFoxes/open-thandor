@@ -20,8 +20,6 @@ THANDOR_ALIGN(4) SpinLockReleaseProc *g_SpinLockRelease = &SpinLock_Release;
 
 THANDOR_ALIGN(16) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = &SpinLock_ReleaseAndInvoke;
 
-/* Implementation ownership: core/memory/synchronization. */
-
 /* Busy-waits until the lock is taken: atomically swaps -1 into it (acquire ordering) until the previous
    value was zero. A null lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the
    per-tick state of the frontend and in-game loops against the timer callbacks.

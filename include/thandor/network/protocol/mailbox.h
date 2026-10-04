@@ -12,8 +12,6 @@
 #include <thandor/network/protocol/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: network/protocol/mailbox. */
-
 /* g_UiTransferMailbox.receivedAllocation sentinel published by UiTransferMailbox_MarkUnavailable when a
    requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
 #define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)(intptr_t)-1) /* all bits set, as 0xffffffff in the original */
@@ -43,8 +41,6 @@
 /* protocolMagic of the 0x10000 discovery probe (UiTransfer_SendDiscoveryProbe); a host answers only
    probes carrying it. */
 #define FRONTEND_PROTOCOL_MAGIC 0x2931
-
-/* Functions are grouped by semantic ownership. */
 
 void UiTransferMailbox_ServiceAndRetransmitTimer();
 

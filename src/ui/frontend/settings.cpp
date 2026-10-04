@@ -13,8 +13,6 @@
 
 SoundVoice *g_FrontendMusicActiveBuffer = nullptr;
 
-/* Implementation ownership: ui/frontend/settings. */
-
 /* Handler of the mission briefing page's game speed slider (FRONTEND_ACTION_GAME_SPEED, slot 74 of
    g_FrontendUiActionHandlersPage20): applies the percentage directly in a local game and as
    FRONTEND_COMMAND_SET_GAME_SPEED in a network game, and saves it as PERSISTENT_SETTING_GAME_SPEED_PERCENT.

@@ -12,10 +12,8 @@
 #include <thandor/world/shots/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/shots/flight. */
 /* ShotRuntimeSlot.impactEffectEmissionFlags bit: a beam (direct-line shot) has emitted its impact effect. */
 #define SHOT_IMPACT_EFFECT_EMITTED 0x1
-/* Functions are grouped by semantic ownership. */
 
 void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);

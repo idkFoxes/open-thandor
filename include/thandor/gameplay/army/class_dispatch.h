@@ -15,10 +15,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/army/class_dispatch. */
-
-/* Functions are grouped by semantic ownership. */
-
 void ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
           (WorldRuntimeContext *worldRuntime,ModelRuntimeNode *modelNodeRuntime);
 

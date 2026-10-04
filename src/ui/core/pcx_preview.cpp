@@ -10,8 +10,6 @@
 #include <thandor/graphics/resources/pcx.h>
 #include <string.h>
 
-/* Implementation ownership: ui/core/pcx_preview. */
-
 /* Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
    dropped, the extension becomes .pcx, the file is looked up next to the executable) into outputPreview:
    its 256-colour palette (3 bytes per colour in the order blue, green, red) followed by the 4096 pixel

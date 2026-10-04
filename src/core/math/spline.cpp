@@ -13,8 +13,6 @@
 
 static const float g_Q12FloatScale4096 = 4096.0f;
 
-/* Implementation ownership: core/math/spline. */
-
 /* Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU
    (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs along row
    by row, followed by back substitution with U. rhsVector then holds the four coefficients of every segment.

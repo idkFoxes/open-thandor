@@ -163,8 +163,6 @@ DynamicApiBinding g_BootstrapApiBindings[6] = {
 
 HWND g_MainWindow = nullptr;
 
-/* Implementation ownership: platform/bootstrap/runtime. */
-
 /* ProcessEntry once the main window exists: initialises every subsystem, sets the initial 640x480 display
    mode from the saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
    fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line. The

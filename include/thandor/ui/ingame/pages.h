@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/pages. */
-
 /* Pages of the in-game window page stack (InGameUiImage.gameWindowPageStack) */
 #define INGAME_WINDOW_PAGE_NONE 0 /* no window open, the world view is shown */
 #define INGAME_WINDOW_PAGE_TECHNOLOGY 2
@@ -27,8 +25,6 @@
 /* Mission help text: TEXT_ID_LEVEL_DESCRIPTION_BASE + 7 + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * level title index +
    active faction (InGameMissionHelpPage_Toggle) */
 #define TEXT_ID_MISSION_HELP_BASE 0x230017
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameMissionHelpPage_Toggle(UiNodeBase *source);
 

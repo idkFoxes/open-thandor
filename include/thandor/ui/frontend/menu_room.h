@@ -16,10 +16,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/menu_room. */
-
-/* Functions are grouped by semantic ownership. */
-
 GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
 void FrontendModelPointerContext_NonRightPress

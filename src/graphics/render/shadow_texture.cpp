@@ -64,8 +64,6 @@ static const uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask = 0x707070707070
 
 uint32_t g_TextureDownsampleShift = 0;
 
-/* Implementation ownership: graphics/render/shadow_texture. */
-
 /* Not in the original: adds a direction vector to a point. */
 static void Shading_AddDirectionToPoint(GraphicsFixedVec3 *point,FixedDirection direction)
 {

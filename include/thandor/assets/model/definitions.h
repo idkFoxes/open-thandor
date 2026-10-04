@@ -13,8 +13,6 @@
 #include <thandor/gameplay/army/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/model/definitions. */
-
 /* Linked model-definition ids of an army model-tree node (ArmyModelTreeNode.linkedDefinitionIds, +0x20):
    [0] is the default, the others are upgrade stages that need a technology. */
 #define MODEL_LINKED_DEFINITION_COUNT 8
@@ -24,8 +22,6 @@
 #define MODEL_POINT_CLASS_SHOT 2 /* shot launch point, keyIndex = weapon / emitter index */
 #define MODEL_POINT_CLASS_EFFECT 3 /* effect spawn point (0 linked effect, 1 periodic effect) */
 #define MODEL_POINT_CLASS_LIGHT 4 /* shading light position */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
 

@@ -25,8 +25,6 @@ static SpatialSoundSlot *g_SpatialSoundSlots = nullptr;
 
 AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
 
-/* Implementation ownership: audio/spatial/runtime. */
-
 /* Allocates the pool of SPATIAL_SOUND_SLOT_COUNT spatial sound slots (sizeof(SpatialSoundSlot) each; 0x10 bytes
    in the 32-bit original, 0x18 with native 64-bit pointers) and zeroes it,
    so every slot starts without a voice set. Returns true on success; false with the allocator's error in

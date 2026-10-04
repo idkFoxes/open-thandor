@@ -42,8 +42,6 @@ uint32_t g_InGameReadyStateToggleFlags = 0;
 
 uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
 
-/* Implementation ownership: ui/ingame/hud. */
-
 /* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView).
    Latches the clicked grid
    cell (selectedSourceX/YQ12 = grid column/row into sourceOriginX/YQ12), converts it to world coordinates and

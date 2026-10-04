@@ -26,8 +26,6 @@ static int32_t *g_UiCommandSpriteVariantAOffsetTables[5] = {
 
 static UiCommandRuntimeRecordPrefix *g_UiCommandSpriteVariantARecords[24] = {};
 
-/* Implementation ownership: ui/ingame/army_stock. */
-
 /* Pointer move over an army stock slot (pointerMove of g_UiCommandSpriteButtonWithDetailsVtable, which the seven diplomacy
    relation buttons share; for them no slot matches and only the cursor frame is returned): shows the slot's
    army asset in the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then

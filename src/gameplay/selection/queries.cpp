@@ -12,8 +12,6 @@
 
 SelectionInfoEntitySlots *g_SelectionInfoEntitySlots = nullptr;
 
-/* Implementation ownership: gameplay/selection/queries. */
-
 /* Writes the average world position (model node translation) of the local selection's entities to
    *outPosition and returns true; returns false when the selection is empty (*outPosition is then all 0).
 */

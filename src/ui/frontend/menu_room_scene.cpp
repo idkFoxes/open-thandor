@@ -27,8 +27,6 @@ std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId{0};
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
 SoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {};
 
-/* Implementation ownership: ui/frontend/menu_room_scene. */
-
 /* Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry
    from the frontend main loop): plays its click sound, then either posts its page action / a close request, or
    starts a camera flight from the current menu-room camera pose to the pose of its target ROM record.

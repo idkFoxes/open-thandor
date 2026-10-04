@@ -8,8 +8,6 @@
 #include <thandor/gameplay/faction/runtime.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: gameplay/faction/runtime. */
-
 /* Returns true when bit otherFactionIndex is clear in factionIndex's record capabilityFlags.
    The mask holds one bit per faction: GameData_ResetDefaults sets the faction's own bit and bit 0, and
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction

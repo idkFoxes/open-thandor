@@ -122,8 +122,6 @@ UiNodeVtable g_UiCatalogEntryControlVtable = {
         .pointerWheel = UI_SLOT(UiNode_ForwardPointerWheelToParent),
 };
 
-/* Implementation ownership: ui/ingame/catalog_entry. */
-
 /* How many entries of the faction's secondary army-asset list are the given catalog record. */
 static int UiCatalogEntryControl_CountOwnedAssets(int factionIndex,const UiCommandRuntimeRecordPrefix *catalogRecord)
 {

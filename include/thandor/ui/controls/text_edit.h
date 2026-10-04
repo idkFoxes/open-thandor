@@ -13,8 +13,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/text_edit. */
-
 /* Code units of the original numeric text edit buffer (the terminator included); see
    UiTextEditControl_RecomputeLayoutAndClampScroll. */
 #define UI_NUMERIC_TEXT_BUFFER_UNITS 16
@@ -24,8 +22,6 @@
 /* The top byte of editStateFlags (text edits) and listStateFlags (text lists) counts frames down. */
 #define UI_STATE_FRAME_COUNTER_UNIT 0x1000000
 #define UI_STATE_FLAGS_MASK 0xffffff /* the flag bits below the counter */
-
-/* Functions are grouped by semantic ownership. */
 
 Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,

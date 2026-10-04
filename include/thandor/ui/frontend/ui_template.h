@@ -11,8 +11,6 @@
 #include <thandor/ui/frontend/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/ui_template. */
-
 extern FrontendUiImage g_FrontendRootInitializationTemplate;
 
 #endif /* THANDOR_UI_FRONTEND_UI_TEMPLATE_H */

@@ -16,8 +16,6 @@ EffectDefinition *g_EffectDefinitionRegistry[256] = {};
    here). */
 static uint16_t s_EffectAssetErrorName[] = {'*', '.', 'e', 'f', 'f', 0}; /* L"*.eff" */
 
-/* Implementation ownership: assets/effect/catalog. */
-
 /* Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version
    0x40007, then hands each 0xC0-byte record after the 0x200-byte header to
    EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves "*.eff" in

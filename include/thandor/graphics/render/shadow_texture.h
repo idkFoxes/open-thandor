@@ -15,8 +15,6 @@
 #include <thandor/world/model/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/shadow_texture. */
-
 /* Generated shadow texture (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): a shadow vertex fades
    out linearly with its ray distance to the caster and vanishes at 5.0 world units (Q12) */
 #define GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 0x5000
@@ -33,7 +31,6 @@
 #define GRAPHICS_PROJECTED_PAIR(block, pair) ((block) * GRAPHICS_PROJECTED_BLOCK_PAIRS + (pair))
 /* Highest light level of g_ShadingIntensityScaleMmx (256 entries) */
 #define GRAPHICS_SHADING_INTENSITY_MAX 255
-/* Functions are grouped by semantic ownership. */
 
 void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);

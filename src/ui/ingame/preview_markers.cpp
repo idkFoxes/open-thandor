@@ -28,8 +28,6 @@ static GameEntityRuntime *g_InGamePlacementPreviewArmyRuntime = nullptr;
 
 static GameEntityRuntime *g_InGameCommandPreviewArmyRuntime = nullptr;
 
-/* Implementation ownership: ui/ingame/preview_markers. */
-
 /* Command mode: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the ghost of the army the previewed
    pointer-mode command would create. */
 static void InGameWorldOverlay_UpdateCommandPreviewArmy

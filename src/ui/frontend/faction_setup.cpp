@@ -15,8 +15,6 @@ uintptr_t g_FrontendRootNode = 0;
 
 static uint32_t g_FrontendFactionAssignmentReadyStateGeneration = 0;
 
-/* Implementation ownership: ui/frontend/faction_setup. */
-
 /* The original indexes the seven-entry row tables (and factionLifecycleStates[rowIndex + 1]) with the row index
    of a frontend command without a check; bounded here because in a network game the command (and its row
    index) comes from a peer. Rows 0..6 pass; anything else is dropped (logged once). */

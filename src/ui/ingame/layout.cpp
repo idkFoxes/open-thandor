@@ -83,8 +83,6 @@ int32_t g_InGamePanelTextureSubresource34Height = 0;
 
 SoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {};
 
-/* Implementation ownership: ui/ingame/layout. */
-
 /* Gives node the given edge offsets. */
 static void InGameUiRuntime_SetEdgeOffsets
           (UiNodeBase *node,int32_t leftOffset,int32_t topOffset,int32_t rightOffset,int32_t bottomOffset)

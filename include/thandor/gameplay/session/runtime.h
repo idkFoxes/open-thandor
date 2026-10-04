@@ -12,8 +12,6 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/session/runtime. */
-
 extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks;
 
 extern uint32_t g_SessionNetworkTickCounter;

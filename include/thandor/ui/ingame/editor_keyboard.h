@@ -13,15 +13,11 @@
 #include <thandor/ui/ingame/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/ingame/editor_keyboard. */
-
 /* Info texts the world view cycles through with Ctrl+I (worldViewCyclingInfoText holds the text resource id) */
 #define TEXT_ID_WORLD_VIEW_INFO_FIRST 0x112
 #define TEXT_ID_WORLD_VIEW_INFO_LAST 0x117
 /* Step of the editor's light direction and field origin hotkeys (Ctrl/Shift + arrow keys) */
 #define EDITOR_ADJUST_STEP 0x400
-
-/* Functions are grouped by semantic ownership. */
 
 void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);

@@ -23,8 +23,6 @@ static uint16_t g_ErrorTextHeapAllocationFailed[71] = {
 
 static ArenaState g_Arena = {};
 
-/* Implementation ownership: core/memory/allocator. */
-
 /* Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the
    ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block. Returns the raw HeapAlloc
    pointer; if the heap cannot be created or allocated the game exits with the heap error message.

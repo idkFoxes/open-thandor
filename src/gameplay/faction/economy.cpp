@@ -26,8 +26,6 @@ typedef struct FactionEnergyConsumerEntry {
   uint32_t priority; /* g_FactionEnergyAllocationPriorityByModelClass[runtime class] */
 } FactionEnergyConsumerEntry;
 
-/* Implementation ownership: gameplay/faction/economy. */
-
 /* Economy step 1, per faction: reset the step's energy demand and extraction rates, decay the faction's row of
    the pair-pressure matrix by 7/8, count the notification/anchor cooldowns down (anchorCooldown1/2 are the
    energy notification cooldowns) and advance the relation transition tick. */

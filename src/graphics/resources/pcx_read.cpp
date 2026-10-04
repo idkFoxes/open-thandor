@@ -9,9 +9,7 @@
 #include <thandor/thandor.h>
 #include <string.h>
 
-/* Implementation ownership: graphics/resources/pcx (reading).
-
-   Replaces export 2 of engine\pcx.fnc (module offset 0x3B0, header check at 0x320). The original decoder
+/* Replaces export 2 of engine\pcx.fnc (module offset 0x3B0, header check at 0x320). The original decoder
    accepted RLE-encoded 8 bits-per-pixel files with 1 plane (paletted) or 3 planes (direct colour) and built a
    GFX-style image record ('gfx' magic, file times, computer label, palette, image header, pixels). Its only
    caller (PcxPreview_Load64x64PaletteAndPixels) rejects every record that is not paletted, so only the

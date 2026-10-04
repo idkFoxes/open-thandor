@@ -26,7 +26,7 @@ Module header: [`bootstrap.h`](../../include/thandor/platform/bootstrap.h) · Ch
 
 [Source](../../src/platform/bootstrap/image.cpp) · [Header](../../include/thandor/platform/bootstrap/image.h)
 
-Own translation unit: uses the real Windows SDK headers, not the game's type headers.
+Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers. thandor.exe keeps code and data in one writable .text section at fixed addresses.
 
 **Functions** (10 public, 14 file-local):
 
@@ -73,16 +73,16 @@ No file comment; function families: `CommandLine_*` (11), `CoreAssets_*` (9), `G
 
 **Functions** (15 public, 21 file-local):
 
-- [`ProcessEntry`](../../src/platform/bootstrap/runtime.cpp#L235) - Process entry: raises the process to real-time priority, creates the full-screen main window (only one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
-- [`GameData_ResetDefaults`](../../src/platform/bootstrap/runtime.cpp#L263) - Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction records, gives every faction its own capability bit, the base technology, a rotated relation ...
-- [`GameData_LoadExternalTables`](../../src/platform/bootstrap/runtime.cpp#L340) - Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image, stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) ...
-- [`DynAPI_Resolve`](../../src/platform/bootstrap/runtime.cpp#L417) - Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0.
-- [`DynDLL_Load`](../../src/platform/bootstrap/runtime.cpp#L450) - Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that DynDLL_UnloadAll frees it; returns the (non-NULL) module.
-- [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L477) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
-- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L503) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
-- [`GameRuntime_InitializeSpatialAudioAndRendering`](../../src/platform/bootstrap/runtime.cpp#L555) - Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables, the software renderer's display-mode hook and the global primitive queue (0xA000 packets), ...
-- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L737) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
-- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L756) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
+- [`ProcessEntry`](../../src/platform/bootstrap/runtime.cpp#L233) - Process entry: raises the process to real-time priority, creates the full-screen main window (only one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
+- [`GameData_ResetDefaults`](../../src/platform/bootstrap/runtime.cpp#L261) - Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction records, gives every faction its own capability bit, the base technology, a rotated relation ...
+- [`GameData_LoadExternalTables`](../../src/platform/bootstrap/runtime.cpp#L338) - Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image, stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) ...
+- [`DynAPI_Resolve`](../../src/platform/bootstrap/runtime.cpp#L415) - Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0.
+- [`DynDLL_Load`](../../src/platform/bootstrap/runtime.cpp#L448) - Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that DynDLL_UnloadAll frees it; returns the (non-NULL) module.
+- [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L475) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
+- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L501) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
+- [`GameRuntime_InitializeSpatialAudioAndRendering`](../../src/platform/bootstrap/runtime.cpp#L553) - Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables, the software renderer's display-mode hook and the global primitive queue (0xA000 packets), ...
+- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L735) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
+- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L754) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
 - 5 more: `Game_LoadCoreAssets`, `Game_PlayIntroMovies`, `DynAPI_Bootstrap`, `CommandLine_FindOption`, `CommandLine_Parse`
 
 **Data** (11 shared, 48 file-local): `g_CommandLineFindOption`, `g_LooseMoviePathPrefix`, `g_DatenHexPathUtf16`, `g_StatHexPathUtf16`, `g_GameStatTableImage`, `g_GameDataAuxState`, `g_FrontendPlayerListRows`, `g_IntroMoviePendingTicks` and 3 more.
@@ -150,7 +150,7 @@ Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor
 
 [Source](../../src/platform/debug/font.cpp) · [Header](../../include/thandor/platform/debug/font.h)
 
-5x7 debug font: each entry is the character followed by its 7 rows of 5 pixels, top row first; in a row the leftmost pixel is bit 4. The glyphs are capitals stored under lower-case keys (DebugFont_DrawText folds A-Z to a-z).
+Built-in 5x7 debug font, drawn straight into the framebuffer (debug tools only).
 
 **Functions** (1 public):
 
@@ -292,7 +292,7 @@ Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
 
 [Source](../../src/platform/debug/test_aids.cpp) · [Header](../../include/thandor/platform/debug/test_aids.h)
 
-Own translation unit: uses the real Windows SDK headers, not the game's type headers.
+Test aids (developer tools, THANDOR_DEV_TOOLS; game code reaches them through thandor/platform/debug/hooks.h): scripted-input detection, a local two-instance network test and a windowed mode. Environment switches: OPEN_THANDOR_SCRIPT, OPEN_THANDOR_MULTI_INSTANCE, OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG, OPEN_THANDOR_WINDOWED, OPEN_THANDOR_WINDOW_X, OPEN_THANDOR_WINDOW_Y.
 
 **Functions** (8 public):
 
@@ -345,16 +345,16 @@ No file comment; function families: `Win32File_*` (11), `Win32FileSystem_*` (4),
 
 **Functions** (16 public, 3 file-local):
 
-- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L96) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
-- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L199) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
-- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L215) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
-- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L267) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
-- [`Win32File_WriteExactOrFlush`](../../src/platform/filesystem/win32.cpp#L293) - Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current position (SetEndOfFile).
-- [`Win32File_GetPosition`](../../src/platform/filesystem/win32.cpp#L317) - Stores the current position of a file in *outPosition and returns true; returns false with outPosition 0 when SetFilePointer fails.
-- [`Win32File_Seek`](../../src/platform/filesystem/win32.cpp#L335) - Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
-- [`Win32File_Delete`](../../src/platform/filesystem/win32.cpp#L351) - Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface.
-- [`Win32File_CreateDirectoryRecursive`](../../src/platform/filesystem/win32.cpp#L365) - Creates a directory.
-- [`Win32FileSystem_EnumerateDirectoryOrVolumeEntries`](../../src/platform/filesystem/win32.cpp#L437) - Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or subdirectories (FILESYSTEM_ENUMERATE_DIRECTORIES) matching the wildcard path, sorted by a bubble ...
+- [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L94) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
+- [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L197) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
+- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L213) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
+- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L265) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
+- [`Win32File_WriteExactOrFlush`](../../src/platform/filesystem/win32.cpp#L291) - Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current position (SetEndOfFile).
+- [`Win32File_GetPosition`](../../src/platform/filesystem/win32.cpp#L315) - Stores the current position of a file in *outPosition and returns true; returns false with outPosition 0 when SetFilePointer fails.
+- [`Win32File_Seek`](../../src/platform/filesystem/win32.cpp#L333) - Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
+- [`Win32File_Delete`](../../src/platform/filesystem/win32.cpp#L349) - Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface.
+- [`Win32File_CreateDirectoryRecursive`](../../src/platform/filesystem/win32.cpp#L363) - Creates a directory.
+- [`Win32FileSystem_EnumerateDirectoryOrVolumeEntries`](../../src/platform/filesystem/win32.cpp#L435) - Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or subdirectories (FILESYSTEM_ENUMERATE_DIRECTORIES) matching the wildcard path, sorted by a bubble ...
 - 6 more: `Win32File_ReadExact`, `Win32File_GetSize`, `Win32File_GetCurrentDirectory`, `Win32File_SetCurrentDirectory`, `Win32File_Open`, `Win32File_Close`
 
 **Data** (13 shared, 8 file-local): `g_ExecutableDirectoryUtf16`, `g_FileSystemCombinedPathScratchUtf16`, `g_FileSystemOpen`, `g_FileSystemClose`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `g_FileSystemGetSize`, `g_FileSystemSeek` and 5 more.
@@ -379,16 +379,16 @@ No file comment; function families: `Keyboard_*` (12), `GraphicsCursor_*` (3).
 
 **Functions** (11 public, 4 file-local):
 
-- [`Keyboard_CompareAsciiCaseInsensitiveFlags`](../../src/platform/input/devices.cpp#L77) - Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of g_KeyboardAsciiCaseTransformCallbacks3.
-- [`Keyboard_FlushEvents`](../../src/platform/input/devices.cpp#L94) - Discards every queued keyboard event by moving the ring's write index back onto its read index.
-- [`Keyboard_ReadNextEvent`](../../src/platform/input/devices.cpp#L106) - Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer.
-- [`Keyboard_ToLowerAscii`](../../src/platform/input/devices.cpp#L130) - Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged.
-- [`GraphicsCursor_LoadAssets`](../../src/platform/input/devices.cpp#L143) - Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table ...
-- [`GraphicsCursor_FreeBuffers`](../../src/platform/input/devices.cpp#L204) - First half of the mouse display-mode hook (SdlInput_SetDisplayMode): blocks backend access (timer cursor drawing) for the switch and frees the three cursor buffers.
-- [`GraphicsCursor_CreateBuffersAndCenter`](../../src/platform/input/devices.cpp#L221) - Second half of the mouse display-mode hook (SdlInput_SetDisplayMode), after the mode switch: recreates the three cursor buffers in the new pixel format, converts the cursor palette and centres the ...
-- [`Keyboard_OnKeyDown`](../../src/platform/input/devices.cpp#L380) - WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), ...
-- [`Keyboard_OnKeyUp`](../../src/platform/input/devices.cpp#L432) - WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, ...
-- [`Keyboard_OnChar`](../../src/platform/input/devices.cpp#L465) - WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with the current modifier state in the keyboard ring.
+- [`Keyboard_CompareAsciiCaseInsensitiveFlags`](../../src/platform/input/devices.cpp#L75) - Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of g_KeyboardAsciiCaseTransformCallbacks3.
+- [`Keyboard_FlushEvents`](../../src/platform/input/devices.cpp#L92) - Discards every queued keyboard event by moving the ring's write index back onto its read index.
+- [`Keyboard_ReadNextEvent`](../../src/platform/input/devices.cpp#L104) - Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer.
+- [`Keyboard_ToLowerAscii`](../../src/platform/input/devices.cpp#L128) - Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged.
+- [`GraphicsCursor_LoadAssets`](../../src/platform/input/devices.cpp#L141) - Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table ...
+- [`GraphicsCursor_FreeBuffers`](../../src/platform/input/devices.cpp#L202) - First half of the mouse display-mode hook (SdlInput_SetDisplayMode): blocks backend access (timer cursor drawing) for the switch and frees the three cursor buffers.
+- [`GraphicsCursor_CreateBuffersAndCenter`](../../src/platform/input/devices.cpp#L219) - Second half of the mouse display-mode hook (SdlInput_SetDisplayMode), after the mode switch: recreates the three cursor buffers in the new pixel format, converts the cursor palette and centres the ...
+- [`Keyboard_OnKeyDown`](../../src/platform/input/devices.cpp#L378) - WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), ...
+- [`Keyboard_OnKeyUp`](../../src/platform/input/devices.cpp#L430) - WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, ...
+- [`Keyboard_OnChar`](../../src/platform/input/devices.cpp#L463) - WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with the current modifier state in the keyboard ring.
 - 1 more: `Keyboard_ToUpperAscii`
 
 **Data** (21 shared, 8 file-local): `g_CursorOverrideX`, `g_CursorOverrideY`, `g_CursorVisibilityToken`, `g_CursorButtonState`, `g_KeyboardSpecialKeyDown`, `g_KeyboardFlushEvents`, `g_KeyboardStateMask`, `g_CursorInputWriteIndex` and 13 more.
@@ -763,16 +763,16 @@ No file comment; function families: `Locale_*` (10).
 
 **Functions** (10 public):
 
-- [`Locale_Init`](../../src/platform/system/time_locale.cpp#L44) - Installs the date/time/locale services in their function pointers and caches the user's locale settings (language id, number separators, date/time separators and order, AM/PM designators) in ...
-- [`Locale_FormatDateFieldsUtf16`](../../src/platform/system/time_locale.cpp#L91) - Writes a date as UTF-16 text in the user's order (LOCALE_ILDATE: 0 month-day-year, 1 day-month-year, else year-month-day) with the user's date separator, without zero padding.
-- [`Locale_FormatCurrentDateUtf16`](../../src/platform/system/time_locale.cpp#L143) - Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator).
-- [`Locale_GetPackedCurrentDate`](../../src/platform/system/time_locale.cpp#L227) - Returns today's local date packed as (year &lt;&lt; 16) \| (month &lt;&lt; 8) \| day, so packed dates compare in calendar order.
-- [`Locale_FormatTimeFieldsUtf16`](../../src/platform/system/time_locale.cpp#L241) - Writes hour:minute as UTF-16 text with the user's time separator.
-- [`Locale_FormatCurrentTimeUtf16`](../../src/platform/system/time_locale.cpp#L299) - Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped AM/PM designators).
-- [`Locale_GetPackedCurrentTime`](../../src/platform/system/time_locale.cpp#L363) - Returns the current local time packed as (hour &lt;&lt; 16) \| (minute &lt;&lt; 8) \| second.
-- [`Locale_GetDefaultTelephoneCountryCode`](../../src/platform/system/time_locale.cpp#L376) - Guesses the player's telephone country code from the Windows user language: English 44, German 49, French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
-- [`Locale_CopyDefaultComputerLabelUtf16`](../../src/platform/system/time_locale.cpp#L413) - Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to destination: always the whole 0x40-byte buffer including its zero padding.
-- [`Locale_ParseUnsignedDecimalAscii`](../../src/platform/system/time_locale.cpp#L433) - Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the first non-digit.
+- [`Locale_Init`](../../src/platform/system/time_locale.cpp#L42) - Installs the date/time/locale services in their function pointers and caches the user's locale settings (language id, number separators, date/time separators and order, AM/PM designators) in ...
+- [`Locale_FormatDateFieldsUtf16`](../../src/platform/system/time_locale.cpp#L89) - Writes a date as UTF-16 text in the user's order (LOCALE_ILDATE: 0 month-day-year, 1 day-month-year, else year-month-day) with the user's date separator, without zero padding.
+- [`Locale_FormatCurrentDateUtf16`](../../src/platform/system/time_locale.cpp#L141) - Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator).
+- [`Locale_GetPackedCurrentDate`](../../src/platform/system/time_locale.cpp#L225) - Returns today's local date packed as (year &lt;&lt; 16) \| (month &lt;&lt; 8) \| day, so packed dates compare in calendar order.
+- [`Locale_FormatTimeFieldsUtf16`](../../src/platform/system/time_locale.cpp#L239) - Writes hour:minute as UTF-16 text with the user's time separator.
+- [`Locale_FormatCurrentTimeUtf16`](../../src/platform/system/time_locale.cpp#L297) - Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped AM/PM designators).
+- [`Locale_GetPackedCurrentTime`](../../src/platform/system/time_locale.cpp#L361) - Returns the current local time packed as (hour &lt;&lt; 16) \| (minute &lt;&lt; 8) \| second.
+- [`Locale_GetDefaultTelephoneCountryCode`](../../src/platform/system/time_locale.cpp#L374) - Guesses the player's telephone country code from the Windows user language: English 44, German 49, French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
+- [`Locale_CopyDefaultComputerLabelUtf16`](../../src/platform/system/time_locale.cpp#L411) - Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to destination: always the whole 0x40-byte buffer including its zero padding.
+- [`Locale_ParseUnsignedDecimalAscii`](../../src/platform/system/time_locale.cpp#L431) - Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the first non-digit.
 
 **Data** (9 shared, 2 file-local): `g_LocaleGetPackedCurrentDate`, `g_LocaleGetPackedCurrentTime`, `g_TimerRegisterPeriodic`, `g_TimerUnregisterPeriodic`, `g_LocaleCopyDefaultComputerLabelUtf16`, `g_LocaleFormatCurrentDateUtf16`, `g_LocaleFormatTimeFieldsUtf16`, `g_LocaleFormatCurrentTimeUtf16` and 1 more.
 

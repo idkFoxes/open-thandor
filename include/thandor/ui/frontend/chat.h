@@ -11,10 +11,6 @@
 #include <thandor/ui/controls/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/chat. */
-
-/* Functions are grouped by semantic ownership. */
-
 void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
 
 void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);

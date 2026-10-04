@@ -33,8 +33,6 @@ static const UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_C
     /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5671E0},
     /* 15 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
-/* Implementation ownership: ui/ingame/hotkeys. */
-
 /* Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
