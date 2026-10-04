@@ -47,7 +47,8 @@ static uintptr_t g_MoviePackageHandle = 0;
 
 static uintptr_t g_LevelPackageHandle = 0;
 
-static uint32_t g_InstallRegistryKeyHandle = 0;
+/* HKEY (pointer-sized on x64) */
+static uintptr_t g_InstallRegistryKeyHandle = 0;
 
 /* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
 static uint32_t g_InstallRegistryValueDataCapacityBytes = 256;
@@ -611,7 +612,8 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     return;
   }
   status = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
-             (HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ | KEY_WOW64_32KEY,&g_InstallRegistryKeyHandle);
+             ((uintptr_t)(intptr_t)(int32_t)HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ | KEY_WOW64_32KEY,
+              &g_InstallRegistryKeyHandle); /* predefined keys are sign-extended 32-bit values on x64 */
   if (status != ERROR_SUCCESS) {
     return;
   }
