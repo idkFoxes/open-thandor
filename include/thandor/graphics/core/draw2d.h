@@ -142,6 +142,12 @@ const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount);
 /* Ends the frame's recording (the list stays readable until the next Draw2D_BeginFrame). */
 void Draw2D_EndFrame();
 
+/* GPU backend hook (nullptr when unused): called right after a SPRITE item is appended, with its index in the
+   frame list. The GPU backend reads the asset here (texture cache lookup, which converts the texels into its
+   staging buffer at once), because the simulation may release or rewrite the asset before the flush (6.4). */
+using Draw2DSpriteRecordedProc = void (uint32_t itemIndex, const Draw2DItem *item);
+extern Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded;
+
 /* Marks where a 3D scene ends (after g_GraphicsEndScene): records a DRAW2D_OP_EXTERNAL_3D item covering the
    scene's clip rectangle in GPU_RECORD mode; does nothing in software mode. */
 void Draw2D_MarkExternal3D(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);

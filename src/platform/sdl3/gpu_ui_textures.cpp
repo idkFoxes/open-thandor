@@ -502,7 +502,12 @@ bool GpuUiTextures_Lookup(const GraphicsTextureSourceAsset *asset, uint32_t subr
   if ((width == 0) || (height == 0) || (width > 16384) || (height > 16384)) {
     return false;
   }
+  /* The bank of the key is the bank actually used: the draw list (draw2d.h) records a paletted subresource with
+     its entry's bank number and a direct-colour one with DRAW2D_PALETTE_BANK_DIRECT (= GPU_UI_TEX_ENTRY_PALETTE),
+     while other callers (the cursor) pass GPU_UI_TEX_ENTRY_PALETTE for both; resolving it here keeps one cache
+     entry per image instead of one per spelling. Direct-colour subresources ignore the bank. */
   const uint8_t *palette = nullptr;
+  uint32_t keyBank = GPU_UI_TEX_ENTRY_PALETTE;
   if (entry->paletteIndex != -1) {
     const uint32_t bank = (paletteBank == GPU_UI_TEX_ENTRY_PALETTE) ? static_cast<uint32_t>(entry->paletteIndex)
                                                                     : paletteBank;
@@ -510,9 +515,10 @@ bool GpuUiTextures_Lookup(const GraphicsTextureSourceAsset *asset, uint32_t subr
       return false;
     }
     palette = bytes + GFX_ASSET_HEADER_SIZE + bank * GFX_PALETTE_BANK_SIZE;
+    keyBank = bank;
   }
   const uint8_t *texels = bytes + entry->dataOffset;
-  const Key key{asset, subresource, paletteBank};
+  const Key key{asset, subresource, keyBank};
 
   auto found = s_ui.entries.find(key);
   if ((found != s_ui.entries.end()) && (found->second.validatedFrame == s_ui.frame)) {

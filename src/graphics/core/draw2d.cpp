@@ -17,6 +17,7 @@
 GraphicsMinimapDrawProc *g_GraphicsMinimapDraw = SoftwareTexture_DrawMinimapBilinear32;
 GraphicsFillColumnSegmentsProc *g_GraphicsFillColumnSegments = SoftwareFramebuffer_FillColumnSegments32;
 GraphicsGreyScaleImageProc *g_GraphicsGreyScaleImage = SoftwareTexture_BilinearBlendScaleSubresources;
+Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded = nullptr;
 
 namespace {
 
@@ -159,6 +160,9 @@ void RecordSprite(uint8_t blend, uint32_t tintArgb, int32_t clipMaxY, int32_t cl
     SetRect(item->dst, x0, y0, x1, y1);
     SetRect(item->src, 0, 0, (int32_t)entry->pixelWidth, (int32_t)entry->pixelHeight);
     SetRect(item->clip, left, top, right, bottom);
+    if (g_Draw2DSpriteRecorded != nullptr) {
+        g_Draw2DSpriteRecorded((uint32_t)(s_items.size() - 1), item);
+    }
 }
 
 /* An IMAGE_REGION item for width x height pixels at (x, y), clipped to the display framebuffer. */

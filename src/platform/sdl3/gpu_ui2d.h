@@ -55,17 +55,17 @@ enum GpuUiBlend : uint8_t {
 bool GpuUi2D_Init(SDL_GPUDevice *device, SDL_GPUTextureFormat target);
 /* Releases what GpuUi2D_Init created (safe without it). */
 void GpuUi2D_Shutdown(SDL_GPUDevice *device);
-/* Draws count vertices (a triangle list, count a multiple of 3) inside renderPass into a target of targetW x
-   targetH pixels: sets the viewport to the whole target and the scissor (target pixels), binds the blend mode's
-   pipeline and page (nearest sampling, clamped; ignored for GPU_UI_BLEND_FILL) and draws. The vertices are pushed
-   through commandBuffer as vertex uniform data (no copy pass is possible inside a render pass), in chunks of
-   GPU_UI_VERTICES_PER_CHUNK, one draw call each. Does nothing without GpuUi2D_Init, for an unknown blend mode or a
-   missing page. */
+/* Copies the frame's vertices (count, a triangle list) into the module's vertex buffer: records a copy pass into
+   commandBuffer, so call it before the render passes that draw them (step 9 WP4: the first design pushed the vertices
+   as vertex uniform data in 4 KiB chunks per draw call, which drew wrong triangles on Direct3D 12). The buffer is
+   cycled, so the previous frame may still draw from it. False (logged when a buffer cannot be created) on failure. */
+bool GpuUi2D_Upload(SDL_GPUCommandBuffer *commandBuffer, const GpuUiVertex *vertices, uint32_t count);
+/* Draws count vertices from firstVertex of the uploaded ones (a triangle list, count a multiple of 3) inside
+   renderPass into a target of targetW x targetH pixels: sets the viewport to the whole target and the scissor (target
+   pixels), binds the blend mode's pipeline and page (nearest sampling, clamped; ignored for GPU_UI_BLEND_FILL), pushes
+   the target scale as vertex uniform data and draws in one call. Does nothing without GpuUi2D_Init and an upload, for
+   an unknown blend mode or a missing page. */
 void GpuUi2D_Draw(SDL_GPURenderPass *renderPass, SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *page,
-                  const GpuUiVertex *vertices, uint32_t count, SDL_Rect scissor, uint8_t blend, int targetW,
-                  int targetH);
-
-/* Vertices per draw call: 4 KiB of uniform data (ui2d.hlsl), rounded down to whole triangles and quads. */
-constexpr uint32_t GPU_UI_VERTICES_PER_CHUNK = 168;
+                  uint32_t firstVertex, uint32_t count, SDL_Rect scissor, uint8_t blend, int targetW, int targetH);
 
 #endif /* THANDOR_PLATFORM_SDL3_GPU_UI2D_H */
