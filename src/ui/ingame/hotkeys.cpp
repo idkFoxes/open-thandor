@@ -219,36 +219,9 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
     PersistentSettings_Write(settings,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
     break;
   }
-  case 0x5677e0: { /* Alt+P: screenshot to the next numbered PCX file */
-    GraphicsCapturedTextureSourceAsset *capture =
-         g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    void *pcxBytes;
-    uint32_t pcxByteCount;
-    uint32_t pcxError;
-    uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
-    uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
-    if (capture == NULL) {
-      break;
-    }
-    if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
-      g_MemoryApi.free(capture);
-      break;
-    }
-    FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,
-                                   g_ScreenshotFileNameUtf16);
-    g_MemoryApi.free(pcxBytes);
-    g_MemoryApi.free(capture);
-    /* advance the two-digit number in the file name */
-    *digitLow = *digitLow + 1;
-    if (*digitLow > '9') {
-      *digitHigh = *digitHigh + 1;
-      *digitLow = *digitLow - 10;
-      if (*digitHigh > '9') {
-        *digitHigh = *digitHigh - 10;
-      }
-    }
+  case 0x5677e0: /* Alt+P: screenshot to the next numbered PCX file */
+    Screenshot_SaveFramebufferAsPcx();
     break;
-  }
   case 0x567870: /* Alt+Q: leave the game (not as host) */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != 0) {
       break;

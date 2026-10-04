@@ -762,6 +762,50 @@ static void CoreAssets_AdvanceScreenshotName(void)
 }
 
 
+/* Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones
+   digit) after a screenshot was written, wrapping from 99 to 00. */
+void Screenshot_AdvanceFileName(void)
+
+{
+  uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
+  uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
+
+  (*digitLow)++;
+  if (*digitLow > '9') {
+    (*digitHigh)++;
+    *digitLow = *digitLow - 10;
+    if (*digitHigh > '9') {
+      *digitHigh = *digitHigh - 10;
+    }
+  }
+}
+
+/* Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer,
+   writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter. A failed capture or encoding
+   writes nothing and keeps the name. */
+void Screenshot_SaveFramebufferAsPcx(void)
+
+{
+  GraphicsCapturedTextureSourceAsset *capture;
+  void *pcxBytes;
+  uint32_t pcxByteCount;
+  uint32_t pcxError;
+
+  capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  if (capture == NULL) {
+    return;
+  }
+  if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
+    g_MemoryApi.free(capture);
+    return;
+  }
+  FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,g_ScreenshotFileNameUtf16);
+  g_MemoryApi.free(pcxBytes);
+  g_MemoryApi.free(capture);
+  Screenshot_AdvanceFileName();
+}
+
+
 /* Binds placeholders 0..13 of the world view info texts to the debug-overlay text slots and installs the
    in-game and frontend UI action handler pages. */
 static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)

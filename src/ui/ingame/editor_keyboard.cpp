@@ -190,9 +190,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 {
   UiNodeVtable **stack;
   int32_t *counterField;
-  wchar_t screenshotTensDigit;
-  wchar_t screenshotOnesDigit;
-  uint32_t *dispatchRecord;
+uint32_t *dispatchRecord;
   uint32_t activePageIndex;
   GraphicsCapturedTextureSourceAsset *capturedFramebuffer;
 
@@ -472,16 +470,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       FileSystem_WriteBufferToPath
                 ((capturedFramebuffer->common).allocationSizeBytes,capturedFramebuffer,
                  g_ScreenshotFileNameUtf16);
-      screenshotOnesDigit = g_ScreenshotFileNameUtf16[7];
-      screenshotTensDigit = g_ScreenshotFileNameUtf16[6];
-      g_ScreenshotFileNameUtf16[7] = g_ScreenshotFileNameUtf16[7] + 1;
-      if (L'9' < (uint16_t)g_ScreenshotFileNameUtf16[7]) {
-        g_ScreenshotFileNameUtf16[6] = g_ScreenshotFileNameUtf16[6] + 1;
-        g_ScreenshotFileNameUtf16[7] = screenshotOnesDigit - 9; /* '9' + 1 - 10: back to '0' */
-        if (L'9' < (uint16_t)g_ScreenshotFileNameUtf16[6]) {
-          g_ScreenshotFileNameUtf16[6] = screenshotTensDigit - 9;
-        }
-      }
+      Screenshot_AdvanceFileName();
     }
     break;
   case 0x56f1c0: /* Alt+Q: leave the editor and the session */

@@ -114,6 +114,11 @@ extern GameDataAuxState g_GameDataAuxState;
 extern UPtr32 g_FrontendPlayerListRows[8]; /* pointers (as uintptr_t) to the eight 0x80-byte lobby player list rows */
 extern uint32_t g_IntroMoviePendingTicks;
 extern uint16_t g_ScreenshotFileNameUtf16[13]; /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
+
+void Screenshot_AdvanceFileName(void);
+
+void Screenshot_SaveFramebufferAsPcx(void);
+
 extern DynamicApiBinding g_BootstrapApiBindings[6]; /* 5 bindings + the all-zero terminator [5] that ends the DynAPI_Bootstrap scan */
 extern HWND g_MainWindow;
 
