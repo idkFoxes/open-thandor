@@ -35,7 +35,11 @@ SCENARIO_CATALOG = {'battle': 0, 'turrets': 1, 'production': 2}  # level<NN>.dat
 def catalog_ids():
     """(unit ids, building ids) from the PckArmyAssetIdCatalog enum: 1..299 units, 300..399 buildings."""
     text = open(TYPES_H, encoding='utf-8').read()
-    body = re.search(r'typedef enum PckArmyAssetIdCatalog\s*\{(.*?)\}', text, re.S).group(1)
+    # 'enum { ... };' followed by 'typedef int PckArmyAssetIdCatalog;' (C++ headers since step 5e), or the
+    # older 'typedef enum PckArmyAssetIdCatalog { ... }'
+    match = (re.search(r'enum\s*\{([^{}]*)\};\s*typedef int PckArmyAssetIdCatalog;', text) or
+             re.search(r'typedef enum PckArmyAssetIdCatalog\s*\{(.*?)\}', text, re.S))
+    body = match.group(1)
     ids = sorted(int(v) for _, v in re.findall(r'(\w+)=(\d+)', body))
     return [i for i in ids if 1 <= i < 300], [i for i in ids if 300 <= i < 400]
 

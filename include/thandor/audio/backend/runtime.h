@@ -87,4 +87,7 @@ extern SoundStopAllVoicesProc *g_SoundStopAllVoices;
 
 extern SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet;
 
+/* DirectSound attenuation (1/100 dB) by channel gain Q15 >> 8 (also the SDL3 backend's gain curve) */
+extern const int32_t g_DirectSoundGainAttenuation[129];
+
 #endif /* THANDOR_AUDIO_BACKEND_RUNTIME_H */

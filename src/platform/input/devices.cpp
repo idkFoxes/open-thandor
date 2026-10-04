@@ -197,6 +197,68 @@ static Bool8 DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
 }
 
 
+/* DirectInputMouse_Init step, shared with the SDL3 backend (SdlInput_Init): loads the cursor images
+   (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table (engine\mouse.dat) and
+   starts every cursor on the first frame of its animations. Returns false with the load error in *outError. */
+Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
+
+{
+  GraphicsSubresourceIndex activeFirstSubresource;
+  GraphicsTextureSourceAsset *cursorAsset;
+  GraphicsCursorFrameRecord *frameRecord;
+  uint32_t remainingFrames;
+  uint32_t subresourceIndex;
+  uint32_t maxHeight;
+  uint32_t maxWidth;
+  void *cursorFrameData;
+  uint32_t cursorFrameBytes;
+  uint32_t cursorLoadErrorCode;
+  GraphicsTextureLogicalSize logicalSize;
+
+  /* cursor images: the largest image size sizes the cursor buffers */
+  cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
+  if (cursorAsset == NULL) {
+    *outError = cursorLoadErrorCode;
+    return false;
+  }
+  maxWidth = 0;
+  maxHeight = 0;
+  subresourceIndex = 0;
+  g_CursorSourceAsset = cursorAsset;
+  do {
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorAsset);
+    subresourceIndex++;
+    if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
+      maxWidth = logicalSize.logicalWidthPixels;
+    }
+    if ((int)maxHeight < (int)logicalSize.logicalHeightPixels) {
+      maxHeight = logicalSize.logicalHeightPixels;
+    }
+  } while (subresourceIndex < (cursorAsset->tableDescriptor).subresourceCount);
+  g_CursorMaxWidth = maxWidth;
+  g_CursorMaxHeight = maxHeight;
+
+  /* cursor frame table */
+  if (!Resource_Load(g_EngineMouseDatPathUtf16,&cursorFrameData,&cursorFrameBytes,&cursorLoadErrorCode)) {
+    *outError = cursorLoadErrorCode;
+    return false;
+  }
+  remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
+  frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
+  g_CursorFrameRecords = frameRecord;
+  g_CursorFrameCount = remainingFrames;
+  /* every cursor starts on the first frame of its animations */
+  do {
+    activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
+    frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
+    frameRecord->activeSubresourceIndex = activeFirstSubresource;
+    frameRecord++;
+    remainingFrames--;
+  } while (remainingFrames != 0);
+  return true;
+}
+
+
 /* Starts the mouse: binds DirectInputCreateA from the DLL, hides the Windows cursor, creates an exclusive
    foreground buffered DirectInput mouse, hooks display-mode changes, starts the cursor-animation (20 Hz)
    and mouse-poll (64 Hz) timers, loads the cursor images (engine\mouse.gfx) and frame table
@@ -207,21 +269,10 @@ static Bool8 DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
 Bool8 DirectInputMouse_Init(uint32_t *outError)
 
 {
-  GraphicsSubresourceIndex activeFirstSubresource;
   uint16_t keyState;
   TH_LEGACY_HRESULT directInputResult;
-  GraphicsTextureSourceAsset *cursorAsset;
-  GraphicsCursorFrameRecord *frameRecord;
-  uint32_t remainingFrames;
-  uint32_t subresourceIndex;
-  uint32_t maxHeight;
-  uint32_t maxWidth;
   HINSTANCE directInputModule;
   uint32_t resolveError;
-  void *cursorFrameData;
-  uint32_t cursorFrameBytes;
-  uint32_t cursorLoadErrorCode;
-  GraphicsTextureLogicalSize logicalSize;
 
   directInputModule = DynDLL_Load(dynapi_3);
   if (directInputModule == NULL) {
@@ -264,46 +315,9 @@ Bool8 DirectInputMouse_Init(uint32_t *outError)
   g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
   g_PointerSetPosition = DirectInputMouse_SetPosition;
 
-  /* cursor images: the largest image size sizes the cursor buffers */
-  cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
-  if (cursorAsset == NULL) {
-    *outError = cursorLoadErrorCode;
+  if (!GraphicsCursor_LoadAssets(outError)) {
     return false;
   }
-  maxWidth = 0;
-  maxHeight = 0;
-  subresourceIndex = 0;
-  g_CursorSourceAsset = cursorAsset;
-  do {
-    logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorAsset);
-    subresourceIndex++;
-    if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
-      maxWidth = logicalSize.logicalWidthPixels;
-    }
-    if ((int)maxHeight < (int)logicalSize.logicalHeightPixels) {
-      maxHeight = logicalSize.logicalHeightPixels;
-    }
-  } while (subresourceIndex < (cursorAsset->tableDescriptor).subresourceCount);
-  g_CursorMaxWidth = maxWidth;
-  g_CursorMaxHeight = maxHeight;
-
-  /* cursor frame table */
-  if (!Resource_Load(g_EngineMouseDatPathUtf16,&cursorFrameData,&cursorFrameBytes,&cursorLoadErrorCode)) {
-    *outError = cursorLoadErrorCode;
-    return false;
-  }
-  remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
-  frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
-  g_CursorFrameRecords = frameRecord;
-  g_CursorFrameCount = remainingFrames;
-  /* every cursor starts on the first frame of its animations */
-  do {
-    activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
-    frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
-    frameRecord->activeSubresourceIndex = activeFirstSubresource;
-    frameRecord++;
-    remainingFrames--;
-  } while (remainingFrames != 0);
 
   keyState = GetKeyState(VK_NUMLOCK);
   if ((keyState & 1) != 0) {
@@ -594,10 +608,25 @@ Bool8 DirectInputMouse_SetDisplayMode
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
 
 {
-  SoftwareFramebufferAccess *primaryFramebuffer;
-  SoftwareFramebufferAccess *newCursorFramebuffer;
-  SoftwareFramebufferAccess *newCompositeFramebuffer;
+  GraphicsCursor_FreeBuffers();
+  if (!g_DirectInputMouseChainedSetDisplayMode
+                    (adapterIndex,bitsPerPixel,framebufferHeight,framebufferWidth,errorCode)) {
+    return false; /* the chained hook's error is passed through */
+  }
+  if (!GraphicsCursor_CreateBuffersAndCenter(framebufferHeight,framebufferWidth,errorCode)) {
+    return false;
+  }
+  g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
+  g_GraphicsBackendAccessState = 0;
+  return true;
+}
 
+
+/* First half of the mouse display-mode hook, shared with the SDL3 backend: blocks backend access (timer cursor
+   drawing) for the switch and frees the three cursor buffers. */
+void GraphicsCursor_FreeBuffers(void)
+
+{
   g_GraphicsBackendAccessState = -1; /* blocks backend access (timer cursor drawing) during the switch */
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
@@ -605,10 +634,21 @@ Bool8 DirectInputMouse_SetDisplayMode
   g_CursorSavedBackground = NULL;
   g_CursorCompositeBuffer = NULL;
   g_CursorAlternateSavedBackground = NULL;
-  if (!g_DirectInputMouseChainedSetDisplayMode
-                    (adapterIndex,bitsPerPixel,framebufferHeight,framebufferWidth,errorCode)) {
-    return false; /* the chained hook's error is passed through */
-  }
+}
+
+
+/* Second half of the mouse display-mode hook, after the mode switch, shared with the SDL3 backend: recreates
+   the three cursor buffers in the new pixel format, converts the cursor palette and centres the mouse. Returns
+   false with the allocator error in *errorCode when a buffer creation fails (the buffers created so far stay
+   installed). */
+Bool8 GraphicsCursor_CreateBuffersAndCenter
+          (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
+
+{
+  SoftwareFramebufferAccess *primaryFramebuffer;
+  SoftwareFramebufferAccess *newCursorFramebuffer;
+  SoftwareFramebufferAccess *newCompositeFramebuffer;
+
   primaryFramebuffer = g_FramebufferAccess;
   /* a failing create stores its allocator error in *errorCode */
   newCursorFramebuffer = g_SoftwareFramebufferCreate
@@ -635,8 +675,6 @@ Bool8 DirectInputMouse_SetDisplayMode
   g_CursorOverrideY = framebufferHeight >> 1;
   g_MouseX = g_CursorOverrideX;
   g_MouseY = g_CursorOverrideY;
-  g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-  g_GraphicsBackendAccessState = 0;
   return true;
 }
 

@@ -103,11 +103,21 @@ void Runtime_Shutdown(void)
   /* any nonzero state makes the present and the cursor timer skip their work from now on */
   g_GraphicsBackendAccessState = -1;
   UiRuntime_Shutdown();
+#ifdef THANDOR_PLATFORM_SDL3
+  SdlInput_Shutdown();
+  Graphics_Shutdown();
+  SdlVideo_Shutdown();
+  Network_Shutdown();
+  SdlAudio_Shutdown();
+  SdlTimer_Shutdown();
+  TimerSystem_Shutdown();
+#else
   DirectInputMouse_Shutdown();
   Graphics_Shutdown();
   Network_Shutdown();
   DirectSound_Shutdown();
   TimerSystem_Shutdown();
+#endif
   DynDLL_UnloadAll();
   Win32FileSystem_RestoreInitialDirectory();
   ArenaHeap_Shutdown();

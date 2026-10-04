@@ -1731,7 +1731,9 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   g_DirectInputMouseRefreshCountdown--;
   if (g_DirectInputMouseRefreshCountdown == 0) {
     g_DirectInputMouseRefreshCountdown = UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL;
+#ifndef THANDOR_PLATFORM_SDL3 /* the SDL3 backend has no DirectInput device to refresh */
     DirectInputMouse_RefreshDeviceIfIdle();
+#endif
   }
   g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);

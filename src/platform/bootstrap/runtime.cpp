@@ -194,19 +194,14 @@ Win32MainMessageStorage g_MainMessageStorage = {
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
-/* Process entry: raises the process to real-time priority, creates the full-screen main window (only
-   one instance may run), initialises every subsystem, sets the initial 640x480 display mode from the
-   saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
-   fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line.
+/* ProcessEntry once the main window exists: initialises every subsystem, sets the initial 640x480 display
+   mode from the saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
+   fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line. The
+   platform backends are DirectDraw, DirectInput and DirectSound, or SDL3 with THANDOR_PLATFORM_SDL3.
 */
-void __cdecl ProcessEntry(void)
+static void ProcessEntry_RunGame(void)
 
 {
-  HANDLE processHandle;
-  HANDLE threadHandle;
-  HINSTANCE windowInstance;
-  int screenHeight;
-  int screenWidth;
   uint32_t networkResult;
   uint32_t bootstrapError;
   uint32_t graphicsError;
@@ -219,12 +214,98 @@ void __cdecl ProcessEntry(void)
   uint32_t displayWidth;
   uint32_t displayHeight;
 
+  ArenaHeap_Init();
+  FileSystem_Init();
+  Locale_Init();
+  ErrorSystem_Init();
+  if (g_CpuFeatureFlags == 0) {
+    FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
+  }
+  bootstrapError = DynAPI_Bootstrap();
+  checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
+  /* TimerSystem_Init only installs the timer procs and always succeeds */
+  TimerSystem_Init();
+#ifdef THANDOR_PLATFORM_SDL3
+  /* SDL timers and the SDL event pump replace the WinMM timers and the Win32 message pump */
+  SdlPlatform_InstallTimersAndPump();
+#endif
+  checkedValue = FatalError_ExitIfFailed(checkedValue,false);
+#ifdef THANDOR_PLATFORM_SDL3
+  graphicsError = SdlVideo_Init();
+#else
+  graphicsError = Graphics_Init();
+#endif
+  FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
+#ifdef THANDOR_PLATFORM_SDL3
+  if (!SdlInput_Init(&mouseInitError)) {
+#else
+  if (!DirectInputMouse_Init(&mouseInitError)) {
+#endif
+    FatalError_ExitIfFailed(mouseInitError,true);
+  }
+#ifdef THANDOR_PLATFORM_SDL3
+  soundError = SdlAudio_Init();
+  Thandor_Log("SdlAudio_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
+#else
+  soundError = DirectSound_Init();
+  Thandor_Log("DirectSound_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
+#endif
+  if (soundError != 0) {
+    /* without a sound device the game only stops when -SOUND demands sound */
+    if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
+      FatalError_ExitIfFailed(soundError,true);
+    }
+  }
+  networkResult = Network_Init();
+  /* the original Network_Init reports success on every path, failures included, so a missing
+     WinSock is never fatal: the check below always passes. */
+  FatalError_ExitIfFailed(networkResult,false);
+  PersistentSettings_Load();
+  displayWidth = GAME_START_DISPLAY_WIDTH;
+  displayHeight = GAME_START_DISPLAY_HEIGHT;
+  bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
+  adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
+  if (g_GraphicsAdapterCount <= adapterIndex) {
+    adapterIndex = 0;
+  }
+  if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
+    FatalError_ExitIfFailed(displayModeError,true);
+  }
+  UiRuntime_Initialize();
+  Game_Run();
+  Runtime_Shutdown();
+}
+
+
+/* Process entry: raises the process to real-time priority, creates the full-screen main window (only
+   one instance may run), runs the game (ProcessEntry_RunGame) and ends the process.
+*/
+void __cdecl ProcessEntry(void)
+
+{
+  HANDLE processHandle;
+  HANDLE threadHandle;
+#ifndef THANDOR_PLATFORM_SDL3
+  HINSTANCE windowInstance;
+  int screenHeight;
+  int screenWidth;
+#endif
+
   g_hInstance = GetModuleHandleA(NULL);
   processHandle = GetCurrentProcess();
   SetPriorityClass(processHandle,REALTIME_PRIORITY_CLASS);
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
+#ifdef THANDOR_PLATFORM_SDL3
+  /* SDL3: the window has SDL's class, so the running instance is found by its title */
+  if ((FindWindowA(NULL,sz_MainWindowTitle) == NULL) || DebugHook_AllowSecondInstance()) {
+    if (SdlPlatform_CreateMainWindow(sz_MainWindowTitle)) {
+      ProcessEntry_RunGame();
+      SdlPlatform_Quit();
+    }
+  }
+#else
   if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || DebugHook_AllowSecondInstance()) {
     g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
     g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
@@ -242,53 +323,12 @@ void __cdecl ProcessEntry(void)
       if (g_MainWindow != NULL) {
         ShowWindow(g_MainWindow,SW_SHOWNORMAL);
         UpdateWindow(g_MainWindow);
-        ArenaHeap_Init();
-        FileSystem_Init();
-        Locale_Init();
-        ErrorSystem_Init();
-        if (g_CpuFeatureFlags == 0) {
-          FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
-        }
-        bootstrapError = DynAPI_Bootstrap();
-        checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
-        /* TimerSystem_Init only installs the timer procs and always succeeds */
-        TimerSystem_Init();
-        checkedValue = FatalError_ExitIfFailed(checkedValue,false);
-        graphicsError = Graphics_Init();
-        FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
-        if (!DirectInputMouse_Init(&mouseInitError)) {
-          FatalError_ExitIfFailed(mouseInitError,true);
-        }
-        soundError = DirectSound_Init();
-        Thandor_Log("DirectSound_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
-        if (soundError != 0) {
-          /* without a sound device the game only stops when -SOUND demands sound */
-          if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
-            FatalError_ExitIfFailed(soundError,true);
-          }
-        }
-        networkResult = Network_Init();
-        /* the original Network_Init reports success on every path, failures included, so a missing
-           WinSock is never fatal: the check below always passes. */
-        FatalError_ExitIfFailed(networkResult,false);
-        PersistentSettings_Load();
-        displayWidth = GAME_START_DISPLAY_WIDTH;
-        displayHeight = GAME_START_DISPLAY_HEIGHT;
-        bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
-        adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
-        if (g_GraphicsAdapterCount <= adapterIndex) {
-          adapterIndex = 0;
-        }
-        if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
-          FatalError_ExitIfFailed(displayModeError,true);
-        }
-        UiRuntime_Initialize();
-        Game_Run();
-        Runtime_Shutdown();
+        ProcessEntry_RunGame();
         DestroyWindow(g_MainWindow);
       }
     }
   }
+#endif
   ExitProcess(0);
 }
 

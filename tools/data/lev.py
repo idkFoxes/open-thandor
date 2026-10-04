@@ -283,7 +283,8 @@ def army_name(asset_id):
         types_h = os.path.join(os.path.dirname(__file__), '..', '..', 'include', 'thandor', 'generated', 'types.h')
         try:
             text = open(types_h, encoding='utf-8', errors='replace').read()
-            body = re.search(r'typedef enum PckArmyAssetIdCatalog \{(.*?)\}', text, re.S)
+            body = (re.search(r'enum\s*\{([^{}]*)\};\s*typedef int PckArmyAssetIdCatalog;', text) or
+                    re.search(r'typedef enum PckArmyAssetIdCatalog \{(.*?)\}', text, re.S))
             if body:
                 for name, value in re.findall(r'(\w+)=(\d+)', body.group(1)):
                     _ARMY_NAMES[int(value)] = name

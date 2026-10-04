@@ -377,8 +377,9 @@ static void GraphicsDirectDraw_StoreSoftwarePixelFormat(void)
   g_SoftwarePixelFormatConfig.blueBitCount = (highestBit + 1) - g_SoftwarePixelFormatConfig.blueShift;
 }
 
-/* Publishes the display framebuffer of the new mode and selects the 16- or 32-bit software blitters. */
-static void GraphicsDirectDraw_PublishFramebuffer
+/* Publishes the display framebuffer of the new mode and selects the 16- or 32-bit software blitters (also used
+   by the SDL3 backend, which then installs its own present and capture functions and the permanent pixels). */
+void GraphicsDirectDraw_PublishFramebuffer
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 {

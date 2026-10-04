@@ -94,6 +94,13 @@ Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
+Bool8 GraphicsCursor_LoadAssets(uint32_t *outError);
+
+void GraphicsCursor_FreeBuffers(void);
+
+Bool8 GraphicsCursor_CreateBuffersAndCenter
+          (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
+
 Bool8 DirectInputMouse_Init(uint32_t *outError);
 
 void DirectInputMouse_RefreshDeviceIfIdle(void);

@@ -42,7 +42,7 @@ static DirectSoundVoiceSet **g_DirectSoundVoiceSetRegistry = 0;
 
 /* DirectSound attenuation (1/100 dB) indexed by channel gain Q15 >> 8 (0..128; the spatial gains are
    clamped to SPATIAL_SOUND_GAIN_Q15_FULL); [128] = 0. 14 bytes of NOP fill followed in the original. */
-static const int32_t g_DirectSoundGainAttenuation[129] = {
+const int32_t g_DirectSoundGainAttenuation[129] = {
         /*   0 */ -10000, -7000, -6000, -5415, -5000, -4678, -4415, -4193,
         /*   8 */ -4000, -3830, -3678, -3540, -3415, -3300, -3193, -3093,
         /*  16 */ -3000, -2913, -2830, -2752, -2678, -2608, -2541, -2476,
