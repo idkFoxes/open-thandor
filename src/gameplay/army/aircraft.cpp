@@ -158,16 +158,15 @@ static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,Model
   }
 }
 
-/* Approach: as soon as ArmyRuntime_TestWorldPointAllowedDefault rejects the target point (classState70/74), the
-   aircraft is placed travelStepCount movement steps behind it on the attack heading (classState78) and starts
-   the attack run (drop countdown armyLinkOrState = travelStepCount, run length classState68 = twice that). The
-   run height is the highest terrain sampled every 10 movement steps along the run, plus half a unit and twice
-   the parked height (classState80). */
+/* Approach: the aircraft is placed travelStepCount movement steps behind the target point (classState70/74) on
+   the attack heading (classState78) and starts the attack run (drop countdown armyLinkOrState = travelStepCount,
+   run length classState68 = twice that). The run height is the highest terrain sampled every 10 movement steps
+   along the run, plus half a unit and twice the parked height (classState80). The original first tested the
+   target point with a world point stub that always rejected it, so the approach always starts at once. */
 static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *rootNode;
-  Bool8 pointAllowed;
   AngleTurn32 attackHeading;
   FixedSinCos sinCosStep;
   uint32_t travelSteps;
@@ -180,13 +179,6 @@ static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelR
 
   definition = modelRuntime->modelDefinition;
   rootNode = modelRuntime->rootModelNode;
-  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                     (definition->worldPointAllowedContext,
-                      (modelRuntime->classLinkState).classState74,
-                      (modelRuntime->classLinkState).classState70);
-  if (pointAllowed) {
-    return;
-  }
   attackHeading = (modelRuntime->classLinkState).classState78;
   sinCosStep = FixedMath_SinCosScaled
                      (attackHeading ^ FIXED_ANGLE16_HALF_TURN,definition->movementStepQ12 * definition->travelStepCount);
@@ -292,16 +284,15 @@ static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,Model
   } while (remainingTicks != 0);
 }
 
-/* Returning (off the map): once the home pad's hangar is idle and ArmyRuntime_TestWorldPointAllowedDefault
-   rejects the pad position, the hangar starts opening (with its sound) and the aircraft is placed phaseDuration
-   movement steps behind the pad on the pad's heading to fly its landing arc. */
+/* Returning (off the map): once the home pad's hangar is idle, the hangar starts opening (with its sound) and the
+   aircraft is placed phaseDuration movement steps behind the pad on the pad's heading to fly its landing arc. The
+   original also tested the pad position with a world point stub that always rejected it. */
 static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
           ModelRuntimeSlot *homeModelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *padNode;
   ModelRuntimeNode *aircraftNode;
-  Bool8 pointAllowed;
   AngleTurn32 padHeading;
   FixedSinCos sinCosStep;
   uint32_t landingSteps;
@@ -309,13 +300,6 @@ static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,Model
   definition = modelRuntime->modelDefinition;
   padNode = (homeModelRuntime->rootModelNodeOrSavedOffset).modelNode;
   if ((homeModelRuntime->classState).classStateB0 != ARMY_PAD_HANGAR_IDLE) {
-    return;
-  }
-  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                     (definition->worldPointAllowedContext,
-                      (padNode->worldTransform).translation.y,
-                      (padNode->worldTransform).translation.x);
-  if (pointAllowed) {
     return;
   }
   (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_OPENING;
@@ -701,10 +685,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_IDLE;
     /* fall through: the idle hangar launches the next pending aircraft */
   case ARMY_PAD_HANGAR_IDLE:
-    if (((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) &&
-       !ArmyRuntime_TestWorldPointAllowedDefault
-                  (linkedChildDefinition->visibilityRadius,(modelNodeRuntime->worldTransform).translation.y,
-                   (modelNodeRuntime->worldTransform).translation.x)) {
+    /* the original also required a world point stub (always false) to reject the pad position */
+    if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
       /* the first pending slot whose aircraft can be created opens the hangar */
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft
@@ -730,13 +712,4 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
-}
-
-/* Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always
-   returns false, so the callers' `!result` branches are always taken.
-*/
-Bool8 ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
-
-{
-  return false;
 }
