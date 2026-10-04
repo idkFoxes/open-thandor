@@ -11,9 +11,9 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(8) GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque = 0;
+THANDOR_ALIGN(8) GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque = nullptr;
 
-THANDOR_ALIGN(4) GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped = nullptr;
 
 static const UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 
@@ -66,7 +66,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   context->selectedHitMetric = (int)bestHit;
   context->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK) != 0) {
-    if (context->heldButtonCursorCallback != NULL)
+    if (context->heldButtonCursorCallback != nullptr)
     {
       callbackResult = context->heldButtonCursorCallback
                         (context->surfaceHitDepth,context->surfaceHitWorldY,
@@ -78,7 +78,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) ==
       0) {
-    if (context->hoverCursorCallback != NULL)
+    if (context->hoverCursorCallback != nullptr)
     {
       callbackResult = context->hoverCursorCallback
                         (context->surfaceHitDepth,context->surfaceHitWorldY,
@@ -188,7 +188,7 @@ void FrontendModelPointerContext_NonRightPress
   callbackContext->contextFlags =
        callbackContext->contextFlags | FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
   if (callbackContext->buttonPressCallback !=
-      NULL) {
+      nullptr) {
     callbackContext->buttonPressCallback
               (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
@@ -216,7 +216,7 @@ void FrontendModelPointerContext_NonRightRelease
   callbackContext->contextFlags =
        callbackContext->contextFlags & ~FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
   if (callbackContext->buttonReleaseCallback !=
-      NULL) {
+      nullptr) {
     callbackContext->buttonReleaseCallback
               (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
@@ -244,7 +244,7 @@ void FrontendModelPointerContext_NonRightDrag
   callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   if (callbackContext->buttonDragCallback !=
-      NULL) {
+      nullptr) {
     callbackContext->buttonDragCallback
               (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
                callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
@@ -282,8 +282,8 @@ void FrontendModelPointerContext_Relocate
   }
   control->worldObjectArray = 0;
   control->worldObjectCount = 0;
-  control->candidateModelListHead = NULL;
-  control->selectedOverlayEntity = NULL;
+  control->candidateModelListHead = nullptr;
+  control->selectedOverlayEntity = nullptr;
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   return;
 }
@@ -369,7 +369,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   g_SpinLockAcquire(control->renderSpinLock);
   cursorOverrideY = g_CursorOverrideY;
   cursorOverrideX = g_CursorOverrideX;
-  control->selectedModelNode = NULL;
+  control->selectedModelNode = nullptr;
   control->selectedHitMetric = WORLD_POINTER_NO_HIT;
   control->surfaceHitWorldX = WORLD_POINTER_NO_HIT;
   control->surfaceHitWorldY = WORLD_POINTER_NO_HIT;
@@ -405,11 +405,11 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
   Graphics_SetActivePrimitiveQueue(frameQueue);
   control->activePrimitiveQueue = frameQueue;
-  if (control->renderPhaseCallback != NULL) {
+  if (control->renderPhaseCallback != nullptr) {
     control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
   }
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
-  for (modelNode = control->candidateModelListHead; modelNode != NULL;
+  for (modelNode = control->candidateModelListHead; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
         ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) {
@@ -419,13 +419,13 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       }
     }
   }
-  if (control->renderPhaseCallback != NULL) {
+  if (control->renderPhaseCallback != nullptr) {
     control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
   }
   FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
+  if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr)) {
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
     control->activePrimitiveQueue = frameQueue;
@@ -439,9 +439,9 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
     control->activePrimitiveQueue = frameQueue;
-    if (modelNode != NULL) {
+    if (modelNode != nullptr) {
       GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
-      for (; modelNode != NULL; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+      for (; modelNode != nullptr; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
         if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
             ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0) &&
             ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
@@ -458,11 +458,11 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
   Graphics_SetActivePrimitiveQueue(frameQueue);
   control->activePrimitiveQueue = frameQueue;
-  if (control->renderPhaseCallback != NULL) {
+  if (control->renderPhaseCallback != nullptr) {
     control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
   }
   renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
-  for (modelNode = control->candidateModelListHead; modelNode != NULL;
+  for (modelNode = control->candidateModelListHead; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if ((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) {
       modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
@@ -471,7 +471,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       }
     }
   }
-  if (control->renderPhaseCallback != NULL) {
+  if (control->renderPhaseCallback != nullptr) {
     control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
   }
   FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
@@ -495,7 +495,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS) == 0) {
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) {
       SelectionOverlay_RenderSelectedArmyMetrics(clipBottom,clipRight,clipTop,clipLeft);
-      if ((control->selectedOverlayEntity != NULL) &&
+      if ((control->selectedOverlayEntity != nullptr) &&
           SelectionInfo_IsEntryAbsent(control->selectedOverlayEntity)) {
         SelectionOverlay_RenderArmyMetricsForEntity
                   (clipBottom,clipRight,clipTop,clipLeft,control->selectedOverlayEntity);
@@ -529,7 +529,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
                 (clipBottom,clipRight,clipTop,clipLeft,(uint8_t)control->selectedResourceMarkerIndex,
                  control->fieldGrid);
     }
-    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
+    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != nullptr))
        && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS) != 0)) {
       SelectionOverlay_DrawDebugMarkedCellMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
@@ -537,9 +537,9 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
   g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-  if ((control->selectedModelNode != NULL) &&
+  if ((control->selectedModelNode != nullptr) &&
      ((int)control->surfaceHitDepth < control->selectedHitMetric)) {
-    control->selectedModelNode = NULL;
+    control->selectedModelNode = nullptr;
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   return;
@@ -580,7 +580,7 @@ void FrontendModelPointerContext_RightRelease
   callbackContext->contextFlags = callbackContext->contextFlags &
        ~(FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION | FRONTEND_CAMERA_MOTION_MASK);
   if ((callbackContext->rightButtonHeldTicks < 7) &&
-     (callbackContext->rightClickCallback != NULL)) {
+     (callbackContext->rightClickCallback != nullptr)) {
     callbackContext->rightClickCallback(callbackContext);
   }
   return;
@@ -707,7 +707,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
   g_PointerSetPosition(callbackContext->pointerCaptureY,callbackContext->pointerCaptureX);
   clearTransientCallback = callbackContext->fieldRegion.clearTransientStateCallback;
   WorldRuntime_CaptureMotionStateToSnapshot(callbackContext);
-  if (clearTransientCallback != NULL) {
+  if (clearTransientCallback != nullptr) {
     clearTransientCallback(callbackContext);
   }
   return;
@@ -754,7 +754,7 @@ Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStat
           FrontendModelPointerHitContext *control)
 
 {
-  if (control->keyboardFallback != NULL &&
+  if (control->keyboardFallback != nullptr &&
       !control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control)) {
     return false;
   }
@@ -851,13 +851,13 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
      (UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack) == 0)) {
     pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
     recordId = FRONTEND_ROM_RECORD_ID_NONE;
-    if (pointedRomRecord != NULL) {
+    if (pointedRomRecord != nullptr) {
       recordId = pointedRomRecord->recordId;
     }
     transitionRecord = (int *)RomRecordTable_FindRecordById(recordId,(void *)g_FrontendActiveRomRecord);
     /* Skip records without a transition, network-only pages (3/4/9/negative) in a networked session and the
        network page (2) when no backend exists. */
-    if ((transitionRecord != NULL) &&
+    if ((transitionRecord != nullptr) &&
        ((((transitionRecord[8] != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
           (transitionRecord[8] != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
          (transitionRecord[8] != FRONTEND_PAGE_ACTION_CREDITS)) &&
@@ -904,7 +904,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   if (hintValue == 0) {
     if (g_FrontendPendingPageActionDepth == 0) {
       frontendRuntime->hintBox.hintActive = 0;
-      frontendRuntime->hintBox.commandStream = NULL;
+      frontendRuntime->hintBox.commandStream = nullptr;
       return resultCode;
     }
     hintValue = 1;
@@ -972,7 +972,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     slotRecord = RomRegistry_FindRecordBySlotValue(pointedModelNode);
-    if (slotRecord != NULL) {
+    if (slotRecord != nullptr) {
       recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,(void *)g_FrontendActiveRomRecord);
       if (-1 < (int)recordIndex) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1024,9 +1024,9 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   int candidatePriority;
   int bestPriority;
 
-  bestModelNode = NULL;
+  bestModelNode = nullptr;
   bestHitMetric = WORLD_POINTER_NO_HIT;
-  for (modelNode = context->candidateModelListHead; modelNode != NULL;
+  for (modelNode = context->candidateModelListHead; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if ((modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
         ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
@@ -1036,7 +1036,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
         if ((int)bestHitMetric <= (int)hitDistanceQ12) continue;
       }
-      else if (bestModelNode != NULL) {
+      else if (bestModelNode != nullptr) {
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
         candidatePriority =
              (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)

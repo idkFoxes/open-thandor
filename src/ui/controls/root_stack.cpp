@@ -84,7 +84,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   UiKeyboardFocus_SelectInitial(&root->base);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-  g_UiTooltipState.targetNode = NULL;
+  g_UiTooltipState.targetNode = nullptr;
   return;
 }
 
@@ -107,7 +107,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
   }
   belowRoot = root->previousRoot;
   closeCallbackVetoed = false;
-  if (root->callbacks->vetoClose != NULL) {
+  if (root->callbacks->vetoClose != nullptr) {
     closeCallbackVetoed = root->callbacks->vetoClose(root);
   }
   if (closeCallbackVetoed) {
@@ -123,7 +123,7 @@ Bool8 UiRootStack_Pop(UiRootNode *root)
   }
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-  g_UiImageControlHoverTarget = NULL;
+  g_UiImageControlHoverTarget = nullptr;
   UiRootStack_InvalidateAll();
   return false;
 }

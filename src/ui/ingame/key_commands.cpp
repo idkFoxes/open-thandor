@@ -245,7 +245,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
        runtime class 11 */
     WorldOwnerListNode *ownerNode = world->ownerListHead;
     uint32_t faction = world->activeFactionRuntimeIndex;
-    for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       uint8_t *modelRuntime;
       if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
@@ -302,8 +302,8 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
         != 1) {
       break;
     }
-        if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,NULL);
+        if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != nullptr)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,nullptr);
     }
     InGameTechnologyPanel_ToggleForSelection((UiNodeBase *)world);
     break;

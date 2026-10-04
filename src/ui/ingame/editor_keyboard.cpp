@@ -51,7 +51,7 @@ THANDOR_ALIGN(16) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = 
     /* 36: terminator (key code 0 ends the scan; the other two dwords are 0x90 fill) */
     {.commandCode = 0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}};
 
-UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord = 0;
+UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord = nullptr;
 
 uint32_t g_UiCommandModeGArmyAssetId = 0;
 
@@ -86,7 +86,7 @@ static void InGameEditorKeyboard_SelectMaterialBackward(int stepCount,UiRootNode
   if ((int)materialIndex < 0) {
     materialIndex = TERRAIN_MATERIAL_COUNT - 1;
   }
-  while (g_TerrainMaterialTextureSets[materialIndex] == NULL || --remainingSteps != 0) {
+  while (g_TerrainMaterialTextureSets[materialIndex] == nullptr || --remainingSteps != 0) {
     materialIndex--;
     if ((int)materialIndex < 0) {
       materialIndex = TERRAIN_MATERIAL_COUNT - 1;
@@ -107,7 +107,7 @@ static void InGameEditorKeyboard_SelectMaterialForward(int stepCount,UiRootNode 
   if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
     materialIndex = 0;
   }
-  while (g_TerrainMaterialTextureSets[materialIndex] == NULL || --remainingSteps != 0) {
+  while (g_TerrainMaterialTextureSets[materialIndex] == nullptr || --remainingSteps != 0) {
     materialIndex++;
     if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
       materialIndex = 0;

@@ -51,7 +51,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
     }
     drawX = (control->base).left;
     drawY = (control->base).top;
-    if (control->textureSource != NULL) {
+    if (control->textureSource != nullptr) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize
                         (control->subresource,control->textureSource);
       slackWidth = (control->base).layoutWidth - textureSize.logicalWidthPixels;
@@ -125,7 +125,7 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
     if ((!skipTextureTest) && ((control->panelFlags & UI_IMAGE_PANEL_HIT_WHOLE_BOX) == 0)) {
       drawX = (control->base).left;
       drawY = (control->base).top;
-      if (control->textureSource == NULL) {
+      if (control->textureSource == nullptr) {
         return hitNode;
       }
       textureSize = g_GraphicsTextureSourceGetLogicalSize
@@ -212,7 +212,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   controlBottom = (control->base).bottom;
   controlLeft = (control->base).left;
   tileTop = (control->base).top;
-  if (control->textureSource == NULL) {
+  if (control->textureSource == nullptr) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       g_GraphicsFramebufferFillRectArgb
@@ -642,7 +642,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
     }
     drawX = (control->base).base.left;
     drawY = (control->base).base.top;
-    if ((control->base).textureSource != NULL) {
+    if ((control->base).textureSource != nullptr) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize
                         ((control->base).subresource,(control->base).textureSource);
       slackWidth = (control->base).base.layoutWidth - textureSize.logicalWidthPixels;
@@ -670,7 +670,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
         /* the original writes both straight back here */
         g_SelectionPanelTextureSource = savedTextureSource;
         g_SelectionPanelData = savedPanelData;
-        if (control->entity != NULL) {
+        if (control->entity != nullptr) {
           g_SelectionPanelTextureSource = g_InfoPanelTextureSource;
           g_SelectionPanelData = g_InfoPanelData;
           SelectionPanel_RenderArmyRuntimeMetrics
@@ -698,7 +698,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
   Bool8 framebufferUnavailable;
   
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     (control->textureSource != NULL)) {
+     (control->textureSource != nullptr)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       SoftwareTexture_BilinearBlendScaleSubresources

@@ -46,8 +46,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
-       (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+       (control->activationSound != nullptr)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->selectable).actionId,control);
     UiNode_InvalidateRoot(&(control->selectable).base);
@@ -55,8 +55,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
-       (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+       (control->activationSound != nullptr)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -66,8 +66,8 @@ Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
-       (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+       (control->activationSound != nullptr)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -149,10 +149,10 @@ Bool8 UiSelectableGroup_FindVisibleSelected
     control = va_arg(controlArgs,UiSelectableControl *);
   }
   va_end(controlArgs);
-  if (outNode != NULL) {
+  if (outNode != nullptr) {
     *outNode = (UiNodeBase *)control;
   }
-  if (outIndex != NULL) {
+  if (outIndex != nullptr) {
     *outIndex = controlIndex;
   }
   return found;

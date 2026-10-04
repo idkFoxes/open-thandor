@@ -572,8 +572,8 @@ void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context)
 /* Texture shown by a material swatch: the first texture of the material's set, NULL for an empty entry. */
 static GraphicsTextureSourceAsset *TerrainMaterial_SwatchTexture(uint32_t materialIndex)
 {
-  if (g_TerrainMaterialTextureSets[materialIndex] == NULL) {
-    return NULL;
+  if (g_TerrainMaterialTextureSets[materialIndex] == nullptr) {
+    return nullptr;
   }
   return g_TerrainMaterialTextureSets[materialIndex]->entries[0].sourceAsset;
 }
@@ -770,7 +770,7 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
   while ((root->rootUi).base.parent != UI_NODE_NONE) {
     root = (InGameRuntimeRoot *)(root->rootUi).base.parent;
   }
-  UiSelectableGroup_FindVisibleSelected(NULL,NULL,6,
+  UiSelectableGroup_FindVisibleSelected(nullptr,nullptr,6,
       INGAME_UI(root,editorModeTabRegion),
       INGAME_UI(root,editorModeTabObjectPlacement),
       INGAME_UI(root,editorModeTabUnitPlacement),

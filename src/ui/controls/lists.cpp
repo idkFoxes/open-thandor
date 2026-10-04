@@ -105,8 +105,8 @@ Bool8 UiListControl_HandleKeyboardNavigation
     newSelectedSlot = control->selectedRowSlot;
     if (newSelectedSlot != previousSelectedSlot) {
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
-         (control->activationSound != NULL)) {
-        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+         (control->activationSound != nullptr)) {
+        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
       }
       rowValue = ((uint32_t)(((uintptr_t)newSelectedSlot - (uintptr_t)control->rowSlots) / sizeof(Ptr32<void>))) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
@@ -138,7 +138,7 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   parentVtable = parentNode->vtable;
   control->base.bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
-  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control,NULL);
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control,nullptr);
   UiPointerList_SelectColumnListIndex(selectedIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
@@ -178,8 +178,8 @@ void UiListControl_SelectRowFromPointer
                  (UiScrollableControl *)(control->base).parent);
       UiActionQueue_Enqueue(control->actionId,control);
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
-         (control->activationSound != NULL)) {
-        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+         (control->activationSound != nullptr)) {
+        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
       }
     }
   }
@@ -205,7 +205,7 @@ void UiPointerList_SortByDwordPairFieldDescending
   Ptr32<void> *pivotSlot;
   Ptr32<void> *scanSlot;
 
-  if (control->rowSlots == NULL) {
+  if (control->rowSlots == nullptr) {
     return;
   }
   passLength = control->rowCount - 1;
@@ -263,7 +263,7 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
   Ptr32<void> *pivotSlot;
   Ptr32<void> *scanSlot;
 
-  if (control->rowSlots == NULL) {
+  if (control->rowSlots == nullptr) {
     return;
   }
   passLength = control->rowCount - 1;
@@ -529,7 +529,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed)
 
 {
-  if (outConfirmed != NULL) {
+  if (outConfirmed != nullptr) {
     *outConfirmed = (control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) != 0;
   }
   return control->selectedRowSlot - control->rowSlots;
@@ -601,7 +601,7 @@ void UiPointerList_SortByExpandedTextFieldAscending
   int textOrder;
   void *selectedRecord;
 
-  if (control->rowSlots != NULL) {
+  if (control->rowSlots != nullptr) {
     lastRowIndex = control->rowCount - 1;
     if ((lastRowIndex != 0) && (-1 < lastRowIndex)) {
       selectedRecord = *control->selectedRowSlot;
@@ -747,8 +747,8 @@ void UiTextListControl_SelectRowFromPointer
              (UiScrollableControl *)(control->base).parent);
   UiActionQueue_Enqueue(control->actionId,control);
   if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
 }
 
@@ -848,8 +848,8 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   selectedSlot = control->selectedRowSlot;
   if (selectedSlot != previousSelectedSlot) {
     if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
-       (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+       (control->activationSound != nullptr)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
     selectedRowTop = ((uint32_t)(((uintptr_t)selectedSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
@@ -931,9 +931,9 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 
 {
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedLeftTextUtf16,leftText,nullptr);
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedRightTextUtf16,rightText,nullptr);
   /* The order is the comparator's result, unchanged. */
   return (*(int (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             (g_UiPointerListExpandedRightTextUtf16,g_UiPointerListExpandedLeftTextUtf16);

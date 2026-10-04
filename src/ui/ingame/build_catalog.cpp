@@ -10,9 +10,9 @@
 
 /* Module data. */
 
-UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48] = {0};
+UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48] = {};
 
-UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42] = {0};
+UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42] = {};
 
 /* Implementation ownership: ui/ingame/build_catalog. */
 
@@ -151,7 +151,7 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
     else {
       slotControl->command.sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       xeniteCost = 0;
-      textureAsset = NULL;
+      textureAsset = nullptr;
     }
     slotControl->command.sprite.primaryTextureSource = textureAsset;
     slotControl->runtimeDisplayValueQ4 = xeniteCost;
@@ -188,7 +188,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   capabilityFlags = SelectionInfo_CollectCapabilityFlags();
   if (capabilityFlags == 0) {
-    for (ownerNode = (inGameUiGridView->worldRuntime).ownerListHead; ownerNode != NULL;
+    for (ownerNode = (inGameUiGridView->worldRuntime).ownerListHead; ownerNode != nullptr;
          ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
@@ -210,12 +210,12 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
-    if (catalogRecord != NULL &&
+    if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord) &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_CAPABILITY_MASK) != 0 &&
-        catalogRecord->textureSource != NULL &&
+        catalogRecord->textureSource != nullptr &&
         itemCount < BUILD_CATALOG_ENTRY_COUNT &&
         (catalogRecord->assetFlags14 & capabilityFlags) != 0 &&
         (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||
@@ -289,7 +289,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   /* count the faction's class-11 models */
   structureCount = 0;
   for (ownerNode = (inGameUiGridView->worldRuntime).ownerListHead;
-      ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+      ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -303,12 +303,12 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   itemCount = 0;
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)g_ArmyAssetRecordRegistry[registryIndex];
-    if (catalogRecord != NULL &&
+    if (catalogRecord != nullptr &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
         !ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord) &&
         (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_SPECIAL) != 0 &&
-        catalogRecord->textureSource != NULL &&
+        catalogRecord->textureSource != nullptr &&
         itemCount < SPECIAL_BUILD_CATALOG_ENTRY_COUNT &&
         structureCount != 0 &&
         (!FactionRuntime_IsArmyAssetNotPending(factionIndex,(ArmyAssetRecordPrefix *)catalogRecord) ||

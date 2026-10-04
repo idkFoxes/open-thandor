@@ -229,7 +229,7 @@ void UiSelectionGeometryControl_DrawClipped
   clipWidth = clipRight - clipLeft;
   clipHeight = clipBottom - clipTop;
   if ((clipWidth == 0) || (clipRight < clipLeft) || (clipHeight == 0) || (clipBottom < clipTop) ||
-      (control->textureSource == NULL)) {
+      (control->textureSource == nullptr)) {
     return;
   }
   rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS + control->rotationAngle];

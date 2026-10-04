@@ -76,7 +76,7 @@ static uint16_t *RichTextCommand_NestedTarget(uint16_t *payload)
   uint16_t *target;
 
   target = THANDOR_PTR32_AT(uint16_t, payload);
-  if (target == NULL) {
+  if (target == nullptr) {
     if (s_loggedNullNestedStream == 0) {
       s_loggedNullNestedStream = 1;
       Thandor_Log("rich text: nested-stream command without a target, skipped");
@@ -394,7 +394,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
   uint16_t *wrapPoint;
 
   lineWidth = 0;
-  wrapPoint = NULL;
+  wrapPoint = nullptr;
   for (commandCursor = lineStart; *commandCursor != 0; commandCursor = readCursor) {
     glyphSubresource = (GraphicsSubresourceIndex)(short)*commandCursor;
     readCursor = commandCursor + 1;
@@ -402,7 +402,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
       /* A space is a wrap opportunity while the line up to it still fits. */
       glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
       if (maximumWidth < lineWidth) {
-        return (wrapPoint != NULL) ? wrapPoint : readCursor;
+        return (wrapPoint != nullptr) ? wrapPoint : readCursor;
       }
       lineWidth = lineWidth + glyphWidth;
       wrapPoint = readCursor;
@@ -441,7 +441,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
       /* Soft hyphen: a wrap opportunity when the hyphen still fits. */
       glyphWidth = FontGlyph_GetLogicalSizeActiveFont('-',&glyphLineHeight);
       if (maximumWidth < glyphWidth + lineWidth) {
-        return (wrapPoint != NULL) ? wrapPoint : readCursor;
+        return (wrapPoint != nullptr) ? wrapPoint : readCursor;
       }
       wrapPoint = readCursor;
       break;
@@ -449,7 +449,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
       if (lineWidth <= maximumWidth) {
         wrapPoint = readCursor;
       }
-      return (wrapPoint != NULL) ? wrapPoint : readCursor;
+      return (wrapPoint != nullptr) ? wrapPoint : readCursor;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
@@ -466,7 +466,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
   if (lineWidth <= maximumWidth) {
     wrapPoint = readCursor;
   }
-  return (wrapPoint != NULL) ? wrapPoint : readCursor;
+  return (wrapPoint != nullptr) ? wrapPoint : readCursor;
 }
 
 /* Measures the next line of the flattened rich-text runtime buffer that fits into maximumWidth, wrapping after

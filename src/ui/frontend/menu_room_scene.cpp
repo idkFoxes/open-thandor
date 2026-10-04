@@ -24,7 +24,7 @@ std::atomic<uint32_t> g_FrontendRomTransitionTargetRecordId{0};
 
 /* the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
-DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {0};
+DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {};
 
 /* Implementation ownership: ui/frontend/menu_room_scene. */
 
@@ -66,10 +66,10 @@ void FrontendRomActionTable_ExecuteRecord
     return;
   }
   if (entry->activationSoundIndex != 0 && suppressActivationSound == 0 &&
-      g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex] != NULL) {
+      g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex] != nullptr) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex],NULL);
+               g_FrontendMenuSoundVoiceSets[entry->activationSoundIndex],nullptr);
   }
   if (targetRecordId == 0) {
     if ((int)pageAction < 0) {
@@ -98,7 +98,7 @@ void FrontendRomActionTable_ExecuteRecord
   entry->keyframes[0].channel5Q12 = menuRoomCamera->motion.pitchAngle;
   entry->keyframes[0].timeQ12 = 0;
   targetRecord = (RomRecord *)RomRegistry_FindRecordById(targetRecordId);
-  if (targetRecord == NULL) {
+  if (targetRecord == nullptr) {
     return;
   }
   pageAction = entry->pageAction;
@@ -134,11 +134,11 @@ Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     slotRecord = slotCursor->record;
-    if (slotRecord != NULL) {
+    if (slotRecord != nullptr) {
       modelNodeRuntime = RomRuntime_BuildNodeTreeRecursive
                         (((RomRecord *)slotRecord)->nodeTintArgb,
                          Thandor_U32ToPointer<RomSerializedNodeHeader>(slotRecord->rootNodeOffsetOrPointer),worldRuntime); /* 5f-format: RomAssetRecordPrefix.rootNodeOffsetOrPointer */
-      if (modelNodeRuntime == NULL) {
+      if (modelNodeRuntime == nullptr) {
         return true;
       }
       slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
@@ -231,7 +231,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
 
   GraphicsShadingRuntime_ClearRecordTable();
   activeRecord = RomRegistry_FindRecordById(recordId);
-  if (activeRecord == NULL) {
+  if (activeRecord == nullptr) {
     return FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
   }
   g_FrontendActiveRomRecord = (uintptr_t)activeRecord;
@@ -249,7 +249,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     record = slotCursor->record;
     rootNode = slotCursor->runtimeRootNode;
-    if (record != NULL) {
+    if (record != nullptr) {
       rootNode->runtimeFlags = rootNode->runtimeFlags | ROM_NODE_FLAG_HIDDEN;
       if (activeRecord == record ||
           (((RomRecord *)activeRecord)->visibleRecordMask[record->recordId >> 5] &
@@ -296,14 +296,14 @@ Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue
   g_FrontendRomTransitionPageAction = frontendValue;
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (slotCursor->runtimeRootNode != NULL) {
+    if (slotCursor->runtimeRootNode != nullptr) {
       slotCursor->runtimeRootNode->runtimeFlags =
            slotCursor->runtimeRootNode->runtimeFlags & ~ROM_NODE_FLAG_ACTION_TARGET;
     }
     slotCursor = slotCursor + 1;
   }
   targetRecord = RomRegistry_FindRecordById(recordId);
-  if (targetRecord == NULL) {
+  if (targetRecord == nullptr) {
     return true;
   }
   GraphicsShadingRuntime_ClearRecordTable();
@@ -312,7 +312,7 @@ Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     record = slotCursor->record;
     rootNode = slotCursor->runtimeRootNode;
-    if (record != NULL) {
+    if (record != nullptr) {
       rootNode->runtimeFlags = rootNode->runtimeFlags | ROM_NODE_FLAG_HIDDEN;
       maskWordIndex = record->recordId >> 5;
       if (record == targetRecord || record == (RomAssetRecordPrefix *)g_FrontendActiveRomRecord ||
@@ -342,7 +342,7 @@ static ModelPackedPointRecord *RomModel_FindChildAttachmentPoint(ModelResource *
     }
     lookupEntry = lookupEntry + 1;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Allocates the runtime node for one serialized ROM sprite node and its children: the node takes the local
@@ -369,8 +369,8 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   ModelPackedPointRecord *attachmentPoint;
 
   newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldObjectArray);
-  if (newNode == NULL) {
-    return NULL;
+  if (newNode == nullptr) {
+    return nullptr;
   }
   newNode->modelPayload.localTranslationXQ12 = 0;
   newNode->modelPayload.localTranslationYQ12 = 0;
@@ -402,17 +402,17 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;
   newNode->modelPayload.modelResource = spriteModelResource;
-  newNode->shadingRecord = NULL;
-  newNode->modelRuntimeLinkOrSavedOffset = NULL;
+  newNode->shadingRecord = nullptr;
+  newNode->modelRuntimeLinkOrSavedOffset = nullptr;
   newNode->runtimeStateA0 = Thandor_PointerToU32(&spriteModelResource->firstMeshGroupRelativeOffset); /* 5f-format: ModelRuntimeNode.runtimeStateA0 (saved model runtime pool) */
   childSlotsRemaining = romNodeRecord->childCount;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
   childIndex = 0;
   newNode->childCount = childSlotsRemaining;
-  newNode->parentNode = NULL;
+  newNode->parentNode = nullptr;
   for (; childSlotsRemaining != 0; childSlotsRemaining = childSlotsRemaining - 1) {
     attachmentPoint = RomModel_FindChildAttachmentPoint(spriteModelResource,childIndex);
-    if (attachmentPoint == NULL) {
+    if (attachmentPoint == nullptr) {
       /* No descriptor for this child: drop it and keep the index for the next child slot. */
       newNode->childCount = newNode->childCount - 1;
       continue;
@@ -420,8 +420,8 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
     childNode = RomRuntime_BuildNodeTreeRecursive
                        (stateTintArgb,romNodeRecord->childReferences[childIndex].node,
                         worldObjectArray);
-    if (childNode == NULL) {
-      return NULL;
+    if (childNode == nullptr) {
+      return nullptr;
     }
     newNode->childNodes[childIndex] = childNode;
     childNode->parentNode = newNode;

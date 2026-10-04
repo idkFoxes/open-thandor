@@ -231,7 +231,7 @@ void UiKeyboard_DispatchPendingEvents(void)
       dispatchToRoot = false;
     }
     if ((dispatchToRoot) && (g_UiRootNode != UI_ROOT_STACK_END) &&
-       (g_UiRootNode->callbacks->keyboardFallback != NULL)) {
+       (g_UiRootNode->callbacks->keyboardFallback != nullptr)) {
       g_UiRootNode->callbacks->keyboardFallback(keyboardStateMask,keyCode,g_UiRootNode);
     }
   }
@@ -344,7 +344,7 @@ static UiNodeBase *UiPointer_HitTestRootStack
     }
     missedCallbacks = root->callbacks;
     root = root->previousRoot;
-    if ((missedCallbacks->method08 != NULL) && missedCallbacks->method08(root)) {
+    if ((missedCallbacks->method08 != nullptr) && missedCallbacks->method08(root)) {
       return UI_NODE_NONE;
     }
   }
@@ -361,9 +361,9 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
   UiSelectableStateFlags *stateFlagsField;
   UiNodeBase *opaqueHit;
 
-  if (hoverTarget != NULL) {
+  if (hoverTarget != nullptr) {
     opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,hoverTarget);
-    g_UiImageControlHoverTarget = NULL;
+    g_UiImageControlHoverTarget = nullptr;
     if (opaqueHit != UI_NODE_NONE) {
       return (UiNodeBase *)hoverTarget;
     }
@@ -485,7 +485,7 @@ void UiPointer_DispatchRightPress
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
     return;
   }
-  if (g_UiImageControlHoverTarget != NULL) {
+  if (g_UiImageControlHoverTarget != nullptr) {
     stateFlagsField = &(g_UiImageControlHoverTarget->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
   }
@@ -560,8 +560,8 @@ void UiPointer_DispatchMotionAndWheel
   UiRootNode *root;
   
   targetNode = g_UiPointerCaptureTarget;
-  if (g_UiHoverSelectionRecord != NULL) {
-    g_UiHoverSelectionRecord = NULL;
+  if (g_UiHoverSelectionRecord != nullptr) {
+    g_UiHoverSelectionRecord = nullptr;
     InGameSelectionDetailPanel_Rebuild();
   }
   UiTooltip_UpdateHoverTarget(pointerY,pointerX);
@@ -591,7 +591,7 @@ void UiPointer_DispatchMotionAndWheel
       return;
     }
     missPolicy = root->callbacks->pointerMissPolicy;
-    if (missPolicy == NULL) {
+    if (missPolicy == nullptr) {
       return;
     }
     missPolicyResult = missPolicy(root);

@@ -378,10 +378,10 @@ void UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSound != NULL)) {
+          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       toggleStateFlagsField = &(control->selectable).stateFlags;
       *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -391,10 +391,10 @@ void UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSound != NULL)) {
+          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -420,9 +420,9 @@ void UiFramedTextButtonControl_NonRightRelease
       (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-        (control->activationSound != NULL)) {
+        (control->activationSound != nullptr)) {
       g_SoundPlayOneShot
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+                (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
     }
     stateFlagsField = &(control->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -529,10 +529,10 @@ void UiTextButtonControl_NonRightPress
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_PUSH_BUTTON,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-            (control->activationSound != NULL)) {
+            (control->activationSound != nullptr)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->activationSound,NULL);
+                     control->activationSound,nullptr);
         }
         if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
           stateFlagsField = &(control->selectable).stateFlags;
@@ -549,10 +549,10 @@ void UiTextButtonControl_NonRightPress
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_CHECKBOX,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-            (control->activationSound != NULL)) {
+            (control->activationSound != nullptr)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->activationSound,NULL);
+                     control->activationSound,nullptr);
         }
         toggleStateFlagsField = &(control->selectable).stateFlags;
         *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -587,10 +587,10 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSound != NULL)) {
+          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -602,10 +602,10 @@ Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,Ui
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSound != NULL)) {
+          (control->activationSound != nullptr)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound,NULL);
+                   control->activationSound,nullptr);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;

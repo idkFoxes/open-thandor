@@ -39,7 +39,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
   flag10BonusSum = 0;
   if (trackClassId != 0) {
     activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
-    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != NULL;
+    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != nullptr;
         ownerListNode = ownerListNode->nextNode) {
       if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;

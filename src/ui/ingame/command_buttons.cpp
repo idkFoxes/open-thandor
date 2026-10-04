@@ -99,10 +99,10 @@ void UiCommandSpriteButtonControl_NonRightRelease
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = control->activationInputState | inputStateBits;
     if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->sprite).activationSound != NULL)) {
+       ((control->sprite).activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->sprite).activationSound,NULL);
+                 (control->sprite).activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -127,10 +127,10 @@ void UiCommandSpriteButtonControl_RightRelease
     (control->sprite).selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
     if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->sprite).activationSound != NULL)) {
+       ((control->sprite).activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->sprite).activationSound,NULL);
+                 (control->sprite).activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);

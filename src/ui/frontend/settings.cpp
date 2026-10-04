@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-IDirectSoundBuffer *g_FrontendMusicActiveBuffer = 0;
+IDirectSoundBuffer *g_FrontendMusicActiveBuffer = nullptr;
 
 /* Implementation ownership: ui/frontend/settings. */
 
@@ -475,7 +475,7 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
-  UiNodeBase *selectedQualityControl = NULL; /* control is one of the three buttons */
+  UiNodeBase *selectedQualityControl = nullptr; /* control is one of the three buttons */
   FrontendTextureQualityGroup *textureQualityGroup;
 
   /* The parent is the frontend template's textureQualityGroup. */
@@ -594,8 +594,8 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   else {
     g_SoundStopVoice(g_FrontendMusicActiveBuffer);
     g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
-    g_FrontendMusicActiveBuffer = NULL;
-    g_FrontendMusicVoiceSet = NULL;
+    g_FrontendMusicActiveBuffer = nullptr;
+    g_FrontendMusicVoiceSet = nullptr;
   }
   savedAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   newAudioFlags = musicEnabledBit | savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;

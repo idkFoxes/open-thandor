@@ -90,8 +90,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              &g_FrontendMissionBriefingMoviePathUtf16[7]);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,NULL,NULL)) {
-    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,nullptr,nullptr)) {
+    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = nullptr;
   }
   else {
     /* Original quirk: the result is not checked; when no frame comes the end code becomes the texture source */

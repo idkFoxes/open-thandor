@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = 0;
+static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = nullptr;
 
 /* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1: per channel the average of the
    new colour and the pixel already in the plane (used to blend water over the ground colour). */
@@ -383,7 +383,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
     pixelCursor = pixelCursor + 4;
     cellsRemaining--;
   } while (cellsRemaining != 0);
-  for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {
       gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);

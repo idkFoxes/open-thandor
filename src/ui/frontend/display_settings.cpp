@@ -450,11 +450,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
   modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
   modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
-  modeStack[DISPLAY_MODE_STACK_END + 0] = NULL;
-  modeStack[DISPLAY_MODE_STACK_END + 1] = NULL;
-  modeStack[DISPLAY_MODE_STACK_END + 2] = NULL;
-  modeStack[DISPLAY_MODE_STACK_END + 3] = NULL;
-  modeStack[DISPLAY_MODE_STACK_END + 4] = NULL;
+  modeStack[DISPLAY_MODE_STACK_END + 0] = nullptr;
+  modeStack[DISPLAY_MODE_STACK_END + 1] = nullptr;
+  modeStack[DISPLAY_MODE_STACK_END + 2] = nullptr;
+  modeStack[DISPLAY_MODE_STACK_END + 3] = nullptr;
+  modeStack[DISPLAY_MODE_STACK_END + 4] = nullptr;
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,0);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);

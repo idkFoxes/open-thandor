@@ -87,8 +87,8 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,
-                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime,NULL);
-      if (createdArmySlots != NULL) {
+                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime,nullptr);
+      if (createdArmySlots != nullptr) {
         ownerFactionIndex = playerBlock->factionIndex;
         modelNodeRuntime = createdArmySlots[1];
         armySlot = *createdArmySlots;
@@ -102,7 +102,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdArmySlots,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = nullptr },
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -144,7 +144,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   INGAME_UI(control,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != NULL) {
+  if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                         (intptr_t)g_ModelRuntimeRebaseDelta);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -252,7 +252,7 @@ void InGameCommand_HandlePlayerDeparture
   if ((flags & INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER) != 0) {
     factionToken = g_SelectionPlayerRuntimeBlockPointers[playerOrFactionId]->factionIndex;
     for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-        ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+        ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         entityRuntime = (GameEntityRuntime *)
              (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime;
@@ -324,11 +324,11 @@ InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {
             /*  0 */ THANDOR_FN(InGameCommandModeG_Select0),
             /*  1 */ THANDOR_FN(InGameCommandModeG_Select1),
             /*  2 */ THANDOR_FN(InGameCommandModeG_Select2),
-            /*  3 */ 0,
+            /*  3 */ nullptr,
             /*  4 */ THANDOR_FN(InGameCommandModeG_Select5),
             /*  5 */ THANDOR_FN(InGameCommandModeG_Select3),
             /*  6 */ THANDOR_FN(InGameCommandModeG_Select4),
-            /*  7 */ 0,
+            /*  7 */ nullptr,
             /*  8 */ THANDOR_FN(InGameCommandModeC_Select0),
             /*  9 */ THANDOR_FN(InGameCommandModeC_Select1),
             /* 10 */ THANDOR_FN(InGameCommandModeC_Select2),

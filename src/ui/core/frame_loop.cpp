@@ -98,7 +98,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
     if (frontRoot != UI_ROOT_STACK_END) {
       UiTree_AdvanceSpriteButtonAnimations(&frontRoot->base);
       rootCallbacks = frontRoot->callbacks;
-      if (rootCallbacks->frameUpdate != NULL) {
+      if (rootCallbacks->frameUpdate != nullptr) {
         rootCallbacks->frameUpdate(frontRoot);
       }
     }

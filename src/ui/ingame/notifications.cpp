@@ -33,7 +33,7 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
   notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,&g_FlmMovie000FlmPathUtf16[9]);
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FlmMovie000FlmPathUtf16,NULL,NULL)) {
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FlmMovie000FlmPathUtf16,nullptr,nullptr)) {
     return;
   }
   /* movies 100-299 and 700-899 play at the alternate movie gain */
@@ -41,7 +41,7 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
       ((notificationMovieNumber < 300) || ((699 < notificationMovieNumber) && (notificationMovieNumber < 900)))) {
     Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
   }
-  if (!Movie_AdvanceFrame(&notificationMovie,NULL)) {
+  if (!Movie_AdvanceFrame(&notificationMovie,nullptr)) {
     return;
   }
   inGameRoot->notificationButtonTextureSource = (uintptr_t)notificationMovie;
@@ -92,7 +92,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
   }
   /* notificationButtonTextureSource holds the playing movie, or the panel texture source when none plays */
   if (panelTextureSource != (GraphicsTextureSourceAsset *)inGameRoot->notificationButtonTextureSource) {
-    if (!Movie_AdvanceFrame(NULL,NULL)) {
+    if (!Movie_AdvanceFrame(nullptr,nullptr)) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 640;
       inGameRoot->notificationButtonTextureSource = (uintptr_t)panelTextureSource;

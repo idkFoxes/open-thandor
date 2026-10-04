@@ -28,7 +28,7 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
   
   previousTick = maskRuntime->tickCounter;
   maskRuntime->tickCounter++;
-  if (maskRuntime->maskPixels != NULL) {
+  if (maskRuntime->maskPixels != nullptr) {
     SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(maskRuntime);
     cycleTicks = previousTick + 20;
     shapeStep = cycleTicks % 100;
@@ -102,7 +102,7 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
   GraphicsTextureLogicalSize logicalSize;
 
   maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
-  if (maskQwordWriteCursor != NULL) {
+  if (maskQwordWriteCursor != nullptr) {
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
     /* 64-byte blocks; a mask of fewer than 64 pixels would wrap the count, as in the original */
     blocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
@@ -138,7 +138,7 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
   int i;
 
   mask = maskRuntime->maskPixels;
-  if (mask == NULL) {
+  if (mask == nullptr) {
     return;
   }
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);

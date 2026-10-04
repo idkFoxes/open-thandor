@@ -44,7 +44,7 @@ Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t 
             (g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_PCX,g_LevelResourcePathScratchUtf16);
-  if (Resource_Load(g_LevelResourcePathScratchUtf16,&sourceBytes,&sourceByteCount,NULL)) {
+  if (Resource_Load(g_LevelResourcePathScratchUtf16,&sourceBytes,&sourceByteCount,nullptr)) {
     /* the original called pcx.fnc export 2 here and accepted only a paletted record (direct-colour 3-plane
        files were rejected as well) */
     if (Pcx_DecodeIndexed8((const uint8_t *)sourceBytes,sourceByteCount,&image)) {

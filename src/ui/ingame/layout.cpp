@@ -11,13 +11,13 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameDiagramTextureSource = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameDiagramTextureSource = nullptr;
 
-THANDOR_ALIGN(8) GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource = 0;
+THANDOR_ALIGN(8) GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource = nullptr;
 
-THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameWindowTextureSource = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameWindowTextureSource = nullptr;
 
-THANDOR_ALIGN(16) GraphicsTextureSourceAsset *g_InGamePanelTextureSource = 0;
+THANDOR_ALIGN(16) GraphicsTextureSourceAsset *g_InGamePanelTextureSource = nullptr;
 
 uint16_t g_GfxPanelPanel0GfxPathUtf16[21] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'p', 'a', 'n', 'e', 'l', '0', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\panel0.gfx" */
 
@@ -81,7 +81,7 @@ int32_t g_InGamePanelTextureSubresource31Height = 0;
 
 int32_t g_InGamePanelTextureSubresource34Height = 0;
 
-DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {0};
+DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {};
 
 /* Implementation ownership: ui/ingame/layout. */
 
@@ -1196,7 +1196,7 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
 
   loadedPackage = g_GraphicsTextureSourceLoadPackageAsset(packagePath,loadError);
   previousPackage = *slot;
-  if (loadedPackage != NULL) {
+  if (loadedPackage != nullptr) {
     *slot = loadedPackage;
     g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(previousPackage);
   }
@@ -1226,7 +1226,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   InGameUiRuntime_SelectDisplayModeLayout(inGameRoot);
   panelTexture = InGameUiRuntime_ReplaceTexturePackage
                    ((uint16_t *)g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
-  if (panelTexture == NULL) {
+  if (panelTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
@@ -1242,7 +1242,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   diagramTexture = InGameUiRuntime_ReplaceTexturePackage
                      ((uint16_t *)g_GfxPanelDiagram0GfxPathUtf16,
                       (GraphicsTextureSourceAsset **)&g_InGameDiagramTextureSource,&textureLoadError);
-  if (diagramTexture == NULL) {
+  if (diagramTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
@@ -1253,7 +1253,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   windowTexture = InGameUiRuntime_ReplaceTexturePackage
                     ((uint16_t *)g_GfxPanelWindowGfxPathUtf16,
                      (GraphicsTextureSourceAsset **)&g_InGameWindowTextureSource,&textureLoadError);
-  if (windowTexture == NULL) {
+  if (windowTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }
@@ -1269,7 +1269,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   techTexture = InGameUiRuntime_ReplaceTexturePackage
                   ((uint16_t *)g_GfxPanelTechGfxPathUtf16,
                    (GraphicsTextureSourceAsset **)&g_InGameTechnologyTextureSource,&textureLoadError);
-  if (techTexture == NULL) {
+  if (techTexture == nullptr) {
     *outError = textureLoadError;
     return false;
   }

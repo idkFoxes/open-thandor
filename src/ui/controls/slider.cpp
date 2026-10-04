@@ -165,8 +165,8 @@ void UiRangeSliderControl_BeginThumbDrag
     }
   }
   control->sliderFlags = control->sliderFlags | UI_RANGE_SLIDER_DRAGGING;
-  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
+  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
   return;
 }
@@ -181,8 +181,8 @@ void UiRangeSliderControl_EndThumbDrag
 {
   control->sliderFlags = control->sliderFlags & ~UI_RANGE_SLIDER_DRAGGING;
   if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-       ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
+       ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
   return;
 }
@@ -285,8 +285,8 @@ Bool8 UiRangeSliderControl_HandleKeyboard
     return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   control->value = adjustedSliderValue;
-  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
+  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,nullptr);
   }
   UiActionQueue_Enqueue(control->actionId,&control->base);
   UiNode_InvalidateRoot(&control->base);

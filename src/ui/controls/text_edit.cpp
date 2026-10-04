@@ -218,8 +218,8 @@ Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keybo
         }
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-           (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+           (control->activationSound != nullptr)) {
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
         }
         return false;
       default:
@@ -317,8 +317,8 @@ Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keybo
   UiNumericTextControl_ParseAndCommitValue(control);
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
   return false;
 }
@@ -672,8 +672,8 @@ static void UiPathTextEdit_PlayInteractionSound(UiPathTextEditControl *control)
 
 {
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
 }
 
@@ -872,8 +872,8 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
 
 {
   if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
 }
 
@@ -1209,8 +1209,8 @@ void UiTextEditControl_BeginSelectionAtPointer
     control->selectionEnd = cursorIndexAtPointer;
   }
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
   return;
 }
@@ -1319,8 +1319,8 @@ void UiTextEditControl_EndSelection
 {
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+     (control->activationSound != nullptr)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,nullptr);
   }
   return;
 }
@@ -1590,7 +1590,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
         return accumulatedWidth;
       }
       glyphWidth = FontGlyph_GetLogicalSizeForStyle
-                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],NULL);
+                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],nullptr);
       glyphIndex++;
       accumulatedWidth = accumulatedWidth + glyphWidth;
     } while (glyphIndex < prefixLength);
@@ -1626,7 +1626,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
       return currentTextIndex;
     }
     glyphWidth = FontGlyph_GetLogicalSizeForStyle
-                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex],NULL);
+                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex],nullptr);
     measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphWidth;
     nextTextIndex = currentTextIndex + 1;
   } while (measuredPrefixWidthPixels < targetOffsetX);
@@ -1690,12 +1690,12 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   cursorWidth = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
   maxScrollOffset = cursorWidth;
   if (prefixLength != 0) {
-    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength - 1],NULL);
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength - 1],nullptr);
     maxScrollOffset = cursorWidth - glyphWidth;
   }
   cursorOverflow = cursorWidth - (control->base).layoutWidth;
   if (control->textBuffer[prefixLength] != 0) {
-    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],NULL);
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],nullptr);
     cursorOverflow = cursorOverflow + glyphWidth;
   }
   /* NOTE: as in the original (a fixed count of 16), only the first 16 code units (the numeric text buffer)

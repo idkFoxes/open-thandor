@@ -135,11 +135,11 @@ void InGameTechnologyResearch_StartSelected(void *source)
   INGAME_UI(inGameRoot,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(inGameRoot,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != NULL) {
+  if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                         (intptr_t)g_ModelRuntimeRebaseDelta);
     doubledTechnologyId = 0;
-    if (UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,NULL,TECHNOLOGY_AREA_TAB_COUNT,
+    if (UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,nullptr,TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),
@@ -206,7 +206,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   
   previousTechnologyId = g_InGameSelectedTechnologyId;
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != NULL) {
+  if (firstSelectedEntity != nullptr) {
     entityModelRuntime = (ModelRuntimeSlot *)(firstSelectedEntity->common).ownership.definitionOrClassRecord;
     definition = (entityModelRuntime->definitionOrSavedId).runtimeDefinition;
     if (((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
@@ -261,7 +261,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
                    labelTemplate + 192);
         RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 192,labelTemplate);
-        RichTextCommandStream_CopyExpanded(384,tooltipText,labelTemplate,NULL);
+        RichTextCommandStream_CopyExpanded(384,tooltipText,labelTemplate,nullptr);
         UiNodeList_UnsuppressActionId(actionId,&inGameRoot->base);
       }
       areaIndex--;
@@ -269,7 +269,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         areaIndex = TECHNOLOGY_AREA_TAB_COUNT - 1;
       }
     }
-    if (!UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,NULL,TECHNOLOGY_AREA_TAB_COUNT,
+    if (!UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,nullptr,TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),

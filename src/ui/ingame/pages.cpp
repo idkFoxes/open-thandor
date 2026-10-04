@@ -114,7 +114,7 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
       INGAME_UI(rootNodeCursor,resultsTabEconomy),
       INGAME_UI(rootNodeCursor,resultsTabMilitary));
   /* Original quirk: the result is not tested; with no visible tab selected the index is 3 (no page) */
-  UiSelectableGroup_FindVisibleSelected(NULL,&selectedTabIndex,3,
+  UiSelectableGroup_FindVisibleSelected(nullptr,&selectedTabIndex,3,
       INGAME_UI(rootNodeCursor,resultsTabThird),
       INGAME_UI(rootNodeCursor,resultsTabEconomy),
       INGAME_UI(rootNodeCursor,resultsTabMilitary));
@@ -158,7 +158,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
       return;
     }
     firstSelectedEntity = SelectionInfo_GetFirstEntry();
-    if (firstSelectedEntity != NULL) {
+    if (firstSelectedEntity != nullptr) {
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
       InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
       /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
@@ -350,7 +350,7 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
       INGAME_UI(root,resultsChartModeButtonB),
       INGAME_UI(root,resultsChartModeButtonA));
   /* Original quirk: the result is not tested; with no visible button selected the index is 2 */
-  UiSelectableGroup_FindVisibleSelected(NULL,&selectedIndexValue,2,
+  UiSelectableGroup_FindVisibleSelected(nullptr,&selectedIndexValue,2,
       INGAME_UI(root,resultsChartModeButtonA),
       INGAME_UI(root,resultsChartModeButtonB));
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
