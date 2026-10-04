@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/selection/selection_set.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: gameplay/selection/selection_set. */
 
@@ -169,9 +170,27 @@ Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Se
 {
   uint32_t pairRecordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  static Bool8 s_loggedUnlinkedPlayer;
 
-  pairRecordsRemaining = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
-  pairRecordCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
+  /* The original reads the player's block unchecked; an unlinked player (no block) counts as "not listed"
+     and the count is bounded by the list capacity here because the player id comes from a command record. */
+  playerBlock = NULL;
+  if (playerRuntimeId < sizeof(g_SelectionPlayerRuntimeBlockPointers) / sizeof(g_SelectionPlayerRuntimeBlockPointers[0])) {
+    playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  }
+  if (playerBlock == NULL) {
+    if (!s_loggedUnlinkedPlayer) {
+      s_loggedUnlinkedPlayer = true;
+      Thandor_Log("selection: marked-cell lookup for unlinked player %u ignored",(unsigned)playerRuntimeId);
+    }
+    return true;
+  }
+  pairRecordsRemaining = playerBlock->markedCellCount;
+  if (pairRecordsRemaining > sizeof(playerBlock->markedCells) / sizeof(playerBlock->markedCells[0])) {
+    pairRecordsRemaining = sizeof(playerBlock->markedCells) / sizeof(playerBlock->markedCells[0]);
+  }
+  pairRecordCursor = playerBlock->markedCells;
   for (; pairRecordsRemaining != 0; pairRecordsRemaining--) {
     if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
       return false;

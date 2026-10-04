@@ -88,8 +88,15 @@ static void InGameNewSession_ResetSessionState(void)
     clearCursor++;
   }
   /* per player: not ready, command sync pending, fresh timeout; link its selection block and copy the name.
-     Original quirk: the player count is tested only after the first player. */
+     Original quirk: the player count is tested only after the first player.
+     The original runs the loop g_FrontendPlayerRuntimeBlockCount times; bounded here to the 8 selection blocks
+     (and frontend player records) because a count of 0 or above 8 would run past both tables. */
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+  if (remainingPlayers == 0 || remainingPlayers > SELECTION_PLAYER_BLOCK_COUNT) {
+    Thandor_Log("new session: player count %u out of range, bounded to the %d selection blocks",
+                (unsigned)remainingPlayers,SELECTION_PLAYER_BLOCK_COUNT);
+    remainingPlayers = remainingPlayers == 0 ? 1 : SELECTION_PLAYER_BLOCK_COUNT;
+  }
   selectionBlock = g_SelectionPlayerBlocks;
   frontendPlayer = g_FrontendPlayerRuntimeBlocks;
   do {

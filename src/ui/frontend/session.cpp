@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/session.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -313,12 +314,17 @@ void FrontendSession_PeriodicTick(void)
   void *packet;
   void *packetEndpoint;
   uint32_t networkTickInterval;
+  static Bool8 s_loggedZeroTickInterval;
 
   callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   /* The original divides by g_SessionNetworkTickInterval as it is; 0 is taken as 1 here because the
      interval comes from the host's join ack (the result is the same for any other value). */
   networkTickInterval = g_SessionNetworkTickInterval != 0 ? g_SessionNetworkTickInterval : 1;
+  if (g_SessionNetworkTickInterval == 0 && !s_loggedZeroTickInterval) {
+    s_loggedZeroTickInterval = true;
+    Thandor_Log("session: network tick interval 0, taken as 1");
+  }
   if (callResult) {
     return;
   }
