@@ -1,6 +1,6 @@
 # Software triangle rasterizer
 
-`src/graphics/backend/software.c` holds 60 triangle handlers,
+`src/graphics/backend/software_rasterizer.cpp` holds 60 triangle handlers,
 `SoftwareRaster{16,Non16,Aux}_ModeNN`, decompiled from hand-written MMX. This page
 explains how they are built, so they can be rewritten into readable C one group at a
 time. The `rastercmp` self-test checked each rewrite against the original machine code; it needed the
@@ -204,7 +204,7 @@ Pitfalls, all of which rastercmp caught:
 ## Work packages
 
 The remaining 51 handlers split into six packages. Each package touches only its own handler
-bodies in `software.c`: the families occupy separate, contiguous regions, so git merges cleanly.
+bodies in `software_rasterizer.cpp`: the families occupy separate, contiguous regions, so git merges cleanly.
 Put new helpers as `static` functions right above the first handler that uses them. Only add a
 helper to `software_raster.h` if another package needs it, and then append it at the end in a
 section named after your package.
@@ -221,14 +221,14 @@ section named after your package.
 WP1 and WP2 share the 16-bit alpha-tested depth rule, and WP3/WP5 share the 32-bit rule. The
 first package to need a rule should add it as a helper and tell the others its name. For the
 alpha-tested depth rule of untextured modes, reproduce the current C condition. The
-`SoftwareTextureSource_*` blits in the same file are not triangle handlers and are out of scope
+`SoftwareTextureSource_*` blits (`software_blit.cpp`) are not triangle handlers and are out of scope
 here; see [Blits](#blits) below.
 
 # Blits
 
-`software.c` also holds the 2D paths that draw a texture-source subresource or a coloured
+`src/graphics/backend/software_blit.cpp` holds the 2D paths that draw a texture-source subresource or a coloured
 rectangle straight into the framebuffer. They are installed per framebuffer depth by
-`directdraw.c` (`g_GraphicsTextureSourceBlit*`, `g_GraphicsFramebufferFillRectArgb`). The software renderer
+`src/graphics/core/device.cpp` (`g_GraphicsTextureSourceBlit*`, `g_GraphicsFramebufferFillRectArgb`). The software renderer
 is the only renderer: the original's Glide and Direct3D backends were removed. Like the rasterizer they were
 hand-written MMX, and the
 decompiled C was full of `CONCAT`/`pmulhw` emulation.
@@ -318,7 +318,7 @@ for (y = 0; y < region.height; y++) {
 
 ## Pixel operations and helpers
 
-The blit helpers are in `software_raster.h`, in the section "Texture-source blits and rectangle
+The blit helpers are in `software_blit_helpers.h`, in the section "Texture-source blits and rectangle
 fills". They reuse `RasterColor` and `Raster_MulHigh`.
 
 | helper | MMX it reproduces |

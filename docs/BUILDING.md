@@ -186,7 +186,7 @@ restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-
 | File | Notes |
 |---|---|
 | `include/thandor/generated/types.h` | The game structures shared by all modules (once exported from the decompilation, now maintained by hand; to be split into the module headers). |
-| `src/<area>/<module>/*.c` | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
+| `src/<area>/<module>/*.cpp` | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
 | `include/thandor/generated/ui_templates.h`, `proc_types.h` | UI template layouts; function pointer types of the data and callbacks. |
 | `include/thandor/generated/imports.h` | KERNEL32/USER32/... import prototypes (replaced by the SDK headers in the 64-bit step). |
 | `include/thandor/core/x86_emulation.h` | What the original's x86 code does, in portable C: `THANDOR_CONTAINER_OF`, atomic exchange, x87 rounding, CPUID, the MMX lane operations. |
@@ -201,6 +201,12 @@ it were removed from the tree after the code no longer needed them; they are in 
 | `fld.py`, `lev.py`, `pck.py`, `mdl2obj.py` | readers/converters for the game's file formats |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
 
+## Documentation generator (`tools/docs`)
+
+`python tools/docs/gen_docs.py` regenerates [MODULE_TREE.md](MODULE_TREE.md), [SOURCE_FILE_GUIDE.md](SOURCE_FILE_GUIDE.md)
+and the file column of `original_addresses.txt` from the tree (file and function comments, includes, a caller scan
+by name); `--check` only reports whether they are out of date. Run it after moving, splitting or renaming files.
+
 ## Known TODOs
 
 Search for `TODO` in the tree. The main groups:
@@ -209,4 +215,3 @@ Search for `TODO` in the tree. The main groups:
   `include/thandor/network/protocol/commands.h`); received commands are resolved to the recovered C
   handlers through explicit command tables (`CommandDispatch_ResolveHandler`). Not yet tested in a real
   networked game.
-- **Stack frames** (`thandor_stack_frame`): `richtext.c` keeps unrecovered stack locals in an unreachable function.

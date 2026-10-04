@@ -1,6 +1,0 @@
-digraph thandor {
-  rankdir=LR;
-  node [shape=box];
-  "GraphicsOffscreen_RenderModelListToTextureSource" [label="0x00486B00\nGraphicsOffscreen_RenderModelListToTextureSourceCf"];
-  "GraphicsProjectedPoint_IsInsideTriangle" [label="0x0050A6A0\nGraphicsProjectedPoint_IsInsideTriangleCf"];
-}
