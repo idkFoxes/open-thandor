@@ -29,12 +29,11 @@
      1/9/17/25 and 32..63 (except 2) source-alpha blend, no depth write
      2/10/18/26 and 34/42/50/58      additive, no depth write
      4/6/12/14, 20/22/28/30          source-alpha blend, then a depth-only draw of the same run that writes depth
-                                     where the modulated alpha is >= 128
+                                     where the modulated alpha is >= 128 (runs split where packets overlap)
      3/5/7/... (empty table entries) not drawn
    The depth test is <= on depth / 2^32. Not reproduced exactly: the blend tables (and their over-reads), the
    16-bit quantization after each blend, the 16-bit lane wrap and per-pixel rounding of the MMX interpolation,
-   GPU sub-pixel snapping of the rebuilt edges (1/256 pixel) and per-pixel depth writes inside one alpha-tested
-   run (they take effect after the run).
+   GPU sub-pixel snapping of the rebuilt edges (1/256 pixel).
 
    OPEN_THANDOR_GPU=compare (developer tools): both renderers run; the software picture is shown and every
    OPEN_THANDOR_GPU_COMPARE_MS milliseconds (default 5000) the scene's clip rectangle is written as
@@ -100,6 +99,14 @@ enum GpuPipelineIndex : int {
 
 /* How a run is drawn: one of the first three pipelines, or the alpha pipeline followed by the depth pass. */
 enum GpuRunKind : int { GPU_RUN_OPAQUE, GPU_RUN_ALPHA, GPU_RUN_ADDITIVE, GPU_RUN_ALPHA_WRITES_DEPTH, GPU_RUN_NONE };
+
+/* Screen bounds (normalized device coordinates) of one packet. */
+struct RunBounds {
+  float minX;
+  float minY;
+  float maxX;
+  float maxY;
+};
 
 struct GpuRun {
   GpuRunKind kind;
@@ -193,6 +200,7 @@ struct GpuState {
   SDL_Rect sceneClip = {};
   std::vector<GpuVertex> vertices;
   std::vector<GpuRun> runs;
+  std::vector<RunBounds> runBounds; /* triangles of the last run, when it is GPU_RUN_ALPHA_WRITES_DEPTH */
   bool atlasResetLogged = false;
 
   GpuTimes times;
@@ -570,16 +578,46 @@ void AppendPacket(const GraphicsPrimitivePacket *packet, const SDL_Rect &scissor
   if (vertexCount == 0) {
     return;
   }
+  /* The alpha-tested modes write depth per pixel while they draw, so a later packet of such a run must not
+     overlap an earlier one: their colour and depth draws would both happen before it. Such a packet starts a
+     new run (bounding boxes; overlapping is rare apart from foliage). */
+  RunBounds bounds{2.0f, 2.0f, -2.0f, -2.0f};
+  if (kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
+    for (Uint32 index = firstVertex; index < firstVertex + vertexCount; index++) {
+      const GpuVertex &vertex = s_gpu.vertices[index];
+      bounds.minX = std::min(bounds.minX, vertex.x);
+      bounds.minY = std::min(bounds.minY, vertex.y);
+      bounds.maxX = std::max(bounds.maxX, vertex.x);
+      bounds.maxY = std::max(bounds.maxY, vertex.y);
+    }
+  }
   if (!s_gpu.runs.empty()) {
     GpuRun &last = s_gpu.runs.back();
-    if ((last.kind == kind) && (last.scissor.x == scissor.x) && (last.scissor.y == scissor.y) &&
-        (last.scissor.w == scissor.w) && (last.scissor.h == scissor.h) &&
-        (last.firstVertex + last.vertexCount == firstVertex)) {
+    bool joins = (last.kind == kind) && (last.scissor.x == scissor.x) && (last.scissor.y == scissor.y) &&
+                 (last.scissor.w == scissor.w) && (last.scissor.h == scissor.h) &&
+                 (last.firstVertex + last.vertexCount == firstVertex);
+    if (joins && (kind == GPU_RUN_ALPHA_WRITES_DEPTH)) {
+      for (const RunBounds &earlier : s_gpu.runBounds) {
+        if ((bounds.minX < earlier.maxX) && (earlier.minX < bounds.maxX) && (bounds.minY < earlier.maxY) &&
+            (earlier.minY < bounds.maxY)) {
+          joins = false;
+          break;
+        }
+      }
+    }
+    if (joins) {
       last.vertexCount += vertexCount;
+      if (kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
+        s_gpu.runBounds.push_back(bounds);
+      }
       return;
     }
   }
   s_gpu.runs.push_back(GpuRun{kind, scissor, firstVertex, vertexCount});
+  s_gpu.runBounds.clear();
+  if (kind == GPU_RUN_ALPHA_WRITES_DEPTH) {
+    s_gpu.runBounds.push_back(bounds);
+  }
 }
 
 /* --- device objects ---------------------------------------------------------------------------------------- */
@@ -1106,6 +1144,7 @@ void GpuRenderer_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY, Gra
   s_gpu.sceneSerial++;
   s_gpu.vertices.clear();
   s_gpu.runs.clear();
+  s_gpu.runBounds.clear();
   const int minX = std::clamp(static_cast<int>(clipMinX), 0, static_cast<int>(s_gpu.targetWidth));
   const int minY = std::clamp(static_cast<int>(clipMinY), 0, static_cast<int>(s_gpu.targetHeight));
   const int maxX = std::clamp(static_cast<int>(clipMaxX), minX, static_cast<int>(s_gpu.targetWidth));
