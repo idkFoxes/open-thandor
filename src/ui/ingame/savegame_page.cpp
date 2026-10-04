@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/savegame_page.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -19,29 +20,62 @@ uint16_t g_ScenarioCatalogPathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
 
 /* Implementation ownership: ui/ingame/savegame_page. */
 
+static_assert(offsetof(InGameUiImage, saveGameDeleteButton) - offsetof(InGameUiImage, gameMenuSaveButton) == 0x760,
+              "the delete handler's node is 0x760 bytes behind gameMenuSaveButton");
+/* The save name of a catalog record runs from identifier up to levelTitleTextId (the header's 0x38-unit
+   saveNameUtf16 field); its last code unit is forced to NUL for records read from a file. */
+#define SAVE_RECORD_NAME_LAST_UNIT (offsetof(ScenarioCatalogSaveRecord, levelTitleTextId) / sizeof(uint16_t) - 1)
+static_assert(SAVE_RECORD_NAME_LAST_UNIT == 0x37, "save name field of 0x38 code units");
+static_assert(sizeof(ScenarioCatalogSaveRecord) == 256, "the catalog record is 0x100 bytes of the .sve");
+
+/* Resolves a save title text id read from a .sve. open-thandor: the original resolved any id and wrote through the
+   result; an id outside the compact range indexes past the page table and a missing text resolves to the sentinel
+   pointer 0x33. Such an id (from a crafted, truncated or unreadable save) gives NULL here instead. */
+static uint16_t *InGameSaveGame_ResolveTitleText(int32_t titleTextId)
+{
+  uint16_t *text;
+
+  /* compact ids (page << 8 | index) below 0x10000 keep the page index inside the 256-entry page table */
+  if ((uint32_t)titleTextId >= 0x10000) {
+    Thandor_Log("save page: title text id 0x%08X of a save is out of range; no description shown",
+                (uint32_t)titleTextId);
+    return NULL;
+  }
+  /* TextResource_TryResolve logs a missing text itself */
+  return TextResource_TryResolve((TextResourceId)titleTextId,&text) ? text : NULL;
+}
+
 /* Shows an existing save's description: its level title text alone, or, while a campaign is loaded, the level and
    campaign titles patched into the saved-game template text. The text box holds a text id, not a string. Shared by
-   InGameSaveGameList_SelectAndRefreshDetail and InGameSaveGamePage_RebuildCatalog. */
+   InGameSaveGameList_SelectAndRefreshDetail and InGameSaveGamePage_RebuildCatalog, which set the empty
+   description first; a save with an invalid title id (see InGameSaveGame_ResolveTitleText) keeps it. */
 static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descriptionBox,
                                                  const ScenarioCatalogSaveRecord *record)
 {
   TextResourceId levelTitleId;
   uint16_t *templateText;
-  uint16_t *fieldText;
+  uint16_t *levelTitleText;
+  uint16_t *campaignTitleText;
 
+  levelTitleText = InGameSaveGame_ResolveTitleText(record->levelTitleTextId);
+  if (levelTitleText == NULL) {
+    return;
+  }
   if (g_FrontendLoadedCampaignAsset == 0) {
     levelTitleId = record->levelTitleTextId;
-    fieldText = TextResource_Resolve(levelTitleId);
-    *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+    /* Original quirk: the colour command is written into the shared resolved title text. */
+    *levelTitleText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
     descriptionBox->text = (uint16_t *)(uintptr_t)levelTitleId; /* a text id in the pointer field */
   }
   else {
+    campaignTitleText = InGameSaveGame_ResolveTitleText(record->campaignTitleTextId);
+    if (campaignTitleText == NULL) {
+      return;
+    }
     templateText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-    fieldText = TextResource_Resolve(record->levelTitleTextId);
-    *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-    RichTextCommandStream_PatchPayloadBySelector(1,fieldText,templateText);
-    fieldText = TextResource_Resolve(record->campaignTitleTextId);
-    RichTextCommandStream_PatchPayloadBySelector(0,fieldText,templateText);
+    *levelTitleText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+    RichTextCommandStream_PatchPayloadBySelector(1,levelTitleText,templateText);
+    RichTextCommandStream_PatchPayloadBySelector(0,campaignTitleText,templateText);
     descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
   }
 }
@@ -140,8 +174,9 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
     /* a failed delete is reported through the fatal-error dispatch */
     deleteError = g_FileSystemDelete(0,g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteError,deleteError != 0);
-    /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
-    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 1888));
+    /* gameMenuSaveButton (0x760 bytes before deleteButton), the node RebuildCatalog expects */
+    InGameSaveGamePage_RebuildCatalog
+              (THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,gameMenuSaveButton));
   }
 }
 
@@ -172,6 +207,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   int clearIndex;
   uint32_t allocError;
   uint32_t openError;
+  uint32_t readError;
   uint16_t *newRowText;
   UiListRowIndex selectedIndex;
 
@@ -205,13 +241,30 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     /* the catalog record is the second 0x100 bytes of the .sve; for a save that cannot be opened only the first
        dword is cleared */
     if (openError == 0) {
-      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
-      g_FileSystemReadExact(256,record,handle);
-      g_FileSystemClose(handle);
-      /* level index -> level title text, campaign index -> campaign title text */
       saveRecord = (ScenarioCatalogSaveRecord *)record;
-      saveRecord->levelTitleTextId = saveRecord->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE;
-      saveRecord->campaignTitleTextId = saveRecord->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
+      readError = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
+      if (readError == 0) {
+        readError = g_FileSystemReadExact(sizeof(ScenarioCatalogSaveRecord),record,handle);
+      }
+      g_FileSystemClose(handle);
+      if (readError == 0) {
+        /* open-thandor: the name is used as file name leaf and list text; a crafted save may lack its NUL */
+        ((uint16_t *)saveRecord)[SAVE_RECORD_NAME_LAST_UNIT] = 0;
+        /* level index -> level title text, campaign index -> campaign title text (unsigned: a crafted index
+           must not overflow; InGameSaveGame_ResolveTitleText rejects out-of-range ids) */
+        saveRecord->levelTitleTextId =
+             (int)((uint32_t)saveRecord->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE);
+        saveRecord->campaignTitleTextId =
+             (int)((uint32_t)saveRecord->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE);
+      }
+      else {
+        /* open-thandor: the original ignored a failed read and kept a partly filled record; a truncated save is
+           listed with an empty name and no description here. */
+        Thandor_Log("save page: catalog record of a save could not be read (error %u)",readError);
+        memset(saveRecord,0,sizeof(ScenarioCatalogSaveRecord));
+        saveRecord->levelTitleTextId = (int)TEXT_RESOURCE_ID_NONE;
+        saveRecord->campaignTitleTextId = (int)TEXT_RESOURCE_ID_NONE;
+      }
     }
     rowSlot++;
     record += 64; /* 0x100 bytes */
@@ -301,149 +354,55 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 
 
 /* Handler of the save-name edit (action 0x1211): enables the Save button (INGAME_ACTION_SAVE_GAME_SAVE) only
-   while the typed name is valid (edit flag 0x1 set, terminated within the capacity) and contains none of the
-   characters * . \ ? < > : " | / that would break the file name built from it.
+   while the typed name is valid (UI_TEXT_EDIT_VALUE_VALID set, terminated within the capacity) and contains none
+   of the characters * . \ ? < > : " | / that would break the file name built from it. The original scanned the
+   name once per forbidden character with dword reads at code unit steps (reading one unit past the NUL); this is
+   the same check per code unit.
 */
 void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 
 {
-  UiNodeBase *parentWalk;
+  static const uint16_t forbiddenUnits[] = {'*', '.', '\\', '?', '<', '>', ':', '"', '|', '/'};
+  UiTextEditControl *nameEdit;
   UiNodeBase *firstNode;
-  uint32_t remainingLength;
-  uint32_t scanRemaining;
+  const uint16_t *name;
+  uint32_t capacity;
   uint32_t nameLength;
-  int32_t *scanEnd;
-  int32_t *charCursor;
-  Bool8 matched;
+  uint32_t unitIndex;
+  uint32_t forbiddenIndex;
+  Bool8 nameValid;
 
+  nameEdit = (UiTextEditControl *)nameControl;
   /* up to the root node (its parent is -1) */
-  parentWalk = nameControl->parent;
   firstNode = nameControl;
-  while (parentWalk != UI_NODE_NONE) {
+  while (firstNode->parent != UI_NODE_NONE) {
     firstNode = firstNode->parent;
-    parentWalk = firstNode->parent;
   }
-  if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
-    /* scan for the NUL; nameLength then counts the characters including the NUL. Each forbidden
-       character is searched by its own scan pass below. */
-    remainingLength = ((UiTextEditControl *)nameControl)->bufferCapacityCodeUnits;
-    matched = true;
-    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-    do {
-      scanEnd = charCursor;
-      if (remainingLength == 0) break;
-      remainingLength--;
-      scanEnd = (int32_t *)((uintptr_t)charCursor + 2);
-      matched = (short)*charCursor == 0;
-      charCursor = scanEnd;
-    } while (!matched);
-    if (matched) {
-      nameLength =
-           (uint32_t)-((intptr_t)((UiTextEditControl *)nameControl)->textBuffer - (intptr_t)scanEnd) >> 1;
-      matched = nameLength == 0;
-      scanRemaining = nameLength;
-      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-      do {
-        if (scanRemaining == 0) break;
-        scanRemaining--;
-        matched = (short)*charCursor == '*';
-        charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-      } while (!matched);
-      if (!matched) {
-        scanRemaining = nameLength;
-        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-        do {
-          if (scanRemaining == 0) break;
-          scanRemaining--;
-          matched = (short)*charCursor == '.';
-          charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-        } while (!matched);
-        if (!matched) {
-          scanRemaining = nameLength;
-          charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-          do {
-            if (scanRemaining == 0) break;
-            scanRemaining--;
-            matched = (short)*charCursor == '\\';
-            charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-          } while (!matched);
-          if (!matched) {
-            scanRemaining = nameLength;
-            charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-            do {
-              if (scanRemaining == 0) break;
-              scanRemaining--;
-              matched = (short)*charCursor == '?';
-              charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-            } while (!matched);
-            if (!matched) {
-              scanRemaining = nameLength;
-              charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-              do {
-                if (scanRemaining == 0) break;
-                scanRemaining--;
-                matched = (short)*charCursor == '<';
-                charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-              } while (!matched);
-              if (!matched) {
-                scanRemaining = nameLength;
-                charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-                do {
-                  if (scanRemaining == 0) break;
-                  scanRemaining--;
-                  matched = (short)*charCursor == '>';
-                  charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-                } while (!matched);
-                if (!matched) {
-                  scanRemaining = nameLength;
-                  charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-                  do {
-                    if (scanRemaining == 0) break;
-                    scanRemaining--;
-                    matched = (short)*charCursor == ':';
-                    charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-                  } while (!matched);
-                  if (!matched) {
-                    scanRemaining = nameLength;
-                    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-                    do {
-                      if (scanRemaining == 0) break;
-                      scanRemaining--;
-                      matched = (short)*charCursor == '"';
-                      charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-                    } while (!matched);
-                    if (!matched) {
-                      scanRemaining = nameLength;
-                      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-                      do {
-                        if (scanRemaining == 0) break;
-                        scanRemaining--;
-                        matched = (short)*charCursor == '|';
-                        charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-                      } while (!matched);
-                      if (!matched) {
-                        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
-                        do {
-                          if (nameLength == 0) break;
-                          nameLength--;
-                          matched = (short)*charCursor == '/';
-                          charCursor = (int32_t *)((uintptr_t)charCursor + 2);
-                        } while (!matched);
-                        if (!matched) {
-                          UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
-                          return;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+  nameValid = false;
+  if ((nameEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
+    name = nameEdit->textBuffer;
+    capacity = nameEdit->bufferCapacityCodeUnits;
+    nameLength = 0;
+    while (nameLength < capacity && name[nameLength] != 0) {
+      nameLength++;
+    }
+    /* a name without its NUL within the capacity is invalid */
+    nameValid = nameLength < capacity;
+    for (unitIndex = 0; nameValid && unitIndex < nameLength; unitIndex++) {
+      for (forbiddenIndex = 0; forbiddenIndex < sizeof(forbiddenUnits) / sizeof(forbiddenUnits[0]);
+           forbiddenIndex++) {
+        if (name[unitIndex] == forbiddenUnits[forbiddenIndex]) {
+          nameValid = false;
+          break;
         }
       }
     }
   }
-  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
+  if (nameValid) {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
+  }
+  else {
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
+  }
 }
 
