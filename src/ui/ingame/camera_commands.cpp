@@ -129,8 +129,8 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
   uint32_t bookmark5PackedAngles;
   uint32_t bookmark6PackedAngles;
   uint32_t bookmark7PackedAngles;
-  const InGameCameraCommandDispatchTable *currentRecord;
-  const InGameCameraCommandDispatchTable *nextRecord;
+  const InGameCameraCommandDispatchRecord *currentRecord;
+  uint32_t recordIndex;
   
   bookmark7PackedAngles = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
   bookmark6PackedAngles = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
@@ -140,19 +140,19 @@ Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
   bookmark2PackedAngles = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
   bookmark1PackedAngles = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
   /* First record with this key whose modifier requirement matches: a record without required modifiers only
-     matches when neither Ctrl nor Alt is held (Shift is ignored). The key-code 0 record terminates the table. */
-  nextRecord = &g_InGameCameraCommandDispatchRecords16;
-  for (currentRecord = nextRecord;
-       recordKeyCode = currentRecord->records[0].keyCode,
-       requiredModifiers = currentRecord->records[0].requiredModifierMask, recordKeyCode != 0;
-       currentRecord = nextRecord) {
-    nextRecord = (const InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
+     matches when neither Ctrl nor Alt is held (Shift is ignored). The key-code 0 record terminates the table;
+     after all sixteen records the table's terminatorKeyCode (0) ends the walk. */
+  for (recordIndex = 0; recordIndex < 16; recordIndex++) {
+    currentRecord = &g_InGameCameraCommandDispatchRecords16.records[recordIndex];
+    recordKeyCode = currentRecord->keyCode;
+    requiredModifiers = currentRecord->requiredModifierMask;
+    if (recordKeyCode == 0) break;
     if ((recordKeyCode != commandCode) ||
         !((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
                                    : ((modifierFlags & requiredModifiers) != 0))) continue;
     /* Matching record: run its command and stop. The original jumps to the record's continuation address; the
        cases are those addresses. */
-    switch(currentRecord->records[0].continuationEntryAddress) {
+    switch(currentRecord->continuationEntryAddress) {
     case 0x56f360: /* 1..7: recall bookmark n */
       WorldRuntime_SetCameraPositionKeepingTarget
                 (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,

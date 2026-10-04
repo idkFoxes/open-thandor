@@ -189,10 +189,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 
 {
   UiNodeVtable **stack;
-  int32_t *counterField;
+  UiSingleLineTextControl *infoTextControl;
 uint32_t *dispatchRecord;
   uint32_t activePageIndex;
-  GraphicsCapturedTextureSourceAsset *capturedFramebuffer;
 
   /* Records are {key code, required modifier mask, handler}; the table ends with a zero key code. The cases
      below are the original handler addresses stored in the records. */
@@ -224,12 +223,10 @@ uint32_t *dispatchRecord;
     }
     break;
   case 0x56e670: /* Ctrl+I: next of the world view info texts (the text field holds the text resource id) */
-    counterField = (int32_t *)&((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text;
-    *counterField = *counterField + 1;
-    if (TEXT_ID_WORLD_VIEW_INFO_LAST <
-        (uint32_t)(uintptr_t)((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text) {
-      ((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText))->text =
-           (uint16_t *)TEXT_ID_WORLD_VIEW_INFO_FIRST;
+    infoTextControl = (UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText);
+    infoTextControl->text = (uint16_t *)(intptr_t)((int32_t)infoTextControl->text + 1);
+    if (TEXT_ID_WORLD_VIEW_INFO_LAST < (uint32_t)infoTextControl->text) {
+      infoTextControl->text = (uint16_t *)TEXT_ID_WORLD_VIEW_INFO_FIRST;
     }
     break;
   case 0x56e6a0: /* F2: save the map */
@@ -463,15 +460,11 @@ uint32_t *dispatchRecord;
     InGameCommandModeG_Select5((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabRegion));
     break;
   case 0x56f160: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
-    /* The original calls this without passing its four arguments (it reads stale stack values); capture
-       the whole framebuffer like the end-game and end-movie screenshot commands. */
-    capturedFramebuffer = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    if (capturedFramebuffer != NULL) {
-      FileSystem_WriteBufferToPath
-                ((capturedFramebuffer->common).allocationSizeBytes,capturedFramebuffer,
-                 g_ScreenshotFileNameUtf16);
-      Screenshot_AdvanceFileName();
-    }
+    /* The original calls the capture without passing its four arguments (it reads stale stack values) and
+       writes the raw capture asset to the .pcx file without freeing it; saved here like the in-game Alt+P and
+       end-movie screenshot commands (whole framebuffer, PCX-encoded, capture freed) because the raw dump is
+       no PCX and leaks one capture per press. */
+    Screenshot_SaveFramebufferAsPcx();
     break;
   case 0x56f1c0: /* Alt+Q: leave the editor and the session */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==

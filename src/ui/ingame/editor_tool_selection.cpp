@@ -590,8 +590,10 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
   uint32_t pageBase;
   
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
+  /* The original reads entries[0] of the material's set without a check; bounded here because the empty
+     materials (no texture set, NULL) would crash: the selected swatch then shows nothing. */
   ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =
-       g_TerrainMaterialTextureSets[absoluteIndex]->entries[0].sourceAsset;
+       TerrainMaterial_SwatchTexture(absoluteIndex);
   pageEnd = g_UiCommandSelectionPageBaseIndex + MATERIAL_SWATCH_COUNT;
   pageBase = g_UiCommandSelectionPageBaseIndex;
   /* move the page by rows of three swatches until absoluteIndex lies in [pageBase, pageEnd) */
