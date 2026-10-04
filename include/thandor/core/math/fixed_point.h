@@ -40,14 +40,13 @@
 /* Wraps an angle to 16 bits (one full turn) before a g_FixedSineQ28 lookup */
 #define FIXED_ANGLE16_MASK 0xffff
 
-/* The low 32 bits of a signed 64-bit product shifted right by `shift` (0 < shift < 32): the original's
-   double shift of the high:low halves (SHLD by 32-shift / SHRD by shift), which drops the fixed-point factor of a product (28 for a Q28
-   factor, 12 for Q12). Written as the two halves so the compiler emits the same SHLD form. */
+/* The low 32 bits of a signed 64-bit product shifted right by `shift` (0 < shift < 32): drops the fixed-point
+   factor of a product (28 for a Q28 factor, 12 for Q12). Combines the shifted high and low halves like the
+   original's double shift (SHRD); the result equals the low 32 bits of product >> shift. */
 #define FIXED_PRODUCT_SHR(product, shift) \
   ((int)((uint64_t)(product) >> 32) << (32 - (shift)) | (uint32_t)(product) >> (shift))
-/* (a * b) >> shift in 64 bits, low 32 bits: the product and the shift in one step (IMUL + SHRD). Use it
-   where the product is not needed otherwise; check the code stays the same (a named temporary for the product
-   can change the register allocation). */
+/* (a * b) >> shift in 64 bits, low 32 bits: the product and the shift in one step. Use it where the product
+   is not needed otherwise. */
 #define FIXED_MUL_SHR(a, b, shift) FIXED_PRODUCT_SHR((int64_t)(a) * (int64_t)(b), shift)
 /* Fixed-point fraction bits (shift counts) */
 #define Q12_SHIFT 12

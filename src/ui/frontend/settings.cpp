@@ -27,13 +27,14 @@ void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *contro
 }
 
 /* Handler of the gameplay settings checkbox with action 0x2049: stores its state as
-   PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL in the persistent map/mouse option flags, which the session
-   reads when it starts.
+   PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN in the persistent map/mouse option flags, which the session reads
+   when it starts. The checkbox text reads "right button does not scroll", but the bit hides the in-game side
+   panel (see InGameGameplaySettings_SetRightButtonDoesNotScroll).
 */
 void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL);
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN);
 }
 
 /* Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
@@ -133,9 +134,10 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
   UiSelectableControl_SetSelected
             (persistedValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
              (UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
-  /* Bit 4 is "right button does not scroll" (its action 0x2049 handler is
-     FrontendGameplaySettings_SetRightButtonDoesNotScroll); the template calls this control hidePanelCheckbox. */
-  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL,
+  /* Bit 4 is the "right button does not scroll" checkbox (its action 0x2049 handler is
+     FrontendGameplaySettings_SetRightButtonDoesNotScroll), which hides the in-game side panel; the template
+     calls this control hidePanelCheckbox. */
+  UiSelectableControl_SetSelected(persistedValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
                                   (UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((persistedValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
