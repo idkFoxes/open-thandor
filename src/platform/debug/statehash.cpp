@@ -32,6 +32,15 @@ static unsigned s_detailTick;   /* OPEN_THANDOR_STATEHASH_DETAIL: tick whose per
 static unsigned s_pauseTick;    /* OPEN_THANDOR_STATEHASH_PAUSE_AT: pause the game after this tick instead of exiting
                                    (a frame-rate independent moment for screenshot comparisons) */
 static FILE *s_output;
+static int s_speedStepTicks;    /* OPEN_THANDOR_STATEHASH_SPEED, 0 = keep the game's speed (1); applied once */
+
+/* The game speed is applied at the end of this simulation tick, not at a wall-clock moment such as
+   DebugStateHash_SessionStart: the steps run during the initialisation (the "waiting for players" loop of
+   InGameRuntime_InitializeNewSession, which sets the speed back to 1 before them) are 1, 2 or 3 depending on the
+   load, and every step scales movement, timers and production by g_InGameSimulationStepTicks, so applying the
+   speed at the session start made the runs diverge (seen as a statehash.txt starting at tick 3 or 4). Tick 2 is
+   where the speed took effect in the usual unloaded run, so those runs keep their hashes. */
+#define STATEHASH_SPEED_AFTER_TICK 2u
 
 static int32_t DebugStateHash_ArmyIndex(const void *army)
 {
@@ -60,6 +69,13 @@ void DebugStateHash_SessionInitializing(void)
      early or late around tick 68 depending on the load. */
   Random_SetBothSeeds((RandomSeed)(seed != nullptr ? strtoul(seed, nullptr, 0) : 12345u));
   Random_SelectSecondaryStream();
+  /* OPEN_THANDOR_STATEHASH_SPEED=1..5: game speed (what key G sets), applied after simulation tick
+     STATEHASH_SPEED_AFTER_TICK by DebugStateHash_ApplySpeedAtFixedTick */
+  {
+    const char *speed = getenv("OPEN_THANDOR_STATEHASH_SPEED");
+    int stepTicks = speed != nullptr ? atoi(speed) : 0;
+    s_speedStepTicks = (stepTicks >= 1 && stepTicks <= INGAME_SIMULATION_STEP_TICKS_MAX) ? stepTicks : 0;
+  }
 }
 
 void DebugStateHash_SessionStart(void)
@@ -79,21 +95,6 @@ void DebugStateHash_SessionStart(void)
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
               seed != nullptr ? seed : "12345");
-  /* OPEN_THANDOR_STATEHASH_SPEED=1..5: game speed from the first step on (what key G sets, but at a fixed step
-     instead of a wall-clock moment, so runs stay comparable) */
-  {
-    const char *speed = getenv("OPEN_THANDOR_STATEHASH_SPEED");
-    int stepTicks = speed != nullptr ? atoi(speed) : 0;
-    unsigned playerIndex;
-    if (stepTicks >= 1 && stepTicks <= INGAME_SIMULATION_STEP_TICKS_MAX) {
-      for (playerIndex = 0; playerIndex < g_FrontendPlayerRuntimeBlockCount; playerIndex++) {
-        g_SelectionPlayerRuntimeBlockPointers[g_FrontendPlayerRuntimeBlocks[playerIndex].playerRuntimeId]
-             ->simulationStepTicks = (InGameSimulationStepBatchTicks)stepTicks;
-      }
-      g_InGameSimulationStepTicks = (InGameSimulationStepBatchTicks)stepTicks;
-      Thandor_Log("test aid: simulation step ticks %d", stepTicks);
-    }
-  }
 }
 
 /* Scenario orders (OPEN_THANDOR_ARENA_ORDERS), issued from the step hook after fixed simulation ticks (not after a
@@ -237,6 +238,23 @@ static void DebugArena_Orders(int step, unsigned tick)
   }
 }
 
+/* Sets the game speed of OPEN_THANDOR_STATEHASH_SPEED for every player once tick has reached
+   STATEHASH_SPEED_AFTER_TICK (from the step hook, under the step lock: the next step runs at the new speed). */
+static void DebugStateHash_ApplySpeedAtFixedTick(unsigned tick)
+{
+  unsigned playerIndex;
+  if (s_speedStepTicks == 0 || tick < STATEHASH_SPEED_AFTER_TICK) {
+    return;
+  }
+  for (playerIndex = 0; playerIndex < g_FrontendPlayerRuntimeBlockCount; playerIndex++) {
+    g_SelectionPlayerRuntimeBlockPointers[g_FrontendPlayerRuntimeBlocks[playerIndex].playerRuntimeId]
+         ->simulationStepTicks = (InGameSimulationStepBatchTicks)s_speedStepTicks;
+  }
+  g_InGameSimulationStepTicks = (InGameSimulationStepBatchTicks)s_speedStepTicks;
+  Thandor_Log("test aid: simulation step ticks %d from tick %u on", s_speedStepTicks, tick + 1);
+  s_speedStepTicks = 0;
+}
+
 void DebugStateHash_AfterStep(void)
 {
   StateHash hash = {0xcbf29ce484222325ull};
@@ -247,6 +265,7 @@ void DebugStateHash_AfterStep(void)
   unsigned slotIndex;
   int faction;
   int detail;
+  DebugStateHash_ApplySpeedAtFixedTick(tick);
   if (s_stepsWanted == 0 || s_output == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
   }
