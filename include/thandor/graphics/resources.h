@@ -12,5 +12,8 @@
 #include <thandor/graphics/resources/palette.h>
 #include <thandor/graphics/resources/pcx.h>
 #include <thandor/graphics/resources/texture.h>
+#include <thandor/graphics/resources/texture_decompose.h>
+#include <thandor/graphics/resources/texture_set.h>
+#include <thandor/graphics/resources/tiled_blit.h>
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_H */

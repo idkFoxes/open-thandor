@@ -101,7 +101,10 @@ add_library(thandor_curated STATIC
     src/graphics/resources/palette.cpp
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
-    src/graphics/resources/texture.cpp
+    src/graphics/resources/texture_decompose.cpp
+    src/graphics/resources/texture_set.cpp
+    src/graphics/resources/texture_source.cpp
+    src/graphics/resources/tiled_blit.cpp
     src/graphics/terrain/minimap_composite.cpp
     src/graphics/terrain/terrain_render.cpp
     src/graphics/terrain/terrain_resources.cpp
