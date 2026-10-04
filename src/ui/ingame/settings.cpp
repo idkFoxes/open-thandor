@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/settings.h>
 #include <thandor/thandor.h>
+#include <thandor/ui/controls/settings_option.h>
 
 /* Implementation ownership: ui/ingame/settings. */
 
@@ -98,30 +99,13 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
 void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  UiPageStackControl *sidePanelStack;
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  /* control is rightButtonNoScrollCheckbox of the in-game UI template copy */
-  sidePanelStack =
-       (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
-    UiPageStack_SetActiveIndex(1,sidePanelStack);
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,
+                                 [control](Bool8 isSelected) {
+    /* control is rightButtonNoScrollCheckbox of the in-game UI template copy; the page stacks and the layout
+       change before the option word is written */
     UiPageStack_SetActiveIndex
-              (0,(UiPageStackControl *)
-                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,resourceBarModeStack));
-    UiPageStack_SetActiveIndex
-              (0,(UiPageStackControl *)
-                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,gamePanelsModeStack));
-    THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset = 0;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
-    UiPageStack_SetActiveIndex(0,sidePanelStack);
+              (isSelected ? 1 : 0,
+               (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack));
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)
                  THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,resourceBarModeStack));
@@ -129,11 +113,10 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
               (0,(UiPageStackControl *)
                  THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,gamePanelsModeStack));
     THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset =
-         THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
-  }
-  UiContainer_LayoutChildren(THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,inGameRootPanel));
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+         isSelected ? 0
+                    : THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
+    UiContainer_LayoutChildren(THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,inGameRootPanel));
+  });
 }
 
 /* UI action 0x1217 (scrollSpeedSlider; g_InGameUiActionHandlersPage12[23]): stores the slider value as
@@ -142,8 +125,7 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
 void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
-  PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-  return;
+  PersistentOption_StoreSlider(control,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
 }
 
 /* UI action 0x1212 (autoZoomOffCheckbox; g_InGameUiActionHandlersPage12[18]): stores
@@ -153,23 +135,14 @@ void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
-    /* control is autoZoomOffCheckbox; reset the minimap zoom */
-    ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
-         INGAME_MINIMAP_DEFAULT_SCALE_Q12;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
+                                 [control](Bool8 isSelected) {
+    if (isSelected) {
+      /* control is autoZoomOffCheckbox; reset the minimap zoom */
+      ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
+           INGAME_MINIMAP_DEFAULT_SCALE_Q12;
+    }
+  });
 }
 
 /* UI action 0x1213 (autoRotationOffCheckbox; g_InGameUiActionHandlersPage12[19]): stores
@@ -179,23 +152,14 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
-
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
-    /* control is autoRotationOffCheckbox; reset the minimap rotation to its default angle */
-    ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoRotationOffCheckbox,minimapView))->
-    rotationAngle = INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS,PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
+                                 [control](Bool8 isSelected) {
+    if (isSelected) {
+      /* control is autoRotationOffCheckbox; reset the minimap rotation to its default angle */
+      ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoRotationOffCheckbox,minimapView))->
+      rotationAngle = INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE;
+    }
+  });
 }
 
 /* UI action 0x1214 (INGAME_ACTION_LINK_ROTATION_ZOOM, linkRotationZoomCheckbox;
@@ -205,31 +169,22 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
 void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
-  WorldRuntimeFlags *runtimeFlagsField;
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_ZOOM,
+                                 [control](Bool8 isSelected) {
+    WorldRuntimeFlags *runtimeFlagsField;
 
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
     runtimeFlagsField =
          &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationZoomCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
-    UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,(control->base).parent);
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
-    /* control is linkRotationZoomCheckbox; the world view's runtime flags */
-    runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationZoomCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,(control->base).parent);
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+    if (isSelected) {
+      *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
+      UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,(control->base).parent);
+    }
+    else {
+      *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,(control->base).parent);
+    }
+  });
 }
 
 /* UI action 0x1215 (INGAME_ACTION_LINK_ROTATION_TILT, linkRotationTiltCheckbox;
@@ -239,31 +194,22 @@ void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
-  WorldRuntimeFlags *runtimeFlagsField;
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_ROTATION_TILT,
+                                 [control](Bool8 isSelected) {
+    WorldRuntimeFlags *runtimeFlagsField;
 
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_TILT;
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
     runtimeFlagsField =
          &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationTiltCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
-    UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_TILT;
-    /* control is linkRotationTiltCheckbox; the world view's runtime flags */
-    runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationTiltCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
-    UiNodeList_UnsuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+    if (isSelected) {
+      *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
+      UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
+    }
+    else {
+      *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
+    }
+  });
 }
 
 /* UI action 0x121B (hidePanelCheckbox; g_InGameUiActionHandlersPage12[27]): stores
@@ -273,29 +219,20 @@ void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
-  WorldRuntimeFlags *runtimeFlagsField;
-  uint32_t optionFlags;
-  PersistentSettingsValue value;
-  Bool8 isSelected;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS,PERSISTENT_LINK_OPTION_HIDE_PANEL,
+                                 [control](Bool8 isSelected) {
+    WorldRuntimeFlags *runtimeFlagsField;
 
-  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    value = optionFlags | PERSISTENT_LINK_OPTION_HIDE_PANEL;
     /* control is hidePanelCheckbox; the world view's runtime flags */
     runtimeFlagsField =
          &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,hidePanelCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_HIDE_PANEL;
-  }
-  else {
-    value = optionFlags & ~PERSISTENT_LINK_OPTION_HIDE_PANEL;
-    /* control is hidePanelCheckbox; the world view's runtime flags */
-    runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,hidePanelCheckbox,worldView))->runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_HIDE_PANEL;
-  }
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  return;
+    if (isSelected) {
+      *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_HIDE_PANEL;
+    }
+    else {
+      *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_HIDE_PANEL;
+    }
+  });
 }
 
 /* UI action 0x1202 (gameMenuGraphicsButton; g_InGameUiActionHandlersPage12[2]): opens the graphics settings
@@ -547,12 +484,7 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
 void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
-  g_ModelLodDepthThresholdQ8 = value;
-  return;
+  g_ModelLodDepthThresholdQ8 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
 }
 
 /* UI action 0x1207 (INGAME_ACTION_TEXTURE_QUALITY, the three texture quality buttons;
@@ -716,23 +648,9 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
-  uint32_t currentAudioFlags;
-  uint32_t reverseStereoBit;
-  int32_t reverseStereoMask;
-  Bool8 isSelected;
-
-  reverseStereoBit = 0;
-  reverseStereoMask = 0;
-  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
-  if (isSelected) {
-    reverseStereoBit = PERSISTENT_SOUND_OPTION_REVERSE_STEREO;
-    reverseStereoMask = -1;
-  }
-  currentAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  g_ReverseStereoMask = reverseStereoMask;
-  PersistentSettings_Write(reverseStereoBit | currentAudioFlags & ~PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
-                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  return;
+  PersistentOption_ApplyCheckbox(control,PERSISTENT_SETTING_SOUND_OPTION_FLAGS,PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
+                                 [](Bool8 isSelected) { g_ReverseStereoMask = isSelected ? -1 : 0; },
+                                 PERSISTENT_SOUND_OPTION_DEFAULT);
 }
 
 /* UI action 0x120B (effectsVolumeSlider; g_InGameUiActionHandlersPage12[11]): stores the effects volume,
@@ -743,12 +661,10 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 {
   PersistentSettingsValue value;
 
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_EFFECTS_GAIN);
+  value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_UiSoundGainQ15 = value;
   g_SoundEffectsGainQ15 = value;
   g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveEffectVoice);
-  return;
 }
 
 /* UI action 0x120C (movieVolumeSlider; g_InGameUiActionHandlersPage12[12]): stores the movie volume and
@@ -757,12 +673,7 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
-  g_MovieDefaultAudioGainQ15 = value;
-  return;
+  g_MovieDefaultAudioGainQ15 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
 }
 
 /* UI action 0x120D (musicVolumeSlider; g_InGameUiActionHandlersPage12[13]): stores the music volume and
@@ -773,10 +684,8 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 {
   PersistentSettingsValue value;
 
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MUSIC_GAIN);
+  value = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MUSIC_GAIN);
   g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveMusicVoice);
-  return;
 }
 
 /* UI action 0x121A (messageMovieVolumeSlider; g_InGameUiActionHandlersPage12[26]): stores the volume of the
@@ -785,12 +694,7 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsValue value;
-
-  value = control->boundValue;
-  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
-  g_MovieAlternateAudioGainQ15 = value;
-  return;
+  g_MovieAlternateAudioGainQ15 = PersistentOption_StoreSlider(control,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
 }
 
 /* UI action 0x1003 (game menu button): opening shows the game menu window (page 3) with the gameplay options
