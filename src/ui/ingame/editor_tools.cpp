@@ -1207,7 +1207,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            InGameUiCommand_ResetInteractionByMode;
       g_InGameUiRootCallbacks.keyboardFallback = EditorSlot_KeyboardFallback;
       /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
-      (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[editorMode])
+      g_UiCommandModeGHandlers[editorMode]
                 ((UiSelectableControl *)
                  THANDOR_UI_AT(root,g_UiCommandModeGControlOffsets[editorMode]));
       /* zeroes the first 32 dwords of the notification queue (dword by dword, not record by record) */

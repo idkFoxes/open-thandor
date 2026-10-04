@@ -797,10 +797,10 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
   return root;
 }
 
-void *g_UiCommandModeGHandlers[6] = {
-    /* 0 */ THANDOR_FN(InGameCommandModeG_Select0),
-    /* 1 */ THANDOR_FN(InGameCommandModeG_Select1),
-    /* 2 */ THANDOR_FN(InGameCommandModeG_Select2),
-    /* 3 */ THANDOR_FN(InGameCommandModeG_Select3),
-    /* 4 */ THANDOR_FN(InGameCommandModeG_Select4),
-    /* 5 */ THANDOR_FN(InGameCommandModeG_Select5)};
+void (*g_UiCommandModeGHandlers[6])(UiSelectableControl *) = {
+    /* 0 */ UI_SLOT(InGameCommandModeG_Select0),
+    /* 1 */ UI_SLOT(InGameCommandModeG_Select1),
+    /* 2 */ UI_SLOT(InGameCommandModeG_Select2),
+    /* 3 */ UI_SLOT(InGameCommandModeG_Select3),
+    /* 4 */ UI_SLOT(InGameCommandModeG_Select4),
+    /* 5 */ UI_SLOT(InGameCommandModeG_Select5)};

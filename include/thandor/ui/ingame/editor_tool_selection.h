@@ -137,7 +137,7 @@ extern uint32_t g_UiCommandModeA;
 extern uint32_t g_UiCommandModeB; /* followed in the original by an all-zero dword no code reaches (dropped) */
 extern uint32_t g_UiCommandModeF;
 
-extern void *g_UiCommandModeGHandlers[6];
+extern void (*g_UiCommandModeGHandlers[6])(UiSelectableControl *);
 
 extern uint32_t g_UiCommandModeGColorVariantLimit; /* uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
 

@@ -869,34 +869,46 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   return;
 }
 
+/* Action slot adapters: these two handlers take the source node's address as an intptr_t; the action queue passes
+   the node pointer (void *), which on x64 arrives as exactly that address value. */
+static void UiActionSlot_QuitMenuOpenAndRefreshButtons(void *source)
+{
+  InGameQuitMenu_OpenAndRefreshButtons((InGameCommandPanelSourceAddress32)source);
+}
+
+static void UiActionSlot_SaveGameDeleteSelectedAndRefreshCatalog(void *source)
+{
+  InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog((InGameSaveGamePageControlAddress32)source);
+}
+
 InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12 = {
         .handlers = {
-            /*  0 */ THANDOR_FN(InGameQuitMenu_OpenAndRefreshButtons),
-            /*  1 */ THANDOR_FN(InGameSettingsPage_CloseViaSharedToggle),
-            /*  2 */ THANDOR_FN(InGameGraphicsSettings_OpenAndSynchronize),
-            /*  3 */ THANDOR_FN(InGameAudioSettings_OpenAndSynchronize),
-            /*  4 */ THANDOR_FN(InGameShadingSettings_SetEnabled),
-            /*  5 */ THANDOR_FN(InGameShadingSettings_ApplyLevel),
-            /*  6 */ THANDOR_FN(InGameModelSettings_SetLodDepthThresholdQ8),
-            /*  7 */ THANDOR_FN(InGameTextureSettings_SetQuality),
-            /*  8 */ THANDOR_FN(InGameAudioSettings_SetEffectsEnabled),
-            /*  9 */ THANDOR_FN(InGameAudioSettings_SetMusicEnabled),
-            /* 10 */ THANDOR_FN(InGameAudioSettings_SetReverseStereo),
-            /* 11 */ THANDOR_FN(InGameAudioSettings_SetEffectsGain),
-            /* 12 */ THANDOR_FN(InGameAudioSettings_SetMovieDefaultGain),
-            /* 13 */ THANDOR_FN(InGameAudioSettings_SetMusicGain),
-            /* 14 */ THANDOR_FN(InGameSaveGamePage_RebuildCatalog),
-            /* 15 */ THANDOR_FN(InGameSaveGameList_SelectAndRefreshDetail),
-            /* 16 */ THANDOR_FN(InGameSaveGame_SaveSelectedOrTypedName),
-            /* 17 */ THANDOR_FN(InGameSaveName_UpdateSaveActionValidity),
-            /* 18 */ THANDOR_FN(InGameGameplaySettings_SetAutomaticZoomOff),
-            /* 19 */ THANDOR_FN(InGameGameplaySettings_SetAutomaticRotationOff),
-            /* 20 */ THANDOR_FN(InGameGameplaySettings_SetLinkRotationZoom),
-            /* 21 */ THANDOR_FN(InGameGameplaySettings_SetLinkRotationTilt),
-            /* 22 */ THANDOR_FN(InGameGameplaySettings_SetRightButtonDoesNotScroll),
-            /* 23 */ THANDOR_FN(InGameGameplaySettings_SetCameraScrollStep),
-            /* 24 */ THANDOR_FN(InGameSettingsPage_OpenViaSharedToggle),
-            /* 25 */ THANDOR_FN(InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog),
-            /* 26 */ THANDOR_FN(InGameAudioSettings_SetMovieAlternateGain),
-            /* 27 */ THANDOR_FN(InGameGameplaySettings_SetHidePanel)
+            /*  0 */ UI_SLOT(UiActionSlot_QuitMenuOpenAndRefreshButtons),
+            /*  1 */ UI_SLOT(InGameSettingsPage_CloseViaSharedToggle),
+            /*  2 */ UI_SLOT(InGameGraphicsSettings_OpenAndSynchronize),
+            /*  3 */ UI_SLOT(InGameAudioSettings_OpenAndSynchronize),
+            /*  4 */ UI_SLOT(InGameShadingSettings_SetEnabled),
+            /*  5 */ UI_SLOT(InGameShadingSettings_ApplyLevel),
+            /*  6 */ UI_SLOT(InGameModelSettings_SetLodDepthThresholdQ8),
+            /*  7 */ UI_SLOT(InGameTextureSettings_SetQuality),
+            /*  8 */ UI_SLOT(InGameAudioSettings_SetEffectsEnabled),
+            /*  9 */ UI_SLOT(InGameAudioSettings_SetMusicEnabled),
+            /* 10 */ UI_SLOT(InGameAudioSettings_SetReverseStereo),
+            /* 11 */ UI_SLOT(InGameAudioSettings_SetEffectsGain),
+            /* 12 */ UI_SLOT(InGameAudioSettings_SetMovieDefaultGain),
+            /* 13 */ UI_SLOT(InGameAudioSettings_SetMusicGain),
+            /* 14 */ UI_SLOT(InGameSaveGamePage_RebuildCatalog),
+            /* 15 */ UI_SLOT(InGameSaveGameList_SelectAndRefreshDetail),
+            /* 16 */ UI_SLOT(InGameSaveGame_SaveSelectedOrTypedName),
+            /* 17 */ UI_SLOT(InGameSaveName_UpdateSaveActionValidity),
+            /* 18 */ UI_SLOT(InGameGameplaySettings_SetAutomaticZoomOff),
+            /* 19 */ UI_SLOT(InGameGameplaySettings_SetAutomaticRotationOff),
+            /* 20 */ UI_SLOT(InGameGameplaySettings_SetLinkRotationZoom),
+            /* 21 */ UI_SLOT(InGameGameplaySettings_SetLinkRotationTilt),
+            /* 22 */ UI_SLOT(InGameGameplaySettings_SetRightButtonDoesNotScroll),
+            /* 23 */ UI_SLOT(InGameGameplaySettings_SetCameraScrollStep),
+            /* 24 */ UI_SLOT(InGameSettingsPage_OpenViaSharedToggle),
+            /* 25 */ UI_SLOT(UiActionSlot_SaveGameDeleteSelectedAndRefreshCatalog),
+            /* 26 */ UI_SLOT(InGameAudioSettings_SetMovieAlternateGain),
+            /* 27 */ UI_SLOT(InGameGameplaySettings_SetHidePanel)
         }};

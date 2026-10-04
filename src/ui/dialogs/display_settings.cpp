@@ -220,26 +220,26 @@ THANDOR_STATIC_ASSERT(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsU
 
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {
-        /*  0 */ THANDOR_FN(UiDisplayModeAction_ApplyPendingMode),
-        /*  1 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  2 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  3 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  4 */ THANDOR_FN(nullptr), /* the original's colour depth buttons, gone (32-bit colour only) */
-        /*  5 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /*  6 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /*  7 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /*  8 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /*  9 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /* 10 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /* 11 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /* 12 */ THANDOR_FN(UiDisplayModeAction_UpdateResolutionSelection),
-        /* 13 */ THANDOR_FN(UiDisplayModeAction_RevertAndReopenSettings),
-        /* 14 */ THANDOR_FN(UiDisplayModeAction_CancelAndRebuildPixelPacking),
-        /* 15 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection),
-        /* 16 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection),
-        /* 17 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection),
-        /* 18 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection),
-        /* 19 */ THANDOR_FN(UiDisplayModeAction_UpdateAdapterSelection)
+        /*  0 */ UI_SLOT(UiDisplayModeAction_ApplyPendingMode),
+        /*  1 */ nullptr, /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  2 */ nullptr, /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  3 */ nullptr, /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  4 */ nullptr, /* the original's colour depth buttons, gone (32-bit colour only) */
+        /*  5 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /*  6 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /*  7 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /*  8 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /*  9 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /* 10 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /* 11 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /* 12 */ UI_SLOT(UiDisplayModeAction_UpdateResolutionSelection),
+        /* 13 */ UI_SLOT(UiDisplayModeAction_RevertAndReopenSettings),
+        /* 14 */ UI_SLOT(UiDisplayModeAction_CancelAndRebuildPixelPacking),
+        /* 15 */ UI_SLOT(UiDisplayModeAction_UpdateAdapterSelection),
+        /* 16 */ UI_SLOT(UiDisplayModeAction_UpdateAdapterSelection),
+        /* 17 */ UI_SLOT(UiDisplayModeAction_UpdateAdapterSelection),
+        /* 18 */ UI_SLOT(UiDisplayModeAction_UpdateAdapterSelection),
+        /* 19 */ UI_SLOT(UiDisplayModeAction_UpdateAdapterSelection)
     }};
 
 /* the ascending list of distinct values (resolutions,
