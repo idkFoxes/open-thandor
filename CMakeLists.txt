@@ -93,12 +93,14 @@ add_library(thandor_curated STATIC
     src/graphics/backend/software_texture_scale.cpp
     src/graphics/core/cursor.cpp
     src/graphics/core/device.cpp
-    src/graphics/render/model.cpp
+    src/graphics/render/light_records.cpp
     src/graphics/render/model_draw.cpp
+    src/graphics/render/model_lighting.cpp
+    src/graphics/render/model_submit.cpp
     src/graphics/render/offscreen.cpp
     src/graphics/render/primitives.cpp
     src/graphics/render/projection.cpp
-    src/graphics/render/shading.cpp
+    src/graphics/render/shadow_texture.cpp
     src/graphics/resources/framebuffer.cpp
     src/graphics/resources/palette.cpp
     src/graphics/resources/pcx_read.cpp

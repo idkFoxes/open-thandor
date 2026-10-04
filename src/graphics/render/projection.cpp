@@ -51,6 +51,10 @@ GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {0};
 
 GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
 
+GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = 0;
+
+GraphicsFixedRect g_ProjectionClipRect = {0};
+
 /* Perspective-projects one view-space Q12 point to screen coordinates (returned as an x/y pair): the perspective
    scale is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
    centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the

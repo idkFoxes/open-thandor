@@ -54,4 +54,8 @@ void Graphics_RebuildFrustumPlanes(void);
 Bool8 GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
+extern GraphicsPrimitiveQueue *g_ActivePrimitiveQueue;
+
+extern GraphicsFixedRect g_ProjectionClipRect;
+
 #endif /* THANDOR_GRAPHICS_RENDER_PROJECTION_H */

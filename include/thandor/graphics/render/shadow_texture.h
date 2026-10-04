@@ -1,26 +1,18 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/graphics/render/shading.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/graphics/render/shadow_texture.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_GRAPHICS_RENDER_SHADING_H
-#define THANDOR_GRAPHICS_RENDER_SHADING_H
+#ifndef THANDOR_GRAPHICS_RENDER_SHADOW_TEXTURE_H
+#define THANDOR_GRAPHICS_RENDER_SHADOW_TEXTURE_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: graphics/render/shading. */
+/* Submodule: graphics/render/shadow_texture. */
 
-/* Number of runtime light records in g_GraphicsShadingRuntimeRecords (0x40 bytes each) */
-#define GRAPHICS_SHADING_RUNTIME_RECORD_COUNT 256
-/* Intensity clamp table (GraphicsIntensityClampTable_Initialize): entry (previous << 8) | target is target
-   limited to previous +/- this step, so model tints fade by at most 21 per update */
-#define GRAPHICS_INTENSITY_CLAMP_MAX_STEP 21
-/* 64 KiB table plus 64 KiB slack so it can be aligned to a 64 KiB boundary */
-#define GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES 0x20000
-#define GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT 0x10000
 /* Generated shadow texture (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): a shadow vertex fades
    out linearly with its ray distance to the caster and vanishes at 5.0 world units (Q12) */
 #define GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 0x5000
@@ -41,23 +33,6 @@
 
 void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
-
-uint32_t GraphicsIntensityClampTable_Initialize(void);
-
-MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
-          (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator);
-
-GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
-          (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
-          PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
-          GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
-
-void GraphicsShadingRuntime_ClearRecordTable(void);
-
-void GraphicsShadingRuntime_RebuildCompactLightingRecords(void);
-
-void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
-          GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
 uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
@@ -108,16 +83,8 @@ void GraphicsShadingGeneratedTexture_ComposeTransform
 void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC);
 
-/* Not in the original: fills g_ShadingIntensityScaleMmx (the original shipped it precomputed). */
-void GraphicsShading_BuildIntensityScaleTable(void);
-
-/* Not in the original: fills g_PackedLightingLookupTable (the original shipped it precomputed). */
-void GraphicsLighting_BuildPackedLookupTable(void);
-
 extern uint32_t g_TextureDownsampleShift;
 
-extern uintptr_t g_GraphicsIntensityClampTableBase;
-extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount;
 extern uint32_t g_GraphicsShadingTextureDimension;
 extern uint32_t g_GraphicsShadingGridHalfSize;
 extern uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor;
@@ -138,8 +105,4 @@ extern int32_t g_GraphicsShadingPositiveGridOriginQ12;
 extern int32_t g_GraphicsShadingNegativeGridOriginQ12;
 extern GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime;
 
-extern GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256];
-
-extern uint64_t g_PackedLightingLookupTable[512];
-
-#endif /* THANDOR_GRAPHICS_RENDER_SHADING_H */
+#endif /* THANDOR_GRAPHICS_RENDER_SHADOW_TEXTURE_H */
