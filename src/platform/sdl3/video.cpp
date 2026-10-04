@@ -465,6 +465,7 @@ void ApplyVsync() noexcept
 {
 #ifdef THANDOR_RENDERER_SDL_GPU
   thandor::sdl3::SetGpuVsync(s_pacing.vsync);
+  thandor::sdl3::SetGpuFrameLimited(s_pacing.frameLimit != PERSISTENT_FRAME_LIMIT_OFF);
 #endif
   if (s_renderer.sdlRenderer && !SDL_SetRenderVSync(s_renderer.sdlRenderer.get(), s_pacing.vsync ? 1 : 0)) {
     Thandor_Log("SDL_SetRenderVSync %d failed: %s", s_pacing.vsync ? 1 : 0, SDL_GetError());
@@ -862,6 +863,9 @@ void SdlVideo_SetFrameLimit(uint32_t fps)
     s_pacing.frameLimit = fps;
     s_pacing.nextPresentNs = 0;
     Thandor_Log("frame limit %u fps%s", fps, (fps == 0) ? " = off" : "");
+#ifdef THANDOR_RENDERER_SDL_GPU
+    thandor::sdl3::SetGpuFrameLimited(fps != PERSISTENT_FRAME_LIMIT_OFF);
+#endif
   }
 }
 

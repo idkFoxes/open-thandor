@@ -353,6 +353,9 @@ int s_uiScale = 1;
    the swapchain texture is acquired waiting (the frame loop runs at the display's refresh rate); false = mailbox
    (else immediate) and a non-waiting acquire. */
 bool s_vsync = true;
+/* A frame limit is set (SetGpuFrameLimited): the swapchain texture is acquired waiting also with VSync off, so a
+   limited frame rate is not thinned out further by dropped frames (immediate mode, all images in flight). */
+bool s_frameLimited = false;
 
 /* A logical-pixel rectangle as target pixels of a target made for scale. */
 SDL_Rect ScaledScissor(const SDL_Rect &logical, int scale) noexcept
@@ -1830,8 +1833,8 @@ void ReleaseDevice() noexcept
 
 /* The swapchain's present mode. VSync on (s_vsync): vsync, and the swapchain texture is acquired waiting, so the
    frame loop is paced by the display. VSync off: mailbox (no tearing, never waits) where the driver has it, else
-   immediate, else vsync; the swapchain texture is then acquired without waiting, so a frame is dropped rather than
-   the game held up. Applied at every window claim and by SetGpuVsync. */
+   immediate, else vsync; the swapchain texture is then acquired without waiting (unless a frame limit is set), so a
+   frame is dropped rather than the game held up. Applied at every window claim and by SetGpuVsync. */
 void ChoosePresentMode() noexcept
 {
   SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
@@ -1940,8 +1943,8 @@ void CheckSwapchainSize() noexcept
 }
 
 /* The swapchain texture for this frame's command buffer, nullptr when there is none: an unclaimed window (minimized
-   at the start), a minimized window, or a frame the non-waiting acquire (VSync off) drops (mailbox, all images in
-   flight). With VSync on the acquire waits for a free swapchain image instead.
+   at the start), a minimized window, or a frame the non-waiting acquire (VSync off, no frame limit) drops (mailbox,
+   all images in flight). With VSync on or a frame limit the acquire waits for a free swapchain image instead.
    None of these is an error; the frame is drawn and submitted without the present. */
 SDL_GPUTexture *AcquireSwapchain(SDL_GPUCommandBuffer *commands, Uint32 *width, Uint32 *height) noexcept
 {
@@ -1949,7 +1952,7 @@ SDL_GPUTexture *AcquireSwapchain(SDL_GPUCommandBuffer *commands, Uint32 *width, 
   CheckSwapchainSize();
   SDL_GPUTexture *swapchain = nullptr;
   if (s_gpu.windowClaimed &&
-      !(s_vsync ? SDL_WaitAndAcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)
+      !((s_vsync || s_frameLimited) ? SDL_WaitAndAcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)
                 : SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height))) {
     if (!s_gpu.presentFailureLogged) {
       Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
@@ -2104,6 +2107,11 @@ bool GpuFrameActive() noexcept
 void SetGpuUiScale(int scale) noexcept
 {
   s_uiScale = std::clamp(scale, 1, kMaxGpuUiScale);
+}
+
+void SetGpuFrameLimited(bool limited) noexcept
+{
+  s_frameLimited = limited;
 }
 
 void SetGpuVsync(bool on) noexcept
