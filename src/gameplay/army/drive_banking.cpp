@@ -218,7 +218,8 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   int travelDistance;
   int recoilTilt;
 
-  /* a new route point (classState68/armyLinkOrState) restarts from standstill */
+  /* a new route point (classState68/armyLinkOrState) restarts from standstill. Original quirk: `&&`, so a route
+     point that differs in only one coordinate keeps the current speed and turn velocity. */
   if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
      ((uint32_t)waypointWorldY != (modelRuntime->classLinkState).armyLinkOrState.classState)) {
     (modelRuntime->classLinkState).classState68 = waypointWorldX;

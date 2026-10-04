@@ -53,7 +53,7 @@ Bool8 ArmyPlacement_CanPlaceAnchoredModel
      Original quirk: the found flag is not checked; without a (1,5) point the record just past the
      point table is read. */
   ModelLookupTable_FindPackedPoint
-            (1,5,Thandor_U32ToPointer<MdlSerializedNodeHeader>(modelDefinition->rootNodeOffsetOrPointer)-> /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
+            (1,5,Thandor_U32ToPointer<MdlSerializedNodeHeader>(modelDefinition->rootNodeOffsetOrPointer)-> /* 32-bit format field: ModelDefinition.rootNodeOffsetOrPointer */
                  spriteAssetReference.modelResource,&anchorRecord);
   offsetLengthAngle = FixedMath_Vector2AngleAndLength
                     ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
@@ -399,7 +399,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
   }
   /* the model definition of the army asset's root node */
   modelDefinition = ModelDefinitionRegistry_FindById
-                    (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
+                    (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 32-bit format field: ArmyAssetRecord.rootNodeOffsetOrPointer */
   if (modelDefinition == nullptr) {
     return false;
   }
@@ -661,7 +661,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   if (sourceRuntime == nullptr) {
     return;
   }
-  /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
+  /* 32-bit format field: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   definitionRecord = ModelDefinitionRegistry_FindById
                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(
                       ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
