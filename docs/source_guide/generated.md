@@ -37,6 +37,6 @@ The game structures, unions and enums recovered from the original, in their 32-b
 
 [Header](../../include/thandor/generated/ui_templates.h)
 
-Layouts of the UI node templates of the original image (one member per node); the templates themselves are variables in the modules' data.c. Once generated from the original thandor.exe, now maintained by hand.
+Layouts of the UI node templates of the original image (one member per node); the templates themselves are variables in the "Module data" section of the .cpp file that owns each of them. Once generated from the original thandor.exe, now maintained by hand.
 
 **Includes:** `stddef.h`.

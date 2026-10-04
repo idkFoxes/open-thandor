@@ -5,7 +5,8 @@
  */
 
 /* Layouts of the UI node templates of the original image (one member per node); the templates themselves are
-   variables in the modules' data.c. Once generated from the original thandor.exe, now maintained by hand. */
+   variables in the "Module data" section of the .cpp file that owns each of them. Once generated from the original
+   thandor.exe, now maintained by hand. */
 
 #ifndef THANDOR_GENERATED_UI_TEMPLATES_H
 #define THANDOR_GENERATED_UI_TEMPLATES_H

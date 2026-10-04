@@ -11,7 +11,8 @@ For every function it checks:
   structured   no endless loop form (`while (true)`, `while (1)`, `for (;;)`) and no goto
 A function is "clean" when all four hold. Prints the totals as percentages (used for the README), and the number
 of hex literals in code that are neither original addresses nor bit masks (0xff, 0xffff0000, ...).
-audio/codec/sam.c is left out of the offset and number checks (MMX table positions, see RAW_EXEMPT)."""
+The sample codec (audio/codec/sam.cpp, sam_encoder.cpp) is left out of the offset and number checks (MMX table
+positions, see RAW_EXEMPT). Scans src/**/*.cpp, src/**/*.h and include/**/*.h."""
 import pathlib
 import re
 import sys
@@ -21,9 +22,20 @@ RAW = re.compile(r"\*\([A-Za-z_][\w ]*\*+\s*\)\s*\([^()]*\+\s*-?0x[0-9a-fA-F]+\)
 # "opaque" alone is a real graphics term (opaque pixel / blit); opaque byte ranges such as opaqueGap0000_05DF are
 # caught by the offset-range pattern
 PLACEHOLDER = re.compile(r"\b(?:\w*[a-z](?:[0-9A-F]{2,4}_[0-9A-F]{2,4})|\w*(?:[Uu]nknown|payloadDword|[Uu]nresolved)\w*|arg\d+|\w+View[0-9A-F]{2,}|\w+Image[0-9A-F]{3,})\b")
-# the sample codec's MMX tables (audio/codec/sam.c) are addressed by genuine table positions; retyping them changes
-# the generated code, so that file is left out of the offset and number checks
-RAW_EXEMPT = ("sam.c",)
+# the sample codec's MMX tables (audio/codec/sam.cpp, sam_encoder.cpp) are addressed by genuine table positions;
+# retyping them changes the generated code, so those files are left out of the offset and number checks
+RAW_EXEMPT = ("sam.cpp", "sam_encoder.cpp")
+
+
+def source_files():
+    """The implementation files and headers (src/**/*.cpp, src/**/*.h, include/**/*.h), without the generated
+    headers and the self-tests."""
+    paths = sorted((ROOT / "src").rglob("*.cpp")) + sorted((ROOT / "src").rglob("*.h"))
+    paths += sorted((ROOT / "include").rglob("*.h"))
+    for path in paths:
+        if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest"):
+            continue
+        yield path
 
 
 def is_mask(digits):
@@ -56,9 +68,7 @@ def functions():
     """Each original function: its file, name, header comment (the comment right above it) and the code up to the
     next original function's header comment."""
     names = original_function_names()
-    for path in sorted((ROOT / "src").rglob("*.c")):
-        if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest"):
-            continue
+    for path in source_files():
         text = path.read_text(encoding="utf-8", errors="replace")
         starts = []
         for m in DEFINITION_LINE.finditer(text):
@@ -88,6 +98,8 @@ def main():
         structured = not FLOW.search(body)
         rows.append((path, name, documented, typed, named, structured))
     total = len(rows)
+    if total == 0:
+        sys.exit("no original functions found under src/ and include/")
     columns = ("documented", "typed", "named", "structured")
     for i, column in enumerate(columns, 2):
         n = sum(1 for r in rows if r[i])
@@ -97,8 +109,8 @@ def main():
     # hex literals in code (not in comments), without original addresses 0x004xxxxx-0x006xxxxx, bit masks
     # (is_mask) and the sample codec's MMX tables (RAW_EXEMPT)
     hex_count = masks = 0
-    for path in (ROOT / "src").rglob("*.c"):
-        if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest") or path.name in RAW_EXEMPT:
+    for path in source_files():
+        if path.name in RAW_EXEMPT:
             continue
         code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", path.read_text(encoding="utf-8", errors="replace"), flags=re.S)
         # the value of a #define is where a number gets its name
