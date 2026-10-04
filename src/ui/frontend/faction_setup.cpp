@@ -49,13 +49,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
   do {
     if ((int)((uintptr_t)factionControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendFactionSetup_CycleFactionColour(g_LocalPlayerRuntimeId,0,0,rowIndex);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CYCLE_FACTION_COLOUR,0,0,rowIndex);
-      }
+      FrontendCommand_Issue<FrontendFactionSetup_CycleFactionColour>(0,0,rowIndex);
       return;
     }
     rowIndex++;
@@ -77,13 +71,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
   do {
     if ((int)((uintptr_t)playerControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex]) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendFactionSetup_ToggleFactionActive(g_LocalPlayerRuntimeId,0,0,rowIndex);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE,0,0,rowIndex);
-      }
+      FrontendCommand_Issue<FrontendFactionSetup_ToggleFactionActive>(0,0,rowIndex);
       return;
     }
     rowIndex++;
@@ -105,13 +93,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
   do {
     if ((int)((uintptr_t)selectionRowControl - g_FrontendRootNode) ==
         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]) {
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendFactionSetup_ChooseFaction(g_LocalPlayerRuntimeId,0,0,rowIndex);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHOOSE_FACTION,0,0,rowIndex);
-      }
+      FrontendCommand_Issue<FrontendFactionSetup_ChooseFaction>(0,0,rowIndex);
       return;
     }
     rowIndex++;
@@ -126,13 +108,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   return;
 }
 

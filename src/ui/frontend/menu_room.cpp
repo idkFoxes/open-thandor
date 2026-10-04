@@ -987,13 +987,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
     if (slotRecord != nullptr) {
       recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,(void *)g_FrontendActiveRomRecord);
       if (-1 < (int)recordIndex) {
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendRomActionTable_ExecuteRecord(g_LocalPlayerRuntimeId,0,0,recordIndex);
-        }
-        else {
-          FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_EXECUTE_ROM_ACTION,0,0,recordIndex);
-        }
+        FrontendCommand_Issue<FrontendRomActionTable_ExecuteRecord>(0,0,recordIndex);
       }
     }
   }
@@ -1008,13 +1002,7 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_RequestRomTransitionStopCallback(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_STOP_ROM_TRANSITION,0,0,0);
-    }
+    FrontendCommand_Issue<ScenarioCatalog_RequestRomTransitionStopCallback>(0,0,0);
   }
   return;
 }

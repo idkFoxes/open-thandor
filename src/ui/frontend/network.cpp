@@ -273,13 +273,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     if (backendError != 0) {
       /* no backend opens: report the last error and leave the network page */
       FatalError_ReportIfFailed(backendError,true);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-      }
+      FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
       return;
     }
   }
@@ -630,13 +624,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
     }
     g_NetworkBackendSlot1(); /* cleanup */
   }
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-      SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-  }
-  else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-  }
+  FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
   Random_SelectPrimaryStream();
   return;
 }
