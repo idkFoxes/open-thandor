@@ -44,7 +44,7 @@ Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: 
 - [`archive_write.cpp / archive_write.h`](source_guide/assets.md#file-assets-package-archive-write) - no file comment; main functions `Package_UpsertEntry`, `Package_DeleteEntry`
 - [`codec.cpp / codec.h`](source_guide/assets.md#file-assets-package-codec) - no file comment; main functions `PckCodec_EncodeHuffmanRle`, `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeHuffmanRle`
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
-- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_Mount`
+- [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_LoadEntryWithSize`
 - [`types.h`](source_guide/assets.md#file-assets-package-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 
 <a id="module-assets-rom"></a>
@@ -521,7 +521,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
 - [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
-- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiKeyModifiers_Match`, `UiCommandDispatch_Find`
+- [`key_dispatch.h`](source_guide/ui.md#file-ui-core-key-dispatch) - no file comment; main functions `UiCommandDispatch_Find`, `UiKeyModifiers_Match`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_InvalidateRoot`, `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`

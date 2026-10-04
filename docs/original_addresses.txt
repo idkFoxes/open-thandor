@@ -375,7 +375,7 @@
 0x00485830  data      g_GraphicsTextureSetReleasePackage                                src/graphics/resources/texture_set.cpp
 0x00485834  data      g_GraphicsCreateTextureSet                                        src/graphics/resources/texture_set.cpp
 0x00485838  data      g_GraphicsDestroyTextureSet                                       src/graphics/resources/texture_set.cpp
-0x0048583C  data      g_GraphicsRefreshTextureColor                                     src/graphics/resources/texture_set.cpp
+0x0048583C  data      g_GraphicsRefreshTextureColor                                     (removed)
 0x00485840  data      g_GraphicsRefreshTextureAlpha                                     src/graphics/resources/texture_set.cpp
 0x00485844  data      g_GraphicsPrimitiveQueueRadixSortProc                             src/graphics/render/primitives.cpp
 0x00485848  data      g_GraphicsOffscreenRenderModelListToTextureSource                 src/graphics/render/offscreen.cpp
@@ -467,7 +467,7 @@
 0x004A8EAC  data      g_SoftwarePixelFormatConfig                                       src/graphics/backend/software_display_mode.cpp
 0x004A8ED0  data      g_GraphicsSetDisplayMode                                          src/graphics/backend/software_display_mode.cpp
 0x004A8ED8  data      g_SoftwareFramebufferCreate                                       src/graphics/backend/software_display_mode.cpp
-0x004A8EDC  data      g_SoftwareFramebufferDestroy                                      src/graphics/backend/software.cpp
+0x004A8EDC  data      g_SoftwareFramebufferDestroy                                      (removed)
 0x004A8EE0  data      g_GraphicsFramebufferPresent                                      src/graphics/resources/framebuffer.cpp
 0x004A8EE4  data      g_GraphicsFramebufferCaptureRegion                                src/graphics/resources/framebuffer.cpp
 0x004A8EE8  data      g_SoftwareBuildPixelPackTables                                    src/graphics/backend/software_display_mode.cpp
@@ -487,7 +487,7 @@
 0x004A8F20  data      g_GraphicsTextureSourceBlitTiledSaturatedAddRgb                   (removed, unused)
 0x004A8F24  data      g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd                    (removed, unused)
 0x004A8F28  data      g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd               (removed, unused)
-0x004A8F2C  data      g_GraphicsTextureSourceDecomposeSubresourceRegionsCf              src/graphics/resources/texture_decompose.cpp
+0x004A8F2C  data      g_GraphicsTextureSourceDecomposeSubresourceRegionsCf              (removed)
 0x004A8F30  data      g_GraphicsFramebufferFillRectArgb                                 src/graphics/resources/framebuffer.cpp
 0x004A8F34  data      g_GraphicsFramebufferCopyRegionToOrigin                           (removed, unused)
 0x004A8F38  data      g_GraphicsFramebufferCopyOriginToRegion                           (removed, unused)
