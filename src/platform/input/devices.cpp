@@ -44,9 +44,9 @@ static uint32_t g_KeyboardToggleLatchMask = 0;
 
 uint32_t g_CursorInputWriteIndex = 0;
 
-PointerFlushEventsProc *g_PointerFlushEvents = 0;
+PointerFlushEventsProc *g_PointerFlushEvents = nullptr;
 
-PointerSetPositionProc *g_PointerSetPosition = 0;
+PointerSetPositionProc *g_PointerSetPosition = nullptr;
 
 uint32_t g_CursorOverflowLeft = 0;
 
@@ -157,7 +157,7 @@ Bool8 GraphicsCursor_LoadAssets(uint32_t *outError)
 
   /* cursor images: the largest image size sizes the cursor buffers */
   cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
-  if (cursorAsset == NULL) {
+  if (cursorAsset == nullptr) {
     *outError = cursorLoadErrorCode;
     return false;
   }
@@ -208,9 +208,9 @@ void GraphicsCursor_FreeBuffers(void)
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
   g_MemoryApi.free(g_CursorAlternateSavedBackground);
-  g_CursorSavedBackground = NULL;
-  g_CursorCompositeBuffer = NULL;
-  g_CursorAlternateSavedBackground = NULL;
+  g_CursorSavedBackground = nullptr;
+  g_CursorCompositeBuffer = nullptr;
+  g_CursorAlternateSavedBackground = nullptr;
 }
 
 
@@ -230,19 +230,19 @@ Bool8 GraphicsCursor_CreateBuffersAndCenter
   /* a failing create stores its allocator error in *errorCode */
   newCursorFramebuffer = g_SoftwareFramebufferCreate
                    (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
-  if (newCursorFramebuffer == NULL) {
+  if (newCursorFramebuffer == nullptr) {
     return false;
   }
   g_CursorSavedBackground = newCursorFramebuffer;
   newCompositeFramebuffer = g_SoftwareFramebufferCreate
                    (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
-  if (newCompositeFramebuffer == NULL) {
+  if (newCompositeFramebuffer == nullptr) {
     return false;
   }
   g_CursorCompositeBuffer = newCompositeFramebuffer;
   newCursorFramebuffer = g_SoftwareFramebufferCreate
                    (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
-  if (newCursorFramebuffer == NULL) {
+  if (newCursorFramebuffer == nullptr) {
     return false;
   }
   g_CursorAlternateSavedBackground = newCursorFramebuffer;

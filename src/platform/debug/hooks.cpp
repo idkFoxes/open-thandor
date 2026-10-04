@@ -43,16 +43,16 @@ void DebugHook_BeforeIntroMovies(void)
 {
   const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
   const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
-  if ((exportMovies != NULL) && (exportMovies[0] != 0)) {
+  if ((exportMovies != nullptr) && (exportMovies[0] != 0)) {
     char names[256];
     char *name;
     snprintf(names, sizeof names, "%s", exportMovies);
-    for (name = strtok(names, ","); name != NULL; name = strtok(NULL, ",")) {
+    for (name = strtok(names, ","); name != nullptr; name = strtok(nullptr, ",")) {
       DebugMovie_ExportOne(name);
     }
     ExitProcess(0);
   }
-  if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
+  if ((debugMovie != nullptr) && (debugMovie[0] != 0)) {
     DebugMovie_Run(debugMovie);
   }
 }

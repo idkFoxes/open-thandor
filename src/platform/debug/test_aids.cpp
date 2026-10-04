@@ -19,7 +19,7 @@ int Thandor_TestAidScriptActive(void)
     static int active = -1;
     if (active < 0) {
         const char *value = getenv("OPEN_THANDOR_SCRIPT");
-        active = value != NULL && value[0] != 0;
+        active = value != nullptr && value[0] != 0;
     }
     return active;
 }
@@ -30,7 +30,7 @@ int Thandor_TestAidStateHashActive(void)
     static int active = -1;
     if (active < 0) {
         const char *value = getenv("OPEN_THANDOR_STATEHASH");
-        active = value != NULL && atoi(value) > 0;
+        active = value != nullptr && atoi(value) > 0;
     }
     return active;
 }
@@ -61,7 +61,7 @@ void Thandor_TestAidNoteOutsideStep(const char *what, void *caller)
 int Thandor_TestAidAllowSecondInstance(void)
 {
     const char *value = getenv("OPEN_THANDOR_MULTI_INSTANCE");
-    return value != NULL && value[0] == '1';
+    return value != nullptr && value[0] == '1';
 }
 
 /* Test aid (not in the original): see test_aids.h. */
@@ -69,7 +69,7 @@ unsigned Thandor_TestAidNetworkBindPort(unsigned gamePort)
 {
     const char *value = getenv("OPEN_THANDOR_NET_PORT");
     unsigned port;
-    if (value == NULL) {
+    if (value == nullptr) {
         return gamePort;
     }
     port = (unsigned)atoi(value);
@@ -89,9 +89,9 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
     const unsigned *words = (const unsigned *)buffer;
     if (enabled < 0) {
         const char *value = getenv("OPEN_THANDOR_NETLOG");
-        enabled = value != NULL && value[0] == '1';
+        enabled = value != nullptr && value[0] == '1';
     }
-    if (!enabled || address == NULL || buffer == NULL) {
+    if (!enabled || address == nullptr || buffer == nullptr) {
         return;
     }
     Thandor_Log("net %s %u.%u.%u.%u:%u %u bytes: %08x %08x %08x %08x", direction, address[4], address[5],
@@ -105,7 +105,7 @@ int Thandor_TestAidWindowed(void)
     static int enabled = -1;
     if (enabled < 0) {
         const char *value = getenv("OPEN_THANDOR_WINDOWED");
-        enabled = value != NULL && value[0] == '1';
+        enabled = value != nullptr && value[0] == '1';
     }
     return enabled;
 }

@@ -90,7 +90,7 @@ void DebugScript_Tick(void)
   if (state < 0) {
     const char *path = getenv("OPEN_THANDOR_SCRIPT");
     state = 0;
-    if (path != NULL && (script = fopen(path, "r")) != NULL) {
+    if (path != nullptr && (script = fopen(path, "r")) != nullptr) {
       state = 1;
       start = Thandor_TickCount();
       Thandor_Log("script: %s", path);
@@ -153,7 +153,7 @@ void DebugScript_Tick(void)
   }
   for (;;) {
     if (state == 1) {
-      if (fgets(line, sizeof line, script) == NULL) {
+      if (fgets(line, sizeof line, script) == nullptr) {
         state = 0;
         fclose(script);
         return;

@@ -35,7 +35,7 @@ static FILE *s_output;
 
 static int32_t DebugStateHash_ArmyIndex(const void *army)
 {
-  if (army == NULL) {
+  if (army == nullptr) {
     return -1;
   }
   return (int32_t)(((const uint8_t *)army - (const uint8_t *)g_ArmyRuntimeSlots) / (int)sizeof(ArmyRuntimeSlot));
@@ -45,7 +45,7 @@ void DebugStateHash_SessionInitializing(void)
 {
   const char *steps = getenv("OPEN_THANDOR_STATEHASH");
   const char *seed = getenv("OPEN_THANDOR_STATEHASH_SEED");
-  if (steps == NULL || atoi(steps) <= 0) {
+  if (steps == nullptr || atoi(steps) <= 0) {
     return;
   }
   /* The simulation draws from g_RandomGeneratorState.next; in a local game that is the primary stream, which the
@@ -58,7 +58,7 @@ void DebugStateHash_SessionInitializing(void)
      (ArmyRuntime_UpdateTimedShotAndEffectEmitters); seeded only at SessionStart, those timers came from a primary
      stream that the frames drawn so far had advanced, and one emitter effect (with its random draw) came a tick
      early or late around tick 68 depending on the load. */
-  Random_SetBothSeeds((RandomSeed)(seed != NULL ? strtoul(seed, NULL, 0) : 12345u));
+  Random_SetBothSeeds((RandomSeed)(seed != nullptr ? strtoul(seed, nullptr, 0) : 12345u));
   Random_SelectSecondaryStream();
 }
 
@@ -67,23 +67,23 @@ void DebugStateHash_SessionStart(void)
   const char *steps = getenv("OPEN_THANDOR_STATEHASH");
   const char *seed = getenv("OPEN_THANDOR_STATEHASH_SEED");
   const char *detail = getenv("OPEN_THANDOR_STATEHASH_DETAIL");
-  if (steps == NULL || atoi(steps) <= 0) {
+  if (steps == nullptr || atoi(steps) <= 0) {
     return;
   }
   s_stepsWanted = atoi(steps);
   s_stepsDone = 0;
-  s_detailTick = detail != NULL ? (unsigned)atoi(detail) : 0;
-  s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != NULL ?
+  s_detailTick = detail != nullptr ? (unsigned)atoi(detail) : 0;
+  s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != nullptr ?
                 (unsigned)atoi(getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT")) : 0;
   /* the random streams were seeded in DebugStateHash_SessionInitializing */
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
-              seed != NULL ? seed : "12345");
+              seed != nullptr ? seed : "12345");
   /* OPEN_THANDOR_STATEHASH_SPEED=1..5: game speed from the first step on (what key G sets, but at a fixed step
      instead of a wall-clock moment, so runs stay comparable) */
   {
     const char *speed = getenv("OPEN_THANDOR_STATEHASH_SPEED");
-    int stepTicks = speed != NULL ? atoi(speed) : 0;
+    int stepTicks = speed != nullptr ? atoi(speed) : 0;
     unsigned playerIndex;
     if (stepTicks >= 1 && stepTicks <= INGAME_SIMULATION_STEP_TICKS_MAX) {
       for (playerIndex = 0; playerIndex < g_FrontendPlayerRuntimeBlockCount; playerIndex++) {
@@ -122,7 +122,7 @@ static void DebugArena_MoveOrders(unsigned tick)
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
     int direction;
-    if (army->modelNodeRuntime == NULL || (army->factionIndex != 1 && army->factionIndex != 2)) {
+    if (army->modelNodeRuntime == nullptr || (army->factionIndex != 1 && army->factionIndex != 2)) {
       continue;
     }
     direction = army->factionIndex == 1 ? 1 : -1;
@@ -163,7 +163,7 @@ static void DebugArena_ProductionOrders(unsigned tick)
   }
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
-    if (army->modelNodeRuntime == NULL || army->modelRuntimeOrSavedOffset.modelRuntime == NULL) {
+    if (army->modelNodeRuntime == nullptr || army->modelRuntimeOrSavedOffset.modelRuntime == nullptr) {
       continue;
     }
     for (index = 0; index < sizeof labs / sizeof labs[0]; index++) {
@@ -225,7 +225,7 @@ static void DebugArena_ProductionSummary(int step)
 static void DebugArena_Orders(int step, unsigned tick)
 {
   const char *orders = getenv("OPEN_THANDOR_ARENA_ORDERS");
-  if (orders == NULL) {
+  if (orders == nullptr) {
     return;
   }
   if (strcmp(orders, "move") == 0) {
@@ -247,14 +247,14 @@ void DebugStateHash_AfterStep(void)
   unsigned slotIndex;
   int faction;
   int detail;
-  if (s_stepsWanted == 0 || s_output == NULL || g_InGameRuntimeRoot == NULL) {
+  if (s_stepsWanted == 0 || s_output == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
   }
   detail = (tick == s_detailTick);
   StateHash_Add(&hash, tick);
   StateHash_Add(&hash, g_RandomGeneratorState.secondarySeed);
   /* every world object in update order: class and world position (models, shots and effects) */
-  for (node = g_InGameRuntimeRoot->worldRuntime.ownerListHead; node != NULL; node = node->nextNode) {
+  for (node = g_InGameRuntimeRoot->worldRuntime.ownerListHead; node != nullptr; node = node->nextNode) {
     StateHash_Add(&hash, (uint32_t)node->ownerClassId);
     StateHash_Add(&hash, (uint32_t)node->worldXQ12);
     StateHash_Add(&hash, (uint32_t)node->worldYQ12);
@@ -270,11 +270,11 @@ void DebugStateHash_AfterStep(void)
     ArmyRuntimeSlot *army = &g_ArmyRuntimeSlots[slotIndex];
     ModelRuntimeSlot *model;
     uint32_t health = 0;
-    if (army->modelNodeRuntime == NULL) {
+    if (army->modelNodeRuntime == nullptr) {
       continue;
     }
     model = army->modelRuntimeOrSavedOffset.modelRuntime;
-    if (model != NULL) {
+    if (model != nullptr) {
       health = model->health;
     }
     StateHash_Add(&hash, slotIndex);
@@ -315,14 +315,14 @@ void DebugStateHash_AfterStep(void)
     /* the flag the pause command toggles once all players agree (InGameCommand_TogglePauseRequest) */
     g_UiCommandRuntimeFlags |= UI_COMMAND_RUNTIME_FLAG_PAUSED;
     fclose(s_output);
-    s_output = NULL;
+    s_output = nullptr;
     s_stepsWanted = 0;
     Thandor_Log("test aid: state hash paused the game at tick %u", tick);
     return;
   }
   if (s_stepsDone >= s_stepsWanted) {
     fclose(s_output);
-    s_output = NULL;
+    s_output = nullptr;
     Thandor_Log("test aid: state hash done after %d steps (tick %u)", s_stepsDone, tick);
     ExitProcess(0);
   }

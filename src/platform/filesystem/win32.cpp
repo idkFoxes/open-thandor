@@ -15,19 +15,19 @@ THANDOR_ALIGN(16) uint16_t g_ExecutableDirectoryUtf16[256] = {0};
 
 THANDOR_ALIGN(16) uint16_t g_FileSystemCombinedPathScratchUtf16[THANDOR_PATH_CAPACITY] = {0};
 
-THANDOR_ALIGN(16) FileSystemOpenProc *g_FileSystemOpen = 0;
+THANDOR_ALIGN(16) FileSystemOpenProc *g_FileSystemOpen = nullptr;
 
-THANDOR_ALIGN(4) FileSystemCloseProc *g_FileSystemClose = 0;
+THANDOR_ALIGN(4) FileSystemCloseProc *g_FileSystemClose = nullptr;
 
-THANDOR_ALIGN(8) FileSystemReadExactProc *g_FileSystemReadExact = 0;
+THANDOR_ALIGN(8) FileSystemReadExactProc *g_FileSystemReadExact = nullptr;
 
-THANDOR_ALIGN(4) FileSystemWriteExactOrFlushProc *g_FileSystemWriteExactOrFlush = 0;
+THANDOR_ALIGN(4) FileSystemWriteExactOrFlushProc *g_FileSystemWriteExactOrFlush = nullptr;
 
-THANDOR_ALIGN(16) FileSystemGetSizeProc *g_FileSystemGetSize = 0;
+THANDOR_ALIGN(16) FileSystemGetSizeProc *g_FileSystemGetSize = nullptr;
 
-THANDOR_ALIGN(8) FileSystemSeekProc *g_FileSystemSeek = 0;
+THANDOR_ALIGN(8) FileSystemSeekProc *g_FileSystemSeek = nullptr;
 
-THANDOR_ALIGN(4) FileSystemGetPositionProc *g_FileSystemGetPosition = 0;
+THANDOR_ALIGN(4) FileSystemGetPositionProc *g_FileSystemGetPosition = nullptr;
 
 /* uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
 static const uint8_t g_FileSystemConfigCharacterNormalizationMap[256] = {
@@ -50,23 +50,23 @@ static const uint8_t g_FileSystemConfigCharacterNormalizationMap[256] = {
 
 static WidePathBuffer256 g_InitialWorkingDirectory = {0};
 
-static FileSystemGetCurrentDirectoryProc *g_FileSystemGetCurrentDirectory = 0;
+static FileSystemGetCurrentDirectoryProc *g_FileSystemGetCurrentDirectory = nullptr;
 
-static FileSystemSetCurrentDirectoryProc *g_FileSystemSetCurrentDirectory = 0;
+static FileSystemSetCurrentDirectoryProc *g_FileSystemSetCurrentDirectory = nullptr;
 
-static FileSystemRemoveDirectoryProc *g_FileSystemRemoveDirectory = 0;
+static FileSystemRemoveDirectoryProc *g_FileSystemRemoveDirectory = nullptr;
 
-static FileSystemGetFreeAndTotalBytesRegsProc *g_FileSystemGetFreeAndTotalBytes = 0;
+static FileSystemGetFreeAndTotalBytesRegsProc *g_FileSystemGetFreeAndTotalBytes = nullptr;
 
-static FileSystemGetLastWriteDosDateProc *g_FileSystemGetLastWriteDosDate = 0;
+static FileSystemGetLastWriteDosDateProc *g_FileSystemGetLastWriteDosDate = nullptr;
 
-static FileSystemGetLastWriteTimeHighProc *g_FileSystemGetLastWriteTimeHigh = 0;
+static FileSystemGetLastWriteTimeHighProc *g_FileSystemGetLastWriteTimeHigh = nullptr;
 
-static FileSystemGetVolumeSerialNumberProc *g_FileSystemGetVolumeSerialNumber = 0;
+static FileSystemGetVolumeSerialNumberProc *g_FileSystemGetVolumeSerialNumber = nullptr;
 
-static FileSystemMoveProc *g_FileSystemMove = 0;
+static FileSystemMoveProc *g_FileSystemMove = nullptr;
 
-static FileSystemCopyProc *g_FileSystemCopy = 0;
+static FileSystemCopyProc *g_FileSystemCopy = nullptr;
 
 static uintptr_t g_EnginePackageLowPriorityMountHandle = 0;
 
@@ -80,7 +80,7 @@ static uint32_t g_Win32FileBytesTransferred = 0;
    DOS-date and disk-space scratch */
 static _WIN32_FIND_DATAA g_Win32FindDataScratch = {0};
 
-static void *g_FileSystemInitComputerNameCapacityOrConfigCursor = 0;
+static void *g_FileSystemInitComputerNameCapacityOrConfigCursor = nullptr;
 
 static uint32_t g_FileSystemConfigRemainingBytes = 0;
 
@@ -93,21 +93,21 @@ static uint8_t g_Win32PathScratch[2][THANDOR_PATH_CAPACITY] = {0};
 /* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
 static char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
-FileSystemDeleteProc *g_FileSystemDelete = 0;
+FileSystemDeleteProc *g_FileSystemDelete = nullptr;
 
-FileSystemCreateDirectoryRecursiveProc *g_FileSystemCreateDirectoryRecursive = 0;
+FileSystemCreateDirectoryRecursiveProc *g_FileSystemCreateDirectoryRecursive = nullptr;
 
-FileSystemEnumerateDriveLettersProc *g_FileSystemEnumerateDriveLetters = 0;
+FileSystemEnumerateDriveLettersProc *g_FileSystemEnumerateDriveLetters = nullptr;
 
-FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode = 0;
+FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode = nullptr;
 
-FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady = 0;
+FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady = nullptr;
 
 uint16_t g_DefaultComputerLabelUtf16[32] = {'C', 'o', 'm', 'p', 'u', 't', 'e', 'r', 0}; /* L"Computer" */
 
-FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = 0;
+FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = nullptr;
 
-FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = 0;
+FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = nullptr;
 
 /* Implementation ownership: platform/filesystem/win32. */
 
@@ -180,7 +180,7 @@ Bool8 FileSystem_BuildEnumerationStringTable
                 (enumerationMode,reserved,recordBufferBytes,recordBuffer,pathOrVolumeText);
   if (entryCount == 0) {
     g_MemoryApi.free(recordBuffer);
-    *outTable = NULL;
+    *outTable = nullptr;
     *outEntryCount = 0;
     return true;
   }
@@ -341,7 +341,7 @@ uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime)
   if ((statusCode == 0) && (fileHandle != INVALID_HANDLE_VALUE)) {
     /* last-write scratch FILETIME at g_Win32FindDataScratch+0x10 (see Win32Drive_GetVolumeSerialNumber) */
     gotFileTime =
-         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
+         GetFileTime(fileHandle,nullptr,nullptr,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
     Win32File_Close(fileHandle);
     statusCode = FATAL_ERROR_FILE_ACCESS_FAILED;
     if (gotFileTime != 0) {
@@ -374,7 +374,7 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
   if (statusCode == 0) {
     /* last-write scratch FILETIME at g_Win32FindDataScratch+0x10 (see Win32Drive_GetVolumeSerialNumber) */
     gotFileTime =
-         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
+         GetFileTime(fileHandle,nullptr,nullptr,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
     Win32File_Close(fileHandle);
     statusCode = FATAL_ERROR_FILE_ACCESS_FAILED;
     if (gotFileTime != 0) {
@@ -488,7 +488,7 @@ Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffe
     if (loadError == 0) {
       g_FileSystemClose(handle);
       *outBuffer = fileBuffer;
-      if (outByteCount != NULL) {
+      if (outByteCount != nullptr) {
         *outByteCount = fileSize;
       }
       return true;
@@ -509,7 +509,7 @@ Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffe
 Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
-  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,NULL,outError);
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,nullptr,outError);
 }
 
 /* Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
@@ -519,7 +519,7 @@ Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *ou
 Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
-  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,NULL,outError);
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,nullptr,outError);
 }
 
 /* Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write
@@ -563,7 +563,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
     SetEndOfFile(handle);
     return 0;
   }
-  wroteFile = WriteFile(handle,source,byteCount,&g_Win32FileBytesTransferred,NULL);
+  wroteFile = WriteFile(handle,source,byteCount,&g_Win32FileBytesTransferred,nullptr);
   if (wroteFile == 0) {
     return FATAL_ERROR_FILE_WRITE_FAILED;
   }
@@ -582,7 +582,7 @@ Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition)
 {
   DWORD filePosition;
 
-  filePosition = SetFilePointer(handle,0,NULL,FILE_CURRENT);
+  filePosition = SetFilePointer(handle,0,nullptr,FILE_CURRENT);
   if (filePosition != INVALID_SET_FILE_POINTER) {
     *outPosition = filePosition;
     return true;
@@ -600,7 +600,7 @@ uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition d
 {
   DWORD newFilePosition;
 
-  newFilePosition = SetFilePointer(handle,distance,NULL,moveMethod);
+  newFilePosition = SetFilePointer(handle,distance,nullptr,moveMethod);
   if (newFilePosition != INVALID_SET_FILE_POINTER) {
     return 0;
   }
@@ -673,14 +673,14 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
   if (!Win32Path_ToNarrow(g_Win32PathScratch[0],path)) {
     return FATAL_ERROR_FILE_WRITE_FAILED;
   }
-  if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],NULL) != 0) {
+  if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],nullptr) != 0) {
     return 0;
   }
   if ((flags & FILESYSTEM_CREATE_DIRECTORY_RECURSIVE) != 0) {
     WidePath_SplitParentAndLeaf(leafName,parentPath,path);
     if (Win32File_CreateDirectoryRecursive(flags,parentPath) == 0) {
       Win32Path_ToNarrow(g_Win32PathScratch[0],path); /* fitted above */
-      if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],NULL) != 0) {
+      if (CreateDirectoryA((LPCSTR)g_Win32PathScratch[0],nullptr) != 0) {
         return 0; /* created after its parents */
       }
     }
@@ -977,7 +977,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
     g_Win32DriveRootPathScratchA[0] = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
     if (GetVolumeInformationA
-          (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratch[0],128,NULL,NULL,NULL,NULL,0) == 0) {
+          (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratch[0],128,nullptr,nullptr,nullptr,nullptr,0) == 0) {
       return 0;
     }
     /* the check allows 0x100 bytes, but the copy may write a whole 0x200-byte record */
@@ -1038,7 +1038,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 
 {
   g_Win32FileBytesTransferred = 0;
-  ReadFile(handle,destination,byteCount,&g_Win32FileBytesTransferred,NULL);
+  ReadFile(handle,destination,byteCount,&g_Win32FileBytesTransferred,nullptr);
   if (g_Win32FileBytesTransferred == byteCount) {
     return 0;
   }
@@ -1054,7 +1054,7 @@ Bool8 Win32File_GetSize(void *handle,uint32_t *outSize)
 {
   DWORD fileSize;
 
-  fileSize = GetFileSize(handle,NULL);
+  fileSize = GetFileSize(handle,nullptr);
   if (fileSize != INVALID_FILE_SIZE) {
     *outSize = fileSize;
     return true;
@@ -1172,8 +1172,8 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
   else {
     desiredAccess = GENERIC_READ | GENERIC_WRITE;
   }
-  fileHandle = CreateFileA((LPCSTR)g_Win32PathScratch[0],desiredAccess,shareMode,NULL,creationDisposition,
-                           FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL,NULL);
+  fileHandle = CreateFileA((LPCSTR)g_Win32PathScratch[0],desiredAccess,shareMode,nullptr,creationDisposition,
+                           FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL,nullptr);
   if (fileHandle != INVALID_HANDLE_VALUE) {
     *outHandle = fileHandle;
     return 0;

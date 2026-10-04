@@ -28,19 +28,19 @@ void DebugCampaign_AutoWinTick(void)
   static int done;
   const char *value = getenv("OPEN_THANDOR_AUTOWIN");
   CampaignAsset *campaign = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
-  CampaignLevelRecord *level = NULL;
-  InGameEndConditionTriggerRecord8 *chosen = NULL;
+  CampaignLevelRecord *level = nullptr;
+  InGameEndConditionTriggerRecord8 *chosen = nullptr;
   int chosenScore = 0;
   InGameEndConditionTriggerRecord8 *trigger;
   WorldOwnerListNode *ownerNode;
   uint32_t localFaction;
   int index;
   int moved = 0;
-  if (value == NULL || g_InGameRuntimeRoot == NULL) {
+  if (value == nullptr || g_InGameRuntimeRoot == nullptr) {
     return;
   }
   /* OPEN_THANDOR_AUTOWIN_LEVELS=<k>: only the first k sessions of the process end automatically */
-  if (getenv("OPEN_THANDOR_AUTOWIN_LEVELS") != NULL &&
+  if (getenv("OPEN_THANDOR_AUTOWIN_LEVELS") != nullptr &&
       g_TestAidSessionCount > (unsigned)atoi(getenv("OPEN_THANDOR_AUTOWIN_LEVELS"))) {
     return;
   }
@@ -53,7 +53,7 @@ void DebugCampaign_AutoWinTick(void)
     return;
   }
   done = 1;
-  if (campaign == NULL) {
+  if (campaign == nullptr) {
     Thandor_Log("test aid: auto-win: not a campaign level");
     return;
   }
@@ -62,7 +62,7 @@ void DebugCampaign_AutoWinTick(void)
       level = &campaign->levels[index];
     }
   }
-  if (level == NULL) {
+  if (level == nullptr) {
     Thandor_Log("test aid: auto-win: level %d has no campaign record", campaign->currentLevelId);
     return;
   }
@@ -92,19 +92,19 @@ void DebugCampaign_AutoWinTick(void)
       score = 2;
     }
     score = score * 2 + (trigger->factionRuntimeIndex != localFaction);
-    if (chosen == NULL || score > chosenScore) {
+    if (chosen == nullptr || score > chosenScore) {
       chosen = trigger;
       chosenScore = score;
     }
   }
-  if (chosen == NULL) {
+  if (chosen == nullptr) {
     Thandor_Log("test aid: auto-win: level %d has no active end trigger", level->levelId);
     return;
   }
   if (level->successorLevelIds[chosen->endMovieSelectionIndex] == 0 || chosenScore < 2) {
     Thandor_Log("test aid: auto-win: level %d has no successor level, firing the campaign end", level->levelId);
   }
-  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
        ownerNode = ownerNode->nextNode) {
     ModelRuntimeSlot *model;
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
@@ -157,7 +157,7 @@ void DebugCampaign_LogCarryOver(int afterMerge)
                 (unsigned)g_OldUnitRecordCount);
     return;
   }
-  if (g_InGameRuntimeRoot != NULL && g_OldUnitRecordCount != 0) {
+  if (g_InGameRuntimeRoot != nullptr && g_OldUnitRecordCount != 0) {
     /* where the carried units of the local faction landed, against the level's start view */
     WorldRuntimeContext *world = &g_InGameRuntimeRoot->worldRuntime;
     unsigned perFaction[8] = {0}, record, shown = 0;
@@ -216,7 +216,7 @@ int DebugCampaign_ApplyScenarioOptions(void)
     return 0;
   }
   used = 1;
-  if (getenv("OPEN_THANDOR_LIST_SCENARIOS") != NULL) {
+  if (getenv("OPEN_THANDOR_LIST_SCENARIOS") != nullptr) {
     ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
     list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
     for (row = 0; row < list->rowCount; row++) {
@@ -232,7 +232,7 @@ int DebugCampaign_ApplyScenarioOptions(void)
     ExitProcess(0);
   }
   wanted = getenv("OPEN_THANDOR_CAMPAIGN");
-  if (wanted == NULL) {
+  if (wanted == nullptr) {
     return 0;
   }
   ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -266,7 +266,7 @@ void DebugCampaign_SelectCampaignLevel(uint8_t *campaignBytes)
                 DebugCampaign_RowName(record->levelFileName,name,sizeof name),
                 (record->levelId == campaign->firstLevelId) ? " (first)" : "");
   }
-  if (wanted != NULL && atoi(wanted) >= 1 && atoi(wanted) <= count) {
+  if (wanted != nullptr && atoi(wanted) >= 1 && atoi(wanted) <= count) {
     campaign->firstLevelId = campaign->levels[atoi(wanted) - 1].levelId;
     Thandor_Log("test aid: campaign starts at level %d",atoi(wanted));
   }

@@ -24,9 +24,9 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   uint32_t i;
   if (enabled < 0) {
     const char *value = getenv("OPEN_THANDOR_MOVIEDUMP");
-    enabled = (value != NULL) && (value[0] == '1');
+    enabled = (value != nullptr) && (value[0] == '1');
     if (enabled) {
-      CreateDirectoryA((LPCSTR)"moviedump", NULL);
+      CreateDirectoryA((LPCSTR)"moviedump", nullptr);
     }
   }
   if (!enabled) {
@@ -45,7 +45,7 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
     FILE *file;
     sprintf(name, "moviedump\\frame_%04u.bmp", movie->currentFrameIndex);
     file = fopen(name, "wb");
-    if (file != NULL) {
+    if (file != nullptr) {
       uint32_t imageBytes = width * height * 4;
       uint32_t header[13];
       int y;

@@ -155,7 +155,7 @@ static void Thandor_SelfTestStretch(void)
 static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 {
     void *payload = malloc(bytes);
-    if (payload == NULL) {
+    if (payload == nullptr) {
         return FATAL_ERROR_ARENA_EXHAUSTED; /* a failed alloc must report a nonzero code */
     }
     *outPayload = payload;
@@ -293,7 +293,7 @@ static void Thandor_SelfTestPcx(void)
     PcxIndexedImage image;
     uint32_t hash = 2166136261u;
     uint32_t i;
-    if (file == NULL) {
+    if (file == nullptr) {
         Thandor_Log("pcx: pcxtest.pcx missing");
         return;
     }
@@ -439,7 +439,7 @@ static void Thandor_SelfTestTriangleSetup(void)
         packet.renderFlags = (GraphicsPrimitiveDispatchFlags)((SelfTest_TriangleRandom(&seed) % 32) << 12);
         g_SoftwareDepthEpoch = (int32_t)(SelfTest_TriangleRandom(&seed) % 0x1000000u);
         SoftwareRenderer_PrepareTrianglePacket(&packet);
-        packet.textureEntry = NULL; /* the pointer differs between runs */
+        packet.textureEntry = nullptr; /* the pointer differs between runs */
         for (i = 0; i < sizeof packet; i++) {
             hash = (hash ^ ((const uint8_t *)&packet)[i]) * 16777619u;
         }
@@ -704,7 +704,7 @@ static void Thandor_SelfTestSettings(void)
                 (unsigned long long)mask);
 
     file = fopen("thandor.dat", "rb");
-    if (file == NULL) {
+    if (file == nullptr) {
         Thandor_Log("settings: no thandor.dat in the current directory, migration not checked");
         return;
     }
@@ -726,7 +726,7 @@ static void Thandor_SelfTestSettings(void)
         Thandor_Log("settings: thandor.dat (%u bytes) -> ini (%u bytes) -> image: %s", (unsigned)datBytes,
                     length, differences == 0 ? "identical" : "MISMATCH");
         file = fopen("thandor.ini", "rb");
-        if (file == NULL) {
+        if (file == nullptr) {
             Thandor_Log("settings: no thandor.ini in the current directory");
             return;
         }
@@ -750,7 +750,7 @@ static void Thandor_SelfTestScanAddresses(void)
     uint8_t *packed = (uint8_t *)malloc(PACKAGE_SCRATCH_BUFFER_BYTES);
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
-    if (out == NULL || packed == NULL) {
+    if (out == nullptr || packed == nullptr) {
         Thandor_Log("scanaddr: setup failed");
         return;
     }
@@ -761,7 +761,7 @@ static void Thandor_SelfTestScanAddresses(void)
     static char extraNames[32][260];
     const char *list[32];
     unsigned listCount = 0;
-    if (extra != NULL) {
+    if (extra != nullptr) {
         const char *cursor = extra;
         while (*cursor != 0 && listCount < 32) {
             unsigned n = 0;
@@ -778,7 +778,7 @@ static void Thandor_SelfTestScanAddresses(void)
         FILE *pck;
         long position = PCK_ENTRY_HEADER_BYTES;
         pck = fopen(list[p], "rb");
-        if (pck == NULL) {
+        if (pck == nullptr) {
             continue;
         }
         for (;;) {
@@ -803,17 +803,17 @@ static void Thandor_SelfTestScanAddresses(void)
                 break;
             }
             unpacked = (uint8_t *)malloc(header.unpackedSize + 4);
-            if (unpacked == NULL) {
+            if (unpacked == nullptr) {
                 break;
             }
-            if (g_PckDecoderTable[header.compressionMethod] == NULL) {
+            if (g_PckDecoderTable[header.compressionMethod] == nullptr) {
                 fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
                 free(unpacked);
                 position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
                 continue;
             }
             decoded = g_PckDecoderTable[header.compressionMethod]
-                          (header.unpackedSize, unpacked, header.packedSize, packed, NULL, NULL);
+                          (header.unpackedSize, unpacked, header.packedSize, packed, nullptr, nullptr);
             totalEntries++;
             if (!decoded) {
                 fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
@@ -821,7 +821,7 @@ static void Thandor_SelfTestScanAddresses(void)
             else {
                 const char *dumpDirectory = getenv("OPEN_THANDOR_DUMPTEXT");
                 size_t nameLength = strlen(name);
-                if (dumpDirectory != NULL && nameLength > 4 &&
+                if (dumpDirectory != nullptr && nameLength > 4 &&
                     (_stricmp(name + nameLength - 4, ".str") == 0 || _stricmp(name + nameLength - 4, ".txt") == 0)) {
                     /* <dir>\<package>_<entry path with '\' as '_'> holds the decoded entry */
                     char dumpPath[600];
@@ -834,7 +834,7 @@ static void Thandor_SelfTestScanAddresses(void)
                         }
                     }
                     dump = fopen(dumpPath, "wb");
-                    if (dump != NULL) {
+                    if (dump != nullptr) {
                         fwrite(unpacked, 1, header.unpackedSize, dump);
                         fclose(dump);
                     }
@@ -1034,57 +1034,57 @@ static void Thandor_SelfTestIcon(void)
 /* Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h. */
 int SelfTest_Run(const char *name)
 {
-    if (name != NULL && strcmp(name, "codec") == 0) {
+    if (name != nullptr && strcmp(name, "codec") == 0) {
         Thandor_SelfTestCodec();
         Thandor_SelfTestCodecNegative();
         return 1;
     }
-    if (name != NULL && strcmp(name, "pcx") == 0) {
+    if (name != nullptr && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
         return 1;
     }
-    if (name != NULL && strcmp(name, "numberformat") == 0) {
+    if (name != nullptr && strcmp(name, "numberformat") == 0) {
         Thandor_SelfTestNumberFormat();
         return 1;
     }
-    if (name != NULL && strcmp(name, "fixedmath") == 0) {
+    if (name != nullptr && strcmp(name, "fixedmath") == 0) {
         Thandor_SelfTestFixedMath();
         return 1;
     }
-    if (name != NULL && strcmp(name, "keymap") == 0) {
+    if (name != nullptr && strcmp(name, "keymap") == 0) {
         Thandor_SelfTestKeymap();
         return 1;
     }
-    if (name != NULL && strcmp(name, "trianglesetup") == 0) {
+    if (name != nullptr && strcmp(name, "trianglesetup") == 0) {
         Thandor_SelfTestTriangleSetup();
         return 1;
     }
-    if (name != NULL && strcmp(name, "movieenc") == 0) {
+    if (name != nullptr && strcmp(name, "movieenc") == 0) {
         Thandor_SelfTestMovieEncode();
         return 1;
     }
-    if (name != NULL && strcmp(name, "settings") == 0) {
+    if (name != nullptr && strcmp(name, "settings") == 0) {
         Thandor_SelfTestSettings();
         return 1;
     }
-    if (name != NULL && strcmp(name, "path") == 0) {
+    if (name != nullptr && strcmp(name, "path") == 0) {
         Thandor_SelfTestPathSplit();
         return 1;
     }
-    if (name != NULL && strcmp(name, "stretch") == 0) {
+    if (name != nullptr && strcmp(name, "stretch") == 0) {
         Thandor_SelfTestStretch();
         return 1;
     }
-    if (name != NULL && strcmp(name, "icon") == 0) {
+    if (name != nullptr && strcmp(name, "icon") == 0) {
         Thandor_SelfTestIcon();
         return 1;
     }
-    if (name != NULL && strcmp(name, "scanaddr") == 0) {
+    if (name != nullptr && strcmp(name, "scanaddr") == 0) {
         Thandor_SelfTestScanAddresses();
         return 1;
     }
-    if (name != NULL && strcmp(name, "crash") == 0) {
-        *(volatile int *)0 = 1; /* exercises the crash handler */
+    if (name != nullptr && strcmp(name, "crash") == 0) {
+        *(volatile int *)nullptr = 1; /* exercises the crash handler */
     }
     return 0;
 }

@@ -332,13 +332,13 @@ void DebugFont_DrawText(int x0, int y0, const char *text)
   int x;
   int y;
   int c;
-  if (fb == NULL) {
+  if (fb == nullptr) {
     return;
   }
   pitch = fb[0];
   bpp = fb[2];
   pixels = (uint8_t *)(uintptr_t)fb[3];
-  if ((pixels == NULL) || (bpp != 4)) {
+  if ((pixels == nullptr) || (bpp != 4)) {
     return;
   }
   if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
@@ -353,13 +353,13 @@ void DebugFont_DrawText(int x0, int y0, const char *text)
   }
   for (c = 0; c < length; c++) {
     char ch = text[c];
-    const uint8_t *glyph = NULL;
+    const uint8_t *glyph = nullptr;
     unsigned g;
     if ((ch >= 'A') && (ch <= 'Z')) ch = (char)(ch - 'A' + 'a');
     for (g = 0; g < sizeof g_DebugFont5x7 / sizeof g_DebugFont5x7[0]; g++) {
       if (g_DebugFont5x7[g][0] == (uint8_t)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
     }
-    if (glyph == NULL) continue;
+    if (glyph == nullptr) continue;
     for (y = 0; y < 7 * scale; y++) {
       for (x = 0; x < 5 * scale; x++) {
         int px = x0 + scale + c * 6 * scale + x;
