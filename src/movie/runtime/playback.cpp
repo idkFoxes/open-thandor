@@ -1136,10 +1136,8 @@ Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     }
     return true;
   }
-  DebugHook_MovieBeforeDecode(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
   consumedBytes = Movie_DecodeFrame4x4Delta
                     (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
-  DebugHook_MovieAfterDecode(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
   movie->currentFrameIndex = nextFrameIndex;
   movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
   DebugHook_MovieFrameDone(movie,consumedBytes);

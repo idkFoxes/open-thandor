@@ -1,6 +1,6 @@
 """Plays campaign levels one after another through the real level change, to test the carry-over of units.
 
-Needs the test build (CMake preset "test") as GAME_DIR/thandor.exe. Uses the test aids OPEN_THANDOR_CAMPAIGN /
+Needs the test build (CMake preset "test") as GAME_DIR/thandor.exe with its SDL3.dll. Uses the test aids OPEN_THANDOR_CAMPAIGN /
 OPEN_THANDOR_CAMPAIGN_LEVEL (start level), OPEN_THANDOR_AUTOWIN (end a level as won after N seconds: the local
 faction's mobile units are moved into the level's exit zone, then an end trigger that leads to the next level is
 fired; the original code then plays the end movie, collects the units in the exit zone, loads the next level and

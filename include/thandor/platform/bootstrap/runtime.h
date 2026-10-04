@@ -54,12 +54,9 @@
 /* Slots of g_BootstrapApiBindings, bound by DynAPI_Bootstrap (order of the image data table) */
 #define BOOTSTRAP_API_LOAD_LIBRARY_A 0 /* KERNEL32 */
 #define BOOTSTRAP_API_FREE_LIBRARY 1 /* KERNEL32 */
-#define BOOTSTRAP_API_TIME_SET_EVENT 2 /* WINMM */
-#define BOOTSTRAP_API_TIME_KILL_EVENT 3 /* WINMM */
-#define BOOTSTRAP_API_MCI_SEND_COMMAND_A 4 /* WINMM */
-#define BOOTSTRAP_API_REG_OPEN_KEY_EX_A 5 /* ADVAPI32 */
-#define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 6 /* ADVAPI32 */
-#define BOOTSTRAP_API_REG_CLOSE_KEY 7 /* ADVAPI32 */
+#define BOOTSTRAP_API_REG_OPEN_KEY_EX_A 2 /* ADVAPI32 */
+#define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 3 /* ADVAPI32 */
+#define BOOTSTRAP_API_REG_CLOSE_KEY 4 /* ADVAPI32 */
 
 /* Functions are grouped by semantic ownership. */
 
@@ -77,8 +74,6 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 HINSTANCE DynDLL_Load(char *moduleName);
 
 void DynDLL_UnloadAll(void);
-
-LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
 
 uint32_t __cdecl CPU_DetectFeatures(void);
 
@@ -105,16 +100,11 @@ cdecl function type would leave the stack unbalanced after every call.
 */
 typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
 typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */
-typedef uint32_t (__stdcall *BootstrapTimeSetEventProc)(uint32_t delayMs, uint32_t resolutionMs, void *callback,
-                                                     uint32_t user, uint32_t flags);             /* [2] */
-typedef uint32_t (__stdcall *BootstrapTimeKillEventProc)(uint32_t timerId);                        /* [3] */
-typedef uint32_t (__stdcall *BootstrapMciSendCommandAProc)(uint32_t device, uint32_t message, uint32_t flags,
-                                                        uint32_t params);                     /* [4] */
 typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(uint32_t key, char *subKey, uint32_t options, uint32_t access,
-                                                     void *result);                       /* [5] */
+                                                     void *result);                       /* [2] */
 typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uint32_t key, void *valueName, uint32_t *reserved,
-                                                        void *type, void *data, void *size); /* [6] */
-typedef long (__stdcall *BootstrapRegCloseKeyProc)(uint32_t key);                               /* [7] */
+                                                        void *type, void *data, void *size); /* [3] */
+typedef long (__stdcall *BootstrapRegCloseKeyProc)(uint32_t key);                               /* [4] */
 
 extern WidePathBuffer256 g_LooseMoviePathPrefix;
 extern uint16_t g_DatenHexPathUtf16[10];
@@ -124,10 +114,8 @@ extern GameDataAuxState g_GameDataAuxState;
 extern UPtr32 g_FrontendPlayerListRows[8]; /* pointers (as uintptr_t) to the eight 0x80-byte lobby player list rows */
 extern uint32_t g_IntroMoviePendingTicks;
 extern uint16_t g_ScreenshotFileNameUtf16[13]; /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
-extern DynamicApiBinding g_BootstrapApiBindings[9]; /* 8 bindings + the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
-extern HINSTANCE g_hInstance;
+extern DynamicApiBinding g_BootstrapApiBindings[6]; /* 5 bindings + the all-zero terminator [5] that ends the DynAPI_Bootstrap scan */
 extern HWND g_MainWindow;
-extern Win32MainMessageStorage g_MainMessageStorage;
 
 extern CommandLineFindOptionProc *g_CommandLineFindOption;
 

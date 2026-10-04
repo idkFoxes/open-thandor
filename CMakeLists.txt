@@ -13,7 +13,7 @@ string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,
-# the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/dump/compare, windowed
+# the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/export/dump, windowed
 # mode, second instance, UDP port and datagram log, watchdog - all switched on at run time by OPEN_THANDOR_*
 # environment variables (docs/BUILDING.md). The game reaches them only through
 # include/thandor/platform/debug/hooks.h. OFF (default): none of it is compiled, the hooks expand to nothing and
@@ -28,13 +28,13 @@ if(DEFINED THANDOR_TEST_AIDS)
     unset(THANDOR_TEST_AIDS CACHE)
 endif()
 
-# The code needs MSVC (__stdcall, MSVC pragmas and intrinsics). Use a preset (CMakePresets.json: debug, release,
-# test for 32-bit x86; x64-release, x64-test for 64-bit), which finds MSVC by itself, or configure from a vcvars
-# prompt. In CLion: Settings > Build > CMake, enable the presets and disable the default MinGW profile.
-if(NOT MSVC OR NOT (CMAKE_SIZEOF_VOID_P EQUAL 4 OR CMAKE_SIZEOF_VOID_P EQUAL 8))
-    message(FATAL_ERROR "open-thandor must be built with MSVC (x86 or x64): use a CMake preset "
-                        "(cmake --preset release) or a vcvars prompt. Found: ${CMAKE_CXX_COMPILER_ID}, "
-                        "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
+# The code needs MSVC (__stdcall, MSVC pragmas and intrinsics) for 64-bit x64 and SDL3. Use a preset
+# (CMakePresets.json: release, debug, test), which finds MSVC x64 by itself (cmake/msvc-x64.cmake), or configure from a
+# vcvars64 prompt. In CLion: Settings > Build > CMake, enable the presets and disable the default MinGW profile.
+if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "open-thandor must be built with MSVC for 64-bit x64 (32-bit x86 is no longer supported): "
+                        "use a CMake preset (cmake --preset release) or a vcvars64 prompt. Found: "
+                        "${CMAKE_CXX_COMPILER_ID}, ${CMAKE_SIZEOF_VOID_P}-byte pointers.")
 endif()
 
 add_library(thandor_curated STATIC
@@ -188,49 +188,46 @@ add_library(thandor_curated STATIC
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): crash logs and the self-tests that run
-# copies of original code rely on stable addresses.
+# Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): the crash logs rely on stable code addresses.
 add_executable(thandor WIN32
     src/platform/bootstrap/main.cpp
     src/platform/bootstrap/image.cpp
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
-# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): on x64 the process stays
-# below 2 GB (/LARGEADDRESSAWARE:NO) so every pointer fits.
+# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): the process stays below 2 GB
+# (/LARGEADDRESSAWARE:NO) so every pointer fits.
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
-# Platform backend. OFF (default): DirectDraw, DirectInput, DirectSound, WinMM timers and the Win32 message pump, as
-# the original. ON: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the software
-# renderer is the same). SDL3 comes from find_package(SDL3), e.g. vcpkg: -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x86-windows.
-option(THANDOR_PLATFORM_SDL3 "Use SDL3 for window, input, timers, video presentation and audio" OFF)
-if(THANDOR_PLATFORM_SDL3)
-    # vcpkg ships Release and Debug only: RelWithDebInfo and MinSizeRel use the Release library
-    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release RelWithDebInfo)
-    set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release MinSizeRel)
-    find_package(SDL3 CONFIG REQUIRED)
-    target_sources(thandor_curated PRIVATE
-        src/platform/sdl3/audio.cpp
-        src/platform/sdl3/input.cpp
-        src/platform/sdl3/platform.cpp
-        src/platform/sdl3/timer.cpp
-        src/platform/sdl3/video.cpp
-    )
-    target_compile_definitions(thandor_curated PUBLIC THANDOR_PLATFORM_SDL3=1)
-    target_link_libraries(thandor_curated PUBLIC SDL3::SDL3)
-    # SDL3.dll next to thandor.exe
-    add_custom_command(TARGET thandor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:thandor>
-        VERBATIM)
+# Platform backend: SDL3 (window, event pump, keyboard, mouse, timers, video presentation, audio; the game's software
+# renderer draws the frames). SDL3 comes from find_package(SDL3): pass its install prefix in CMAKE_PREFIX_PATH (vcpkg:
+# -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows), or set the environment variable VCPKG_ROOT, whose
+# installed/x64-windows is searched as well.
+if(DEFINED ENV{VCPKG_ROOT})
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/installed/x64-windows" THANDOR_VCPKG_PREFIX)
+    list(APPEND CMAKE_PREFIX_PATH "${THANDOR_VCPKG_PREFIX}")
 endif()
+# vcpkg ships Release and Debug only: RelWithDebInfo and MinSizeRel use the Release library
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release RelWithDebInfo)
+set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release MinSizeRel)
+find_package(SDL3 CONFIG REQUIRED)
+target_sources(thandor_curated PRIVATE
+    src/platform/sdl3/audio.cpp
+    src/platform/sdl3/input.cpp
+    src/platform/sdl3/platform.cpp
+    src/platform/sdl3/timer.cpp
+    src/platform/sdl3/video.cpp
+)
+target_link_libraries(thandor_curated PUBLIC SDL3::SDL3)
+# SDL3.dll next to thandor.exe
+add_custom_command(TARGET thandor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:thandor>
+    VERBATIM)
 
-# SDL3 stage 2 (needs THANDOR_PLATFORM_SDL3): the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
+# SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
 # switched on at run time with OPEN_THANDOR_GPU=1 or -GPU; the software renderer stays the default. The shaders
 # (src/platform/sdl3/shaders/primitives.hlsl) are compiled to DXBC shader model 5.1 with fxc from the Windows SDK.
-option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU (needs THANDOR_PLATFORM_SDL3)" OFF)
+option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU" OFF)
 if(THANDOR_RENDERER_SDL_GPU)
-    if(NOT THANDOR_PLATFORM_SDL3)
-        message(FATAL_ERROR "THANDOR_RENDERER_SDL_GPU needs THANDOR_PLATFORM_SDL3=ON")
-    endif()
     # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
     set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
     file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
@@ -269,12 +266,9 @@ if(THANDOR_DEV_TOOLS)
         src/platform/debug/level_script.cpp
         src/platform/debug/movie_decoder.cpp
         src/platform/debug/movie_player.cpp
-        src/platform/debug/original_code.cpp
         src/platform/debug/script.cpp
         src/platform/debug/statehash.cpp
         src/platform/debug/test_aids.cpp
-        src/platform/debug/windowed.cpp
-        src/platform/selftest/relax.cpp
         src/platform/selftest/selftests.cpp
     )
     target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)

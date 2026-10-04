@@ -7,7 +7,7 @@
 
 /* The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option
    THANDOR_DEV_TOOLS. Each hook hands over to the tool behind it; without its environment variable a tool does
-   nothing. The windowed-mode hooks are in windowed.c, the level-script log in level_script.c. */
+   nothing. The level-script log is in level_script.cpp. */
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,6 +67,13 @@ unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass)
   return DebugHook_Windowed() ? NORMAL_PRIORITY_CLASS : priorityClass;
 }
 
+/* --- windowed mode --- */
+
+int DebugHook_Windowed(void)
+{
+  return Thandor_TestAidWindowed();
+}
+
 /* --- input --- */
 
 int DebugHook_IgnoreRealMouse(void)
@@ -102,16 +109,6 @@ void DebugHook_UdpDatagram(const char *direction, const void *sockaddrIn, unsign
 }
 
 /* --- movie decoder --- */
-
-void DebugHook_MovieBeforeDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded)
-{
-  DebugMovieDecoder_CompareBefore(movie, height, width, encoded);
-}
-
-void DebugHook_MovieAfterDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed)
-{
-  DebugMovieDecoder_CompareAfter(movie, height, width, consumed);
-}
 
 void DebugHook_MovieFrameDone(MovieRuntime *movie, uint32_t consumedBytes)
 {

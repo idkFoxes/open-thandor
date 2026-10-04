@@ -22,7 +22,8 @@ installation.
 | Area | Status |
 |---|---|
 | Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions (on "strong" and the highest game speed): 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the campaign end in all four campaigns (tutorial 3 levels, Luke 4, Nimm2 5, Hansolo 20 on the winning path); units are carried over into tutorial 2 and 3 and Hansolo 9, 13 and 23 |
-| Graphics | software renderer presented through DirectDraw ([details](docs/software_raster.md)). The original's Glide (3dfx) and Direct3D renderers were removed |
+| Graphics | software renderer presented through SDL3 ([details](docs/software_raster.md)), optionally rasterized on the GPU (SDL_GPU). The original's Glide (3dfx) and Direct3D renderers were removed |
+| Platform | 64-bit (x64) only, on SDL3: window, input, timers, video presentation and audio; the original's DirectDraw, DirectInput, DirectSound and WinMM code was removed |
 | Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands; protocol-compatible with the original game |
 | Map editor | hidden in the original; opened by a hotkey on the `experimental/map-editor` branch |
 
@@ -37,7 +38,7 @@ The current step turns the reimplementation into a maintainable code base:
 4. Clang, then a stepwise port to C++ following the
    [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 5. 64-bit only, with explicit file formats (save games, levels and the network protocol stay compatible) and a
-   platform layer.
+   platform layer (64-bit only and the SDL3 platform layer are done).
 
 After that the platform layer gets an SDL3 backend: first the software renderer's image shown through SDL, later a
 hardware renderer on SDL_GPU.
@@ -62,23 +63,26 @@ water flow, double clicks, spinlocks that were not atomic).
 
 ## Building
 
-Requirements: Windows, Visual Studio 2022 or newer with the C++ workload (MSVC x86 and Windows SDK), CMake 3.25+
-and Ninja on the `PATH` (a "Developer Command Prompt" is not needed; [`cmake/msvc-x86.cmake`](cmake/msvc-x86.cmake)
-finds the compiler via `vswhere`).
+Requirements: Windows, Visual Studio 2022 or newer with the C++ workload (MSVC x64 and Windows SDK), CMake 3.25+
+and Ninja on the `PATH` (a "Developer Command Prompt" is not needed; [`cmake/msvc-x64.cmake`](cmake/msvc-x64.cmake)
+finds the compiler via `vswhere`), and SDL3 for x64, e.g. `vcpkg install sdl3:x64-windows`. CMake finds SDL3 through
+the environment variable `VCPKG_ROOT` (the vcpkg directory) or `-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`.
 
 ```bat
+set VCPKG_ROOT=C:\path\to\vcpkg
 cmake --preset release
 cmake --build --preset release
 ```
 
-The result is `cmake-build-msvc-release\thandor.exe` (32-bit for now). Other presets: `debug` and `test`
-(`THANDOR_DEV_TOOLS=ON`, adds the developer tools: self-tests, windowed mode, several instances, scripted input,
-starting any campaign level, winning a level automatically, the determinism state hash; the default build has
-none of them). The optional differential self-tests want `thandor_original.exe` next to the exe.
-CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
+The result is `cmake-build-msvc-release\thandor.exe` (x64) with `SDL3.dll` next to it. Other presets: `debug`,
+`test` (`THANDOR_DEV_TOOLS=ON`, builds into `build-test` and adds the developer tools: self-tests, windowed mode,
+several instances, scripted input, starting any campaign level, winning a level automatically, the determinism
+state hash; the default build has none of them) and `gpu-test` (`test` plus the SDL_GPU rasterizer,
+`THANDOR_RENDERER_SDL_GPU=ON`). CLion and Visual Studio pick the presets up from
+[`CMakePresets.json`](CMakePresets.json).
 
-To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this
-repository) and start it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are
+To play, copy `thandor.exe` and `SDL3.dll` into a **copy** of an installed Thandor directory (the game data is not
+part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`. Developer tools, test switches and the data tools are
 described in [docs/BUILDING.md](docs/BUILDING.md).
 
 ## Source tree

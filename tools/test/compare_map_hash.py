@@ -1,7 +1,7 @@
 """Plays a stock map with strong computer opponents under the state hash (fixed seed, game speed 5 from the first
 step via OPEN_THANDOR_STATEHASH_SPEED) in several game dirs at once and compares the per-step hashes. This covers
 the computer opponents, which the arena scenarios of run_determinism.py do not. Each dir needs the test build as
-thandor.exe; put an older build into one of them to compare two versions (the first dir is the reference).
+thandor.exe (with its SDL3.dll); put an older build into one of them to compare two versions (the first dir is the reference).
 
 usage: compare_map_hash.py MAP STEPS DIR [DIR...]    e.g. compare_map_hash.py stromschnelle 1400 ..\\ot-soak ..\\ot-old
 A run that ends earlier (a side lost) records fewer steps; the steps all runs recorded are compared, and an

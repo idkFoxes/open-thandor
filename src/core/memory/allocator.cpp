@@ -424,20 +424,3 @@ uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase)
   }
   return FATAL_ERROR_GENERAL_FAILURE;
 }
-
-
-/* Zeroes bytes / 4 dwords at destination; a trailing one to three bytes are left unchanged,
-   so callers pass multiples of 4.
-*/
-void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
-
-{
-  uint32_t dwordsRemaining;
-
-  for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining--) {
-    *(uint32_t *)destination = 0;
-    destination = (uint32_t *)destination + 1;
-  }
-  return;
-}
-

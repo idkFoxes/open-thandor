@@ -3,59 +3,48 @@
   "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
   "configurePresets": [
     {
-      "name": "msvc-x86",
-      "hidden": true,
-      "description": "MSVC 32-bit x86, found without vcvars (cmake/msvc-x86.cmake)",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build-msvc-${presetName}",
-      "toolchainFile": "${sourceDir}/cmake/msvc-x86.cmake",
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
-    },
-    {
       "name": "msvc-x64",
       "hidden": true,
-      "description": "MSVC 64-bit x64, found without vcvars (cmake/msvc-x64.cmake)",
+      "description": "MSVC 64-bit x64 with SDL3, found without vcvars (cmake/msvc-x64.cmake); SDL3 from CMAKE_PREFIX_PATH or $env{VCPKG_ROOT}/installed/x64-windows",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/cmake-build-msvc-${presetName}",
       "toolchainFile": "${sourceDir}/cmake/msvc-x64.cmake",
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     },
     {
-      "name": "x64-release",
+      "name": "debug",
+      "displayName": "MSVC x64 Debug",
+      "inherits": "msvc-x64",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
       "displayName": "MSVC x64 RelWithDebInfo",
       "inherits": "msvc-x64",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
     },
     {
-      "name": "x64-test",
-      "displayName": "MSVC x64 RelWithDebInfo with the developer tools",
-      "inherits": "msvc-x64",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
-    },
-    {
-      "name": "debug",
-      "displayName": "MSVC x86 Debug",
-      "inherits": "msvc-x86",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-    },
-    {
-      "name": "release",
-      "displayName": "MSVC x86 RelWithDebInfo (test build)",
-      "inherits": "msvc-x86",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
-    },
-    {
       "name": "test",
-      "displayName": "MSVC x86 RelWithDebInfo with the developer tools (test aids, debug switches, self-tests)",
-      "inherits": "msvc-x86",
+      "displayName": "MSVC x64 RelWithDebInfo with the developer tools (test aids, debug switches, self-tests)",
+      "inherits": "msvc-x64",
+      "binaryDir": "${sourceDir}/build-test",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
+    },
+    {
+      "name": "gpu-test",
+      "displayName": "MSVC x64 RelWithDebInfo with the developer tools and the SDL_GPU renderer (OPEN_THANDOR_GPU=1)",
+      "inherits": "msvc-x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "THANDOR_DEV_TOOLS": "ON",
+        "THANDOR_RENDERER_SDL_GPU": "ON"
+      }
     }
   ],
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
     { "name": "release", "configurePreset": "release" },
     { "name": "test", "configurePreset": "test" },
-    { "name": "x64-release", "configurePreset": "x64-release" },
-    { "name": "x64-test", "configurePreset": "x64-test" }
+    { "name": "gpu-test", "configurePreset": "gpu-test" }
   ]
 }

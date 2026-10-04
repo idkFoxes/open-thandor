@@ -11,7 +11,6 @@
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/original_code.h>
 #include <thandor/platform/debug/movie_decoder.h>
 
 /* Debug tool: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame (consumed bytes, stream state,
@@ -65,64 +64,5 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
       }
       fclose(file);
     }
-  }
-}
-
-/* Debug tool: OPEN_THANDOR_MOVIECMP=1 decodes every frame a second time with the original machine code
-   of Movie_DecodeFrame4x4Delta (0x004A81C0, copied from thandor_original.exe; it uses no absolute data)
-   into a shadow buffer and logs where the two results differ. Call before the C decoder runs. */
-typedef uint32_t (__stdcall *OriginalMovieDecodeProc)(uint32_t heightPixels, uint32_t widthPixels,
-                                                      uint32_t *destinationArgb, uint8_t *encodedFrame);
-static uint32_t *s_MovieCompareShadow;
-static uint32_t s_MovieCompareConsumed;
-
-void DebugMovieDecoder_CompareBefore(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded)
-{
-  static int enabled = -1;
-  static OriginalMovieDecodeProc original;
-  if (enabled < 0) {
-    const char *value = getenv("OPEN_THANDOR_MOVIECMP");
-    enabled = (value != NULL) && (value[0] == '1');
-    if (enabled) {
-      /* the decoder's code runs from 0x004A81C0 up to and including its RET 0x10 at 0x004A8586 */
-      original = (OriginalMovieDecodeProc)Thandor_LoadOriginalCodeCopy(0x4a81c0, 0x4a8589 - 0x4a81c0);
-      if (original == NULL) {
-        Thandor_Log("moviecmp: could not load the original decoder");
-        enabled = 0;
-      }
-    }
-  }
-  if (!enabled) {
-    return;
-  }
-  if (s_MovieCompareShadow == NULL || movie->currentFrameIndex == 0) {
-    free(s_MovieCompareShadow);
-    s_MovieCompareShadow = (uint32_t *)malloc(width * height * 4);
-    memcpy(s_MovieCompareShadow, movie->argbPixels, width * height * 4);
-  }
-  s_MovieCompareConsumed = original(height, width, s_MovieCompareShadow, encoded);
-#if defined(_M_IX86)
-  __asm emms
-#endif
-}
-
-void DebugMovieDecoder_CompareAfter(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed)
-{
-  uint32_t i;
-  uint32_t differing = 0;
-  uint32_t first = 0;
-  if (s_MovieCompareShadow == NULL) {
-    return;
-  }
-  for (i = 0; i < width * height; i++) {
-    if (s_MovieCompareShadow[i] != movie->argbPixels[i]) {
-      if (differing++ == 0) first = i;
-    }
-  }
-  if (differing != 0 || consumed != s_MovieCompareConsumed) {
-    Thandor_Log("moviecmp frame %u: %u pixels differ (first at %u,%u: C %08x original %08x), consumed C %u original %u",
-                movie->currentFrameIndex, differing, first % width, first / width, movie->argbPixels[first],
-                s_MovieCompareShadow[first], consumed, s_MovieCompareConsumed);
-    memcpy(s_MovieCompareShadow, movie->argbPixels, width * height * 4); /* resync */
   }
 }

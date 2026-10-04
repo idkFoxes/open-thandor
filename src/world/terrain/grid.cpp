@@ -2243,7 +2243,7 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex
    cell's surface. Sources with negative water or FIELD_CELL_FLUID_SOURCE_EXCLUDED are skipped, receivers
    with FIELD_CELL_FLUID_RECEIVER_EXCLUDED are left alone.
    The source is the centre cell itself (its waterSurfaceDelta); verified against the original
-   machine code by OPEN_THANDOR_SELFTEST=relaxcmp.
+   machine code by the former relaxcmp self-test.
 */
 void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
 
@@ -2320,7 +2320,7 @@ void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGr
    cells backwards from the bottom-right, so water spreads evenly in both directions over two ticks.
    Cells are addressed by raw byte offsets (cell size 0x80; +0x48 terrainHeight, +0x4C waterSurfaceDelta,
    +0x50 flagsAndMaterial; +/-0x80 is the next/previous cell).
-   The source is the centre cell itself; verified by OPEN_THANDOR_SELFTEST=relaxcmp.
+   The source is the centre cell itself; verified by the former relaxcmp self-test.
 */
 void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
 
@@ -2401,7 +2401,7 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
    every interior cell 1/8 of the way toward that cell's surface, but cells with negative water are sources too.
    FIELD_CELL_FLUID_SOURCE_EXCLUDED and FIELD_CELL_FLUID_RECEIVER_EXCLUDED are honoured. Run by
    TerrainGrid_RunDirectionalRelaxationPasses when mode bit 0 is set (the editor's land tool); verified against
-   the original by OPEN_THANDOR_SELFTEST=relaxcmp. (cellBeforeSource is advanced at the top of the inner loop, so
+   the original by the former relaxcmp self-test. (cellBeforeSource is advanced at the top of the inner loop, so
    inside it it is the source cell.)
 */
 void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
@@ -2480,7 +2480,7 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
    interior cells from the bottom-right, the partner pass of the land tool in
    TerrainGrid_RunDirectionalRelaxationPasses. Cells are addressed by raw byte offsets (cell size 0x80; +0x48
    terrainHeight, +0x4C waterSurfaceDelta, +0x50 flagsAndMaterial; 0x40000000 = FIELD_CELL_FLUID_SOURCE_EXCLUDED,
-   0x20000000 = FIELD_CELL_FLUID_RECEIVER_EXCLUDED). Verified by OPEN_THANDOR_SELFTEST=relaxcmp.
+   0x20000000 = FIELD_CELL_FLUID_RECEIVER_EXCLUDED). Verified by the former relaxcmp self-test.
 */
 void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
 

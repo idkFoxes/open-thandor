@@ -30,7 +30,8 @@ further copies next to it), windowed, with its own UDP ports:
                changes in 12 parallel parts of 2-3 levels (the last part of each campaign to the campaign end);
                every level runs 2 minutes, then the auto-win fires the end trigger; every level must be won
                and units carried over where the campaign does it, without crash or hang (ports 910-921)
---new defaults to build-test/thandor.exe of this repository. The output of
+--new defaults to build-test/thandor.exe of this repository (CMake preset "test"); each copy gets the SDL3.dll next
+to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
 (start-ups can stall under the full load; determinism has a rare timing-dependent one-tick shift); the table then
@@ -56,8 +57,8 @@ import cpu_load
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
-           'statehash.txt')
+PRIVATE = ('thandor.exe', 'thandor.pdb', 'sdl3.dll', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log',
+           'hang.log', 'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
 # timing sensitive: a failure in the parallel run is retried alone (a real regression shows up again in the retry).
@@ -110,6 +111,11 @@ def make_copy(name, exe):
     pdb = os.path.splitext(exe)[0] + '.pdb'
     if os.path.exists(pdb):
         shutil.copy(pdb, os.path.join(target, 'thandor.pdb'))
+    # the build's SDL3.dll (next to the exe, the build copies it there), else the game dir's
+    for dll in (os.path.join(os.path.dirname(exe), 'SDL3.dll'), os.path.join(game, 'SDL3.dll')):
+        if os.path.exists(dll):
+            shutil.copy(dll, os.path.join(target, 'SDL3.dll'))
+            break
     if os.path.exists(os.path.join(game, 'thandor.dat')):
         shutil.copy(os.path.join(game, 'thandor.dat'), os.path.join(target, 'thandor.dat'))
     return target

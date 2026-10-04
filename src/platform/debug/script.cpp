@@ -41,7 +41,7 @@ volatile unsigned g_TestAidSessionCount;
 
 /* Port-only test aid (no original address). Moves the pointer to framebuffer pixel x,y with button mask buttons
    (LEFT/RIGHT of GraphicsCursorButtonState) and appends a pointer event of that type to the 256-entry ring
-   g_CursorInputEvents, as DirectInputMouse_PollBufferedEvents does for real mouse input, so scripted clicks
+   g_CursorInputEvents, as the SDL3 input backend does for real mouse input, so scripted clicks
    reach the UI through the normal event path. */
 static void DebugScript_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y)
 {

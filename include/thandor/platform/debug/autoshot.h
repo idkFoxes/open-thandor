@@ -11,7 +11,7 @@
 /* Automatic screenshots (test aid). Reads OPEN_THANDOR_AUTOSHOT=<milliseconds>: at that interval the game's own
    framebuffer is saved to shots\shot_NNNN.bmp. */
 
-/* Called from the message pump (Win32_PumpMessages); saves a shot when the interval has passed. */
+/* Called from the message pump (SdlPlatform_PumpEvents); saves a shot when the interval has passed. */
 void DebugAutoShot_Tick(void);
 
 /* Saves the framebuffer now as shots\script_NNNN.bmp (the script command "shot"); creates the folder. */

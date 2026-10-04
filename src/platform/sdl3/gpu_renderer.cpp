@@ -329,7 +329,7 @@ void QueueTextureConversion(const AtlasKey &key, uint32_t x, uint32_t y) noexcep
 bool AtlasSlotOfTexture(const GraphicsTextureSetEntry *entry, AtlasSlot &outSlot) noexcept
 {
   const GraphicsTextureSourceEntry *source = entry->sourceEntry;
-  const uint8_t *asset = reinterpret_cast<const uint8_t *>(entry->sourceAsset);
+  const uint8_t *asset = reinterpret_cast<const uint8_t *>(entry->sourceAsset.get());
   if ((source == nullptr) || (asset == nullptr) || (entry->widthLog2 > 12) || (entry->heightLog2 > 12)) {
     return false;
   }

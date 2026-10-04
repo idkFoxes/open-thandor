@@ -2,8 +2,8 @@
 
 usage: run_game.py GAME_DIR SECONDS [--args "..."] [--script FILE] [--shots MS]
 
-Starts GAME_DIR/thandor.exe with the exact argument string (quotes are passed through, so
--KARTE="mittelpunkt" works), optional OPEN_THANDOR_SCRIPT input replay and OPEN_THANDOR_AUTOSHOT
+Starts GAME_DIR/thandor.exe (SDL3.dll must be next to it) with the exact argument string (quotes are passed
+through, so -KARTE="mittelpunkt" works), optional OPEN_THANDOR_SCRIPT input replay and OPEN_THANDOR_AUTOSHOT
 snapshots, stops it after SECONDS, then prints the new thandor.log lines, reports whether crash.log
 changed and writes GAME_DIR/shots/sheet.png with all snapshots as thumbnails.
 

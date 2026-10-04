@@ -99,8 +99,6 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
                 byteCount >= 8 ? words[1] : 0u, byteCount >= 12 ? words[2] : 0u, byteCount >= 16 ? words[3] : 0u);
 }
 
-#define TEST_AID_WINDOW_STYLE (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
-
 /* Test aid (not in the original): see test_aids.h. */
 int Thandor_TestAidWindowed(void)
 {
@@ -110,47 +108,4 @@ int Thandor_TestAidWindowed(void)
         enabled = value != NULL && value[0] == '1';
     }
     return enabled;
-}
-
-/* Test aid (not in the original): see test_aids.h. */
-void *Thandor_TestAidCreateWindowedMainWindow(const char *className, const char *title, void *instance)
-{
-    const char *value;
-    int x = 0;
-    int y = 0;
-    RECT rect = {0, 0, 640, 480};
-    value = getenv("OPEN_THANDOR_WINDOW_X");
-    if (value != NULL) {
-        x = atoi(value);
-    }
-    value = getenv("OPEN_THANDOR_WINDOW_Y");
-    if (value != NULL) {
-        y = atoi(value);
-    }
-    AdjustWindowRect(&rect, TEST_AID_WINDOW_STYLE, FALSE);
-    Thandor_Log("test aid: windowed mode, window at %d,%d", x, y);
-    return CreateWindowExA(0, className, title, TEST_AID_WINDOW_STYLE, x, y, rect.right - rect.left,
-                           rect.bottom - rect.top, NULL, NULL, (HINSTANCE)instance, NULL);
-}
-
-/* Test aid (not in the original): see test_aids.h. */
-void Thandor_TestAidSetWindowClientSize(void *window, unsigned width, unsigned height)
-{
-    RECT rect;
-    rect.left = 0;
-    rect.top = 0;
-    rect.right = (LONG)width;
-    rect.bottom = (LONG)height;
-    AdjustWindowRect(&rect, (DWORD)GetWindowLongA((HWND)window, GWL_STYLE), FALSE);
-    SetWindowPos((HWND)window, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
-                 SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-}
-
-/* Test aid (not in the original): see test_aids.h. */
-void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y)
-{
-    POINT origin = {0, 0};
-    ClientToScreen((HWND)window, &origin);
-    *x = origin.x;
-    *y = origin.y;
 }

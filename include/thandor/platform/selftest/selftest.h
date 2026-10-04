@@ -17,18 +17,18 @@
      scanaddr       decodes the packages next to the executable and writes original-range dwords to
                     scanaddr.txt (OPEN_THANDOR_SCANFILES=a;b;... scans those files instead,
                     OPEN_THANDOR_DUMPTEXT=<dir> also writes the decoded *.str / *.txt entries there)
-     stretchcmp     C bilinear stretches against the original machine code
-     relaxcmp       the four water relaxation passes against the original (relax.c)
+     pcx            decodes pcxtest.pcx next to the executable, logs size and hash (tools/test/pcx_check.py)
+     numberformat, fixedmath, keymap, trianglesetup, movieenc
+                    hash tests: log a hash over many results of the number formatter, the fixed-point math,
+                    the keyboard layer, the software triangle setup and the movie encoder/decoder, to
+                    compare two builds
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
-   The *cmp tests read the original bytes from thandor_original.exe next to the executable. */
+   The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
+   compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
+   functions before. */
 
 /* Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects.
    Returns nonzero when a test ran (the caller then exits), 0 for NULL, "crash" or an unknown name. */
 int SelfTest_Run(const char *name);
-
-/* Differential test against the original machine code (relax.c). The rasterizer, blend-scale and blit
-   comparisons needed the original image mapped at its address and went away with it (step 4c); they had
-   confirmed those functions before. */
-void Thandor_SelfTestRelaxCompare(void);
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

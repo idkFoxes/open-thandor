@@ -13,7 +13,7 @@
    input; see script.c for the format. Also defines g_TestAidInGameFrames and g_TestAidSessionCount (declared
    in thandor/platform/debug/test_aids.h). */
 
-/* Called from the message pump (Win32_PumpMessages); runs the script lines that are due. */
+/* Called from the message pump (SdlPlatform_PumpEvents); runs the script lines that are due. */
 void DebugScript_Tick(void);
 
 #endif /* THANDOR_PLATFORM_DEBUG_SCRIPT_H */

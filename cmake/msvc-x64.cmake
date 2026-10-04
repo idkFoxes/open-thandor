@@ -43,6 +43,12 @@ set(CMAKE_AR "${_msvc}/bin/HostX64/x64/lib.exe")
 set(CMAKE_RC_COMPILER "${_sdk_root}/bin/${_sdk_version}/x64/rc.exe")
 set(CMAKE_MT "${_sdk_root}/bin/${_sdk_version}/x64/mt.exe")
 
+# The toolset's modules.json for CMake's C++ standard-library module support: without a vcvars environment CMake's own
+# search (VCToolsInstallDir, INCLUDE) misses it and can pick up an unrelated modules.json, which stops the configure.
+if(EXISTS "${_msvc}/modules/modules.json")
+    set(CMAKE_CXX_STDLIB_MODULES_JSON "${_msvc}/modules/modules.json")
+endif()
+
 set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES
     "${_msvc}/include"
     "${_sdk_root}/Include/${_sdk_version}/ucrt"

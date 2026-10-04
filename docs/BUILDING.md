@@ -1,53 +1,80 @@
 # Building
 
-The tree builds a 32-bit Windows executable (`thandor.exe`) with MSVC.
+The tree builds a 64-bit Windows executable (`thandor.exe`, x64) with MSVC and SDL3. The 32-bit build and the
+original's Win32/DirectX platform code (DirectDraw, DirectInput, DirectSound, WinMM timers, the Win32 message pump)
+were removed once the x64 build reproduced every determinism hash and pixel of the 32-bit one; they are in the git
+history.
+
+Requirements:
+
+- Visual Studio 2022 or newer with the C++ workload (MSVC x64 tools and a Windows 10/11 SDK)
+- CMake 3.25 or newer and Ninja (both come with Visual Studio)
+- SDL3 for x64, e.g. from vcpkg: `vcpkg install sdl3:x64-windows`
+
+SDL3 is found with `find_package(SDL3)`: pass its install prefix in `CMAKE_PREFIX_PATH`
+(`-DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows`), or set the environment variable `VCPKG_ROOT` to the vcpkg
+directory, whose `installed/x64-windows` CMake then searches as well. The build copies `SDL3.dll` next to
+`thandor.exe`; the game needs it there.
+
+From a vcvars64 prompt:
 
 ```bat
-call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars32.bat"
-cmake -S . -B build-rel -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo
+call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+cmake -S . -B build-rel -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+      -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
 cmake --build build-rel
 ```
 
-Use `RelWithDebInfo` for testing: it is optimized (`/O2`) and keeps the PDB, so `crash.log` shows
-function names and lines. `Debug` (`/Od`) is much slower in game; `Release` drops the PDB.
-Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.py`.
+or with a preset, which finds MSVC x64 without a vcvars prompt (`cmake/msvc-x64.cmake`; SDL3 through `VCPKG_ROOT`
+or `-DCMAKE_PREFIX_PATH=...` on the command line):
+
+| Preset | Build |
+|---|---|
+| `release` | RelWithDebInfo (`cmake-build-msvc-release`) |
+| `debug` | Debug (`cmake-build-msvc-debug`) |
+| `test` | RelWithDebInfo with the developer tools, in `build-test` (what `tools/test` runs) |
+| `gpu-test` | as `test`, plus the SDL_GPU rasterizer (`THANDOR_RENDERER_SDL_GPU`, see below) |
+
+```bat
+cmake --preset test
+cmake --build --preset test
+```
+
+CMake stops with an error for anything but MSVC x64. Use `RelWithDebInfo` for testing: it is optimized (`/O2`) and
+keeps the PDB, so `crash.log` shows function names and lines. `Debug` (`/Od`) is much slower in game; `Release`
+drops the PDB. Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.py`.
+
+The original data layouts keep their pointers in 32-bit fields (`Ptr32<T>`,
+[`include/thandor/core/ptr32.h`](../include/thandor/core/ptr32.h)), so savegames and assets keep their format; the
+executable is linked `/LARGEADDRESSAWARE:NO` (every address below 2 GB) at the fixed base `0x10000000`.
 
 ## Running
 
-Next to `thandor.exe` the game currently needs:
+Next to `thandor.exe` the game needs:
 
-- nothing from the original executable: its data (globals, tables, UI templates) is compiled in as C
-  variables of the modules (`src/<area>/<module>/data.c`). Only the optional differential self-tests that run
-  copies of original code (`relaxcmp`, `stretchcmp`, the movie decoder compare `OPEN_THANDOR_MOVIECMP=1`; developer
-  tools only) read `thandor_original.exe` next to the executable.
+- `SDL3.dll` (the build puts it next to `thandor.exe`; copy both into the game directory),
 - the game's `*.PCK` files and `thandor.dat` from the installation,
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.
 
-The game always draws with its software renderer and presents through DirectDraw; the original's 3dfx Glide
-and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed, and the display settings list
-only DirectDraw adapters. A `THANDOR.cfg` that still names an adapter index past that list starts on adapter 0.
+Nothing of the original executable is needed: its data (globals, tables, UI templates) is compiled in.
 
-## SDL3 platform backend (`THANDOR_PLATFORM_SDL3`)
+## Platform layer (SDL3)
 
-With the CMake option `THANDOR_PLATFORM_SDL3` (default `OFF`) the game uses SDL3 instead of Win32, DirectDraw,
-DirectInput, WinMM timers and DirectSound for the window, the event pump, keyboard and mouse, the periodic timers,
-the video presentation and the audio (`src/platform/sdl3`, interface
-[`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)). The software renderer
-is unchanged: it draws into a memory framebuffer (RGB565 or XRGB8888) that is presented letterboxed through an
-SDL renderer, fullscreen on the desktop (or in a window with the developer tools' `OPEN_THANDOR_WINDOWED=1`).
-The display settings list one adapter, "SDL", with the modes from 640x480 up to the desktop size in 16 and
-32 bits. SDL3 is found with `find_package(SDL3)`, e.g. from vcpkg; `SDL3.dll` is copied next to `thandor.exe`:
-
-```bat
-cmake -S . -B build-sdl -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
-      -DTHANDOR_PLATFORM_SDL3=ON -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x86-windows
-cmake --build build-sdl
-```
+The window, the event pump, keyboard and mouse, the periodic timers, the video presentation and the audio run on
+SDL3 (`src/platform/sdl3`, interface
+[`include/thandor/platform/sdl3/platform.h`](../include/thandor/platform/sdl3/platform.h)); the game reaches them
+through the original's function slots (`g_Win32PumpMessages`, `g_TimerRegisterPeriodic`, `g_GraphicsSetDisplayMode`,
+`g_GraphicsFramebufferPresent`, `g_Sound*`, `g_Pointer*`). The game always draws with its software renderer into a
+memory framebuffer (RGB565 or XRGB8888) that is presented letterboxed through an SDL renderer, fullscreen on the
+desktop (or in a window with the developer tools' `OPEN_THANDOR_WINDOWED=1`). The original's 3dfx Glide and
+Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed. The display settings list one adapter,
+"SDL", with the modes from 640x480 up to the desktop size in 16 and 32 bits; a `THANDOR.cfg` that still names an
+adapter index past that list starts on adapter 0. The network code stays on WinSock (UDP).
 
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 
-With `THANDOR_RENDERER_SDL_GPU=ON` as well (needs `THANDOR_PLATFORM_SDL3`, default `OFF`) the build can rasterize
+With the CMake option `THANDOR_RENDERER_SDL_GPU=ON` (default `OFF`; preset `gpu-test`) the build can rasterize
 the 3D view on the GPU through SDL_GPU (Direct3D 12) instead of the software rasterizer
 (`src/platform/sdl3/gpu_renderer.cpp`). The software renderer stays the default; the GPU path is switched on at run
 time with `OPEN_THANDOR_GPU=1` or the command-line option `-GPU`. Only the rasterization of the primitive queues
@@ -66,17 +93,18 @@ the per-scene times every 10 seconds.
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 
 All test and debug aids of the port - the self-tests, the input scripts, automatic screenshots, the determinism
-state hash, campaign starts and AUTOWIN, the level-script log, the movie player, dump and compare, windowed mode,
+state hash, campaign starts and AUTOWIN, the level-script log, the movie player, export and dump, windowed mode,
 a second instance, the UDP port and datagram log, the watchdog - are compiled in only with the CMake option
 `THANDOR_DEV_TOOLS` (default `OFF`):
 
 ```bat
-cmake -S . -B build-test -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTHANDOR_DEV_TOOLS=ON
+cmake -S . -B build-test -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+      -DTHANDOR_DEV_TOOLS=ON -DCMAKE_PREFIX_PATH=<vcpkg>/installed/x64-windows
 cmake --build build-test
 ```
 
 or the preset `test` (`cmake --preset test && cmake --build --preset test`). This test build is what
-`tools/test` drives (`run_checks.py` takes `build-test/thandor.exe`). The tools live in `src/platform/debug` and
+`tools/test` drives (`run_checks.py` takes `build-test/thandor.exe` and the `SDL3.dll` next to it). The tools live in `src/platform/debug` and
 `src/platform/selftest`; the game reaches them only through the hooks in
 [`include/thandor/platform/debug/hooks.h`](../include/thandor/platform/debug/hooks.h). With the option `OFF` those
 sources are not compiled, every hook is a macro that expands to nothing (or passes the original value through),
@@ -88,13 +116,13 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|stretchcmp\|relaxcmp\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec` and `movieenc` log hashes of the save-game encoder and the FLM encoders/decoder output - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`) |
-| `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes frames and audio to `moviedump\`); the player is in [`src/platform/debug/movie_player.c`](../src/platform/debug/movie_player.c) |
-| `OPEN_THANDOR_MOVIEDUMP=1` / `OPEN_THANDOR_MOVIECMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) / compare the frame decoder with the original machine code |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|path\|stretch\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
+| `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
 | `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
-| `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.c`](../src/platform/debug/statehash.c)) |
-| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full-screen exclusive (desktop colour depth, non-exclusive mouse); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
+| `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
+| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (desktop colour depth, absolute mouse position, normal process priority); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
@@ -125,7 +153,7 @@ ended early, hung or crashed; screenshots and a contact sheet per mission go to 
 Determinism test (the safety net for changes that alter the machine code): `python tools/test/run_determinism.py
 <game dir> --reference tools/test/determinism_reference` generates three test levels (tools/test/make_arena.py:
 flat map, two players), plays each for 1200 simulation steps with a fixed random seed and compares a hash of the
-game state after every step (test aid `OPEN_THANDOR_STATEHASH`, platform/debug/statehash.c) with the stored
+game state after every step (test aid `OPEN_THANDOR_STATEHASH`, platform/debug/statehash.cpp) with the stored
 reference. Scenarios: `battle` (every unit and building type on both sides, move orders at steps 100 and 500),
 `turrets` (every armed static defence with power plants), `production` (factories, labs, storage; units queued
 and research started at step 20). Without `--reference` each scenario runs twice in parallel and the runs must

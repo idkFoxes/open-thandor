@@ -114,8 +114,6 @@ static uint32_t g_DynamicModuleCount = 0;
 
 static char g_Kernel32ModuleName[9] = "KERNEL32";
 
-static char g_WinmmModuleName[6] = "WINMM";
-
 static char g_Advapi32ModuleName[9] = "ADVAPI32";
 
 static char dynapi_9[13] = "LoadLibraryA";
@@ -128,22 +126,11 @@ static char g_BootstrapApiName_RegQueryValueExA[17] = "RegQueryValueExA";
 
 static char g_BootstrapApiName_RegCloseKey[12] = "RegCloseKey";
 
-static char g_BootstrapApiName_timeSetEvent[13] = "timeSetEvent";
-
-static char g_BootstrapApiName_timeKillEvent[14] = "timeKillEvent";
-
-static char g_BootstrapApiName_mciSendCommandA[16] = "mciSendCommandA";
-
 static char g_CommandLineOptionSound[6] = "SOUND";
-
-/* uint32_t: WM_ACTIVATEAPP wParam (application active flag), initially 1; platform/bootstrap/runtime.c */
-static uint32_t g_AppActive = 1;
 
 static CommandLineArgumentMirrorState500 g_CommandLine = {0};
 
 static char sz_MainWindowTitle[15] = " thandor  (TG)";
-
-static char sz_MainWindowClass[17] = "thandorCLASS(TG)";
 
 WidePathBuffer256 g_LooseMoviePathPrefix = {0};
 
@@ -171,33 +158,26 @@ uint32_t g_IntroMoviePendingTicks = 0;
 /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
 uint16_t g_ScreenshotFileNameUtf16[13] = {'s', 'c', 'r', 'e', 'e', 'n', '0', '0', '.', 'p', 'c', 'x', 0}; /* L"screen00.pcx" */
 
-/* 8 bindings, then the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
-DynamicApiBinding g_BootstrapApiBindings[9] = {
+/* 5 bindings, then the all-zero terminator [5] that ends the DynAPI_Bootstrap scan. The original also bound
+   WINMM's timeSetEvent, timeKillEvent (its periodic timers, now SDL timers) and mciSendCommandA (never called). */
+DynamicApiBinding g_BootstrapApiBindings[6] = {
         /* 0 */ {.destination = THANDOR_PTR(&dynapi_9), .moduleName = THANDOR_PTR(g_Kernel32ModuleName)},
         /* 1 */ {.destination = THANDOR_PTR(g_BootstrapApiName_FreeLibrary), .moduleName = THANDOR_PTR(g_Kernel32ModuleName)},
-        /* 2 */ {.destination = THANDOR_PTR(g_BootstrapApiName_timeSetEvent), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
-        /* 3 */ {.destination = THANDOR_PTR(g_BootstrapApiName_timeKillEvent), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
-        /* 4 */ {.destination = THANDOR_PTR(g_BootstrapApiName_mciSendCommandA), .moduleName = THANDOR_PTR(g_WinmmModuleName)},
-        /* 5 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegOpenKeyExA), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
-        /* 6 */ {
+        /* 2 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegOpenKeyExA), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
+        /* 3 */ {
         .destination = THANDOR_PTR(g_BootstrapApiName_RegQueryValueExA),
         .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
-        /* 7 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegCloseKey), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
-        /* 8: terminator */ {0}};
-
-HINSTANCE g_hInstance = 0;
+        /* 4 */ {.destination = THANDOR_PTR(g_BootstrapApiName_RegCloseKey), .moduleName = THANDOR_PTR(g_Advapi32ModuleName)},
+        /* 5: terminator */ {0}};
 
 HWND g_MainWindow = 0;
-
-Win32MainMessageStorage g_MainMessageStorage = {
-    .overlay = {.windowClass = {.style = 3, .windowProc = THANDOR_FN(MainWindowProc), .className = THANDOR_PTR(&sz_MainWindowClass)}}};
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
 /* ProcessEntry once the main window exists: initialises every subsystem, sets the initial 640x480 display
    mode from the saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
    fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line. The
-   platform backends are DirectDraw, DirectInput and DirectSound, or SDL3 with THANDOR_PLATFORM_SDL3.
+   platform backend is SDL3 (src/platform/sdl3), in place of the original's DirectDraw, DirectInput and DirectSound.
 */
 static void ProcessEntry_RunGame(void)
 
@@ -223,33 +203,17 @@ static void ProcessEntry_RunGame(void)
   }
   bootstrapError = DynAPI_Bootstrap();
   checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
-  /* TimerSystem_Init only installs the timer procs and always succeeds */
-  TimerSystem_Init();
-#ifdef THANDOR_PLATFORM_SDL3
-  /* SDL timers and the SDL event pump replace the WinMM timers and the Win32 message pump */
+  /* the original's TimerSystem_Init installed the WinMM timers and the Win32 message pump here (it cannot fail);
+     the SDL timers and the SDL event pump take their place */
   SdlPlatform_InstallTimersAndPump();
-#endif
   checkedValue = FatalError_ExitIfFailed(checkedValue,false);
-#ifdef THANDOR_PLATFORM_SDL3
   graphicsError = SdlVideo_Init();
-#else
-  graphicsError = Graphics_Init();
-#endif
   FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
-#ifdef THANDOR_PLATFORM_SDL3
   if (!SdlInput_Init(&mouseInitError)) {
-#else
-  if (!DirectInputMouse_Init(&mouseInitError)) {
-#endif
     FatalError_ExitIfFailed(mouseInitError,true);
   }
-#ifdef THANDOR_PLATFORM_SDL3
   soundError = SdlAudio_Init();
   Thandor_Log("SdlAudio_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
-#else
-  soundError = DirectSound_Init();
-  Thandor_Log("DirectSound_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
-#endif
   if (soundError != 0) {
     /* without a sound device the game only stops when -SOUND demands sound */
     if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
@@ -285,50 +249,19 @@ void __cdecl ProcessEntry(void)
 {
   HANDLE processHandle;
   HANDLE threadHandle;
-#ifndef THANDOR_PLATFORM_SDL3
-  HINSTANCE windowInstance;
-  int screenHeight;
-  int screenWidth;
-#endif
 
-  g_hInstance = GetModuleHandleA(NULL);
   processHandle = GetCurrentProcess();
   SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
-#ifdef THANDOR_PLATFORM_SDL3
-  /* SDL3: the window has SDL's class, so the running instance is found by its title */
+  /* the window has SDL's class, so the running instance is found by its title */
   if ((FindWindowA(NULL,sz_MainWindowTitle) == NULL) || DebugHook_AllowSecondInstance()) {
     if (SdlPlatform_CreateMainWindow(sz_MainWindowTitle)) {
       ProcessEntry_RunGame();
       SdlPlatform_Quit();
     }
   }
-#else
-  if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || DebugHook_AllowSecondInstance()) {
-    g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
-    g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
-    g_MainMessageStorage.overlay.windowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
-    if (RegisterClassA((WNDCLASSA *)&g_MainMessageStorage.overlay.windowClass) != 0) { /* the original tests only the 16-bit ATOM */
-      windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
-      screenHeight = GetSystemMetrics(SM_CYSCREEN);
-      screenWidth = GetSystemMetrics(SM_CXSCREEN);
-      /* windowed mode (developer tools, not in the original): a normal window instead of the full-screen
-         topmost popup */
-      if (!DebugHook_CreateMainWindow(sz_MainWindowClass,sz_MainWindowTitle,windowInstance)) {
-        g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
-                                       0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
-      }
-      if (g_MainWindow != NULL) {
-        ShowWindow(g_MainWindow,SW_SHOWNORMAL);
-        UpdateWindow(g_MainWindow);
-        ProcessEntry_RunGame();
-        DestroyWindow(g_MainWindow);
-      }
-    }
-  }
-#endif
   ExitProcess(0);
 }
 
@@ -567,87 +500,6 @@ void DynDLL_UnloadAll(void)
     moduleEntryCursor++;
   }
   return;
-}
-
-
-/* Window procedure of the main window (g_MainMessageStorage.overlay.windowClass.windowProc, registered by ProcessEntry). Counts
-   WM_CLOSE/WM_DESTROY, hides the cursor and forwards keys and characters to the keyboard layer. On
-   WM_ACTIVATEAPP it drops to normal priority and releases the mouse when deactivated (the original also let
-   its hardware renderer give up the display then), and on reactivation returns to real-time priority,
-   reacquires the mouse, restores the display mode and reseeds the lock-key state.
-*/
-LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
-
-{
-  uint16_t keyState;
-  HANDLE currentProcess;
-  LRESULT defaultResult;
-  uint32_t ignoredModeError; /* a failed restore is ignored here */
-
-  if ((message == WM_DESTROY) || (message == WM_CLOSE)) {
-    g_WindowDestroyDepth++;
-  }
-  else if (message == WM_ACTIVATEAPP) {
-    g_AppActive = wParam;
-    if (wParam == 0) {
-      currentProcess = GetCurrentProcess();
-      SetPriorityClass(currentProcess,NORMAL_PRIORITY_CLASS);
-      if (g_MouseDevice != NULL) {
-        g_MouseDevice->lpVtbl->Unacquire(g_MouseDevice);
-      }
-    }
-    else {
-      currentProcess = GetCurrentProcess();
-      SetPriorityClass(currentProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
-      if (g_MouseDevice != NULL) {
-        g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-      }
-      /* only when a display mode was set; the red+green+blue bit count is rounded up to a multiple of 16
-         (a 5-5-5 format asks for 16 bits per pixel) */
-      if (-1 < (int)g_ActiveGraphicsAdapterIndex) {
-        g_GraphicsSetDisplayMode
-                  (g_ActiveGraphicsAdapterIndex,
-                   (g_SoftwarePixelFormatConfig.redBitCount +
-                   g_SoftwarePixelFormatConfig.greenBitCount +
-                   g_SoftwarePixelFormatConfig.blueBitCount + 0xf) & 0xfffffff0,g_FramebufferHeight,
-                   g_FramebufferWidth,&ignoredModeError);
-      }
-      if (g_MouseDevice != NULL) {
-        g_KeyboardStateMask = 0;
-        /* bit 0 of GetKeyState is the toggle state of a lock key */
-        keyState = GetKeyState(VK_NUMLOCK);
-        if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_NUM_LOCK;
-        }
-        keyState = GetKeyState(VK_SCROLL);
-        if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_SCROLL_LOCK;
-        }
-        keyState = GetKeyState(VK_CAPITAL);
-        if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_CAPS_LOCK;
-        }
-        g_KeyboardFlushEvents();
-      }
-    }
-  }
-  else if (message == WM_SETCURSOR) {
-    SetCursor(NULL);
-  }
-  else if ((message == WM_KEYDOWN) || (message == WM_SYSKEYDOWN)) {
-    Keyboard_OnKeyDown(wParam);
-  }
-  else if ((message == WM_KEYUP) || (message == WM_SYSKEYUP)) {
-    Keyboard_OnKeyUp(wParam);
-  }
-  else {
-    if ((message != WM_CHAR) && (message != WM_SYSCHAR)) {
-      defaultResult = DefWindowProcA(hwnd,message,wParam,lParam);
-      return defaultResult;
-    }
-    Keyboard_OnChar(wParam);
-  }
-  return 0;
 }
 
 

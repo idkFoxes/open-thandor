@@ -13,16 +13,14 @@
 The structs of generated/types.h and generated/ui_templates.h are the original's 32-bit layouts: file and
 asset images, save-game images (pools written raw), UI templates linked by byte offsets, and runtime records
 that code walks with the original strides and offsets. Their pointer fields are declared Ptr32<T> (data
-pointers) or Ptr32<R(args)> (function pointers):
-- x86: Ptr32<T> is exactly T * - nothing changes.
-- x64: Ptr32<T> is a 4-byte field holding the pointer as a signed 32-bit value. The exe is linked
-  /LARGEADDRESSAWARE:NO, so every address of the process (image, heap, stacks) is below 2 GB and fits;
-  sign extension on reading keeps sentinels like (T *)-1 intact. A pointer that does not fit stops the
-  game (Thandor_Ptr32Overflow).
+pointers) or Ptr32<R(args)> (function pointers). Ptr32<T> is a 4-byte field holding the pointer as a signed
+32-bit value. The exe is linked /LARGEADDRESSAWARE:NO, so every address of the process (image, heap, stacks) is
+below 2 GB and fits; sign extension on reading keeps sentinels like (T *)-1 intact. A pointer that does not fit
+stops the game (Thandor_Ptr32Overflow). Savegames, assets and the UI templates depend on these layouts.
 UPtr32 is the same for a field the code keeps as uintptr_t (a pointer or a small value).
 The field converts to T * implicitly, so most code reads and writes it like a pointer. What does not work
-on x64 (compile errors): taking the field's address as a T **, ?: between the field and a T *, and
-pointer-typed references to it.
+(compile errors): taking the field's address as a T **, ?: between the field and a T *, and pointer-typed
+references to it.
 */
 
 #include <stddef.h>
@@ -39,7 +37,6 @@ struct ThandorAnyPtr {
     template <class T> operator T *() const { return (T *)ptr; }
 };
 
-#if defined(_WIN64)
 /* Stops the game with a log entry: a pointer of 2 GB or more was stored in a 32-bit field. */
 [[noreturn]] void Thandor_Ptr32Overflow(uintptr_t value);
 
@@ -93,19 +90,15 @@ struct UPtr32 {
     UPtr32 &operator+=(uintptr_t count) { return *this = (uintptr_t)*this + count; }
     UPtr32 &operator-=(uintptr_t count) { return *this = (uintptr_t)*this - count; }
 };
-#else
-template <class T> using Ptr32 = T *;
-typedef uintptr_t UPtr32;
-#endif
 #endif /* __cplusplus */
 
 #ifdef __cplusplus
 /* The 32-bit pointer slot (a Ptr32<T> lvalue) at address p inside an original layout: a pointer in a text
-   command stream, a pointer field reached by byte offset. On x86 this is *(T **)(p). */
+   command stream, a pointer field reached by byte offset. */
 #define THANDOR_PTR32_AT(T, p) (*(Ptr32<T> *)(p))
 #endif
 
-/* Bytes of a 32-bit pointer field (sizeof(Ptr32<void>) on both architectures). */
+/* Bytes of a 32-bit pointer field (sizeof(Ptr32<void>)). */
 #define THANDOR_PTR32_BYTES 4
 
 #endif

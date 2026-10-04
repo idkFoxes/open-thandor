@@ -8,22 +8,17 @@
 #define THANDOR_PLATFORM_BOOTSTRAP_IMAGE_H
 
 /*
-Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers. (The
-copies of original machine code for the differential self-tests are developer tools:
-thandor/platform/debug/original_code.h.)
+Process support of the rebuilt executable: logging, crash and hang reports and small Win32 helpers.
 
 thandor.exe keeps code and data in one writable .text section at fixed addresses. The rebuilt executable
 compiles that data in as ordinary C variables (src/<area>/<module>/data.c); nothing of the original image
 is mapped.
 */
 
-/* Layout of the original thandor.exe image (PE header values); the self-tests read original code by these */
-#define ORIGINAL_IMAGE_BASE 0x400000u  /* ImageBase */
-#define ORIGINAL_IMAGE_SIZE 0x192000u  /* SizeOfImage */
-#define ORIGINAL_TEXT_START 0x401000u  /* its single RWX .text section (code and data) */
-#define ORIGINAL_TEXT_END 0x58C000u    /* end of the original machine code */
-#define ORIGINAL_TEXT_RVA (ORIGINAL_TEXT_START - ORIGINAL_IMAGE_BASE)
-#define ORIGINAL_TEXT_SIZE (ORIGINAL_TEXT_END - ORIGINAL_TEXT_START)
+/* Address range of the original thandor.exe's single RWX .text section (code and data); the scanaddr self-test
+   looks for these values in assets */
+#define ORIGINAL_TEXT_START 0x401000u
+#define ORIGINAL_TEXT_END 0x58C000u
 /* The rebuilt executable is linked at this fixed base (/BASE in CMakeLists.txt); its code starts one page in */
 #define REBUILT_IMAGE_BASE 0x10000000u
 #define REBUILT_IMAGE_CODE_START (REBUILT_IMAGE_BASE + 0x1000u)

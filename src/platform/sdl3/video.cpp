@@ -42,7 +42,7 @@ struct VideoState {
 };
 VideoState s_video;
 
-/* The desktop's bits per pixel (16 or 32), as the developer tools' DirectDraw window uses it. */
+/* The desktop's bits per pixel (16 or 32), which the developer tools' window uses. */
 uint32_t DesktopBitsPerPixel() noexcept
 {
   const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
@@ -247,7 +247,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
 {
   g_CursorCurrentVisibilityToken = -1;
   if (thandor::sdl3::Windowed() && (bitsPerPixel != DesktopBitsPerPixel())) {
-    /* as the developer tools' DirectDraw window: the desktop's depth, which the blitters chosen afterwards, the
+    /* the developer tools' window keeps the desktop's depth, which the blitters chosen afterwards, the
        renderer's queue and the pixel packing all follow */
     Thandor_Log("test aid: windowed %ux%u uses the desktop depth of %u bits instead of %u", width, height,
                 DesktopBitsPerPixel(), bitsPerPixel);
@@ -289,7 +289,7 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   ChannelOfMask(blueMask, g_SoftwarePixelFormatConfig.blueMask, g_SoftwarePixelFormatConfig.blueShift,
                 g_SoftwarePixelFormatConfig.blueBitCount);
 
-  /* the framebuffer, the 16/32-bit blitters and the active adapter as for DirectDraw; then this backend's
+  /* the framebuffer, the 16/32-bit blitters and the active adapter as in the original; then this backend's
      present, captures and permanent pixels */
   GraphicsDirectDraw_PublishFramebuffer(adapterIndex, bitsPerPixel, height, width);
   g_DisplayFramebufferAccess.pixels = reinterpret_cast<uint8_t *>(s_video.framebuffer.data());

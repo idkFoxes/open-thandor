@@ -1,7 +1,7 @@
 """Local two-instance network test.
 
 Needs the test build: configure with THANDOR_DEV_TOOLS=ON (CMake preset "test", or
--DTHANDOR_DEV_TOOLS=ON) and copy its thandor.exe as thandor.exe into GAME_DIR. The default build
+-DTHANDOR_DEV_TOOLS=ON) and copy its thandor.exe and SDL3.dll into GAME_DIR. The default build
 does not contain the test aids used below (they would be ignored and the second instance would not start).
 
 usage: run_multiplayer.py GAME_DIR SECONDS [--host-script FILE] [--client-script FILE] [--shots MS]

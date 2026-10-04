@@ -31,14 +31,10 @@
 #define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
 #define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
 #define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
-/* Subsystem startup (Graphics_Init, DirectSound_Init); names follow the failing step */
-#define FATAL_ERROR_DIRECTDRAW_NO_ADAPTER 0x17 /* DirectDrawEnumerateA failed or listed no adapter */
-#define FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE 0x18 /* no adapter reported a usable display mode */
-#define FATAL_ERROR_DIRECTSOUND_SETUP 0x29 /* primary buffer setup failed; the stage number is left in
-                                              g_PackageLastErrorPath */
-#define FATAL_ERROR_DIRECTINPUT_SETUP 0x25 /* DirectInputMouse_Init: DirectInputCreateA or a mouse-device
-                                              setup call failed; the stage number (0..4) is left in
-                                              g_PackageLastErrorPath */
+/* Sound setup (the original's DirectSound primary/secondary buffers; SdlAudio_CreateSampleVoiceSet for an empty
+   sample); the stage number is left in g_PackageLastErrorPath. 0x17, 0x18 (no DirectDraw adapter / display mode)
+   and 0x25 (DirectInput mouse setup) were the original's startup errors of the DirectX backend. */
+#define FATAL_ERROR_DIRECTSOUND_SETUP 0x29
 /* Generic failure code returned as a failure by many helpers (package mount/lookup, PCK codec, text copies,
    runtime pools); InGameRuntime_RunSessionUntilExit returns it when the UI root stack runs empty */
 #define FATAL_ERROR_GENERAL_FAILURE 0x14
@@ -52,8 +48,7 @@
 /* No network backend: the default g_NetworkBackendSlot0/Slot2 entries (NetworkBackendFallback_Slot0/2, left in
    place when Network_Init could not start WinSock) return it; the frontend reports it when no backend opens */
 #define FATAL_ERROR_NETWORK_UNAVAILABLE 0x2B
-/* DirectSound_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 (a failing
-   secondary-buffer step there returns FATAL_ERROR_DIRECTSOUND_SETUP) */
+/* SdlAudio_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 */
 #define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
 /* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
    ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
@@ -115,12 +110,9 @@
 #define FATAL_ERROR_ARMY_REGISTRY_FULL 0x42 /* all 768 army registry slots are taken */
 #define FATAL_ERROR_ARMY_ID_DUPLICATE 0x4C /* ArmyAssetRecord_RegisterAndRelocate: an army id is registered twice
                                               (the id is left in g_PackageLastErrorPath) */
-/* Display mode switch (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources); the number of completed setup
-   steps is left in g_PackageLastErrorPath. Named after the failing step. */
-#define FATAL_ERROR_DIRECTDRAW_CREATE 0x19 /* DirectDrawCreate, SetCooperativeLevel or the IDirectDraw2 query */
-#define FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE 0x1A /* IDirectDraw2::SetDisplayMode */
-#define FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES 0x1B /* primary or back surface creation/query */
-#define FATAL_ERROR_DIRECTDRAW_PIXEL_FORMAT 0x1C /* GetPixelFormat failed or reported an empty RGB mask */
+/* Display mode switch (SdlVideo_ApplyDisplayMode): the frame's texture cannot be created (the original's
+   DirectDraw surface creation error; 0x19, 0x1A and 0x1C were its other DirectDraw setup steps) */
+#define FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES 0x1B
 /* 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors) */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F

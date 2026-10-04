@@ -13,8 +13,8 @@
 
 /* Submodule: platform/input/devices. */
 
-/* Lock-key bits of g_KeyboardStateMask, seeded from GetKeyState (DirectInputMouse_Init at startup
-   and again on WM_ACTIVATEAPP in MainWindowProc). */
+/* Lock-key bits of g_KeyboardStateMask, seeded from the system's lock-key state (SdlInput_Init at startup and
+   again when the window regains the focus). */
 #define KEYBOARD_STATE_NUM_LOCK 0x10000
 #define KEYBOARD_STATE_SCROLL_LOCK 0x20000
 #define KEYBOARD_STATE_CAPS_LOCK 0x40000
@@ -74,16 +74,11 @@
    the low word of a special key is its g_KeyboardSpecialKeyDown index */
 #define KEYBOARD_KEY_CODE_FAMILY_MASK 0xffff0000
 #define KEYBOARD_KEY_CODE_INDEX_MASK 0xffff
-/* Entries of the g_CursorInputEvents ring (DirectInputMouse_PollBufferedEvents); the write index wraps after
-   SIZE - 1 */
+/* Entries of the g_CursorInputEvents ring (filled by the SDL3 input backend and the input script); the write
+   index wraps after SIZE - 1 */
 #define CURSOR_INPUT_EVENT_RING_SIZE 256
-/* DirectInputMouse_Init: rates of the cursor-animation and mouse-poll timers */
+/* SdlInput_Init: rate of the cursor-animation timer (the original also polled its DirectInput mouse at 64 Hz) */
 #define CURSOR_ANIMATION_TIMER_HZ 20
-#define MOUSE_POLL_TIMER_HZ 64
-/* DirectInputMouse_PollBufferedEvents: a button event's dwData has this bit set while the button is down */
-#define DIRECTINPUT_BUTTON_DOWN_BIT 0x80
-/* DirectInputMouse_PollBufferedEvents: device errors after which a poll gives up until the next tick */
-#define MOUSE_POLL_MAX_ERRORS 16
 /* Functions are grouped by semantic ownership. */
 
 Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
@@ -100,22 +95,6 @@ void GraphicsCursor_FreeBuffers(void);
 
 Bool8 GraphicsCursor_CreateBuffersAndCenter
           (GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
-
-Bool8 DirectInputMouse_Init(uint32_t *outError);
-
-void DirectInputMouse_RefreshDeviceIfIdle(void);
-
-void DirectInputMouse_Shutdown(void);
-
-void DirectInputMouse_PollBufferedEvents(void);
-
-Bool8 DirectInputMouse_SetDisplayMode
-          (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
-          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
-
-void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX);
-
-void DirectInputMouse_FlushBufferedEvents(void);
 
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey);
 
@@ -137,7 +116,6 @@ extern uint32_t g_CursorOverflowLeft;
 extern uint32_t g_CursorOverflowRight;
 extern uint32_t g_CursorOverflowTop;
 extern uint32_t g_CursorOverflowBottom;
-extern IDirectInputDeviceA *g_MouseDevice;
 extern UiPixelCoordinate g_MouseX;
 extern UiPixelCoordinate g_MouseY;
 extern GraphicsCursorButtonState g_MouseButtonMask;

@@ -10,19 +10,12 @@
 #include <string.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/platform/debug/original_code.h>
 #include <thandor/platform/selftest/selftest.h>
 
 /* Self-test data */
 #define SELFTEST_GUARD_BYTES 0x10000      /* codec: bytes behind each output buffer that must stay untouched */
 #define SELFTEST_GUARD_FILL 0xCD          /* codec: fill byte of the output buffers and their guards */
 #define SELFTEST_UNWRITTEN_FILL 0xAB      /* path split: fill byte that marks untouched output */
-/* stretchcmp: g_SoftwarePixelMmxConstants quantize mask and PMADDWD pack weights, 16-bit lanes
-   {blue, green, red, 0} from the low word up, for the 565 and 555 layouts */
-#define STRETCHCMP_QUANTIZE_MASK_565 0x0000f800fc00f800ull
-#define STRETCHCMP_PACK_WEIGHTS_565 0x0000080000200100ull
-#define STRETCHCMP_QUANTIZE_MASK_555 0x0000f800f800f800ull
-#define STRETCHCMP_PACK_WEIGHTS_555 0x0000040000200080ull
 #define SCANADDR_MAX_UNPACKED_BYTES 0x4000000 /* scanaddr: entries claiming more are taken as the end of the package */
 #define SCANADDR_REBUILT_IMAGE_SPAN 0x300000  /* scanaddr: dwords in [REBUILT_IMAGE_BASE, + this) are reported */
 
@@ -148,106 +141,6 @@ static void Thandor_SelfTestStretch(void)
                     target[y * 8 + 0], target[y * 8 + 1], target[y * 8 + 2], target[y * 8 + 3],
                     target[y * 8 + 4], target[y * 8 + 5], target[y * 8 + 6], target[y * 8 + 7]);
     }
-}
-
-/* OPEN_THANDOR_SELFTEST=stretchcmp compares the C bilinear stretches against the original machine
-   code (0x004AA170 16-bit, 0x004AA3F0 32-bit) on random sources, sizes and 555/565 constants. The
-   mapped entries jump to the C versions, so the original bytes are copied from the file; both
-   routines only use absolute data addresses and internal relative jumps. */
-typedef void (__stdcall *OriginalStretchProc)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, void *, void *);
-
-static void Thandor_SelfTestStretchCompare(void)
-{
-    static const unsigned long long quantize[2][2] = {
-        /* {quantize mask 0x41F6E8, PMADDWD weights 0x41F6E0}: 565 and 555 layouts */
-        {STRETCHCMP_QUANTIZE_MASK_565, STRETCHCMP_PACK_WEIGHTS_565},
-        {STRETCHCMP_QUANTIZE_MASK_555, STRETCHCMP_PACK_WEIGHTS_555},
-    };
-    unsigned long long *maskSlot = (unsigned long long *)(uintptr_t)0x41f6e8;
-    unsigned long long *weightSlot = (unsigned long long *)(uintptr_t)0x41f6e0;
-    unsigned long long savedMask = *maskSlot;
-    unsigned long long savedWeights = *weightSlot;
-    unsigned seed = 4711;
-    int run;
-    int failures = 0;
-    OriginalStretchProc original16 = (OriginalStretchProc)Thandor_LoadOriginalCodeCopy(0x4aa170, 0x4aa3eb - 0x4aa170);
-    OriginalStretchProc original32 = (OriginalStretchProc)Thandor_LoadOriginalCodeCopy(0x4aa3f0, 0x4aa622 - 0x4aa3f0);
-    if (original16 == NULL || original32 == NULL) {
-        Thandor_Log("stretchcmp: could not load the original code");
-        return;
-    }
-    for (run = 0; run < 24; run++) {
-        int bytesPerPixel = (run & 1) ? 4 : 2;
-        int layout = (run >> 1) & 1;
-        uint32_t srcW = 16 + (run * 37) % 300;
-        uint32_t srcH = 9 + (run * 53) % 200;
-        uint32_t dstW = 2 * (8 + (run * 71) % 400);
-        uint32_t dstH = 4 + (run * 29) % 300;
-        uint32_t pitch = dstW + 8;
-        uint32_t assetBytes = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET + (srcW * (srcH + 1) + 2) * 4;
-        uint8_t *asset = (uint8_t *)calloc(1, assetBytes);
-        uint8_t *mine = (uint8_t *)calloc(pitch * (dstH + 1), bytesPerPixel);
-        uint8_t *theirs = (uint8_t *)calloc(pitch * (dstH + 1), bytesPerPixel);
-        uint32_t fbMine[4];
-        uint32_t fbTheirs[4];
-        GraphicsTextureSourceAsset *header = (GraphicsTextureSourceAsset *)asset;
-        GraphicsTextureSourceEntry *entry;
-        uint32_t *pixels;
-        uint32_t i;
-        size_t total = (size_t)pitch * (dstH + 1) * bytesPerPixel;
-        if (!asset || !mine || !theirs) {
-            Thandor_Log("stretchcmp: allocation failed");
-            return;
-        }
-        *maskSlot = (bytesPerPixel == 2) ? quantize[layout][0] : savedMask;
-        *weightSlot = (bytesPerPixel == 2) ? quantize[layout][1] : savedWeights;
-        header->common.magic = ASSET_MAGIC_GFX;
-        header->tableDescriptor.subresourceCount = 1;
-        header->tableDescriptor.subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
-        entry = (GraphicsTextureSourceEntry *)(asset + GFX_ASSET_HEADER_SIZE);
-        entry->paletteIndex = -1; /* direct ARGB8888 pixels */
-        entry->dataOffset = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-        entry->pixelWidth = srcW;
-        entry->pixelHeight = srcH;
-        pixels = (uint32_t *)(asset + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET);
-        for (i = 0; i < srcW * (srcH + 1) + 2; i++) {
-            seed = seed * 1103515245u + 12345u;
-            pixels[i] = seed ^ (seed >> 13);
-        }
-        fbMine[0] = pitch; fbMine[1] = 0; fbMine[2] = bytesPerPixel; fbMine[3] = (uint32_t)(uintptr_t)mine;
-        fbTheirs[0] = pitch; fbTheirs[1] = 0; fbTheirs[2] = bytesPerPixel; fbTheirs[3] = (uint32_t)(uintptr_t)theirs;
-        if (bytesPerPixel == 2) {
-            SoftwareTextureSource_StretchDirectColorBilinear16(dstH, dstW, 0, 4, 0,
-                header, (SoftwareFramebufferAccess *)fbMine);
-            original16(dstH, dstW, 0, 4, 0, asset, fbTheirs);
-        }
-        else {
-            SoftwareTextureSource_StretchDirectColorBilinear32(dstH, dstW, 0, 4, 0,
-                header, (SoftwareFramebufferAccess *)fbMine);
-            original32(dstH, dstW, 0, 4, 0, asset, fbTheirs);
-        }
-#if defined(_M_IX86)
-        __asm emms
-#endif
-        for (i = 0; i < total && mine[i] == theirs[i]; i++) {
-        }
-        if (i < total) {
-            failures++;
-            Thandor_Log("stretchcmp run %d (%d bpp, %s, %ux%u -> %ux%u): MISMATCH at byte %u (pixel %u,%u): mine %02x theirs %02x",
-                        run, bytesPerPixel * 8, layout ? "555" : "565", srcW, srcH, dstW, dstH, i,
-                        (i / bytesPerPixel) % pitch, (i / bytesPerPixel) / pitch, mine[i], theirs[i]);
-        }
-        else {
-            Thandor_Log("stretchcmp run %d (%d bpp, %s, %ux%u -> %ux%u): identical", run,
-                        bytesPerPixel * 8, layout ? "555" : "565", srcW, srcH, dstW, dstH);
-        }
-        free(asset);
-        free(mine);
-        free(theirs);
-    }
-    *maskSlot = savedMask;
-    *weightSlot = savedWeights;
-    Thandor_Log("stretchcmp: %d of 24 runs differ", failures);
 }
 
 /* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
@@ -764,14 +657,6 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "scanaddr") == 0) {
         Thandor_SelfTestScanAddresses();
-        return 1;
-    }
-    if (name != NULL && strcmp(name, "stretchcmp") == 0) {
-        Thandor_SelfTestStretchCompare();
-        return 1;
-    }
-    if (name != NULL && strcmp(name, "relaxcmp") == 0) {
-        Thandor_SelfTestRelaxCompare(); /* relax.c */
         return 1;
     }
     if (name != NULL && strcmp(name, "crash") == 0) {

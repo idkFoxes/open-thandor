@@ -1253,7 +1253,7 @@ Project code, not in the original game. Campaign test aids (test build): OPEN_TH
 
 [Source](../src/platform/debug/movie_decoder.c) · [Header](../include/thandor/platform/debug/movie_decoder.h)
 
-Project code, not in the original game. OPEN_THANDOR_MOVIEDUMP (log and dump decoded frames) and OPEN_THANDOR_MOVIECMP (compare the decoder with the original machine code), hooked into Movie_AdvanceFrame.
+Project code, not in the original game. OPEN_THANDOR_MOVIEDUMP (log and dump decoded frames), hooked into Movie_AdvanceFrame.
 
 <a id="module-platform-debug-script"></a>
 ### `platform/debug/script`
@@ -1267,21 +1267,14 @@ Project code, not in the original game. OPEN_THANDOR_SCRIPT: replays timed input
 
 [Source](../src/platform/debug/test_aids.c) · [Header](../include/thandor/platform/debug/test_aids.h)
 
-Project code, not in the original game. Developer tools (THANDOR_DEV_TOOLS): Win32 helpers of the windowed mode, a second instance, UDP port and datagram log for local multiplayer tests (OPEN_THANDOR_WINDOWED, _MULTI_INSTANCE, _NET_PORT, _NETLOG).
+Project code, not in the original game. Developer tools (THANDOR_DEV_TOOLS): the windowed-mode switch, a second instance, UDP port and datagram log for local multiplayer tests (OPEN_THANDOR_WINDOWED, _MULTI_INSTANCE, _NET_PORT, _NETLOG); the window itself is the SDL3 backend's.
 
 <a id="module-platform-selftest-selftests"></a>
 ### `platform/selftest/selftests`
 
 [Source](../src/platform/selftest/selftests.c) · [Header](../include/thandor/platform/selftest/selftest.h)
 
-Project code, not in the original game. SelfTest_Run for OPEN_THANDOR_SELFTEST (codec, path, stretch, stretchcmp, scanaddr, crash, and relaxcmp below), plus the OPEN_THANDOR_SCANFILES / _DUMPTEXT data tools.
-
-<a id="module-platform-selftest-relax"></a>
-### `platform/selftest/relax`
-
-[Source](../src/platform/selftest/relax.c) · [Header](../include/thandor/platform/selftest/selftest.h)
-
-Project code, not in the original game. relaxcmp: the water relax passes against a copy of the original machine code (read from thandor_original.exe).
+Project code, not in the original game. SelfTest_Run for OPEN_THANDOR_SELFTEST (codec, pcx, numberformat, fixedmath, keymap, trianglesetup, movieenc, path, stretch, scanaddr, crash), plus the OPEN_THANDOR_SCANFILES / _DUMPTEXT data tools.
 
 <a id="module-platform-debug-font"></a>
 ### `platform/debug/font`
@@ -1295,21 +1288,14 @@ Project code, not in the original game. The built-in 5x7 debug font (`g_DebugFon
 
 [Source](../src/platform/debug/movie_player.c) · [Header](../include/thandor/platform/debug/movie_player.h)
 
-Project code, not in the original game. The debug movie tools started from `Game_PlayIntroMovies` by environment switches: `DebugMovie_Run` (`OPEN_THANDOR_MOVIE`, `_STRETCH`, `_START`: plays one movie or the list in `movies.txt` with a name and frame counter overlay) and `DebugMovie_ExportOne` (`OPEN_THANDOR_MOVIEEXPORT`: writes the decoded frames and audio to `moviedump\`). See [BUILDING.md](BUILDING.md).
+Project code, not in the original game. The debug movie tools started from `Game_PlayIntroMovies` by environment switches: `DebugMovie_Run` (`OPEN_THANDOR_MOVIE`, `_STRETCH`, `_START`: plays one movie or the list in `movies.txt` with a name and frame counter overlay) and `DebugMovie_ExportOne` (`OPEN_THANDOR_MOVIEEXPORT`: writes the decoded frames to `moviedump\`). See [BUILDING.md](BUILDING.md).
 
 <a id="module-platform-debug-hooks"></a>
 ### `platform/debug/hooks`
 
 [Source](../src/platform/debug/hooks.c) · [Header](../include/thandor/platform/debug/hooks.h)
 
-The one interface between the game and the developer tools (CMake option `THANDOR_DEV_TOOLS`): `DebugHook_*` functions that hand over to the tools (self-test, message pump, intro movies, second instance, UDP bind and datagram log, movie decoder, campaign, session frame and simulation step, state hash). With the option off the header turns every hook into an empty macro and none of `platform/debug` or `platform/selftest` is compiled.
-
-<a id="module-platform-debug-windowed"></a>
-### `platform/debug/windowed`
-
-[Source](../src/platform/debug/windowed.c) · [Header](../include/thandor/platform/debug/hooks.h)
-
-Project code, not in the original game. Windowed-mode hooks (OPEN_THANDOR_WINDOWED): main window, DirectDraw cooperative level, window clipper, desktop colour depth, present into the client area, non-exclusive DirectInput mouse.
+The one interface between the game and the developer tools (CMake option `THANDOR_DEV_TOOLS`): `DebugHook_*` functions that hand over to the tools (self-test, message pump, intro movies, windowed mode, second instance, UDP bind and datagram log, movie decoder, campaign, session frame and simulation step, state hash). With the option off the header turns every hook into an empty macro and none of `platform/debug` or `platform/selftest` is compiled.
 
 <a id="module-platform-debug-level-script"></a>
 ### `platform/debug/level_script`
@@ -1317,13 +1303,6 @@ Project code, not in the original game. Windowed-mode hooks (OPEN_THANDOR_WINDOW
 [Source](../src/platform/debug/level_script.c) · [Header](../include/thandor/platform/debug/hooks.h)
 
 Project code, not in the original game. Level-script log of InGameConditionRuntime_UpdateScheduledRecords (conditions and triggers at tick 20, fired end triggers), moved here from gameplay/session/runtime.c.
-
-<a id="module-platform-debug-original-code"></a>
-### `platform/debug/original_code`
-
-[Source](../src/platform/debug/original_code.c) · [Header](../include/thandor/platform/debug/original_code.h)
-
-Project code, not in the original game. `Thandor_LoadOriginalCodeCopy`: executable copies of original machine code from thandor_original.exe for the differential self-tests and OPEN_THANDOR_MOVIECMP (moved here from platform/bootstrap/image.c).
 
 <a id="module-platform-filesystem-win32"></a>
 ### `platform/filesystem/win32`

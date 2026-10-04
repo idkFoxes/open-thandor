@@ -32,7 +32,7 @@
 /* WinMain, before ProcessEntry: runs the self-test OPEN_THANDOR_SELFTEST names; nonzero when one ran (the
    process then exits). */
 int DebugHook_RunSelfTest(void);
-/* Win32_PumpMessages, before the queue is read: automatic screenshots and the input script. */
+/* SdlPlatform_PumpEvents, before the queue is read: automatic screenshots and the input script. */
 void DebugHook_MessagePump(void);
 /* Game_PlayIntroMovies, before the intro: the debug movie player and export (both exit the process). */
 void DebugHook_BeforeIntroMovies(void);
@@ -43,22 +43,9 @@ int DebugHook_AllowSecondInstance(void);
 unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass);
 
 /* --- windowed mode (OPEN_THANDOR_WINDOWED) --- */
-/* Nonzero when the game runs in a normal window instead of full-screen exclusive. */
+/* Nonzero when the game runs in a normal window (at OPEN_THANDOR_WINDOW_X/Y, the desktop's colour depth) instead
+   of full screen (SdlPlatform_CreateMainWindow, SdlVideo_ApplyDisplayMode, normal process priority). */
 int DebugHook_Windowed(void);
-/* ProcessEntry: creates the windowed main window into g_MainWindow and returns nonzero; 0 = not windowed,
-   the game creates its full-screen window. */
-int DebugHook_CreateMainWindow(const char *className, const char *title, void *instance);
-/* DirectDraw cooperative level: fullScreenLevel, or DDSCL_NORMAL when windowed. */
-uint32_t DebugHook_DirectDrawCooperativeLevel(uint32_t fullScreenLevel);
-/* After the primary surface exists: sizes the window and clips the primary surface to it (windowed). */
-void DebugHook_AfterPrimarySurfaceCreated(uint32_t width, uint32_t height);
-/* After the primary pixel format was read: the bit depth the renderer must use (the desktop's when windowed). */
-uint32_t DebugHook_SurfaceBitsPerPixel(uint32_t bitsPerPixel, uint32_t width, uint32_t height);
-/* GraphicsFramebuffer_Present: blits the back surface into the window's client area and returns nonzero;
-   0 = not windowed, the game blits as the original. */
-int DebugHook_PresentToWindow(TH_LEGACY_RECT *sourceRect);
-/* DirectInput mouse cooperative level: exclusiveLevel, or non-exclusive when windowed. */
-uint32_t DebugHook_MouseCooperativeLevel(uint32_t exclusiveLevel);
 
 /* --- input --- */
 /* Nonzero while an input script drives the game: the real mouse is then ignored. */
@@ -72,9 +59,7 @@ void DebugHook_AfterUdpBind(WinSockAddress *bindEndpoint, unsigned gamePort);
 /* Every datagram sent or received ("send" / "recv"). */
 void DebugHook_UdpDatagram(const char *direction, const void *sockaddrIn, unsigned byteCount, const void *buffer);
 
-/* --- movie decoder (OPEN_THANDOR_MOVIECMP, OPEN_THANDOR_MOVIEDUMP) --- */
-void DebugHook_MovieBeforeDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded);
-void DebugHook_MovieAfterDecode(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed);
+/* --- movie decoder (OPEN_THANDOR_MOVIEDUMP) --- */
 void DebugHook_MovieFrameDone(MovieRuntime *movie, uint32_t consumedBytes);
 
 /* --- campaign and scenario selection --- */
@@ -120,12 +105,6 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_ProcessPriorityClass(priorityClass) (priorityClass)
 
 #define DebugHook_Windowed() 0
-#define DebugHook_CreateMainWindow(className, title, instance) 0
-#define DebugHook_DirectDrawCooperativeLevel(fullScreenLevel) (fullScreenLevel)
-#define DebugHook_AfterPrimarySurfaceCreated(width, height) ((void)0)
-#define DebugHook_SurfaceBitsPerPixel(bitsPerPixel, width, height) (bitsPerPixel)
-#define DebugHook_PresentToWindow(sourceRect) 0
-#define DebugHook_MouseCooperativeLevel(exclusiveLevel) (exclusiveLevel)
 
 #define DebugHook_IgnoreRealMouse() 0
 
@@ -133,8 +112,6 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_AfterUdpBind(bindEndpoint, gamePort) ((void)0)
 #define DebugHook_UdpDatagram(direction, sockaddrIn, byteCount, buffer) ((void)0)
 
-#define DebugHook_MovieBeforeDecode(movie, height, width, encoded) ((void)0)
-#define DebugHook_MovieAfterDecode(movie, height, width, consumed) ((void)0)
 #define DebugHook_MovieFrameDone(movie, consumedBytes) ((void)0)
 
 #define DebugHook_ScenarioPageOpened() 0

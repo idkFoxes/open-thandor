@@ -13,25 +13,19 @@
 
 /* Submodule: audio/backend/runtime. */
 
-/* DirectSound voice sets: every loaded sound owns eight IDirectSoundBuffer voices (voices[0] is the
-   buffer that holds the data, the others are DuplicateSoundBuffer copies made on demand), and all sets
-   are listed in the 256-entry g_DirectSoundVoiceSetRegistry (DirectSound_Init allocates it). */
+/* Voice sets (DirectSoundVoiceSet, the original's layout, kept as the arena block the game holds): every loaded
+   sound has up to eight voices, and all sets are listed in a 256-entry registry (SdlAudio_Init allocates it). */
 #define DIRECTSOUND_VOICES_PER_SET 8
 #define DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY 256
-/* SoundSampleAsset.formatVersion the DirectSound backend accepts (1.0 in 16.16) */
+/* SoundSampleAsset.formatVersion the audio backend accepts (1.0 in 16.16) */
 #define SOUND_SAMPLE_FORMAT_VERSION 0x10000
 /* The .sam decoder produces blocks of 256 stereo 16-bit frames = 0x400 bytes (0x200 shorts). */
 #define SOUND_SAMPLE_DECODED_BLOCK_BYTES 0x400
-/* Stage numbers DirectSound_Create*VoiceSet leave in g_PackageLastErrorPath on failure */
+/* Stage numbers SdlAudio_CreateSampleVoiceSet leaves in g_PackageLastErrorPath on failure (the original's
+   DirectSound stages) */
 #define DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER 100
-#define DIRECTSOUND_VOICE_STAGE_LOCK 101
 #define DIRECTSOUND_VOICE_STAGE_FILL 102
-/* Memory_ZeroDwords size used for WaveFormat_PCM_22050_Stereo16: sizeof(WAVEFORMATEX), the 18 bytes of fields
-   and the two bytes of tail padding */
-#define DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES 0x14
 /* Functions are grouped by semantic ownership. */
-
-void DirectSound_Shutdown(void);
 
 uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 
@@ -52,27 +46,6 @@ Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
 
-uint32_t DirectSound_Init(void);
-
-uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
-
-void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
-
-Bool8 DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-Bool8 DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
-
-void DirectSound_StopVoice(IDirectSoundBuffer *voice);
-
-Bool8 DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
-
-void DirectSound_StopAllVoices(void);
-
-void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          IDirectSoundBuffer *voice);
-
 void SoundBackendDisabled_StopAllVoices(void);
 
 extern SoundPlayVoiceProc *g_SoundPlayOneShot;
@@ -87,7 +60,7 @@ extern SoundStopAllVoicesProc *g_SoundStopAllVoices;
 
 extern SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet;
 
-/* DirectSound attenuation (1/100 dB) by channel gain Q15 >> 8 (also the SDL3 backend's gain curve) */
+/* The original's DirectSound attenuation (1/100 dB) by channel gain Q15 >> 8, the SDL3 backend's gain curve */
 extern const int32_t g_DirectSoundGainAttenuation[129];
 
 #endif /* THANDOR_AUDIO_BACKEND_RUNTIME_H */

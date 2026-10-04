@@ -442,14 +442,13 @@ void HandleMouseEvent(const SDL_Event &event)
     return;
   }
   AppendCursorEvent(eventType);
-  g_MouseEventsProcessed++;
 }
 
 void HandleFocusGained()
 {
   /* MainWindowProc on WM_ACTIVATEAPP: back to real-time priority, lock keys reseeded (modifiers released),
      queued keys dropped */
-  SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+  SetPriorityClass(GetCurrentProcess(), DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
   g_KeyboardStateMask = LockKeyBits();
   g_KeyboardFlushEvents();
 }

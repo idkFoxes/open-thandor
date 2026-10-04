@@ -12,8 +12,6 @@
 
 uint32_t g_UiPendingFrameTicks = 0;
 
-static UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown = 16;
-
 /* Implementation ownership: ui/core/frame_loop. */
 
 /* Runs one complete UI frame (events, frame ticks, queued actions, draw, present) from code that may or may
@@ -78,7 +76,7 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
 
 /* One UI frame step under the UI frame lock: pumps Win32 messages, then runs every pending frame tick
    (sprite-button animations and frame callback of the front root, tick of the pointer-capture and
-   keyboard-focus nodes, tooltip countdown) and refreshes the DirectInput mouse every 48 calls.
+   keyboard-focus nodes, tooltip countdown).
 */
 void UiFrame_Update(UiStopMessageCode stopMessageCode)
 
@@ -115,13 +113,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
     }
     UiTooltip_TickCountdown();
   }
-  g_DirectInputMouseRefreshCountdown--;
-  if (g_DirectInputMouseRefreshCountdown == 0) {
-    g_DirectInputMouseRefreshCountdown = UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL;
-#ifndef THANDOR_PLATFORM_SDL3 /* the SDL3 backend has no DirectInput device to refresh */
-    DirectInputMouse_RefreshDeviceIfIdle();
-#endif
-  }
+  /* the original refreshes its DirectInput mouse here every 48th call; the SDL3 backend has no device to refresh */
   g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;

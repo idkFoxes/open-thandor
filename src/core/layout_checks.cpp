@@ -357,8 +357,6 @@ static_assert(sizeof(UiNodeVtable) == 0x48 &&
               offsetof(UiNodeVtable, tick) == 0x40 &&
               offsetof(UiNodeVtable, pointerWheel) == 0x44,
               "UiNodeVtable keeps its 32-bit layout");
-static_assert(sizeof(WAVEFORMATEX) == 0x14,
-              "WAVEFORMATEX keeps its 32-bit layout");
 static_assert(sizeof(UiPageStackControl) == 0x54 &&
               offsetof(UiPageStackControl, pages) == 0x50,
               "UiPageStackControl keeps its 32-bit layout");
@@ -1213,23 +1211,15 @@ static_assert(sizeof(FrontendTaskAssignmentControlOffsetTables) == 0x8C,
               "FrontendTaskAssignmentControlOffsetTables keeps its 32-bit layout");
 static_assert(sizeof(UiCommandDispatchRecord) == 0xC,
               "UiCommandDispatchRecord keeps its 32-bit layout");
-static_assert(sizeof(TimerCallbackTable) == 0x80 &&
-              offsetof(TimerCallbackTable, callbacks) == 0x0,
-              "TimerCallbackTable keeps its 32-bit layout");
 static_assert(sizeof(CommandLineState) == 0x500,
               "CommandLineState keeps its 32-bit layout");
 static_assert(sizeof(ArmyPlacementContactCallbackTable5) == 0x14 &&
               offsetof(ArmyPlacementContactCallbackTable5, callbacks) == 0x0,
               "ArmyPlacementContactCallbackTable5 keeps its 32-bit layout");
-static_assert(sizeof(PALETTEENTRY_DX6) == 0x4,
-              "PALETTEENTRY_DX6 keeps its 32-bit layout");
 static_assert(sizeof(ModelHierarchyEnergyDemand) == 0x8,
               "ModelHierarchyEnergyDemand keeps its 32-bit layout");
 static_assert(sizeof(LocaleSystemState) == 0x100,
               "LocaleSystemState keeps its 32-bit layout");
-static_assert(sizeof(TimerSystemState) == 0x100 &&
-              offsetof(TimerSystemState, callbacks) == 0x0,
-              "TimerSystemState keeps its 32-bit layout");
 static_assert(sizeof(PcxRgb24) == 0x3,
               "PcxRgb24 keeps its 32-bit layout");
 static_assert(sizeof(TechnologyCategoryMasks) == 0x40,
