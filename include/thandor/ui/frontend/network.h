@@ -43,4 +43,15 @@ extern uint16_t g_FrontendNetworkEndpointTextUtf16[512]; /* local address text f
 
 void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList);
 
+void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control);
+
+void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control);
+
+void FrontendNetworkSettings_SetGameName(UiTextEditControl *control);
+
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
+          (FrontendNetworkSettingsControlView *networkSettings);
+
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
+
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */

@@ -148,6 +148,7 @@ add_library(thandor_curated STATIC
     src/ui/frontend/session.cpp
     src/ui/frontend/settings.cpp
     src/ui/frontend/state.cpp
+    src/ui/frontend/task_assignment.cpp
     src/ui/frontend/ui_template.cpp
     src/ui/ingame/army_stock.cpp
     src/ui/ingame/build_catalog.cpp

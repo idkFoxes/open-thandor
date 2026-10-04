@@ -639,3 +639,170 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
   Random_SelectPrimaryStream();
   return;
 }
+
+/* Change handler of the network game page's player-name edit (playerNameEdit, action 0x2032, slot 50 of
+   g_FrontendUiActionHandlersPage20). An empty name hides Host and Join; a valid one shows Host, lets the session
+   list decide about Join, and is saved as PERSISTENT_SETTING_PLAYER_NAME and copied to the local player's name
+   (20 UTF-16 code units).
+*/
+void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
+
+{
+  UiNodeBase *parentCursor;
+  UiTextEditControl *rootNode;
+  int remainingDwords;
+  uint32_t *sourceDwordCursor;
+  uint32_t *playerNameDwordCursor;
+
+  parentCursor = control->base.parent;
+  rootNode = control;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    parentCursor = rootNode->base.parent;
+  }
+  UiTextControl_UpdateNonEmptyValidity(control);
+  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->base);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
+    FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
+              ((FrontendNetworkSettingsControlView *)FRONTEND_UI(rootNode,sessionList));
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
+                                  PERSISTENT_SETTING_PLAYER_NAME);
+    sourceDwordCursor = (uint32_t *)control->textBuffer;
+    playerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
+    for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
+         remainingDwords--) {
+      *playerNameDwordCursor = *sourceDwordCursor;
+      sourceDwordCursor++;
+      playerNameDwordCursor++;
+    }
+  }
+  return;
+}
+
+/* Handler of the host game setup page's player-count slider (maxPlayersSlider, action 0x2007, slot 7 of
+   g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_NETWORK_PLAYER_COUNT and formats it
+   into the slider's number text.
+*/
+void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
+
+{
+  PersistentSettingsValue value;
+
+  value = control->boundValue;
+  PersistentSettings_Write(value,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
+             g_FrontendNetworkPlayerCountTextUtf16);
+  return;
+}
+
+/* Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
+   is only offered while the name is valid (non-empty), and a valid name is saved as PERSISTENT_SETTING_GAME_NAME.
+*/
+void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
+
+{
+  UiTextEditControl *rootNode;
+  UiNodeBase *parentCursor;
+  
+  parentCursor = control->base.parent;
+  rootNode = control;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    parentCursor = rootNode->base.parent;
+  }
+  if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
+                                  PERSISTENT_SETTING_GAME_NAME);
+  }
+  return;
+}
+
+/* Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
+   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_SetPlayerName). Join
+   (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (rowCount), its selected row (selectedRowSlot)
+   holds a session (advertisement.joinAvailableFlag) and the local player has a name; if then bit 2 of the
+   list's listStateFlags is set
+   (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
+   The field names of FrontendNetworkSettingsControlView used here do not fit a list (text edit overlay).
+*/
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
+          (FrontendNetworkSettingsControlView *networkSettings)
+
+{
+  UiListStateFlags *dirtyFlagsSlot;
+  UiNodeBase *parentCursor;
+  FrontendNetworkSettingsControlView *rootNode;
+
+  parentCursor = networkSettings->commonState.commonPrefix.parent;
+  rootNode = networkSettings;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (FrontendNetworkSettingsControlView *)
+                rootNode->commonState.commonPrefix.parent;
+    parentCursor = rootNode->commonState.commonPrefix.parent;
+  }
+  /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecord rows). */
+  if (((((UiListControl *)networkSettings)->rowCount == 0) ||
+      (((FrontendSessionDiscoveryRecord *)*((UiListControl *)networkSettings)->selectedRowSlot)->advertisement.
+       joinAvailableFlag == 0)) ||
+     (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
+    if ((((UiListControl *)networkSettings)->listStateFlags & 4) != 0) {
+      dirtyFlagsSlot = &((UiListControl *)networkSettings)->listStateFlags;
+      *dirtyFlagsSlot = *dirtyFlagsSlot & ~4;
+      FrontendNetworkSettings_PublishSelectedPlayerDescriptor
+                ((FrontendNetworkSettingsControlView *)FRONTEND_UI(rootNode,networkGameJoinButton));
+    }
+  }
+  return;
+}
+
+/* Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
+   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick):
+   takes the session token (advertisement.header.sequenceToken) and host endpoint (senderEndpoint, 16 bytes)
+   of the selected row (selectedRowSlot) of the sibling sessionList and sends the join request (player
+   descriptor packet 0x20002) to it. Returns the result of UiTransfer_SendPlayerDescriptor.
+*/
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings)
+
+{
+  int remainingDwords;
+  uint32_t *selectedPlayerRecordDwordCursor;
+  uint32_t *selectedEndpointDwordCursor;
+  Bool8 sendCarry;
+  
+  /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
+  g_FrontendSessionToken =
+       ((FrontendSessionDiscoveryRecord *)
+        *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings - offsetof(FrontendUiImage,networkGameJoinButton),
+                                       sessionList))->selectedRowSlot)->advertisement.header.sequenceToken;
+  selectedPlayerRecordDwordCursor =
+       (uint32_t *)&((FrontendSessionDiscoveryRecord *)
+                     *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings -
+                                                    offsetof(FrontendUiImage,networkGameJoinButton),
+                                                    sessionList))->selectedRowSlot)->senderEndpoint;
+  selectedEndpointDwordCursor = (uint32_t *)&g_FrontendSelectedNetworkEndpoint;
+  for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
+       remainingDwords--) {
+    *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;
+    selectedPlayerRecordDwordCursor++;
+    selectedEndpointDwordCursor++;
+  }
+  g_FrontendSelectedPlayerToken = 0xffffffff;
+  sendCarry = UiTransfer_SendPlayerDescriptor();
+  return sendCarry;
+}

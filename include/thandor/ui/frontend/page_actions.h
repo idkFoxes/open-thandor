@@ -23,4 +23,6 @@ void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument);
 
 void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode);
 
+extern FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20;
+
 #endif /* THANDOR_UI_FRONTEND_PAGE_ACTIONS_H */

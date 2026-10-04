@@ -26,6 +26,7 @@
 #include <thandor/ui/frontend/session.h>
 #include <thandor/ui/frontend/settings.h>
 #include <thandor/ui/frontend/state.h>
+#include <thandor/ui/frontend/task_assignment.h>
 #include <thandor/ui/frontend/ui_template.h>
 
 #endif /* THANDOR_UI_FRONTEND_H */

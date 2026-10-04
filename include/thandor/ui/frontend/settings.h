@@ -11,6 +11,8 @@
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
+/* Submodule: ui/frontend/settings. */
+
 /* The graphics settings page's shading level box as laid out in the frontend template (shadingLevelGroup and
    the six grid/depth choices that follow it). 0x2C4 bytes. */
 typedef struct FrontendShadingLevelGroup {
@@ -27,18 +29,7 @@ typedef struct FrontendTextureQualityGroup {
     UiTextButtonControl high;   /* +0x114 */
 } FrontendTextureQualityGroup;
 
-/* Submodule: ui/frontend/settings. */
 /* Functions are grouped by semantic ownership. */
-
-void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *frontendRootPage);
-
-void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
-
-void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton);
-
-void FrontendDisplaySettings_ApplyMode(void *control);
-
-void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control);
 
 void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control);
 
@@ -84,23 +75,6 @@ void FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control
 
 void FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control);
 
-void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control);
-
-void FrontendNetworkSettings_SetGameName(UiTextEditControl *control);
-
-void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
-          (FrontendNetworkSettingsControlView *networkSettings);
-
-void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot);
-
-Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
-
-void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
-
-extern FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets;
-extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* followed by 4 bytes 0x90 fill (dropped) */
 extern IDirectSoundBuffer *g_FrontendMusicActiveBuffer;
-
-extern FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20;
 
 #endif /* THANDOR_UI_FRONTEND_SETTINGS_H */

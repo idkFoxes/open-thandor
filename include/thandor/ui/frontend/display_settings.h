@@ -19,4 +19,14 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
 
 void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);
 
+void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
+
+void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton);
+
+void FrontendDisplaySettings_ApplyMode(void *control);
+
+void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
+
+extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* followed by 4 bytes 0x90 fill (dropped) */
+
 #endif /* THANDOR_UI_FRONTEND_DISPLAY_SETTINGS_H */
