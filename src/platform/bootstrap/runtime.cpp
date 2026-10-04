@@ -520,7 +520,7 @@ uint32_t __cdecl CPU_DetectFeatures(void)
 
 /* Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and
    rendering, loads the core assets and plays the intro movies (each failure is fatal). It then switches
-   from the 640x480x16 start mode to the saved display mode if that differs, runs the frontend main loop and
+   from the 640x480 start mode to the saved display mode, runs the frontend main loop and
    finally closes and cleans up the network backend.
 */
 void __cdecl Game_Run(void)
@@ -550,18 +550,17 @@ void __cdecl Game_Run(void)
   introMoviesFailed = Game_PlayIntroMovies();
   FatalError_ExitIfFailed(checkedValue,introMoviesFailed);
   PersistentSettings_Load();
-  /* ProcessEntry started in 640x480x16; switch only when the saved mode differs */
+  /* ProcessEntry started in 640x480. The original switched only when the saved mode differed from 640x480x16;
+     the colour depth is always 32 bits now (never 16), so the saved mode is always set (the same mode switches,
+     and with them the same allocations, as before) */
   displayWidth = PersistentSettings_Read(GAME_START_DISPLAY_WIDTH,PERSISTENT_SETTING_DISPLAY_WIDTH);
   displayHeight = PersistentSettings_Read(GAME_START_DISPLAY_HEIGHT,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
-  if (displayWidth != GAME_START_DISPLAY_WIDTH || displayHeight != GAME_START_DISPLAY_HEIGHT ||
-      bitsPerPixel != PERSISTENT_DEFAULT_BITS_PER_PIXEL) {
-    adapterIndex = SdlVideo_SavedAdapterIndex();
-    if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
-      FatalError_ExitIfFailed(displayModeError,true);
-    }
-    SdlVideo_SaveAdapterIndex(g_ActiveGraphicsAdapterIndex);
+  adapterIndex = SdlVideo_SavedAdapterIndex();
+  if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
+    FatalError_ExitIfFailed(displayModeError,true);
   }
+  SdlVideo_SaveAdapterIndex(g_ActiveGraphicsAdapterIndex);
   if (!Frontend_MainLoop(1,&mainLoopError)) {
     FatalError_ExitIfFailed(mainLoopError,true);
   }

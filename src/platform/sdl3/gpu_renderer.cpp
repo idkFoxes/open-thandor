@@ -227,7 +227,6 @@ struct GpuState {
   Uint32 frameHeight = 0;
   SDL_GPUTransferBuffer *frameUpload = nullptr;
   Uint32 frameUploadBytes = 0;
-  std::vector<uint32_t> frameConverted; /* RGB565 widened to B8G8R8A8 when the device cannot sample B5G6R5 */
   bool presentFailureLogged = false;
 
   /* compare mode */
@@ -1013,12 +1012,6 @@ bool RenderScene() noexcept
   return true;
 }
 
-/* Packs one 8-bit channel into the software framebuffer format (top bits, as Raster_Pack16 quantizes). */
-inline uint32_t PackChannel(uint32_t value, GraphicsPixelChannelBitShift shift, GraphicsPixelChannelBitCount bits) noexcept
-{
-  return (bits >= 8) ? (value << shift) : ((value >> (8 - bits)) << shift);
-}
-
 /* Writes the downloaded clip rectangle into the software framebuffer. */
 void WriteSceneToFramebuffer() noexcept
 {
@@ -1027,22 +1020,10 @@ void WriteSceneToFramebuffer() noexcept
   if ((framebuffer == nullptr) || (framebuffer->pixels == nullptr) || s_gpu.gpuPixels.empty()) {
     return;
   }
-  const SoftwarePixelFormatConfig &format = g_SoftwarePixelFormatConfig;
-  const bool sixteenBit = (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT);
   for (int row = 0; row < clip.h; row++) {
     const uint32_t *source = s_gpu.gpuPixels.data() + static_cast<size_t>(row) * clip.w;
     uint8_t *destinationRow = framebuffer->pixels + static_cast<size_t>(clip.y + row) * g_FramebufferRowStrideBytes;
-    if (!sixteenBit) {
-      std::memcpy(destinationRow + static_cast<size_t>(clip.x) * 4, source, static_cast<size_t>(clip.w) * 4);
-      continue;
-    }
-    auto *destination = reinterpret_cast<uint16_t *>(destinationRow) + clip.x;
-    for (int column = 0; column < clip.w; column++) {
-      const uint32_t argb = source[column];
-      destination[column] = static_cast<uint16_t>(PackChannel((argb >> 16) & 0xFF, format.redShift, format.redBitCount) |
-                                                  PackChannel((argb >> 8) & 0xFF, format.greenShift, format.greenBitCount) |
-                                                  PackChannel(argb & 0xFF, format.blueShift, format.blueBitCount));
-    }
+    std::memcpy(destinationRow + static_cast<size_t>(clip.x) * 4, source, static_cast<size_t>(clip.w) * 4);
   }
 }
 
@@ -1052,26 +1033,10 @@ std::vector<uint32_t> ReadFramebufferRegion(const SDL_Rect &clip) noexcept
 {
   std::vector<uint32_t> result(static_cast<size_t>(clip.w) * clip.h);
   SoftwareFramebufferAccess *framebuffer = g_FramebufferAccess;
-  const SoftwarePixelFormatConfig &format = g_SoftwarePixelFormatConfig;
-  const bool sixteenBit = (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT);
   for (int row = 0; row < clip.h; row++) {
     const uint8_t *sourceRow = framebuffer->pixels + static_cast<size_t>(clip.y + row) * g_FramebufferRowStrideBytes;
-    for (int column = 0; column < clip.w; column++) {
-      uint32_t argb;
-      if (sixteenBit) {
-        uint16_t packed;
-        std::memcpy(&packed, sourceRow + (clip.x + column) * 2, 2);
-        argb = (uint32_t{GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.redMask, format.redShift,
-                                                                 format.redBitCount)} << 16) |
-               (uint32_t{GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.greenMask, format.greenShift,
-                                                                 format.greenBitCount)} << 8) |
-               GraphicsFramebuffer_ExpandChannelTo8Bit(packed, format.blueMask, format.blueShift, format.blueBitCount);
-      }
-      else {
-        std::memcpy(&argb, sourceRow + (clip.x + column) * 4, 4);
-      }
-      result[static_cast<size_t>(row) * clip.w + column] = argb;
-    }
+    std::memcpy(result.data() + static_cast<size_t>(row) * clip.w, sourceRow + static_cast<size_t>(clip.x) * 4,
+                static_cast<size_t>(clip.w) * 4);
   }
   return result;
 }
@@ -1339,15 +1304,10 @@ void ChoosePresentMode() noexcept
   SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode);
 }
 
-/* The framebuffer texture in the framebuffer's size and format: B5G6R5 for RGB565 (same bit layout) when the
-   device can sample it, else B8G8R8A8 (RGB565 is widened on the CPU); B8G8R8A8 for XRGB8888. */
-bool EnsureFrameTexture(Uint32 width, Uint32 height, bool sixteenBit) noexcept
+/* The framebuffer texture in the framebuffer's size, B8G8R8A8 (the XRGB8888 framebuffer's bit layout). */
+bool EnsureFrameTexture(Uint32 width, Uint32 height) noexcept
 {
-  SDL_GPUTextureFormat format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
-  if (sixteenBit && SDL_GPUTextureSupportsFormat(s_gpu.device, SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM,
-                                                 SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
-    format = SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM;
-  }
+  constexpr SDL_GPUTextureFormat format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
   if ((s_gpu.frameTexture != nullptr) && (s_gpu.frameWidth == width) && (s_gpu.frameHeight == height) &&
       (s_gpu.frameFormat == format)) {
     return true;
@@ -1445,22 +1405,21 @@ bool GpuDeviceRunning() noexcept
   return s_gpu.device != nullptr;
 }
 
-bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height, bool sixteenBit) noexcept
+bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept
 {
   if ((s_gpu.device == nullptr) || (width <= 0) || (height <= 0)) {
     return false;
   }
   const auto frameWidth = static_cast<Uint32>(width);
   const auto frameHeight = static_cast<Uint32>(height);
-  if (!EnsureFrameTexture(frameWidth, frameHeight, sixteenBit)) {
+  if (!EnsureFrameTexture(frameWidth, frameHeight)) {
     if (!s_gpu.presentFailureLogged) {
       Thandor_Log("SDL_GPU: frame texture %dx%d failed: %s", width, height, SDL_GetError());
       s_gpu.presentFailureLogged = true;
     }
     return false;
   }
-  const Uint32 texelBytes = (s_gpu.frameFormat == SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM) ? 2 : 4;
-  const Uint32 rowBytes = frameWidth * texelBytes;
+  const Uint32 rowBytes = frameWidth * 4;
   if (!EnsureTransferBuffer(s_gpu.frameUpload, s_gpu.frameUploadBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                             rowBytes * frameHeight)) {
     return false;
@@ -1472,23 +1431,7 @@ bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int heig
   }
   for (Uint32 row = 0; row < frameHeight; row++) {
     const std::byte *source = pixels + static_cast<size_t>(row) * static_cast<size_t>(pitchBytes);
-    std::byte *destination = mapped + static_cast<size_t>(row) * rowBytes;
-    if (sixteenBit && (texelBytes == 4)) {
-      /* RGB565 widened to B8G8R8A8 (top bits repeated into the low ones) */
-      for (Uint32 column = 0; column < frameWidth; column++) {
-        uint16_t packed = 0;
-        std::memcpy(&packed, source + column * 2, sizeof packed);
-        const uint32_t red = (packed >> 11) & 0x1F;
-        const uint32_t green = (packed >> 5) & 0x3F;
-        const uint32_t blue = packed & 0x1F;
-        const uint32_t pixel = 0xFF000000u | (((red << 3) | (red >> 2)) << 16) | (((green << 2) | (green >> 4)) << 8) |
-                               ((blue << 3) | (blue >> 2));
-        std::memcpy(destination + column * 4, &pixel, sizeof pixel);
-      }
-    }
-    else {
-      std::memcpy(destination, source, rowBytes);
-    }
+    std::memcpy(mapped + static_cast<size_t>(row) * rowBytes, source, rowBytes);
   }
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.frameUpload);
 

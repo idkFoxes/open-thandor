@@ -88,7 +88,7 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_DISPLAY_HEIGHT, INI_KIND_UINT, "display", "height",
    "screen height in pixels (default 480)", 0, 0, NULL, 0},
   {PERSISTENT_SETTING_BITS_PER_PIXEL, INI_KIND_UINT, "display", "bits_per_pixel",
-   "colour depth in bits (default 16)", 0, 0, NULL, 0},
+   "colour depth in bits, always 32 (an older 16 is read as 32)", 0, 0, NULL, 0},
   {PERSISTENT_SETTING_RENDERER, INI_KIND_ENUM, "display", "renderer",
    "renderer: vulkan (default), d3d12 or software", 0, 0, INI_ENUM(s_IniRendererNames)},
   {PERSISTENT_SETTING_DISPLAY_MODE_KIND, INI_KIND_ENUM, "display", "display_mode",
@@ -748,9 +748,9 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
    that the next Flush writes thandor.ini. A shorter thandor.dat leaves the rest zero and not present, so
    every PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found
    at its path it is looked up in the executable directory. Without any settings file the image stays empty
-   (all defaults).
+   (all defaults). open-thandor: the image is then passed to PersistentSettings_NormalizeColorDepth.
 */
-void PersistentSettings_Load(void)
+static void PersistentSettings_LoadImage(void)
 
 {
   uint32_t *clearCursor;
@@ -823,6 +823,27 @@ void PersistentSettings_Load(void)
   g_FileSystemClose(fileHandle);
   /* the failed read may have left bytes behind */
   memset(image,0,PERSISTENT_SETTINGS_IMAGE_BYTES);
+}
+
+/* open-thandor: the game runs in 32-bit colour only. A colour depth other than 32 from an older thandor.ini or
+   thandor.dat (the original's 16) is read as 32 and also written as 32 the next time the settings are saved. */
+static void PersistentSettings_NormalizeColorDepth(void)
+{
+  if ((g_PersistentSettings.image == NULL) ||
+      !PersistentSettings_IsPresent(PERSISTENT_SETTING_BITS_PER_PIXEL, 4) ||
+      (PersistentIni_GetDword((const uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL) ==
+       PERSISTENT_DEFAULT_BITS_PER_PIXEL)) {
+    return;
+  }
+  PersistentIni_SetDword((uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL,
+                         PERSISTENT_DEFAULT_BITS_PER_PIXEL);
+  s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(PERSISTENT_SETTING_BITS_PER_PIXEL, 4);
+}
+
+void PersistentSettings_Load(void)
+{
+  PersistentSettings_LoadImage();
+  PersistentSettings_NormalizeColorDepth();
 }
 
 

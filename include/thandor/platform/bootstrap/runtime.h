@@ -37,8 +37,7 @@
 #define CPU_FEATURE_MMX 0x1 /* bit of g_CpuFeatureFlags */
 /* DynDLL_Load: capacity of g_DynamicModules */
 #define DYNAMIC_MODULE_CAPACITY 16
-/* ProcessEntry sets this display mode first (with PERSISTENT_DEFAULT_BITS_PER_PIXEL); Game_Run switches to the
-   saved mode when it differs */
+/* ProcessEntry sets this display mode first (in 32-bit colour); Game_Run then switches to the saved mode */
 #define GAME_START_DISPLAY_WIDTH 640
 #define GAME_START_DISPLAY_HEIGHT 480
 /* GameRuntime_InitializeSpatialAudioAndRendering: packets of the global primitive queue */

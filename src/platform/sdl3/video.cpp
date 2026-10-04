@@ -5,8 +5,8 @@
  * Project code (not in the original game)
  */
 
-/* SDL3 backend: video. The software renderer draws into a plain memory framebuffer (RGB565 in 16-bit modes,
-   XRGB8888 in 32-bit modes) that stays published in g_DisplayFramebufferAccess, so the framebuffer access hooks
+/* SDL3 backend: video. The software renderer draws into a plain memory framebuffer (XRGB8888; the game runs in
+   32-bit colour only) that stays published in g_DisplayFramebufferAccess, so the framebuffer access hooks
    are the no-op stubs. A present composes the software cursor into the framebuffer (as GraphicsFramebuffer_Present
    does into the DirectDraw back surface), presents it letterboxed and removes the cursor again. Screen captures
    read the memory framebuffer.
@@ -27,7 +27,7 @@
    Display mode kinds (PERSISTENT_SETTING_DISPLAY_MODE_KIND, chosen on the display settings page): exclusive
    fullscreen in the mode or the closest larger one (default, "Vollbild"), borderless fullscreen over the desktop
    ("Vollbildfenster"), or a normal window in the mode's size ("Fenster"); the frame is letterboxed in all three. The developer tools' window (OPEN_THANDOR_WINDOWED) is
-   always a window at OPEN_THANDOR_WINDOW_X/Y in the desktop's colour depth. */
+   always a window at OPEN_THANDOR_WINDOW_X/Y. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
 
@@ -59,7 +59,6 @@ struct VideoState {
   thandor::sdl3::TexturePtr texture;
   int width = 0;
   int height = 0;
-  int bytesPerPixel = 0;
   int pitchBytes = 0;
   int cursorDrawX = 0;
   int cursorDrawY = 0;
@@ -110,16 +109,6 @@ const char *DisplayModeKindName(uint32_t kind) noexcept
   }
 }
 
-/* The desktop's bits per pixel (16 or 32), which the developer tools' window uses. */
-uint32_t DesktopBitsPerPixel() noexcept
-{
-  const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-  if ((desktop != nullptr) && (SDL_BYTESPERPIXEL(desktop->format) == 2)) {
-    return 16;
-  }
-  return 32;
-}
-
 /* Stores a channel mask with its shift (lowest set bit) and bit count in g_SoftwarePixelFormatConfig's style. */
 void ChannelOfMask(Uint32 mask, GraphicsPackedPixelMask &outMask, GraphicsPixelChannelBitShift &outShift,
                    GraphicsPixelChannelBitCount &outBitCount) noexcept
@@ -140,7 +129,7 @@ void ChannelOfMask(Uint32 mask, GraphicsPackedPixelMask &outMask, GraphicsPixelC
 }
 
 /* The display modes: every distinct fullscreen size of the primary display from 640x480 up to the desktop size
-   (640x480 itself always), in 16 and 32 bits per pixel, the same for every adapter (renderer). */
+   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer). */
 void ListDisplayModes()
 {
   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
@@ -164,17 +153,15 @@ void ListDisplayModes()
   sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
   for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
     for (const auto &[width, height] : sizes) {
-      for (const FrontendColorDepthBits bitsPerPixel : {16, 32}) {
-        if (g_GraphicsDisplayModeCount >= GRAPHICS_DISPLAY_MODE_CAPACITY) {
-          return;
-        }
-        GraphicsDisplayMode &slot = g_GraphicsDisplayModes[g_GraphicsDisplayModeCount];
-        slot.width = width;
-        slot.height = height;
-        slot.bitsPerPixel = bitsPerPixel;
-        slot.adapterIndex = adapterIndex;
-        g_GraphicsDisplayModeCount++;
+      if (g_GraphicsDisplayModeCount >= GRAPHICS_DISPLAY_MODE_CAPACITY) {
+        return;
       }
+      GraphicsDisplayMode &slot = g_GraphicsDisplayModes[g_GraphicsDisplayModeCount];
+      slot.width = width;
+      slot.height = height;
+      slot.bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
+      slot.adapterIndex = adapterIndex;
+      g_GraphicsDisplayModeCount++;
     }
   }
 }
@@ -184,7 +171,7 @@ void ListDisplayModes()
    layout, origin at the rectangle's top left), towards the buffer when toBuffer is set. */
 void CopyCursorRectangle(SoftwareFramebufferAccess &buffer, int drawY, int drawX, bool toBuffer) noexcept
 {
-  const int bytesPerPixel = (buffer.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) ? 2 : 4;
+  constexpr int bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
   const int rowPixels = static_cast<int>(buffer.width);
   int copyWidth = static_cast<int>(buffer.width);
   int copyHeight = static_cast<int>(buffer.height);
@@ -668,16 +655,11 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
       adapterIndex = index;
     }
   }
-  if (thandor::sdl3::Windowed() && (bitsPerPixel != DesktopBitsPerPixel())) {
-    /* the developer tools' window keeps the desktop's depth, which the blitters chosen afterwards, the
-       renderer's queue and the pixel packing all follow */
-    Thandor_Log("test aid: windowed %ux%u uses the desktop depth of %u bits instead of %u", width, height,
-                DesktopBitsPerPixel(), bitsPerPixel);
-    bitsPerPixel = DesktopBitsPerPixel();
-  }
-  bitsPerPixel = (bitsPerPixel <= 16) ? 16 : 32;
-  const int bytesPerPixel = (bitsPerPixel == 16) ? 2 : 4;
-  const SDL_PixelFormat pixelFormat = (bitsPerPixel == 16) ? SDL_PIXELFORMAT_RGB565 : SDL_PIXELFORMAT_XRGB8888;
+  /* 32-bit colour only: a requested depth (an old saved 16, or the 24 colour bits a caller derives from the
+     pixel format) is not looked at */
+  bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
+  constexpr int bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
+  constexpr SDL_PixelFormat pixelFormat = SDL_PIXELFORMAT_XRGB8888;
   ApplyDisplayModeKind(Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind, static_cast<int>(width),
                        static_cast<int>(height));
   if (renderer == PERSISTENT_RENDERER_SOFTWARE) {
@@ -700,7 +682,6 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   }
   s_video.width = static_cast<int>(width);
   s_video.height = static_cast<int>(height);
-  s_video.bytesPerPixel = bytesPerPixel;
   s_video.pitchBytes = static_cast<int>(width) * bytesPerPixel;
   s_video.framebuffer.assign(static_cast<std::size_t>(s_video.pitchBytes) * height, std::byte{0});
   Thandor_Log("display mode %ux%ux%u, %s, renderer %s", width, height, bitsPerPixel,
@@ -724,13 +705,13 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   ChannelOfMask(blueMask, g_SoftwarePixelFormatConfig.blueMask, g_SoftwarePixelFormatConfig.blueShift,
                 g_SoftwarePixelFormatConfig.blueBitCount);
 
-  /* the framebuffer, the 16/32-bit blitters and the active adapter as in the original; then this backend's
+  /* the framebuffer, the blitters and the active adapter as in the original; then this backend's
      present, captures and permanent pixels */
   GraphicsDirectDraw_PublishFramebuffer(adapterIndex, bitsPerPixel, height, width);
   g_DisplayFramebufferAccess.pixels = reinterpret_cast<uint8_t *>(s_video.framebuffer.data());
   g_FramebufferRowStrideBytes = static_cast<uint32_t>(s_video.pitchBytes);
   g_GraphicsFramebufferPresent = SdlVideo_Present;
-  g_GraphicsFramebufferCaptureRegion = (bitsPerPixel == 16) ? SdlVideo_CaptureRegion16Bit : SdlVideo_CaptureRegion32Bit;
+  g_GraphicsFramebufferCaptureRegion = SdlVideo_CaptureRegion32Bit;
   return g_GraphicsDisplayModeFinalize(adapterIndex, bitsPerPixel, height, width, errorCode);
 }
 
@@ -746,8 +727,7 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
     ComposeCursor();
 #ifdef THANDOR_RENDERER_SDL_GPU
     if (GpuDeviceRunning()) {
-      PresentWithGpu(s_video.framebuffer.data(), s_video.pitchBytes, s_video.width, s_video.height,
-                     s_video.bytesPerPixel == 2);
+      PresentWithGpu(s_video.framebuffer.data(), s_video.pitchBytes, s_video.width, s_video.height);
     }
     else
 #endif
@@ -762,40 +742,6 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
     RestoreCursor();
   }
   g_GraphicsBackendAccessState--;
-}
-
-GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion16Bit(uint32_t captureHeight,uint32_t captureWidth,
-                                                                int32_t sourceY,int32_t sourceX)
-{
-  GraphicsCapturedTextureSourceAsset *capturedAsset = AllocateCapture(captureHeight, captureWidth);
-  if ((capturedAsset == nullptr) || (captureHeight == 0) || (captureWidth == 0) || s_video.framebuffer.empty()) {
-    return capturedAsset;
-  }
-  /* the first pixel as GraphicsFramebuffer_CaptureRegion16Bit finds it, rows a pitch apart */
-  const std::byte *sourceRow = s_video.framebuffer.data() + (sourceY * static_cast<int32_t>(g_FramebufferWidth) + sourceX) * 2;
-  uint32_t *destinationPixel = capturedAsset->argb8888Pixels;
-  for (uint32_t row = 0; row < captureHeight; row++) {
-    const std::byte *sourcePixel = sourceRow;
-    for (uint32_t column = 0; column < captureWidth; column++) {
-      uint16_t packed = 0;
-      std::memcpy(&packed, sourcePixel, sizeof packed);
-      const uint32_t pixel = packed;
-      const uint8_t red = GraphicsFramebuffer_ExpandChannelTo8Bit(pixel, g_SoftwarePixelFormatConfig.redMask,
-                                                                  g_SoftwarePixelFormatConfig.redShift,
-                                                                  g_SoftwarePixelFormatConfig.redBitCount);
-      const uint8_t green = GraphicsFramebuffer_ExpandChannelTo8Bit(pixel, g_SoftwarePixelFormatConfig.greenMask,
-                                                                    g_SoftwarePixelFormatConfig.greenShift,
-                                                                    g_SoftwarePixelFormatConfig.greenBitCount);
-      const uint8_t blue = GraphicsFramebuffer_ExpandChannelTo8Bit(pixel, g_SoftwarePixelFormatConfig.blueMask,
-                                                                   g_SoftwarePixelFormatConfig.blueShift,
-                                                                   g_SoftwarePixelFormatConfig.blueBitCount);
-      *destinationPixel = (uint32_t{ARGB8888_CHANNEL_MAX} << 24) | (uint32_t{red} << 16) | (uint32_t{green} << 8) | blue;
-      sourcePixel += 2;
-      destinationPixel++;
-    }
-    sourceRow += s_video.pitchBytes;
-  }
-  return capturedAsset;
 }
 
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
