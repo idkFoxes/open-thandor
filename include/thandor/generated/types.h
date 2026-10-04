@@ -9134,7 +9134,7 @@ struct ArenaBlockHeader {
 };
 
 struct TimerCallbackTable {
-    void (*callbacks[32])(void); 
+    Ptr32<void (void)> callbacks[32]; 
 };
 
 struct CommandLineState {
@@ -9375,7 +9375,7 @@ enum {
 typedef int RuntimeSpinLockValue;
 
 struct TimerSystemState {
-    void (*callbacks[32])(void); 
+    Ptr32<void (void)> callbacks[32]; 
     uint32_t winmmTimerIds[32]; 
 };
 

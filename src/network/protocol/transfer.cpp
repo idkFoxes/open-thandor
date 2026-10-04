@@ -1337,27 +1337,27 @@ static void FrontendTransfer_SendSessionPlayerRowToPeers(uint32_t roundRobinCoun
      heartbeatExpiryTicks gives playerRuntimeId (+4) and playerName (+8), the one at transferProgressBytes
      capabilityLabelUtf16 (+8), and pingRoundTripTicks is read directly */
   g_FrontendPacket40008Buffer.selectedPlayerRuntimeId =
-       peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].ipv4AddressNetworkOrder;
+       peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks))].ipv4AddressNetworkOrder;
   g_FrontendPacket40008Buffer.selectedStatusCode0 =
-       *(FrontendStatusCode *)peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding;
+       *(FrontendStatusCode *)peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes))].zeroPadding;
   g_FrontendPacket40008Buffer.selectedStatusCode1 =
-       *(FrontendStatusCode *)(peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding + 4);
+       *(FrontendStatusCode *)(peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes))].zeroPadding + 4);
   g_FrontendPacket40008Buffer.selectedPlayerIndex = selectedIndex;
   g_FrontendPacket40008Buffer.playerCount = rowCount;
   endpoint = peerEndpointCursor;
   textByteCount = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                     peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(pingRoundTripTicks)].addressHeader.packedFamilyAndPort << 2,
+                     peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(pingRoundTripTicks))].addressHeader.packedFamilyAndPort << 2,
                      g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16);
   *(uint32_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + textByteCount) =
        ('s' << 16 | 'm'); /* L"ms" */
   *(uint16_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + textByteCount + 4) = 0;
-  descriptorSourceCursor = peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].zeroPadding;
+  descriptorSourceCursor = peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks))].zeroPadding;
   descriptorDestinationCursor = g_FrontendPacket40008Buffer.playerDescriptorPayload;
   for (dwordCount = 10; dwordCount != 0; dwordCount--) {
     *descriptorDestinationCursor = *(uint32_t *)descriptorSourceCursor;

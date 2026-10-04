@@ -152,8 +152,8 @@ add_executable(thandor WIN32
     src/platform/bootstrap/image.cpp
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
-# The file formats still hold pointers in 32-bit fields: on x64 the process stays below 2 GB
-# (/LARGEADDRESSAWARE:NO) so those pointers fit until the formats get explicit (de)serialisation.
+# The original layouts keep their pointers in 32-bit fields (Ptr32, core/ptr32.h): on x64 the process stays
+# below 2 GB (/LARGEADDRESSAWARE:NO) so every pointer fits.
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
 # Platform backend. OFF (default): DirectDraw, DirectInput, DirectSound, WinMM timers and the Win32 message pump, as
