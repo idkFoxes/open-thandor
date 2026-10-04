@@ -32,15 +32,13 @@
 #define PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD 0x34 /* Q8, default 0x10000 */
 #define PERSISTENT_SETTING_LOCALE_COUNTRY_CODE 0x38 /* mirrors g_LocaleCountryCodeOverride */
 #define PERSISTENT_SETTING_NETWORK_PLAYER_COUNT 0x3C /* default 4 */
-#define PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS 0x40 /* right button does not scroll, automatic zoom/rotation off */
+#define PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS 0x40 /* automatic zoom/rotation off, side panel hidden */
 #define PERSISTENT_SETTING_GAME_SPEED_PERCENT 0x44 /* default 100 */
 #define PERSISTENT_SETTING_CAMERA_SCROLL_STEP 0x48 /* default 0x20 */
 #define PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN 0x4C /* Q15, default 0x8000 */
 #define PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS 0x5C /* link rotation zoom/tilt, hide panel */
 #define PERSISTENT_SETTING_PLAYER_NAME 0x60 /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 #define PERSISTENT_SETTING_GAME_NAME 0x88 /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
-#define PERSISTENT_SETTING_RENDERER 0xB0 /* 0 Vulkan (default), 1 DirectX 12, 2 Software; open-thandor addition */
-#define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* 0 fullscreen (default), 1 borderless, 2 window; open-thandor addition */
 #define PERSISTENT_SETTINGS_NAME_BYTES 0x28 /* 20 UTF-16 code units */
 /* Not in the original (open-thandor additions in the free tail of the image; the original game never reads them and
    writes the whole image back unchanged, so the file stays compatible). A file without them reads 0, the defaults. */
@@ -69,7 +67,7 @@
 /* Bits of PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS (gameplay settings page, InGameRuntime_UpdateCursorGridAndViewScaleCache) */
 #define PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF 0x1
 #define PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF 0x2
-#define PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN 0x4
+#define PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN 0x4 /* checkbox text "right button does not scroll" */
 /* Bits of PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS (in-game gameplay settings page), mirrored to
    WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM / _LINK_ROTATION_TILT / _HIDE_PANEL */
 #define PERSISTENT_LINK_OPTION_ROTATION_ZOOM 0x1

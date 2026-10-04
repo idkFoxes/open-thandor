@@ -19,9 +19,9 @@
 /* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
 #define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
 
-uintptr_t __cdecl FileSystem_Init();
+uintptr_t FileSystem_Init();
 
-void __cdecl Win32FileSystem_RestoreInitialDirectory();
+void Win32FileSystem_RestoreInitialDirectory();
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 

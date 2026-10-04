@@ -15,7 +15,7 @@
    influence bands and the classification masks by tick bit 1 */
 #define INGAME_REDUCED_GRID_REFRESH_TICK_MASK 0xC
 
-void __cdecl InGameRuntime_PeriodicCountdownAndClockTick();
+void InGameRuntime_PeriodicCountdownAndClockTick();
 
 void InGameRuntime_UpdateSimulationAndNetworkTick();
 

@@ -33,7 +33,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
 
 Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
-void __cdecl GridScratch_CopyPrimaryToSecondary();
+void GridScratch_CopyPrimaryToSecondary();
 
 void GridScratch_SwapPrimarySecondary();
 

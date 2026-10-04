@@ -124,36 +124,36 @@ using RasterSpanProc = void (*)(RasterSpan *span);
 /* ---- arithmetic -------------------------------------------------------------------------- */
 
 /* (a * b) >> shift of the 64-bit product, truncated to 32 bits. */
-static __inline int Raster_MulShift(int a, int b, int shift)
+static inline int Raster_MulShift(int a, int b, int shift)
 {
     return (int)(((long long)a * b) >> shift);
 }
 
 /* Difference of two 32-bit values with wrap-around, e.g. of depths. */
-static __inline int Raster_Diff(int a, int b)
+static inline int Raster_Diff(int a, int b)
 {
     return (int)((uint32_t)a - (uint32_t)b);
 }
 
 /* One byte channel (0 = blue .. 3 = alpha) of a packed ARGB colour. */
-static __inline int Raster_Channel(PackedArgb32 argb, int lane)
+static inline int Raster_Channel(PackedArgb32 argb, int lane)
 {
     return (int)((argb >> (8 * lane)) & 0xff);
 }
 
 /* PACKUSWB of one lane: clamps a signed 16-bit value to 0..255. */
-static __inline int Raster_SaturateByte(int value)
+static inline int Raster_SaturateByte(int value)
 {
     return value < 0 ? 0 : (value > 255 ? 255 : value);
 }
 
 /* PMULHW of one lane: high half of the signed 16 x 16 product. */
-static __inline short Raster_MulHigh(short a, short b)
+static inline short Raster_MulHigh(short a, short b)
 {
     return (short)(((int)a * b) >> 16);
 }
 
-static __inline RasterColor RasterColor_Add(RasterColor a, RasterColor b)
+static inline RasterColor RasterColor_Add(RasterColor a, RasterColor b)
 {
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
@@ -162,7 +162,7 @@ static __inline RasterColor RasterColor_Add(RasterColor a, RasterColor b)
     return a;
 }
 
-static __inline RasterColor RasterColor_Negate(RasterColor a)
+static inline RasterColor RasterColor_Negate(RasterColor a)
 {
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
@@ -172,7 +172,7 @@ static __inline RasterColor RasterColor_Negate(RasterColor a)
 }
 
 /* PSRAW of every lane. */
-static __inline RasterColor RasterColor_ShiftRight(RasterColor a, int shift)
+static inline RasterColor RasterColor_ShiftRight(RasterColor a, int shift)
 {
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
@@ -185,7 +185,7 @@ static __inline RasterColor RasterColor_ShiftRight(RasterColor a, int shift)
 
 /* Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) >> 4, about channel * 16
    (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4. Used by the 32-bit and Aux families. */
-static __inline RasterColor Raster_Unpack32(uint32_t pixel)
+static inline RasterColor Raster_Unpack32(uint32_t pixel)
 {
     RasterColor result;
     int i;
@@ -196,14 +196,14 @@ static __inline RasterColor Raster_Unpack32(uint32_t pixel)
 }
 
 /* Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD). */
-static __inline uint32_t Raster_Pack32(const int channel[RASTER_LANE_COUNT])
+static inline uint32_t Raster_Pack32(const int channel[RASTER_LANE_COUNT])
 {
     return (uint32_t)channel[0] | ((uint32_t)channel[1] << 8) | ((uint32_t)channel[2] << 16) |
            ((uint32_t)channel[3] << 24);
 }
 
 /* Lanes >> shift, saturated to bytes (PSRAW + PACKUSWB). */
-static __inline void Raster_LanesToBytes(RasterColor color, int shift, int channel[RASTER_LANE_COUNT])
+static inline void Raster_LanesToBytes(RasterColor color, int shift, int channel[RASTER_LANE_COUNT])
 {
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
@@ -351,7 +351,7 @@ static void Raster_OriginalBlendRow(uint32_t address, short lanes[RASTER_LANE_CO
    g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors tables (PMULHW). The table index
    is the top 12 bits of the source alpha lane; an index past the 256 rows reads the original bytes
    behind the tables (Raster_OriginalBlendDword). Result in Q4. */
-static __inline RasterColor Raster_BlendAlpha(RasterColor sourceQ4, RasterColor destinationQ4)
+static inline RasterColor Raster_BlendAlpha(RasterColor sourceQ4, RasterColor destinationQ4)
 {
     unsigned index = (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >> 4;
     short alphaLanes[RASTER_LANE_COUNT];
@@ -385,7 +385,7 @@ static __inline RasterColor Raster_BlendAlpha(RasterColor sourceQ4, RasterColor 
 
 /* d(attribute)/dx of the plane through the three vertices, scaled by invArea and shifted:
    ((a2 - a0) * (y1 - y0) - (a1 - a0) * (y2 - y0)) >> 12, times invArea, >> shift. */
-static __inline int Raster_GradientX(const GraphicsPrimitivePacket *packet, int a0, int a1, int a2, int invArea,
+static inline int Raster_GradientX(const GraphicsPrimitivePacket *packet, int a0, int a1, int a2, int invArea,
                                      int shift)
 {
     int dy10 = packet->vertices[1].screenY - packet->vertices[0].screenY;
@@ -398,7 +398,7 @@ static __inline int Raster_GradientX(const GraphicsPrimitivePacket *packet, int 
    triangle. Flat shading takes v0's colour, widened like PUNPCKLBW + PSRLW 2 ((c * 0x101) >> 2),
    and never steps it; Gouraud shading starts at c << 6 and interpolates. Returns 0 when the
    triangle has no height or no area (nothing is drawn). */
-static __inline int Raster_SetupTriangle(const GraphicsPrimitivePacket *packet, RasterShading shading, int textured,
+static inline int Raster_SetupTriangle(const GraphicsPrimitivePacket *packet, RasterShading shading, int textured,
                                          RasterEdges *edges, RasterGradients *gradients)
 {
     const GraphicsPrimitiveVertexRaw *v0 = &packet->vertices[0];
@@ -570,7 +570,7 @@ static __forceinline void Raster_WalkTriangle(const RasterTarget *target, const 
 }
 
 /* Target of the 32-bit framebuffer family (g_FramebufferAccess + depth buffer). */
-static __inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMaxY, int clipMaxX, int clipMinY,
+static inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMaxY, int clipMaxX, int clipMinY,
                                                       int clipMinX)
 {
     RasterTarget target;
@@ -588,7 +588,7 @@ static __inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMa
 
 /* Target of the auxiliary family: a 32-bit image of clipMaxX pixels per row; the depth buffer uses
    the same row length (not g_SoftwareDepthRowStrideBytes). */
-static __inline RasterTarget Raster_AuxiliaryTarget(int clipMaxY, int clipMaxX, int clipMinY, int clipMinX)
+static inline RasterTarget Raster_AuxiliaryTarget(int clipMaxY, int clipMaxX, int clipMinY, int clipMinX)
 {
     RasterTarget target;
     target.pixels = (uint8_t *)g_SoftwareAuxiliaryTargetBase;
@@ -604,7 +604,7 @@ static __inline RasterTarget Raster_AuxiliaryTarget(int clipMaxY, int clipMaxX, 
 }
 
 /* Advances a span to its next pixel. */
-static __inline void RasterSpan_Next(RasterSpan *span)
+static inline void RasterSpan_Next(RasterSpan *span)
 {
     span->pixel += span->pixelStep;
     span->depth += span->depthPointerStep;
@@ -619,7 +619,7 @@ static __inline void RasterSpan_Next(RasterSpan *span)
 /* Texture of a textured packet: the source entry's texels inside the source asset, and for
    paletted textures (paletteIndex >= 0) palette bank paletteIndex (0x800 bytes each, after a
    0x200-byte header). */
-static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, RasterTexture *texture)
+static inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, RasterTexture *texture)
 {
     const GraphicsTextureSetEntry *entry = packet->textureEntry;
     const uint8_t *asset = (const uint8_t *)entry->sourceAsset;
@@ -634,7 +634,7 @@ static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, 
 }
 
 /* The ARGB texel at (u, v), both wrapped to the texture (nearest texel, no filtering). */
-static __inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, int v)
+static inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, int v)
 {
     uint32_t index = (((uint32_t)u & texture->uMask) >> 12) +
                   (uint32_t)(((unsigned long long)((uint32_t)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
@@ -645,7 +645,7 @@ static __inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, 
 }
 
 /* An ARGB texel as lanes of (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), ready for Raster_Modulate. */
-static __inline RasterColor Raster_TexelLanes(uint32_t argb)
+static inline RasterColor Raster_TexelLanes(uint32_t argb)
 {
     RasterColor result;
     int i;
@@ -656,7 +656,7 @@ static __inline RasterColor Raster_TexelLanes(uint32_t argb)
 }
 
 /* Shaded colour (Q6) times texel lanes (PMULHW); the result is Q4 (channel * 16). */
-static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel)
+static inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel)
 {
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
@@ -672,7 +672,7 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
    the blend index (word)alpha >> 4 is > 0x7f. The lane is read unsigned, so a negative lane also
    passes. The textured modes test exactly this in the original; the untextured ones test a stale
    value instead (see docs/software_raster.md), and the C keeps this rule for them. */
-static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
+static inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
 {
     return (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
 }

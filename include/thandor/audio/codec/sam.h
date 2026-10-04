@@ -36,7 +36,7 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
 uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
 
 /* Returns 0, or the allocation error (the tables stay unset; no sample may be decoded then). */
-uint32_t __cdecl CosineDerivedLookupTables_Init();
+uint32_t CosineDerivedLookupTables_Init();
 
 /* the two cosine matrices of the .sam codec (CosineDerivedLookupTables_Init) */
 extern short *g_CosineDerivedLookupAllocation;

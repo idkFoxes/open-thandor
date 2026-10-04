@@ -91,7 +91,7 @@ static Bool8 Win32Path_ToNarrow(uint8_t *destination,uint16_t *path)
    directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
    The original never reports failure to its caller; the return value is the result of the engine.pck mount.
 */
-uintptr_t __cdecl FileSystem_Init()
+uintptr_t FileSystem_Init()
 
 {
   uint8_t configByte;
@@ -194,7 +194,7 @@ uintptr_t __cdecl FileSystem_Init()
 
 /* Changes back to the working directory FileSystem_Init found at startup, if one was captured.
 */
-void __cdecl Win32FileSystem_RestoreInitialDirectory()
+void Win32FileSystem_RestoreInitialDirectory()
 
 {
   if (g_InitialWorkingDirectory.firstTwoCodeUnits != 0) {

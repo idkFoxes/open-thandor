@@ -14,7 +14,7 @@
 
 #include <atomic>
 
-void __cdecl UiFrame_ProcessAndPresentWithLockTransition();
+void UiFrame_ProcessAndPresentWithLockTransition();
 
 void UiFrame_ProcessAndPresent();
 

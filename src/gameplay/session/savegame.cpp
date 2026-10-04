@@ -422,7 +422,7 @@ InGameSaveGame_PrepareRegistrationRecords
    InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize.
 */
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage()
+ResourceRegistrationImagePair InGameSaveGame_PrepareFactionImage()
 
 {
   ArmyRuntimeSlot *runtimeMember;
@@ -470,7 +470,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage()
    directly by the save-game writer InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize.
 */
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots()
+ResourceRegistrationImagePair InGameSaveGame_PrepareEffectSlots()
 
 {
   EffectRuntimeCompletionAction slotCompletionAction;
@@ -525,7 +525,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots()
    InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize.
 */
-ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots()
+ResourceRegistrationImagePair InGameSaveGame_PrepareShotSlots()
 
 {
   ShotDefinitionReferenceOrSavedId serializedDefinitionId;
@@ -653,7 +653,7 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave()
    size 0x4000, and inverts serializationToggleDword of record 0 so the saved image carries the
    inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
 */
-RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag()
+RuntimeHexSegmentImage RuntimeHexSegment_GetLightImageAndToggleFlag()
 
 {
   RuntimeHexSegmentImage segment;
@@ -669,7 +669,7 @@ RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag()
    back (RuntimeHexSegment_GetLightImageAndToggleFlag inverted it before), so the saved image carries the
    inverted value while the live one is unchanged. The caller keeps the serializer flags.
 */
-void __cdecl RuntimeHexSegment_ToggleLightImageFlag()
+void RuntimeHexSegment_ToggleLightImageFlag()
 
 {
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =

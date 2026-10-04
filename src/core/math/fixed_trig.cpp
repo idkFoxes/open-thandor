@@ -11,8 +11,8 @@
 
 /* Module data. */
 
-/* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed_trig.h>); filled at startup by
-   FixedMath_BuildSinCosTables */
+/* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed_trig.h>, index macros
+   FIXED_SINE_TABLE_* in <thandor/core/math/fixed_point.h>); filled at startup by FixedMath_BuildSinCosTables */
 int32_t g_FixedSineQ28[98304] = {0};
 
 /* Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane

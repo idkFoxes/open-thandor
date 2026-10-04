@@ -56,7 +56,7 @@ void UiScaler_BuildPixelWeightTables()
 /* MMX lane helpers for the bilinear scaler below (lanes are little-endian 16-bit words). */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: byte i of pixel becomes word lane i = (byte * 0x101) >> shift. */
-static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shift) {
+static inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shift) {
   uint64_t lanes;
   int lane;
 
@@ -69,7 +69,7 @@ static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shif
 }
 
 /* PADDW: lane-wise wrapping 16-bit add. */
-static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right) {
+static inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right) {
   uint64_t sum;
   int shift;
 
@@ -82,7 +82,7 @@ static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right) {
 
 /* PSRLW mm,shift then PACKUSWB (low dword): each lane shifted right, saturated to an unsigned
    byte. The logical shift leaves every lane non-negative, so only the 0xFF clamp applies. */
-static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift) {
+static inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift) {
   uint32_t packed;
   uint16_t laneValue;
   int lane;
@@ -97,7 +97,7 @@ static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift
 
 /* Bilinear blend of a 2x2 texel quad with the scaler weight tables (256 steps per axis):
    rows blended across the column fraction, then across the row fraction, then >> 2 and packed. */
-static __inline PackedArgb32 UiScaler_BlendBilinear
+static inline PackedArgb32 UiScaler_BlendBilinear
           (PackedArgb32 topLeft,PackedArgb32 topRight,PackedArgb32 bottomLeft,PackedArgb32 bottomRight,
           int columnWeight,int rowWeight) {
   uint64_t topRow;

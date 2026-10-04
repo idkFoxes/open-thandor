@@ -16,25 +16,11 @@
 typedef struct PersistentSettingsRuntime PersistentSettingsRuntime, *PPersistentSettingsRuntime;
 typedef struct PersistentSettingsImage PersistentSettingsImage, *PPersistentSettingsImage;
 
-enum {
-    PERSISTENT_TOGGLE_DISABLED=0,
-    PERSISTENT_TOGGLE_ENABLED=1
-};
-using PersistentToggleState = int;
+using PersistentToggleState = int; /* 0 off, 1 on */
 
-enum {
-    PERSISTENT_MOUSE_LINK_ROTATION_ZOOM=1,
-    PERSISTENT_MOUSE_LINK_ROTATION_TILT=2,
-    PERSISTENT_UI_HIDE_PANEL=4
-};
-using PersistentMouseLinkPanelOptionFlags = int;
+using PersistentMouseLinkPanelOptionFlags = int; /* PERSISTENT_LINK_OPTION_* bits (settings/persistent.h) */
 
-enum {
-    PERSISTENT_MAP_AUTOMATIC_ZOOM_OFF=1,
-    PERSISTENT_MAP_AUTOMATIC_ROTATION_OFF=2,
-    PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL=4
-};
-using PersistentMapMouseOptionFlags = int;
+using PersistentMapMouseOptionFlags = int; /* PERSISTENT_MAP_OPTION_* bits (settings/persistent.h) */
 
 using PersistentSettingsValue = uint32_t;
 
@@ -66,12 +52,7 @@ using PersistentSettingsByteCount = uint32_t;
 
 using PersistentShadingGridHalfSize = uint32_t;
 
-enum {
-    SOUND_OPTIONS_EFFECTS_ENABLED=1,
-    SOUND_OPTIONS_MUSIC_ENABLED=2,
-    SOUND_OPTIONS_REVERSE_STEREO=4
-};
-using PersistentSoundOptionFlags = int;
+using PersistentSoundOptionFlags = int; /* PERSISTENT_SOUND_OPTION_* bits (settings/persistent.h) */
 
 enum {
     TEXTURE_QUALITY_HIGH=0,

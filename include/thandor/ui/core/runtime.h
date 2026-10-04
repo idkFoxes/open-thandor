@@ -61,9 +61,9 @@ void UiRuntime_Initialize();
 
 void UiRuntime_Shutdown();
 
-void __cdecl UiRuntime_IncrementPeriodicTickCounter();
+void UiRuntime_IncrementPeriodicTickCounter();
 
-void __cdecl UiActionQueue_DispatchPending();
+void UiActionQueue_DispatchPending();
 
 void UiNode_DefaultMethod04_NoOp(UiNodeBase *node);
 

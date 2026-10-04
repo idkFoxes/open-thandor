@@ -96,21 +96,21 @@ The common types: Bool8, the fixed-point scalars, angles, vectors, ids and the o
 
 [Header](../../include/thandor/core/x86_emulation.h)
 
-Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange, x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
+Helpers that reproduce what the original's x86 code does, expressed in portable C++: container-of, atomic exchange, x87 rounding and the MMX lane operations (with the original's wrap-around and saturation).
 
-**Functions** (13 public):
+**Functions** (12 public):
 
-- [`thandor_atomic_exchange`](../../include/thandor/core/x86_emulation.h#L39) - THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and ...
-- [`cpuid_Version_info`](../../include/thandor/core/x86_emulation.h#L59) - cpuid_Version_info(leaf): runs CPUID for leaf.
-- [`thandor_mmx_pmulhw`](../../include/thandor/core/x86_emulation.h#L82)
-- [`thandor_mmx_pmaddwd`](../../include/thandor/core/x86_emulation.h#L91)
-- [`thandor_mmx_paddusb`](../../include/thandor/core/x86_emulation.h#L100)
-- [`thandor_mmx_paddusw`](../../include/thandor/core/x86_emulation.h#L109)
-- [`thandor_mmx_paddsw`](../../include/thandor/core/x86_emulation.h#L119)
-- [`thandor_mmx_psraw`](../../include/thandor/core/x86_emulation.h#L131)
-- [`thandor_mmx_rgb`](../../include/thandor/core/x86_emulation.h#L142) - Operands are integers or the 8-byte lane structs some MMX values are typed as.
-- [`thandor_mmx_bgra`](../../include/thandor/core/x86_emulation.h#L143)
-- 3 more: `thandor_mmx_q`, `thandor_mmx_q`, `thandor_mmx_q`
+- [`thandor_atomic_exchange`](../../include/thandor/core/x86_emulation.h#L34) - THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit location shared with the timer thread (g_TimerRegisterPeriodic callbacks): stores value and ...
+- [`thandor_mmx_pmulhw`](../../include/thandor/core/x86_emulation.h#L61)
+- [`thandor_mmx_pmaddwd`](../../include/thandor/core/x86_emulation.h#L70)
+- [`thandor_mmx_paddusb`](../../include/thandor/core/x86_emulation.h#L79)
+- [`thandor_mmx_paddusw`](../../include/thandor/core/x86_emulation.h#L88)
+- [`thandor_mmx_paddsw`](../../include/thandor/core/x86_emulation.h#L98)
+- [`thandor_mmx_psraw`](../../include/thandor/core/x86_emulation.h#L110)
+- [`thandor_mmx_rgb`](../../include/thandor/core/x86_emulation.h#L121) - Operands are integers or the 8-byte lane structs some MMX values are typed as.
+- [`thandor_mmx_bgra`](../../include/thandor/core/x86_emulation.h#L122)
+- [`thandor_mmx_q`](../../include/thandor/core/x86_emulation.h#L123)
+- 2 more: `thandor_mmx_q`, `thandor_mmx_q`
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 

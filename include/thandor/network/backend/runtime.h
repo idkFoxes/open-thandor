@@ -19,7 +19,7 @@
 /* UDP port (host byte order) the frontend passes to g_NetworkBackendSlot2 (open and bind) for every session. */
 #define NETWORK_GAME_UDP_PORT 929
 
-uint32_t __cdecl Network_Init();
+uint32_t Network_Init();
 
 void Network_Shutdown();
 

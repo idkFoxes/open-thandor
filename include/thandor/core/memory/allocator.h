@@ -23,13 +23,13 @@
    and a 32-byte payload); smaller remainders stay with the allocation. */
 #define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
 
-void * __cdecl ArenaHeap_Init();
+void * ArenaHeap_Init();
 
 void ArenaHeap_Shutdown();
 
 uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload);
 
-uint32_t __cdecl ArenaHeap_QueryFreeBytes();
+uint32_t ArenaHeap_QueryFreeBytes();
 
 uint32_t ArenaHeap_Free(void *memory);
 

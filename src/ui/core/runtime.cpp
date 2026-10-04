@@ -227,7 +227,7 @@ void UiRuntime_Shutdown()
 /* Frame-tick timer (20 Hz, registered by UiRuntime_Initialize): counts the pending frame ticks that the
    frame loop waits for and consumes.
 */
-void __cdecl UiRuntime_IncrementPeriodicTickCounter()
+void UiRuntime_IncrementPeriodicTickCounter()
 
 {
   g_UiPendingFrameTicks.fetch_add(1);
@@ -239,7 +239,7 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter()
    byte; the handler gets the control that queued it. Each entry is removed (the rest moved down) before its
    handler runs, so handlers may queue further actions.
 */
-void __cdecl UiActionQueue_DispatchPending()
+void UiActionQueue_DispatchPending()
 
 {
   void *actionSource;

@@ -81,7 +81,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
 
 
 /* C model of the MMX PCMPEQB instruction: 0xFF in every byte lane where a and b are equal, 0 elsewhere. */
-static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
+static inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
 
 {
   ThandorMmx aLanes;

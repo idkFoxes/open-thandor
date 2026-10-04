@@ -57,11 +57,8 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
       newAdvance = acceleratedAdvance;
     }
   }
-  /* atomic exchange, as in the original */
-  LOCK();
   previousAdvance = (modelRuntime->movementControl).movementAdvancePerTickQ12;
   (modelRuntime->movementControl).movementAdvancePerTickQ12 = newAdvance;
-  UNLOCK();
   if ((previousAdvance == 0) && (newAdvance != 0)) {
     startSoundSlotIndex = definition->moveStartSoundSlotIndex;
     if ((startSoundSlotIndex != 0) &&

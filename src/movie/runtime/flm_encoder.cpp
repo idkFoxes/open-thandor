@@ -24,14 +24,14 @@ static const uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels = 0xF0F0F000F0F0F0ull
    pixel. */
 
 /* One byte of one pixel scaled for the channel sum: (byte * 0x101) >> 6. */
-static __inline uint16_t Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
+static inline uint16_t Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
 {
   uint8_t value = (uint8_t)(pixel >> (lane * 8));
   return (uint16_t)((((uint16_t)value << 8) | value) >> 6);
 }
 
 /* Adds one 4-pixel row to the four 16-bit channel sums (each wrapping at 16 bits). */
-static __inline uint64_t
+static inline uint64_t
 Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pixel1,PackedRgb24 pixel2,
                           PackedRgb24 pixel3)
 {
@@ -49,7 +49,7 @@ Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pi
 
 /* The four channel averages as one pixel: each sum >> 6, clamped to 0xFF (the clamp never triggers:
    16 terms of at most 0x3FF, shifted right by 6). */
-static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
+static inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 {
   PackedRgb24 color = 0;
   uint16_t average;
@@ -242,7 +242,7 @@ static uint8_t *MovieDeltaEncode_WriteSkipToken(uint8_t *output,uint32_t skipped
 }
 
 /* Widens [*minLuma, *maxLuma] (signed compare) to include luma. */
-static __inline void MovieDeltaEncode_ExtendLumaRange(int luma,int *minLuma,int *maxLuma)
+static inline void MovieDeltaEncode_ExtendLumaRange(int luma,int *minLuma,int *maxLuma)
 {
   if (luma < *minLuma) {
     *minLuma = luma;

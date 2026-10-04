@@ -35,12 +35,10 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
       shadingRecord->radiusTransitionElapsedTicks = negatedDuration;
       return;
     }
-    /* fading in: exchange in the new duration (atomic swap), rescale elapsed to keep the reached radius
+    /* fading in: exchange in the new duration, rescale elapsed to keep the reached radius
        fraction */
-    LOCK();
     fadeInDuration = shadingRecord->radiusTransitionDurationTicks;
     shadingRecord->radiusTransitionDurationTicks = negatedDuration;
-    UNLOCK();
     rescaledElapsed = (int)(((int64_t)negatedDuration * (int64_t)shadingRecord->radiusTransitionElapsedTicks)
                             / (int64_t)fadeInDuration);
     shadingRecord->radiusTransitionElapsedTicks = rescaledElapsed;

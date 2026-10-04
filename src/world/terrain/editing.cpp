@@ -407,12 +407,10 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
   if ((requiredOccupancyMask & extractionDescriptor) != 0) {
     cell->resourceExtractionDescriptor = 0;
-    /* take the model offset and clear it in one atomic step */
-    LOCK();
+    /* take the model offset and clear it */
     savedArmyOffset = cell->armyRuntimeSavedOffset;
     cell->armyRuntimeSavedOffset = 0;
     entriesBase = (uintptr_t)g_TerrainRegionCollectionEntries;
-    UNLOCK();
     if (storedCount < TERRAIN_REGION_COLLECTION_CAPACITY) {
       g_TerrainRegionCollectionStoredCount++;
       *(uint32_t *)((uintptr_t)g_TerrainRegionCollectionEntries + storedCount * 8) = extractionDescriptor;

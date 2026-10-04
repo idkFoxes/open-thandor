@@ -69,9 +69,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   /* the serialized tree links are offsets from the root: relocate by the root's address */
   UiSerializedTree_Relocate(Thandor_PointerToI32(root),&root->base); /* 5f-format: UI template tree links (32-bit offsets relocated by the root address) */
   oldFrontRoot = g_UiRootNode;
-  LOCK();
   g_UiRootNode = root;
-  UNLOCK();
   root->previousRoot = oldFrontRoot;
   if (oldFrontRoot != UI_ROOT_STACK_END) {
     (oldFrontRoot->base).nextSibling = &root->base;

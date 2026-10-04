@@ -54,7 +54,7 @@
 #define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 3 /* ADVAPI32 */
 #define BOOTSTRAP_API_REG_CLOSE_KEY 4 /* ADVAPI32 */
 
-void __cdecl ProcessEntry();
+void ProcessEntry();
 
 /* 0, or the allocator's error code */
 uint32_t GameData_ResetDefaults();
@@ -69,12 +69,12 @@ HINSTANCE DynDLL_Load(char *moduleName);
 
 void DynDLL_UnloadAll();
 
-void __cdecl Game_Run();
+void Game_Run();
 
 /* 0, or the error code of the first failing step */
-uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering();
+uint32_t GameRuntime_InitializeSpatialAudioAndRendering();
 
-uint32_t __cdecl Game_LoadCoreAssets();
+uint32_t Game_LoadCoreAssets();
 
 Bool8 Game_PlayIntroMovies();
 

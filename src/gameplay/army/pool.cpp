@@ -108,8 +108,6 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                 (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
       loadedTextureSet = g_GraphicsCreateTextureSet(textureSourceAsset,outError);
       if (loadedTextureSet == nullptr) {
-        LOCK();
-        UNLOCK();
         Resource_Release(textureSourceAsset);
         return false;
       }

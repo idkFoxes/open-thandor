@@ -15,11 +15,11 @@
 
 uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 
-void __cdecl NetworkBackendFallback_Cleanup();
+void NetworkBackendFallback_Cleanup();
 
 uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
 
-void __cdecl NetworkBackendFallback_CloseActiveSocket();
+void NetworkBackendFallback_CloseActiveSocket();
 
 Bool8 NetworkBackendFallback_ReceiveDatagram(WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 

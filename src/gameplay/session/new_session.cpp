@@ -24,8 +24,6 @@ WorldObjectRecord *g_InGameWorldObjectRecords = nullptr;
 
 uintptr_t g_InGameWorldRuntimeDwordArray256[256] = {0}; /* SpatialSoundSlot pointers (WorldRuntimeContext.dwordArray) */
 
-static uint8_t g_InGameSessionStartedNetworked = 0;
-
 /* Failure exit of InGameRuntime_InitializeNewSession: closes the level movie (also when it was not opened yet),
    stores the error in *outError and returns false. */
 static Bool8 InGameNewSession_Fail(uint32_t error,uint32_t *outError)
@@ -55,9 +53,6 @@ static void InGameNewSession_ResetSessionState()
   uint32_t *nameDestination;
 
   InGameSession_ResetTickState();
-  g_InGameSessionStartedNetworked =
-       (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-       SESSION_NETWORK_ROLE_LOCAL;
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
@@ -223,27 +218,17 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
 {
   WorldRuntimeContext *world;
   uint32_t mapMouseOptionFlags;
-  uint32_t subsystemFailureError;
 
   world = &inGameRoot->worldRuntime;
   g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   InGameSession_InitShadingAndMirrorViewOptions(world);
   mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  /* Original quirk: the (unreachable) failure of the optional subsystem below reports the map/mouse option flags
-     as its error code, or the address of the resource bar page stack when bit 2 of them is set (left-over
-     intermediate values). */
-  subsystemFailureError = mapMouseOptionFlags;
   if ((mapMouseOptionFlags & 4) != 0) {
     UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
-    subsystemFailureError = (uint32_t)(uintptr_t)&inGameRoot->resourceBarModePageStack; /* low 32 bits on x64 */
     UiPageStack_SetActiveIndex(0,&inGameRoot->resourceBarModePageStack);
     UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);
     inGameRoot->worldViewAreaRightOffset = 0;
     UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
-  }
-  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uintptr_t)world->fieldGrid) != 0) {
-    *outError = subsystemFailureError;
-    return false;
   }
   /* a campaign carries units over from the previous level */
   if (g_FrontendLoadedCampaignAsset == 0) {
