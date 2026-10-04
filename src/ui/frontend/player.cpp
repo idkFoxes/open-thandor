@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/player.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -239,7 +240,16 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   destBlock = g_FrontendPlayerRuntimeBlocks + 1;
   commandSource = g_FrontendPlayerCommandRecords;
   commandDest = g_FrontendPlayerCommandRecords;
-  for (scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1; 0 < scanRemaining; scanRemaining--) {
+  /* The original scans g_FrontendPlayerRuntimeBlockCount - 1 blocks unchecked; bounded here to the 8 allocated
+     blocks (7 clients) because a malformed count would overrun the blocks, the command records and
+     removedPlayerIds. */
+  scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
+  if (scanRemaining > FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1) {
+    Thandor_Log("player timeouts: block count %d out of range, scan bounded",
+                (int)g_FrontendPlayerRuntimeBlockCount);
+    scanRemaining = FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT - 1;
+  }
+  for (; 0 < scanRemaining; scanRemaining--) {
     sourceBlock->heartbeatExpiryTicks = sourceBlock->heartbeatExpiryTicks - 1;
     if (sourceBlock->heartbeatExpiryTicks == 0) {
       /* remove: only the source cursors advance */
@@ -541,6 +551,17 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
   FrontendPlayerRuntimeRecord *playerBlock;
 
   loadedLevel = g_FrontendLoadedLevelAsset;
+  /* The original trusts the level's counts; validated here because an assignable count of 0 wraps the loop below
+     (about 4 billion writes), an active count below the assignable one underflows activeRemaining, and more than
+     7 factions run past factionLifecycleStates[8]. */
+  if (loadedLevel->worldSettings.assignableFactionCount == 0 ||
+      loadedLevel->worldSettings.activeFactionCount > 7 ||
+      loadedLevel->worldSettings.assignableFactionCount > loadedLevel->worldSettings.activeFactionCount) {
+    Thandor_Log("faction assignments: invalid level counts (assignable %u, active %u), not assigned",
+                (unsigned)loadedLevel->worldSettings.assignableFactionCount,
+                (unsigned)loadedLevel->worldSettings.activeFactionCount);
+    return;
+  }
   factionSlot = 1; /* slot 0 is not a player faction */
   activeRemaining = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
   assignableRemaining = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
@@ -1069,6 +1090,17 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   writeOffset = playerBlock->chatRecipientMaskAndWriteOffset & 0xff;
+  /* The original writes at whatever low byte INGAME_COMMAND_CHAT_SET_RECIPIENTS stored (a peer may send any
+     value there) and only clamps the next offset; the write offset is bounded here too because 0x25..0xFF would
+     run past chatStagingText. Valid lines start at 0 and never exceed 0x24. */
+  if (writeOffset > PLAYER_CHAT_LAST_PIECE_OFFSET) {
+    static int s_loggedChatOffset;
+    if (s_loggedChatOffset == 0) {
+      s_loggedChatOffset = 1;
+      Thandor_Log("in-game chat: write offset 0x%x out of range, clamped",(unsigned)writeOffset);
+    }
+    writeOffset = PLAYER_CHAT_LAST_PIECE_OFFSET;
+  }
   *(FrontendTextCommandValue0 *)(playerBlock->chatStagingText + writeOffset) = value0;
   *(FrontendTextCommandValue1 *)(playerBlock->chatStagingText + writeOffset + 4) = value1;
   nextOffset = writeOffset + PLAYER_CHAT_PIECE_BYTES;
@@ -1327,8 +1359,10 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
 
 
 /* Handler of FRONTEND_COMMAND_CHAT_APPEND: appends 12 bytes of a lobby chat line (valueC first) to the
-   sender's message record and advances its write offset. Unlike the in-game FrontendPlayerTextCommand_
-   AppendTripleClamped the offset is not clamped: a ninth piece would run past the 100-byte record.
+   sender's message record and advances its write offset. The original does not clamp the offset (unlike the
+   in-game FrontendPlayerTextCommand_AppendTripleClamped), so a ninth piece would run past the 100-byte record;
+   bounded here because a peer controls how many pieces it sends. A valid line is at most four pieces
+   (offsets 4..0x28), which stay unchanged.
 */
 void FrontendPlayerMessageBuffer_AppendTripleById
           (PlayerRuntimeId playerId,FrontendMessageValueA valueA,FrontendMessageValueB valueB,
@@ -1344,7 +1378,16 @@ void FrontendPlayerMessageBuffer_AppendTripleById
   }
   /* dword 0 of the record is the write offset */
   writeOffset = *(int *)messageRecord;
-  *(int *)messageRecord = *(int *)messageRecord + PLAYER_CHAT_PIECE_BYTES;
+  /* the last piece of the 0x30-byte text starts at FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET + 0x24 */
+  if ((uint32_t)writeOffset > PLAYER_CHAT_LAST_PIECE_OFFSET + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET) {
+    static int s_loggedLobbyChatOffset;
+    if (s_loggedLobbyChatOffset == 0) {
+      s_loggedLobbyChatOffset = 1;
+      Thandor_Log("lobby chat: write offset %d out of range, clamped",writeOffset);
+    }
+    writeOffset = PLAYER_CHAT_LAST_PIECE_OFFSET + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
+  }
+  *(int *)messageRecord = writeOffset + PLAYER_CHAT_PIECE_BYTES;
   *(FrontendMessageValueC *)(messageRecord + writeOffset) = valueC;
   *(FrontendMessageValueB *)(messageRecord + writeOffset + 4) = valueB;
   *(FrontendMessageValueA *)(messageRecord + writeOffset + 8) = valueA;
