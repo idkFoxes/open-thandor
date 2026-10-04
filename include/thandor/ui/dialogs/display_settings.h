@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/controls/misc.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/dialogs/display_settings.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_UI_CONTROLS_MISC_H
-#define THANDOR_UI_CONTROLS_MISC_H
+#ifndef THANDOR_UI_DIALOGS_DISPLAY_SETTINGS_H
+#define THANDOR_UI_DIALOGS_DISPLAY_SETTINGS_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/controls/misc. */
+/* Submodule: ui/dialogs/display_settings. */
 
 /* Action ids of the display settings dialog (g_UiDisplaySettingsRootTemplate); action 0x200 + n runs
    g_UiDisplayModeSelectionActionHandlers20[n]. UiDisplayModeSelection_RefreshEnumeratedOptions suppresses
@@ -93,6 +93,7 @@ typedef struct UiFourValueDialogCountdownText {
    it sends when the pointer moves from one child to another (the new child's press, the old child's drag and
    release), so that no pixel test of theirs hits. */
 #define UI_POINTER_FAR_OUTSIDE 0x70000000
+
 /* Functions are grouped by semantic ownership. */
 
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
@@ -105,62 +106,19 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode);
 
 void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode);
 
-void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control);
-
-void UiImageControl_TickHover(UiImageControl *control);
-
 void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode);
 
 void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode);
 
 void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 
-void UiRangeSliderControl_DrawTrackAndThumb
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiRangeSliderControl *control);
-
-void UiRangeSliderControl_BeginThumbDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiRangeSliderControl *control);
-
-void UiRangeSliderControl_EndThumbDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiRangeSliderControl *control);
-
-void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
-
-void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
-
-void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiImageControl *control);
-
-void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control);
-
-void UiImageControl_NonRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control);
-
-void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
-
-void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control);
-
 void UiDisplaySettings_OpenAndPopulateModeSelection(void);
-
-UiNodeBase * UiImageControl_HitTestOpaque
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
 
 void UiDisplayModeSelection_RefreshEnumeratedOptions
           (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits selectedBitsPerPixel,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot);
 
-extern UiNodeVtable g_UiRangeSliderControlVtable;
-extern UiNodeVtable g_UiImageControlVtable;
-extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* UiHorizontalGaugeControl subclass of the transfer progress gauge */
-
 extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate;
 
-#endif /* THANDOR_UI_CONTROLS_MISC_H */
+#endif /* THANDOR_UI_DIALOGS_DISPLAY_SETTINGS_H */

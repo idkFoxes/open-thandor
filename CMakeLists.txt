@@ -112,11 +112,11 @@ add_library(thandor_curated STATIC
     src/ui/controls/image.cpp
     src/ui/controls/input.cpp
     src/ui/controls/lists.cpp
-    src/ui/controls/misc.cpp
     src/ui/controls/panels.cpp
     src/ui/controls/root_stack.cpp
     src/ui/controls/scrollable.cpp
     src/ui/controls/selectable.cpp
+    src/ui/controls/slider.cpp
     src/ui/controls/text.cpp
     src/ui/controls/text_buttons.cpp
     src/ui/controls/text_edit.cpp
@@ -124,7 +124,9 @@ add_library(thandor_curated STATIC
     src/ui/controls/tree_list.cpp
     src/ui/controls/window.cpp
     src/ui/core/frame_loop.cpp
+    src/ui/core/model_tint.cpp
     src/ui/core/runtime.cpp
+    src/ui/dialogs/display_settings.cpp
     src/ui/frontend/chat.cpp
     src/ui/frontend/debug_overlay.cpp
     src/ui/frontend/display_settings.cpp

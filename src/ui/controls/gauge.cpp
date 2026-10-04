@@ -161,3 +161,83 @@ UiNodeVtable g_UiHorizontalGaugeControlVtable = {
         .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
         .tick = THANDOR_FN(UiNode_DefaultTick),
         .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
+
+/* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
+   are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count
+   and the value the smallest progress any client has reported (transferProgressBytes of player blocks 1..n); on a
+   client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is
+   running and not yet complete.
+*/
+void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control)
+
+{
+  UiTransferPayloadByteCount receivedTotal;
+  uint32_t minimumProgress;
+  uint32_t receivedDone;
+  int remainingPlayers;
+  FrontendPlayerRuntimeRecord *playerRecord;
+
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
+  receivedTotal = g_UiTransferMailbox.receivedByteCount;
+  minimumProgress = g_UiTransferMailbox.outgoingByteCount;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+    if (g_UiTransferMailbox.outgoingByteCount == 0) {
+      return;
+    }
+    remainingPlayers = g_FrontendPlayerRuntimeBlockCount - 1;
+    if (remainingPlayers == 0) {
+      return;
+    }
+    control->minimumValue = 0;
+    control->maximumValue = minimumProgress;
+    /* the clients follow the host's own block 0 */
+    do {
+      if ((int)playerRecord[1].transferProgressBytes < (int)minimumProgress) {
+        minimumProgress = playerRecord[1].transferProgressBytes;
+      }
+      remainingPlayers--;
+      playerRecord = playerRecord + 1;
+    } while (remainingPlayers != 0);
+    control->value = minimumProgress;
+    if (control->maximumValue <= minimumProgress) {
+      return;
+    }
+  }
+  else {
+    if ((g_UiTransferMailbox.receivedByteCount == 0) &&
+       (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
+      return;
+    }
+    receivedDone = g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes;
+    control->minimumValue = 0;
+    control->maximumValue = receivedTotal;
+    control->value = receivedDone;
+    if (receivedTotal <= receivedDone) {
+      return;
+    }
+  }
+  UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipBottom,clipRight,clipTop,clipLeft,control);
+  return;
+}
+
+UiNodeVtable g_UiTransferProgressGaugeVtable = {
+    .relocate = THANDOR_FN(UiContainer_RelocateChildren),
+    .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
+    .drawClipped = THANDOR_FN(UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw),
+    .layout = THANDOR_FN(UiContainer_LayoutChildren),
+    .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
+    .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
+    .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
+    .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
+    .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
+    .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
+    .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
+    .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
+    .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
+    .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
+    .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
+    .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
+    .tick = THANDOR_FN(UiNode_DefaultTick),
+    .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
+};

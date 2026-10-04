@@ -24,4 +24,9 @@ GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
 
 extern UiNodeVtable g_UiHorizontalGaugeControlVtable;
 
+void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control);
+
+extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* UiHorizontalGaugeControl subclass of the transfer progress gauge */
+
 #endif /* THANDOR_UI_CONTROLS_GAUGE_H */

@@ -14,11 +14,11 @@
 #include <thandor/ui/controls/image.h>
 #include <thandor/ui/controls/input.h>
 #include <thandor/ui/controls/lists.h>
-#include <thandor/ui/controls/misc.h>
 #include <thandor/ui/controls/panels.h>
 #include <thandor/ui/controls/root_stack.h>
 #include <thandor/ui/controls/scrollable.h>
 #include <thandor/ui/controls/selectable.h>
+#include <thandor/ui/controls/slider.h>
 #include <thandor/ui/controls/text.h>
 #include <thandor/ui/controls/text_buttons.h>
 #include <thandor/ui/controls/text_edit.h>

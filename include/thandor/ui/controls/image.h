@@ -17,4 +17,24 @@
 
 void UiImageControl_LayoutChildrenToParent(UiImageControl *control);
 
+void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiImageControl *control);
+
+void UiImageControl_TickHover(UiImageControl *control);
+
+void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiImageControl *control);
+
+void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiImageControl *control);
+
+void UiImageControl_NonRightRelease
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiImageControl *control);
+
+UiNodeBase * UiImageControl_HitTestOpaque
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
+
+extern UiNodeVtable g_UiImageControlVtable;
+
 #endif /* THANDOR_UI_CONTROLS_IMAGE_H */

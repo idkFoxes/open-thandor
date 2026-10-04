@@ -10,6 +10,7 @@
 
 #include <thandor/ui/controls.h>
 #include <thandor/ui/core.h>
+#include <thandor/ui/dialogs.h>
 #include <thandor/ui/frontend.h>
 #include <thandor/ui/ingame.h>
 #include <thandor/ui/support.h>

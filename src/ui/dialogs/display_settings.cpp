@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/controls/misc.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/dialogs/display_settings.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/ui/controls/misc.h>
+#include <thandor/ui/dialogs/display_settings.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -244,7 +244,7 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
    resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
 static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
-/* Implementation ownership: ui/controls/misc. */
+/* Implementation ownership: ui/dialogs/display_settings. */
 
 /* frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
    colour scale slider has moved, stores the new values, rebuilds the pixel packing tables at once (a live
@@ -276,7 +276,6 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   return;
 }
 
-
 /* Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
    of the display settings dialog: selects the button's bit depth, keeps the selected adapter and resolution
    and refreshes the available buttons. Each option button keeps its value in the dword 8 bytes before it
@@ -299,7 +298,6 @@ void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
   return;
 }
 
-
 /* Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
    of the display settings dialog: selects the button's resolution (height 12 bytes and width 8 bytes before
    the button), keeps the selected adapter and bit depth and refreshes the available buttons.
@@ -319,7 +317,6 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
              DISPLAY_MODE_OPTION_PREFIX(sourceNode).modeValue,displaySettingsRoot);
   return;
 }
-
 
 /* Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
    of the display settings dialog: selects the button's adapter (the dword 8 bytes before the button), keeps
@@ -341,7 +338,6 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
              (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
   return;
 }
-
 
 /* Revert action (UI_DISPLAY_MODE_ACTION_REVERT, g_UiDisplayModeSelectionActionHandlers20[13]) of the "keep
    the new display mode?" dialog, from its button or from the expired countdown: closes the dialog, switches
@@ -395,103 +391,6 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   UiDisplaySettings_OpenAndPopulateModeSelection();
   return;
 }
-
-
-/* nonRightDrag of the image control (g_UiImageControlVtable): only for an image in persistent activation
-   mode, whose children act like a menu. Moving onto another child hands the pointer over: the new child
-   gets a synthetic press and the drag, becomes activeChild, and the previous one gets a synthetic drag and
-   release far outside (UI_POINTER_FAR_OUTSIDE). A drag over the current child is simply forwarded.
-*/
-void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control)
-
-{
-  UiNodeVtable *hitVtable;
-  UiImageControl *hitControl;
-  UiNodeBase *previousActiveChild;
-
-  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
-    return;
-  }
-  hitControl = (UiImageControl *)UiImageControl_HitTestOpaque(pointerY,pointerX,control);
-  /* Off the image's own pixels PRESSED_ON_IMAGE is cleared. Over the image itself or over nothing the
-     current child only gets the synthetic drag and release; it stays activeChild (as in the original). */
-  if (hitControl != control) {
-    (control->selectable).stateFlags &= ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
-  }
-  if (hitControl == control || hitControl == (UiImageControl *)UI_NODE_NONE) {
-    previousActiveChild = control->activeChild;
-  }
-  else {
-    if (hitControl == (UiImageControl *)control->activeChild) {
-      (*((hitControl->selectable).base.vtable)->nonRightDrag)
-                (wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
-      UiRootStack_InvalidateAll();
-      return;
-    }
-    hitVtable = (hitControl->selectable).base.vtable;
-    /* All calls go to the hit child through its own vtable, and that child becomes the new
-       activeChild. */
-    hitVtable->nonRightPress(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,(UiNodeBase *)hitControl);
-    hitVtable->nonRightDrag(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
-    /* swap in the new active child */
-    previousActiveChild = control->activeChild;
-    control->activeChild = (UiNodeBase *)hitControl;
-  }
-  if (previousActiveChild != NULL) {
-    previousActiveChild->vtable->nonRightDrag
-              (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
-    previousActiveChild->vtable->nonRightRelease
-              (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
-  }
-  UiRootStack_InvalidateAll();
-  return;
-}
-
-
-/* tick of the image control (g_UiImageControlVtable): when the right mouse button goes down (latched in
-   UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED until it is released), an opaque child under the cursor gets a
-   release, press and drag at the current cursor position, so that it re-evaluates the pointer;
-   UI_IMAGE_CONTROL_PRESS_STARTED is cleared then.
-*/
-void UiImageControl_TickHover(UiImageControl *control)
-
-{
-  UiSelectableStateFlags *clearStateFlagsField;
-  UiNodeVtable *hitChildVtable;
-  UiImageControl *hitControl;
-  UiSelectableStateFlags *stateFlagsField;
-  UiSelectableStateFlags *hoverStateFlagsField;
-
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
-      if ((g_CursorButtonState & RIGHT) != 0) {
-        hitControl = (UiImageControl *)
-                     UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
-        stateFlagsField = &(control->selectable).stateFlags;
-        *stateFlagsField = *stateFlagsField | UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
-        if ((hitControl != control) && (hitControl != (UiImageControl *)UI_NODE_NONE)) {
-          hitChildVtable = (hitControl->selectable).base.vtable;
-          hoverStateFlagsField = &(control->selectable).stateFlags;
-          *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STARTED;
-          hitChildVtable->nonRightRelease
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
-          /* all three calls go to the hovered child through its own vtable */
-          hitChildVtable->nonRightPress
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
-          hitChildVtable->nonRightDrag
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
-        }
-      }
-    }
-    else if ((g_CursorButtonState & RIGHT) == 0) {
-      clearStateFlagsField = &(control->selectable).stateFlags;
-      *clearStateFlagsField = *clearStateFlagsField & ~UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
-    }
-  }
-  return;
-}
-
 
 /* Apply action (UI_DISPLAY_MODE_ACTION_APPLY, g_UiDisplayModeSelectionActionHandlers20[0]) of the display
    settings dialog: closes the dialog and, when the selected mode differs from the current one, switches to
@@ -550,7 +449,6 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   return;
 }
 
-
 /* Cancel action (UI_DISPLAY_MODE_ACTION_CANCEL, g_UiDisplayModeSelectionActionHandlers20[14]) of the display
    settings dialog: closes it and rebuilds the pixel packing tables from the colour bias and scale the
    dialog opened with, undoing the slider preview.
@@ -571,7 +469,6 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
   return;
 }
-
 
 /* frameUpdate of g_UiFourValueDialogRootCallbacks (the "keep the new display mode?" dialog): every
    UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS frame updates the shown countdown drops by one; at zero the revert
@@ -604,433 +501,6 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   }
   return;
 }
-
-
-/* Thumb offset along the track for UiRangeSliderControl_DrawTrackAndThumb: value (clamped to
-   minimumValue..maximumValue) scaled from the range onto freeTrackLength, rounded to the nearest pixel;
-   measured from the other end when invert is set. */
-static uint32_t UiRangeSliderControl_ThumbOffset(const UiRangeSliderControl *control,uint32_t freeTrackLength,
-                                                 Bool8 invert)
-{
-  int32_t rangeMax;
-  int32_t clampedValue;
-  uint32_t range;
-  uint32_t valueOffset;
-  uint64_t scaledOffset;
-
-  rangeMax = control->maximumValue;
-  clampedValue = control->value;
-  if (rangeMax < control->value) {
-    clampedValue = rangeMax;
-  }
-  range = rangeMax - control->minimumValue;
-  if (range == 0) {
-    range = 1;
-  }
-  valueOffset = clampedValue - control->minimumValue;
-  if ((int)valueOffset < 0) {
-    valueOffset = 0;
-  }
-  if (invert) {
-    valueOffset = range - valueOffset;
-  }
-  /* offset * free track length / range, plus one when twice the remainder exceeds the range */
-  scaledOffset = (uint64_t)valueOffset * (uint64_t)freeTrackLength;
-  return (uint32_t)(int)(scaledOffset / range) +
-         (uint32_t)(range < (uint32_t)((int)(scaledOffset % (uint64_t)range) * 2));
-}
-
-/* drawClipped of the range slider (g_UiRangeSliderControlVtable): draws the track from three
-   g_UiWindowTextureSource pieces (start cap, tiled middle, end cap) and the thumb at the position of value
-   within minimumValue..maximumValue, rounded to the nearest pixel. Horizontal or vertical after
-   UI_RANGE_SLIDER_VERTICAL; a suppressed slider uses the greyed pieces.
-*/
-void UiRangeSliderControl_DrawTrackAndThumb
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiRangeSliderControl *control)
-
-{
-  uint32_t subresourceBase;
-  int edgeLength;
-  uint32_t thumbOffset;
-  GraphicsTextureLogicalSize textureSize;
-
-  if (g_GraphicsFramebufferBeginAccess()) {
-    return; /* framebuffer access failed */
-  }
-  subresourceBase = UI_RANGE_SLIDER_SUBRESOURCE_BASE;
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    subresourceBase = UI_RANGE_SLIDER_SUBRESOURCE_BASE_SUPPRESSED;
-  }
-  if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) != 0) {
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,
-               subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET,
-                                                        g_UiWindowTextureSource);
-    edgeLength = control->base.layoutHeight - textureSize.logicalHeightPixels;
-    UiWindow_BlitTiledVerticalEdge
-              (clipBottom,clipRight,clipTop,clipLeft,
-               subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_TRACK,
-               edgeLength,textureSize.logicalHeightPixels,0,&control->base);
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,edgeLength + control->base.top,control->base.left,
-               subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_END_CAP,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    /* the thumb; vertical sliders have their maximum at the top unless reversed */
-    textureSize = g_GraphicsTextureSourceGetLogicalSize
-              (subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_THUMB,
-               g_UiWindowTextureSource);
-    thumbOffset = UiRangeSliderControl_ThumbOffset
-              (control,control->base.layoutHeight - textureSize.logicalHeightPixels,
-               (control->sliderFlags & UI_RANGE_SLIDER_REVERSED) == 0);
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,thumbOffset + control->base.top,control->base.left,
-               subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_THUMB,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-  }
-  else {
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,subresourceBase,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase,g_UiWindowTextureSource);
-    edgeLength = control->base.layoutWidth - textureSize.logicalWidthPixels;
-    UiWindow_BlitTiledHorizontalEdge
-              (clipBottom,clipRight,clipTop,clipLeft,subresourceBase + UI_RANGE_SLIDER_PIECE_TRACK,edgeLength,0,
-               textureSize.logicalWidthPixels,&control->base);
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,edgeLength + control->base.left,
-               subresourceBase + UI_RANGE_SLIDER_PIECE_END_CAP,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    /* the thumb */
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,
-                                                        g_UiWindowTextureSource);
-    thumbOffset = UiRangeSliderControl_ThumbOffset
-              (control,control->base.layoutWidth - textureSize.logicalWidthPixels,
-               (control->sliderFlags & UI_RANGE_SLIDER_REVERSED) != 0);
-    g_GraphicsTextureSourceBlitSourceAlpha
-              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,thumbOffset + control->base.left,
-               subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
-  }
-  g_GraphicsFramebufferEndAccess();
-  return;
-}
-
-
-/* nonRightPress of the range slider (g_UiRangeSliderControlVtable): a press inside the slider, within the
-   thumb's cross size (its height for a horizontal slider, its width for a vertical one), starts a thumb
-   drag and plays the click sound when UI_RANGE_SLIDER_CLICK_SOUND is set.
-*/
-void UiRangeSliderControl_BeginThumbDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiRangeSliderControl *control)
-
-{
-  int localX;
-  int localY;
-  GraphicsTextureLogicalSize thumbSize;
-
-  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    return;
-  }
-  if (pointerX < control->base.left || pointerY < control->base.top) {
-    return;
-  }
-  localX = pointerX - control->base.left;
-  localY = pointerY - control->base.top;
-  if (localX >= control->base.layoutWidth || localY >= control->base.layoutHeight) {
-    return;
-  }
-  if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
-    thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_HORIZONTAL_THUMB,
-                                                      g_UiWindowTextureSource);
-    if ((int)thumbSize.logicalHeightPixels <= localY) {
-      return;
-    }
-  }
-  else {
-    thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_THUMB,
-                                                      g_UiWindowTextureSource);
-    if ((int)thumbSize.logicalWidthPixels <= localX) {
-      return;
-    }
-  }
-  control->sliderFlags = control->sliderFlags | UI_RANGE_SLIDER_DRAGGING;
-  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
-  }
-  return;
-}
-
-
-/* nonRightRelease of the range slider (g_UiRangeSliderControlVtable): ends a thumb drag and plays the click
-   sound when UI_RANGE_SLIDER_CLICK_SOUND is set and the slider is not suppressed.
-*/
-void UiRangeSliderControl_EndThumbDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-               UiRangeSliderControl *control)
-
-{
-  control->sliderFlags = control->sliderFlags & ~UI_RANGE_SLIDER_DRAGGING;
-  if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-       ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
-  }
-  return;
-}
-
-
-/* suppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
-   greyed out (UI_NODE_SUPPRESSED), gives up the keyboard focus and is redrawn.
-*/
-void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
-
-{
-  if (actionId == control->actionId) {
-    control->base.nodeFlags = control->base.nodeFlags | UI_NODE_SUPPRESSED;
-    UiKeyboardFocus_ReleaseNode(&control->base);
-    UiNode_InvalidateRoot(&control->base);
-  }
-  return;
-}
-
-
-/* unsuppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
-   enabled again, takes the keyboard focus if nobody has it and is redrawn.
-*/
-void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
-
-{
-  if (actionId == control->actionId) {
-    control->base.nodeFlags = control->base.nodeFlags & ~UI_NODE_SUPPRESSED;
-    UiKeyboardFocus_AcquireIfNone(&control->base);
-    UiNode_InvalidateRoot(&control->base);
-  }
-  return;
-}
-
-
-/* drawClipped of the image control (g_UiImageControlVtable): in persistent activation mode the children
-   are drawn first, then the image itself: alternateSubresource while selected, else normalSubresource. An
-   image with UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE is only drawn while selected.
-*/
-void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiImageControl *control)
-
-{
-  Bool8 accessFailed;
-  GraphicsSubresourceIndex subresource;
-
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
-      UiContainer_DrawIntersectingChildren
-                (clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
-    }
-    if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
-       (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0)) {
-      accessFailed = g_GraphicsFramebufferBeginAccess();
-      if (!accessFailed) {
-        if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-          subresource = control->normalSubresource;
-        }
-        else {
-          subresource = control->alternateSubresource;
-        }
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
-                   (control->selectable).base.left,subresource,control->textureSource,g_FramebufferAccess);
-        g_GraphicsFramebufferEndAccess();
-      }
-    }
-  }
-  return;
-}
-
-
-/* nonRightPress of the image control (g_UiImageControlVtable): plays the pointer sound
-   (UI_IMAGE_CONTROL_POINTER_SOUND, unless the image is already OPEN), drops the active child and the hover
-   target, then toggles: a press on an opaque pixel of an already selected image clears
-   UI_IMAGE_CONTROL_PRESS_STATE_BITS, any other press sets them.
-*/
-void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control)
-
-{
-  UiSelectableStateFlags *pressStateFlagsField;
-  Bool8 opaqueHit;
-  UiSelectableStateFlags *stateFlagsField;
-
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    return;
-  }
-  if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
-      ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-      control->pointerActivationSound != NULL) {
-    g_SoundPlayOneShot
-              (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               control->pointerActivationSound,NULL);
-  }
-  opaqueHit = false;
-  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
-      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                        (pointerY,pointerX,(control->selectable).base.top,
-                         (control->selectable).base.left,control->normalSubresource,
-                         control->textureSource);
-    }
-    else {
-      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                        (pointerY,pointerX,(control->selectable).base.top,
-                         (control->selectable).base.left,control->alternateSubresource,
-                         control->textureSource);
-    }
-  }
-  control->activeChild = NULL;
-  g_UiImageControlHoverTarget = NULL;
-  if (opaqueHit) {
-    /* Pressing an already selected image on an opaque pixel clears its selected/armed state. */
-    stateFlagsField = &(control->selectable).stateFlags;
-    *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STATE_BITS;
-  }
-  else {
-    pressStateFlagsField = &(control->selectable).stateFlags;
-    *pressStateFlagsField = *pressStateFlagsField | UI_IMAGE_CONTROL_PRESS_STATE_BITS;
-  }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
-  return;
-}
-
-
-/* nonRightRelease of the image control (g_UiImageControlVtable). A release while
-   UI_IMAGE_CONTROL_PRESSED_ON_IMAGE is set keeps it open: UI_IMAGE_CONTROL_OPEN, and the image becomes
-   g_UiImageControlHoverTarget. Otherwise an active child gets the release first, and the image stays open
-   only if it had one and OPEN was not yet set or PRESS_STARTED is set; else it closes: hover target
-   cleared, UI_IMAGE_CONTROL_HOVER_STATE_BITS cleared and the pointer sound played (POINTER_SOUND).
-*/
-void UiImageControl_NonRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiImageControl *control)
-
-{
-  UiSelectableStateFlags *hoverStateFlagsField;
-  UiNodeBase *previousActiveChild;
-  UiSelectableStateFlags *stateFlagsField;
-  UiNodeVtable *activeChildVtable;
-  Bool8 preserveHover;
-
-  previousActiveChild = control->activeChild;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
-    if (!preserveHover) {
-      if (previousActiveChild != NULL) {
-        activeChildVtable = previousActiveChild->vtable;
-        control->activeChild = NULL;
-        activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
-        preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 ||
-                        ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED) != 0;
-      }
-      if (!preserveHover) {
-        g_UiImageControlHoverTarget = NULL;
-        stateFlagsField = &(control->selectable).stateFlags;
-        *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-        if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-            control->pointerActivationSound != NULL) {
-          g_SoundPlayOneShot
-                    (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->pointerActivationSound,NULL);
-        }
-      }
-    }
-    if (preserveHover) {
-      hoverStateFlagsField = &(control->selectable).stateFlags;
-      *hoverStateFlagsField = *hoverStateFlagsField | UI_IMAGE_CONTROL_OPEN;
-      g_UiImageControlHoverTarget = control;
-      hoverStateFlagsField = &(control->selectable).stateFlags;
-      *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
-    }
-  }
-  UiNode_InvalidateRoot((UiNodeBase *)control);
-  return;
-}
-
-
-/* Re-tints a world model (army, effect or shot) after its runtime state bits changed: the tint chosen by
-   ModelRuntimeNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
-   differs from the tint the model already has.
-*/
-void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
-
-{
-  PackedArgb32 tintArgb;
-  
-  tintArgb = ModelRuntimeNode_GetStateTintArgb(modelNode);
-  if (tintArgb != modelNode->tintArgb) {
-    ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode);
-  }
-  return;
-}
-
-
-/* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
-   are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count
-   and the value the smallest progress any client has reported (transferProgressBytes of player blocks 1..n); on a
-   client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is
-   running and not yet complete.
-*/
-void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control)
-
-{
-  UiTransferPayloadByteCount receivedTotal;
-  uint32_t minimumProgress;
-  uint32_t receivedDone;
-  int remainingPlayers;
-  FrontendPlayerRuntimeRecord *playerRecord;
-
-  playerRecord = g_FrontendPlayerRuntimeBlocks;
-  receivedTotal = g_UiTransferMailbox.receivedByteCount;
-  minimumProgress = g_UiTransferMailbox.outgoingByteCount;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if (g_UiTransferMailbox.outgoingByteCount == 0) {
-      return;
-    }
-    remainingPlayers = g_FrontendPlayerRuntimeBlockCount - 1;
-    if (remainingPlayers == 0) {
-      return;
-    }
-    control->minimumValue = 0;
-    control->maximumValue = minimumProgress;
-    /* the clients follow the host's own block 0 */
-    do {
-      if ((int)playerRecord[1].transferProgressBytes < (int)minimumProgress) {
-        minimumProgress = playerRecord[1].transferProgressBytes;
-      }
-      remainingPlayers--;
-      playerRecord = playerRecord + 1;
-    } while (remainingPlayers != 0);
-    control->value = minimumProgress;
-    if (control->maximumValue <= minimumProgress) {
-      return;
-    }
-  }
-  else {
-    if ((g_UiTransferMailbox.receivedByteCount == 0) &&
-       (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
-      return;
-    }
-    receivedDone = g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes;
-    control->minimumValue = 0;
-    control->maximumValue = receivedTotal;
-    control->value = receivedDone;
-    if (receivedTotal <= receivedDone) {
-      return;
-    }
-  }
-  UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipBottom,clipRight,clipTop,clipLeft,control);
-  return;
-}
-
 
 /* One step of the sorted insert in UiDisplaySettings_OpenAndPopulateModeSelection: a value below the slot
    takes the slot and the displaced slot value moves on to the next slot; otherwise the value itself moves on.
@@ -1226,49 +696,6 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   return;
 }
 
-
-/* Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
-   precisely. A miss clears UI_IMAGE_CONTROL_PRESSED_ON_IMAGE and, in persistent activation mode, passes the
-   test on to the children. Returns the hit node or UI_NODE_NONE.
-*/
-UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
-
-{
-  UiNodeBase *hitNode;
-  Bool8 opaqueHit;
-
-  if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    return UI_NODE_NONE;
-  }
-  if ((control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
-    opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                      (pointerY,pointerX,control->selectable.base.top,
-                       control->selectable.base.left,control->normalSubresource,
-                       control->textureSource);
-  }
-  else {
-    opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                      (pointerY,pointerX,control->selectable.base.top,
-                       control->selectable.base.left,control->alternateSubresource,
-                       control->textureSource);
-  }
-  if (opaqueHit) {
-    return (UiNodeBase *)control;
-  }
-  control->selectable.stateFlags &= ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
-  if ((control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
-    return UI_NODE_NONE;
-  }
-  /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
-     while g_UiImageControlHoverTarget is NULL */
-  hitNode = UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
-  if (hitNode == (UiNodeBase *)control && g_UiImageControlHoverTarget != NULL) {
-    return UI_NODE_NONE;
-  }
-  return hitNode;
-}
-
-
 /* Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
    colour-depth, resolution and adapter button whose combination with the other selected values was not
    enumerated (GraphicsDisplayMode_IsEnumerated) is suppressed, the others are enabled; the buttons matching
@@ -1381,67 +808,3 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   }
   return;
 }
-
-
-/* Class vtables. */
-
-UiNodeVtable g_UiRangeSliderControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiRangeSliderControl_DrawTrackAndThumb),
-        .layout = THANDOR_FN(UiContainer_LayoutChildren),
-        .nonRightPress = THANDOR_FN(UiRangeSliderControl_BeginThumbDrag),
-        .nonRightRelease = THANDOR_FN(UiRangeSliderControl_EndThumbDrag),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiRangeSliderControl_UpdateValueFromPointer),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-        .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-        .keyboardEvent = THANDOR_FN(UiRangeSliderControl_HandleKeyboard),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiRangeSliderControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiRangeSliderControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiNode_DefaultTick),
-        .pointerWheel = THANDOR_FN(UiRangeSliderControl_HandlePointerWheel)};
-
-UiNodeVtable g_UiImageControlVtable = {
-        .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-        .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-        .drawClipped = THANDOR_FN(UiImageControl_DrawClipped),
-        .layout = THANDOR_FN(UiImageControl_LayoutChildrenToParent),
-        .nonRightPress = THANDOR_FN(UiImageControl_NonRightPress),
-        .nonRightRelease = THANDOR_FN(UiImageControl_NonRightRelease),
-        .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-        .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-        .nonRightDrag = THANDOR_FN(UiImageControl_NonRightDrag),
-        .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-        .pointerMove = THANDOR_FN(UiImageControl_PointerMove),
-        .hitTest = THANDOR_FN(UiImageControl_HitTestOpaque),
-        .keyboardEvent = THANDOR_FN(UiSelectableControl_KeyboardEvent),
-        .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-        .suppressActionId = THANDOR_FN(UiSelectableControl_SuppressIfActionId),
-        .unsuppressActionId = THANDOR_FN(UiSelectableControl_UnsuppressIfActionId),
-        .tick = THANDOR_FN(UiImageControl_TickHover),
-        .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent)};
-
-UiNodeVtable g_UiTransferProgressGaugeVtable = {
-    .relocate = THANDOR_FN(UiContainer_RelocateChildren),
-    .method04 = THANDOR_FN(UiNode_DefaultMethod04_NoOp),
-    .drawClipped = THANDOR_FN(UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw),
-    .layout = THANDOR_FN(UiContainer_LayoutChildren),
-    .nonRightPress = THANDOR_FN(UiNode_DefaultNonRightPress),
-    .nonRightRelease = THANDOR_FN(UiNode_DefaultNonRightRelease),
-    .rightPress = THANDOR_FN(UiNode_ForwardRightPressToParent),
-    .rightRelease = THANDOR_FN(UiNode_DefaultRightRelease),
-    .nonRightDrag = THANDOR_FN(UiNode_DefaultNonRightDrag),
-    .rightDrag = THANDOR_FN(UiNode_DefaultRightDrag),
-    .pointerMove = THANDOR_FN(UiNode_DefaultPointerMove),
-    .hitTest = THANDOR_FN(UiContainer_HitTestChildren),
-    .keyboardEvent = THANDOR_FN(UiNode_DefaultKeyboardEventMoveFocusNext),
-    .applyFlags = THANDOR_FN(UiNode_ApplyFlagsRecursive),
-    .suppressActionId = THANDOR_FN(UiContainer_SuppressActionId),
-    .unsuppressActionId = THANDOR_FN(UiContainer_UnsuppressActionId),
-    .tick = THANDOR_FN(UiNode_DefaultTick),
-    .pointerWheel = THANDOR_FN(UiNode_ForwardPointerWheelToParent),
-};
