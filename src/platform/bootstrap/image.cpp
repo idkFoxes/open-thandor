@@ -16,21 +16,11 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/core/ptr32.h>
 
-/* Instruction, frame and stack pointer of a CONTEXT and the StackWalk64 machine type of this build. The
-   crash logs were written for x86; the x64 build logs the same through Rip/Rbp/Rsp (5f). */
-#if defined(_M_IX86)
-#define CRASH_MACHINE_TYPE IMAGE_FILE_MACHINE_I386
-#define CONTEXT_PC(context) ((context).Eip)
-#define CONTEXT_FP(context) ((context).Ebp)
-#define CONTEXT_SP(context) ((context).Esp)
-#elif defined(_M_X64)
+/* Instruction, frame and stack pointer of a CONTEXT and the StackWalk64 machine type of this (x64) build. */
 #define CRASH_MACHINE_TYPE IMAGE_FILE_MACHINE_AMD64
 #define CONTEXT_PC(context) ((context).Rip)
 #define CONTEXT_FP(context) ((context).Rbp)
 #define CONTEXT_SP(context) ((context).Rsp)
-#else
-#error "crash handler: unsupported architecture"
-#endif
 
 static void executable_directory(char *out, size_t capacity)
 {
@@ -145,34 +135,12 @@ void Thandor_LogStack(const char *reason, unsigned value)
     fprintf(out, "%s 0x%08X\n", reason, value);
     memset(&context, 0, sizeof context);
     context.ContextFlags = CONTEXT_CONTROL;
-#if defined(_M_IX86)
-    /* RtlCaptureContext reads the caller's return address through EBP, which the optimized
-       build does not keep as a frame pointer (EBP may be 0). Capture ESP/EBP/EIP directly. */
-    {
-        DWORD espValue;
-        DWORD ebpValue;
-        DWORD eipValue;
-        __asm {
-            mov espValue, esp
-            mov ebpValue, ebp
-            call here
-        here:
-            pop eax
-            mov eipValue, eax
-        }
-        context.Esp = espValue;
-        context.Ebp = ebpValue;
-        context.Eip = eipValue;
-    }
-#else
     /* x64: the stack walk unwinds through the unwind tables, not a frame pointer */
     RtlCaptureContext(&context);
-#endif
     log_stack_thread(out, &context, GetCurrentThread());
     fclose(out);
 }
 
-#if defined(_WIN64)
 /* core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout. */
 void Thandor_Ptr32Overflow(uintptr_t value)
 {
@@ -180,11 +148,10 @@ void Thandor_Ptr32Overflow(uintptr_t value)
     Thandor_LogStack("Ptr32 overflow stack", (unsigned)value);
     ExitProcess(0xF5);
 }
-#endif
 
 /* First thing in the crash filter: registers and raw stack words to crash_raw.log using only
    kernel32/user32 calls, so a corrupted CRT heap or stack cannot stop it. Symbolize the code
-   addresses offline with build-x86/thandor.map. */
+   addresses offline with the build's thandor.pdb or a /MAP map file. */
 static void raw_crash_dump(EXCEPTION_POINTERS *info)
 {
     char path[MAX_PATH];
@@ -219,15 +186,10 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
                   (DWORD)info->ExceptionRecord->ExceptionInformation[0],
                   (DWORD)info->ExceptionRecord->ExceptionInformation[1]);
     WriteFile(file, line, n, &written, NULL);
-#if defined(_M_IX86)
-    n = wsprintfA(line, "eip=%08lX eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\r\n",
-                  c->Eip, c->Eax, c->Ebx, c->Ecx, c->Edx, c->Esi, c->Edi, c->Ebp, c->Esp);
-#else
     /* x64: each register as high and low dword (wsprintf has no 64-bit format) */
     n = wsprintfA(line, "rip=%08lX%08lX rax=%08lX%08lX rbp=%08lX%08lX rsp=%08lX%08lX\r\n",
                   (DWORD)(c->Rip >> 32), (DWORD)c->Rip, (DWORD)(c->Rax >> 32), (DWORD)c->Rax,
                   (DWORD)(c->Rbp >> 32), (DWORD)c->Rbp, (DWORD)(c->Rsp >> 32), (DWORD)c->Rsp);
-#endif
     WriteFile(file, line, n, &written, NULL);
     for (i = 0; i < 512; i += 8) {
         if (!Thandor_IsReadable(stack + i, 32)) {
@@ -271,15 +233,9 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
                 info->ExceptionRecord->ExceptionInformation[0] == 1 ? "write" : "read",
                 info->ExceptionRecord->ExceptionInformation[1]);
     }
-#if defined(_M_IX86)
-    fprintf(out, "eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\n\n",
-            context.Eax, context.Ebx, context.Ecx, context.Edx, context.Esi, context.Edi, context.Ebp,
-            context.Esp);
-#else
     fprintf(out, "rax=%016llX rbx=%016llX rcx=%016llX rdx=%016llX\nrsi=%016llX rdi=%016llX rbp=%016llX rsp=%016llX\n\n",
             context.Rax, context.Rbx, context.Rcx, context.Rdx, context.Rsi, context.Rdi, context.Rbp,
             context.Rsp);
-#endif
     fflush(out);
     /* Raw stack words first: the stack walk below can fault on a corrupted stack. */
     {
