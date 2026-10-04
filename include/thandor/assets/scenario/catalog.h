@@ -67,7 +67,8 @@ void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,u
 
 ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
           (ScenarioCatalogSourceByteCount sourceByteCount,ScenarioCatalogRecord *sourceRecords,
-          ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords);
+          ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords,
+          ScenarioCatalogRecordCount maxRecordCount);
 
 extern ScenarioCatalogHeader *g_ScenarioCatalog;
 extern uint32_t g_ScenarioCatalogUsedBytes;

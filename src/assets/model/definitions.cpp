@@ -7,6 +7,7 @@
 
 #include <thandor/assets/model/definitions.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -165,10 +166,22 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
 /* Serialized model node tree: nodeFlags (low nibble 0 = has a sprite), sprite path right after the header,
    spriteAssetReference, ownedNestedResourcePresent (owned-copy count), childCount, childSerializedOffsets
    (relative to the asset, relocated in place). Loads or reuses each node's sprite; returns true with *error
-   on failure. */
-static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error)
+   on failure. The original trusts childCount and the nesting depth; bounded here because the walk follows file
+   data: a node with more children than childSerializedOffsets holds or a tree deeper than
+   MDL_NODE_TREE_MAX_DEPTH (a cyclic offset) fails with FATAL_ERROR_MODEL_ASSET_INVALID before its sprite is
+   loaded. The stock models use at most 5 children and depth 5. */
+#define MDL_NODE_TREE_MAX_DEPTH 64
+static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error,
+                                                uint32_t depth)
 {
   uint32_t childIndex;
+  if (depth >= MDL_NODE_TREE_MAX_DEPTH ||
+      node->childCount > sizeof(node->childSerializedOffsets) / sizeof(node->childSerializedOffsets[0])) {
+    Thandor_Log("ModelDefinition_RegisterAndResolveReferences: node with %u children at depth %u, rejected",
+                (uint32_t)node->childCount,depth);
+    *error = FATAL_ERROR_MODEL_ASSET_INVALID;
+    return true;
+  }
   if ((node->nodeFlags & 0xf) == 0) {
     uint16_t *spritePath = (uint16_t *)(node + 1);
     SpriteAssetHeader *loadedSprite;
@@ -204,7 +217,8 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
     /* relocate the child offset to a pointer in place */
     node->childSerializedOffsets[childIndex] = node->childSerializedOffsets[childIndex] + (int)(uintptr_t)asset;
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error)) {
+                  ((MdlSerializedNodeHeader *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error,
+                   depth + 1)) {
       return true;
     }
   }
@@ -344,6 +358,16 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
   uint32_t status;
   uint32_t rootNodeOffset;
 
+  /* The original accepts any target class; rejected here because the shot code indexes the 8 per-class impact
+     effects and damages of a shot definition with it (world/shots/flight.cpp; the stock models use 0..7). */
+  if (definition->targetClassIndex >= SHOT_TARGET_CLASS_IMPACT_COUNT) {
+    Thandor_Log("ModelDefinition_RegisterAndResolveReferences: model %u has target class %u, rejected",
+                (uint32_t)definition->definitionId,definition->targetClassIndex);
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
+    *outError = FATAL_ERROR_MODEL_ASSET_INVALID;
+    return false;
+  }
   status = ModelDefinition_ClaimRegistrySlot(definition);
   if (status != 0) {
     *outError = status;
@@ -355,7 +379,7 @@ Bool8 ModelDefinition_RegisterAndResolveReferences
     definition->rootNodeOffsetOrPointer = Thandor_PointerToU32((uint8_t *)asset + rootNodeOffset); /* 5f-format: ModelDefinition.rootNodeOffsetOrPointer */
     /* The node tree walk is a recursion over every child (ModelDefinition_ResolveNodeSprites). */
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status)) {
+                  ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status,0)) {
       *outError = status;
       return false;
     }

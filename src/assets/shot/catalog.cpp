@@ -7,6 +7,7 @@
 
 #include <thandor/assets/shot/catalog.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -227,6 +228,15 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
   ShotDefinition **registrySlotCursor;
   uint32_t spriteError;
 
+  /* The original accepts a lifetime of 0; rejected here because world/shots/flight.cpp divides the impact damage
+     by it (the stock shots use 6 and more). */
+  if (definition->projectileLifetimeTicks == 0) {
+    Thandor_Log("ShotDefinition_RegisterAndResolveReferences: shot %u has projectile lifetime 0, rejected",
+                (uint32_t)definition->definitionId);
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
+    return FATAL_ERROR_SHOT_ASSET_INVALID;
+  }
   if (ShotRuntime_FindDefinitionById(definition->definitionId) != NULL) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);

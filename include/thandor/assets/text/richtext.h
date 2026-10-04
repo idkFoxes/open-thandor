@@ -61,7 +61,7 @@
 /* The 0x18 return resumes 8 bytes (the four payload code units) after the saved position. */
 #define RICHTEXT_NESTED_PAYLOAD_BYTES 8
 /* Code units of g_FontRuntimeBuffer that RichTextCommandStream_FlattenNestedToRuntimeBuffer fills (the terminator
-   is written behind them). */
+   is written behind them, or over the last one when all are used: the allocation holds exactly these units). */
 #define RICHTEXT_RUNTIME_BUFFER_UNITS 0x2000
 
 /* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */

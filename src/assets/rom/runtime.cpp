@@ -7,6 +7,7 @@
 
 #include <thandor/assets/rom/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
 
@@ -47,17 +48,31 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
   return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
 
+/* Depth of the explicit walk stacks below; RomSerializedNodeTree_LoadSpritesAndRelocate rejects deeper trees. */
+#define ROM_NODE_TREE_MAX_DEPTH 64
+#define ROM_NODE_MAX_CHILDREN (sizeof(((RomSerializedNodeHeader *)0)->childReferences) / \
+                               sizeof(((RomSerializedNodeHeader *)0)->childReferences[0]))
+
 /* Depth-first walk over a relocated sprite-node tree (RomSerializedNodeHeader), releasing every node's sprite
    asset, parents before children, with an explicit stack of {remaining, nextChild, node} frames. The same
    tree is walked by
-   RomSerializedNodeTree_LoadSpritesAndRelocate. */
+   RomSerializedNodeTree_LoadSpritesAndRelocate, which rejects trees with more than ROM_NODE_MAX_CHILDREN
+   children per node or deeper than ROM_NODE_TREE_MAX_DEPTH; the limits are applied here as well so that a
+   rejected tree is never walked out of bounds.
+   Original quirk: every node's sprite is released, also one a node took over from the sprite registry
+   (RomSerializedNode_LoadSprite: existingSprite, ownedNestedResourcePresent stays 0), which would be released
+   twice. Kept because the stock engine\zentrale.rom (18 records with one node each, 18 distinct sprite ids
+   raum00..raum18) never shares a sprite, so every node owns its sprite. */
 static void RomSerializedNodeTree_ReleaseSprites(RomSerializedNodeHeader *node)
 {
-  struct { RomSerializedNodeHeader *node; uint32_t nextChild; uint32_t remaining; } frames[64];
+  struct { RomSerializedNodeHeader *node; uint32_t nextChild; uint32_t remaining; } frames[ROM_NODE_TREE_MAX_DEPTH];
   int depth = 0;
 
   do {
     frames[depth].remaining = node->childCount;
+    if (frames[depth].remaining > ROM_NODE_MAX_CHILDREN || depth + 1 >= ROM_NODE_TREE_MAX_DEPTH) {
+      frames[depth].remaining = 0; /* rejected while loading; its children were never relocated */
+    }
     frames[depth].nextChild = 0;
     Resource_Release(node->spriteAssetReference.spriteAsset);
     frames[depth].node = node;
@@ -196,19 +211,32 @@ static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t
 /* Depth-first walk over a serialized sprite-node tree, parents before children: loads every node's sprite
    (RomSerializedNode_LoadSprite) and relocates the child offsets (relative to assetBase) to pointers in place
    while walking, with an explicit stack of {node, nextChild, remaining} frames. Returns 0, or the first loader
-   error. The same tree is walked by
+   error (a node with more than ROM_NODE_MAX_CHILDREN children or a tree deeper than ROM_NODE_TREE_MAX_DEPTH fails
+   with FATAL_ERROR_ROM_REGISTRY_FULL, the code of an invalid ROM header). The same tree is walked by
    RomSerializedNodeTree_ReleaseSprites. */
 static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
           (RomSerializedNodeHeader *node,RomAssetHeader *assetBase)
 {
-  struct { RomSerializedNodeHeader *node; uint32_t nextChild; uint32_t remaining; } frames[64];
+  struct { RomSerializedNodeHeader *node; uint32_t nextChild; uint32_t remaining; } frames[ROM_NODE_TREE_MAX_DEPTH];
   int depth = 0;
   uint32_t loadError;
   uint32_t *child;
 
   do {
+    /* The original trusts the file: childCount indexes the six child references and the frame stack has no
+       depth check; bounded here because a malformed ROM would write past both. */
+    if (depth >= ROM_NODE_TREE_MAX_DEPTH) {
+      Thandor_Log("RomAssetRecord_RegisterAndRelocate: node tree deeper than %d, rejected",ROM_NODE_TREE_MAX_DEPTH);
+      Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+      return FATAL_ERROR_ROM_REGISTRY_FULL;
+    }
     if (RomSerializedNode_LoadSprite(node,&loadError)) {
       return loadError;
+    }
+    if (node->childCount > ROM_NODE_MAX_CHILDREN) {
+      Thandor_Log("RomAssetRecord_RegisterAndRelocate: node with %u children, rejected",node->childCount);
+      Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
+      return FATAL_ERROR_ROM_REGISTRY_FULL;
     }
     frames[depth].node = node;
     frames[depth].nextChild = 0;
