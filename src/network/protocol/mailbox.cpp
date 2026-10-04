@@ -28,7 +28,7 @@ uint32_t g_UiTransferSequenceToken = 0x12340000;
 
 uint32_t g_UiTransferSenderContext = 0;
 
-UiTransferMailboxState g_UiTransferMailbox = {0};
+UiTransferMailboxState g_UiTransferMailbox = {};
 
 /* Implementation ownership: network/protocol/mailbox. */
 
@@ -118,7 +118,7 @@ static void UiTransferMailbox_ReceiveChunk
   totalByteCount = *(uint32_t *)(ringRecord->payload + 4);
   /* receivedAllocation: NULL = no transfer requested, UI_TRANSFER_MAILBOX_UNAVAILABLE = requested,
      first chunk still missing (allocated here), otherwise the buffer being filled */
-  if (g_UiTransferMailbox.receivedAllocation == NULL) {
+  if (g_UiTransferMailbox.receivedAllocation == nullptr) {
     return;
   }
   if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
@@ -177,7 +177,7 @@ static void UiTransferMailbox_ServeChunkRequest
   const uint32_t *mailboxSourceDwords;
   uint32_t *chunkPayloadCursor;
 
-  if (g_UiTransferMailbox.outgoingAllocation == NULL) {
+  if (g_UiTransferMailbox.outgoingAllocation == nullptr) {
     return;
   }
   /* the first record is compared before the count is checked */
@@ -359,7 +359,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 void UiTransferMailbox_ClearReceivedState(void)
 
 {
-  g_UiTransferMailbox.receivedAllocation = NULL;
+  g_UiTransferMailbox.receivedAllocation = nullptr;
   g_UiTransferMailbox.receivedByteCount = 0;
   g_UiTransferMailbox.receivedRemainingBytes = 0;
   g_UiTransferMailbox.receiveRetryTicks = 0;
@@ -375,12 +375,12 @@ void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount)
 
 {
   if (g_UiTransferMailbox.receivedAllocation != UI_TRANSFER_MAILBOX_UNAVAILABLE &&
-      g_UiTransferMailbox.receivedAllocation != NULL &&
+      g_UiTransferMailbox.receivedAllocation != nullptr &&
       g_UiTransferMailbox.receivedRemainingBytes == 0) {
     *outByteCount = g_UiTransferMailbox.receivedByteCount;
     return g_UiTransferMailbox.receivedAllocation;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Gives this machine a new random session identity before it opens or looks for a session: XORs a random

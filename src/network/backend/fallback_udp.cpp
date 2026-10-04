@@ -135,7 +135,7 @@ static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress(voi
   uint8_t *ipOption;
 
   ipOption = g_CommandLineFindOption(3,s_CommandLineOptionIp); /* "IP=" */
-  if ((ipOption == NULL) || (ipOption[3] != '"')) {
+  if ((ipOption == nullptr) || (ipOption[3] != '"')) {
     return 0;
   }
   /* copy the quoted value, up to and including the closing quote (or the terminator), into the scratch
@@ -160,7 +160,7 @@ static NetworkIpv4AddressNetworkOrder NetworkFallback_ResolveIpOptionAddress(voi
   if (bindAddress == INADDR_NONE) {
     hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
     bindAddress = 0;
-    if (hostEntry != NULL) {
+    if (hostEntry != nullptr) {
       bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
     }
   }
@@ -342,7 +342,7 @@ Bool8 NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDe
     if (ipv4AddressNetworkOrder == INADDR_NONE) {
       /* not a dotted address: look the host name up */
       resolvedHostEntry = g_WinSock_gethostbyname(g_NetworkEndpointTextScratchA);
-      if (resolvedHostEntry == NULL) {
+      if (resolvedHostEntry == nullptr) {
         return true;
       }
       ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
@@ -372,7 +372,7 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
   uint8_t *dottedAddress;
 
   dottedAddress = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
-  if (dottedAddress != NULL) {
+  if (dottedAddress != nullptr) {
     Text_CopyNarrowToUtf16(512,(uint16_t *)outputText,dottedAddress);
     return;
   }
