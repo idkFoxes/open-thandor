@@ -116,7 +116,7 @@ Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
       blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
                         ((WorldOwnerListNode *)modelNodeRuntime,worldXQ12,worldYQ12,
-                         (IMAGE_DOS_HEADER *)ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
+                         NULL,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
       if (!blocked) {
         if (modelRuntime->modelDefinition->placementContactKindIndex == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
           blocked = TerrainAuxHeightThreshold_TestAroundWorldPoint

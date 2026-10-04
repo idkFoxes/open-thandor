@@ -139,6 +139,11 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   targetCandidateCount = g_AiWorkspace07Count;
   targetCandidateRecords = g_AiWorkspace07Targets;
   if (g_AiWorkspace07Count == 0) {
+    /* Original quirk: workspace 03 holds 8-byte AiRuntimeWorkspaceEntry records (written at ws03+count*8 in
+       0x005383BE) but the original walks it with the 16-byte workspace-07 stride (0x0053B960 `add edi,0x10`,
+       modelRuntime read at +8), so candidate i is ws03[2i+1].modelRuntime: for i >= count/2 a stale entry of an
+       earlier rebuild, for count > 256 past the 0x1000-byte buffer. Kept: it feeds the AI decisions and the AI
+       hash; a loaded game can see a different stale tail than an uninterrupted one. */
     targetCandidateCount = g_AiWorkspace03Count;
     targetCandidateRecords = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
     if (g_AiWorkspace03Count == 0) {
