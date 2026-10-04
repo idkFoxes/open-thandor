@@ -10,9 +10,9 @@
    characters of WM_CHAR (Keyboard_OnChar), suppressed for the keys Win32_ShouldTranslateMessageFlags does not
    translate, with the control characters 1-26 of Ctrl+A..Ctrl+Z. Mouse events go into the g_CursorInputEvents
    ring exactly as DirectInputMouse_PollBufferedEvents appends them (position clamped to the framebuffer, the
-   excess in g_CursorOverflow*). Fullscreen uses SDL's relative mouse mode, so the position moves by the raw
-   device deltas as with the exclusive DirectInput mouse; the developer tools' window uses the absolute
-   position in framebuffer pixels. */
+   excess in g_CursorOverflow*). Fullscreen (borderless or exclusive) uses SDL's relative mouse mode, so the position moves by the raw
+   device deltas as with the exclusive DirectInput mouse; a window (display mode kind "Fenster", or the developer
+   tools' window) uses the absolute position mapped into framebuffer pixels. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
 
@@ -284,21 +284,22 @@ void AppendCursorEvent(GraphicsCursorEventType eventType) noexcept
 /* Absolute mode (window): the event position in framebuffer pixels. */
 void MoveToEventPosition(const SDL_Event &event) noexcept
 {
-  SDL_Event converted = event;
-  SDL_ConvertEventToRenderCoordinates(MainRenderer(), &converted);
-  float x = 0.0f;
-  float y = 0.0f;
-  if (converted.type == SDL_EVENT_MOUSE_MOTION) {
-    x = converted.motion.x;
-    y = converted.motion.y;
+  float windowX = 0.0f;
+  float windowY = 0.0f;
+  if (event.type == SDL_EVENT_MOUSE_MOTION) {
+    windowX = event.motion.x;
+    windowY = event.motion.y;
   }
-  else if ((converted.type == SDL_EVENT_MOUSE_BUTTON_DOWN) || (converted.type == SDL_EVENT_MOUSE_BUTTON_UP)) {
-    x = converted.button.x;
-    y = converted.button.y;
+  else if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) || (event.type == SDL_EVENT_MOUSE_BUTTON_UP)) {
+    windowX = event.button.x;
+    windowY = event.button.y;
   }
   else {
     return;
   }
+  float x = 0.0f;
+  float y = 0.0f;
+  WindowToFramebuffer(windowX, windowY, x, y);
   g_MouseX = static_cast<UiPixelCoordinate>(std::floor(x));
   g_MouseY = static_cast<UiPixelCoordinate>(std::floor(y));
 }
@@ -394,7 +395,7 @@ void HandleMouseEvent(const SDL_Event &event)
   if (DebugHook_IgnoreRealMouse()) {
     return;
   }
-  const bool relative = !Windowed();
+  const bool relative = !AbsoluteMouse();
   GraphicsCursorEventType eventType = MOTION_OR_WHEEL;
   s_mouseWheelDelta = 0;
   switch (event.type) {
@@ -458,6 +459,13 @@ void HandleFocusLost()
   SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 }
 
+void UpdateMouseMode() noexcept
+{
+  if (MainWindow() != nullptr) {
+    SDL_SetWindowRelativeMouseMode(MainWindow(), !AbsoluteMouse());
+  }
+}
+
 } // namespace thandor::sdl3
 
 using namespace thandor::sdl3;
@@ -476,9 +484,7 @@ Bool8 SdlInput_Init(uint32_t *outError)
     return false;
   }
   g_KeyboardStateMask |= LockKeyBits();
-  if (!Windowed()) {
-    SDL_SetWindowRelativeMouseMode(MainWindow(), true);
-  }
+  UpdateMouseMode();
   return true;
 }
 
@@ -515,11 +521,10 @@ void SdlInput_SetPosition(int32_t positionY,int32_t positionX)
   s_mouseWheelDelta = 0;
   /* the window follows the system mouse: move it along (not while a script drives the game, and only while it
      is over this window, so tests never move the desktop mouse) */
-  if (Windowed() && !DebugHook_IgnoreRealMouse() && (SDL_GetMouseFocus() == MainWindow())) {
+  if (AbsoluteMouse() && !DebugHook_IgnoreRealMouse() && (SDL_GetMouseFocus() == MainWindow())) {
     float windowX = 0.0f;
     float windowY = 0.0f;
-    SDL_RenderCoordinatesToWindow(MainRenderer(), static_cast<float>(positionX) + 0.5f,
-                                  static_cast<float>(positionY) + 0.5f, &windowX, &windowY);
+    FramebufferToWindow(static_cast<float>(positionX) + 0.5f, static_cast<float>(positionY) + 0.5f, windowX, windowY);
     SDL_WarpMouseInWindow(MainWindow(), windowX, windowY);
   }
 }

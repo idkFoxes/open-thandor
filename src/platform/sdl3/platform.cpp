@@ -5,7 +5,7 @@
  * Project code (not in the original game)
  */
 
-/* SDL3 backend: the main window, its renderer and the event pump (g_Win32PumpMessages). The pump does what
+/* SDL3 backend: the main window and the event pump (g_Win32PumpMessages); video.cpp presents into the window. The pump does what
    the original's Win32_PumpMessages and MainWindowProc do: the developer tools' pump hook first, then
    keys, characters, mouse and focus changes, and a quit request ends the game. */
 
@@ -28,8 +28,8 @@ namespace thandor::sdl3 {
 namespace {
 
 WindowPtr s_window;
-RendererPtr s_renderer;
 bool s_windowed = false;
+bool s_vulkanWindow = false;
 
 /* OPEN_THANDOR_WINDOW_X / _Y (developer tools' windowed mode), 0 when unset. */
 int WindowCoordinateFromEnvironment(const char *name) noexcept
@@ -54,19 +54,18 @@ SDL_Window *MainWindow() noexcept
   return s_window.get();
 }
 
-SDL_Renderer *MainRenderer() noexcept
-{
-  return s_renderer.get();
-}
-
 bool Windowed() noexcept
 {
   return s_windowed;
 }
 
+bool VulkanWindow() noexcept
+{
+  return s_vulkanWindow;
+}
+
 void DestroyMainWindow() noexcept
 {
-  s_renderer.reset();
   s_window.reset();
   g_MainWindow = nullptr;
 }
@@ -84,8 +83,20 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
     return false;
   }
   s_windowed = DebugHook_Windowed() != 0;
-  const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN | (s_windowed ? SDL_WindowFlags{0} : SDL_WINDOW_FULLSCREEN);
-  s_window.reset(SDL_CreateWindow(title, GAME_START_DISPLAY_WIDTH, GAME_START_DISPLAY_HEIGHT, flags));
+  /* hidden until the first display mode switch has applied the renderer and the display mode kind; a Vulkan
+     swapchain needs a window created for Vulkan, which needs the Vulkan loader, so without one the window is
+     created without and Vulkan is not offered */
+  const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN;
+#ifdef THANDOR_RENDERER_SDL_GPU
+  s_window.reset(SDL_CreateWindow(title, GAME_START_DISPLAY_WIDTH, GAME_START_DISPLAY_HEIGHT, flags | SDL_WINDOW_VULKAN));
+  s_vulkanWindow = static_cast<bool>(s_window);
+  if (!s_window) {
+    Thandor_Log("no Vulkan window (%s), Vulkan is not offered", SDL_GetError());
+  }
+#endif
+  if (!s_window) {
+    s_window.reset(SDL_CreateWindow(title, GAME_START_DISPLAY_WIDTH, GAME_START_DISPLAY_HEIGHT, flags));
+  }
   if (!s_window) {
     Thandor_Log("SDL_CreateWindow failed: %s", SDL_GetError());
     return false;
@@ -96,19 +107,8 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
     SDL_SetWindowPosition(s_window.get(), x, y);
     Thandor_Log("test aid: windowed mode, window at %d,%d", x, y);
   }
-  s_renderer.reset(SDL_CreateRenderer(s_window.get(), nullptr));
-  if (!s_renderer) {
-    Thandor_Log("SDL_CreateRenderer failed (%s), trying the software renderer", SDL_GetError());
-    s_renderer.reset(SDL_CreateRenderer(s_window.get(), SDL_SOFTWARE_RENDERER));
-  }
-  if (!s_renderer) {
-    Thandor_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
-    s_window.reset();
-    return false;
-  }
-  Thandor_Log("SDL %d.%d.%d, renderer %s, %s", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
-              SDL_GetRendererName(s_renderer.get()), s_windowed ? "windowed" : "fullscreen");
-  SDL_ShowWindow(s_window.get());
+  Thandor_Log("SDL %d.%d.%d%s", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
+              s_windowed ? ", windowed (test aid)" : "");
   SDL_StartTextInput(s_window.get());
   /* the window handle for the remaining Win32 users (fatal-error message box, file dialogs) */
   g_MainWindow = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(s_window.get()),

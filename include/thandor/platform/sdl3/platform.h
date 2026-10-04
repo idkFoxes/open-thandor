@@ -23,9 +23,10 @@
 
 /* --- window and event pump (src/platform/sdl3/platform.cpp) --- */
 
-/* Starts SDL (video, events), creates the main window (fullscreen desktop, or a 640x480 window at
-   OPEN_THANDOR_WINDOW_X/Y in the developer tools' windowed mode) and its renderer, and publishes the window's
-   HWND in g_MainWindow. Returns false (logged) when SDL or the window cannot be started. */
+/* Starts SDL (video, events), creates the hidden main window (at OPEN_THANDOR_WINDOW_X/Y in the developer tools'
+   windowed mode) and publishes its HWND in g_MainWindow. The renderer and the display mode kind (window,
+   borderless, fullscreen) are applied by the first display mode switch (SdlVideo_ApplyDisplayMode), which also
+   shows the window. Returns false (logged) when SDL or the window cannot be started. */
 Bool8 SdlPlatform_CreateMainWindow(const char *title);
 /* Where the original's TimerSystem_Init ran: installs the SDL timers in g_TimerRegisterPeriodic/g_TimerUnregisterPeriodic and
    SdlPlatform_PumpEvents in g_Win32PumpMessages. */
@@ -48,35 +49,46 @@ void SdlTimer_Shutdown(void);
 
 /* --- video (src/platform/sdl3/video.cpp) --- */
 
-/* In place of the original's Graphics_Init: allocates the graphics tables, lists one adapter ("SDL") and the display modes
-   (640x480 up to the desktop size, 16 and 32 bits per pixel) and installs SdlVideo_ApplyDisplayMode as the base
-   display-mode step. Returns 0 or the error code. */
+/* In place of the original's Graphics_Init: allocates the graphics tables, lists the renderers as the graphics
+   adapters ("Vulkan (GPU)", "DirectX 12 (GPU)", "Software (CPU)"; only GPU renderers whose driver is available,
+   probed once; with OPEN_THANDOR_GPU / -GPU / -SOFTWARE only the forced one) and for each of them the display
+   modes (640x480 up to the desktop size, 16 and 32 bits per pixel), and installs SdlVideo_ApplyDisplayMode as the
+   base display-mode step. Returns 0 or the error code. */
 uint32_t SdlVideo_Init(void);
-/* Runtime_Shutdown, after Graphics_Shutdown: releases the framebuffer, texture, renderer and window. */
+/* Runtime_Shutdown, after Graphics_Shutdown: releases the framebuffer, the renderer (SDL_GPU device or
+   SDL_Renderer) and the window. */
 void SdlVideo_Shutdown(void);
-/* Base step of g_GraphicsSetDisplayMode: a w x h memory framebuffer in RGB565 or XRGB8888 (the desktop depth
-   when windowed), a streaming texture of that format presented letterboxed, the pixel format, the published
-   framebuffer and the 16/32-bit blitters; then the chained finalize step. */
+/* Base step of g_GraphicsSetDisplayMode: switches to the adapter's renderer when it is not the running one (a
+   GPU renderer that cannot start falls back Vulkan -> Direct3D 12 -> software, logged), applies the display mode
+   kind (window, borderless fullscreen, exclusive fullscreen), a w x h memory framebuffer in RGB565 or XRGB8888 (the
+   desktop depth in the developer tools' window), the pixel format, the published framebuffer and the 16/32-bit
+   blitters; then the chained finalize step. */
 Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode);
-/* g_GraphicsFramebufferPresent: composes the software cursor into the framebuffer, uploads and presents it and
-   removes the cursor again. */
+/* g_GraphicsFramebufferPresent: composes the software cursor into the framebuffer, presents it letterboxed
+   (through the SDL_GPU device, or an SDL_Renderer streaming texture for the software renderer) and removes the
+   cursor again. */
 void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer);
+/* The renderer choice kept in the persistent settings (PERSISTENT_SETTING_RENDERER, not the original's adapter
+   index): the adapter index of the saved renderer (or of the one forced by OPEN_THANDOR_GPU / -GPU / -SOFTWARE; an
+   unavailable one gives the first adapter), and saving the renderer of an adapter (not while one is forced). The
+   original's PERSISTENT_SETTING_ADAPTER_INDEX gets 0, the one display adapter. */
+uint32_t SdlVideo_SavedAdapterIndex(void);
+void SdlVideo_SaveAdapterIndex(uint32_t adapterIndex);
+/* The second label part of an adapter (shown in brackets after its name): "GPU" or "CPU". */
+uint16_t *SdlVideo_AdapterDetailUtf16(uint32_t adapterIndex);
+/* The display mode kind (PERSISTENT_DISPLAY_MODE_*): the saved one (PERSISTENT_SETTING_DISPLAY_MODE_KIND), saving
+   it, the one in use, and the one the next SdlVideo_ApplyDisplayMode applies. The developer tools' window
+   (OPEN_THANDOR_WINDOWED) stays a window and saves nothing. */
+uint32_t SdlVideo_SavedDisplayModeKind(void);
+void SdlVideo_SaveDisplayModeKind(uint32_t kind);
+uint32_t SdlVideo_DisplayModeKind(void);
+void SdlVideo_SetDisplayModeKind(uint32_t kind);
 /* g_GraphicsFramebufferCaptureRegion: the memory framebuffer as a one-image ARGB8888 'gfx' asset. */
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion16Bit(uint32_t captureHeight,uint32_t captureWidth,
                                                                 int32_t sourceY,int32_t sourceX);
 GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t captureHeight,uint32_t captureWidth,
                                                                 int32_t sourceY,int32_t sourceX);
-
-/* --- GPU primitive renderer (src/platform/sdl3/gpu_renderer.cpp, CMake option THANDOR_RENDERER_SDL_GPU) --- */
-
-/* End of SdlVideo_Init: with OPEN_THANDOR_GPU=1 (or =compare in the developer tools) or the command-line option
-   -GPU, creates an SDL_GPU device and installs the GPU rasterization of the primitive queues in
-   g_GraphicsSetViewportAndClearDepth, g_GraphicsDrawPrimitiveQueue and g_GraphicsEndScene. Returns false (the
-   software renderer stays) when it is not requested or the device cannot be set up (logged). */
-bool SdlGpuRenderer_Init(void);
-/* SdlVideo_Shutdown: puts the software renderer's slots back and releases the device. */
-void SdlGpuRenderer_Shutdown(void);
 
 /* --- keyboard and mouse (src/platform/sdl3/input.cpp) --- */
 

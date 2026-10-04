@@ -16,6 +16,8 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace thandor::sdl3 {
@@ -38,12 +40,38 @@ using RendererPtr = std::unique_ptr<SDL_Renderer, RendererDeleter>;
 using TexturePtr = std::unique_ptr<SDL_Texture, TextureDeleter>;
 using AudioStreamPtr = std::unique_ptr<SDL_AudioStream, AudioStreamDeleter>;
 
-/* platform.cpp: the main window and its renderer (nullptr before SdlPlatform_CreateMainWindow and after
-   DestroyMainWindow), whether it is the developer tools' window instead of the fullscreen one, and their end. */
+/* platform.cpp: the main window (nullptr before SdlPlatform_CreateMainWindow and after DestroyMainWindow),
+   whether it is the developer tools' window (OPEN_THANDOR_WINDOWED), whether it was created for Vulkan
+   (SDL_WINDOW_VULKAN; false when no Vulkan loader exists), and its end. */
 SDL_Window *MainWindow() noexcept;
-SDL_Renderer *MainRenderer() noexcept;
 bool Windowed() noexcept;
+bool VulkanWindow() noexcept;
 void DestroyMainWindow() noexcept;
+
+/* video.cpp: the presentation geometry. LetterboxRect is the largest rectangle of the inner size's aspect
+   centred in the outer size; the window <-> framebuffer mappings use it with the window size (in window
+   coordinates) and the framebuffer size. AbsoluteMouse: the display mode kind is a normal window, so the
+   pointer follows the system mouse position instead of SDL's relative mouse mode. */
+SDL_FRect LetterboxRect(float outerWidth, float outerHeight, float innerWidth, float innerHeight) noexcept;
+void WindowToFramebuffer(float windowX, float windowY, float &outX, float &outY) noexcept;
+void FramebufferToWindow(float x, float y, float &outWindowX, float &outWindowY) noexcept;
+bool AbsoluteMouse() noexcept;
+
+/* input.cpp: switches SDL's relative mouse mode on or off after a display mode kind change (AbsoluteMouse). */
+void UpdateMouseMode() noexcept;
+
+/* gpu_renderer.cpp (THANDOR_RENDERER_SDL_GPU): the SDL_GPU device of the GPU renderers (renderer is
+   PERSISTENT_RENDERER_VULKAN or _DIRECT3D12). GpuRendererSupported probes the driver without creating a device.
+   StartGpuDevice creates the device, claims the window for its swapchain and installs the GPU rasterization of the
+   primitive queues (compare: the developer tools' compare mode); false (logged, nothing left behind) when any step
+   fails. StopGpuDevice puts the software rasterizer back and releases the window and the device.
+   PresentWithGpu uploads the framebuffer (RGB565 or XRGB8888 rows, pitchBytes apart) and blits it letterboxed into
+   the swapchain. */
+bool GpuRendererSupported(uint32_t renderer) noexcept;
+bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcept;
+void StopGpuDevice() noexcept;
+bool GpuDeviceRunning() noexcept;
+bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height, bool sixteenBit) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);
