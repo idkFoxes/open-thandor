@@ -7,6 +7,7 @@
 
 #include <thandor/ui/controls/panels.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/controls/panels. */
 
@@ -505,10 +506,21 @@ void UiFormattedContainer_DrawClipped
       currentValue = control->currentValue;
       scaleRange = control->initialScaleRange;
       barSpan = barEndX - barStartX;
-      /* Grow the scale by factors of 4 until it covers the value, the limit and the marker. */
-      while ((scaleRange < currentValue) || (scaleRange < control->limitValue) ||
-             (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
-              (scaleRange < ((UiFormattedContainerWithMarker *)control)->markerValue))) {
+      /* Grow the scale by factors of 4 until it covers the value, the limit and the marker. The original
+         loops forever when the initial range is <= 0 or the growth overflows; bounded here because of
+         that: a range <= 0 starts at 1 and the growth stops before it would overflow. */
+      if (scaleRange <= 0) {
+        static int s_loggedScaleRange;
+        if (s_loggedScaleRange == 0) {
+          s_loggedScaleRange = 1;
+          Thandor_Log("gauge %p: initial scale range %d, started at 1",(void *)control,scaleRange);
+        }
+        scaleRange = 1;
+      }
+      while (((scaleRange < currentValue) || (scaleRange < control->limitValue) ||
+              (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
+               (scaleRange < ((UiFormattedContainerWithMarker *)control)->markerValue))) &&
+             (scaleRange <= (INT32_MAX >> 2))) {
         scaleRange = scaleRange << 2;
       }
       if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
@@ -521,6 +533,15 @@ void UiFormattedContainer_DrawClipped
       if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
           (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
         scaleLimit = ((UiFormattedContainerWithMarker *)control)->markerValue;
+      }
+      if (scaleLimit == 0) {
+        /* The original divides by zero here (marker value 0); bounded here because that crashes. */
+        static int s_loggedScaleLimit;
+        if (s_loggedScaleLimit == 0) {
+          s_loggedScaleLimit = 1;
+          Thandor_Log("gauge %p: marker value 0, fill percentage taken against 1",(void *)control);
+        }
+        scaleLimit = 1;
       }
       fillPercent = (uint32_t)(((int64_t)currentValue * 100) / (int64_t)scaleLimit);
       textureFrame = UiFormattedContainer_FillVariantOffset

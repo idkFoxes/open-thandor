@@ -7,6 +7,7 @@
 
 #include <thandor/ui/controls/text.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/controls/text. */
 
@@ -119,9 +120,9 @@ void UiSingleLineTextControl_DrawClipped
     lineWidth = textExtent.widthPixels + lineWidth;
     tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
     capWidth = (int)tileSize.logicalWidthPixels;
-    /* Original quirk: until the framebuffer is accessed, the node the focus is lent to below is the cap
-       width reinterpreted as a pointer. */
-    focusLendTarget = (UiNodeBase *)(uintptr_t)tileSize.logicalWidthPixels;
+    /* The original leaves the cap width here, reinterpreted as a pointer, as the node the focus is lent to
+       below when the framebuffer cannot be accessed; NULL here because that pointer is written through. */
+    focusLendTarget = NULL;
     if (control->focusChild != NULL) {
       lineWidth = lineWidth + capWidth * 2;
     }
@@ -177,10 +178,19 @@ void UiSingleLineTextControl_DrawClipped
                  commandStream,alignOffsetY + (control->base).top,alignOffsetX + (control->base).left);
       g_GraphicsFramebufferEndAccess();
     }
-    /* NOTE: as in the original, focusLendTarget is the focus child only when the framebuffer could be
-       accessed (else it still holds the cap width), and a focused label without a focus child dereferences
-       NULL here. */
-    if (&control->base == g_UiKeyboardFocusNode) {
+    /* The original lends the focus whenever the label is focused, writing through NULL without a focus
+       child (or through the cap width when the framebuffer could not be accessed); bounded here because
+       that crashes: then the children are drawn without lending the focus. */
+    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget == NULL)) {
+      static int s_loggedMissingFocusChild;
+      if (s_loggedMissingFocusChild == 0) {
+        s_loggedMissingFocusChild = 1;
+        Thandor_Log("focused label %p: focus not lent (focus child %p, framebuffer %s)",
+                    (void *)control,(void *)control->focusChild,
+                    framebufferUnavailable ? "unavailable" : "accessed");
+      }
+    }
+    if ((&control->base == g_UiKeyboardFocusNode) && (focusLendTarget != NULL)) {
       g_UiKeyboardFocusNode = focusLendTarget;
       focusLendTarget->nodeFlags = focusLendTarget->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
