@@ -18,14 +18,13 @@ Asset loading, catalogs and resource formats.
 Module header: [`army.h`](../include/thandor/assets/army.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-army-catalog) - no file comment; main functions `ArmyAssetRegistry_FindById`, `ArmyAssetRegistry_FindEnabledById`, `ArmyAsset_PrepareRecords`
-- [`editor_cycling.cpp / editor_cycling.h`](source_guide/assets.md#file-assets-army-editor-cycling) - no file comment; main functions `ArmyAssetRegistry_NormalizeIdToPlaceableUnit`, `ArmyAssetRegistry_StepForwardPlaceableUnit`, `ArmyAssetRegistry_StepBackwardPlaceableUnit`
 
 <a id="module-assets-effect"></a>
 ### `assets/effect`
 
 Module header: [`effect.h`](../include/thandor/assets/effect.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-effect-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-effect-catalog) - no file comment; main functions `EffectDefinitionRegistry_FindById`, `EffectAsset_PrepareEntries`, `EffectDefinitions_ResolveCrossReferences`
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-effect-catalog) - no file comment; main functions `EffectDefinitionRegistry_FindById`, `EffectDefinitions_ResolveCrossReferences`, `EffectAsset_PrepareEntries`
 
 <a id="module-assets-model"></a>
 ### `assets/model`
@@ -33,7 +32,6 @@ Module header: [`effect.h`](../include/thandor/assets/effect.h) · Changelog: `c
 Module header: [`model.h`](../include/thandor/assets/model.h) · Changelog: `definitions` [dev](../CHANGELOG.md#module-assets-model-definitions) · [full](../CHANGELOG_FULL.md#module-assets-model-definitions)
 
 - [`definitions.cpp / definitions.h`](source_guide/assets.md#file-assets-model-definitions) - no file comment; main functions `ModelLookupTable_FindPackedPoint`, `ModelDefinitionRegistry_FindById`, `ModelLookupTable_GetPackedPointPosition`
-- [`mesh_raycast.cpp / mesh_raycast.h`](source_guide/assets.md#file-assets-model-mesh-raycast) - no file comment; main functions `ModelMesh_IntersectTriangleRayDistance`
 
 <a id="module-assets-package"></a>
 ### `assets/package`
@@ -45,19 +43,11 @@ Module header: [`package.h`](../include/thandor/assets/package.h) · Changelog: 
 - [`resource_loader.cpp / resource_loader.h`](source_guide/assets.md#file-assets-package-resource-loader) - no file comment; main functions `Resource_Release`, `Resource_Load`
 - [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-package-runtime) - no file comment; main functions `Package_LoadEntry`, `Package_SetLastErrorPath`, `Package_Mount`
 
-<a id="module-assets-resource"></a>
-### `assets/resource`
-
-Module header: [`resource.h`](../include/thandor/assets/resource.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-assets-resource-runtime) · [full](../CHANGELOG_FULL.md#module-assets-resource-runtime)
-
-- [`savegame_prepare.cpp / savegame_prepare.h`](source_guide/assets.md#file-assets-resource-savegame-prepare) - no file comment; main functions `InGameSaveGame_CreatePackage`, `InGameSaveGame_PrepareRegistrationRecords`, `InGameSaveGame_PrepareFactionImage`
-
 <a id="module-assets-rom"></a>
 ### `assets/rom`
 
 Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-assets-rom-runtime)
 
-- [`menu_room.cpp / menu_room.h`](source_guide/assets.md#file-assets-rom-menu-room) - no file comment; main functions `FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ActivateRecordById`, `FrontendRomTransition_RequestStop`
 - [`runtime.cpp / runtime.h`](source_guide/assets.md#file-assets-rom-runtime) - no file comment; main functions `RomAsset_PrepareRecords`, `FrontendRomRegistry_ClearAndReleaseNestedResources`, `RomRegistry_FindRecordBySlotValue`
 
 <a id="module-assets-scenario"></a>
@@ -66,15 +56,13 @@ Module header: [`rom.h`](../include/thandor/assets/rom.h) · Changelog: `runtime
 Module header: [`scenario.h`](../include/thandor/assets/scenario.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 - [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-scenario-catalog) - no file comment; main functions `ScenarioCatalog_RequestRomTransitionStopCallback`, `ScenarioCatalog_Rebuild`, `ScenarioCatalog_MergeRecordsByName`
-- [`frontend_selection.cpp / frontend_selection.h`](source_guide/assets.md#file-assets-scenario-frontend-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
-- [`session_load.cpp / session_load.h`](source_guide/assets.md#file-assets-scenario-session-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
 
 <a id="module-assets-shot"></a>
 ### `assets/shot`
 
 Module header: [`shot.h`](../include/thandor/assets/shot.h) · Changelog: `catalog` [full](../CHANGELOG_FULL.md#module-assets-shot-catalog)
 
-- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-shot-catalog) - no file comment; main functions `ShotDefinition_ComputeLaunchAngles`, `ShotDefinitionRegistry_FindByIdWithError`, `ShotAsset_PrepareEntries`
+- [`catalog.cpp / catalog.h`](source_guide/assets.md#file-assets-shot-catalog) - no file comment; main functions `ShotDefinitions_ValidateTerrainMaterialReferences`, `ShotDefinitionRegistry_FindByIdWithError`, `ShotAsset_PrepareEntries`
 
 <a id="module-assets-sprite"></a>
 ### `assets/sprite`
@@ -88,11 +76,9 @@ Module header: [`sprite.h`](../include/thandor/assets/sprite.h) · Changelog: `c
 
 Module header: [`text.h`](../include/thandor/assets/text.h) · Changelog: `resources` [full](../CHANGELOG_FULL.md#module-assets-text-resources); `richtext` [dev](../CHANGELOG.md#module-assets-text-richtext) · [full](../CHANGELOG_FULL.md#module-assets-text-richtext)
 
-- [`font.cpp / font.h`](source_guide/assets.md#file-assets-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeActiveFont`, `FontGlyph_GetLogicalSizeForStyle`, `FontRuntime_Init`
 - [`resources.cpp / resources.h`](source_guide/assets.md#file-assets-text-resources) - no file comment; main functions `TextResource_Resolve`, `TextResourcePage_Load`, `TextResourcePage_LoadCompatibilityAliases`
 - [`richtext.cpp / richtext.h`](source_guide/assets.md#file-assets-text-richtext) - no file comment; main functions `RichTextCommandStream_PatchPayloadBySelector`, `RichTextCommandStream_CopyExpanded`, `RichTextCommandStream_CopyToNarrow`
 - [`richtext_markup.cpp / richtext_markup.h`](source_guide/assets.md#file-assets-text-richtext-markup) - no file comment; main functions `RichTextMarkup_ParseAndBuildStringAsset`
-- [`richtext_render.cpp / richtext_render.h`](source_guide/assets.md#file-assets-text-richtext-render) - no file comment; main functions `RichTextCommandStream_DrawSingleLine`, `RichTextCommandStream_MeasureLine`, `RichTextCommandStream_MeasureWrappedBlock`
 
 ## [Audio](source_guide/audio.md)
 
@@ -119,7 +105,7 @@ Module header: [`codec.h`](../include/thandor/audio/codec.h) · Changelog: `sam`
 
 Module header: [`spatial.h`](../include/thandor/audio/spatial.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-audio-spatial-runtime)
 
-- [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-spatial-runtime) - no file comment; main functions `SpatialSound_PlayPositionedOneShot`, `SpatialSound_UpdateDesiredPositionedGains`, `SpatialSoundPool_Init`
+- [`runtime.cpp / runtime.h`](source_guide/audio.md#file-audio-spatial-runtime) - no file comment; main functions `SpatialSound_PlayPositionedOneShot`, `SpatialSound_UpdateDesiredPositionedGains`, `SpatialSoundSlot_CreateFromSampleAsset`
 
 ## [Core](source_guide/core.md)
 
@@ -138,7 +124,6 @@ Error handling, fixed-point maths, memory, settings and strings.
 
 Module header: [`error.h`](../include/thandor/core/error.h) · Changelog: `runtime` [dev](../CHANGELOG.md#module-core-error-runtime) · [full](../CHANGELOG_FULL.md#module-core-error-runtime)
 
-- [`fatal_dialog.cpp / fatal_dialog.h`](source_guide/core.md#file-core-error-fatal-dialog) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 - [`runtime.cpp / runtime.h`](source_guide/core.md#file-core-error-runtime) - no file comment; main functions `FatalError_Exit`, `ErrorSystem_Init`
 
 <a id="module-core-math"></a>
@@ -150,9 +135,7 @@ Module header: [`math.h`](../include/thandor/core/math.h) · Changelog: `fixed` 
 - [`fixed_transform.cpp / fixed_transform.h`](source_guide/core.md#file-core-math-fixed-transform) - no file comment; main functions `FixedTransform_ApplyPoint`, `FixedTransform_Compose`, `FixedTransform_BuildRotationBasis`
 - [`fixed_trig.cpp / fixed_trig.h`](source_guide/core.md#file-core-math-fixed-trig) - no file comment; main functions `FixedMath_Atan2Angle16`, `FixedMath_DirectionFromAnglesScaled`, `FixedMath_Vector2AngleAndLength`
 - [`fixed_vector.cpp / fixed_vector.h`](source_guide/core.md#file-core-math-fixed-vector) - no file comment; main functions `FixedMath_Length2`, `FixedMath_Length3`, `FixedVec3_DotQ28`
-- [`geometry.cpp / geometry.h`](source_guide/core.md#file-core-math-geometry) - no file comment; main functions `FixedGeometry_SolveTriangleJointAngles`, `Triangle2D_ComputeBarycentricWeightsQ12Packed`
-- [`interpolation.cpp / interpolation.h`](source_guide/core.md#file-core-math-interpolation) - no file comment; main functions `InterpolationState_SetNegatedTargetAndRescaleProgress`, `InterpolationStateTable_Advance256ByTicks`
-- [`motion_spline.cpp / motion_spline.h`](source_guide/core.md#file-core-math-motion-spline) - no file comment; main functions `WorldMotionSpline_BuildSixChannelCurves`, `WorldMotionSpline_EvaluateAndApplyAtTime`, `WorldMotionSpline_ClearCachedDerivatives`
+- [`geometry.cpp / geometry.h`](source_guide/core.md#file-core-math-geometry) - no file comment; main functions `FixedGeometry_SolveTriangleJointAngles`
 - [`random.cpp / random.h`](source_guide/core.md#file-core-math-random) - no file comment; main functions `Random_NextPrimary`, `Random_SetBothSeeds`, `Random_SelectSecondaryStream`
 - [`spline.cpp / spline.h`](source_guide/core.md#file-core-math-spline) - no file comment; main functions `CubicSpline_SolveCoefficientSystem`, `CubicSpline_BuildNaturalCoefficientSystem`, `CubicSpline_EvaluateValueQ12`
 
@@ -161,7 +144,7 @@ Module header: [`math.h`](../include/thandor/core/math.h) · Changelog: `fixed` 
 
 Module header: [`memory.h`](../include/thandor/core/memory.h) · Changelog: `allocator` [dev](../CHANGELOG.md#module-core-memory-allocator) · [full](../CHANGELOG_FULL.md#module-core-memory-allocator); `synchronization` [full](../CHANGELOG_FULL.md#module-core-memory-synchronization)
 
-- [`allocator.cpp / allocator.h`](source_guide/core.md#file-core-memory-allocator) - no file comment; main functions `ArenaHeap_Alloc`, `PriorityPairHeap_SiftUp`, `PriorityPairHeap_SiftDown`
+- [`allocator.cpp / allocator.h`](source_guide/core.md#file-core-memory-allocator) - no file comment; main functions `ArenaHeap_Alloc`, `ArenaHeap_Init`, `ArenaHeap_Shutdown`
 - [`synchronization.cpp / synchronization.h`](source_guide/core.md#file-core-memory-synchronization) - no file comment; main functions `Runtime_Shutdown`, `SpinLock_Acquire`, `SpinLock_TryAcquireFlags`
 
 <a id="module-core-settings"></a>
@@ -214,11 +197,13 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 - [`drive_common.cpp / drive_common.h`](source_guide/gameplay.md#file-gameplay-army-drive-common) - no file comment; main functions `ArmyRuntime_HandleCollisionPartner`, `ArmyRuntime_UpdateActivationMetricAndPlayStartSound`
 - [`drive_ground.cpp / drive_ground.h`](source_guide/gameplay.md#file-gameplay-army-drive-ground) - no file comment; main functions `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`, `ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation`, `ArmyRuntimeClass_UpdateGroundMovement`
 - [`factory.cpp / factory.h`](source_guide/gameplay.md#file-gameplay-army-factory) - no file comment; main functions `ArmyRuntimeClass_UpdateUnitFactory`, `ArmyRuntimeClass_UpdateStructureFactory`, `ArmyRuntimeSpawner_CreateLinkedChildInstance`
+- [`model_rules.cpp / model_rules.h`](source_guide/gameplay.md#file-gameplay-army-model-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
+- [`model_slots.cpp / model_slots.h`](source_guide/gameplay.md#file-gameplay-army-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
 - [`move_orders.cpp / move_orders.h`](source_guide/gameplay.md#file-gameplay-army-move-orders) - no file comment; main functions `ArmyRuntime_UpdateMovementAndWaypoints`, `ArmyRuntime_StartRoutedMoveCommand`, `ArmyRuntime_ResetMovementStateFromModel`
 - [`placement.cpp / placement.h`](source_guide/gameplay.md#file-gameplay-army-placement) - no file comment; main functions `ArmyPlacement_ValidateAssetAtPointAndCellCorners`, `ArmyPlacement_CanPlaceAssetAtFieldPoint`, `PlayerRuntime_CreatePlacementArmy`
 - [`placement_contact.cpp / placement_contact.h`](source_guide/gameplay.md#file-gameplay-army-placement-contact) - no file comment; main functions `ArmyPlacementContact_ApplyTerrainHeight`, `ArmyPlacementContact_ApplyWaterSurfaceHeight`, `ArmyPlacementContact_ApplyTerrainHeightAndNormal`
 - [`placement_release.cpp / placement_release.h`](source_guide/gameplay.md#file-gameplay-army-placement-release) - no file comment; main functions `ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation`, `ArmyPlacement_ReleaseFactionCapacity`, `ArmyPlacement_ReleaseClassStateReservation`
-- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntimePool_RebaseAfterLoad`
+- [`pool.cpp / pool.h`](source_guide/gameplay.md#file-gameplay-army-pool) - no file comment; main functions `ArmyRuntime_CreateInstanceFromAsset`, `ArmyRuntime_DestroyInstanceAndRefreshUi`, `ArmyRuntime_InitializePoolAndGraphics`
 - [`preview.cpp / preview.h`](source_guide/gameplay.md#file-gameplay-army-preview) - no file comment; main functions `ArmyAssetRegistry_ResolveOrCreatePreviewTexture`, `ArmyRuntime_RenderPreviewTexture`, `ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected`
 - [`turrets.cpp / turrets.h`](source_guide/gameplay.md#file-gameplay-army-turrets) - no file comment; main functions `ArmyRuntimeClass_UpdateSingleBarrelTurret`, `ArmyRuntimeClass_UpdateTwinBarrelTurret`, `FixedVector_StepBackwardAlongOwnDirection`
 - [`walker.cpp / walker.h`](source_guide/gameplay.md#file-gameplay-army-walker) - no file comment; main functions `ArmyRuntimeClass_UpdateArticulatedMovement`, `ArmyArticulatedRuntime_InitializeTerrainContactGeometry`, `ArmyArticulatedRuntime_UpdateSuspensionHierarchy`
@@ -229,19 +214,10 @@ Module header: [`army.h`](../include/thandor/gameplay/army.h) · Changelog: `aud
 
 Module header: [`faction.h`](../include/thandor/gameplay/faction.h) · Changelog: `relations` [dev](../CHANGELOG.md#module-gameplay-faction-relations) · [full](../CHANGELOG_FULL.md#module-gameplay-faction-relations); `runtime` [dev](../CHANGELOG.md#module-gameplay-faction-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-faction-runtime)
 
-- [`army_stock.cpp / army_stock.h`](source_guide/gameplay.md#file-gameplay-faction-army-stock) - no file comment; main functions `GameFactionRuntime_RegisterArmyAssetPointers`, `GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid`, `GameFactionRuntime_RebaseLoadedArmyReferences`
-- [`carryover.cpp / carryover.h`](source_guide/gameplay.md#file-gameplay-faction-carryover) - no file comment; main functions `OldUnitRuntime_ResetPendingTables`, `OldUnitRuntime_RebuildScenarioReplayTables`, `OldUnitRuntime_MergeMasksAndReplayRecords`
+- [`army_stock.cpp / army_stock.h`](source_guide/gameplay.md#file-gameplay-faction-army-stock) - no file comment; main functions `GameFactionRuntime_RegisterArmyAssetPointers`, `GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid`, `GameFactionRuntime_CancelQueuedArmyAssetsAndRefund`
+- [`economy.cpp / economy.h`](source_guide/gameplay.md#file-gameplay-faction-economy) - no file comment; main functions `InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState`
 - [`relations.cpp / relations.h`](source_guide/gameplay.md#file-gameplay-faction-relations) - no file comment; main functions `PlayerPairList_InsertRange`, `PlayerPairList_RemoveRange`, `GameFactionRuntime_AdvancePairwiseRelationState`
-- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-faction-runtime) - no file comment; main functions `GameFactionRuntime_TestCapabilityBitClear`, `GameFactionRuntime_GetPackedStateNibble`, `GameFactionRuntime_RecomputeProgressAndScoreMetrics`
-
-<a id="module-gameplay-input"></a>
-### `gameplay/input`
-
-Module header: [`input.h`](../include/thandor/gameplay/input.h) · Changelog: `world` [dev](../CHANGELOG.md#module-gameplay-input-world) · [full](../CHANGELOG_FULL.md#module-gameplay-input-world)
-
-- [`camera_commands.cpp / camera_commands.h`](source_guide/gameplay.md#file-gameplay-input-camera-commands) - no file comment; main functions `InGameCameraCommand_DispatchByCodeAndModifierFlags`
-- [`targeting.cpp / targeting.h`](source_guide/gameplay.md#file-gameplay-input-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
-- [`world.cpp / world.h`](source_guide/gameplay.md#file-gameplay-input-world) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`
+- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-faction-runtime) - no file comment; main functions `GameFactionRuntime_TestCapabilityBitClear`, `GameFactionRuntime_RecomputeProgressAndScoreMetrics`, `GameFactionRuntime_GetPackedStateNibble`
 
 <a id="module-gameplay-selection"></a>
 ### `gameplay/selection`
@@ -249,11 +225,6 @@ Module header: [`input.h`](../include/thandor/gameplay/input.h) · Changelog: `w
 Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Changelog: `overlay` [full](../CHANGELOG_FULL.md#module-gameplay-selection-overlay); `runtime` [full](../CHANGELOG_FULL.md#module-gameplay-selection-runtime)
 
 - [`commands.cpp / commands.h`](source_guide/gameplay.md#file-gameplay-selection-commands) - no file comment; main functions `InGameSelection_SelectAllOwnAircraftPads`, `InGamePlayerSelection_ReplaceWithArmyRuntimeIndex`, `InGamePlayerSelection_ApplyMoveCommand`
-- [`overlay.cpp / overlay.h`](source_guide/gameplay.md#file-gameplay-selection-overlay) - no file comment; main functions `SelectionOverlay_RenderSelectedArmyMetrics`, `SelectionOverlay_RenderArmyMetricsForEntity`, `SelectionOverlay_DrawBoundsFrame`
-- [`panel_cells.cpp / panel_cells.h`](source_guide/gameplay.md#file-gameplay-selection-panel-cells) - no file comment; main functions `SelectionPanel_DrawNumberCellAndAdvance`, `SelectionPanel_DrawIconCellAndAdvance`, `SelectionPanel_DrawSteppedMeterCellAndAdvance`
-- [`panel_metrics.cpp / panel_metrics.h`](source_guide/gameplay.md#file-gameplay-selection-panel-metrics) - no file comment; main functions `SelectionPanel_RenderArmyRuntimeMetrics`
-- [`panel_resources.cpp / panel_resources.h`](source_guide/gameplay.md#file-gameplay-selection-panel-resources) - no file comment; main functions `SelectionInfoPanel_InitResources`, `SelectionInfoPanel_ShutdownResources`
-- [`preview_markers.cpp / preview_markers.h`](source_guide/gameplay.md#file-gameplay-selection-preview-markers) - no file comment; main functions `InGameWorldOverlay_RebuildOrReleaseTransientMarkers`, `InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint`
 - [`queries.cpp / queries.h`](source_guide/gameplay.md#file-gameplay-selection-queries) - no file comment; main functions `SelectionInfo_IsEntryAbsent`, `SelectionInfo_AllEntriesEmptyOrMatchOwner`, `SelectionInfo_TestNotOwnAircraftPadsWithAircraft`
 - [`selection_set.cpp / selection_set.h`](source_guide/gameplay.md#file-gameplay-selection-selection-set) - no file comment; main functions `SelectionPlayerRuntime_MovePrimarySelectionBy`, `SelectionPlayerRuntime_RotatePrimarySelectionBy`, `SelectionPlayerRuntime_ClearTerrainEditSelectionState`
 
@@ -262,9 +233,20 @@ Module header: [`selection.h`](../include/thandor/gameplay/selection.h) · Chang
 
 Module header: [`session.h`](../include/thandor/gameplay/session.h) · Changelog: `level` [dev](../CHANGELOG.md#module-gameplay-session-level) · [full](../CHANGELOG_FULL.md#module-gameplay-session-level); `runtime` [dev](../CHANGELOG.md#module-gameplay-session-runtime) · [full](../CHANGELOG_FULL.md#module-gameplay-session-runtime); `savegame` [full](../CHANGELOG_FULL.md#module-gameplay-session-savegame)
 
-- [`level.cpp / level.h`](source_guide/gameplay.md#file-gameplay-session-level) - no file comment; main functions `LevelAsset_PrepareEndingMoviePath`, `InGameLevelRuntime_LoadResourcesAfterDefaultReset`, `InGameLevelRuntime_LoadResourcesAfterExternalTables`
-- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-session-runtime) - no file comment; main functions `ResourceRegistrationRuntime_RebaseLoadedRecords`, `InGameHotkeys_DispatchCommandByFlags`, `InGameRuntime_RunSessionUntilExit`
-- [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`
+- [`campaign_carryover.cpp / campaign_carryover.h`](source_guide/gameplay.md#file-gameplay-session-campaign-carryover) - no file comment; main functions `OldUnitRuntime_ResetPendingTables`, `OldUnitRuntime_RebuildScenarioReplayTables`, `OldUnitRuntime_MergeMasksAndReplayRecords`
+- [`level.cpp / level.h`](source_guide/gameplay.md#file-gameplay-session-level) - no file comment; main functions `LevelAsset_PrepareEndingMoviePath`, `InGameLevelRuntime_ShutdownLoadedAssetResources`, `InGameLevelRuntime_SaveLevelAssetImageFromWorldState`
+- [`level_new.cpp / level_new.h`](source_guide/gameplay.md#file-gameplay-session-level-new) - no file comment; main functions `NewLevel_Fail`, `NewLevel_CopyRuntimePrefix`, `NewLevel_LoadTechnology`
+- [`level_saved.cpp / level_saved.h`](source_guide/gameplay.md#file-gameplay-session-level-saved) - no file comment; main functions `InGameLevelRuntime_LoadResourcesAfterExternalTables`
+- [`level_script.cpp / level_script.h`](source_guide/gameplay.md#file-gameplay-session-level-script) - no file comment; main functions `InGameConditionRuntime_UpdateScheduledRecords`
+- [`loaded_session.cpp / loaded_session.h`](source_guide/gameplay.md#file-gameplay-session-loaded-session) - no file comment; main functions `InGameRuntime_InitializeLoadedSession`
+- [`loading_movie.cpp / loading_movie.h`](source_guide/gameplay.md#file-gameplay-session-loading-movie) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
+- [`new_session.cpp / new_session.h`](source_guide/gameplay.md#file-gameplay-session-new-session) - no file comment; main functions `InGameRuntime_InitializeNewSession`
+- [`runtime.cpp / runtime.h`](source_guide/gameplay.md#file-gameplay-session-runtime)
+- [`savegame.cpp / savegame.h`](source_guide/gameplay.md#file-gameplay-session-savegame) - no file comment; main functions `InGameSaveGame_WritePackage`, `RuntimeHexSegment_ToggleLightImageFlag`, `InGameSaveGame_CreatePackage`
+- [`savegame_load.cpp / savegame_load.h`](source_guide/gameplay.md#file-gameplay-session-savegame-load) - no file comment; main functions `GameFactionRuntime_RebaseLoadedArmyReferences`, `ResourceRegistrationRuntime_RebaseLoadedRecords`, `SavedLevel_LoadRuntimePools`
+- [`scenario_load.cpp / scenario_load.h`](source_guide/gameplay.md#file-gameplay-session-scenario-load) - no file comment; main functions `FrontendScenarioSession_LoadOrRequestCampaignBundle`, `FrontendScenarioSession_LoadOrRequestLevelAsset`, `FrontendScenarioAction_StartFieldGridLoad`
+- [`startup.cpp / startup.h`](source_guide/gameplay.md#file-gameplay-session-startup) - no file comment; main functions `InGameSession_SetWorldRuntimeFlag`, `InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess`, `InGameRuntime_RunSessionUntilExit`
+- [`tick.cpp / tick.h`](source_guide/gameplay.md#file-gameplay-session-tick) - no file comment; main functions `InGameRuntime_PeriodicCountdownAndClockTick`, `InGameRuntime_UpdateSimulationAndNetworkTick`
 
 <a id="module-gameplay-technology"></a>
 ### `gameplay/technology`
@@ -286,7 +268,6 @@ Module header: [`backend.h`](../include/thandor/graphics/backend.h) · Changelog
 - [`software.cpp / software.h`](source_guide/graphics.md#file-graphics-backend-software) - no file comment; main functions `SoftwareRenderer_BuildFactorTables`, `SoftwareGraphicsDispatch_NoOp`, `SoftwareGraphicsDispatch_SuccessNoOp`
 - [`software_blit.cpp / software_blit.h`](source_guide/graphics.md#file-graphics-backend-software-blit) - Software blits into the framebuffer, each in a 16-bit and a 32-bit pixel version: texture source blits (alpha, half, bilinear stretch, integer scale, palette bank, saturated add, modulated), ...
 - [`software_blit_helpers.h`](source_guide/graphics.md#file-graphics-backend-software-blit-helpers) - ---- Texture-source blits and rectangle fills ---------------------------------------------
-- [`software_credits_mask.cpp / software_credits_mask.h`](source_guide/graphics.md#file-graphics-backend-software-credits-mask) - The 8-bit reveal mask of the credits and scenario screen transitions (SoftwareMaskBuffer_*): pattern advance, circular, diagonal and band regions.
 - [`software_display_mode.cpp / software_display_mode.h`](source_guide/graphics.md#file-graphics-backend-software-display-mode) - Software renderer display mode: the pixel format and channel pack tables of a mode, the display mode hook chain and the owned memory framebuffer.
 - [`software_raster.h`](source_guide/graphics.md#file-graphics-backend-software-raster) - Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in software_rasterizer.cpp; the texture-source blit helpers are in software_blit_helpers.h).
 - [`software_rasterizer.cpp / software_rasterizer.h`](source_guide/graphics.md#file-graphics-backend-software-rasterizer) - Software triangle rasterizer: the primitive queue walkers per pixel family (16-bit, non-16-bit, auxiliary target), the 64-entry raster mode handler tables, the triangle packet set-up and the depth ...
@@ -307,6 +288,7 @@ Module header: [`core.h`](../include/thandor/graphics/core.h) · Changelog: `run
 Module header: [`render.h`](../include/thandor/graphics/render.h) · Changelog: `model` [dev](../CHANGELOG.md#module-graphics-render-model) · [full](../CHANGELOG_FULL.md#module-graphics-render-model); `primitives` [dev](../CHANGELOG.md#module-graphics-render-primitives) · [full](../CHANGELOG_FULL.md#module-graphics-render-primitives); `projection` [full](../CHANGELOG_FULL.md#module-graphics-render-projection); `shading` [dev](../CHANGELOG.md#module-graphics-render-shading) · [full](../CHANGELOG_FULL.md#module-graphics-render-shading)
 
 - [`light_records.cpp / light_records.h`](source_guide/graphics.md#file-graphics-render-light-records) - Dynamic light records: the record table and its compact copy, record allocation, nearby-record collection, the compact lighting at a point, and the intensity clamp, intensity scale and packed ...
+- [`light_transitions.cpp / light_transitions.h`](source_guide/graphics.md#file-graphics-render-light-transitions) - no file comment; main functions `InterpolationState_SetNegatedTargetAndRescaleProgress`, `InterpolationStateTable_Advance256ByTicks`
 - [`model.h`](source_guide/graphics.md#file-graphics-render-model)
 - [`model_draw.cpp / model_draw.h`](source_guide/graphics.md#file-graphics-render-model-draw) - Model hierarchy drawing: view culling, level of detail and projection of the nodes of a model runtime hierarchy before their meshes are submitted.
 - [`model_lighting.cpp`](source_guide/graphics.md#file-graphics-render-model-lighting) - no file comment; main functions `ModelRender_ComputeVertexIntensityDefaultPath`, `ModelRender_ComputeVertexIntensityScaledPath`, `ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath`
@@ -339,7 +321,6 @@ Module header: [`resources.h`](../include/thandor/graphics/resources.h) · Chang
 
 Module header: [`terrain.h`](../include/thandor/graphics/terrain.h)
 
-- [`minimap_composite.cpp / minimap_composite.h`](source_guide/graphics.md#file-graphics-terrain-minimap-composite) - The minimap composite texture of the field grid: a gfx asset with three ARGB planes (terrain/water colours, panel colours, faction presence) built from the cells.
 - [`terrain_render.cpp / terrain_render.h`](source_guide/graphics.md#file-graphics-terrain-terrain-render) - no file comment; main functions `TerrainProjectedGrid_TransformShadeAndQueue`, `TerrainProjectedQuad_QueueAsTwoTriangles`, `TerrainProjectedVertex_TransformProjectAndShade`
 - [`terrain_resources.cpp / terrain_resources.h`](source_guide/graphics.md#file-graphics-terrain-terrain-resources) - no file comment; main functions `TerrainVisualResources_LoadPrimary`, `TerrainVisualResources_LoadAndClearCellOverlayFlags`, `TerrainVisualResources_Shutdown`
 
@@ -352,11 +333,9 @@ FLM movie playback and encoding.
 
 Module header: [`runtime.h`](../include/thandor/movie/runtime.h) · Changelog: `playback` [dev](../CHANGELOG.md#module-movie-runtime-playback) · [full](../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
-- [`end_movie_ui.cpp / end_movie_ui.h`](source_guide/movie.md#file-movie-runtime-end-movie-ui) - no file comment; main functions `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
 - [`flm_decoder.cpp / flm_decoder.h`](source_guide/movie.md#file-movie-runtime-flm-decoder) - no file comment; main functions `Movie_DecodeFrame4x4Delta`, `Movie_BuildChromaLumaTable`
 - [`flm_encoder.cpp / flm_encoder.h`](source_guide/movie.md#file-movie-runtime-flm-encoder) - no file comment; main functions `Movie_EncodeFrame4x4Keyframe`, `Movie_EncodeFrame4x4Delta`, `Movie_EncodeFlmBufferFromFrameProvider`
-- [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - no file comment; main functions `Movie_AdvanceFrame`, `Movie_Close`, `Movie_Open`
-- [`session_schedule.cpp / session_schedule.h`](source_guide/movie.md#file-movie-runtime-session-schedule) - no file comment; main functions `MoviePlayback_AdvanceScheduledFrameAndTick`, `MoviePlayback_AdvanceToFrameAndPresent`
+- [`playback.cpp / playback.h`](source_guide/movie.md#file-movie-runtime-playback) - no file comment; main functions `Movie_Close`, `Movie_AdvanceFrame`, `Movie_Open`
 
 ## [Network](source_guide/network.md)
 
@@ -489,7 +468,7 @@ Module header: [`controls.h`](../include/thandor/ui/controls.h) · Changelog: `b
 Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` [full](../CHANGELOG_FULL.md#module-ui-core-runtime)
 
 - [`chat_history.cpp / chat_history.h`](source_guide/ui.md#file-ui-core-chat-history) - no file comment; main functions `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`
-- [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_ProcessAndPresent`, `UiFrame_Draw`
+- [`frame_loop.cpp / frame_loop.h`](source_guide/ui.md#file-ui-core-frame-loop) - no file comment; main functions `UiFrame_FlushInputAndResetPendingTicks`, `UiFrame_Draw`, `UiFrame_ProcessAndPresent`
 - [`model_tint.cpp / model_tint.h`](source_guide/ui.md#file-ui-core-model-tint) - no file comment; main functions `ModelNodeRuntime_RefreshStateTint`, `ModelRuntimeNode_GetStateTintArgb`
 - [`pcx_preview.cpp / pcx_preview.h`](source_guide/ui.md#file-ui-core-pcx-preview) - no file comment; main functions `PcxPreview_Load64x64PaletteAndPixels`
 - [`runtime.cpp / runtime.h`](source_guide/ui.md#file-ui-core-runtime) - no file comment; main functions `UiNode_DefaultMethod04_NoOp`, `UiNode_ApplyFlagsRecursive`, `UiNode_InvalidateRoot`
@@ -500,6 +479,7 @@ Module header: [`core.h`](../include/thandor/ui/core.h) · Changelog: `runtime` 
 Module header: [`dialogs.h`](../include/thandor/ui/dialogs.h)
 
 - [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-dialogs-display-settings) - no file comment; main functions `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateColorDepthSelection`, `UiDisplayModeAction_UpdateResolutionSelection`
+- [`fatal_error.cpp / fatal_error.h`](source_guide/ui.md#file-ui-dialogs-fatal-error) - no file comment; main functions `FatalErrorDialog_DismissAndPopRoot`, `ErrorRuntime_InstallUiHandlerAndAllocateState`, `FatalErrorDialog_BlockMissedPointerPress`
 
 <a id="module-ui-frontend"></a>
 ### `ui/frontend`
@@ -509,18 +489,22 @@ Module header: [`frontend.h`](../include/thandor/ui/frontend.h) · Changelog: `n
 - [`chat.cpp / chat.h`](source_guide/ui.md#file-ui-frontend-chat) - no file comment; main functions `FrontendRecentTextHistory_InsertAndRebuild5`, `FrontendRecentText_TrimAndSortTopFive`
 - [`common.h`](source_guide/ui.md#file-ui-frontend-common) - Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files.
 - [`credits.cpp / credits.h`](source_guide/ui.md#file-ui-frontend-credits) - no file comment; main functions `CreditsScreen_Open`
+- [`credits_mask.cpp / credits_mask.h`](source_guide/ui.md#file-ui-frontend-credits-mask) - The 8-bit reveal mask of the credits and scenario screen transitions (SoftwareMaskBuffer_*): pattern advance, circular, diagonal and band regions.
 - [`debug_overlay.cpp / debug_overlay.h`](source_guide/ui.md#file-ui-frontend-debug-overlay) - no file comment; main functions `FrontendDebugOverlay_RefreshCountersAndWorldCoordinates`
 - [`display_settings.cpp / display_settings.h`](source_guide/ui.md#file-ui-frontend-display-settings) - no file comment; main functions `FrontendDisplaySettingsAction_OpenPageAndListModes`, `FrontendDisplaySettingsAction_SelectAdapter`, `FrontendDisplaySettingsAction_ApplyPendingResolution`
 - [`end_movie.cpp / end_movie.h`](source_guide/ui.md#file-ui-frontend-end-movie) - no file comment; main functions `Frontend_PlaySelectedEndMovie`
+- [`end_movie_commands.cpp / end_movie_commands.h`](source_guide/ui.md#file-ui-frontend-end-movie-commands) - no file comment; main functions `EndMovieUiRuntime_HandleModeTransition`, `EndMovieUiRuntime_DispatchCommandByFlags`
 - [`faction_setup.cpp / faction_setup.h`](source_guide/ui.md#file-ui-frontend-faction-setup) - no file comment; main functions `FrontendFactionSetupAction_CycleFactionColour`, `FrontendFactionSetupAction_ToggleFactionActive`, `FrontendFactionSetupAction_ChooseFaction`
 - [`lifecycle.cpp / lifecycle.h`](source_guide/ui.md#file-ui-frontend-lifecycle) - no file comment; main functions `Frontend_Init`, `FrontendRuntime_ShutdownAndReleaseResources`, `FrontendMenu_BindSharedResources`
 - [`main_loop.cpp / main_loop.h`](source_guide/ui.md#file-ui-frontend-main-loop) - no file comment; main functions `Frontend_MainLoop`
 - [`menu_room.cpp / menu_room.h`](source_guide/ui.md#file-ui-frontend-menu-room) - no file comment; main functions `FrontendRuntime_UpdatePointerContextAndSceneView`, `FrontendMenuRoom_PressNoOp`, `FrontendMenuRoom_DragNoOp`
+- [`menu_room_scene.cpp / menu_room_scene.h`](source_guide/ui.md#file-ui-frontend-menu-room-scene) - no file comment; main functions `FrontendRomActionTable_ExecuteRecord`, `FrontendRomTransition_ActivateRecordById`, `FrontendRomTransition_RequestStop`
 - [`mission_briefing.cpp / mission_briefing.h`](source_guide/ui.md#file-ui-frontend-mission-briefing) - no file comment; main functions `FrontendMissionBriefingPage_Initialize`
 - [`network.cpp / network.h`](source_guide/ui.md#file-ui-frontend-network) - no file comment; main functions `FrontendNetworkSetupPage_InitializeBackendMode`, `FrontendTeardown_SaveStatusTextAndHostAddress`, `FrontendTransferPage_ValidateInputAndRequestMailbox`
 - [`page_actions.cpp / page_actions.h`](source_guide/ui.md#file-ui-frontend-page-actions) - no file comment; main functions `FrontendCallback_NoOpArg1`, `FrontendCallback_ReturnToMainPageOrDispatchState4`, `FrontendQuitDialogAction_ReturnToMainPage`
-- [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`, `FrontendPlayerRuntime_InitializeFactionAssignments`
+- [`player.cpp / player.h`](source_guide/ui.md#file-ui-frontend-player) - no file comment; main functions `FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton`, `FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus`, `FrontendPlayerSelection_ClearAndRefreshLocalPanels`
 - [`results.cpp / results.h`](source_guide/ui.md#file-ui-frontend-results) - no file comment; main functions `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsGraph_DrawFactionWeightSumColumn`, `FrontendResultsGraph_DrawFactionWeightLane0Column`
+- [`scenario_selection.cpp / scenario_selection.h`](source_guide/ui.md#file-ui-frontend-scenario-selection) - no file comment; main functions `ScenarioCatalog_RebuildLevelRecordListPage`, `ScenarioCatalog_RebuildCampaignRecordListPage`, `ScenarioCatalog_RebuildSaveRecordListPage`
 - [`session.cpp / session.h`](source_guide/ui.md#file-ui-frontend-session) - no file comment; main functions `FrontendSession_ReturnToMainPage`, `FrontendSession_SetGameSpeedPercent`, `FrontendTransferPage_ResetSessionOpenAndRequestMailbox`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-frontend-settings) - no file comment; main functions `FrontendGameplaySettings_SetGameSpeedPercent`, `FrontendGameplaySettings_SetRightButtonDoesNotScroll`, `FrontendGameplaySettings_SetCameraScrollStep`
 - [`state.cpp / state.h`](source_guide/ui.md#file-ui-frontend-state) - no file comment; main functions `FrontendState_DispatchCode`, `FrontendRuntime_TimerCountdownTick`, `FrontendRomTransition_AdvanceElapsedTicks`
@@ -534,22 +518,44 @@ Module header: [`ingame.h`](../include/thandor/ui/ingame.h) · Changelog: `comma
 
 - [`army_stock.cpp / army_stock.h`](source_guide/ui.md#file-ui-ingame-army-stock) - no file comment; main functions `InGameArmyStock_RebuildGrid`, `InGameArmyStock_PointerMoveShowSlotDetails`, `InGameArmyStock_TakeOrSellSlotArmy`
 - [`build_catalog.cpp / build_catalog.h`](source_guide/ui.md#file-ui-ingame-build-catalog) - no file comment; main functions `InGameBuildCatalog_RebuildGrid`, `InGameSpecialBuildCatalog_RebuildGrid`, `InGameBuildCatalog_QueueOrCancelEntry`
+- [`camera_commands.cpp / camera_commands.h`](source_guide/ui.md#file-ui-ingame-camera-commands) - no file comment; main functions `InGameCameraCommand_DispatchByCodeAndModifierFlags`
 - [`catalog_entry.cpp / catalog_entry.h`](source_guide/ui.md#file-ui-ingame-catalog-entry) - no file comment; main functions `UiCatalogEntryControl_DrawClipped`, `UiCatalogEntryControl_PointerMove`, `UiCatalogEntryControl_NonRightRelease`
 - [`chat.cpp / chat.h`](source_guide/ui.md#file-ui-ingame-chat) - no file comment; main functions `InGameRecentTextHistory_InsertAndRebuild8`, `InGameSevenSlotCommand_SubmitAndClosePage`, `InGameChatInput_SendLineOrCheckCheatPhrase`
 - [`command_buttons.cpp / command_buttons.h`](source_guide/ui.md#file-ui-ingame-command-buttons) - no file comment; main functions `UiCommandSpriteButtonControl_BeginPress`, `UiCommandSpriteButtonControl_RightRelease`, `UiCommandSpriteButtonControl_NonRightRelease`
 - [`commands.cpp / commands.h`](source_guide/ui.md#file-ui-ingame-commands) - no file comment; main functions `InGameCommand_HandlePlayerDeparture`, `UiCommandRuntimeFlags_ApplyClearSetToggleMasks`, `InGameCommand_TogglePauseRequest`
+- [`editor_army_cycling.cpp / editor_army_cycling.h`](source_guide/ui.md#file-ui-ingame-editor-army-cycling) - no file comment; main functions `ArmyAssetRegistry_NormalizeIdToPlaceableUnit`, `ArmyAssetRegistry_StepForwardPlaceableUnit`, `ArmyAssetRegistry_StepBackwardPlaceableUnit`
 - [`editor_keyboard.cpp / editor_keyboard.h`](source_guide/ui.md#file-ui-ingame-editor-keyboard) - no file comment; main functions `InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags`
 - [`editor_tool_selection.cpp / editor_tool_selection.h`](source_guide/ui.md#file-ui-ingame-editor-tool-selection) - no file comment; main functions `InGameCommandModeG_Select0`, `InGameCommandModeG_Select1`, `InGameCommandModeG_Select2`
 - [`editor_tools.cpp / editor_tools.h`](source_guide/ui.md#file-ui-ingame-editor-tools) - no file comment; main functions `InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState`, `InGameUiCommand_SaveFieldAndLevelAssetImages`, `InGameUiCommand_ResolveCursorCodeByMode`
-- [`hud.cpp / hud.h`](source_guide/ui.md#file-ui-ingame-hud) - no file comment; main functions `InGameOtherPlayerCommand_RebuildTargetEntries`, `InGameMapAction_RecenterViewFromGridCoordinates`, `InGameHud_UpdateStatusCountersAndSessionPrompts`
+- [`hotkeys.cpp / hotkeys.h`](source_guide/ui.md#file-ui-ingame-hotkeys) - no file comment; main functions `InGameHotkeys_DispatchCommandByFlags`
+- [`hud.cpp / hud.h`](source_guide/ui.md#file-ui-ingame-hud) - no file comment; main functions `InGameOtherPlayerCommand_RebuildTargetEntries`, `InGamePanel_RebuildPlayerStatusRows`, `InGameMapAction_RecenterViewFromGridCoordinates`
 - [`key_commands.cpp / key_commands.h`](source_guide/ui.md#file-ui-ingame-key-commands) - no file comment; main functions `InGameNotificationQueue_InsertPriorityRecord`, `InGameUiRuntime_DispatchCommandByCodeAndModifierFlags`, `InGameUiRuntime_ResetNotificationButtonCursor`
 - [`layout.cpp / layout.h`](source_guide/ui.md#file-ui-ingame-layout) - no file comment; main functions `InGameUiRuntime_InitializeControlTreeResources`
+- [`minimap_texture.cpp / minimap_texture.h`](source_guide/ui.md#file-ui-ingame-minimap-texture) - The minimap composite texture of the field grid: a gfx asset with three ARGB planes (terrain/water colours, panel colours, faction presence) built from the cells.
 - [`music_choice.cpp / music_choice.h`](source_guide/ui.md#file-ui-ingame-music-choice) - no file comment; main functions `InGameMusic_ComputeTrackSuitabilityScore`
+- [`notifications.cpp / notifications.h`](source_guide/ui.md#file-ui-ingame-notifications) - no file comment; main functions `InGameRuntime_ProcessQueuedSessionNotificationTimer`
 - [`pages.cpp / pages.h`](source_guide/ui.md#file-ui-ingame-pages) - no file comment; main functions `InGameQuitMenu_OpenAndRefreshButtons`, `InGameMissionHelpPage_Toggle`, `InGameTechnologyPanel_ToggleForSelection`
+- [`preview_markers.cpp / preview_markers.h`](source_guide/ui.md#file-ui-ingame-preview-markers) - no file comment; main functions `InGameWorldOverlay_RebuildOrReleaseTransientMarkers`, `InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint`
+- [`root_frame.cpp / root_frame.h`](source_guide/ui.md#file-ui-ingame-root-frame) - no file comment; main functions `InGameUiRoot_UpdateFrame`, `InGameRuntime_SaveWorldViewInfoTextChoice`, `InGameRuntime_UpdateCursorGridAndViewScaleCache`
 - [`savegame_page.cpp / savegame_page.h`](source_guide/ui.md#file-ui-ingame-savegame-page) - no file comment; main functions `InGameSaveGamePage_RebuildCatalog`, `InGameSaveGameList_SelectAndRefreshDetail`, `InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog`
 - [`selection_detail.cpp / selection_detail.h`](source_guide/ui.md#file-ui-ingame-selection-detail) - no file comment; main functions `InGameSelectionDetailPanel_Rebuild`
+- [`selection_overlay.cpp / selection_overlay.h`](source_guide/ui.md#file-ui-ingame-selection-overlay) - no file comment; main functions `SelectionOverlay_RenderSelectedArmyMetrics`, `SelectionOverlay_RenderArmyMetricsForEntity`, `SelectionOverlay_DrawBoundsFrame`
+- [`selection_panel_cells.cpp / selection_panel_cells.h`](source_guide/ui.md#file-ui-ingame-selection-panel-cells) - no file comment; main functions `SelectionPanel_DrawNumberCellAndAdvance`, `SelectionPanel_DrawIconCellAndAdvance`, `SelectionPanel_DrawSteppedMeterCellAndAdvance`
+- [`selection_panel_metrics.cpp / selection_panel_metrics.h`](source_guide/ui.md#file-ui-ingame-selection-panel-metrics) - no file comment; main functions `SelectionPanel_RenderArmyRuntimeMetrics`
+- [`selection_panel_resources.cpp / selection_panel_resources.h`](source_guide/ui.md#file-ui-ingame-selection-panel-resources) - no file comment; main functions `SelectionInfoPanel_InitResources`, `SelectionInfoPanel_ShutdownResources`
 - [`settings.cpp / settings.h`](source_guide/ui.md#file-ui-ingame-settings) - no file comment; main functions `InGameSettingsPage_ToggleAndSynchronizeControls`, `InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks`, `InGameSettingsAction_CloseAlternatePanel`
+- [`targeting.cpp / targeting.h`](source_guide/ui.md#file-ui-ingame-targeting) - no file comment; main functions `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameTargetingContext_CancelAndRestoreState`
 - [`technology.cpp / technology.h`](source_guide/ui.md#file-ui-ingame-technology) - no file comment; main functions `InGameTechnologyPanel_ResetAndSelectCurrentArea`, `InGameTechnologyAreaTab_SelectAndRebuild`, `InGameTechnologyResearch_StartSelected`
+- [`ui_template.cpp / ui_template.h`](source_guide/ui.md#file-ui-ingame-ui-template)
+- [`world_input.cpp / world_input.h`](source_guide/ui.md#file-ui-ingame-world-input) - no file comment; main functions `InGameWorldInput_ResolveContextActionAndCursor`, `InGameWorldInput_BeginPointerCapture`, `InGameWorldInput_UpdateDragSelectionAndCamera`
+
+<a id="module-ui-text"></a>
+### `ui/text`
+
+Module header: [`text.h`](../include/thandor/ui/text.h)
+
+- [`font.cpp / font.h`](source_guide/ui.md#file-ui-text-font) - no file comment; main functions `FontGlyph_GetLogicalSizeActiveFont`, `FontGlyph_GetLogicalSizeForStyle`, `FontRuntime_Init`
+- [`richtext_render.cpp / richtext_render.h`](source_guide/ui.md#file-ui-text-richtext-render) - no file comment; main functions `RichTextCommandStream_DrawSingleLine`, `RichTextCommandStream_MeasureLine`, `RichTextCommandStream_MeasureWrappedBlock`
 
 ## [World](source_guide/world.md)
 
@@ -561,7 +567,8 @@ World runtime: camera, terrain, pathing, models, effects and shots.
 Module header: [`camera.h`](../include/thandor/world/camera.h) · Changelog: `world/motion/runtime` [dev](../CHANGELOG.md#module-world-motion-runtime) · [full](../CHANGELOG_FULL.md#module-world-motion-runtime)
 
 - [`camera.cpp / camera.h`](source_guide/world.md#file-world-camera-camera) - Camera state of the world runtime: position, angles and distance, the target point on the field surface and snapshots of the motion state.
-- [`camera_input.cpp / camera_input.h`](source_guide/world.md#file-world-camera-camera-input) - no file comment; main functions `WorldRuntime_TranslateCameraByScreenDelta`, `WorldRuntime_ApplyEdgeScrollAndGetCursorFrame`, `WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn`
+- [`camera_input.cpp / camera_input.h`](source_guide/world.md#file-world-camera-camera-input) - no file comment; main functions `WorldRuntime_TranslateCameraByScreenDelta`, `WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn`, `WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn`
+- [`motion_spline.cpp / motion_spline.h`](source_guide/world.md#file-world-camera-motion-spline) - no file comment; main functions `WorldMotionSpline_BuildSixChannelCurves`, `WorldMotionSpline_EvaluateAndApplyAtTime`, `WorldMotionSpline_ClearCachedDerivatives`
 
 <a id="module-world-effects"></a>
 ### `world/effects`
@@ -569,7 +576,7 @@ Module header: [`camera.h`](../include/thandor/world/camera.h) · Changelog: `wo
 Module header: [`effects.h`](../include/thandor/world/effects.h) · Changelog: `maintenance` [full](../CHANGELOG_FULL.md#module-world-effects-maintenance); `runtime` [full](../CHANGELOG_FULL.md#module-world-effects-runtime)
 
 - [`lifecycle.cpp / lifecycle.h`](source_guide/world.md#file-world-effects-lifecycle) - no file comment; main functions `EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint`, `EffectRuntimeMaintenance_OccupancyRebuildNoOp`, `EffectRuntimeMaintenance_AudioRefreshNoOp`
-- [`pool.cpp`](source_guide/world.md#file-world-effects-pool) - no file comment; main functions `EffectRuntimePool_CreateInstanceFromDefinition`, `EffectRuntime_RebaseSlotsAfterLoad`, `EffectRuntime_FindDefinitionById`
+- [`pool.cpp`](source_guide/world.md#file-world-effects-pool) - no file comment; main functions `EffectRuntimePool_CreateInstanceFromDefinition`, `EffectRuntime_InitGraphicsResources`, `EffectRuntime_RebaseSlotsAfterLoad`
 - [`runtime.h`](source_guide/world.md#file-world-effects-runtime)
 
 <a id="module-world-model"></a>
@@ -577,12 +584,11 @@ Module header: [`effects.h`](../include/thandor/world/effects.h) · Changelog: `
 
 Module header: [`model.h`](../include/thandor/world/model.h) · Changelog: `hierarchy` [dev](../CHANGELOG.md#module-world-model-hierarchy) · [full](../CHANGELOG_FULL.md#module-world-model-hierarchy); `runtime` [full](../CHANGELOG_FULL.md#module-world-model-runtime); `slots` [dev](../CHANGELOG.md#module-world-model-slots) · [full](../CHANGELOG_FULL.md#module-world-model-slots)
 
-- [`gameplay_rules.cpp / gameplay_rules.h`](source_guide/world.md#file-world-model-gameplay-rules) - Gameplay rules evaluated on a model hierarchy: armour sums and destroyed marking, condition, energy and selection metrics, faction technology variants and the turret yaw/pitch aim.
 - [`hierarchy.cpp / hierarchy.h`](source_guide/world.md#file-world-model-hierarchy) - no file comment; main functions `ModelNodeRuntime_RebuildTransformsFromRoot`, `ModelNodeRuntime_TransformLocalPoint`, `ModelNodeRuntime_UpdateDepthBinMasks`
+- [`mesh_raycast.cpp / mesh_raycast.h`](source_guide/world.md#file-world-model-mesh-raycast) - no file comment; main functions `ModelMesh_IntersectTriangleRayDistance`
 - [`picking.cpp / picking.h`](source_guide/world.md#file-world-model-picking) - Model picking: the pointer hit test against the projected bounds of a model hierarchy and the nearest ray hit on its mesh triangles.
-- [`pool.cpp`](source_guide/world.md#file-world-model-pool) - no file comment; main functions `ModelRuntimePool_DestroyHierarchyAndDetach`, `ModelRuntimePool_RebaseAfterLoad`, `ModelRuntime_EmitProjectilesFromAttachmentPoints`
+- [`pool.cpp`](source_guide/world.md#file-world-model-pool) - no file comment; main functions `ModelRuntimePool_DestroyHierarchyAndDetach`, `ModelRuntimePool_Init`, `ModelRuntimePool_RebaseAfterLoad`
 - [`runtime.h`](source_guide/world.md#file-world-model-runtime)
-- [`slots.cpp / slots.h`](source_guide/world.md#file-world-model-slots) - no file comment; main functions `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`
 
 <a id="module-world-pathing"></a>
 ### `world/pathing`
@@ -590,7 +596,7 @@ Module header: [`model.h`](../include/thandor/world/model.h) · Changelog: `hier
 Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `grid` [dev](../CHANGELOG.md#module-world-pathing-grid) · [full](../CHANGELOG_FULL.md#module-world-pathing-grid); `influence` [full](../CHANGELOG_FULL.md#module-world-pathing-influence)
 
 - [`grid.h`](source_guide/world.md#file-world-pathing-grid)
-- [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_AddLowDistanceBands`, `GridInfluence_RemoveLowDistanceBands`, `GridInfluence_AddHighDistanceBands`
+- [`influence.cpp / influence.h`](source_guide/world.md#file-world-pathing-influence) - no file comment; main functions `GridInfluence_ClearDistanceBandsAndRefreshEntities`, `GridInfluence_AddLowDistanceBands`, `GridInfluence_RemoveLowDistanceBands`
 - [`path_cost.cpp / path_cost.h`](source_guide/world.md#file-world-pathing-path-cost) - Hex path costs on the scratch grid: the weighted neighbour propagation (Dijkstra over the hex lattice), the best-route backtrack and the relocation out of a blocked cell.
 - [`reachability.cpp / reachability.h`](source_guide/world.md#file-world-pathing-reachability) - Reachability on the scratch grid: connected regions around a world point, unreachable-region marking and the hex line-of-passage test of a segment.
 - [`route.cpp / route.h`](source_guide/world.md#file-world-pathing-route) - Entity routes: destination resolution and route rebuilds for one entity or an overlapping group, route segment updates and the footprint traversal flags around a world point.
@@ -601,7 +607,7 @@ Module header: [`pathing.h`](../include/thandor/world/pathing.h) · Changelog: `
 
 Module header: [`runtime.h`](../include/thandor/world/runtime.h) · Changelog: `core` [dev](../CHANGELOG.md#module-world-runtime-core) · [full](../CHANGELOG_FULL.md#module-world-runtime-core)
 
-- [`core.cpp / core.h`](source_guide/world.md#file-world-runtime-core) - no file comment; main functions `WorldRuntimeNode_IsPositionInsideBounds`, `RuntimeHexSegment_ToggleLightImageFlag`, `WorldRuntime_AttachFieldGridAsset`
+- [`core.cpp / core.h`](source_guide/world.md#file-world-runtime-core) - no file comment; main functions `WorldRuntime_AttachFieldGridAsset`, `WorldRuntime_AttachAndClearDwordArray`, `WorldRuntime_InterpolateTopSurfaceHeightOrSentinel`
 - [`entity_registry.cpp / entity_registry.h`](source_guide/world.md#file-world-runtime-entity-registry) - World object registry: the object array and its free-record allocation, the owner list of model, shot and effect nodes and the owner-list callbacks that clear references when an object goes away.
 
 <a id="module-world-shots"></a>
@@ -609,8 +615,9 @@ Module header: [`runtime.h`](../include/thandor/world/runtime.h) · Changelog: `
 
 Module header: [`shots.h`](../include/thandor/world/shots.h) · Changelog: `maintenance` [full](../CHANGELOG_FULL.md#module-world-shots-maintenance); `runtime` [full](../CHANGELOG_FULL.md#module-world-shots-runtime)
 
+- [`ballistics.cpp / ballistics.h`](source_guide/world.md#file-world-shots-ballistics) - no file comment; main functions `ShotDefinition_ComputeLaunchAngles`, `ShotDefinition_ComputeSelectionRange`, `ShotDefinition_GetLeadSpeed`
 - [`flight.cpp / flight.h`](source_guide/world.md#file-world-shots-flight) - no file comment; main functions `ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint`, `ShotRuntimeMaintenance_OccupancyRebuildNoOp`, `ShotRuntimeMaintenance_UpdateHierarchyProjectedSound`
-- [`pool.cpp`](source_guide/world.md#file-world-shots-pool) - no file comment; main functions `ShotRuntimePool_CreateProjectileFromDefinition`, `ShotRuntime_RebaseSlotsAfterLoad`, `ShotRuntime_ApplyArmyHitRelationAndNotifications`
+- [`pool.cpp`](source_guide/world.md#file-world-shots-pool) - no file comment; main functions `ShotRuntime_InitGraphicsResources`, `ShotRuntime_RebaseSlotsAfterLoad`, `ShotRuntimePool_CreateProjectileFromDefinition`
 - [`runtime.h`](source_guide/world.md#file-world-shots-runtime)
 
 <a id="module-world-terrain"></a>
