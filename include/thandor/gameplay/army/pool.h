@@ -73,4 +73,13 @@ extern const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24]; /* uint32_t[24
 
 extern void *g_ArmyRuntimeRebaseBaseMinusOne;
 
+/* Faction graphics ('gfx') texture source asset layout used by ArmyGraphics_CopyFrontendPlayerPaletteAndTexture */
+#define ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE 0x71 /* image replaced by the frontend player's picture */
+#define ARMY_GRAPHICS_PALETTE_TABLE_OFFSET 0x200    /* first palette, from the asset start */
+#define ARMY_GRAPHICS_PALETTE_BYTES 0x800           /* 256 entries of 8 bytes */
+#define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
+
+void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
+          ArmyGraphicsAssetAddress32 armyGraphicsAsset);
+
 #endif /* THANDOR_GAMEPLAY_ARMY_POOL_H */
