@@ -84,10 +84,17 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
     return false;
   }
   s_windowed = DebugHook_Windowed() != 0;
+  const bool minimized = s_windowed && (DebugHook_WindowMinimized() != 0);
   /* hidden until the first display mode switch has applied the renderer and the display mode kind; a Vulkan
      swapchain needs a window created for Vulkan, which needs the Vulkan loader, so without one the window is
-     created without and Vulkan is not offered */
-  const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN;
+     created without and Vulkan is not offered. The developer tools' minimized window (OPEN_THANDOR_WINDOW_MINIMIZED)
+     is shown minimized at once without activation (SDL: SW_SHOWMINNOACTIVE, so the later SDL_ShowWindow does
+     nothing) and is never activated when shown; the frame loop, the event pump and the software present do not
+     depend on visibility or focus, a GPU present without a swapchain texture is skipped (logged once). */
+  if (minimized) {
+    SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, "0");
+  }
+  const SDL_WindowFlags flags = minimized ? SDL_WINDOW_MINIMIZED : SDL_WINDOW_HIDDEN;
 #ifdef THANDOR_RENDERER_SDL_GPU
   s_window.reset(SDL_CreateWindow(title, GAME_START_DISPLAY_WIDTH, GAME_START_DISPLAY_HEIGHT, flags | SDL_WINDOW_VULKAN));
   s_vulkanWindow = static_cast<bool>(s_window);
@@ -106,7 +113,7 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
     const int x = WindowCoordinateFromEnvironment("OPEN_THANDOR_WINDOW_X");
     const int y = WindowCoordinateFromEnvironment("OPEN_THANDOR_WINDOW_Y");
     SDL_SetWindowPosition(s_window.get(), x, y);
-    Thandor_Log("test aid: windowed mode, window at %d,%d", x, y);
+    Thandor_Log("test aid: windowed mode, window at %d,%d%s", x, y, minimized ? ", minimized" : "");
   }
   Thandor_Log("SDL %d.%d.%d%s", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
               s_windowed ? ", windowed (test aid)" : "");

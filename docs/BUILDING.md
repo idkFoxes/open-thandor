@@ -296,7 +296,8 @@ renderer, `OPEN_THANDOR_GPU=vulkan|d3d12` one GPU API, `OPEN_THANDOR_GPU=1` or `
 `OPEN_THANDOR_GPU=auto` the saved choice (as without the variable). A forced renderer is the only one listed and is
 not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a window. The test tools
 (`tools/test`, `game_env.py`) start every game with `OPEN_THANDOR_GPU=0` unless the caller sets it, so the pixel
-and hash checks keep comparing the software renderer.
+and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
+unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).
 
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 
@@ -361,6 +362,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `wheel x y <notches>` (negative: down), `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`); the real mouse is ignored meanwhile |
 | `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
 | `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (absolute mouse position, normal process priority; a display mode kind chosen in the settings is logged and kept for the session, not applied or saved); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
+| `OPEN_THANDOR_WINDOW_MINIMIZED=1` | that window (implies `OPEN_THANDOR_WINDOWED=1`), created minimized and never activated, so test games stay out of the way; the game keeps running at full speed and drawing its frames (screenshots read the framebuffer; input scripts do not need focus). The test tools set it for every game (`game_env.py`) unless `OPEN_THANDOR_TEST_VISIBLE=1` |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
