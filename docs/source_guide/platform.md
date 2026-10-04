@@ -43,7 +43,7 @@ Process support of the rebuilt executable: logging, crash and hang reports and s
 
 **Data** (1 shared, 6 file-local): `g_ThandorFrameHeartbeat`.
 
-**Called from** (83 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +14); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`network/protocol/commands`](network.md#file-network-protocol-commands) (`CommandDispatch_CachedCodeOf`, `CommandDispatch_CheckDerivedCodes` +3); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CommandLine_Parse`, `CoreAssets_UseLocalMovieFolder` +3); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +3); [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_DecodeEntryInto`, `Package_LoadEntry` +2); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`ui/frontend/player`](ui.md#file-ui-frontend-player) (`FrontendPlayerMessageBuffer_AppendTripleById`, `FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers` +2); [`world/terrain/field_edit_commands`](world.md#file-world-terrain-field-edit-commands) (`FieldGridEdit_PlayerBlock`, `FieldGridEdit_PlayerHeightPlane` +2); 73 more: [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog), [`assets/text/resources`](assets.md#file-assets-text-resources), [`network/protocol/lobby`](network.md#file-network-protocol-lobby), [`platform/debug/autoshot`](#file-platform-debug-autoshot), [`platform/debug/level_script`](#file-platform-debug-level-script), [`platform/debug/movie_player`](#file-platform-debug-movie-player), [`platform/debug/test_aids`](#file-platform-debug-test-aids), [`assets/army/catalog`](assets.md#file-assets-army-catalog), [`assets/model/definitions`](assets.md#file-assets-model-definitions), [`assets/package/codec`](assets.md#file-assets-package-codec), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`core/text/path`](core.md#file-core-text-path), [`graphics/terrain/terrain_render`](graphics.md#file-graphics-terrain-terrain-render), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/mailbox`](network.md#file-network-protocol-mailbox), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/frontend/task_assignment`](ui.md#file-ui-frontend-task-assignment), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud), [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page), [`world/model/pool`](world.md#file-world-model-pool), [`world/terrain/field_lifecycle`](world.md#file-world-terrain-field-lifecycle), [`assets/rom/runtime`](assets.md#file-assets-rom-runtime), [`assets/shot/catalog`](assets.md#file-assets-shot-catalog), [`assets/text/richtext`](assets.md#file-assets-text-richtext), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/math/spline`](core.md#file-core-math-spline), [`core/ptr32`](core.md#file-core-ptr32), [`gameplay/selection/selection_set`](gameplay.md#file-gameplay-selection-selection-set), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session), [`gameplay/session/savegame_load`](gameplay.md#file-gameplay-session-savegame-load), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer), [`graphics/resources/palette`](graphics.md#file-graphics-resources-palette), [`graphics/resources/texture_set`](graphics.md#file-graphics-resources-texture-set), [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source), [`graphics/resources/tiled_blit`](graphics.md#file-graphics-resources-tiled-blit), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder), [`network/protocol/command_exchange`](network.md#file-network-protocol-command-exchange), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon), [`platform/selftest/keymatch_selftest`](#file-platform-selftest-keymatch-selftest), [`ui/controls/container`](ui.md#file-ui-controls-container), [`ui/controls/gauge`](ui.md#file-ui-controls-gauge), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/controls/panels`](ui.md#file-ui-controls-panels), [`ui/controls/text`](ui.md#file-ui-controls-text), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/faction_setup`](ui.md#file-ui-frontend-faction-setup), [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room), [`ui/frontend/menu_room_scene`](ui.md#file-ui-frontend-menu-room-scene), [`ui/frontend/mission_briefing`](ui.md#file-ui-frontend-mission-briefing), [`ui/frontend/results`](ui.md#file-ui-frontend-results), [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`ui/frontend/session`](ui.md#file-ui-frontend-session), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands), [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers), [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame), [`ui/text/font`](ui.md#file-ui-text-font), [`ui/text/richtext_render`](ui.md#file-ui-text-richtext-render), [`world/model/hierarchy`](world.md#file-world-model-hierarchy), [`world/shots/flight`](world.md#file-world-shots-flight).
+**Called from** (86 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_CompareSettingsImages`, `Thandor_SelfTestCodec` +14); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`ChooseRasterization`, `CompareScene` +7); [`platform/sdl3/video`](#file-platform-sdl3-video) (`ApplyDisplayModeKind`, `CreateSdlRenderer` +6); [`network/protocol/commands`](network.md#file-network-protocol-commands) (`CommandDispatch_CachedCodeOf`, `CommandDispatch_CheckDerivedCodes` +3); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CommandLine_Parse`, `CoreAssets_UseLocalMovieFolder` +3); [`platform/debug/statehash`](#file-platform-debug-statehash) (`DebugArena_ProductionOrders`, `DebugArena_ProductionSummary` +3); [`assets/package/runtime`](assets.md#file-assets-package-runtime) (`Package_DecodeEntryInto`, `Package_LoadEntry` +2); [`platform/debug/campaign`](#file-platform-debug-campaign) (`DebugCampaign_ApplyScenarioOptions`, `DebugCampaign_AutoWinTick` +2); [`platform/sdl3/gpu_ui_textures`](#file-platform-sdl3-gpu-ui-textures) (`AllocateCacheRect`, `CreatePageTexture` +2); [`ui/frontend/player`](ui.md#file-ui-frontend-player) (`FrontendPlayerMessageBuffer_AppendTripleById`, `FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers` +2); 76 more: [`world/terrain/field_edit_commands`](world.md#file-world-terrain-field-edit-commands), [`assets/scenario/catalog`](assets.md#file-assets-scenario-catalog), [`assets/text/resources`](assets.md#file-assets-text-resources), [`network/protocol/lobby`](network.md#file-network-protocol-lobby), [`platform/debug/autoshot`](#file-platform-debug-autoshot), [`platform/debug/level_script`](#file-platform-debug-level-script), [`platform/debug/movie_player`](#file-platform-debug-movie-player), [`platform/debug/test_aids`](#file-platform-debug-test-aids), [`assets/army/catalog`](assets.md#file-assets-army-catalog), [`assets/model/definitions`](assets.md#file-assets-model-definitions), [`assets/package/codec`](assets.md#file-assets-package-codec), [`core/settings/persistent`](core.md#file-core-settings-persistent), [`core/text/path`](core.md#file-core-text-path), [`graphics/terrain/terrain_render`](graphics.md#file-graphics-terrain-terrain-render), [`movie/runtime/playback`](movie.md#file-movie-runtime-playback), [`network/protocol/mailbox`](network.md#file-network-protocol-mailbox), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest), [`ui/frontend/main_loop`](ui.md#file-ui-frontend-main-loop), [`ui/frontend/task_assignment`](ui.md#file-ui-frontend-task-assignment), [`ui/ingame/hud`](ui.md#file-ui-ingame-hud), [`ui/ingame/savegame_page`](ui.md#file-ui-ingame-savegame-page), [`world/model/pool`](world.md#file-world-model-pool), [`world/terrain/field_lifecycle`](world.md#file-world-terrain-field-lifecycle), [`assets/rom/runtime`](assets.md#file-assets-rom-runtime), [`assets/shot/catalog`](assets.md#file-assets-shot-catalog), [`assets/text/richtext`](assets.md#file-assets-text-richtext), [`core/error/runtime`](core.md#file-core-error-runtime), [`core/math/spline`](core.md#file-core-math-spline), [`core/ptr32`](core.md#file-core-ptr32), [`gameplay/selection/selection_set`](gameplay.md#file-gameplay-selection-selection-set), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session), [`gameplay/session/savegame_load`](gameplay.md#file-gameplay-session-savegame-load), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer), [`graphics/resources/palette`](graphics.md#file-graphics-resources-palette), [`graphics/resources/texture_set`](graphics.md#file-graphics-resources-texture-set), [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source), [`graphics/resources/tiled_blit`](graphics.md#file-graphics-resources-tiled-blit), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder), [`network/protocol/command_exchange`](network.md#file-network-protocol-command-exchange), [`network/protocol/scenario_transfer`](network.md#file-network-protocol-scenario-transfer), [`platform/bootstrap/main`](#file-platform-bootstrap-main), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder), [`platform/debug/script`](#file-platform-debug-script), [`platform/filesystem/win32`](#file-platform-filesystem-win32), [`platform/sdl3/audio`](#file-platform-sdl3-audio), [`platform/sdl3/gpu_ui2d`](#file-platform-sdl3-gpu-ui2d), [`platform/sdl3/platform`](#file-platform-sdl3-platform), [`platform/sdl3/timer`](#file-platform-sdl3-timer), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon), [`platform/selftest/keymatch_selftest`](#file-platform-selftest-keymatch-selftest), [`platform/selftest/uiatlas_selftest`](#file-platform-selftest-uiatlas-selftest), [`ui/controls/container`](ui.md#file-ui-controls-container), [`ui/controls/gauge`](ui.md#file-ui-controls-gauge), [`ui/controls/input`](ui.md#file-ui-controls-input), [`ui/controls/panels`](ui.md#file-ui-controls-panels), [`ui/controls/text`](ui.md#file-ui-controls-text), [`ui/frontend/display_settings`](ui.md#file-ui-frontend-display-settings), [`ui/frontend/end_movie_commands`](ui.md#file-ui-frontend-end-movie-commands), [`ui/frontend/faction_setup`](ui.md#file-ui-frontend-faction-setup), [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room), [`ui/frontend/menu_room_scene`](ui.md#file-ui-frontend-menu-room-scene), [`ui/frontend/mission_briefing`](ui.md#file-ui-frontend-mission-briefing), [`ui/frontend/results`](ui.md#file-ui-frontend-results), [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`ui/frontend/session`](ui.md#file-ui-frontend-session), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/hotkeys`](ui.md#file-ui-ingame-hotkeys), [`ui/ingame/key_commands`](ui.md#file-ui-ingame-key-commands), [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers), [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame), [`ui/text/font`](ui.md#file-ui-text-font), [`ui/text/richtext_render`](ui.md#file-ui-text-richtext-render), [`world/model/hierarchy`](world.md#file-world-model-hierarchy), [`world/shots/flight`](world.md#file-world-shots-flight).
 
 **Includes:** `windows.h`, `dbghelp.h`, `stdarg.h`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/core/ptr32.h`.
 
@@ -60,7 +60,7 @@ The original image has no C runtime: its PE entry point is ProcessEntry, which e
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 
-**Depends on** (8 files, names used): [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/debug/hooks`](#file-platform-debug-hooks) (1), [`ui/controls/minimap`](ui.md#file-ui-controls-minimap) (1).
+**Depends on** (8 files, names used): [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (1), [`graphics/backend/software_texture_scale`](graphics.md#file-graphics-backend-software-texture-scale) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/debug/hooks`](#file-platform-debug-hooks) (1).
 
 **Includes:** `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
@@ -409,7 +409,7 @@ The types of the module (structs, unions, enums and scalar typedefs in the origi
 <a id="module-platform-sdl3"></a>
 ### `platform/sdl3`
 
-Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`gpu_shader_fragment`](#file-platform-sdl3-gpu-shader-fragment), [`gpu_shader_fragment_alpha_test`](#file-platform-sdl3-gpu-shader-fragment-alpha-test), [`gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv), [`gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv), [`gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex), [`gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video), [`window_icon`](#file-platform-sdl3-window-icon)
+Files: [`audio`](#file-platform-sdl3-audio), [`gpu_renderer`](#file-platform-sdl3-gpu-renderer), [`gpu_shader_fragment`](#file-platform-sdl3-gpu-shader-fragment), [`gpu_shader_fragment_alpha_test`](#file-platform-sdl3-gpu-shader-fragment-alpha-test), [`gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv), [`gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv), [`gpu_shader_ui2d_fill`](#file-platform-sdl3-gpu-shader-ui2d-fill), [`gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv), [`gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb), [`gpu_shader_ui2d_half_rgb_spirv`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb-spirv), [`gpu_shader_ui2d_modulated`](#file-platform-sdl3-gpu-shader-ui2d-modulated), [`gpu_shader_ui2d_modulated_spirv`](#file-platform-sdl3-gpu-shader-ui2d-modulated-spirv), [`gpu_shader_ui2d_opaque`](#file-platform-sdl3-gpu-shader-ui2d-opaque), [`gpu_shader_ui2d_opaque_spirv`](#file-platform-sdl3-gpu-shader-ui2d-opaque-spirv), [`gpu_shader_ui2d_skip0`](#file-platform-sdl3-gpu-shader-ui2d-skip0), [`gpu_shader_ui2d_skip0_spirv`](#file-platform-sdl3-gpu-shader-ui2d-skip0-spirv), [`gpu_shader_ui2d_vertex`](#file-platform-sdl3-gpu-shader-ui2d-vertex), [`gpu_shader_ui2d_vertex_spirv`](#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv), [`gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex), [`gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv), [`gpu_ui2d`](#file-platform-sdl3-gpu-ui2d), [`gpu_ui_textures`](#file-platform-sdl3-gpu-ui-textures), [`input`](#file-platform-sdl3-input), [`platform`](#file-platform-sdl3-platform), [`sdl_objects`](#file-platform-sdl3-sdl-objects), [`timer`](#file-platform-sdl3-timer), [`types`](#file-platform-sdl3-types), [`video`](#file-platform-sdl3-video), [`window_icon`](#file-platform-sdl3-window-icon)
 
 <a id="file-platform-sdl3-audio"></a>
 #### `audio.cpp`
@@ -485,7 +485,7 @@ Generated by Microsoft (R) HLSL Shader Compiler 10.1
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 
-**Depends on** (1 files, names used): [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
 
 <a id="file-platform-sdl3-gpu-shader-fragment-spirv"></a>
 #### `gpu_shader_fragment_spirv.h`
@@ -493,6 +493,144 @@ Generated by Microsoft (R) HLSL Shader Compiler 10.1
 [Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_fragment_spirv.h)
 
 **Data** (3 shared, 0 file-local): `V`, `spiregg`, `Shader`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-fill"></a>
+#### `gpu_shader_ui2d_fill.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_fill.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-fill-spirv"></a>
+#### `gpu_shader_ui2d_fill_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_fill_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `uint`.
+
+**Called from** (7 files): [`platform/sdl3/gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv) (`Shader`); [`platform/sdl3/gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv) (`Shader`); [`platform/sdl3/gpu_shader_ui2d_half_rgb_spirv`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb-spirv) (`Shader`); [`platform/sdl3/gpu_shader_ui2d_modulated_spirv`](#file-platform-sdl3-gpu-shader-ui2d-modulated-spirv) (`Shader`); [`platform/sdl3/gpu_shader_ui2d_opaque_spirv`](#file-platform-sdl3-gpu-shader-ui2d-opaque-spirv) (`Shader`); [`platform/sdl3/gpu_shader_ui2d_skip0_spirv`](#file-platform-sdl3-gpu-shader-ui2d-skip0-spirv) (`Shader`); [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (`float`).
+
+**Depends on** (1 files, names used): [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-half-rgb"></a>
+#### `gpu_shader_ui2d_half_rgb.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_half_rgb.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+**Data** (3 shared, 0 file-local): `S0`, `mode_default`, `space`.
+
+**Called from** (4 files): [`platform/sdl3/gpu_shader_ui2d_modulated`](#file-platform-sdl3-gpu-shader-ui2d-modulated) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_opaque`](#file-platform-sdl3-gpu-shader-ui2d-opaque) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_skip0`](#file-platform-sdl3-gpu-shader-ui2d-skip0) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_vertex`](#file-platform-sdl3-gpu-shader-ui2d-vertex) (`CB0`, `dynamicIndexed`).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex) (2), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-half-rgb-spirv"></a>
+#### `gpu_shader_ui2d_half_rgb_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_half_rgb_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `Shader`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-modulated"></a>
+#### `gpu_shader_ui2d_modulated.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_modulated.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+**Data** (3 shared, 0 file-local): `S0`, `mode_default`, `space`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (3 files, names used): [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (2), [`platform/sdl3/gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex) (2), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-modulated-spirv"></a>
+#### `gpu_shader_ui2d_modulated_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_modulated_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `Shader`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-opaque"></a>
+#### `gpu_shader_ui2d_opaque.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_opaque.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+**Data** (3 shared, 0 file-local): `S0`, `mode_default`, `space`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (3 files, names used): [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (2), [`platform/sdl3/gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex) (2), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-opaque-spirv"></a>
+#### `gpu_shader_ui2d_opaque_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_opaque_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `Shader`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-skip0"></a>
+#### `gpu_shader_ui2d_skip0.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_skip0.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+**Data** (3 shared, 0 file-local): `S0`, `mode_default`, `space`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (3 files, names used): [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (2), [`platform/sdl3/gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex) (2), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-skip0-spirv"></a>
+#### `gpu_shader_ui2d_skip0_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_skip0_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `Shader`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-vertex"></a>
+#### `gpu_shader_ui2d_vertex.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_vertex.h)
+
+Generated by Microsoft (R) HLSL Shader Compiler 10.1
+
+**Data** (3 shared, 0 file-local): `CB0`, `dynamicIndexed`, `space`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/sdl3/gpu_shader_vertex`](#file-platform-sdl3-gpu-shader-vertex) (2), [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (1).
+
+<a id="file-platform-sdl3-gpu-shader-ui2d-vertex-spirv"></a>
+#### `gpu_shader_ui2d_vertex_spirv.h`
+
+[Private header](../../src/platform/sdl3/shaders/compiled/gpu_shader_ui2d_vertex_spirv.h)
+
+**Data** (3 shared, 0 file-local): `V`, `spiregg`, `uint`.
 
 **Called from:** no other file (entry points, slots filled at run time or file-local use).
 
@@ -507,7 +645,7 @@ Generated by Microsoft (R) HLSL Shader Compiler 10.1
 
 **Data** (6 shared, 0 file-local): `xyzw`, `xyzw`, `xyzw`, `xyzw`, `xy`, `g_VertexMain`.
 
-**Called from:** no other file (entry points, slots filled at run time or file-local use).
+**Called from** (5 files): [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_modulated`](#file-platform-sdl3-gpu-shader-ui2d-modulated) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_opaque`](#file-platform-sdl3-gpu-shader-ui2d-opaque) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_skip0`](#file-platform-sdl3-gpu-shader-ui2d-skip0) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_vertex`](#file-platform-sdl3-gpu-shader-ui2d-vertex) (`CB0`, `dynamicIndexed` +1).
 
 <a id="file-platform-sdl3-gpu-shader-vertex-spirv"></a>
 #### `gpu_shader_vertex_spirv.h`
@@ -516,7 +654,55 @@ Generated by Microsoft (R) HLSL Shader Compiler 10.1
 
 **Data** (3 shared, 0 file-local): `V`, `spiregg`, `float`.
 
-**Called from** (9 files): [`core/math/spline`](core.md#file-core-math-spline) (`CubicSpline_BackSubstituteRow`, `CubicSpline_BuildNaturalCoefficientSystem` +4); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`AppendPacket`, `AppendSmoothTriangle` +2); [`platform/sdl3/video`](#file-platform-sdl3-video) (`FramebufferInWindow`, `FramebufferToWindow` +2); [`platform/sdl3/input`](#file-platform-sdl3-input) (`MoveByRelativeMotion`, `MoveToEventPosition` +1); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_AllocateRuntimeBuffers`); [`platform/sdl3/audio`](#file-platform-sdl3-audio) (`LinearGain`); [`platform/sdl3/gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv) (`Shader`); [`platform/sdl3/gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv) (`Shader`); [`world/camera/motion_spline`](world.md#file-world-camera-motion-spline) (`WorldMotionSpline_ClearCachedDerivatives`).
+**Called from** (21 files): [`core/math/spline`](core.md#file-core-math-spline) (`CubicSpline_BackSubstituteRow`, `CubicSpline_BuildNaturalCoefficientSystem` +4); [`platform/sdl3/gpu_renderer`](#file-platform-sdl3-gpu-renderer) (`AppendPacket`, `AppendSmoothTriangle` +2); [`platform/sdl3/video`](#file-platform-sdl3-video) (`FramebufferInWindow`, `FramebufferToWindow` +2); [`platform/sdl3/gpu_shader_ui2d_half_rgb`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_modulated`](#file-platform-sdl3-gpu-shader-ui2d-modulated) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_opaque`](#file-platform-sdl3-gpu-shader-ui2d-opaque) (`S0`, `mode_default` +1); [`platform/sdl3/gpu_shader_ui2d_skip0`](#file-platform-sdl3-gpu-shader-ui2d-skip0) (`S0`, `mode_default` +1); [`platform/sdl3/input`](#file-platform-sdl3-input) (`MoveByRelativeMotion`, `MoveToEventPosition` +1); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`CoreAssets_AllocateRuntimeBuffers`); [`platform/sdl3/audio`](#file-platform-sdl3-audio) (`LinearGain`); 11 more: [`platform/sdl3/gpu_shader_fragment_alpha_test_spirv`](#file-platform-sdl3-gpu-shader-fragment-alpha-test-spirv), [`platform/sdl3/gpu_shader_fragment_spirv`](#file-platform-sdl3-gpu-shader-fragment-spirv), [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv), [`platform/sdl3/gpu_shader_ui2d_half_rgb_spirv`](#file-platform-sdl3-gpu-shader-ui2d-half-rgb-spirv), [`platform/sdl3/gpu_shader_ui2d_modulated_spirv`](#file-platform-sdl3-gpu-shader-ui2d-modulated-spirv), [`platform/sdl3/gpu_shader_ui2d_opaque_spirv`](#file-platform-sdl3-gpu-shader-ui2d-opaque-spirv), [`platform/sdl3/gpu_shader_ui2d_skip0_spirv`](#file-platform-sdl3-gpu-shader-ui2d-skip0-spirv), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv), [`platform/sdl3/gpu_ui2d`](#file-platform-sdl3-gpu-ui2d), [`platform/sdl3/gpu_ui_textures`](#file-platform-sdl3-gpu-ui-textures), [`world/camera/motion_spline`](world.md#file-world-camera-motion-spline).
+
+**Depends on** (1 files, names used): [`platform/sdl3/gpu_shader_ui2d_fill_spirv`](#file-platform-sdl3-gpu-shader-ui2d-fill-spirv) (1).
+
+<a id="file-platform-sdl3-gpu-ui2d"></a>
+#### `gpu_ui2d.cpp / gpu_ui2d.h`
+
+[Source](../../src/platform/sdl3/gpu_ui2d.cpp) · [Private header](../../src/platform/sdl3/gpu_ui2d.h)
+
+GPU 2D renderer of step 9: pipelines and draws for the 2D draw list (see gpu_ui2d.h and ui2d.hlsl).
+
+**Functions** (3 public, 2 file-local):
+
+- [`GpuUi2D_Init`](../../src/platform/sdl3/gpu_ui2d.cpp#L122)
+- [`GpuUi2D_Shutdown`](../../src/platform/sdl3/gpu_ui2d.cpp#L217)
+- [`GpuUi2D_Draw`](../../src/platform/sdl3/gpu_ui2d.cpp#L231)
+
+**Data** (2 shared, 2 file-local): `GPU_UI_VERTEX_FLAG_PALETTED`, `GPU_UI_VERTICES_PER_CHUNK`.
+
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
+
+**Depends on** (2 files, names used): [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+**Includes:** `gpu_ui2d.h`, `SDL3/SDL_error.h`, `SDL3/SDL_stdinc.h`, `algorithm`, `cstddef`, `thandor/platform/bootstrap/image.h`, `gpu_shader_ui2d_vertex.h`, `gpu_shader_ui2d_skip0.h`, `gpu_shader_ui2d_half_rgb.h`, `gpu_shader_ui2d_modulated.h`, `gpu_shader_ui2d_opaque.h`, `gpu_shader_ui2d_fill.h`, `gpu_shader_ui2d_vertex_spirv.h`, `gpu_shader_ui2d_skip0_spirv.h`, `gpu_shader_ui2d_half_rgb_spirv.h`, `gpu_shader_ui2d_modulated_spirv.h`, `gpu_shader_ui2d_opaque_spirv.h`, `gpu_shader_ui2d_fill_spirv.h`.
+
+<a id="file-platform-sdl3-gpu-ui-textures"></a>
+#### `gpu_ui_textures.cpp / gpu_ui_textures.h`
+
+[Source](../../src/platform/sdl3/gpu_ui_textures.cpp) · [Private header](../../src/platform/sdl3/gpu_ui_textures.h)
+
+Step 9 work package 2: the GPU UI texture cache and its atlas pages (see gpu_ui_textures.h). Packing: each page has shelves (rows of rectangles of similar height, filled left to right) and a list of rectangles freed by evictions; a request takes the best fitting free rectangle, then the best fitting shelf, then a new shelf at the bottom, then a new page.
+
+**Functions** (7 public, 18 file-local):
+
+- [`GpuUiTextures_Init`](../../src/platform/sdl3/gpu_ui_textures.cpp#L447)
+- [`GpuUiTextures_Shutdown`](../../src/platform/sdl3/gpu_ui_textures.cpp#L458)
+- [`GpuUiTextures_Lookup`](../../src/platform/sdl3/gpu_ui_textures.cpp#L490)
+- [`GpuUiTextures_FlushUploads`](../../src/platform/sdl3/gpu_ui_textures.cpp#L555)
+- [`GpuUiTextures_UploadRegion`](../../src/platform/sdl3/gpu_ui_textures.cpp#L615)
+- [`GpuUiTextures_Evict`](../../src/platform/sdl3/gpu_ui_textures.cpp#L655)
+- [`GpuUiTextures_GetStats`](../../src/platform/sdl3/gpu_ui_textures.cpp#L668)
+
+**Data** (4 shared, 5 file-local): `GPU_UI_TEX_ENTRY_PALETTE`, `GPU_UI_PAGE_SIZE`, `GPU_UI_SOFT_PAGE_LIMIT`, `GPU_UI_HARD_PAGE_LIMIT`.
+
+**Called from** (1 files): [`platform/selftest/uiatlas_selftest`](#file-platform-selftest-uiatlas-selftest) (`Thandor_SelfTestUiAtlas`).
+
+**Depends on** (3 files, names used): [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_vertex_spirv`](#file-platform-sdl3-gpu-shader-vertex-spirv) (1).
+
+**Includes:** `gpu_ui_textures.h`, `SDL3/SDL_stdinc.h`, `algorithm`, `cstring`, `map`, `tuple`, `vector`, `thandor/platform/bootstrap/image.h`.
 
 <a id="file-platform-sdl3-input"></a>
 #### `input.cpp`
@@ -666,7 +852,7 @@ SDL3 backend: the window and taskbar icon from thandor.ico (see thandor/platform
 <a id="module-platform-selftest"></a>
 ### `platform/selftest`
 
-Files: [`hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`keymatch_selftest`](#file-platform-selftest-keymatch-selftest), [`raster_selftest`](#file-platform-selftest-raster-selftest), [`selftest`](#file-platform-selftest-selftest), [`selftests`](#file-platform-selftest-selftests)
+Files: [`hexscan_selftest`](#file-platform-selftest-hexscan-selftest), [`keymatch_selftest`](#file-platform-selftest-keymatch-selftest), [`raster_selftest`](#file-platform-selftest-raster-selftest), [`selftest`](#file-platform-selftest-selftest), [`selftests`](#file-platform-selftest-selftests), [`uiatlas_selftest`](#file-platform-selftest-uiatlas-selftest)
 
 <a id="file-platform-selftest-hexscan-selftest"></a>
 #### `hexscan_selftest.cpp`
@@ -745,9 +931,27 @@ No file comment; function families: `Thandor_*` (15), `SelfTest_*` (11), `IconTe
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_RunSelfTest`).
 
-**Depends on** (24 files, names used): [`assets/package/codec`](assets.md#file-assets-package-codec) (6), [`audio/codec/sam`](audio.md#file-audio-codec-sam) (6), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (5), [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (4), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (3), [`audio/codec/sam_encoder`](audio.md#file-audio-codec-sam-encoder) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest) (1), [`platform/selftest/keymatch_selftest`](#file-platform-selftest-keymatch-selftest) (1), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest) (1).
+**Depends on** (25 files, names used): [`assets/package/codec`](assets.md#file-assets-package-codec) (6), [`audio/codec/sam`](audio.md#file-audio-codec-sam) (6), [`graphics/backend/software`](graphics.md#file-graphics-backend-software) (5), [`platform/input/devices`](#file-platform-input-devices) (5), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (4), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (3), [`audio/codec/sam_encoder`](audio.md#file-audio-codec-sam-encoder) (2), [`core/math/fixed_vector`](core.md#file-core-math-fixed-vector) (2), [`core/settings/persistent`](core.md#file-core-settings-persistent) (2), [`graphics/backend/software_rasterizer`](graphics.md#file-graphics-backend-software-rasterizer) (2), [`graphics/render/light_records`](graphics.md#file-graphics-render-light-records) (2), [`graphics/resources/pcx_read`](graphics.md#file-graphics-resources-pcx-read) (2), [`movie/runtime/flm_encoder`](movie.md#file-movie-runtime-flm-encoder) (2), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (1), [`core/math/geometry`](core.md#file-core-math-geometry) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`core/text/string`](core.md#file-core-text-string) (1), [`graphics/backend/software_blit`](graphics.md#file-graphics-backend-software-blit) (1), [`movie/runtime/flm_decoder`](movie.md#file-movie-runtime-flm-decoder) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/selftest/hexscan_selftest`](#file-platform-selftest-hexscan-selftest) (1), [`platform/selftest/keymatch_selftest`](#file-platform-selftest-keymatch-selftest) (1), [`platform/selftest/raster_selftest`](#file-platform-selftest-raster-selftest) (1), [`platform/selftest/uiatlas_selftest`](#file-platform-selftest-uiatlas-selftest) (1).
 
 **Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `thandor/platform/sdl3/window_icon.h`, `algorithm`, `vector`.
+
+<a id="file-platform-selftest-uiatlas-selftest"></a>
+#### `uiatlas_selftest.cpp`
+
+[Source](../../src/platform/selftest/uiatlas_selftest.cpp)
+
+OPEN_THANDOR_SELFTEST=uiatlas: the GPU UI texture cache (platform/sdl3/gpu_ui_textures.cpp) without a GPU device.
+
+**Functions** (2 public, 3 file-local):
+
+- [`Thandor_SelfTestUiAtlas`](../../src/platform/selftest/uiatlas_selftest.cpp#L118)
+- [`Thandor_SelfTestUiAtlas`](../../src/platform/selftest/uiatlas_selftest.cpp#L306)
+
+**Called from** (1 files): [`platform/selftest/selftests`](#file-platform-selftest-selftests) (`SelfTest_Run`).
+
+**Depends on** (5 files, names used): [`platform/sdl3/gpu_ui_textures`](#file-platform-sdl3-gpu-ui-textures) (8), [`graphics/resources/texture_source`](graphics.md#file-graphics-resources-texture-source) (3), [`assets/package/codec`](assets.md#file-assets-package-codec) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
+
+**Includes:** `stdio.h`, `stdlib.h`, `string.h`, `string`, `unordered_set`, `vector`, `thandor/platform/bootstrap/image.h`, `thandor/platform/selftest/selftest.h`, `../sdl3/gpu_ui_textures.h`.
 
 <a id="module-platform-system"></a>
 ### `platform/system`
