@@ -79,10 +79,10 @@ No file comment; function families: `CommandLine_*` (11), `CoreAssets_*` (9), `G
 - [`DynAPI_Resolve`](../../src/platform/bootstrap/runtime.cpp#L415) - Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0.
 - [`DynDLL_Load`](../../src/platform/bootstrap/runtime.cpp#L448) - Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that DynDLL_UnloadAll frees it; returns the (non-NULL) module.
 - [`DynDLL_UnloadAll`](../../src/platform/bootstrap/runtime.cpp#L475) - Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared before the call so a module is never freed twice.
-- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L501) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
-- [`GameRuntime_InitializeSpatialAudioAndRendering`](../../src/platform/bootstrap/runtime.cpp#L553) - Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables, the software renderer's display-mode hook and the global primitive queue (0xA000 packets), ...
-- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L735) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
-- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L754) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
+- [`Game_Run`](../../src/platform/bootstrap/runtime.cpp#L500) - Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and rendering, loads the core assets and plays the intro movies (each failure is fatal).
+- [`GameRuntime_InitializeSpatialAudioAndRendering`](../../src/platform/bootstrap/runtime.cpp#L551) - Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables, the software renderer's display-mode hook and the global primitive queue (0xA000 packets), ...
+- [`Screenshot_AdvanceFileName`](../../src/platform/bootstrap/runtime.cpp#L733) - Advances the two-digit counter of g_ScreenshotFileNameUtf16 ("screen00.pcx", [6] tens digit, [7] ones digit) after a screenshot was written, wrapping from 99 to 00.
+- [`Screenshot_SaveFramebufferAsPcx`](../../src/platform/bootstrap/runtime.cpp#L752) - Screenshot command of the in-game and end-movie keyboard dispatchers: captures the whole framebuffer, writes it as PCX to g_ScreenshotFileNameUtf16 and advances the name's counter.
 - 5 more: `Game_LoadCoreAssets`, `Game_PlayIntroMovies`, `DynAPI_Bootstrap`, `CommandLine_FindOption`, `CommandLine_Parse`
 
 **Data** (11 shared, 48 file-local): `g_CommandLineFindOption`, `g_LooseMoviePathPrefix`, `g_DatenHexPathUtf16`, `g_StatHexPathUtf16`, `g_GameStatTableImage`, `g_GameDataAuxState`, `g_FrontendPlayerListRows`, `g_IntroMoviePendingTicks` and 3 more.
@@ -347,14 +347,14 @@ No file comment; function families: `Win32File_*` (11), `Win32FileSystem_*` (4),
 
 - [`FileSystem_Init`](../../src/platform/filesystem/win32.cpp#L94) - Starts the file layer: records the executable directory, installs the Win32 implementations of the g_FileSystem* function table, replaces the default L"Computer" label with the machine name, ...
 - [`Win32FileSystem_RestoreInitialDirectory`](../../src/platform/filesystem/win32.cpp#L197) - Changes back to the working directory FileSystem_Init found at startup, if one was captured.
-- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L213) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
-- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L265) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
-- [`Win32File_WriteExactOrFlush`](../../src/platform/filesystem/win32.cpp#L291) - Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current position (SetEndOfFile).
-- [`Win32File_GetPosition`](../../src/platform/filesystem/win32.cpp#L315) - Stores the current position of a file in *outPosition and returns true; returns false with outPosition 0 when SetFilePointer fails.
-- [`Win32File_Seek`](../../src/platform/filesystem/win32.cpp#L333) - Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
-- [`Win32File_Delete`](../../src/platform/filesystem/win32.cpp#L349) - Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface.
-- [`Win32File_CreateDirectoryRecursive`](../../src/platform/filesystem/win32.cpp#L363) - Creates a directory.
-- [`Win32FileSystem_EnumerateDirectoryOrVolumeEntries`](../../src/platform/filesystem/win32.cpp#L435) - Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or subdirectories (FILESYSTEM_ENUMERATE_DIRECTORIES) matching the wildcard path, sorted by a bubble ...
+- [`FileSystem_LoadWholeFileNearExecutable`](../../src/platform/filesystem/win32.cpp#L212) - Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as given.
+- [`FileSystem_WriteBufferToPath`](../../src/platform/filesystem/win32.cpp#L264) - Writes a whole buffer to a file, creating or truncating it with exclusive access.
+- [`Win32File_WriteExactOrFlush`](../../src/platform/filesystem/win32.cpp#L290) - Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current position (SetEndOfFile).
+- [`Win32File_GetPosition`](../../src/platform/filesystem/win32.cpp#L314) - Stores the current position of a file in *outPosition and returns true; returns false with outPosition 0 when SetFilePointer fails.
+- [`Win32File_Seek`](../../src/platform/filesystem/win32.cpp#L332) - Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
+- [`Win32File_Delete`](../../src/platform/filesystem/win32.cpp#L348) - Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface.
+- [`Win32File_CreateDirectoryRecursive`](../../src/platform/filesystem/win32.cpp#L362) - Creates a directory.
+- [`Win32FileSystem_EnumerateDirectoryOrVolumeEntries`](../../src/platform/filesystem/win32.cpp#L434) - Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or subdirectories (FILESYSTEM_ENUMERATE_DIRECTORIES) matching the wildcard path, sorted by a bubble ...
 - 6 more: `Win32File_ReadExact`, `Win32File_GetSize`, `Win32File_GetCurrentDirectory`, `Win32File_SetCurrentDirectory`, `Win32File_Open`, `Win32File_Close`
 
 **Data** (13 shared, 8 file-local): `g_ExecutableDirectoryUtf16`, `g_FileSystemCombinedPathScratchUtf16`, `g_FileSystemOpen`, `g_FileSystemClose`, `g_FileSystemReadExact`, `g_FileSystemWriteExactOrFlush`, `g_FileSystemGetSize`, `g_FileSystemSeek` and 5 more.
@@ -381,14 +381,14 @@ No file comment; function families: `Keyboard_*` (12), `GraphicsCursor_*` (3).
 
 - [`Keyboard_CompareAsciiCaseInsensitiveFlags`](../../src/platform/input/devices.cpp#L75) - Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of g_KeyboardAsciiCaseTransformCallbacks3.
 - [`Keyboard_FlushEvents`](../../src/platform/input/devices.cpp#L92) - Discards every queued keyboard event by moving the ring's write index back onto its read index.
-- [`Keyboard_ReadNextEvent`](../../src/platform/input/devices.cpp#L104) - Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer.
-- [`Keyboard_ToLowerAscii`](../../src/platform/input/devices.cpp#L128) - Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged.
-- [`GraphicsCursor_LoadAssets`](../../src/platform/input/devices.cpp#L141) - Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table ...
-- [`GraphicsCursor_FreeBuffers`](../../src/platform/input/devices.cpp#L202) - First half of the mouse display-mode hook (SdlInput_SetDisplayMode): blocks backend access (timer cursor drawing) for the switch and frees the three cursor buffers.
-- [`GraphicsCursor_CreateBuffersAndCenter`](../../src/platform/input/devices.cpp#L219) - Second half of the mouse display-mode hook (SdlInput_SetDisplayMode), after the mode switch: recreates the three cursor buffers in the new pixel format, converts the cursor palette and centres the ...
-- [`Keyboard_OnKeyDown`](../../src/platform/input/devices.cpp#L378) - WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), ...
-- [`Keyboard_OnKeyUp`](../../src/platform/input/devices.cpp#L430) - WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, ...
-- [`Keyboard_OnChar`](../../src/platform/input/devices.cpp#L463) - WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with the current modifier state in the keyboard ring.
+- [`Keyboard_ReadNextEvent`](../../src/platform/input/devices.cpp#L103) - Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer.
+- [`Keyboard_ToLowerAscii`](../../src/platform/input/devices.cpp#L127) - Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged.
+- [`GraphicsCursor_LoadAssets`](../../src/platform/input/devices.cpp#L140) - Step of the original's DirectInputMouse_Init, called by SdlInput_Init: loads the cursor images (engine\mouse.gfx; the largest image size sizes the cursor buffers) and the frame table ...
+- [`GraphicsCursor_FreeBuffers`](../../src/platform/input/devices.cpp#L201) - First half of the mouse display-mode hook (SdlInput_SetDisplayMode): blocks backend access (timer cursor drawing) for the switch and frees the three cursor buffers.
+- [`GraphicsCursor_CreateBuffersAndCenter`](../../src/platform/input/devices.cpp#L218) - Second half of the mouse display-mode hook (SdlInput_SetDisplayMode), after the mode switch: recreates the three cursor buffers in the new pixel format, converts the cursor palette and centres the ...
+- [`Keyboard_OnKeyDown`](../../src/platform/input/devices.cpp#L377) - WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), ...
+- [`Keyboard_OnKeyUp`](../../src/platform/input/devices.cpp#L428) - WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, ...
+- [`Keyboard_OnChar`](../../src/platform/input/devices.cpp#L460) - WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with the current modifier state in the keyboard ring.
 - 1 more: `Keyboard_ToUpperAscii`
 
 **Data** (21 shared, 8 file-local): `g_CursorOverrideX`, `g_CursorOverrideY`, `g_CursorVisibilityToken`, `g_CursorButtonState`, `g_KeyboardSpecialKeyDown`, `g_KeyboardFlushEvents`, `g_KeyboardStateMask`, `g_CursorInputWriteIndex` and 13 more.
@@ -772,7 +772,7 @@ No file comment; function families: `Locale_*` (10).
 - [`Locale_GetPackedCurrentTime`](../../src/platform/system/time_locale.cpp#L361) - Returns the current local time packed as (hour &lt;&lt; 16) \| (minute &lt;&lt; 8) \| second.
 - [`Locale_GetDefaultTelephoneCountryCode`](../../src/platform/system/time_locale.cpp#L374) - Guesses the player's telephone country code from the Windows user language: English 44, German 49, French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 - [`Locale_CopyDefaultComputerLabelUtf16`](../../src/platform/system/time_locale.cpp#L411) - Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to destination: always the whole 0x40-byte buffer including its zero padding.
-- [`Locale_ParseUnsignedDecimalAscii`](../../src/platform/system/time_locale.cpp#L431) - Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the first non-digit.
+- [`Locale_ParseUnsignedDecimalAscii`](../../src/platform/system/time_locale.cpp#L430) - Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the first non-digit.
 
 **Data** (9 shared, 2 file-local): `g_LocaleGetPackedCurrentDate`, `g_LocaleGetPackedCurrentTime`, `g_TimerRegisterPeriodic`, `g_TimerUnregisterPeriodic`, `g_LocaleCopyDefaultComputerLabelUtf16`, `g_LocaleFormatCurrentDateUtf16`, `g_LocaleFormatTimeFieldsUtf16`, `g_LocaleFormatCurrentTimeUtf16` and 1 more.
 

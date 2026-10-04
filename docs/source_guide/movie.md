@@ -64,10 +64,10 @@ No file comment; function families: `Movie_*` (15), `IntroMovie_*` (1).
 - [`Movie_Open`](../../src/movie/runtime/playback.cpp#L156) - Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a mounted package, the executable directory or the plain path, in that order.
 - [`Movie_GetFrameDimensions`](../../src/movie/runtime/playback.cpp#L353) - Returns the frame size of the active movie, so callers can place and scale the movie texture.
 - [`Movie_SetAudioGainQ15`](../../src/movie/runtime/playback.cpp#L370) - Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame with this gain on both channels).
-- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L441) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
-- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L463) - Closes g_ActiveMovie.
-- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L505) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
-- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L558) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
+- [`Movie_Rewind`](../../src/movie/runtime/playback.cpp#L440) - Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice, so the movie plays again from the start.
+- [`Movie_Close`](../../src/movie/runtime/playback.cpp#L461) - Closes g_ActiveMovie.
+- [`IntroMovie_TimerTick`](../../src/movie/runtime/playback.cpp#L502) - Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in g_IntroMoviePendingTicks.
+- [`Movie_AdvanceFrame`](../../src/movie/runtime/playback.cpp#L554) - Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
 
 **Data** (3 shared, 0 file-local): `g_MovieDefaultAudioGainQ15`, `g_MovieAlternateAudioGainQ15`, `g_ActiveMovie`.
 
