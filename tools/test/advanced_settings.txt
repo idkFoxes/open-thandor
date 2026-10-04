@@ -9,7 +9,7 @@
 #   Auto/1x/2x/3x at y 366/390/414/438 (radio circles at x 365), "Bildratenbegrenzung" rows Aus/60/120/144 at
 #   y 282/306/330/354 (circles at x 701), the "VSync" checkbox at 707,394
 # Steps: options page (shot 0), "Anzeige" (shot 1), "3D" (shot 2), "Sound" (shot 3), "Erweitert" (shot 4), choose
-# 60 Bilder/s, untick VSync, choose "Original" and "2x" (shot 5: those selected; a GPU renderer switches to UI scale
+# 60 Bilder/s, toggle VSync (off under the test tools, OPEN_THANDOR_VSYNC=0), choose "Original" and "2x" (shot 5: those selected; a GPU renderer switches to UI scale
 # 2 at once - run without OPEN_THANDOR_UI_SCALE, which wins, i.e. set it empty - and with
 # OPEN_THANDOR_GPU_NATIVE_SHOTS=1 the frame is also written at full size, shots\gpunative_NNNN.bmp), "1x" (shot 6:
 # back at scale 1), back to "Anzeige" (shot 7), choose 640x480 (the top of the resolution list) and apply it
