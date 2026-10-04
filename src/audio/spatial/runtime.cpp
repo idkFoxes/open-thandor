@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(16) int32_t g_ReverseStereoMask = 0;
+int32_t g_ReverseStereoMask = 0;
 
 static GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform = {0};
 
@@ -27,7 +27,8 @@ AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
 
 /* Implementation ownership: audio/spatial/runtime. */
 
-/* Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,
+/* Allocates the pool of SPATIAL_SOUND_SLOT_COUNT spatial sound slots (sizeof(SpatialSoundSlot) each; 0x10 bytes
+   in the 32-bit original, 0x18 with native 64-bit pointers) and zeroes it,
    so every slot starts without a voice set. Returns true on success; false with the allocator's error in
    *outError when the arena is exhausted.
 */
@@ -90,8 +91,8 @@ void SpatialSound_RebuildListenerTransformFromPose
    azimuth. Returns false when the position is not closer than maximumDistanceQ12 or the attenuated gain is
    not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15. Otherwise stores two channel gains, each clamped to
    SPATIAL_SOUND_GAIN_Q15_FULL: *firstGainQ15 is the reduced one for an azimuth in the first half turn and
-   *secondGainQ15 the reduced one in the second half turn; reverse stereo swaps the two. The callers map
-   them to left/right differently (see SpatialSound_UpdateDesiredPositionedGains). */
+   *secondGainQ15 the reduced one in the second half turn; reverse stereo swaps the two. Both callers play
+   the first gain on the left channel and the second on the right. */
 static Bool8 SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,uint32_t volumeQ15,
           GraphicsFixedVec3 *worldPosition,uint32_t *firstGainQ15,uint32_t *secondGainQ15)
 
@@ -201,10 +202,10 @@ void SpatialSound_UpdateDesiredPositionedGains
   if ((slot == nullptr) || (volumeQ15 == 0)) {
     return;
   }
-  /* Original quirk: the channels are mapped the other way round than in SpatialSound_PlayPositionedOneShot
-     (the first-half-reduced gain goes to the right channel here), so looping and one-shot sounds at the
-     same position pan to opposite sides (unless the play callback's left/right parameter names are swapped). */
-  if (SpatialSound_ComputePositionedGains(maximumDistanceQ12,volumeQ15,worldPosition,&rightGainQ15,&leftGainQ15)) {
+  /* same channel mapping as SpatialSound_PlayPositionedOneShot (first gain left, second gain right). The
+     original stored the gains crosswise and swapped them back when playing; the slot field names follow
+     the channel each gain is played on (see SpatialSoundSlot). */
+  if (SpatialSound_ComputePositionedGains(maximumDistanceQ12,volumeQ15,worldPosition,&leftGainQ15,&rightGainQ15)) {
     slot->desiredLeftGainQ15 = leftGainQ15;
     slot->desiredRightGainQ15 = rightGainQ15;
   }
@@ -302,7 +303,7 @@ void SpatialSoundPool_ApplyDesiredGains()
         if (slotCursor->desiredLeftGainQ15 != 0 || slotCursor->desiredRightGainQ15 != 0) {
           /* the voice is stored whether or not it plays (NULL on failure) */
           g_SoundPlayLooping
-                    (slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,
+                    (slotCursor->desiredLeftGainQ15,slotCursor->desiredRightGainQ15,
                      slotCursor->voiceSet,&activeVoice);
           slotCursor->activeVoice = activeVoice;
         }
@@ -312,7 +313,7 @@ void SpatialSoundPool_ApplyDesiredGains()
         slotCursor->activeVoice = nullptr;
       }
       else {
-        g_SoundSetVoiceGains(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice);
+        g_SoundSetVoiceGains(slotCursor->desiredLeftGainQ15,slotCursor->desiredRightGainQ15,existingVoice);
       }
     }
     slotCursor++;
