@@ -14,7 +14,7 @@ usage:
   run_determinism.py GAME_DIR --save-reference DIR     store one run per scenario as DIR/<scenario>.txt
   run_determinism.py GAME_DIR --reference DIR          every scenario must match its stored reference
 
-Needs the test build (CMake preset "test") as GAME_DIR/thandor.exe. With --runs 2 the runs of a scenario must
+Needs the test build (CMake preset "test") as GAME_DIR/thandor.exe with its SDL3.dll. With --runs 2 the runs of a scenario must
 match each other (their frame rates differ, which must not change the result). On a mismatch the first differing
 step is reported; rerun with --detail <tick> to get every army's values at that tick (statehash.txt in each copy).
 """

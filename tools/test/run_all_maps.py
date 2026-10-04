@@ -1,6 +1,7 @@
 """Starts every mission and checks that it loads and runs, several missions in parallel.
 
-Needs the test build (CMake preset "test" / -DTHANDOR_DEV_TOOLS=ON) as GAME_DIR/thandor.exe: it uses the test
+Needs the test build (CMake preset "test" / -DTHANDOR_DEV_TOOLS=ON) as GAME_DIR/thandor.exe with its SDL3.dll
+(the worker copies link GAME_DIR's): it uses the test
 aids OPEN_THANDOR_CAMPAIGN / OPEN_THANDOR_CAMPAIGN_LEVEL (start a campaign at a given level),
 OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE and OPEN_THANDOR_NET_PORT, plus the input script
 (OPEN_THANDOR_SCRIPT).
