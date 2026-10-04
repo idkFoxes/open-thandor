@@ -824,8 +824,8 @@
 0x004BA3D0  function  UiTextListControl_UnsuppressIfActionId                            src/ui/controls/lists.cpp
 0x004BA400  function  UiTextListControl_SuppressIfActionId                              src/ui/controls/lists.cpp
 0x004BA430  function  UiPointerList_InitializeMeasuredTextRows                          src/ui/controls/lists.cpp
-0x004BA500  function  UiPointerList_SelectTextListIndex                                 src/ui/controls/lists.cpp
-0x004BA560  function  UiPointerList_GetSelectedIndex                                    src/ui/controls/lists.cpp
+0x004BA500  function  UiPointerList_SelectTextListIndex                                 (merged into UiPointerList_SelectColumnListIndex)
+0x004BA560  function  UiPointerList_GetSelectedIndex                                    (merged into UiPointerList_GetSelectedIndexAndConfirmed)
 0x004BA590  data      g_UiListControlVtable                                             src/ui/controls/scrollable.cpp
 0x004BA5D8  data      g_UiPointerListExpandedLeftTextUtf16                              src/ui/controls/lists.cpp
 0x004BA9D8  data      g_UiPointerListExpandedRightTextUtf16                             src/ui/controls/lists.cpp

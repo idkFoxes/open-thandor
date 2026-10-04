@@ -130,24 +130,6 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   return;
 }
 
-/* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
-   parent so the row is visible. Out-of-range indices are ignored.
-*/
-void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control)
-
-{
-  int rowTop;
-  
-  if (index < control->rowCount) {
-    control->selectedRowSlot = control->rowSlots + index;
-    rowTop = control->rowHeight * index;
-    UiScrollableControl_ClampOffsetsToViewport
-              (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
-               (UiScrollableControl *)(control->base).parent);
-  }
-  return;
-}
-
 /* Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
    pointer, scrolls it into view, queues the list's action and plays the selection sound. A double click
    also marks the selection confirmed (UI_LIST_SELECTION_CONFIRMED) and re-queues even for the same row; a
@@ -305,23 +287,6 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
             (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
              (UiScrollableControl *)(control->base).parent);
   return;
-}
-
-/* Returns the index of the selected row of a pointer list. The original also reports whether
-   UI_LIST_SELECTION_CONFIRMED is set, which this C signature does not carry (both branches return the index).
-   No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode passes the index straight to the backend
-   call, and FrontendNetworkSetup_OpenSelectedBackend ignores the flag.
-*/
-UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
-
-{
-  UiListRowIndex selectedRowIndex;
-  
-  selectedRowIndex = control->selectedRowSlot - control->rowSlots;
-  if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
-    return selectedRowIndex;
-  }
-  return selectedRowIndex;
 }
 
 /* Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
@@ -521,8 +486,8 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,Ptr32<void> *r
 }
 
 /* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
-   parent so the row is visible; the same as UiPointerList_SelectTextListIndex. Out-of-range indices are
-   ignored.
+   parent so the row is visible. Out-of-range indices are ignored. The original has a second copy for the
+   text lists (UiPointerList_SelectTextListIndex).
 */
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control)
 
@@ -541,6 +506,8 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 
 /* Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
    whether the selection was confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
+   The original has a second copy for the text lists (UiPointerList_GetSelectedIndex) that reports the flag
+   in a register no caller reads.
 */
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed)
 

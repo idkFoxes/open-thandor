@@ -245,8 +245,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   /* no session yet: open the backend selected in the protocol list, else the first one that opens */
   UiRuntimeRecordRing_Clear();
   UiTransferMailbox_RandomizeSequenceToken();
-  backendIndex = UiPointerList_GetSelectedIndex
-                          ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
+  backendIndex = UiPointerList_GetSelectedIndexAndConfirmed
+                          ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList),NULL);
   if (FrontendNetworkSetupPage_OpenBackend(backendIndex) != 0) {
     /* the selected backend fails: try every backend from the first one (the selected one again included) */
     backendIndex = 0;
@@ -271,7 +271,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     }
   }
   /* backend backendIndex is open */
-  UiPointerList_SelectTextListIndex
+  UiPointerList_SelectColumnListIndex
             (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
   localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpoint;
   endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
@@ -592,7 +592,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
   uint32_t *endpointDestinationDwordCursor;
   uint32_t backendError; /* 0 or a FATAL_ERROR_NETWORK_* code */
 
-  selectedBackendIndex = UiPointerList_GetSelectedIndex(backendList);
+  selectedBackendIndex = UiPointerList_GetSelectedIndexAndConfirmed(backendList,NULL);
   if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
     return;
   }
