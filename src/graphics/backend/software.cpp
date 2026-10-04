@@ -13,7 +13,7 @@
 /* Module data. */
 
 /* SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software_display_mode.cpp). */
-static SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = THANDOR_FN(SoftwareFramebuffer_Destroy);
+[[maybe_unused]] static SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = &SoftwareFramebuffer_Destroy;
 
 /* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software_texture_scale.cpp); built by SoftwareRenderer_BuildFactorTables */
 int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
@@ -34,7 +34,7 @@ SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];
 
 SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256];
 
-GraphicsEndSceneProc *g_GraphicsEndScene = THANDOR_FN(SoftwareGraphicsDispatch_NoOp);
+GraphicsEndSceneProc *g_GraphicsEndScene = &SoftwareGraphicsDispatch_NoOp;
 
 GraphicsDiagnosticCounter g_PrimitiveDrawCallCount = 0;
 
@@ -42,11 +42,11 @@ GraphicsDiagnosticCounter g_TextureBindStateChangeCount = 0;
 
 GraphicsDiagnosticCounter g_TextureDeviceReloadCount = 0;
 
-GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth = THANDOR_FN(SoftwareRenderer_ClearViewport);
+GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth = &SoftwareRenderer_ClearViewport;
 
-GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue = THANDOR_FN(SoftwareRenderer_DrawPrimitiveQueueBridge);
+GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue = &SoftwareRenderer_DrawPrimitiveQueueBridge;
 
-GraphicsBeginSceneProc *g_GraphicsBeginScene = THANDOR_FN(SoftwareGraphicsDispatch_SuccessNoOp);
+GraphicsBeginSceneProc *g_GraphicsBeginScene = &SoftwareGraphicsDispatch_SuccessNoOp;
 
 /* Implementation ownership: graphics/backend/software. */
 

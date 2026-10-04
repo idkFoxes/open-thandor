@@ -14,9 +14,9 @@
 
 /* Module data. */
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = THANDOR_FN(GraphicsTextureSource_BlitTiledHalfSourceRgb);
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = &GraphicsTextureSource_BlitTiledHalfSourceRgb;
 
-GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = THANDOR_FN(GraphicsTextureSource_BlitTiledSourceAlpha);
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = &GraphicsTextureSource_BlitTiledSourceAlpha;
 
 /* The tile stepping below never ends for a zero (or, as int, negative) logical size, which
    g_GraphicsTextureSourceGetLogicalSize returns for an invalid asset or index; the original looped forever there.

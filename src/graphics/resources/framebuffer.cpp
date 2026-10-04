@@ -25,9 +25,9 @@ uint32_t g_FramebufferHeight = 0;
 
 GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent = nullptr;
 
-GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess = THANDOR_FN(GraphicsFramebuffer_BeginAccessStub);
+GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess = &GraphicsFramebuffer_BeginAccessStub;
 
-GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess = THANDOR_FN(GraphicsFramebuffer_EndAccessStub);
+GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess = &GraphicsFramebuffer_EndAccessStub;
 
 GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = nullptr;
 
