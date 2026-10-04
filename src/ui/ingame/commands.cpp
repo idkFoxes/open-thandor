@@ -147,14 +147,8 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   if (firstSelectedEntity != nullptr) {
     modelOffset = (int)((intptr_t)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                         (intptr_t)g_ModelRuntimeRebaseDelta);
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-                (g_LocalPlayerRuntimeId,0,0xffffffff,modelOffset);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE,0,0xffffffff,modelOffset);
-    }
+    InGameCommand_Issue<FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology>
+              (0,0xffffffff,modelOffset);
   }
   return;
 }
@@ -205,13 +199,8 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
     return;
   }
   factionIndex = ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_SELECTION_GROUP,(CommandPayload)factionIndex,transferModeFlags,groupIndex);
-    return;
-  }
-  FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
-            (g_LocalPlayerRuntimeId,factionIndex,transferModeFlags,groupIndex);
+  InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
+            ((CommandPayload)factionIndex,transferModeFlags,groupIndex);
   return;
 }
 

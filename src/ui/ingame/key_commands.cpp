@@ -165,13 +165,8 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     if (commandsBlocked) {
       break;
     }
-    if (localSession) {
-      FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
-                (g_LocalPlayerRuntimeId,world->activeFactionRuntimeIndex,transferMode,groupIndex);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_GROUP,world->activeFactionRuntimeIndex,transferMode,groupIndex);
-    }
+    InGameCommand_Issue<FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh>
+              (world->activeFactionRuntimeIndex,transferMode,groupIndex);
     break;
   }
   case INGAME_KEY_NOTIFICATION_ADVANCE:
@@ -236,28 +231,21 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
   case INGAME_KEY_SELECTION_STOP_MOVEMENT:
   case INGAME_KEY_SELECTION_CANCEL_TARGETS:
   case INGAME_KEY_SELECTION_SELF_DESTRUCT: {
-    static const uint32_t queuedCommandCodes[4] = {INGAME_COMMAND_SELECTION_RESET_MOVEMENT,INGAME_COMMAND_SELECTION_STOP_MOVEMENT,
-                                                   INGAME_COMMAND_SELECTION_CANCEL_TARGETS,INGAME_COMMAND_SELECTION_SELF_DESTRUCT};
-    int commandIndex = (target == INGAME_KEY_SELECTION_RESET_MOVEMENT) ? 0 :
-                       (target == INGAME_KEY_SELECTION_STOP_MOVEMENT) ? 1 :
-                       (target == INGAME_KEY_SELECTION_CANCEL_TARGETS) ? 2 : 3;
     if (commandsBlocked || SelectionInfo_AllEntriesEmptyOrMatchOwner(world->activeFactionRuntimeIndex)) {
       break;
     }
-    if (!localSession) {
-      InGameCommandQueue_AppendLocalPlayerCommand(queuedCommandCodes[commandIndex],0,0,0);
+    /* in-game commands 0xE10, 0xE30, 0xE50 and 0xE70 */
+    if (target == INGAME_KEY_SELECTION_RESET_MOVEMENT) {
+      InGameCommand_Issue<PlayerSelection_ResetMovementPruneAndRecenterEntries>(0,0,0);
     }
-    else if (commandIndex == 0) {
-      PlayerSelection_ResetMovementPruneAndRecenterEntries(g_LocalPlayerRuntimeId,0,0,0);
+    else if (target == INGAME_KEY_SELECTION_STOP_MOVEMENT) {
+      InGameCommand_Issue<PlayerSelection_StopMovement>(0,0,0);
     }
-    else if (commandIndex == 1) {
-      PlayerSelection_StopMovement(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else if (commandIndex == 2) {
-      PlayerSelection_CancelTargets(g_LocalPlayerRuntimeId,0,0,0);
+    else if (target == INGAME_KEY_SELECTION_CANCEL_TARGETS) {
+      InGameCommand_Issue<PlayerSelection_CancelTargets>(0,0,0);
     }
     else {
-      PlayerSelection_SelfDestruct(g_LocalPlayerRuntimeId,0,0,0);
+      InGameCommand_Issue<PlayerSelection_SelfDestruct>(0,0,0);
     }
     break;
   }
@@ -283,12 +271,7 @@ Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask 
     if (commandsBlocked) {
       break;
     }
-    if (localSession) {
-      InGameSelection_SelectAllOwnAircraftPads(g_LocalPlayerRuntimeId,0,0,0);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS,0,0,0);
-    }
+    InGameCommand_Issue<InGameSelection_SelectAllOwnAircraftPads>(0,0,0);
     break;
   case INGAME_KEY_FREE_CAMERA_TOGGLE:
     /* no pitch and distance clamps in the world motion code */
@@ -355,30 +338,14 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
         hasActiveOwnerType16 = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(world->activeFactionRuntimeIndex);
         if (hasActiveOwnerType16) {
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-              SESSION_NETWORK_ROLE_LOCAL) {
-            FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-          }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
-          }
+          InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
           return;
         }
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
-        }
-      }
-      else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-               SESSION_NETWORK_ROLE_LOCAL) {
-        GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
-                  (g_LocalPlayerRuntimeId,0,0,world->activeFactionRuntimeIndex);
+        InGameCommand_Issue<FrontendPlayerSelection_ClearAndRefreshLocalPanels>(0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,world->activeFactionRuntimeIndex);
+        InGameCommand_Issue<GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid>
+                  (0,0,world->activeFactionRuntimeIndex);
       }
     }
     else {
