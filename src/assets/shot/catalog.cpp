@@ -13,12 +13,16 @@
 
 ShotDefinition *g_ShotDefinitionRegistry[256] = {};
 
+/* Fixed name for the fatal-error box when a SHT asset has an invalid header (the asset's own path is not known
+   here). */
+static uint16_t s_ShotAssetErrorName[] = {'*', '.', 's', 'h', 't', 0}; /* L"*.sht" */
+
 /* Implementation ownership: assets/shot/catalog. */
 
 /* Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version
    0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
-   ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
-   asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
+   ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves
+   "*.sht" in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
    Returns 0 on success, otherwise the error code (the original's success return value was never used by its
    callers).
 */
@@ -41,7 +45,9 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
     }
     return 0;
   }
-  Package_SetLastErrorPath((uint16_t *)asset);
+  /* The original passes the asset header itself as the error path; replaced by a fixed name here because the
+     header words are no text (units >= 0x8000 become rich-text pointer codes in the fatal-error box). */
+  Package_SetLastErrorPath(s_ShotAssetErrorName);
   return FATAL_ERROR_SHOT_ASSET_INVALID;
 }
 
@@ -135,7 +141,8 @@ static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
   uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
-  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16)) {
+  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16,
+                                sizeof definition->resourcePathUtf16 / sizeof(uint16_t))) {
     /* Original quirk: the original returns the leftover error code of the earlier duplicate-id lookup, so a
        failing .spr extension switch returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
     return FATAL_ERROR_SHOT_ID_NOT_FOUND;
