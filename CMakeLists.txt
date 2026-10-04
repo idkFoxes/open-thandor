@@ -44,6 +44,7 @@ add_library(thandor_curated STATIC
     src/assets/package/codec.cpp
     src/assets/package/runtime.cpp
     src/assets/resource/runtime.cpp
+    src/assets/rom/menu_room.cpp
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
     src/assets/scenario/frontend_selection.cpp

@@ -12,7 +12,6 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/rom/runtime. */
-/* Functions are grouped by semantic ownership. */
 
 /* Frontend ROM action table (a RomRecord, g_FrontendActiveRomRecord): the 0x200-byte RomRecord header with the
    entry count in entryCount, followed by 0x200-byte FrontendRomActionEntry entries. */
@@ -64,32 +63,15 @@ typedef struct RomRecord {
     uint8_t unknown44_4F[12];
     RomRecordLight lights[27];           /* +0x50 */
 } RomRecord;
-/* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
-#define FRONTEND_ROM_TRANSITION_SKIP_TICKS 0x10000000
+
 /* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
 #define ROM_REGISTRY_SLOT_COUNT 256
-/* Model-node descriptor list scanned by RomRuntime_ApplyIndexedDescriptor: 0x10-byte entries whose first dword
-   holds the kind in its low 4 bits and the entry index above them; kind 4 is a point light. */
-#define ROM_NODE_DESCRIPTOR_KIND_MASK 0xf
-#define ROM_NODE_DESCRIPTOR_KIND_LIGHT 4
-/* runtimeFlags bits of a ROM record's runtime root node (FrontendRomTransition_ActivateRecordById,
-   RomRuntime_UpdateRecordVisibilityAndDescriptors; read by the frontend menu-room hit test) */
-#define ROM_NODE_FLAG_ACTION_TARGET 0x20 /* linked from an entry of the active record */
-#define ROM_NODE_FLAG_HIDDEN 0x40 /* neither the active record nor in its visibleRecordMask */
 
-void FrontendRomActionTable_ExecuteRecord
-          (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
-          RomRecordTableIndex recordIndex);
+/* Functions are grouped by semantic ownership. */
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
-Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
-
-void FrontendRomTransition_ProcessPendingRecord(void);
-
 void FrontendRomRegistry_ClearAndReleaseNestedResources(void);
-
-void FrontendRomTransition_RequestStop(void);
 
 RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue);
 
@@ -97,32 +79,14 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable);
 
 RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
-uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
-
-Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
-
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
-
-ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
-          (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,
-          WorldRuntimeContext *worldObjectArray);
-
-void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry);
 
 Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
-void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
-
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 
-extern uint32_t g_FrontendRomTransitionPageAction;
-extern uintptr_t g_FrontendActiveRomRecord;
-extern uint32_t g_FrontendRomTransitionElapsedTicks;
-extern uintptr_t g_FrontendRomTransitionSplineKeyframes;
-extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
-extern uint32_t g_FrontendRomTransitionTargetRecordId;
 extern RomRegistrySlot *g_RomRegistrySlots;
-extern DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
+
 extern uint16_t g_EngineZentraleRomPathUtf16[20];
 
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */
