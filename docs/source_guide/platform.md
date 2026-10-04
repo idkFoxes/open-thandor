@@ -34,12 +34,12 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 - [`Thandor_SymbolName`](../../src/platform/bootstrap/image.cpp#L300)
 - [`Thandor_LogStack`](../../src/platform/bootstrap/image.cpp#L316)
 - [`Thandor_Ptr32Overflow`](../../src/platform/bootstrap/image.cpp#L337) - core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout.
-- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L604)
-- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L614)
-- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L629)
-- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L634)
-- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L639)
-- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L645)
+- [`Thandor_InstallCrashHandler`](../../src/platform/bootstrap/image.cpp#L606)
+- [`Thandor_IsReadable`](../../src/platform/bootstrap/image.cpp#L616)
+- [`Thandor_TickCount`](../../src/platform/bootstrap/image.cpp#L631)
+- [`Thandor_SleepMs`](../../src/platform/bootstrap/image.cpp#L636)
+- [`Thandor_DirectoryExistsW`](../../src/platform/bootstrap/image.cpp#L641)
+- [`Thandor_GetExecutablePathA`](../../src/platform/bootstrap/image.cpp#L647)
 
 **Data** (1 shared, 6 file-local): `g_ThandorFrameHeartbeat`.
 
@@ -52,7 +52,7 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 
 [Source](../../src/platform/bootstrap/main.cpp)
 
-The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the code uses memcpy), has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
+The original image has no C runtime: its PE entry point is ProcessEntry, which ends in ExitProcess. The rebuilt executable links the C/C++ runtime of its compiler (MinGW GCC or MSVC), has the original data compiled in (the "Module data." sections of the module sources) and enters ProcessEntry from WinMain.
 
 **Functions** (1 public):
 
@@ -256,7 +256,7 @@ Scripted input (test aid). Reads OPEN_THANDOR_SCRIPT=&lt;file&gt; and replays it
 
 **Functions** (1 public, 1 file-local):
 
-- [`DebugScript_Tick`](../../src/platform/debug/script.cpp#L67)
+- [`DebugScript_Tick`](../../src/platform/debug/script.cpp#L68)
 
 **Data** (2 shared, 0 file-local): `g_TestAidInGameFrames`, `g_TestAidSessionCount`.
 
@@ -740,7 +740,7 @@ No file comment; function families: `Thandor_*` (15), `SelfTest_*` (11), `IconTe
 
 **Functions** (1 public, 29 file-local):
 
-- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L1175) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
+- [`SelfTest_Run`](../../src/platform/selftest/selftests.cpp#L1176) - Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h.
 
 **Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_RunSelfTest`).
 

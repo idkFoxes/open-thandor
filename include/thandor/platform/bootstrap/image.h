@@ -19,7 +19,8 @@ is mapped.
    looks for these values in assets */
 #define ORIGINAL_TEXT_START 0x401000u
 #define ORIGINAL_TEXT_END 0x58C000u
-/* The rebuilt executable is linked at this fixed base (/BASE in CMakeLists.txt); its code starts one page in */
+/* The rebuilt executable is linked at this fixed base (/BASE or --image-base in CMakeLists.txt); its code starts
+   one page in. The crash log symbolizes stack values in this range. */
 #define REBUILT_IMAGE_BASE 0x10000000u
 #define REBUILT_IMAGE_CODE_START (REBUILT_IMAGE_BASE + 0x1000u)
 

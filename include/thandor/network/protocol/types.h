@@ -48,7 +48,7 @@ using FrontendSnapshotTransferFlags = int;
 
 enum {
     UI_TRANSFER_JOIN_UNAVAILABLE=0,
-    UI_TRANSFER_JOIN_AVAILABLE=4294967295
+    UI_TRANSFER_JOIN_AVAILABLE=0xFFFFFFFFu /* stored as -1 in the int joinAvailableFlag */
 };
 using UiTransferJoinAvailability = int;
 
@@ -175,7 +175,8 @@ struct UiCommandQueueRecord {
 
 struct UiTransferSenderEndpointSlot {
     struct UiTransferEndpointDescriptor endpoint; 
-    uint32_t transferTimeoutTicks; 
+    uint32_t chunkTimeoutScratchNeverRead; /* original quirk: chunk requests extend this instead of the player's
+                                              heartbeat (UiTransferMailbox_ServiceAndRetransmitTimer) */
     uint8_t reserved0014_007F[108]; 
 };
 

@@ -256,7 +256,7 @@ static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD6
     }
 }
 
-/* Crash log: raw stack words below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
+/* Crash log: raw stack qwords below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
    of the rebuilt executable's image) */
 #define CRASH_LOG_REBUILT_IMAGE_SPAN 0x400000u
 static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
@@ -463,13 +463,14 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
             context.Rsp);
     fprintf(out, "module base 0x%p\n\n", (void *)GetModuleHandleA(nullptr));
     fflush(out);
-    /* Raw stack words first: the stack walk below can fault on a corrupted stack. */
+    /* Raw stack qwords first (the same 0x180 bytes as the earlier 96 dwords): the stack walk below can fault
+       on a corrupted stack. */
     {
-        const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(context);
+        const uint64_t *stack = (const uint64_t *)(uintptr_t)CONTEXT_SP(context);
         int i;
         fprintf(out, "stack:");
-        for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
-            fprintf(out, "%s%08lX", (i % 8) ? " " : "\n  ", stack[i]);
+        for (i = 0; i < 48 && Thandor_IsReadable(stack + i, 8); i++) {
+            fprintf(out, "%s%016llX", (i % 4) ? " " : "\n  ", (unsigned long long)stack[i]);
         }
         fprintf(out, "\n\n");
         fflush(out);
@@ -477,13 +478,14 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 
     SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
     SymInitialize(process, nullptr, TRUE);
-    /* Code addresses among the raw stack words (return addresses of the frames). */
+    /* Code addresses among the raw stack qwords (return addresses of the frames; x64 pushes 8-byte return
+       addresses, so the earlier 4-byte scan also matched halves of other values). */
     {
-        const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(context);
+        const uint64_t *stack = (const uint64_t *)(uintptr_t)CONTEXT_SP(context);
         int i;
-        for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
+        for (i = 0; i < 48 && Thandor_IsReadable(stack + i, 8); i++) {
             if (stack[i] >= REBUILT_IMAGE_CODE_START && stack[i] < REBUILT_IMAGE_BASE + CRASH_LOG_REBUILT_IMAGE_SPAN) {
-                fprintf(out, "  [esp+%03X] %s\n", i * 4,
+                fprintf(out, "  [rsp+%03X] %s\n", i * 8,
                         Thandor_SymbolName((const void *)(uintptr_t)stack[i]));
             }
         }

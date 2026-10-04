@@ -1054,7 +1054,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers()
    level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
    screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
    buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
-   reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
+   reads and writes PCX itself instead.) Returns 0, or the error code of the first failing step (the caller
    treats non-zero as failure).
 */
 uint32_t __cdecl Game_LoadCoreAssets()
@@ -1096,7 +1096,7 @@ uint32_t __cdecl Game_LoadCoreAssets()
     return aiInitError;
   }
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
-     written in C, graphics/resources/pcx_read.cpp and pcx_write.cpp. */
+     written by graphics/resources/pcx_read.cpp and pcx_write.cpp. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
                      ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == nullptr) {
