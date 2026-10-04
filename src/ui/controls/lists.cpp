@@ -408,7 +408,9 @@ void UiListControl_TickActivationPulse(UiListControl *control)
 }
 
 /* Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
-   passes the request on to its children like any container.
+   passes the request on to its children like any container. Also the unsuppressActionId of the text list
+   (g_UiTextListControlVtable; UiTextListControl has actionId at the same offset): the original has a copy
+   for it (UiTextListControl_UnsuppressIfActionId).
 */
 void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
 
@@ -425,7 +427,8 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
 
 /* Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
    passes the request on to its children like any container. Unlike the selectable controls it keeps the
-   keyboard focus.
+   keyboard focus. Also the suppressActionId of the text list (g_UiTextListControlVtable; the original has a
+   copy for it, UiTextListControl_SuppressIfActionId).
 */
 void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
 
@@ -859,38 +862,6 @@ void UiTextListControl_TickActivationPulse(UiTextListControl *control)
          (UI_LIST_FLAGS_MASK & ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
-}
-
-/* Enables a text list whose action id matches (unsuppressActionId slot of g_UiTextListControlVtable), then
-   passes the id on to the children.
-*/
-void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control)
-
-{
-  UiNodeFlags *controlNodeFlags;
-  
-  if (actionId == control->actionId) {
-    controlNodeFlags = &(control->base).nodeFlags;
-    *controlNodeFlags = *controlNodeFlags & ~UI_NODE_SUPPRESSED;
-  }
-  UiContainer_UnsuppressActionId(actionId,&control->base);
-  return;
-}
-
-/* Disables a text list whose action id matches (suppressActionId slot of g_UiTextListControlVtable), then
-   passes the id on to the children.
-*/
-void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control)
-
-{
-  UiNodeFlags *controlNodeFlags;
-  
-  if (actionId == control->actionId) {
-    controlNodeFlags = &(control->base).nodeFlags;
-    *controlNodeFlags = *controlNodeFlags | UI_NODE_SUPPRESSED;
-  }
-  UiContainer_SuppressActionId(actionId,&control->base);
-  return;
 }
 
 /* Fills a pointer list whose rows are rich-text strings (rowPointers, one per row) and selects row 0. The

@@ -67,9 +67,6 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
 
 void UiTextListControl_TickActivationPulse(UiTextListControl *control);
 
-void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
-
-void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
 void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control);
 

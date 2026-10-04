@@ -821,8 +821,8 @@
 0x004BA040  function  UiTextListControl_SelectRowFromPointer                            src/ui/controls/lists.cpp
 0x004BA130  function  UiTextListControl_HandleKeyboardNavigationAndSearch               src/ui/controls/lists.cpp
 0x004BA390  function  UiTextListControl_TickActivationPulse                             src/ui/controls/lists.cpp
-0x004BA3D0  function  UiTextListControl_UnsuppressIfActionId                            src/ui/controls/lists.cpp
-0x004BA400  function  UiTextListControl_SuppressIfActionId                              src/ui/controls/lists.cpp
+0x004BA3D0  function  UiTextListControl_UnsuppressIfActionId                            (merged into UiListControl_UnsuppressIfActionId)
+0x004BA400  function  UiTextListControl_SuppressIfActionId                              (merged into UiListControl_SuppressIfActionId)
 0x004BA430  function  UiPointerList_InitializeMeasuredTextRows                          src/ui/controls/lists.cpp
 0x004BA500  function  UiPointerList_SelectTextListIndex                                 (merged into UiPointerList_SelectColumnListIndex)
 0x004BA560  function  UiPointerList_GetSelectedIndex                                    (merged into UiPointerList_GetSelectedIndexAndConfirmed)
