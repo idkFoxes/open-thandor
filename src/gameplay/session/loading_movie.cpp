@@ -1,14 +1,14 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/movie/runtime/session_schedule.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/loading_movie.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <thandor/movie/runtime/session_schedule.h>
+#include <thandor/gameplay/session/loading_movie.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
@@ -17,7 +17,7 @@
 
 uint32_t g_MoviePlaybackCurrentFrame = 0;
 
-/* Implementation ownership: movie/runtime/session_schedule. */
+/* Implementation ownership: gameplay/session/loading_movie. */
 
 /* Per-tick callback of a movie played inside a session: counts the tick, works out which frame the movie
    should show by now (8 frames per g_MoviePlaybackScheduleSpan ticks, offset by the base frame group), catches

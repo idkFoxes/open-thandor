@@ -51,7 +51,6 @@ add_library(thandor_curated STATIC
     src/assets/rom/runtime.cpp
     src/assets/scenario/catalog.cpp
     src/assets/scenario/frontend_selection.cpp
-    src/assets/scenario/session_load.cpp
     src/assets/shot/catalog.cpp
     src/assets/sprite/catalog.cpp
     src/assets/text/font.cpp
@@ -110,7 +109,6 @@ add_library(thandor_curated STATIC
     src/gameplay/army/walker.cpp
     src/gameplay/army/weapons.cpp
     src/gameplay/faction/army_stock.cpp
-    src/gameplay/faction/carryover.cpp
     src/gameplay/faction/economy.cpp
     src/gameplay/faction/relations.cpp
     src/gameplay/faction/runtime.cpp
@@ -125,12 +123,15 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/preview_markers.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
+    src/gameplay/session/campaign_carryover.cpp
     src/gameplay/session/level.cpp
     src/gameplay/session/level_new.cpp
     src/gameplay/session/level_saved.cpp
     src/gameplay/session/level_script.cpp
+    src/gameplay/session/loading_movie.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
+    src/gameplay/session/scenario_load.cpp
     src/gameplay/session/startup.cpp
     src/gameplay/session/tick.cpp
     src/gameplay/technology/runtime.cpp
@@ -167,7 +168,6 @@ add_library(thandor_curated STATIC
     src/movie/runtime/flm_decoder.cpp
     src/movie/runtime/flm_encoder.cpp
     src/movie/runtime/playback.cpp
-    src/movie/runtime/session_schedule.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
     src/network/protocol/cipher.cpp

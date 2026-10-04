@@ -148,53 +148,6 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
                              (uint16_t *)g_CampagneHexPathUtf16,packageHandle);
 }
 
-/* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
-   dword zero. */
-static Bool8 InGameSaveGame_OldUnitTablesAreEmpty(void)
-
-{
-  int index;
-
-  if (g_OldUnitRecordCount != 0) {
-    return false;
-  }
-  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
-    if (g_OldUnitSecondaryTable[index] != 0) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
-   temporary allocation. Returns false only when that allocation fails. */
-static Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
-
-{
-  uint32_t *oldUnitImage;
-  uint32_t *destinationCursor;
-  int index;
-
-  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage) != 0) {
-    return false;
-  }
-  oldUnitImage[0] = g_OldUnitRecordCount;
-  destinationCursor = oldUnitImage + 1;
-  for (index = 0; index < OLD_UNIT_PRIMARY_TABLE_BYTES / 4; index++) {
-    *destinationCursor = g_OldUnitPrimaryTable[index];
-    destinationCursor++;
-  }
-  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
-    *destinationCursor = g_OldUnitSecondaryTable[index];
-    destinationCursor++;
-  }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                      (PckDecodedByteCount)((uint8_t *)destinationCursor - (uint8_t *)oldUnitImage),oldUnitImage,
-                      (uint16_t *)g_OldunitHexPathUtf16,packageHandle);
-  g_MemoryApi.free(oldUnitImage);
-  return true;
-}
-
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
    id and the campaign index, and writes it back. Returns true on success. */

@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/faction/carryover.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/campaign_carryover.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/gameplay/faction/carryover.h>
+#include <thandor/gameplay/session/campaign_carryover.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -16,7 +16,7 @@ uint32_t *g_OldUnitPrimaryTable = 0;
 
 OldUnitRecordCount g_OldUnitRecordCount = 0;
 
-/* Implementation ownership: gameplay/faction/carryover. */
+/* Implementation ownership: gameplay/session/campaign_carryover. */
 
 /* Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
    for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
@@ -224,4 +224,51 @@ void OldUnitRuntime_ResetPendingTables(void)
   }
   g_OldUnitRecordCount = 0;
   return;
+}
+
+/* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
+   dword zero. */
+Bool8 InGameSaveGame_OldUnitTablesAreEmpty(void)
+
+{
+  int index;
+
+  if (g_OldUnitRecordCount != 0) {
+    return false;
+  }
+  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
+    if (g_OldUnitSecondaryTable[index] != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
+   temporary allocation. Returns false only when that allocation fails. */
+Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
+
+{
+  uint32_t *oldUnitImage;
+  uint32_t *destinationCursor;
+  int index;
+
+  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage) != 0) {
+    return false;
+  }
+  oldUnitImage[0] = g_OldUnitRecordCount;
+  destinationCursor = oldUnitImage + 1;
+  for (index = 0; index < OLD_UNIT_PRIMARY_TABLE_BYTES / 4; index++) {
+    *destinationCursor = g_OldUnitPrimaryTable[index];
+    destinationCursor++;
+  }
+  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
+    *destinationCursor = g_OldUnitSecondaryTable[index];
+    destinationCursor++;
+  }
+  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                      (PckDecodedByteCount)((uint8_t *)destinationCursor - (uint8_t *)oldUnitImage),oldUnitImage,
+                      (uint16_t *)g_OldunitHexPathUtf16,packageHandle);
+  g_MemoryApi.free(oldUnitImage);
+  return true;
 }

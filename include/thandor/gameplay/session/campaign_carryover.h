@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/faction/carryover.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/session/campaign_carryover.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_GAMEPLAY_FACTION_CARRYOVER_H
-#define THANDOR_GAMEPLAY_FACTION_CARRYOVER_H
+#ifndef THANDOR_GAMEPLAY_SESSION_CAMPAIGN_CARRYOVER_H
+#define THANDOR_GAMEPLAY_SESSION_CAMPAIGN_CARRYOVER_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: gameplay/faction/carryover. */
+/* Submodule: gameplay/session/campaign_carryover. */
 
 /* g_OldUnitPrimaryTable: 0x20-byte carry-over unit records (OLD_UNIT_PRIMARY_TABLE_BYTES / 0x20). */
 #define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
@@ -28,4 +28,8 @@ extern uint32_t *g_OldUnitSecondaryTable;
 extern uint32_t *g_OldUnitPrimaryTable;
 extern OldUnitRecordCount g_OldUnitRecordCount; /* followed by 8 bytes 0x90 fill (dropped) */
 
-#endif /* THANDOR_GAMEPLAY_FACTION_CARRYOVER_H */
+Bool8 InGameSaveGame_OldUnitTablesAreEmpty(void);
+
+Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle);
+
+#endif /* THANDOR_GAMEPLAY_SESSION_CAMPAIGN_CARRYOVER_H */

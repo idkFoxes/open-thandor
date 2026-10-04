@@ -18,6 +18,13 @@ uint16_t g_LevelHexPathUtf16[10] = {'l', 'e', 'v', 'e', 'l', '.', 'h', 'e', 'x',
 
 uint16_t g_LevelEndingMovieSourcePath[256] = {0};
 
+/* LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer (PCK_ENTRY_HEADER_BYTES) */
+static PckEntryHeader g_LevelPackageFoundEntry = {0};
+
+static uint16_t g_LevelLevPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'l', 'e', 'v', 0}; /* L"level\\*.lev" */
+
+static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 's', 't', 'r', 0}; /* L"level\\*.str" */
+
 /* Implementation ownership: gameplay/session/level. */
 
 /* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at
@@ -229,5 +236,47 @@ Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldV
     *outError = writeError;
     return false;
   }
+  return true;
+}
+
+/* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
+   'lev' asset of converter version 0x70001, and the level\*.str text page must load as the level's text
+   aliases (keyed by the level's title text id). Returns false when the package stays mounted; on any failure
+   it is unmounted again and true is returned (a failed mount returns without unmounting).
+*/
+Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
+
+{
+  uint32_t levelTitleTextId;
+  EngineFileHandle fileHandle;
+  int *levelAsset;
+  uint32_t matchCount;
+
+  /* on failure fileHandle holds the error code but is not used */
+  if (!Package_Mount(levelPathUtf16,&fileHandle)) {
+    return true; /* nothing mounted, nothing to unmount */
+  }
+  if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
+                        (uint16_t *)g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
+      matchCount != 0) {
+    levelAsset = (int *)Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
+    if (levelAsset != NULL) {
+      /* dword 0: asset magic, dword 3: converter version */
+      if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
+        levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
+        Resource_Release(levelAsset);
+        if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
+                              (uint16_t *)g_LevelStrPatternUtf16,fileHandle,&matchCount) &&
+            matchCount != 0 &&
+            !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,g_LevelPackageFoundEntry.path)) {
+          return false; /* valid level: the package stays mounted */
+        }
+      }
+      else {
+        Resource_Release(levelAsset);
+      }
+    }
+  }
+  Package_Unmount(fileHandle);
   return true;
 }

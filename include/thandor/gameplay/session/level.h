@@ -32,4 +32,6 @@ extern uint16_t g_FieldHexPathUtf16[10];
 extern uint16_t g_LevelHexPathUtf16[10];
 extern uint16_t g_LevelEndingMovieSourcePath[256];
 
+Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
+
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_H */

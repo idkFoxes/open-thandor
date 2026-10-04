@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/assets/scenario/session_load.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/session/scenario_load.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_ASSETS_SCENARIO_SESSION_LOAD_H
-#define THANDOR_ASSETS_SCENARIO_SESSION_LOAD_H
+#ifndef THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H
+#define THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: assets/scenario/session_load. */
+/* Submodule: gameplay/session/scenario_load. */
 
 /* Functions are grouped by semantic ownership. */
 
@@ -33,4 +33,4 @@ extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* level/campaign/save 
 
 extern uintptr_t g_FrontendLoadedCampaignAsset;
 
-#endif /* THANDOR_ASSETS_SCENARIO_SESSION_LOAD_H */
+#endif /* THANDOR_GAMEPLAY_SESSION_SCENARIO_LOAD_H */

@@ -35,20 +35,9 @@ typedef struct InGameSavePackageHeader {
 
 Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
-extern uint16_t g_CampagneHexPathUtf16[13];
-extern uint16_t g_OldunitHexPathUtf16[12];
-extern uint8_t g_InGameResourceRegistrationBusyCount;
-
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
 
 Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError);
-
-extern uint16_t g_EffectHexPathUtf16[11];
-extern uint16_t g_ShotHexPathUtf16[9];
-extern uint16_t g_ModulHexPathUtf16[10];
-extern uint16_t g_LightHexPathUtf16[10];
-extern uint16_t g_WidgetHexPathUtf16[11];
-extern uint16_t g_ArmyHexPathUtf16[9];
 
 Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 
@@ -61,9 +50,6 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void);
 ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void);
 
 void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
-
-extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
-extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
 
 void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void);
 
@@ -78,5 +64,19 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
 RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
 
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
+
+extern uint16_t g_CampagneHexPathUtf16[13];
+extern uint16_t g_OldunitHexPathUtf16[12];
+extern uint8_t g_InGameResourceRegistrationBusyCount;
+
+extern uint16_t g_EffectHexPathUtf16[11];
+extern uint16_t g_ShotHexPathUtf16[9];
+extern uint16_t g_ModulHexPathUtf16[10];
+extern uint16_t g_LightHexPathUtf16[10];
+extern uint16_t g_WidgetHexPathUtf16[11];
+extern uint16_t g_ArmyHexPathUtf16[9];
+
+extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
+extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

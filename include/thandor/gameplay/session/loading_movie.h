@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/movie/runtime/session_schedule.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/gameplay/session/loading_movie.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_MOVIE_RUNTIME_SESSION_SCHEDULE_H
-#define THANDOR_MOVIE_RUNTIME_SESSION_SCHEDULE_H
+#ifndef THANDOR_GAMEPLAY_SESSION_LOADING_MOVIE_H
+#define THANDOR_GAMEPLAY_SESSION_LOADING_MOVIE_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: movie/runtime/session_schedule. */
+/* Submodule: gameplay/session/loading_movie. */
 
 /* Functions are grouped by semantic ownership. */
 
@@ -21,4 +21,4 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
 
 extern uint32_t g_MoviePlaybackCurrentFrame;
 
-#endif /* THANDOR_MOVIE_RUNTIME_SESSION_SCHEDULE_H */
+#endif /* THANDOR_GAMEPLAY_SESSION_LOADING_MOVIE_H */

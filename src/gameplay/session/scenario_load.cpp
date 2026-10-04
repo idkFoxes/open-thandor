@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/scenario/session_load.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/scenario_load.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/assets/scenario/session_load.h>
+#include <thandor/gameplay/session/scenario_load.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
@@ -23,7 +23,7 @@ FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = 0;
 
 uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
 
-/* Implementation ownership: assets/scenario/session_load. */
+/* Implementation ownership: gameplay/session/scenario_load. */
 
 /* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
