@@ -183,7 +183,12 @@ Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32
    reachable; these tables list exactly those functions with their codes, so the codes keep their protocol
    values without the original image layout. Not every entry is a four-argument command handler: the queue
    functions themselves and a few helpers start in the same regions and are listed because the original would
-   call them for such a code, too. */
+   call them for such a code, too.
+   The handler stays an untyped void * on purpose (the one function-address table that is not typed by
+   THANDOR_SLOT): the entries have different signatures (the four-argument handlers, the queue functions, the
+   lookup helper), and the table identifies a command by its handler's address (CommandDispatch_CodeOfHandler,
+   CommandDispatch_IsCommandHandler); only CommandDispatch_ResolveHandler casts a checked entry to
+   CommandQueueHandlerProc. */
 typedef struct CommandTableEntry {
   uint32_t code;
   void *handler;
