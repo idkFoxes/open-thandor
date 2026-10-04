@@ -311,3 +311,35 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
   }
   return;
 }
+
+/* Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
+   candidateRecord. Inverted like all failure flags: false = found, true = not found.
+   recordCount must be at least 1.
+*/
+Bool8 DwordBlock64Array_ContainsExactRecord
+          (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
+
+{
+  int dwordsRemainingInRecord;
+  uint32_t *candidateRecordCursor;
+  Bool8 dwordsEqual;
+
+  do {
+    /* compare the 0x40 dwords until the first difference (the count is nonzero, so dwordsEqual holds the
+       last comparison) */
+    dwordsRemainingInRecord = DWORD_BLOCK64_RECORD_DWORDS;
+    candidateRecordCursor = candidateRecord;
+    do {
+      dwordsRemainingInRecord--;
+      dwordsEqual = *recordArray == *candidateRecordCursor;
+      recordArray++;
+      candidateRecordCursor++;
+    } while (dwordsEqual && (dwordsRemainingInRecord != 0));
+    if (dwordsEqual) {
+      return false;
+    }
+    recordArray = recordArray + dwordsRemainingInRecord; /* skip the rest of the mismatching record */
+    recordCount--;
+  } while (recordCount != 0);
+  return true;
+}
