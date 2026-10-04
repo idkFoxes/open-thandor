@@ -24,7 +24,8 @@
    PERSISTENT_SETTING_RENDERER (default Vulkan). OPEN_THANDOR_GPU=auto keeps the saved choice (as without the
    variable); OPEN_THANDOR_GPU=0|off|software / -SOFTWARE forces software,
    =vulkan / =d3d12 a GPU API, =1 / -GPU the first available GPU API, =compare (developer tools) the GPU compare
-   mode; a forced renderer is the only adapter listed and is not saved.
+   mode on the first available GPU API (=compare-vulkan / =compare-d3d12 on that one); a forced renderer is the only
+   adapter listed and is not saved.
 
    Display mode kinds (PERSISTENT_SETTING_DISPLAY_MODE_KIND, chosen on the display settings page): exclusive
    fullscreen in the mode or the closest larger one (default, "Vollbild"), borderless fullscreen over the desktop
@@ -320,14 +321,17 @@ uint32_t ForcedRenderer() noexcept
         (SDL_strcasecmp(value, "dx12") == 0)) {
       return PERSISTENT_RENDERER_DIRECT3D12;
     }
-    if (SDL_strcasecmp(value, "compare") == 0) {
+    if (SDL_strncasecmp(value, "compare", 7) == 0) {
 #ifdef THANDOR_DEV_TOOLS
       s_renderer.compare = true;
 #else
       Thandor_Log("SDL_GPU renderer: compare mode needs the developer tools, using the GPU alone");
 #endif
+      if ((SDL_strcasecmp(value + 7, "-d3d12") == 0) || (SDL_strcasecmp(value + 7, "-dx12") == 0)) {
+        return PERSISTENT_RENDERER_DIRECT3D12;
+      }
     }
-    return PERSISTENT_RENDERER_VULKAN; /* 1 / on / compare: the first GPU renderer that runs */
+    return PERSISTENT_RENDERER_VULKAN; /* 1 / on / compare(-vulkan): the first GPU renderer that runs */
   }
   if (CommandLineHasOption("-SOFTWARE")) {
     return PERSISTENT_RENDERER_SOFTWARE;
@@ -772,6 +776,8 @@ void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
       g_GraphicsBackendAccessState--;
       return;
     }
+    /* compare mode: the GPU draws the recorded frame too and compares it with the framebuffer (before the cursor) */
+    CompareGpuFrame();
 #endif
     ComposeCursor();
 #ifdef THANDOR_RENDERER_SDL_GPU

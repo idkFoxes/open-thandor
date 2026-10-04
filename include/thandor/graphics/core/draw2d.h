@@ -22,6 +22,10 @@ functions those slots hold is chosen by the backend:
   special cases (minimap, results columns, grey-scale image and the bilinear stretch) are drawn by their
   software function into a CPU scratch image that the item points to (DRAW2D_OP_IMAGE_REGION, the MVP's
   streaming fallback).
+- DRAW2D_BACKEND_COMPARE (the developer tools' OPEN_THANDOR_GPU=compare): every draw does both - the software
+  function writes the CPU framebuffer (the reference picture, as with DRAW2D_BACKEND_SOFTWARE) and, for the display
+  framebuffer, the item is recorded as with DRAW2D_BACKEND_GPU_RECORD, so the GPU can draw the same frame and the
+  two pictures can be compared.
 
 The list holds items in call order (no reordering). Draw2D_BeginFrame empties it and releases the scratch
 images of the previous frame; the pixel pointers of IMAGE_REGION items stay valid until the next
@@ -40,6 +44,7 @@ the asset while the frame is recorded or right at its flush, before the simulati
 enum Draw2DBackend : uint8_t {
     DRAW2D_BACKEND_SOFTWARE = 0,
     DRAW2D_BACKEND_GPU_RECORD = 1,
+    DRAW2D_BACKEND_COMPARE = 2,
 };
 
 enum Draw2DOp : uint8_t {
@@ -149,7 +154,7 @@ using Draw2DSpriteRecordedProc = void (uint32_t itemIndex, const Draw2DItem *ite
 extern Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded;
 
 /* Marks where a 3D scene ends (after g_GraphicsEndScene): records a DRAW2D_OP_EXTERNAL_3D item covering the
-   scene's clip rectangle in GPU_RECORD mode; does nothing in software mode. */
+   scene's clip rectangle in GPU_RECORD and COMPARE mode; does nothing in software mode. */
 void Draw2D_MarkExternal3D(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX);
 
 #endif /* THANDOR_GRAPHICS_CORE_DRAW2D_H */

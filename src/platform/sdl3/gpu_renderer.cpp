@@ -10,8 +10,9 @@
    display settings' choice Vulkan / DirectX 12 / Software, or OPEN_THANDOR_GPU) and starts the device here with
    StartGpuDevice: Vulkan with the SPIR-V shaders, Direct3D 12 with the DXBC shaders (primitives.hlsl). The device
    claims the main window and presents the GPU frame (PresentGpuFrame, see "The GPU frame" below; in compare mode
-   PresentWithGpu uploads the software framebuffer with the cursor into a texture and blits it letterboxed into the
-   swapchain), so no SDL_Renderer (and no second graphics API) runs beside it.
+   the GPU frame is drawn but not shown, and PresentWithGpu uploads the software framebuffer with the cursor into a
+   texture and blits it letterboxed into the swapchain), so no SDL_Renderer (and no second graphics API) runs beside
+   it.
 
    Only g_GraphicsDrawPrimitiveQueue is replaced: lighting, fog, projection, clipping, culling and the radix sort
    stay on the CPU, so the simulation and the state hash are untouched. One scene (g_GraphicsSetViewportAndClearDepth
@@ -31,11 +32,9 @@
      Each texture used by a packet is looked up in
      an RGBA atlas (4096 x 4096, B8G8R8A8); its texels and palette are hashed once per scene and converted again when
      they changed (the generated shadow textures change every frame).
-   - g_GraphicsEndScene: the scene waits for the frame (step 9, see "The GPU frame" below). Compare mode instead
-     uploads vertices and changed atlas regions at once, draws the runs into an offscreen colour + depth target
-     (cleared to black / far) and downloads the clip rectangle for the comparison.
+   - g_GraphicsEndScene: the scene waits for the frame (step 9, see "The GPU frame" below).
 
-   The GPU frame (step 9, docs/plans/step9_gpu_ui.md; not in compare mode): the 2D draw list (graphics/core/draw2d.h)
+   The GPU frame (step 9, docs/plans/step9_gpu_ui.md): the 2D draw list (graphics/core/draw2d.h)
    records every UI draw instead of writing the software framebuffer, and each sprite's image is looked up in the UI
    texture cache (gpu_ui_textures.cpp) while it is recorded. At every present (SdlVideo_Present, which all present
    sites call) PresentGpuFrame records one command buffer: the cache's copy pass, then the draw list in call order
@@ -57,9 +56,15 @@
    16-bit quantization after each blend, the 16-bit lane wrap and per-pixel rounding of the MMX interpolation,
    GPU sub-pixel snapping of the rebuilt edges (1/256 pixel).
 
-   OPEN_THANDOR_GPU=compare (developer tools): both rasterizers run; the software picture is shown and every
-   OPEN_THANDOR_GPU_COMPARE_MS milliseconds (default 5000) the scene's clip rectangle is written as
-   shots\gpucmp_NNNN_sw.bmp, _gpu.bmp and _diff.bmp with the difference statistics in thandor.log. */
+   OPEN_THANDOR_GPU=compare (developer tools, step 9 work package 7): the whole frame is drawn twice - the 2D draw
+   list's COMPARE backend draws every 2D slot in software into the CPU framebuffer and records it, the software
+   rasterizer draws the 3D scenes there too, and the GPU frame is drawn from the recorded list into the frame target
+   as without compare (CompareGpuFrame, called by the present before the cursor goes on the framebuffer). The
+   software picture is shown. Every OPEN_THANDOR_GPU_COMPARE_MS milliseconds (default 5000) the frame target is
+   downloaded and both pictures are written as shots\gpucmp_NNNN_sw.bmp, _gpu.bmp and _diff.bmp (per pixel the
+   largest channel difference x4, grey; red inside the frame's 3D scene rectangles), and thandor.log gets the
+   statistics (mean channel difference, largest, pixels > 8) for the whole frame and for the UI alone (outside the
+   3D scene rectangles) with PASS (UI mean < 0.5 and UI pixels > 8 under 0.1 %) or FAIL. */
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
@@ -310,7 +315,8 @@ struct GpuState {
   bool frameFailureLogged = false;
 
   /* compare mode */
-  std::vector<uint32_t> gpuPixels;
+  std::vector<uint32_t> compareGpu;      /* the downloaded frame target */
+  std::vector<SDL_Rect> compareScenes;   /* the 3D scene rectangles of the compared frame */
   uint32_t compareIntervalMs = 5000;
   uint32_t lastCompareTick = 0;
   uint32_t compareNumber = 0;
@@ -1120,80 +1126,7 @@ void RecordSceneRuns(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *colorTextur
   SDL_EndGPURenderPass(renderPass);
 }
 
-/* Compare mode: uploads, draws and downloads the collected scene into s_gpu.gpuPixels (clip rectangle, B8G8R8A8
-   rows). False when nothing could be drawn. */
-bool RenderScene() noexcept
-{
-  const SDL_Rect clip = s_gpu.sceneClip;
-  const Uint32 downloadRowPixels = (static_cast<Uint32>(clip.w) + kUploadPitchPixels - 1) / kUploadPitchPixels *
-                                   kUploadPitchPixels;
-  const Uint32 downloadBytes = downloadRowPixels * static_cast<Uint32>(clip.h) * 4;
-  if ((clip.w <= 0) || (clip.h <= 0) ||
-      !EnsureTransferBuffer(s_gpu.downloadBuffer, s_gpu.downloadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
-                            downloadBytes)) {
-    return false;
-  }
-  SDL_GPUCommandBuffer *commands = SDL_AcquireGPUCommandBuffer(s_gpu.device);
-  if (commands == nullptr) {
-    return false;
-  }
-  if (!RecordSceneUploads(commands, s_gpu.vertices, s_gpu.staging, s_gpu.uploads)) {
-    SDL_CancelGPUCommandBuffer(commands);
-    return false;
-  }
-  RecordSceneRuns(commands, s_gpu.colorTarget, false, s_gpu.runs, !s_gpu.vertices.empty());
-
-  SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
-  SDL_GPUTextureRegion source;
-  SDL_zero(source);
-  source.texture = s_gpu.colorTarget;
-  source.x = static_cast<Uint32>(clip.x);
-  source.y = static_cast<Uint32>(clip.y);
-  source.w = static_cast<Uint32>(clip.w);
-  source.h = static_cast<Uint32>(clip.h);
-  source.d = 1;
-  SDL_GPUTextureTransferInfo destination;
-  SDL_zero(destination);
-  destination.transfer_buffer = s_gpu.downloadBuffer;
-  destination.pixels_per_row = downloadRowPixels;
-  destination.rows_per_layer = static_cast<Uint32>(clip.h);
-  SDL_DownloadFromGPUTexture(copyPass, &source, &destination);
-  SDL_EndGPUCopyPass(copyPass);
-
-  SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(commands);
-  if (fence == nullptr) {
-    return false;
-  }
-  SDL_WaitForGPUFences(s_gpu.device, true, &fence, 1);
-  SDL_ReleaseGPUFence(s_gpu.device, fence);
-
-  const auto *pixels = static_cast<const uint32_t *>(SDL_MapGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer, false));
-  if (pixels == nullptr) {
-    return false;
-  }
-  s_gpu.gpuPixels.resize(static_cast<size_t>(clip.w) * clip.h);
-  for (int row = 0; row < clip.h; row++) {
-    std::memcpy(s_gpu.gpuPixels.data() + static_cast<size_t>(row) * clip.w, pixels + static_cast<size_t>(row) * downloadRowPixels,
-                static_cast<size_t>(clip.w) * sizeof(uint32_t));
-  }
-  SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
-  return true;
-}
-
 #ifdef THANDOR_DEV_TOOLS
-/* Compare mode: the clip rectangle of the framebuffer (software picture) as ARGB rows. */
-std::vector<uint32_t> ReadFramebufferRegion(const SDL_Rect &clip) noexcept
-{
-  std::vector<uint32_t> result(static_cast<size_t>(clip.w) * clip.h);
-  SoftwareFramebufferAccess *framebuffer = g_FramebufferAccess;
-  for (int row = 0; row < clip.h; row++) {
-    const uint8_t *sourceRow = framebuffer->pixels + static_cast<size_t>(clip.y + row) * g_FramebufferRowStrideBytes;
-    std::memcpy(result.data() + static_cast<size_t>(row) * clip.w, sourceRow + static_cast<size_t>(clip.x) * 4,
-                static_cast<size_t>(clip.w) * 4);
-  }
-  return result;
-}
-
 void WriteBmp(const char *path, const uint32_t *pixels, int width, int height) noexcept
 {
   FILE *file = std::fopen(path, "wb");
@@ -1226,46 +1159,81 @@ void WriteBmp(const char *path, const uint32_t *pixels, int width, int height) n
   std::fclose(file);
 }
 
-/* Compare mode: every compareIntervalMs writes the software and GPU pictures of this scene and their difference
-   (per pixel the largest channel difference, x4, grey) and logs the statistics. */
-void CompareScene() noexcept
-{
-  const unsigned now = Thandor_TickCount();
-  if ((now - s_gpu.lastCompareTick < s_gpu.compareIntervalMs) || s_gpu.gpuPixels.empty()) {
-    return;
-  }
-  s_gpu.lastCompareTick = now;
-  const SDL_Rect clip = s_gpu.sceneClip;
-  std::vector<uint32_t> software = ReadFramebufferRegion(clip);
-  std::vector<uint32_t> difference(software.size());
+/* Compare mode: the difference statistics of one area (mean channel difference, largest, pixels > 8). */
+struct CompareStats {
+  uint64_t pixels = 0;
   uint64_t sum = 0;
-  uint32_t over8 = 0;
-  uint32_t over32 = 0;
-  for (size_t i = 0; i < software.size(); i++) {
-    int largest = 0;
-    for (int shift = 0; shift < 24; shift += 8) {
-      const int delta = std::abs(static_cast<int>((software[i] >> shift) & 0xFF) -
-                                 static_cast<int>((s_gpu.gpuPixels[i] >> shift) & 0xFF));
-      largest = std::max(largest, delta);
-      sum += static_cast<uint64_t>(delta);
-    }
-    over8 += (largest > 8) ? 1 : 0;
-    over32 += (largest > 32) ? 1 : 0;
-    const uint32_t grey = static_cast<uint32_t>(std::min(255, largest * 4));
-    difference[i] = (grey << 16) | (grey << 8) | grey;
+  uint64_t over8 = 0;
+  int largest = 0;
+
+  void Add(int largestChannel, int channelSum) noexcept
+  {
+    pixels++;
+    sum += static_cast<uint64_t>(channelSum);
+    over8 += (largestChannel > 8) ? 1 : 0;
+    largest = std::max(largest, largestChannel);
   }
-  const double pixelCount = static_cast<double>(software.size());
-  CreateDirectoryA((LPCSTR)"shots", nullptr);
+  [[nodiscard]] double Mean() const noexcept
+  {
+    return (pixels == 0) ? 0.0 : static_cast<double>(sum) / (static_cast<double>(pixels) * 3.0);
+  }
+  [[nodiscard]] double Over8Percent() const noexcept
+  {
+    return (pixels == 0) ? 0.0 : 100.0 * static_cast<double>(over8) / static_cast<double>(pixels);
+  }
+};
+
+/* Compare mode: the software picture (framebuffer) against the downloaded GPU frame (s_gpu.compareGpu), both
+   width x height: writes the three pictures and logs the statistics of the whole frame and of the UI alone (the
+   pixels outside s_gpu.compareScenes) with the verdict. */
+void ComparePictures(int width, int height) noexcept
+{
+  std::vector<uint32_t> software(static_cast<size_t>(width) * height);
+  std::vector<uint32_t> difference(software.size());
+  CompareStats whole;
+  CompareStats ui;
+  for (int y = 0; y < height; y++) {
+    const uint8_t *sourceRow = g_DisplayFramebufferAccess.pixels + static_cast<size_t>(y) * g_FramebufferRowStrideBytes;
+    for (int x = 0; x < width; x++) {
+      const size_t index = static_cast<size_t>(y) * width + x;
+      uint32_t pixel = 0;
+      std::memcpy(&pixel, sourceRow + static_cast<size_t>(x) * 4, sizeof pixel);
+      software[index] = pixel;
+      const uint32_t gpu = s_gpu.compareGpu[index];
+      int largest = 0;
+      int channelSum = 0;
+      for (int shift = 0; shift < 24; shift += 8) {
+        const int delta = std::abs(static_cast<int>((pixel >> shift) & 0xFF) - static_cast<int>((gpu >> shift) & 0xFF));
+        largest = std::max(largest, delta);
+        channelSum += delta;
+      }
+      bool inScene = false;
+      for (const SDL_Rect &scene : s_gpu.compareScenes) {
+        inScene = inScene || ((x >= scene.x) && (x < scene.x + scene.w) && (y >= scene.y) && (y < scene.y + scene.h));
+      }
+      whole.Add(largest, channelSum);
+      if (!inScene) {
+        ui.Add(largest, channelSum);
+      }
+      const auto grey = static_cast<uint32_t>(std::min(255, largest * 4));
+      difference[index] = inScene ? (grey << 16) | ((grey / 2) << 8) | (grey / 2) : (grey << 16) | (grey << 8) | grey;
+    }
+  }
+  CreateDirectoryA((LPCSTR) "shots", nullptr);
   char path[64];
   std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_sw.bmp", s_gpu.compareNumber);
-  WriteBmp(path, software.data(), clip.w, clip.h);
+  WriteBmp(path, software.data(), width, height);
   std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_gpu.bmp", s_gpu.compareNumber);
-  WriteBmp(path, s_gpu.gpuPixels.data(), clip.w, clip.h);
+  WriteBmp(path, s_gpu.compareGpu.data(), width, height);
   std::snprintf(path, sizeof path, "shots\\gpucmp_%04u_diff.bmp", s_gpu.compareNumber);
-  WriteBmp(path, difference.data(), clip.w, clip.h);
-  Thandor_Log("SDL_GPU compare %04u: %dx%d, mean channel difference %.2f, pixels > 8: %.2f%%, > 32: %.2f%%",
-              s_gpu.compareNumber, clip.w, clip.h, static_cast<double>(sum) / (pixelCount * 3.0),
-              100.0 * over8 / pixelCount, 100.0 * over32 / pixelCount);
+  WriteBmp(path, difference.data(), width, height);
+  /* the plan's thresholds for the UI (docs/plans/step9_gpu_ui.md, work package 7) */
+  const bool pass = (ui.Mean() < 0.5) && (ui.Over8Percent() < 0.1);
+  Thandor_Log("SDL_GPU compare %04u: %dx%d, %u 3D scenes; frame: mean %.3f, max %d, > 8: %.3f%%; UI only (%llu "
+              "pixels): mean %.3f, max %d, > 8: %.3f%% -> %s",
+              s_gpu.compareNumber, width, height, static_cast<unsigned>(s_gpu.compareScenes.size()), whole.Mean(),
+              whole.largest, whole.Over8Percent(), static_cast<unsigned long long>(ui.pixels), ui.Mean(), ui.largest,
+              ui.Over8Percent(), pass ? "PASS" : "FAIL");
   s_gpu.compareNumber++;
 }
 #endif
@@ -1395,44 +1363,28 @@ void GpuRenderer_EndScene()
   s_gpu.times.scenes++;
   s_gpu.times.vertices += static_cast<uint32_t>(s_gpu.vertices.size());
   s_gpu.times.runs += static_cast<uint32_t>(s_gpu.runs.size());
-  if (s_gpu.mode == GPU_MODE_ON) {
-    /* the GPU frame: the scene waits for its EXTERNAL_3D item of the draw list (PresentGpuFrame); the vectors are
-       swapped with a recycled scene's, so their capacity is kept */
-    PendingScene scene;
-    if (!s_gpu.scenePool.empty()) {
-      scene = std::move(s_gpu.scenePool.back());
-      s_gpu.scenePool.pop_back();
-    }
-    scene.clip = s_gpu.sceneClip;
-    scene.vertices.swap(s_gpu.vertices);
-    scene.runs.swap(s_gpu.runs);
-    scene.staging.swap(s_gpu.staging);
-    scene.uploads.swap(s_gpu.uploads);
-    s_gpu.vertices.clear();
-    s_gpu.runs.clear();
-    s_gpu.staging.clear();
-    s_gpu.uploads.clear();
-    s_gpu.pendingScenes.push_back(std::move(scene));
+  /* the GPU frame (compare mode too): the scene waits for its EXTERNAL_3D item of the draw list
+     (PresentGpuFrame); the vectors are swapped with a recycled scene's, so their capacity is kept */
+  PendingScene scene;
+  if (!s_gpu.scenePool.empty()) {
+    scene = std::move(s_gpu.scenePool.back());
+    s_gpu.scenePool.pop_back();
   }
-  else if (!s_gpu.vertices.empty() || !s_gpu.uploads.empty()) {
-    const bool rendered = RenderScene();
-    s_gpu.uploads.clear();
-    s_gpu.staging.clear();
-    if (!rendered && !s_gpu.renderFailureLogged) {
-      Thandor_Log("SDL_GPU renderer: drawing a scene failed (%s)", SDL_GetError());
-      s_gpu.renderFailureLogged = true;
-    }
-    if (rendered) {
-#ifdef THANDOR_DEV_TOOLS
-      CompareScene();
-#endif
-    }
-  }
+  scene.clip = s_gpu.sceneClip;
+  scene.vertices.swap(s_gpu.vertices);
+  scene.runs.swap(s_gpu.runs);
+  scene.staging.swap(s_gpu.staging);
+  scene.uploads.swap(s_gpu.uploads);
+  s_gpu.vertices.clear();
+  s_gpu.runs.clear();
+  s_gpu.staging.clear();
+  s_gpu.uploads.clear();
+  s_gpu.pendingScenes.push_back(std::move(scene));
   s_gpu.times.submit += SDL_GetPerformanceCounter() - start;
   LogStatistics();
 }
 
-/* --- the GPU frame (GPU_MODE_ON, step 9) ---------------------------------------------------------------------- */
+/* --- the GPU frame (GPU_MODE_ON and compare mode, step 9) --------------------------------------------------------- */
 
 /* g_Draw2DSpriteRecorded: looks the sprite's image up in the UI texture cache while it is recorded (the cache
    converts the texels into its staging buffer at once), because the simulation, which runs between the 3D passes
@@ -1631,8 +1583,9 @@ void EndGpuFrame() noexcept
 }
 
 /* Starts the 2D drawing of the GPU frame: the UI texture cache and the 2D pipelines on the device, the draw list
-   recording. False (logged, nothing left behind) when a part fails. */
-bool StartGpuFrame() noexcept
+   recording (backend GPU_RECORD, or COMPARE: software drawing as well). False (logged, nothing left behind) when a
+   part fails. */
+bool StartGpuFrame(Draw2DBackend backend) noexcept
 {
   if (!GpuUiTextures_Init(s_gpu.device)) {
     Thandor_Log("SDL_GPU: UI texture cache failed (%s)", SDL_GetError());
@@ -1643,14 +1596,14 @@ bool StartGpuFrame() noexcept
     return false;
   }
   g_Draw2DSpriteRecorded = RecordSpriteRegion;
-  Draw2D_SetBackend(DRAW2D_BACKEND_GPU_RECORD);
+  Draw2D_SetBackend(backend);
   return true;
 }
 
 /* Puts the 2D drawing back on the software blits (before the device goes). */
 void StopGpuFrame() noexcept
 {
-  if (Draw2D_GetBackend() == DRAW2D_BACKEND_GPU_RECORD) {
+  if (Draw2D_GetBackend() != DRAW2D_BACKEND_SOFTWARE) {
     Draw2D_SetBackend(DRAW2D_BACKEND_SOFTWARE);
   }
   g_Draw2DSpriteRecorded = nullptr;
@@ -1795,9 +1748,9 @@ bool StartGpuDevice(uint32_t renderer, SDL_Window *window, bool compare) noexcep
     ReleaseDevice();
     return false;
   }
-  /* GPU_MODE_ON draws the whole frame on the GPU (the 2D draw list records the UI); compare mode keeps the
-     software 2D path and shows the software picture */
-  if (!compare && !StartGpuFrame()) {
+  /* GPU_MODE_ON draws the whole frame on the GPU (the 2D draw list records the UI); compare mode draws it in
+     software as well and shows the software picture */
+  if (!StartGpuFrame(compare ? DRAW2D_BACKEND_COMPARE : DRAW2D_BACKEND_GPU_RECORD)) {
     Thandor_Log("SDL_GPU: %s 2D setup failed", DriverName(renderer));
     ReleaseDevice();
     return false;
@@ -1844,8 +1797,8 @@ bool GpuFrameActive() noexcept
 
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 {
-  if (!GpuFrameActive()) {
-    return false;
+  if ((s_gpu.device == nullptr) || (s_gpu.mode == GPU_MODE_OFF)) {
+    return false; /* compare mode draws the frame target here too, but does not show it */
   }
   const uint64_t start = SDL_GetPerformanceCounter();
   Draw2D_EndFrame();
@@ -1973,7 +1926,8 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
   SDL_GPUTexture *swapchain = nullptr;
   Uint32 swapchainWidth = 0;
   Uint32 swapchainHeight = 0;
-  if (!SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, &swapchainWidth, &swapchainHeight)) {
+  if ((s_gpu.mode == GPU_MODE_ON) &&
+      !SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, &swapchainWidth, &swapchainHeight)) {
     if (!s_gpu.presentFailureLogged) {
       Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
       s_gpu.presentFailureLogged = true;
@@ -2047,7 +2001,7 @@ bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
 
 bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept
 {
-  if (!GpuFrameActive() || (s_gpu.frameTarget == nullptr) || (outArgb == nullptr) || (x < 0) || (y < 0) ||
+  if ((s_gpu.device == nullptr) || (s_gpu.mode == GPU_MODE_OFF) || (s_gpu.frameTarget == nullptr) || (outArgb == nullptr) || (x < 0) || (y < 0) ||
       (width <= 0) || (height <= 0) || (static_cast<Uint32>(x + width) > s_gpu.frameTargetWidth) ||
       (static_cast<Uint32>(y + height) > s_gpu.frameTargetHeight)) {
     return false;
@@ -2101,6 +2055,46 @@ bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexce
   }
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.captureDownload);
   return true;
+}
+
+void CompareGpuFrame() noexcept
+{
+  if ((s_gpu.device == nullptr) || (s_gpu.mode != GPU_MODE_COMPARE)) {
+    return;
+  }
+#ifdef THANDOR_DEV_TOOLS
+  /* the frame's 3D scene rectangles, before PresentGpuFrame ends the draw list */
+  uint32_t itemCount = 0;
+  const Draw2DItem *items = Draw2D_FrameItems(&itemCount);
+  std::vector<SDL_Rect> scenes;
+  for (uint32_t index = 0; index < itemCount; index++) {
+    if (items[index].op == DRAW2D_OP_EXTERNAL_3D) {
+      const int32_t *clip = items[index].clip;
+      scenes.push_back(SDL_Rect{clip[0], clip[1], clip[2] - clip[0], clip[3] - clip[1]});
+    }
+  }
+#endif
+  PresentGpuFrame(nullptr);
+#ifdef THANDOR_DEV_TOOLS
+  const unsigned now = Thandor_TickCount();
+  if (now - s_gpu.lastCompareTick < s_gpu.compareIntervalMs) {
+    return;
+  }
+  const int width = static_cast<int>(s_gpu.frameTargetWidth);
+  const int height = static_cast<int>(s_gpu.frameTargetHeight);
+  if ((width <= 0) || (height <= 0) || (static_cast<uint32_t>(width) != g_DisplayFramebufferAccess.width) ||
+      (static_cast<uint32_t>(height) != g_DisplayFramebufferAccess.height) ||
+      (g_DisplayFramebufferAccess.pixels == nullptr)) {
+    return;
+  }
+  s_gpu.compareGpu.resize(static_cast<size_t>(width) * height);
+  if (!ReadGpuFrame(0, 0, width, height, s_gpu.compareGpu.data())) {
+    return;
+  }
+  s_gpu.lastCompareTick = now;
+  s_gpu.compareScenes = std::move(scenes);
+  ComparePictures(width, height);
+#endif
 }
 
 bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept
