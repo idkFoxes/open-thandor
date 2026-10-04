@@ -128,15 +128,17 @@ add_library(thandor_curated STATIC
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
     src/ui/support/runtime.cpp
+    src/world/camera/camera.cpp
+    src/world/camera/camera_input.cpp
     src/world/effects/maintenance.cpp
     src/world/effects/runtime.cpp
     src/world/model/hierarchy.cpp
     src/world/model/runtime.cpp
     src/world/model/slots.cpp
-    src/world/motion/runtime.cpp
     src/world/pathing/grid.cpp
     src/world/pathing/influence.cpp
     src/world/runtime/core.cpp
+    src/world/runtime/entity_registry.cpp
     src/world/shots/maintenance.cpp
     src/world/shots/runtime.cpp
     src/world/terrain/editing.cpp

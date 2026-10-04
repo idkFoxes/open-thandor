@@ -1,17 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/world/motion/runtime.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/world/camera/camera_input.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_WORLD_MOTION_RUNTIME_H
-#define THANDOR_WORLD_MOTION_RUNTIME_H
+#ifndef THANDOR_WORLD_CAMERA_CAMERA_INPUT_H
+#define THANDOR_WORLD_CAMERA_CAMERA_INPUT_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: world/motion/runtime. */
+/* Submodule: world/camera/camera_input. */
 
 /* Scroll-arrow cursor frames returned by WorldRuntime_ApplyEdgeScrollAndGetCursorFrame (clockwise from up). */
 #define WORLD_CURSOR_SCROLL_UP 0x2F
@@ -53,4 +53,4 @@ void WorldRuntime_TranslateCameraByScreenDelta
           (CameraScreenDeltaPixels screenDeltaDown,uint32_t screenDeltaRight,WorldRuntimeContext *worldRuntime
           );
 
-#endif /* THANDOR_WORLD_MOTION_RUNTIME_H */
+#endif /* THANDOR_WORLD_CAMERA_CAMERA_INPUT_H */

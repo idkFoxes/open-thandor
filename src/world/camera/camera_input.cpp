@@ -1,11 +1,11 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/motion/runtime.cpp
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/camera/camera_input.cpp
  * Reverse engineering by idkFoxes 2026
  */
 
-#include <thandor/world/motion/runtime.h>
+#include <thandor/world/camera/camera_input.h>
 #include <thandor/thandor.h>
 
 /* Module data. */
@@ -28,7 +28,7 @@ static const UQ12 g_WorldMotionAlternateMinimumDistanceQ12 = 32768;
 
 static const UQ12 g_WorldMotionAlternateMaximumDistanceQ12 = 131072;
 
-/* Implementation ownership: world/motion/runtime. */
+/* Implementation ownership: world/camera/camera_input. */
 
 /* Edge scrolling: while the cursor presses against a screen edge (g_CursorOverflow*), moves the camera by the
    configured scroll step in that direction and returns the matching scroll-arrow cursor frame

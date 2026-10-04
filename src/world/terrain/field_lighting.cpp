@@ -321,3 +321,240 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
              &g_InGameRuntimeRoot->worldRuntime);
   return;
 }
+
+/* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b
+   of value as the words ((b << 8) | b) >> shift (b * 0x101 widens a byte to the full 16-bit range). */
+static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane++) {
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
+  }
+  return lanes.q;
+}
+
+/* Not a function of its own in the original: the inlined MMX sequence that blends one colour pair of
+   WorldLightingRuntime_UpdateInterpolatedTerrainLighting per byte, color * forward + alternateColor * inverse
+   with unsigned saturation (PUNPCKLBW/PSRLW 6 of both colours, PMULHW by the factors, PADDW, PACKUSWB). */
+static __inline uint32_t WorldLighting_BlendColors
+          (uint32_t color,uint32_t alternateColor,SoftwareBgraWordLanes forwardFactors,
+          SoftwareBgraWordLanes inverseFactors)
+
+{
+  ThandorMmx forwardTerm;
+  ThandorMmx inverseTerm;
+  uint32_t packed;
+  short sum;
+  int lane;
+
+  forwardTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(color,6),forwardFactors);
+  inverseTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(alternateColor,6),inverseFactors);
+  packed = 0;
+  for (lane = 0; lane < 4; lane++) {
+    sum = (short)(forwardTerm.sw[lane] + inverseTerm.sw[lane]);
+    packed = packed | (uint32_t)(sum < 0 ? 0 : (0xff < sum ? 0xff : sum)) << (lane * 8);
+  }
+  return packed;
+}
+
+/* Triangular blend of two 16-bit values over the phase byte (0 = primary, 0x80 = alternate, back towards
+   primary at 0xff); the value that would lie below the other one gets WORLD_LIGHTING_PACKED_HALF_WRAP
+   added, so the blend runs forward through the 16-bit wrap. Returns the low 16 bits of the result. */
+static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t alternateValue,uint32_t phaseByte)
+
+{
+  int primaryWeighted;
+  int alternateWeighted;
+
+  if (phaseByte < 128) {
+    if (alternateValue < primaryValue) {
+      alternateValue = alternateValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
+    }
+    alternateWeighted = alternateValue * phaseByte;
+    primaryWeighted = primaryValue * (128 - phaseByte);
+  }
+  else {
+    if (primaryValue < alternateValue) {
+      primaryValue = primaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
+    }
+    primaryWeighted = primaryValue * (phaseByte - 128);
+    alternateWeighted = alternateValue * (128 - (phaseByte - 128));
+  }
+  return (uint32_t)(primaryWeighted + alternateWeighted) >> 7 & 0xffff;
+}
+
+/* Periodic terrain lighting cycle (tick-wheel case 0, plus two session setup paths): when the level
+   defines a cycle duration, the simulation tick's phase in the cycle picks a cosine blend between the
+   level's primary and alternate terrain colour sets and between two packed 16-bit parameter pairs,
+   installs the blended colours and recomputes the terrain normals and lighting with the blended pairs.
+   At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
+   256-entry factor tables (as in the original).
+*/
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
+
+{
+  SoftwareBgraWordLanes forwardFactors;
+  SoftwareBgraWordLanes inverseFactors;
+  struct LevelWorldSettings *settings;
+  uint32_t mixedColor0A;
+  uint32_t mixedColor0B;
+  uint32_t mixedColor1A;
+  uint32_t mixedColor1B;
+  uint32_t mixedColor2A;
+  uint32_t mixedColor2B;
+  uint32_t mixedColor3A;
+  uint32_t mixedColor3B;
+  uint32_t cycleDuration;
+  uint32_t phase;
+  uint32_t phaseByte;
+  uint32_t blendIndex;
+  uint32_t blendWeight;
+  int inverseBlendWeight;
+  uint32_t blendedLightAzimuth;
+  uint32_t blendedAuxiliaryAzimuth;
+  WorldRuntimeContext *worldRuntime;
+
+  settings = &g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings;
+  cycleDuration = settings->terrainLightingCycleDurationTicks;
+  worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
+  if (cycleDuration != 0) {
+    /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
+    phase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDuration << 16) / cycleDuration;
+    blendIndex = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + phase] + (uint32_t)Q28_ONE) >> 21;
+    forwardFactors = g_SoftwareBilinearForwardFactors[blendIndex];
+    inverseFactors = g_SoftwareBilinearInverseFactors[blendIndex];
+    mixedColor0A = WorldLighting_BlendColors(settings->terrainRampStepColorArgb,
+                                             settings->alternateTerrainRampStepColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor0B = WorldLighting_BlendColors(settings->terrainBaseColorArgb,
+                                             settings->alternateTerrainBaseColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor1A = WorldLighting_BlendColors(settings->terrainLightingColor128Argb,
+                                             settings->alternateTerrainLightingColor128Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor1B = WorldLighting_BlendColors(settings->terrainSecondaryColorArgb,
+                                             settings->alternateTerrainSecondaryColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor2A = WorldLighting_BlendColors(settings->terrainLightingColor130Argb,
+                                             settings->alternateTerrainLightingColor130Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor2B = WorldLighting_BlendColors(settings->terrainLightingColor134Argb,
+                                             settings->alternateTerrainLightingColor134Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor3A = WorldLighting_BlendColors(settings->terrainLightingColor138Argb,
+                                             settings->alternateTerrainLightingColor138Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor3B = WorldLighting_BlendColors(settings->terrainLightingColor13CArgb,
+                                             settings->alternateTerrainLightingColor13CArgb,
+                                             forwardFactors,inverseFactors);
+    /* A colors without alpha; B colors opaque, except the secondary colour keeps its alpha */
+    WorldRuntime_SetTerrainLightingConfiguration
+              (mixedColor3B | 0xff000000,mixedColor3A & 0xffffff,mixedColor2B | 0xff000000,
+               mixedColor2A & 0xffffff,mixedColor1B | settings->terrainSecondaryColorArgb & 0xff000000,
+               mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
+    /* The packed pairs hold the light direction (origin pair: elevation high, azimuth low) and the auxiliary
+       angles (height/width pair). Low 16 bits: triangular blend over the phase byte (see
+       WorldLighting_BlendPackedLow16). High 16 bits: the same cosine weight as the colours. */
+    phaseByte = phase >> 8;
+    blendedLightAzimuth =
+         WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionOriginYHigh16XLow16,
+                                        (uint16_t)settings->alternatePackedFieldRegionOriginYHigh16XLow16,
+                                        phaseByte);
+    blendWeight = (g_FixedSineQ28[FIXED_SINE_TABLE_COS + phase] + (uint32_t)Q28_ONE) >> 21;
+    inverseBlendWeight = 256 - blendWeight;
+    blendedAuxiliaryAzimuth =
+         WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionHeightHigh16WidthLow16,
+                                        (uint16_t)settings->alternatePackedFieldRegionHeightHigh16WidthLow16,
+                                        phaseByte);
+    /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
+    WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+              ((int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionHeightHigh16WidthLow16)[1] *
+                     inverseBlendWeight +
+                     (uint32_t)((uint16_t *)&settings->packedFieldRegionHeightHigh16WidthLow16)[1] *
+                     (256 - inverseBlendWeight)) >> 8,
+               blendedAuxiliaryAzimuth,
+               (int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionOriginYHigh16XLow16)[1] *
+                     inverseBlendWeight +
+                     ((uint16_t *)&settings->packedFieldRegionOriginYHigh16XLow16)[1] * blendWeight) >> 8,
+               blendedLightAzimuth,worldRuntime);
+  }
+}
+
+/* Keyboard command of the in-game root (called directly in a local game, in a networked one queued as
+   command 0x2D00 from InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags): turns the
+   auxiliary angle pair (stored in fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle, see
+   WorldRuntime_RecomputeFieldRegionNormalsAndLighting) by the given deltas, the elevation clamped to
+   -0x4000..-0x1000 and the azimuth wrapped to 16 bits, and relights the field with the unchanged light
+   direction. The name is historical: nothing here is a field origin.
+*/
+void WorldRuntime_TurnAuxiliaryAnglesClamped
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle)
+
+{
+  FieldGridDimensionCells auxiliaryElevationAngle;
+
+  auxiliaryElevationAngle =
+       deltaElevationAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryElevationAngle;
+  if (WORLD_AUXILIARY_ELEVATION_MAXIMUM < auxiliaryElevationAngle) {
+    auxiliaryElevationAngle = WORLD_AUXILIARY_ELEVATION_MAXIMUM;
+  }
+  if (auxiliaryElevationAngle < WORLD_AUXILIARY_ELEVATION_MINIMUM) {
+    auxiliaryElevationAngle = WORLD_AUXILIARY_ELEVATION_MINIMUM;
+  }
+  WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+            (auxiliaryElevationAngle,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryAzimuthAngle & FIXED_ANGLE16_MASK,
+             g_InGameRuntimeRoot->lightElevationAngle,
+             g_InGameRuntimeRoot->lightAzimuthAngle,
+             &g_InGameRuntimeRoot->worldRuntime);
+  return;
+}
+
+/* Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
+   runtime and rebuilds the terrain colour ramp from the base colour, the ramp-step colour and the secondary colour.
+*/
+void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
+          PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
+          PackedArgb32 secondaryColorArgb,PackedArgb32 lightingColor128Argb,
+          PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb,WorldRuntimeContext *worldRuntime
+          )
+
+{
+  worldRuntime->lighting.color130Argb = lightingColor130Argb;
+  worldRuntime->lighting.color134Argb = lightingColor134Argb;
+  worldRuntime->lighting.color128Argb = lightingColor128Argb;
+  worldRuntime->lighting.color138Argb = lightingColor138Argb;
+  worldRuntime->lighting.color13CArgb = lightingColor13CArgb;
+  worldRuntime->lighting.rampStepColorArgb = rampStepColorArgb;
+  worldRuntime->lighting.baseColorArgb = baseColorArgb;
+  worldRuntime->lighting.secondaryColorArgb = secondaryColorArgb;
+  TerrainLighting_BuildColorRampAndSetBaseColor(secondaryColorArgb,baseColorArgb,rampStepColorArgb);
+  return;
+}
+
+/* Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
+   and the directional lighting of the field grid. The auxiliary angle pair is only stored (in
+   fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle; callers clamp and wrap it like the light direction, elevation
+   -0x4000..-0x1000, azimuth & 0xFFFF). Callers: level load, the periodic lighting cycle and the light-direction
+   commands.
+*/
+void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+          (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
+          Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime)
+
+{
+  /* worldRuntime is the world embedded in the in-game root; the light angles are stored in the root */
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRoot, worldRuntime)->
+       lightAzimuthAngle = lightAzimuthAngle;
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRoot, worldRuntime)->
+       lightElevationAngle = lightElevationAngle;
+  FieldGrid_RecomputeInteriorTriangleNormalAngles(worldRuntime->fieldGrid);
+  FieldGrid_RecomputeInteriorDirectionalLighting
+            (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);
+  worldRuntime->fieldRegion.auxiliaryAzimuthAngle = auxiliaryAzimuthAngle;
+  worldRuntime->fieldRegion.auxiliaryElevationAngle = auxiliaryElevationAngle;
+  return;
+}

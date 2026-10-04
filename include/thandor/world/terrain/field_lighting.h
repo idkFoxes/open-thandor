@@ -11,6 +11,13 @@
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
+/* Range of the auxiliary elevation angle (fieldRegion.auxiliaryElevationAngle) set by WorldRuntime_TurnAuxiliaryAnglesClamped */
+#define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
+#define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
+/* WorldLightingRuntime_UpdateInterpolatedTerrainLighting: one wrap of a 16-bit half of a packed field-region
+   pair, added to the lower endpoint so the blend runs forward through the wrap */
+#define WORLD_LIGHTING_PACKED_HALF_WRAP 0x10000
+
 /* g_TerrainDirectionalLightColorLut (TerrainLighting_BuildColorRampAndSetBaseColor,
    FieldGridCell_ComputeDirectionalLightColor) is indexed by the signed Q8 dot product of the cell normal and
    the light direction (-256..256) from its middle entry: the first RAMP_ENTRY_COUNT entries (dot -256..-1) hold
@@ -48,5 +55,20 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
 void TerrainLighting_AdjustDirectionAndRecomputeField
           (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
           uint32_t deltaAzimuthAngle);
+
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void);
+
+void WorldRuntime_TurnAuxiliaryAnglesClamped
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle);
+
+void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
+          PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
+          PackedArgb32 secondaryColorArgb,PackedArgb32 lightingColor128Argb,
+          PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb,WorldRuntimeContext *worldRuntime
+          );
+
+void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+          (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
+          Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_WORLD_TERRAIN_FIELD_LIGHTING_H */
