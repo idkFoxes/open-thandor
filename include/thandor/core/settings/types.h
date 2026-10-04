@@ -97,7 +97,8 @@ struct PersistentSettingsImage {
     uint32_t displayModeKind; /* open-thandor: PERSISTENT_SETTING_DISPLAY_MODE_KIND (0 = fullscreen) */
     uint32_t gpuRasterization; /* open-thandor: PERSISTENT_SETTING_GPU_RASTERIZATION (0 = smooth) */
     uint32_t uiScale; /* open-thandor: PERSISTENT_SETTING_UI_SCALE (0 = auto) */
-    uint8_t reservedC0_C7[8]; 
+    uint32_t vsync; /* open-thandor: PERSISTENT_SETTING_VSYNC (0 = on) */
+    uint32_t frameLimit; /* open-thandor: PERSISTENT_SETTING_FRAME_LIMIT (0 = no limit) */
 };
 
 #endif /* THANDOR_CORE_SETTINGS_TYPES_H */
