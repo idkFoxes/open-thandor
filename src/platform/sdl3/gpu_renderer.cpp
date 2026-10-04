@@ -70,6 +70,10 @@ namespace {
 constexpr Uint32 kAtlasSize = 4096;
 constexpr uint16_t kUntexturedMask = 0xFFFF;
 constexpr double kDepthScale = 1.0 / 4294967296.0;
+/* D3D12 copies between buffers and textures need 512-byte aligned offsets and 256-byte aligned row pitches;
+   otherwise SDL_GPU copies every upload/download through a temporary buffer. */
+constexpr size_t kUploadPlacementPixels = 512 / 4;
+constexpr uint32_t kUploadPitchPixels = 256 / 4;
 
 /* One packet corner as the vertex shader reads it (primitives.hlsl). */
 struct GpuVertex {
@@ -144,7 +148,8 @@ struct PendingUpload {
   uint32_t y;
   uint32_t width;
   uint32_t height;
-  size_t stagingOffset; /* in pixels */
+  size_t stagingOffset; /* in pixels, a multiple of kUploadPlacementPixels */
+  uint32_t rowPixels;   /* staging row pitch, a multiple of kUploadPitchPixels */
 };
 
 struct GpuTimes {
@@ -283,22 +288,30 @@ void QueueTextureConversion(const AtlasKey &key, uint32_t x, uint32_t y) noexcep
   const uint32_t width = 1u << key.widthLog2;
   const uint32_t height = 1u << key.heightLog2;
   const size_t texelCount = static_cast<size_t>(width) * height;
-  const size_t stagingOffset = s_gpu.staging.size();
-  s_gpu.staging.resize(stagingOffset + texelCount);
+  const uint32_t rowPixels = std::max(width, kUploadPitchPixels);
+  const size_t stagingOffset =
+      (s_gpu.staging.size() + kUploadPlacementPixels - 1) / kUploadPlacementPixels * kUploadPlacementPixels;
+  s_gpu.staging.resize(stagingOffset + static_cast<size_t>(rowPixels) * height);
   uint32_t *destination = s_gpu.staging.data() + stagingOffset;
   if (key.palette != nullptr) {
     /* a palette entry is 8 bytes, the ARGB colour at +0 */
     for (int index = 0; index < 256; index++) {
       std::memcpy(&s_gpu.paletteLut[index], key.palette + index * 8, sizeof(uint32_t));
     }
-    for (size_t texel = 0; texel < texelCount; texel++) {
-      destination[texel] = s_gpu.paletteLut[key.texels[texel]];
+    const uint8_t *source = key.texels;
+    for (uint32_t row = 0; row < height; row++, source += width, destination += rowPixels) {
+      for (uint32_t column = 0; column < width; column++) {
+        destination[column] = s_gpu.paletteLut[source[column]];
+      }
     }
   }
   else {
-    std::memcpy(destination, key.texels, texelCount * sizeof(uint32_t));
+    const uint8_t *source = key.texels;
+    for (uint32_t row = 0; row < height; row++, source += width * 4, destination += rowPixels) {
+      std::memcpy(destination, source, width * sizeof(uint32_t));
+    }
   }
-  s_gpu.uploads.push_back(PendingUpload{x, y, width, height, stagingOffset});
+  s_gpu.uploads.push_back(PendingUpload{x, y, width, height, stagingOffset, rowPixels});
   s_gpu.times.uploadedTexels += static_cast<uint32_t>(texelCount);
 }
 
@@ -774,7 +787,9 @@ bool RenderScene() noexcept
   const SDL_Rect clip = s_gpu.sceneClip;
   const Uint32 vertexBytes = static_cast<Uint32>(s_gpu.vertices.size() * sizeof(GpuVertex));
   const Uint32 textureBytes = static_cast<Uint32>(s_gpu.staging.size() * sizeof(uint32_t));
-  const Uint32 downloadBytes = static_cast<Uint32>(clip.w) * static_cast<Uint32>(clip.h) * 4;
+  const Uint32 downloadRowPixels = (static_cast<Uint32>(clip.w) + kUploadPitchPixels - 1) / kUploadPitchPixels *
+                                   kUploadPitchPixels;
+  const Uint32 downloadBytes = downloadRowPixels * static_cast<Uint32>(clip.h) * 4;
   if ((clip.w <= 0) || (clip.h <= 0) ||
       !EnsureTransferBuffer(s_gpu.uploadBuffer, s_gpu.uploadBufferBytes, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                             vertexBytes + textureBytes + 4) ||
@@ -787,11 +802,12 @@ bool RenderScene() noexcept
   if (mapped == nullptr) {
     return false;
   }
-  if (vertexBytes != 0) {
-    std::memcpy(mapped, s_gpu.vertices.data(), vertexBytes);
-  }
+  /* textures first, so their offsets keep the staging alignment; the vertices after them */
   if (textureBytes != 0) {
-    std::memcpy(mapped + vertexBytes, s_gpu.staging.data(), textureBytes);
+    std::memcpy(mapped, s_gpu.staging.data(), textureBytes);
+  }
+  if (vertexBytes != 0) {
+    std::memcpy(mapped + textureBytes, s_gpu.vertices.data(), vertexBytes);
   }
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.uploadBuffer);
 
@@ -801,7 +817,7 @@ bool RenderScene() noexcept
   }
   SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commands);
   if (vertexBytes != 0) {
-    SDL_GPUTransferBufferLocation location{s_gpu.uploadBuffer, 0};
+    SDL_GPUTransferBufferLocation location{s_gpu.uploadBuffer, textureBytes};
     SDL_GPUBufferRegion region{s_gpu.vertexBuffer, 0, vertexBytes};
     SDL_UploadToGPUBuffer(copyPass, &location, &region, true);
   }
@@ -809,8 +825,8 @@ bool RenderScene() noexcept
     SDL_GPUTextureTransferInfo source;
     SDL_zero(source);
     source.transfer_buffer = s_gpu.uploadBuffer;
-    source.offset = vertexBytes + static_cast<Uint32>(upload.stagingOffset * sizeof(uint32_t));
-    source.pixels_per_row = upload.width;
+    source.offset = static_cast<Uint32>(upload.stagingOffset * sizeof(uint32_t));
+    source.pixels_per_row = upload.rowPixels;
     source.rows_per_layer = upload.height;
     SDL_GPUTextureRegion destination;
     SDL_zero(destination);
@@ -885,7 +901,7 @@ bool RenderScene() noexcept
   SDL_GPUTextureTransferInfo destination;
   SDL_zero(destination);
   destination.transfer_buffer = s_gpu.downloadBuffer;
-  destination.pixels_per_row = static_cast<Uint32>(clip.w);
+  destination.pixels_per_row = downloadRowPixels;
   destination.rows_per_layer = static_cast<Uint32>(clip.h);
   SDL_DownloadFromGPUTexture(copyPass, &source, &destination);
   SDL_EndGPUCopyPass(copyPass);
@@ -901,7 +917,11 @@ bool RenderScene() noexcept
   if (pixels == nullptr) {
     return false;
   }
-  s_gpu.gpuPixels.assign(pixels, pixels + static_cast<size_t>(clip.w) * clip.h);
+  s_gpu.gpuPixels.resize(static_cast<size_t>(clip.w) * clip.h);
+  for (int row = 0; row < clip.h; row++) {
+    std::memcpy(s_gpu.gpuPixels.data() + static_cast<size_t>(row) * clip.w, pixels + static_cast<size_t>(row) * downloadRowPixels,
+                static_cast<size_t>(clip.w) * sizeof(uint32_t));
+  }
   SDL_UnmapGPUTransferBuffer(s_gpu.device, s_gpu.downloadBuffer);
   return true;
 }
