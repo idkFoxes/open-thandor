@@ -16,8 +16,6 @@ int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
 
 TechnologyCategoryMasks g_TechnologyCategoryMasks = {0};
 
-static uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8] = {0};
-
 TechnologyAsset *g_TechnologyAsset = nullptr;
 
 /* Implementation ownership: gameplay/technology/runtime. */
@@ -175,7 +173,7 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
 
 
 /* Recomputes values derived from the loaded army and technology files: per model category (0..7) the largest
-   maximumHealth and its Q24 reciprocal, the largest movementSpeed of models with a non-zero accelerationPerTick
+   maximumHealth, the largest movementSpeed of models with a non-zero accelerationPerTick
    (used by the AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */
 void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks()
@@ -183,7 +181,6 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks()
 {
   ModelDefinition *definitionRecord;
   int registrySlotIndex;
-  int categoryIndex;
   int maskWordIndex;
   int technologyIndex;
   uint32_t technologyBitMask;
@@ -222,11 +219,6 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks()
       }
     }
   }
-  /* Q24 reciprocal of each category maximum (the maxima start at 1, so no division by zero) */
-  for (categoryIndex = 0; categoryIndex < 8; categoryIndex++) {
-    g_TechnologyCategoryMaximumReciprocalQ24Table8[categoryIndex] =
-         TECHNOLOGY_RECIPROCAL_Q24_ONE / (uint32_t)g_TechnologyCategoryMaximums[categoryIndex];
-  }
   /* clear both category masks */
   for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
     g_TechnologyCategoryMasks.category2[maskWordIndex] = 0;
@@ -261,28 +253,10 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
           (FactionRuntimeIndex factionIndex,uintptr_t linkedDefinitionList)
 
 {
-  PckModelDefinitionIdCatalog linkedDefinitionId;
-  int linkedSlotsRemaining;
-  PckModelDefinitionIdCatalog selectedDefinitionId;
-  Bool8 technologyLocked;
   ModelDefinitionRecordPrefix *selectedDefinition;
 
-  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
-    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
-    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-    if (linkedDefinitionId != 0) {
-      /* true while the technology is still locked */
-      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
-                        (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                         linkedDefinitionId);
-      if (!technologyLocked) {
-        selectedDefinitionId = linkedDefinitionId;
-      }
-    }
-    linkedDefinitionList = linkedDefinitionList + 4;
-  }
-  selectedDefinition = ModelDefinitionRegistry_FindById(selectedDefinitionId);
+  selectedDefinition = ModelDefinitionRegistry_FindById
+                         (ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList));
   if (selectedDefinition == nullptr) {
     /* Original quirk: the error code of the failed lookup is returned as the definition */
     selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;

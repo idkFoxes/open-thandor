@@ -1401,7 +1401,7 @@
 0x0050E082  data      g_StatHexPathUtf16                                                src/platform/bootstrap/runtime.cpp
 0x0050E094  data      g_OldunitHexPathUtf16                                             src/gameplay/session/savegame.cpp
 0x0050E0AC  data      g_InGameResourceRegistrationBusyCount                             src/gameplay/session/savegame.cpp
-0x0050E0B0  function  InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess            src/gameplay/session/startup.cpp
+0x0050E0B0  function  InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess            (removed, unused)
 0x0050E0D0  function  InGameRuntime_ReleaseFactionScratchBuffers                        src/gameplay/session/startup.cpp
 0x0050E120  function  InGameConditionRuntime_UpdateScheduledRecords                     src/gameplay/session/level_script.cpp
 0x0050E890  function  InGameSaveGame_PrepareRegistrationRecords                         src/gameplay/session/savegame.cpp
@@ -1693,13 +1693,13 @@
 0x00522660  function  ArmyArticulatedRuntime_InitializeRightTerrainContact              src/gameplay/army/walker.cpp
 0x00522770  function  ArmyArticulatedRuntime_UpdateSelectedTerrainContact               src/gameplay/army/walker.cpp
 0x00522A90  function  ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming       src/gameplay/army/model_slots.cpp
-0x00522B70  function  ArmyRuntimeClass_NoOpUpdate                                       src/gameplay/army/class_dispatch.cpp
+0x00522B70  function  ArmyRuntimeClass_NoOpUpdate                                       (merged into UnifiedRuntimeDefault_TwoArgNoOpD)
 0x00522B90  function  ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform             src/gameplay/army/model_slots.cpp
 0x00522C00  function  ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation           src/gameplay/army/drive_banking.cpp
 0x00523240  function  ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds                    (merged into ArmyRuntimeAudio_UpdateTurnAndMoveSounds)
 0x00523340  function  ArmyRuntimeCommand_UpdateTargetFollowingState                     src/gameplay/army/move_orders.cpp
-0x005233F0  function  ArmyRuntimeClass_NoOpTickUpdateForClass5                          src/gameplay/army/class_dispatch.cpp
-0x00523400  function  ArmyRuntimeClass_NoOpTickUpdateForClass6                          src/gameplay/army/class_dispatch.cpp
+0x005233F0  function  ArmyRuntimeClass_NoOpTickUpdate                                   src/gameplay/army/class_dispatch.cpp
+0x00523400  function  ArmyRuntimeClass_NoOpTickUpdateForClass6                          (merged into ArmyRuntimeClass_NoOpTickUpdate)
 0x00523410  function  ArmyRuntimeClass_UpdateSingleBarrelTurret                         src/gameplay/army/turrets.cpp
 0x00523690  function  ArmyRuntimeClass_UpdateTwinBarrelTurret                           src/gameplay/army/turrets.cpp
 0x00523980  function  ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments               src/gameplay/army/combat.cpp
@@ -2067,7 +2067,7 @@
 0x005393F0  function  AiConstructionPlanner_PlaceTritiumStorageNearResourceSite         src/gameplay/ai/construction.cpp
 0x00539600  function  AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate          src/gameplay/ai/construction.cpp
 0x005397C0  function  AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor         src/gameplay/ai/construction.cpp
-0x00539980  data      g_TechnologyCategoryMaximumReciprocalQ24Table8                    src/gameplay/technology/runtime.cpp
+0x00539980  data      g_TechnologyCategoryMaximumReciprocalQ24Table8                    (removed, unused)
 0x005399A0  data      g_TechnologyCategoryMaximums                                      src/gameplay/technology/runtime.cpp
 0x005399C0  data      g_AiArmyCandidateFlaggedDefinitionValueMaximum                    src/gameplay/technology/runtime.cpp
 0x005399C4  data      g_AiStrategicClassTerrainWeights                                  src/gameplay/ai/planning.cpp
@@ -2705,7 +2705,7 @@
 0x0056A050  function  InGameSpecialBuildCatalog_RebuildGrid                             src/ui/ingame/build_catalog.cpp
 0x0056A2A0  function  InGameArmyStock_RebuildGrid                                       src/ui/ingame/army_stock.cpp
 0x0056A460  function  InGameMusic_ComputeTrackSuitabilityScore                          src/ui/ingame/music_choice.cpp
-0x0056A604  data      g_InGameSessionStartedNetworked                                   src/gameplay/session/new_session.cpp
+0x0056A604  data      g_InGameSessionStartedNetworked                                   (removed, unused)
 0x0056A610  function  InGameChatInput_SendLineOrCheckCheatPhrase                        src/ui/ingame/chat.cpp
 0x0056A8A0  function  InGameMissionHelpPage_Toggle                                      src/ui/ingame/pages.cpp
 0x0056AA90  function  InGameMissionHelpPage_SelectBriefingTab                           src/ui/ingame/pages.cpp
