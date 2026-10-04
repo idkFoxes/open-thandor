@@ -107,7 +107,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
         ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,chatInputTextEdit))->textBuffer)[i] = 0;
       }
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-      UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
+      UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,INGAME_UI(rt,messageRecipientAllTab),
                                             INGAME_UI(rt,messageRecipientGroupsTab),
                                             INGAME_UI(rt,messageRecipientPlayersTab));
       g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]
@@ -127,9 +127,9 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
                                                      INGAME_UI(rt,inGameMenuButton));
     UiSelectableControl_SetSelected(1,toggle);
     if (((toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-        (((UiSpriteButtonControl *)toggle)->activationSound != NULL)) {
+        (((UiSpriteButtonControl *)toggle)->activationSound != nullptr)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
-                            ((UiSpriteButtonControl *)toggle)->activationSound,NULL);
+                            ((UiSpriteButtonControl *)toggle)->activationSound,nullptr);
     }
     if (target == 0x567460) {
       InGameMissionHelpPage_Toggle((UiNodeBase *)toggle);
@@ -171,7 +171,7 @@ Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiA
       ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,messageTextEdit))->textBuffer)[i] = 0;
     }
     /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-    UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
+    UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,INGAME_UI(rt,messageRecipientAllTab),
                                           INGAME_UI(rt,messageRecipientGroupsTab),
                                           INGAME_UI(rt,messageRecipientPlayersTab));
     g_InGameUiActionHandlersPage10.handlers[((UiSelectableControl *)recipientTab)->actionId & 0xff]

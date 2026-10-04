@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
+THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = nullptr;
 
 static uint16_t g_InGameHudNumberTextUtf16[16] = {0};
 
@@ -32,7 +32,7 @@ static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 
 
 static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
 
-uint16_t *g_InGamePlayerListTextScratchUtf16 = 0;
+uint16_t *g_InGamePlayerListTextScratchUtf16 = nullptr;
 
 InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
 
@@ -390,7 +390,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       }
       resolvedText = TextResource_Resolve(resourceId);
       RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText);
-      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText,NULL);
+      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText,nullptr);
       destination++;
       playerRecord++;
     }

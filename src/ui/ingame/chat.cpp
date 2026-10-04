@@ -141,7 +141,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
                 (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,
                  commandTextEdit->textBuffer);
       /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-      UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,
+      UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientAllTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientGroupsTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
@@ -375,7 +375,7 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   RichTextCommandStream_CopyToNarrow
             (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,messageTextEdit->textBuffer);
   /* Original quirk: the result is not tested; with no tab selected this is the last tab */
-  UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,
+  UiSelectableGroup_FindVisibleSelected(&recipientTab,nullptr,3,
       INGAME_UI(source,messageRecipientAllTab),
       INGAME_UI(source,messageRecipientGroupsTab),
       INGAME_UI(source,messageRecipientPlayersTab));

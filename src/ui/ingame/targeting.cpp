@@ -50,7 +50,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   case TECHNOLOGY_UNLOCK_POSITION:
     /* own model at exactly the payload position. Note: "modelToken" holds the rebased army offset and
        "armyToken" the rebased model offset (names follow the callee's parameter order). */
-    for (ownerNode = root->worldRuntime.ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    for (ownerNode = root->worldRuntime.ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) ||
           (ownerNode->worldXQ12 != root->activeNotificationPayload.worldXQ12)) {
         continue;

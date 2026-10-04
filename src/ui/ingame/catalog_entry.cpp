@@ -194,7 +194,7 @@ static int UiCatalogEntryControl_FindGroup42BuildPercent
   int bestPercent;
 
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != NULL;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
@@ -223,7 +223,7 @@ static int UiCatalogEntryControl_FindGroup48BuildPercent
 
   factionIndex = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   bestPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != NULL;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != nullptr;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
@@ -450,10 +450,10 @@ void UiCatalogEntryControl_NonRightRelease
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     (control->command).activationInputState = activationInputState;
     if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->command).sprite.activationSound != NULL)) {
+       ((control->command).sprite.activationSound != nullptr)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->command).sprite.activationSound,NULL);
+                 (control->command).sprite.activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);

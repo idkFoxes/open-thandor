@@ -33,7 +33,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
   selectionSlots = g_SelectionInfoEntitySlots->entries;
   for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
     selectedEntity = selectionSlots[slotIndex];
-    if (selectedEntity == NULL) {
+    if (selectedEntity == nullptr) {
       continue;
     }
     modelNode = (selectedEntity->common).ownership.modelNode;

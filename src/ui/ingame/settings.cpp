@@ -564,7 +564,7 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
-  UiNodeBase *selectedQualityControl = NULL; /* control is one of the three buttons */
+  UiNodeBase *selectedQualityControl = nullptr; /* control is one of the three buttons */
   UiNodeBase *textureQualityGroup;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -609,7 +609,7 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
     g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveEffectVoice);
-    g_InGameActiveEffectVoice = NULL;
+    g_InGameActiveEffectVoice = nullptr;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write((uint32_t)isEnabled | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
@@ -676,7 +676,7 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   }
   else {
     g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveMusicVoice);
-    g_InGameActiveMusicVoice = NULL;
+    g_InGameActiveMusicVoice = nullptr;
     g_InGameMusicNextTrackCountdown = 1;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);

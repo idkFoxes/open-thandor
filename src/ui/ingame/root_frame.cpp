@@ -16,11 +16,11 @@ THANDOR_ALIGN(16) UiRootCallbacks g_InGameUiRootCallbacks = {
     .frameUpdate = THANDOR_FN(InGameUiRoot_UpdateFrame),
     .keyboardFallback = THANDOR_FN(InGameHotkeys_DispatchCommandByFlags)};
 
-IDirectSoundBuffer *g_InGameActiveEffectVoice = 0;
+IDirectSoundBuffer *g_InGameActiveEffectVoice = nullptr;
 
 uint32_t g_InGameEffectsEnabled = 0;
 
-IDirectSoundBuffer *g_InGameActiveMusicVoice = 0;
+IDirectSoundBuffer *g_InGameActiveMusicVoice = nullptr;
 
 uint32_t g_InGameMusicNextTrackCountdown = 0;
 
@@ -127,7 +127,7 @@ static void InGameUiRoot_UpdateEffectSounds
   worldRuntime = &inGameRoot->worldRuntime;
   if ((currentPresentationTick & 7) == 0) {
     SpatialSoundPool_ClearDesiredGains();
-    for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    for (ownerNode = worldRuntime->ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
       /* the callback of the node's owner class (model, shot or effect) */
       (*(&g_RuntimeMaintenanceCallbackPhases.audioRefresh.army)[ownerNode->ownerClassId])(worldRuntime,ownerNode);
     }
@@ -136,7 +136,7 @@ static void InGameUiRoot_UpdateEffectSounds
   }
   if (g_InGameEffectsEnabled == 0) {
     if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveEffectVoice)) {
-      g_InGameActiveEffectVoice = NULL;
+      g_InGameActiveEffectVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
     }
@@ -178,7 +178,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
     if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveMusicVoice)) {
-      g_InGameActiveMusicVoice = NULL;
+      g_InGameActiveMusicVoice = nullptr;
       randomValue = Random_NextPrimary();
       g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
     }

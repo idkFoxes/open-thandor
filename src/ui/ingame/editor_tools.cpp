@@ -83,9 +83,9 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   ArmyRuntimeSlot *previewArmyRuntime;
 
   /* the world owner-list node under the pointer; only model nodes count */
-  if ((ownerNodeUnderPointer != NULL) &&
+  if ((ownerNodeUnderPointer != nullptr) &&
      (ownerNodeUnderPointer->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
-    ownerNodeUnderPointer = NULL;
+    ownerNodeUnderPointer = nullptr;
   }
   /* The values are cursor frames of the editor tools (EDITOR_CURSOR_*, WORLD_CURSOR_*). */
   switch(g_UiCommandModeG) {
@@ -131,7 +131,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       placementSubMode = g_UiCommandModeB;
     }
     if (placementSubMode == 1) {
-      if (ownerNodeUnderPointer != NULL) {
+      if (ownerNodeUnderPointer != nullptr) {
         return EDITOR_CURSOR_DELETE_TARGET;
       }
       return EDITOR_CURSOR_DELETE_NONE;
@@ -145,8 +145,8 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
         /* nothing picked up: test a temporary instance at the pointer */
         previewArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
                           (1,0,pointerWorldXQ12,pointerWorldYQ12,g_UiCommandModeGOwnerFactionIndex,
-                           g_UiCommandModeGArmyAssetId,worldRuntime,NULL);
-        if (previewArmyRuntime == NULL) {
+                           g_UiCommandModeGArmyAssetId,worldRuntime,nullptr);
+        if (previewArmyRuntime == nullptr) {
           return WORLD_CURSOR_MOVE;
         }
         cursorCode = WORLD_CURSOR_MOVE;
@@ -162,7 +162,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     else {
       localSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
       if (localSelectionBlock->placedArmyToken == 0) {
-        if (ownerNodeUnderPointer != NULL) {
+        if (ownerNodeUnderPointer != nullptr) {
           return WORLD_CURSOR_OWN_ARMY;
         }
         return WORLD_CURSOR_FOREIGN_ARMY;
@@ -394,7 +394,7 @@ static void InGameEditorPointer_BeginPlacementTool
     g_UiCommandDragStartScreenY = mapControl->pointerPressY;
     return;
   }
-  if (ownerNodeUnderPointer != NULL) {
+  if (ownerNodeUnderPointer != nullptr) {
     if (placementSubMode == 1) {
       armyToken = ArmyRuntime_Token
                   (((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
@@ -470,9 +470,9 @@ void InGameUiCommand_BeginInteractionByMode
   uint32_t gridXQ12;
   uint32_t gridYQ12;
 
-  if ((ownerNodeUnderPointer != NULL) &&
+  if ((ownerNodeUnderPointer != nullptr) &&
      (ownerNodeUnderPointer->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
-    ownerNodeUnderPointer = NULL;
+    ownerNodeUnderPointer = nullptr;
   }
   switch(g_UiCommandModeG) {
   case EDITOR_MODE_TERRAIN_HEIGHT:
@@ -554,7 +554,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   g_InGameSelectionInsertTripletDwordCount = 0;
   g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerFactionIndex = mapControl->activeFactionRuntimeIndex;
-  for (runtimeNode = (WorldOwnerListNode *)mapControl->ownerListHead; runtimeNode != NULL;
+  for (runtimeNode = (WorldOwnerListNode *)mapControl->ownerListHead; runtimeNode != nullptr;
       runtimeNode = runtimeNode->nextNode) {
     if ((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) == 0) continue;
     static_assert(offsetof(ModelRuntimeSlot,ownerArmyRuntimeOrSavedOffset) == 8,
@@ -822,7 +822,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   case EDITOR_MODE_TERRAIN_MATERIAL:
     if (g_UiCommandModeD != 3) {
       if (g_TerrainMaterialTextureSets[g_UiCommandAbsoluteSelectionIndex] ==
-          NULL) {
+          nullptr) {
         return;
       }
       if (g_UiCommandModeD == 1) {
@@ -1192,7 +1192,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         UiPageStack_SetActiveIndex(1,&root->gamePanelsModePageStack);
       }
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
-      root->worldOverlayCallback = NULL;
+      root->worldOverlayCallback = nullptr;
       (root->worldRuntime).selection.dispatchCommandCallback =
            InGameCameraCommand_DispatchByCodeAndModifierFlags;
       /* the mode handlers, the no-op and the keyboard fallback go in through the EditorSlot_ adapters above */
@@ -1224,8 +1224,8 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       materialTextureSet = g_TerrainMaterialTextureSets[materialIndex];
       root->notificationButtonTextureSource = (uintptr_t)panelTextureSource;
       /* preview texture of the selected material */
-      swatchTextureSource = NULL;
-      if (materialTextureSet != NULL) {
+      swatchTextureSource = nullptr;
+      if (materialTextureSet != nullptr) {
         swatchTextureSource = materialTextureSet->entries[0].sourceAsset;
       }
       root->notificationButtonSubresource = INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE;
@@ -1301,7 +1301,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     /* free the cached preview textures of all army asset records */
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];
-      if (armyAsset != NULL) {
+      if (armyAsset != nullptr) {
         g_MemoryApi.free(Thandor_U32ToPointer<void>(armyAsset[2].byteSize)); /* 5f-format: ArmyAssetRecord.previewTexture (+0x20) */
         armyAsset[2].byteSize = 0;
       }
@@ -1329,7 +1329,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & ~INGAME_WORLD_FLAG_EDITOR; /* set on entering */
     TerrainDirectionTable_AdvanceAndRebuildVectors();
-    g_UiHoverSelectionRecord = NULL;
+    g_UiHoverSelectionRecord = nullptr;
     InGameSelectionDetailPanel_Rebuild();
   }
   return;

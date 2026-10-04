@@ -200,7 +200,7 @@ static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
   int reloadTicks;
 
   childModelRuntime = armyRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-  if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == NULL)) {
+  if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == nullptr)) {
     return false;
   }
   childDefinition = (childModelRuntime->definitionOrSavedId).runtimeDefinition;
@@ -237,7 +237,7 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
   int slotIndex;
 
   childModelRuntime = armyRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-  if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == NULL)) {
+  if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == nullptr)) {
     return false;
   }
   childDefinition = (ArmyWeaponDefinitionView *)(childModelRuntime->definitionOrSavedId).runtimeDefinition;

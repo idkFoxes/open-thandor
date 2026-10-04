@@ -26,13 +26,13 @@ static uint16_t g_GfxPanelSelectDatPathUtf16[21] =
 static uint16_t g_GfxPanelInfoDatPathUtf16[19] =
     {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'i', 'n', 'f', 'o', '.', 'd', 'a', 't', 0};
 
-GraphicsTextureSourceAsset *g_SelectionPanelTextureSource = 0;
+GraphicsTextureSourceAsset *g_SelectionPanelTextureSource = nullptr;
 
-GraphicsTextureSourceAsset *g_InfoPanelTextureSource = 0;
+GraphicsTextureSourceAsset *g_InfoPanelTextureSource = nullptr;
 
-void *g_SelectionPanelData = 0;
+void *g_SelectionPanelData = nullptr;
 
-void *g_InfoPanelData = 0;
+void *g_InfoPanelData = nullptr;
 
 /* Implementation ownership: ui/ingame/selection_panel_resources. */
 
@@ -45,7 +45,7 @@ static void SelectionInfoPanel_ClearAllPlayerSelections(void)
 
   for (blockIndex = 0; blockIndex < 8; blockIndex++) {
     for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
-      g_SelectionPlayerBlocks[blockIndex].selection.entries[entryIndex] = NULL;
+      g_SelectionPlayerBlocks[blockIndex].selection.entries[entryIndex] = nullptr;
     }
   }
 }
@@ -148,26 +148,26 @@ Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uin
 
   selectionTextureSource =
        g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelSelectGfxPathUtf16,&loadErrorCode);
-  if (selectionTextureSource == NULL) {
+  if (selectionTextureSource == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelTextureSource = selectionTextureSource;
   infoTextureSource =
        g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelInfoGfxPathUtf16,&loadErrorCode);
-  if (infoTextureSource == NULL) {
+  if (infoTextureSource == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_InfoPanelTextureSource = infoTextureSource;
   selectionPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelSelectDatPathUtf16,&loadErrorCode);
-  if (selectionPanelData == NULL) {
+  if (selectionPanelData == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelData = selectionPanelData;
   infoPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelInfoDatPathUtf16,&loadErrorCode);
-  if (infoPanelData == NULL) {
+  if (infoPanelData == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -189,9 +189,9 @@ void SelectionInfoPanel_ShutdownResources(void)
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InfoPanelTextureSource);
   Resource_Release(g_SelectionPanelData);
   Resource_Release(g_InfoPanelData);
-  g_SelectionPanelTextureSource = NULL;
-  g_InfoPanelTextureSource = NULL;
-  g_SelectionPanelData = NULL;
-  g_InfoPanelData = NULL;
+  g_SelectionPanelTextureSource = nullptr;
+  g_InfoPanelTextureSource = nullptr;
+  g_SelectionPanelData = nullptr;
+  g_InfoPanelData = nullptr;
   return;
 }

@@ -59,9 +59,9 @@ static void InGameSelectionDetailPanel_FillLinkedDefinitionNames
 
   InGameSelectionDetailPanel_CopyName(nameDestination,nameSource);
   noWeaponText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,NULL);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,NULL);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,nullptr);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,nullptr);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,nullptr);
   if (linkedDefinitionListView->childListCount == 0) {
     return;
   }
@@ -150,9 +150,9 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
                                   nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
   /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
   noWeaponText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,NULL);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,NULL);
-  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,nullptr);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,nullptr);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,nullptr);
   g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
   g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
   g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
@@ -168,13 +168,13 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
                       TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
     RichTextCommandStream_CopyExpanded
               (128,g_InGameSelectionDetailTextSlot09Utf16,
-               TextResource_Resolve(researchTechnologyId * 2 + TECHNOLOGY_TEXT_ID_BASE),NULL);
+               TextResource_Resolve(researchTechnologyId * 2 + TECHNOLOGY_TEXT_ID_BASE),nullptr);
   }
   /* Weapon names: the attached models of the first three attachment slots (the model runtime is re-read from
      the entity before each further slot). */
   if (modelRuntime->attachmentCount != 0) {
     attachedModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-    if (attachedModelRuntime != NULL) {
+    if (attachedModelRuntime != nullptr) {
       InGameSelectionDetailPanel_CopyName
                 (g_InGameSelectionDetailWeaponName0TextUtf16,
                  TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
@@ -183,7 +183,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
     modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
     if (1 < modelRuntime->attachmentCount) {
       attachedModelRuntime = modelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
-      if (attachedModelRuntime != NULL) {
+      if (attachedModelRuntime != nullptr) {
         InGameSelectionDetailPanel_CopyName
                   (g_InGameSelectionDetailWeaponName1TextUtf16,
                    TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
@@ -192,7 +192,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
       modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
       if (2 < modelRuntime->attachmentCount) {
         attachedModelRuntime = modelRuntime->attachments[2].childModelRuntimeOrSavedOffset;
-        if (attachedModelRuntime != NULL) {
+        if (attachedModelRuntime != nullptr) {
           InGameSelectionDetailPanel_CopyName
                     (g_InGameSelectionDetailWeaponName2TextUtf16,
                      TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
@@ -260,7 +260,7 @@ static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,Ui
   entitySlots = g_SelectionInfoEntitySlots->entries;
   for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
     entity = entitySlots[slotIndex];
-    if ((entity != NULL) && (remainingCells != 0)) {
+    if ((entity != nullptr) && (remainingCells != 0)) {
       cellOffset = *gridCellOffset;
       ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->entity = (RuntimeModelFactionPrefix *)entity;
       /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
@@ -346,21 +346,21 @@ void InGameSelectionDetailPanel_Rebuild(void)
 
   hoverRecord = g_UiHoverSelectionRecord;
   root = g_InGameRuntimeRoot;
-  if (root == NULL) {
+  if (root == nullptr) {
     return;
   }
   activeFactionIndex = root->worldRuntime.activeFactionRuntimeIndex;
   selectedCount = 0;
-  lastSelectedEntity = NULL;
+  lastSelectedEntity = nullptr;
   entitySlots = g_SelectionInfoEntitySlots->entries;
   for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
-    if (entitySlots[slotIndex] != NULL) {
+    if (entitySlots[slotIndex] != nullptr) {
       selectedCount++;
       lastSelectedEntity = entitySlots[slotIndex];
     }
   }
   stack = &root->selectionDetailPageStack;
-  if (hoverRecord != NULL) {
+  if (hoverRecord != nullptr) {
     InGameSelectionDetailPanel_ShowHoverRecord(root,stack,hoverRecord);
     return;
   }

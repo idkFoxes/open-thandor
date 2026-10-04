@@ -56,7 +56,7 @@ static uint32_t InGameWorldInput_ResolveWeaponTargetCursor(GameEntityRuntime *en
   if (SelectionInfo_TestNoEntryHasWeaponDamage()) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
-  if (entry == NULL) {
+  if (entry == nullptr) {
     return WORLD_CURSOR_TARGET;
   }
   if (GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex)) {
@@ -75,7 +75,7 @@ static uint32_t InGameWorldInput_ResolveCandidateConditionCursor(GameEntityRunti
 {
   Q12 conditionRatioQ12;
 
-  if (entry == NULL) {
+  if (entry == nullptr) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   if (GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex)) {
@@ -109,7 +109,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   Bool8 testResult;
 
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
-  (inGameRuntime->selection).selectedEntity = NULL;
+  (inGameRuntime->selection).selectedEntity = nullptr;
   if (((inGameRuntime->interaction).nodeFlags & 8) != 0) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
@@ -147,7 +147,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     /* command mode: an own army under the pointer (candidate height at most 1.0 in Q12 above the picked
        height) is selected on click; otherwise the modifier keys pick the pointer-mode command to preview */
     g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_OVER_OWN_ARMY;
-    if ((candidateNode != NULL) &&
+    if ((candidateNode != nullptr) &&
         (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
         ((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12) &&
         !GameFactionRuntime_TestCapabilityBitClear
@@ -182,27 +182,27 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   }
   /* selection mode: only an owned army at most 1.0 (Q12) above the picked height counts as candidate;
      entry stays NULL without a candidate army */
-  entry = NULL;
-  if ((candidateNode != NULL) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
+  entry = nullptr;
+  if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
     entry = (GameEntityRuntime *)
             ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (((int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE)) ||
         ((entry->common).ownership.ownerIndex == 0)) {
-      entry = NULL;
+      entry = nullptr;
     }
   }
-  if (entry != NULL) {
+  if (entry != nullptr) {
     (inGameRuntime->selection).selectedEntity = entry;
   }
   if (!SelectionInfo_HasAnyEntry() || SelectionInfo_AllEntriesEmptyOrMatchOwner(ownerIndex)) {
-    if (entry == NULL) {
+    if (entry == nullptr) {
       return GRAPHICS_CURSOR_FRAME_ARROW;
     }
     return (ownerIndex != (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_FOREIGN_ARMY : WORLD_CURSOR_OWN_ARMY;
   }
   if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
     if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) != 0) {
-      if (entry == NULL) {
+      if (entry == nullptr) {
         return GRAPHICS_CURSOR_FRAME_ARROW;
       }
       return (ownerIndex == (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_OWN_ARMY : WORLD_CURSOR_FOREIGN_ARMY;
@@ -212,7 +212,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     }
     return InGameWorldInput_ResolveCandidateConditionCursor(entry,ownerIndex);
   }
-  if (entry == NULL) {
+  if (entry == nullptr) {
     /* ground: move cursor unless no move is possible here */
     if (SelectionInfo_TestAnyActiveOrSingleClass13()) {
       return GRAPHICS_CURSOR_FRAME_ARROW;
@@ -282,7 +282,7 @@ void InGameWorldInput_BeginPointerCapture
     return;
   }
   /* command mode: an own army under the pointer is selected right away */
-  if ((candidateNode != NULL) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
+  if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
     candidateArmy = ((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12) &&
         !GameFactionRuntime_TestCapabilityBitClear(candidateArmy->factionIndex,ownerIndex)) {
@@ -376,7 +376,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
   g_InGameSelectionInsertTripletDwordCount = 0;
   g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
-  for (runtimeNode = inGameRuntime->ownerListHead; runtimeNode != NULL; runtimeNode = runtimeNode->nextNode) {
+  for (runtimeNode = inGameRuntime->ownerListHead; runtimeNode != nullptr; runtimeNode = runtimeNode->nextNode) {
     if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || ((runtimeNode->runtimeFlags & 2) == 0)) {
       continue;
     }
@@ -700,16 +700,16 @@ static void InGameWorldInput_CommitSelectionModeRelease
   /* same candidate filter as InGameWorldInput_ResolveContextActionAndCursor; entry stays NULL without a
      candidate army */
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
-  entry = NULL;
-  if ((candidateNode != NULL) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
+  entry = nullptr;
+  if ((candidateNode != nullptr) && (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) {
     entry = THANDOR_PTR32_AT(GameEntityRuntime, (uint8_t *)candidateNode->runtimePayload + 8);
     if (((int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE)) ||
         ((entry->common).ownership.ownerIndex == 0)) {
-      entry = NULL;
+      entry = nullptr;
     }
   }
   if (!SelectionInfo_HasAnyEntry() || SelectionInfo_AllEntriesEmptyOrMatchOwner(ownerIndex)) {
-    if (entry != NULL) {
+    if (entry != nullptr) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
                   (g_LocalPlayerRuntimeId,0,0,ArmyRuntime_Token(entry));
@@ -723,7 +723,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
     return;
   }
   if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
-    if (entry == NULL) {
+    if (entry == nullptr) {
       /* ground click: move, or position with Shift/Alt */
       if (!SelectionInfo_TestAnyActiveOrSingleClass13() && (pickedHeightQ12 != WORLD_POINTER_NO_HIT)) {
         if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
@@ -761,7 +761,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
     }
   }
   else if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
-    if (entry == NULL) {
+    if (entry == nullptr) {
       /* Ctrl ground click: target position at the top surface height under the pointer */
       if (pickedHeightQ12 != WORLD_POINTER_NO_HIT) {
         surfaceHeightQ12 = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
@@ -788,7 +788,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
     InGameWorldInput_SelectCandidateArmy(entry);
     return;
   }
-  if (entry != NULL) {
+  if (entry != nullptr) {
     InGameWorldInput_ToggleCandidateArmy(ownerIndex,entry);
   }
   return;
