@@ -1,7 +1,7 @@
 """Runs all behaviour checks after a build, in parallel, and prints one summary table.
 
 usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-jobs N]
-                     [--map-minutes M] [--skip determinism,aihash,...]
+                     [--map-minutes M] [--full-campaign] [--skip determinism,aihash,...]
 
 GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
 (hard links to the data files, own executable, settings, log and save folder; the tools started from here make
@@ -26,10 +26,12 @@ further copies next to it), windowed, with its own UDP ports:
                (tutorial 2/3, hansolo 9/13/23, tested by the campaign check), a warning elsewhere (the strong
                computer opponents can win a map in time); hansolo 20 is skipped (its level file is missing
                from the original data) (ports 940+)
-  campaign     run_campaign_chain.py segments: every level of every campaign's winning path through real level
-               changes in 12 parallel parts of 2-3 levels (the last part of each campaign to the campaign end);
-               every level runs 2 minutes, then the auto-win fires the end trigger; every level must be won
-               and units carried over where the campaign does it, without crash or hang (ports 910-921)
+  campaign     run_campaign_chain.py quick: 10 levels in 5 parallel parts through real level changes - the
+               levels that take over the previous level's units (tutorial 2/3, hansolo 9/13/23) and the
+               tutorial and nimm2 campaign ends; with --full-campaign every level of every campaign's winning
+               path (segments: 12 parts, 33 levels). Every level runs 2 minutes, then the auto-win fires the end
+               trigger; every level must be won and units carried over where the campaign does it, without
+               crash or hang (ports 910-921)
 --new defaults to build-test/thandor.exe of this repository (CMake preset "test"); each copy gets the SDL3.dll next
 to that exe (else the one in GAME_DIR), the tools started from a copy link it from there. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
@@ -75,7 +77,7 @@ INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedi
 EXPECTED_ENDED = ('tutorial 2', 'tutorial 3', 'hansolo 9', 'hansolo 13', 'hansolo 23')
 # missions whose level file is missing from the original game data (hansolo 20 names level\hansolo\s19_forschung.lev)
 EXPECTED_MISSING = ('hansolo 20',)
-CAMPAIGN_SEGMENTS = 12
+CAMPAIGN_PARTS = {'quick': 5, 'segments': 12}
 
 args = None
 game = None
@@ -353,19 +355,21 @@ def check_maps():
 def check_campaign():
     folder = make_copy('campaign', args.new)
     shutil.rmtree(os.path.join(folder, 'chain'), ignore_errors=True)
+    mode = 'segments' if args.full_campaign else 'quick'
+    parts = CAMPAIGN_PARTS[mode]
     code, text = run_tool(os.path.join(out_dir, 'campaign.txt'),
-                          [os.path.join(HERE, 'run_campaign_chain.py'), folder, 'segments', '--jobs',
-                           str(CAMPAIGN_SEGMENTS), '--win-after', '120', '--port-base', '910'], 2400)
+                          [os.path.join(HERE, 'run_campaign_chain.py'), folder, mode, '--jobs',
+                           str(parts), '--win-after', '120', '--port-base', '910'], 2400)
     rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
     # '[n/12] <campaign> <first+count[ end]> <verdict> <n> levels <per level: carried units, end>'
     fields = [r.split(']', 1)[1].split() for r in rows]
     shift = [3 if f[2] == 'end' else 2 for f in fields]
     bad = [' '.join(f[:s]) for f, s in zip(fields, shift) if f[s] != 'ok']
     levels = sum(int(f[s + 1]) for f, s in zip(fields, shift) if f[s + 1].isdigit())
-    details = '%d/%d parts ok, %d levels' % (len(rows) - len(bad), CAMPAIGN_SEGMENTS, levels)
+    details = '%d/%d parts ok, %d levels' % (len(rows) - len(bad), parts, levels)
     if bad:
         details += ', FAILED: ' + '; '.join(bad)
-    if code != 0 or len(rows) != CAMPAIGN_SEGMENTS:
+    if code != 0 or len(rows) != parts:
         return 'FAIL', details + ' (%d results, tool exit %s)' % (len(rows), code)
     return ('FAIL' if bad else 'PASS'), details
 
@@ -400,8 +404,11 @@ def main():
                                                        'at least 4, growing to 16 as the other checks finish; a '
                                                        'given number stays fixed)')
     parser.add_argument('--map-minutes', type=float, default=2)
+    parser.add_argument('--full-campaign', action='store_true',
+                        help='campaign check over all 33 levels (12 parts) instead of the 10-level quick set')
     parser.add_argument('--skip', default='', help='comma-separated: ' + ','.join(CHECKS))
     args = parser.parse_args()
+    INSTANCES['campaign'] = CAMPAIGN_PARTS['segments' if args.full_campaign else 'quick']
     game = os.path.abspath(args.game_dir)
     args.new = os.path.abspath(args.new)
     args.old = os.path.abspath(args.old) if args.old else None

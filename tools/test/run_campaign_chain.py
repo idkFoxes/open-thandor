@@ -27,6 +27,8 @@ segments:  every level of every campaign's winning path, split into parallel run
            (those are reached through a real level change inside a part). Every level is won after
            --win-after seconds; a part ending a campaign must fire the campaign end, the others must win their
            last level. Levels off the winning path (hansolo 7, 15-17, 20) are started by run_all_maps.py.
+quick:     10 levels in 5 parts (QUICK_SEGMENTS): tutorial 1-3 to the campaign end, hansolo 8-9, 12-13 and 22-23 (the
+           levels that take over the previous level's units) and nimm2 5 to the campaign end.
 Results in GAME_DIR/chain/results.txt, screenshots and log per run in GAME_DIR/chain/<run>/.
 """
 import argparse
@@ -48,11 +50,15 @@ SEGMENTS = [('hansolo', 2, 3, False), ('hansolo', 5, 3, False), ('hansolo', 8, 3
             ('hansolo', 14, 3, False), ('hansolo', 21, 3, False), ('hansolo', 24, 3, True),
             ('nimm2', 1, 3, False), ('nimm2', 4, 2, True), ('luke', 1, 2, False), ('luke', 3, 2, True),
             ('tutorial', 1, 3, True)]
+# quick: 10 levels in 5 parts - every level that needs the previous level's units (tutorial 2/3, hansolo 9/13/23)
+# through a real level change, and two campaign ends (tutorial, nimm2)
+QUICK_SEGMENTS = [('tutorial', 1, 3, True), ('hansolo', 8, 2, False), ('hansolo', 12, 2, False),
+                  ('hansolo', 22, 2, False), ('nimm2', 5, 1, True)]
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log')
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('game_dir')
-parser.add_argument('mode', choices=('pairs', 'campaigns', 'segments'))
+parser.add_argument('mode', choices=('pairs', 'campaigns', 'segments', 'quick'))
 parser.add_argument('--jobs', type=int, default=10)
 parser.add_argument('--win-after', type=int, default=30)
 parser.add_argument('--minutes', type=float, default=1)
@@ -105,9 +111,10 @@ def mtime(path):
 if args.mode == 'pairs':
     # win the level before, then run the target level --minutes (no auto-win there)
     runs = [('%s %d->%d' % (c, l, l + n - 1), c, l, n, args.minutes * 60) for c, l, n in PAIRS]
-elif args.mode == 'segments':
+elif args.mode in ('segments', 'quick'):
     # every level won after --win-after seconds; label: first level and number of levels
-    runs = [('%s %d+%d%s' % (c, l, n, ' end' if end else ''), c, l, n, 0) for c, l, n, end in SEGMENTS]
+    runs = [('%s %d+%d%s' % (c, l, n, ' end' if end else ''), c, l, n, 0)
+            for c, l, n, end in (SEGMENTS if args.mode == 'segments' else QUICK_SEGMENTS)]
 else:
     # every level won after --win-after seconds; the last level too, so the campaign end is reached
     runs = [('%s %d-%d' % (c, first, last), c, first, last - first + 1, 0) for c, first, last in CAMPAIGNS]
@@ -203,7 +210,7 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
             sessions[-1]['end'] = 'SCRIPT END'
     # every level start of a campaign logs its carry-over (also 0 units)
     started = len(sessions)
-    if args.mode == 'segments':
+    if args.mode in ('segments', 'quick'):
         ends_campaign = label.endswith(' end')
         # a level counts as passed when the next level started (it may end by its own script before the auto-win)
         # or when the auto-win ended it
