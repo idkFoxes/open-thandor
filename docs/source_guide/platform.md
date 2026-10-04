@@ -171,7 +171,7 @@ Campaign test aids (developer tools, THANDOR_DEV_TOOLS), reached through thandor
 
 The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compiled only with the CMake option THANDOR_DEV_TOOLS. Each hook hands over to the tool behind it; without its environment variable a tool does nothing.
 
-**Functions** (22 public):
+**Functions** (23 public):
 
 - [`DebugHook_RunSelfTest`](../../src/platform/debug/hooks.cpp#L29) - --- process ---
 - [`DebugHook_MessagePump`](../../src/platform/debug/hooks.cpp#L34)
@@ -179,17 +179,17 @@ The developer-tool hooks the game calls (thandor/platform/debug/hooks.h), compil
 - [`DebugHook_AllowSecondInstance`](../../src/platform/debug/hooks.cpp#L60)
 - [`DebugHook_ProcessPriorityClass`](../../src/platform/debug/hooks.cpp#L65)
 - [`DebugHook_Windowed`](../../src/platform/debug/hooks.cpp#L72) - --- windowed mode ---
-- [`DebugHook_IgnoreRealMouse`](../../src/platform/debug/hooks.cpp#L79) - --- input ---
-- [`DebugHook_BeforeUdpBind`](../../src/platform/debug/hooks.cpp#L88)
-- [`DebugHook_AfterUdpBind`](../../src/platform/debug/hooks.cpp#L97)
-- [`DebugHook_UdpDatagram`](../../src/platform/debug/hooks.cpp#L106)
-- 12 more: `DebugHook_MovieFrameDone`, `DebugHook_ScenarioPageOpened`, `DebugHook_CampaignLoaded`, `DebugHook_CampaignCarryOver`, `DebugHook_SessionInitializing`, `DebugHook_SessionStarted`, `DebugHook_SessionFrameBegin`, `DebugHook_SessionFrameEnd`, `DebugHook_SimulationStepBegin`, `DebugHook_SimulationStepEnd`, `DebugHook_SuppressTransientMarkers`, `DebugHook_NoteOutsideStepFrom`
+- [`DebugHook_WindowMinimized`](../../src/platform/debug/hooks.cpp#L77)
+- [`DebugHook_IgnoreRealMouse`](../../src/platform/debug/hooks.cpp#L84) - --- input ---
+- [`DebugHook_BeforeUdpBind`](../../src/platform/debug/hooks.cpp#L93)
+- [`DebugHook_AfterUdpBind`](../../src/platform/debug/hooks.cpp#L102)
+- 13 more: `DebugHook_UdpDatagram`, `DebugHook_MovieFrameDone`, `DebugHook_ScenarioPageOpened`, `DebugHook_CampaignLoaded`, `DebugHook_CampaignCarryOver`, `DebugHook_SessionInitializing`, `DebugHook_SessionStarted`, `DebugHook_SessionFrameBegin`, `DebugHook_SessionFrameEnd`, `DebugHook_SimulationStepBegin`, `DebugHook_SimulationStepEnd`, `DebugHook_SuppressTransientMarkers`, `DebugHook_NoteOutsideStepFrom`
 
 **Data** (0 shared, 1 file-local): `s_udpPortOverridden`.
 
 **Called from** (12 files): [`network/backend/fallback_udp`](network.md#file-network-backend-fallback-udp) (`NetworkFallback_OpenAndBindUdpSocket`, `NetworkFallback_ReceiveDatagram` +1); [`platform/sdl3/input`](#file-platform-sdl3-input) (`HandleFocusGained`, `HandleMouseEvent` +1); [`movie/runtime/playback`](movie.md#file-movie-runtime-playback) (`Movie_AdvanceFrame`, `Movie_Close`); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`Game_PlayIntroMovies`, `ProcessEntry`); [`platform/sdl3/platform`](#file-platform-sdl3-platform) (`SdlPlatform_CreateMainWindow`, `SdlPlatform_PumpEvents`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_FinishWorldUnderTickLock`); [`gameplay/session/scenario_load`](gameplay.md#file-gameplay-session-scenario-load) (`FrontendScenarioSession_LoadOrRequestCampaignBundle`); [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_RunSessionUntilExit`); [`gameplay/session/tick`](gameplay.md#file-gameplay-session-tick) (`InGameTick_RunSimulationStep`); [`platform/bootstrap/main`](#file-platform-bootstrap-main) (`WinMain`); 2 more: [`ui/frontend/scenario_selection`](ui.md#file-ui-frontend-scenario-selection), [`ui/ingame/preview_markers`](ui.md#file-ui-ingame-preview-markers).
 
-**Depends on** (10 files, names used): [`platform/debug/test_aids`](#file-platform-debug-test-aids) (8), [`platform/debug/campaign`](#file-platform-debug-campaign) (4), [`platform/debug/script`](#file-platform-debug-script) (3), [`platform/debug/statehash`](#file-platform-debug-statehash) (3), [`platform/debug/movie_player`](#file-platform-debug-movie-player) (2), [`gameplay/session/runtime`](gameplay.md#file-gameplay-session-runtime) (1), [`network/backend/runtime`](network.md#file-network-backend-runtime) (1), [`platform/debug/autoshot`](#file-platform-debug-autoshot) (1), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder) (1), [`platform/selftest/selftests`](#file-platform-selftest-selftests) (1).
+**Depends on** (10 files, names used): [`platform/debug/test_aids`](#file-platform-debug-test-aids) (9), [`platform/debug/campaign`](#file-platform-debug-campaign) (4), [`platform/debug/script`](#file-platform-debug-script) (3), [`platform/debug/statehash`](#file-platform-debug-statehash) (3), [`platform/debug/movie_player`](#file-platform-debug-movie-player) (2), [`gameplay/session/runtime`](gameplay.md#file-gameplay-session-runtime) (1), [`network/backend/runtime`](network.md#file-network-backend-runtime) (1), [`platform/debug/autoshot`](#file-platform-debug-autoshot) (1), [`platform/debug/movie_decoder`](#file-platform-debug-movie-decoder) (1), [`platform/selftest/selftests`](#file-platform-selftest-selftests) (1).
 
 **Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/autoshot.h`, `thandor/platform/debug/campaign.h`, `thandor/platform/debug/movie_decoder.h`, `thandor/platform/debug/movie_player.h`, `thandor/platform/debug/script.h`, `thandor/platform/debug/statehash.h`, `thandor/platform/debug/test_aids.h`, `thandor/platform/selftest/selftest.h`.
 
@@ -294,7 +294,7 @@ Determinism test aid (developer tools, THANDOR_DEV_TOOLS).
 
 Own translation unit: uses the real Windows SDK headers, not the game's type headers.
 
-**Functions** (7 public):
+**Functions** (8 public):
 
 - [`Thandor_TestAidScriptActive`](../../src/platform/debug/test_aids.cpp#L17) - Test aid (not in the original): see test_aids.h.
 - [`Thandor_TestAidStateHashActive`](../../src/platform/debug/test_aids.cpp#L28) - Test aid (not in the original): see test_aids.h.
@@ -303,10 +303,11 @@ Own translation unit: uses the real Windows SDK headers, not the game's type hea
 - [`Thandor_TestAidNetworkBindPort`](../../src/platform/debug/test_aids.cpp#L68) - Test aid (not in the original): see test_aids.h.
 - [`Thandor_TestAidLogDatagram`](../../src/platform/debug/test_aids.cpp#L84) - Test aid (not in the original): see test_aids.h.
 - [`Thandor_TestAidWindowed`](../../src/platform/debug/test_aids.cpp#L103) - Test aid (not in the original): see test_aids.h.
+- [`Thandor_TestAidWindowMinimized`](../../src/platform/debug/test_aids.cpp#L114) - Test aid (not in the original): see test_aids.h.
 
 **Data** (1 shared, 0 file-local): `g_TestAidInSimulationStep`.
 
-**Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_AllowSecondInstance`, `DebugHook_BeforeUdpBind` +7).
+**Called from** (1 files): [`platform/debug/hooks`](#file-platform-debug-hooks) (`DebugHook_AllowSecondInstance`, `DebugHook_BeforeUdpBind` +8).
 
 **Depends on** (1 files, names used): [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1).
 
@@ -560,15 +561,15 @@ SDL3 backend: the main window and the event pump (g_Win32PumpMessages); video.cp
 - [`VulkanWindow`](../../src/platform/sdl3/platform.cpp#L63)
 - [`DestroyMainWindow`](../../src/platform/sdl3/platform.cpp#L68)
 - [`SdlPlatform_CreateMainWindow`](../../src/platform/sdl3/platform.cpp#L78)
-- [`SdlPlatform_InstallTimersAndPump`](../../src/platform/sdl3/platform.cpp#L122)
-- [`SdlPlatform_PumpEvents`](../../src/platform/sdl3/platform.cpp#L129)
-- [`SdlPlatform_Quit`](../../src/platform/sdl3/platform.cpp#L175)
+- [`SdlPlatform_InstallTimersAndPump`](../../src/platform/sdl3/platform.cpp#L129)
+- [`SdlPlatform_PumpEvents`](../../src/platform/sdl3/platform.cpp#L136)
+- [`SdlPlatform_Quit`](../../src/platform/sdl3/platform.cpp#L182)
 
 **Data** (0 shared, 3 file-local): `s_window`, `s_windowed`, `s_vulkanWindow`.
 
 **Called from** (3 files): [`platform/sdl3/video`](#file-platform-sdl3-video) (`AbsoluteMouse`, `ApplyDisplayModeKind` +9); [`platform/sdl3/input`](#file-platform-sdl3-input) (`SdlInput_SetPosition`, `SdlInput_Shutdown` +1); [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (`ProcessEntry`, `ProcessEntry_RunGame`).
 
-**Depends on** (9 files, names used): [`platform/sdl3/input`](#file-platform-sdl3-input) (6), [`platform/debug/hooks`](#file-platform-debug-hooks) (2), [`platform/sdl3/timer`](#file-platform-sdl3-timer) (2), [`platform/system/time_locale`](#file-platform-system-time-locale) (2), [`platform/system/win32`](#file-platform-system-win32) (2), [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (1).
+**Depends on** (9 files, names used): [`platform/sdl3/input`](#file-platform-sdl3-input) (6), [`platform/debug/hooks`](#file-platform-debug-hooks) (3), [`platform/sdl3/timer`](#file-platform-sdl3-timer) (2), [`platform/system/time_locale`](#file-platform-system-time-locale) (2), [`platform/system/win32`](#file-platform-system-win32) (2), [`core/memory/synchronization`](core.md#file-core-memory-synchronization) (1), [`platform/bootstrap/image`](#file-platform-bootstrap-image) (1), [`platform/bootstrap/runtime`](#file-platform-bootstrap-runtime) (1), [`platform/sdl3/window_icon`](#file-platform-sdl3-window-icon) (1).
 
 **Includes:** `thandor/platform/sdl3/sdl_objects.h`, `thandor/platform/sdl3/window_icon.h`, `SDL3/SDL_hints.h`, `SDL3/SDL_init.h`, `SDL3/SDL_keyboard.h`, `SDL3/SDL_properties.h`, `SDL3/SDL_stdinc.h`, `SDL3/SDL_version.h`, `cstdlib`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
