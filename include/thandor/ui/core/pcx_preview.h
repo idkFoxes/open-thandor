@@ -1,0 +1,24 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/core/pcx_preview.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
+#ifndef THANDOR_UI_CORE_PCX_PREVIEW_H
+#define THANDOR_UI_CORE_PCX_PREVIEW_H
+
+#include <thandor/generated/types.h>
+#include <thandor/core/contracts.h>
+
+/* Submodule: ui/core/pcx_preview. */
+
+/* Extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h): ".pcx",
+   the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
+#define WIDE_PATH_EXTENSION_PCX 0x786370
+
+/* Functions are grouped by semantic ownership. */
+
+Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
+
+#endif /* THANDOR_UI_CORE_PCX_PREVIEW_H */

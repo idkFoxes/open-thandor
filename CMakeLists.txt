@@ -125,11 +125,14 @@ add_library(thandor_curated STATIC
     src/ui/controls/tooltip.cpp
     src/ui/controls/tree_list.cpp
     src/ui/controls/window.cpp
+    src/ui/core/chat_history.cpp
     src/ui/core/frame_loop.cpp
     src/ui/core/model_tint.cpp
+    src/ui/core/pcx_preview.cpp
     src/ui/core/runtime.cpp
     src/ui/dialogs/display_settings.cpp
     src/ui/frontend/chat.cpp
+    src/ui/frontend/credits.cpp
     src/ui/frontend/debug_overlay.cpp
     src/ui/frontend/display_settings.cpp
     src/ui/frontend/end_movie.cpp
@@ -160,7 +163,6 @@ add_library(thandor_curated STATIC
     src/ui/ingame/selection_detail.cpp
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
-    src/ui/support/runtime.cpp
     src/world/effects/maintenance.cpp
     src/world/effects/runtime.cpp
     src/world/model/hierarchy.cpp

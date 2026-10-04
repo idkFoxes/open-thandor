@@ -10,6 +10,7 @@
 
 #include <thandor/ui/frontend/chat.h>
 #include <thandor/ui/frontend/common.h>
+#include <thandor/ui/frontend/credits.h>
 #include <thandor/ui/frontend/debug_overlay.h>
 #include <thandor/ui/frontend/display_settings.h>
 #include <thandor/ui/frontend/end_movie.h>
