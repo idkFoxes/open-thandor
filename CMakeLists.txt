@@ -314,7 +314,7 @@ else()
     # GNU ld: the same fixed base, no ASLR, not large-address aware; the C and C++ runtimes linked in statically
     # (only SDL3.dll ships next to thandor.exe); thandor.map for symbolizing crash logs (docs/BUILDING.md).
     target_link_options(thandor PRIVATE -Wl,--image-base=0x10000000 -Wl,--disable-dynamicbase
-                        -Wl,--disable-high-entropy-va -static -static-libgcc -static-libstdc++
+                        -Wl,--disable-high-entropy-va -Wl,--tsaware -static -static-libgcc -static-libstdc++
                         -Wl,-Map=$<TARGET_FILE_DIR:thandor>/thandor.map)
     # ld marks every 64-bit image large-address aware (--disable-large-address-aware is 32-bit only): a small helper
     # clears the flag after the link and fails the build if the image came out relocatable.
