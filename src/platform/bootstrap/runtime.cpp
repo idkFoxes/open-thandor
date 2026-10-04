@@ -15,7 +15,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) CommandLineFindOptionProc *g_CommandLineFindOption = 0;
+THANDOR_ALIGN(4) CommandLineFindOptionProc *g_CommandLineFindOption = 0;
 
 static CommandLineWideArguments g_CommandLineWideArguments = {0};
 
@@ -432,7 +432,7 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != NULL) {
-    *destination = resolvedProcedure;
+    *destination = (void *)resolvedProcedure;
     return 0;
   }
   moduleEntryCursor = g_DynamicModules;

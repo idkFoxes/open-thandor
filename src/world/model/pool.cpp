@@ -253,7 +253,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 }
 
 /* First registered model definition with the given id, or NULL. */
-static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
+static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindByIdOrNull(PckModelDefinitionIdCatalog definitionId)
 {
   int registryIndex;
   ModelDefinitionRecordPrefix *registeredDefinition;
@@ -343,7 +343,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = rebasedLinkedRuntime;
     modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
 
-    registeredDefinition = ModelDefinitionRegistry_FindById
+    registeredDefinition = ModelDefinitionRegistry_FindByIdOrNull
                              ((PckModelDefinitionIdCatalog)modelRuntime->definitionOrSavedId.savedIdOrOffset);
     if (registeredDefinition == NULL) {
       /* definition no longer registered: drop the instance */
@@ -479,7 +479,7 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   }
   modelRuntime = &g_ModelRuntimeSlots[slotIndex];
 
-  definitionView = (ModelDefinition *)ModelDefinitionRegistry_FindById(modelDefinitionId);
+  definitionView = (ModelDefinition *)ModelDefinitionRegistry_FindByIdOrNull(modelDefinitionId);
   if (definitionView == NULL) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
