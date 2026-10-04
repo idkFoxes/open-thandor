@@ -5,9 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
-/* Software triangle rasterizer: the primitive queue walkers per pixel family (16-bit, non-16-bit,
+/* Software triangle rasterizer: the primitive queue walkers per pixel family (32-bit framebuffer,
    auxiliary target), the 64-entry raster mode handler tables, the triangle packet set-up and the depth
-   epoch. */
+   epoch. The original's 16-bit family (RGB565 framebuffer) is gone with 16-bit colour. */
 
 #include <thandor/graphics/backend/software_rasterizer.h>
 #include <thandor/thandor.h>
@@ -56,10 +56,10 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
   return;
 }
 
-/* Queue renderer for 16-bit framebuffers (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
-   prepares every packet of the queue and draws it with the 16-bit raster handler its render flags select.
+/* Queue renderer for the 32-bit framebuffer (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
+   prepares every packet of the queue and draws it with the raster handler its render flags select.
 */
-void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
@@ -70,29 +70,7 @@ void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
   while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     /* the handler index is bits 12..17 of the flags */
-    (*g_SoftwareRasterHandlers16Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
-    g_PrimitiveDrawCallCount++;
-    packet = GraphicsPrimitiveQueue_Next(queue);
-  }
-  return;
-}
-
-/* Queue renderer for every framebuffer that is not 16-bit, i.e. 32-bit (installed in g_SoftwareDrawQueue by
-   SoftwareRenderer_SetDisplayMode): like SoftwareRenderer_DrawQueue16Bit, with g_SoftwareRasterHandlersNon16Bit.
-*/
-void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsPrimitiveQueue *queue)
-
-{
-  GraphicsPrimitivePacket *packet;
-
-  packet = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet != NULL) {
-    SoftwareRenderer_PrepareTrianglePacket(packet);
-    /* the handler index is bits 12..17 of the flags */
-    (*g_SoftwareRasterHandlersNon16Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
+    (*g_SoftwareRasterHandlers32Bit[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12])
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
     packet = GraphicsPrimitiveQueue_Next(queue);
@@ -101,7 +79,7 @@ void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,Graphi
 }
 
 /* Queue renderer for an off-screen 32-bit target (GraphicsOffscreen_RenderModelListToTextureSource): like
-   SoftwareRenderer_DrawQueue16Bit, but it draws into targetBase, whose rows are clipMaxX pixels long, through
+   SoftwareRenderer_DrawQueue32Bit, but it draws into targetBase, whose rows are clipMaxX pixels long, through
    g_SoftwareRasterHandlersAuxiliary with clip minima of 0. Textured packets whose texture is subresource 99 or
    113 of its source are skipped (which textures these are is not known).
 */
@@ -130,7 +108,7 @@ void SoftwareRenderer_DrawQueueAuxiliary
 }
 
 /* g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
-   renderer chosen for the current pixel depth (g_SoftwareDrawQueue); draws nothing when the lock fails.
+   renderer (g_SoftwareDrawQueue); draws nothing when the lock fails.
 */
 void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -147,481 +125,7 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
   return;
 }
 
-/* Span of the textured opaque modes 16/24: the nearest texel (paletted or direct colour, wrapped) modulated by
-   the interpolated colour; pixel and depth are written where the depth test passes. */
-static void Raster16_SpanTexturedOpaque(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(Raster_Modulate(span->color, texel), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-            *span->depth = span->depthValue;
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque triangle
-   on the 16-bit framebuffer (see Raster16_SpanTexturedOpaque). Handler ABI and the rasterizer as a whole:
-   docs/software_raster.md.
-*/
-void SoftwareRaster16_Mode16
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedOpaque);
-  }
-}
-
-/* Texel modulated by the span colour: the Q4 source colour of the textured modes. */
-static RasterColor Raster16_TexturedSource(const RasterSpan *span)
-{
-    RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-    return Raster_Modulate(span->color, texel);
-}
-
-/* Textured alpha blend (as mode 17) that also stores the depth when the modulated alpha is
-   >= 128 (Raster_AlphaWritesDepth), so opaque parts of the texture occlude later triangles. */
-static void Raster16_SpanTexturedAlphaTested(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-            if (Raster_AlphaWritesDepth(source)) {
-                *span->depth = span->depthValue;
-            }
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* Modes 20/22 (Gouraud) and 28/30 (flat); each pair is byte-identical in the original. */
-static void Raster16_DrawTexturedAlphaTested(RasterShading shading, GraphicsScreenCoordinate clipMaxY,
-                                             GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,
-                                             GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet)
-{
-    RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-    RasterEdges edges;
-    RasterGradients gradients;
-    RasterTexture texture;
-
-    if (Raster_SetupTriangle(packet, shading, 1, &edges, &gradients)) {
-        Raster_SetupTexture(packet, &texture);
-        Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedAlphaTested);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 22 (render mode 22): byte-identical to mode 20 in the original: textured,
-   Gouraud-shaded, alpha-blended, with the alpha-tested depth write (Raster16_DrawTexturedAlphaTested).
-*/
-void SoftwareRaster16_Mode22
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawTexturedAlphaTested(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* Span of the textured alpha-blended modes 17/25: the modulated texel is blended with the framebuffer by its
-   alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written. */
-static void Raster16_SpanTexturedAlphaBlend(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
-   depth-tested, alpha-blended triangle without depth write (Raster16_SpanTexturedAlphaBlend).
-*/
-void SoftwareRaster16_Mode17
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedAlphaBlend);
-  }
-}
-
-/* Span of the textured additive modes 18/26: the modulated texel is added to the framebuffer with saturation;
-   the depth buffer is not written. */
-static void Raster16_SpanTexturedAdd(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested,
-   additive triangle without depth write (Raster16_SpanTexturedAdd).
-*/
-void SoftwareRaster16_Mode18
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedAdd);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 20 (render mode 20): textured, Gouraud-shaded, depth-tested, alpha-blended
-   triangle like mode 17 that also writes the depth where the modulated alpha is >= 128. Byte-identical to mode 22.
-*/
-void SoftwareRaster16_Mode20
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawTexturedAlphaTested(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 24 (render mode 24): textured, flat-shaded (colour of v0), depth-tested,
-   opaque triangle. Same pixel operation as mode 16.
-*/
-void SoftwareRaster16_Mode24
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedOpaque);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 30 (render mode 30): byte-identical to mode 28 in the original: textured,
-   flat-shaded, alpha-blended, with the alpha-tested depth write (Raster16_DrawTexturedAlphaTested).
-*/
-void SoftwareRaster16_Mode30
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawTexturedAlphaTested(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 25 and 56, 57, 60, 62 (render mode 25): textured, flat-shaded (colour of
-   v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
-*/
-void SoftwareRaster16_Mode25
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedAlphaBlend);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 26 and 58 (render mode 26): textured, flat-shaded (colour of v0),
-   depth-tested, additive triangle. Same pixel operation as mode 18.
-*/
-void SoftwareRaster16_Mode26
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-  RasterTexture texture;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 1, &edges, &gradients)) {
-    Raster_SetupTexture(packet, &texture);
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, Raster16_SpanTexturedAdd);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 28 (render mode 28): textured, flat-shaded, depth-tested, alpha-blended
-   triangle with the alpha-tested depth write of mode 20. Byte-identical to mode 30.
-*/
-void SoftwareRaster16_Mode28
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawTexturedAlphaTested(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* Span of the untextured opaque modes 0/8: a pixel is written, and its depth stored, where the interpolated
-   depth is <= the depth buffer. */
-static void Raster16_SpanShadedOpaque(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            *(uint16_t *)span->pixel = Raster_ShadeToPixel16(span->color);
-            *span->depth = span->depthValue;
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
-   16-bit framebuffer (Raster16_SpanShadedOpaque). Handler interface: docs/software_raster.md (clip rectangle and
-   packet; the draw queue passes the prepared packet).
-*/
-void SoftwareRaster16_Mode00
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedOpaque);
-  }
-}
-
-/* Alpha blend like mode 1 that also writes depth where the source alpha is >= 128 (the C depth rule
-   of modes 4/6/12/14, see Raster_AlphaWritesDepth in software_raster.h). */
-static void Raster16_SpanShadedAlphaBlendDepth(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-            if (Raster_AlphaWritesDepth(source)) {
-                *span->depth = span->depthValue;
-            }
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* Modes 4/6 (Gouraud) and 12/14 (flat); the original handlers of each pair are byte-identical. */
-static void Raster16_DrawAlphaBlendDepth(RasterShading shading, GraphicsScreenCoordinate clipMaxY,
-                                         GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,
-                                         GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, shading, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedAlphaBlendDepth);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle that
-   also writes depth where the interpolated alpha is >= 128. Byte-identical to mode 4 in the original, which tests
-   a stale value instead of the alpha (docs/software_raster.md, "Stale MM2"); the C keeps the alpha rule.
-*/
-void SoftwareRaster16_Mode06
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawAlphaBlendDepth(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* Span of the untextured alpha-blended modes 1/9: visible pixels are blended with the framebuffer by the
-   interpolated vertex alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written. */
-static void Raster16_SpanShadedAlphaBlend(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested,
-   alpha-blended triangle without depth write (Raster16_SpanShadedAlphaBlend).
-*/
-void SoftwareRaster16_Mode01
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedAlphaBlend);
-  }
-}
-
-/* Span of the untextured additive modes 2/10: visible pixels get the interpolated colour added with
-   saturation; the depth buffer is not written. */
-static void Raster16_SpanShadedAdd(RasterSpan *span)
-{
-    for (; span->count > 0; span->count--) {
-        if (span->depthValue <= *span->depth) {
-            RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
-            int channel[RASTER_LANE_COUNT];
-            Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(uint16_t *)span->pixel = Raster_Pack16(channel);
-        }
-        RasterSpan_Next(span);
-    }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 2 and 34 (render mode 2): Gouraud-shaded, depth-tested, additive triangle
-   without depth write (Raster16_SpanShadedAdd).
-*/
-void SoftwareRaster16_Mode02
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedAdd);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 4 (render mode 4): same as mode 6 (see SoftwareRaster16_Mode06).
-*/
-void SoftwareRaster16_Mode04
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawAlphaBlendDepth(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 8 (render mode 8): flat-shaded (colour of v0), depth-tested, opaque
-   triangle. Same pixel operation as mode 0 with a constant colour.
-*/
-void SoftwareRaster16_Mode08
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedOpaque);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 14 (render mode 14): flat-shaded version of mode 6 (colour of v0).
-   Byte-identical to mode 12 in the original; same stale-value note as mode 6.
-*/
-void SoftwareRaster16_Mode14
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawAlphaBlendDepth(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded (colour of v0),
-   depth-tested, alpha-blended triangle. Same pixel operation as mode 1 with a constant colour; the depth buffer is
-   not written.
-*/
-void SoftwareRaster16_Mode09
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedAlphaBlend);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entries 10 and 42 (render mode 10): flat-shaded (colour of v0), depth-tested,
-   additive triangle. Same pixel operation as mode 2 with a constant colour; the depth buffer is not written.
-*/
-void SoftwareRaster16_Mode10
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  RasterTarget target = Raster_FramebufferTarget(2, clipMaxY, clipMaxX, clipMinY, clipMinX);
-  RasterEdges edges;
-  RasterGradients gradients;
-
-  if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster16_SpanShadedAdd);
-  }
-}
-
-/* g_SoftwareRasterHandlers16Bit entry 12 (render mode 12): same as mode 14 (see SoftwareRaster16_Mode14).
-*/
-void SoftwareRaster16_Mode12
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitivePacket *packet)
-{
-  Raster16_DrawAlphaBlendDepth(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
-}
-
-/* 32-bit span of the textured opaque modes 16/24 (Non16 family): the nearest texel modulated by the
+/* 32-bit span of the textured opaque modes 16/24: the nearest texel modulated by the
    interpolated colour; pixel and depth are written where the depth test passes. */
 static void Raster32_SpanTexturedOpaque(RasterSpan *span)
 {
@@ -638,8 +142,8 @@ static void Raster32_SpanTexturedOpaque(RasterSpan *span)
 }
 
 /* Draws a textured triangle into the 32-bit framebuffer with the given shading and span function.
-   All textured Non16 handlers share this setup; they differ only in shading and pixel operation. */
-static void RasterNon16_DrawTextured(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
+   All textured 32-bit handlers share this setup; they differ only in shading and pixel operation. */
+static void Raster32_DrawTextured(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                      GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                      GraphicsPrimitivePacket *packet, RasterShading shading,
                                      RasterSpanProc drawSpan)
@@ -655,19 +159,19 @@ static void RasterNon16_DrawTextured(GraphicsScreenCoordinate clipMaxY, Graphics
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque
-   triangle on the 32-bit framebuffer (see SoftwareRaster16_Mode16).
+/* g_SoftwareRasterHandlers32Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque
+   triangle on the 32-bit framebuffer.
 */
-void SoftwareRasterNon16_Mode16
+void SoftwareRaster32_Mode16
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
                            Raster32_SpanTexturedOpaque);
 }
 
-/* Span of the Non16 modes 20/22/28/30: visible pixels are blended with the framebuffer by the modulated
+/* Span of the 32-bit modes 20/22/28/30: visible pixels are blended with the framebuffer by the modulated
    texel alpha; the depth is written only when that alpha lane, as an unsigned word, is >= 0x800 (alpha >= 128,
    or a negative lane). */
 static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
@@ -688,20 +192,20 @@ static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 22 (render mode 22): textured, Gouraud-shaded, depth-tested,
+/* g_SoftwareRasterHandlers32Bit entry 22 (render mode 22): textured, Gouraud-shaded, depth-tested,
    alpha-blended triangle with the alpha-tested depth write (Raster32_SpanTexturedAlphaTested). Byte-identical to
    mode 20 in the original.
 */
-void SoftwareRasterNon16_Mode22
+void SoftwareRaster32_Mode22
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* Span of the Non16 modes 17/25: visible pixels are blended with the framebuffer by the modulated texel
+/* Span of the 32-bit modes 17/25: visible pixels are blended with the framebuffer by the modulated texel
    alpha; the depth buffer is not written. */
 static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
 {
@@ -717,19 +221,19 @@ static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
+/* g_SoftwareRasterHandlers32Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
    depth-tested, alpha-blended triangle without depth write (Raster32_SpanTexturedAlphaBlend).
 */
-void SoftwareRasterNon16_Mode17
+void SoftwareRaster32_Mode17
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
                            Raster32_SpanTexturedAlphaBlend);
 }
 
-/* Span of the Non16 modes 18/26: visible pixels get the modulated texel added with saturation; the depth
+/* Span of the 32-bit modes 18/26: visible pixels get the modulated texel added with saturation; the depth
    buffer is not written. */
 static void Raster32_SpanTexturedAdd(RasterSpan *span)
 {
@@ -745,92 +249,92 @@ static void Raster32_SpanTexturedAdd(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested,
+/* g_SoftwareRasterHandlers32Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested,
    additive triangle without depth write (Raster32_SpanTexturedAdd).
 */
-void SoftwareRasterNon16_Mode18
+void SoftwareRaster32_Mode18
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
                            Raster32_SpanTexturedAdd);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 20 (render mode 20): byte-identical to mode 22 (see
-   SoftwareRasterNon16_Mode22).
+/* g_SoftwareRasterHandlers32Bit entry 20 (render mode 20): byte-identical to mode 22 (see
+   SoftwareRaster32_Mode22).
 */
-void SoftwareRasterNon16_Mode20
+void SoftwareRaster32_Mode20
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_GOURAUD,
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 24 (render mode 24): textured, flat-shaded (colour of v0), depth-tested,
+/* g_SoftwareRasterHandlers32Bit entry 24 (render mode 24): textured, flat-shaded (colour of v0), depth-tested,
    opaque triangle. Same pixel operation as mode 16.
 */
-void SoftwareRasterNon16_Mode24
+void SoftwareRaster32_Mode24
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
                            Raster32_SpanTexturedOpaque);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 30 (render mode 30): textured, flat-shaded (colour of v0), depth-tested,
+/* g_SoftwareRasterHandlers32Bit entry 30 (render mode 30): textured, flat-shaded (colour of v0), depth-tested,
    alpha-blended triangle with the alpha-tested depth write of modes 20/22. Byte-identical to mode 28 in the
    original.
 */
-void SoftwareRasterNon16_Mode30
+void SoftwareRaster32_Mode30
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 25 and 56, 57, 60, 62 (render mode 25): textured, flat-shaded (colour
+/* g_SoftwareRasterHandlers32Bit entries 25 and 56, 57, 60, 62 (render mode 25): textured, flat-shaded (colour
    of v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
 */
-void SoftwareRasterNon16_Mode25
+void SoftwareRaster32_Mode25
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
                            Raster32_SpanTexturedAlphaBlend);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 26 and 58 (render mode 26): textured, flat-shaded (colour of v0),
+/* g_SoftwareRasterHandlers32Bit entries 26 and 58 (render mode 26): textured, flat-shaded (colour of v0),
    depth-tested, additive triangle. Same pixel operation as mode 18.
 */
-void SoftwareRasterNon16_Mode26
+void SoftwareRaster32_Mode26
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
                            Raster32_SpanTexturedAdd);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 28 (render mode 28): byte-identical to mode 30 (see
-   SoftwareRasterNon16_Mode30).
+/* g_SoftwareRasterHandlers32Bit entry 28 (render mode 28): byte-identical to mode 30 (see
+   SoftwareRaster32_Mode30).
 */
-void SoftwareRasterNon16_Mode28
+void SoftwareRaster32_Mode28
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
+  Raster32_DrawTextured(clipMaxY, clipMaxX, clipMinY, clipMinX, packet, RASTER_SHADE_FLAT,
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* 32-bit span of the untextured opaque modes (Non16 0/8, Aux 0/8): pixel and depth are written where the
+/* 32-bit span of the untextured opaque modes (32-bit 0/8, Aux 0/8): pixel and depth are written where the
    depth test passes. */
 static void Raster32_SpanShadedOpaque(RasterSpan *span)
 {
@@ -845,10 +349,10 @@ static void Raster32_SpanShadedOpaque(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
-   32-bit framebuffer (see SoftwareRaster16_Mode00).
+/* g_SoftwareRasterHandlers32Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
+   32-bit framebuffer.
 */
-void SoftwareRasterNon16_Mode00
+void SoftwareRaster32_Mode00
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -862,7 +366,7 @@ void SoftwareRasterNon16_Mode00
   }
 }
 
-/* Span of the Non16 modes 4/6/12/14: alpha blend like mode 1 that also writes the depth of pixels whose
+/* Span of the 32-bit modes 4/6/12/14: alpha blend like mode 1 that also writes the depth of pixels whose
    source alpha is >= 128 (Raster_AlphaWritesDepth). The original tests a stale value instead, which it never
    sets in these modes (see docs/software_raster.md); the C rule is deliberate. */
 static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
@@ -884,7 +388,7 @@ static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
 
 /* Modes 4 and 6 (identical code in the original): Gouraud-shaded with
    Raster32_SpanShadedAlphaBlendDepth. */
-static void RasterNon16_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
+static void Raster32_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                   GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                                   GraphicsPrimitivePacket *packet)
 {
@@ -897,19 +401,19 @@ static void RasterNon16_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipM
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle
+/* g_SoftwareRasterHandlers32Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle
    (like mode 1) that also writes depth where the source alpha is >= 128; see
-   RasterNon16_DrawShadedAlphaBlendDepth.
+   Raster32_DrawShadedAlphaBlendDepth.
 */
-void SoftwareRasterNon16_Mode06
+void SoftwareRaster32_Mode06
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawShadedAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
+  Raster32_DrawShadedAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Span of the Non16 modes 1/9: blend with the framebuffer by the interpolated alpha; the depth buffer is
+/* Span of the 32-bit modes 1/9: blend with the framebuffer by the interpolated alpha; the depth buffer is
    not written. */
 static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
 {
@@ -925,10 +429,10 @@ static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested,
-   alpha-blended triangle; the depth buffer is not written (see SoftwareRaster16_Mode01).
+/* g_SoftwareRasterHandlers32Bit entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested,
+   alpha-blended triangle; the depth buffer is not written.
 */
-void SoftwareRasterNon16_Mode01
+void SoftwareRaster32_Mode01
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -942,7 +446,7 @@ void SoftwareRasterNon16_Mode01
   }
 }
 
-/* Span of the Non16 modes 2/10: the interpolated colour is added with saturation; the depth buffer is not
+/* Span of the 32-bit modes 2/10: the interpolated colour is added with saturation; the depth buffer is not
    written. */
 static void Raster32_SpanShadedAdd(RasterSpan *span)
 {
@@ -958,10 +462,10 @@ static void Raster32_SpanShadedAdd(RasterSpan *span)
     }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 2 and 34 (render mode 2): Gouraud-shaded, depth-tested, additive
-   triangle; the depth buffer is not written (see SoftwareRaster16_Mode02).
+/* g_SoftwareRasterHandlers32Bit entries 2 and 34 (render mode 2): Gouraud-shaded, depth-tested, additive
+   triangle; the depth buffer is not written.
 */
-void SoftwareRasterNon16_Mode02
+void SoftwareRaster32_Mode02
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -975,21 +479,21 @@ void SoftwareRasterNon16_Mode02
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 4 (render mode 4): byte-identical to mode 6, see
-   RasterNon16_DrawShadedAlphaBlendDepth.
+/* g_SoftwareRasterHandlers32Bit entry 4 (render mode 4): byte-identical to mode 6, see
+   Raster32_DrawShadedAlphaBlendDepth.
 */
-void SoftwareRasterNon16_Mode04
+void SoftwareRaster32_Mode04
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawShadedAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
+  Raster32_DrawShadedAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 8 (render mode 8): flat-shaded (v0's colour), depth-tested, opaque
-   triangle (flat version of SoftwareRasterNon16_Mode00).
+/* g_SoftwareRasterHandlers32Bit entry 8 (render mode 8): flat-shaded (v0's colour), depth-tested, opaque
+   triangle (flat version of SoftwareRaster32_Mode00).
 */
-void SoftwareRasterNon16_Mode08
+void SoftwareRaster32_Mode08
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -1004,8 +508,8 @@ void SoftwareRasterNon16_Mode08
 }
 
 /* Modes 12 and 14 (identical code in the original): the flat-shaded (v0's
-   colour) version of RasterNon16_DrawShadedAlphaBlendDepth, with the same replacement of the stale-value test. */
-static void RasterNon16_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
+   colour) version of Raster32_DrawShadedAlphaBlendDepth, with the same replacement of the stale-value test. */
+static void Raster32_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                 GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                                 GraphicsPrimitivePacket *packet)
 {
@@ -1018,22 +522,22 @@ static void RasterNon16_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMax
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 14 (render mode 14): flat-shaded version of modes 4/6: alpha-blended,
-   depth written where the source alpha is >= 128; see RasterNon16_DrawFlatAlphaBlendDepth.
+/* g_SoftwareRasterHandlers32Bit entry 14 (render mode 14): flat-shaded version of modes 4/6: alpha-blended,
+   depth written where the source alpha is >= 128; see Raster32_DrawFlatAlphaBlendDepth.
 */
-void SoftwareRasterNon16_Mode14
+void SoftwareRaster32_Mode14
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawFlatAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
+  Raster32_DrawFlatAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded (v0's colour),
+/* g_SoftwareRasterHandlers32Bit entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded (v0's colour),
    depth-tested, alpha-blended triangle; the depth buffer is not written (flat version of
-   SoftwareRasterNon16_Mode01).
+   SoftwareRaster32_Mode01).
 */
-void SoftwareRasterNon16_Mode09
+void SoftwareRaster32_Mode09
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -1047,10 +551,10 @@ void SoftwareRasterNon16_Mode09
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entries 10 and 42 (render mode 10): flat-shaded (v0's colour), depth-tested,
-   additive triangle; the depth buffer is not written (flat version of SoftwareRasterNon16_Mode02).
+/* g_SoftwareRasterHandlers32Bit entries 10 and 42 (render mode 10): flat-shaded (v0's colour), depth-tested,
+   additive triangle; the depth buffer is not written (flat version of SoftwareRaster32_Mode02).
 */
-void SoftwareRasterNon16_Mode10
+void SoftwareRaster32_Mode10
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
@@ -1064,15 +568,15 @@ void SoftwareRasterNon16_Mode10
   }
 }
 
-/* g_SoftwareRasterHandlersNon16Bit entry 12 (render mode 12): byte-identical to mode 14, see
-   RasterNon16_DrawFlatAlphaBlendDepth.
+/* g_SoftwareRasterHandlers32Bit entry 12 (render mode 12): byte-identical to mode 14, see
+   Raster32_DrawFlatAlphaBlendDepth.
 */
-void SoftwareRasterNon16_Mode12
+void SoftwareRaster32_Mode12
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
                GraphicsPrimitivePacket *packet)
 {
-  RasterNon16_DrawFlatAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
+  Raster32_DrawFlatAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
 /* The textured pixel of the auxiliary family: nearest texel modulated by the colour, saturated to
@@ -1151,7 +655,7 @@ static void RasterAux_DrawTexturedTriangle(GraphicsScreenCoordinate clipMaxY, Gr
 }
 
 /* g_SoftwareRasterHandlersAuxiliary entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque
-   triangle into the off-screen target of SoftwareRenderer_DrawQueueAuxiliary (see SoftwareRaster16_Mode16).
+   triangle into the off-screen target of SoftwareRenderer_DrawQueueAuxiliary.
 */
 void SoftwareRasterAux_Mode16
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1273,7 +777,7 @@ void SoftwareRasterAux_Mode28
 }
 
 /* g_SoftwareRasterHandlersAuxiliary entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle into
-   the off-screen target of SoftwareRenderer_DrawQueueAuxiliary (see SoftwareRaster16_Mode00). Target and depth
+   the off-screen target of SoftwareRenderer_DrawQueueAuxiliary. Target and depth
    rows are clipMaxX pixels long.
 */
 void SoftwareRasterAux_Mode00
@@ -1569,135 +1073,70 @@ void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
   }
 }
 
-SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64] = {
-    /*  0 */ THANDOR_FN(SoftwareRaster16_Mode00),
-    /*  1 */ THANDOR_FN(SoftwareRaster16_Mode01),
-    /*  2 */ THANDOR_FN(SoftwareRaster16_Mode02),
+SoftwareRasterHandler *g_SoftwareRasterHandlers32Bit[64] = {
+    /*  0 */ THANDOR_FN(SoftwareRaster32_Mode00),
+    /*  1 */ THANDOR_FN(SoftwareRaster32_Mode01),
+    /*  2 */ THANDOR_FN(SoftwareRaster32_Mode02),
     /*  3 */ 0,
-    /*  4 */ THANDOR_FN(SoftwareRaster16_Mode04),
+    /*  4 */ THANDOR_FN(SoftwareRaster32_Mode04),
     /*  5 */ 0,
-    /*  6 */ THANDOR_FN(SoftwareRaster16_Mode06),
+    /*  6 */ THANDOR_FN(SoftwareRaster32_Mode06),
     /*  7 */ 0,
-    /*  8 */ THANDOR_FN(SoftwareRaster16_Mode08),
-    /*  9 */ THANDOR_FN(SoftwareRaster16_Mode09),
-    /* 10 */ THANDOR_FN(SoftwareRaster16_Mode10),
+    /*  8 */ THANDOR_FN(SoftwareRaster32_Mode08),
+    /*  9 */ THANDOR_FN(SoftwareRaster32_Mode09),
+    /* 10 */ THANDOR_FN(SoftwareRaster32_Mode10),
     /* 11 */ 0,
-    /* 12 */ THANDOR_FN(SoftwareRaster16_Mode12),
+    /* 12 */ THANDOR_FN(SoftwareRaster32_Mode12),
     /* 13 */ 0,
-    /* 14 */ THANDOR_FN(SoftwareRaster16_Mode14),
+    /* 14 */ THANDOR_FN(SoftwareRaster32_Mode14),
     /* 15 */ 0,
-    /* 16 */ THANDOR_FN(SoftwareRaster16_Mode16),
-    /* 17 */ THANDOR_FN(SoftwareRaster16_Mode17),
-    /* 18 */ THANDOR_FN(SoftwareRaster16_Mode18),
+    /* 16 */ THANDOR_FN(SoftwareRaster32_Mode16),
+    /* 17 */ THANDOR_FN(SoftwareRaster32_Mode17),
+    /* 18 */ THANDOR_FN(SoftwareRaster32_Mode18),
     /* 19 */ 0,
-    /* 20 */ THANDOR_FN(SoftwareRaster16_Mode20),
+    /* 20 */ THANDOR_FN(SoftwareRaster32_Mode20),
     /* 21 */ 0,
-    /* 22 */ THANDOR_FN(SoftwareRaster16_Mode22),
+    /* 22 */ THANDOR_FN(SoftwareRaster32_Mode22),
     /* 23 */ 0,
-    /* 24 */ THANDOR_FN(SoftwareRaster16_Mode24),
-    /* 25 */ THANDOR_FN(SoftwareRaster16_Mode25),
-    /* 26 */ THANDOR_FN(SoftwareRaster16_Mode26),
+    /* 24 */ THANDOR_FN(SoftwareRaster32_Mode24),
+    /* 25 */ THANDOR_FN(SoftwareRaster32_Mode25),
+    /* 26 */ THANDOR_FN(SoftwareRaster32_Mode26),
     /* 27 */ 0,
-    /* 28 */ THANDOR_FN(SoftwareRaster16_Mode28),
+    /* 28 */ THANDOR_FN(SoftwareRaster32_Mode28),
     /* 29 */ 0,
-    /* 30 */ THANDOR_FN(SoftwareRaster16_Mode30),
+    /* 30 */ THANDOR_FN(SoftwareRaster32_Mode30),
     /* 31 */ 0,
-    /* 32 */ THANDOR_FN(SoftwareRaster16_Mode01),
-    /* 33 */ THANDOR_FN(SoftwareRaster16_Mode01),
-    /* 34 */ THANDOR_FN(SoftwareRaster16_Mode02),
+    /* 32 */ THANDOR_FN(SoftwareRaster32_Mode01),
+    /* 33 */ THANDOR_FN(SoftwareRaster32_Mode01),
+    /* 34 */ THANDOR_FN(SoftwareRaster32_Mode02),
     /* 35 */ 0,
-    /* 36 */ THANDOR_FN(SoftwareRaster16_Mode01),
+    /* 36 */ THANDOR_FN(SoftwareRaster32_Mode01),
     /* 37 */ 0,
-    /* 38 */ THANDOR_FN(SoftwareRaster16_Mode01),
+    /* 38 */ THANDOR_FN(SoftwareRaster32_Mode01),
     /* 39 */ 0,
-    /* 40 */ THANDOR_FN(SoftwareRaster16_Mode09),
-    /* 41 */ THANDOR_FN(SoftwareRaster16_Mode09),
-    /* 42 */ THANDOR_FN(SoftwareRaster16_Mode10),
+    /* 40 */ THANDOR_FN(SoftwareRaster32_Mode09),
+    /* 41 */ THANDOR_FN(SoftwareRaster32_Mode09),
+    /* 42 */ THANDOR_FN(SoftwareRaster32_Mode10),
     /* 43 */ 0,
-    /* 44 */ THANDOR_FN(SoftwareRaster16_Mode09),
+    /* 44 */ THANDOR_FN(SoftwareRaster32_Mode09),
     /* 45 */ 0,
-    /* 46 */ THANDOR_FN(SoftwareRaster16_Mode09),
+    /* 46 */ THANDOR_FN(SoftwareRaster32_Mode09),
     /* 47 */ 0,
-    /* 48 */ THANDOR_FN(SoftwareRaster16_Mode17),
-    /* 49 */ THANDOR_FN(SoftwareRaster16_Mode17),
-    /* 50 */ THANDOR_FN(SoftwareRaster16_Mode18),
+    /* 48 */ THANDOR_FN(SoftwareRaster32_Mode17),
+    /* 49 */ THANDOR_FN(SoftwareRaster32_Mode17),
+    /* 50 */ THANDOR_FN(SoftwareRaster32_Mode18),
     /* 51 */ 0,
-    /* 52 */ THANDOR_FN(SoftwareRaster16_Mode17),
+    /* 52 */ THANDOR_FN(SoftwareRaster32_Mode17),
     /* 53 */ 0,
-    /* 54 */ THANDOR_FN(SoftwareRaster16_Mode17),
+    /* 54 */ THANDOR_FN(SoftwareRaster32_Mode17),
     /* 55 */ 0,
-    /* 56 */ THANDOR_FN(SoftwareRaster16_Mode25),
-    /* 57 */ THANDOR_FN(SoftwareRaster16_Mode25),
-    /* 58 */ THANDOR_FN(SoftwareRaster16_Mode26),
+    /* 56 */ THANDOR_FN(SoftwareRaster32_Mode25),
+    /* 57 */ THANDOR_FN(SoftwareRaster32_Mode25),
+    /* 58 */ THANDOR_FN(SoftwareRaster32_Mode26),
     /* 59 */ 0,
-    /* 60 */ THANDOR_FN(SoftwareRaster16_Mode25),
+    /* 60 */ THANDOR_FN(SoftwareRaster32_Mode25),
     /* 61 */ 0,
-    /* 62 */ THANDOR_FN(SoftwareRaster16_Mode25)};
-
-SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64] = {
-    /*  0 */ THANDOR_FN(SoftwareRasterNon16_Mode00),
-    /*  1 */ THANDOR_FN(SoftwareRasterNon16_Mode01),
-    /*  2 */ THANDOR_FN(SoftwareRasterNon16_Mode02),
-    /*  3 */ 0,
-    /*  4 */ THANDOR_FN(SoftwareRasterNon16_Mode04),
-    /*  5 */ 0,
-    /*  6 */ THANDOR_FN(SoftwareRasterNon16_Mode06),
-    /*  7 */ 0,
-    /*  8 */ THANDOR_FN(SoftwareRasterNon16_Mode08),
-    /*  9 */ THANDOR_FN(SoftwareRasterNon16_Mode09),
-    /* 10 */ THANDOR_FN(SoftwareRasterNon16_Mode10),
-    /* 11 */ 0,
-    /* 12 */ THANDOR_FN(SoftwareRasterNon16_Mode12),
-    /* 13 */ 0,
-    /* 14 */ THANDOR_FN(SoftwareRasterNon16_Mode14),
-    /* 15 */ 0,
-    /* 16 */ THANDOR_FN(SoftwareRasterNon16_Mode16),
-    /* 17 */ THANDOR_FN(SoftwareRasterNon16_Mode17),
-    /* 18 */ THANDOR_FN(SoftwareRasterNon16_Mode18),
-    /* 19 */ 0,
-    /* 20 */ THANDOR_FN(SoftwareRasterNon16_Mode20),
-    /* 21 */ 0,
-    /* 22 */ THANDOR_FN(SoftwareRasterNon16_Mode22),
-    /* 23 */ 0,
-    /* 24 */ THANDOR_FN(SoftwareRasterNon16_Mode24),
-    /* 25 */ THANDOR_FN(SoftwareRasterNon16_Mode25),
-    /* 26 */ THANDOR_FN(SoftwareRasterNon16_Mode26),
-    /* 27 */ 0,
-    /* 28 */ THANDOR_FN(SoftwareRasterNon16_Mode28),
-    /* 29 */ 0,
-    /* 30 */ THANDOR_FN(SoftwareRasterNon16_Mode30),
-    /* 31 */ 0,
-    /* 32 */ THANDOR_FN(SoftwareRasterNon16_Mode01),
-    /* 33 */ THANDOR_FN(SoftwareRasterNon16_Mode01),
-    /* 34 */ THANDOR_FN(SoftwareRasterNon16_Mode02),
-    /* 35 */ 0,
-    /* 36 */ THANDOR_FN(SoftwareRasterNon16_Mode01),
-    /* 37 */ 0,
-    /* 38 */ THANDOR_FN(SoftwareRasterNon16_Mode01),
-    /* 39 */ 0,
-    /* 40 */ THANDOR_FN(SoftwareRasterNon16_Mode09),
-    /* 41 */ THANDOR_FN(SoftwareRasterNon16_Mode09),
-    /* 42 */ THANDOR_FN(SoftwareRasterNon16_Mode10),
-    /* 43 */ 0,
-    /* 44 */ THANDOR_FN(SoftwareRasterNon16_Mode09),
-    /* 45 */ 0,
-    /* 46 */ THANDOR_FN(SoftwareRasterNon16_Mode09),
-    /* 47 */ 0,
-    /* 48 */ THANDOR_FN(SoftwareRasterNon16_Mode17),
-    /* 49 */ THANDOR_FN(SoftwareRasterNon16_Mode17),
-    /* 50 */ THANDOR_FN(SoftwareRasterNon16_Mode18),
-    /* 51 */ 0,
-    /* 52 */ THANDOR_FN(SoftwareRasterNon16_Mode17),
-    /* 53 */ 0,
-    /* 54 */ THANDOR_FN(SoftwareRasterNon16_Mode17),
-    /* 55 */ 0,
-    /* 56 */ THANDOR_FN(SoftwareRasterNon16_Mode25),
-    /* 57 */ THANDOR_FN(SoftwareRasterNon16_Mode25),
-    /* 58 */ THANDOR_FN(SoftwareRasterNon16_Mode26),
-    /* 59 */ 0,
-    /* 60 */ THANDOR_FN(SoftwareRasterNon16_Mode25),
-    /* 61 */ 0,
-    /* 62 */ THANDOR_FN(SoftwareRasterNon16_Mode25)};
+    /* 62 */ THANDOR_FN(SoftwareRaster32_Mode25)};
 
 SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64] = {
     /*  0 */ THANDOR_FN(SoftwareRasterAux_Mode00),

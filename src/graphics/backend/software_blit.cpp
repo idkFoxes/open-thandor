@@ -5,9 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
-/* Software blits into the framebuffer, each in a 16-bit and a 32-bit pixel version: texture source blits
-   (alpha, half, bilinear stretch, integer scale, palette bank, saturated add, modulated), rectangle fill
-   and the region copies. */
+/* Software blits into the 32-bit framebuffer: texture source blits (alpha, half, bilinear stretch, integer
+   scale, palette bank, saturated add, modulated), rectangle fill and the region copies. The original also had
+   a 16-bit (RGB565) version of each blit and of the fill; they are gone with 16-bit colour. */
 
 #include <thandor/graphics/backend/software_blit.h>
 #include <thandor/thandor.h>
@@ -24,53 +24,9 @@ static GraphicsFramebufferCopyRegionToOriginProc *g_GraphicsFramebufferCopyRegio
 /* GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
 static GraphicsFramebufferCopyOriginToRegionProc *g_GraphicsFramebufferCopyOriginToRegion = THANDOR_FN(SoftwareFramebuffer_CopyOriginToRegion);
 
-/* Clips and draws one source subresource into a two-byte framebuffer (source-alpha blit, see
-   docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is copied, anything else is blended. A
-   paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
-   entry's ARGB colour (+0) with the alpha of that colour. Always returns false.
-*/
-Bool8 SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return false;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      if (region.palette != NULL) {
-        uint32_t converted = Blit_PalettePixel(&region, *texel);
-        if (Blit_IsTransparent(converted)) {
-          continue;
-        }
-        *pixel = Blit_IsOpaque(converted) ? (uint16_t)converted
-                                          : Blit_BlendArgb16(Blit_PaletteColor(&region, *texel), *pixel);
-      }
-      else {
-        uint32_t argb = *(const uint32_t *)texel;
-        if (Blit_IsTransparent(argb)) {
-          continue;
-        }
-        *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
-      }
-    }
-  }
-  return false;
-}
-
 /* Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is converted through
-   g_SoftwarePixelPackTables and written, anything else is blended in 8-bit lanes. Unlike the 16-bit version, a
+   g_SoftwarePixelPackTables and written, anything else is blended in 8-bit lanes. A
    paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
    opaque write, which converts it through the pack tables again. Always returns false.
 */
@@ -98,41 +54,6 @@ Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,
         continue;
       }
       *pixel = Blit_IsOpaque(color) ? Blit_ConvertArgb(color) : Blit_BlendArgb32(color, *pixel);
-    }
-  }
-  return false;
-}
-
-/* Clips and draws one source subresource into a two-byte framebuffer, with the source RGB at half
-   strength (see docs/software_raster.md "Blits"). Alpha 0 is skipped; every other alpha, 0xFF included, blends
-   (source lanes (c * 0x101) >> 3 instead of >> 2), so there is no opaque copy. Unlike BlitSourceAlpha16, a
-   paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. Always returns
-   false.
-*/
-Bool8 SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return false;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
-      if (Blit_IsTransparent(argb)) {
-        continue;
-      }
-      *pixel = Blit_PackLanes16(Blit_BlendLanes(Blit_ArgbLanes(argb, 3), Blit_Unpack16(*pixel), argb >> 24));
     }
   }
   return false;
@@ -175,110 +96,6 @@ Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMax
     }
   }
   return false;
-}
-
-/* Stretches one direct-color source subresource into a two-byte framebuffer using two-dimensional linear
-   interpolation. The source entry must be direct color: paletteIndex == -1. The function computes 8-bit fractional
-   source steps from (pixelWidth-1)/(destinationWidth-1) and (pixelHeight-1)/(destinationHeight-1). Four
-   neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
-   g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
-   pixel pairs (an odd last column is left out).
-*/
-void SoftwareTextureSource_StretchDirectColorBilinear16
-          (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
-          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  /* The MMX lanes in plain C, like the 32-bit variant. Two destination pixels per step; each blends four
-     ARGB8888 neighbours through the word tables g_SoftwareBilinearInverseFactors (weight of the left/upper
-     neighbour) and g_SoftwareBilinearForwardFactors (weight of the right/lower one), then packs to 16 bits with
-     the runtime quantize masks (g_SoftwarePixelMmxConstants.quantizeMasksQ12) and PMADDWD weights
-     (g_SoftwarePixelMmxConstants.packWeights), which the display setup fills for 555 or 565. */
-  const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
-  const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
-  const uint16_t *quantizeMask = (const uint16_t *)&g_SoftwarePixelMmxConstants.quantizeMasksQ12;
-  const short *packWeights = (const short *)&g_SoftwarePixelMmxConstants.packWeights;
-  uint8_t *asset = (uint8_t *)sourceAsset;
-  GraphicsTextureSourceEntry *entry;
-  uint8_t *sourceBase;
-  uint8_t *sourceRow;
-  uint16_t *destinationRow;
-  uint32_t pitchPixels;
-  uint32_t sourceWidth;
-  uint32_t sourceHeight;
-  uint32_t stepX;
-  uint32_t stepY;
-  uint32_t fy;
-  uint32_t row;
-  uint32_t pair;
-
-  /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
-  if (((uint32_t)sourceAsset->common.magic != ASSET_MAGIC_GFX) ||
-      (subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount)) {
-    return;
-  }
-  entry = (GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset +
-                                         subresourceIndex * sizeof(GraphicsTextureSourceEntry));
-  /* paletteIndex -1: ARGB8888 texels */
-  if (((uint32_t)framebuffer->bytesPerPixel != 2) || (entry->paletteIndex != -1)) {
-    return;
-  }
-  pitchPixels = framebuffer->width;
-  destinationRow = (uint16_t *)framebuffer->pixels +
-                   (int32_t)(destinationY * pitchPixels + destinationX);
-  sourceWidth = entry->pixelWidth;
-  sourceHeight = entry->pixelHeight;
-  /* 8.8 fixed-point source steps */
-  stepX = ((sourceWidth - 1) * 256) / (destinationWidth - 1);
-  stepY = ((sourceHeight - 1) * 256) / (destinationHeight - 1);
-  sourceBase = asset + entry->dataOffset;
-  sourceRow = sourceBase;
-  fy = 0;
-  for (row = destinationHeight; row != 0; row--) {
-    uint32_t fx = 0;
-    uint32_t *out = (uint32_t *)destinationRow;
-    for (pair = destinationWidth >> 1; pair != 0; pair--) {
-      uint16_t packed[2];
-      int half;
-      for (half = 0; half < 2; half++) {
-        uint32_t x = fx >> 8;
-        const uint8_t *p00 = sourceRow + x * 4;
-        const uint8_t *p10 = sourceRow + sourceWidth * 4 + x * 4;
-        uint32_t wx = fx & 0xff;
-        uint32_t wy = fy & 0xff;
-        uint16_t lanes[4];
-        int lane;
-        unsigned long long madd;
-        for (lane = 0; lane < 4; lane++) {
-          int a = ((p00[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
-          short top = (short)(((a * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((b * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
-          short bottom = (short)(((c * firstWeights[(int32_t)(wx * 4 + lane)]) >> 16) + ((d * secondWeights[(int32_t)(wx * 4 + lane)]) >> 16));
-          short mixed = (short)(((top * firstWeights[(int32_t)(wy * 4 + lane)]) >> 16) +
-                                ((bottom * secondWeights[(int32_t)(wy * 4 + lane)]) >> 16));
-          int value = (unsigned short)mixed >> 2;
-          if (value > ARGB8888_CHANNEL_MAX) value = ARGB8888_CHANNEL_MAX;
-          /* PUNPCKLBW x,x; PSLLW 4; PAND quantize mask */
-          lanes[lane] = (uint16_t)(((value * COLOR_CHANNEL_TO_WORD_LANE) << 4) & quantizeMask[lane]);
-        }
-        /* PMADDWD: two signed dword sums, then the two shifted copies are added per word. */
-        madd = (unsigned long long)(uint32_t)((short)lanes[0] * packWeights[0] + (short)lanes[1] * packWeights[1]) |
-               ((unsigned long long)(uint32_t)((short)lanes[2] * packWeights[2] +
-                                            (short)lanes[3] * packWeights[3]) << 32);
-        packed[half] = (uint16_t)((uint16_t)(madd >> 8) + (uint16_t)(madd >> 40));
-        fx = fx + stepX;
-      }
-      *out = (uint32_t)packed[0] | ((uint32_t)packed[1] << 16);
-      out++;
-    }
-    destinationRow = destinationRow + pitchPixels;
-    fy = fy + stepY;
-    sourceRow = sourceBase + (fy >> 8) * sourceWidth * 4;
-  }
 }
 
 /* Stretches one direct-color source subresource into a four-byte framebuffer using two-dimensional linear
@@ -380,77 +197,15 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   }
 }
 
-/* Draws one source subresource into a two-byte framebuffer at an integer scale (see
+/* Draws one source subresource into a four-byte framebuffer at an integer scale (see
    docs/software_raster.md "Blits"). Every texel becomes an integerScale x integerScale block, and the entry's
    origin is scaled too. Nothing is clipped at the source: the whole scaled image is walked and each pixel is
    tested against the clip rectangle, which is clamped to the framebuffer. Alpha 0 is skipped, alpha 0xFF is
-   written, anything else is blended. A paletted texel tests the alpha of the entry's converted pixel (+4) and
-   writes its low word, but blends the entry's ARGB colour (+0), as in BlitSourceAlpha16. Quirks kept: every
-   negative paletteIndex means ARGB texels, and the counters are do-while loops, so a scale or image size of 0
-   runs them 2^32 times.
-*/
-void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
-          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitScaledImage image;
-  const uint8_t *sourceRow;
-  uint32_t sourceRowsLeft;
-  int y;
-
-  if (!Blit_SetupScaled(sourceAsset, subresourceIndex, framebuffer, 2, integerScale, drawX, drawY, clipMaxY,
-                        clipMaxX, clipMinY, clipMinX, &image)) {
-    return;
-  }
-  sourceRow = image.texels;
-  y = image.top;
-  sourceRowsLeft = image.height;
-  do {
-    uint32_t repeatRowsLeft = integerScale;
-    do {
-      if (BlitScaled_RowVisible(&image, y)) {
-        const uint8_t *texel = sourceRow;
-        uint32_t columnsLeft = image.width;
-        int x = image.left;
-        do {
-          uint32_t blendColor;
-          uint32_t color = BlitScaled_TexelColor(&image, texel, &blendColor);
-          if (Blit_IsTransparent(color)) {
-            x += (int)integerScale;
-          }
-          else {
-            uint32_t repeatColumnsLeft = integerScale;
-            do {
-              if (BlitScaled_ColumnVisible(&image, x)) {
-                uint16_t *pixel = (uint16_t *)BlitScaled_Pixel(framebuffer, 2, x, y);
-                if (!Blit_IsOpaque(color)) {
-                  *pixel = Blit_BlendArgb16(blendColor, *pixel);
-                }
-                else {
-                  *pixel = image.palette != NULL ? (uint16_t)color : (uint16_t)Blit_ConvertArgb(color);
-                }
-              }
-              x++;
-            } while (--repeatColumnsLeft != 0);
-          }
-          texel += image.texelBytes;
-        } while (--columnsLeft != 0);
-      }
-      y++;
-    } while (--repeatRowsLeft != 0);
-    sourceRow += (int32_t)(image.width * image.texelBytes);
-  } while (--sourceRowsLeft != 0);
-}
-
-/* Four-byte framebuffer version of SoftwareTextureSource_BlitIntegerScaledSourceAlpha16 (integer-scaled,
-   per-pixel clip test, alpha 0 skipped, 0xFF written, anything else blended in 8-bit lanes). Unlike
-   BlitSourceAlpha32, a paletted texel here uses the 16-bit layout: it tests the alpha of the converted pixel
-   (+4), blends the ARGB colour (+0), and writes +4 as it is (not converted again) when opaque. A direct texel is
-   converted through g_SoftwarePixelPackTables when opaque. Same quirks as the 16-bit version.
+   written, anything else is blended in 8-bit lanes. Unlike BlitSourceAlpha32, a paletted texel here uses the
+   layout of the original's 16-bit blits: it tests the alpha of the converted pixel (+4), blends the ARGB colour
+   (+0), and writes +4 as it is (not converted again) when opaque. A direct texel is converted through
+   g_SoftwarePixelPackTables when opaque. Quirks kept: every negative paletteIndex means ARGB texels, and the
+   counters are do-while loops, so a scale or image size of 0 runs them 2^32 times.
 */
 void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -509,59 +264,6 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
   } while (--sourceRowsLeft != 0);
 }
 
-/* BlitSourceAlpha16 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
-   subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
-   be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
-   subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha16, including the palette
-   +0/+4 mix.
-*/
-void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
-          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return;
-  }
-  if (region.palette != NULL) {
-    if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
-      return;
-    }
-    /* the palette banks follow the asset header, 256 entries of 8 bytes each */
-    region.palette =
-        (const uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteBankIndex * GFX_PALETTE_BANK_SIZE;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      if (region.palette != NULL) {
-        uint32_t converted = Blit_PalettePixel(&region, *texel);
-        if (Blit_IsTransparent(converted)) {
-          continue;
-        }
-        *pixel = Blit_IsOpaque(converted) ? (uint16_t)converted
-                                          : Blit_BlendArgb16(Blit_PaletteColor(&region, *texel), *pixel);
-      }
-      else {
-        uint32_t argb = *(const uint32_t *)texel;
-        if (Blit_IsTransparent(argb)) {
-          continue;
-        }
-        *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
-      }
-    }
-  }
-}
-
 /* BlitSourceAlpha32 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
    subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
    be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
@@ -605,40 +307,6 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
   }
 }
 
-/* Clips and adds one source subresource onto a two-byte framebuffer (saturated add, see
-   docs/software_raster.md "Blits"). A texel whose RGB is 0 is skipped whatever its alpha; every other one is
-   added lane by lane with unsigned 16-bit saturation (Blit_AddArgb16) and the sum is packed back. Source alpha
-   is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. Always
-   returns false.
-*/
-Bool8 SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return false;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & ARGB8888_RGB_MASK) != 0) {
-        *pixel = Blit_AddArgb16(argb, *pixel, 0);
-      }
-    }
-  }
-  return false;
-}
-
 /* Clips and adds one source subresource onto a four-byte framebuffer (saturated add). A texel whose RGB
    is 0 is skipped whatever its alpha; every other one is added byte by byte, clamped at 0xFF (Blit_AddArgb32).
    The alpha byte is summed and written as well. Quirk kept from the original: a paletted texel uses the entry's
@@ -667,39 +335,6 @@ Bool8 SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipM
       uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 0);
-      }
-    }
-  }
-  return false;
-}
-
-/* Same as SoftwareTextureSource_BlitSaturatedAddRgb16, but the source lanes are halved (PSRLW 1 of
-   c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour. A paletted texel uses the
-   entry's ARGB colour (+0). Always returns false.
-*/
-Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return false;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & ARGB8888_RGB_MASK) != 0) {
-        *pixel = Blit_AddArgb16(argb, *pixel, 1);
       }
     }
   }
@@ -739,46 +374,9 @@ Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
   return false;
 }
 
-/* Clips and draws one source subresource into a two-byte framebuffer, each source channel multiplied by
-   the matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md "Blits"). The
-   modulated colour then goes through the source-alpha rules: alpha 0 skipped, alpha 0xFF converted and written,
-   anything else blended. Unlike BlitSourceAlpha16, a paletted texel uses the entry's ARGB colour (+0) for
-   everything. Quirk: the modulated alpha is at most 0xFE, so the opaque branch is never taken. Always
-   returns false.
-*/
-Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-          PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
-          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
-
-{
-  BlitRegion region;
-  int x;
-  int y;
-
-  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
-                             clipMinY, clipMinX, &region)) {
-    return false;
-  }
-  for (y = 0; y < region.height; y++) {
-    const uint8_t *texel = region.texels + y * region.texelStride;
-    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
-    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      uint32_t argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
-                                 modulationArgb8888);
-      if (Blit_IsTransparent(argb)) {
-        continue;
-      }
-      *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
-    }
-  }
-  return false;
-}
-
-/* Four-byte framebuffer version of BlitModulatedSourceAlpha16: each source channel is multiplied by the
-   matching channel of modulationArgb8888 (Blit_Modulate), then drawn with the source-alpha rules. Unlike
+/* Clips and draws one source subresource into a four-byte framebuffer, each source channel multiplied by the
+   matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md "Blits"), then drawn
+   with the source-alpha rules. Unlike
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
    0xFE, so the opaque branch is never taken. Always returns false.
 */
@@ -814,38 +412,9 @@ Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
 }
 
 /* Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip
-   rectangle of a two-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the colour
-   converted through g_SoftwarePixelPackTables, anything else blends it over every pixel (see
-   docs/software_raster.md "Blits").
-*/
-void SoftwareFramebuffer_FillRectArgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
-          GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
-          SoftwareFramebufferAccess *framebuffer)
-
-{
-  uint16_t opaque;
-  int x;
-  int y;
-
-  if (framebuffer->bytesPerPixel != SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT ||
-      !Blit_ClipRect(framebuffer, clipMaxY, clipMaxX, clipMinY, clipMinX, &rectMinX, &rectMinY, &rectMaxX,
-                     &rectMaxY) ||
-      Blit_IsTransparent(argb8888)) {
-    return;
-  }
-  opaque = Blit_IsOpaque(argb8888) ? (uint16_t)Blit_ConvertArgb(argb8888) : 0;
-  for (y = rectMinY; y < rectMaxY; y++) {
-    uint16_t *pixel = (uint16_t *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
-    for (x = rectMinX; x < rectMaxX; x++, pixel++) {
-      *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb16(argb8888, *pixel);
-    }
-  }
-}
-
-/* Four-byte framebuffer version of SoftwareFramebuffer_FillRectArgb16: alpha 0 draws nothing, alpha
-   0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included).
+   rectangle of a four-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the colour
+   converted through g_SoftwarePixelPackTables, anything else is blended in 8-bit lanes (alpha lane included,
+   see docs/software_raster.md "Blits").
 */
 void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,

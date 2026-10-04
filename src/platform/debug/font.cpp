@@ -338,14 +338,13 @@ void DebugFont_DrawText(int x0, int y0, const char *text)
   pitch = fb[0];
   bpp = fb[2];
   pixels = (uint8_t *)(uintptr_t)fb[3];
-  if ((pixels == NULL) || ((bpp != 4) && (bpp != 2))) {
+  if ((pixels == NULL) || (bpp != 4)) {
     return;
   }
   if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
 #define DEBUG_PUT(px, py, white)                                                          \
   do {                                                                                    \
-    if (bpp == 4) ((uint32_t *)pixels)[(py) * pitch + (px)] = (white) ? DEBUG_FONT_TEXT_COLOR_32BPP : DEBUG_FONT_BOX_COLOR_32BPP; \
-    else ((uint16_t *)pixels)[(py) * pitch + (px)] = (white) ? DEBUG_FONT_TEXT_COLOR_16BPP : DEBUG_FONT_BOX_COLOR_16BPP; \
+    ((uint32_t *)pixels)[(py) * pitch + (px)] = (white) ? DEBUG_FONT_TEXT_COLOR_32BPP : DEBUG_FONT_BOX_COLOR_32BPP; \
   } while (0)
   for (y = 0; y < boxHeight; y++) {
     for (x = 0; x < boxWidth; x++) {

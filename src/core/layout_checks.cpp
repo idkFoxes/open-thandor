@@ -797,8 +797,6 @@ static_assert(sizeof(GraphicsWideFixed) == 0x8,
               "GraphicsWideFixed keeps its 32-bit layout");
 static_assert(sizeof(GraphicsFixedRect) == 0x10,
               "GraphicsFixedRect keeps its 32-bit layout");
-static_assert(sizeof(SoftwarePixelMmxConstants) == 0x20,
-              "SoftwarePixelMmxConstants keeps its 32-bit layout");
 static_assert(sizeof(GraphicsPrimitiveQueue) == 0x30 &&
               offsetof(GraphicsPrimitiveQueue, packetPool) == 0x8 &&
               offsetof(GraphicsPrimitiveQueue, radixScratchPool) == 0xC &&

@@ -18,8 +18,6 @@ static SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = THANDOR_FN
 /* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c); built by SoftwareRenderer_BuildFactorTables */
 int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
 
-SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0};
-
 /* Bilinear weights per 8-bit fraction f, all four lanes equal: forward (f * 0x4040) >> 8, inverse
    ((256 - f) * 0x4040) >> 8 (built by SoftwareRenderer_BuildFactorTables). Entry 256 is an original quirk:
    WorldLightingRuntime_UpdateInterpolatedTerrainLighting reads index 256 when the lighting cycle phase is 0

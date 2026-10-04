@@ -27,7 +27,6 @@ extern GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth;
 extern GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue;
 extern GraphicsBeginSceneProc *g_GraphicsBeginScene;
 
-extern SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants;
 extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257];
 extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257];
 extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];

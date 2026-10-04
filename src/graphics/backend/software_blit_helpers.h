@@ -21,9 +21,10 @@ SoftwareTextureSource_Blit*, SoftwareFramebuffer_FillRectArgb* (see docs/softwar
 Texture source asset: "gfx" magic, tableDescriptor at +0xB0 (subresourceCount, paletteBankCount,
 subresourceTableOffset), palette banks of 256 * 8 bytes at +0x200, and a table of 32-byte
 GraphicsTextureSourceEntry records. A palette entry holds two dwords: the ARGB colour at +0 and,
-at +4, the colour converted to the 16-bit framebuffer format with the alpha in its top byte. The
-16-bit blits test the alpha of +4, write its low word and blend +0; the 32-bit blits use +4 for
-everything (they treat it as ARGB). An entry with paletteIndex -1 stores ARGB dwords instead of
+at +4, the colour converted to the framebuffer format (g_GraphicsTextureSourceConvertPaletteEntries)
+with the alpha in its top byte. Most blits use +4 for everything (they treat it as ARGB); the
+original's 16-bit blits (gone with 16-bit colour) tested the alpha of +4, wrote its low word and
+blended +0. An entry with paletteIndex -1 stores ARGB dwords instead of
 8-bit indices.
 
 A source colour whose alpha is 0 is skipped, alpha 0xFF is written as is (converted), anything in
@@ -39,7 +40,7 @@ typedef struct BlitRegion {
     int texelStride;       /* bytes per source row */
     const uint8_t *palette;   /* palette bank of a paletted image (256 entries of 8 bytes), else NULL */
     uint8_t *pixels;          /* top-left drawn pixel */
-    int pixelBytes;        /* 2 or 4 */
+    int pixelBytes;        /* 4 */
     int pixelStride;       /* bytes per framebuffer row (framebuffer->width pixels) */
     int width;             /* drawn size in pixels, both > 0 */
     int height;
@@ -55,7 +56,7 @@ static __inline int Blit_IsOpaque(uint32_t argb)
     return argb >= 0xff000000u;
 }
 
-/* The two dwords of a palette entry: +0 ARGB colour, +4 converted (16-bit) pixel with the alpha on top. */
+/* The two dwords of a palette entry: +0 ARGB colour, +4 converted pixel with the alpha on top. */
 static __inline uint32_t Blit_PaletteColor(const BlitRegion *region, uint8_t index)
 {
     return *(const uint32_t *)(region->palette + index * 8u);
@@ -67,7 +68,7 @@ static __inline uint32_t Blit_PalettePixel(const BlitRegion *region, uint8_t ind
 }
 
 /* ARGB -> framebuffer pixel through the g_SoftwarePixelPackTables channel tables. The alpha byte is
-   added on top; a 16-bit framebuffer keeps the low word. */
+   added on top. */
 static __inline uint32_t Blit_ConvertArgb(uint32_t argb)
 {
     const SoftwarePixelPackTables *tables = g_SoftwarePixelPackTables;
@@ -82,24 +83,6 @@ static __inline RasterColor Blit_ArgbLanes(uint32_t argb, int shift)
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         result.lane[i] = (short)((Raster_Channel(argb, i) * 0x101) >> shift);
-    }
-    return result;
-}
-
-/* A 16-bit framebuffer pixel as lanes: masked channel scaled to the top of 16 bits (PAND + PMULLW
-   with the 565/555 constants), then >> 2 (PSRLW). Same scale as Blit_ArgbLanes(argb, 2). */
-static __inline RasterColor Blit_Unpack16(uint16_t pixel)
-{
-    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
-    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (uint16_t)k->unpackScales.zero};
-    RasterColor result;
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        uint16_t scaled = (uint16_t)((pixel & masks[i]) * scales[i]);
-        result.lane[i] = (short)(scaled >> 2);
     }
     return result;
 }
@@ -123,27 +106,6 @@ static __inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor dest
     return result;
 }
 
-/* Blended lanes (channel << 4, 12 bits) -> 16-bit pixel: PAND with the quantize masks, PMADDWD with
-   the pack weights, and the word sum of bits 8..23 of both dword halves (PSRLQ 8 / 40 + PADDW). */
-static __inline uint16_t Blit_PackLanes16(RasterColor lanes)
-{
-    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const uint16_t masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
-                                           k->quantizeMasksQ12.red, (uint16_t)k->quantizeMasksQ12.zero};
-    const uint16_t weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
-                                             (uint16_t)k->packWeights.zero};
-    short q[RASTER_LANE_COUNT];
-    uint32_t low;
-    uint32_t high;
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        q[i] = (short)(lanes.lane[i] & masks[i]);
-    }
-    low = (uint32_t)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
-    high = (uint32_t)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
-    return (uint16_t)((low >> 8) + (high >> 8));
-}
-
 /* Blended lanes -> 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included. */
 static __inline uint32_t Blit_PackLanes32(RasterColor lanes)
 {
@@ -155,12 +117,7 @@ static __inline uint32_t Blit_PackLanes32(RasterColor lanes)
     return Raster_Pack32(channel);
 }
 
-/* Source-alpha blend of an ARGB colour over a 16-bit / 32-bit pixel, alpha = the colour's top byte. */
-static __inline uint16_t Blit_BlendArgb16(uint32_t argb, uint16_t destination)
-{
-    return Blit_PackLanes16(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_Unpack16(destination), argb >> 24));
-}
-
+/* Source-alpha blend of an ARGB colour over a 32-bit pixel, alpha = the colour's top byte. */
 static __inline uint32_t Blit_BlendArgb32(uint32_t argb, uint32_t destination)
 {
     return Blit_PackLanes32(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_ArgbLanes(destination, 2), argb >> 24));
@@ -277,38 +234,6 @@ static __inline uint16_t Blit_AddSaturateWord(uint16_t a, uint16_t b)
     return (uint16_t)(sum > 0xffffu ? 0xffffu : sum);
 }
 
-/* A 16-bit framebuffer pixel as lanes without Blit_Unpack16's final >> 2: the masked channel times
-   the unpack scale, low 16 bits (PAND + PMULLW), i.e. the channel at the top of the word. */
-static __inline RasterColor Blit_Unpack16Unshifted(uint16_t pixel)
-{
-    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
-    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (uint16_t)k->unpackScales.zero};
-    RasterColor result;
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        result.lane[i] = (short)(uint16_t)((pixel & masks[i]) * scales[i]);
-    }
-    return result;
-}
-
-/* Adds an ARGB colour to a 16-bit pixel: source lanes (c * 0x101) >> sourceShift, destination
-   Blit_Unpack16Unshifted, PADDUSW, then PSRLW 4 down to the Q12 scale Blit_PackLanes16 expects.
-   The alpha lane goes through the same steps; the pack constants' fourth lane decides whether it
-   reaches the pixel. */
-static __inline uint16_t Blit_AddArgb16(uint32_t argb, uint16_t destination, int sourceShift)
-{
-    RasterColor source = Blit_ArgbLanes(argb, sourceShift);
-    RasterColor sum = Blit_Unpack16Unshifted(destination);
-    int i;
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        sum.lane[i] = (short)(Blit_AddSaturateWord((uint16_t)sum.lane[i], (uint16_t)source.lane[i]) >> 4);
-    }
-    return Blit_PackLanes16(sum);
-}
-
 /* Adds an ARGB colour to a 32-bit pixel: both as lanes c * 0x101 (the source >> sourceShift),
    PADDUSW, PSRLW 8 and PACKUSWB. All four bytes, alpha included, are summed and written. */
 static __inline uint32_t Blit_AddArgb32(uint32_t argb, uint32_t destination, int sourceShift)
@@ -325,8 +250,8 @@ static __inline uint32_t Blit_AddArgb32(uint32_t argb, uint32_t destination, int
 
 /* ---- B3: integer-scaled blit ---------------------------------------------------------------- */
 /*
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32 do not clip the source. They walk the whole
-image, replicate every texel scale x scale times, and test each written pixel against the clip
+SoftwareTextureSource_BlitIntegerScaledSourceAlpha32 does not clip the source. It walks the whole
+image, replicates every texel scale x scale times, and tests each written pixel against the clip
 rectangle, which is first clamped to [0, framebuffer size) (signed compares). The original's
 destination pointer walks the unclipped image; a pixel at (x, y) is at pixels + (y * width + x) *
 pixelBytes, which is what BlitScaled_Pixel computes, and only for pixels that pass the clip test.
