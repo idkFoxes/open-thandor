@@ -358,32 +358,47 @@ add_custom_command(TARGET thandor POST_BUILD
 # SDL3 stage 2: the primitive queues rasterized on the GPU through SDL_GPU (D3D12),
 # switched on at run time with OPEN_THANDOR_GPU=1 or -GPU; the software renderer stays the default. The shaders
 # (src/platform/sdl3/shaders/primitives.hlsl) are compiled to DXBC shader model 5.1 with fxc from the Windows SDK.
+# A GCC build without fxc (or with THANDOR_GPU_PRECOMPILED_SHADERS) uses the headers fxc made, committed in
+# src/platform/sdl3/shaders/compiled/; after a change of primitives.hlsl regenerate them from an MSVC gpu-test build
+# (docs/BUILDING.md).
 option(THANDOR_RENDERER_SDL_GPU "Rasterize the primitive queues on the GPU with SDL_GPU" OFF)
+option(THANDOR_GPU_PRECOMPILED_SHADERS "SDL_GPU: use the committed shader headers instead of running fxc" OFF)
 if(THANDOR_RENDERER_SDL_GPU)
     # fxc of the Windows SDK: on the PATH of a vcvars prompt, else the newest SDK's x64 tools
     set(THANDOR_PROGRAM_FILES_X86 "ProgramFiles(x86)")
     file(GLOB THANDOR_SDK_BIN_DIRS LIST_DIRECTORIES true "$ENV{${THANDOR_PROGRAM_FILES_X86}}/Windows Kits/10/bin/10.*/x64")
     list(SORT THANDOR_SDK_BIN_DIRS COMPARE NATURAL ORDER DESCENDING)
-    find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+    if(THANDOR_GPU_PRECOMPILED_SHADERS)
+        # no fxc
+    elseif(MSVC)
+        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS} REQUIRED)
+    else()
+        find_program(THANDOR_FXC fxc HINTS ${THANDOR_SDK_BIN_DIRS})
+    endif()
     set(THANDOR_GPU_SHADER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/primitives.hlsl)
-    set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
-    file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
     set(THANDOR_GPU_SHADER_HEADERS)
-    foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
-                   "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
-        separate_arguments(shader)
-        list(GET shader 0 shaderName)
-        list(GET shader 1 shaderProfile)
-        list(GET shader 2 shaderEntry)
-        set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
-        add_custom_command(OUTPUT ${shaderHeader}
-            COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
-                    /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
-            DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
-            COMMENT "fxc ${shaderEntry}"
-            VERBATIM)
-        list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
-    endforeach()
+    if(THANDOR_FXC AND NOT THANDOR_GPU_PRECOMPILED_SHADERS)
+        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/gpu_shaders)
+        file(MAKE_DIRECTORY ${THANDOR_GPU_SHADER_DIR})
+        foreach(shader "vertex vs_5_1 VertexMain" "fragment ps_5_1 FragmentMain"
+                       "fragment_alpha_test ps_5_1 FragmentAlphaTestMain")
+            separate_arguments(shader)
+            list(GET shader 0 shaderName)
+            list(GET shader 1 shaderProfile)
+            list(GET shader 2 shaderEntry)
+            set(shaderHeader ${THANDOR_GPU_SHADER_DIR}/gpu_shader_${shaderName}.h)
+            add_custom_command(OUTPUT ${shaderHeader}
+                COMMAND ${THANDOR_FXC} /nologo /O3 /T ${shaderProfile} /E ${shaderEntry} /Vn g_${shaderEntry}
+                        /Fh ${shaderHeader} ${THANDOR_GPU_SHADER_SOURCE}
+                DEPENDS ${THANDOR_GPU_SHADER_SOURCE}
+                COMMENT "fxc ${shaderEntry}"
+                VERBATIM)
+            list(APPEND THANDOR_GPU_SHADER_HEADERS ${shaderHeader})
+        endforeach()
+    else()
+        set(THANDOR_GPU_SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl3/shaders/compiled)
+        message(STATUS "SDL_GPU shaders: the precompiled headers in ${THANDOR_GPU_SHADER_DIR}")
+    endif()
     target_sources(thandor_curated PRIVATE src/platform/sdl3/gpu_renderer.cpp ${THANDOR_GPU_SHADER_HEADERS})
     target_include_directories(thandor_curated PRIVATE ${THANDOR_GPU_SHADER_DIR})
     target_compile_definitions(thandor_curated PUBLIC THANDOR_RENDERER_SDL_GPU=1)

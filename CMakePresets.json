@@ -60,6 +60,16 @@
       "displayName": "MinGW-w64 GCC x64 RelWithDebInfo with the developer tools (test aids, debug switches, self-tests)",
       "inherits": "mingw-x64",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_DEV_TOOLS": "ON" }
+    },
+    {
+      "name": "mingw-gpu-test",
+      "displayName": "MinGW-w64 GCC x64 RelWithDebInfo with the developer tools and the SDL_GPU renderer (OPEN_THANDOR_GPU=1)",
+      "inherits": "mingw-x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "THANDOR_DEV_TOOLS": "ON",
+        "THANDOR_RENDERER_SDL_GPU": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -68,6 +78,7 @@
     { "name": "test", "configurePreset": "test" },
     { "name": "gpu-test", "configurePreset": "gpu-test" },
     { "name": "mingw-release", "configurePreset": "mingw-release" },
-    { "name": "mingw-test", "configurePreset": "mingw-test" }
+    { "name": "mingw-test", "configurePreset": "mingw-test" },
+    { "name": "mingw-gpu-test", "configurePreset": "mingw-gpu-test" }
   ]
 }
