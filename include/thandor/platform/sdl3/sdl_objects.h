@@ -112,6 +112,9 @@ void SetGpuRasterizationExact(bool exact) noexcept;
    swapchain image is dropped). Applied to a claimed window at once and at every later window claim (also of a
    device started later). video.cpp sets it from the vsync setting (SdlVideo_SetVsync). */
 void SetGpuVsync(bool on) noexcept;
+/* A frame limit is set (video.cpp, SdlVideo_SetFrameLimit): the swapchain texture is acquired waiting also with
+   VSync off, so frames are not dropped at the limited rate. Takes effect at the next acquire. */
+void SetGpuFrameLimited(bool limited) noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);

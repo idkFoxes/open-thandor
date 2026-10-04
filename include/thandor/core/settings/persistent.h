@@ -67,7 +67,7 @@
 #define PERSISTENT_VSYNC_OFF 1
 #define PERSISTENT_VSYNC_COUNT 2
 #define PERSISTENT_FRAME_LIMIT_OFF 0 /* default: no frame rate limit */
-#define PERSISTENT_FRAME_LIMIT_MAX 1000 /* larger saved values are read as no limit; the menu offers 30, 60, 120, 144 */
+#define PERSISTENT_FRAME_LIMIT_MAX 1000 /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
 /* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
 #define PERSISTENT_SOUND_OPTION_EFFECTS 0x1

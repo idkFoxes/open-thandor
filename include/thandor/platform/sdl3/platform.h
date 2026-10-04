@@ -106,10 +106,11 @@ bool SdlVideo_UiScaleChangePending();
    VSync: [graphics] vsync = on|off in thandor.ini (PERSISTENT_SETTING_VSYNC, default on), OPEN_THANDOR_VSYNC=0|1
    wins at start. On: the GPU renderers present in vsync mode and wait for a free swapchain image, the software
    renderer's SDL_Renderer presents with vsync. Off: the GPU renderers present in mailbox mode (else immediate) and
-   drop a frame rather than wait.
-   Frame limit: [graphics] frame_limit = 0|30|60|120|144 (PERSISTENT_SETTING_FRAME_LIMIT, frames per second, 0 = no
-   limit, default 0; other values up to PERSISTENT_FRAME_LIMIT_MAX work too), OPEN_THANDOR_FRAME_LIMIT=n wins at
-   start. SdlVideo_Present waits (high-resolution sleep) so that at most that many frames per second are presented.
+   drop a frame rather than wait (unless a frame limit is set).
+   Frame limit: [graphics] frame_limit = 0|60|120|144 (PERSISTENT_SETTING_FRAME_LIMIT, frames per second, 0 = no
+   limit, default 0; other values up to PERSISTENT_FRAME_LIMIT_MAX work too, at least 60 is recommended),
+   OPEN_THANDOR_FRAME_LIMIT=n wins at start. SdlVideo_Present waits (high-resolution sleep) so that at most that many
+   frames per second are presented; the GPU renderers then also wait for a free swapchain image (no dropped frames).
    Get returns the value in effect (the environment's when it was set); Set applies it immediately (also during a
    frame loop) and saves it in the persistent settings (written to thandor.ini at the next flush). A frame limit
    above PERSISTENT_FRAME_LIMIT_MAX is taken as 0. */

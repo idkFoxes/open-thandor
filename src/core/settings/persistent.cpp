@@ -121,8 +121,8 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_VSYNC, INI_KIND_ENUM, "graphics", "vsync",
    "vsync: on (default; frames wait for the display's refresh, no tearing) or off", 0, 0, INI_ENUM(s_IniVsyncNames)},
   {PERSISTENT_SETTING_FRAME_LIMIT, INI_KIND_UINT, "graphics", "frame_limit",
-   "frame rate limit in frames per second: 0 (default, no limit), 30, 60, 120, 144 (below 60 the game runs "
-   "slower, its steps wait for drawn frames)", 0, 0, nullptr, 0},
+   "frame rate limit in frames per second: 0 (default, no limit), 60, 120, 144; at least 60 recommended (below 60 "
+   "the game runs slower, its steps wait for drawn frames)", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
