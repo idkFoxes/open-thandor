@@ -38,13 +38,22 @@
    (wins) or [graphics] ui_scale (auto, 1, 2, 3): auto is the largest whole N at which N x the mode fits the display
    (fullscreen kinds: the desktop size; a window: the display's usable area), a number is taken as it is. With a
    fixed N > 1 the GPU adapters list the display's sizes divided by N; auto and 1 list the display's sizes. The
-   software renderer always runs at N = 1. */
+   software renderer always runs at N = 1.
+
+   Frame pacing (render rate only; the game's timers are not touched, but a simulation step waits for a drawn
+   frame, so a frame limit below 60 slows the game): VSync ([graphics] vsync on|off, PERSISTENT_SETTING_VSYNC,
+   default on; OPEN_THANDOR_VSYNC=0|1 wins) makes the GPU renderers present in
+   vsync mode with a waiting swapchain acquire (off: mailbox, else immediate) and the software renderer's
+   SDL_Renderer present with vsync. The frame limit ([graphics] frame_limit, PERSISTENT_SETTING_FRAME_LIMIT, 0 = off,
+   default; OPEN_THANDOR_FRAME_LIMIT=n wins) makes SdlVideo_Present wait (SDL_DelayPrecise) until 1/n s after the
+   previous present's slot. Both are changed at run time by SdlVideo_SetVsync / SdlVideo_SetFrameLimit. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
 
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_timer.h>
 
 #include <algorithm>
 #include <cmath>
@@ -94,6 +103,15 @@ struct RendererState {
   bool modesListedWithSettings = false;
 };
 RendererState s_renderer;
+
+/* VSync and the frame limit (SdlVideo_GetVsync etc.), read from the settings at the first display mode switch. */
+struct FramePacing {
+  bool loaded = false;
+  bool vsync = true;
+  uint32_t frameLimit = PERSISTENT_FRAME_LIMIT_OFF; /* frames per second, 0 = no limit */
+  Uint64 nextPresentNs = 0;                         /* SDL_GetTicksNS slot of the next present, 0 = none yet */
+};
+FramePacing s_pacing;
 
 uint16_t s_gpuDetailUtf16[] = {'G', 'P', 'U', 0};
 uint16_t s_cpuDetailUtf16[] = {'C', 'P', 'U', 0};
@@ -441,6 +459,67 @@ uint32_t AdapterOfRenderer(uint32_t renderer) noexcept
   return 0;
 }
 
+/* The vsync of the running presenter: the GPU renderers' swapchain (also kept for a later device start) and the
+   software renderer's SDL_Renderer. */
+void ApplyVsync() noexcept
+{
+#ifdef THANDOR_RENDERER_SDL_GPU
+  thandor::sdl3::SetGpuVsync(s_pacing.vsync);
+#endif
+  if (s_renderer.sdlRenderer && !SDL_SetRenderVSync(s_renderer.sdlRenderer.get(), s_pacing.vsync ? 1 : 0)) {
+    Thandor_Log("SDL_SetRenderVSync %d failed: %s", s_pacing.vsync ? 1 : 0, SDL_GetError());
+  }
+}
+
+/* Reads VSync and the frame limit once (the settings are loaded before the first display mode switch):
+   OPEN_THANDOR_VSYNC=0|1 and OPEN_THANDOR_FRAME_LIMIT=n win over [graphics] vsync / frame_limit. */
+void LoadFramePacing() noexcept
+{
+  if (s_pacing.loaded) {
+    return;
+  }
+  s_pacing.loaded = true;
+  s_pacing.vsync = PersistentSettings_Read(PERSISTENT_VSYNC_ON, PERSISTENT_SETTING_VSYNC) != PERSISTENT_VSYNC_OFF;
+  const char *vsyncSource = "settings";
+  if (const char *value = SDL_getenv("OPEN_THANDOR_VSYNC")) {
+    s_pacing.vsync = SDL_atoi(value) != 0;
+    vsyncSource = "OPEN_THANDOR_VSYNC";
+  }
+  uint32_t limit = PersistentSettings_Read(PERSISTENT_FRAME_LIMIT_OFF, PERSISTENT_SETTING_FRAME_LIMIT);
+  const char *limitSource = "settings";
+  if (const char *value = SDL_getenv("OPEN_THANDOR_FRAME_LIMIT")) {
+    const int requested = SDL_atoi(value);
+    limit = (requested > 0) ? static_cast<uint32_t>(requested) : PERSISTENT_FRAME_LIMIT_OFF;
+    limitSource = "OPEN_THANDOR_FRAME_LIMIT";
+  }
+  s_pacing.frameLimit = (limit <= PERSISTENT_FRAME_LIMIT_MAX) ? limit : PERSISTENT_FRAME_LIMIT_OFF;
+  Thandor_Log("frame pacing: vsync %s (%s), frame limit %u fps%s (%s)", s_pacing.vsync ? "on" : "off", vsyncSource,
+              s_pacing.frameLimit, (s_pacing.frameLimit == 0) ? " = off" : "", limitSource);
+}
+
+/* The frame limit: waits until the present's slot, 1/limit s after the previous one. A present that comes late by
+   more than one slot starts the schedule anew instead of being followed by a burst. SDL_DelayPrecise sleeps and
+   only spins the last fraction of a millisecond. */
+void WaitForFrameSlot() noexcept
+{
+  if (s_pacing.frameLimit == PERSISTENT_FRAME_LIMIT_OFF) {
+    s_pacing.nextPresentNs = 0;
+    return;
+  }
+  const Uint64 period = SDL_NS_PER_SECOND / s_pacing.frameLimit;
+  Uint64 now = SDL_GetTicksNS();
+  if ((s_pacing.nextPresentNs != 0) && (now < s_pacing.nextPresentNs)) {
+    SDL_DelayPrecise(s_pacing.nextPresentNs - now);
+    now = SDL_GetTicksNS();
+  }
+  if ((s_pacing.nextPresentNs == 0) || (now > s_pacing.nextPresentNs + period)) {
+    s_pacing.nextPresentNs = now + period;
+  }
+  else {
+    s_pacing.nextPresentNs += period;
+  }
+}
+
 /* The SDL_Renderer of the software renderer: Vulkan, else Direct3D 12, Direct3D 11, else SDL's choice. */
 bool CreateSdlRenderer() noexcept
 {
@@ -460,6 +539,7 @@ bool CreateSdlRenderer() noexcept
   }
   Thandor_Log("software renderer, presenting through the SDL_Renderer %s",
               SDL_GetRendererName(s_renderer.sdlRenderer.get()));
+  ApplyVsync();
   return true;
 }
 
@@ -748,6 +828,43 @@ void SdlVideo_SetDisplayModeKind(uint32_t kind)
   s_renderer.kindChosen = true;
 }
 
+bool SdlVideo_GetVsync()
+{
+  LoadFramePacing();
+  return s_pacing.vsync;
+}
+
+void SdlVideo_SetVsync(bool on)
+{
+  LoadFramePacing();
+  PersistentSettings_Write(on ? PERSISTENT_VSYNC_ON : PERSISTENT_VSYNC_OFF, PERSISTENT_SETTING_VSYNC);
+  if (s_pacing.vsync != on) {
+    s_pacing.vsync = on;
+    Thandor_Log("vsync %s", on ? "on" : "off");
+    ApplyVsync();
+  }
+}
+
+uint32_t SdlVideo_GetFrameLimit()
+{
+  LoadFramePacing();
+  return s_pacing.frameLimit;
+}
+
+void SdlVideo_SetFrameLimit(uint32_t fps)
+{
+  LoadFramePacing();
+  if (fps > PERSISTENT_FRAME_LIMIT_MAX) {
+    fps = PERSISTENT_FRAME_LIMIT_OFF;
+  }
+  PersistentSettings_Write(fps, PERSISTENT_SETTING_FRAME_LIMIT);
+  if (s_pacing.frameLimit != fps) {
+    s_pacing.frameLimit = fps;
+    s_pacing.nextPresentNs = 0;
+    Thandor_Log("frame limit %u fps%s", fps, (fps == 0) ? " = off" : "");
+  }
+}
+
 Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode)
 {
@@ -756,6 +873,10 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
     /* the first switch runs after the settings are loaded */
     s_renderer.pendingKind = SdlVideo_SavedDisplayModeKind();
     s_renderer.kindChosen = true;
+  }
+  if (!s_pacing.loaded) {
+    LoadFramePacing();
+    ApplyVsync(); /* before the renderer starts below */
   }
   if (!s_renderer.modesListedWithSettings) {
     /* the UI scale setting is known now: list the display modes again (SdlVideo_Init ran before the load) */
@@ -845,6 +966,9 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
 void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
 {
   g_ThandorFrameHeartbeat++;
+  if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
+    WaitForFrameSlot(); /* the frame limit, before the backend lock (the cursor timer skips while it is held) */
+  }
   /* atomic exchange: take the backend lock and learn whether it was already held */
   const auto previousAccessState = static_cast<int32_t>(THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState, 1));
   if (previousAccessState != 0) {

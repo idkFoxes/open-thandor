@@ -348,6 +348,11 @@ GpuState s_gpu;
    positions from the logical size (so the GPU rasterizes the world at N x), the 3D scissors x N (ScaledScissor). */
 int s_uiScale = 1;
 
+/* VSync (SetGpuVsync; outside s_gpu, which a device restart resets): true = the swapchain presents in vsync mode and
+   the swapchain texture is acquired waiting (the frame loop runs at the display's refresh rate); false = mailbox
+   (else immediate) and a non-waiting acquire. */
+bool s_vsync = true;
+
 /* A logical-pixel rectangle as target pixels of a target made for scale. */
 SDL_Rect ScaledScissor(const SDL_Rect &logical, int scale) noexcept
 {
@@ -1777,17 +1782,30 @@ void ReleaseDevice() noexcept
   s_gpu = GpuState{};
 }
 
-/* The swapchain's present mode: mailbox (no tearing, never waits) where the driver has it, else vsync; the
-   swapchain texture is acquired without waiting, so a frame is dropped rather than the game held up. */
+/* The swapchain's present mode. VSync on (s_vsync): vsync, and the swapchain texture is acquired waiting, so the
+   frame loop is paced by the display. VSync off: mailbox (no tearing, never waits) where the driver has it, else
+   immediate, else vsync; the swapchain texture is then acquired without waiting, so a frame is dropped rather than
+   the game held up. Applied at every window claim and by SetGpuVsync. */
 void ChoosePresentMode() noexcept
 {
   SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
-  if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
-    presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+  if (!s_vsync) {
+    if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+      presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+    }
+    else if (SDL_WindowSupportsGPUPresentMode(s_gpu.device, s_gpu.window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+      presentMode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+    }
   }
   if (!SDL_SetGPUSwapchainParameters(s_gpu.device, s_gpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, presentMode)) {
     Thandor_Log("SDL_GPU: swapchain parameters not set (%s)", SDL_GetError());
+    return;
   }
+  static const char *const kPresentModeNames[] = {"vsync", "immediate", "mailbox"};
+  const auto modeIndex = static_cast<size_t>(presentMode);
+  Thandor_Log("SDL_GPU: present mode %s (vsync %s)",
+              (modeIndex < SDL_arraysize(kPresentModeNames)) ? kPresentModeNames[modeIndex] : "?",
+              s_vsync ? "on" : "off");
 }
 
 /* True when the device really holds the window's swapchain: SDL_GetGPUSwapchainTextureFormat fails only for an
@@ -1876,14 +1894,17 @@ void CheckSwapchainSize() noexcept
 }
 
 /* The swapchain texture for this frame's command buffer, nullptr when there is none: an unclaimed window (minimized
-   at the start), a minimized window, or a frame the non-waiting acquire drops (mailbox, all images in flight).
+   at the start), a minimized window, or a frame the non-waiting acquire (VSync off) drops (mailbox, all images in
+   flight). With VSync on the acquire waits for a free swapchain image instead.
    None of these is an error; the frame is drawn and submitted without the present. */
 SDL_GPUTexture *AcquireSwapchain(SDL_GPUCommandBuffer *commands, Uint32 *width, Uint32 *height) noexcept
 {
   RetryWindowClaim();
   CheckSwapchainSize();
   SDL_GPUTexture *swapchain = nullptr;
-  if (s_gpu.windowClaimed && !SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)) {
+  if (s_gpu.windowClaimed &&
+      !(s_vsync ? SDL_WaitAndAcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height)
+                : SDL_AcquireGPUSwapchainTexture(commands, s_gpu.window, &swapchain, width, height))) {
     if (!s_gpu.presentFailureLogged) {
       Thandor_Log("SDL_GPU: no swapchain texture (%s)", SDL_GetError());
       s_gpu.presentFailureLogged = true;
@@ -2037,6 +2058,17 @@ bool GpuFrameActive() noexcept
 void SetGpuUiScale(int scale) noexcept
 {
   s_uiScale = std::clamp(scale, 1, kMaxGpuUiScale);
+}
+
+void SetGpuVsync(bool on) noexcept
+{
+  if (s_vsync == on) {
+    return;
+  }
+  s_vsync = on;
+  if ((s_gpu.device != nullptr) && s_gpu.windowClaimed) {
+    ChoosePresentMode();
+  }
 }
 
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept
