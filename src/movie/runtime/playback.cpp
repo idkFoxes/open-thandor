@@ -519,13 +519,15 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
   void *handle;
+  HANDLE refillSemaphore;
   MovieRuntime *movie;
   uint32_t byteCount;
 
   /* The original keeps the movie in a local: it re-reads g_ActiveMovie only at the loop top, after the
      wait and at the exit. */
   while ((movie = g_ActiveMovie) != NULL) {
-    MsgWaitForMultipleObjects(1,&movie->refillSemaphore,FALSE,256,0);
+    refillSemaphore = movie->refillSemaphore;
+    MsgWaitForMultipleObjects(1,&refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
     if ((movie == NULL) || (movie->streamState == MOVIE_STREAM_SHUTDOWN) ||
         (movie->workerActive == 0) || (movie->remainingVideoBytes == 0)) break;
@@ -879,7 +881,7 @@ static PackedRgb24 MovieDeltaEncode_ScanBlock(const PackedRgb24 *blockPixels,uin
     MovieDeltaEncode_ExtendLumaRange((int)MovieColor_ComputeLuma5FromRgb888(blockPixels[column]),&minLuma,&maxLuma);
   }
   for (row = 1; row < 4; row++) {
-    rowPixels = blockPixels + row * rowStridePixels;
+    rowPixels = blockPixels + (int32_t)(row * rowStridePixels);
     channelSums = Movie_AddRowToChannelSums(channelSums,rowPixels[0],rowPixels[1],rowPixels[2],rowPixels[3]);
     for (column = 0; column < 4; column++) {
       MovieDeltaEncode_ExtendLumaRange((int)MovieColor_ComputeLuma5FromRgb888(rowPixels[column]),&minLuma,&maxLuma);
@@ -908,7 +910,7 @@ static void MovieDeltaEncode_PackLevels(const PackedRgb24 *blockPixels,uint32_t 
   int column;
 
   for (row = 3; row >= 0; row--) {
-    rowPixels = blockPixels + row * rowStridePixels;
+    rowPixels = blockPixels + (int32_t)(row * rowStridePixels);
     for (column = 3; column >= 0; column--) {
       level = (int)MovieColor_ComputeLuma5FromRgb888(rowPixels[column]) - baseLuma;
       if (level < 0) {

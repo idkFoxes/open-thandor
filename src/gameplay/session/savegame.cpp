@@ -57,7 +57,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   /* catalogList is the save page's saveGameList node of the in-game UI copy. */
   UiPageStackControl *saveNameEntryStack;
   UiWrappedTextControl *descriptionBox;
-  void **rowSlotArray;
+  Ptr32<void> *rowSlotArray;
   ScenarioCatalogSaveRecord *selectedRowRecord;
   UiListRowIndex selectedIndex;
   UiNodeBase *rootNode;
@@ -158,9 +158,9 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   UiWrappedTextControl *descriptionText;
   UiNodeBase *rootNode;
   UiListRowCount listRowCount;
-  void **rowSlots;
+  Ptr32<void> *rowSlots;
   ScenarioCatalogSaveRecord *selectedRecord;
-  void **rowSlot;
+  Ptr32<void> *rowSlot;
   uint32_t *record;
   uint8_t *enumRecord;
   ScenarioCatalogSaveRecord *saveRecord;
@@ -182,7 +182,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocError = g_MemoryApi.alloc((uint32_t)((rowCount + 1) * (sizeof(void *) + 256)),(void **)&rowSlot);
+  allocError = g_MemoryApi.alloc((uint32_t)((rowCount + 1) * (sizeof(Ptr32<void>) + 256)),(void **)&rowSlot);
   if (allocError != 0) {
     return;
   }
@@ -227,9 +227,9 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
   descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
   /* sort only the saves, then append the new row and select it */
-  UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
+  UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)g_ScenarioCatalog,saveList);
   UiPointerList_SortByDwordPairFieldDescending(240,saveList);
-  UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
+  UiPointerList_InitializeColumnLayout(rowCount + 1,(Ptr32<void> *)g_ScenarioCatalog,saveList);
   UiPointerList_SelectColumnListIndex(rowCount,saveList);
   UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));

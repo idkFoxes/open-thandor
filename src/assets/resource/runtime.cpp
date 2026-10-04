@@ -294,7 +294,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
   GameFactionRuntimeRecord *factionRecord;
   uint32_t *armyAssetPointerCursor;
   uint32_t *primaryArmyAssetPointerCursor;
-  ArmyRuntimeSlot **runtimeMembers;
+  Ptr32<ArmyRuntimeSlot> *runtimeMembers;
 
   for (factionIndex = 0; factionIndex < 8; factionIndex++) {
     factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];

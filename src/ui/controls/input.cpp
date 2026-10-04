@@ -1163,7 +1163,7 @@ void UiSelectionGeometryControl_DrawClipped
   remainingColumns = clipWidth;
   if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
     destPixel = g_FramebufferAccess->pixels +
-              g_FramebufferRowStrideBytes * clipTop + clipLeft * 2;
+              (int32_t)(g_FramebufferRowStrideBytes * clipTop) + clipLeft * 2;
     sourceV = sourceStartUHigh + sourceStartV;
     rowStartU = sourceU;
     rowStartV = sourceV;
@@ -1195,7 +1195,7 @@ void UiSelectionGeometryControl_DrawClipped
   }
   else {
     destPixel = g_FramebufferAccess->pixels +
-              g_FramebufferRowStrideBytes * clipTop + clipLeft * 4;
+              (int32_t)(g_FramebufferRowStrideBytes * clipTop) + clipLeft * 4;
     sourceV = sourceStartUHigh + sourceStartV;
     rowStartU = sourceU;
     rowStartV = sourceV;

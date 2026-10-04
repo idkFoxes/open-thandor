@@ -524,7 +524,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   ArmyRuntimeSlot *armySlot;
   ModelRuntimeSlot *slotModelRuntime;
   InGameRuntimeRoot *runtimeRoot;
-  ArmyRuntimeSlot **createdArmySlots;
+  Ptr32<ArmyRuntimeSlot> *createdArmySlots;
   WorldRuntimeContext *worldRuntime;
   Bool8 placementRejected;
 
@@ -544,7 +544,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                        worldRuntime);
     if (!placementRejected) {
       /* the validator leaves the accepted (possibly snapped) point in g_ArmyPlacementValidatedWorldX/YQ12 */
-      createdArmySlots = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+      createdArmySlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,

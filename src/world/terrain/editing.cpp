@@ -105,7 +105,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
       (gridY >= (int)fieldGridAsset->gridHeight)) {
     return;
   }
-  referenceMaterial = fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + gridX].flagsAndMaterial &
+  referenceMaterial = fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial &
           FIELD_CELL_MATERIAL_ID_MASK;
   if (referenceMaterial != replacementMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -150,7 +150,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
       (gridY >= (int)fieldGridAsset->gridHeight)) {
     return;
   }
-  if ((fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + gridX].flagsAndMaterial &
+  if ((fieldGridAsset->cells[(int32_t)(gridY * fieldGridAsset->gridWidth + gridX)].flagsAndMaterial &
       FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
@@ -206,7 +206,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
           FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
         /* the two neighbours in the previous row (same column and the one to the right) */
-        fieldCell = fieldCell + -widthCells;
+        fieldCell = fieldCell + -(int32_t)widthCells;
         if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell);
@@ -226,7 +226,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
-        fieldCell = cell + -widthCells;
+        fieldCell = cell + -(int32_t)widthCells;
       }
     }
     fieldCell = fieldCell + 1;

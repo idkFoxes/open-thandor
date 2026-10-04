@@ -449,6 +449,7 @@ static void UiTransferMailbox_ReceiveChunk
   uint32_t dwordsRemaining;
   const uint32_t *receivedChunkSourceDwords;
   uint32_t *receivedChunkDestinationDwords;
+  void *receivedAllocation;
 
   if ((g_FrontendSessionToken != ringRecord->packetHeader.sequenceToken) ||
       (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder !=
@@ -464,9 +465,10 @@ static void UiTransferMailbox_ReceiveChunk
     return;
   }
   if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
-    if (g_MemoryApi.alloc(totalByteCount,&g_UiTransferMailbox.receivedAllocation) != 0) {
+    if (g_MemoryApi.alloc(totalByteCount,&receivedAllocation) != 0) {
       return;
     }
+    g_UiTransferMailbox.receivedAllocation = receivedAllocation; /* alloc writes it only on success */
     chunkOffset = 0;
     g_UiTransferMailbox.receivedByteCount = totalByteCount;
     g_UiTransferMailbox.receivedRemainingBytes = totalByteCount;
@@ -767,7 +769,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
         nameDestinationCursor++;
       }
       UiPointerList_InitializeColumnLayout
-                (playerCount,(void **)g_FrontendPlayerListRows,
+                (playerCount,(Ptr32<void> *)g_FrontendPlayerListRows,
                  (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
     }
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
@@ -1335,27 +1337,27 @@ static void FrontendTransfer_SendSessionPlayerRowToPeers(uint32_t roundRobinCoun
      heartbeatExpiryTicks gives playerRuntimeId (+4) and playerName (+8), the one at transferProgressBytes
      capabilityLabelUtf16 (+8), and pingRoundTripTicks is read directly */
   g_FrontendPacket40008Buffer.selectedPlayerRuntimeId =
-       peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].ipv4AddressNetworkOrder;
+       peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks))].ipv4AddressNetworkOrder;
   g_FrontendPacket40008Buffer.selectedStatusCode0 =
-       *(FrontendStatusCode *)peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding;
+       *(FrontendStatusCode *)peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes))].zeroPadding;
   g_FrontendPacket40008Buffer.selectedStatusCode1 =
-       *(FrontendStatusCode *)(peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding + 4);
+       *(FrontendStatusCode *)(peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes))].zeroPadding + 4);
   g_FrontendPacket40008Buffer.selectedPlayerIndex = selectedIndex;
   g_FrontendPacket40008Buffer.playerCount = rowCount;
   endpoint = peerEndpointCursor;
   textByteCount = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                     peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(pingRoundTripTicks)].addressHeader.packedFamilyAndPort << 2,
+                     peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(pingRoundTripTicks))].addressHeader.packedFamilyAndPort << 2,
                      g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16);
   *(uint32_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + textByteCount) =
        ('s' << 16 | 'm'); /* L"ms" */
   *(uint16_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + textByteCount + 4) = 0;
-  descriptorSourceCursor = peerEndpointCursor[(selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
-           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].zeroPadding;
+  descriptorSourceCursor = peerEndpointCursor[(int32_t)((selectedIndex - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+           FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks))].zeroPadding;
   descriptorDestinationCursor = g_FrontendPacket40008Buffer.playerDescriptorPayload;
   for (dwordCount = 10; dwordCount != 0; dwordCount--) {
     *descriptorDestinationCursor = *(uint32_t *)descriptorSourceCursor;
@@ -1581,7 +1583,7 @@ static void FrontendTransfer_StoreSessionAdvertisement
   int sessionsRemaining;
   int dwordCount;
   FrontendSessionDiscoveryRecord *discoveryRecord;
-  FrontendSessionDiscoveryRecord **sessionRowCursor;
+  Ptr32<FrontendSessionDiscoveryRecord> *sessionRowCursor;
   uint32_t *recordDwordCursor;
   const uint32_t *sourceDwords;
 
@@ -1655,7 +1657,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
       playerRowCursor++;
     }
     UiPointerList_InitializeColumnLayout
-              (0,(void **)g_FrontendPlayerListRows,
+              (0,(Ptr32<void> *)g_FrontendPlayerListRows,
                (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
   }
 }

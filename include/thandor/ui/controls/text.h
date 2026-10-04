@@ -251,7 +251,7 @@ void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListContro
 
 void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
-void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
+void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control);
 
 void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiWrappedTextControl *control);

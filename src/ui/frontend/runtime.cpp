@@ -2122,7 +2122,7 @@ static UiRootCallbacks g_FrontendUiRootCallbacks = {
 /* row pointer table of the frontend network backend list (display
    names), one entry per network backend; Frontend_Init fills it and hands it to the backend list control. The
    original addresses it on its own, right after the control offset tables, and reserves 256 entries. */
-static uint16_t *g_FrontendNetworkBackendNameRows[256] = {0};
+static Ptr32<uint16_t> g_FrontendNetworkBackendNameRows[256] = {0};
 
 static uint32_t g_FrontendFactionAssignmentReadyStateGeneration = 0;
 
@@ -4329,7 +4329,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
-                (0,(void **)g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
+                (0,(Ptr32<void> *)g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
       UiTransfer_SendDiscoveryProbe();
       return;
     }
@@ -4493,6 +4493,8 @@ void Frontend_PlaySelectedEndMovie(void)
   InGameRuntimeRoot *runtimeRoot;
   uint32_t playbackRateHz;
   Bool8 movieOpened;
+  MovieRuntime *endMovieRuntime;
+  Bool8 endMovieAdvanced;
 
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
@@ -4517,7 +4519,10 @@ void Frontend_PlaySelectedEndMovie(void)
       g_EndMoviePendingTicks = 0;
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack));
-      if (Movie_AdvanceFrame(&runtimeRoot->activeEndMovieRuntime,NULL)) {
+      endMovieRuntime = runtimeRoot->activeEndMovieRuntime;
+      endMovieAdvanced = Movie_AdvanceFrame(&endMovieRuntime,NULL);
+      runtimeRoot->activeEndMovieRuntime = endMovieRuntime;
+      if (endMovieAdvanced) {
         runtimeRoot->endMoviePlaybackState = 0;
         g_EndMoviePendingTicks = 0;
         /* one movie frame per timer tick until the movie ends (or the end-movie flag is cleared elsewhere) */
@@ -4639,7 +4644,7 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
     backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
   }
   UiPointerList_InitializeMeasuredTextRows
-            (backendCount,(void **)g_FrontendNetworkBackendNameRows,
+            (backendCount,(Ptr32<void> *)g_FrontendNetworkBackendNameRows,
              (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
 }
 

@@ -902,6 +902,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   uint32_t soundIndex;
   ModelRuntimeNode *rootNode;
   DirectSoundVoiceSet **soundVoiceSet;
+  DirectSoundVoiceSet *quirkVoiceSet;
   GraphicsFixedVec3 *translationVec;
 
   soundIndex = factoryDefinition->primarySoundIndex;
@@ -911,16 +912,18 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
   rootNode = modelRuntime->rootModelNode;
   /* Original quirk: the voice set is read from rootNode + index * 4, not from
      worldRuntime->dwordArray, which is only tested for NULL. */
-  soundVoiceSet = *(DirectSoundVoiceSet ***)((uint8_t *)rootNode + soundIndex * 4);
+  soundVoiceSet = THANDOR_PTR32_AT(DirectSoundVoiceSet *, (uint8_t *)rootNode + soundIndex * 4);
   translationVec = &(rootNode->worldTransform).translation;
   if (soundVoiceSet == NULL) {
     return;
   }
   if (!TerrainGrid_TestProjectedCellMaskBits01((rootNode->worldTransform).translation.y,translationVec->x,
                                                worldRuntime)) {
+    /* the dword it points at is taken as the voice set (a 32-bit slot of the node's memory, as in the original) */
+    quirkVoiceSet = THANDOR_PTR32_AT(DirectSoundVoiceSet, soundVoiceSet);
     SpatialSound_PlayPositionedOneShot
               (factoryDefinition->positionedSoundMaximumDistanceQ12,factoryDefinition->positionedSoundGainQ15,
-               translationVec,soundVoiceSet);
+               translationVec,&quirkVoiceSet);
   }
 }
 
@@ -1959,7 +1962,7 @@ Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, indexed by the definition's
    runtimeClassId) for the army in *armyRuntimeHolder and returns its acceptance.
 */
-Bool8 ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
+Bool8 ArmyRuntimeNode_DispatchTypedCallback(Ptr32<ArmyRuntimeSlot> *armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
   Bool8 accepted;
@@ -3293,7 +3296,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear(activeFactionIndex,factionIndex);
   /* the active faction's byte of the cell's occupancy mask */
   if ((capabilityClear) &&
-      ((((uint8_t *)&fieldGrid->cells[gridWidthCells * cellRow + cellColumn].occupancyMask)[activeFactionIndex] &
+      ((((uint8_t *)&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)].occupancyMask)[activeFactionIndex] &
         ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
       (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
     g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;

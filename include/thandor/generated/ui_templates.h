@@ -34,7 +34,7 @@ typedef struct UiTextButtonTemplateFields {
 /* Single-line labels (g_UiFocusProxyControlVtable, UiSingleLineTextControl). */
 typedef struct UiLabelTemplateFields {
     uint32_t labelFlags; /* UI_LABEL_* */
-    UiNodeBase *focusChild; /* link */
+    Ptr32<UiNodeBase> focusChild; /* link */
     uint32_t textResourceId; /* a TextResourceId, or (UI_LABEL_TEXT_IS_STREAM) a command stream set at runtime */
     UiPackedTextStyle styleOverride;
 } UiLabelTemplateFields;
@@ -52,8 +52,8 @@ typedef struct UiRangeSliderTemplateFields {
 /* Resizable windows (g_UiResizableWindowControlVtable, UiResizableWindowControl). */
 typedef struct UiResizableWindowTemplateFields {
     UiRootFlags rootFlags; /* UI_ROOT_* */
-    struct UiRootCallbacks *callbacks;
-    struct UiRootNode *previousRoot;
+    Ptr32<struct UiRootCallbacks> callbacks;
+    Ptr32<struct UiRootNode> previousRoot;
     UiTextResourceId titleTextResourceId;
     uint32_t field5C;
     int32_t restoredLeft;
@@ -102,7 +102,7 @@ typedef struct UiDisplayModeOptionPrefix {
    id of the tab's technology and the tab's tooltip text (the expanded label), both set at runtime. */
 typedef struct UiTechnologyAreaTabPrefix {
     int32_t nameTextResourceId; /* -8: TECHNOLOGY_TEXT_ID_BASE + 2 * technology id */
-    uint16_t *tooltipText; /* -4 */
+    Ptr32<uint16_t> tooltipText; /* -4 */
 } UiTechnologyAreaTabPrefix;
 /* The <node>_prefix of the given type in front of a node the code only has as a pointer (the
    node of an action callback, a node chosen at runtime); with the node's name known,
@@ -208,9 +208,7 @@ typedef struct DisplaySettingsUiImage {
 /* A link to node `node` of the template (its offset in the template, made a pointer when the copy is linked). */
 #define DISPLAY_SETTINGS_LINK(node) UI_TEMPLATE_LINK(offsetof(DisplaySettingsUiImage, node))
 /* The node offsets of the original template image: the field structs must keep them. */
-/* The template layouts are the original 32-bit images; on x64 the node structs are larger and these offsets do
-   not hold (TODO 5f: typed template nodes for x64). */
-#if !defined(_WIN64)
+/* The template layouts are the original 32-bit images on both architectures (pointer fields are Ptr32). */
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, displaySettingsWindow) == 0x0, "DisplaySettingsUiImage layout");
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, cancelButton) == 0x78, "DisplaySettingsUiImage layout");
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, applyButton) == 0xD4, "DisplaySettingsUiImage layout");
@@ -240,7 +238,6 @@ THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasSliderFrame) == 
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasSlider) == 0xA78, "DisplaySettingsUiImage layout");
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorScaleValueText) == 0xADC, "DisplaySettingsUiImage layout");
 THANDOR_STATIC_ASSERT(offsetof(DisplaySettingsUiImage, colorBiasValueText) == 0xB38, "DisplaySettingsUiImage layout");
-#endif
 
 /* g_UiFourValueDialogTemplateImage: 4 UI nodes. FOUR_VALUE_DIALOG_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */

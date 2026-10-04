@@ -518,7 +518,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
   ArmyRuntimeSlot *createdModelNode;
   ArmyRuntimeSlot *createdArmySlot;
   ModelRuntimeSlot *createdModelRuntime;
-  ArmyRuntimeSlot **armyRuntime;
+  Ptr32<ArmyRuntimeSlot> *armyRuntime;
   Q12 anchorXQ12;
   Q12 anchorYQ12;
 
@@ -530,7 +530,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
          (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime,&anchorYQ12,&anchorXQ12)) {
     return false;
   }
-  armyRuntime = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+  armyRuntime = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorYQ12,anchorXQ12,factionIndex,armyAssetId,worldRuntime,
                      NULL);
   if (armyRuntime == NULL) {
@@ -747,12 +747,12 @@ static void AiConstructionPlanner_CreatePlacedAsset
           (FieldGridCell *cell,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 {
-  ArmyRuntimeSlot **createdSlots;
+  Ptr32<ArmyRuntimeSlot> *createdSlots;
   ArmyRuntimeSlot *modelNodeRuntime;
   ArmyRuntimeSlot *createdArmySlot;
   ModelRuntimeSlot *createdModelRuntime;
 
-  createdSlots = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+  createdSlots = (Ptr32<ArmyRuntimeSlot> *)ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)cell->triangle0NormalAngles,
                      cell->worldY,cell->worldX,factionIndex,armyAssetId,worldRuntime,NULL);
   if (createdSlots == NULL) {

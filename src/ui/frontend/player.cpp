@@ -188,7 +188,7 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
 {
   UiNodeBase *parentCursor;
-  FrontendPlayerRuntimeRecord **selectedPlayerRuntimeSlot;
+  Ptr32<FrontendPlayerRuntimeRecord> *selectedPlayerRuntimeSlot;
   
   /* rootNode starts as the kick button and walks up to the frontend root */
   parentCursor = rootNode->base.parent;
@@ -197,9 +197,9 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
     parentCursor = rootNode->base.parent;
   }
   /* the list's row slots point at the player blocks */
-  selectedPlayerRuntimeSlot = (FrontendPlayerRuntimeRecord **)
+  selectedPlayerRuntimeSlot = (Ptr32<FrontendPlayerRuntimeRecord> *)
        ((FrontendNetworkListsRuntimeView *)rootNode)->playerRuntimeList.selectedRowSlot;
-  if (selectedPlayerRuntimeSlot != (FrontendPlayerRuntimeRecord **)
+  if (selectedPlayerRuntimeSlot != (Ptr32<FrontendPlayerRuntimeRecord> *)
       ((FrontendNetworkListsRuntimeView *)rootNode)->playerRuntimeList.rowSlots) {
     (*selectedPlayerRuntimeSlot)->heartbeatExpiryTicks = 1;
     FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
@@ -930,15 +930,15 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   int entryIndex;
   int scanIndex;
   int memberIndex;
-  ArmyRuntimeSlot **factionGroupMembers;
-  GameEntityRuntime **groupEntries;
-  GameEntityRuntime **selectionEntries;
-  GameEntityRuntime **sourceEntries;
-  GameEntityRuntime **destEntries;
+  Ptr32<ArmyRuntimeSlot> *factionGroupMembers;
+  Ptr32<GameEntityRuntime> *groupEntries;
+  Ptr32<GameEntityRuntime> *selectionEntries;
+  Ptr32<GameEntityRuntime> *sourceEntries;
+  Ptr32<GameEntityRuntime> *destEntries;
   FixedVectorQ12 averagePosition;
 
   /* the 32 army pointers of the group (they hold the same pointers as a selection) */
-  groupEntries = (GameEntityRuntime **)&g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32
+  groupEntries = (Ptr32<GameEntityRuntime> *)&g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32
                   [selectionGroupIndex * SELECTION_GROUP_ENTRY_COUNT];
   selectionEntries = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection.entries;
   if ((transferModeFlags & SELECTION_TRANSFER_TO_GROUP) != 0) {
@@ -1390,10 +1390,10 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
 {
   FrontendHeartbeatTickCount *heartbeatTicks;
   UiListRowCount *rowCountField;
-  void ***selectedSlotField;
-  void **selectedSlot;
+  Ptr32<Ptr32<void>> *selectedSlotField;
+  Ptr32<void> *selectedSlot;
   UiListRowCount initialRowCount;
-  void **rowSlotCursor;
+  Ptr32<void> *rowSlotCursor;
   int copyRemaining;
   int blocksRemaining;
   FrontendPlayerRuntimeRecord *sourceBlock;

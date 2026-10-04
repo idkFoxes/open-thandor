@@ -289,7 +289,7 @@ Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Grap
   }
   return ARGB8888_RGB_MASK <
          ((GraphicsPaletteTextureSourceAsset *)sourceAsset)->paletteEntries
-                    [paletteIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (uint32_t)pixels[pixelIndex]].argb8888;
+                    [(int32_t)(paletteIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (uint32_t)pixels[pixelIndex])].argb8888;
 }
 
 
@@ -705,7 +705,7 @@ static Bool8 GraphicsTextureDecompose_CutArgbRegion
       }
       topLeft = topLeft + sourceWidth;
     }
-    bottomRow = topLeft + sourceWidth * (record->pixelHeight - 1);
+    bottomRow = topLeft + (int32_t)(sourceWidth * (record->pixelHeight - 1));
     while (GraphicsTextureDecompose_ArgbRunIs(bottomRow,record->logicalWidth,1,edgeColor)) {
       record->pixelHeight = record->pixelHeight - 1;
       if (record->pixelHeight == 0) {
@@ -806,7 +806,7 @@ static Bool8 GraphicsTextureDecompose_CutIndexedRegion
       }
       topLeft = topLeft + sourceWidth;
     }
-    bottomRow = topLeft + sourceWidth * (record->pixelHeight - 1);
+    bottomRow = topLeft + (int32_t)(sourceWidth * (record->pixelHeight - 1));
     while (GraphicsTextureDecompose_IndexRunIs(bottomRow,record->logicalWidth,1,edgeIndex)) {
       record->pixelHeight = record->pixelHeight - 1;
       if (record->pixelHeight == 0) {
@@ -1332,7 +1332,7 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
   errorCode = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
   if (errorCode == 0) {
     entryCount = convertedSource->subresourceCount;
-    errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + 8,(void **)&set);
+    errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + GRAPHICS_TEXTURE_SET_HEADER_BYTES,(void **)&set);
     if (errorCode == 0) {
       set->sourceAsset = sourceAsset;
       set->subresourceCount = entryCount;

@@ -518,13 +518,13 @@ static uint32_t ModelDefinition_ClaimRegistrySlot(ModelDefinitionResolveView *de
 static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveView *definition)
 {
   /* each effect field holds its serialized id until the lookup replaces it by the definition */
-  EffectDefinition **const destructionEffects[] = {
+  Ptr32<EffectDefinition> *const destructionEffects[] = {
     &definition->destructionEffect0,&definition->destructionEffect1,
     &definition->destructionEffect2,&definition->destructionEffect3,
     &definition->destructionEffect4,&definition->destructionEffect5,
     &definition->destructionEffect6,&definition->destructionEffect7
   };
-  EffectDefinition **const emitterAndRemovalEffects[] = {
+  Ptr32<EffectDefinition> *const emitterAndRemovalEffects[] = {
     &definition->emitterEffectDefinitionReference,&definition->waterEmitterEffectDefinitionReference,
     &definition->removalEffectDefinitionReference,&definition->damageEffectDefinitionReference
   };
@@ -532,6 +532,7 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
   uint32_t fieldIndex;
   ShotDefinition *resolvedShot;
   ShotDefinition *resolvedEmitterShot;
+  EffectDefinition *resolvedEffect;
 
   status = ShotDefinitionRegistry_FindByIdWithError
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot); /* 5f-format: ModelDefinition.shotDefinitionReference (id on disk, pointer after resolve) */
@@ -539,8 +540,9 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
   definition->shotDefinitionReference = resolvedShot;
   for (fieldIndex = 0; fieldIndex < 8; fieldIndex++) {
     status = EffectDefinitionRegistry_FindById
-                       ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],destructionEffects[fieldIndex]); /* 5f-format: ModelDefinition destruction effect references (id on disk, pointer after resolve) */
+                       ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],&resolvedEffect); /* 5f-format: ModelDefinition destruction effect references (id on disk, pointer after resolve) */
     if (status != 0) return status;
+    *destructionEffects[fieldIndex] = resolvedEffect;
   }
   /* -1: the definition has no emitter shot */
   if (definition->emitterShotDefinitionReference != (ShotDefinition *)(intptr_t)-1) {
@@ -552,8 +554,9 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
   for (fieldIndex = 0; fieldIndex < 4; fieldIndex++) {
     status = EffectDefinitionRegistry_FindById
                        ((PckEffectDefinitionIdCatalog)*emitterAndRemovalEffects[fieldIndex], /* 5f-format: ModelDefinition emitter/removal effect references (id on disk, pointer after resolve) */
-                        emitterAndRemovalEffects[fieldIndex]);
+                        &resolvedEffect);
     if (status != 0) return status;
+    *emitterAndRemovalEffects[fieldIndex] = resolvedEffect;
   }
   return 0;
 }
@@ -579,17 +582,17 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
      outside the run of its entry reads the neighbouring entries (as in the original). */
   if (definition->placementContactKindIndex == 1) {
     uint32_t maxWaterSurfaceDelta =
-         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA + terrainClass];
+         g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA + terrainClass)];
     uint32_t maxNormalAngle =
-         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE + terrainClass];
+         g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE + terrainClass)];
     ((ModelDefinition *)definition)->classParameterCC = maxWaterSurfaceDelta;
     definition->runtimeValue24 = maxNormalAngle;
   }
   else if (definition->placementContactKindIndex == 4) {
     uint32_t secondaryThreshold =
-         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_CLASS4_SECONDARY + (terrainClass - 1)];
+         g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_CLASS4_SECONDARY + (terrainClass - 1))];
     definition->runtimeValue24 =
-         g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE + (terrainClass - 1)];
+         g_GridTerrainClassThresholds[(int32_t)(GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE + (terrainClass - 1))];
     definition->traversalSecondaryThreshold = secondaryThreshold;
   }
   else {

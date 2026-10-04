@@ -147,7 +147,7 @@ Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Se
 void SelectionPointerArray_ApplyMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
-void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRuntime> *selectionEntries);
 
 void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
           (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection);
@@ -202,11 +202,11 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget
 void SelectionPointerArray_ApplyTargetPositionCommand
           (Q12 coordinateA,uint32_t coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection);
 
-void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries);
 
-void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries);
 
-void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_SelfDestruct(Ptr32<GameEntityRuntime> *selectionEntries);
 
 void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection);
 

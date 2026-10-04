@@ -567,7 +567,8 @@ uint32_t Graphics_AllocateTables(void)
   }
   g_GraphicsTextureSlots = (GraphicsTextureResource **)allocation;
   zeroCursor = (uint32_t *)allocation;
-  for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingDwords != 0; remainingDwords--) {
+  for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *) / 4; remainingDwords != 0;
+       remainingDwords--) {
     *zeroCursor = 0;
     zeroCursor++;
   }

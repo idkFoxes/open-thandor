@@ -31,8 +31,8 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton);
 void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton);
 
 extern uint16_t g_FrontendLocalPlayerNameUtf16[20];
-extern FrontendSessionDiscoveryRecord **g_FrontendSessionListRows;
-extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32];
+extern Ptr32<FrontendSessionDiscoveryRecord> *g_FrontendSessionListRows;
+extern Ptr32<FrontendPlayerRuntimeRecord> g_FrontendPlayerRuntimeRecordPointers32[32];
 extern uint32_t g_FrontendNetworkState;
 extern char g_SpielerSpielNetzwerkHostKeywordsAscii[31];
 extern char g_NameClientKarteKeywordsAscii[21]; /* the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */

@@ -227,7 +227,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   }
   else {
     rowStrideBytes = g_GridScratchWidth * 8;
-    routeScratchCell = g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumn;
+    routeScratchCell = g_GridScratchPrimary + (int32_t)(startRow * g_GridScratchWidth) + startColumn;
     segmentBlocked = GridPathLine_TestHexSegmentBlocked
                        (g_GridPathHighCostMask,startRow,startColumn,routeScratchCell,
                         g_GridScratchPrimary + targetRow * g_GridScratchWidth + targetColumn);
@@ -257,7 +257,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
                   (GRID_PATH_PROPAGATION_PASSES,routeScratchCell,reachableRow,reachableColumn);
         rowStrideBytes = g_GridScratchWidth * 8;
         routeScratchCell = g_GridScratchPrimary +
-                       ((startRow * g_GridScratchWidth + startColumn) - g_GridScratchWidth);
+                       (int32_t)((startRow * g_GridScratchWidth + startColumn) - g_GridScratchWidth);
       }
       fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
       fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
@@ -397,7 +397,7 @@ Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
   }
   rowStrideBytes = g_GridScratchWidth * 8;
   GridReachability_MarkOpenRegionRecursive
-            (rowStrideBytes,g_GridScratchPrimary + cellRow * g_GridScratchWidth + cellColumn);
+            (rowStrideBytes,g_GridScratchPrimary + (int32_t)(cellRow * g_GridScratchWidth) + cellColumn);
   GridFootprint_ClearTraversalFlagsAroundWorldPoint(radiusMetric,worldYQ12,worldXQ12);
   /* find the first marked cell inside the outer footprint that has a neighbour outside it (count 0); the
      tested cell is scratchCursor[scratchWidth], the cursor sits on the row above it */
@@ -527,7 +527,7 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
       if ((-1 < modelColumn) && (-1 < modelRow) && (modelColumn < (int)g_GridScratchWidth) &&
           (modelRow < (int)g_GridScratchHeight)) {
         GridScratch_FloodFillConnectedCells
-                  (wallMask,g_GridScratchWidth << 3,g_GridScratchPrimary + modelRow * g_GridScratchWidth + modelColumn);
+                  (wallMask,g_GridScratchWidth << 3,g_GridScratchPrimary + (int32_t)(modelRow * g_GridScratchWidth) + modelColumn);
       }
     }
     ownerNode = ownerNode->nextNode;
@@ -596,15 +596,15 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
       cellClassMask = GridScratch_ClassifyFieldCell(fieldCell);
       cellFlags = fieldCell->flagsAndMaterial;
       if ((cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
-        scratchCursor[scratchWidth * -2 + 2].stateMask = scratchCursor[scratchWidth * -2 + 2].stateMask | cellClassMask;
-        scratchCursor[scratchWidth * -2 + 3].stateMask = scratchCursor[scratchWidth * -2 + 3].stateMask | cellClassMask;
-        scratchCursor[1 - scratchWidth].stateMask = scratchCursor[1 - scratchWidth].stateMask | cellClassMask;
-        scratchCursor[2 - scratchWidth].stateMask = scratchCursor[2 - scratchWidth].stateMask | cellClassMask;
-        scratchCursor[3 - scratchWidth].stateMask = scratchCursor[3 - scratchWidth].stateMask | cellClassMask;
+        scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 2)].stateMask | cellClassMask;
+        scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 3)].stateMask | cellClassMask;
+        scratchCursor[(int32_t)(1 - scratchWidth)].stateMask = scratchCursor[(int32_t)(1 - scratchWidth)].stateMask | cellClassMask;
+        scratchCursor[(int32_t)(2 - scratchWidth)].stateMask = scratchCursor[(int32_t)(2 - scratchWidth)].stateMask | cellClassMask;
+        scratchCursor[(int32_t)(3 - scratchWidth)].stateMask = scratchCursor[(int32_t)(3 - scratchWidth)].stateMask | cellClassMask;
         if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
-          scratchCursor[scratchWidth * -2 + 4].stateMask = scratchCursor[scratchWidth * -2 + 4].stateMask | cellClassMask;
-          scratchCursor[4 - scratchWidth].stateMask = scratchCursor[4 - scratchWidth].stateMask | cellClassMask;
-          scratchCursor[5 - scratchWidth].stateMask = scratchCursor[5 - scratchWidth].stateMask | cellClassMask;
+          scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask = scratchCursor[(int32_t)(scratchWidth * -2 + 4)].stateMask | cellClassMask;
+          scratchCursor[(int32_t)(4 - scratchWidth)].stateMask = scratchCursor[(int32_t)(4 - scratchWidth)].stateMask | cellClassMask;
+          scratchCursor[(int32_t)(5 - scratchWidth)].stateMask = scratchCursor[(int32_t)(5 - scratchWidth)].stateMask | cellClassMask;
         }
       }
       if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
@@ -652,7 +652,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
         }
       }
       scratchStride = g_GridScratchWidth;
-      scratchCursor = scratchCursor + scratchWidth * -3 + 4;
+      scratchCursor = scratchCursor + (int32_t)(scratchWidth * -3) + 4;
       fieldCell++;
       columnsRemaining--;
     } while (columnsRemaining != 0);
@@ -663,7 +663,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   /* grow class 24 by one field cell: mark (visited) every open cell with a class-24 cell four scratch cells
      away in one of the six hex directions, then promote the marks */
   cellsToPromote = g_GridScratchHeight * g_GridScratchWidth;
-  scratchCursor = g_GridScratchPrimary + g_GridScratchWidth * -4;
+  scratchCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * -4);
   cellsRemaining = cellsToPromote;
   do {
     scratchCursor[scratchStride * 4].stateMask =
@@ -842,22 +842,22 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
              (uint32_t)((currentFieldCell->occupancyMask &
                          FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,7)) != 0) * 2) * 2) * 2) * 2)
              * 2) * 2) * 2;
-        scratchCellCursor[scratchWidth * -4 + 4] =
-             scratchCellCursor[scratchWidth * -4 + 4] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -4 + 6] =
-             scratchCellCursor[scratchWidth * -4 + 6] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -2 + 2] =
-             scratchCellCursor[scratchWidth * -2 + 2] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -2 + 4] =
-             scratchCellCursor[scratchWidth * -2 + 4] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -2 + 6] =
-             scratchCellCursor[scratchWidth * -2 + 6] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -4 + 8] =
-             scratchCellCursor[scratchWidth * -4 + 8] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -2 + 8] =
-             scratchCellCursor[scratchWidth * -2 + 8] | factionPresenceMask;
-        scratchCellCursor[scratchWidth * -2 + 10] =
-             scratchCellCursor[scratchWidth * -2 + 10] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -4 + 4)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -4 + 4)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -4 + 6)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -4 + 6)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -2 + 2)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -2 + 2)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -2 + 4)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -2 + 4)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -2 + 6)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -2 + 6)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -4 + 8)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -4 + 8)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -2 + 8)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -2 + 8)] | factionPresenceMask;
+        scratchCellCursor[(int32_t)(scratchWidth * -2 + 10)] =
+             scratchCellCursor[(int32_t)(scratchWidth * -2 + 10)] | factionPresenceMask;
         scratchCellCursor[8] = scratchCellCursor[8] | factionPresenceMask;
         scratchCellCursor[10] = scratchCellCursor[10] | factionPresenceMask;
         scratchCellCursor[scratchWidth * 2 + 8] =
@@ -872,14 +872,14 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
         scratchCellCursor[6] = scratchCellCursor[6] | factionPresenceMask;
         propagatedScratchCursor = scratchCellCursor + scratchWidth * 2;
         propagatedScratchCursor[-2] = propagatedScratchCursor[-2] | factionPresenceMask;
-        propagatedScratchCursor[scratchWidth * 2 + -2] =
-             propagatedScratchCursor[scratchWidth * 2 + -2] | factionPresenceMask;
-        propagatedScratchCursor[scratchWidth * 2 + -4] =
-             propagatedScratchCursor[scratchWidth * 2 + -4] | factionPresenceMask;
-        propagatedScratchCursor[scratchWidth * 4 + -2] =
-             propagatedScratchCursor[scratchWidth * 4 + -2] | factionPresenceMask;
-        propagatedScratchCursor[scratchWidth * 4 + -4] =
-             propagatedScratchCursor[scratchWidth * 4 + -4] | factionPresenceMask;
+        propagatedScratchCursor[(int32_t)(scratchWidth * 2 + -2)] =
+             propagatedScratchCursor[(int32_t)(scratchWidth * 2 + -2)] | factionPresenceMask;
+        propagatedScratchCursor[(int32_t)(scratchWidth * 2 + -4)] =
+             propagatedScratchCursor[(int32_t)(scratchWidth * 2 + -4)] | factionPresenceMask;
+        propagatedScratchCursor[(int32_t)(scratchWidth * 4 + -2)] =
+             propagatedScratchCursor[(int32_t)(scratchWidth * 4 + -2)] | factionPresenceMask;
+        propagatedScratchCursor[(int32_t)(scratchWidth * 4 + -4)] =
+             propagatedScratchCursor[(int32_t)(scratchWidth * 4 + -4)] | factionPresenceMask;
         *propagatedScratchCursor = *propagatedScratchCursor | factionPresenceMask;
         propagatedScratchCursor[2] = propagatedScratchCursor[2] | factionPresenceMask;
         propagatedScratchCursor[4] = propagatedScratchCursor[4] | factionPresenceMask;
@@ -902,13 +902,13 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
         lowerScratchCursor[scratchWidth * 2 + 4] = lowerScratchCursor[scratchWidth * 2 + 4] | factionPresenceMask;
         lowerScratchCursor[scratchWidth * 4] = lowerScratchCursor[scratchWidth * 4] | factionPresenceMask;
         lowerScratchCursor[scratchWidth * 4 + 2] = lowerScratchCursor[scratchWidth * 4 + 2] | factionPresenceMask;
-        lowerScratchCursor[scratchWidth * 2 + -2] = lowerScratchCursor[scratchWidth * 2 + -2] | factionPresenceMask
+        lowerScratchCursor[(int32_t)(scratchWidth * 2 + -2)] = lowerScratchCursor[(int32_t)(scratchWidth * 2 + -2)] | factionPresenceMask
         ;
-        lowerScratchCursor[scratchWidth * 2 + -4] = lowerScratchCursor[scratchWidth * 2 + -4] | factionPresenceMask
+        lowerScratchCursor[(int32_t)(scratchWidth * 2 + -4)] = lowerScratchCursor[(int32_t)(scratchWidth * 2 + -4)] | factionPresenceMask
         ;
-        lowerScratchCursor[scratchWidth * 4 + -2] = lowerScratchCursor[scratchWidth * 4 + -2] | factionPresenceMask
+        lowerScratchCursor[(int32_t)(scratchWidth * 4 + -2)] = lowerScratchCursor[(int32_t)(scratchWidth * 4 + -2)] | factionPresenceMask
         ;
-        nextScratchCellCursor = lowerScratchCursor + scratchWidth * -6 + 8;
+        nextScratchCellCursor = lowerScratchCursor + (int32_t)(scratchWidth * -6) + 8;
       }
       scratchCellCursor = nextScratchCellCursor;
       columnsRemaining--;
@@ -944,7 +944,7 @@ Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t
       cellColumn >= (int)g_GridScratchWidth || cellRow >= (int)g_GridScratchHeight) {
     return true;
   }
-  cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
+  cellStateMask = g_GridScratchPrimary[(int32_t)(cellRow * g_GridScratchWidth + cellColumn)].stateMask;
   /* sign bit: GRID_SCRATCH_BLOCKED */
   if ((int)cellStateMask < 0) {
     return true;
@@ -1175,7 +1175,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
     return;
   }
   /* world position of the centre cell's centre */
-  centerCellCursor = g_GridScratchPrimary + g_GridScratchWidth * centerRow + centerColumn;
+  centerCellCursor = g_GridScratchPrimary + (int32_t)(g_GridScratchWidth * centerRow) + centerColumn;
   centerRowQ12 = centerRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
   wideProduct = (int64_t)(centerRowQ12 + (centerColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
   centerCellWorldX = (int)((uint64_t)wideProduct >> 32) << 19 | (uint32_t)wideProduct >> 13;
@@ -1335,7 +1335,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   segmentBlocked = false;
   if (!startRelocated) {
     segmentBlocked = GridPathLine_TestHexSegmentBlocked
-                       (0,startRow,startColumn,g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumn,
+                       (0,startRow,startColumn,g_GridScratchPrimary + (int32_t)(startRow * g_GridScratchWidth) + startColumn,
                         g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimit - 2));
     targetColumn = columnLimit - 2;
     targetRow = rowLimit - 2;
@@ -1691,7 +1691,7 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
   queue.originCell = originCell;
   queue.readCursor = g_GridPathCostQueueBegin;
   queue.writeCursor = g_GridPathCostQueueBegin + 1;
-  startCell = g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumn;
+  startCell = g_GridScratchPrimary + (int32_t)(startRow * g_GridScratchWidth) + startColumn;
   *g_GridPathCostQueueBegin = startCell;
   g_GridPathCostQueuePassBoundary = queue.readCursor;
   startCell->pathCost = 0;
@@ -1952,7 +1952,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
     *scratchRecord = *scratchRecord & ~(GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED);
     scratchRecord[1]++;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-    scratchRecord = scratchRecord + g_GridScratchWidth * -4 + 2;
+    scratchRecord = scratchRecord + (int32_t)(g_GridScratchWidth * -4) + 2;
     nextCount = visitedCount + 1;
   } while ((*scratchRecord & GRID_SCRATCH_BLOCKED) == 0);
   return visitedCount;
@@ -2143,7 +2143,7 @@ Bool8 GridPathCost_RelocateFromBlockedCell
     return true;
   }
   bestHexDistance = INT32_MAX;
-  rowStartCell = g_GridScratchPrimary + searchRow * g_GridScratchWidth + minColumn;
+  rowStartCell = g_GridScratchPrimary + (int32_t)(searchRow * g_GridScratchWidth) + minColumn;
   for (; rowsRemaining != 0; rowsRemaining--) {
     scanCell = rowStartCell;
     for (scanColumn = minColumn; scanColumn != minColumn + scanWidth; scanColumn++) {

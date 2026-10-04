@@ -8,7 +8,6 @@
 #include <thandor/graphics/render/shading.h>
 #include <thandor/thandor.h>
 
-#if !defined(_WIN64)
 /* the original offsets of the render context view and the 0x80-byte primitive blocks */
 static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
               offsetof(GeneratedTextureRenderContextView, lightAzimuthAngle) == 0xB8 &&
@@ -16,7 +15,6 @@ static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
               "GeneratedTextureRenderContextView layout");
 static_assert(offsetof(GraphicsPrimitivePacket, textureEntry) == 0x64 && offsetof(GraphicsPrimitiveQueue, primaryNodes) == 0x20,
               "primitive block layout");
-#endif
 static_assert(sizeof(GraphicsPrimitivePacket) == GRAPHICS_PROJECTED_BLOCK_BYTES, "a primitive block is one packet");
 
 /* Module data. */
@@ -709,7 +707,7 @@ MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
             if (radiusScale != 0) {
               /* bits 5..36 of the remainder, divided unsigned */
               scaledLight = pmulhw(Shading_DuplicateBytesToWordLanes(packedColor,2),
-                              g_PackedLightingLookupTable[(uint32_t)(remainingQ24 >> 5) / radiusScale]);
+                              g_PackedLightingLookupTable[(int32_t)((uint32_t)(remainingQ24 >> 5) / radiusScale)]);
               packedLightAccumulator = paddusw(packedLightAccumulator,scaledLight);
             }
           }
@@ -1498,8 +1496,8 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
   }
   /* top-left texel of the tile (the pixel cursor points at its centre) */
   tileTopLeft = g_GraphicsShadingGeneratedTexturePixelCursor +
-                (-(g_GraphicsShadingGridHalfSize >> 1) -
-                 g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1));
+                (int32_t)(-(g_GraphicsShadingGridHalfSize >> 1) -
+                          g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1));
   /* pass 1: tile -> scratch, each texel reduced to 3 bits */
   textureCursor = tileTopLeft;
   scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
@@ -1851,7 +1849,7 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
   bottomXClamped = ShadingRaster_ClampToTile(bottomVertex->component0);
   upperDeltaX = middleXClamped - topXClamped;
   longDeltaX = bottomXClamped - topXClamped;
-  rowPixels = g_GraphicsShadingGeneratedTexturePixelCursor + (topY >> Q12_SHIFT) * g_GraphicsShadingTextureDimension;
+  rowPixels = g_GraphicsShadingGeneratedTexturePixelCursor + (int32_t)((topY >> Q12_SHIFT) * g_GraphicsShadingTextureDimension);
   /* the long edge runs from the top to the bottom vertex over all rows */
   longEdgeStep = longDeltaX / rowsRemaining;
   longEdgeX = topXClamped;

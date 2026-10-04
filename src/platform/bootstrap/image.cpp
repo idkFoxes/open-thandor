@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/core/ptr32.h>
 
 /* Instruction, frame and stack pointer of a CONTEXT and the StackWalk64 machine type of this build. The
    crash logs were written for x86; the x64 build logs the same through Rip/Rbp/Rsp (5f). */
@@ -170,6 +171,16 @@ void Thandor_LogStack(const char *reason, unsigned value)
     log_stack_thread(out, &context, GetCurrentThread());
     fclose(out);
 }
+
+#if defined(_WIN64)
+/* core/ptr32.h: a pointer of 2 GB or more was stored in a 32-bit field of an original layout. */
+void Thandor_Ptr32Overflow(uintptr_t value)
+{
+    Thandor_Log("Ptr32: pointer 0x%llX does not fit a 32-bit field", (unsigned long long)value);
+    Thandor_LogStack("Ptr32 overflow stack", (unsigned)value);
+    ExitProcess(0xF5);
+}
+#endif
 
 /* First thing in the crash filter: registers and raw stack words to crash_raw.log using only
    kernel32/user32 calls, so a corrupted CRT heap or stack cannot stop it. Symbolize the code

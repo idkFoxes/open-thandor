@@ -1455,7 +1455,7 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
 static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointerListControl *control)
 
 {
-  void **rowSlotCursor;
+  Ptr32<void> *rowSlotCursor;
   UiListRowCount remainingRows;
   int selectedRowTop;
 
@@ -1492,8 +1492,8 @@ void UiPointerList_SortByExpandedTextFieldAscending
   int lastRowIndex;
   int comparisonsLeft;
   int remainingPasses;
-  void **passAnchorSlot;
-  void **rowSlotCursor;
+  Ptr32<void> *passAnchorSlot;
+  Ptr32<void> *rowSlotCursor;
   int textOrder;
   void *selectedRecord;
 
@@ -2945,8 +2945,8 @@ void UiTextListControl_DrawRowsAndSelection
   int rowTop;
   uint32_t lastVisibleRow;
   int highlightWidth;
-  uint16_t **lastRowSlot;
-  uint16_t **rowSlot;
+  Ptr32<uint16_t> *lastRowSlot;
+  Ptr32<uint16_t> *rowSlot;
   Bool8 framebufferUnavailable;
   RichTextExtent rowExtent;
   GraphicsTextureLogicalSize capSize;
@@ -3022,7 +3022,7 @@ void UiTextListControl_SelectRowFromPointer
   int controlLeft;
   int rowTop;
   RichTextExtent rowExtent;
-  uint16_t **clickedRowSlot;
+  Ptr32<uint16_t> *clickedRowSlot;
 
   if (((control->base).top > pointerY) || ((control->base).left > pointerX)) {
     return;
@@ -3071,15 +3071,15 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
           UiTextListControl *control)
 
 {
-  uint16_t **previousSelectedSlot;
-  uint16_t **scanSlot;
-  uint16_t **selectedSlot;
+  Ptr32<uint16_t> *previousSelectedSlot;
+  Ptr32<uint16_t> *scanSlot;
+  Ptr32<uint16_t> *selectedSlot;
   int pageUpRow;
   int selectedRowTop;
   int pulseFrames;
   uint32_t pageDownRow;
   UiListRowCount remainingRows;
-  uint16_t **candidateSlot;
+  Ptr32<uint16_t> *candidateSlot;
   Bool8 rowBelowKey;
   UiScrollableViewportSize viewportSize;
 
@@ -3116,7 +3116,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-    pageUpRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) -
+    pageUpRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) -
             ((int)(viewportSize.height / control->rowHeight) - 1);
     if (pageUpRow < 0) {
       pageUpRow = 0;
@@ -3125,7 +3125,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-    pageDownRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) +
+    pageDownRow = ((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) +
             (int)(viewportSize.height / control->rowHeight) - 1;
     if (control->rowCount <= pageDownRow) {
       pageDownRow = control->rowCount - 1;
@@ -3138,7 +3138,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
     }
   }
   else if (keyCode == KEYBOARD_KEY_CODE_DOWN) {
-    if (((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) + 1 <
+    if (((uint32_t)(((uintptr_t)control->selectedRowSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) + 1 <
         control->rowCount) {
       control->selectedRowSlot++;
     }
@@ -3152,7 +3152,7 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
        (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
-    selectedRowTop = ((uint32_t)(((uintptr_t)selectedSlot - (uintptr_t)control->rowTextSlots) / sizeof(uint16_t *))) * control->rowHeight;
+    selectedRowTop = ((uint32_t)(((uintptr_t)selectedSlot - (uintptr_t)control->rowTextSlots) / sizeof(Ptr32<uint16_t>))) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               (selectedRowTop + control->rowHeight + 1,(control->base).rightOffset,selectedRowTop,0,
                (UiScrollableControl *)(control->base).parent);
@@ -3224,7 +3224,7 @@ void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl 
    list's size follows its content: one list-font line plus 1 pixel per row, and the widest measured row
    plus 6 pixels; the parent (the scrollable frame) is laid out again for the new size.
 */
-void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
+void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,Ptr32<void> *rowPointers,UiPointerListControl *control)
 
 {
   UiNodeBase *parentNode;

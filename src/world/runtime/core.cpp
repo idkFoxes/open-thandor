@@ -533,7 +533,7 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 
 {
-  WorldOwnerListNode **ownerListHeadLink;
+  Ptr32<WorldOwnerListNode> *ownerListHeadLink;
   WorldOwnerListNode *previousHeadNode;
   WorldRuntimeContext *ownerWorld;
 
@@ -925,8 +925,8 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
                       (worldRuntime->motion.headingAngle,
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
-                        (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_COS - currentPitchAngle]) /
-                       (int64_t)g_FixedSineQ28[FIXED_SINE_TABLE_SIN - currentPitchAngle]));
+                        (int64_t)g_FixedSineQ28[(int32_t)(FIXED_SINE_TABLE_COS - currentPitchAngle)]) /
+                       (int64_t)g_FixedSineQ28[(int32_t)(FIXED_SINE_TABLE_SIN - currentPitchAngle)]));
     groundOffsetY = groundOffsetXY.sinValue;
     worldRuntime->motion.targetPositionXQ12 = groundOffsetXY.cosValue + worldRuntime->motion.positionXQ12;
     worldRuntime->motion.targetPositionYQ12 = groundOffsetY + worldRuntime->motion.positionYQ12;

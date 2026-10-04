@@ -541,7 +541,7 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
 
 {
   SelectionRuntime_ResetMovementPruneAndRecenterEntries
-            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
 
@@ -556,7 +556,7 @@ void PlayerSelection_StopMovement
 
 {
   SelectionRuntime_StopMovement
-            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
 
@@ -570,7 +570,7 @@ void PlayerSelection_CancelTargets
 
 {
   SelectionRuntime_CancelTargets
-            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
 
@@ -584,7 +584,7 @@ void PlayerSelection_SelfDestruct
 
 {
   SelectionRuntime_SelfDestruct
-            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((Ptr32<GameEntityRuntime> *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
 
@@ -650,7 +650,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     modelNode = (target->common).ownership.modelNode;
     newWorldXQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
     newWorldYQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
-    definition = *(ModelDefinition **)(target->common).ownership.definitionOrClassRecord;
+    definition = THANDOR_PTR32_AT(ModelDefinition, (target->common).ownership.definitionOrClassRecord);
     (target->common).pathCoordinate0Q12 = newWorldXQ12;
     (target->common).pathCoordinate1Q12 = newWorldYQ12;
     (target->common).trackedCoordinate0Q12 = newWorldXQ12;
@@ -915,7 +915,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
   int worldXAggregateQ12;
   int worldYAggregateQ12;
   int worldZAggregateQ12;
-  GameEntityRuntime **selectionEntitySlotCursor;
+  Ptr32<GameEntityRuntime> *selectionEntitySlotCursor;
   int selectedEntityCount;
   int selectionSlotsRemaining;
 
@@ -972,7 +972,7 @@ Bool8 SelectionInfo_HasAnyEntry(void)
 
 {
   int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
+  Ptr32<GameEntityRuntime> *selectionEntryCursor;
   Bool8 entryIsEmpty;
   GameEntityRuntime *currentEntry;
 
@@ -998,7 +998,7 @@ Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 {
   int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
+  Ptr32<GameEntityRuntime> *selectionEntryCursor;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
@@ -1068,7 +1068,7 @@ Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void)
       continue;
     }
     selectedEntryCount++;
-    selectedDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    selectedDefinition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntry->common).ownership.definitionOrClassRecord);
     if (selectedDefinition->accelerationPerTick != 0) {
       return false;
     }
@@ -1098,7 +1098,7 @@ static Bool8 SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wo
     if (selectedEntity == NULL) {
       continue;
     }
-    class13Definition = *(ModelDefinition **)(selectedEntity->common).ownership.definitionOrClassRecord;
+    class13Definition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntity->common).ownership.definitionOrClassRecord);
     if (class13Definition->runtimeClassId != MODEL_RUNTIME_CLASS_13) {
       continue;
     }
@@ -1155,7 +1155,7 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
   (selectedModelNode->worldTransform).translation.x = worldYQ12;
   savedTranslationY = (selectedModelNode->worldTransform).translation.y;
   (selectedModelNode->worldTransform).translation.y = worldXQ12;
-  testResult = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
+  testResult = ArmyRuntimeNode_DispatchTypedCallback((Ptr32<ArmyRuntimeSlot> *)selectedEntity,inGameRuntime);
   (selectedModelNode->worldTransform).translation.x = savedTranslationX;
   (selectedModelNode->worldTransform).translation.y = savedTranslationY;
   return testResult;
@@ -1171,7 +1171,7 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void)
 {
   GameEntityRuntime *armyRuntime;
   int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
+  Ptr32<GameEntityRuntime> *selectionEntryCursor;
   Bool8 stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -1201,7 +1201,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
 
 {
   int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
+  Ptr32<GameEntityRuntime> *selectionEntryCursor;
   Bool8 stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -1228,8 +1228,8 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 {
   GameEntityRuntime *firstEntry;
   int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
-  GameEntityRuntime **nextSelectionEntryCursor;
+  Ptr32<GameEntityRuntime> *selectionEntryCursor;
+  Ptr32<GameEntityRuntime> *nextSelectionEntryCursor;
   Bool8 currentEntryIsEmpty;
 
   /* skip the empty entries */
@@ -1308,7 +1308,7 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
     if (selectedEntry == NULL) {
       continue;
     }
-    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    entityDefinition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntry->common).ownership.definitionOrClassRecord);
     if (entityDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
       capabilityMask = capabilityMask | 8;
     }
@@ -1413,7 +1413,7 @@ void SelectionPointerArray_ApplyMoveCommand
       continue;
     }
     selectedEntryCount++;
-    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    entityDefinition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntry->common).ownership.definitionOrClassRecord);
     if (entityDefinition->accelerationPerTick != 0) {
       return;
     }
@@ -1437,7 +1437,7 @@ void SelectionPointerArray_ApplyMoveCommand
    entity gets its point in the model runtime's classLinkState.classState78/7C reset to its model's lookup point
    (1,5) (flag 0x800 cleared) and the selection cleared.
 */
-void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_ResetMovementPruneAndRecenterEntries(Ptr32<GameEntityRuntime> *selectionEntries)
 
 {
   ModelRuntimeSlot *entryModelRuntime;
@@ -1476,7 +1476,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
       continue;
     }
     selectedEntryCount++;
-    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    entityDefinition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntry->common).ownership.definitionOrClassRecord);
     if (entityDefinition->accelerationPerTick != 0) {
       return;
     }
@@ -1543,7 +1543,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   do {
-    movementRuntime = *(ArmyMovementRuntime **)selection;
+    movementRuntime = THANDOR_PTR32_AT(ArmyMovementRuntime, selection);
     if (movementRuntime != NULL) {
       if (!spreadTooLarge) {
         targetWorldX = targetWorldX - movementRuntime->classState60;
@@ -1995,7 +1995,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
-    runtimeState = *(ArmyRuntimeSlot **)selection;
+    runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
     if (runtimeState != NULL) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
@@ -2028,7 +2028,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
-    runtimeState = *(ArmyRuntimeSlot **)selection;
+    runtimeState = THANDOR_PTR32_AT(ArmyRuntimeSlot, selection);
     if (runtimeState != NULL) {
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
@@ -2049,7 +2049,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
    current model position (GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel) and clears command
    flag 0x200.
 */
-void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_StopMovement(Ptr32<GameEntityRuntime> *selectionEntries)
 
 {
   GameEntityCommandFlags *commandFlagsPtr;
@@ -2074,7 +2074,7 @@ void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries)
 /* For every selected entity without command flag 0x2: drops an active attack/follow target
    (ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) and clears command-mode bit 0x10.
 */
-void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_CancelTargets(Ptr32<GameEntityRuntime> *selectionEntries)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -2098,7 +2098,7 @@ void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
 /* For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
    hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_MarkDestroyedRecursive).
 */
-void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_SelfDestruct(Ptr32<GameEntityRuntime> *selectionEntries)
 
 {
   GameEntityRuntime *modelRuntime;
@@ -2285,7 +2285,7 @@ void SelectionPointerArray_SetAircraftPadTargets
       continue;
     }
     /* entry -> model runtime (dword 0) -> definition */
-    padRuntime = *(ModelRuntimeLinkedChildSpawnAndBuildView **)selectedEntry;
+    padRuntime = THANDOR_PTR32_AT(ModelRuntimeLinkedChildSpawnAndBuildView, selectedEntry);
     if (padRuntime->modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
       /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;

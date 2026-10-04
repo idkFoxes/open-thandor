@@ -127,7 +127,7 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
   previewModelNode = (previewArmy->common).ownership.modelNode;
   g_InGamePlacementPreviewArmyRuntime = previewArmy;
   previewModelNode->tintArgb = previewTint;
-  armyDefinition = *(ModelDefinition **)(previewArmy->common).ownership.definitionOrClassRecord;
+  armyDefinition = THANDOR_PTR32_AT(ModelDefinition, (previewArmy->common).ownership.definitionOrClassRecord);
   ModelNodeRuntime_RebuildTransformsFromRoot(previewModelNode);
   if (((armyDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
       (3 < previewModelNode->childCount)) &&
@@ -209,7 +209,7 @@ static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *wo
 {
   EffectDefinition *waypointDefinition;
   EffectDefinition *targetDefinition;
-  GameEntityRuntime **selectionSlots;
+  Ptr32<GameEntityRuntime> *selectionSlots;
   GameEntityRuntime *entityRuntime;
   GameEntityRuntime *commandTargetEntity;
   ModelRuntimeNode *targetModelNode;
@@ -374,7 +374,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
 {
   ModelRuntimeNode *modelNode;
   GameEntityRuntime *selectedEntity;
-  GameEntityRuntime **selectionSlots;
+  Ptr32<GameEntityRuntime> *selectionSlots;
   int slotIndex;
 
   selectionSlots = g_SelectionInfoEntitySlots->entries;

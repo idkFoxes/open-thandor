@@ -218,7 +218,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(Ptr32<void> *)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
   UiTransfer_SendDiscoveryProbe();
@@ -246,14 +246,14 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
 {
   UiTransferPayloadByteCount *expiryTicks;
   UiListRowCount *rowCountField;
-  void ***selectedSlotField;
-  void **currentSelectedSlot;
+  Ptr32<Ptr32<void>> *selectedSlotField;
+  Ptr32<void> *currentSelectedSlot;
   FrontendSessionDiscoveryRecord *sourceRecord;
   FrontendSessionDiscoveryRecord *destinationRecord;
   UiListRowCount rowsRemaining;
   int dwordsRemaining;
-  void **rowSlotCursor;
-  FrontendSessionDiscoveryRecord **rowPointerCursor;
+  Ptr32<void> *rowSlotCursor;
+  Ptr32<FrontendSessionDiscoveryRecord> *rowPointerCursor;
   uint32_t *sourceDwordCursor;
   uint32_t *destinationDwordCursor;
   

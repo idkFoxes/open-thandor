@@ -155,7 +155,7 @@ void *g_GameStatTableImage = 0;
 
 GameDataAuxState g_GameDataAuxState = {0};
 
-uintptr_t g_FrontendPlayerListRows[8] = {
+UPtr32 g_FrontendPlayerListRows[8] = {
     0, /* row 0 */
     0, /* row 1 */
     0, /* row 2 */
@@ -1011,7 +1011,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
   uintptr_t playerListBase;
   float *splineBuffer;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
-  FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
+  Ptr32<FrontendPlayerRuntimeRecord> *playerRuntimePointerTableWriteCursor;
   uint8_t *scratchCursor;
   int remainingCount;
   uint32_t allocError;
@@ -1052,7 +1052,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
     return allocError;
   }
   allocError = g_MemoryApi.alloc
-                   (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
+                   (FRONTEND_SESSION_LIST_CAPACITY * sizeof(Ptr32<FrontendSessionDiscoveryRecord>),
                     (void **)&g_FrontendSessionListRows);
   if (allocError != 0) {
     return allocError;

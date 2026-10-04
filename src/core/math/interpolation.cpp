@@ -378,7 +378,7 @@ void CubicSpline_SolveCoefficientSystem(CubicSplineEquationCount equationCount,f
     CubicSpline_BackSubstituteRow(1.0,rowIndex - 1,0,rowIndex,rhsVector,matrix32x32);
     if (rowIndex + 1 < equationCount) {
       /* column rowIndex of L below the diagonal, divided by the pivot U[rowIndex][rowIndex] */
-      pivot = matrix32x32[rowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1)];
+      pivot = matrix32x32[(int32_t)(rowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1))];
       for (lowerRowIndex = rowIndex + 1; lowerRowIndex < equationCount; lowerRowIndex++) {
         CubicSpline_ForwardEliminateColumn(pivot,rowIndex - 1,rowIndex,lowerRowIndex,matrix32x32);
       }
@@ -389,7 +389,7 @@ void CubicSpline_SolveCoefficientSystem(CubicSplineEquationCount equationCount,f
   backRowIndex = equationCount - 1;
   do {
     CubicSpline_BackSubstituteRow
-              (matrix32x32[backRowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1)],equationCount - 1,
+              (matrix32x32[(int32_t)(backRowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1))],equationCount - 1,
                backRowIndex + 1,backRowIndex,rhsVector,matrix32x32);
     backRowIndex--;
   } while (-1 < (int)backRowIndex);
