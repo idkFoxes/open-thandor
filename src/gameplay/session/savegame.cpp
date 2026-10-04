@@ -19,6 +19,24 @@ uint16_t g_OldunitHexPathUtf16[12] = {'o', 'l', 'd', 'u', 'n', 'i', 't', '.', 'h
 
 uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
+/* L"army.hex" */
+__declspec(align(4)) uint16_t g_ArmyHexPathUtf16[9] = {'a', 'r', 'm', 'y', '.', 'h', 'e', 'x', 0};
+
+/* L"effect.hex" */
+uint16_t g_EffectHexPathUtf16[11] = {'e', 'f', 'f', 'e', 'c', 't', '.', 'h', 'e', 'x', 0};
+
+/* L"shot.hex" */
+uint16_t g_ShotHexPathUtf16[9] = {'s', 'h', 'o', 't', '.', 'h', 'e', 'x', 0};
+
+/* L"modul.hex" */
+uint16_t g_ModulHexPathUtf16[10] = {'m', 'o', 'd', 'u', 'l', '.', 'h', 'e', 'x', 0};
+
+/* L"light.hex" */
+uint16_t g_LightHexPathUtf16[10] = {'l', 'i', 'g', 'h', 't', '.', 'h', 'e', 'x', 0};
+
+/* L"widget.hex" */
+uint16_t g_WidgetHexPathUtf16[11] = {'w', 'i', 'd', 'g', 'e', 't', '.', 'h', 'e', 'x', 0};
+
 /* Implementation ownership: gameplay/session/savegame. */
 
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
@@ -374,4 +392,48 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   }
   runtimeImage->tailRecord = tailRecord;
   (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
+}
+
+/* Loads one saved runtime pool (a .hex entry of the save package) into its buffer; false with the load error in
+   *outError, which stays unchanged on success. */
+static Bool8 SavedLevel_LoadRuntimePool
+          (PckLoadCapacityFlags bufferCapacity,uint8_t *destination,uint16_t *path,uint32_t *outError)
+
+{
+  uint32_t loadResult; /* Package_LoadEntryIntoBuffer: byte count on success, error code on failure */
+
+  if (!Package_LoadEntryIntoBuffer(bufferCapacity,destination,path,&loadResult)) {
+    return NewLevel_Fail(outError,loadResult);
+  }
+  return true;
+}
+
+/* Loads the saved runtime pools (widget.hex, army.hex, modul.hex, effect.hex, shot.hex, light.hex) over the
+   freshly initialised ones and rebases their pointers. */
+Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError)
+
+{
+  if (!SavedLevel_LoadRuntimePool(worldRuntime->objectCount * sizeof(WorldObjectRecord),
+                                  (uint8_t *)worldRuntime->objectArray,(uint16_t *)g_WidgetHexPathUtf16,
+                                  outError) ||
+      !SavedLevel_LoadRuntimePool(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(uint8_t *)g_ArmyRuntimeSlots,
+                                  (uint16_t *)g_ArmyHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(MODEL_RUNTIME_POOL_BYTES,(uint8_t *)g_ModelRuntimeSlots,
+                                  (uint16_t *)g_ModulHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(EFFECT_RUNTIME_POOL_BYTES,(uint8_t *)g_EffectRuntimeSlots,
+                                  (uint16_t *)g_EffectHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(SHOT_RUNTIME_POOL_BYTES,(uint8_t *)g_ShotRuntimeSlots,
+                                  (uint16_t *)g_ShotHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(sizeof(g_GraphicsShadingRuntimeRecords),
+                                  (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)g_LightHexPathUtf16,
+                                  outError)) {
+    return false;
+  }
+  ArmyRuntimePool_RebaseAfterLoad();
+  ModelRuntimePool_RebaseAfterLoad();
+  ShotRuntime_RebaseSlotsAfterLoad();
+  EffectRuntime_RebaseSlotsAfterLoad();
+  ResourceRegistrationRuntime_RebaseLoadedRecords((ResourceRegistrationRuntimeImage *)worldRuntime);
+  RuntimeHexSegment_ToggleLightImageFlag();
+  return true;
 }

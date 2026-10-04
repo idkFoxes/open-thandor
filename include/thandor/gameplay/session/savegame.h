@@ -41,4 +41,13 @@ extern uint8_t g_InGameResourceRegistrationBusyCount;
 
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
 
+Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError);
+
+extern uint16_t g_EffectHexPathUtf16[11];
+extern uint16_t g_ShotHexPathUtf16[9];
+extern uint16_t g_ModulHexPathUtf16[10];
+extern uint16_t g_LightHexPathUtf16[10];
+extern uint16_t g_WidgetHexPathUtf16[11];
+extern uint16_t g_ArmyHexPathUtf16[9];
+
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

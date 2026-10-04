@@ -9,6 +9,8 @@
 #define THANDOR_GAMEPLAY_SESSION_H
 
 #include <thandor/gameplay/session/level.h>
+#include <thandor/gameplay/session/level_new.h>
+#include <thandor/gameplay/session/level_saved.h>
 #include <thandor/gameplay/session/level_script.h>
 #include <thandor/gameplay/session/runtime.h>
 #include <thandor/gameplay/session/savegame.h>

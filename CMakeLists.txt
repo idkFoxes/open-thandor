@@ -127,6 +127,8 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/level.cpp
+    src/gameplay/session/level_new.cpp
+    src/gameplay/session/level_saved.cpp
     src/gameplay/session/level_script.cpp
     src/gameplay/session/runtime.cpp
     src/gameplay/session/savegame.cpp
