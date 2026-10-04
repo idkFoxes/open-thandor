@@ -51,7 +51,7 @@ GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {0};
 
 GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
 
-GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = 0;
+GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = nullptr;
 
 GraphicsFixedRect g_ProjectionClipRect = {0};
 

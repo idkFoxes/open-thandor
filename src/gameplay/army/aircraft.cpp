@@ -67,7 +67,7 @@ static void ArmyAircraft_UpdateParked(WorldRuntimeContext *worldRuntime,ModelRun
 
   definition = modelRuntime->modelDefinition;
   rootNode = modelRuntime->rootModelNode;
-  if ((homeModelRuntime == NULL) || ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_READY)) {
+  if ((homeModelRuntime == nullptr) || ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_READY)) {
     (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_TAKING_OFF;
     (modelRuntime->classLinkState).classState7C = 0;
     (modelRuntime->classLinkState).classState64 = definition->phaseInitial;
@@ -128,7 +128,7 @@ static void ArmyAircraft_UpdateLanding(WorldRuntimeContext *worldRuntime,ModelRu
   (modelRuntime->classLinkState).classState68 = (modelRuntime->classLinkState).classState68 - 1;
   if ((int)(modelRuntime->classLinkState).classState68 < 0) {
     (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
-    if (homeModelRuntime != NULL) {
+    if (homeModelRuntime != nullptr) {
       ArmyAircraft_TouchDownOnPad(worldRuntime,modelRuntime,homeModelRuntime);
     }
   }
@@ -144,7 +144,7 @@ static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,Model
   ArmyAircraft_FlyPadArc(modelRuntime,modelRuntime->modelDefinition);
   rootNode = modelRuntime->rootModelNode;
   (modelRuntime->classLinkState).classState64 = (modelRuntime->classLinkState).classState64 - 1;
-  if (((modelRuntime->classLinkState).classState64 == 0) && (homeModelRuntime != NULL)) {
+  if (((modelRuntime->classLinkState).classState64 == 0) && (homeModelRuntime != nullptr)) {
     (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
     ModelRuntime_PlayDefinitionOneShotSound
             (homeModelRuntime,homeModelRuntime->definitionOrSavedId.runtimeDefinition->secondarySoundIndex,
@@ -375,14 +375,14 @@ void ArmyRuntimeClass_UpdateAircraft
     ArmyAircraft_UpdateAttackRun(worldRuntime,modelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_RETURNING:
-    if (homeModelRuntime != NULL) {
+    if (homeModelRuntime != nullptr) {
       ArmyAircraft_TryStartLanding(worldRuntime,modelRuntime,homeModelRuntime);
       break;
     }
     ModelRuntimeHierarchy_MarkDestroyedRecursive(worldRuntime,modelRuntime->ownerArmyRuntime);
     /* no home pad left: falls through */
   case ARMY_AIRCRAFT_STATE_NO_PAD:
-    if (homeModelRuntime == NULL) {
+    if (homeModelRuntime == nullptr) {
       childHeightZ = Q12_ONE;
     }
     else {
@@ -473,11 +473,11 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
   DirectSoundVoiceSet **soundVoiceSet;
 
   if ((soundAssetIndex == 0) || (worldRuntime->dwordArrayCount <= soundAssetIndex) ||
-     (worldRuntime->dwordArray == NULL)) {
+     (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
-  if (soundVoiceSet == NULL) {
+  if (soundVoiceSet == nullptr) {
     return;
   }
   if (!TerrainGrid_TestProjectedCellMaskBits01
@@ -560,7 +560,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
         }
       }
       ownerNode = ownerNode->nextNode;
-    } while (ownerNode != NULL);
+    } while (ownerNode != nullptr);
   }
   switch(modelRuntime->secondaryArmyAssetBuildState) {
   case 0:

@@ -43,7 +43,7 @@ static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
   int i;
   for (i = 0; i < childCount; i++) {
     ModelRuntimeSlot *child = node->attachments[i].childModelRuntimeOrSavedOffset;
-    if (child != NULL) {
+    if (child != nullptr) {
       sum = sum + ModelRuntimeHierarchy_SumArmourFrom(child);
     }
   }
@@ -62,7 +62,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   childCount = node->attachmentCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
     ModelRuntimeSlot *child = node->attachments[childIndex].childModelRuntimeOrSavedOffset;
-    if (child != NULL) {
+    if (child != nullptr) {
       ModelRuntimeHierarchy_MarkDestroyedFrom(child);
     }
   }
@@ -135,7 +135,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   }
   attachment = modelRuntimeSlot->attachments;
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
-    if (attachment->childModelRuntimeOrSavedOffset != NULL) {
+    if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
       ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)attachment->childModelRuntimeOrSavedOffset);
     }
     attachment++;
@@ -163,7 +163,7 @@ Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntim
   for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0;
       attachmentsRemaining--) {
     childModelRuntime = attachment->childModelRuntimeOrSavedOffset;
-    if (childModelRuntime != NULL) {
+    if (childModelRuntime != nullptr) {
       childConditionRatioQ12 = ModelRuntimeHierarchy_ComputeConditionRatioQ12(childModelRuntime);
       ratioSumQ12 = ratioSumQ12 + childConditionRatioQ12;
       ratioSampleCount++;
@@ -201,7 +201,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
        MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-      if (currentChildModelRuntime != NULL) {
+      if (currentChildModelRuntime != nullptr) {
         childMetric = currentChildModelRuntime->classState.energyLoadQ4;
         if ((currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
           activeMetricTotal = activeMetricTotal + childMetric;
@@ -425,7 +425,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   }
   attachment = modelRuntimeSlot->attachments;
   for (childrenRemaining = modelRuntimeSlot->attachmentCount; childrenRemaining != 0; childrenRemaining--) {
-    if (attachment->childModelRuntimeOrSavedOffset != NULL) {
+    if (attachment->childModelRuntimeOrSavedOffset != nullptr) {
       ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
                 (factionIndex,(int *)attachment->childModelRuntimeOrSavedOffset);
     }

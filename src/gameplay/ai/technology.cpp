@@ -31,7 +31,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
 
   candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
   technologyAsset = g_TechnologyAsset;
-  if (candidateDefinition == NULL) {
+  if (candidateDefinition == nullptr) {
     return 0;
   }
   runtimeClassId = ((ModelDefinition *)candidateDefinition)->runtimeClassId;
@@ -94,7 +94,7 @@ Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
   workspaceEntry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     structureRuntime = (ModelRuntimeSlot *)workspaceEntry->runtimeSlotAddressOrZero;
-    if (structureRuntime != NULL &&
+    if (structureRuntime != nullptr &&
         (structureRuntime->classState.stateFlags &
          (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) != 0 &&
         technologyIndex == structureRuntime->researchTechnologyId) {
@@ -329,7 +329,7 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
   occupiedEntryCount = 0;
   runtimeWorkspaceEntry = g_AiWorkspace01Units;
   for (remainingCount = g_AiWorkspace01Count; remainingCount != 0; remainingCount--) {
-    if (runtimeWorkspaceEntry->modelRuntime != NULL) {
+    if (runtimeWorkspaceEntry->modelRuntime != nullptr) {
       occupiedEntryCount++;
       unitDefinitionId = runtimeWorkspaceEntry->modelRuntime->definitionOrSavedId.definition->definitionId;
       definitionIdDelta = (int)unitDefinitionId - (int)candidateDefinition->definitionId;

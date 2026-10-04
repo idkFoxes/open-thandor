@@ -19,7 +19,7 @@ THANDOR_ALIGN(8) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = THANDOR_
 
 int32_t g_CursorCurrentVisibilityToken = 0;
 
-SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = 0;
+SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = nullptr;
 
 /* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
 static uint32_t g_GraphicsCursorAnimationCountdown = 2;
@@ -38,17 +38,17 @@ uint32_t g_CursorInputReadIndex = 0;
 
 uint32_t g_CursorInputClockValue = 0;
 
-GraphicsTextureSourceAsset *g_CursorSourceAsset = 0;
+GraphicsTextureSourceAsset *g_CursorSourceAsset = nullptr;
 
-GraphicsCursorFrameRecord *g_CursorFrameRecords = 0;
+GraphicsCursorFrameRecord *g_CursorFrameRecords = nullptr;
 
 GraphicsCursorFrameCount g_CursorFrameCount = 0;
 
 GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = THANDOR_FN(GraphicsCursor_ConsumeNextInputEvent);
 
-SoftwareFramebufferAccess *g_CursorSavedBackground = 0;
+SoftwareFramebufferAccess *g_CursorSavedBackground = nullptr;
 
-SoftwareFramebufferAccess *g_CursorCompositeBuffer = 0;
+SoftwareFramebufferAccess *g_CursorCompositeBuffer = nullptr;
 
 /* Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the
    game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor

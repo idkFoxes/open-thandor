@@ -185,7 +185,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   /* sum the army asset's xeniteCostQ4 (read as resolvedAsset[2].registryId) over every model of this faction
      on the map */
   armyAssetValueSum = 0;
-  for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL;
+  for (ownerNode = worldRuntime->ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;

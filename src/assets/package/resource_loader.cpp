@@ -23,7 +23,7 @@ Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint3
   void *buffer;
 
   buffer = Package_LoadEntryWithSize(path,outByteCount,outErrorCode);
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return false;
   }
   *outBuffer = buffer;

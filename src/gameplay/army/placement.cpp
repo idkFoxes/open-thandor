@@ -116,7 +116,7 @@ Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
       blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
                         ((WorldOwnerListNode *)modelNodeRuntime,worldXQ12,worldYQ12,
-                         NULL,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
+                         nullptr,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
       if (!blocked) {
         if (modelRuntime->modelDefinition->placementContactKindIndex == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
           blocked = TerrainAuxHeightThreshold_TestAroundWorldPoint
@@ -166,7 +166,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
   g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
   if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
-                          ownerFactionId,(UiRootNode *)inGameRuntime,NULL)) {
+                          ownerFactionId,(UiRootNode *)inGameRuntime,nullptr)) {
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
@@ -174,7 +174,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
     Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
     if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                            (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
-                            (UiRootNode *)inGameRuntime,NULL)) {
+                            (UiRootNode *)inGameRuntime,nullptr)) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
       g_ArmyPlacementValidatedWorldYQ12 = y;
       return false;
@@ -304,7 +304,7 @@ Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
   if (ArmyCollision_FindBlockingRuntimeForCurrentUnit
                     ((modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
-                     (RuntimeCollisionQueryView *)modelRuntime,worldRuntime) != NULL) {
+                     (RuntimeCollisionQueryView *)modelRuntime,worldRuntime) != nullptr) {
     return true;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
@@ -400,7 +400,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
   /* the model definition of the army asset's root node */
   modelDefinition = ModelDefinitionRegistry_FindById
                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
-  if (modelDefinition == NULL) {
+  if (modelDefinition == nullptr) {
     return false;
   }
   assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
@@ -414,7 +414,7 @@ Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
              &placementValue)) {
     return false;
   }
-  if (outPlacementValue != NULL) {
+  if (outPlacementValue != nullptr) {
     *outPlacementValue = placementValue;
   }
   return true;
@@ -487,11 +487,11 @@ Bool8 ArmyPlacement_CanPlaceBuilding
   if (blocked) {
     return false;
   }
-  if (ownerNode == NULL) {
+  if (ownerNode == nullptr) {
     *outPlacementValue = (uint32_t)terrainTest.value;
     return true;
   }
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -601,8 +601,8 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
   createdRuntime = ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,worldXQ12,worldYQ12,playerBlock->placementFactionIndex,
                      armyAssetId,
-                     &g_InGameRuntimeRoot->worldRuntime,NULL);
-  if (createdRuntime != NULL) {
+                     &g_InGameRuntimeRoot->worldRuntime,nullptr);
+  if (createdRuntime != nullptr) {
     playerBlock->placedArmyToken =
          (uint32_t)((uintptr_t)createdRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
     return;
@@ -658,20 +658,20 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   uint32_t overlayExtent;
   ModelRuntimeSlot *modelRuntime;
 
-  if (sourceRuntime == NULL) {
+  if (sourceRuntime == nullptr) {
     return;
   }
   /* 5f-format: ArmyAssetRecordPrefix.rootNodeOffsetOrPointer */
   definitionRecord = ModelDefinitionRegistry_FindById
                     (Thandor_U32ToPointer<AiLinkedDefinitionListView>(
                       ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
-  if (definitionRecord == NULL) {
+  if (definitionRecord == nullptr) {
     return;
   }
   overlayExtent = UINT32_MAX;
   ownerNode = worldRuntime->ownerListHead;
   overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
-  if (ownerNode == NULL) {
+  if (ownerNode == nullptr) {
     return;
   }
   if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
@@ -680,7 +680,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   }
   overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
            [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }

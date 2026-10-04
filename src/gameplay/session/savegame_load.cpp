@@ -44,13 +44,13 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
       nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
       /* 1-based offsets from the runtime-object base; 0 stays NULL */
-      if (primaryPointer != NULL) {
+      if (primaryPointer != nullptr) {
         primaryPointer = primaryPointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      if (secondaryPointer != NULL) {
+      if (secondaryPointer != nullptr) {
         secondaryPointer = secondaryPointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
-      if (nestedBasePointer != NULL) {
+      if (nestedBasePointer != nullptr) {
         nestedBasePointer = nestedBasePointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = Thandor_PointerToU32(primaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
@@ -59,14 +59,14 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
       auxiliaryPointer = Thandor_U32ToPointer<uint8_t>((registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       nestedCount = registrationRecord->nestedCount;
-      if (auxiliaryPointer != NULL) {
+      if (auxiliaryPointer != nullptr) {
         /* 1-based offset from the shading records; 0 is null */
         auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + Thandor_PointerToI32(auxiliaryPointer)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = Thandor_PointerToU32(auxiliaryPointer); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
       /* the nested pointers are 1-based offsets from the runtime-object base as well */
       for (nestedIndex = 0; nestedIndex < nestedCount; nestedIndex++) {
-        if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != NULL) {
+        if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != nullptr) {
           registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer =
                Thandor_U32ToPointer<uint8_t>((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
                        Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
@@ -112,8 +112,8 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   /* the last nested slot of the last record is the saved tail record */
   tailNestedPointer = runtimeImage->records[runtimeImage->recordCount - 1].nestedPointersOrSavedOffsets
            [12].runtimePointer;
-  tailRecord = NULL;
-  if (tailNestedPointer != NULL) {
+  tailRecord = nullptr;
+  if (tailNestedPointer != nullptr) {
     tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(tailNestedPointer)); /* 5f-format: ResourceRegistrationRecord saved offsets (widget.hex) */
   }
   runtimeImage->tailRecord = tailRecord;
@@ -181,13 +181,13 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
 
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
     slot = &g_ArmyRuntimeSlots[slotIndex];
-    if (slot->modelNodeRuntime == NULL) {
+    if (slot->modelNodeRuntime == nullptr) {
       continue;
     }
     /* modelRuntime + g_ModelRuntimeRebaseDelta */
     rebasedModelRuntime = (uint8_t *)(slot->modelRuntimeOrSavedOffset).modelRuntime + g_ModelRuntimeRebaseDelta;
-    rebasedCommandTarget = NULL;
-    if (slot->commandTargetArmyRuntime != NULL) {
+    rebasedCommandTarget = nullptr;
+    if (slot->commandTargetArmyRuntime != nullptr) {
       rebasedCommandTarget = /* 5f-format: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
            Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(slot->commandTargetArmyRuntime) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     }
@@ -245,8 +245,8 @@ void GameFactionRuntime_RebaseLoadedArmyReferences(void)
     for (groupSlotIndex = 0; groupSlotIndex < 256; groupSlotIndex++) {
       /* the slot holds the saved offset */
       savedSlotOffset = factionRecord->runtimeGroupMembers8x32[groupSlotIndex];
-      rebasedSlot = NULL;
-      if (savedSlotOffset != NULL) {
+      rebasedSlot = nullptr;
+      if (savedSlotOffset != nullptr) {
         rebasedSlot = Thandor_U32ToPointer<ArmyRuntimeSlot>(Thandor_PointerToI32(savedSlotOffset) + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne)); /* 5f-format: GameFactionRuntimeRecord.runtimeGroupMembers8x32 (daten.hex) */
       }
       factionRecord->runtimeGroupMembers8x32[groupSlotIndex] = rebasedSlot;

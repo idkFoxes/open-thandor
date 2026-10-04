@@ -12,16 +12,16 @@
 
 /* Module data. */
 
-SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize = 0;
+SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize = nullptr;
 
 int32_t g_GraphicsBackendAccessState = -0x1;
 
 /* allocated by Graphics_AllocateTables but no longer read (see there) */
-static DirectDrawPaletteEntry *g_TexturePaletteEntries = 0;
+static DirectDrawPaletteEntry *g_TexturePaletteEntries = nullptr;
 
-static GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = 0;
+static GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = nullptr;
 
-static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = 0;
+static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = nullptr;
 
 /* Implementation ownership: graphics/core/device. */
 
@@ -86,9 +86,9 @@ void Graphics_Shutdown(void)
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
   g_MemoryApi.free(g_CursorAlternateSavedBackground);
-  g_CursorSavedBackground = NULL;
-  g_CursorCompositeBuffer = NULL;
-  g_CursorAlternateSavedBackground = NULL;
+  g_CursorSavedBackground = nullptr;
+  g_CursorCompositeBuffer = nullptr;
+  g_CursorAlternateSavedBackground = nullptr;
   return;
 }
 
@@ -105,7 +105,7 @@ void GraphicsDirectDraw_PublishFramebuffer
   g_ActiveGraphicsAdapterIndex = adapterIndex;
   g_DisplayFramebufferAccess.width = width;
   g_DisplayFramebufferAccess.height = height;
-  g_DisplayFramebufferAccess.pixels = NULL;
+  g_DisplayFramebufferAccess.pixels = nullptr;
   g_FramebufferAccess = &g_DisplayFramebufferAccess;
   (void)bitsPerPixel;
   g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;

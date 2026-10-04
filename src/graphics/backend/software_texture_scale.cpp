@@ -107,7 +107,7 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   uint32_t rowsLeft;
   int lane;
 
-  if (asset == NULL || asset->common.magic != ASSET_MAGIC_GFX ||
+  if (asset == nullptr || asset->common.magic != ASSET_MAGIC_GFX ||
       sourceSubresourceIndexB >= asset->tableDescriptor.subresourceCount ||
       sourceSubresourceIndexA >= asset->tableDescriptor.subresourceCount) {
     return;

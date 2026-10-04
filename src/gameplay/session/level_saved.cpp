@@ -180,21 +180,21 @@ static Bool8 SavedLevel_LoadSpatialSounds
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
     if (soundIndex < worldRuntime->dwordArrayCount) {
       if (soundsInPackage) {
-        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,NULL,&loadErrorCode);
+        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,nullptr,&loadErrorCode);
       }
       else {
         WidePath_CombineDirectoryAndLeaf
                   (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
                    g_InGameLevelSoundParentDirectoryScratchUtf16);
         sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                     &loadedSample,NULL,&loadErrorCode);
+                                     &loadedSample,nullptr,&loadErrorCode);
       }
       if (!sampleLoaded) {
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
       soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
-      if (soundSlot != NULL) {
+      if (soundSlot != nullptr) {
         soundSlotCursor[soundIndex] = (uintptr_t)soundSlot;
       }
       Resource_Release(loadedSample);

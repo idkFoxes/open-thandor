@@ -50,7 +50,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
   assetBytes = outputWidth * outputHeight * 4 + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
   if (g_MemoryApi.alloc(assetBytes,&textureAllocationPayload) != 0) {
-    return NULL;
+    return nullptr;
   }
   assetWords = (int32_t *)textureAllocationPayload;
   zeroCursor = assetWords;
@@ -90,7 +90,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   assetWords[GFX_SUBRESOURCE_DWORD(PIXEL_OFFSET)] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
   if (g_MemoryApi.alloc(outputHeight * outputWidth * 4,(void **)&depthBuffer) != 0) {
     g_MemoryApi.free(assetWords);
-    return NULL;
+    return nullptr;
   }
   depthCursor = depthBuffer;
   for (pixelsLeft = outputHeight * outputWidth & DWORD_COUNT_MASK; pixelsLeft != 0; pixelsLeft--) {
@@ -121,7 +121,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   queue = GraphicsPrimitiveQueue_ResetGlobal();
   Graphics_SetActivePrimitiveQueue(queue);
   for (; modelCount != 0; modelCount--) {
-    if (*modelNodes != NULL) {
+    if (*modelNodes != nullptr) {
       ModelRuntime_CullAndRenderHierarchyRecursive(*modelNodes);
     }
     modelNodes++;

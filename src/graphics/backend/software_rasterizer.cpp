@@ -26,13 +26,13 @@ typedef struct RasterAuxTexture {
 
 THANDOR_ALIGN(16) SoftwareRasterScanState g_SoftwareRasterScanState = {0};
 
-int32_t *g_SoftwareDepthBuffer = 0;
+int32_t *g_SoftwareDepthBuffer = nullptr;
 
-SoftwareDrawQueueProc *g_SoftwareDrawQueue = 0;
+SoftwareDrawQueueProc *g_SoftwareDrawQueue = nullptr;
 
 uint32_t g_SoftwareDepthRowStrideBytes = 0;
 
-void *g_SoftwareAuxiliaryTargetBase = 0;
+void *g_SoftwareAuxiliaryTargetBase = nullptr;
 
 int32_t g_SoftwareDepthEpoch = 0;
 
@@ -66,7 +66,7 @@ static SoftwareRasterHandler *SoftwareRenderer_SelectHandler(SoftwareRasterHandl
   SoftwareRasterHandler *handler;
 
   handler = handlers[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 12];
-  if (handler == NULL && !loggedEmptyHandler) {
+  if (handler == nullptr && !loggedEmptyHandler) {
     loggedEmptyHandler = true;
     Thandor_Log("SoftwareRenderer: skipped packets with render flags 0x%08X (no raster handler)",
                 (uint32_t)packet->renderFlags);
@@ -86,10 +86,10 @@ void SoftwareRenderer_DrawQueue32Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
   SoftwareRasterHandler *handler;
 
   packet = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet != NULL) {
+  while (packet != nullptr) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     handler = SoftwareRenderer_SelectHandler(g_SoftwareRasterHandlers32Bit,packet);
-    if (handler != NULL) {
+    if (handler != nullptr) {
       (*handler)(clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
       g_PrimitiveDrawCallCount++;
     }
@@ -113,13 +113,13 @@ void SoftwareRenderer_DrawQueueAuxiliary
 
   g_SoftwareAuxiliaryTargetBase = targetBase;
   packet = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet != NULL) {
+  while (packet != nullptr) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 113)))) {
       handler = SoftwareRenderer_SelectHandler(g_SoftwareRasterHandlersAuxiliary,packet);
-      if (handler != NULL) {
+      if (handler != nullptr) {
         (*handler)(clipMaxY,clipMaxX,0,0,packet);
         g_PrimitiveDrawCallCount++;
       }
@@ -384,7 +384,7 @@ void SoftwareRaster32_Mode00
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedOpaque);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedOpaque);
   }
 }
 
@@ -419,7 +419,7 @@ static void Raster32_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAlphaBlendDepth);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAlphaBlendDepth);
   }
 }
 
@@ -464,7 +464,7 @@ void SoftwareRaster32_Mode01
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAlphaBlend);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAlphaBlend);
   }
 }
 
@@ -497,7 +497,7 @@ void SoftwareRaster32_Mode02
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAdd);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAdd);
   }
 }
 
@@ -525,7 +525,7 @@ void SoftwareRaster32_Mode08
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedOpaque);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedOpaque);
   }
 }
 
@@ -540,7 +540,7 @@ static void Raster32_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, 
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAlphaBlendDepth);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAlphaBlendDepth);
   }
 }
 
@@ -569,7 +569,7 @@ void SoftwareRaster32_Mode09
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAlphaBlend);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAlphaBlend);
   }
 }
 
@@ -586,7 +586,7 @@ void SoftwareRaster32_Mode10
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_FLAT, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedAdd);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedAdd);
   }
 }
 
@@ -812,7 +812,7 @@ void SoftwareRasterAux_Mode00
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, RASTER_SHADE_GOURAUD, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedOpaque);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, Raster32_SpanShadedOpaque);
   }
 }
 
@@ -830,7 +830,7 @@ static __forceinline void RasterAux_DrawUntextured(GraphicsScreenCoordinate clip
   RasterGradients gradients;
 
   if (Raster_SetupTriangle(packet, shading, 0, &edges, &gradients)) {
-    Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, drawSpan);
+    Raster_WalkTriangle(&target, packet, &edges, &gradients, nullptr, drawSpan);
   }
 }
 
@@ -1099,128 +1099,128 @@ SoftwareRasterHandler *g_SoftwareRasterHandlers32Bit[64] = {
     /*  0 */ THANDOR_FN(SoftwareRaster32_Mode00),
     /*  1 */ THANDOR_FN(SoftwareRaster32_Mode01),
     /*  2 */ THANDOR_FN(SoftwareRaster32_Mode02),
-    /*  3 */ 0,
+    /*  3 */ nullptr,
     /*  4 */ THANDOR_FN(SoftwareRaster32_Mode04),
-    /*  5 */ 0,
+    /*  5 */ nullptr,
     /*  6 */ THANDOR_FN(SoftwareRaster32_Mode06),
-    /*  7 */ 0,
+    /*  7 */ nullptr,
     /*  8 */ THANDOR_FN(SoftwareRaster32_Mode08),
     /*  9 */ THANDOR_FN(SoftwareRaster32_Mode09),
     /* 10 */ THANDOR_FN(SoftwareRaster32_Mode10),
-    /* 11 */ 0,
+    /* 11 */ nullptr,
     /* 12 */ THANDOR_FN(SoftwareRaster32_Mode12),
-    /* 13 */ 0,
+    /* 13 */ nullptr,
     /* 14 */ THANDOR_FN(SoftwareRaster32_Mode14),
-    /* 15 */ 0,
+    /* 15 */ nullptr,
     /* 16 */ THANDOR_FN(SoftwareRaster32_Mode16),
     /* 17 */ THANDOR_FN(SoftwareRaster32_Mode17),
     /* 18 */ THANDOR_FN(SoftwareRaster32_Mode18),
-    /* 19 */ 0,
+    /* 19 */ nullptr,
     /* 20 */ THANDOR_FN(SoftwareRaster32_Mode20),
-    /* 21 */ 0,
+    /* 21 */ nullptr,
     /* 22 */ THANDOR_FN(SoftwareRaster32_Mode22),
-    /* 23 */ 0,
+    /* 23 */ nullptr,
     /* 24 */ THANDOR_FN(SoftwareRaster32_Mode24),
     /* 25 */ THANDOR_FN(SoftwareRaster32_Mode25),
     /* 26 */ THANDOR_FN(SoftwareRaster32_Mode26),
-    /* 27 */ 0,
+    /* 27 */ nullptr,
     /* 28 */ THANDOR_FN(SoftwareRaster32_Mode28),
-    /* 29 */ 0,
+    /* 29 */ nullptr,
     /* 30 */ THANDOR_FN(SoftwareRaster32_Mode30),
-    /* 31 */ 0,
+    /* 31 */ nullptr,
     /* 32 */ THANDOR_FN(SoftwareRaster32_Mode01),
     /* 33 */ THANDOR_FN(SoftwareRaster32_Mode01),
     /* 34 */ THANDOR_FN(SoftwareRaster32_Mode02),
-    /* 35 */ 0,
+    /* 35 */ nullptr,
     /* 36 */ THANDOR_FN(SoftwareRaster32_Mode01),
-    /* 37 */ 0,
+    /* 37 */ nullptr,
     /* 38 */ THANDOR_FN(SoftwareRaster32_Mode01),
-    /* 39 */ 0,
+    /* 39 */ nullptr,
     /* 40 */ THANDOR_FN(SoftwareRaster32_Mode09),
     /* 41 */ THANDOR_FN(SoftwareRaster32_Mode09),
     /* 42 */ THANDOR_FN(SoftwareRaster32_Mode10),
-    /* 43 */ 0,
+    /* 43 */ nullptr,
     /* 44 */ THANDOR_FN(SoftwareRaster32_Mode09),
-    /* 45 */ 0,
+    /* 45 */ nullptr,
     /* 46 */ THANDOR_FN(SoftwareRaster32_Mode09),
-    /* 47 */ 0,
+    /* 47 */ nullptr,
     /* 48 */ THANDOR_FN(SoftwareRaster32_Mode17),
     /* 49 */ THANDOR_FN(SoftwareRaster32_Mode17),
     /* 50 */ THANDOR_FN(SoftwareRaster32_Mode18),
-    /* 51 */ 0,
+    /* 51 */ nullptr,
     /* 52 */ THANDOR_FN(SoftwareRaster32_Mode17),
-    /* 53 */ 0,
+    /* 53 */ nullptr,
     /* 54 */ THANDOR_FN(SoftwareRaster32_Mode17),
-    /* 55 */ 0,
+    /* 55 */ nullptr,
     /* 56 */ THANDOR_FN(SoftwareRaster32_Mode25),
     /* 57 */ THANDOR_FN(SoftwareRaster32_Mode25),
     /* 58 */ THANDOR_FN(SoftwareRaster32_Mode26),
-    /* 59 */ 0,
+    /* 59 */ nullptr,
     /* 60 */ THANDOR_FN(SoftwareRaster32_Mode25),
-    /* 61 */ 0,
+    /* 61 */ nullptr,
     /* 62 */ THANDOR_FN(SoftwareRaster32_Mode25)};
 
 SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64] = {
     /*  0 */ THANDOR_FN(SoftwareRasterAux_Mode00),
     /*  1 */ THANDOR_FN(SoftwareRasterAux_Mode01),
     /*  2 */ THANDOR_FN(SoftwareRasterAux_Mode02),
-    /*  3 */ 0,
+    /*  3 */ nullptr,
     /*  4 */ THANDOR_FN(SoftwareRasterAux_Mode04),
-    /*  5 */ 0,
+    /*  5 */ nullptr,
     /*  6 */ THANDOR_FN(SoftwareRasterAux_Mode06),
-    /*  7 */ 0,
+    /*  7 */ nullptr,
     /*  8 */ THANDOR_FN(SoftwareRasterAux_Mode08),
     /*  9 */ THANDOR_FN(SoftwareRasterAux_Mode09),
     /* 10 */ THANDOR_FN(SoftwareRasterAux_Mode10),
-    /* 11 */ 0,
+    /* 11 */ nullptr,
     /* 12 */ THANDOR_FN(SoftwareRasterAux_Mode12),
-    /* 13 */ 0,
+    /* 13 */ nullptr,
     /* 14 */ THANDOR_FN(SoftwareRasterAux_Mode14),
-    /* 15 */ 0,
+    /* 15 */ nullptr,
     /* 16 */ THANDOR_FN(SoftwareRasterAux_Mode16),
     /* 17 */ THANDOR_FN(SoftwareRasterAux_Mode17),
     /* 18 */ THANDOR_FN(SoftwareRasterAux_Mode18),
-    /* 19 */ 0,
+    /* 19 */ nullptr,
     /* 20 */ THANDOR_FN(SoftwareRasterAux_Mode20),
-    /* 21 */ 0,
+    /* 21 */ nullptr,
     /* 22 */ THANDOR_FN(SoftwareRasterAux_Mode22),
-    /* 23 */ 0,
+    /* 23 */ nullptr,
     /* 24 */ THANDOR_FN(SoftwareRasterAux_Mode24),
     /* 25 */ THANDOR_FN(SoftwareRasterAux_Mode25),
     /* 26 */ THANDOR_FN(SoftwareRasterAux_Mode26),
-    /* 27 */ 0,
+    /* 27 */ nullptr,
     /* 28 */ THANDOR_FN(SoftwareRasterAux_Mode28),
-    /* 29 */ 0,
+    /* 29 */ nullptr,
     /* 30 */ THANDOR_FN(SoftwareRasterAux_Mode30),
-    /* 31 */ 0,
+    /* 31 */ nullptr,
     /* 32 */ THANDOR_FN(SoftwareRasterAux_Mode01),
     /* 33 */ THANDOR_FN(SoftwareRasterAux_Mode01),
     /* 34 */ THANDOR_FN(SoftwareRasterAux_Mode02),
-    /* 35 */ 0,
+    /* 35 */ nullptr,
     /* 36 */ THANDOR_FN(SoftwareRasterAux_Mode01),
-    /* 37 */ 0,
+    /* 37 */ nullptr,
     /* 38 */ THANDOR_FN(SoftwareRasterAux_Mode01),
-    /* 39 */ 0,
+    /* 39 */ nullptr,
     /* 40 */ THANDOR_FN(SoftwareRasterAux_Mode09),
     /* 41 */ THANDOR_FN(SoftwareRasterAux_Mode09),
     /* 42 */ THANDOR_FN(SoftwareRasterAux_Mode10),
-    /* 43 */ 0,
+    /* 43 */ nullptr,
     /* 44 */ THANDOR_FN(SoftwareRasterAux_Mode09),
-    /* 45 */ 0,
+    /* 45 */ nullptr,
     /* 46 */ THANDOR_FN(SoftwareRasterAux_Mode09),
-    /* 47 */ 0,
+    /* 47 */ nullptr,
     /* 48 */ THANDOR_FN(SoftwareRasterAux_Mode17),
     /* 49 */ THANDOR_FN(SoftwareRasterAux_Mode17),
     /* 50 */ THANDOR_FN(SoftwareRasterAux_Mode18),
-    /* 51 */ 0,
+    /* 51 */ nullptr,
     /* 52 */ THANDOR_FN(SoftwareRasterAux_Mode17),
-    /* 53 */ 0,
+    /* 53 */ nullptr,
     /* 54 */ THANDOR_FN(SoftwareRasterAux_Mode17),
-    /* 55 */ 0,
+    /* 55 */ nullptr,
     /* 56 */ THANDOR_FN(SoftwareRasterAux_Mode25),
     /* 57 */ THANDOR_FN(SoftwareRasterAux_Mode25),
     /* 58 */ THANDOR_FN(SoftwareRasterAux_Mode26),
-    /* 59 */ 0,
+    /* 59 */ nullptr,
     /* 60 */ THANDOR_FN(SoftwareRasterAux_Mode25),
-    /* 61 */ 0,
+    /* 61 */ nullptr,
     /* 62 */ THANDOR_FN(SoftwareRasterAux_Mode25)};

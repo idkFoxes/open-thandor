@@ -12,22 +12,22 @@
 /* Module data. */
 
 /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
-THANDOR_ALIGN(4) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
+THANDOR_ALIGN(4) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {};
 
 /* path suffix letters "a".."z" (with terminator) of the 26 terrain material texture sets */
 static const TerrainMaterialSuffixEntry g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26] = {
     {'a'}, {'b'}, {'c'}, {'d'}, {'e'}, {'f'}, {'g'}, {'h'}, {'i'}, {'j'}, {'k'}, {'l'}, {'m'},
     {'n'}, {'o'}, {'p'}, {'q'}, {'r'}, {'s'}, {'t'}, {'u'}, {'v'}, {'w'}, {'x'}, {'y'}, {'z'}};
 
-GraphicsTextureSet *g_TerrainPrimaryTextureSet = 0;
+GraphicsTextureSet *g_TerrainPrimaryTextureSet = nullptr;
 
-void *g_TerrainSoilPacketTablePayload = 0;
+void *g_TerrainSoilPacketTablePayload = nullptr;
 
-void *g_TerrainSurfacePacketTablePayload = 0;
+void *g_TerrainSurfacePacketTablePayload = nullptr;
 
-GraphicsPaletteAsset *g_TerrainPrimaryPalette = 0;
+GraphicsPaletteAsset *g_TerrainPrimaryPalette = nullptr;
 
-GraphicsPaletteAsset *g_TerrainSecondaryPalette = 0;
+GraphicsPaletteAsset *g_TerrainSecondaryPalette = nullptr;
 
 /* Implementation ownership: graphics/terrain/terrain_resources. */
 
@@ -74,12 +74,12 @@ static Bool8 TerrainVisualResources_LoadMaterialTextureSets
     WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
     if ((materialFlagBits & 1) == 0) {
       /* optional material: missing is fine (NULL) */
-      g_TerrainMaterialTextureSets[materialIndex] = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,NULL);
+      g_TerrainMaterialTextureSets[materialIndex] = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,nullptr);
     }
     else {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,&loadErrorCode);
-      if (materialTextureSet == NULL) {
+      if (materialTextureSet == nullptr) {
         *outError = loadErrorCode;
         return false;
       }
@@ -106,7 +106,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
 
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
   packetTable = Package_LoadEntry(primaryResourcePath,&loadErrorCode);
-  if (packetTable == NULL) {
+  if (packetTable == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -114,7 +114,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
   g_TerrainSurfacePacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
   primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
-  if (primaryTextureSet == NULL) {
+  if (primaryTextureSet == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -122,7 +122,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
   g_TerrainPrimaryTextureSet = primaryTextureSet;
   WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
   palette = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath,&loadErrorCode);
-  if (palette == NULL) {
+  if (palette == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -132,7 +132,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
   pathSuffixEntry->terminator = 0;
   WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
   palette = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath,&loadErrorCode);
-  if (palette == NULL) {
+  if (palette == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -142,7 +142,7 @@ static Bool8 TerrainVisualResources_LoadTablesAndPalettes
   pathSuffixEntry->terminator = 0;
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
   packetTable = Package_LoadEntry(secondaryResourcePath,&loadErrorCode);
-  if (packetTable == NULL) {
+  if (packetTable == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
@@ -289,9 +289,9 @@ void TerrainVisualResources_Shutdown(void)
   materialTextureSetCursor = g_TerrainMaterialTextureSets;
   materialTextureSetsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
   do {
-    if (*materialTextureSetCursor != NULL) {
+    if (*materialTextureSetCursor != nullptr) {
       g_GraphicsTextureSetReleasePackage(*materialTextureSetCursor);
-      *materialTextureSetCursor = NULL;
+      *materialTextureSetCursor = nullptr;
     }
     materialTextureSetCursor++;
     materialTextureSetsRemaining--;
@@ -300,15 +300,15 @@ void TerrainVisualResources_Shutdown(void)
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainSecondaryPalette);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
-  if (g_TerrainSoilPacketTablePayload != NULL) {
+  if (g_TerrainSoilPacketTablePayload != nullptr) {
     Resource_Release((void *)((uintptr_t)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
-  if (surfacePacketTablePayload != NULL) {
+  if (surfacePacketTablePayload != nullptr) {
     Resource_Release((void *)((uintptr_t)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
-  g_TerrainPrimaryTextureSet = NULL;
-  g_TerrainSecondaryPalette = NULL;
-  g_TerrainPrimaryPalette = NULL;
-  g_TerrainSoilPacketTablePayload = NULL;
-  g_TerrainSurfacePacketTablePayload = NULL;
+  g_TerrainPrimaryTextureSet = nullptr;
+  g_TerrainSecondaryPalette = nullptr;
+  g_TerrainPrimaryPalette = nullptr;
+  g_TerrainSoilPacketTablePayload = nullptr;
+  g_TerrainSurfacePacketTablePayload = nullptr;
 }

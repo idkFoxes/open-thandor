@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-EffectDefinition *g_EffectDefinitionRegistry[256] = {0};
+EffectDefinition *g_EffectDefinitionRegistry[256] = {};
 
 /* Implementation ownership: assets/effect/catalog. */
 
@@ -68,7 +68,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
   for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     currentDefinition = *registryCursor;
-    if (currentDefinition != NULL) {
+    if (currentDefinition != nullptr) {
       if (currentDefinition->linkedEffectPresent != 0) {
         lookupError = EffectDefinitionRegistry_FindById
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition,&linkedEffect); /* 5f-format: EffectDefinition.linkedEffectDefinition (+0x14, id on disk, pointer after resolve) */
@@ -108,7 +108,7 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
   uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
-  if (EffectRuntime_FindDefinitionById(definition->definitionId) != NULL) {
+  if (EffectRuntime_FindDefinitionById(definition->definitionId) != nullptr) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     *outError = FATAL_ERROR_EFFECT_ID_DUPLICATE;
@@ -116,7 +116,7 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
   }
   registrySlotCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while (registrySlotsRemaining != 0 && *registrySlotCursor != NULL) {
+  while (registrySlotsRemaining != 0 && *registrySlotCursor != nullptr) {
     registrySlotCursor++;
     registrySlotsRemaining--;
   }
@@ -136,12 +136,12 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
     return false;
   }
   loadedSpriteAsset = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
-  if (loadedSpriteAsset == NULL) {
+  if (loadedSpriteAsset == nullptr) {
     *outError = loadErrorCode;
     return false;
   }
   existingSpriteAsset = SpriteAssetRegistry_FindById(loadedSpriteAsset->registryHeader.registryId);
-  if (existingSpriteAsset == NULL) {
+  if (existingSpriteAsset == nullptr) {
     definition->ownedNestedResourcePresent++;
     definition->ownedNestedResource = loadedSpriteAsset;
     spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(loadedSpriteAsset);
@@ -170,12 +170,12 @@ EffectDefinition *EffectDefinitionRegistry_LookupById(PckEffectDefinitionIdCatal
   for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     candidateDefinition = *registryCursor;
-    if (candidateDefinition != NULL && candidateDefinition->definitionId == definitionId) {
+    if (candidateDefinition != nullptr && candidateDefinition->definitionId == definitionId) {
       return candidateDefinition;
     }
     registryCursor++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Looks up a registered effect definition by id, used to turn serialized effect ids into pointers. Id 0
@@ -189,11 +189,11 @@ uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definiti
   EffectDefinition *candidateDefinition;
 
   if (definitionId == 0) {
-    *outDefinition = NULL;
+    *outDefinition = nullptr;
     return 0;
   }
   candidateDefinition = EffectDefinitionRegistry_LookupById(definitionId);
-  if (candidateDefinition != NULL) {
+  if (candidateDefinition != nullptr) {
     *outDefinition = candidateDefinition;
     return 0;
   }

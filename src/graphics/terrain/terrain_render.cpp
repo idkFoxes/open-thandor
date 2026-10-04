@@ -476,7 +476,7 @@ static GraphicsPrimitivePacket *TerrainProjectedTriangle_QueueSoilPacket
                      ((uint32_t *)((uint8_t *)soilPacketTable + packetOffset),vertex2Color,vertex1Color,vertex0Color,
                       (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
                       (GraphicsProjectedVertexSource *)vertex0,renderContext);
-  if (queuedPacket != NULL) {
+  if (queuedPacket != nullptr) {
     queuedPacket->renderFlags = queuedPacket->renderFlags | layerFlags;
   }
   return queuedPacket;
@@ -531,7 +531,7 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
                       vertex2Color,vertex1Color,vertex0Color,(GraphicsProjectedVertexSource *)vertex2,
                       (GraphicsProjectedVertexSource *)vertex1,(GraphicsProjectedVertexSource *)vertex0,
                       renderContext);
-  if (queuedPacket == NULL) {
+  if (queuedPacket == nullptr) {
     return;
   }
   if (materialOffset0 == materialOffset1) {
@@ -557,7 +557,7 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
                        (soilPacketTable,packetOffset1 + 4 * TERRAIN_SURFACE_PACKET_BYTES,
                         TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS,vertex2Color,vertex1Color,vertex0Color,vertex2,
                         vertex1,vertex0,renderContext);
-    if (queuedPacket != NULL) {
+    if (queuedPacket != nullptr) {
       TerrainProjectedTriangle_QueueSoilPacket
                 (soilPacketTable,packetOffset2 + 5 * TERRAIN_SURFACE_PACKET_BYTES,
                  TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS,vertex2Color,vertex1Color,vertex0Color,vertex2,vertex1,
@@ -798,7 +798,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   packetIndex = primitiveQueue->count;
   if (packetIndex + 1 >= primitiveQueue->capacity) {
     /* Queue full (the original returned no packet here; no caller reads the result) */
-    return NULL;
+    return nullptr;
   }
   primitiveQueue->count = packetIndex + 1;
   newPacket = primitiveQueue->packetPool + packetIndex;
@@ -818,7 +818,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   newPacket->vertices[2].textureV = terrainPacketRecord[5];
   paletteModulationColor = 0;
   /* the palette index is bounded here (the original read past the palette for an index past its entries) */
-  if (g_TerrainPrimaryPalette != NULL && terrainPacketRecord[7] < g_TerrainPrimaryPalette->paletteBankCount) {
+  if (g_TerrainPrimaryPalette != nullptr && terrainPacketRecord[7] < g_TerrainPrimaryPalette->paletteBankCount) {
     paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
             alternateModulationColorArgb;
   }
@@ -826,8 +826,8 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   newPacket->modulationColor = paletteModulationColor;
   terrainTextureSet = g_TerrainPrimaryTextureSet;
   textureEntryIndex = terrainPacketRecord[6];
-  newPacket->textureEntry = NULL;
-  if ((terrainTextureSet != NULL) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
+  newPacket->textureEntry = nullptr;
+  if ((terrainTextureSet != nullptr) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
     newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
     newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
   }
@@ -875,18 +875,18 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
      range or names an optional material that was not loaded (a NULL entry) is skipped here, as if the queue
      were full, because the original crashed on it. */
   if (terrainPacketRecord[6] >= sizeof(g_TerrainMaterialTextureSets) / sizeof(g_TerrainMaterialTextureSets[0]) ||
-      g_TerrainMaterialTextureSets[terrainPacketRecord[6]] == NULL) {
+      g_TerrainMaterialTextureSets[terrainPacketRecord[6]] == nullptr) {
     if (!loggedMissingMaterial) {
       loggedMissingMaterial = true;
       Thandor_Log("GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle: skipped packets of missing material %u",
                   terrainPacketRecord[6]);
     }
-    return NULL;
+    return nullptr;
   }
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndex = primitiveQueue->count;
   if (packetIndex + 1 >= primitiveQueue->capacity) {
-    return NULL;
+    return nullptr;
   }
   primitiveQueue->count = packetIndex + 1;
   newPacket = primitiveQueue->packetPool + packetIndex;
@@ -902,7 +902,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
   newPacket->vertices[2].textureV = (GraphicsPrimitiveTextureCoordinateFixed)terrainPacketRecord[5];
   paletteModulationColor = 0;
   /* the palette index is bounded here (the original read past the palette for an index past its entries) */
-  if (g_TerrainSecondaryPalette != NULL && terrainPacketRecord[7] < g_TerrainSecondaryPalette->paletteBankCount) {
+  if (g_TerrainSecondaryPalette != nullptr && terrainPacketRecord[7] < g_TerrainSecondaryPalette->paletteBankCount) {
     paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
             alternateModulationColorArgb;
   }

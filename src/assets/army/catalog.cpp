@@ -17,7 +17,7 @@ THANDOR_ALIGN(4) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = {'a', 'r', 'm
 /* char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
 THANDOR_ALIGN(4) char g_UnreferencedArmyTag[5] = "ARMY";
 
-ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {0};
+ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {};
 
 /* Implementation ownership: assets/army/catalog. */
 
@@ -111,7 +111,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   armourSum = ((ModelDefinition *)selected)->maximumHealth;
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ArmyModelTreeNode *child = node->children[childIndex];
-    if (child != NULL) {
+    if (child != nullptr) {
       armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
     }
   }
@@ -231,7 +231,7 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
     return FATAL_ERROR_ARMY_ID_DUPLICATE;
   }
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
-    if (g_ArmyAssetRecordRegistry[slotIndex] != NULL) {
+    if (g_ArmyAssetRecordRegistry[slotIndex] != nullptr) {
       continue;
     }
     g_ArmyAssetRecordRegistry[slotIndex] = (ArmyAssetRecordPrefix *)record;
@@ -258,11 +258,11 @@ ArmyAssetRecordPrefix *ArmyAssetRegistry_FindRecordById(PckArmyAssetIdCatalog re
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     candidateRecord = g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateRecord != NULL && candidateRecord->registryId == registryId) {
+    if (candidateRecord != nullptr && candidateRecord->registryId == registryId) {
       return candidateRecord;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
@@ -278,7 +278,7 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
   ArmyAssetRecordPrefix *candidateRecord;
 
   candidateRecord = ArmyAssetRegistry_FindRecordById(registryId);
-  if (candidateRecord != NULL) {
+  if (candidateRecord != nullptr) {
     *outRecord = candidateRecord;
     return 0;
   }
@@ -300,7 +300,7 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+    if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
       return 0; /* found a unit */
     }
@@ -320,7 +320,7 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+    if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
       return 0; /* found an object */
     }
@@ -340,7 +340,7 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+    if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) != 0 &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
       return 0; /* found a placeable unit */
@@ -361,7 +361,7 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId)
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
     candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+    if (candidateAsset != nullptr && recordId == candidateAsset->registryId &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) != 0 &&
         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
       return 0; /* found a placeable object */

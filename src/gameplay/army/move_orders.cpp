@@ -33,7 +33,7 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
       ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
     }
   }
-  if (targetRuntime == NULL) {
+  if (targetRuntime == nullptr) {
     armyRuntime->commandModeFlags = 0;
     armyRuntime->commandGeneration = 0;
   }
@@ -59,7 +59,7 @@ static void ArmyRuntime_ClearModelTreeFlags218(ModelRuntimeSlot *node)
        ~(ARMY_MODEL_STATE_DISMANTLED | ARMY_MODEL_STATE_DISMANTLING | ARMY_RUNTIME_FLAG_DESTROYED);
   for (childIndex = 0; childIndex < (int)node->attachmentCount; childIndex++) {
     ModelRuntimeSlot *child = node->attachments[childIndex].childModelRuntimeOrSavedOffset;
-    if (child != NULL) {
+    if (child != nullptr) {
       ArmyRuntime_ClearModelTreeFlags218(child);
     }
   }
@@ -93,7 +93,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     armyRuntime->commandGeneration = standardGeneration;
-    armyRuntime->commandTargetArmyRuntime = NULL;
+    armyRuntime->commandTargetArmyRuntime = nullptr;
   }
   currentWorldX = (modelNode->worldTransform).translation.x;
   currentWorldY = (modelNode->worldTransform).translation.y;
@@ -127,7 +127,7 @@ void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot 
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     armyRuntime->commandGeneration = commandGeneration;
-    armyRuntime->commandTargetArmyRuntime = NULL;
+    armyRuntime->commandTargetArmyRuntime = nullptr;
   }
   return;
 }
@@ -410,7 +410,7 @@ Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targ
   ownerRootModelRuntime = (ModelRuntimeSlot *)(ownerEntity->common).ownership.definitionOrClassRecord;
   if (lineOfFireBlocked) {
     if (((modelRuntime == ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset) ||
-        (ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset == NULL)
+        (ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset == nullptr)
         ) && (((ownerEntity->common).commandFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) == 0)) {
       if (((ownerEntity->common).commandTarget.targetFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
         ArmyRuntime_StartMoveCommandWithFallbackWaypoints
@@ -727,7 +727,7 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
       ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
     }
   }
-  if (targetArmyRuntime == NULL) {
+  if (targetArmyRuntime == nullptr) {
     armyRuntime->commandModeFlags = 0;
     armyRuntime->commandGeneration = 0;
   }
@@ -761,7 +761,7 @@ void ArmyRuntime_ApplyTargetPositionCommand
   armyRuntime->commandCoordinate1Q12 = coordinate1Q12;
   armyRuntime->commandCoordinate2Q12 = coordinate2Q12;
   commandGeneration = g_ArmyCommandGenerationStandard;
-  armyRuntime->commandTargetArmyRuntime = NULL;
+  armyRuntime->commandTargetArmyRuntime = nullptr;
   armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_TARGET_FOLLOWING;
   armyRuntime->commandGeneration = commandGeneration;
   return;
@@ -825,7 +825,7 @@ Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSt
     return true;
   }
   commandTargetEntity = (targetState->common).commandTarget.targetEntity;
-  if (commandTargetEntity == NULL) {
+  if (commandTargetEntity == nullptr) {
     return false;
   }
   /* two bits per faction; the upper one = the target is visible to that faction */
@@ -833,7 +833,7 @@ Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSt
   targetModelRuntime = (ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord;
   if (((commandTargetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) == 0) {
     /* the owner's faction lost sight of the target: drop it */
-    (targetState->common).commandTarget.targetEntity = NULL;
+    (targetState->common).commandTarget.targetEntity = nullptr;
     (targetState->common).commandTarget.targetFlags = 0;
     return false;
   }

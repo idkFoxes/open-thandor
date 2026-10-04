@@ -27,7 +27,7 @@ static void AiPlanningRebuild_AddUnassignedStructureEntry(PckArmyAssetIdCatalog 
 
 {
   if (g_AiWorkspace00Count < AI_WORKSPACE00_CAPACITY) {
-    g_AiWorkspace00Structures[g_AiWorkspace00Count].runtimeSlotAddressOrZero = 0;
+    g_AiWorkspace00Structures[g_AiWorkspace00Count].runtimeSlotAddressOrZero = nullptr;
     g_AiWorkspace00Structures[g_AiWorkspace00Count].armyAssetId = assetId;
     g_AiWorkspace00Count++;
   }
@@ -44,7 +44,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
   PckArmyAssetIdCatalog assetId;
   uint32_t visibilityBits;
 
-  for (; worldNode != NULL; worldNode = worldNode->nextNode) {
+  for (; worldNode != nullptr; worldNode = worldNode->nextNode) {
     if (worldNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -104,7 +104,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
     assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     AiPlanningRebuild_AddUnassignedStructureEntry(assetId);
     AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace04RequestedAssets,&g_AiWorkspace04Count,
-                                      AI_WORKSPACE04_CAPACITY,NULL,assetId);
+                                      AI_WORKSPACE04_CAPACITY,nullptr,assetId);
     armyAssetPointerCursor++;
   }
   armyAssetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
@@ -112,7 +112,7 @@ static void AiPlanningRebuild_AddPendingArmyAssets(FactionRuntimeIndex factionIn
        armyAssetsRemaining != 0; armyAssetsRemaining--) {
     assetId = *Thandor_U32ToPointer<PckArmyAssetIdCatalog>(*armyAssetPointerCursor + 8); /* 5f-format: GameFactionRuntimeRecord.primary/secondaryArmyAssetPointersOrIds */
     if (assetId < ARM_0300_BUILDING_MDL0301) {
-      AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,NULL,
+      AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,nullptr,
                                         assetId);
     }
     else {
@@ -136,7 +136,7 @@ static void AiPlanningRebuild_AddAssetsInProduction(void)
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
     slotWords = (int *)structureEntry->runtimeSlotAddressOrZero;
-    if (slotWords != NULL) {
+    if (slotWords != nullptr) {
       slotDefinition = ((ModelRuntimeSlot *)slotWords)->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) {
         if (slotWords[46] == 1) {
@@ -146,11 +146,11 @@ static void AiPlanningRebuild_AddAssetsInProduction(void)
       else if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
         if (slotWords[43] == 1) {
           AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,
-                                            NULL,slotWords[24]);
+                                            nullptr,slotWords[24]);
         }
       }
       else if ((slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (slotWords[46] == 1)) {
-        AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,NULL,
+        AiPlanningRebuild_AddRuntimeEntry(g_AiWorkspace01Units,&g_AiWorkspace01Count,AI_WORKSPACE01_CAPACITY,nullptr,
                                           slotWords[24]);
       }
     }
@@ -327,7 +327,7 @@ static uint32_t AiPlanningRebuild_CollectProductionMask(void)
   productionMask = 0;
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
-    if (structureEntry->runtimeSlotAddressOrZero != NULL) {
+    if (structureEntry->runtimeSlotAddressOrZero != nullptr) {
       slotDefinition = structureEntry->runtimeSlotAddressOrZero->definitionOrSavedId.runtimeDefinition;
       if (slotDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
         productionMask = productionMask | slotDefinition->classParameterC4;
@@ -359,7 +359,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
   workspace11Cursor = g_AiWorkspace11ProducibleAssets;
   for (slotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     definitionNode = *armyAssetRegistryCursor;
-    if ((definitionNode != NULL) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+    if ((definitionNode != nullptr) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
       /* returns true while some technology of the hierarchy is still locked */
       technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                                (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
@@ -393,7 +393,7 @@ static void AiPlanningRebuild_CollectTargets(void)
   for (hostilesRemaining = g_AiWorkspace02Count;
        (hostilesRemaining != 0) && (g_AiWorkspace07Count < AI_WORKSPACE07_CAPACITY); hostilesRemaining--) {
     modelRuntime = hostileEntry->modelRuntime;
-    if (modelRuntime != NULL) {
+    if (modelRuntime != nullptr) {
       targetEntry->modelRuntime = modelRuntime;
       modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       translationX = modelNode->worldTransform.translation.x;
@@ -424,7 +424,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
   structureEntry = g_AiWorkspace00Structures;
   for (entriesRemaining = g_AiWorkspace00Count; entriesRemaining != 0; entriesRemaining--) {
     modelRuntime = (ModelRuntimeSlot *)structureEntry->runtimeSlotAddressOrZero;
-    if (modelRuntime != NULL) {
+    if (modelRuntime != nullptr) {
       slotDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
       for (technologySlot = 28; technologySlot != 0; technologySlot--) {
         /* returns false when the AI may plan this technology */
@@ -470,10 +470,10 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   g_AiWorkspace10Count = 0;
   g_AiWorkspace11Count = 0;
   g_AiWorkspace12Count = 0;
-  g_AiWorkspaceOwnedAsset300Runtime = NULL;
+  g_AiWorkspaceOwnedAsset300Runtime = nullptr;
   /* Original quirk: the pending and in-production assets are only added when the world owner list is not
      empty. */
-  if (worldRuntime->ownerListHead != NULL) {
+  if (worldRuntime->ownerListHead != nullptr) {
     AiPlanningRebuild_CollectWorldEntities(factionIndex,worldRuntime->ownerListHead);
     AiPlanningRebuild_AddPendingArmyAssets(factionIndex);
     AiPlanningRebuild_AddAssetsInProduction();

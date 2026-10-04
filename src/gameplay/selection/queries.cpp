@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-SelectionInfoEntitySlots *g_SelectionInfoEntitySlots = 0;
+SelectionInfoEntitySlots *g_SelectionInfoEntitySlots = nullptr;
 
 /* Implementation ownership: gameplay/selection/queries. */
 
@@ -35,7 +35,7 @@ Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPo
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntitySlotCursor != NULL) {
+    if (*selectionEntitySlotCursor != nullptr) {
       slotModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
       worldXAggregateQ12 = worldXAggregateQ12 + (slotModelNode->worldTransform).translation.x;
       worldYAggregateQ12 = worldYAggregateQ12 + (slotModelNode->worldTransform).translation.y;
@@ -74,7 +74,7 @@ Bool8 SelectionInfo_HasAnyEntry(void)
     if (entriesRemaining == 0) break;
     entriesRemaining--;
     currentEntry = *selectionEntryCursor;
-    entryIsEmpty = currentEntry == NULL;
+    entryIsEmpty = currentEntry == nullptr;
     selectionEntryCursor++;
   } while (entryIsEmpty);
   return !entryIsEmpty;
@@ -91,7 +91,7 @@ Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  while ((*selectionEntryCursor == NULL ||
+  while ((*selectionEntryCursor == nullptr ||
          (ownerIndex == ((*selectionEntryCursor)->common).ownership.ownerIndex))) {
     selectionEntryCursor++;
     entriesRemaining--;
@@ -117,7 +117,7 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
   activeEntryCount = 0;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     currentEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (currentEntry == NULL) {
+    if (currentEntry == nullptr) {
       continue;
     }
     classRecord = (ModelRuntimeSlot *)(currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
@@ -151,7 +151,7 @@ Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void)
   selectedEntryIsClass13 = false;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (selectedEntry == NULL) {
+    if (selectedEntry == nullptr) {
       continue;
     }
     selectedEntryCount++;
@@ -181,7 +181,7 @@ static Bool8 SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wo
 
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntity = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (selectedEntity == NULL) {
+    if (selectedEntity == nullptr) {
       continue;
     }
     class13Definition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntity->common).ownership.definitionOrClassRecord);
@@ -218,11 +218,11 @@ Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,
   Bool8 testResult;
   GameEntityRuntime *selectedEntity;
 
-  selectedEntity = NULL;
-  selectedModelNode = NULL;
+  selectedEntity = nullptr;
+  selectedModelNode = nullptr;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntity = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (selectedEntity == NULL) {
+    if (selectedEntity == nullptr) {
       continue;
     }
     selectedModelNode = (selectedEntity->common).ownership.modelNode;
@@ -262,7 +262,7 @@ Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void)
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     armyRuntime = *selectionEntryCursor;
-    if (armyRuntime != NULL) {
+    if (armyRuntime != nullptr) {
       stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)armyRuntime);
       if (stateTestResult) {
         stateTestResult = ArmyRuntime_TestHasNoWeaponDamage((ArmyRuntimeSlot *)armyRuntime);
@@ -290,7 +290,7 @@ Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntryCursor != NULL) {
+    if (*selectionEntryCursor != nullptr) {
       stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
       if (stateTestResult) {
         return true;
@@ -316,7 +316,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 
   /* skip the empty entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  firstEntry = NULL;
+  firstEntry = nullptr;
   currentEntryIsEmpty = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
@@ -324,7 +324,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
     if (entriesRemaining == 0) break;
     entriesRemaining--;
     nextSelectionEntryCursor = selectionEntryCursor + 1;
-    currentEntryIsEmpty = *selectionEntryCursor == NULL;
+    currentEntryIsEmpty = *selectionEntryCursor == nullptr;
     selectionEntryCursor = nextSelectionEntryCursor;
   } while (currentEntryIsEmpty);
   if (!currentEntryIsEmpty) {
@@ -362,7 +362,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
   effectVariantMask = 0;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (selectedEntry != NULL) {
+    if (selectedEntry != nullptr) {
       effectVariantMask |=
            ArmyRuntime_GetAttachmentEffectVariantMask
               ((ModelRuntimeLinkedChildSpawnAndBuildView *)(selectedEntry->common).ownership.definitionOrClassRecord);
@@ -385,7 +385,7 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
   capabilityMask = 0;
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
-    if (selectedEntry == NULL) {
+    if (selectedEntry == nullptr) {
       continue;
     }
     entityDefinition = THANDOR_PTR32_AT(ModelDefinition, (selectedEntry->common).ownership.definitionOrClassRecord);

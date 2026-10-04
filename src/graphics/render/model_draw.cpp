@@ -120,7 +120,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
   uint32_t childrenRemaining;
   int childIndex;
 
-  if (modelNodeRuntime == NULL) {
+  if (modelNodeRuntime == nullptr) {
     return;
   }
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
@@ -135,7 +135,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
   }
   childIndex = 0;
   for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNodeRuntime->childNodes[childIndex] != NULL) {
+    if (modelNodeRuntime->childNodes[childIndex] != nullptr) {
       ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime->childNodes[childIndex]);
     }
     childIndex++;
@@ -157,7 +157,7 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
 
   /* The original read the resource before the NULL test; read after it here, so the compiler cannot drop the
      test (a dereference before it lets it assume a non-NULL node) */
-  if (modelNode != NULL) {
+  if (modelNode != nullptr) {
     modelResourceView = modelNode->modelPayload.modelResource;
     modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
     /* g_GraphicsDirectionWorld only serves as scratch vector here */
@@ -177,7 +177,7 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
     ModelRender_DrawMeshGroupsAlternatePath(modelNode->runtimeStateA0,modelNode);
     childIndex = 0;
     for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-      if (modelNode->childNodes[childIndex] != NULL) {
+      if (modelNode->childNodes[childIndex] != nullptr) {
         ModelRuntime_RenderHierarchyRecursiveAlternatePath(modelNode->childNodes[childIndex]);
       }
       childIndex++;

@@ -66,7 +66,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
   
   modelDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(runtimeClassId);
   candidateScore = 0;
-  if (modelDefinition != NULL) {
+  if (modelDefinition != nullptr) {
     candidateModelDefinitionId = modelDefinition->definitionId;
     armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
     registryEntriesRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
@@ -76,7 +76,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
         armyAssetRegistryCursor++,
         registryEntriesRemaining--) {
       armyAssetRecord = (ArmyAssetRecord *)*armyAssetRegistryCursor;
-      if ((armyAssetRecord != NULL) &&
+      if ((armyAssetRecord != nullptr) &&
          ((armyAssetRecord->flags & 1) != 0)) { /* bit 0: asset enabled */
         /* the asset's root node is an AiLinkedDefinitionListView */
         assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer; /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
@@ -386,7 +386,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
     }
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) &&
+      if ((entitySlot != nullptr) &&
           ((entitySlot[59] & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) &&
           AiPurchaseCandidate_DefinitionListsResearch
             (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition,candidateId)) {
@@ -405,7 +405,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   if ((producerClassMask & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) &&
+      if ((entitySlot != nullptr) &&
           (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot[46] == 0)) {
         return false;
@@ -415,7 +415,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   else if ((producerClassMask & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) &&
+      if ((entitySlot != nullptr) &&
           (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) && (entitySlot[43] == 0)) {
         return false;
@@ -425,7 +425,7 @@ Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candida
   else if ((producerClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entitySlot != NULL) &&
+      if ((entitySlot != nullptr) &&
           (((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
           ((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) &&
           ((((ModelRuntimeSlot *)entitySlot)->definitionOrSavedId.runtimeDefinition->classParameterC4 &
@@ -457,12 +457,12 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
   if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--, workspaceEntry++) {
       entity = (GameEntityRuntime *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entity != NULL) &&
+      if ((entity != nullptr) &&
           (((entity->common).runtimeFlags & (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) &&
           AiPurchaseCandidate_DefinitionListsResearch
             ((ModelDefinition *)(entity->common).ownership.definitionOrClassRecord,candidateId)) {
         Technology_ApplyRecordToEntity(candidateId,entity);
-        workspaceEntry->runtimeSlotAddressOrZero = 0;
+        workspaceEntry->runtimeSlotAddressOrZero = nullptr;
         return;
       }
     }

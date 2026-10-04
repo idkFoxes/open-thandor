@@ -24,7 +24,7 @@ uint32_t g_GraphicsShadingTextureDimension = 0;
 
 uint32_t g_GraphicsShadingGridHalfSize = 0;
 
-uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor = 0;
+uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor = nullptr;
 
 uint32_t g_GraphicsShadingGeneratedTextureTileX = 0;
 
@@ -42,13 +42,13 @@ uint32_t g_GraphicsShadingGridStepQ20 = 0;
 
 int32_t g_GraphicsShadingGridStepQ20Current = 0;
 
-GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset = 0;
+GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset = nullptr;
 
-void *g_GraphicsShadingGridScratch = 0;
+void *g_GraphicsShadingGridScratch = nullptr;
 
-void *g_GraphicsShadingGridScratchInterior = 0;
+void *g_GraphicsShadingGridScratchInterior = nullptr;
 
-GraphicsTextureSet *g_GraphicsShadingTextureSet = 0;
+GraphicsTextureSet *g_GraphicsShadingTextureSet = nullptr;
 
 uint32_t g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
 
@@ -542,7 +542,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
     }
   }
   projectedBlocks = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks(renderContext);
-  if (projectedBlocks == NULL) {
+  if (projectedBlocks == nullptr) {
     return;
   }
   if (GraphicsShadingGeneratedTexture_TransformSamplesToView(projectedBlocks)) {
@@ -619,8 +619,8 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   if (allocError != 0) {
     /* the original leaked the scratch grid here; freed and cleared so a later shutdown does not see it */
     g_MemoryApi.free(gridScratch);
-    g_GraphicsShadingGridScratch = NULL;
-    g_GraphicsShadingGridScratchInterior = NULL;
+    g_GraphicsShadingGridScratch = nullptr;
+    g_GraphicsShadingGridScratchInterior = nullptr;
     return allocError;
   }
   g_GraphicsShadingGeneratedAsset = asset;
@@ -671,14 +671,14 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   g_GraphicsShadingNegativeGridOriginQ12 = gridOriginCells * -Q12_ONE;
   g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
   createdTextureSet = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset,&textureSetError);
-  if (createdTextureSet == NULL) {
+  if (createdTextureSet == nullptr) {
     /* The original kept the freed asset in g_GraphicsShadingGeneratedAsset (GraphicsShadingRuntime_Shutdown then
        freed it a second time) and the scratch grid allocated; both are freed and cleared here. */
     g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
-    g_GraphicsShadingGeneratedAsset = NULL;
+    g_GraphicsShadingGeneratedAsset = nullptr;
     g_MemoryApi.free(gridScratch);
-    g_GraphicsShadingGridScratch = NULL;
-    g_GraphicsShadingGridScratchInterior = NULL;
+    g_GraphicsShadingGridScratch = nullptr;
+    g_GraphicsShadingGridScratchInterior = nullptr;
     return textureSetError;
   }
   g_GraphicsShadingTextureSet = createdTextureSet;
@@ -693,11 +693,11 @@ void GraphicsShadingRuntime_Shutdown(void)
 
 {
   g_GraphicsDestroyTextureSet(g_GraphicsShadingTextureSet);
-  g_GraphicsShadingTextureSet = NULL;
+  g_GraphicsShadingTextureSet = nullptr;
   g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
-  g_GraphicsShadingGeneratedAsset = NULL;
+  g_GraphicsShadingGeneratedAsset = nullptr;
   g_MemoryApi.free(g_GraphicsShadingGridScratch);
-  g_GraphicsShadingGridScratch = NULL;
+  g_GraphicsShadingGridScratch = nullptr;
   return;
 }
 
@@ -860,7 +860,7 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
   }
   childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[childIndex] != NULL) {
+    if (modelNode->childNodes[childIndex] != nullptr) {
       GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(modelNode->childNodes[childIndex]);
     }
     childIndex++;
@@ -969,7 +969,7 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *m
   }
   childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[childIndex] != NULL) {
+    if (modelNode->childNodes[childIndex] != nullptr) {
       result = result + GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(modelNode->childNodes[childIndex]);
     }
     childIndex++;
@@ -1062,7 +1062,7 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
   }
   childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[childIndex] != NULL) {
+    if (modelNode->childNodes[childIndex] != nullptr) {
       GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
                 (modelNode->childNodes[childIndex]);
     }
@@ -1265,7 +1265,7 @@ Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode
   }
   /* the count is taken as signed, so a count of 0x80000001 or more probes no child */
   for (childIndex = (int)(modelNode->childCount - 1); childIndex >= 0; childIndex--) {
-    if (modelNode->childNodes[childIndex] != NULL &&
+    if (modelNode->childNodes[childIndex] != nullptr &&
         !GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode->childNodes[childIndex])) {
       return false;
     }
@@ -1309,7 +1309,7 @@ GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProje
     firstPacket->renderFlags = GRAPHICS_PRIMITIVE_FLAG_TEXTURED | GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT;
     return firstBlock;
   }
-  return NULL;
+  return nullptr;
 }
 
 

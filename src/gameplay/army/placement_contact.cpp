@@ -24,7 +24,7 @@ void ArmyPlacementContact_ApplyTerrainHeight
 {
   Q12 surfaceHeightQ12;
   
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
       (modelNode->worldTransform).translation.z =
            surfaceHeightQ12 + heightOffsetQ12 +
@@ -51,7 +51,7 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
 {
   Q12 surfaceHeightQ12;
   
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldXQ12;
@@ -77,7 +77,7 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
   Q12 surfaceHeightQ12;
   uint32_t surfaceNormalAngles;
 
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateTerrainHeightAndNormal
           (worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12,&surfaceNormalAngles)) {
       resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
@@ -106,7 +106,7 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
 {
   Q12 surfaceHeightQ12;
   
-  if (worldRuntime->fieldGrid != NULL) {
+  if (worldRuntime->fieldGrid != nullptr) {
     if (FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldXQ12;

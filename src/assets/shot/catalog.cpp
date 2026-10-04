@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-ShotDefinition *g_ShotDefinitionRegistry[256] = {0};
+ShotDefinition *g_ShotDefinitionRegistry[256] = {};
 
 /* Implementation ownership: assets/shot/catalog. */
 
@@ -65,14 +65,14 @@ uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
   for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     definition = *registryCursor;
-    if (definition != NULL) {
+    if (definition != nullptr) {
       materialIndexCursor = definition->terrainMaterialIndices31;
       for (materialIndicesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; materialIndicesRemaining != 0;
            materialIndicesRemaining--) {
         materialIndex = *materialIndexCursor;
         materialIndexCursor++;
         if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex ||
-            (-1 < materialIndex && g_TerrainMaterialTextureSets[materialIndex] == NULL)) {
+            (-1 < materialIndex && g_TerrainMaterialTextureSets[materialIndex] == nullptr)) {
           g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                      SHOT_DEFINITION_REGISTRY_SLOT_COUNT - registrySlotsRemaining,g_PackageLastErrorPath);
@@ -97,12 +97,12 @@ ShotDefinition *ShotDefinitionRegistry_LookupById(PckShotDefinitionIdCatalog def
   for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
     registeredDefinition = *registryCursor;
-    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
+    if (registeredDefinition != nullptr && registeredDefinition->definitionId == definitionId) {
       return registeredDefinition;
     }
     registryCursor++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
@@ -116,7 +116,7 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
   ShotDefinition *registeredDefinition;
 
   registeredDefinition = ShotDefinitionRegistry_LookupById(definitionId);
-  if (registeredDefinition != NULL) {
+  if (registeredDefinition != nullptr) {
     *outDefinition = registeredDefinition;
     return 0;
   }
@@ -141,11 +141,11 @@ static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
     return FATAL_ERROR_SHOT_ID_NOT_FOUND;
   }
   loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
-  if (loadedSprite == NULL) {
+  if (loadedSprite == nullptr) {
     return loadErrorCode;
   }
   existingSprite = SpriteAssetRegistry_FindById(loadedSprite->registryHeader.registryId);
-  if (existingSprite == NULL) {
+  if (existingSprite == nullptr) {
     definition->ownedNestedResourcePresent++;
     definition->ownedNestedResource = loadedSprite;
     spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(loadedSprite);
@@ -237,14 +237,14 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     return FATAL_ERROR_SHOT_ASSET_INVALID;
   }
-  if (ShotRuntime_FindDefinitionById(definition->definitionId) != NULL) {
+  if (ShotRuntime_FindDefinitionById(definition->definitionId) != nullptr) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     return FATAL_ERROR_SHOT_ID_DUPLICATE;
   }
   registrySlotCursor = g_ShotDefinitionRegistry;
   for (slotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (*registrySlotCursor == NULL) {
+    if (*registrySlotCursor == nullptr) {
       *registrySlotCursor = definition;
       spriteError = ShotDefinition_LoadSprite(definition);
       if (spriteError != 0) {

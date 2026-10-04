@@ -12,7 +12,7 @@
 
 GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc = THANDOR_FN(GraphicsPrimitiveQueue_RadixSortForRendering);
 
-GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
+GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = nullptr;
 
 static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
@@ -214,7 +214,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *qu
     queue->traversalCursor = queue->traversalCursor->next;
     return currentTraversalPacket;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -233,7 +233,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
     queue->traversalCursor = currentTraversalNode->next;
     return currentTraversalPacket;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -350,8 +350,8 @@ void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTex
   queuedPacketCount = queue->count;
   packetPool = queue->packetPool;
   packetPool[queuedPacketCount - 1].modulationColor = modulationColor;
-  packetPool[queuedPacketCount - 1].textureEntry = NULL;
-  if (textureEntry != NULL) {
+  packetPool[queuedPacketCount - 1].textureEntry = nullptr;
+  if (textureEntry != nullptr) {
     packetPool[queuedPacketCount - 1].renderFlags =
          packetPool[queuedPacketCount - 1].renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
     packetPool[queuedPacketCount - 1].textureEntry = textureEntry;

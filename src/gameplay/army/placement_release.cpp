@@ -62,7 +62,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   cellColumn = ((gridCoordinates.columnQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
   cellRow = ((gridCoordinates.rowQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
   activeFieldGrid = (inGameRoot->worldRuntime).fieldGrid;
-  if (((0 < cellColumn) && (0 < cellRow)) && (activeFieldGrid != NULL)) {
+  if (((0 < cellColumn) && (0 < cellRow)) && (activeFieldGrid != nullptr)) {
     if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
         (cellRow + 1 < (int)activeFieldGrid->gridHeight)) {
       cellIndex = cellRow * activeFieldGrid->gridWidth + cellColumn;
@@ -133,7 +133,7 @@ void ArmyPlacement_ReleaseClassStateReservation
   ModelRuntimeSlot *linkedModelSlot;
 
   linkedModelSlot = (modelRuntime->classLinkState).modelLinkOrState.modelRuntime;
-  if (linkedModelSlot == NULL) {
+  if (linkedModelSlot == nullptr) {
     return;
   }
   /* the 13 asset-id dwords start at classState78 and run on past it */

@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-AiKnowledgeDataImage *g_AiKnowledgeData = 0;
+AiKnowledgeDataImage *g_AiKnowledgeData = nullptr;
 
 /* Implementation ownership: gameplay/ai/placement. */
 
@@ -40,7 +40,7 @@ Bool8 AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId
   }
   if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                 (4,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                 factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+                 factionIndex,(UiRootNode *)worldRuntime,nullptr)) {
     return true;
   }
   /* ceil(placementCount / quantum) must stay below 5 */
@@ -261,7 +261,7 @@ static Bool8 AiSiteCandidate_IsNearClass13StructureMarker(const FieldGridCell *t
   workspace00Entry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     runtimeSlot = (ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero;
-    if (runtimeSlot != NULL) {
+    if (runtimeSlot != nullptr) {
       modelNodeRuntime = runtimeSlot->rootModelNodeOrSavedOffset.modelNode;
       if ((runtimeSlot->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
           (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&markerRecord))) {
@@ -296,7 +296,7 @@ static Bool8 AiSiteCandidate_FindNearestStructureDistance(const FieldGridCell *t
   nearestDistance = INT32_MAX;
   workspace00Entry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
-    if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
+    if (workspace00Entry->runtimeSlotAddressOrZero != nullptr) {
       structureNode =
            ((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
       deltaX = structureNode->worldTransform.translation.x - terrainFeatureCell->worldX;
@@ -417,7 +417,7 @@ Bool8 AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,F
   return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (0,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,placementContext,
-                     inGameRoot,NULL);
+                     inGameRoot,nullptr);
 }
 
 
@@ -431,7 +431,7 @@ Bool8 AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,F
   return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (4,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime,NULL);
+                     (UiRootNode *)worldRuntime,nullptr);
 }
 
 
@@ -458,7 +458,7 @@ Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetI
                  (UiRootNode *)worldRuntime,&placementCount)) {
     if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                   (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                   factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+                   factionIndex,(UiRootNode *)worldRuntime,nullptr)) {
       return false;
     }
     bucketCount = 0;
@@ -466,7 +466,7 @@ Bool8 AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetI
   else if ((placementCount != 0) &&
           (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                          factionIndex,(UiRootNode *)worldRuntime,NULL))) {
+                          factionIndex,(UiRootNode *)worldRuntime,nullptr))) {
     /* Round the placement count up to whole separation quanta. */
     quantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
     bucketCount = ((placementCount - 1) + quantum) / quantum;
@@ -612,7 +612,7 @@ Bool8 AiPlacement_FindNearestPlaceableBaseSite
       if ((int)candidateDistance < (int)bestDistance) {
         if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                           candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+                           candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,nullptr)) {
           bestDistance = candidateDistance;
           bestCell = candidateCell;
         }
@@ -681,8 +681,8 @@ Bool8 AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAss
     }
     /* Y before X, as at every ArmyRuntime_CreateInstanceFromAsset call site */
     probeInstance = ArmyRuntime_CreateInstanceFromAsset
-                      (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
-    if (probeInstance == NULL) {
+                      (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime,nullptr);
+    if (probeInstance == nullptr) {
       break;
     }
     probeInstances[probeCount] = probeInstance;

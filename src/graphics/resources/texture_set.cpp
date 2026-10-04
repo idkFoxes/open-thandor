@@ -20,7 +20,7 @@ THANDOR_ALIGN(16) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetRele
 
 GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
 
-GraphicsTextureResource **g_GraphicsTextureSlots = 0;
+GraphicsTextureResource **g_GraphicsTextureSlots = nullptr;
 
 static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
 
@@ -49,8 +49,8 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
   AssetSubresourceCount entriesRemaining;
 
   allocatedSet = GraphicsTextureSet_AllocateMetadata(sourceAsset,outErrorCode);
-  if (allocatedSet == NULL) {
-    return NULL;
+  if (allocatedSet == nullptr) {
+    return nullptr;
   }
   entriesRemaining = (allocatedSet->sourceAsset->tableDescriptor).subresourceCount;
   entryCursor = allocatedSet->entries;
@@ -62,7 +62,7 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
       registerFailed = GraphicsTexture_RegisterSlot(newTexture);
       if (registerFailed) {
         g_MemoryApi.free(newTexture);
-        entryCursor->texture = NULL;
+        entryCursor->texture = nullptr;
       }
     }
     entryCursor++;
@@ -86,14 +86,14 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
   GraphicsTextureSetEntry *entryCursor;
   GraphicsTextureResource **matchedSlot;
 
-  releasedSourceAsset = NULL;
-  if (set != NULL) {
+  releasedSourceAsset = nullptr;
+  if (set != nullptr) {
     entriesRemaining = set->subresourceCount;
     entryCursor = set->entries;
     /* a while loop: the original's do-while ran once for a set without entries */
     while (entriesRemaining != 0) {
       texture = entryCursor->texture;
-      if (texture != NULL) {
+      if (texture != nullptr) {
         /* find the texture's slot; if it is not registered the scan ends on (and clears) the last slot */
         slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
         slotCursor = g_GraphicsTextureSlots;
@@ -103,7 +103,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
           slotsRemaining--;
           slotCursor = matchedSlot + 1;
         } while (slotsRemaining != 0);
-        *matchedSlot = NULL;
+        *matchedSlot = nullptr;
         g_MemoryApi.free(texture);
       }
       entryCursor++;
@@ -127,17 +127,17 @@ GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t
   uint32_t errorCode;
 
   loadedSource = (GraphicsTextureSourceAsset *)Package_LoadEntry(pathUtf16,&errorCode);
-  if (loadedSource != NULL) {
+  if (loadedSource != nullptr) {
     createdSet = g_GraphicsCreateTextureSet(loadedSource,&errorCode);
-    if (createdSet != NULL) {
+    if (createdSet != nullptr) {
       return createdSet;
     }
     Resource_Release(loadedSource);
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the
@@ -198,7 +198,7 @@ static Bool8 GraphicsTextureSet_FillEntries
         widthLog2--;
       }
     }
-    entry->texture = NULL;
+    entry->texture = nullptr;
     entry->subresourceIndex = entryIndex;
     entry->widthLog2 = widthLog2;
     if (1 << ((uint8_t)widthLog2 & SHIFT_COUNT_MASK) != sourceEntry->pixelWidth) {
@@ -266,10 +266,10 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
       errorCode = FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
     }
   }
-  if (outErrorCode != NULL) {
+  if (outErrorCode != nullptr) {
     *outErrorCode = errorCode;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the
@@ -280,8 +280,8 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 {
   GraphicsTextureSourceAsset *sourceAsset;
 
-  sourceAsset = NULL;
-  if (set != NULL) {
+  sourceAsset = nullptr;
+  if (set != nullptr) {
     sourceAsset = set->sourceAsset;
     g_MemoryApi.free(set);
   }
@@ -300,7 +300,7 @@ Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
   slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   slotCursor = g_GraphicsTextureSlots;
   do {
-    if (*slotCursor == NULL) {
+    if (*slotCursor == nullptr) {
       *slotCursor = texture;
       return false;
     }

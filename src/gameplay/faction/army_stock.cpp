@@ -33,7 +33,7 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
     do {
       if (runtimeGroupMember ==
           factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex]) {
-        factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex] = NULL;
+        factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex] = nullptr;
       }
       groupSlotIndex++;
       groupSlotsRemaining--;
@@ -69,7 +69,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
   }
   /* Structures of class 0xB or 0xD in state 1 that are currently producing armyAssetRecord. */
   for (ownerNode = g_InGameRuntimeRoot->worldRuntime.ownerListHead;
-      ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+      ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
@@ -202,7 +202,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   else {
     producerClassId = MODEL_RUNTIME_CLASS_13;
   }
-  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }

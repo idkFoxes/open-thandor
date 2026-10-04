@@ -60,7 +60,7 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
       frameIndex++;
-      if (!Movie_AdvanceFrame(NULL,NULL)) {
+      if (!Movie_AdvanceFrame(nullptr,nullptr)) {
         return;
       }
     } while (frameIndex < targetFrame);

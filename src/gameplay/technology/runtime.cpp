@@ -18,7 +18,7 @@ TechnologyCategoryMasks g_TechnologyCategoryMasks = {0};
 
 static uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8] = {0};
 
-TechnologyAsset *g_TechnologyAsset = 0;
+TechnologyAsset *g_TechnologyAsset = nullptr;
 
 /* Implementation ownership: gameplay/technology/runtime. */
 
@@ -66,7 +66,7 @@ void Technology_UnlockForFaction
   /* the dependency is unlocked without a position; the recursion ends at an already unlocked technology */
   Technology_UnlockForFaction
             (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex);
-  for (ownerNode = (root->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (root->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -126,7 +126,7 @@ Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fa
   }
   /* scan the world's model owner nodes for an army of the faction that is already researching (runtime flag
      0x40) this technology (researchTechnologyId) */
-  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       researchingModel = (ModelRuntimeSlot *)ownerNode->runtimePayload;
@@ -202,13 +202,13 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   /* every registered army asset with flags bit 0: look at its root model definition */
   for (registrySlotIndex = 0; registrySlotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotIndex++) {
     armyAssetRecord = g_ArmyAssetRecordRegistry[registrySlotIndex];
-    if ((armyAssetRecord != NULL) &&
+    if ((armyAssetRecord != nullptr) &&
        ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
       /* the root node's model definition id (ArmyModelTreeNode.linkedDefinitionIds[0]) */
       definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
                         (*Thandor_U32ToPointer<PckModelDefinitionIdCatalog>(
                           armyAssetRecord->rootNodeOffsetOrPointer + 32)); /* 5f-format: ArmyAssetRecord.rootNodeOffsetOrPointer */
-      if (definitionRecord != NULL) {
+      if (definitionRecord != nullptr) {
         /* per target class (targetClassIndex) the largest armour (maximumHealth); for mobile models
            (accelerationPerTick) the top speed (movementSpeed) */
         if ((int)g_TechnologyCategoryMaximums[definitionRecord->targetClassIndex] <
@@ -283,7 +283,7 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
     linkedDefinitionList = linkedDefinitionList + 4;
   }
   selectedDefinition = ModelDefinitionRegistry_FindById(selectedDefinitionId);
-  if (selectedDefinition == NULL) {
+  if (selectedDefinition == nullptr) {
     /* Original quirk: the error code of the failed lookup is returned as the definition */
     selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
   }
@@ -392,7 +392,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
   ModelDefinitionRecordPrefix *modelDefinition;
 
   modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-  if (modelDefinition != NULL) {
+  if (modelDefinition != nullptr) {
     Technology_UnlockForFaction
               (0,0,((ModelDefinition *)modelDefinition)->researchTechnologyIds[0],factionIndex);
   }
@@ -410,7 +410,7 @@ Bool8 ModelDefinition_IsFactionTechnologyLocked
   ModelDefinitionRecordPrefix *modelDefinition;
 
   modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-  if (modelDefinition == NULL) {
+  if (modelDefinition == nullptr) {
     return true;
   }
   technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit;

@@ -186,7 +186,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
 
   consumerCount = 0;
   for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-      worldNode != NULL; worldNode = worldNode->nextNode) {
+      worldNode != nullptr; worldNode = worldNode->nextNode) {
     if (worldNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
     modelRuntime = (int *)worldNode->runtimePayload;
     if ((modelRuntime[59] & ARMY_MODEL_STATE_DISMANTLING) != 0) continue;
@@ -202,7 +202,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
       attachmentSlot = modelRuntime;
       for (remainingAttachments = modelRuntime[3]; remainingAttachments != 0; remainingAttachments--) {
         attachedRuntime = Thandor_U32ToPointer<int>(attachmentSlot[80]); /* 5f-format: ModelRuntimeSlot.attachments[].childModelRuntimeOrSavedOffset (dword view) */
-        if (((attachedRuntime != NULL) && (attachedRuntime[61] != 0)) && (consumerCount < 256)) {
+        if (((attachedRuntime != nullptr) && (attachedRuntime[61] != 0)) && (consumerCount < 256)) {
           InGameFactionEconomy_FillEnergyConsumer(&consumers[consumerCount],attachedRuntime);
           consumerCount++;
         }

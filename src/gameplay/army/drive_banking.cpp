@@ -28,7 +28,7 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
 
   linkedModelRuntime = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime;
   rootNode = modelRuntime->rootModelNode;
-  if (linkedModelRuntime == NULL) {
+  if (linkedModelRuntime == nullptr) {
     return;
   }
   movementDefinition = modelRuntime->modelDefinition;
@@ -40,18 +40,18 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
     return;
   }
   childCount = rootNode->childCount;
-  (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+  (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   if ((childCount < 3) || (((modelRuntime->classState).behaviorState & 4) == 0)) {
     return;
   }
   classStateWord = &(modelRuntime->classState).behaviorState;
   *classStateWord = *classStateWord | 1;
   soundIndex = ((ModelDefinition *)movementDefinition)->positionedSoundSlotIndex;
-  if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == NULL)) {
+  if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
-  if (voiceSetRef == NULL) {
+  if (voiceSetRef == nullptr) {
     return;
   }
   worldPosition = &(modelRuntime->rootModelNode->worldTransform).translation;
@@ -266,7 +266,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                      (nextPosition.yQ12,nextPosition.xQ12,
                       (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
-  if (blockingModelRuntime != NULL) {
+  if (blockingModelRuntime != nullptr) {
     collisionRootNode = modelRuntime->rootModelNode;
     ArmyRuntime_HandleCollisionPartner
               ((ModelRuntimeSlot *)modelRuntime,(collisionRootNode->worldTransform).translation.y,

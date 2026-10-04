@@ -235,7 +235,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                      (nextPosition.yQ12,nextPosition.xQ12,
                       (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
-  if (blockingModelRuntime != NULL) {
+  if (blockingModelRuntime != nullptr) {
     /* stay where we are and let the collision partner react (water surface: it is not notified) */
     blockedRootNode = modelRuntime->rootModelNode;
     if (notifyBlockingArmy) {
@@ -374,13 +374,13 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
   /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
      radius and this unit is still within it. */
-  if ((linkedModelRuntime != NULL) &&
+  if ((linkedModelRuntime != nullptr) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
        !ArmyCollision_TestPointWithinExpandedRuntimeRadius
                   (modelRuntime->modelDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
                    (rootNode->worldTransform).translation.x,linkedModelRuntime))) {
-    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   }
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
@@ -459,13 +459,13 @@ void ArmyRuntimeClass_UpdateGroundMovement
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
   /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
      radius and this unit is still within it. */
-  if ((linkedModelRuntime != NULL) &&
+  if ((linkedModelRuntime != nullptr) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
        !ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (modelRuntime->modelDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
            (rootNode->worldTransform).translation.x,linkedModelRuntime))) {
-    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   }
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
@@ -535,13 +535,13 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
   /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
      radius and this unit is still within it. */
-  if ((linkedModelRuntime != NULL) &&
+  if ((linkedModelRuntime != nullptr) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
        !ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (modelRuntime->modelDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
            (rootNode->worldTransform).translation.x,linkedModelRuntime))) {
-    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = nullptr;
   }
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;

@@ -94,7 +94,7 @@ static inline int32_t ArmyRuntime_Token(const void *armyRuntime)
 static inline ArmyRuntimeSlot *ArmyRuntime_FromToken(int32_t token)
 {
   if (token == 0) {
-    return NULL;
+    return nullptr;
   }
   return (ArmyRuntimeSlot *)((uintptr_t)(uint32_t)token + (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
 }

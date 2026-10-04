@@ -692,7 +692,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   }
   survivingFactionTextureSet = g_ArmyGraphicsBindings[survivingFactionIndex].textureSet;
   survivingFactionPaletteAsset = g_ArmyGraphicsBindings[survivingFactionIndex].paletteAsset;
-  for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+  for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != nullptr; ownerNode = ownerNode->nextNode) {
     /* re-own the absorbed faction's models (their army's factionIndex) and repaint them in the survivor's colours */
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       armyRuntime = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -914,7 +914,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   
   shooterArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
   targetEntity = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime; /* the hit model's army */
-  if (shooterArmy != NULL) {
+  if (shooterArmy != nullptr) {
     if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
       /* a condition ratio of 1.0 means the target is fully repaired */
       conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
@@ -946,7 +946,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
           ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime);
         }
         else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
-                  (shooterArmy->commandTargetArmyRuntime != NULL &&
+                  (shooterArmy->commandTargetArmyRuntime != nullptr &&
                    targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
                  99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
                              g_GameFactionRuntimeImage.records[shooterFactionIndex].relationStateTicks

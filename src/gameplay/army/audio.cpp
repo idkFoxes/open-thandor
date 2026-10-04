@@ -21,11 +21,11 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
   GraphicsFixedVec3 *worldPosition;
 
   if ((soundSlotIndex == 0) || (soundSlotIndex >= worldRuntime->dwordArrayCount) ||
-      (worldRuntime->dwordArray == NULL)) {
+      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
-  if (soundSlot == NULL) {
+  if (soundSlot == nullptr) {
     return;
   }
   worldPosition = &(modelNode->worldTransform).translation;
@@ -220,11 +220,11 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
   if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) || (soundSlotIndex == 0) ||
-      (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == NULL)) {
+      (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
-  if (slot == NULL) {
+  if (slot == nullptr) {
     return;
   }
   worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
@@ -255,12 +255,12 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   Bool8 capabilityClear;
   FieldGridAsset *fieldGrid;
 
-  if ((soundAssetIndex == 0) || (worldContext->dwordArray == NULL) ||
+  if ((soundAssetIndex == 0) || (worldContext->dwordArray == nullptr) ||
       (soundAssetIndex >= worldContext->dwordArrayCount)) {
     return;
   }
   voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
-  if (voiceSetRef == NULL) {
+  if (voiceSetRef == nullptr) {
     return;
   }
   fieldGrid = worldContext->fieldGrid;
@@ -286,7 +286,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
         ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
       (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
     g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;
-    g_SoundPlayOneShot(g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef,NULL);
+    g_SoundPlayOneShot(g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef,nullptr);
   }
 }
 
@@ -312,11 +312,11 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   if ((soundAssetIndex == 0) || (soundAssetIndex >= worldRuntime->dwordArrayCount) ||
-      (worldRuntime->dwordArray == NULL)) {
+      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
   voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
-  if (voiceSetRef == NULL) {
+  if (voiceSetRef == nullptr) {
     return;
   }
   cellMasked = TerrainGrid_TestProjectedCellMaskBits01
