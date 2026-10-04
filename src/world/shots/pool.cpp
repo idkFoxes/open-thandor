@@ -144,23 +144,17 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
 
 {
   ShotDefinition *registryDefinition;
-  int registrySlotsRemaining;
-  ShotDefinition **registryCursor;
 
-  registryCursor = g_ShotDefinitionRegistry;
-  registryDefinition = NULL;
-  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
-       registrySlotsRemaining--) {
-    registryDefinition = *registryCursor;
-    if (registryDefinition != NULL && registryDefinition->definitionId == definitionId) {
-      return registryDefinition;
-    }
-    registryCursor++;
+  registryDefinition = ShotDefinitionRegistry_LookupById(definitionId);
+  if (registryDefinition == NULL) {
+    /* Original quirk: the original formats the last registry slot (what its scan loaded last), not the
+       missing id */
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+               (int32_t)(intptr_t)g_ShotDefinitionRegistry[SHOT_DEFINITION_REGISTRY_SLOT_COUNT - 1],
+               g_PackageLastErrorPath);
   }
-  /* Original quirk: the original formats registryDefinition, i.e. the last registry slot, not the missing id */
-  g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(intptr_t)registryDefinition,g_PackageLastErrorPath);
-  return NULL;
+  return registryDefinition;
 }
 
 /* Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):

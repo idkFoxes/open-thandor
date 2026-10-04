@@ -235,6 +235,23 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
   return FATAL_ERROR_ARMY_REGISTRY_FULL;
 }
 
+/* The first registered army asset record with this id in the 768-slot army registry, or NULL when there is
+   none. No side effects (ArmyAssetRegistry_FindById also reports a miss). */
+ArmyAssetRecordPrefix *ArmyAssetRegistry_FindRecordById(PckArmyAssetIdCatalog registryId)
+
+{
+  ArmyAssetRecordPrefix *candidateRecord;
+  int slotIndex;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateRecord = g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateRecord != NULL && candidateRecord->registryId == registryId) {
+      return candidateRecord;
+    }
+  }
+  return NULL;
+}
+
 /* Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
    *outRecord; an unknown id is written as decimal text to g_PackageLastErrorPath and returns
    FATAL_ERROR_ARMY_ID_NOT_FOUND.
@@ -246,14 +263,11 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
 
 {
   ArmyAssetRecordPrefix *candidateRecord;
-  int slotIndex;
 
-  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
-    candidateRecord = g_ArmyAssetRecordRegistry[slotIndex];
-    if (candidateRecord != NULL && candidateRecord->registryId == registryId) {
-      *outRecord = candidateRecord;
-      return 0;
-    }
+  candidateRecord = ArmyAssetRegistry_FindRecordById(registryId);
+  if (candidateRecord != NULL) {
+    *outRecord = candidateRecord;
+    return 0;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
   *outRecord = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;

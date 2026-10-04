@@ -157,6 +157,26 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
 }
 
 
+/* The first registered effect definition with this id in the 256-slot registry, or NULL. No side effects. */
+EffectDefinition *EffectDefinitionRegistry_LookupById(PckEffectDefinitionIdCatalog definitionId)
+
+{
+  EffectDefinition *candidateDefinition;
+  int registrySlotsRemaining;
+  EffectDefinition **registryCursor;
+
+  registryCursor = g_EffectDefinitionRegistry;
+  for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    candidateDefinition = *registryCursor;
+    if (candidateDefinition != NULL && candidateDefinition->definitionId == definitionId) {
+      return candidateDefinition;
+    }
+    registryCursor++;
+  }
+  return NULL;
+}
+
 /* Looks up a registered effect definition by id, used to turn serialized effect ids into pointers. Id 0
    means "no effect" and yields NULL. Returns 0 with the definition (or NULL) in *outDefinition. An unknown id
    is written as decimal text to g_PackageLastErrorPath and FATAL_ERROR_EFFECT_ID_NOT_FOUND is returned;
@@ -166,22 +186,15 @@ uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definiti
 
 {
   EffectDefinition *candidateDefinition;
-  int registrySlotsRemaining;
-  EffectDefinition **registryCursor;
 
   if (definitionId == 0) {
     *outDefinition = NULL;
     return 0;
   }
-  registryCursor = g_EffectDefinitionRegistry;
-  for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
-       registrySlotsRemaining--) {
-    candidateDefinition = *registryCursor;
-    if (candidateDefinition != NULL && candidateDefinition->definitionId == definitionId) {
-      *outDefinition = candidateDefinition;
-      return 0;
-    }
-    registryCursor++;
+  candidateDefinition = EffectDefinitionRegistry_LookupById(definitionId);
+  if (candidateDefinition != NULL) {
+    *outDefinition = candidateDefinition;
+    return 0;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
   return FATAL_ERROR_EFFECT_ID_NOT_FOUND;

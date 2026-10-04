@@ -84,12 +84,8 @@ uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
   return 0;
 }
 
-/* Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
-   written as decimal text to g_PackageLastErrorPath for the fatal-error message, *outDefinition is left untouched
-   and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned.
-*/
-uint32_t ShotDefinitionRegistry_FindByIdWithError
-          (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition)
+/* The first registered shot definition with this id in the 256-slot registry, or NULL. No side effects. */
+ShotDefinition *ShotDefinitionRegistry_LookupById(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registeredDefinition;
@@ -101,10 +97,27 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
        registrySlotsRemaining--) {
     registeredDefinition = *registryCursor;
     if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
-      *outDefinition = registeredDefinition;
-      return 0;
+      return registeredDefinition;
     }
     registryCursor++;
+  }
+  return NULL;
+}
+
+/* Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
+   written as decimal text to g_PackageLastErrorPath for the fatal-error message, *outDefinition is left untouched
+   and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned.
+*/
+uint32_t ShotDefinitionRegistry_FindByIdWithError
+          (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition)
+
+{
+  ShotDefinition *registeredDefinition;
+
+  registeredDefinition = ShotDefinitionRegistry_LookupById(definitionId);
+  if (registeredDefinition != NULL) {
+    *outDefinition = registeredDefinition;
+    return 0;
   }
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
