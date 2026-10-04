@@ -13,14 +13,6 @@
 
 /* Submodule: gameplay/selection/overlay. */
 
-/* Tints of the ghost army that previews a placement or command-mode command
-   (InGameWorldOverlay_RebuildOrReleaseTransientMarkers). */
-#define OVERLAY_PREVIEW_TINT_ARGB 0xCFFFFFFF /* translucent white */
-#define OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB 0x4FFFFFFF /* fainter: the placement has several candidates */
-#define OVERLAY_PREVIEW_TINT_BLOCKED_MASK 0xFF707070 /* darkens the preview when the placement would fail */
-/* Capacities of g_InGameOwnedEntityTransientEffectMarkers and g_InGameCommandTargetTransientEffectMarkers. */
-#define OVERLAY_OWNED_MARKER_CAPACITY 32
-#define OVERLAY_COMMAND_TARGET_MARKER_CAPACITY 128
 /* Subresources of g_SelectionPanelTextureSource drawn by the SelectionOverlay_* functions: the eight pieces of
    the bounds frame and the map-view markers. */
 #define SELECTION_OVERLAY_FRAME_TOP_LEFT 0xA4
@@ -41,10 +33,8 @@
 /* Initial g_ModelProjectedBoundsPixels: an empty (inverted) rectangle for ModelProjectedBounds_AccumulateHierarchyRecursive. */
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MIN 0x10000
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MAX (-0x10000)
-/* Functions are grouped by semantic ownership. */
 
-void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
-          (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);
+/* Functions are grouped by semantic ownership. */
 
 void SelectionOverlay_RenderSelectedArmyMetrics
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -83,34 +73,5 @@ void SelectionOverlay_DrawResourceCellMarkers
 void SelectionOverlay_DrawDebugMarkedCellMarkers
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid);
-
-void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
-          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
-
-void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
-          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
-
-void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
-          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
-
-void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
-          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
-
-void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
-          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
-
-void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-          (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
-          void *inGameRuntime);
-
-extern intptr_t g_InGamePendingPlacementArmyAsset; /* ArmyAssetRecordPrefix * staged for placement, 0 when none */
-extern uint32_t g_InGameCommandPreviewArmyAssetId;
-
-/* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
-   SelectionMarkerCoordinates_ApplyType3..7): four arguments. */
-typedef void InGamePointerModeHandler
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
-extern InGamePointerModeHandler *g_InGamePointerModeHandlers[8];
 
 #endif /* THANDOR_GAMEPLAY_SELECTION_OVERLAY_H */

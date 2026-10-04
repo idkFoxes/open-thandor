@@ -101,6 +101,7 @@ add_library(thandor_curated STATIC
     src/gameplay/selection/panel_cells.cpp
     src/gameplay/selection/panel_metrics.cpp
     src/gameplay/selection/panel_resources.cpp
+    src/gameplay/selection/preview_markers.cpp
     src/gameplay/selection/queries.cpp
     src/gameplay/selection/selection_set.cpp
     src/gameplay/session/level.cpp

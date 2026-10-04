@@ -587,3 +587,88 @@ void SelectionPointerArray_SetAircraftPadTargets
   }
   return;
 }
+
+/* Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 3 (lanes 1 and 2) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
+*/
+void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
+
+{
+  SelectionPointerArray_SetAircraftPadTargets
+            (3,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+  return;
+}
+
+/* Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 4 (lane 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
+*/
+void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
+
+{
+  SelectionPointerArray_SetAircraftPadTargets
+            (4,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+  return;
+}
+
+/* Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 5 (lanes 1 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
+*/
+void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
+
+{
+  SelectionPointerArray_SetAircraftPadTargets
+            (5,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+  return;
+}
+
+/* Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 6 (lanes 2 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
+*/
+void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
+
+{
+  SelectionPointerArray_SetAircraftPadTargets
+            (6,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+  return;
+}
+
+/* Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 7 (lanes 1, 2 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
+*/
+void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
+
+{
+  SelectionPointerArray_SetAircraftPadTargets
+            (7,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+  return;
+}
+
+InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {
+    /* 0 */ 0,
+    /* 1 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane1),
+    /* 2 */ THANDOR_FN(InGameSelection_SetAircraftPadTargetLane2),
+    /* 3 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType3),
+    /* 4 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType4),
+    /* 5 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType5),
+    /* 6 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType6),
+    /* 7 */ THANDOR_FN(SelectionMarkerCoordinates_ApplyType7)};
