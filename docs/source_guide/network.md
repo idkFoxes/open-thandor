@@ -168,21 +168,21 @@ No file comment; function families: `FrontendNetwork_*` (7).
 
 [Source](../../src/network/protocol/lobby.cpp) · [Header](../../include/thandor/network/protocol/lobby.h)
 
-No file comment; function families: `FrontendTransfer_*` (19), `UiTransfer_*` (2), `FrontendSnapshotTransfer_*` (1).
+No file comment; function families: `FrontendTransfer_*` (20), `UiTransfer_*` (2), `FrontendSnapshotTransfer_*` (1).
 
-**Functions** (13 public, 9 file-local):
+**Functions** (14 public, 9 file-local):
 
 - [`FrontendTransfer_ExecuteLobbyCommandRecords`](../../src/network/protocol/lobby.cpp#L54) - Executes commandCount consecutive 0x20-byte lobby command records (the original executes at least one: a count of 0 wraps).
-- [`FrontendTransfer_HandleHostSessionAndCommandBatchPackets`](../../src/network/protocol/lobby.cpp#L100) - Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the player's name; a non-zero expected block count starts the session and switches to ...
-- [`FrontendTransfer_MarkUnavailableIfModeBit0Callback`](../../src/network/protocol/lobby.cpp#L215) - Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player snapshots and executed ...
-- [`FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady`](../../src/network/protocol/lobby.cpp#L230) - Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every ...
-- [`UiTransfer_SendDiscoveryProbe`](../../src/network/protocol/lobby.cpp#L269) - Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address.
-- [`UiTransfer_SendPlayerDescriptor`](../../src/network/protocol/lobby.cpp#L286) - Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units) whose last unit is replaced by flags: bit 0 = a 64x64 picture &lt;name&gt;.pcx was found (loaded into ...
-- [`FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets`](../../src/network/protocol/lobby.cpp#L554) - Host side of the lobby.
-- [`FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands`](../../src/network/protocol/lobby.cpp#L643) - Host lobby tick.
-- [`FrontendTransfer_SendCapabilityHeartbeat`](../../src/network/protocol/lobby.cpp#L666) - Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat value of 0x40, which the host stores in this player's record.
-- [`FrontendTransfer_HandleSessionListAndJoinAckPackets`](../../src/network/protocol/lobby.cpp#L733) - Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over ...
-- 3 more: `FrontendTransfer_TickRequestTimeoutAndResetPage`, `FrontendTransfer_ConsumeProcessedFlagForMenuTick`, `FrontendTransfer_SendLobbyCommandAndSnapshotRequest`
+- [`FrontendTransfer_HandleHostSessionAndCommandBatchPackets`](../../src/network/protocol/lobby.cpp#L152) - Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the player's name; a non-zero expected block count starts the session and switches to ...
+- [`FrontendTransfer_MarkUnavailableIfModeBit0Callback`](../../src/network/protocol/lobby.cpp#L267) - Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player snapshots and executed ...
+- [`FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady`](../../src/network/protocol/lobby.cpp#L282) - Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every ...
+- [`UiTransfer_SendDiscoveryProbe`](../../src/network/protocol/lobby.cpp#L321) - Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address.
+- [`UiTransfer_SendPlayerDescriptor`](../../src/network/protocol/lobby.cpp#L338) - Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units) whose last unit is replaced by flags: bit 0 = a 64x64 picture &lt;name&gt;.pcx was found (loaded into ...
+- [`FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets`](../../src/network/protocol/lobby.cpp#L621) - Host side of the lobby.
+- [`FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands`](../../src/network/protocol/lobby.cpp#L710) - Host lobby tick.
+- [`FrontendTransfer_SendCapabilityHeartbeat`](../../src/network/protocol/lobby.cpp#L733) - Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat value of 0x40, which the host stores in this player's record.
+- [`FrontendTransfer_HandleSessionListAndJoinAckPackets`](../../src/network/protocol/lobby.cpp#L813) - Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over ...
+- 4 more: `FrontendTransfer_SanitizePeerTextUtf16`, `FrontendTransfer_TickRequestTimeoutAndResetPage`, `FrontendTransfer_ConsumeProcessedFlagForMenuTick`, `FrontendTransfer_SendLobbyCommandAndSnapshotRequest`
 
 **Data** (7 shared, 10 file-local): `g_FrontendPlayerRuntimeCount`, `g_FrontendPacket10011Buffer`, `g_FrontendSelectedNetworkEndpoint`, `g_FrontendSessionToken`, `g_SessionTransferTimeoutTicks`, `g_FrontendPendingSessionPlayerCount`, `g_FrontendExpectedPlayerRuntimeBlockCount`.
 
