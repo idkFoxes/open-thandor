@@ -202,6 +202,7 @@ struct GpuState {
   std::vector<GpuRun> runs;
   std::vector<RunBounds> runBounds; /* triangles of the last run, when it is GPU_RUN_ALPHA_WRITES_DEPTH */
   bool atlasResetLogged = false;
+  bool renderFailureLogged = false;
 
   GpuTimes times;
   uint64_t statsStart = 0;
@@ -264,7 +265,7 @@ void ResetAtlas() noexcept
   s_gpu.uploads.clear();
   s_gpu.staging.clear();
   if (!s_gpu.atlasResetLogged) {
-    Thandor_Log("SDL_GPU renderer: texture atlas full, starting over");
+    Thandor_Log("SDL_GPU renderer: texture atlas (nearly) full, starting over");
     s_gpu.atlasResetLogged = true;
   }
 }
@@ -1142,6 +1143,11 @@ void GpuRenderer_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY, Gra
   SoftwareRenderer_ClearViewport(clipMaxY, clipMaxX, clipMinY, clipMinX);
   s_gpu.sceneOpen = EnsureTargets();
   s_gpu.sceneSerial++;
+  /* entries of released texture sets stay in the atlas: start it over between scenes once it is three quarters
+     full, so it rarely runs full inside a scene (then the packets drawn before see overwritten texels) */
+  if (s_gpu.shelvesBottom > kAtlasSize / 4 * 3) {
+    ResetAtlas();
+  }
   s_gpu.vertices.clear();
   s_gpu.runs.clear();
   s_gpu.runBounds.clear();
@@ -1199,6 +1205,10 @@ void GpuRenderer_EndScene(void)
     const bool rendered = RenderScene();
     s_gpu.uploads.clear();
     s_gpu.staging.clear();
+    if (!rendered && !s_gpu.renderFailureLogged) {
+      Thandor_Log("SDL_GPU renderer: drawing a scene failed (%s)", SDL_GetError());
+      s_gpu.renderFailureLogged = true;
+    }
     if (rendered) {
 #ifdef THANDOR_DEV_TOOLS
       if (s_gpu.mode == GPU_MODE_COMPARE) {
