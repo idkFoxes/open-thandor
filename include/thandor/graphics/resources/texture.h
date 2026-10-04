@@ -72,4 +72,9 @@ extern GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPac
 
 extern GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3;
 
+/* Called with the asset by both texture-source release callbacks (releasePackage, releaseClone) before it is
+   freed, when not NULL (open-thandor; the SDL_GPU UI texture cache evicts its images there). NULL by default. */
+using GraphicsTextureSourceReleaseObserverProc = void(const GraphicsTextureSourceAsset *sourceAsset);
+extern GraphicsTextureSourceReleaseObserverProc *g_GraphicsTextureSourceReleaseObserver;
+
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

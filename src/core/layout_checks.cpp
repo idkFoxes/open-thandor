@@ -923,9 +923,10 @@ static_assert(sizeof(UiRequiredTextEditControl) == 0x80 &&
 static_assert(sizeof(UiDisplayModeSelectionActionHandlerTable) == 0x50 &&
               offsetof(UiDisplayModeSelectionActionHandlerTable, handlers) == 0x0,
               "UiDisplayModeSelectionActionHandlerTable keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x16C && /* 0x160 + the 3 handlers of open-thandor */
+static_assert(sizeof(FrontendUiActionHandlerPage20Prefix) == 0x180 && /* 0x160 + the 8 handlers of open-thandor */
               offsetof(FrontendUiActionHandlerPage20Prefix, handlers00_54) == 0x0 &&
-              offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154,
+              offsetof(FrontendUiActionHandlerPage20Prefix, scenarioCatalogRebuildCallbacks) == 0x154 &&
+              offsetof(FrontendUiActionHandlerPage20Prefix, handlers5B_5F) == 0x16C,
               "FrontendUiActionHandlerPage20Prefix keeps its 32-bit layout");
 static_assert(sizeof(InGameUiActionHandlerPage12Prefix28) == 0x70 &&
               offsetof(InGameUiActionHandlerPage12Prefix28, handlers) == 0x0,
@@ -1581,7 +1582,15 @@ static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4,
               "DisplaySettingsUiImage keeps its 32-bit layout");
 static_assert(sizeof(FourValueDialogUiImage) == 0x1A4,
               "FourValueDialogUiImage keeps its 32-bit layout");
-static_assert(sizeof(FrontendUiImage) == 0x71A0 && /* 0x5954 + the display mode kind and resolution list nodes of open-thandor */
+static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode kind, resolution list and advanced settings nodes of open-thandor */
+              offsetof(FrontendUiImage, displayPageStack) == 0x71A0 &&
+              offsetof(FrontendUiImage, advancedSettingsButton) == 0x71F8 &&
+              offsetof(FrontendUiImage, advancedSettingsPage) == 0x7258 &&
+              offsetof(FrontendUiImage, advancedEdgesGroup) == 0x7370 &&
+              offsetof(FrontendUiImage, advancedUiScaleGroup) == 0x7484 &&
+              offsetof(FrontendUiImage, advancedFrameLimitGroup) == 0x7658 &&
+              offsetof(FrontendUiImage, advancedVsyncCheckbox) == 0x782C &&
+              offsetof(FrontendUiImage, advancedNoteLabel) == 0x788C &&
               offsetof(FrontendUiImage, displayModeKindGroup) == 0x5954 &&
               offsetof(FrontendUiImage, displayModeKindFullscreen) == 0x5A68 &&
               offsetof(FrontendUiImage, displayResolutionScrollBox) == 0x5AC8 &&

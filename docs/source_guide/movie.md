@@ -25,7 +25,7 @@ The decoder treats every token &gt;= MOVIE_TOKEN_SKIP_LONG as a long skip, so th
 
 **Called from** (3 files): [`movie/runtime/playback`](#file-movie-runtime-playback) (`Movie_AdvanceFrame`); [`platform/bootstrap/main`](platform.md#file-platform-bootstrap-main) (`WinMain`); [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestMovieEncode`).
 
-**Depends on** (1 files, names used): [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1).
+**Depends on** (2 files, names used): [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
@@ -48,7 +48,7 @@ Encoder-only constants (the decoder does not need them).
 
 **Called from** (1 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestMovieEncode`).
 
-**Depends on** (2 files, names used): [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1).
+**Depends on** (3 files, names used): [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 
@@ -73,7 +73,7 @@ No file comment; function families: `Movie_*` (15), `IntroMovie_*` (1).
 
 **Called from** (14 files): [`gameplay/session/startup`](gameplay.md#file-gameplay-session-startup) (`InGameRuntime_ShutdownAndReleaseResources`, `InGameSession_OpenLoadingMovieAndAttachObjects` +1); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_ApplySoundSettings`, `Game_PlayIntroMovies` +1); [`ui/frontend/settings`](ui.md#file-ui-frontend-settings) (`FrontendAudioSettings_SetEffectsEnabled`, `FrontendAudioSettings_SetMovieAlternateGain` +1); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameAudioSettings_SetEffectsEnabled`, `InGameAudioSettings_SetMovieAlternateGain` +1); [`platform/debug/movie_player`](platform.md#file-platform-debug-movie-player) (`DebugMovie_ExportOne`, `DebugMovie_PlayOne`); [`ui/frontend/session`](ui.md#file-ui-frontend-session) (`FrontendSessionAction_CloseMovieAndReturnToMainPage`, `FrontendSession_ApplyGameSpeedAndReturnToMainPage`); [`ui/ingame/notifications`](ui.md#file-ui-ingame-notifications) (`InGameNotification_StartQueueHeadMovie`, `InGameRuntime_ProcessQueuedSessionNotificationTimer`); [`gameplay/session/loaded_session`](gameplay.md#file-gameplay-session-loaded-session) (`InGameLoadedSession_Fail`); [`gameplay/session/loading_movie`](gameplay.md#file-gameplay-session-loading-movie) (`MoviePlayback_AdvanceToFrameAndPresent`); [`gameplay/session/new_session`](gameplay.md#file-gameplay-session-new-session) (`InGameNewSession_Fail`); 4 more: [`ui/frontend/end_movie`](ui.md#file-ui-frontend-end-movie), [`ui/frontend/mission_briefing`](ui.md#file-ui-frontend-mission-briefing), [`ui/frontend/state`](ui.md#file-ui-frontend-state), [`ui/ingame/editor_tools`](ui.md#file-ui-ingame-editor-tools).
 
-**Depends on** (11 files, names used): [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (8), [`audio/backend/runtime`](audio.md#file-audio-backend-runtime) (4), [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (2), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (2), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (2), [`platform/debug/hooks`](platform.md#file-platform-debug-hooks) (2), [`core/math/random`](core.md#file-core-math-random) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`movie/runtime/flm_decoder`](#file-movie-runtime-flm-decoder) (1).
+**Depends on** (12 files, names used): [`platform/filesystem/win32`](platform.md#file-platform-filesystem-win32) (8), [`audio/backend/runtime`](audio.md#file-audio-backend-runtime) (4), [`platform/system/time_locale`](platform.md#file-platform-system-time-locale) (3), [`assets/package/runtime`](assets.md#file-assets-package-runtime) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (2), [`platform/bootstrap/image`](platform.md#file-platform-bootstrap-image) (2), [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (2), [`platform/debug/hooks`](platform.md#file-platform-debug-hooks) (2), [`core/math/random`](core.md#file-core-math-random) (1), [`core/text/path`](core.md#file-core-text-path) (1), [`movie/runtime/flm_decoder`](#file-movie-runtime-flm-decoder) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 **Includes:** `atomic`, `stdio.h`, `stdlib.h`, `string.h`, `thandor/platform/bootstrap/image.h`, `thandor/platform/debug/hooks.h`.
 

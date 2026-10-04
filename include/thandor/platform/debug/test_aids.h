@@ -48,5 +48,9 @@ int Thandor_TestAidWindowed();
    and without activating it. The game keeps running and drawing into its framebuffer as when visible (nothing in
    the port pauses on minimize or focus loss; screenshots read the framebuffer). Off by default. */
 int Thandor_TestAidWindowMinimized();
+/* Restore test aid (not in the original), for the GPU renderer's swapchain recovery after a minimized start:
+   OPEN_THANDOR_RESTORE_AFTER_MS=<ms> restores the minimized window (without activating it) once, that many
+   milliseconds after the first message pump. Called from the pump with the window handle. Off by default. */
+void Thandor_TestAidRestoreWindowWhenDue(void *window);
 
 #endif /* THANDOR_PLATFORM_DEBUG_TEST_AIDS_H */

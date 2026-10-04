@@ -28,8 +28,33 @@ static uint16_t g_ProjectTextAnzeigemodus[] = {'A','n','z','e','i','g','e','m','
 static uint16_t g_ProjectTextFenster[] = {PROJECT_TEXT_BRIGHT,'F','e','n','s','t','e','r',0};
 static uint16_t g_ProjectTextVollbildfenster[] = {PROJECT_TEXT_BRIGHT,'V','o','l','l','b','i','l','d','f','e','n','s','t','e','r',0};
 static uint16_t g_ProjectTextVollbild[] = {PROJECT_TEXT_BRIGHT,'V','o','l','l','b','i','l','d',0};
+/* the options page's display button and title, and the advanced settings page (texts and choices) */
+static uint16_t g_ProjectTextAnzeige[] = {'A','n','z','e','i','g','e',0};
+static uint16_t g_ProjectTextAnzeigeeinstellungen[] = {'A','n','z','e','i','g','e','e','i','n','s','t','e','l','l','u','n','g','e','n',0};
+static uint16_t g_ProjectTextErweitert[] = {'E','r','w','e','i','t','e','r','t',0};
+static uint16_t g_ProjectTextErweiterteEinstellungen[] = {'E','r','w','e','i','t','e','r','t','e',' ','E','i','n','s','t','e','l','l','u','n','g','e','n',0};
+static uint16_t g_ProjectText3DKanten[] = {'3','D','-','K','a','n','t','e','n',':',0};
+static uint16_t g_ProjectTextGlatt[] = {PROJECT_TEXT_BRIGHT,'G','l','a','t','t',0};
+static uint16_t g_ProjectTextOriginal[] = {PROJECT_TEXT_BRIGHT,'O','r','i','g','i','n','a','l',0};
+static uint16_t g_ProjectTextUiSkalierung[] = {'U','I','-','S','k','a','l','i','e','r','u','n','g',':',0};
+static uint16_t g_ProjectTextAuto[] = {PROJECT_TEXT_BRIGHT,'A','u','t','o',0};
+static uint16_t g_ProjectText1x[] = {PROJECT_TEXT_BRIGHT,'1','x',0};
+static uint16_t g_ProjectText2x[] = {PROJECT_TEXT_BRIGHT,'2','x',0};
+static uint16_t g_ProjectText3x[] = {PROJECT_TEXT_BRIGHT,'3','x',0};
+static uint16_t g_ProjectTextBildratenbegrenzung[] = {'B','i','l','d','r','a','t','e','n','b','e','g','r','e','n','z','u','n','g',':',0};
+static uint16_t g_ProjectTextAus[] = {PROJECT_TEXT_BRIGHT,'A','u','s',0};
+static uint16_t g_ProjectText60[] = {PROJECT_TEXT_BRIGHT,'6','0',' ','B','i','l','d','e','r','/','s',0};
+static uint16_t g_ProjectText120[] = {PROJECT_TEXT_BRIGHT,'1','2','0',' ','B','i','l','d','e','r','/','s',0};
+static uint16_t g_ProjectText144[] = {PROJECT_TEXT_BRIGHT,'1','4','4',' ','B','i','l','d','e','r','/','s',0};
+static uint16_t g_ProjectTextVSync[] = {PROJECT_TEXT_BRIGHT,'V','S','y','n','c',0};
+static uint16_t g_ProjectTextNoteSoftware[] = {'3','D','-','K','a','n','t','e','n',' ','u','n','d',' ','U','I','-','S','k','a','l','i','e','r','u','n','g',' ','w','i','r','k','e','n',' ','n','u','r',' ','m','i','t',' ','V','u','l','k','a','n',' ','o','d','e','r',' ','D','i','r','e','c','t','X',' ','1','2',0};
 static uint16_t *const g_ProjectTexts[TEXT_ID_PROJECT_COUNT] = {
-    g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild};
+    g_ProjectTextAnzeigemodus, g_ProjectTextFenster, g_ProjectTextVollbildfenster, g_ProjectTextVollbild,
+    g_ProjectTextAnzeige, g_ProjectTextAnzeigeeinstellungen, g_ProjectTextErweitert, g_ProjectTextErweiterteEinstellungen,
+    g_ProjectText3DKanten, g_ProjectTextGlatt, g_ProjectTextOriginal, g_ProjectTextUiSkalierung,
+    g_ProjectTextAuto, g_ProjectText1x, g_ProjectText2x, g_ProjectText3x,
+    g_ProjectTextBildratenbegrenzung, g_ProjectTextAus, g_ProjectText60, g_ProjectText120,
+    g_ProjectText144, g_ProjectTextVSync, g_ProjectTextNoteSoftware};
 
 /* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
    description and 14 further description lines reachable under the global ids the frontend uses for that

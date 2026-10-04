@@ -45,6 +45,9 @@
 #define PERSISTENT_SETTING_RENDERER 0xB0 /* PERSISTENT_RENDERER_*: the display settings' renderer */
 #define PERSISTENT_SETTING_DISPLAY_MODE_KIND 0xB4 /* PERSISTENT_DISPLAY_MODE_*: fullscreen, borderless or window */
 #define PERSISTENT_SETTING_GPU_RASTERIZATION 0xB8 /* PERSISTENT_GPU_RASTERIZATION_*: how the GPU renderers draw */
+#define PERSISTENT_SETTING_UI_SCALE 0xBC /* PERSISTENT_UI_SCALE_* or 1..3: the GPU renderers' UI scale */
+#define PERSISTENT_SETTING_VSYNC 0xC0 /* PERSISTENT_VSYNC_*: vsync of the presents (all renderers) */
+#define PERSISTENT_SETTING_FRAME_LIMIT 0xC4 /* frames per second the presents are capped to, 0 = no limit */
 #define PERSISTENT_RENDERER_VULKAN 0 /* default: SDL_GPU on Vulkan */
 #define PERSISTENT_RENDERER_DIRECT3D12 1 /* SDL_GPU on Direct3D 12 */
 #define PERSISTENT_RENDERER_SOFTWARE 2 /* the software rasterizer, presented through an SDL_Renderer */
@@ -58,6 +61,13 @@
                                                  original's Direct3D renderer) */
 #define PERSISTENT_GPU_RASTERIZATION_EXACT 1  /* the software rasterizer's triangles (pixel-snapped, affine) */
 #define PERSISTENT_GPU_RASTERIZATION_COUNT 2
+#define PERSISTENT_UI_SCALE_AUTO 0 /* default: the largest integer scale at which the display mode fits the display */
+#define PERSISTENT_UI_SCALE_MAX 3  /* values 1..3: that scale */
+#define PERSISTENT_VSYNC_ON 0  /* default */
+#define PERSISTENT_VSYNC_OFF 1
+#define PERSISTENT_VSYNC_COUNT 2
+#define PERSISTENT_FRAME_LIMIT_OFF 0 /* default: no frame rate limit */
+#define PERSISTENT_FRAME_LIMIT_MAX 1000 /* larger saved values are read as no limit; the menu offers 60, 120, 144 */
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
 /* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
 #define PERSISTENT_SOUND_OPTION_EFFECTS 0x1
@@ -97,6 +107,9 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
+/* Not in the original: Write for open-thandor's own settings chosen in its menus; the value is read back at once
+   (Write leaves a dword that was not loaded reading its default). */
+void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* open-thandor: the settings are saved as thandor.ini (thandor.dat is only read, as a migration source).
    FormatIni writes the ini text of the keys whose dwords are in presentMask (bit i = byte offset 4 * i) in a

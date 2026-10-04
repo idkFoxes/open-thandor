@@ -11,5 +11,6 @@
 #include <thandor/graphics/core/types.h>
 #include <thandor/graphics/core/cursor.h>
 #include <thandor/graphics/core/runtime.h>
+#include <thandor/graphics/core/draw2d.h>
 
 #endif /* THANDOR_GRAPHICS_CORE_H */

@@ -86,7 +86,8 @@ void Graphics_Shutdown()
   g_CursorAlternateSavedBackground = nullptr;
 }
 
-/* Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the software blitters.
+/* Publishes the display framebuffer of the new mode (32 bits per pixel) and installs the blitters of the 2D
+   backend (graphics/core/draw2d.h; the software blitters unless the GPU records the frame).
    Called by SdlVideo_ApplyDisplayMode, which then installs its present and capture functions and the framebuffer
    pixels. The original chose the 16-bit (RGB565) blitters for a depth of 16 bits or less; 16-bit colour is gone,
    so bitsPerPixel is not looked at. */
@@ -103,9 +104,6 @@ void GraphicsDisplay_PublishFramebuffer
   g_FramebufferAccess = &g_DisplayFramebufferAccess;
   (void)bitsPerPixel;
   g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
-  g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
-  g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32;
-  g_GraphicsTextureSourceStretchDirectColorBilinear = SoftwareTextureSource_StretchDirectColorBilinear32;
-  g_GraphicsTextureSourceBlitModulatedSourceAlpha = SoftwareTextureSource_BlitModulatedSourceAlpha32;
-  g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
+  /* the blit/fill slots of the current 2D backend (software: the software blitters themselves) */
+  Draw2D_InstallSlots();
 }

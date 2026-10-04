@@ -19,7 +19,7 @@ int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
    ((256 - f) * 0x4040) >> 8 (built by SoftwareRenderer_BuildFactorTables). Entry 256 is an original quirk:
    WorldLightingRuntime_UpdateInterpolatedTerrainLighting reads index 256 when the lighting cycle phase is 0
    (cosine exactly 1.0); in the original that read the first entry of the table that followed each one
-   (g_UiScalerFirstPixelWeights: 0x4000, g_SoftwareBlendAlphaFactors: 0), so those values are kept there. */
+   (g_SoftwareMinimapFirstPixelWeights: 0x4000, g_SoftwareBlendAlphaFactors: 0), so those values are kept there. */
 SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257];
 
 SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257];
@@ -56,7 +56,7 @@ void SoftwareRenderer_BuildFactorTables()
     forward = (uint16_t)((fraction * 0x4040) >> 8);
     inverse = (uint16_t)(((256 - fraction) * 0x4040) >> 8);
     if (fraction == 256) {
-      forward = 0x4000; /* the original read the first entry of g_UiScalerFirstPixelWeights here */
+      forward = 0x4000; /* the original read the first entry of g_SoftwareMinimapFirstPixelWeights here */
     }
     g_SoftwareBilinearForwardFactors[fraction].blue = forward;
     g_SoftwareBilinearForwardFactors[fraction].green = forward;

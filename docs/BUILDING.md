@@ -141,8 +141,8 @@ Windows SDK and with the Windows `dxc.exe` when it finds it (`THANDOR_DXC`, the 
 otherwise uses the headers fxc and dxc made, committed in
 [`src/platform/sdl3/shaders/compiled/`](../src/platform/sdl3/shaders/compiled) (`gpu_shader_<name>.h` DXBC,
 `gpu_shader_<name>_spirv.h` SPIR-V; `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON` forces them). After a change of
-`primitives.hlsl` regenerate them: build the MSVC preset `test` with fxc and dxc found and copy
-`<build dir>\gpu_shaders\gpu_shader_*.h` there.
+a shader source (`primitives.hlsl`, `ui2d.hlsl`) regenerate them: build the MSVC preset `test` with fxc and dxc
+found and copy `<build dir>\gpu_shaders\gpu_shader_*.h` there.
 
 ## Running
 
@@ -208,6 +208,12 @@ texture_quality = high
 model_detail = 262144
 ; Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) or exact (the software renderer's look)
 gpu_rasterization = smooth
+; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)
+ui_scale = auto
+; vsync: on (default; frames wait for the display's refresh, no tearing) or off
+vsync = on
+; frame rate limit in frames per second: 0 (default, no limit), 60, 120, 144; at least 60 recommended (below 60 the game runs slower, its steps wait for drawn frames)
+frame_limit = 0
 
 [sound]
 ; sound effects (default true)
@@ -304,6 +310,34 @@ not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a w
 and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
 unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).
 
+**UI scale** (Vulkan / DirectX 12 only): the chosen display mode is the logical UI resolution - layout, hit tests,
+the mouse and captures stay in its pixels - and the GPU draws the whole frame at N times that size (the UI with
+nearest sampling, so it stays crisp; the 3D view at the full resolution), then presents it letterboxed. The window
+or the exclusive fullscreen mode gets N x the mode's size. N is `[graphics] ui_scale` in `thandor.ini` (or
+`OPEN_THANDOR_UI_SCALE=auto|1..8`, which wins): `auto` (default) takes the largest whole N at which N x the mode
+fits the display (a window: its usable area), so 1280x720 runs at 2x on a 1440p and at 3x on a 4K display; with a
+fixed `2` or `3` the GPU renderers' resolution list offers the display's sizes divided by N (from 640x480 on). The
+software renderer always runs at N = 1. There is no choice on the display settings page yet (`thandor.ini` or the
+variable only); `thandor.log` names the scale (`display mode 1280x720x32, window, renderer Vulkan, UI scale 2
+(auto)`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the frame at N x and
+point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the caller sets it.
+
+**VSync and frame limit** (all renderers; the render rate only - the game's timers are untouched, see below for the
+steps): `[graphics] vsync = on|off` (default `on`; `OPEN_THANDOR_VSYNC=0|1` wins) - on, Vulkan / DirectX 12
+present in vsync mode and wait for a free swapchain image, the software renderer's SDL_Renderer presents with vsync;
+off, the GPU renderers present in mailbox mode (else immediate) and drop a frame rather than wait.
+`[graphics] frame_limit = 0|60|120|144` (frames per second, `0` = no limit, default; `OPEN_THANDOR_FRAME_LIMIT=n`
+wins; any value up to 1000 works, at least 60 is recommended) makes every present wait (high-resolution sleep, no busy
+loop) so that at most that many frames per second are shown; with a limit the GPU renderers also wait for a free
+swapchain image (as with vsync), so no frame of the limited rate is dropped. Both are kept in the settings image (`PERSISTENT_SETTING_VSYNC` 0xC0, 0 = on, and
+`PERSISTENT_SETTING_FRAME_LIMIT` 0xC4) and can be changed at run time (`SdlVideo_SetVsync` /
+`SdlVideo_SetFrameLimit` in `include/thandor/platform/sdl3/platform.h`, applied at once). `thandor.log` names them
+(`frame pacing: vsync on (settings), frame limit 0 fps = off (settings)`, the GPU renderers' `present mode`). The
+original couples the simulation to the drawn frames: a step runs at the first frame after its 80 Hz timer countdown
+(4 ticks) and the countdown restarts there, so a low cap slows the game - measured on mittelpunkt: uncapped, 60 fps
+and vsync (144 Hz) 19.8 steps per second, 30 fps 14.2 (so the menu offers no limit below 60). The test tools set
+`OPEN_THANDOR_VSYNC=0` and `OPEN_THANDOR_FRAME_LIMIT=0` unless the caller sets them, so tests run uncapped.
+
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 
 With the CMake option `THANDOR_RENDERER_SDL_GPU` (default `ON`; a build directory configured before still holding
@@ -329,10 +363,22 @@ or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers commi
 [MinGW-w64 GCC](#mingw-w64-gcc)); a build without SPIR-V headers has no Vulkan renderer. With the option `OFF` only
 the software renderer exists.
 
-With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame (on the first GPU API that
-runs; with the `exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
-3D view of both as `shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the
-difference; the GPU renderers log their per-scene times every 10 seconds.
+With the developer tools, `OPEN_THANDOR_GPU=compare` draws every frame twice - the whole frame in software into the
+CPU framebuffer (every 2D draw and the software rasterizer) and the same frame on the GPU from the recorded 2D draw
+list and the GPU rasterization (on the first GPU API that runs, `compare-vulkan` / `compare-d3d12` pick one; with the
+`exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other). It shows the software picture and
+every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) downloads the GPU frame and writes both frames as
+`shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` (largest channel difference x4, grey;
+reddish inside the 3D view) and logs a `SDL_GPU compare` line with the mean channel difference, the largest one and
+the share of pixels differing by more than 8, for the whole frame and for the UI alone (outside the frame's 3D scene
+rectangles), with `PASS` when the UI's mean is below 0.5 and under 0.1 % of its pixels differ by more than 8, else
+`FAIL`. The GPU renderers log their per-scene times every 10 seconds.
+
+`python tools/test/gpu_compare.py <game dir> --api vulkan|d3d12` runs one scripted game in the compare mode (a
+linked copy as in `run_checks.py`, minimized; default `tools/test/skirmish_pause.txt` on Ahaggar with the pixel
+check's fixed seed and pause tick, `--script` / `--args` for others, `--interval` for the compare interval, default
+2000 ms), prints a table of the compare lines with a summary and exits with 1 when one of them is `FAIL`, none was
+made or the game crashed; the pictures, the log and `summary.txt` go to `<game dir>_gpucmp_<api>` (`--out`).
 
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 
@@ -360,7 +406,7 @@ the variable it does nothing:
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|icon\|path\|stretch\|scanaddr\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip - both also to compare GCC and MSVC builds; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds (GCC and MSVC too) before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds (GCC and MSVC too) before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
+| `OPEN_THANDOR_SELFTEST=codec\|movieenc\|numberformat\|fixedmath\|keymap\|trianglesetup\|raster\|hexscan\|keymatch\|tables\|sam\|uiatlas\|icon\|path\|stretch\|scanaddr\|pcx\|settings\|crash` | run one self-test and exit (results in `thandor.log`; `icon` runs the window icon's `.ico` parser on a synthetic icon file and logs `icon: ok, N checks`; `settings` checks the `thandor.ini` reader and writer and that the `thandor.dat` of the current directory comes back unchanged through it; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`; `codec`, `movieenc`, `numberformat`, `fixedmath`, `keymap` and `trianglesetup` log hashes of the save-game encoder, the FLM encoders/decoder, the number formatter, the fixed-point math, the keyboard layer and the triangle setup - compare them between two builds after touching those; `tables` hashes the tables computed at startup (the sine table built with `sin()`, the `.sam` cosine matrices, the lighting/shading/software factor tables) and `sam` the `.sam` decoder on synthetic input and an encoder round trip - both also to compare GCC and MSVC builds; `raster` (`raster_selftest.cpp`) draws seeded random triangles through every entry of the 32-bit and auxiliary raster handler tables and runs every blit, tiled blit, stretch, fill, the bilinear blend scale and the mask step on synthetic textures and framebuffers (no game data, software functions called directly, so independent of the renderer), logging one `raster <group>: <hash>` line per handler entry or blit path - compare all lines between two builds (GCC and MSVC too) before and after touching `src/graphics/backend`; `hexscan` (`hexscan_selftest.cpp`) runs the seven hexagonal radius scans of `src/world/terrain` (overlay A and B, occupancy marking, the flatten brush, the height-band and auxiliary placement tests, line of sight) at 2000 seeded points each on a synthetic 67x53 field grid, logging one `hexscan <driver>: <hash>` line per driver - compare them between two builds (GCC and MSVC too) before and after touching those walkers; `keymatch` (`keymatch_selftest.cpp`) compares literal copies of the four old key command modifier matchers (hotkeys/end movie, in-game key commands, frontend hotkeys, camera/editor keyboard) with `UiKeyModifiers_Match` (`include/thandor/ui/core/key_dispatch.h`) for every modifier class of the six tables and every held combination, checks `UiCommandDispatch_Find` against the old scan and logs mismatch lines and `keymatch: ... hash <hash>` - expect 0 mismatches in table classes (the Shift-only class 0x03 differs for the hotkey and frontend rules, which no table of theirs uses); `uiatlas` (`uiatlas_selftest.cpp`, needs the game packages in the current directory, otherwise it logs `uiatlas: skipped`) packs every image of every `gfx` asset into the step-9 GPU UI texture cache (`src/platform/sdl3/gpu_ui_textures.cpp`) without a GPU device, logs page count, texels, packing fill and a hash of the converted texels, writes `uiatlas.txt` (one line per asset) and ends with `uiatlas: ok`; `scanaddr` also reads `OPEN_THANDOR_SCANFILES` and `OPEN_THANDOR_DUMPTEXT`). The differential tests against the original machine code (`relaxcmp`, `stretchcmp`, `OPEN_THANDOR_MOVIECMP`) were removed with the 32-bit build |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes the frames to `moviedump\`); the player is in [`src/platform/debug/movie_player.cpp`](../src/platform/debug/movie_player.cpp) |
 | `OPEN_THANDOR_MOVIEDUMP=1` | log every decoded movie frame (every tenth also to `moviedump\`) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` (a failed capture is logged) |
@@ -368,6 +414,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
 | `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (absolute mouse position, normal process priority; a display mode kind chosen in the settings is logged and kept for the session, not applied or saved); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_WINDOW_MINIMIZED=1` | that window (implies `OPEN_THANDOR_WINDOWED=1`), created minimized and never activated, so test games stay out of the way; the game keeps running at full speed and drawing its frames (screenshots read the framebuffer; input scripts do not need focus). The test tools set it for every game (`game_env.py`) unless `OPEN_THANDOR_TEST_VISIBLE=1` |
+| `OPEN_THANDOR_RESTORE_AFTER_MS=<ms>` | restores that minimized window (without activating it) once, `<ms>` milliseconds after the first message pump; tests the GPU renderer's swapchain recovery after a minimized start (log: `SDL_GPU: window ... claimed for the swapchain`, `swapchain texture ... acquired again`) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |

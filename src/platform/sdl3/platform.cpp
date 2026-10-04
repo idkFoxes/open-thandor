@@ -90,7 +90,8 @@ Bool8 SdlPlatform_CreateMainWindow(const char *title)
      created without and Vulkan is not offered. The developer tools' minimized window (OPEN_THANDOR_WINDOW_MINIMIZED)
      is shown minimized at once without activation (SDL: SW_SHOWMINNOACTIVE, so the later SDL_ShowWindow does
      nothing) and is never activated when shown; the frame loop, the event pump and the software present do not
-     depend on visibility or focus, a GPU present without a swapchain texture is skipped (logged once). */
+     depend on visibility or focus, a GPU present without a swapchain texture is skipped (the GPU renderer claims the
+     window again when it is restored, see GpuWindowChanged). */
   if (minimized) {
     SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, "0");
   }
@@ -164,6 +165,16 @@ void SdlPlatform_PumpEvents()
     case SDL_EVENT_MOUSE_WHEEL:
       HandleMouseEvent(event);
       break;
+#ifdef THANDOR_RENDERER_SDL_GPU
+    case SDL_EVENT_WINDOW_SHOWN:
+    case SDL_EVENT_WINDOW_RESTORED:
+    case SDL_EVENT_WINDOW_MAXIMIZED:
+    case SDL_EVENT_WINDOW_RESIZED:
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+      /* a GPU renderer still without its swapchain (window minimized at the start) claims the window again */
+      GpuWindowChanged();
+      break;
+#endif
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
       HandleFocusGained();
       break;

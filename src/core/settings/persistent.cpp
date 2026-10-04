@@ -80,6 +80,8 @@ static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};
 static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
 static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
+static const char *const s_IniUiScaleNames[] = {"auto", "1", "2", "3"};
+static const char *const s_IniVsyncNames[] = {"on", "off"};
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 
@@ -112,6 +114,15 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {PERSISTENT_SETTING_GPU_RASTERIZATION, INI_KIND_ENUM, "graphics", "gpu_rasterization",
    "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
    "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
+  {PERSISTENT_SETTING_UI_SCALE, INI_KIND_ENUM, "graphics", "ui_scale",
+   "Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the "
+   "display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)", 0, 0,
+   INI_ENUM(s_IniUiScaleNames)},
+  {PERSISTENT_SETTING_VSYNC, INI_KIND_ENUM, "graphics", "vsync",
+   "vsync: on (default; frames wait for the display's refresh, no tearing) or off", 0, 0, INI_ENUM(s_IniVsyncNames)},
+  {PERSISTENT_SETTING_FRAME_LIMIT, INI_KIND_UINT, "graphics", "frame_limit",
+   "frame rate limit in frames per second: 0 (default, no limit), 60, 120, 144; at least 60 recommended (below 60 "
+   "the game runs slower, its steps wait for drawn frames)", 0, 0, nullptr, 0},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, nullptr, 0},
@@ -151,9 +162,6 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, nullptr, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xBC, INI_KIND_RAW, "reserved", "dword_bc", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, nullptr, 0},
-  {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, nullptr, 0},
 };
 
 #define PERSISTENT_INI_KEY_COUNT (sizeof s_PersistentIniKeys / sizeof s_PersistentIniKeys[0])
@@ -922,5 +930,17 @@ void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsBy
       *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) = value;
       g_PersistentSettings.dirtyWriteCount++;
     }
+  }
+}
+
+/* Not in the original: PersistentSettings_Write for open-thandor's own settings chosen in its menus (beyond the
+   original's dwords), whose new value is read back at once: the dword also becomes present. */
+void PersistentSettings_WriteChosen(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  PersistentSettings_Write(value,settingsOffsetBytes);
+  if ((g_PersistentSettings.image != nullptr) &&
+      (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
+    s_PersistentSettingsPresentMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
   }
 }

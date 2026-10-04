@@ -39,6 +39,10 @@
                     matrices, lighting/shading/software factor tables), to compare builds or compilers
      sam            the .sam decoder on LCG bytes and an encoder round trip of a synthetic waveform, one hash
                     line (no game files needed)
+     uiatlas        packs every image of every 'gfx' asset in the packages of the current directory into the GPU UI
+                    texture cache without a GPU device (uiatlas_selftest.cpp): logs pages, texels, packing fill and
+                    a hash of the converted texels, writes uiatlas.txt (one line per asset) and checks per-frame
+                    validation, re-conversion of a changed image, streaming regions and release eviction
      crash          writes to address 0 to exercise the crash handler, then (if it returns) starts the game
    The differential tests that ran the original machine code (stretchcmp, relaxcmp and the movie decoder
    compare) needed the 32-bit original exe and were removed with the 32-bit build; they had confirmed those
@@ -56,5 +60,8 @@ void Thandor_SelfTestHexScan(void);
 
 /* OPEN_THANDOR_SELFTEST=keymatch (keymatch_selftest.cpp), called by SelfTest_Run. */
 void Thandor_SelfTestKeyMatch(void);
+
+/* OPEN_THANDOR_SELFTEST=uiatlas (uiatlas_selftest.cpp), called by SelfTest_Run. */
+void Thandor_SelfTestUiAtlas();
 
 #endif /* THANDOR_PLATFORM_SELFTEST_SELFTEST_H */

@@ -120,3 +120,22 @@ int Thandor_TestAidWindowMinimized()
     }
     return enabled;
 }
+
+/* Test aid (not in the original): see test_aids.h. */
+void Thandor_TestAidRestoreWindowWhenDue(void *window)
+{
+    static int afterMs = -1;
+    static DWORD start;
+    if (afterMs < 0) {
+        const char *value = getenv("OPEN_THANDOR_RESTORE_AFTER_MS");
+        afterMs = (value != nullptr) ? atoi(value) : 0;
+        start = GetTickCount();
+    }
+    if ((afterMs <= 0) || (window == nullptr) || (GetTickCount() - start < (DWORD)afterMs)) {
+        return;
+    }
+    afterMs = 0;
+    /* SW_SHOWNOACTIVATE: restores the minimized window without taking the focus */
+    ShowWindow((HWND)window, SW_SHOWNOACTIVATE);
+    Thandor_Log("test aid: window restored (OPEN_THANDOR_RESTORE_AFTER_MS)");
+}

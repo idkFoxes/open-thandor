@@ -19,9 +19,6 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSelectionGeometryControl *control);
 
-/* Not in the original: builds the bilinear scaler weight tables (called once at startup). */
-void UiScaler_BuildPixelWeightTables();
-
 extern UiNodeVtable g_UiSelectionGeometryControlVtable;
 
 #endif /* THANDOR_UI_CONTROLS_MINIMAP_H */

@@ -78,7 +78,7 @@ No file comment; function families: `SoundSample_*` (2), `SoundCoefficientTransf
 
 **Called from** (3 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`SelfTest_BuildSamCosineTables`, `SelfTest_FreeSamCosineTables` +2); [`platform/sdl3/audio`](platform.md#file-platform-sdl3-audio) (`SdlAudio_CreateSampleVoiceSet`, `SdlAudio_Init`); [`audio/codec/sam_encoder`](#file-audio-codec-sam-encoder) (`SoundSample_TransformPcmBlockToCoefficientsMmx`).
 
-**Depends on** (2 files, names used): [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1).
+**Depends on** (3 files, names used): [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (1), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 <a id="file-audio-codec-sam-encoder"></a>
 #### `sam_encoder.cpp / sam_encoder.h`
@@ -94,7 +94,7 @@ No file comment; function families: `SoundSample_*` (2).
 
 **Called from** (1 files): [`platform/selftest/selftests`](platform.md#file-platform-selftest-selftests) (`Thandor_SelfTestSam`).
 
-**Depends on** (1 files, names used): [`audio/codec/sam`](#file-audio-codec-sam) (5).
+**Depends on** (2 files, names used): [`audio/codec/sam`](#file-audio-codec-sam) (5), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 <a id="file-audio-codec-types"></a>
 #### `types.h`
@@ -132,7 +132,7 @@ No file comment; function families: `SpatialSound_*` (4), `SpatialSoundPool_*` (
 
 **Called from** (17 files): [`gameplay/army/audio`](gameplay.md#file-gameplay-army-audio) (`ArmyRuntimeAudio_UpdateSoundAtModel`, `ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint` +2); [`ui/frontend/settings`](ui.md#file-ui-frontend-settings) (`FrontendAudioSettings_SetEffectsEnabled`, `FrontendAudioSettings_SetEffectsGain` +1); [`ui/ingame/settings`](ui.md#file-ui-ingame-settings) (`InGameAudioSettings_SetEffectsEnabled`, `InGameAudioSettings_SetEffectsGain` +1); [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CoreAssets_ApplySoundSettings`, `GameRuntime_InitializeSpatialAudioAndRendering`); [`gameplay/army/aircraft`](gameplay.md#file-gameplay-army-aircraft) (`ArmyPadHangar_PlaySound`); [`gameplay/army/class_updates`](gameplay.md#file-gameplay-army-class-updates) (`ArmyRuntimeClass_PlayVerticalDeploymentSound`); [`gameplay/army/drive_banking`](gameplay.md#file-gameplay-army-drive-banking) (`ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint`); [`gameplay/army/drive_common`](gameplay.md#file-gameplay-army-drive-common) (`ArmyRuntime_UpdateActivationMetricAndPlayStartSound`); [`gameplay/army/factory`](gameplay.md#file-gameplay-army-factory) (`ArmyUnitFactory_PlayPrimarySound`); [`gameplay/army/walker`](gameplay.md#file-gameplay-army-walker) (`ArmyArticulatedRuntime_UpdateContactChildAndEffects`); 7 more: [`gameplay/session/level`](gameplay.md#file-gameplay-session-level), [`gameplay/session/level_new`](gameplay.md#file-gameplay-session-level-new), [`gameplay/session/level_saved`](gameplay.md#file-gameplay-session-level-saved), [`ui/frontend/menu_room`](ui.md#file-ui-frontend-menu-room), [`ui/ingame/root_frame`](ui.md#file-ui-ingame-root-frame), [`world/effects/pool`](world.md#file-world-effects-pool), [`world/shots/flight`](world.md#file-world-shots-flight).
 
-**Depends on** (4 files, names used): [`audio/backend/runtime`](#file-audio-backend-runtime) (6), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1).
+**Depends on** (5 files, names used): [`audio/backend/runtime`](#file-audio-backend-runtime) (6), [`core/math/fixed_transform`](core.md#file-core-math-fixed-transform) (3), [`core/math/fixed_trig`](core.md#file-core-math-fixed-trig) (2), [`core/memory/allocator`](core.md#file-core-memory-allocator) (1), [`platform/sdl3/gpu_shader_ui2d_vertex_spirv`](platform.md#file-platform-sdl3-gpu-shader-ui2d-vertex-spirv) (1).
 
 <a id="file-audio-spatial-types"></a>
 #### `types.h`

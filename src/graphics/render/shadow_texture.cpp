@@ -9,6 +9,8 @@
 #include <thandor/thandor.h>
 #include <thandor/core/color_lanes.h>
 
+#include <emmintrin.h>
+
 /* the original offsets of the render context view and the 0x80-byte primitive blocks */
 static_assert(offsetof(GeneratedTextureRenderContextView, fieldGrid) == 0x54 &&
               offsetof(GeneratedTextureRenderContextView, lightAzimuthAngle) == 0xB8 &&
@@ -1125,45 +1127,46 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor()
 }
 
 
-/* The 8 bytes at byteOffset from a scratch grid position. */
-static uint64_t ShadingFilter_LoadQuad(const uint8_t *scratchPosition,int byteOffset)
+/* The 16 bytes at byteOffset from a scratch grid position (two of the original's MMX quads). */
+static __m128i ShadingFilter_LoadPair(const uint8_t *scratchPosition,int byteOffset)
 {
-  return *(const uint64_t *)(scratchPosition + byteOffset);
+  return _mm_loadu_si128((const __m128i *)(scratchPosition + byteOffset));
 }
 
-/* Filter value of the 8 scratch texels at center (each 0..7), byte-saturated: centre x4, the four direct taps
+/* Filter value of the 16 scratch texels at center (each 0..7), byte-saturated: centre x4, the four direct taps
    (left/right tapStep texels, up/down tapRowStride bytes) x3 through one cross sum added three times, and the
-   outer taps x1. The additions keep the original order. */
-static uint64_t ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int tapStep,int tapRowStride)
+   outer taps x1. The additions keep the original order (PADDUSB on two MMX quads at once: _mm_adds_epu8 is the
+   same per-byte saturating add, and the 64-bit lane shift of the centre is the original PSLLQ). */
+static __m128i ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int tapStep,int tapRowStride)
 {
-  uint64_t sum;
-  uint64_t crossSum;
+  __m128i sum;
+  __m128i crossSum;
 
-  sum = paddusb(ShadingFilter_LoadQuad(center,0) << 2,ShadingFilter_LoadQuad(center,tapStep * 2));
-  crossSum = paddusb(ShadingFilter_LoadQuad(center,tapStep),ShadingFilter_LoadQuad(center,-tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapStep * 2));
+  sum = _mm_adds_epu8(_mm_slli_epi64(ShadingFilter_LoadPair(center,0),2),ShadingFilter_LoadPair(center,tapStep * 2));
+  crossSum = _mm_adds_epu8(ShadingFilter_LoadPair(center,tapStep),ShadingFilter_LoadPair(center,-tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapStep * 2));
   /* row above */
-  crossSum = paddusb(crossSum,ShadingFilter_LoadQuad(center,-tapRowStride));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride + tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride + tapStep * 2));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride - tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride - tapStep * 2));
+  crossSum = _mm_adds_epu8(crossSum,ShadingFilter_LoadPair(center,-tapRowStride));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride + tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride + tapStep * 2));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride - tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride - tapStep * 2));
   /* row below */
-  crossSum = paddusb(crossSum,ShadingFilter_LoadQuad(center,tapRowStride));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride + tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride + tapStep * 2));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride - tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride - tapStep * 2));
-  sum = paddusb(sum,crossSum);
-  sum = paddusb(sum,crossSum);
-  sum = paddusb(sum,crossSum);
+  crossSum = _mm_adds_epu8(crossSum,ShadingFilter_LoadPair(center,tapRowStride));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride + tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride + tapStep * 2));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride - tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride - tapStep * 2));
+  sum = _mm_adds_epu8(sum,crossSum);
+  sum = _mm_adds_epu8(sum,crossSum);
+  sum = _mm_adds_epu8(sum,crossSum);
   /* two rows above and below */
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2 + tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2 - tapStep));
-  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2 - tapStep));
-  return paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2 + tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride * 2));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride * 2 + tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride * 2));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,-tapRowStride * 2 - tapStep));
+  sum = _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride * 2 - tapStep));
+  return _mm_adds_epu8(sum,ShadingFilter_LoadPair(center,tapRowStride * 2 + tapStep));
 }
 
 
@@ -1171,22 +1174,25 @@ static uint64_t ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int
    after the soft-shadow silhouette pass drew something): copies the tile's texels, reduced to 0..7 (>> 5), into
    the zero-bordered scratch grid, then writes back to every texel the byte-saturated weighted sum of its
    neighbourhood (centre x4, taps gridHalfSize / 16 texels apart), 32 texels per step with MMX.
+   open-thandor: the 32 texels of a step are done as two 16-byte SSE2 halves (each the original's two MMX quads,
+   same operations per byte, so the same result); the per-byte emulated PADDUSB made this filter most of an
+   in-game frame at large shading grids.
 */
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
 
 {
-  uint64_t threeBitMask;
+  __m128i threeBitMask;
   int tapStep;
   int tapRowStride;
   uint32_t blocksPerRow;
   uint32_t blocksRemaining;
   uint32_t rowsRemaining;
-  int quadIndex;
+  int halfIndex;
   uint8_t *tileTopLeft;
   uint8_t *textureCursor;
   uint8_t *scratchCursor;
 
-  threeBitMask = g_GraphicsShadingMmxPacked3BitPerByteMask;
+  threeBitMask = _mm_set1_epi64x((long long)g_GraphicsShadingMmxPacked3BitPerByteMask);
   /* horizontal tap distance in texels; tapRowStride is the same distance vertically (scratch rows are
      2 * gridHalfSize bytes apart) */
   tapStep = (int)(g_GraphicsShadingGridHalfSize >> 4);
@@ -1201,15 +1207,17 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   tileTopLeft = g_GraphicsShadingGeneratedTexturePixelCursor +
                 (int32_t)(-(g_GraphicsShadingGridHalfSize >> 1) -
                           g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1));
-  /* pass 1: tile -> scratch, each texel reduced to 3 bits */
+  /* pass 1: tile -> scratch, each texel reduced to 3 bits (the original's PSRLQ 5 and PAND per quad) */
   textureCursor = tileTopLeft;
   scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
   /* Original quirk: both passes test the row count at the end, so gridHalfSize 0 would wrap around */
   rowsRemaining = g_GraphicsShadingGridHalfSize;
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
-      for (quadIndex = 0; quadIndex < 4; quadIndex++) {
-        ((uint64_t *)scratchCursor)[quadIndex] = ((uint64_t *)textureCursor)[quadIndex] >> 5 & threeBitMask;
+      for (halfIndex = 0; halfIndex < 2; halfIndex++) {
+        const __m128i texels = _mm_loadu_si128((const __m128i *)(textureCursor + halfIndex * 16));
+        _mm_storeu_si128((__m128i *)(scratchCursor + halfIndex * 16),
+                         _mm_and_si128(_mm_srli_epi64(texels,5),threeBitMask));
       }
       textureCursor = textureCursor + 32;
       scratchCursor = scratchCursor + 32;
@@ -1225,9 +1233,10 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx()
   rowsRemaining = g_GraphicsShadingGridHalfSize;
   do {
     for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
-      for (quadIndex = 0; quadIndex < 4; quadIndex++) {
-        ((uint64_t *)textureCursor)[quadIndex] =
-             ShadingFilter_WeightedNeighbourhoodSum(scratchCursor + quadIndex * 8,tapStep,tapRowStride);
+      for (halfIndex = 0; halfIndex < 2; halfIndex++) {
+        _mm_storeu_si128((__m128i *)(textureCursor + halfIndex * 16),
+                         ShadingFilter_WeightedNeighbourhoodSum(scratchCursor + halfIndex * 16,tapStep,
+                                                                tapRowStride));
       }
       textureCursor = textureCursor + 32;
       scratchCursor = scratchCursor + 32;

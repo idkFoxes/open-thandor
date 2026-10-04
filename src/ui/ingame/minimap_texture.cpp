@@ -420,4 +420,6 @@ void TerrainCompositeTexture_RebuildPlane0()
       }
     }
   }
+  /* the GPU backend's dirty flag (graphics/core/draw2d.h) */
+  g_Draw2DMinimapContentGeneration++;
 }

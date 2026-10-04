@@ -34,6 +34,8 @@ GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = nullptr;
 
 GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = nullptr;
 
+GraphicsTextureSourceReleaseObserverProc *g_GraphicsTextureSourceReleaseObserver = nullptr;
+
 
 
 
@@ -278,25 +280,33 @@ uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourc
 
 
 /* Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache
-   (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage).
+   (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage). Tells g_GraphicsTextureSourceReleaseObserver first
+   (open-thandor: the GPU UI texture cache evicts the asset's images).
 */
 void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *allocation;
 
+  if (g_GraphicsTextureSourceReleaseObserver != nullptr) {
+    g_GraphicsTextureSourceReleaseObserver(sourceAsset);
+  }
   allocation = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
   Resource_Release(allocation);
 }
 
 
-/* Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone).
+/* Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone),
+   after telling g_GraphicsTextureSourceReleaseObserver (open-thandor, as above).
 */
 void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *allocation;
 
+  if (g_GraphicsTextureSourceReleaseObserver != nullptr) {
+    g_GraphicsTextureSourceReleaseObserver(sourceAsset);
+  }
   allocation = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
   g_MemoryApi.free(allocation);
 }

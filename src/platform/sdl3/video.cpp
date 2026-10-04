@@ -9,7 +9,9 @@
    32-bit colour only) that stays published in g_DisplayFramebufferAccess, so the framebuffer access hooks
    are the no-op stubs. A present composes the software cursor into the framebuffer (as GraphicsFramebuffer_Present
    does into the DirectDraw back surface), presents it letterboxed and removes the cursor again. Screen captures
-   read the memory framebuffer.
+   read the memory framebuffer. With a GPU renderer (step 9) the 2D draw list records the frame instead, the GPU
+   draws it into its frame target and puts the cursor on top at present (PresentGpuFrame); captures download the
+   frame target (ReadGpuFrame).
 
    Renderers: the graphics adapters of the display settings are the renderers - "Vulkan (GPU)", "DirectX 12 (GPU)"
    (only when the driver is available) and "Software (CPU)", each with the same display modes - so the original's
@@ -22,18 +24,36 @@
    PERSISTENT_SETTING_RENDERER (default Vulkan). OPEN_THANDOR_GPU=auto keeps the saved choice (as without the
    variable); OPEN_THANDOR_GPU=0|off|software / -SOFTWARE forces software,
    =vulkan / =d3d12 a GPU API, =1 / -GPU the first available GPU API, =compare (developer tools) the GPU compare
-   mode; a forced renderer is the only adapter listed and is not saved.
+   mode on the first available GPU API (=compare-vulkan / =compare-d3d12 on that one); a forced renderer is the only
+   adapter listed and is not saved.
 
    Display mode kinds (PERSISTENT_SETTING_DISPLAY_MODE_KIND, chosen on the display settings page): exclusive
    fullscreen in the mode or the closest larger one (default, "Vollbild"), borderless fullscreen over the desktop
    ("Vollbildfenster"), or a normal window in the mode's size ("Fenster"); the frame is letterboxed in all three. The developer tools' window (OPEN_THANDOR_WINDOWED) is
-   always a window at OPEN_THANDOR_WINDOW_X/Y. */
+   always a window at OPEN_THANDOR_WINDOW_X/Y.
+
+   UI scale (step 9 WP8, GPU renderers only): the display mode is the logical UI resolution (g_FramebufferWidth /
+   Height: layout, hit tests, mouse, captures); the GPU draws the frame at N x that size (SetGpuUiScale) and the
+   window or the exclusive fullscreen mode gets N x the mode's size. N comes from OPEN_THANDOR_UI_SCALE=auto|1..8
+   (wins) or [graphics] ui_scale (auto, 1, 2, 3): auto is the largest whole N at which N x the mode fits the display
+   (fullscreen kinds: the desktop size; a window: the display's usable area), a number is taken as it is. With a
+   fixed N > 1 the GPU adapters list the display's sizes divided by N; auto and 1 list the display's sizes. The
+   software renderer always runs at N = 1.
+
+   Frame pacing (render rate only; the game's timers are not touched, but a simulation step waits for a drawn
+   frame, so a frame limit below 60 slows the game): VSync ([graphics] vsync on|off, PERSISTENT_SETTING_VSYNC,
+   default on; OPEN_THANDOR_VSYNC=0|1 wins) makes the GPU renderers present in
+   vsync mode with a waiting swapchain acquire (off: mailbox, else immediate) and the software renderer's
+   SDL_Renderer present with vsync. The frame limit ([graphics] frame_limit, PERSISTENT_SETTING_FRAME_LIMIT, 0 = off,
+   default; OPEN_THANDOR_FRAME_LIMIT=n wins) makes SdlVideo_Present wait (SDL_DelayPrecise) until 1/n s after the
+   previous present's slot. Both are changed at run time by SdlVideo_SetVsync / SdlVideo_SetFrameLimit. */
 
 #include <thandor/platform/sdl3/sdl_objects.h>
 
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_timer.h>
 
 #include <algorithm>
 #include <cmath>
@@ -80,8 +100,19 @@ struct RendererState {
   bool shown = false;
   int windowWidth = 0; /* the size last given to the normal window */
   int windowHeight = 0;
+  bool modesListedWithSettings = false;
+  int appliedUiScaleRequest = -1; /* RequestedUiScale at the last display mode switch (-1: none yet) */
 };
 RendererState s_renderer;
+
+/* VSync and the frame limit (SdlVideo_GetVsync etc.), read from the settings at the first display mode switch. */
+struct FramePacing {
+  bool loaded = false;
+  bool vsync = true;
+  uint32_t frameLimit = PERSISTENT_FRAME_LIMIT_OFF; /* frames per second, 0 = no limit */
+  Uint64 nextPresentNs = 0;                         /* SDL_GetTicksNS slot of the next present, 0 = none yet */
+};
+FramePacing s_pacing;
 
 uint16_t s_gpuDetailUtf16[] = {'G', 'P', 'U', 0};
 uint16_t s_cpuDetailUtf16[] = {'C', 'P', 'U', 0};
@@ -129,10 +160,31 @@ void ChannelOfMask(Uint32 mask, GraphicsPackedPixelMask &outMask, GraphicsPixelC
   outBitCount = (highestBit + 1) - shift;
 }
 
+/* The requested UI scale: OPEN_THANDOR_UI_SCALE=auto|1..kMaxGpuUiScale (wins), else [graphics] ui_scale
+   (PERSISTENT_SETTING_UI_SCALE); 0 = auto. */
+int RequestedUiScale() noexcept
+{
+  if (const char *value = SDL_getenv("OPEN_THANDOR_UI_SCALE")) {
+    if (SDL_strcasecmp(value, "auto") == 0) {
+      return PERSISTENT_UI_SCALE_AUTO;
+    }
+    const int scale = SDL_atoi(value);
+    if ((scale >= 1) && (scale <= thandor::sdl3::kMaxGpuUiScale)) {
+      return scale;
+    }
+  }
+  const uint32_t saved = PersistentSettings_Read(PERSISTENT_UI_SCALE_AUTO, PERSISTENT_SETTING_UI_SCALE);
+  return (saved <= PERSISTENT_UI_SCALE_MAX) ? static_cast<int>(saved) : PERSISTENT_UI_SCALE_AUTO;
+}
+
 /* The display modes: every distinct fullscreen size of the primary display from 640x480 up to the desktop size
-   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer). */
+   (640x480 itself always), all in 32 bits per pixel, the same for every adapter (renderer) - except that with a
+   fixed UI scale N > 1 (RequestedUiScale) the GPU renderers list those sizes divided by N (logical sizes from
+   640x480 on, 640x480 always). */
 void ListDisplayModes()
 {
+  g_GraphicsDisplayModeCount = 0;
+  const int requestedScale = RequestedUiScale();
   const SDL_DisplayID display = SDL_GetPrimaryDisplay();
   const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display);
   const int desktopWidth = (desktop != nullptr) ? std::max(desktop->w, kMinimumModeWidth) : kMinimumModeWidth;
@@ -152,8 +204,20 @@ void ListDisplayModes()
   sizes.emplace_back(desktopWidth, desktopHeight);
   std::sort(sizes.begin(), sizes.end());
   sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
-  for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
+  std::vector<std::pair<int, int>> scaledSizes{{kMinimumModeWidth, kMinimumModeHeight}};
+  if (requestedScale > 1) {
     for (const auto &[width, height] : sizes) {
+      if ((width / requestedScale >= kMinimumModeWidth) && (height / requestedScale >= kMinimumModeHeight)) {
+        scaledSizes.emplace_back(width / requestedScale, height / requestedScale);
+      }
+    }
+    std::sort(scaledSizes.begin(), scaledSizes.end());
+    scaledSizes.erase(std::unique(scaledSizes.begin(), scaledSizes.end()), scaledSizes.end());
+  }
+  for (uint32_t adapterIndex = 0; adapterIndex < g_GraphicsAdapterCount; adapterIndex++) {
+    const bool scaled = (requestedScale > 1) && (adapterIndex < s_renderer.adapterCount) &&
+                        (s_renderer.adapters[adapterIndex] != PERSISTENT_RENDERER_SOFTWARE);
+    for (const auto &[width, height] : scaled ? scaledSizes : sizes) {
       if (g_GraphicsDisplayModeCount >= GRAPHICS_DISPLAY_MODE_CAPACITY) {
         return;
       }
@@ -238,6 +302,30 @@ void ComposeCursor() noexcept
   CopyCursorRectangle(*g_CursorCompositeBuffer, drawY, drawX, false);
 }
 
+#ifdef THANDOR_RENDERER_SDL_GPU
+/* The GPU frame's cursor (as ComposeCursor draws it, latching the visibility token); false when it is hidden. */
+bool CursorSprite(thandor::sdl3::GpuCursorSprite &outCursor) noexcept
+{
+  g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
+  if ((g_CursorVisibilityToken < 0) || (g_CursorSourceAsset == nullptr)) {
+    return false;
+  }
+  UiPixelCoordinate cursorX = g_MouseX;
+  UiPixelCoordinate cursorY = g_MouseY;
+  if (g_CursorUseOverridePosition != 0) {
+    cursorX = g_CursorOverrideX;
+    cursorY = g_CursorOverrideY;
+  }
+  const GraphicsCursorFrameRecord &cursorFrame = g_CursorFrameRecords[GraphicsCursor_GetFrameIndex()];
+  outCursor.asset = g_CursorSourceAsset;
+  outCursor.subresource = ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) ? cursorFrame.idleSubresourceIndex
+                                                                         : cursorFrame.activeSubresourceIndex;
+  outCursor.drawX = cursorX - cursorFrame.hotspotX;
+  outCursor.drawY = cursorY - cursorFrame.hotspotY;
+  return true;
+}
+#endif
+
 /* GraphicsCursor_RestoreAfterPresent: writes the saved background back over the cursor. */
 void RestoreCursor() noexcept
 {
@@ -294,14 +382,17 @@ uint32_t ForcedRenderer() noexcept
         (SDL_strcasecmp(value, "dx12") == 0)) {
       return PERSISTENT_RENDERER_DIRECT3D12;
     }
-    if (SDL_strcasecmp(value, "compare") == 0) {
+    if (SDL_strncasecmp(value, "compare", 7) == 0) {
 #ifdef THANDOR_DEV_TOOLS
       s_renderer.compare = true;
 #else
       Thandor_Log("SDL_GPU renderer: compare mode needs the developer tools, using the GPU alone");
 #endif
+      if ((SDL_strcasecmp(value + 7, "-d3d12") == 0) || (SDL_strcasecmp(value + 7, "-dx12") == 0)) {
+        return PERSISTENT_RENDERER_DIRECT3D12;
+      }
     }
-    return PERSISTENT_RENDERER_VULKAN; /* 1 / on / compare: the first GPU renderer that runs */
+    return PERSISTENT_RENDERER_VULKAN; /* 1 / on / compare(-vulkan): the first GPU renderer that runs */
   }
   if (CommandLineHasOption("-SOFTWARE")) {
     return PERSISTENT_RENDERER_SOFTWARE;
@@ -369,6 +460,68 @@ uint32_t AdapterOfRenderer(uint32_t renderer) noexcept
   return 0;
 }
 
+/* The vsync of the running presenter: the GPU renderers' swapchain (also kept for a later device start) and the
+   software renderer's SDL_Renderer. */
+void ApplyVsync() noexcept
+{
+#ifdef THANDOR_RENDERER_SDL_GPU
+  thandor::sdl3::SetGpuVsync(s_pacing.vsync);
+  thandor::sdl3::SetGpuFrameLimited(s_pacing.frameLimit != PERSISTENT_FRAME_LIMIT_OFF);
+#endif
+  if (s_renderer.sdlRenderer && !SDL_SetRenderVSync(s_renderer.sdlRenderer.get(), s_pacing.vsync ? 1 : 0)) {
+    Thandor_Log("SDL_SetRenderVSync %d failed: %s", s_pacing.vsync ? 1 : 0, SDL_GetError());
+  }
+}
+
+/* Reads VSync and the frame limit once (the settings are loaded before the first display mode switch):
+   OPEN_THANDOR_VSYNC=0|1 and OPEN_THANDOR_FRAME_LIMIT=n win over [graphics] vsync / frame_limit. */
+void LoadFramePacing() noexcept
+{
+  if (s_pacing.loaded) {
+    return;
+  }
+  s_pacing.loaded = true;
+  s_pacing.vsync = PersistentSettings_Read(PERSISTENT_VSYNC_ON, PERSISTENT_SETTING_VSYNC) != PERSISTENT_VSYNC_OFF;
+  const char *vsyncSource = "settings";
+  if (const char *value = SDL_getenv("OPEN_THANDOR_VSYNC")) {
+    s_pacing.vsync = SDL_atoi(value) != 0;
+    vsyncSource = "OPEN_THANDOR_VSYNC";
+  }
+  uint32_t limit = PersistentSettings_Read(PERSISTENT_FRAME_LIMIT_OFF, PERSISTENT_SETTING_FRAME_LIMIT);
+  const char *limitSource = "settings";
+  if (const char *value = SDL_getenv("OPEN_THANDOR_FRAME_LIMIT")) {
+    const int requested = SDL_atoi(value);
+    limit = (requested > 0) ? static_cast<uint32_t>(requested) : PERSISTENT_FRAME_LIMIT_OFF;
+    limitSource = "OPEN_THANDOR_FRAME_LIMIT";
+  }
+  s_pacing.frameLimit = (limit <= PERSISTENT_FRAME_LIMIT_MAX) ? limit : PERSISTENT_FRAME_LIMIT_OFF;
+  Thandor_Log("frame pacing: vsync %s (%s), frame limit %u fps%s (%s)", s_pacing.vsync ? "on" : "off", vsyncSource,
+              s_pacing.frameLimit, (s_pacing.frameLimit == 0) ? " = off" : "", limitSource);
+}
+
+/* The frame limit: waits until the present's slot, 1/limit s after the previous one. A present that comes late by
+   more than one slot starts the schedule anew instead of being followed by a burst. SDL_DelayPrecise sleeps and
+   only spins the last fraction of a millisecond. */
+void WaitForFrameSlot() noexcept
+{
+  if (s_pacing.frameLimit == PERSISTENT_FRAME_LIMIT_OFF) {
+    s_pacing.nextPresentNs = 0;
+    return;
+  }
+  const Uint64 period = SDL_NS_PER_SECOND / s_pacing.frameLimit;
+  Uint64 now = SDL_GetTicksNS();
+  if ((s_pacing.nextPresentNs != 0) && (now < s_pacing.nextPresentNs)) {
+    SDL_DelayPrecise(s_pacing.nextPresentNs - now);
+    now = SDL_GetTicksNS();
+  }
+  if ((s_pacing.nextPresentNs == 0) || (now > s_pacing.nextPresentNs + period)) {
+    s_pacing.nextPresentNs = now + period;
+  }
+  else {
+    s_pacing.nextPresentNs += period;
+  }
+}
+
 /* The SDL_Renderer of the software renderer: Vulkan, else Direct3D 12, Direct3D 11, else SDL's choice. */
 bool CreateSdlRenderer() noexcept
 {
@@ -388,7 +541,40 @@ bool CreateSdlRenderer() noexcept
   }
   Thandor_Log("software renderer, presenting through the SDL_Renderer %s",
               SDL_GetRendererName(s_renderer.sdlRenderer.get()));
+  ApplyVsync();
   return true;
+}
+
+/* The UI scale of a renderer for a width x height display mode shown as kind: 1 for the software renderer, else
+   the requested one, and for auto the largest whole N at which N x the mode fits the output (fullscreen kinds:
+   the desktop size; a window: the display's usable area). */
+int UiScaleFor(uint32_t renderer, uint32_t kind, int width, int height) noexcept
+{
+  if ((renderer == PERSISTENT_RENDERER_SOFTWARE) || (width <= 0) || (height <= 0)) {
+    return 1;
+  }
+  const int requested = RequestedUiScale();
+  if (requested != PERSISTENT_UI_SCALE_AUTO) {
+    return requested;
+  }
+  SDL_Window *window = thandor::sdl3::MainWindow();
+  SDL_DisplayID display = SDL_GetDisplayForWindow(window);
+  if (display == 0) {
+    display = SDL_GetPrimaryDisplay();
+  }
+  int outputWidth = 0;
+  int outputHeight = 0;
+  SDL_Rect usable;
+  if ((thandor::sdl3::Windowed() || (kind == PERSISTENT_DISPLAY_MODE_WINDOW)) &&
+      SDL_GetDisplayUsableBounds(display, &usable)) {
+    outputWidth = usable.w;
+    outputHeight = usable.h;
+  }
+  else if (const SDL_DisplayMode *desktop = SDL_GetDesktopDisplayMode(display)) {
+    outputWidth = desktop->w;
+    outputHeight = desktop->h;
+  }
+  return std::clamp(std::min(outputWidth / width, outputHeight / height), 1, thandor::sdl3::kMaxGpuUiScale);
 }
 
 /* Stops the running renderer and starts this one; false (logged) when it cannot start. */
@@ -434,7 +620,7 @@ uint32_t SwitchRenderer(uint32_t requested) noexcept
 
 /* --- window ----------------------------------------------------------------------------------------------- */
 
-/* Applies the display mode kind for a width x height framebuffer. */
+/* Applies the display mode kind for a width x height output (the framebuffer size x the UI scale). */
 void ApplyDisplayModeKind(uint32_t kind, int width, int height) noexcept
 {
   SDL_Window *window = thandor::sdl3::MainWindow();
@@ -633,6 +819,54 @@ void SdlVideo_SaveDisplayModeKind(uint32_t kind)
   PersistentSettings_Write(kind, PERSISTENT_SETTING_DISPLAY_MODE_KIND);
 }
 
+bool SdlVideo_GpuRendererActive()
+{
+  return (s_renderer.active != kNoRenderer) && (s_renderer.active != PERSISTENT_RENDERER_SOFTWARE);
+}
+
+uint32_t SdlVideo_GpuRasterization()
+{
+  return (PersistentSettings_Read(PERSISTENT_GPU_RASTERIZATION_SMOOTH, PERSISTENT_SETTING_GPU_RASTERIZATION) ==
+          PERSISTENT_GPU_RASTERIZATION_EXACT)
+             ? PERSISTENT_GPU_RASTERIZATION_EXACT
+             : PERSISTENT_GPU_RASTERIZATION_SMOOTH;
+}
+
+void SdlVideo_SetGpuRasterization(uint32_t rasterization)
+{
+  if (rasterization >= PERSISTENT_GPU_RASTERIZATION_COUNT) {
+    return;
+  }
+  PersistentSettings_WriteChosen(rasterization, PERSISTENT_SETTING_GPU_RASTERIZATION);
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SetGpuRasterizationExact(rasterization == PERSISTENT_GPU_RASTERIZATION_EXACT);
+#endif
+}
+
+uint32_t SdlVideo_SavedUiScale()
+{
+  const uint32_t saved = PersistentSettings_Read(PERSISTENT_UI_SCALE_AUTO, PERSISTENT_SETTING_UI_SCALE);
+  return (saved <= PERSISTENT_UI_SCALE_MAX) ? saved : PERSISTENT_UI_SCALE_AUTO;
+}
+
+void SdlVideo_SaveUiScale(uint32_t scale)
+{
+  if ((scale > PERSISTENT_UI_SCALE_MAX) || (scale == SdlVideo_SavedUiScale())) {
+    return;
+  }
+  const int requestedBefore = RequestedUiScale();
+  PersistentSettings_WriteChosen(scale, PERSISTENT_SETTING_UI_SCALE);
+  Thandor_Log("UI scale %u (0 = auto) saved", scale);
+  if (RequestedUiScale() != requestedBefore) {
+    ListDisplayModes(); /* a fixed scale lists the display's sizes divided by it */
+  }
+}
+
+bool SdlVideo_UiScaleChangePending()
+{
+  return (s_renderer.appliedUiScaleRequest >= 0) && (RequestedUiScale() != s_renderer.appliedUiScaleRequest);
+}
+
 uint32_t SdlVideo_DisplayModeKind()
 {
   return Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.kind;
@@ -644,6 +878,46 @@ void SdlVideo_SetDisplayModeKind(uint32_t kind)
   s_renderer.kindChosen = true;
 }
 
+bool SdlVideo_GetVsync()
+{
+  LoadFramePacing();
+  return s_pacing.vsync;
+}
+
+void SdlVideo_SetVsync(bool on)
+{
+  LoadFramePacing();
+  PersistentSettings_Write(on ? PERSISTENT_VSYNC_ON : PERSISTENT_VSYNC_OFF, PERSISTENT_SETTING_VSYNC);
+  if (s_pacing.vsync != on) {
+    s_pacing.vsync = on;
+    Thandor_Log("vsync %s", on ? "on" : "off");
+    ApplyVsync();
+  }
+}
+
+uint32_t SdlVideo_GetFrameLimit()
+{
+  LoadFramePacing();
+  return s_pacing.frameLimit;
+}
+
+void SdlVideo_SetFrameLimit(uint32_t fps)
+{
+  LoadFramePacing();
+  if (fps > PERSISTENT_FRAME_LIMIT_MAX) {
+    fps = PERSISTENT_FRAME_LIMIT_OFF;
+  }
+  PersistentSettings_Write(fps, PERSISTENT_SETTING_FRAME_LIMIT);
+  if (s_pacing.frameLimit != fps) {
+    s_pacing.frameLimit = fps;
+    s_pacing.nextPresentNs = 0;
+    Thandor_Log("frame limit %u fps%s", fps, (fps == 0) ? " = off" : "");
+#ifdef THANDOR_RENDERER_SDL_GPU
+    thandor::sdl3::SetGpuFrameLimited(fps != PERSISTENT_FRAME_LIMIT_OFF);
+#endif
+  }
+}
+
 Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint32_t height,uint32_t width,
                                 uint32_t *errorCode)
 {
@@ -652,6 +926,15 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
     /* the first switch runs after the settings are loaded */
     s_renderer.pendingKind = SdlVideo_SavedDisplayModeKind();
     s_renderer.kindChosen = true;
+  }
+  if (!s_pacing.loaded) {
+    LoadFramePacing();
+    ApplyVsync(); /* before the renderer starts below */
+  }
+  if (!s_renderer.modesListedWithSettings) {
+    /* the UI scale setting is known now: list the display modes again (SdlVideo_Init ran before the load) */
+    ListDisplayModes();
+    s_renderer.modesListedWithSettings = true;
   }
   if (adapterIndex >= s_renderer.adapterCount) {
     adapterIndex = 0;
@@ -673,8 +956,13 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   bitsPerPixel = PERSISTENT_DEFAULT_BITS_PER_PIXEL;
   constexpr int bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
   constexpr SDL_PixelFormat pixelFormat = SDL_PIXELFORMAT_XRGB8888;
-  ApplyDisplayModeKind(Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind, static_cast<int>(width),
-                       static_cast<int>(height));
+  const uint32_t kind = Windowed() ? PERSISTENT_DISPLAY_MODE_WINDOW : s_renderer.pendingKind;
+  const int uiScale = UiScaleFor(renderer, kind, static_cast<int>(width), static_cast<int>(height));
+  s_renderer.appliedUiScaleRequest = RequestedUiScale();
+#ifdef THANDOR_RENDERER_SDL_GPU
+  SetGpuUiScale(uiScale);
+#endif
+  ApplyDisplayModeKind(kind, static_cast<int>(width) * uiScale, static_cast<int>(height) * uiScale);
   if (renderer == PERSISTENT_RENDERER_SOFTWARE) {
     SDL_Renderer *sdlRenderer = s_renderer.sdlRenderer.get();
     thandor::sdl3::TexturePtr texture(SDL_CreateTexture(sdlRenderer, pixelFormat, SDL_TEXTUREACCESS_STREAMING,
@@ -697,8 +985,9 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
   s_video.height = static_cast<int>(height);
   s_video.pitchBytes = static_cast<int>(width) * bytesPerPixel;
   s_video.framebuffer.assign(static_cast<std::size_t>(s_video.pitchBytes) * height, std::byte{0});
-  Thandor_Log("display mode %ux%ux%u, %s, renderer %s", width, height, bitsPerPixel,
-              DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer));
+  Thandor_Log("display mode %ux%ux%u, %s, renderer %s, UI scale %d (%s)", width, height, bitsPerPixel,
+              DisplayModeKindName(SdlVideo_DisplayModeKind()), RendererName(renderer), uiScale,
+              (RequestedUiScale() == PERSISTENT_UI_SCALE_AUTO) ? "auto" : "fixed");
   if (!s_renderer.shown) {
     SDL_ShowWindow(MainWindow());
     s_renderer.shown = true;
@@ -731,12 +1020,27 @@ Bool8 SdlVideo_ApplyDisplayMode(uint32_t adapterIndex,uint32_t bitsPerPixel,uint
 void SdlVideo_Present(SoftwareFramebufferAccess *framebuffer)
 {
   g_ThandorFrameHeartbeat++;
+  if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
+    WaitForFrameSlot(); /* the frame limit, before the backend lock (the cursor timer skips while it is held) */
+  }
   /* atomic exchange: take the backend lock and learn whether it was already held */
   const auto previousAccessState = static_cast<int32_t>(THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState, 1));
   if (previousAccessState != 0) {
     return;
   }
   if ((framebuffer == &g_DisplayFramebufferAccess) && !s_video.framebuffer.empty()) {
+#ifdef THANDOR_RENDERER_SDL_GPU
+    if (GpuFrameActive()) {
+      /* the frame was recorded by the 2D draw list: the GPU draws it and the cursor (no CPU framebuffer pixels) */
+      GpuCursorSprite cursor{};
+      const bool cursorShown = CursorSprite(cursor);
+      PresentGpuFrame(cursorShown ? &cursor : nullptr);
+      g_GraphicsBackendAccessState--;
+      return;
+    }
+    /* compare mode: the GPU draws the recorded frame too and compares it with the framebuffer (before the cursor) */
+    CompareGpuFrame();
+#endif
     ComposeCursor();
 #ifdef THANDOR_RENDERER_SDL_GPU
     if (GpuDeviceRunning()) {
@@ -764,6 +1068,13 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
   if ((capturedAsset == nullptr) || (captureHeight == 0) || (captureWidth == 0) || s_video.framebuffer.empty()) {
     return capturedAsset;
   }
+#ifdef THANDOR_RENDERER_SDL_GPU
+  /* the GPU frame: the frame target holds the picture (synchronous download) */
+  if (GpuFrameActive() && ReadGpuFrame(sourceX, sourceY, static_cast<int>(captureWidth), static_cast<int>(captureHeight),
+                                       capturedAsset->argb8888Pixels)) {
+    return capturedAsset;
+  }
+#endif
   const std::byte *sourceRow = s_video.framebuffer.data() + (sourceY * static_cast<int32_t>(g_FramebufferWidth) + sourceX) * 4;
   uint32_t *destinationPixel = capturedAsset->argb8888Pixels;
   for (uint32_t row = 0; row < captureHeight; row++) {
@@ -779,3 +1090,4 @@ GraphicsCapturedTextureSourceAsset *SdlVideo_CaptureRegion32Bit(uint32_t capture
   }
   return capturedAsset;
 }
+
