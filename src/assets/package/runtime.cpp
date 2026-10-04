@@ -15,7 +15,7 @@ static PckMountSlot g_PackageMountSlots[1024] = {0};
 
 uint8_t *g_PackageScratchBuffer = 0;
 
-__declspec(align(4)) uint16_t g_PackageLastErrorPath[256] = {0};
+THANDOR_ALIGN(4) uint16_t g_PackageLastErrorPath[256] = {0};
 
 /* Implementation ownership: assets/package/runtime. */
 

@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) void *g_ArmyRuntimeRebaseBaseMinusOne = 0;
+THANDOR_ALIGN(4) void *g_ArmyRuntimeRebaseBaseMinusOne = 0;
 
 ArmyRuntimeSlot *g_ArmyRuntimeSlots = 0;
 

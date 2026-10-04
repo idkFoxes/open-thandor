@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
+THANDOR_ALIGN(16) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
     /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E670},
     /*  2 */ {.commandCode = 0x20002, .continuationEntryAddress = 0x56E6A0},

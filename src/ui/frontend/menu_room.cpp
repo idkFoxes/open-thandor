@@ -11,9 +11,9 @@
 
 /* Module data. */
 
-__declspec(align(8)) GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque = 0;
+THANDOR_ALIGN(8) GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque = 0;
 
-__declspec(align(4)) GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped = 0;
 
 static const UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 

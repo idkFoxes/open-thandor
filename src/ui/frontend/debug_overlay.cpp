@@ -11,31 +11,31 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {0};
 
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {0};
 
 /* 32 units, the last slot owns the unnamed 0x20 bytes after its first 16 units in the original. It receives the locale-formatted elapsed time (hours, time separator, minutes, AM/PM designator),
    which can run past 16 units. */
-__declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
+THANDOR_ALIGN(4) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
 
 /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
 uint32_t g_DebugOverlayCounterRefreshCountdown = 20;

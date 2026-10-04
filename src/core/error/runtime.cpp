@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint16_t g_FatalErrorDetail1Utf16[256] = {0};
+THANDOR_ALIGN(4) uint16_t g_FatalErrorDetail1Utf16[256] = {0};
 
 uint16_t g_FatalErrorDetail2Utf16[256] = {0};
 

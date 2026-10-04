@@ -12,7 +12,7 @@
 
 static_assert(sizeof(ArenaBlockHeader) == ARENA_BLOCK_HEADER_BYTES, "arena block header is 0x20 bytes");
 
-__declspec(align(16)) MemoryApiTable g_MemoryApi = {0};
+THANDOR_ALIGN(16) MemoryApiTable g_MemoryApi = {0};
 
 /* its address doubles as the error code */
 /* "error: HEAP: cannot allocate heap memory! Please check your swap-file." */
@@ -25,7 +25,7 @@ static uint16_t g_ErrorTextHeapAllocationFailed[71] = {
    the 0xC00 bytes past the limit run to the end of the original image and are never handed out. One array
    so cursor and limit stay in the same object. The alignment is kept on purpose: ArenaHeap_ReserveLinear
    hands out base + offset without rounding, so the blocks inherit the 16-byte alignment of the original region. */
-static __declspec(align(16)) uint8_t g_ArenaLinearStorage[0x4C00] = {0};
+static THANDOR_ALIGN(16) uint8_t g_ArenaLinearStorage[0x4C00] = {0};
 
 static ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
 

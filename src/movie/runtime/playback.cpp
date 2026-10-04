@@ -15,9 +15,9 @@
 
 /* Module data. */
 
-__declspec(align(4)) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
+THANDOR_ALIGN(4) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
 
-__declspec(align(16)) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
+THANDOR_ALIGN(16) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 
 MovieRuntime *g_ActiveMovie = 0;
 

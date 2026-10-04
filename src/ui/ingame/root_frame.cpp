@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) UiRootCallbacks g_InGameUiRootCallbacks = {
+THANDOR_ALIGN(16) UiRootCallbacks g_InGameUiRootCallbacks = {
     .frameUpdate = THANDOR_FN(InGameUiRoot_UpdateFrame),
     .keyboardFallback = THANDOR_FN(InGameHotkeys_DispatchCommandByFlags)};
 

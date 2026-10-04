@@ -15,9 +15,9 @@
 /* Module data. */
 
 /* filled at startup by GraphicsLighting_BuildPackedLookupTable */
-__declspec(align(16)) uint64_t g_PackedLightingLookupTable[512] = {0};
+THANDOR_ALIGN(16) uint64_t g_PackedLightingLookupTable[512] = {0};
 
-__declspec(align(16)) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {0};
+THANDOR_ALIGN(16) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {0};
 
 uintptr_t g_GraphicsIntensityClampTableBase = 0;
 

@@ -10,12 +10,12 @@
 
 /* Module data. */
 
-__declspec(align(16)) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
+THANDOR_ALIGN(16) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
     .releasePackage = THANDOR_FN(GraphicsTextureSource_ReleasePackageAsset),
     .clone = THANDOR_FN(GraphicsTextureSource_CloneAsset),
     .releaseClone = THANDOR_FN(GraphicsTextureSource_ReleaseClonedAsset)};
 
-__declspec(align(4)) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = THANDOR_FN(GraphicsTextureSource_LoadPackageAsset);
+THANDOR_ALIGN(4) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = THANDOR_FN(GraphicsTextureSource_LoadPackageAsset);
 
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = 0;
 

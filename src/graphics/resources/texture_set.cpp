@@ -13,9 +13,9 @@
 
 /* Module data. */
 
-__declspec(align(4)) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = THANDOR_FN(GraphicsTextureSet_LoadPackage);
+THANDOR_ALIGN(4) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = THANDOR_FN(GraphicsTextureSet_LoadPackage);
 
-__declspec(align(16)) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = THANDOR_FN(GraphicsTextureSet_ReleasePackage);
+THANDOR_ALIGN(16) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = THANDOR_FN(GraphicsTextureSet_ReleasePackage);
 
 GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = THANDOR_FN(GraphicsTextureSet_RefreshNoOp);
 

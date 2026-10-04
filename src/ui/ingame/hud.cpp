@@ -11,7 +11,7 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
+THANDOR_ALIGN(4) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
 
 static uint16_t g_InGameHudNumberTextUtf16[16] = {0};
 

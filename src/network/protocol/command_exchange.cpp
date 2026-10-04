@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) FrontendPacket10022StatePending g_FrontendPacket10022Buffer = {0};
+THANDOR_ALIGN(16) FrontendPacket10022StatePending g_FrontendPacket10022Buffer = {0};
 
 static FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer = {0};
 

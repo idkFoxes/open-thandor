@@ -218,4 +218,4 @@ void UiRootStack_InvalidateAll(void)
   return;
 }
 
-__declspec(align(16)) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {.handlers = {THANDOR_FN(UiRootStack_Pop), THANDOR_FN(FatalErrorDialog_DismissAndPopRoot)}};
+THANDOR_ALIGN(16) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {.handlers = {THANDOR_FN(UiRootStack_Pop), THANDOR_FN(FatalErrorDialog_DismissAndPopRoot)}};

@@ -12,7 +12,7 @@
 /* Module data. */
 
 /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
-__declspec(align(4)) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
+THANDOR_ALIGN(4) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
 
 /* path suffix letters "a".."z" (with terminator) of the 26 terrain material texture sets */
 static const TerrainMaterialSuffixEntry g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26] = {

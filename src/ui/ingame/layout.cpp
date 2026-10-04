@@ -11,13 +11,13 @@
 
 /* Module data. */
 
-__declspec(align(4)) GraphicsTextureSourceAsset *g_InGameDiagramTextureSource = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameDiagramTextureSource = 0;
 
-__declspec(align(8)) GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource = 0;
+THANDOR_ALIGN(8) GraphicsTextureSourceAsset *g_InGameTechnologyTextureSource = 0;
 
-__declspec(align(4)) GraphicsTextureSourceAsset *g_InGameWindowTextureSource = 0;
+THANDOR_ALIGN(4) GraphicsTextureSourceAsset *g_InGameWindowTextureSource = 0;
 
-__declspec(align(16)) GraphicsTextureSourceAsset *g_InGamePanelTextureSource = 0;
+THANDOR_ALIGN(16) GraphicsTextureSourceAsset *g_InGamePanelTextureSource = 0;
 
 uint16_t g_GfxPanelPanel0GfxPathUtf16[21] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'p', 'a', 'n', 'e', 'l', '0', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\panel0.gfx" */
 

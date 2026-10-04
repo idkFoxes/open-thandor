@@ -10,19 +10,19 @@
 
 /* Module data. */
 
-__declspec(align(8)) UiPixelCoordinate g_CursorOverrideX = 0;
+THANDOR_ALIGN(8) UiPixelCoordinate g_CursorOverrideX = 0;
 
-__declspec(align(4)) UiPixelCoordinate g_CursorOverrideY = 0;
+THANDOR_ALIGN(4) UiPixelCoordinate g_CursorOverrideY = 0;
 
-__declspec(align(4)) int32_t g_CursorVisibilityToken = -1;
+THANDOR_ALIGN(4) int32_t g_CursorVisibilityToken = -1;
 
-__declspec(align(8)) uint32_t g_CursorButtonState = 0;
+THANDOR_ALIGN(8) uint32_t g_CursorButtonState = 0;
 
-__declspec(align(16)) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
+THANDOR_ALIGN(16) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
 
-__declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = THANDOR_FN(Keyboard_FlushEvents);
+THANDOR_ALIGN(16) KeyboardFlushEventsProc *g_KeyboardFlushEvents = THANDOR_FN(Keyboard_FlushEvents);
 
-__declspec(align(8)) uint32_t g_KeyboardStateMask = 0;
+THANDOR_ALIGN(8) uint32_t g_KeyboardStateMask = 0;
 
 static uint32_t g_CursorMaxWidth = 0;
 

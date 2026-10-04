@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
+THANDOR_ALIGN(16) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
 
 /* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
 uint32_t g_FrontendSelectedPlayerToken = 1;

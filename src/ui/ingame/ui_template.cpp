@@ -12,7 +12,7 @@
 
 /* Module data. */
 
-__declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
+THANDOR_ALIGN(16) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         { /* +0000 inGameRootPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x17C), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = THANDOR_PTR(&g_UiPanelControlVtable),

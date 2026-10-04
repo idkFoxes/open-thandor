@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
-__declspec(align(4)) uint32_t g_UiCommandModeGColorVariantLimit = 16777215;
+THANDOR_ALIGN(4) uint32_t g_UiCommandModeGColorVariantLimit = 16777215;
 
 static uint32_t g_UiCommandSelectionPageBaseIndex = 0;
 
