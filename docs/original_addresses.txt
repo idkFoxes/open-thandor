@@ -2067,7 +2067,7 @@
 0x005393F0  function  AiConstructionPlanner_PlaceTritiumStorageNearResourceSite         src/gameplay/ai/construction.cpp
 0x00539600  function  AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate          src/gameplay/ai/construction.cpp
 0x005397C0  function  AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor         src/gameplay/ai/construction.cpp
-0x00539980  data      g_TechnologyCategoryMaximumReciprocalQ24Table8                    src/gameplay/technology/runtime.cpp
+0x00539980  data      g_TechnologyCategoryMaximumReciprocalQ24Table8                    (removed, unused)
 0x005399A0  data      g_TechnologyCategoryMaximums                                      src/gameplay/technology/runtime.cpp
 0x005399C0  data      g_AiArmyCandidateFlaggedDefinitionValueMaximum                    src/gameplay/technology/runtime.cpp
 0x005399C4  data      g_AiStrategicClassTerrainWeights                                  src/gameplay/ai/planning.cpp
