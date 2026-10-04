@@ -79,6 +79,7 @@ typedef struct PersistentIniKey {
 static const char *const s_IniRendererNames[] = {"vulkan", "d3d12", "software"};
 static const char *const s_IniDisplayModeNames[] = {"fullscreen", "borderless", "window"};
 static const char *const s_IniTextureQualityNames[] = {"high", "medium", "low"};
+static const char *const s_IniGpuRasterizationNames[] = {"smooth", "exact"};
 
 #define INI_ENUM(names) names, (uint32_t)(sizeof names / sizeof names[0])
 
@@ -108,6 +109,9 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
    "texture quality: high, medium or low", 0, 0, INI_ENUM(s_IniTextureQualityNames)},
   {PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD, INI_KIND_INT, "graphics", "model_detail",
    "model detail distance, 8.8 fixed point (default 65536)", 0, 0, NULL, 0},
+  {PERSISTENT_SETTING_GPU_RASTERIZATION, INI_KIND_ENUM, "graphics", "gpu_rasterization",
+   "Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) "
+   "or exact (the software renderer's look)", 0, 0, INI_ENUM(s_IniGpuRasterizationNames)},
 
   {PERSISTENT_SETTING_SOUND_OPTION_FLAGS, INI_KIND_BIT, "sound", "effects",
    "sound effects (default true)", PERSISTENT_SOUND_OPTION_EFFECTS, PERSISTENT_SOUND_OPTION_DEFAULT, NULL, 0},
@@ -147,7 +151,6 @@ static const PersistentIniKey s_PersistentIniKeys[] = {
   {0x50, INI_KIND_RAW, "reserved", "dword_50", "unused in the original settings file, kept", 0, 0, NULL, 0},
   {0x54, INI_KIND_RAW, "reserved", "dword_54", "unused in the original settings file, kept", 0, 0, NULL, 0},
   {0x58, INI_KIND_RAW, "reserved", "dword_58", "unused in the original settings file, kept", 0, 0, NULL, 0},
-  {0xB8, INI_KIND_RAW, "reserved", "dword_b8", "unused in the original settings file, kept", 0, 0, NULL, 0},
   {0xBC, INI_KIND_RAW, "reserved", "dword_bc", "unused in the original settings file, kept", 0, 0, NULL, 0},
   {0xC0, INI_KIND_RAW, "reserved", "dword_c0", "unused in the original settings file, kept", 0, 0, NULL, 0},
   {0xC4, INI_KIND_RAW, "reserved", "dword_c4", "unused in the original settings file, kept", 0, 0, NULL, 0},
