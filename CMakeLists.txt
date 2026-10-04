@@ -146,9 +146,12 @@ add_library(thandor_curated STATIC
     src/movie/runtime/session_schedule.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
+    src/network/protocol/cipher.cpp
+    src/network/protocol/command_exchange.cpp
     src/network/protocol/commands.cpp
+    src/network/protocol/lobby.cpp
+    src/network/protocol/mailbox.cpp
     src/network/protocol/scenario_transfer.cpp
-    src/network/protocol/transfer.cpp
     src/platform/bootstrap/runtime.cpp
     src/platform/filesystem/win32.cpp
     src/platform/input/devices.cpp
