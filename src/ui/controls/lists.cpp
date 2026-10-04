@@ -26,6 +26,14 @@ static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {0};
 
 /* Implementation ownership: ui/controls/lists. */
 
+/* True for the keys that move a list's selection (Home/End, Page Up/Down, Up/Down). */
+static bool UiList_IsNavigationKey(UiKeyboardEventCode keyCode)
+{
+  return (keyCode == KEYBOARD_KEY_CODE_HOME) || (keyCode == KEYBOARD_KEY_CODE_END) ||
+         (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) || (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) ||
+         (keyCode == KEYBOARD_KEY_CODE_UP) || (keyCode == KEYBOARD_KEY_CODE_DOWN);
+}
+
 /* Keyboard handler of the column list (g_UiListControlVtable keyboardEvent): Enter confirms the selection
    and queues the list's action at once; Home/End, Up/Down and Page Up/Down (one row less than the view
    holds) move the selection, play the selection sound, scroll the row into view and queue the action after
@@ -48,6 +56,12 @@ Bool8 UiListControl_HandleKeyboardNavigation
     if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
       UiActionQueue_Enqueue(control->actionId,control);
+    }
+    else if ((control->rowCount == 0) && UiList_IsNavigationKey(keyCode)) {
+      /* The original computes row rowCount - 1 (End, Page Down) or the slot before rowSlots (Up, with
+         rowSlots NULL) on an empty list and stores that meaningless slot; ignored here because on x64 the
+         slot does not fit the 32-bit field (Thandor_Ptr32Overflow ends the game). */
+      return false;
     }
     else if (keyCode == KEYBOARD_KEY_CODE_HOME) {
       control->selectedRowSlot = control->rowSlots;
@@ -787,6 +801,11 @@ Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
   else if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
     UiActionQueue_Enqueue(control->actionId,control);
+  }
+  else if ((control->rowCount == 0) && UiList_IsNavigationKey(keyCode)) {
+    /* empty list: ignored as in UiListControl_HandleKeyboardNavigation (the original stores a slot that
+       does not fit the 32-bit field on x64) */
+    return false;
   }
   else if (keyCode == KEYBOARD_KEY_CODE_HOME) {
     control->selectedRowSlot = control->rowTextSlots;
