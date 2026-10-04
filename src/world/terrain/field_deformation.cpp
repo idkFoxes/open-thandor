@@ -264,3 +264,361 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex
          terrainMaterialIndexOrNegativeSentinel;
   }
 }
+
+/* Flatten brush step for one cell: levels it to g_TerrainScanReferenceHeight and moves the removed height into
+   waterSurfaceDelta, so the water surface stays where it was. */
+static void TerrainHeightDelta_LevelCell(FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+  cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+  cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+}
+
+/* Flatten brush, sector 0 of the hexagon around the brush vertex
+   (FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors): walks the sector's diagonal, levels each cell and the one between it and the next diagonal cell to
+   g_TerrainScanReferenceHeight (the removed height goes into waterSurfaceDelta, so the water surface stays), and
+   starts the straight scans of directions 0 and 1 that fill the sector. Stops at a map-edge cell or the radius.
+*/
+void TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  FieldGridCell *betweenCell;
+
+  while ((scanStep < g_TerrainScanStepLimit) && ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)) {
+    TerrainHeightDelta_LevelCell(cell);
+    rowStrideBytes = g_TerrainScanRowStrideBytes;
+    directionStartCell = cell + 1;
+    TerrainHeightDelta_ApplyDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
+    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+      return;
+    }
+    /* the in-between cell is one row up from directionStartCell */
+    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes);
+    if ((betweenCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return;
+    }
+    TerrainHeightDelta_LevelCell(betweenCell);
+    cell = betweenCell + 1;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+    TerrainHeightDelta_ApplyDirection1
+              (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
+  }
+}
+
+/* Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 1 and 2.
+*/
+void TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  FieldGridCell *betweenCell;
+
+  while ((scanStep < g_TerrainScanStepLimit) && ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)) {
+    TerrainHeightDelta_LevelCell(cell);
+    rowStrideBytes = g_TerrainScanRowStrideBytes;
+    TerrainHeightDelta_ApplyDirection1
+              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+               FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes));
+    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+      return;
+    }
+    /* the in-between cell is the one above */
+    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes);
+    if ((betweenCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return;
+    }
+    TerrainHeightDelta_LevelCell(betweenCell);
+    /* two rows up */
+    directionStartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
+    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+    cell = directionStartCell + 1;
+    TerrainHeightDelta_ApplyDirection2(scanStep,directionStartCell);
+  }
+}
+
+/* Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 2 and 3.
+*/
+void TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  FieldGridCell *directionStartCell;
+  int heightAdjustmentQ12;
+  int adjacentHeightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      TerrainHeightDelta_ApplyDirection2
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+        return;
+      }
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[-1].terrainHeight;
+      cell[-1].terrainHeight = cell[-1].terrainHeight + adjacentHeightAdjustmentQ12;
+      cell[-1].waterSurfaceDelta = cell[-1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
+      directionStartCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,-g_TerrainScanRowStrideBytes); /* up and left */
+      TerrainHeightDelta_ApplyDirection3(scanStep,directionStartCell);
+      if (g_TerrainScanStepLimit <= scanStep) {
+        return;
+      }
+    }
+  }
+}
+
+/* Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 3 and 4.
+*/
+void TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  FieldGridCell *betweenCell;
+
+  while ((scanStep < g_TerrainScanStepLimit) && ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)) {
+    TerrainHeightDelta_LevelCell(cell);
+    rowStrideBytes = g_TerrainScanRowStrideBytes;
+    directionStartCell = cell - 1;
+    TerrainHeightDelta_ApplyDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
+    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+      return;
+    }
+    /* the in-between cell is the one below directionStartCell (one row stride on) */
+    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,rowStrideBytes);
+    if ((betweenCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return;
+    }
+    TerrainHeightDelta_LevelCell(betweenCell);
+    cell = betweenCell - 1;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+    TerrainHeightDelta_ApplyDirection4
+              (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
+  }
+}
+
+/* Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 4 and 5.
+*/
+void TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int rowStrideBytes;
+  FieldGridCell *betweenCell;
+  FieldGridCell *direction5StartCell;
+
+  while ((scanStep < g_TerrainScanStepLimit) && ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)) {
+    TerrainHeightDelta_LevelCell(cell);
+    rowStrideBytes = g_TerrainScanRowStrideBytes;
+    /* the scan starts one row down and one cell left */
+    TerrainHeightDelta_ApplyDirection4
+              (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+               FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes));
+    if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+      return;
+    }
+    /* the in-between cell is the one below */
+    betweenCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes);
+    if ((betweenCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return;
+    }
+    TerrainHeightDelta_LevelCell(betweenCell);
+    scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+    /* two rows down: the direction 5 start; the next diagonal cell is one left of it */
+    direction5StartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(betweenCell,g_TerrainScanRowStrideBytes);
+    cell = direction5StartCell - 1;
+    TerrainHeightDelta_ApplyDirection5(scanStep,direction5StartCell);
+  }
+}
+
+/* Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 5 and 0.
+*/
+void TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  FieldGridCell *directionStartCell;
+  int heightAdjustmentQ12;
+  int adjacentHeightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      /* the scan starts one row down */
+      TerrainHeightDelta_ApplyDirection5
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
+        return;
+      }
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[1].terrainHeight;
+      cell[1].terrainHeight = cell[1].terrainHeight + adjacentHeightAdjustmentQ12;
+      cell[1].waterSurfaceDelta = cell[1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
+      directionStartCell = cell + 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,g_TerrainScanRowStrideBytes); /* below the right cell */
+      TerrainHeightDelta_ApplyDirection0(scanStep,directionStartCell);
+      if (g_TerrainScanStepLimit <= scanStep) {
+        return;
+      }
+    }
+  }
+}
+
+/* Flatten brush, straight leg along direction 0 (C+1, right): levels each cell to g_TerrainScanReferenceHeight
+   and takes the change out of waterSurfaceDelta so the water surface stays where it was. 4 scan steps per cell,
+   until the step limit or a map-edge cell.
+*/
+void TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell++;
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}
+
+/* Flatten brush, straight leg along direction 1 (C+1-W, up and right): levels each cell to
+   g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
+*/
+void TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes); /* 0x80 = one cell */
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}
+
+/* Flatten brush, straight leg along direction 2 (C-W, up): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
+*/
+void TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}
+
+/* Flatten brush, straight leg along direction 3 (C-1, left): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
+*/
+void TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell--;
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}
+
+/* Flatten brush, straight leg along direction 4 (C-1+W, down and left): levels each cell to
+   g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
+*/
+void TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}
+
+/* Flatten brush, straight leg along direction 5 (C+W, down): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
+*/
+void TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+
+{
+  int heightAdjustmentQ12;
+
+  if (scanStep < g_TerrainScanStepLimit) {
+    do {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        return;
+      }
+      heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
+    } while (scanStep < g_TerrainScanStepLimit);
+  }
+  return;
+}

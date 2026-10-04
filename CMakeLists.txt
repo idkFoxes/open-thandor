@@ -96,6 +96,7 @@ add_library(thandor_curated STATIC
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
     src/graphics/resources/texture.cpp
+    src/graphics/terrain/terrain_render.cpp
     src/movie/runtime/playback.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
@@ -143,9 +144,11 @@ add_library(thandor_curated STATIC
     src/world/terrain/field_lighting.cpp
     src/world/terrain/field_raycast.cpp
     src/world/terrain/field_sampling.cpp
-    src/world/terrain/height.cpp
+    src/world/terrain/hex_scan.cpp
     src/world/terrain/occupancy.cpp
-    src/world/terrain/projection.cpp
+    src/world/terrain/overlay_marking.cpp
+    src/world/terrain/placement_tests.cpp
+    src/world/terrain/sight.cpp
     src/world/terrain/visuals.cpp
     src/world/terrain/water_relaxation.cpp
 )
