@@ -244,6 +244,47 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
    resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
 static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
+static UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
+    .vetoClose = THANDOR_FN(UiRootCallbacks_Free),
+    .frameUpdate = THANDOR_FN(UiFourValueDialog_TickCountdownAndRequestClose),
+    .method08 = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerPress),
+    .pointerMissPolicy = THANDOR_FN(UiModalDialogRoot_BlockMissedPointerMotion)};
+
+static FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
+        { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+            .vtable = THANDOR_PTR(&g_UiPanelControlVtable),
+            .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
+        {
+            0x00000003},
+        { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+            .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
+            .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
+        {
+            0x00000008, 0x0000020D, 0x00000101},
+        { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
+            .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
+            .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000004, 0x00000000, 0x00000100},
+        { /* +0110 countdownMessageText g_UiListOffsetControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = THANDOR_PTR(&g_UiListOffsetControlVtable),
+            .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
+};
+
 /* Implementation ownership: ui/dialogs/display_settings. */
 
 /* frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
@@ -805,6 +846,78 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   }
   else {
     UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
+  }
+  return;
+}
+
+/* Writes the two number readouts of the display settings dialog (root is a copy of
+   g_UiDisplaySettingsRootTemplate): the selected colour bias (applyButton selectedColorBiasQ16, Q16, -64..+64)
+   divided by 64.0, i.e. -1.000..+1.000, and the colour scale (applyButton selectedColorScaleQ16, Q16,
+   0.5..2.0) as a plain value, both signed with up to 3 fraction digits into the number buffers in the tail of
+   colorBiasValueText (colorBiasTextUtf16 for the bias, colorScaleTextUtf16 for the scale). Called when the dialog opens and by
+   UiDisplaySettingsRoot_RefreshModeSelection.
+*/
+void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
+
+{
+  UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  UiDisplaySettingsValueReadout *readout =
+       (UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText);
+
+  /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,64 << 16,applyButton->selectedColorBiasQ16,
+             readout->colorBiasTextUtf16);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,applyButton->selectedColorScaleQ16,
+             readout->colorScaleTextUtf16);
+  return;
+}
+
+/* Opens the "keep the new display mode?" dialog after UiDisplayModeAction_ApplyPendingMode switched modes:
+   copies g_UiFourValueDialogTemplateImage to the heap, points the countdown text (text 0x109) at its number
+   buffer, prints the starting seconds there and stores the previous mode tuple, which the revert action
+   0x20D (button or countdown expiry) restores. The original also reports a failed allocation to the caller;
+   no caller looks at it.
+*/
+void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+          UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth)
+
+{
+  uint16_t *countdownNumberBuffer;
+  UiRootNode *root;
+  int remainingDwords;
+  uint32_t *templateCursor;
+  uint32_t *copyCursor;
+  uint32_t allocError;
+  uint16_t *resolvedText;
+  UiFourValueDialogCountdownText *countdownText;
+
+  allocError = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage),(void **)&root);
+  if (allocError != 0) {
+    root = (UiRootNode *)(uintptr_t)allocError;
+  }
+  else {
+    /* copy the 0x1A4-byte template, one dword per step */
+    templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
+    copyCursor = (uint32_t *)root;
+    countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+    for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
+      *copyCursor = *templateCursor;
+      templateCursor++;
+      copyCursor++;
+    }
+    countdownNumberBuffer = countdownText->countdownTextUtf16;
+    resolvedText = TextResource_Resolve(TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN);
+    RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,countdownText->countdown,countdownNumberBuffer);
+    countdownText->previousWidth = previousWidth;
+    countdownText->previousHeight = previousHeight;
+    countdownText->previousBitsPerPixel = previousBitsPerPixel;
+    countdownText->previousAdapterIndex = previousAdapterIndex;
+    UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
+    UiRootStack_InvalidateAll();
+    return;
   }
   return;
 }

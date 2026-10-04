@@ -12,7 +12,6 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/core/runtime. */
-/* Functions are grouped by semantic ownership. */
 
 /* Receive ring of network packets (g_UiRuntimeRecordRing, 0x100-byte UiRuntimeRecord slots) with a parallel
    array of 0x80-byte sender-endpoint slots (g_UiRuntimeRecordEndpointSlots); indices wrap after 256. */
@@ -26,10 +25,6 @@
    g_UiTransferDataBuffer) */
 #define UI_TRANSFER_ENDPOINT_BUFFER_BYTES 0x1000
 #define UI_TRANSFER_DATA_BUFFER_BYTES 0x2000
-/* ModelRuntimeNode_GetStateTintArgb results */
-#define UI_MODEL_TINT_OPAQUE_WHITE 0xffffffffu /* colours unchanged */
-#define UI_MODEL_TINT_TRANSPARENT_WHITE 0x00ffffff
-#define UI_MODEL_TINT_OPAQUE_GREY 0xff878787u
 
 /* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries (actionId, source;
    8 bytes each on x86), filled by UiActionQueue_Enqueue and drained once per frame by
@@ -47,14 +42,11 @@
 #define UI_ACTION_PAGE_INGAME_MENU 0x12         /* g_InGameUiActionHandlersPage12: settings and save pages, 0x12xx */
 #define UI_ACTION_PAGE_FRONTEND 0x20            /* g_FrontendUiActionHandlersPage20: frontend menus, 0x20xx */
 
+/* Functions are grouped by semantic ownership. */
+
 Bool8 UiRootCallbacks_Free(UiRootNode *root);
 
 Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
-
-void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
-
-void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
-          UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
 
 Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 
@@ -104,9 +96,6 @@ UiNodeBase * UiNode_GetRoot(UiNodeBase *node);
 void UiNode_InvalidateRoot(UiNodeBase *node);
 
 void UiActionQueue_Enqueue(UiActionId actionId,void *source);
-
-PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node);
-
 
 int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root);
 

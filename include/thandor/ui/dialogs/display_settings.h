@@ -121,4 +121,9 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 
 extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate;
 
+void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
+
+void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+          UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
+
 #endif /* THANDOR_UI_DIALOGS_DISPLAY_SETTINGS_H */

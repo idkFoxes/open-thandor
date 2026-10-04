@@ -25,3 +25,25 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
   }
   return;
 }
+
+/* Tint of a world model (both callers pass a ModelRuntimeNode) from its terrain-derived runtimeFlags: 0x04 ->
+   opaque white (unchanged colours), else without 0x08 -> 0 (black), with 0x08 and 0x10 -> 0x00FFFFFF, with
+   0x08 only -> opaque grey 0x878787.
+*/
+PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
+
+{
+  ModelRuntimeFlags stateFlags;
+
+  stateFlags = node->runtimeFlags;
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
+    return UI_MODEL_TINT_OPAQUE_WHITE;
+  }
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) == 0) {
+    return 0;
+  }
+  if ((stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) != 0) {
+    return UI_MODEL_TINT_TRANSPARENT_WHITE;
+  }
+  return UI_MODEL_TINT_OPAQUE_GREY;
+}
