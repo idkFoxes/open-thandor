@@ -694,7 +694,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
      (control->textureSource != nullptr)) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      SoftwareTexture_BilinearBlendScaleSubresources
+      g_GraphicsGreyScaleImage
                 ((control->base).layoutHeight,(control->base).layoutWidth,(control->base).top,(control->base).left,
                  control->blendedSourcePixels,control->blendFactorPixels,
                  control->incomingSubresource,

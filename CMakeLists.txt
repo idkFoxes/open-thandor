@@ -142,6 +142,7 @@ add_executable(thandor WIN32
     src/graphics/backend/software_texture_scale.cpp
     src/graphics/core/cursor.cpp
     src/graphics/core/device.cpp
+    src/graphics/core/draw2d.cpp
     src/graphics/render/light_records.cpp
     src/graphics/render/light_transitions.cpp
     src/graphics/render/model_draw.cpp

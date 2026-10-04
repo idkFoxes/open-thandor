@@ -28,7 +28,7 @@ extern "C" int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance,
     FixedMath_BuildSinCosTables();
     Movie_BuildChromaLumaTable();
     GraphicsLighting_BuildPackedLookupTable();
-    UiScaler_BuildPixelWeightTables();
+    SoftwareMinimap_BuildPixelWeightTables();
     SoftwareRenderer_BuildFactorTables();
     GraphicsShading_BuildIntensityScaleTable();
     if (DebugHook_RunSelfTest()) { /* platform/selftest/selftests.cpp */
