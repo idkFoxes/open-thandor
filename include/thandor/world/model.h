@@ -8,7 +8,9 @@
 #ifndef THANDOR_WORLD_MODEL_H
 #define THANDOR_WORLD_MODEL_H
 
+#include <thandor/world/model/gameplay_rules.h>
 #include <thandor/world/model/hierarchy.h>
+#include <thandor/world/model/picking.h>
 #include <thandor/world/model/runtime.h>
 #include <thandor/world/model/slots.h>
 

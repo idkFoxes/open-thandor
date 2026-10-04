@@ -5,141 +5,310 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+/* View projection: the view and projection parameters, the projection viewport and clip rectangle, the
+   frustum planes, the auxiliary orientation and the point projection used by the renderers. */
+
 #include <thandor/graphics/render/projection.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/hooks.h>
 
 /* Module data. */
 
-GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource = THANDOR_FN(GraphicsOffscreen_RenderModelListToTextureSource);
+__declspec(align(4)) GraphicsFixedVec3 g_ViewOriginFixed = {0};
 
-/* Dword index of a field (GFX_SUBRESOURCE_*) of the first subresource record of a gfx asset */
-#define GFX_SUBRESOURCE_DWORD(field) ((GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_##field) / 4)
+int32_t g_ProjectionScaleFixed = 0;
 
+GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed = {0};
 
-/* Implementation ownership: graphics/render/projection. */
+GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed = {0};
 
-/* Renders a list of model hierarchies off screen into a new texture-source asset (used for the army preview,
-   g_GraphicsOffscreenRenderModelListToTextureSource). The asset holds one direct-colour subresource of
-   outputWidth x outputHeight ARGB pixels at +0x220; it is drawn with the software rasterizer's auxiliary
-   family into a temporary depth buffer that replaces g_SoftwareDepthBuffer/g_SoftwareDepthEpoch for the call.
-   Returns the asset, or NULL when either allocation fails.
+static GraphicsViewAngle16 g_ViewAngle0 = 0;
+
+static GraphicsViewAngle16 g_ViewAngle1 = 0;
+
+static uint32_t g_ProjectionShift = 0;
+
+static uint32_t g_ProjectionScaleProduct = 0;
+
+static GraphicsWideFixed g_ProjectionNumerator = {0};
+
+static GraphicsFixedVec2 g_ProjectionCenterFixed = {0};
+
+static GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed = {0};
+
+static GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed = {0};
+
+static GraphicsWideFixed g_ProjectionAngleFactors[2] = {0};
+
+static GraphicsFixedVec2 g_AuxiliaryOrientation = {0};
+
+static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {0};
+
+GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed = {0};
+
+GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {0};
+
+GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
+
+GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = 0;
+
+GraphicsFixedRect g_ProjectionClipRect = {0};
+
+/* Perspective-projects one view-space Q12 point to screen coordinates (returned as an x/y pair): the perspective
+   scale is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
+   centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the
+   32-bit division would overflow) project to (0,0).
 */
-GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
-          (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
-          GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
-          GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
-          ModelRuntimeNode **modelNodes)
+GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
 
 {
-  int32_t *savedDepthBuffer;
-  int32_t savedDepthEpoch;
-  int32_t *assetWords;
-  int32_t *zeroCursor;
-  int32_t *depthBuffer;
-  int32_t *depthCursor;
-  int32_t *usedDepthBuffer;
-  uint32_t packedTime;
-  uint32_t packedDate;
-  GraphicsPrimitiveQueue *queue;
-  uint32_t dwordsLeft;
-  uint32_t assetBytes;
-  uint32_t pixelsLeft;
-  void *textureAllocationPayload;
-
-  /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
-  assetBytes = outputWidth * outputHeight * 4 + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-  if (g_MemoryApi.alloc(assetBytes,&textureAllocationPayload) != 0) {
-    return NULL;
+  int perspectiveScaleQ12;
+  GraphicsProjectedPointPair projectedPoint;
+  GraphicsProjectedPointPair offscreenPoint;
+  int64_t projectedXProduct;
+  int64_t projectedYProduct;
+  
+  if (g_ProjectionNumerator.high < viewPoint->z) {
+    perspectiveScaleQ12 =
+         (int)((int64_t)((uint64_t)(uint32_t)g_ProjectionNumerator.high << 32 | g_ProjectionNumerator.low) /
+               (int64_t)viewPoint->z);
+    projectedXProduct = (int64_t)viewPoint->x * (int64_t)perspectiveScaleQ12;
+    projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
+    /* bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
+    projectedPoint.projectedY =
+         (FIXED_PRODUCT_SHR(projectedYProduct, 12)) +
+         g_ProjectionCenterFixed.component1;
+    projectedPoint.projectedX =
+         g_ProjectionCenterFixed.component0 +
+         (FIXED_PRODUCT_SHR(projectedXProduct, 12));
+    return projectedPoint;
   }
-  assetWords = (int32_t *)textureAllocationPayload;
-  zeroCursor = assetWords;
-  for (dwordsLeft = assetBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
-    *zeroCursor = 0;
-    zeroCursor++;
-  }
-  /* common asset prefix: magic, allocation size, format version 1, converter version 0 */
-  *assetWords = ASSET_MAGIC_GFX;
-  assetWords[1] = assetBytes;
-  assetWords[2] = 1;
-  assetWords[3] = 0;
-  /* three time/date pairs at +0x10..+0x27 and the two producer names at +0x30 and +0x70 */
-  packedTime = g_LocaleGetPackedCurrentTime();
-  assetWords[4] = packedTime;
-  assetWords[6] = packedTime;
-  assetWords[8] = packedTime;
-  packedDate = g_LocaleGetPackedCurrentDate();
-  assetWords[5] = packedDate;
-  assetWords[7] = packedDate;
-  assetWords[9] = packedDate;
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetWords + 12));
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetWords + 28));
-  *(uint8_t *)(assetWords + offsetof(GraphicsTextureSourceAsset, unusedText) / 4) = 0; /* +0x100 unusedText: empty */
-  /* table descriptor at +0xB0: one subresource, no palette banks, entry table at +0x200 */
-  assetWords[offsetof(GraphicsTextureSourceAsset, tableDescriptor.subresourceCount) / 4] = 1;
-  assetWords[offsetof(GraphicsTextureSourceAsset, tableDescriptor.paletteBankCount) / 4] = 0;
-  assetWords[offsetof(GraphicsTextureSourceAsset, tableDescriptor.subresourceTableOffset) / 4] = GFX_ASSET_HEADER_SIZE;
-  /* the entry: logical and pixel size, origin 0/0, paletteIndex -1 (ARGB texels), data at +0x220 */
-  assetWords[GFX_SUBRESOURCE_DWORD(LOGICAL_WIDTH)] = outputWidth;
-  assetWords[GFX_SUBRESOURCE_DWORD(LOGICAL_HEIGHT)] = outputHeight;
-  assetWords[GFX_SUBRESOURCE_DWORD(PIXEL_WIDTH)] = outputWidth;
-  assetWords[GFX_SUBRESOURCE_DWORD(PIXEL_HEIGHT)] = outputHeight;
-  assetWords[GFX_SUBRESOURCE_DWORD(ORIGIN_X)] = 0;
-  assetWords[GFX_SUBRESOURCE_DWORD(ORIGIN_Y)] = 0;
-  assetWords[GFX_SUBRESOURCE_DWORD(PALETTE_INDEX)] = -1;
-  assetWords[GFX_SUBRESOURCE_DWORD(PIXEL_OFFSET)] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-  if (g_MemoryApi.alloc(outputHeight * outputWidth * 4,(void **)&depthBuffer) != 0) {
-    g_MemoryApi.free(assetWords);
-    return NULL;
-  }
-  depthCursor = depthBuffer;
-  for (pixelsLeft = outputHeight * outputWidth & DWORD_COUNT_MASK; pixelsLeft != 0; pixelsLeft--) {
-    *depthCursor = -1;
-    depthCursor++;
-  }
-  savedDepthEpoch = g_SoftwareDepthEpoch;
-  savedDepthBuffer = g_SoftwareDepthBuffer;
-  /* the original swaps the depth epoch and buffer in with atomic exchanges (the LOCK/UNLOCK pairs) */
-  LOCK();
-  g_SoftwareDepthEpoch = -1;
-  UNLOCK();
-  LOCK();
-  UNLOCK();
-  g_SoftwareDepthBuffer = depthBuffer;
-  Graphics_SetProjectionClipRect(outputHeight,outputWidth,0,0);
-  Graphics_SetViewProjectionParameters
-            (viewParameters->projectionShift,viewParameters->viewAngle1,
-             viewParameters->viewAngle0,viewParameters->projectionScale,viewParameters->originZ,
-             viewParameters->originY,viewParameters->originX);
-  Graphics_SetProjectionViewport(outputHeight,outputWidth,0,0);
-  Graphics_SetAuxiliaryOrientation(auxiliaryOrientationAngles[1],*auxiliaryOrientationAngles);
-  Graphics_SetSceneBoundsAndColors
-            (sceneExtents->verticalExtent,sceneExtents->horizontalExtent,
-             sceneExtents->verticalExtent,sceneExtents->horizontalExtent,0,0,0,0);
-  Graphics_RebuildFrustumPlanes();
-  g_GraphicsShadingCompactRecordCount = 0;
-  queue = GraphicsPrimitiveQueue_ResetGlobal();
-  Graphics_SetActivePrimitiveQueue(queue);
-  for (; modelCount != 0; modelCount--) {
-    if (*modelNodes != NULL) {
-      ModelRuntime_CullAndRenderHierarchyRecursive(*modelNodes);
-    }
-    modelNodes++;
-  }
-  GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
-  /* the pixels start at +0x220 (int32 index 0x88); rows are outputWidth pixels long */
-  SoftwareRenderer_DrawQueueAuxiliary(outputHeight,outputWidth,
-                                  assetWords + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET / 4,queue);
-  /* restore the caller's depth buffer and epoch, free the temporary one (read back from the global) */
-  usedDepthBuffer = g_SoftwareDepthBuffer;
-  LOCK();
-  UNLOCK();
-  g_SoftwareDepthBuffer = savedDepthBuffer;
-  g_SoftwareDepthEpoch = savedDepthEpoch;
-  g_MemoryApi.free(usedDepthBuffer);
-  return (GraphicsTextureSourceAsset *)textureAllocationPayload;
+  offscreenPoint.projectedX = 0;
+  offscreenPoint.projectedY = 0;
+  return offscreenPoint;
 }
 
+/* Sets the screen rectangle projected geometry is clipped against, converted from pixels to Q12 (20.12 fixed
+   point). First step of a scene setup, before the view parameters and the viewport (called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped and GraphicsOffscreen_RenderModelListToTextureSource).
+*/
+void Graphics_SetProjectionClipRect
+          (GraphicsScreenCoordinate maxY,GraphicsScreenCoordinate maxX,GraphicsScreenCoordinate minY
+          ,GraphicsScreenCoordinate minX)
+
+{
+  g_ProjectionClipRect.minX = minX << Q12_SHIFT;
+  g_ProjectionClipRect.minY = minY << Q12_SHIFT;
+  g_ProjectionClipRect.maxX = maxX << Q12_SHIFT;
+  g_ProjectionClipRect.maxY = maxY << Q12_SHIFT;
+}
+
+/* Sets up the camera for the next scene: stores the eye position (Q12 world coordinates), projection scale and
+   view angles, builds the view rotation, the camera matrix (identity rotation, translation to the eye) and
+   their composition g_ViewProjectionMatrixFixed, and stores the sin/cos pairs of the view azimuth plus and minus
+   the half view angle atan2(1 << (12 - projectionShift), projectionScale).
+   The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaled, which
+   Graphics_RebuildFrustumPlanes feeds with the same two angles.
+*/
+void Graphics_SetViewProjectionParameters
+          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
+          GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
+          GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
+          GraphicsWorldCoordinateQ12 originX)
+
+{
+  uint32_t halfViewAngle16;
+  FixedSinCos sinCosQ28;
+
+  g_ViewOriginFixed.x = originX;
+  g_ViewOriginFixed.y = originY;
+  g_ViewOriginFixed.z = originZ;
+  g_ProjectionScaleFixed = projectionScale;
+  g_ViewAngle0 = viewAzimuthAngle;
+  g_ViewAngle1 = viewElevationAngle;
+  FixedTransform_BuildRotationBasis
+            (&g_ViewRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - viewAzimuthAngle & FIXED_ANGLE16_MASK,viewElevationAngle,
+             FIXED_ANGLE16_THREE_QUARTER_TURN);
+  g_ViewRotationMatrixFixed.translation.x = 0;
+  g_ViewRotationMatrixFixed.translation.y = 0;
+  g_ViewRotationMatrixFixed.translation.z = 0;
+  g_CameraTransformMatrixFixed.translation.x = -originX;
+  g_CameraTransformMatrixFixed.translation.y = -originY;
+  g_CameraTransformMatrixFixed.translation.z = -originZ;
+  g_CameraTransformMatrixFixed.basisRow0[0] = Q28_ONE;
+  g_CameraTransformMatrixFixed.basisRow0[1] = 0;
+  g_CameraTransformMatrixFixed.basisRow0[2] = 0;
+  g_CameraTransformMatrixFixed.basisRow1[0] = 0;
+  g_CameraTransformMatrixFixed.basisRow1[1] = Q28_ONE;
+  g_CameraTransformMatrixFixed.basisRow1[2] = 0;
+  g_CameraTransformMatrixFixed.basisRow2[0] = 0;
+  g_CameraTransformMatrixFixed.basisRow2[1] = 0;
+  g_CameraTransformMatrixFixed.basisRow2[2] = Q28_ONE;
+  FixedTransform_Compose
+            (&g_ViewProjectionMatrixFixed,&g_CameraTransformMatrixFixed,&g_ViewRotationMatrixFixed);
+  g_ProjectionShift = projectionShift;
+  halfViewAngle16 =
+       FixedMath_Atan2Angle16(1 << (12U - (char)projectionShift & SHIFT_COUNT_MASK),projectionScale);
+  /* each factor: low = cos, high = sin (Q28) */
+  sinCosQ28 = FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & FIXED_ANGLE16_MASK);
+  g_ProjectionAngleFactors[0].low = (uint32_t)sinCosQ28.cosValue;
+  g_ProjectionAngleFactors[0].high = sinCosQ28.sinValue;
+  sinCosQ28 = FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & FIXED_ANGLE16_MASK);
+  g_ProjectionAngleFactors[1].low = (uint32_t)sinCosQ28.cosValue;
+  g_ProjectionAngleFactors[1].high = sinCosQ28.sinValue;
+}
+
+/* Maps the view onto a screen rectangle in pixels: the projection centre
+   is the rectangle's midpoint in Q12, and the perspective numerator that Graphics_ProjectViewPoint divides by z
+   is width * projection scale, shifted by g_ProjectionShift - 1 and widened to a signed 64-bit value << 12.
+   Must follow Graphics_SetViewProjectionParameters, whose scale and shift it reads.
+*/
+void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
+          GraphicsScreenCoordinate top,GraphicsScreenCoordinate left)
+
+{
+  int projectionShiftDelta;
+  int64_t projectionScaleProduct;
+  uint8_t rightShiftAmount;
+
+  /* (a + b) * 0x800 = the midpoint (a + b) / 2 in Q12 */
+  g_ProjectionCenterFixed.component0 = (left + right) * (Q12_ONE / 2);
+  g_ProjectionCenterFixed.component1 = (top + bottom) * (Q12_ONE / 2);
+  projectionShiftDelta = g_ProjectionShift - 1;
+  projectionScaleProduct = (int64_t)(right - left) * (int64_t)(int)g_ProjectionScaleFixed;
+  g_ProjectionScaleProduct = (uint32_t)projectionScaleProduct;
+  if (projectionShiftDelta != 0) {
+    if (projectionShiftDelta < 0) {
+      rightShiftAmount = -(uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK;
+      g_ProjectionScaleProduct =
+           g_ProjectionScaleProduct >> rightShiftAmount |
+           (int)((uint64_t)projectionScaleProduct >> 32) << (32 - rightShiftAmount);
+    }
+    else {
+      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK);
+    }
+  }
+  /* 64-bit numerator = sign-extended product << 12 */
+  g_ProjectionNumerator.low = g_ProjectionScaleProduct << Q12_SHIFT;
+  g_ProjectionNumerator.high = (int)g_ProjectionScaleProduct >> (32 - Q12_SHIFT);
+}
+
+/* Sets the scene's second direction (elevation/azimuth): stores the angles, their unit direction
+   g_AuxiliaryForwardDirectionFixed and a rotation built like the view rotation. The model renderer transforms the
+   direction into each model's space and passes it to ModelRender_ComputeVertexIntensity* as the light direction;
+   the rotation is used by the generated-texture shading code.
+*/
+void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
+
+{
+  g_AuxiliaryOrientation.component0 = azimuthAngle;
+  g_AuxiliaryOrientation.component1 = elevationAngle;
+  FixedMath_WriteDirectionQ28(&g_AuxiliaryForwardDirectionFixed,elevationAngle,azimuthAngle);
+  FixedTransform_BuildRotationBasis
+            (&g_AuxiliaryRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - azimuthAngle & FIXED_ANGLE16_MASK,elevationAngle,
+             FIXED_ANGLE16_THREE_QUARTER_TURN);
+  g_AuxiliaryRotationMatrixFixed.translation.x = 0;
+  g_AuxiliaryRotationMatrixFixed.translation.y = 0;
+  g_AuxiliaryRotationMatrixFixed.translation.z = 0;
+}
+
+/* Stores the eight per-scene values in g_SceneBoundsFixed. bound4..bound7 are packed ARGB
+   colours: the model renderer passes bound5/bound4 and bound7/bound6 as the scene colour pairs of
+   ModelRender_ComputeVertexIntensityDefaultPath and ...ScaledPath. No reader of bound0..bound3 is known.
+*/
+void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
+          GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
+          GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
+          GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0)
+
+{
+  g_SceneBoundsFixed.bound0 = bound0;
+  g_SceneBoundsFixed.bound1 = bound1;
+  g_SceneBoundsFixed.bound2 = bound2;
+  g_SceneBoundsFixed.bound3 = bound3;
+  g_SceneBoundsFixed.bound4 = bound4;
+  g_SceneBoundsFixed.bound5 = bound5;
+  g_SceneBoundsFixed.bound6 = bound6;
+  g_SceneBoundsFixed.bound7 = bound7;
+}
+
+/* Selects the primitive queue the model renderer appends its triangles to (g_ActivePrimitiveQueue); the scene
+   setup calls it with the queue freshly reset by GraphicsPrimitiveQueue_ResetGlobal.
+*/
+void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
+
+{
+  g_ActivePrimitiveQueue = queue;
+}
+
+/* Rebuilds the four side planes of the view frustum from the current view angles, projection scale and shift
+   (call after Graphics_SetViewProjectionParameters). Two edge rays are forward + / - a sideways vector of length
+   1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross
+   products of neighbouring rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
+*/
+void Graphics_RebuildFrustumPlanes(void)
+
+{
+  uint32_t forwardX;
+  uint32_t forwardY;
+  uint32_t forwardZ;
+  uint32_t sideAzimuthAngle16;
+  uint32_t edgeAzimuthAngle16;
+  int scale;
+  uint32_t upElevationAngle16;
+  FixedDirection viewDirection;
+  uint32_t viewElevationAngle16;
+  uint32_t viewAzimuthAngle16;
+  
+  viewElevationAngle16 = g_ViewAngle1;
+  viewAzimuthAngle16 = g_ViewAngle0;
+  scale = 1 << (12U - (char)g_ProjectionShift & SHIFT_COUNT_MASK);
+  viewDirection = FixedMath_DirectionFromAnglesScaled(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
+  forwardZ = viewDirection.z;
+  forwardY = viewDirection.y;
+  forwardX = viewDirection.x;
+  /* rays 0 and 1: horizontal vectors of length scale, a quarter turn to either side */
+  sideAzimuthAngle16 = viewAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,sideAzimuthAngle16,scale);
+  edgeAzimuthAngle16 = sideAzimuthAngle16 - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,edgeAzimuthAngle16,scale);
+  g_FrustumCornerRayFixed_0[0].x = g_FrustumCornerRayFixed_0[0].x + forwardX;
+  g_FrustumCornerRayFixed_0[0].y = g_FrustumCornerRayFixed_0[0].y + forwardY;
+  g_FrustumCornerRayFixed_0[0].z = g_FrustumCornerRayFixed_0[0].z + forwardZ;
+  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x + forwardX;
+  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y + forwardY;
+  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z + forwardZ;
+  /* rays 2 and 3: up and down (elevation + / - a quarter turn) at the view azimuth again */
+  edgeAzimuthAngle16 = edgeAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  upElevationAngle16 = viewElevationAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,upElevationAngle16,edgeAzimuthAngle16,scale);
+  FixedMath_WriteDirectionScaled
+            (g_FrustumCornerRayFixed_0 + 3,upElevationAngle16 - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,edgeAzimuthAngle16,
+             scale);
+  FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0,g_FrustumCornerRayFixed_0,
+                     g_FrustumCornerRayFixed_0 + 2);
+  FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 1,g_FrustumCornerRayFixed_0 + 2,
+                     g_FrustumCornerRayFixed_0 + 1);
+  /* ray 1 back to the pure sideways vector, rays 2 and 3 tilted forward */
+  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x - forwardX;
+  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y - forwardY;
+  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z - forwardZ;
+  g_FrustumCornerRayFixed_0[2].x = g_FrustumCornerRayFixed_0[2].x + forwardX;
+  g_FrustumCornerRayFixed_0[2].y = g_FrustumCornerRayFixed_0[2].y + forwardY;
+  g_FrustumCornerRayFixed_0[2].z = g_FrustumCornerRayFixed_0[2].z + forwardZ;
+  g_FrustumCornerRayFixed_0[3].x = g_FrustumCornerRayFixed_0[3].x + forwardX;
+  g_FrustumCornerRayFixed_0[3].y = g_FrustumCornerRayFixed_0[3].y + forwardY;
+  g_FrustumCornerRayFixed_0[3].z = g_FrustumCornerRayFixed_0[3].z + forwardZ;
+  FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 2,g_FrustumCornerRayFixed_0 + 2,
+                     g_FrustumCornerRayFixed_0 + 1);
+  FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 3,g_FrustumCornerRayFixed_0 + 1,
+                     g_FrustumCornerRayFixed_0 + 3);
+  FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0,g_FrustumPlaneNormalFixed_0);
+  FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 1,g_FrustumPlaneNormalFixed_0 + 1);
+  FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 2,g_FrustumPlaneNormalFixed_0 + 2);
+  FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 3,g_FrustumPlaneNormalFixed_0 + 3);
+}
 
 /* Point-in-triangle test for the mouse pointer against a projected triangle, used by
    ModelRuntimeNode_HitTestProjectedBoundsAndChildren on the faces of a model's projected bounding box.
@@ -182,4 +351,3 @@ Bool8 GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,Graphics
   }
   return false;
 }
-

@@ -9,5 +9,6 @@
 #define THANDOR_WORLD_RUNTIME_H
 
 #include <thandor/world/runtime/core.h>
+#include <thandor/world/runtime/entity_registry.h>
 
 #endif /* THANDOR_WORLD_RUNTIME_H */

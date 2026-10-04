@@ -10,5 +10,9 @@
 
 #include <thandor/world/pathing/grid.h>
 #include <thandor/world/pathing/influence.h>
+#include <thandor/world/pathing/path_cost.h>
+#include <thandor/world/pathing/reachability.h>
+#include <thandor/world/pathing/route.h>
+#include <thandor/world/pathing/scratch_grid.h>
 
 #endif /* THANDOR_WORLD_PATHING_H */

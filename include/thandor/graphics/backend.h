@@ -10,5 +10,10 @@
 
 #include <thandor/graphics/backend/directdraw.h>
 #include <thandor/graphics/backend/software.h>
+#include <thandor/graphics/backend/software_blit.h>
+#include <thandor/graphics/backend/software_credits_mask.h>
+#include <thandor/graphics/backend/software_display_mode.h>
+#include <thandor/graphics/backend/software_rasterizer.h>
+#include <thandor/graphics/backend/software_texture_scale.h>
 
 #endif /* THANDOR_GRAPHICS_BACKEND_H */

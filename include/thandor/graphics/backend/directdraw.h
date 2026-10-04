@@ -20,10 +20,6 @@ Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,
 Bool8 DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex);
 
-void GraphicsDirectDraw_PublishFramebuffer
-          (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
-          GraphicsPixelDimension height,GraphicsPixelDimension width);
-
 extern uint32_t g_ActiveGraphicsAdapterIndex; /* uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
 extern GraphicsDisplayMode *g_GraphicsDisplayModes;
 extern GraphicsDisplayModeCount g_GraphicsDisplayModeCount;

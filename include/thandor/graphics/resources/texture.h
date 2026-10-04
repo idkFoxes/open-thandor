@@ -13,14 +13,6 @@
 
 /* Submodule: graphics/resources/texture. */
 
-/* Number of entries in g_GraphicsTextureSlots, the registry of live texture resources
-   (GraphicsTexture_RegisterSlot, GraphicsTextureSet_Destroy). */
-#define GRAPHICS_TEXTURE_SLOT_CAPACITY 4096
-
-/* repeatEndY/repeatEndX value of the tiled blits (GraphicsTextureSource_BlitTiled*): repeat along that axis
-   for exactly one tile extent from the tile origin. */
-#define GRAPHICS_TILED_BLIT_ONE_TILE (-0x80000000)
-
 /* Subresource table of a 'gfx' texture source: one 32-byte record per subresource at
    asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The pixel data offset is relative to
    the asset start as well. */
@@ -55,53 +47,12 @@
 
 /* Functions are grouped by semantic ownership. */
 
-GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
-
-GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
-
-GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
-
-void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
-
-void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
-
-void __cdecl GraphicsTexture_RebuildNoOp(void);
-
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
-
-void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
-void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
-void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
-
-void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-          SoftwareFramebufferAccess *framebuffer);
 
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError);
 
@@ -115,27 +66,11 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
 
 GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
-GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
-
-GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
-
-Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
-
-Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
-          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
-          GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
-
 extern GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize;
 extern GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel;
 extern GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha;
-extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha;
 extern GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha;
 
-extern GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures;
-
-extern GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet;
-extern GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet;
-extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
 extern GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries;
 extern GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase;
 
@@ -143,12 +78,6 @@ extern GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb;
 extern GraphicsTextureSourceStretchDirectColorBilinearProc *g_GraphicsTextureSourceStretchDirectColorBilinear;
 extern GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAddRgb;
 extern GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd;
-extern GraphicsTextureResource **g_GraphicsTextureSlots;
-
-extern GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha;
-
-extern GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage;
-extern GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage;
 
 extern GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset;
 

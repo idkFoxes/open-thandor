@@ -27,9 +27,6 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
 
 void ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime);
 
-void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime);
-
 void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode);
 
 void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime);
@@ -46,13 +43,6 @@ ModelNodeRuntime_TransformLocalPoint
 
 ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
-          (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
-          FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12);
-
-Q12 ModelNodeRuntime_RaycastHierarchyNearest
-          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode);
-
 Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
@@ -64,10 +54,6 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
 
 void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(const void *targetRuntimeId,int *modelRuntime);
 
-void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,ArmyRuntimeSlot *armyRuntime);
-
-int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
-
 Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode);
 
@@ -78,31 +64,15 @@ Bool8 ModelNodeRuntime_CreateHierarchyRecursive
 
 void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node);
 
-void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime);
-
-Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntime);
-
-ModelHierarchyEnergyDemand ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime);
-
-Bool8 ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
-
-uint32_t ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
-
 void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode);
 
 void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRuntime);
-
-void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime);
 
 
 void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node);
 
 extern GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix;
-extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4;
-extern int32_t g_ModelRaycastMaximumDistance;
-extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* Q12 world-space ray origin */
-extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* Q28 world-space ray direction */
 
 extern int32_t g_ModelBoundsMinimumX;
 extern int32_t g_ModelBoundsMaximumX;

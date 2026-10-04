@@ -9,10 +9,19 @@
 #define THANDOR_WORLD_TERRAIN_H
 
 #include <thandor/world/terrain/editing.h>
+#include <thandor/world/terrain/field_deformation.h>
+#include <thandor/world/terrain/field_edit_commands.h>
+#include <thandor/world/terrain/field_lifecycle.h>
+#include <thandor/world/terrain/field_lighting.h>
+#include <thandor/world/terrain/field_raycast.h>
+#include <thandor/world/terrain/field_sampling.h>
+#include <thandor/world/terrain/fog_visibility.h>
 #include <thandor/world/terrain/grid.h>
-#include <thandor/world/terrain/height.h>
+#include <thandor/world/terrain/hex_scan.h>
 #include <thandor/world/terrain/occupancy.h>
-#include <thandor/world/terrain/projection.h>
-#include <thandor/world/terrain/visuals.h>
+#include <thandor/world/terrain/overlay_marking.h>
+#include <thandor/world/terrain/placement_tests.h>
+#include <thandor/world/terrain/sight.h>
+#include <thandor/world/terrain/water_relaxation.h>
 
 #endif /* THANDOR_WORLD_TERRAIN_H */

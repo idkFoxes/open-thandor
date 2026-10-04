@@ -86,16 +86,33 @@ add_library(thandor_curated STATIC
     src/gameplay/technology/runtime.cpp
     src/graphics/backend/directdraw.cpp
     src/graphics/backend/software.cpp
-    src/graphics/core/runtime.cpp
-    src/graphics/render/model.cpp
+    src/graphics/backend/software_blit.cpp
+    src/graphics/backend/software_credits_mask.cpp
+    src/graphics/backend/software_display_mode.cpp
+    src/graphics/backend/software_rasterizer.cpp
+    src/graphics/backend/software_texture_scale.cpp
+    src/graphics/core/cursor.cpp
+    src/graphics/core/device.cpp
+    src/graphics/render/light_records.cpp
+    src/graphics/render/model_draw.cpp
+    src/graphics/render/model_lighting.cpp
+    src/graphics/render/model_submit.cpp
+    src/graphics/render/offscreen.cpp
     src/graphics/render/primitives.cpp
     src/graphics/render/projection.cpp
-    src/graphics/render/shading.cpp
+    src/graphics/render/shadow_texture.cpp
     src/graphics/resources/framebuffer.cpp
     src/graphics/resources/palette.cpp
+    src/graphics/resources/palette_optimizer.cpp
     src/graphics/resources/pcx_read.cpp
     src/graphics/resources/pcx_write.cpp
-    src/graphics/resources/texture.cpp
+    src/graphics/resources/texture_decompose.cpp
+    src/graphics/resources/texture_set.cpp
+    src/graphics/resources/texture_source.cpp
+    src/graphics/resources/tiled_blit.cpp
+    src/graphics/terrain/minimap_composite.cpp
+    src/graphics/terrain/terrain_render.cpp
+    src/graphics/terrain/terrain_resources.cpp
     src/movie/runtime/playback.cpp
     src/network/backend/fallback_udp.cpp
     src/network/backend/runtime.cpp
@@ -168,23 +185,38 @@ add_library(thandor_curated STATIC
     src/ui/ingame/selection_detail.cpp
     src/ui/ingame/settings.cpp
     src/ui/ingame/technology.cpp
-    src/world/effects/maintenance.cpp
-    src/world/effects/runtime.cpp
+    src/world/camera/camera.cpp
+    src/world/camera/camera_input.cpp
+    src/world/effects/lifecycle.cpp
+    src/world/effects/pool.cpp
+    src/world/model/gameplay_rules.cpp
     src/world/model/hierarchy.cpp
-    src/world/model/runtime.cpp
+    src/world/model/picking.cpp
+    src/world/model/pool.cpp
     src/world/model/slots.cpp
-    src/world/motion/runtime.cpp
-    src/world/pathing/grid.cpp
     src/world/pathing/influence.cpp
+    src/world/pathing/path_cost.cpp
+    src/world/pathing/reachability.cpp
+    src/world/pathing/route.cpp
+    src/world/pathing/scratch_grid.cpp
     src/world/runtime/core.cpp
-    src/world/shots/maintenance.cpp
-    src/world/shots/runtime.cpp
+    src/world/runtime/entity_registry.cpp
+    src/world/shots/flight.cpp
+    src/world/shots/pool.cpp
     src/world/terrain/editing.cpp
-    src/world/terrain/grid.cpp
-    src/world/terrain/height.cpp
+    src/world/terrain/field_deformation.cpp
+    src/world/terrain/field_edit_commands.cpp
+    src/world/terrain/field_lifecycle.cpp
+    src/world/terrain/field_lighting.cpp
+    src/world/terrain/field_raycast.cpp
+    src/world/terrain/field_sampling.cpp
+    src/world/terrain/fog_visibility.cpp
+    src/world/terrain/hex_scan.cpp
     src/world/terrain/occupancy.cpp
-    src/world/terrain/projection.cpp
-    src/world/terrain/visuals.cpp
+    src/world/terrain/overlay_marking.cpp
+    src/world/terrain/placement_tests.cpp
+    src/world/terrain/sight.cpp
+    src/world/terrain/water_relaxation.cpp
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

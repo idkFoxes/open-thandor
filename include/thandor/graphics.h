@@ -12,5 +12,6 @@
 #include <thandor/graphics/core.h>
 #include <thandor/graphics/render.h>
 #include <thandor/graphics/resources.h>
+#include <thandor/graphics/terrain.h>
 
 #endif /* THANDOR_GRAPHICS_H */
