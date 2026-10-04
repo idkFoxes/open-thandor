@@ -208,6 +208,8 @@ texture_quality = high
 model_detail = 262144
 ; Vulkan / DirectX 12 triangles: smooth (default; sub-pixel, perspective-correct like the original's Direct3D) or exact (the software renderer's look)
 gpu_rasterization = smooth
+; Vulkan / DirectX 12 UI scale: auto (default; the largest whole factor at which the display mode fits the display) or 1, 2, 3 (the display mode list then offers the display's sizes divided by it)
+ui_scale = auto
 
 [sound]
 ; sound effects (default true)
@@ -304,6 +306,18 @@ not saved. The developer tools' window (`OPEN_THANDOR_WINDOWED=1`) is always a w
 and hash checks keep comparing the software renderer, and with `OPEN_THANDOR_WINDOW_MINIMIZED=1` (minimized window)
 unless `OPEN_THANDOR_TEST_VISIBLE=1` is set (to watch a test game).
 
+**UI scale** (Vulkan / DirectX 12 only): the chosen display mode is the logical UI resolution - layout, hit tests,
+the mouse and captures stay in its pixels - and the GPU draws the whole frame at N times that size (the UI with
+nearest sampling, so it stays crisp; the 3D view at the full resolution), then presents it letterboxed. The window
+or the exclusive fullscreen mode gets N x the mode's size. N is `[graphics] ui_scale` in `thandor.ini` (or
+`OPEN_THANDOR_UI_SCALE=auto|1..8`, which wins): `auto` (default) takes the largest whole N at which N x the mode
+fits the display (a window: its usable area), so 1280x720 runs at 2x on a 1440p and at 3x on a 4K display; with a
+fixed `2` or `3` the GPU renderers' resolution list offers the display's sizes divided by N (from 640x480 on). The
+software renderer always runs at N = 1. There is no choice on the display settings page yet (`thandor.ini` or the
+variable only); `thandor.log` names the scale (`display mode 1280x720x32, window, renderer Vulkan, UI scale 2
+(auto)`). Captures (`shot`, autoshot, the PCX screenshot, the compare mode) download the frame at N x and
+point-sample it back to the logical size. The test tools set `OPEN_THANDOR_UI_SCALE=1` unless the caller sets it.
+
 ### GPU rasterization (`THANDOR_RENDERER_SDL_GPU`)
 
 With the CMake option `THANDOR_RENDERER_SDL_GPU` (default `ON`; a build directory configured before still holding
@@ -329,10 +343,22 @@ or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers commi
 [MinGW-w64 GCC](#mingw-w64-gcc)); a build without SPIR-V headers has no Vulkan renderer. With the option `OFF` only
 the software renderer exists.
 
-With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame (on the first GPU API that
-runs; with the `exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
-3D view of both as `shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the
-difference; the GPU renderers log their per-scene times every 10 seconds.
+With the developer tools, `OPEN_THANDOR_GPU=compare` draws every frame twice - the whole frame in software into the
+CPU framebuffer (every 2D draw and the software rasterizer) and the same frame on the GPU from the recorded 2D draw
+list and the GPU rasterization (on the first GPU API that runs, `compare-vulkan` / `compare-d3d12` pick one; with the
+`exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other). It shows the software picture and
+every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) downloads the GPU frame and writes both frames as
+`shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` (largest channel difference x4, grey;
+reddish inside the 3D view) and logs a `SDL_GPU compare` line with the mean channel difference, the largest one and
+the share of pixels differing by more than 8, for the whole frame and for the UI alone (outside the frame's 3D scene
+rectangles), with `PASS` when the UI's mean is below 0.5 and under 0.1 % of its pixels differ by more than 8, else
+`FAIL`. The GPU renderers log their per-scene times every 10 seconds.
+
+`python tools/test/gpu_compare.py <game dir> --api vulkan|d3d12` runs one scripted game in the compare mode (a
+linked copy as in `run_checks.py`, minimized; default `tools/test/skirmish_pause.txt` on Ahaggar with the pixel
+check's fixed seed and pause tick, `--script` / `--args` for others, `--interval` for the compare interval, default
+2000 ms), prints a table of the compare lines with a summary and exits with 1 when one of them is `FAIL`, none was
+made or the game crashed; the pictures, the log and `summary.txt` go to `<game dir>_gpucmp_<api>` (`--out`).
 
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 
@@ -368,6 +394,7 @@ the variable it does nothing:
 | `OPEN_THANDOR_STATEHASH=<steps>` | determinism test: state hash per simulation step to `statehash.txt` (`_SEED`, `_DETAIL`, `_PAUSE_AT`, `_SPEED`, `OPEN_THANDOR_ARENA_ORDERS`; see below and [`src/platform/debug/statehash.cpp`](../src/platform/debug/statehash.cpp)) |
 | `OPEN_THANDOR_WINDOWED=1` | normal window instead of full screen (absolute mouse position, normal process priority; a display mode kind chosen in the settings is logged and kept for the session, not applied or saved); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_WINDOW_MINIMIZED=1` | that window (implies `OPEN_THANDOR_WINDOWED=1`), created minimized and never activated, so test games stay out of the way; the game keeps running at full speed and drawing its frames (screenshots read the framebuffer; input scripts do not need focus). The test tools set it for every game (`game_env.py`) unless `OPEN_THANDOR_TEST_VISIBLE=1` |
+| `OPEN_THANDOR_RESTORE_AFTER_MS=<ms>` | restores that minimized window (without activating it) once, `<ms>` milliseconds after the first message pump; tests the GPU renderer's swapchain recovery after a minimized start (log: `SDL_GPU: window ... claimed for the swapchain`, `swapchain texture ... acquired again`) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |

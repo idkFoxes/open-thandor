@@ -4,8 +4,8 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/core/draw2d.cpp
  */
 
-/* The 2D draw-list front end (see graphics/core/draw2d.h): the backend switch, the slot installation and the
-   GPU_RECORD functions that turn blits and fills into Draw2DItems. */
+/* The 2D draw-list front end (see graphics/core/draw2d.h): the backend switch, the slot installation, the
+   GPU_RECORD functions that turn blits and fills into Draw2DItems and the COMPARE functions that do both. */
 
 #include <thandor/graphics/core/draw2d.h>
 #include <thandor/thandor.h>
@@ -18,12 +18,13 @@ GraphicsMinimapDrawProc *g_GraphicsMinimapDraw = SoftwareTexture_DrawMinimapBili
 GraphicsFillColumnSegmentsProc *g_GraphicsFillColumnSegments = SoftwareFramebuffer_FillColumnSegments32;
 GraphicsGreyScaleImageProc *g_GraphicsGreyScaleImage = SoftwareTexture_BilinearBlendScaleSubresources;
 Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded = nullptr;
+uint32_t g_Draw2DMinimapContentGeneration = 0;
 
 namespace {
 
 Draw2DBackend s_backend = DRAW2D_BACKEND_SOFTWARE;
 std::vector<Draw2DItem> s_items;
-/* CPU images of the IMAGE_REGION items. The outer vector may move the inner ones when it grows, which keeps their
+/* CPU images of the IMAGE_BILINEAR items (the credits' grey levels). The outer vector may move the inner ones when it grows, which keeps their
    buffers (and so the items' pixel pointers) in place. Recycled by Draw2D_BeginFrame. */
 std::vector<std::vector<uint32_t>> s_scratch;
 std::size_t s_scratchUsed = 0;
@@ -52,17 +53,6 @@ uint32_t *AcquireScratch(std::size_t pixelCount)
     std::vector<uint32_t> &buffer = s_scratch[s_scratchUsed++];
     buffer.assign(pixelCount, 0);
     return buffer.data();
-}
-
-/* A SoftwareFramebufferAccess over a scratch image, so the software functions can draw into it. */
-SoftwareFramebufferAccess ScratchFramebuffer(uint32_t *pixels, int32_t pitchPixels, int32_t height)
-{
-    SoftwareFramebufferAccess access = {};
-    access.width = (GraphicsPixelDimension)pitchPixels;
-    access.height = (GraphicsPixelDimension)height;
-    access.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
-    access.pixels = (uint8_t *)pixels;
-    return access;
 }
 
 void SetRect(int32_t *rect, int32_t x0, int32_t y0, int32_t x1, int32_t y1)
@@ -161,26 +151,6 @@ void RecordSprite(uint8_t blend, uint32_t tintArgb, int32_t clipMaxY, int32_t cl
     if (g_Draw2DSpriteRecorded != nullptr) {
         g_Draw2DSpriteRecorded((uint32_t)(s_items.size() - 1), item);
     }
-}
-
-/* An IMAGE_REGION item for width x height pixels at (x, y), clipped to the display framebuffer. */
-Draw2DItem *RecordImageRegion(int32_t x, int32_t y, int32_t width, int32_t height, const uint32_t *pixels,
-                              int32_t pitchBytes)
-{
-    int32_t left = x;
-    int32_t top = y;
-    int32_t right = x + width;
-    int32_t bottom = y + height;
-    if (!ClipToDisplay(INT32_MAX, INT32_MAX, INT32_MIN, INT32_MIN, &left, &top, &right, &bottom)) {
-        return nullptr;
-    }
-    Draw2DItem *item = AppendItem(DRAW2D_OP_IMAGE_REGION, DRAW2D_BLEND_OPAQUE);
-    SetRect(item->dst, x, y, x + width, y + height);
-    SetRect(item->src, 0, 0, width, height);
-    SetRect(item->clip, left, top, right, bottom);
-    item->pixels = pixels;
-    item->pitchBytes = pitchBytes;
-    return item;
 }
 
 /* ---- GPU_RECORD slot functions ---- */
@@ -317,14 +287,29 @@ void RecordMinimapDraw(int32_t destY, int32_t destX, int32_t height, int32_t wid
                                               rowStepU, rowStepV, texture, framebuffer);
         return;
     }
-    if (width <= 0 || height <= 0) {
+    int32_t left = destX;
+    int32_t top = destY;
+    int32_t right = destX + width;
+    int32_t bottom = destY + height;
+    if (width <= 0 || height <= 0 || SubresourceEntry(texture, 0) == nullptr ||
+        !ClipToDisplay(INT32_MAX, INT32_MAX, INT32_MIN, INT32_MIN, &left, &top, &right, &bottom)) {
         return;
     }
-    uint32_t *pixels = AcquireScratch((std::size_t)width * (std::size_t)height);
-    SoftwareFramebufferAccess scratch = ScratchFramebuffer(pixels, width, height);
-    SoftwareTexture_DrawMinimapBilinear32(0, 0, height, width, startU, startV, pixelStepU, pixelStepV, rowStepU,
-                                          rowStepV, texture, &scratch);
-    RecordImageRegion(destX, destY, width, height, pixels, width * 4);
+    /* the GPU samples the texture itself (step 9 WP5): the item keeps the Q12 walk of the software sampler */
+    Draw2DItem *item = AppendItem(DRAW2D_OP_ROTATED_BILINEAR, DRAW2D_BLEND_OPAQUE);
+    item->asset = texture;
+    item->subresource = 0;
+    item->paletteBank = DRAW2D_PALETTE_BANK_DIRECT;
+    SetRect(item->dst, destX, destY, destX + width, destY + height);
+    SetRect(item->clip, left, top, right, bottom);
+    const uint32_t steps[6] = {startU, startV, pixelStepU, pixelStepV, rowStepU, rowStepV};
+    for (int index = 0; index < 6; index++) {
+        item->q12[index] = (int32_t)steps[index];
+    }
+    item->contentGeneration = g_Draw2DMinimapContentGeneration;
+    if (g_Draw2DSpriteRecorded != nullptr) {
+        g_Draw2DSpriteRecorded((uint32_t)(s_items.size() - 1), item);
+    }
 }
 
 /* A results graph column: one opaque FILL per drawn segment, in the packed colour (a framebuffer pixel, already
@@ -461,6 +446,118 @@ void RecordGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixe
                         (int32_t)destinationWidth, pixels, width, height, width * 4);
 }
 
+/* ---- COMPARE slot functions: the software function draws (the reference picture), then the item is recorded for
+   the display framebuffer. The software functions only read their sources (the grey-scale image's cross-fade
+   rewrites blendedSourcePixels from the same inputs), so drawing twice changes nothing. ---- */
+
+Bool8 CompareBlitSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+                             int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
+                             SoftwareFramebufferAccess *framebuffer)
+{
+    const Bool8 result = SoftwareTextureSource_BlitSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX,
+                                                                 subresourceIndex, sourceAsset, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordBlitSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
+                              framebuffer);
+    }
+    return result;
+}
+
+Bool8 CompareBlitHalfSourceRgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY,
+                               int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
+                               SoftwareFramebufferAccess *framebuffer)
+{
+    const Bool8 result = SoftwareTextureSource_BlitHalfSourceRgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY,
+                                                                   drawX, subresourceIndex, sourceAsset, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordBlitHalfSourceRgb(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, sourceAsset,
+                                framebuffer);
+    }
+    return result;
+}
+
+Bool8 CompareBlitModulatedSourceAlpha(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX,
+                                      int32_t drawY, int32_t drawX, uint32_t modulationArgb8888,
+                                      uint32_t subresourceIndex, GraphicsTextureSourceAsset *sourceAsset,
+                                      SoftwareFramebufferAccess *framebuffer)
+{
+    const Bool8 result = SoftwareTextureSource_BlitModulatedSourceAlpha32(clipMaxY, clipMaxX, clipMinY, clipMinX,
+                                                                          drawY, drawX, modulationArgb8888,
+                                                                          subresourceIndex, sourceAsset, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordBlitModulatedSourceAlpha(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, modulationArgb8888,
+                                       subresourceIndex, sourceAsset, framebuffer);
+    }
+    return result;
+}
+
+void CompareFillRectArgb(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t rectMaxY,
+                         int32_t rectMaxX, int32_t rectMinY, int32_t rectMinX, uint32_t argb8888,
+                         SoftwareFramebufferAccess *framebuffer)
+{
+    SoftwareFramebuffer_FillRectArgb32(clipMaxY, clipMaxX, clipMinY, clipMinX, rectMaxY, rectMaxX, rectMinY, rectMinX,
+                                       argb8888, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordFillRectArgb(clipMaxY, clipMaxX, clipMinY, clipMinX, rectMaxY, rectMaxX, rectMinY, rectMinX, argb8888,
+                           framebuffer);
+    }
+}
+
+void CompareStretchDirectColorBilinear(uint32_t destinationHeight, uint32_t destinationWidth, int32_t destinationY,
+                                       int32_t destinationX, uint32_t subresourceIndex,
+                                       GraphicsTextureSourceAsset *sourceAsset, SoftwareFramebufferAccess *framebuffer)
+{
+    SoftwareTextureSource_StretchDirectColorBilinear32(destinationHeight, destinationWidth, destinationY, destinationX,
+                                                       subresourceIndex, sourceAsset, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordStretchDirectColorBilinear(destinationHeight, destinationWidth, destinationY, destinationX,
+                                         subresourceIndex, sourceAsset, framebuffer);
+    }
+}
+
+void CompareMinimapDraw(int32_t destY, int32_t destX, int32_t height, int32_t width, uint32_t startU, uint32_t startV,
+                        uint32_t pixelStepU, uint32_t pixelStepV, uint32_t rowStepU, uint32_t rowStepV,
+                        GraphicsTextureSourceAsset *texture, SoftwareFramebufferAccess *framebuffer)
+{
+    SoftwareTexture_DrawMinimapBilinear32(destY, destX, height, width, startU, startV, pixelStepU, pixelStepV,
+                                          rowStepU, rowStepV, texture, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordMinimapDraw(destY, destX, height, width, startU, startV, pixelStepU, pixelStepV, rowStepU, rowStepV,
+                          texture, framebuffer);
+    }
+}
+
+void CompareFillColumnSegments(int32_t topY, int32_t drawX, uint32_t segmentCount, const int32_t *segmentHeights,
+                               const uint32_t *packedColors, SoftwareFramebufferAccess *framebuffer)
+{
+    SoftwareFramebuffer_FillColumnSegments32(topY, drawX, segmentCount, segmentHeights, packedColors, framebuffer);
+    if (IsDisplay(framebuffer)) {
+        RecordFillColumnSegments(topY, drawX, segmentCount, segmentHeights, packedColors, framebuffer);
+    }
+}
+
+void CompareGreyScaleImage(GraphicsPixelDimension destinationHeight, GraphicsPixelDimension destinationWidth,
+                           GraphicsScreenCoordinate destinationTop, GraphicsScreenCoordinate destinationLeft,
+                           uint64_t *blendedSourcePixels, uint64_t *blendFactorPixels,
+                           GraphicsSubresourceIndex sourceSubresourceIndexA,
+                           GraphicsSubresourceIndex sourceSubresourceIndexB, int *graphicsTextureAsset,
+                           int *framebufferAccess)
+{
+    SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, destinationTop, destinationLeft,
+                                                   blendedSourcePixels, blendFactorPixels, sourceSubresourceIndexA,
+                                                   sourceSubresourceIndexB, graphicsTextureAsset, framebufferAccess);
+    /* only the cases the record function records (it would draw the others into the display a second time) */
+    if (IsDisplay((const SoftwareFramebufferAccess *)framebufferAccess) &&
+        GreyScaleImageDraws(sourceSubresourceIndexA, sourceSubresourceIndexB,
+                            (const GraphicsTextureSourceAsset *)graphicsTextureAsset) &&
+        destinationWidth >= 2 && destinationHeight >= 2 && destinationWidth <= 16384 && destinationHeight <= 16384) {
+        /* (the record function repeats the cross-fade: it depends only on the two images and the mask) */
+        RecordGreyScaleImage(destinationHeight, destinationWidth, destinationTop, destinationLeft, blendedSourcePixels,
+                             blendFactorPixels, sourceSubresourceIndexA, sourceSubresourceIndexB,
+                             graphicsTextureAsset, framebufferAccess);
+    }
+}
+
 } // namespace
 
 void Draw2D_InstallSlots()
@@ -474,6 +571,17 @@ void Draw2D_InstallSlots()
         g_GraphicsMinimapDraw = RecordMinimapDraw;
         g_GraphicsFillColumnSegments = RecordFillColumnSegments;
         g_GraphicsGreyScaleImage = RecordGreyScaleImage;
+        return;
+    }
+    if (s_backend == DRAW2D_BACKEND_COMPARE) {
+        g_GraphicsTextureSourceBlitSourceAlpha = CompareBlitSourceAlpha;
+        g_GraphicsTextureSourceBlitHalfSourceRgb = CompareBlitHalfSourceRgb;
+        g_GraphicsTextureSourceStretchDirectColorBilinear = CompareStretchDirectColorBilinear;
+        g_GraphicsTextureSourceBlitModulatedSourceAlpha = CompareBlitModulatedSourceAlpha;
+        g_GraphicsFramebufferFillRectArgb = CompareFillRectArgb;
+        g_GraphicsMinimapDraw = CompareMinimapDraw;
+        g_GraphicsFillColumnSegments = CompareFillColumnSegments;
+        g_GraphicsGreyScaleImage = CompareGreyScaleImage;
         return;
     }
     g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
@@ -518,7 +626,7 @@ void Draw2D_EndFrame()
 
 void Draw2D_MarkExternal3D(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX)
 {
-    if (s_backend != DRAW2D_BACKEND_GPU_RECORD) {
+    if (s_backend == DRAW2D_BACKEND_SOFTWARE) {
         return;
     }
     int32_t left = clipMinX;
