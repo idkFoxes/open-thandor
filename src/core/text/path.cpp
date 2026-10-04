@@ -23,18 +23,18 @@ Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t
   uint16_t currentCodeUnit;
 
   /* A backslash restarts the search, so only a '.' in the last component counts. */
-  extension = NULL;
+  extension = nullptr;
   while (*path != 0) {
     currentCodeUnit = *path;
     path++;
     if (currentCodeUnit == '\\') {
-      extension = NULL;
+      extension = nullptr;
     }
     else if (currentCodeUnit == '.') {
       extension = path;
     }
   }
-  if (extension == NULL) {
+  if (extension == nullptr) {
     *path = '.';
     extension = path + 1;
   }

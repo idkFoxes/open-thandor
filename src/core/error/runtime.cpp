@@ -17,16 +17,16 @@ uint16_t g_FatalErrorDetail2Utf16[256] = {0};
 
 uint16_t g_FatalErrorDetail3Utf16[256] = {0};
 
-static FatalErrorPassThroughProc *g_FatalErrorFallbackHandler = 0;
+static FatalErrorPassThroughProc *g_FatalErrorFallbackHandler = nullptr;
 
 /* "texte\\error.str" */
 static uint16_t g_TexteErrorStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'e', 'r', 'r', 'o', 'r', '.', 's', 't', 'r'};
 
 static uint8_t g_FatalErrorNarrowBuffer[1024] = {0};
 
-FatalErrorPassThroughProc *g_FatalErrorExitHandler = 0;
+FatalErrorPassThroughProc *g_FatalErrorExitHandler = nullptr;
 
-FatalErrorPassThroughProc *g_FatalErrorReportHandler = 0;
+FatalErrorPassThroughProc *g_FatalErrorReportHandler = nullptr;
 
 /* "error: IO: initialization failed!" */
 uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'I', 'O', ':', ' ', 'i', 'n', 'i', 't', 'i', 'a',
@@ -46,7 +46,7 @@ void __cdecl ErrorSystem_Init(void)
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
   g_FatalErrorFallbackHandler = FatalError_Exit;
-  errorTextsLoaded = TextResourcePage_Load(0,g_TexteErrorStrPathUtf16,NULL);
+  errorTextsLoaded = TextResourcePage_Load(0,g_TexteErrorStrPathUtf16,nullptr);
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),!errorTextsLoaded);
 }
 
@@ -89,6 +89,6 @@ void FatalError_ShowAndExit(uintptr_t error)
   FatalError_CopyRichTextToNarrow(sizeof g_FatalErrorNarrowBuffer,g_FatalErrorNarrowBuffer,messageText);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
-  MessageBoxA(NULL,(LPCSTR)g_FatalErrorNarrowBuffer,NULL,MB_ICONEXCLAMATION);
+  MessageBoxA(nullptr,(LPCSTR)g_FatalErrorNarrowBuffer,nullptr,MB_ICONEXCLAMATION);
   ExitProcess(0);
 }

@@ -74,7 +74,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
   }
   else {
     /* without a sign zero code units are copied, so signText is never read */
-    signText = NULL;
+    signText = nullptr;
     signLength = 0;
     if ((flags & WIDE_FORMAT_SIGNED_VALUE) != 0) {
       if (value < 0) {

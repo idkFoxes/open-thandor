@@ -12,7 +12,7 @@
 
 static_assert(sizeof(ArenaBlockHeader) == ARENA_BLOCK_HEADER_BYTES, "arena block header is 0x20 bytes");
 
-THANDOR_ALIGN(16) MemoryApiTable g_MemoryApi = {0};
+THANDOR_ALIGN(16) MemoryApiTable g_MemoryApi = {nullptr};
 
 /* its address doubles as the error code */
 /* "error: HEAP: cannot allocate heap memory! Please check your swap-file." */
@@ -43,7 +43,7 @@ void * __cdecl ArenaHeap_Init(void)
   ArenaBlockHeader *alignedFirstBlock;
 
   heap = HeapCreate(0,ARENA_HEAP_RESERVE_BYTES,0);
-  if (heap != NULL) {
+  if (heap != nullptr) {
     g_MemoryApi.alloc = ArenaHeap_Alloc;
     g_MemoryApi.free = ArenaHeap_Free;
     g_MemoryApi.allocLargestFreeBlock = ArenaHeap_AllocLargestFreeBlock;
@@ -52,7 +52,7 @@ void * __cdecl ArenaHeap_Init(void)
     g_MemoryApi.reserveLinear = ArenaHeap_ReserveLinear;
     g_Arena.processHeap = heap;
     rawArenaAllocation = HeapAlloc(heap,0,ARENA_HEAP_RESERVE_BYTES);
-    if (rawArenaAllocation != NULL) {
+    if (rawArenaAllocation != nullptr) {
       alignedFirstBlock = (ArenaBlockHeader *)
           (((uintptr_t)rawArenaAllocation + ARENA_BLOCK_ALIGNMENT_MASK) & ~(uintptr_t)ARENA_BLOCK_ALIGNMENT_MASK);
       g_Arena.rawAllocation = rawArenaAllocation;
@@ -175,7 +175,7 @@ uint32_t ArenaHeap_Free(void *memory)
   ArenaBlockHeader *previousBlock;
   ArenaBlockHeader *mergedNextBlock;
 
-  if (memory != NULL) {
+  if (memory != nullptr) {
     /* the header is addressed both as freedBlock (sizes) and as memory[-1] (links), as in the original */
     freedBlock = (ArenaBlockHeader *)((uintptr_t)memory - ARENA_BLOCK_HEADER_BYTES);
     if (((ArenaBlockHeader *)memory)[-1].stateMagic != ARENA_BLOCK_ALLOCATED) {
