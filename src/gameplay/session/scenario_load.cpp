@@ -114,7 +114,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   checkedValue = FatalError_ExitIfFailed
                       (loadedEntry != NULL ? (uintptr_t)loadedEntry : loadErrorCode,loadedEntry == NULL);
   sourceGrid = (FieldGridAsset *)checkedValue;
-  (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+  (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
   encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     /* transfer image: the decoded size, then the encoded grid; copied into its own buffer */
@@ -318,7 +318,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       }
       UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)bundleByteCount,(uint32_t *)checkedValue);
     }
-    (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid; /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
+    (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = Thandor_PointerToU32(sourceGrid); /* 5f-format: LevelAssetHeader.pathState.levelPathOffsetOrLoadedFieldGrid (+0xB0) */
     FrontendPlayerRuntime_InitializeFactionAssignments();
   }
   else {

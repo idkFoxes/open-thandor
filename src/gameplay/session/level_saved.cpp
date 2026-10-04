@@ -27,7 +27,7 @@ static Bool8 SavedLevel_InitTerrainAndGraphics
   if (!TerrainVisualResources_LoadAndClearCellOverlayFlags
          ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
           (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.groundTextureBasePathOffset),
-          (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,&stepError)) { /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+          Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),&stepError)) { /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
     return NewLevel_Fail(outError,stepError);
   }
   stepError = ShotDefinitions_ValidateTerrainMaterialReferences();
@@ -95,7 +95,7 @@ static void SavedLevel_PlaceStartCameraAndLightFieldRegion
   MoviePlayback_AdvanceScheduledFrameAndTick();
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[localFactionIndex - 1];
   WorldRuntime_AttachFieldGridAsset
-            ((FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,worldRuntime); /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
+            (Thandor_U32ToPointer<FieldGridAsset>((levelImage->header).pathOffsets.levelPathOffset),worldRuntime); /* 5f-format: LevelAsset +0x0B0 levelPathOffset (FieldGridAsset *) */
   MoviePlayback_AdvanceScheduledFrameAndTick();
   startSlot = (struct LevelPlayerSlotRecord *)((uint8_t *)&levelImage->playerSlots[0] + playerSlotByteOffset);
   packedHeadingLow16PitchHigh16 = startSlot->packedHeadingLow16PitchHigh16;
