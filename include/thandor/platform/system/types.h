@@ -236,11 +236,9 @@ using FARPROC = int (*)();
 using LPWORD = WORD *;
 
 using LPCVOID = void *;
-using CpuDetectFeaturesProc = uint32_t __cdecl ();
 using LocaleCopyDefaultComputerLabelUtf16Proc = void (uint16_t * destination);
 using LocaleFormatCurrentDateUtf16Proc = uint32_t (uint16_t * destination);
 using LocaleFormatCurrentTimeUtf16Proc = uint32_t (uint16_t * destination);
-using LocaleFormatDateFieldsUtf16Proc = uint32_t (uint32_t year, uint32_t month, uint32_t day, uint16_t * destination);
 using LocaleFormatTimeFieldsUtf16Proc = uint32_t (uint32_t hour, uint32_t minute, uint16_t * destination);
 using LocaleGetPackedCurrentDateProc = uint32_t ();
 using LocaleGetPackedCurrentTimeProc = uint32_t ();

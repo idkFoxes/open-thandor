@@ -26,7 +26,7 @@
 
 /* Error codes handed to the fatal-error dispatcher (FatalError_ExitIfFailed); the code selects
    the message text. Named as they are found. */
-#define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
+#define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* the original's ProcessEntry: CPUID reports no MMX (check dropped: x64 has MMX) */
 /* DLL binding (DynAPI_Bootstrap, DynAPI_Resolve, DynDLL_Load); the DLL/procedure name is left in
    g_PackageLastErrorPath */
 #define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */

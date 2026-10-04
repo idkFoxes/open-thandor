@@ -31,10 +31,6 @@
 #define FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT 8 /* records in g_FrontendPlayerRuntimeBlocks (0x9D80 bytes) */
 #define CORE_ASSET_SCRATCH_SLICE_COUNT 7 /* tooltip texts of the in-game template's technologyAreaTab1..7, one zeroed allocation */
 #define CORE_ASSET_SCRATCH_SLICE_BYTES 0x200
-/* CPU_DetectFeatures */
-#define CPUID_LEAF_VERSION_INFO 1
-#define CPUID_EDX_MMX 0x00800000 /* CPUID leaf 1, EDX bit 23 */
-#define CPU_FEATURE_MMX 0x1 /* bit of g_CpuFeatureFlags */
 /* DynDLL_Load: capacity of g_DynamicModules */
 #define DYNAMIC_MODULE_CAPACITY 16
 /* ProcessEntry sets this display mode first (in 32-bit colour); Game_Run then switches to the saved mode */
@@ -76,8 +72,6 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 HINSTANCE DynDLL_Load(char *moduleName);
 
 void DynDLL_UnloadAll();
-
-uint32_t __cdecl CPU_DetectFeatures();
 
 void __cdecl Game_Run();
 

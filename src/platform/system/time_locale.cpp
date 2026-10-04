@@ -22,10 +22,6 @@ THANDOR_ALIGN(4) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = nullpt
 
 THANDOR_ALIGN(4) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = nullptr;
 
-static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = nullptr;
-
-static CpuDetectFeaturesProc *g_CPUDetectFeatures = nullptr;
-
 static uint8_t g_LocaleInfoScratch[16] = {0};
 
 static LocaleSystemState g_LocaleSystemState = {0};
@@ -40,7 +36,7 @@ LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = null
 
 /* Implementation ownership: platform/system/time_locale. */
 
-/* Detects the CPU features, installs the date/time/locale services in their function pointers and
+/* Installs the date/time/locale services in their function pointers and
    caches the user's locale settings (language id, number separators, date/time separators and order,
    AM/PM designators) in g_LocaleSystemState for the date and number formatters.
    Numeric fields are parsed from the GetLocaleInfoA text; string fields are widened to UTF-16.
@@ -48,8 +44,8 @@ LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = null
 void Locale_Init()
 
 {
-  CPU_DetectFeatures();
-  g_LocaleFormatDateFieldsUtf16 = Locale_FormatDateFieldsUtf16;
+  /* the original first ran the CPU feature detection here and also stored it and Locale_FormatDateFieldsUtf16
+     in slots that nothing called */
   g_LocaleFormatCurrentDateUtf16 = Locale_FormatCurrentDateUtf16;
   g_LocaleGetPackedCurrentDate = Locale_GetPackedCurrentDate;
   g_LocaleFormatTimeFieldsUtf16 = Locale_FormatTimeFieldsUtf16;
@@ -57,7 +53,6 @@ void Locale_Init()
   g_LocaleGetPackedCurrentTime = Locale_GetPackedCurrentTime;
   g_LocaleGetDefaultTelephoneCountryCode = Locale_GetDefaultTelephoneCountryCode;
   g_LocaleCopyDefaultComputerLabelUtf16 = Locale_CopyDefaultComputerLabelUtf16;
-  g_CPUDetectFeatures = CPU_DetectFeatures;
   /* The string copies pass an output capacity of LOCALE_STRING_COPY_CAPACITY_BYTES (8 UTF-16 units),
      although every string field of g_LocaleSystemState holds 16 units. */
   GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_ILANGUAGE,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);

@@ -112,7 +112,7 @@ Helpers that reproduce what the original's x86 code does, expressed in portable 
 - [`thandor_mmx_identity`](../../include/thandor/core/x86_emulation.h#L155)
 - 5 more: `thandor_mmx_rgb`, `thandor_mmx_bgra`, `thandor_mmx_q`, `thandor_mmx_q`, `thandor_mmx_q`
 
-**Called from** (1 files): [`platform/bootstrap/runtime`](platform.md#file-platform-bootstrap-runtime) (`CPU_DetectFeatures`).
+**Called from:** no other file (entry points, slots filled at run time or file-local use).
 
 **Includes:** `stddef.h`, `intrin.h`, `math.h`, `stdint.h`, `string.h`.
 
