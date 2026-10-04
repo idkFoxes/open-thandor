@@ -151,15 +151,8 @@ void InGameTechnologyResearch_StartSelected(void *source)
          2 * technology id (see InGameTechnologyPanel_Rebuild) */
       doubledTechnologyId = TECHNOLOGY_AREA_TAB_PREFIX(selectedAreaTab).nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
     }
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-        SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-                (g_LocalPlayerRuntimeId,0,doubledTechnologyId >> 1,modelOffset);
-    }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE,0,doubledTechnologyId >> 1,
-                                                  modelOffset);
-    }
+    InGameCommand_Issue<FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology>
+              (0,doubledTechnologyId >> 1,modelOffset);
   }
   return;
 }
