@@ -72,7 +72,10 @@ void UpdateMouseMode() noexcept;
    (framebuffer size), then presents that letterboxed with the cursor on top (cursor nullptr: hidden).
    ReadGpuFrame downloads a rectangle of the frame target (the last presented frame without the cursor) as
    0xFFRRGGBB pixels, synchronously (captures). PresentWithGpu (compare mode) uploads the software framebuffer
-   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. */
+   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. CompareGpuFrame (compare mode,
+   called by the present before the cursor is composed; does nothing otherwise) draws the recorded frame into the
+   frame target without showing it and every OPEN_THANDOR_GPU_COMPARE_MS compares it with the framebuffer
+   (shots\gpucmp_NNNN_*.bmp, statistics in thandor.log). */
 struct GpuCursorSprite {
   const GraphicsTextureSourceAsset *asset;
   uint32_t subresource;
@@ -87,6 +90,7 @@ bool GpuFrameActive() noexcept;
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;
 bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept;
 bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept;
+void CompareGpuFrame() noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);
