@@ -570,3 +570,60 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
   return;
 }
 
+/* Handler of action 0x2043 (slot 67 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
+   "Back" button: applies the game speed and returns to the main page with ROM action record 0
+   (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game).
+*/
+void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument)
+
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendSession_ApplyGameSpeedAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_APPLY_GAME_SPEED,0,0,0);
+  }
+  return;
+}
+
+/* Handler of action 0x204F (slot 79 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Exit" button of
+   the in-game variant of the mission briefing: releases the loaded campaign and returns to the main page
+   (FRONTEND_COMMAND_RELEASE_CAMPAIGN in a network game).
+*/
+void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument)
+
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendSession_ReleaseSelectedResourceAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RELEASE_CAMPAIGN,0,0,0);
+  }
+  return;
+}
+
+/* Handler of action 0x200C (slot 12 of g_FrontendUiActionHandlersPage20.handlers00_54), a selection change in
+   the host lobby's player list: the Kick button (FRONTEND_ACTION_KICK_PLAYER) is hidden while the first row,
+   the host itself, is selected and shown for any other player.
+*/
+void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl)
+
+{
+  UiPointerListControl *frontendRoot;
+  UiNodeBase *parentCursor;
+  
+  parentCursor = playerListControl->base.parent;
+  frontendRoot = playerListControl;
+  while (parentCursor != UI_NODE_NONE) {
+    frontendRoot = (UiPointerListControl *)(frontendRoot->base).parent;
+    parentCursor = frontendRoot->base.parent;
+  }
+  if (playerListControl->selectedRowSlot == playerListControl->rowSlots) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendRoot->base);
+    return;
+  }
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendRoot->base);
+  return;
+}

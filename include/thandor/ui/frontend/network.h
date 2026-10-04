@@ -41,4 +41,6 @@ extern uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4]; /* decimal number of 
 extern uint16_t g_FrontendNetworkPlayerCountTextUtf16[4]; /* decimal maximum player count (payload 1 of the session player count text, bound to a template text control) */
 extern uint16_t g_FrontendNetworkEndpointTextUtf16[512]; /* local address text from g_NetworkBackendSlot7 */
 
+void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList);
+
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */

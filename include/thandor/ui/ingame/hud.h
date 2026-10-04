@@ -55,4 +55,8 @@ extern uint32_t g_InGameReadyStateToggleFlags;
 
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16;
 
+void FrontendRuntime_UpdateCurrentFactionMetricCache(void);
+
+extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* decimal xenite amount, bound to a template text control */
+
 #endif /* THANDOR_UI_INGAME_HUD_H */

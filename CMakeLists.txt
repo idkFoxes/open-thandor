@@ -113,13 +113,23 @@ add_library(thandor_curated STATIC
     src/ui/controls/misc.cpp
     src/ui/controls/text.cpp
     src/ui/core/runtime.cpp
+    src/ui/frontend/chat.cpp
+    src/ui/frontend/debug_overlay.cpp
+    src/ui/frontend/display_settings.cpp
+    src/ui/frontend/end_movie.cpp
+    src/ui/frontend/faction_setup.cpp
+    src/ui/frontend/lifecycle.cpp
+    src/ui/frontend/main_loop.cpp
+    src/ui/frontend/menu_room.cpp
     src/ui/frontend/network.cpp
+    src/ui/frontend/page_actions.cpp
     src/ui/frontend/player.cpp
     src/ui/frontend/results.cpp
-    src/ui/frontend/runtime.cpp
     src/ui/frontend/scenario.cpp
     src/ui/frontend/session.cpp
     src/ui/frontend/settings.cpp
+    src/ui/frontend/state.cpp
+    src/ui/frontend/ui_template.cpp
     src/ui/ingame/chat.cpp
     src/ui/ingame/commands.cpp
     src/ui/ingame/editor_keyboard.cpp

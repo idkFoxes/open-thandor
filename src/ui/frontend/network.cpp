@@ -577,3 +577,65 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   return;
 }
 
+/* Handler of action 0x200F (slot 15 of g_FrontendUiActionHandlersPage20.handlers00_54), a choice in the network
+   game page's protocol list: closes the current backend and opens the chosen one on NETWORK_GAME_UDP_PORT. On
+   success the local endpoint is copied to g_FrontendNetworkEndpointScratch and formatted into
+   g_FrontendNetworkEndpointTextUtf16, the session list is emptied, Join hidden and a discovery probe sent. A failure is reported and the backend opened once more without a report; if that
+   fails too, the menu returns to the main page and the random generator to the primary stream.
+*/
+void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList)
+
+{
+  UiListRowIndex selectedBackendIndex;
+  int remainingDwords;
+  uint32_t *endpointSourceDwordCursor;
+  uint32_t *endpointDestinationDwordCursor;
+  uint32_t backendError; /* 0 or a FATAL_ERROR_NETWORK_* code */
+
+  selectedBackendIndex = UiPointerList_GetSelectedIndex(backendList);
+  if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
+    return;
+  }
+  g_NetworkBackendSlot3(); /* close */
+  g_NetworkBackendSlot1(); /* cleanup */
+  backendError = g_NetworkBackendSlot0(selectedBackendIndex);
+  FatalError_ReportIfFailed(backendError,backendError != 0); /* reports and returns: the flag is ours */
+  if (backendError == 0) {
+    backendError = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
+    FatalError_ReportIfFailed(backendError,backendError != 0);
+    if (backendError == 0) {
+      endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
+      endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
+      for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
+           remainingDwords--) {
+        *endpointDestinationDwordCursor = *endpointSourceDwordCursor;
+        endpointSourceDwordCursor++;
+        endpointDestinationDwordCursor++;
+      }
+      g_NetworkBackendSlot7
+                ((char *)g_FrontendNetworkEndpointTextUtf16,
+                 (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+      UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->rootNode);
+      UiPointerList_InitializeColumnLayout
+                (0,(Ptr32<void> *)g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
+      UiTransfer_SendDiscoveryProbe();
+      return;
+    }
+    g_NetworkBackendSlot1(); /* cleanup */
+  }
+  if (g_NetworkBackendSlot0(selectedBackendIndex) == 0) {
+    if (g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT) == 0) {
+      return;
+    }
+    g_NetworkBackendSlot1(); /* cleanup */
+  }
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
+  }
+  Random_SelectPrimaryStream();
+  return;
+}

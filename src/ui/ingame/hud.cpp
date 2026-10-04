@@ -46,6 +46,8 @@ uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
 
 uint32_t g_InGameReadyStateToggleFlags = 0;
 
+uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
+
 /* Implementation ownership: ui/ingame/hud. */
 
 /* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView).
@@ -565,5 +567,49 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       }
     }
   }
+  return;
+}
+
+/* Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
+   (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
+   extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
+*/
+void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
+
+{
+  XeniteAmountQ4 xeniteStorageLimit;
+  TritiumAmountQ4 tritiumStorageLimit;
+  int xeniteCurrentDisplay;
+  FactionProgressAmountQ4 baselineEnergySupplyQ4;
+  FactionProgressAmountQ4 energyGenerationCapacityQ4;
+  FactionArmyContributionValue tritiumExtractionRate;
+  InGameRuntimeRoot *runtimeRoot;
+  int activeFactionIndex;
+  
+  runtimeRoot = g_InGameRuntimeRoot;
+  activeFactionIndex = g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex;
+  xeniteStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].xeniteStorageLimitQ4;
+  xeniteCurrentDisplay = (int)g_GameFactionRuntimeImage.records[activeFactionIndex].xeniteCurrentQ4 >> 4;
+  g_InGameRuntimeRoot->primaryResourceDisplayCurrent = xeniteCurrentDisplay;
+  runtimeRoot->primaryResourceDisplayLimit = (int)xeniteStorageLimit >> 4;
+  /* decimal, no fraction digits */
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,xeniteCurrentDisplay,
+             g_FrontendCurrentFactionPrimaryResourceTextUtf16);
+  tritiumStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumStorageLimitQ4;
+  baselineEnergySupplyQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].baselineEnergySupplyQ4;
+  runtimeRoot->secondaryResourceDisplayCurrent =
+       (int)g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumCurrentQ4 >> 4;
+  runtimeRoot->secondaryResourceDisplayLimit = (int)tritiumStorageLimit >> 4;
+  energyGenerationCapacityQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].energyGenerationCapacityQ4;
+  tritiumExtractionRate =
+       g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumExtractionRateQ4PerTick;
+  runtimeRoot->energyDemandDisplay =
+       (int)(g_GameFactionRuntimeImage.records[activeFactionIndex].suppliedEnergyDemandQ4 +
+            g_GameFactionRuntimeImage.records[activeFactionIndex].unpoweredEnergyDemandQ4) >> 4;
+  runtimeRoot->energyCapacityDisplay = (int)energyGenerationCapacityQ4 >> 4;
+  /* the extraction rate is added unshifted, as in the original */
+  runtimeRoot->baselineEnergySupplyDisplay =
+       ((int)baselineEnergySupplyQ4 >> 4) + tritiumExtractionRate;
   return;
 }

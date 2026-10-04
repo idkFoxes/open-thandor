@@ -55,4 +55,10 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
 extern FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords;
 extern FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007;
 
+void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument);
+
+void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument);
+
+void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl);
+
 #endif /* THANDOR_UI_FRONTEND_SESSION_H */

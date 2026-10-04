@@ -1,18 +1,17 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/frontend/runtime.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/frontend/common.h
  * Reverse engineering by idkFoxes 2026
  */
 
-#ifndef THANDOR_UI_FRONTEND_RUNTIME_H
-#define THANDOR_UI_FRONTEND_RUNTIME_H
+#ifndef THANDOR_UI_FRONTEND_COMMON_H
+#define THANDOR_UI_FRONTEND_COMMON_H
 
 #include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
-/* Submodule: ui/frontend/runtime. */
-/* Functions are grouped by semantic ownership. */
+/* Frontend pages, page actions, UI actions, player and network states and text ids shared by the frontend files. */
 
 /* Frontend menu state machine (Frontend_MainLoop).
    g_FrontendPendingPageAction holds the next step of the menu. A ROM action-table record writes it when the
@@ -37,17 +36,6 @@
 #define FRONTEND_ROM_RECORD_MAIN_MENU 1
 #define FRONTEND_ROM_RECORD_MISSION_BRIEFING 10 /* followed by FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE */
 #define FRONTEND_ROM_RECORD_SCENARIO_SELECTION 12 /* followed by FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE */
-
-/* Bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags: per-player progress through the
-   network menu handshake, set locally or from the peer's packets (ui/frontend/player, assets/scenario/catalog). */
-#define FRONTEND_PLAYER_STATE_SCENARIO_CATALOG 0x01 /* scenario catalogue exchanged */
-#define FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT 0x02 /* ready for the task-assignment page */
-#define FRONTEND_PLAYER_STATE_LEVEL_LOADED 0x04 /* level package loaded locally */
-#define FRONTEND_PLAYER_STATE_LEVEL_RECEIVED 0x08 /* level package received from / confirmed to the host */
-#define FRONTEND_PLAYER_STATE_LEVEL_READY_MASK 0x0C
-/* set by FrontendScenarioSession_LoadOrRequestLevelAsset for players whose catalog level mask has the selected
-   level, i.e. who can load it from their own disk instead of receiving it */
-#define FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY 0x10
 
 /* Pages of FrontendUiImage.frontendPageStack (see generated/ui_templates.h). */
 #define FRONTEND_PAGE_MAIN 0 /* no dialog page: only the menu room */
@@ -156,173 +144,4 @@
 #define FRONTEND_CAMERA_MOTION_PITCH 8
 #define FRONTEND_CAMERA_MOTION_MASK 15
 
-Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
-
-GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
-
-void FrontendModelPointerContext_NonRightPress
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContext *callbackContext);
-
-void FrontendModelPointerContext_NonRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerHitContext *callbackContext);
-
-void FrontendModelPointerContext_NonRightDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContext *callbackContext);
-
-void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl);
-
-void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl);
-
-void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl);
-
-void FrontendModelPointerContext_Relocate
-               (UiSerializedRelocationDelta relocationDelta,
-               FrontendModelPointerContext *control);
-
-void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
-
-void FrontendModelPointerContext_RenderWorldViewQueuesClipped
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,FrontendModelPointerContext *control);
-
-void FrontendModelPointerContext_RightPress
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContext *callbackContext);
-
-void FrontendModelPointerContext_RightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContext *callbackContext);
-
-void FrontendModelPointerContext_DispatchWorldCameraPointerInput
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          WorldRuntimeContext *callbackContext);
-
-void FrontendModelPointerContext_PointerWheel
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          WorldRuntimeContext *callbackContext);
-
-Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          FrontendModelPointerHitContext *control);
-
-void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
-
-void FrontendRuntime_UpdateCurrentFactionMetricCache(void);
-
-void __cdecl FrontendRuntime_TimerCountdownTick(void);
-
-void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
-
-Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
-          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
-
-void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
-
-uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
-          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
-          void *pointedModelNode,FrontendPointerSceneRuntimeView *frontendRuntime);
-
-void FrontendMenuRoom_PressNoOp
-               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
-               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
-
-void FrontendMenuRoom_DragNoOp
-               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
-               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
-
-void FrontendMenuRoom_ExecuteClickedRomAction
-          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
-          FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext);
-
-void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext);
-
-void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
-
-void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument);
-
-void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument);
-
-void FrontendCallback_NoOpArg1(void *source);
-
-void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument);
-
-void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);
-
-void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument);
-
-void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode);
-
-void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source);
-
-void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);
-
-void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl);
-
-void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
-
-void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList);
-
-void Frontend_PlaySelectedEndMovie(void);
-
-Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
-
-void Frontend_StateTick(void);
-
-void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
-
-void FrontendFactionSetup_CycleFactionColour
-          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
-          FrontendFactionAssignmentIndex rowIndex);
-
-void FrontendFactionSetup_ToggleFactionActive
-          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
-          FrontendFactionAssignmentIndex rowIndex);
-
-void FrontendFactionSetup_ChooseFaction
-          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
-          FrontendFactionAssignmentIndex rowIndex);
-
-void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
-
-void FrontendRuntime_ShutdownAndReleaseResources(void);
-
-uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
-
-extern FrontendUiImage g_FrontendRootInitializationTemplate;
-extern uintptr_t g_FrontendRootNode; /* the FrontendUiImage copy (address) */
-extern uint32_t g_FrontendPendingPageAction;
-extern uint32_t g_FrontendRuntimeFlags;
-extern uintptr_t g_FrontendCentralTextureSet;
-extern uintptr_t g_FrontendCentralPaletteAsset;
-extern GraphicsTextureSourceAsset *g_FrontendMenuTextureSource;
-extern uint32_t g_FrontendNetworkTickCounter;
-extern uint32_t g_FrontendStateTickSpinLock;
-extern uint32_t g_FrontendScenarioInitializationCount;
-extern DirectSoundVoiceSet *g_FrontendMusicVoiceSet;
-extern uint16_t g_FrontendMusic00SamPathUtf16[18];
-extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* decimal xenite amount, bound to a template text control */
-extern uint32_t g_DebugOverlayCounterRefreshCountdown; /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
-extern uint32_t g_EndMovieSelectionIndex;
-extern uint32_t g_EndMoviePendingTicks;
-
-extern UiNodeVtable g_FrontendModelPointerContextVtable;
-
-extern GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque;
-extern GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped;
-
-extern uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16];
-extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* owns the unnamed 0x20 bytes after its first 16 units in the original (elapsed time can exceed 16 units) */
-
-#endif /* THANDOR_UI_FRONTEND_RUNTIME_H */
+#endif /* THANDOR_UI_FRONTEND_COMMON_H */
