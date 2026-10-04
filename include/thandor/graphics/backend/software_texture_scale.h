@@ -22,6 +22,13 @@ void SoftwareTexture_BilinearBlendScaleSubresources
           GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
           int *framebufferAccess);
 
+/* Step 1 of SoftwareTexture_BilinearBlendScaleSubresources alone (the cross-fade into blendedSourcePixels; the GPU
+   draw list scales the result on the GPU). The caller checks the asset and that both entries are paletted. */
+void SoftwareTexture_CrossFadeSubresources
+          (uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
+          GraphicsSubresourceIndex sourceSubresourceIndexA,GraphicsSubresourceIndex sourceSubresourceIndexB,
+          const GraphicsTextureSourceAsset *asset);
+
 /* Not in the original: builds the minimap scaler weight tables (called once at startup). */
 void SoftwareMinimap_BuildPixelWeightTables();
 

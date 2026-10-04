@@ -20,16 +20,16 @@ functions those slots hold is chosen by the backend:
   appends a Draw2DItem to the frame's list instead of writing pixels; any other destination (the cursor
   composite buffer, offscreen buffers, the raster self-test) still goes to the software function. The
   minimap is recorded as a DRAW2D_OP_ROTATED_BILINEAR item (the GPU samples the minimap texture itself, step 9
-  WP5); the other special cases (results columns, grey-scale image and the bilinear stretch) are drawn by their
-  software function into a CPU scratch image that the item points to (DRAW2D_OP_IMAGE_REGION, the MVP's
-  streaming fallback).
+  WP5). The results graph columns become FILL items (one per segment), the bilinear stretch (movie frames) and
+  the credits grey-scale image become DRAW2D_OP_IMAGE_BILINEAR items (a CPU image - the movie frame's texels,
+  the CPU cross-fade as grey levels - that the GPU stretches with a linear sampler; WP5).
 - DRAW2D_BACKEND_COMPARE (the developer tools' OPEN_THANDOR_GPU=compare): every draw does both - the software
   function writes the CPU framebuffer (the reference picture, as with DRAW2D_BACKEND_SOFTWARE) and, for the display
   framebuffer, the item is recorded as with DRAW2D_BACKEND_GPU_RECORD, so the GPU can draw the same frame and the
   two pictures can be compared.
 
 The list holds items in call order (no reordering). Draw2D_BeginFrame empties it and releases the scratch
-images of the previous frame; the pixel pointers of IMAGE_REGION items stay valid until the next
+images of the previous frame; the pixel pointers of IMAGE_REGION / IMAGE_BILINEAR items stay valid until the next
 Draw2D_BeginFrame. Items keep the asset pointer of SPRITE draws only: the GPU backend must read (hash or upload)
 the asset while the frame is recorded or right at its flush, before the simulation can release it (see 6.4,
 "Simulation runs between render passes"). All of this runs on the main thread. */
@@ -51,9 +51,13 @@ enum Draw2DBackend : uint8_t {
 enum Draw2DOp : uint8_t {
     DRAW2D_OP_SPRITE = 0,       /* one subresource of asset: dst <- src texels, through clip */
     DRAW2D_OP_FILL = 1,         /* dst filled with tintArgb, through clip */
-    DRAW2D_OP_IMAGE_REGION = 2, /* CPU image (pixels, pitchBytes) of src size drawn at dst, through clip */
+    DRAW2D_OP_IMAGE_REGION = 2, /* CPU image (pixels, pitchBytes) of src size drawn at dst, through clip (no
+                                   recorder produces it since WP5; the GPU backend still draws it) */
     DRAW2D_OP_EXTERNAL_3D = 3,  /* the 3D scene ends here: it covers clip (= dst) */
     DRAW2D_OP_ROTATED_BILINEAR = 4, /* subresource 0 of asset sampled bilinearly along the Q12 steps (minimap) */
+    /* CPU image (pixels, pitchBytes) of src size stretched bilinearly over dst, drawn through clip (movie
+       frames, credits; step 9 WP5) */
+    DRAW2D_OP_IMAGE_BILINEAR = 5,
 };
 
 enum Draw2DBlend : uint8_t {
@@ -86,7 +90,14 @@ enum Draw2DBlend : uint8_t {
      0, ARGB8888 texels; texels outside it count as 0); blend OPAQUE; q12 = {startU, startV, pixelStepU,
      pixelStepV, rowStepU, rowStepV} as the slot got them (pixel dst[0] + i, dst[1] + j samples the Q12 texel
      position start + i * pixelStep + j * rowStep, texel (c, r) sitting at (c << 12, r << 12));
-     contentGeneration = g_Draw2DMinimapContentGeneration at the call. */
+     contentGeneration = g_Draw2DMinimapContentGeneration at the call.
+   - IMAGE_BILINEAR: pixels/pitchBytes describe src[2] x src[3] ARGB8888 pixels (src[0] = src[1] = 0, alpha not
+     meaningful); dst is the whole destination of the software scaler (both sides at least 2 pixels), clip the
+     part it writes (the stretch leaves an odd last column out) cut to the display; blend OPAQUE. The texel
+     position of destination pixel (i, j) is the software scalers' (i * stepX / 256, j * stepY / 256) with the
+     truncated 8.8 steps step = (srcSize - 1) * 256 / (dstSize - 1), so the GPU samples the same texels (only the
+     weights' rounding differs). The pixels are read when the item is recorded (g_Draw2DSpriteRecorded) and stay
+     valid until the next Draw2D_BeginFrame. */
 struct Draw2DItem {
     uint8_t op;    /* Draw2DOp */
     uint8_t blend; /* Draw2DBlend */
@@ -97,8 +108,8 @@ struct Draw2DItem {
     int32_t src[4];
     int32_t clip[4];
     uint32_t tintArgb;
-    const uint32_t *pixels; /* IMAGE_REGION only */
-    int32_t pitchBytes;     /* IMAGE_REGION only */
+    const uint32_t *pixels; /* IMAGE_REGION and IMAGE_BILINEAR only */
+    int32_t pitchBytes;     /* IMAGE_REGION and IMAGE_BILINEAR only */
     int32_t q12[6];             /* ROTATED_BILINEAR only */
     uint32_t contentGeneration; /* ROTATED_BILINEAR only */
 };
@@ -162,10 +173,10 @@ const Draw2DItem *Draw2D_FrameItems(uint32_t *outCount);
 /* Ends the frame's recording (the list stays readable until the next Draw2D_BeginFrame). */
 void Draw2D_EndFrame();
 
-/* GPU backend hook (nullptr when unused): called right after a SPRITE or ROTATED_BILINEAR item is appended, with
-   its index in the frame list. The GPU backend reads the asset here (texture cache lookup, which converts the
-   texels into its staging buffer at once), because the simulation may release or rewrite the asset before the
-   flush (6.4). */
+/* GPU backend hook (nullptr when unused): called right after a SPRITE, ROTATED_BILINEAR or IMAGE_BILINEAR item is
+   appended, with its index in the frame list. The GPU backend reads the asset or pixels here (texture cache
+   lookup or streaming upload, which copy the texels into its staging buffer at once), because the simulation
+   may release or rewrite the asset (a movie frame: every frame) before the flush (6.4). */
 using Draw2DSpriteRecordedProc = void (uint32_t itemIndex, const Draw2DItem *item);
 extern Draw2DSpriteRecordedProc *g_Draw2DSpriteRecorded;
 
