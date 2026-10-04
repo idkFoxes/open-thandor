@@ -41,8 +41,6 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
 
 uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
-uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase);
-
 extern MemoryApiTable g_MemoryApi;
 
 #endif /* THANDOR_CORE_MEMORY_ALLOCATOR_H */

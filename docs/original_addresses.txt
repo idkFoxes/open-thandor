@@ -60,7 +60,7 @@
 0x00407B14  data      g_FatalErrorDetail3Utf16                                          src/core/error/runtime.cpp
 0x00407D14  data      g_FatalErrorExitHandler                                           src/core/error/runtime.cpp
 0x00407D18  data      g_FatalErrorReportHandler                                         src/core/error/runtime.cpp
-0x00407D1C  data      g_FatalErrorFallbackHandler                                       src/core/error/runtime.cpp
+0x00407D1C  data      g_FatalErrorFallbackHandler                                       (removed, unused)
 0x00407D20  data      g_TexteErrorStrPathUtf16                                          src/core/error/runtime.cpp
 0x00407D40  data      g_ErrorTextIoInitializationFailed                                 src/core/error/runtime.cpp
 0x00407D84  data      g_ErrorTextHeapAllocationFailed                                   src/core/memory/allocator.cpp
@@ -3154,7 +3154,7 @@
 0x005865B0  function  ArenaHeap_Free                                                    src/core/memory/allocator.cpp
 0x00586640  function  ArenaHeap_AllocLargestFreeBlock                                   src/core/memory/allocator.cpp
 0x005866B0  function  ArenaHeap_ShrinkInPlace                                           src/core/memory/allocator.cpp
-0x00586750  function  ArenaHeap_ReserveLinear                                           src/core/memory/allocator.cpp
+0x00586750  function  ArenaHeap_ReserveLinear                                           (removed, unused)
 0x00586790  function  TimerSystem_Init                                                  (removed)
 0x005867B0  function  TimerSystem_Shutdown                                              (removed)
 0x005867E0  function  WinMM_TimerDispatchCallback                                       (removed)
@@ -3176,4 +3176,4 @@
 0x00587350  function  Locale_CopyDefaultComputerLabelUtf16                              src/platform/system/time_locale.cpp
 0x00587370  function  CPU_DetectFeatures                                                src/platform/bootstrap/runtime.cpp
 0x005873A0  function  Memory_ZeroDwords                                                 (removed)
-0x00587400  data      g_ArenaLinearStorage                                              src/core/memory/allocator.cpp
+0x00587400  data      g_ArenaLinearStorage                                              (removed, unused)

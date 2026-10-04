@@ -21,13 +21,7 @@ static uint16_t g_ErrorTextHeapAllocationFailed[71] = {
     'c', 'a', 't', 'e', ' ', 'h', 'e', 'a', 'p', ' ', 'm', 'e', 'm', 'o', 'r', 'y', '!', ' ', 'P', 'l', 'e', 'a', 's', 'e',
     ' ', 'c', 'h', 'e', 'c', 'k', ' ', 'y', 'o', 'u', 'r', ' ', 's', 'w', 'a', 'p', '-', 'f', 'i', 'l', 'e', '.'};
 
-/* linear (bump) region of g_Arena (g_Arena.linearCursor starts at [0], g_Arena.linearLimit is [0x4000]);
-   the 0xC00 bytes past the limit run to the end of the original image and are never handed out. One array
-   so cursor and limit stay in the same object. The alignment is kept on purpose: ArenaHeap_ReserveLinear
-   hands out base + offset without rounding, so the blocks inherit the 16-byte alignment of the original region. */
-static THANDOR_ALIGN(16) uint8_t g_ArenaLinearStorage[0x4C00] = {0};
-
-static ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
+static ArenaState g_Arena = {};
 
 /* Implementation ownership: core/memory/allocator. */
 
@@ -49,7 +43,6 @@ void * __cdecl ArenaHeap_Init()
     g_MemoryApi.allocLargestFreeBlock = ArenaHeap_AllocLargestFreeBlock;
     g_MemoryApi.shrinkInPlace = ArenaHeap_ShrinkInPlace;
     g_MemoryApi.queryFreeBytes = ArenaHeap_QueryFreeBytes;
-    g_MemoryApi.reserveLinear = ArenaHeap_ReserveLinear;
     g_Arena.processHeap = heap;
     rawArenaAllocation = HeapAlloc(heap,0,ARENA_HEAP_RESERVE_BYTES);
     if (rawArenaAllocation != nullptr) {
@@ -299,22 +292,4 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
     }
   }
   return 0;
-}
-
-/* Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
-   returns 0 with the old cursor in *outBase and advances it by bytes, or FATAL_ERROR_GENERAL_FAILURE
-   (*outBase unchanged) when the region is full. Nothing is ever given back.
-*/
-uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase)
-
-{
-  uint8_t *previousLinearCursor;
-
-  previousLinearCursor = g_Arena.linearCursor;
-  if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
-    g_Arena.linearCursor = g_Arena.linearCursor + bytes;
-    *outBase = previousLinearCursor;
-    return 0;
-  }
-  return FATAL_ERROR_GENERAL_FAILURE;
 }
