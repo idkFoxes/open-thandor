@@ -427,7 +427,8 @@ if(THANDOR_RENDERER_SDL_GPU)
                    "fragment_alpha_test ps FragmentAlphaTestMain primitives.hlsl"
                    "ui2d_vertex vs Ui2dVertexMain ui2d.hlsl" "ui2d_skip0 ps Ui2dSkip0Main ui2d.hlsl"
                    "ui2d_half_rgb ps Ui2dHalfRgbMain ui2d.hlsl" "ui2d_modulated ps Ui2dModulatedMain ui2d.hlsl"
-                   "ui2d_opaque ps Ui2dOpaqueMain ui2d.hlsl" "ui2d_fill ps Ui2dFillMain ui2d.hlsl")
+                   "ui2d_opaque ps Ui2dOpaqueMain ui2d.hlsl" "ui2d_fill ps Ui2dFillMain ui2d.hlsl"
+                   "ui2d_minimap ps Ui2dMinimapMain ui2d.hlsl")
         separate_arguments(shader)
         list(GET shader 0 shaderName)
         list(GET shader 1 shaderStage)

@@ -308,7 +308,7 @@ Module header: [`core.h`](../include/thandor/graphics/core.h) · Changelog: `run
 
 - [`cursor.cpp / cursor.h`](source_guide/graphics.md#file-graphics-core-cursor) - The mouse cursor: frame animation (the cursor timer) and the input event ring with double clicks.
 - [`device.cpp`](source_guide/graphics.md#file-graphics-core-device) - no file comment; main functions `Graphics_AllocateTables`, `Graphics_Shutdown`, `GraphicsDisplay_PublishFramebuffer`
-- [`draw2d.cpp / draw2d.h`](source_guide/graphics.md#file-graphics-core-draw2d) - The 2D draw-list front end (see graphics/core/draw2d.h): the backend switch, the slot installation and the GPU_RECORD functions that turn blits and fills into Draw2DItems.
+- [`draw2d.cpp / draw2d.h`](source_guide/graphics.md#file-graphics-core-draw2d) - The 2D draw-list front end (see graphics/core/draw2d.h): the backend switch, the slot installation, the GPU_RECORD functions that turn blits and fills into Draw2DItems and the COMPARE functions that ...
 - [`runtime.h`](source_guide/graphics.md#file-graphics-core-runtime)
 - [`types.h`](source_guide/graphics.md#file-graphics-core-types) - The types of the module (structs, unions, enums and scalar typedefs in the original's 32-bit layouts, pointer fields as Ptr32): the ones only it uses and the shared ones it owns.
 

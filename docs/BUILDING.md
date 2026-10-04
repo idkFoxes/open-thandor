@@ -329,10 +329,22 @@ or with `-DTHANDOR_GPU_PRECOMPILED_SHADERS=ON`, the build uses the headers commi
 [MinGW-w64 GCC](#mingw-w64-gcc)); a build without SPIR-V headers has no Vulkan renderer. With the option `OFF` only
 the software renderer exists.
 
-With the developer tools, `OPEN_THANDOR_GPU=compare` runs both rasterizers on every frame (on the first GPU API that
-runs; with the `exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other), shows the software picture and every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) writes the
-3D view of both as `shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` and logs the
-difference; the GPU renderers log their per-scene times every 10 seconds.
+With the developer tools, `OPEN_THANDOR_GPU=compare` draws every frame twice - the whole frame in software into the
+CPU framebuffer (every 2D draw and the software rasterizer) and the same frame on the GPU from the recorded 2D draw
+list and the GPU rasterization (on the first GPU API that runs, `compare-vulkan` / `compare-d3d12` pick one; with the
+`exact` rasterization unless `OPEN_THANDOR_GPU_RASTER=smooth` asks for the other). It shows the software picture and
+every `OPEN_THANDOR_GPU_COMPARE_MS` milliseconds (default 5000) downloads the GPU frame and writes both frames as
+`shots\gpucmp_NNNN_sw.bmp` / `_gpu.bmp` with a difference image `_diff.bmp` (largest channel difference x4, grey;
+reddish inside the 3D view) and logs a `SDL_GPU compare` line with the mean channel difference, the largest one and
+the share of pixels differing by more than 8, for the whole frame and for the UI alone (outside the frame's 3D scene
+rectangles), with `PASS` when the UI's mean is below 0.5 and under 0.1 % of its pixels differ by more than 8, else
+`FAIL`. The GPU renderers log their per-scene times every 10 seconds.
+
+`python tools/test/gpu_compare.py <game dir> --api vulkan|d3d12` runs one scripted game in the compare mode (a
+linked copy as in `run_checks.py`, minimized; default `tools/test/skirmish_pause.txt` on Ahaggar with the pixel
+check's fixed seed and pause tick, `--script` / `--args` for others, `--interval` for the compare interval, default
+2000 ms), prints a table of the compare lines with a summary and exits with 1 when one of them is `FAIL`, none was
+made or the game crashed; the pictures, the log and `summary.txt` go to `<game dir>_gpucmp_<api>` (`--out`).
 
 ## Developer tools (`THANDOR_DEV_TOOLS`)
 

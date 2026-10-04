@@ -130,3 +130,21 @@ float4 Ui2dFillMain(Ui2dVaryings input) : SV_Target0
     }
     return color / 255.0;
 }
+
+/* MINIMAP (the Draw2D ROTATED_BILINEAR item, bound with the linear sampler): opaque, bilinear with the weights of the
+   software minimap sampler (SoftwareMinimap_BuildPixelWeightTables, software_texture_scale.cpp). Per axis the
+   position's fraction f (8 bits, as the software takes it) becomes saturate((f - 0.25) * 2): a texel keeps its full
+   weight within a quarter texel of its centre and blends into the next one twice as fast as plain bilinear. The
+   remapped position goes to the linear sampler; the page's black border makes texels outside the image 0. */
+float4 Ui2dMinimapMain(Ui2dVaryings input) : SV_Target0
+{
+    float width;
+    float height;
+    g_Page.GetDimensions(width, height);
+    const float2 size = float2(width, height);
+    const float2 position = input.uv * size - 0.5;
+    const float2 base = floor(position);
+    const float2 fraction = saturate((floor((position - base) * 256.0) / 256.0 - 0.25) * 2.0);
+    const uint4 texel = (uint4)round(g_Page.Sample(g_PageSampler, (base + fraction + 0.5) / size) * 255.0);
+    return float4(texel.rgb / 255.0, 1.0);
+}

@@ -72,11 +72,14 @@ void UpdateMouseMode() noexcept;
    (framebuffer size), then presents that letterboxed with the cursor on top (cursor nullptr: hidden).
    ReadGpuFrame downloads a rectangle of the frame target (the last presented frame without the cursor) as
    0xFFRRGGBB pixels, synchronously (captures). PresentWithGpu (compare mode) uploads the software framebuffer
-   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. Without a swapchain texture
-   (minimized window, dropped mailbox frame) both draw and submit the frame without presenting it. A window that
-   could not get its swapchain yet (Vulkan, minimized at the start) is claimed again once it is not minimized;
-   GpuWindowChanged (the pump, on window restore / show / size events) makes that happen at the next present.
-   Fullscreen and size switches need nothing from here: SDL recreates a claimed window's swapchain itself. */
+   (XRGB8888 rows, pitchBytes apart) and blits it letterboxed into the swapchain. CompareGpuFrame (compare mode,
+   called by the present before the cursor is composed; does nothing otherwise) draws the recorded frame into the
+   frame target without showing it and every OPEN_THANDOR_GPU_COMPARE_MS compares it with the framebuffer
+   (shots\gpucmp_NNNN_*.bmp, statistics in thandor.log). Without a swapchain texture (minimized window, dropped
+   mailbox frame) the frame is drawn and submitted without being presented. A window that could not get its
+   swapchain yet (Vulkan, minimized at the start) is claimed again once it is not minimized; GpuWindowChanged (the
+   pump, on window restore / show / size events) makes that happen at the next present. Fullscreen and size
+   switches need nothing from here: SDL recreates a claimed window's swapchain itself. */
 struct GpuCursorSprite {
   const GraphicsTextureSourceAsset *asset;
   uint32_t subresource;
@@ -92,6 +95,7 @@ bool GpuFrameActive() noexcept;
 bool PresentGpuFrame(const GpuCursorSprite *cursor) noexcept;
 bool ReadGpuFrame(int x, int y, int width, int height, uint32_t *outArgb) noexcept;
 bool PresentWithGpu(const std::byte *pixels, int pitchBytes, int width, int height) noexcept;
+void CompareGpuFrame() noexcept;
 
 /* input.cpp: the event handlers of the pump. */
 void HandleKeyDown(const SDL_KeyboardEvent &event);
