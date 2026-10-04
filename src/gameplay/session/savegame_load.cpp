@@ -120,6 +120,103 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
 }
 
+/* True when a saved 1-based offset (0 = none) names a whole element of elementSize bytes inside a pool of
+   poolBytes bytes. */
+static bool SavedOffset_IsElementInPool(uint32_t savedOffset,uint32_t poolBytes,uint32_t elementSize)
+{
+  return savedOffset != 0 && savedOffset - 1 <= poolBytes - elementSize;
+}
+
+/* Checks the saved form of the resource registration records (widget.hex) before
+   ResourceRegistrationRuntime_RebaseLoadedRecords turns it back into pointers. The original trusts the file: a
+   nestedCount above the 13 nested slots writes past the record, the army texture-set field indexes the eight
+   army graphics bindings unchecked and every saved offset is rebased without a range check; rejected here
+   (FATAL_ERROR_LEVEL_ASSET_INVALID) because the save is untrusted input. Every save written by the game passes:
+   the writer saves only offsets of live pool elements, at most 13 nested children (the model tree loaders bound
+   childCount) and the owner army's faction index. */
+static Bool8 ResourceRegistrationRuntime_ValidateLoadedRecords
+          (const ResourceRegistrationRuntimeImageSavedView *runtimeImage,uint32_t *outError)
+
+{
+  const uint32_t objectPoolBytes = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord);
+  const ResourceRegistrationRecordSavedView *record;
+  uint32_t recordIndex;
+  uint32_t nestedIndex;
+  uint32_t payloadPoolBytes;
+  uint32_t payloadElementSize;
+  const char *problem;
+
+  for (recordIndex = 0; recordIndex < runtimeImage->recordCount; recordIndex++) {
+    record = &runtimeImage->records[recordIndex];
+    problem = nullptr;
+    if ((record->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
+      if ((record->primarySavedIdOrOffset != 0 &&
+           !SavedOffset_IsElementInPool(record->primarySavedIdOrOffset,objectPoolBytes,sizeof(WorldObjectRecord))) ||
+          (record->secondarySavedIdOrOffset != 0 &&
+           !SavedOffset_IsElementInPool(record->secondarySavedIdOrOffset,objectPoolBytes,
+                                        sizeof(WorldObjectRecord))) ||
+          (record->nestedBaseSavedOffset != 0 &&
+           !SavedOffset_IsElementInPool(record->nestedBaseSavedOffset,objectPoolBytes,sizeof(WorldObjectRecord)))) {
+        problem = "object offset";
+      }
+      else if (record->auxiliarySavedIdOrOffset != 0 &&
+               !SavedOffset_IsElementInPool(record->auxiliarySavedIdOrOffset,
+                                            sizeof(g_GraphicsShadingRuntimeRecords),
+                                            sizeof(g_GraphicsShadingRuntimeRecords[0]))) {
+        problem = "shading offset";
+      }
+      else if (record->nestedCount > sizeof(record->nestedSavedOffsets) / sizeof(record->nestedSavedOffsets[0])) {
+        problem = "nested count";
+      }
+      else {
+        for (nestedIndex = 0; nestedIndex < record->nestedCount; nestedIndex++) {
+          if (record->nestedSavedOffsets[nestedIndex] != 0 &&
+              !SavedOffset_IsElementInPool(record->nestedSavedOffsets[nestedIndex],objectPoolBytes,
+                                           sizeof(WorldObjectRecord))) {
+            problem = "nested offset";
+            break;
+          }
+        }
+      }
+      if (problem == nullptr) {
+        payloadPoolBytes = 0;
+        payloadElementSize = 0;
+        switch(record->domainIndex) {
+        case RESOURCE_DOMAIN_ARMY_RUNTIME:
+          if (record->textureSetSavedIdOrOffset >= sizeof(g_ArmyGraphicsBindings) / sizeof(g_ArmyGraphicsBindings[0])) {
+            problem = "army graphics binding";
+          }
+          payloadPoolBytes = MODEL_RUNTIME_POOL_BYTES;
+          payloadElementSize = sizeof(ModelRuntimeSlot);
+          break;
+        case RESOURCE_DOMAIN_SHOT_RUNTIME:
+          payloadPoolBytes = SHOT_RUNTIME_POOL_BYTES;
+          payloadElementSize = sizeof(ShotRuntimeSlot);
+          break;
+        case RESOURCE_DOMAIN_EFFECT_RUNTIME:
+          payloadPoolBytes = EFFECT_RUNTIME_POOL_BYTES;
+          payloadElementSize = sizeof(EffectRuntimeSlot);
+          break;
+        }
+        if (problem == nullptr && payloadElementSize != 0 &&
+            !SavedOffset_IsElementInPool(record->runtimePayloadSavedOffset,payloadPoolBytes,payloadElementSize)) {
+          problem = "payload offset";
+        }
+      }
+    }
+    /* the last nested slot of the last record holds the saved tail record */
+    if (problem == nullptr && recordIndex == runtimeImage->recordCount - 1 && record->nestedSavedOffsets[12] != 0 &&
+        !SavedOffset_IsElementInPool(record->nestedSavedOffsets[12],objectPoolBytes,sizeof(WorldObjectRecord))) {
+      problem = "tail record offset";
+    }
+    if (problem != nullptr) {
+      Thandor_Log("savegame load: widget.hex record %u: invalid %s, rejected",recordIndex,problem);
+      return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
+    }
+  }
+  return true;
+}
+
 /* Loads one saved runtime pool (a .hex entry of the save package) into its buffer; false with the load error in
    *outError, which stays unchanged on success. */
 static Bool8 SavedLevel_LoadRuntimePool
@@ -152,7 +249,9 @@ Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *ou
                                   (uint16_t *)g_ShotHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(sizeof(g_GraphicsShadingRuntimeRecords),
                                   (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)g_LightHexPathUtf16,
-                                  outError)) {
+                                  outError) ||
+      !ResourceRegistrationRuntime_ValidateLoadedRecords
+                 ((const ResourceRegistrationRuntimeImageSavedView *)worldRuntime,outError)) {
     return false;
   }
   ArmyRuntimePool_RebaseAfterLoad();
