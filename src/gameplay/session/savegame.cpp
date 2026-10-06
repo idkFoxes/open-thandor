@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/savegame.h>
 #include <thandor/thandor.h>
+#include <thandor/assets/record_bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /* Module data. */
@@ -41,6 +42,19 @@ uint8_t *g_EffectRuntimeRebaseBaseMinusOne = nullptr;
 
 uint8_t *g_RuntimeObjectRebaseBaseMinusOne = nullptr;
 
+/* A save-image block (a runtime pool, record array or asset image written or cleared as it is) viewed as the
+   dwords Package_UpsertEntry and the dword clear loops take. */
+template <class T> static inline uint32_t *SaveImage_Dwords(T *block)
+{
+  return reinterpret_cast<uint32_t *>(block);
+}
+
+/* The image address of a (base << 32) | byteSize pair from the InGameSaveGame_Prepare* functions. */
+static inline uint32_t *SaveImage_PairImage(ResourceRegistrationImagePair pair)
+{
+  return reinterpret_cast<uint32_t *>(pair >> 32);
+}
+
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
    Returns true when the package is open in *packageHandle. */
 static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
@@ -49,8 +63,8 @@ static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *pack
   if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
     return true;
   }
-  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,g_ResourceRegistrationDirectoryUtf16,
-                              (uint16_t *)savePath);
+  WidePath_SplitParentAndLeaf(reinterpret_cast<uint16_t *>(g_PackageScratchBuffer), /* scratch for the leaf */
+                              g_ResourceRegistrationDirectoryUtf16,static_cast<uint16_t *>(savePath));
   if (g_FileSystemCreateDirectoryRecursive
           (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
     return false;
@@ -72,7 +86,7 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   ArmyRuntimePool_ConvertPointersToOffsetsForSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (PckDecodedByteCount)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)),
-                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)g_ArmyHexPathUtf16,packageHandle);
+                              SaveImage_Dwords(g_ArmyRuntimeSlots),g_ArmyHexPathUtf16,packageHandle);
   ArmyRuntimePool_RebaseAfterLoad();
   if (!upsertOk) {
     return false;
@@ -81,69 +95,71 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   ModelRuntimePool_UnrebaseBeforeSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (PckDecodedByteCount)(MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot)),
-                              (uint32_t *)g_ModelRuntimeSlots,(uint16_t *)g_ModulHexPathUtf16,packageHandle);
+                              SaveImage_Dwords(g_ModelRuntimeSlots),g_ModulHexPathUtf16,packageHandle);
   ModelRuntimePool_RebaseAfterLoad();
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareShotSlots();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_ShotHexPathUtf16,packageHandle);
+                              SaveImage_PairImage(domainImagePair),g_ShotHexPathUtf16,packageHandle);
   ShotRuntime_RebaseSlotsAfterLoad();
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareEffectSlots();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_EffectHexPathUtf16,packageHandle);
+                              SaveImage_PairImage(domainImagePair),g_EffectHexPathUtf16,packageHandle);
   EffectRuntime_RebaseSlotsAfterLoad();
   if (!upsertOk) {
     return false;
   }
-  domainImagePair = InGameSaveGame_PrepareRegistrationRecords((ResourceRegistrationRuntimeImageSavedView *)worldView);
+  domainImagePair =
+       InGameSaveGame_PrepareRegistrationRecords(static_cast<ResourceRegistrationRuntimeImageSavedView *>(worldView));
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_WidgetHexPathUtf16,packageHandle);
-  ResourceRegistrationRuntime_RebaseLoadedRecords((ResourceRegistrationRuntimeImage *)worldView);
+                              SaveImage_PairImage(domainImagePair),g_WidgetHexPathUtf16,packageHandle);
+  ResourceRegistrationRuntime_RebaseLoadedRecords(static_cast<ResourceRegistrationRuntimeImage *>(worldView));
   if (!upsertOk) {
     return false;
   }
   segmentImage = RuntimeHexSegment_GetLightImageAndToggleFlag();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)g_LightHexPathUtf16,packageHandle);
+                              segmentImage.image,g_LightHexPathUtf16,packageHandle);
   RuntimeHexSegment_ToggleLightImageFlag();
   if (!upsertOk) {
     return false;
   }
-  segmentImage = RuntimeHexSegment_GetFieldImage((InGameFieldImageSaveContext58 *)worldView);
+  segmentImage = RuntimeHexSegment_GetFieldImage(static_cast<InGameFieldImageSaveContext58 *>(worldView));
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)g_FieldHexPathUtf16,packageHandle);
-  RuntimeHexSegment_AfterFieldImageNoOp((InGameFieldImageSaveContext58 *)worldView);
+                              segmentImage.image,g_FieldHexPathUtf16,packageHandle);
+  RuntimeHexSegment_AfterFieldImageNoOp(static_cast<InGameFieldImageSaveContext58 *>(worldView));
   levelStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if (!upsertOk) {
     return false;
   }
-  InGameSaveGame_StoreCameraAsPlayerStart((ResourceRegistrationRuntimeImage *)worldView);
+  InGameSaveGame_StoreCameraAsPlayerStart(static_cast<ResourceRegistrationRuntimeImage *>(worldView));
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (levelStorage->levelImage).header.resourceTables.
-                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)levelStorage,
-                              (uint16_t *)g_LevelHexPathUtf16,packageHandle);
+                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,SaveImage_Dwords(levelStorage),
+                              g_LevelHexPathUtf16,packageHandle);
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareFactionImage();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_DatenHexPathUtf16,packageHandle);
+                              SaveImage_PairImage(domainImagePair),g_DatenHexPathUtf16,packageHandle);
   GameFactionRuntime_RebaseLoadedArmyReferences();
   if (!upsertOk) {
     return false;
   }
   if (g_FrontendLoadedCampaignAsset == 0) {
-    Package_DeleteEntry((uint16_t *)g_CampagneHexPathUtf16,packageHandle,nullptr);
+    Package_DeleteEntry(g_CampagneHexPathUtf16,packageHandle,nullptr);
     return true;
   }
-  return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
-                             (uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset,
-                             (uint16_t *)g_CampagneHexPathUtf16,packageHandle);
+  /* the loaded CGN image, kept as an integer address; its dword 1 is the allocation size */
+  return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,reinterpret_cast<uint32_t *>(g_FrontendLoadedCampaignAsset)[1],
+                             reinterpret_cast<uint32_t *>(g_FrontendLoadedCampaignAsset),
+                             g_CampagneHexPathUtf16,packageHandle);
 }
 
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
@@ -152,8 +168,8 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
 static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
 
 {
-  void *handle = (void *)(uintptr_t)packageHandle;
-  InGameSavePackageHeader *header = (InGameSavePackageHeader *)g_PackageScratchBuffer;
+  void *handle = reinterpret_cast<void *>(packageHandle); /* the Win32 HANDLE */
+  InGameSavePackageHeader *header = reinterpret_cast<InGameSavePackageHeader *>(g_PackageScratchBuffer);
   uint32_t dateTextByteLength;
   uint16_t *timeText;
   uint32_t campaignIndex;
@@ -162,11 +178,12 @@ static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle p
       g_FileSystemReadExact(sizeof(InGameSavePackageHeader),header,handle) != 0) {
     return false;
   }
-  WidePath_SplitParentAndLeaf(header->saveNameUtf16,(uint16_t *)(header + 1),(uint16_t *)savePath);
+  WidePath_SplitParentAndLeaf
+            (header->saveNameUtf16,Asset_RecordAfter<uint16_t>(header),static_cast<uint16_t *>(savePath));
   header->packedDate = g_LocaleGetPackedCurrentDate();
   header->packedTime = g_LocaleGetPackedCurrentTime();
   dateTextByteLength = g_LocaleFormatCurrentDateUtf16(header->dateTimeTextUtf16);
-  timeText = (uint16_t *)((uint8_t *)header->dateTimeTextUtf16 + dateTextByteLength + 4);
+  timeText = Asset_RecordAt<uint16_t>(header->dateTimeTextUtf16,static_cast<size_t>(dateTextByteLength) + 4);
   timeText[-2] = L','; /* ", " between date and time */
   timeText[-1] = L' ';
   g_LocaleFormatCurrentTimeUtf16(timeText);
@@ -195,11 +212,11 @@ static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
   if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
     return false;
   }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,(uint32_t *)g_GameStatTableImage,
-                      (uint16_t *)g_StatHexPathUtf16,packageHandle);
+  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,static_cast<uint32_t *>(g_GameStatTableImage),
+                      g_StatHexPathUtf16,packageHandle);
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
-    Package_DeleteEntry((uint16_t *)g_OldunitHexPathUtf16,packageHandle,nullptr);
+    Package_DeleteEntry(g_OldunitHexPathUtf16,packageHandle,nullptr);
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
     return false;
@@ -251,12 +268,14 @@ Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle
 
 {
   uint8_t *header;
+  PckArchiveHeader *archiveHeader;
   uint32_t packedTime;
   uint32_t packedDate;
   int byteIndex;
   EngineFileHandle mountedHandle;
 
   header = g_PackageScratchBuffer;
+  archiveHeader = reinterpret_cast<PckArchiveHeader *>(header); /* the same 0x200 bytes */
   for (byteIndex = 0; byteIndex < PCK_ENTRY_HEADER_BYTES; byteIndex++) {
     header[byteIndex] = 0;
   }
@@ -280,23 +299,23 @@ Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle
   header[15] = 0;
   /* three time/date pairs all set to now */
   packedTime = g_LocaleGetPackedCurrentTime();
-  ((PckArchiveHeader *)header)->timeValue0 = packedTime;
-  ((PckArchiveHeader *)header)->timeValue1 = packedTime;
-  ((PckArchiveHeader *)header)->timeValue2 = packedTime;
+  archiveHeader->timeValue0 = packedTime;
+  archiveHeader->timeValue1 = packedTime;
+  archiveHeader->timeValue2 = packedTime;
   packedDate = g_LocaleGetPackedCurrentDate();
-  ((PckArchiveHeader *)header)->dateValue0 = packedDate;
-  ((PckArchiveHeader *)header)->dateValue1 = packedDate;
-  ((PckArchiveHeader *)header)->dateValue2 = packedDate;
-  g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->producerName);
-  g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->sourceName);
+  archiveHeader->dateValue0 = packedDate;
+  archiveHeader->dateValue1 = packedDate;
+  archiveHeader->dateValue2 = packedDate;
+  g_LocaleCopyDefaultComputerLabelUtf16(archiveHeader->producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16(archiveHeader->sourceName);
   header[256] = 0; /* unusedText: empty */
   /* +0xB0 entryCount = 0 */
   header[176] = 0;
   header[177] = 0;
   header[178] = 0;
   header[179] = 0;
-  FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,(uint16_t *)packagePath);
-  if (!Package_Mount((uint16_t *)packagePath,&mountedHandle)) {
+  FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,static_cast<uint16_t *>(packagePath));
+  if (!Package_Mount(static_cast<uint16_t *>(packagePath),&mountedHandle)) {
     return false;
   }
   *outHandle = mountedHandle;
@@ -338,7 +357,7 @@ InGameSaveGame_PrepareRegistrationRecords
   do {
     if ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
       /* free record: zero its 0x40 dwords */
-      recordDword = (uint32_t *)recordCursor;
+      recordDword = SaveImage_Dwords(recordCursor);
       for (clearCount = sizeof(ResourceRegistrationRecordSavedView) / 4; clearCount != 0; clearCount--) {
         *recordDword = 0;
         recordDword++;
@@ -411,7 +430,7 @@ InGameSaveGame_PrepareRegistrationRecords
   recordCount = runtimeImage->recordCount;
   /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
   records[recordCount - 1].nestedSavedOffsets[12] = Thandor_PointerToU32(tailRecord); /* 32-bit format field: ResourceRegistrationRecordSavedView.nestedSavedOffsets[12] (saved tail record) */
-  return ((uint64_t)(uint32_t)(uintptr_t)records << 32) |
+  return ((uint64_t)(uint32_t)reinterpret_cast<uintptr_t>(records) << 32) |
          (uint32_t)(recordCount * sizeof(ResourceRegistrationRecordSavedView));
 }
 
@@ -460,7 +479,8 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareFactionImage()
       runtimeMembers[memberIndex] = runtimeMember;
     }
   }
-  return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | sizeof(GameFactionRuntimeImage);
+  return ((uint64_t)(uint32_t)reinterpret_cast<uintptr_t>(&g_GameFactionRuntimeImage) << 32) |
+         sizeof(GameFactionRuntimeImage);
 }
 
 /* Save-game preparation of the 0x1000 effect runtime slots (the "effect.hex" entry): in every used slot the
@@ -485,7 +505,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareEffectSlots()
     slot = g_EffectRuntimeSlots + slotIndex;
     if (slot->modelNodeOrSavedOffset.modelNode == nullptr) {
       /* free slot: zero its 0x10 dwords */
-      slotWords = (uint32_t *)slot;
+      slotWords = SaveImage_Dwords(slot);
       for (wordIndex = 0; wordIndex < 16; wordIndex++) {
         slotWords[wordIndex] = 0;
       }
@@ -500,7 +520,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareEffectSlots()
     ownerModelNode = slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != nullptr) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-        ownerModelNode = (ModelRuntimeNode *)(Thandor_PointerToI32(ownerModelNode) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
+        ownerModelNode = reinterpret_cast<ModelRuntimeNode *>(Thandor_PointerToI32(ownerModelNode) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: EffectRuntimeSlot.lifecycleOwnerAndDefinition.owner */
       }
       else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         ownerModelNode =
@@ -514,7 +534,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareEffectSlots()
     slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
     slot->definitionOrSavedId = serializedDefinitionId;
   }
-  return ((uint64_t)(uint32_t)(uintptr_t)g_EffectRuntimeSlots << 32) |
+  return ((uint64_t)(uint32_t)reinterpret_cast<uintptr_t>(g_EffectRuntimeSlots) << 32) |
          (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
 }
 
@@ -541,7 +561,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareShotSlots()
     slot = g_ShotRuntimeSlots + slotIndex;
     if (slot->modelNodeOrSavedOffset.modelNode == nullptr) {
       /* free slot: zero its 0x10 dwords */
-      slotWords = (uint32_t *)slot;
+      slotWords = SaveImage_Dwords(slot);
       for (wordIndex = 0; wordIndex < 16; wordIndex++) {
         slotWords[wordIndex] = 0;
       }
@@ -557,7 +577,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareShotSlots()
     runtimeStateRef = slot->runtimeStateOrSavedOffset.runtimeStatePointer;
     ownerArmyRuntime = slot->ownerAndTrajectory.ownerArmyRuntime;
     if (runtimeStateRef != nullptr) {
-      runtimeStateRef = (void *)(Thandor_PointerToI32(runtimeStateRef) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: ShotRuntimeSlot.runtimeStateOrSavedOffset */
+      runtimeStateRef = reinterpret_cast<void *>(Thandor_PointerToI32(runtimeStateRef) - g_ModelRuntimeRebaseDelta); /* 32-bit format field: ShotRuntimeSlot.runtimeStateOrSavedOffset */
     }
     if (ownerArmyRuntime != nullptr) {
       ownerArmyRuntime =
@@ -571,7 +591,7 @@ ResourceRegistrationImagePair InGameSaveGame_PrepareShotSlots()
     slot->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
     slot->definitionOrSavedId = serializedDefinitionId;
   }
-  return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | SHOT_RUNTIME_POOL_BYTES;
+  return ((uint64_t)(uint32_t)reinterpret_cast<uintptr_t>(g_ShotRuntimeSlots) << 32) | SHOT_RUNTIME_POOL_BYTES;
 }
 
 /* Before the level image is saved: stores the current camera (orientation as magnitude plus packed
@@ -592,13 +612,12 @@ void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *r
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
           [runtimeImage->factionAssignmentIndex - 1];
-  cameraOrientation = WorldRuntime_GetCameraOrientation((WorldRuntimeContext *)runtimeImage);
-  playerSlot = (LevelPlayerSlotRecord *)((uint8_t *)levelConditionStorage->levelImage.playerSlots +
-                                         playerSlotByteOffset);
+  cameraOrientation = WorldRuntime_GetCameraOrientation(reinterpret_cast<WorldRuntimeContext *>(runtimeImage));
+  playerSlot = Asset_RecordAt<LevelPlayerSlotRecord>(levelConditionStorage->levelImage.playerSlots,playerSlotByteOffset);
   playerSlot->startCameraMagnitudeQ12 = cameraOrientation.magnitudeQ12;
   playerSlot->packedHeadingLow16PitchHigh16 =
        cameraOrientation.headingAngle & FIXED_ANGLE16_MASK | cameraOrientation.pitchAngle << 16;
-  cameraPosition = WorldRuntime_GetCameraPosition((WorldRuntimeContext *)runtimeImage);
+  cameraPosition = WorldRuntime_GetCameraPosition(reinterpret_cast<WorldRuntimeContext *>(runtimeImage));
   playerSlot->startCameraXQ12 = cameraPosition.xQ12;
   playerSlot->startCameraYQ12 = cameraPosition.yQ12;
   playerSlot->startCameraZQ12 = cameraPosition.zQ12;
@@ -624,13 +643,13 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave()
     slot = &g_ArmyRuntimeSlots[slotIndex];
     if (slot->modelNodeRuntime == nullptr) {
       /* an unused slot is zeroed dword by dword */
-      slotWords = (uint32_t *)slot;
+      slotWords = SaveImage_Dwords(slot);
       for (wordIndex = 0; wordIndex < (int)(sizeof(ArmyRuntimeSlot) / 4); wordIndex++) {
         slotWords[wordIndex] = 0;
       }
       continue;
     }
-    savedModelRuntimeOffset = (ModelRuntimeSlot *) /* 32-bit format field: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
+    savedModelRuntimeOffset = reinterpret_cast<ModelRuntimeSlot *> /* 32-bit format field: ArmyRuntimeSlot.modelRuntimeOrSavedOffset (army.hex) */
              ((int)(slot->modelRuntimeOrSavedOffset).modelRuntime - g_ModelRuntimeRebaseDelta);
     savedTargetOffset = slot->commandTargetArmyRuntime;
     if (savedTargetOffset != nullptr) {
@@ -660,7 +679,7 @@ RuntimeHexSegmentImage RuntimeHexSegment_GetLightImageAndToggleFlag()
 
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  segment.image = (uint32_t *)g_GraphicsShadingRuntimeRecords;
+  segment.image = SaveImage_Dwords(g_GraphicsShadingRuntimeRecords);
   segment.byteSize = sizeof(g_GraphicsShadingRuntimeRecords);
   return segment;
 }
@@ -685,7 +704,7 @@ RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveConte
 {
   RuntimeHexSegmentImage segment;
 
-  segment.image = (uint32_t *)fieldImageContext->fieldGridAsset;
+  segment.image = static_cast<uint32_t *>(fieldImageContext->fieldGridAsset); /* the field image as dwords */
   segment.byteSize = (uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
   return segment;
 }

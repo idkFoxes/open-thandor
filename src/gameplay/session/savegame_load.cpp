@@ -9,6 +9,12 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* A runtime pool viewed as the raw bytes its save entry is loaded into. */
+template <class T> static inline uint8_t *SavedLevel_PoolBytes(T *pool)
+{
+  return reinterpret_cast<uint8_t *>(pool);
+}
+
 /* Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
    load and after writing a savegame: the 1-based offsets become runtime-object, shading-record, army/shot/effect
    slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also
@@ -39,8 +45,8 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
       primaryPointer = Thandor_U32ToPointer<uint8_t>((registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
-      secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
-      nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
+      secondaryPointer = static_cast<uint8_t *>((registrationRecord->secondaryPointerOrSavedOffset).runtimePointer);
+      nestedBasePointer = static_cast<uint8_t *>((registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer);
       /* 1-based offsets from the runtime-object base; 0 stays NULL */
       if (primaryPointer != nullptr) {
         primaryPointer = primaryPointer + Thandor_PointerToI32(g_RuntimeObjectRebaseBaseMinusOne); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
@@ -59,7 +65,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       nestedCount = registrationRecord->nestedCount;
       if (auxiliaryPointer != nullptr) {
         /* 1-based offset from the shading records; 0 is null */
-        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + Thandor_PointerToI32(auxiliaryPointer)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
+        auxiliaryPointer = reinterpret_cast<uint8_t *>(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + Thandor_PointerToI32(auxiliaryPointer)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
       }
       (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = Thandor_PointerToU32(auxiliaryPointer); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
       /* the nested pointers are 1-based offsets from the runtime-object base as well */
@@ -74,20 +80,21 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       switch(registrationRecord->domainIndex) {
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
         /* textureSet holds the army graphics binding index until here */
-        payloadSlot = (ArmyRuntimeSlot *)
+        payloadSlot = reinterpret_cast<ArmyRuntimeSlot *>
                      (Thandor_PointerToI32(payloadSlot) + g_ModelRuntimeRebaseDelta); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
         selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset; /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet; /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->paletteAsset = selectedPalette;
         break;
       case RESOURCE_DOMAIN_SHOT_RUNTIME:
-        payloadSlot = (ArmyRuntimeSlot *)
+        /* the payload is handled through its army view in every domain */
+        payloadSlot = reinterpret_cast<ArmyRuntimeSlot *>
                      (g_ShotRuntimeRebaseBaseMinusOne + Thandor_PointerToI32(payloadSlot)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
         registrationRecord->textureSet = g_ShotTextureSet;
         registrationRecord->paletteAsset = g_ShotPalette;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
-        payloadSlot = (ArmyRuntimeSlot *)
+        payloadSlot = reinterpret_cast<ArmyRuntimeSlot *>
                      (g_EffectRuntimeRebaseBaseMinusOne + Thandor_PointerToI32(payloadSlot)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
@@ -112,7 +119,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
            [12].runtimePointer;
   tailRecord = nullptr;
   if (tailNestedPointer != nullptr) {
-    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(tailNestedPointer)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
+    tailRecord = reinterpret_cast<ResourceRegistrationRecord *>(g_RuntimeObjectRebaseBaseMinusOne + Thandor_PointerToI32(tailNestedPointer)); /* 32-bit format field: ResourceRegistrationRecord saved offsets (widget.hex) */
   }
   runtimeImage->tailRecord = tailRecord;
   (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
@@ -235,28 +242,30 @@ Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *ou
 
 {
   if (!SavedLevel_LoadRuntimePool(worldRuntime->objectCount * sizeof(WorldObjectRecord),
-                                  (uint8_t *)worldRuntime->objectArray,(uint16_t *)g_WidgetHexPathUtf16,
+                                  static_cast<uint8_t *>(worldRuntime->objectArray),g_WidgetHexPathUtf16,
                                   outError) ||
-      !SavedLevel_LoadRuntimePool(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(uint8_t *)g_ArmyRuntimeSlots,
-                                  (uint16_t *)g_ArmyHexPathUtf16,outError) ||
-      !SavedLevel_LoadRuntimePool(MODEL_RUNTIME_POOL_BYTES,(uint8_t *)g_ModelRuntimeSlots,
-                                  (uint16_t *)g_ModulHexPathUtf16,outError) ||
-      !SavedLevel_LoadRuntimePool(EFFECT_RUNTIME_POOL_BYTES,(uint8_t *)g_EffectRuntimeSlots,
-                                  (uint16_t *)g_EffectHexPathUtf16,outError) ||
-      !SavedLevel_LoadRuntimePool(SHOT_RUNTIME_POOL_BYTES,(uint8_t *)g_ShotRuntimeSlots,
-                                  (uint16_t *)g_ShotHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),
+                                  SavedLevel_PoolBytes(g_ArmyRuntimeSlots),
+                                  g_ArmyHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(MODEL_RUNTIME_POOL_BYTES,SavedLevel_PoolBytes(g_ModelRuntimeSlots),
+                                  g_ModulHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(EFFECT_RUNTIME_POOL_BYTES,SavedLevel_PoolBytes(g_EffectRuntimeSlots),
+                                  g_EffectHexPathUtf16,outError) ||
+      !SavedLevel_LoadRuntimePool(SHOT_RUNTIME_POOL_BYTES,SavedLevel_PoolBytes(g_ShotRuntimeSlots),
+                                  g_ShotHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(sizeof(g_GraphicsShadingRuntimeRecords),
-                                  (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)g_LightHexPathUtf16,
+                                  SavedLevel_PoolBytes(g_GraphicsShadingRuntimeRecords),g_LightHexPathUtf16,
                                   outError) ||
       !ResourceRegistrationRuntime_ValidateLoadedRecords
-                 ((const ResourceRegistrationRuntimeImageSavedView *)worldRuntime,outError)) {
+                 (reinterpret_cast<const ResourceRegistrationRuntimeImageSavedView *>(worldRuntime),outError)) {
     return false;
   }
   ArmyRuntimePool_RebaseAfterLoad();
   ModelRuntimePool_RebaseAfterLoad();
   ShotRuntime_RebaseSlotsAfterLoad();
   EffectRuntime_RebaseSlotsAfterLoad();
-  ResourceRegistrationRuntime_RebaseLoadedRecords((ResourceRegistrationRuntimeImage *)worldRuntime);
+  /* the registration image is a view of the world runtime context's first 0xDC bytes */
+  ResourceRegistrationRuntime_RebaseLoadedRecords(reinterpret_cast<ResourceRegistrationRuntimeImage *>(worldRuntime));
   RuntimeHexSegment_ToggleLightImageFlag();
   return true;
 }
@@ -282,7 +291,8 @@ void ArmyRuntimePool_RebaseAfterLoad()
       continue;
     }
     /* modelRuntime + g_ModelRuntimeRebaseDelta */
-    rebasedModelRuntime = (uint8_t *)(slot->modelRuntimeOrSavedOffset).modelRuntime + g_ModelRuntimeRebaseDelta;
+    rebasedModelRuntime =
+         static_cast<uint8_t *>((slot->modelRuntimeOrSavedOffset).modelRuntime) + g_ModelRuntimeRebaseDelta;
     rebasedCommandTarget = nullptr;
     if (slot->commandTargetArmyRuntime != nullptr) {
       rebasedCommandTarget = /* 32-bit format field: ArmyRuntimeSlot.commandTargetArmyRuntime (army.hex) */
@@ -290,9 +300,9 @@ void ArmyRuntimePool_RebaseAfterLoad()
     }
     /* modelNodeRuntime + g_RuntimeObjectRebaseBaseMinusOne */
     slot->modelNodeRuntime = /* 32-bit format field: ArmyRuntimeSlot.modelNodeRuntime (army.hex) */
-         (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)slot->modelNodeRuntime);
+         reinterpret_cast<ModelRuntimeNode *>(g_RuntimeObjectRebaseBaseMinusOne + (int)slot->modelNodeRuntime);
     savedAssignedTargetOffset = slot->assignedTargetArmyRuntime;
-    (slot->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)rebasedModelRuntime;
+    (slot->modelRuntimeOrSavedOffset).modelRuntime = static_cast<ModelRuntimeSlot *>(rebasedModelRuntime);
     if (savedAssignedTargetOffset != 0) {
       savedAssignedTargetOffset = savedAssignedTargetOffset + Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne); /* 32-bit format field: ArmyRuntimeSlot.assignedTargetArmyRuntime (army.hex) */
     }
