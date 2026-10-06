@@ -51,7 +51,7 @@ template <class T> struct ThandorSlotPrefixOf {
 };
 #define THANDOR_SLOT_PREFIX(T, member)                                                                          \
     template <> struct ThandorSlotPrefixOf<T> {                                                                 \
-        using type = std::remove_cv_t<decltype(((T *)nullptr)->member)>;                                        \
+        using type = std::remove_cv_t<decltype(static_cast<T *>(nullptr)->member)>;                             \
         static_assert(std::is_class_v<type> && std::is_standard_layout_v<T> && std::is_standard_layout_v<type>, \
                       "THANDOR_SLOT_PREFIX(" #T ", " #member "): both types must be standard-layout structs");  \
         static_assert(offsetof(T, member) == 0,                                                                 \

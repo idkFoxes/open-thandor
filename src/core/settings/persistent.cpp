@@ -11,6 +11,7 @@
 #include <string.h>
 #include <thandor/core/settings/persistent.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 #include <thandor/platform/bootstrap/image.h>
 
 /*
@@ -487,8 +488,8 @@ static void PersistentIni_ParseName(const char *begin, const char *end, uint8_t 
 {
   uint32_t unitCount = PERSISTENT_SETTINGS_NAME_BYTES / 2;
   uint32_t written = 0;
-  const uint8_t *cursor = (const uint8_t *)begin;
-  const uint8_t *limit = (const uint8_t *)end;
+  const uint8_t *cursor = reinterpret_cast<const uint8_t *>(begin);
+  const uint8_t *limit = reinterpret_cast<const uint8_t *>(end);
 
   memset(field, 0, PERSISTENT_SETTINGS_NAME_BYTES);
   while (cursor < limit) {
@@ -579,7 +580,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       continue;
     }
     if (*lineBegin == '[') {
-      const char *close = (const char *)memchr(lineBegin, ']', (size_t)(lineEnd - lineBegin));
+      const char *close = static_cast<const char *>(memchr(lineBegin, ']', (size_t)(lineEnd - lineBegin)));
 
       if (close != nullptr) {
         sectionBegin = lineBegin + 1;
@@ -588,7 +589,7 @@ uint64_t PersistentSettings_ParseIni(const char *text, uint32_t length, uint8_t 
       }
       continue;
     }
-    equals = (const char *)memchr(lineBegin, '=', (size_t)(lineEnd - lineBegin));
+    equals = static_cast<const char *>(memchr(lineBegin, '=', (size_t)(lineEnd - lineBegin)));
     if (equals == nullptr || sectionBegin == nullptr) {
       continue;
     }
@@ -694,7 +695,7 @@ void PersistentSettings_Flush()
     PersistentSettings_Write(g_LocaleCountryCodeOverride,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
     if (g_PersistentSettings.dirtyWriteCount != 0) {
       iniLength = PersistentSettings_FormatIni
-                    ((const uint8_t *)g_PersistentSettings.image,
+                    (Thandor_Bytes(g_PersistentSettings.image.get()),
                      s_PersistentSettingsPresentMask | s_PersistentSettingsWrittenMask,iniText,sizeof iniText);
       FileSystem_WriteBufferToPath(iniLength,iniText,s_PersistentSettingsIniPath);
       g_PersistentSettings.dirtyWriteCount = 0;
@@ -718,7 +719,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
 
   if (g_FileSystemOpen(0,s_PersistentSettingsIniPath,&fileHandle) != 0) {
     WidePath_CombineDirectoryAndLeaf
-              (g_FileSystemCombinedPathScratchUtf16,(uint16_t *)s_PersistentSettingsIniLeaf,
+              (g_FileSystemCombinedPathScratchUtf16,const_cast<uint16_t *>(s_PersistentSettingsIniLeaf) /* only read */,
                g_ExecutableDirectoryUtf16);
     if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
       return false;
@@ -732,7 +733,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
     g_FileSystemClose(fileHandle);
     return false;
   }
-  text = (char *)malloc(fileSize + 1);
+  text = static_cast<char *>(malloc(fileSize + 1));
   if (text == nullptr || (fileSize != 0 && g_FileSystemReadExact(fileSize,text,fileHandle) != 0)) {
     free(text);
     g_FileSystemClose(fileHandle);
@@ -740,7 +741,7 @@ static bool PersistentSettings_LoadIni(PersistentSettingsImage *image)
   }
   g_FileSystemClose(fileHandle);
   text[fileSize] = 0;
-  presentMask = PersistentSettings_ParseIni(text,fileSize,(uint8_t *)image);
+  presentMask = PersistentSettings_ParseIni(text,fileSize,Thandor_Bytes(image));
   free(text);
   s_PersistentSettingsPresentMask = presentMask;
   if ((presentMask & PersistentSettings_DwordMask(PERSISTENT_SETTING_LOCALE_COUNTRY_CODE,4)) != 0) {
@@ -778,14 +779,14 @@ static void PersistentSettings_LoadImage()
   s_PersistentSettingsPresentMask = 0;
   s_PersistentSettingsWrittenMask = 0;
   memcpy(s_PersistentSettingsIniPath,s_PersistentSettingsIniLeaf,sizeof s_PersistentSettingsIniLeaf);
-  if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,(void **)&clearCursor) != 0) {
+  if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,reinterpret_cast<void **>(&clearCursor)) /* the payload as dwords */ != 0) {
     return;
   }
   for (dwordsRemaining = PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
     *clearCursor = 0;
     clearCursor++;
   }
-  image = (PersistentSettingsImage *)(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
+  image = reinterpret_cast<PersistentSettingsImage *>(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
   if (PersistentSettings_LoadIni(image)) {
     return;
   }
@@ -842,11 +843,11 @@ static void PersistentSettings_NormalizeColorDepth()
 {
   if ((g_PersistentSettings.image == nullptr) ||
       !PersistentSettings_IsPresent(PERSISTENT_SETTING_BITS_PER_PIXEL, 4) ||
-      (PersistentIni_GetDword((const uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL) ==
+      (PersistentIni_GetDword(Thandor_Bytes(g_PersistentSettings.image.get()), PERSISTENT_SETTING_BITS_PER_PIXEL) ==
        PERSISTENT_DEFAULT_BITS_PER_PIXEL)) {
     return;
   }
-  PersistentIni_SetDword((uint8_t *)g_PersistentSettings.image, PERSISTENT_SETTING_BITS_PER_PIXEL,
+  PersistentIni_SetDword(Thandor_Bytes(g_PersistentSettings.image.get()), PERSISTENT_SETTING_BITS_PER_PIXEL,
                          PERSISTENT_DEFAULT_BITS_PER_PIXEL);
   s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(PERSISTENT_SETTING_BITS_PER_PIXEL, 4);
   g_PersistentSettings.dirtyWriteCount++; /* the next Flush writes it */
@@ -867,7 +868,7 @@ uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
 
 {
   if ((g_PersistentSettings.image != nullptr) && PersistentSettings_IsPresent(settingsOffsetBytes,4)) {
-    defaultValue = *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
+    defaultValue = *Thandor_At<PersistentSettingsValue>(g_PersistentSettings.image.get(), settingsOffsetBytes);
   }
   return defaultValue;
 }
@@ -882,7 +883,7 @@ void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount region
 {
   if ((g_PersistentSettings.image != nullptr) &&
      PersistentSettings_IsPresent(settingsOffsetBytes,regionByteCount)) {
-    fallback = (uint8_t *)g_PersistentSettings.image + settingsOffsetBytes;
+    fallback = Thandor_At(g_PersistentSettings.image.get(), settingsOffsetBytes);
   }
   return fallback;
 }
@@ -901,7 +902,7 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
 
   if ((g_PersistentSettings.image != nullptr) &&
      (settingsOffsetBytes + regionByteCount < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
-    destination = (uint32_t *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
+    destination = Thandor_At<uint32_t>(g_PersistentSettings.image.get(), settingsOffsetBytes);
     dwordsRemaining = regionByteCount >> 2;
     if (dwordsRemaining != 0) {
       s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(settingsOffsetBytes,dwordsRemaining * 4);
@@ -926,8 +927,8 @@ void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsBy
   if ((g_PersistentSettings.image != nullptr) &&
       (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
     s_PersistentSettingsWrittenMask |= PersistentSettings_DwordMask(settingsOffsetBytes,4);
-    if (*(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) != value) {
-      *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) = value;
+    if (*Thandor_At<PersistentSettingsValue>(g_PersistentSettings.image.get(), settingsOffsetBytes) != value) {
+      *Thandor_At<PersistentSettingsValue>(g_PersistentSettings.image.get(), settingsOffsetBytes) = value;
       g_PersistentSettings.dirtyWriteCount++;
     }
   }

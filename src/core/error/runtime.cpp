@@ -68,13 +68,13 @@ void FatalError_ShowAndExit(uintptr_t error)
   uint16_t *messageText;
 
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
-  Thandor_Log("fatal error 0x%08IX, last path \"%ls\"", error, (wchar_t *)g_PackageLastErrorPath);
+  Thandor_Log("fatal error 0x%08IX, last path \"%ls\"", error, reinterpret_cast<wchar_t *>(g_PackageLastErrorPath)); /* UTF-16 as %ls */
   Thandor_LogStack("fatal error stack", (unsigned)error);
   if (FATAL_ERROR_IS_CODE(error)) {
     messageText = TextResource_Resolve((uint32_t)error);
   }
   else {
-    messageText = (uint16_t *)error;
+    messageText = reinterpret_cast<uint16_t *>(error); /* not a code: the text's address */
   }
   /* payload selectors 0..3 of the message text */
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,messageText);
@@ -84,6 +84,6 @@ void FatalError_ShowAndExit(uintptr_t error)
   FatalError_CopyRichTextToNarrow(sizeof g_FatalErrorNarrowBuffer,g_FatalErrorNarrowBuffer,messageText);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
-  MessageBoxA(nullptr,(LPCSTR)g_FatalErrorNarrowBuffer,nullptr,MB_ICONEXCLAMATION);
+  MessageBoxA(nullptr,reinterpret_cast<LPCSTR>(g_FatalErrorNarrowBuffer),nullptr,MB_ICONEXCLAMATION);
   ExitProcess(0);
 }
