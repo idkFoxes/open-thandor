@@ -67,12 +67,12 @@ static void InGameEditorKeyboard_SelectMaterialBackward(int stepCount,UiRootNode
 
   materialIndex = g_UiCommandAbsoluteSelectionIndex - 1;
   remainingSteps = stepCount;
-  if ((int)materialIndex < 0) {
+  if (static_cast<int>(materialIndex) < 0) {
     materialIndex = TERRAIN_MATERIAL_COUNT - 1;
   }
   while (g_TerrainMaterialTextureSets[materialIndex] == nullptr || --remainingSteps != 0) {
     materialIndex--;
-    if ((int)materialIndex < 0) {
+    if (static_cast<int>(materialIndex) < 0) {
       materialIndex = TERRAIN_MATERIAL_COUNT - 1;
     }
   }
@@ -109,9 +109,10 @@ static void InGameEditorKeyboard_HoverUnitPlacementArmy()
   uintptr_t hoverRecordValue;
 
   armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-  hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uintptr_t)foundArmyAsset,
+  hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError
+                                                                  : reinterpret_cast<uintptr_t>(foundArmyAsset),
                                               armyLookupError != 0);
-  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
+  g_UiHoverSelectionRecord = reinterpret_cast<UiCommandRuntimeRecordPrefix *>(hoverRecordValue);
   InGameSelectionDetailPanel_Rebuild();
 }
 
@@ -120,9 +121,9 @@ static void InGameEditorKeyboard_ShowUnitPlacementArmy(UiRootNode *uiRoot)
 {
   GraphicsTextureSourceAsset *previewTexture;
 
-  previewTexture = (GraphicsTextureSourceAsset *)
-           ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = previewTexture;
+  previewTexture = reinterpret_cast<GraphicsTextureSourceAsset *>
+           (ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId));
+  InGameUi_Image(uiRoot)->unitPlacementPreviewImage.textureSource = previewTexture;
   InGameEditorKeyboard_HoverUnitPlacementArmy();
 }
 
@@ -131,9 +132,17 @@ static void InGameEditorKeyboard_ShowObjectPlacementArmy(UiRootNode *uiRoot)
 {
   GraphicsTextureSourceAsset *previewTexture;
 
-  previewTexture = (GraphicsTextureSourceAsset *)
-           ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
-  ((UiImagePanelControl *)INGAME_UI(uiRoot,objectPlacementPreviewImage))->textureSource = previewTexture;
+  previewTexture = reinterpret_cast<GraphicsTextureSourceAsset *>
+           (ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId));
+  InGameUi_Image(uiRoot)->objectPlacementPreviewImage.textureSource = previewTexture;
+}
+
+/* The editor mode tab G4 as the selectable control InGameCommandModeG_Select4 takes. The image keeps the node as
+   UiNodeBase + fields because it is one dword short of a UiSpriteButtonControl (minimapView follows at +0x74);
+   its selectable part lies inside. */
+static UiSelectableControl *InGameEditorKeyboard_ObjectPlacementTab(InGameUiImage *image)
+{
+  return reinterpret_cast<UiSelectableControl *>(&image->editorModeTabObjectPlacement);
 }
 
 /* Arrow key with Ctrl and/or Shift: Ctrl turns the light direction, Shift turns the auxiliary angles (moves
@@ -159,7 +168,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot)
 
 {
-  UiNodeVtable **stack;
+  InGameUiImage *image;
+  UiPageStackControl *sidePanelStack;
   const UiCommandDispatchRecord *dispatchRecord;
   uint32_t activePageIndex;
 
@@ -171,27 +181,28 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   if (dispatchRecord == nullptr) {
     return;
   }
+  image = InGameUi_Image(uiRoot);
   switch(dispatchRecord->continuationEntryAddress) {
   case 0x56e5e0: /* Alt+I: show or hide the side panel */
-    stack = (struct UiNodeVtable * *)INGAME_UI(uiRoot,sidePanelStack);
-    activePageIndex = UiPageStack_ActivePageIndex((UiPageStackControl *)stack);
+    sidePanelStack = UiLayoutContainerControl_AsPageStack(&image->sidePanelStack);
+    activePageIndex = UiPageStack_ActivePageIndex(sidePanelStack);
     if (activePageIndex == 0) {
-      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
-      UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,resourceBarModeStack));
-      UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,gamePanelsModeStack));
-      INGAME_UI(uiRoot,worldViewArea)->rightOffset = 0;
+      UiPageStack_SetActiveIndex(1,sidePanelStack);
+      UiPageStack_SetActiveIndex(2,UiLayoutContainerControl_AsPageStack(&image->resourceBarModeStack));
+      UiPageStack_SetActiveIndex(2,UiLayoutContainerControl_AsPageStack(&image->gamePanelsModeStack));
+      image->worldViewArea.base.rightOffset = 0;
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     else {
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)stack);
-      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(uiRoot,resourceBarModeStack));
-      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(uiRoot,gamePanelsModeStack));
-      INGAME_UI(uiRoot,worldViewArea)->rightOffset = INGAME_UI(uiRoot,sidePanelFrameLeftEdge)->leftOffset;
+      UiPageStack_SetActiveIndex(0,sidePanelStack);
+      UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->resourceBarModeStack));
+      UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&image->gamePanelsModeStack));
+      image->worldViewArea.base.rightOffset = image->sidePanelFrameLeftEdge.base.leftOffset;
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     break;
   case 0x56e670: /* Ctrl+I: next of the world view info texts (the text field holds the text resource id) */
-    InGameWorldView_ShowNextInfoText((UiSingleLineTextControl *)INGAME_UI(uiRoot,worldViewCyclingInfoText));
+    InGameWorldView_ShowNextInfoText(&image->worldViewCyclingInfoText);
     break;
   case 0x56e6a0: /* F2: save the map */
     InGameCommand_Issue<InGameUiCommand_SaveFieldAndLevelAssetImages>(0,0,0);
@@ -285,10 +296,11 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       g_UiCommandModeGOwnerFactionIndex++;
       if (g_GameFactionRuntimeImage.tail.activeFactionCount <
-          (uint32_t)g_UiCommandModeGOwnerFactionIndex) {
+          static_cast<uint32_t>(g_UiCommandModeGOwnerFactionIndex)) {
         g_UiCommandModeGOwnerFactionIndex = 1;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uintptr_t)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected
+                (static_cast<uint32_t>(reinterpret_cast<uintptr_t>(uiRoot)));
     }
     break;
   case 0x56edc0: /* Page Down: previous owner faction for unit placement */
@@ -297,105 +309,106 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
         g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uintptr_t)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected
+                (static_cast<uint32_t>(reinterpret_cast<uintptr_t>(uiRoot)));
     }
     break;
   /* Letter keys: editor tab and tool */
   case 0x56ee00: /* A */
-    InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
-    InGameCommandModeC_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption0));
+    InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
+    InGameCommandModeC_Select0(&image->heightToolOption0);
     break;
   case 0x56ee20: /* H */
-    InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
-    InGameCommandModeC_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption1));
+    InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
+    InGameCommandModeC_Select1(&image->heightToolOption1);
     break;
   case 0x56ee40: /* G */
-    InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
-    InGameCommandModeC_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption2));
+    InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
+    InGameCommandModeC_Select2(&image->heightToolOption2);
     break;
   case 0x56ee60: /* S */
     if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
-      InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
-      InGameCommandModeD_Select3((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption3));
+      InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
+      InGameCommandModeD_Select3(&image->materialToolOption3);
     }
     else {
-      InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
-      InGameCommandModeC_Select3((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption3));
+      InGameCommandModeG_Select0(&image->editorModeTabTerrainHeight.selectable);
+      InGameCommandModeC_Select3(&image->heightToolOption3);
     }
     break;
   case 0x56eeb0: /* P */
-    InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
-    InGameCommandModeD_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption0));
+    InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
+    InGameCommandModeD_Select0(&image->materialToolOption0);
     break;
   case 0x56eed0: /* F */
-    InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
-    InGameCommandModeD_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption1));
+    InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
+    InGameCommandModeD_Select1(&image->materialToolOption1);
     break;
   case 0x56eef0: /* T */
-    InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
-    InGameCommandModeD_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption2));
+    InGameCommandModeG_Select1(&image->editorModeTabTerrainMaterial.selectable);
+    InGameCommandModeD_Select2(&image->materialToolOption2);
     break;
   case 0x56ef10: /* W */
-    InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandModeE_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption0));
+    InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
+    InGameCommandModeE_Select0(&image->smoothingToolOption0);
     break;
   case 0x56ef30: /* Q */
-    InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandModeE_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption1));
+    InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
+    InGameCommandModeE_Select1(&image->smoothingToolOption1);
     break;
   case 0x56ef50: /* Y */
-    InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandModeE_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption2));
+    InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
+    InGameCommandModeE_Select2(&image->smoothingToolOption2);
     break;
   case 0x56ef70: /* C */
-    InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandRange_DispatchState0((UiNodeBase *)INGAME_UI(uiRoot,smoothingRelaxGatedButton));
+    InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
+    InGameCommandRange_DispatchState0(&image->smoothingRelaxGatedButton.selectable.base);
     break;
   case 0x56ef90: /* D */
-    InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandRange_DispatchState1(INGAME_UI(uiRoot,smoothingRelaxLandButton));
+    InGameCommandModeG_Select2(&image->editorModeTabTerrainSmoothing.selectable);
+    InGameCommandRange_DispatchState1(&image->smoothingRelaxLandButton.selectable.base);
     break;
   case 0x56efb0: /* N */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
-      InGameCommandModeB_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption0));
+      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeB_Select0(&image->objectPlacementOption0);
     }
     else {
-      InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
-      InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
+      InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
+      InGameCommandModeA_Select0(&image->unitPlacementOption0);
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
   case 0x56f020: /* L */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
-      InGameCommandModeB_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption1));
+      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeB_Select1(&image->objectPlacementOption1);
     }
     else {
-      InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
-      InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
+      InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
+      InGameCommandModeA_Select1(&image->unitPlacementOption1);
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
   case 0x56f090: /* V */
     if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
-      InGameCommandModeB_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption2));
+      InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
+      InGameCommandModeB_Select2(&image->objectPlacementOption2);
     }
     else {
-      InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
-      InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
+      InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
+      InGameCommandModeA_Select2(&image->unitPlacementOption2);
       InGameEditorKeyboard_HoverUnitPlacementArmy();
     }
     break;
   case 0x56f100: /* E */
-    InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
+    InGameCommandModeG_Select3(&image->editorModeTabUnitPlacement.selectable);
     break;
   case 0x56f120: /* B */
-    InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
+    InGameCommandModeG_Select4(InGameEditorKeyboard_ObjectPlacementTab(image));
     break;
   case 0x56f140: /* R */
-    InGameCommandModeG_Select5((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabRegion));
+    InGameCommandModeG_Select5(&image->editorModeTabRegion.selectable);
     break;
   case 0x56f160: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
     /* The original calls the capture without passing its four arguments (it reads stale stack values) and
