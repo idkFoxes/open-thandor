@@ -43,8 +43,8 @@ static Bool8 InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
   const int *textDwords;
   int dwordIndex;
 
-  phraseDwords = (const int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
-  textDwords = (const int *)text;
+  phraseDwords = reinterpret_cast<const int *>(g_DeveloperChatPhraseUtf16);
+  textDwords = reinterpret_cast<const int *>(text);
   for (dwordIndex = 0; dwordIndex < 16; dwordIndex++) {
     if (phraseDwords[dwordIndex] != textDwords[dwordIndex]) {
       return false;
@@ -116,7 +116,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       if (InGameChatInput_MatchesCheatPhrase(commandTextEdit->textBuffer)) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED;
-        InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)g_HmmNaGutChatPhraseUtf16);
+        InGameRecentTextHistory_InsertAndRebuild8(g_HmmNaGutChatPhraseUtf16);
       }
     }
     else {
@@ -168,7 +168,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   uint16_t *stream;
   TextResourceId resourceId;
   uint32_t factionIndexCursor;
-  uintptr_t factionRecordAddress;
+  const GameFactionRuntimeRecord *factionRecord;
   uint32_t filledSlotCount;
   uint16_t *resolvedText;
   
@@ -186,12 +186,12 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   filledSlotCount = 0;
   factionIndexCursor = 1;
   /* a faction is named after its colour: colorIndex of the faction record selects the name text */
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord));
+  factionRecord = &g_GameFactionRuntimeImage.records[1];
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
       resolvedText = TextResource_Resolve(resourceId);
       stream = resolvedText;
-      factionNameIndex = ((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex;
+      factionNameIndex = factionRecord->colorIndex;
       resourceId++;
       /* nodeFlags of the check box */
       controlFlags = &(image->*g_UiSevenSlotSelectionControls[filledSlotCount]).selectable.base.nodeFlags;
@@ -201,7 +201,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
       RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,stream);
     }
     factionIndexCursor++;
-    factionRecordAddress = factionRecordAddress + sizeof(GameFactionRuntimeRecord);
+    factionRecord++;
   } while (factionIndexCursor < 8);
   image->messageRecipientList.root.base.bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
