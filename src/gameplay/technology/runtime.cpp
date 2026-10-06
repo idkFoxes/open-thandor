@@ -272,7 +272,7 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
   uint32_t childIndex;
   ModelDefinition_UnlockLinkedTechnologyForFaction
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
-                                    (factionIndex,(uintptr_t)node));
+                                    (factionIndex,reinterpret_cast<uintptr_t>(node)));
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ModelDefinitionHierarchy_UnlockFrom(factionIndex,node->children[childIndex]);
   }

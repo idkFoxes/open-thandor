@@ -55,7 +55,7 @@ struct GridScratchCell {
 };
 /* Step 13 X7b: the scratch grid's byte-address views, each one named reinterpret_cast.
    GridScratchCell_RowBelow/RowAbove: the cell one row (rowStrideBytes bytes) below/above; the stride keeps the
-   caller's integer type, as the (uint8_t *)cell +- rowStrideBytes arithmetic they replace did.
+   caller's integer type, as the byte-pointer arithmetic cell +- rowStrideBytes they replace did.
    GridScratchCell_StateMaskBits: stateMask (an int) as the uint32_t the hex-line walkers and the dword loops over the
    grid read and write. */
 template <class Stride> inline GridScratchCell *GridScratchCell_RowBelow(GridScratchCell *cell, Stride rowStrideBytes)

@@ -99,10 +99,9 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   Bool8 selectionConfirmed;
   Bool8 isNewSaveRow;
 
-  saveNameEntryStack =
-       (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
-  descriptionBox =
-       (UiWrappedTextControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameDescriptionText);
+  InGameUiImage *image = THANDOR_CONTAINER_OF(catalogList, InGameUiImage, saveGameList);
+  saveNameEntryStack = UiLayoutContainerControl_AsPageStack(&image->saveNameEntryStack);
+  descriptionBox = &image->saveGameDescriptionText;
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(catalogList,&selectionConfirmed);
@@ -113,8 +112,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   if (selectionConfirmed) {
     if (!isNewSaveRow) {
       /* a double-clicked existing save is overwritten at once */
-      InGameSaveGame_SaveSelectedOrTypedName
-                (THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameSaveButton));
+      InGameSaveGame_SaveSelectedOrTypedName(&image->saveGameSaveButton.selectable.base);
       return;
     }
   }
@@ -132,8 +130,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   /* the "new savegame" row: no Delete, Save only for a valid typed name */
   rootNode = UiNode_GetRoot(&catalogList->base);
   UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
-  if ((((UiTextEditControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEdit))->
-       editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
+  if ((image->saveNameEdit.editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
   }
   else {
@@ -154,9 +151,13 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   UiListRowIndex selectedIndex;
   uint32_t deleteError;
 
+  /* deleteButton is the save page's saveGameDeleteButton node of the in-game UI copy */
+  InGameUiImage *image =
+       THANDOR_CONTAINER_OF(reinterpret_cast<UiNodeBase *>(deleteButton), InGameUiImage, saveGameDeleteButton);
+
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  saveList =
-       (UiPointerListControl *)THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList);
+  /* the list's 0x64-byte prefix view */
+  saveList = reinterpret_cast<UiPointerListControl *>(&image->saveGameList);
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr);
   /* the trailing "new savegame" row has no file */
   if (selectedIndex + 1 != saveList->rowCount) {
@@ -173,8 +174,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
     deleteError = g_FileSystemDelete(0,g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteError,deleteError != 0);
     /* gameMenuSaveButton (0x760 bytes before deleteButton), the node RebuildCatalog expects */
-    InGameSaveGamePage_RebuildCatalog
-              (THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,gameMenuSaveButton));
+    InGameSaveGamePage_RebuildCatalog(&image->gameMenuSaveButton.selectable.base);
   }
 }
 
@@ -321,12 +321,12 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   uint16_t *leaf;
   Bool8 saveFailed;
 
+  InGameUiImage *image = THANDOR_CONTAINER_OF(saveButton, InGameUiImage, saveGameSaveButton);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
+  saveList = reinterpret_cast<UiPointerListControl *>(&image->saveGameList); /* the list's prefix view */
   rowOrdinal = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr) + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
-  leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
-         textBuffer;
+  leaf = image->saveNameEdit.textBuffer;
   if (rowOrdinal != saveList->rowCount) {
     leaf = (uint16_t *)saveList->rowSlots[rowOrdinal - 1];
   }
@@ -338,16 +338,14 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
              g_ScenarioCatalogPathScratchUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_ScenarioCatalogPathScratchUtf16);
   saveFailed = InGameSaveGame_WritePackage
-                    (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
+                    (&image->worldView.base,
                      g_ScenarioCatalogPathScratchUtf16);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   /* Original quirk: the error code reported for a failed save is the selected row ordinal (selected index + 1),
      not an error from the save routine; the original never replaces that value before the report. */
   FatalError_ReportIfFailed(rowOrdinal,saveFailed);
-  UiSelectableControl_SetSelected
-            (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
-  InGameSettingsPage_ToggleAndSynchronizeControls
-            ((UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
+  UiSelectableControl_SetSelected(0,&image->inGameMenuButton.selectable);
+  InGameSettingsPage_ToggleAndSynchronizeControls(&image->inGameMenuButton.selectable);
 }
 
 

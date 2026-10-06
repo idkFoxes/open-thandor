@@ -84,7 +84,7 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
        (int)(((int64_t)(int)definitionValueC0 *
               (int64_t)ModelView_Cast<ModelDefinition>(modelDefinition)->accelerationPerTick) /
              (int64_t)(int)(definitionValue0C << 2));
-  *(int *)modelRuntimeSlot->classPrefixState = initialTimingValue;
+  *reinterpret_cast<int *>(modelRuntimeSlot->classPrefixState) = initialTimingValue;
   modelRuntimeSlot->classState.classStateD0 = initialTimingValue;
   modelRuntimeSlot->classState.effectEmitterTimerTicks = INT32_MAX;
 }

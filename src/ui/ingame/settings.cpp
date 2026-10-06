@@ -97,19 +97,18 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
                                  [control](Bool8 isSelected) {
     /* control is rightButtonNoScrollCheckbox of the in-game UI template copy; the page stacks and the layout
        change before the option word is written */
+    InGameUiImage *image = THANDOR_CONTAINER_OF(control, InGameUiImage, rightButtonNoScrollCheckbox);
     UiPageStack_SetActiveIndex
               (isSelected ? 1 : 0,
-               (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack));
+               UiLayoutContainerControl_AsPageStack(&image->sidePanelStack));
     UiPageStack_SetActiveIndex
-              (0,(UiPageStackControl *)
-                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,resourceBarModeStack));
+              (0,UiLayoutContainerControl_AsPageStack(&image->resourceBarModeStack));
     UiPageStack_SetActiveIndex
-              (0,(UiPageStackControl *)
-                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,gamePanelsModeStack));
-    THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset =
+              (0,UiLayoutContainerControl_AsPageStack(&image->gamePanelsModeStack));
+    image->worldViewArea.base.rightOffset =
          isSelected ? 0
-                    : THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
-    UiContainer_LayoutChildren(THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,inGameRootPanel));
+                    : image->sidePanelFrameLeftEdge.base.leftOffset;
+    UiContainer_LayoutChildren(&image->inGameRootPanel.root.base);
   });
 }
 
@@ -133,7 +132,7 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
                                  [control](Bool8 isSelected) {
     if (isSelected) {
       /* control is autoZoomOffCheckbox; reset the minimap zoom */
-      ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
+      THANDOR_CONTAINER_OF(control, InGameUiImage, autoZoomOffCheckbox)->minimapView.sampleScaleQ12 =
            INGAME_MINIMAP_DEFAULT_SCALE_Q12;
     }
   });
@@ -150,7 +149,7 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
                                  [control](Bool8 isSelected) {
     if (isSelected) {
       /* control is autoRotationOffCheckbox; reset the minimap rotation to its default angle */
-      ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoRotationOffCheckbox,minimapView))->
+      THANDOR_CONTAINER_OF(control, InGameUiImage, autoRotationOffCheckbox)->minimapView.
       rotationAngle = INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE;
     }
   });
@@ -169,7 +168,7 @@ void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationZoomCheckbox,worldView))->runtimeFlags;
+         &InGameUi_WorldRuntime(THANDOR_CONTAINER_OF(control, InGameUiImage, linkRotationZoomCheckbox))->runtimeFlags;
     if (isSelected) {
       *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
       UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,(control->base).parent);
@@ -194,7 +193,7 @@ void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationTiltCheckbox,worldView))->runtimeFlags;
+         &InGameUi_WorldRuntime(THANDOR_CONTAINER_OF(control, InGameUiImage, linkRotationTiltCheckbox))->runtimeFlags;
     if (isSelected) {
       *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
       UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
@@ -219,7 +218,7 @@ void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
     /* control is hidePanelCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,hidePanelCheckbox,worldView))->runtimeFlags;
+         &InGameUi_WorldRuntime(THANDOR_CONTAINER_OF(control, InGameUiImage, hidePanelCheckbox))->runtimeFlags;
     if (isSelected) {
       *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_HIDE_PANEL;
     }
@@ -243,11 +242,11 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
   int shadingDepth;
   UiNodeBase *selectedButton;
 
-/* graphicsButton is gameMenuGraphicsButton of the in-game UI template copy */
-#define GRAPHICS_UI(node) THANDOR_UI_SIBLING(graphicsButton,InGameUiImage,gameMenuGraphicsButton,node)
-  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GRAPHICS_SETTINGS,(UiPageStackControl *)GRAPHICS_UI(gameWindowPageStack));
+  /* graphicsButton is gameMenuGraphicsButton of the in-game UI template copy */
+  InGameUiImage *image = THANDOR_CONTAINER_OF(graphicsButton, InGameUiImage, gameMenuGraphicsButton);
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GRAPHICS_SETTINGS,UiLayoutContainerControl_AsPageStack(&image->gameWindowPageStack));
   settingValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
-  UiSelectableControl_SetSelected(settingValue,(UiSelectableControl *)GRAPHICS_UI(shadingEnabledCheckbox));
+  UiSelectableControl_SetSelected(settingValue,&image->shadingEnabledCheckbox.selectable);
   uiRoot = graphicsButton;
   while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
@@ -271,48 +270,47 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
   /* the buttons name the depth, the setting stores a quarter of it */
   shadingDepth = storedSubresourceCount * 4;
   if (settingValue == 32) {
-    selectedButton = GRAPHICS_UI(shadingLevel32x32Button);
+    selectedButton = &image->shadingLevel32x32Button.base.selectable.base;
     if (shadingDepth == 64) {
-      selectedButton = GRAPHICS_UI(shadingLevel32x64Button);
+      selectedButton = &image->shadingLevel32x64Button.base.selectable.base;
     }
     else if (shadingDepth == 128) {
-      selectedButton = GRAPHICS_UI(shadingLevel32x128Button);
+      selectedButton = &image->shadingLevel32x128Button.base.selectable.base;
     }
   }
   else if (settingValue == 64) {
-    selectedButton = GRAPHICS_UI(shadingLevel64x64Button);
+    selectedButton = &image->shadingLevel64x64Button.base.selectable.base;
     if (shadingDepth == 128) {
-      selectedButton = GRAPHICS_UI(shadingLevel64x128Button);
+      selectedButton = &image->shadingLevel64x128Button.base.selectable.base;
     }
   }
   else {
-    selectedButton = GRAPHICS_UI(shadingLevel128x128Button);
+    selectedButton = &image->shadingLevel128x128Button.base.selectable.base;
   }
   UiSelectableGroup_SelectExclusive(6,selectedButton,
-      GRAPHICS_UI(shadingLevel128x128Button),
-      GRAPHICS_UI(shadingLevel64x128Button),
-      GRAPHICS_UI(shadingLevel64x64Button),
-      GRAPHICS_UI(shadingLevel32x128Button),
-      GRAPHICS_UI(shadingLevel32x64Button),
-      GRAPHICS_UI(shadingLevel32x32Button));
+      &image->shadingLevel128x128Button.base.selectable.base,
+      &image->shadingLevel64x128Button.base.selectable.base,
+      &image->shadingLevel64x64Button.base.selectable.base,
+      &image->shadingLevel32x128Button.base.selectable.base,
+      &image->shadingLevel32x64Button.base.selectable.base,
+      &image->shadingLevel32x32Button.base.selectable.base);
   settingValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (settingValue == TEXTURE_QUALITY_HIGH) {
-    selectedButton = GRAPHICS_UI(textureQualityHighButton);
+    selectedButton = &image->textureQualityHighButton.selectable.base;
   }
   else if (settingValue == TEXTURE_QUALITY_MEDIUM) {
-    selectedButton = GRAPHICS_UI(textureQualityMediumButton);
+    selectedButton = &image->textureQualityMediumButton.selectable.base;
   }
   else {
-    selectedButton = GRAPHICS_UI(textureQualityLowButton);
+    selectedButton = &image->textureQualityLowButton.selectable.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedButton,
-      GRAPHICS_UI(textureQualityHighButton),
-      GRAPHICS_UI(textureQualityMediumButton),
-      GRAPHICS_UI(textureQualityLowButton));
+      &image->textureQualityHighButton.selectable.base,
+      &image->textureQualityMediumButton.selectable.base,
+      &image->textureQualityLowButton.selectable.base);
   settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,
                                          PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
-  ((UiRangeSliderControl *)GRAPHICS_UI(modelDetailSlider))->value = settingValue;
-#undef GRAPHICS_UI
+  image->modelDetailSlider.value = settingValue;
 }
 
 /* UI action 0x1203 (gameMenuAudioButton; g_InGameUiActionHandlersPage12[3]): opens the sound settings window
@@ -434,31 +432,32 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
     shadingDepth = newSubresourceCount << 2;
     /* control is one of the shading level buttons, its parent is shadingLevelGroup */
     shadingLevelGroup = (control->base).parent;
+    InGameUiImage *image = THANDOR_CONTAINER_OF(shadingLevelGroup, InGameUiImage, shadingLevelGroup);
     if (newGridHalfSize == 32) {
-      selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button);
+      selectedControl = &image->shadingLevel32x32Button.base.selectable.base;
       if (shadingDepth == 64) {
-        selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x64Button);
+        selectedControl = &image->shadingLevel32x64Button.base.selectable.base;
       }
       else if (shadingDepth == 128) {
-        selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x128Button);
+        selectedControl = &image->shadingLevel32x128Button.base.selectable.base;
       }
     }
     else if (newGridHalfSize == 64) {
-      selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel64x64Button);
+      selectedControl = &image->shadingLevel64x64Button.base.selectable.base;
       if (shadingDepth == 128) {
-        selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel64x128Button);
+        selectedControl = &image->shadingLevel64x128Button.base.selectable.base;
       }
     }
     else {
-      selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel128x128Button);
+      selectedControl = &image->shadingLevel128x128Button.base.selectable.base;
     }
     UiSelectableGroup_SelectExclusive(6,selectedControl,
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel128x128Button),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel64x128Button),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel64x64Button),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x128Button),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x64Button),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button));
+      &image->shadingLevel128x128Button.base.selectable.base,
+      &image->shadingLevel64x128Button.base.selectable.base,
+      &image->shadingLevel64x64Button.base.selectable.base,
+      &image->shadingLevel32x128Button.base.selectable.base,
+      &image->shadingLevel32x64Button.base.selectable.base,
+      &image->shadingLevel32x32Button.base.selectable.base);
     return;
   }
   textureDimension = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,
@@ -494,22 +493,23 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   /* control is one of the texture quality buttons, its parent is textureQualityGroup */
   textureQualityGroup = (control->base).parent;
-  if ((UiSelectableControl *)THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityLowButton) == control) {
+  InGameUiImage *image = THANDOR_CONTAINER_OF(textureQualityGroup, InGameUiImage, textureQualityGroup);
+  if (&image->textureQualityLowButton.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityLowButton);
+    selectedQualityControl = &image->textureQualityLowButton.selectable.base;
   }
-  if ((UiSelectableControl *)THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityMediumButton) == control) {
+  if (&image->textureQualityMediumButton.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityMediumButton);
+    selectedQualityControl = &image->textureQualityMediumButton.selectable.base;
   }
-  if ((UiSelectableControl *)THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityHighButton) == control) {
+  if (&image->textureQualityHighButton.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityHighButton);
+    selectedQualityControl = &image->textureQualityHighButton.selectable.base;
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityHighButton),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityMediumButton),
-      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityLowButton));
+      &image->textureQualityHighButton.selectable.base,
+      &image->textureQualityMediumButton.selectable.base,
+      &image->textureQualityLowButton.selectable.base);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);

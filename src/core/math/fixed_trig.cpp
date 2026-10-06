@@ -367,7 +367,7 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
   }
   ratioQ31 = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)(denominator * 2));
   ratioSquaredQ30 = FIXED_MUL_HIGH(ratioQ31,ratioQ31);
-  /* atan(t) in angle units (FIXED_ATAN_ANGLE16_C*) */
+  /* atan(t) in angle units (the FIXED_ATAN_ANGLE16_C... constants) */
   return octantBaseAngle16 +
          FIXED_MUL_HIGH(ratioQ31,
                         FIXED_MUL_HIGH(ratioSquaredQ30,

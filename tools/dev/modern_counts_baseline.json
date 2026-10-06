@@ -1,5 +1,5 @@
 {
- "revision": "b41104af",
+ "revision": "3f198c28",
  "worktree": true,
  "files": 693,
  "metrics": {
@@ -114,19 +114,15 @@
  },
  "counts": {
   "cstyle_cast": {
-   "audio": 23,
-   "core": 5,
-   "gameplay": 22,
-   "platform": 18,
-   "ui": 1047,
-   "world": 66
+   "ui": 967,
+   "world": 61
   },
   "ingame_ui": {
    "ui": 4
   },
   "ui_at_sibling": {
    "core": 3,
-   "ui": 238
+   "ui": 79
   },
   "frontend_ui": {},
   "define_numeric": {
@@ -152,7 +148,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 801,
+   "ui": 799,
    "world": 177
   },
   "include_guard": {
@@ -174,7 +170,7 @@
    "gameplay": 2,
    "network": 2,
    "platform": 52,
-   "ui": 12,
+   "ui": 16,
    "world": 13
   },
   "typedef_struct": {

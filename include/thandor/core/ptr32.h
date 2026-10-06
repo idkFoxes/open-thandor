@@ -90,14 +90,14 @@ template <class T> struct Ptr32 {
     Ptr32 &operator=(ThandorAnyPtr pointer)
         requires(!std::is_function_v<T>)
     { value = thandor_ptr32_pack(pointer.ptr); return *this; }
-    /* field = THANDOR_SLOT(function) (the conversions alone would be ambiguous between operator=(T *) and the
+    /* field = THANDOR_SLOT(function) (the conversions alone would be ambiguous between operator=(T *pointer) and the
        copy assignment) */
     template <auto Fn> Ptr32 &operator=(ThandorSlot<Fn>) { return *this = ThandorSlot<Fn>::template pick<T>(); }
 
     T *get() const { return reinterpret_cast<T *>(static_cast<intptr_t>(value)); }
     operator T *() const { return get(); }
     T *operator->() const { return get(); }
-    /* (U *)field and (integer)field as for a pointer */
+    /* field cast to a U * or to an integer, as for a pointer */
     template <class U> explicit operator U *() const { return reinterpret_cast<U *>(static_cast<intptr_t>(value)); }
     explicit operator int32_t() const { return value; }
     explicit operator uint32_t() const { return (uint32_t)value; }
@@ -129,7 +129,7 @@ struct UPtr32 {
 Explicit conversions between a pointer and a 32-bit value of the original layouts, for the places that keep a
 pointer in a plain 32-bit integer (a field that holds a pointer or an offset/id, a saved offset computed from two
 pointers, a pointer dword of a UI template). They replace the plain (uint32_t)pointer / (int)pointer /
-(T *)value casts, which truncate silently and are compile errors in g++.
+C-style T * casts of the value, which truncate silently and are compile errors in g++.
 
 Thandor_PointerToU32(pointer) / Thandor_PointerToI32(pointer): the pointer's address as 32 bits, the same value
 the plain cast gave; a pointer of 2 GB or more (which a 32-bit field cannot hold) stops the game

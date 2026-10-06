@@ -56,7 +56,7 @@ union ShotModelRuntimeStateOrSavedOffset {
     uint32_t savedIdOrOffset; 
     uint32_t raw; 
     Ptr32<void> runtimeStatePointer; 
-    Ptr32<struct ModelRuntimeSlot> targetModelRuntime; /* the same pointer as the guided shot's target model (step 13 X7b, was a (ModelRuntimeSlot *)runtimeStatePointer cast) */
+    Ptr32<struct ModelRuntimeSlot> targetModelRuntime; /* the same pointer as the guided shot's target model (step 13 X7b, was a C-style cast of runtimeStatePointer to ModelRuntimeSlot *) */
 };
 
 struct ShotRuntimeSlot {

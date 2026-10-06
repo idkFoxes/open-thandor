@@ -98,7 +98,7 @@ uint32_t ModelRuntimePool_Init()
     return allocError;
   }
   /* pool base - 1 */
-  g_ModelRuntimeRebaseDelta = (intptr_t)modelRuntimePool - 1;
+  g_ModelRuntimeRebaseDelta = reinterpret_cast<intptr_t>(modelRuntimePool) - 1;
   g_ModelRuntimeSlots = modelRuntimePool;
   /* zero the pool dword by dword */
   poolDword = reinterpret_cast<uint32_t *>(modelRuntimePool); /* zeroed dword by dword, as the original */
@@ -321,7 +321,7 @@ void ModelRuntimePool_RebaseAfterLoad()
     rebasedOwnerArmy = Thandor_U32ToPointer<ArmyRuntimeSlot>((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
                                            Thandor_PointerToI32(g_ArmyRuntimeRebaseBaseMinusOne));
     modelRuntime->rootModelNodeOrSavedOffset.modelNode =
-         (ModelRuntimeNode *)
+         reinterpret_cast<ModelRuntimeNode *>
          (g_RuntimeObjectRebaseBaseMinusOne + (int)modelRuntime->rootModelNodeOrSavedOffset.modelNode);
     modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = rebasedOwnerArmy;
     savedLinkedArmy = modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime;
@@ -396,7 +396,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 
   modelDefinition = modelRuntime->definitionOrSavedId.definition;
   runtimeClassId = ModelView_Cast<ModelDefinition>(modelDefinition)->runtimeClassId;
-  FrontendPlayerRuntime_ClearAssignmentTokenFromAll((uintptr_t)modelRuntime);
+  FrontendPlayerRuntime_ClearAssignmentTokenFromAll(reinterpret_cast<uintptr_t>(modelRuntime));
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[runtimeClassId]
             (modelDefinition,modelRuntime);
   attachment = modelRuntime->attachments;

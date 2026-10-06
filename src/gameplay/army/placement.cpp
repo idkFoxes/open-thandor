@@ -601,7 +601,7 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
                      &g_InGameRuntimeRoot->worldRuntime,nullptr);
   if (createdRuntime != nullptr) {
     playerBlock->placedArmyToken =
-         (uint32_t)((uintptr_t)createdRuntime - (uintptr_t)g_ArmyRuntimeRebaseBaseMinusOne);
+         (uint32_t)(reinterpret_cast<uintptr_t>(createdRuntime) - reinterpret_cast<uintptr_t>(g_ArmyRuntimeRebaseBaseMinusOne));
     return;
   }
   playerBlock->placedArmyToken = 0;
