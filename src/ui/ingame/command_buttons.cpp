@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/command_buttons.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
 
 /* Module data. */
 
@@ -67,7 +68,7 @@ void UiCommandSpriteButtonControl_BeginPress
     control->activationInputState = 0;
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&(control->sprite).selectable.base);
     if (((control->sprite).selectable.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) {
       control->activationInputState =
            control->activationInputState | UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK;
@@ -102,7 +103,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
                  (control->sprite).activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&(control->sprite).selectable.base);
   }
 }
 
@@ -129,7 +130,7 @@ void UiCommandSpriteButtonControl_RightRelease
                  (control->sprite).activationSound,nullptr);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
-    UiNode_InvalidateRoot((UiNodeBase *)control);
+    UiNode_InvalidateRoot(&(control->sprite).selectable.base);
   }
 }
 
@@ -143,10 +144,10 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
 
 {
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) == 0 &&
-      ((((UiWrappedTextControl *)control)->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
+      (((InGameUiNode_As<UiWrappedTextControl>(control))->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
        (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) &&
       (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,(UiWrappedTextControl *)control);
+    UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,InGameUiNode_As<UiWrappedTextControl>(control));
   }
 }
 
@@ -162,7 +163,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
   UiSingleLineTextControl *textControl;
   int drawOffsetAdjust;
 
-  textControl = (UiSingleLineTextControl *)control;
+  textControl = InGameUiNode_As<UiSingleLineTextControl>(control);
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) != 0) {
     return;
   }
@@ -177,9 +178,9 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
     }
     drawOffsetAdjust = g_InGameSimulationStepTicks - 2;
   }
-  textControl->text = (uint16_t *)((uint8_t *)textControl->text + drawOffsetAdjust);
+  textControl->text = reinterpret_cast<uint16_t *>(Thandor_Bytes(textControl->text.get()) + drawOffsetAdjust); /* shifted by bytes */
   UiSingleLineTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,textControl);
-  textControl->text = (uint16_t *)((uint8_t *)textControl->text - drawOffsetAdjust);
+  textControl->text = reinterpret_cast<uint16_t *>(Thandor_Bytes(textControl->text.get()) - drawOffsetAdjust); /* back by the same bytes */
 }
 
 UiNodeVtable g_UiCommandSpriteButtonWithDetailsVtable = {

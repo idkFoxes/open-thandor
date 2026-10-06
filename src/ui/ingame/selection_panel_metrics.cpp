@@ -132,7 +132,7 @@ static void SelectionPanelMetrics_DrawSegmentedSides(SelectionPanelMetricFrame *
   uint32_t rightFilledSegments;
   uint32_t rightTotalSegments;
 
-  slotMeter = ArmyRuntime_GetLinkedChildSlotMeter((ModelRuntimeLinkedChildSpawnAndBuildView *)armyRuntime);
+  slotMeter = ArmyRuntime_GetLinkedChildSlotMeter(ModelView_Cast<ModelRuntimeLinkedChildSpawnAndBuildView>(armyRuntime));
   rightFilledSegments = slotMeter.filledSegments >> 1;
   rightTotalSegments = slotMeter.totalSegments >> 1;
   SelectionPanel_DrawSegmentedCappedBar
@@ -208,7 +208,7 @@ static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
       (childDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_08)) {
     return false;
   }
-  weapon = (ModelRuntimeWeaponAimStateView *)childModelRuntime;
+  weapon = ModelView_Cast<ModelRuntimeWeaponAimStateView>(childModelRuntime);
   reloadCountdownTicks = weapon->attachmentReloadCountdownTicks;
   reloadTicks = (int)weapon->modelDefinition->attachmentReloadTicks;
   SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,false);
@@ -227,6 +227,7 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
           ModelRuntimeSlot **researchSource)
 {
   ModelRuntimeSlot *childModelRuntime;
+  ModelDefinition *childModelDefinition;
   ArmyWeaponDefinitionView *childDefinition;
   ModelRuntimeWeaponAimStateView *launcher;
   uint32_t minimumReloadTicks;
@@ -238,14 +239,16 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
   if ((armyRuntime->attachmentCount == 0) || (childModelRuntime == nullptr)) {
     return false;
   }
-  childDefinition = (ArmyWeaponDefinitionView *)(childModelRuntime->definitionOrSavedId).runtimeDefinition;
+  childModelDefinition = (childModelRuntime->definitionOrSavedId).runtimeDefinition;
+  /* the weapon view of the child's definition (attachmentReloadTicks) */
+  childDefinition = reinterpret_cast<ArmyWeaponDefinitionView *>(childModelDefinition);
   /* Original quirk: when the child is not class 9, the generic frame reads the research flags and ticks at the
-     child's definition instead of the entity's own runtime. */
-  *researchSource = (ModelRuntimeSlot *)childDefinition;
-  if (((ModelDefinition *)childDefinition)->runtimeClassId != MODEL_RUNTIME_CLASS_09) {
+     child's definition instead of the entity's own runtime (the definition read as a model runtime). */
+  *researchSource = reinterpret_cast<ModelRuntimeSlot *>(childModelDefinition);
+  if (childModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_09) {
     return false;
   }
-  launcher = (ModelRuntimeWeaponAimStateView *)childModelRuntime;
+  launcher = ModelView_Cast<ModelRuntimeWeaponAimStateView>(childModelRuntime);
   minimumReloadTicks = UINT32_MAX;
   for (slotIndex = 7; slotIndex >= 0; slotIndex--) {
     if (launcher->attachmentReloadTicks[slotIndex] < minimumReloadTicks) {
@@ -273,8 +276,8 @@ static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
 static void SelectionPanelMetrics_DrawClass22Frame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
-  if (((ArmyRuntimeArticulatedContactState *)&(armyRuntime->classState).classStateAC)->
-      terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
+  if (ModelView_Cast<ArmyArticulatedRuntimeSlotView>(armyRuntime)->articulatedContact.terrainContactMode ==
+      ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
     SelectionPanelMetrics_DrawOwnCorners(frame,runtimeEntry,true);
     SelectionPanelMetrics_DrawTopBar
               (frame,(UiNumericValue32)(armyRuntime->classLinkState).classState68,

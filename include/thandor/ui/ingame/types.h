@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <thandor/core/ptr32.h> /* Ptr32: the pointer fields of these 32-bit layouts */
+#include <thandor/core/bytes.h> /* Thandor_At: INGAME_UI_FIELD */
 #include <thandor/assets/army/types.h>
 #include <thandor/core/types.h>
 #include <thandor/gameplay/army/types.h>
@@ -745,8 +746,8 @@ struct InGameTargetingRootTraversalView {
 
 /* UI template node links: offsets from the template start, made into pointers when the
    template is copied and linked. */
-#define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))
-#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)
+#define UI_TEMPLATE_LINK(offset) (reinterpret_cast<UiNodeBase *>(offset))
+#define UI_TEMPLATE_NO_LINK (reinterpret_cast<UiNodeBase *>(-1))
 /* The same as initialisers of a Ptr32 field of a template image, constant at compile time
    (tools/dev/ui_image_retype.py writes these). */
 #define UI_TEMPLATE_LINK_BITS(offset) THANDOR_PTR32_BITS(offset)
@@ -1269,7 +1270,7 @@ typedef struct InGameUiImage {
    control type; U5-U9 drop those casts and switch the macro to the typed member). Other members (the
    _prefix, _fields and _trailing members) keep their own type. */
 #define INGAME_UI(root, node) (reinterpret_cast<InGameUi_NodeView<decltype(InGameUiImage::node)> *>(&((InGameUiImage *)(uintptr_t)(root))->node))
-#define INGAME_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)INGAME_UI(root, node) + (offset)))
+#define INGAME_UI_FIELD(root, node, offset, type) (*Thandor_At<type>(INGAME_UI(root, node), (offset)))
 /* The in-game UI image behind a root pointer (any pointer to the image start): the typed replacement for
    INGAME_UI, e.g. &InGameUi_Image(rt)->chatInputTextEdit. One reinterpretation for all users. */
 template <class T> inline InGameUiImage *InGameUi_Image(T *root)
