@@ -1,5 +1,5 @@
 {
- "revision": "6b5e87bf",
+ "revision": "eea39656",
  "worktree": true,
  "files": 691,
  "metrics": {
@@ -117,7 +117,7 @@
    "audio": 23,
    "core": 57,
    "gameplay": 549,
-   "graphics": 234,
+   "graphics": 187,
    "movie": 41,
    "network": 197,
    "platform": 239,
