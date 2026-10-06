@@ -69,7 +69,14 @@ Bool8 ModelRuntimePool_RepairDeferredChild
   }
   /* Original quirk: index past the attachment count still succeeds and leaves a stale value as the child model
      runtime; in its only caller (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) that value is
-     childDefinitionId. */
+     childDefinitionId. Not in the original: logged once, since the child model is silently missing. */
+  static Bool8 s_loggedAttachmentOutOfRange = false;
+  if (!s_loggedAttachmentOutOfRange) {
+    s_loggedAttachmentOutOfRange = true;
+    Thandor_Log("model: definition %u has %u attachment points, child model %u for slot %u not created",
+                (uint32_t)modelRuntime->definitionOrSavedId.definition->definitionId,
+                (uint32_t)modelRuntime->attachmentCount,(uint32_t)childDefinitionId,(uint32_t)attachmentIndex);
+  }
   *outChildModelRuntime = (ModelRuntimeSlot *)(uintptr_t)childDefinitionId;
   return true;
 }

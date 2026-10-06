@@ -419,8 +419,8 @@ struct AiTargetWorkspaceEntry {
 struct AiLinkedDefinitionListView {
     uint8_t unresolved00_07[8]; 
     uint32_t childListCount; 
-    ModelLinkedDefinitionListAddress32 childList0Address; 
-    ModelLinkedDefinitionListAddress32 childList1Address; 
+    ModelLinkedDefinitionListAddress32 childList0Address; /* children[ARMY_WEAPON_SLOT_PRIMARY] */
+    ModelLinkedDefinitionListAddress32 childList1Address; /* children[ARMY_WEAPON_SLOT_SECONDARY] */
     uint8_t unresolved14_1F[12]; 
     PckModelDefinitionIdCatalog definitionIds[8]; 
 };

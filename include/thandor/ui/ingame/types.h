@@ -612,9 +612,9 @@ struct InGameRuntimeRootFrameView {
 struct ArmyModelTreeNodeAddressView {
     uint8_t unresolved00_07[8];
     uint32_t childListCount;
-    ModelLinkedDefinitionListAddress32 childList0Address;
-    ModelLinkedDefinitionListAddress32 childList1Address;
-    ModelLinkedDefinitionListAddress32 childList2Address;
+    ModelLinkedDefinitionListAddress32 childList0Address; /* children[ARMY_WEAPON_SLOT_PRIMARY] */
+    ModelLinkedDefinitionListAddress32 childList1Address; /* children[ARMY_WEAPON_SLOT_SECONDARY] */
+    ModelLinkedDefinitionListAddress32 childList2Address; /* children[ARMY_WEAPON_SLOT_TERTIARY] */
 };
 
 /* The world view of InGameRuntimeRoot (WorldRuntimeContext at root+0xA30) with the root fields that follow it. */
