@@ -486,7 +486,7 @@ static Bool8 NewLevel_LoadSpatialSounds
       }
       soundSlot = SpatialSoundSlot_CreateFromSampleAsset(static_cast<SoundSampleAsset *>(loadedSample));
       if (soundSlot != nullptr) {
-        soundSlotCursor[soundIndex] = (uintptr_t)soundSlot;
+        soundSlotCursor[soundIndex] = reinterpret_cast<uintptr_t>(soundSlot); /* kept as an integer slot */
       }
       Resource_Release(loadedSample);
       MoviePlayback_AdvanceScheduledFrameAndTick();
