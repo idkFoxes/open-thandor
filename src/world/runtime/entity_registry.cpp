@@ -130,7 +130,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     modelRuntime = WorldOwnerNode_ModelRuntime(node);
-    ModelRuntimeHierarchy_ClearMatchingTargetRecursive(releasedObject,(int *)modelRuntime);
+    ModelRuntimeHierarchy_ClearMatchingTargetRecursive(releasedObject,modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     /* 5f-format: ArmyRuntimeSlot.assignedTargetArmyRuntime (pool offset in saves) */

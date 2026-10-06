@@ -126,7 +126,7 @@ Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
     *outError = allocError;
     return false;
   }
-  lookupWriteCursor = (uint8_t *)(((uintptr_t)lookupAllocationBase + 0xffff) & ~(uintptr_t)0xffff);
+  lookupWriteCursor = reinterpret_cast<uint8_t *>(((uintptr_t)lookupAllocationBase + 0xffff) & ~(uintptr_t)0xffff); /* the next 64-KiB boundary */
   g_TerrainByteClampLookup = lookupWriteCursor;
   /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
   for (rowPair = 0; rowPair < 64; rowPair++) {
