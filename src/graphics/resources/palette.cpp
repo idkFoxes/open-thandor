@@ -35,7 +35,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint
   GraphicsPaletteAsset *validatedPaletteAsset;
   uint32_t errorCode;
 
-  loadedPaletteAsset = (GraphicsPaletteAsset *)Package_LoadEntry(pathUtf16,&errorCode);
+  loadedPaletteAsset = static_cast<GraphicsPaletteAsset *>(Package_LoadEntry(pathUtf16,&errorCode));
   if (loadedPaletteAsset != nullptr) {
     validatedPaletteAsset = g_GraphicsPaletteAssetValidate(loadedPaletteAsset,&errorCode);
     if (validatedPaletteAsset != nullptr) {
@@ -72,6 +72,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
 
 {
   GraphicsPaletteAsset *clonedAsset;
+  void *cloneBlock;
   uint32_t allocationSize;
   uint32_t remainingDwords;
   const uint32_t *sourceDword;
@@ -80,13 +81,15 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   GraphicsPaletteAsset *validatedAsset;
 
   allocationSize = paletteAsset->allocationSizeBytes;
-  allocError = g_MemoryApi.alloc(allocationSize,(void **)&clonedAsset);
+  allocError = g_MemoryApi.alloc(allocationSize,&cloneBlock);
   if (allocError != 0) {
     /* Original quirk: a failed allocation returns its error code as the asset pointer */
-    return (GraphicsPaletteAsset *)(uintptr_t)allocError;
+    return reinterpret_cast<GraphicsPaletteAsset *>(static_cast<uintptr_t>(allocError));
   }
-  sourceDword = (const uint32_t *)paletteAsset;
-  destinationDword = (uint32_t *)clonedAsset;
+  clonedAsset = static_cast<GraphicsPaletteAsset *>(cloneBlock);
+  /* both asset blocks as dwords: the copy is dword by dword */
+  sourceDword = reinterpret_cast<const uint32_t *>(paletteAsset);
+  destinationDword = static_cast<uint32_t *>(cloneBlock);
   for (remainingDwords = allocationSize >> 2; remainingDwords != 0; remainingDwords--) {
     *destinationDword = *sourceDword;
     sourceDword++;
@@ -97,7 +100,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
     return validatedAsset;
   }
   /* Original quirk: the clone's result after a failed validation is the free's status (0 = NULL) */
-  return (GraphicsPaletteAsset *)(uintptr_t)g_MemoryApi.free(clonedAsset);
+  return reinterpret_cast<GraphicsPaletteAsset *>(static_cast<uintptr_t>(g_MemoryApi.free(clonedAsset)));
 }
 
 
