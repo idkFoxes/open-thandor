@@ -7,6 +7,32 @@
 
 #include <thandor/ui/frontend/network.h>
 #include <thandor/thandor.h>
+#include <thandor/core/bytes.h>
+
+/* Views the network backend callbacks and the copy loops need (genuine reinterpretations, in one place). */
+/* The 16-byte UiTransferEndpointDescriptor is the image of a sockaddr_in (family and port, IPv4 address, 8 zero
+   bytes); the backend callbacks take it as a WinSockAddress. */
+static inline WinSockAddress *FrontendNetwork_SocketAddress(UiTransferEndpointDescriptor *endpoint)
+{
+  return reinterpret_cast<WinSockAddress *>(endpoint);
+}
+/* The backend callbacks take their text as char *, also where the buffer holds UTF-16 code units (the original
+   passes the same bytes; the backend formats/parses wide text). */
+template <class T> static inline char *FrontendNetwork_TextBytes(T *text)
+{
+  return reinterpret_cast<char *>(text);
+}
+/* A record or text buffer as dwords: the original copies names, endpoints and player records dword by dword. */
+template <class T> static inline uint32_t *FrontendNetwork_Dwords(T *record)
+{
+  return reinterpret_cast<uint32_t *>(record);
+}
+/* The typed row pointer arrays of the session and player lists as the untyped row slots of a UiPointerListControl
+   (same 4-byte Ptr32 entries). */
+template <class T> static inline Ptr32<void> *FrontendNetwork_RowSlots(Ptr32<T> *rows)
+{
+  return reinterpret_cast<Ptr32<void> *>(rows);
+}
 
 /* Module data. */
 
@@ -118,19 +144,19 @@ static void FrontendNetworkSetupPage_ApplyClientOption()
   }
   *option = 'c';
   Text_CopyNarrowToUtf16
-            (PACKAGE_SCRATCH_BUFFER_BYTES,(uint16_t *)g_PackageScratchBuffer,option + 8);
+            (PACKAGE_SCRATCH_BUFFER_BYTES,reinterpret_cast<uint16_t *>(g_PackageScratchBuffer) /* the scratch bytes as UTF-16 text */,option + 8);
   endpointParseFailed = g_NetworkBackendSlot6
-                    (&g_FrontendSelectedNetworkEndpoint,(char *)g_PackageScratchBuffer);
+                    (&g_FrontendSelectedNetworkEndpoint,FrontendNetwork_TextBytes(g_PackageScratchBuffer));
   if (endpointParseFailed) {
     return;
   }
-  g_NetworkBackendSlot6(&g_FrontendNetworkEndpointScratch,(char *)g_PackageScratchBuffer);
+  g_NetworkBackendSlot6(&g_FrontendNetworkEndpointScratch,FrontendNetwork_TextBytes(g_PackageScratchBuffer));
   g_FrontendSessionToken = FRONTEND_SEQUENCE_TOKEN_HIGH_WORD;
   g_FrontendSelectedPlayerToken = 0xffffffff;
   UiTransfer_SendPlayerDescriptor();
   g_NetworkBackendSlot7
-            ((char *)g_FrontendNetworkEndpointTextUtf16,
-             (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+            (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
+             FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
   RichTextCommandStream_CopyExpanded
             (128,FrontendUi_Image(g_FrontendRootNode)->hostAddressEdit.textBuffer,
              g_FrontendNetworkEndpointTextUtf16,nullptr);
@@ -152,7 +178,7 @@ void FrontendNetworkGamePage_ClearSessionList(FrontendUiImage *frontendUi)
 {
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&frontendUi->frontendRoot.root.base);
   UiPointerList_InitializeColumnLayout
-            (0,(Ptr32<void> *)g_FrontendSessionListRows,UiListControl_AsPointerList(&frontendUi->sessionList));
+            (0,FrontendNetwork_RowSlots(g_FrontendSessionListRows),UiListControl_AsPointerList(&frontendUi->sessionList));
 }
 
 /* Opens the network part of the menu (FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) according to the session role:
@@ -183,8 +209,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     /* host: back to the lobby */
     g_NetworkBackendSlot7
-              ((char *)g_FrontendNetworkEndpointTextUtf16,
-               (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+              (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
+               FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&frontendUi->frontendRoot.root.base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&frontendUi->frontendRoot.root.base);
     UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendUi->frontendRoot.root.base);
@@ -195,7 +221,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
     UiPointerList_InitializeColumnLayout
-              (1,(Ptr32<void> *)g_FrontendPlayerRuntimeRecordPointers32,
+              (1,FrontendNetwork_RowSlots(g_FrontendPlayerRuntimeRecordPointers32),
                UiListControl_AsPointerList(&frontendUi->hostLobbyPlayerList));
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16
@@ -206,7 +232,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */
     firstPlayerRecord->peerSequenceToken = sequenceToken;
     localPlayerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
-    localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
+    localPlayerRecordDwordCursor = FrontendNetwork_Dwords(&firstPlayerRecord->playerName);
     for (dwordsRemaining = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); dwordsRemaining != 0;
          dwordsRemaining--) {
       *localPlayerRecordDwordCursor = *localPlayerNameDwordCursor;
@@ -214,7 +240,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
       localPlayerRecordDwordCursor++;
     }
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
-    endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
+    endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
     for (dwordsRemaining = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); dwordsRemaining != 0;
          dwordsRemaining--) {
       *localPlayerRecordDwordCursor = *endpointSourceDwordCursor;
@@ -231,8 +257,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     /* client: back to the network game page with the host address filled in, and ask to join again */
     g_NetworkBackendSlot7
-              ((char *)g_FrontendNetworkEndpointTextUtf16,
-               (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+              (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
+               FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
     RichTextCommandStream_CopyExpanded
               (128,frontendUi->hostAddressEdit.textBuffer,
                g_FrontendNetworkEndpointTextUtf16,nullptr);
@@ -279,8 +305,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   /* backend backendIndex is open */
   UiPointerList_SelectColumnListIndex
             (backendIndex,reinterpret_cast<UiPointerListControl *>(&frontendUi->networkProtocolList));
-  localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpoint;
-  endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
+  localEndpointCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
+  endpointDestinationDwordCursor = FrontendNetwork_Dwords(&g_FrontendNetworkEndpointScratch);
   /* copies the 16-byte local endpoint dword by dword */
   for (dwordsRemaining = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); dwordsRemaining != 0;
        dwordsRemaining--) {
@@ -290,8 +316,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   }
   FrontendNetworkSetupPage_ApplyNameOption();
   g_NetworkBackendSlot7
-            ((char *)g_FrontendNetworkEndpointTextUtf16,
-             (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+            (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
+             FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
   FrontendNetworkGamePage_Show(frontendUi);
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   /* hosting needs a player name */
@@ -331,11 +357,10 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
      and the 0x40-code-unit hostAddressEdit text). */
   g_FrontendRootInitializationTemplate.bottomBarStatusText.text =
        FrontendUi_Image(root)->bottomBarStatusText.text;
-  /* the UTF-16 text buffers, copied as dwords */
-  sourceCursor = reinterpret_cast<int32_t *>(FrontendUi_Image(root)->hostAddressEdit.textBuffer);
-  destinationCursor = reinterpret_cast<int32_t *>(g_FrontendRootInitializationTemplate.hostAddressEdit.textBuffer);
-  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
-       static_cast<TextResourceId>(g_FrontendRootInitializationTemplate.bottomBarStatusText.text);
+  sourceCursor = reinterpret_cast<int32_t *>(FrontendUi_Image(root)->hostAddressEdit.textBuffer) /* the text dword by dword */;
+  destinationCursor =
+       reinterpret_cast<int32_t *>(g_FrontendRootInitializationTemplate.hostAddressEdit.textBuffer) /* the text dword by dword */;
+  g_InGameRuntimeDefaultImageTemplate.worldViewCyclingInfoText.text = g_FrontendRootInitializationTemplate.bottomBarStatusText.text;
   for (dwordsRemaining = 32; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
     *destinationCursor = *sourceCursor;
     sourceCursor++;
@@ -355,7 +380,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
   Bool8 endpointParseFailed;
 
   endpointParseFailed = g_NetworkBackendSlot6
-                    (&g_FrontendNetworkEndpointScratch,(char *)hostAddressEdit->textBuffer);
+                    (&g_FrontendNetworkEndpointScratch,FrontendNetwork_TextBytes(hostAddressEdit->textBuffer));
   if (endpointParseFailed) {
     hostAddressEdit->editStateFlags =
          hostAddressEdit->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
@@ -365,7 +390,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
        hostAddressEdit->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
   UiTransfer_SendDiscoveryProbe();
   g_NetworkBackendSlot7
-            ((char *)g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
+            (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch)
             );
 }
 
@@ -380,7 +405,7 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   /* source is the frontend template's hostGameSetupBackButton. */
   FrontendUiImage *frontendUi;
 
-  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostGameSetupBackButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(source) - offsetof(FrontendUiImage,hostGameSetupBackButton));
   FrontendNetworkGamePage_Show(frontendUi);
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   FrontendNetworkGamePage_ClearSessionList(frontendUi);
@@ -463,7 +488,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
       g_SessionNetworkTickInterval = optionNetworkSpeed * 2;
     }
   }
-  frontendUi = (FrontendUiImage *)((uint8_t *)hostButton - offsetof(FrontendUiImage,networkGameHostButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(hostButton) - offsetof(FrontendUiImage,networkGameHostButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_GAME_SETUP,UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     frontendUi->menuRoomModelView.contextFlags |=
@@ -506,7 +531,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   uint32_t *localPlayerRecordDwordCursor;
   Bool8 previewLoadFailed;
   
-  frontendUi = (FrontendUiImage *)((uint8_t *)createButton - offsetof(FrontendUiImage,hostGameCreateButton));
+  frontendUi = reinterpret_cast<FrontendUiImage *>(Thandor_Bytes(createButton) - offsetof(FrontendUiImage,hostGameCreateButton));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendUi->frontendRoot.root.base);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,UiLayoutContainerControl_AsPageStack(&frontendUi->frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -515,7 +540,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
   UiPointerList_InitializeColumnLayout
-            (1,(Ptr32<void> *)g_FrontendPlayerRuntimeRecordPointers32,
+            (1,FrontendNetwork_RowSlots(g_FrontendPlayerRuntimeRecordPointers32),
              UiListControl_AsPointerList(&frontendUi->hostLobbyPlayerList));
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16);
@@ -525,14 +550,14 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   firstPlayerRecord->peerSequenceToken = sequenceToken;
   firstPlayerRecord->playerRuntimeId = 0;
   localPlayerNameCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
-  localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
+  localPlayerRecordDwordCursor = FrontendNetwork_Dwords(&firstPlayerRecord->playerName);
   for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *localPlayerRecordDwordCursor = *localPlayerNameCursor;
     localPlayerNameCursor++;
     localPlayerRecordDwordCursor++;
   }
-  localEndpointDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
+  localEndpointDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
   for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *localPlayerRecordDwordCursor = *localEndpointDwordCursor;
@@ -549,8 +574,8 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localPlayerRecordDwordCursor[6] = 0; /* snapshotTransferFlags */
   /* the preview goes into snapshotPayload, its name is the player name (playerName) */
   previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
-                    ((PcxPreview64 *)(localPlayerRecordDwordCursor + 24),
-                     (uint16_t *)(localPlayerRecordDwordCursor + -14));
+                    (reinterpret_cast<PcxPreview64 *>(localPlayerRecordDwordCursor + 24),
+                     reinterpret_cast<uint16_t *>(localPlayerRecordDwordCursor + -14));
   if (!previewLoadFailed) {
     localPlayerRecordDwordCursor[6] = FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
   }
@@ -592,8 +617,8 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
     backendError = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     FatalError_ReportIfFailed(backendError,backendError != 0);
     if (backendError == 0) {
-      endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
-      endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
+      endpointSourceDwordCursor = FrontendNetwork_Dwords(&g_NetworkLocalEndpoint);
+      endpointDestinationDwordCursor = FrontendNetwork_Dwords(&g_FrontendNetworkEndpointScratch);
       for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
            remainingDwords--) {
         *endpointDestinationDwordCursor = *endpointSourceDwordCursor;
@@ -601,11 +626,11 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
         endpointDestinationDwordCursor++;
       }
       g_NetworkBackendSlot7
-                ((char *)g_FrontendNetworkEndpointTextUtf16,
-                 (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+                (FrontendNetwork_TextBytes(g_FrontendNetworkEndpointTextUtf16),
+                 FrontendNetwork_SocketAddress(&g_FrontendNetworkEndpointScratch));
       UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
-                (0,(Ptr32<void> *)g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
+                (0,FrontendNetwork_RowSlots(g_FrontendSessionListRows),&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
       UiTransfer_SendDiscoveryProbe();
       return;
     }
@@ -639,7 +664,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
   rootNode = control;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    rootNode = UiNode_As<UiTextEditControl>((rootNode->base).parent.get());
     parentCursor = rootNode->base.parent;
   }
   UiTextControl_UpdateNonEmptyValidity(control);
@@ -651,9 +676,9 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
     FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick /* the page view at the session list */
               (reinterpret_cast<FrontendNetworkSettingsControlView *>(&FrontendUi_Image(rootNode)->sessionList));
-    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,FrontendNetwork_Dwords(control->textBuffer),
                                   PERSISTENT_SETTING_PLAYER_NAME);
-    sourceDwordCursor = (uint32_t *)control->textBuffer;
+    sourceDwordCursor = FrontendNetwork_Dwords(control->textBuffer);
     playerNameDwordCursor = THANDOR_PTR(g_FrontendLocalPlayerNameUtf16);
     for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
          remainingDwords--) {
@@ -693,7 +718,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
   rootNode = control;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    rootNode = UiNode_As<UiTextEditControl>((rootNode->base).parent.get());
     parentCursor = rootNode->base.parent;
   }
   if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
@@ -701,7 +726,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
-    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,FrontendNetwork_Dwords(control->textBuffer),
                                   PERSISTENT_SETTING_GAME_NAME);
   }
 }
@@ -721,26 +746,28 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
   UiListStateFlags *dirtyFlagsSlot;
   UiNodeBase *parentCursor;
   FrontendNetworkSettingsControlView *rootNode;
+  UiListControl *sessionList;
 
   parentCursor = networkSettings->commonState.commonPrefix.parent;
   rootNode = networkSettings;
   /* climb to the root of the control's UI tree */
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = (FrontendNetworkSettingsControlView *)
-                rootNode->commonState.commonPrefix.parent;
+    rootNode = reinterpret_cast<FrontendNetworkSettingsControlView *>
+                (rootNode->commonState.commonPrefix.parent.get()); /* the parent node read through the page view */
     parentCursor = rootNode->commonState.commonPrefix.parent;
   }
   /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecord rows). */
-  if (((((UiListControl *)networkSettings)->rowCount == 0) ||
-      (((FrontendSessionDiscoveryRecord *)*((UiListControl *)networkSettings)->selectedRowSlot)->advertisement.
+  sessionList = reinterpret_cast<UiListControl *>(networkSettings);
+  if (((sessionList->rowCount == 0) ||
+      (static_cast<FrontendSessionDiscoveryRecord *>(sessionList->selectedRowSlot->get())->advertisement.
        joinAvailableFlag == 0)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->nodeView.base);
   }
   else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
-    if ((((UiListControl *)networkSettings)->listStateFlags & 4) != 0) {
-      dirtyFlagsSlot = &((UiListControl *)networkSettings)->listStateFlags;
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->nodeView.base);
+    if ((sessionList->listStateFlags & 4) != 0) {
+      dirtyFlagsSlot = &sessionList->listStateFlags;
       *dirtyFlagsSlot = *dirtyFlagsSlot & ~4;
       FrontendNetworkSettings_PublishSelectedPlayerDescriptor /* the page view at the Join button */
                 (reinterpret_cast<FrontendNetworkSettingsControlView *>(&FrontendUi_Image(rootNode)->networkGameJoinButton));
@@ -764,13 +791,14 @@ Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSet
   
   /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
   g_FrontendSessionToken =
-       ((FrontendSessionDiscoveryRecord *)
-        *FrontendUi_Image((uint8_t *)networkSettings - offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot)->advertisement.header.sequenceToken;
+       static_cast<FrontendSessionDiscoveryRecord *>
+       (FrontendUi_Image(Thandor_Bytes(networkSettings) - offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->advertisement.header.sequenceToken;
   selectedPlayerRecordDwordCursor =
-       (uint32_t *)&((FrontendSessionDiscoveryRecord *)
-                     *FrontendUi_Image((uint8_t *)networkSettings -
-                                                    offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot)->senderEndpoint;
-  selectedEndpointDwordCursor = (uint32_t *)&g_FrontendSelectedNetworkEndpoint;
+       FrontendNetwork_Dwords(&static_cast<FrontendSessionDiscoveryRecord *>
+                     (FrontendUi_Image(Thandor_Bytes(networkSettings) -
+                                       offsetof(FrontendUiImage,networkGameJoinButton))->sessionList.selectedRowSlot->get())->senderEndpoint);
+
+  selectedEndpointDwordCursor = FrontendNetwork_Dwords(&g_FrontendSelectedNetworkEndpoint);
   for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;

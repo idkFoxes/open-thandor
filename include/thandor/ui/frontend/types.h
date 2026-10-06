@@ -1287,6 +1287,15 @@ template <class T> inline FrontendUiImage *FrontendUi_ImageOfNode(T *node, size_
   return Thandor_At<FrontendUiImage>(node, -static_cast<int32_t>(nodeOffset));
 }
 
+/* The control behind a node pointer: the UI passes a control to its action handlers and callbacks as its
+   UiNodeBase (every control starts with it, through its base chain), and parent links hold UiNodeBase pointers.
+   The downcast along that chain, in one place; Control must start with a UiNodeBase. */
+template <class Control> inline Control *UiNode_As(UiNodeBase *node)
+{
+  return reinterpret_cast<Control *>(node);
+}
+
+
 /* The menu room node (menuRoomModelView) as the world runtime context the ROM transitions, the menu room scene
    and the debug overlay work on: a FrontendModelPointerContext shares its storage with a WorldRuntimeContext
    view (see the field comments of FrontendModelPointerContext). */
