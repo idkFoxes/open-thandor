@@ -249,10 +249,12 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
     if (InGameConditionRuntime_HasUnalliedActiveFactionPair()) {
       if ((uint32_t)endTrigger->factionRuntimeIndex == (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex) {
         g_InGameRuntimeRoot->diplomacyPanelNodeFlags = g_InGameRuntimeRoot->diplomacyPanelNodeFlags | 8;
-        INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags = INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags | 8;
-        INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags =
-             INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags | 8;
-        INGAME_UI(relationRoot,armyStockPanel)->nodeFlags = INGAME_UI(relationRoot,armyStockPanel)->nodeFlags | 8;
+        InGameUiImage *relationUi = InGameUi_Image(relationRoot);
+        relationUi->buildCatalogPanel.selectable.base.nodeFlags =
+             relationUi->buildCatalogPanel.selectable.base.nodeFlags | 8;
+        relationUi->specialBuildCatalogPanel.selectable.base.nodeFlags =
+             relationUi->specialBuildCatalogPanel.selectable.base.nodeFlags | 8;
+        relationUi->armyStockPanel.selectable.base.nodeFlags = relationUi->armyStockPanel.selectable.base.nodeFlags | 8;
       }
       return;
     }

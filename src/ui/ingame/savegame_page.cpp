@@ -277,15 +277,15 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   RichTextCommandStream_CopyExpanded(256,(uint16_t *)record,newRowText,nullptr);
   /* The action source is the game menu's Save button (InGameUiImage.gameMenuSaveButton). */
   inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
-  saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
-  descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
+  saveList = reinterpret_cast<UiPointerListControl *>(&inGameUi->saveGameList); /* the list's 0x64-byte prefix view */
+  descriptionText = &inGameUi->saveGameDescriptionText;
   /* sort only the saves, then append the new row and select it */
   UiPointerList_InitializeColumnLayout(rowCount,(Ptr32<void> *)g_ScenarioCatalog,saveList);
   UiPointerList_SortByDwordPairFieldDescending(240,saveList);
   UiPointerList_InitializeColumnLayout(rowCount + 1,(Ptr32<void> *)g_ScenarioCatalog,saveList);
   UiPointerList_SelectColumnListIndex(rowCount,saveList);
-  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
+  UiPageStack_SetActiveIndex(5,UiLayoutContainerControl_AsPageStack(&inGameUi->gameWindowPageStack));
+  UiPageStack_SetActiveIndex(1,UiLayoutContainerControl_AsPageStack(&inGameUi->saveNameEntryStack));
   /* up to the root node (its parent is -1) */
   rootNode = saveMenuButton;
   while (rootNode->parent != UI_NODE_NONE) {
@@ -293,8 +293,8 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   }
   UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,rootNode);
   UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,rootNode);
-  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)INGAME_UI(rootNode, saveNameEdit));
-  InGameSaveName_UpdateSaveActionValidity(INGAME_UI(rootNode, saveNameEdit));
+  UiTextControl_UpdateNonEmptyValidity(reinterpret_cast<UiTextEditControl *>(&InGameUi_Image(rootNode)->saveNameEdit));
+  InGameSaveName_UpdateSaveActionValidity(&InGameUi_Image(rootNode)->saveNameEdit.base);
   listRowCount = saveList->rowCount;
   rowSlots = saveList->rowSlots;
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,nullptr);
