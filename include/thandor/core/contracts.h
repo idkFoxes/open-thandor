@@ -55,7 +55,7 @@ using UQ12 = unsigned int;
 #define THANDOR_ALIGN(n) __attribute__((aligned(n)))
 #endif
 
-#include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
+#include <stddef.h>
 #include <thandor/core/x86_emulation.h>
 
 /* Address of `offset` bytes into an object, as an integer: for code that steps through a table or record by
@@ -74,21 +74,5 @@ template <class B> static __forceinline uint8_t *Thandor_AddressBytes(B base)
     return reinterpret_cast<uint8_t *>(static_cast<uintptr_t>(base));
   }
 }
-
-/* A UI node at a byte offset from base: the variadic UiSelectableGroup_* helpers take the group's controls
-   as extra arguments, which the original addresses as base + byte offset. */
-#define THANDOR_UI_AT(base, offset) \
-    (reinterpret_cast<UiNodeBase *>(Thandor_AddressBytes(base) + static_cast<int>(offset)))
-
-/* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
-   UiNodeBase; the node offsets are those of the template layouts (the *UiImage structs of the ui type headers). */
-#define THANDOR_UI_FIELD(base, offset, type) \
-    (*reinterpret_cast<type *>(Thandor_AddressBytes(base) + static_cast<int>(offset)))
-
-/* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same
-   copy (ImageType is the template struct, e.g. InGameUiImage): the nodes' fixed distance in the template. */
-#define THANDOR_UI_SIBLING(self, ImageType, selfNode, node) \
-    THANDOR_UI_AT(self, (int)offsetof(ImageType, node) - (int)offsetof(ImageType, selfNode))
-
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

@@ -53,9 +53,8 @@ void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control);
 
 void FrontendNetworkSettings_SetGameName(UiTextEditControl *control);
 
-void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
-          (FrontendNetworkSettingsControlView *networkSettings);
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick(UiListControl *sessionList);
 
-Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(UiFramedTextButtonControl *joinButton);
 
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */
