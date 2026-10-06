@@ -49,14 +49,14 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
     parentNode = source->parent;
   }
   Movie_Close();
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
+  UiPageStack_SetActiveIndex(0,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(source,frontendViewModeStack)));
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
-            (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource);
-  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels);
-  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels);
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource = nullptr;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = nullptr;
-  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = nullptr;
+            (FRONTEND_UI(source,moviePlaybackView)->textureSource);
+  g_MemoryApi.free(FRONTEND_UI(source,moviePlaybackView)->blendFactorPixels);
+  g_MemoryApi.free(FRONTEND_UI(source,moviePlaybackView)->blendedSourcePixels);
+  FRONTEND_UI(source,moviePlaybackView)->textureSource = nullptr;
+  FRONTEND_UI(source,moviePlaybackView)->blendFactorPixels = nullptr;
+  FRONTEND_UI(source,moviePlaybackView)->blendedSourcePixels = nullptr;
   g_CursorVisibilityToken++;
   FrontendCommand_Issue<FrontendSession_ReturnToMainPage>(0,0,0);
 }
@@ -114,7 +114,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
     source = source->parent;
     parentNode = source->parent;
   }
-  g_FrontendPlayerRuntimeBlockCount = ((UiListControl *)FRONTEND_UI(source,hostLobbyPlayerList))->rowCount;
+  g_FrontendPlayerRuntimeBlockCount = FRONTEND_UI(source,hostLobbyPlayerList)->rowCount;
   g_FrontendExpectedPlayerRuntimeBlockCount = 0;
   g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount;
   seed = Random_NextPrimary();
@@ -141,7 +141,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
           GameSpeedPercent gameSpeedPercent)
 
 {
-  ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider))->value = gameSpeedPercent;
+  FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider)->value = gameSpeedPercent;
 }
 
 
@@ -152,9 +152,9 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 
 {
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
-                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+                             UiLayoutContainerControl_AsPageStack(FRONTEND_UI(frontendUi,frontendPageStack)));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    FRONTEND_UI(frontendUi,menuRoomModelView)->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
@@ -502,8 +502,9 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
   Movie_Close();
   /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(((UiRangeSliderControl *)FRONTEND_UI(frontendRootAddress,gameSpeedSlider))->value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
-  displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
+       (uint32_t)(FRONTEND_UI(frontendRootAddress,gameSpeedSlider)->value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
+  /* briefingImage: an image action control, its template node is shorter than the class */
+  displayFlags = &reinterpret_cast<UiImageActionControl *>(FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
 }
@@ -521,8 +522,8 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
   uintptr_t frontendRootAddress;
 
   frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,UiLayoutContainerControl_AsPageStack(FRONTEND_UI(g_FrontendRootNode,frontendPageStack)));
+  FRONTEND_UI(frontendRootAddress,menuRoomModelView)->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
 }

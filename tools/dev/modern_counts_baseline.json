@@ -1,5 +1,5 @@
 {
- "revision": "cde607e4",
+ "revision": "9d4e55de",
  "worktree": true,
  "files": 692,
  "metrics": {
@@ -119,7 +119,7 @@
    "gameplay": 24,
    "movie": 41,
    "platform": 18,
-   "ui": 1936,
+   "ui": 1769,
    "world": 66
   },
   "ingame_ui": {
@@ -134,7 +134,7 @@
    "gameplay": 10,
    "network": 16,
    "platform": 3,
-   "ui": 291
+   "ui": 288
   },
   "define_numeric": {
    "assets": 102,
@@ -159,7 +159,7 @@
    "network": 165,
    "platform": 330,
    "root": 7,
-   "ui": 803,
+   "ui": 802,
    "world": 177
   },
   "include_guard": {
