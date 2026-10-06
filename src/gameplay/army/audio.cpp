@@ -22,7 +22,7 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  soundSlot = ArmySound_Slot(worldRuntime,soundSlotIndex);
   if (soundSlot == nullptr) {
     return;
   }
@@ -213,7 +213,7 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
       (soundSlotIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  slot = ArmySound_Slot(worldRuntime,soundSlotIndex);
   if (slot == nullptr) {
     return;
   }
@@ -249,7 +249,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
       (soundAssetIndex >= worldContext->dwordArrayCount)) {
     return;
   }
-  voiceSetRef = (SoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
+  voiceSetRef = ArmySound_VoiceSetRef(worldContext,soundAssetIndex);
   if (voiceSetRef == nullptr) {
     return;
   }
@@ -272,7 +272,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear(activeFactionIndex,factionIndex);
   /* the active faction's byte of the cell's occupancy mask */
   if ((capabilityClear) &&
-      ((((uint8_t *)&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)].occupancyMask)[activeFactionIndex] &
+      ((FieldGridCell_OccupancyByte(&fieldGrid->cells[(int32_t)(gridWidthCells * cellRow + cellColumn)],activeFactionIndex) &
         ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0) &&
       (16 < g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick)) {
     g_GameFactionRuntimeImage.records[activeFactionIndex].relationTransitionTick = 0;
@@ -305,7 +305,7 @@ void ModelRuntime_PlayDefinitionOneShotSound(ModelRuntimeSlot *modelRuntime,uint
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  voiceSetRef = ArmySound_VoiceSetRef(worldRuntime,soundAssetIndex);
   if (voiceSetRef == nullptr) {
     return;
   }

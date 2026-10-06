@@ -460,8 +460,7 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
      (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  /* the sound slot (a SpatialSoundSlot address kept as an integer, its voiceSet first) as the voice-set reference */
-  soundVoiceSet = reinterpret_cast<SoundVoiceSet **>(worldRuntime->dwordArray[soundAssetIndex]);
+  soundVoiceSet = ArmySound_VoiceSetRef(worldRuntime,soundAssetIndex);
   if (soundVoiceSet == nullptr) {
     return;
   }
@@ -486,8 +485,7 @@ static Bool8 ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRu
   spawnFailed = ArmyRuntimeSpawner_CreateLinkedChildInstance
                           (inheritedState->inheritedValue78,inheritedState->inheritedValue74,
                            inheritedState->inheritedValue70,linkedArmyAssetId,worldRuntime,
-                           /* the pad's model runtime read through the linked-child mask view */
-                           reinterpret_cast<ArmyRuntimeLinkedChildMaskSlotView *>(padRuntime));
+                           ModelView_Cast<ArmyRuntimeLinkedChildMaskSlotView>(padRuntime));
   if (spawnFailed) {
     return false;
   }

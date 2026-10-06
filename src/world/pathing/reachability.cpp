@@ -225,7 +225,7 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
   leftEndCell = GridPathRegion_ScanUnreachedSpanEnd(currentCell,-1);
   rightEndCell = GridPathRegion_ScanUnreachedSpanEnd(currentCell,1);
   /* hex distance from the span to the reference cell; spanByteOffset moves to the span cell nearest to it */
-  spanByteOffset = (uint32_t)((uint8_t *)(leftEndCell + 1) - (uint8_t *)g_GridScratchPrimary);
+  spanByteOffset = (uint32_t)(reinterpret_cast<uint8_t *>(leftEndCell + 1) - reinterpret_cast<uint8_t *>(g_GridScratchPrimary));
   spanLength = (int)(rightEndCell - leftEndCell) - 2;
   spanColumn = (spanByteOffset >> 3) % g_GridScratchWidth;
   referenceDistance = (spanByteOffset >> 3) / g_GridScratchWidth - g_GridPathUnreachableRegionReferenceRow;
@@ -272,22 +272,22 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
   bestResult.bestCost = updatedBestCost;
   bestResult.bestCellByteOffset = bestCellByteOffset;
   /* recurse into the unreached, unvisited, open cells of the rows above and below the span */
-  rowCursor = (GridScratchCell *)((uint8_t *)(leftEndCell + 1) - rowStrideBytes);
+  rowCursor = GridScratchCell_RowAbove(leftEndCell + 1,rowStrideBytes);
   do {
     if (GridPathRegion_IsUnvisitedUnreachedOpenCell(rowCursor)) {
       bestResult = GridPathRegion_MarkUnreachableRecursive
                          (rowStrideBytes,rowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
     rowCursor++;
-  } while (rowCursor <= (GridScratchCell *)((uint8_t *)rightEndCell - rowStrideBytes));
-  rowCursor = (GridScratchCell *)((uint8_t *)leftEndCell + rowStrideBytes);
+  } while (rowCursor <= GridScratchCell_RowAbove(rightEndCell,rowStrideBytes));
+  rowCursor = GridScratchCell_RowBelow(leftEndCell,rowStrideBytes);
   do {
     if (GridPathRegion_IsUnvisitedUnreachedOpenCell(rowCursor)) {
       bestResult = GridPathRegion_MarkUnreachableRecursive
                          (rowStrideBytes,rowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
     rowCursor++;
-  } while (rowCursor < (GridScratchCell *)((uint8_t *)rightEndCell + rowStrideBytes));
+  } while (rowCursor < GridScratchCell_RowBelow(rightEndCell,rowStrideBytes));
   return bestResult;
 }
 
@@ -318,15 +318,15 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
   /* row above: from the span's first cell up to the column of the right stop cell (inclusive); row below: from
      the column of the left stop cell up to the span's last cell. Neither range is ever empty, so testing before
      the first cell matches the original's do-while. */
-  prevRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
-  for (prevRowCursor = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+  prevRowEnd = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
+  for (prevRowCursor = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
        prevRowCursor <= prevRowEnd; prevRowCursor++) {
     if ((prevRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,prevRowCursor);
     }
   }
-  nextRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
-  for (nextRowCursor = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+  nextRowEnd = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
+  for (nextRowCursor = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
        nextRowCursor < nextRowEnd; nextRowCursor++) {
     if ((nextRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,nextRowCursor);
@@ -361,15 +361,15 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
   }
   /* same row ranges as GridReachability_MarkOpenRegionRecursive; neither is ever empty, so testing before the
      first cell matches the original's do-while */
-  prevRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
-  for (prevRowCursor = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+  prevRowEnd = GridScratchCell_RowAbove(rightStopCell,rowStrideBytes);
+  for (prevRowCursor = GridScratchCell_RowAbove(leftStopCell + 1,rowStrideBytes);
        prevRowCursor <= prevRowEnd; prevRowCursor++) {
     if ((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && prevRowCursor->pathCost != 0) {
       GridReachability_ClearCostedRegionRecursive(rowStrideBytes,prevRowCursor);
     }
   }
-  nextRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
-  for (nextRowCursor = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+  nextRowEnd = GridScratchCell_RowBelow(rightStopCell,rowStrideBytes);
+  for (nextRowCursor = GridScratchCell_RowBelow(leftStopCell,rowStrideBytes);
        nextRowCursor < nextRowEnd; nextRowCursor++) {
     if ((nextRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && nextRowCursor->pathCost != 0) {
       GridReachability_ClearCostedRegionRecursive(rowStrideBytes,nextRowCursor);

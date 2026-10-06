@@ -27,7 +27,7 @@ void DebugMovieDecoder_DumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
     const char *value = getenv("OPEN_THANDOR_MOVIEDUMP");
     enabled = (value != nullptr) && (value[0] == '1');
     if (enabled) {
-      CreateDirectoryA(const_cast<LPCSTR>("moviedump"), nullptr);
+      CreateDirectoryA("moviedump", nullptr);
     }
   }
   if (!enabled) {

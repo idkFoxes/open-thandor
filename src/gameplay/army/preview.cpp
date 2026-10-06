@@ -205,9 +205,9 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   uint32_t allocationSize;
 
   /* a temporary army at world position (ARMY_PREVIEW_WORLD_POSITION_Q12 on both axes) */
-  previewArmy = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
+  previewArmy = ModelView_Cast<GameEntityRuntime>(ArmyRuntime_CreateInstanceFromAsset
                      (1,0,ARMY_PREVIEW_WORLD_POSITION_Q12,ARMY_PREVIEW_WORLD_POSITION_Q12,factionIndex,armyAssetId,
-                      worldRuntime,nullptr);
+                      worldRuntime,nullptr));
   if (previewArmy == nullptr) {
     return nullptr;
   }
@@ -216,7 +216,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   if ((((previewArmy->common).ownership.modelRuntime()->definitionOrSavedId.
         runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (3 < rootNode->childCount)) &&
      (rootNode->childNodes[3] != nullptr)) {
-    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode(ModelView_Cast<WorldOwnerListNode>(rootNode->childNodes[3]));
     rootNode->childNodes[3] = nullptr;
   }
   /* angles are 16-bit turns: 45 and 67.5 degrees */
@@ -253,12 +253,13 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   g_ArmyPreviewViewParameters.viewAngle1 = 0;
   g_ArmyPreviewViewParameters.projectionShift = 4;
   g_ArmyPreviewModelNode = rootNode;
-  previewTexture = (GameEntityRuntime *)g_GraphicsOffscreenRenderModelListToTextureSource
+  /* the texture is handled through the GameEntityRuntime view below (header fields by entity field names) */
+  previewTexture = reinterpret_cast<GameEntityRuntime *>(g_GraphicsOffscreenRenderModelListToTextureSource
                      (&g_ArmyPreviewSceneExtents,
                       g_ArmyPreviewAuxiliaryOrientation,
                       &g_ArmyPreviewViewParameters,
                       previewHeight * 2,previewWidth * 2,1,
-                      &g_ArmyPreviewModelNode);
+                      &g_ArmyPreviewModelNode));
   if (previewTexture == nullptr) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
     return nullptr;
@@ -266,7 +267,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
      rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
      allocation size */
-  sourcePixels = (uint32_t *)&previewTexture[1].common.commandTarget.targetWorldXQ12;
+  sourcePixels = reinterpret_cast<uint32_t *>(&previewTexture[1].common.commandTarget.targetWorldXQ12); /* +0x220 */
   ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
   /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
   destinationPixels = sourcePixels;
@@ -294,7 +295,7 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   allocationSize = (uint32_t)(halvedWidth * halvedHeight * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
   (previewTexture->common).ownership.modelNode = Thandor_U32ToPointer<ModelRuntimeNode>(allocationSize); /* 32-bit format field: GraphicsTextureSourceAsset header +0x04 (GameEntityRuntime view) */
   g_MemoryApi.shrinkInPlace(allocationSize,previewTexture);
-  return (GraphicsTextureResource *)previewTexture;
+  return reinterpret_cast<GraphicsTextureResource *>(previewTexture); /* back from the entity view */
 }
 
 /* Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
@@ -314,7 +315,7 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   registryCursor = g_ArmyAssetRecordRegistry;
   for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
        registrySlotsRemaining--) {
-    registeredRecord = (ArmyAssetRecord *)*registryCursor;
+    registeredRecord = ModelView_Cast<ArmyAssetRecord>(*registryCursor);
     if (registeredRecord != nullptr) {
       g_MemoryApi.free(Thandor_U32ToPointer<void>(registeredRecord->previewTexture)); /* 32-bit format field: ArmyAssetRecord.previewTexture (+0x20) */
       registeredRecord->previewTexture = 0;
@@ -323,10 +324,10 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   }
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
   ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
-       (GraphicsTextureSourceAsset *)resolvedTexture;
+       reinterpret_cast<GraphicsTextureSourceAsset *>(resolvedTexture);
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
   ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
-       (GraphicsTextureSourceAsset *)resolvedTexture;
+       reinterpret_cast<GraphicsTextureSourceAsset *>(resolvedTexture);
 }
 
 /* Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
@@ -345,7 +346,7 @@ uintptr_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegi
   FactionRuntimeIndex factionIndex;
 
   for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
-    registeredRecord = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    registeredRecord = ModelView_Cast<ArmyAssetRecord>(g_ArmyAssetRecordRegistry[slotIndex]);
     if (registeredRecord == nullptr || armyAssetRegistryId != registeredRecord->registryId) {
       continue;
     }

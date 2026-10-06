@@ -258,7 +258,9 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
     if (attachmentAssetId == g_InGamePointerModePreviewArmyIds[4]) {
       variantMask = variantMask | 4;
     }
-    linkedChildRuntime = (ModelRuntimeLinkedChildSpawnAndBuildView *)((uint8_t *)linkedChildRuntime + 4);
+    /* the view moves by one dword (the next slot's fields line up) */
+    linkedChildRuntime = reinterpret_cast<ModelRuntimeLinkedChildSpawnAndBuildView *>(
+         reinterpret_cast<uint8_t *>(linkedChildRuntime) + 4);
     attachmentEffectSlotsRemaining--;
   } while (attachmentEffectSlotsRemaining != 0);
   return variantMask;
@@ -278,7 +280,7 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
       (worldRuntime->dwordArray == nullptr)) {
     return;
   }
-  soundVoiceSet = (SoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  soundVoiceSet = ArmySound_VoiceSetRef(worldRuntime,soundAssetIndex);
   if (soundVoiceSet == nullptr) {
     return;
   }
@@ -412,7 +414,9 @@ Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelR
     /* the original advances the source pointer itself by one attachment descriptor (0x20), so
        attachments[0] walks the attachments */
     sourceModelRuntime =
-         (ModelRuntimeSlot *)((uint8_t *)sourceModelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
+         /* by one descriptor's bytes */
+         reinterpret_cast<ModelRuntimeSlot *>(reinterpret_cast<uint8_t *>(sourceModelRuntime) +
+                                              sizeof(ModelRuntimeAttachmentDescriptor));
   }
   return true;
 }

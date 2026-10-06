@@ -63,7 +63,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
     startSoundSlotIndex = definition->moveStartSoundSlotIndex;
     if ((startSoundSlotIndex != 0) &&
        ((startSoundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != nullptr)))) {
-      voiceSetRef = (SoundVoiceSet **)worldRuntime->dwordArray[startSoundSlotIndex];
+      voiceSetRef = ArmySound_VoiceSetRef(worldRuntime,startSoundSlotIndex);
       worldPosition = &(rootNode->worldTransform).translation;
       if (voiceSetRef != nullptr) {
         cellMasked = TerrainGrid_TestProjectedCellMaskBits01

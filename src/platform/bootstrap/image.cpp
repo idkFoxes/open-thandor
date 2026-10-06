@@ -22,6 +22,18 @@
 #define CONTEXT_FP(context) ((context).Rbp)
 #define CONTEXT_SP(context) ((context).Rsp)
 
+/* A register or stack value of a captured context taken as an address in this process. */
+static const void *register_address(DWORD64 value)
+{
+    return reinterpret_cast<const void *>(static_cast<uintptr_t>(value)); /* the value is a native address */
+}
+
+/* The first code byte of a function, to measure its offset from the image base. */
+static const BYTE *code_bytes(void (*function)())
+{
+    return reinterpret_cast<const BYTE *>(reinterpret_cast<uintptr_t>(function)); /* code address as bytes */
+}
+
 static void executable_directory(char *out, size_t capacity)
 {
     char *slash;
@@ -57,13 +69,13 @@ static int module_offset(char *out, size_t capacity, DWORD64 address)
     char moduleName[MAX_PATH];
     const char *base;
     if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                            (LPCSTR)(uintptr_t)address, &module) ||
+                            static_cast<LPCSTR>(register_address(address)), &module) ||
         !GetModuleFileNameA(module, moduleName, sizeof moduleName)) {
         return 0;
     }
     base = strrchr(moduleName, '\\');
     snprintf(out, capacity, "%s+0x%llX", base ? base + 1 : moduleName,
-             (unsigned long long)(address - (DWORD64)(uintptr_t)module));
+             (unsigned long long)(address - (DWORD64)reinterpret_cast<uintptr_t>(module)));
     return 1;
 }
 
@@ -112,7 +124,7 @@ static const SymbolTableEntry *symbol_table_find(uint64_t rva)
 static int symbol_table_name(char *out, size_t capacity, DWORD64 address)
 {
     const SymbolTableEntry *entry;
-    DWORD64 base = (DWORD64)(uintptr_t)GetModuleHandleA(nullptr);
+    DWORD64 base = (DWORD64)reinterpret_cast<uintptr_t>(GetModuleHandleA(nullptr));
     if (g_SymbolTableCount == 0 || address < base || (entry = symbol_table_find(address - base)) == nullptr) {
         return 0;
     }
@@ -144,8 +156,10 @@ static void symbol_table_load()
     unsigned long long imageBase = 0;
     int haveImageBase = 0;
     char *cursor;
-    const BYTE *module = (const BYTE *)GetModuleHandleA(nullptr);
-    const IMAGE_NT_HEADERS *headers = (const IMAGE_NT_HEADERS *)(module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
+    const BYTE *module = reinterpret_cast<const BYTE *>(GetModuleHandleA(nullptr)); /* the handle is the image base */
+    /* the PE headers of the loaded image, read in place */
+    const IMAGE_NT_HEADERS *headers = reinterpret_cast<const IMAGE_NT_HEADERS *>(
+        module + reinterpret_cast<const IMAGE_DOS_HEADER *>(module)->e_lfanew);
     const IMAGE_SECTION_HEADER *section = IMAGE_FIRST_SECTION(headers);
     const SymbolTableEntry *self;
     WORD sectionIndex;
@@ -160,8 +174,8 @@ static void symbol_table_load()
         return;
     }
     if (GetFileSizeEx(file, &size) && size.QuadPart > 0 && size.QuadPart < 0x4000000) {
-        g_SymbolTableText = (char *)VirtualAlloc(nullptr, (SIZE_T)size.QuadPart + 1, MEM_COMMIT | MEM_RESERVE,
-                                                 PAGE_READWRITE);
+        g_SymbolTableText = static_cast<char *>(
+            VirtualAlloc(nullptr, (SIZE_T)size.QuadPart + 1, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
         if (g_SymbolTableText != nullptr &&
             (!ReadFile(file, g_SymbolTableText, (DWORD)size.QuadPart, &bytesRead, nullptr) ||
              bytesRead != (DWORD)size.QuadPart)) {
@@ -177,8 +191,8 @@ static void symbol_table_load()
     for (cursor = g_SymbolTableText; *cursor != '\0'; cursor++) {
         lineCount += (*cursor == '\n');
     }
-    g_SymbolTableEntries = (SymbolTableEntry *)VirtualAlloc(nullptr, ((SIZE_T)lineCount + 1) * sizeof(SymbolTableEntry),
-                                                            MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    g_SymbolTableEntries = static_cast<SymbolTableEntry *>(VirtualAlloc(
+        nullptr, ((SIZE_T)lineCount + 1) * sizeof(SymbolTableEntry), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
     if (g_SymbolTableEntries == nullptr) {
         symbol_table_drop();
         return;
@@ -227,8 +241,8 @@ static void symbol_table_load()
         cursor = *lineEnd != '\0' ? lineEnd + 1 : lineEnd;
     }
     /* the table must name this very function at its own address, else it belongs to another build */
-    self = symbol_table_find((uint64_t)((const BYTE *)(uintptr_t)&Thandor_InstallCrashHandler - module));
-    if (self == nullptr || self->rva != (uint32_t)((const BYTE *)(uintptr_t)&Thandor_InstallCrashHandler - module) ||
+    self = symbol_table_find((uint64_t)(code_bytes(&Thandor_InstallCrashHandler) - module));
+    if (self == nullptr || self->rva != (uint32_t)(code_bytes(&Thandor_InstallCrashHandler) - module) ||
         strncmp(g_SymbolTableText + self->nameOffset, "Thandor_InstallCrashHandler",
                 sizeof "Thandor_InstallCrashHandler" - 1) != 0) {
         symbol_table_drop();
@@ -241,7 +255,7 @@ static void symbol_table_load()
 static void code_address_name(char *out, size_t capacity, HANDLE process, DWORD64 address)
 {
     char buffer[sizeof(SYMBOL_INFO) + 256];
-    SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+    SYMBOL_INFO *symbol = reinterpret_cast<SYMBOL_INFO *>(buffer); /* dbghelp's variable-length record in the byte buffer */
     DWORD64 displacement = 0;
     if (symbol_table_name(out, capacity, address)) {
         return;
@@ -306,7 +320,7 @@ const char *Thandor_SymbolName(const void *address)
         SymInitialize(GetCurrentProcess(), nullptr, TRUE);
         initialized = 1;
     }
-    code_address_name(name, sizeof name, GetCurrentProcess(), (DWORD64)(uintptr_t)address);
+    code_address_name(name, sizeof name, GetCurrentProcess(), (DWORD64)reinterpret_cast<uintptr_t>(address));
     if (strcmp(name, "?") == 0) {
         snprintf(name, sizeof name, "%p", address);
     }
@@ -352,7 +366,7 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     HANDLE file;
     DWORD written;
     const CONTEXT *c = info->ContextRecord;
-    const DWORD *stack = (const DWORD *)(uintptr_t)CONTEXT_SP(*c);
+    const DWORD *stack = static_cast<const DWORD *>(register_address(CONTEXT_SP(*c)));
     SYSTEMTIME now;
     int i;
     int n;
@@ -378,7 +392,7 @@ static void raw_crash_dump(EXCEPTION_POINTERS *info)
     n = wsprintfA(line, "\r\n==== %04u-%02u-%02u %02u:%02u:%02u ====\r\nexception %08lX at %08lX info %08lX %08lX\r\n",
                   now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond,
                   info->ExceptionRecord->ExceptionCode,
-                  (DWORD)(uintptr_t)info->ExceptionRecord->ExceptionAddress,
+                  (DWORD)reinterpret_cast<uintptr_t>(info->ExceptionRecord->ExceptionAddress),
                   (DWORD)info->ExceptionRecord->ExceptionInformation[0],
                   (DWORD)info->ExceptionRecord->ExceptionInformation[1]);
     WriteFile(file, line, n, &written, nullptr);
@@ -461,12 +475,12 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     fprintf(out, "rax=%016llX rbx=%016llX rcx=%016llX rdx=%016llX\nrsi=%016llX rdi=%016llX rbp=%016llX rsp=%016llX\n",
             context.Rax, context.Rbx, context.Rcx, context.Rdx, context.Rsi, context.Rdi, context.Rbp,
             context.Rsp);
-    fprintf(out, "module base 0x%p\n\n", (void *)GetModuleHandleA(nullptr));
+    fprintf(out, "module base 0x%p\n\n", static_cast<void *>(GetModuleHandleA(nullptr)));
     fflush(out);
     /* Raw stack qwords first (the same 0x180 bytes as the earlier 96 dwords): the stack walk below can fault
        on a corrupted stack. */
     {
-        const uint64_t *stack = (const uint64_t *)(uintptr_t)CONTEXT_SP(context);
+        const uint64_t *stack = static_cast<const uint64_t *>(register_address(CONTEXT_SP(context)));
         int i;
         fprintf(out, "stack:");
         for (i = 0; i < 48 && Thandor_IsReadable(stack + i, 8); i++) {
@@ -481,12 +495,12 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     /* Code addresses among the raw stack qwords (return addresses of the frames; x64 pushes 8-byte return
        addresses, so the earlier 4-byte scan also matched halves of other values). */
     {
-        const uint64_t *stack = (const uint64_t *)(uintptr_t)CONTEXT_SP(context);
+        const uint64_t *stack = static_cast<const uint64_t *>(register_address(CONTEXT_SP(context)));
         int i;
         for (i = 0; i < 48 && Thandor_IsReadable(stack + i, 8); i++) {
             if (stack[i] >= REBUILT_IMAGE_CODE_START && stack[i] < REBUILT_IMAGE_BASE + CRASH_LOG_REBUILT_IMAGE_SPAN) {
                 fprintf(out, "  [rsp+%03X] %s\n", i * 8,
-                        Thandor_SymbolName((const void *)(uintptr_t)stack[i]));
+                        Thandor_SymbolName(register_address(stack[i])));
             }
         }
         fprintf(out, "\n");
@@ -514,7 +528,7 @@ static HANDLE g_watchedThread;
    interval. */
 static DWORD WINAPI watchdog_thread(void *parameter)
 {
-    DWORD interval = (DWORD)(uintptr_t)parameter;
+    DWORD interval = static_cast<DWORD>(reinterpret_cast<uintptr_t>(parameter));
     for (;;) {
         char path[MAX_PATH];
         FILE *out;
@@ -529,7 +543,7 @@ static DWORD WINAPI watchdog_thread(void *parameter)
         memset(&context, 0, sizeof context);
         context.ContextFlags = CONTEXT_FULL;
         if (GetThreadContext(g_watchedThread, &context)) {
-            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName((void *)(uintptr_t)CONTEXT_PC(context)));
+            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName(register_address(CONTEXT_PC(context))));
             log_stack_thread(out, &context, g_watchedThread);
         }
         ResumeThread(g_watchedThread);
@@ -541,7 +555,9 @@ static void start_watchdog()
 {
     char seconds[16];
     if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
-        CreateThread(nullptr, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, nullptr);
+        /* the thread parameter carries the period in seconds as its value */
+        CreateThread(nullptr, 0, watchdog_thread, reinterpret_cast<void *>(static_cast<uintptr_t>(atoi(seconds))), 0,
+                     nullptr);
     }
 }
 #else
@@ -593,7 +609,7 @@ static DWORD WINAPI hang_detector_thread(void *parameter)
             context.ContextFlags = CONTEXT_FULL;
             if (GetThreadContext(g_watchedThread, &context)) {
                 fprintf(out, "sample %d: main thread at %s\n", reported + 1,
-                        Thandor_SymbolName((void *)(uintptr_t)CONTEXT_PC(context)));
+                        Thandor_SymbolName(register_address(CONTEXT_PC(context))));
                 log_stack_thread(out, &context, g_watchedThread);
             }
             ResumeThread(g_watchedThread);
@@ -616,14 +632,14 @@ void Thandor_InstallCrashHandler()
 int Thandor_IsReadable(const void *address, unsigned size)
 {
     MEMORY_BASIC_INFORMATION mbi;
-    const char *p = (const char *)address;
+    const char *p = static_cast<const char *>(address);
     const char *end = p + size;
     while (p < end) {
         if (VirtualQuery(p, &mbi, sizeof mbi) == 0 || mbi.State != MEM_COMMIT ||
             (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) != 0) {
             return 0;
         }
-        p = (const char *)mbi.BaseAddress + mbi.RegionSize;
+        p = static_cast<const char *>(mbi.BaseAddress) + mbi.RegionSize;
     }
     return 1;
 }
@@ -640,7 +656,7 @@ void Thandor_SleepMs(unsigned milliseconds)
 
 int Thandor_DirectoryExistsW(const unsigned short *path)
 {
-    DWORD attributes = GetFileAttributesW((const wchar_t *)path);
+    DWORD attributes = GetFileAttributesW(reinterpret_cast<const wchar_t *>(path)); /* UTF-16; wchar_t is 16 bits on Windows */
     return (attributes != INVALID_FILE_ATTRIBUTES) && ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
 }
 

@@ -192,7 +192,8 @@ static_assert(sizeof(ShotModelNodeReferenceOrSavedOffset) == 0x4 &&
               offsetof(ShotModelNodeReferenceOrSavedOffset, modelNode) == 0x0,
               "ShotModelNodeReferenceOrSavedOffset keeps its 32-bit layout");
 static_assert(sizeof(ShotModelRuntimeStateOrSavedOffset) == 0x4 &&
-              offsetof(ShotModelRuntimeStateOrSavedOffset, runtimeStatePointer) == 0x0,
+              offsetof(ShotModelRuntimeStateOrSavedOffset, runtimeStatePointer) == 0x0 &&
+              offsetof(ShotModelRuntimeStateOrSavedOffset, targetModelRuntime) == 0x0,
               "ShotModelRuntimeStateOrSavedOffset keeps its 32-bit layout");
 static_assert(sizeof(ShotRuntimeSlot) == 0x40,
               "ShotRuntimeSlot keeps its 32-bit layout");
@@ -2212,6 +2213,945 @@ static_assert(sizeof(FrontendUiImage) == 0x78E8 && /* 0x5954 + the display mode 
               "FrontendUiImage keeps its 32-bit layout");
 static_assert(sizeof(InGameUiImage) == 0xC3E4,
               "InGameUiImage keeps its 32-bit layout");
+/* Step 13 U3: the typed nodes of the in-game image (tools/dev/ui_image_retype.py --asserts). */
+static_assert(offsetof(InGameUiImage, inGameRootPanel) == 0x0 && sizeof(UiPanelControl) == 0x58,
+              "InGameUiImage.inGameRootPanel is a UiPanelControl");
+static_assert(offsetof(InGameUiImage, chatInputPageStack) == 0x58 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.chatInputPageStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, chatInputTextEdit) == 0xB0 && sizeof(UiRequiredTextEditControl) == 0x80,
+              "InGameUiImage.chatInputTextEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(InGameUiImage, chatInputTextEdit_trailing) == 0x130,
+              "InGameUiImage.chatInputTextEdit_trailing follows the control");
+static_assert(offsetof(InGameUiImage, primaryPageStack) == 0x17C && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.primaryPageStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, endMovieView) == 0x1D8 && sizeof(UiImageActionControl) == 0x68,
+              "InGameUiImage.endMovieView is a UiImageActionControl");
+static_assert(offsetof(InGameUiImage, endMovieLetterboxTop) == 0x240 && sizeof(UiFillPanelControl) == 0x5C,
+              "InGameUiImage.endMovieLetterboxTop is a UiFillPanelControl");
+static_assert(offsetof(InGameUiImage, endMovieLetterboxBottom) == 0x29C && sizeof(UiFillPanelControl) == 0x5C,
+              "InGameUiImage.endMovieLetterboxBottom is a UiFillPanelControl");
+static_assert(offsetof(InGameUiImage, endMoviePageStack) == 0x2F8 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.endMoviePageStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, resultsScreenPanel) == 0x350 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.resultsScreenPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, resultsChartPageStack) == 0x3AC && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.resultsChartPageStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, resultsTabMilitary) == 0x584 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsTabMilitary is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsTabEconomy) == 0x5E4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsTabEconomy is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsTabThird) == 0x644 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsTabThird is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsContinueButton) == 0x6A4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsContinueButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsSecondaryExitButton) == 0x704 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsSecondaryExitButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsChartModeButtonA) == 0x764 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsChartModeButtonA is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsChartModeButtonB) == 0x7C4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.resultsChartModeButtonB is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, resultsSummaryText) == 0x824 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.resultsSummaryText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, playerStatusBox) == 0x8E4 && sizeof(UiConditionalActionTextBox<8>) == 0x7C,
+              "InGameUiImage.playerStatusBox is a UiConditionalActionTextBox<8>");
+static_assert(offsetof(InGameUiImage, messageHistoryPanel) == 0x960 && sizeof(UiConditionalActionTextBox<8>) == 0x7C,
+              "InGameUiImage.messageHistoryPanel is a UiConditionalActionTextBox<8>");
+static_assert(offsetof(InGameUiImage, worldViewArea) == 0x9DC && sizeof(UiLayoutContainerControl<1>) == 0x54,
+              "InGameUiImage.worldViewArea is a UiLayoutContainerControl<1>");
+static_assert(offsetof(InGameUiImage, worldView) == 0xA30 && sizeof(FrontendModelPointerContext) == 0x17C,
+              "InGameUiImage.worldView is a FrontendModelPointerContext");
+static_assert(offsetof(InGameUiImage, worldView_trailing) == 0xBAC,
+              "InGameUiImage.worldView_trailing follows the control");
+static_assert(offsetof(InGameUiImage, gameWindowPageStack) == 0xBD0 && sizeof(UiLayoutContainerControl<9>) == 0x74,
+              "InGameUiImage.gameWindowPageStack is a UiLayoutContainerControl<9>");
+static_assert(offsetof(InGameUiImage, gameMenuWindow) == 0xC44 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.gameMenuWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, quitGameWindow) == 0xCA0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.quitGameWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, saveGameWindow) == 0xCFC && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.saveGameWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, graphicsSettingsWindow) == 0xD58 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.graphicsSettingsWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, audioSettingsWindow) == 0xDB4 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.audioSettingsWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, missionHelpWindow) == 0xE10 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.missionHelpWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyWindow) == 0xE6C && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, missionHelpTitle) == 0xEC8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.missionHelpTitle is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, missionHelpCloseButton) == 0xF24 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.missionHelpCloseButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, missionHelpBriefingTab) == 0xF84 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.missionHelpBriefingTab is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, missionHelpKeyboardTab) == 0xFE4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.missionHelpKeyboardTab is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, missionHelpMouseTab) == 0x1044 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.missionHelpMouseTab is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, missionHelpTabPageStack) == 0x10A4 && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.missionHelpTabPageStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, missionBriefingScroll) == 0x1100 && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.missionBriefingScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, missionBriefingText) == 0x1190 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.missionBriefingText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, keyboardHelpScroll) == 0x11EC && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.keyboardHelpScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, keyboardHelpKeyColumn) == 0x127C && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.keyboardHelpKeyColumn is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, keyboardHelpDescriptionColumn) == 0x12D8 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.keyboardHelpDescriptionColumn is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, mouseHelpScroll) == 0x1334 && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.mouseHelpScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, mouseHelpText) == 0x13C4 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.mouseHelpText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, technologyTitle) == 0x1420 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.technologyTitle is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, technologyCloseButton) == 0x147C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyCloseButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyResearchButton) == 0x14DC && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyResearchButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab1) == 0x1544 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab1 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab2) == 0x15AC && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab2 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab3) == 0x1614 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab3 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab4) == 0x167C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab4 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab5) == 0x16E4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab5 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab6) == 0x174C && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab6 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab7) == 0x17B4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.technologyAreaTab7 is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab1Icon) == 0x1814 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab1Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab2Icon) == 0x1870 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab2Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab3Icon) == 0x18CC && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab3Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab4Icon) == 0x1928 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab4Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab5Icon) == 0x1984 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab5Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab6Icon) == 0x19E0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab6Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyAreaTab7Icon) == 0x1A3C && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyAreaTab7Icon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyDescriptionFrame) == 0x1A98 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.technologyDescriptionFrame is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, technologyDescriptionScroll) == 0x1AF4 && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.technologyDescriptionScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, technologyDescriptionText) == 0x1B84 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.technologyDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, messageWindow) == 0x1BE0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.messageWindow is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, messageWindowTitle) == 0x1C3C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.messageWindowTitle is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, messageTextEdit) == 0x1C98 && sizeof(UiRequiredTextEditControl) == 0x80,
+              "InGameUiImage.messageTextEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(InGameUiImage, messageTextEdit_trailing) == 0x1D18,
+              "InGameUiImage.messageTextEdit_trailing follows the control");
+static_assert(offsetof(InGameUiImage, messageCancelButton) == 0x1D64 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.messageCancelButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageSendAndCloseButton) == 0x1DC4 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.messageSendAndCloseButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageSendButton) == 0x1E24 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.messageSendButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientPlayersTab) == 0x1E84 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientPlayersTab is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientGroupsTab) == 0x1EE4 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientGroupsTab is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientAllTab) == 0x1F44 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientAllTab is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientPageStack) == 0x1FA4 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.messageRecipientPageStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, messageRecipientScroll) == 0x1FFC && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.messageRecipientScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, messageRecipientList) == 0x208C && sizeof(UiPanelControl) == 0x58,
+              "InGameUiImage.messageRecipientList is a UiPanelControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox1) == 0x20E4 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox1 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox2) == 0x2144 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox2 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox3) == 0x21A4 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox3 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox4) == 0x2204 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox4 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox5) == 0x2264 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox5 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox6) == 0x22C4 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox6 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, messageRecipientCheckbox7) == 0x2324 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.messageRecipientCheckbox7 is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, worldViewCyclingInfoText) == 0x2384 && sizeof(UiCommandVisibilitySingleLineText) == 0x5C,
+              "InGameUiImage.worldViewCyclingInfoText is a UiCommandVisibilitySingleLineText");
+static_assert(offsetof(InGameUiImage, worldViewStatusTextA) == 0x23E0 && sizeof(UiCommandVisibilitySingleLineText) == 0x5C,
+              "InGameUiImage.worldViewStatusTextA is a UiCommandVisibilitySingleLineText");
+static_assert(offsetof(InGameUiImage, worldViewStatusTextB) == 0x243C && sizeof(UiCommandVisibilitySingleLineText) == 0x5C,
+              "InGameUiImage.worldViewStatusTextB is a UiCommandVisibilitySingleLineText");
+static_assert(offsetof(InGameUiImage, worldViewWrappedStatusText) == 0x2498 && sizeof(UiCommandVisibilityWrappedText) == 0x5C,
+              "InGameUiImage.worldViewWrappedStatusText is a UiCommandVisibilityWrappedText");
+static_assert(offsetof(InGameUiImage, gameMenuTitle) == 0x24F4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.gameMenuTitle is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, gameMenuSaveButton) == 0x2550 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.gameMenuSaveButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, gameMenuQuitButton) == 0x25B0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.gameMenuQuitButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, gameMenuGraphicsButton) == 0x2610 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.gameMenuGraphicsButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, gameMenuAudioButton) == 0x2670 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.gameMenuAudioButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, rightButtonNoScrollCheckbox) == 0x26D0 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.rightButtonNoScrollCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, scrollSpeedGroup) == 0x2730 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.scrollSpeedGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, scrollSpeedMinLabel) == 0x278C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.scrollSpeedMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, scrollSpeedMaxLabel) == 0x27E8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.scrollSpeedMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, scrollSpeedSlider) == 0x2844 && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.scrollSpeedSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, autoCameraGroup) == 0x28AC && sizeof(UiTitledWindowControl) == 0x54,
+              "InGameUiImage.autoCameraGroup is a UiTitledWindowControl");
+static_assert(offsetof(InGameUiImage, autoZoomOffCheckbox) == 0x2900 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.autoZoomOffCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, autoRotationOffCheckbox) == 0x2960 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.autoRotationOffCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, cameraLinkGroup) == 0x29C0 && sizeof(UiTitledWindowControl) == 0x54,
+              "InGameUiImage.cameraLinkGroup is a UiTitledWindowControl");
+static_assert(offsetof(InGameUiImage, linkRotationZoomCheckbox) == 0x2A14 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.linkRotationZoomCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, linkRotationTiltCheckbox) == 0x2A74 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.linkRotationTiltCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, hidePanelCheckbox) == 0x2AD4 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.hidePanelCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, gameMenuCloseButton) == 0x2B34 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.gameMenuCloseButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, saveGameBackButton) == 0x2B94 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.saveGameBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, saveGameTitle) == 0x2BF4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.saveGameTitle is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, saveGameSaveButton) == 0x2C50 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.saveGameSaveButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, saveGameDeleteButton) == 0x2CB0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.saveGameDeleteButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, saveGameListScroll) == 0x2D10 && sizeof(UiScrollableControl) == 0x90,
+              "InGameUiImage.saveGameListScroll is a UiScrollableControl");
+static_assert(offsetof(InGameUiImage, saveGameList) == 0x2DA0 && sizeof(UiListControl) == 0x74,
+              "InGameUiImage.saveGameList is a UiListControl");
+static_assert(offsetof(InGameUiImage, saveGameList_trailing) == 0x2E14,
+              "InGameUiImage.saveGameList_trailing follows the control");
+static_assert(offsetof(InGameUiImage, saveGameListHeaderLabel) == 0x2E1C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.saveGameListHeaderLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, saveGameDescriptionText) == 0x2E78 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.saveGameDescriptionText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, saveNameEntryStack) == 0x2ED4 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.saveNameEntryStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, saveNameEdit) == 0x2F2C && sizeof(UiRequiredTextEditControl) == 0x80,
+              "InGameUiImage.saveNameEdit is a UiRequiredTextEditControl");
+static_assert(offsetof(InGameUiImage, saveNameEdit_trailing) == 0x2FAC,
+              "InGameUiImage.saveNameEdit_trailing follows the control");
+static_assert(offsetof(InGameUiImage, saveNameLabel) == 0x2FD8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.saveNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, quitMenuBackButton) == 0x3034 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.quitMenuBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, quitMenuTitleLabel) == 0x3094 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.quitMenuTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, quitMenuAbortMissionButton) == 0x30F0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.quitMenuAbortMissionButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, quitMenuSurrenderButton) == 0x3150 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.quitMenuSurrenderButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, quitMenuRestartMissionButton) == 0x31B0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.quitMenuRestartMissionButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, graphicsOptionsBackButton) == 0x3210 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.graphicsOptionsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, graphicsOptionsTitleLabel) == 0x3270 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.graphicsOptionsTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, shadingEnabledCheckbox) == 0x32CC && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.shadingEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, shadingLevelGroup) == 0x332C && sizeof(UiTitledWindowControl) == 0x54,
+              "InGameUiImage.shadingLevelGroup is a UiTitledWindowControl");
+static_assert(offsetof(InGameUiImage, shadingLevel32x32Button) == 0x3380 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel32x32Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, shadingLevel32x64Button) == 0x33E8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel32x64Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, shadingLevel32x128Button) == 0x3450 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel32x128Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, shadingLevel64x64Button) == 0x34B8 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel64x64Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, shadingLevel64x128Button) == 0x3520 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel64x128Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, shadingLevel128x128Button) == 0x3588 && sizeof(UiNumericPairTextButton) == 0x68,
+              "InGameUiImage.shadingLevel128x128Button is a UiNumericPairTextButton");
+static_assert(offsetof(InGameUiImage, modelDetailGroup) == 0x35F0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.modelDetailGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, modelDetailMinLabel) == 0x364C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.modelDetailMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, modelDetailMaxLabel) == 0x36A8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.modelDetailMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, modelDetailSlider) == 0x3704 && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.modelDetailSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, textureQualityGroup) == 0x376C && sizeof(UiTitledWindowControl) == 0x54,
+              "InGameUiImage.textureQualityGroup is a UiTitledWindowControl");
+static_assert(offsetof(InGameUiImage, textureQualityLowButton) == 0x37C0 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.textureQualityLowButton is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, textureQualityMediumButton) == 0x3820 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.textureQualityMediumButton is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, textureQualityHighButton) == 0x3880 && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.textureQualityHighButton is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, soundOptionsBackButton) == 0x38E0 && sizeof(UiFramedTextButtonControl) == 0x60,
+              "InGameUiImage.soundOptionsBackButton is a UiFramedTextButtonControl");
+static_assert(offsetof(InGameUiImage, soundOptionsTitleLabel) == 0x3940 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.soundOptionsTitleLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, musicEnabledCheckbox) == 0x399C && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.musicEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, effectsEnabledCheckbox) == 0x39FC && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.effectsEnabledCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, reverseStereoCheckbox) == 0x3A5C && sizeof(UiTextButtonControl) == 0x60,
+              "InGameUiImage.reverseStereoCheckbox is a UiTextButtonControl");
+static_assert(offsetof(InGameUiImage, effectsVolumeGroup) == 0x3ABC && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.effectsVolumeGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, effectsVolumeMinLabel) == 0x3B18 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.effectsVolumeMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, effectsVolumeMaxLabel) == 0x3B74 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.effectsVolumeMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, effectsVolumeSlider) == 0x3BD0 && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.effectsVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, movieVolumeGroup) == 0x3C38 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.movieVolumeGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, movieVolumeMinLabel) == 0x3C94 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.movieVolumeMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, movieVolumeMaxLabel) == 0x3CF0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.movieVolumeMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, movieVolumeSlider) == 0x3D4C && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.movieVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, musicVolumeGroup) == 0x3DB4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.musicVolumeGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, musicVolumeMinLabel) == 0x3E10 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.musicVolumeMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, musicVolumeMaxLabel) == 0x3E6C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.musicVolumeMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, musicVolumeSlider) == 0x3EC8 && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.musicVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, messageMovieVolumeGroup) == 0x3F30 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.messageMovieVolumeGroup is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, messageMovieVolumeMinLabel) == 0x3F8C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.messageMovieVolumeMinLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, messageMovieVolumeMaxLabel) == 0x3FE8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.messageMovieVolumeMaxLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, messageMovieVolumeSlider) == 0x4044 && sizeof(UiRangeSliderControl) == 0x68,
+              "InGameUiImage.messageMovieVolumeSlider is a UiRangeSliderControl");
+static_assert(offsetof(InGameUiImage, sidePanelStack) == 0x40AC && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.sidePanelStack is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, sidePanelFrameLeftEdge) == 0x4104 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameLeftEdge is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelFrameRightEdge) == 0x4160 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameRightEdge is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelFrameTopCap) == 0x41BC && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameTopCap is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelFrameMenuBar) == 0x4218 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameMenuBar is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelFrameInfoSection) == 0x4274 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameInfoSection is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelFrameBottomCap) == 0x42D0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.sidePanelFrameBottomCap is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, sidePanelMenuButtonStack) == 0x432C && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.sidePanelMenuButtonStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, inGameMenuButton) == 0x4388 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.inGameMenuButton is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, missionObjectivesButton) == 0x4400 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.missionObjectivesButton is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, countdownDisplayPanel) == 0x4478 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.countdownDisplayPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, countdownText) == 0x44D4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.countdownText is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, resourceBarModeStack) == 0x4530 && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.resourceBarModeStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, resourcePanel) == 0x458C && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.resourcePanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, editorTabStripA) == 0x45E8 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.editorTabStripA is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, gamePanelsModeStack) == 0x4644 && sizeof(UiLayoutContainerControl<3>) == 0x5C,
+              "InGameUiImage.gamePanelsModeStack is a UiLayoutContainerControl<3>");
+static_assert(offsetof(InGameUiImage, gamePanelsArea) == 0x46A0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.gamePanelsArea is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, editorTabStripB) == 0x46FC && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.editorTabStripB is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, resourcePanelImageToggle8) == 0x4758 && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.resourcePanelImageToggle8 is a UiImageControl");
+static_assert(offsetof(InGameUiImage, resourcePanelImageToggle8Popup) == 0x47C4 && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.resourcePanelImageToggle8Popup is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, resourcePanelImageToggle9) == 0x4820 && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.resourcePanelImageToggle9 is a UiImageControl");
+static_assert(offsetof(InGameUiImage, resourcePanelImageToggle9Popup) == 0x488C && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.resourcePanelImageToggle9Popup is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, resourcePanelImageToggle9Popup_trailing) == 0x48E8,
+              "InGameUiImage.resourcePanelImageToggle9Popup_trailing follows the control");
+static_assert(offsetof(InGameUiImage, resourcePanelIconButton) == 0x48EC && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.resourcePanelIconButton is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, xeniteGauge) == 0x4964 && sizeof(UiFormattedContainer) == 0x94,
+              "InGameUiImage.xeniteGauge is a UiFormattedContainer");
+static_assert(offsetof(InGameUiImage, xeniteGauge_trailing) == 0x49F8,
+              "InGameUiImage.xeniteGauge_trailing follows the control");
+static_assert(offsetof(InGameUiImage, tritiumGauge) == 0x49FC && sizeof(UiFormattedContainer) == 0x94,
+              "InGameUiImage.tritiumGauge is a UiFormattedContainer");
+static_assert(offsetof(InGameUiImage, tritiumGauge_trailing) == 0x4A90,
+              "InGameUiImage.tritiumGauge_trailing follows the control");
+static_assert(offsetof(InGameUiImage, energyGauge) == 0x4A94 && sizeof(UiFormattedContainer) == 0x94,
+              "InGameUiImage.energyGauge is a UiFormattedContainer");
+static_assert(offsetof(InGameUiImage, energyGauge_trailing) == 0x4B28,
+              "InGameUiImage.energyGauge_trailing follows the control");
+static_assert(offsetof(InGameUiImage, xeniteAmountText) == 0x4B44 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.xeniteAmountText is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, xeniteAmountText_trailing) == 0x4BA0,
+              "InGameUiImage.xeniteAmountText_trailing follows the control");
+static_assert(offsetof(InGameUiImage, editorModeTabTerrainHeight) == 0x4BA4 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.editorModeTabTerrainHeight is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, editorModeTabTerrainMaterial) == 0x4C1C && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.editorModeTabTerrainMaterial is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, editorModeTabTerrainSmoothing) == 0x4C94 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.editorModeTabTerrainSmoothing is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, diplomacyPanel) == 0x4D0C && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.diplomacyPanel is a UiImageControl");
+static_assert(offsetof(InGameUiImage, diplomacyFrame) == 0x4D78 && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.diplomacyFrame is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow1) == 0x4DD4 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow1 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow2) == 0x4E2C && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow2 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow3) == 0x4E84 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow3 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow4) == 0x4EDC && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow4 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow5) == 0x4F34 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow5 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow6) == 0x4F8C && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow6 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow7) == 0x4FE4 && sizeof(UiLayoutContainerControl<2>) == 0x58,
+              "InGameUiImage.diplomacyRow7 is a UiLayoutContainerControl<2>");
+static_assert(offsetof(InGameUiImage, diplomacyRow1PlayerNumberLabel) == 0x503C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow1PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow2PlayerNumberLabel) == 0x5098 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow2PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow3PlayerNumberLabel) == 0x50F4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow3PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow4PlayerNumberLabel) == 0x5150 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow4PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow5PlayerNumberLabel) == 0x51AC && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow5PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow6PlayerNumberLabel) == 0x5208 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow6PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow7PlayerNumberLabel) == 0x5264 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow7PlayerNumberLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow1FactionLabel) == 0x52C0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow1FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow2FactionLabel) == 0x531C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow2FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow3FactionLabel) == 0x5378 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow3FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow4FactionLabel) == 0x53D4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow4FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow5FactionLabel) == 0x5430 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow5FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow6FactionLabel) == 0x548C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow6FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow7FactionLabel) == 0x54E8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow7FactionLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow1RelationLabel) == 0x5544 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow1RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow2RelationLabel) == 0x55A0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow2RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow3RelationLabel) == 0x55FC && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow3RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow4RelationLabel) == 0x5658 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow4RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow5RelationLabel) == 0x56B4 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow5RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow6RelationLabel) == 0x5710 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow6RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow7RelationLabel) == 0x576C && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow7RelationLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow1PlayerNameLabel) == 0x57C8 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow1PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow2PlayerNameLabel) == 0x5824 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow2PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow3PlayerNameLabel) == 0x5880 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow3PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow4PlayerNameLabel) == 0x58DC && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow4PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow5PlayerNameLabel) == 0x5938 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow5PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow6PlayerNameLabel) == 0x5994 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow6PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow7PlayerNameLabel) == 0x59F0 && sizeof(UiFocusProxyControl) == 0x5C,
+              "InGameUiImage.diplomacyRow7PlayerNameLabel is a UiFocusProxyControl");
+static_assert(offsetof(InGameUiImage, diplomacyRow1RelationButton) == 0x5A4C && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow1RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow2RelationButton) == 0x5AC8 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow2RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow3RelationButton) == 0x5B44 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow3RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow4RelationButton) == 0x5BC0 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow4RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow5RelationButton) == 0x5C3C && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow5RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow6RelationButton) == 0x5CB8 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow6RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow7RelationButton) == 0x5D34 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.diplomacyRow7RelationButton is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, diplomacyRow7RelationButton_trailing) == 0x5DB0,
+              "InGameUiImage.diplomacyRow7RelationButton_trailing follows the control");
+static_assert(offsetof(InGameUiImage, buildCatalogPanel) == 0x5DB4 && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.buildCatalogPanel is a UiImageControl");
+static_assert(offsetof(InGameUiImage, buildCatalogFrame) == 0x5E20 && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.buildCatalogFrame is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry00) == 0x5E7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry00 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry01) == 0x5EFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry01 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry02) == 0x5F7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry02 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry03) == 0x5FFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry03 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry04) == 0x607C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry04 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry05) == 0x60FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry05 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry06) == 0x617C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry06 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry07) == 0x61FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry07 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry08) == 0x627C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry08 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry09) == 0x62FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry09 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry10) == 0x637C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry10 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry11) == 0x63FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry11 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry12) == 0x647C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry12 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry13) == 0x64FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry13 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry14) == 0x657C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry14 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry15) == 0x65FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry15 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry16) == 0x667C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry16 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry17) == 0x66FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry17 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry18) == 0x677C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry18 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry19) == 0x67FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry19 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry20) == 0x687C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry20 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry21) == 0x68FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry21 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry22) == 0x697C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry22 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry23) == 0x69FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry23 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry24) == 0x6A7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry24 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry25) == 0x6AFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry25 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry26) == 0x6B7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry26 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry27) == 0x6BFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry27 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry28) == 0x6C7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry28 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry29) == 0x6CFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry29 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry30) == 0x6D7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry30 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry31) == 0x6DFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry31 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry32) == 0x6E7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry32 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry33) == 0x6EFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry33 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry34) == 0x6F7C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry34 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry35) == 0x6FFC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry35 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry36) == 0x707C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry36 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry37) == 0x70FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry37 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry38) == 0x717C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry38 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry39) == 0x71FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry39 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry40) == 0x727C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry40 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry41) == 0x72FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry41 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry42) == 0x737C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry42 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry43) == 0x73FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry43 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry44) == 0x747C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry44 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry45) == 0x74FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry45 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry46) == 0x757C && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry46 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry47) == 0x75FC && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.buildCatalogEntry47 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, buildCatalogEntry47_trailing) == 0x767C,
+              "InGameUiImage.buildCatalogEntry47_trailing follows the control");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogPanel) == 0x7680 && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.specialBuildCatalogPanel is a UiImageControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogFrame) == 0x76EC && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.specialBuildCatalogFrame is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry00) == 0x7748 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry00 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry01) == 0x77C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry01 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry02) == 0x7848 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry02 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry03) == 0x78C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry03 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry04) == 0x7948 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry04 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry05) == 0x79C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry05 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry06) == 0x7A48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry06 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry07) == 0x7AC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry07 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry08) == 0x7B48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry08 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry09) == 0x7BC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry09 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry10) == 0x7C48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry10 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry11) == 0x7CC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry11 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry12) == 0x7D48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry12 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry13) == 0x7DC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry13 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry14) == 0x7E48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry14 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry15) == 0x7EC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry15 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry16) == 0x7F48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry16 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry17) == 0x7FC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry17 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry18) == 0x8048 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry18 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry19) == 0x80C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry19 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry20) == 0x8148 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry20 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry21) == 0x81C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry21 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry22) == 0x8248 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry22 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry23) == 0x82C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry23 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry24) == 0x8348 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry24 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry25) == 0x83C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry25 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry26) == 0x8448 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry26 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry27) == 0x84C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry27 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry28) == 0x8548 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry28 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry29) == 0x85C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry29 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry30) == 0x8648 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry30 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry31) == 0x86C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry31 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry32) == 0x8748 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry32 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry33) == 0x87C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry33 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry34) == 0x8848 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry34 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry35) == 0x88C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry35 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry36) == 0x8948 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry36 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry37) == 0x89C8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry37 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry38) == 0x8A48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry38 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry39) == 0x8AC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry39 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry40) == 0x8B48 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry40 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry41) == 0x8BC8 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.specialBuildCatalogEntry41 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, specialBuildCatalogEntry41_trailing) == 0x8C48,
+              "InGameUiImage.specialBuildCatalogEntry41_trailing follows the control");
+static_assert(offsetof(InGameUiImage, armyStockPanel) == 0x8C4C && sizeof(UiImageControl) == 0x6C,
+              "InGameUiImage.armyStockPanel is a UiImageControl");
+static_assert(offsetof(InGameUiImage, armyStockFrame) == 0x8CB8 && sizeof(UiNineSlicePanelControl) == 0x5C,
+              "InGameUiImage.armyStockFrame is a UiNineSlicePanelControl");
+static_assert(offsetof(InGameUiImage, armyStockSlot00) == 0x8D14 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot00 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot01) == 0x8D90 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot01 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot02) == 0x8E0C && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot02 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot03) == 0x8E88 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot03 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot04) == 0x8F04 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot04 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot05) == 0x8F80 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot05 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot06) == 0x8FFC && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot06 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot07) == 0x9078 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot07 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot08) == 0x90F4 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot08 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot09) == 0x9170 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot09 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot10) == 0x91EC && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot10 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot11) == 0x9268 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot11 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot12) == 0x92E4 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot12 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot13) == 0x9360 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot13 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot14) == 0x93DC && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot14 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot15) == 0x9458 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot15 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot16) == 0x94D4 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot16 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot17) == 0x9550 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot17 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot18) == 0x95CC && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot18 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot19) == 0x9648 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot19 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot20) == 0x96C4 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot20 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot21) == 0x9740 && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot21 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot22) == 0x97BC && sizeof(UiCommandSpriteButtonWithDetails) == 0x7C,
+              "InGameUiImage.armyStockSlot22 is a UiCommandSpriteButtonWithDetails");
+static_assert(offsetof(InGameUiImage, armyStockSlot23) == 0x9838 && sizeof(UiCatalogEntryControl) == 0x80,
+              "InGameUiImage.armyStockSlot23 is a UiCatalogEntryControl");
+static_assert(offsetof(InGameUiImage, editorModeTabRegion) == 0x98B8 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.editorModeTabRegion is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, editorModeTabUnitPlacement) == 0x9930 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.editorModeTabUnitPlacement is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, minimapView) == 0x9A1C && sizeof(UiSelectionGeometryControl) == 0x70,
+              "InGameUiImage.minimapView is a UiSelectionGeometryControl");
+static_assert(offsetof(InGameUiImage, modePreviewPageStack) == 0x9A8C && sizeof(UiLayoutContainerControl<8>) == 0x70,
+              "InGameUiImage.modePreviewPageStack is a UiLayoutContainerControl<8>");
+static_assert(offsetof(InGameUiImage, heightToolPreview) == 0x9B60 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.heightToolPreview is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialToolSelectedSwatch) == 0x9BBC && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialToolSelectedSwatch is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, smoothingToolPreview) == 0x9C18 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.smoothingToolPreview is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, unitPlacementPreviewFrame) == 0x9C74 && sizeof(UiFillPanelControl) == 0x5C,
+              "InGameUiImage.unitPlacementPreviewFrame is a UiFillPanelControl");
+static_assert(offsetof(InGameUiImage, unitPlacementPreviewImage) == 0x9CD0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.unitPlacementPreviewImage is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, objectPlacementPreviewFrame) == 0x9D2C && sizeof(UiFillPanelControl) == 0x5C,
+              "InGameUiImage.objectPlacementPreviewFrame is a UiFillPanelControl");
+static_assert(offsetof(InGameUiImage, objectPlacementPreviewImage) == 0x9D88 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.objectPlacementPreviewImage is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, regionToolPreview) == 0x9DE4 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.regionToolPreview is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, regionToolPreview_trailing) == 0x9E40,
+              "InGameUiImage.regionToolPreview_trailing follows the control");
+static_assert(offsetof(InGameUiImage, modeDetailPageStack) == 0x9EE0 && sizeof(UiLayoutContainerControl<8>) == 0x70,
+              "InGameUiImage.modeDetailPageStack is a UiLayoutContainerControl<8>");
+static_assert(offsetof(InGameUiImage, selectionDetailPanel) == 0x9F50 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.selectionDetailPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, selectionDetailPageStack) == 0x9FAC && sizeof(UiLayoutContainerControl<4>) == 0x60,
+              "InGameUiImage.selectionDetailPageStack is a UiLayoutContainerControl<4>");
+static_assert(offsetof(InGameUiImage, singleSelectionMetrics) == 0xA00C && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.singleSelectionMetrics is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, singleSelectionStatsText) == 0xA06C && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.singleSelectionStatsText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, singleSelectionStatsText_trailing) == 0xA0C8,
+              "InGameUiImage.singleSelectionStatsText_trailing follows the control");
+static_assert(offsetof(InGameUiImage, hoverItemIcon) == 0xA140 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.hoverItemIcon is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, hoverItemStatsText) == 0xA19C && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.hoverItemStatsText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, multiSelectionCell00) == 0xA1F8 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell00 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell01) == 0xA258 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell01 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell02) == 0xA2B8 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell02 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell03) == 0xA318 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell03 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell04) == 0xA378 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell04 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell05) == 0xA3D8 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell05 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell06) == 0xA438 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell06 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell07) == 0xA498 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell07 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell08) == 0xA4F8 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell08 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell09) == 0xA558 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell09 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell10) == 0xA5B8 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell10 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, multiSelectionCell11) == 0xA618 && sizeof(UiArmyMetricsPanel) == 0x60,
+              "InGameUiImage.multiSelectionCell11 is a UiArmyMetricsPanel");
+static_assert(offsetof(InGameUiImage, heightToolPanel) == 0xA678 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.heightToolPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialPalettePanel) == 0xA6D4 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialPalettePanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch00) == 0xA730 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch00 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch00Selector_fields) == 0xA7D8 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch00Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch01) == 0xA7E8 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch01 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch01Selector_fields) == 0xA890 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch01Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch02) == 0xA8A0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch02 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch02Selector_fields) == 0xA948 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch02Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch03) == 0xA958 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch03 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch03Selector_fields) == 0xAA00 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch03Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch04) == 0xAA10 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch04 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch04Selector_fields) == 0xAAB8 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch04Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch05) == 0xAAC8 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch05 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch05Selector_fields) == 0xAB70 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch05Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch06) == 0xAB80 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch06 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch06Selector_fields) == 0xAC28 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch06Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch07) == 0xAC38 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch07 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch07Selector_fields) == 0xACE0 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch07Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch08) == 0xACF0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch08 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch08Selector_fields) == 0xAD98 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch08Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch09) == 0xADA8 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch09 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch09Selector_fields) == 0xAE50 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch09Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch10) == 0xAE60 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch10 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch10Selector_fields) == 0xAF08 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch10Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, materialSwatch11) == 0xAF18 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.materialSwatch11 is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, materialSwatch11Selector_fields) == 0xAFC0 && sizeof(UiTextButtonTemplateFields) == 0x10,
+              "InGameUiImage.materialSwatch11Selector_fields is a UiTextButtonTemplateFields");
+static_assert(offsetof(InGameUiImage, smoothingToolPanel) == 0xAFD0 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.smoothingToolPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, unitPlacementPanel) == 0xB02C && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.unitPlacementPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, unitPlacementStatsText) == 0xB088 && sizeof(UiListOffsetControl) == 0x5C,
+              "InGameUiImage.unitPlacementStatsText is a UiListOffsetControl");
+static_assert(offsetof(InGameUiImage, objectPlacementPanel) == 0xB0E4 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.objectPlacementPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, regionToolPanel) == 0xB140 && sizeof(UiImagePanelControl) == 0x5C,
+              "InGameUiImage.regionToolPanel is a UiImagePanelControl");
+static_assert(offsetof(InGameUiImage, modeCommandPageStack) == 0xB19C && sizeof(UiLayoutContainerControl<9>) == 0x74,
+              "InGameUiImage.modeCommandPageStack is a UiLayoutContainerControl<9>");
+static_assert(offsetof(InGameUiImage, selectionGroupButton0) == 0xB210 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton0 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton0_trailing) == 0xB28C,
+              "InGameUiImage.selectionGroupButton0_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton1) == 0xB290 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton1 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton1_trailing) == 0xB30C,
+              "InGameUiImage.selectionGroupButton1_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton2) == 0xB310 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton2 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton2_trailing) == 0xB38C,
+              "InGameUiImage.selectionGroupButton2_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton3) == 0xB390 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton3 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton3_trailing) == 0xB40C,
+              "InGameUiImage.selectionGroupButton3_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton4) == 0xB410 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton4 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton4_trailing) == 0xB48C,
+              "InGameUiImage.selectionGroupButton4_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton5) == 0xB490 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton5 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton5_trailing) == 0xB50C,
+              "InGameUiImage.selectionGroupButton5_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton6) == 0xB510 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton6 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton6_trailing) == 0xB58C,
+              "InGameUiImage.selectionGroupButton6_trailing follows the control");
+static_assert(offsetof(InGameUiImage, selectionGroupButton7) == 0xB590 && sizeof(UiCommandSpriteButtonControl) == 0x7C,
+              "InGameUiImage.selectionGroupButton7 is a UiCommandSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, selectionGroupButton7_trailing) == 0xB60C,
+              "InGameUiImage.selectionGroupButton7_trailing follows the control");
+static_assert(offsetof(InGameUiImage, heightToolOption0) == 0xB610 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.heightToolOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, heightToolOption1) == 0xB688 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.heightToolOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, heightToolOption2) == 0xB700 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.heightToolOption2 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, heightToolOption3) == 0xB778 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.heightToolOption3 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, materialToolOption0) == 0xB7F0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.materialToolOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, materialToolOption1) == 0xB868 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.materialToolOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, materialToolOption2) == 0xB8E0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.materialToolOption2 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, materialToolOption3) == 0xB958 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.materialToolOption3 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, smoothingToolOption0) == 0xB9D0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.smoothingToolOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, smoothingToolOption1) == 0xBA48 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.smoothingToolOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, smoothingToolOption2) == 0xBAC0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.smoothingToolOption2 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, smoothingRelaxGatedButton) == 0xBB38 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.smoothingRelaxGatedButton is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, smoothingRelaxLandButton) == 0xBBB0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.smoothingRelaxLandButton is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, unitPlacementOption0) == 0xBC28 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.unitPlacementOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, unitPlacementOption2) == 0xBCA0 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.unitPlacementOption2 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, unitPlacementOption1) == 0xBD18 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.unitPlacementOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, objectPlacementOption0) == 0xBD90 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.objectPlacementOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, objectPlacementOption2) == 0xBE08 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.objectPlacementOption2 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, objectPlacementOption1) == 0xBE80 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.objectPlacementOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, regionToolOption0) == 0xBEF8 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.regionToolOption0 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, regionToolOption1) == 0xBF70 && sizeof(UiSpriteButtonControl) == 0x78,
+              "InGameUiImage.regionToolOption1 is a UiSpriteButtonControl");
+static_assert(offsetof(InGameUiImage, regionToolOption1_trailing) == 0xBFE8,
+              "InGameUiImage.regionToolOption1_trailing follows the control");
 
 /* Typed table entries (core/slot.h): a function of exactly the slot's signature is the entry itself; one taking a
    registered prefixed type (ui/controls/node_views.h), a view of the prefix chain or void * gets a thunk. Other

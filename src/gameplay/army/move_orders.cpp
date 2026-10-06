@@ -25,10 +25,10 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
   standardGeneration = g_ArmyCommandGenerationStandard;
   if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   if (targetRuntime == nullptr) {
@@ -41,9 +41,9 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
     targetModelNode = (targetRuntime->common).ownership.modelNode;
     ArmyRuntime_StartMoveCommandWithFallbackWaypoints
               ((targetModelNode->worldTransform).translation.y,(targetModelNode->worldTransform).translation.x
-               ,(ArmyMovementRuntime *)armyRuntime);
+               ,ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
   }
-  armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)targetRuntime;
+  armyRuntime->commandTargetArmyRuntime = ModelView_Cast<ArmyRuntimeSlot>(targetRuntime);
 }
 
 /* Helper for ArmyRuntime_ResetMovementStateFromModel (no original address: the original walks the tree
@@ -402,21 +402,21 @@ Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targ
         ) && (((ownerEntity->common).commandFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) == 0)) {
       if (((ownerEntity->common).commandTarget.targetFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
         ArmyRuntime_StartMoveCommandWithFallbackWaypoints
-                  (targetWorldYQ12,targetWorldXQ12,(ArmyMovementRuntime *)ownerEntity);
+                  (targetWorldYQ12,targetWorldXQ12,ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
       }
       else {
         ArmyRuntime_StartClampedMoveCommand
-                  (targetWorldYQ12,targetWorldXQ12,(ArmyMovementRuntime *)ownerEntity);
+                  (targetWorldYQ12,targetWorldXQ12,ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
       }
     }
     return true;
   }
   if (((ownerEntity->common).commandFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if (((ownerEntity->common).commandTarget.targetFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)ownerEntity);
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)ownerEntity);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(ownerEntity));
     }
   }
   return false;
@@ -705,10 +705,10 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
   standardGeneration = g_ArmyCommandGenerationStandard;
   if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   if (targetArmyRuntime == nullptr) {
@@ -733,10 +733,10 @@ void ArmyRuntime_ApplyTargetPositionCommand
 
   if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_AI_COMBAT_TARGET) == 0) {
-      ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
     else {
-      ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
+      ArmyRuntime_ResetMovementStateFromCurrentPosition(ModelView_Cast<ArmyMovementRuntime>(armyRuntime));
     }
   }
   armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_POSITION;

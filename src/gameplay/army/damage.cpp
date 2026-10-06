@@ -35,8 +35,10 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
     (childNode->modelPayload).localTranslationZQ12 =
          (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
                (int64_t)
-               *(int *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordByteOffset)) /
-              (int64_t)*(int *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordByteOffset + 4)
+               (int)Thandor_LoadU32(reinterpret_cast<const uint8_t *>(g_GameFactionRuntimeImage.records) +
+                                    factionRecordByteOffset)) /
+              (int64_t)(int)Thandor_LoadU32(reinterpret_cast<const uint8_t *>(g_GameFactionRuntimeImage.records) +
+                                            factionRecordByteOffset + 4)
               ) + classDefinition->runtimeValue24;
     childNode->runtimeFlags = childNode->runtimeFlags | 1;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
@@ -89,7 +91,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
     return;
   }
   maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
-  healthField = (Q12 *)&modelRuntime->health;
+  healthField = reinterpret_cast<Q12 *>(&modelRuntime->health); /* the health dword read signed */
   previousHealth = *healthField;
   *healthField = *healthField - damageAmount;
   /* the new health is still > 0; a negative damage (repair) never raises it above maxHealth */
@@ -149,14 +151,14 @@ void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,Fac
      GameEntityRuntime parameter type */
   targetModelNodeRuntime = targetModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
-            (impactAngle,sourceFactionIndex,impactValue >> 1,(GameEntityRuntime *)targetModelRuntime);
+            (impactAngle,sourceFactionIndex,impactValue >> 1,ModelView_Cast<GameEntityRuntime>(targetModelRuntime));
   secondHalfRecipient = targetModelRuntime;
   if (targetModelNodeRuntime->parentNode != nullptr) {
     secondHalfRecipient = (targetModelNodeRuntime->parentNode->runtimePayload).modelRuntime;
   }
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             (impactAngle,sourceFactionIndex,impactValue - (impactValue >> 1),
-             (GameEntityRuntime *)secondHalfRecipient);
+             ModelView_Cast<GameEntityRuntime>(secondHalfRecipient));
 }
 
 /* Subtracts damageAmount from the health of a living army. When the health drops to zero or below the army is
@@ -176,7 +178,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
   (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
   if (0 < (int)modelRuntime->health) {
     maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
-    healthField = (Q12 *)&modelRuntime->health;
+    healthField = reinterpret_cast<Q12 *>(&modelRuntime->health); /* the health dword read signed */
     previousHealth = *healthField;
     *healthField = *healthField - damageAmount;
     /* the new health is <= 0 */
@@ -398,8 +400,9 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             return;
           }
           attachedModelRuntime = (attachmentCursor->classPayload).impactOwnerLinks.attachment1ChildModelRuntime;
+          /* advance by one 0x20-byte attachment descriptor: the entity view starting at commandTarget.targetWorldXQ12 */
           attachmentCursor =
-               (GameEntityRuntime *)&(attachmentCursor->common).commandTarget.targetWorldXQ12;
+               reinterpret_cast<GameEntityRuntime *>(&(attachmentCursor->common).commandTarget.targetWorldXQ12);
         }
       }
     }
