@@ -36,6 +36,33 @@
 /* Pixels of an asset with a single subresource record directly after the header (offscreen renders) */
 #define GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET (GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE)
 
+/* The asset as bytes: every offset in the header and the subresource records is relative to the asset start
+   (the asset is one block of header, palette banks, record table and pixels). */
+static inline const uint8_t *GraphicsTextureSource_Bytes(const GraphicsTextureSourceAsset *sourceAsset)
+{
+    return reinterpret_cast<const uint8_t *>(sourceAsset); /* byte view of the asset block */
+}
+
+static inline uint8_t *GraphicsTextureSource_Bytes(GraphicsTextureSourceAsset *sourceAsset)
+{
+    return reinterpret_cast<uint8_t *>(sourceAsset); /* byte view of the asset block */
+}
+
+/* The subresource record table at asset + subresourceTableOffset. */
+static inline const GraphicsTextureSourceEntry *GraphicsTextureSource_Entries(const GraphicsTextureSourceAsset *sourceAsset)
+{
+    /* the records are 32-byte GraphicsTextureSourceEntry structs inside the asset block */
+    return reinterpret_cast<const GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) +
+                                                               sourceAsset->tableDescriptor.subresourceTableOffset);
+}
+
+static inline GraphicsTextureSourceEntry *GraphicsTextureSource_Entries(GraphicsTextureSourceAsset *sourceAsset)
+{
+    /* the records are 32-byte GraphicsTextureSourceEntry structs inside the asset block */
+    return reinterpret_cast<GraphicsTextureSourceEntry *>(GraphicsTextureSource_Bytes(sourceAsset) +
+                                                         sourceAsset->tableDescriptor.subresourceTableOffset);
+}
+
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 

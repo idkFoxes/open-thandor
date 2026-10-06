@@ -66,6 +66,7 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
   uint32_t lineBufferBytes;
   uint64_t pixelCount;
   uint8_t *lineBuffer;
+  void *block;
   uint8_t *pixelCursor;
   uint32_t lineFilled;
   uint32_t rowsLeft;
@@ -113,14 +114,16 @@ Bool8 Pcx_DecodeIndexed8(const uint8_t *fileBytes,uint32_t fileByteCount,PcxInde
     return false;
   }
   lineBufferBytes = bytesPerLine < outImage->width ? outImage->width : bytesPerLine;
-  if (g_MemoryApi.alloc((uint32_t)pixelCount,(void **)&outImage->pixels) != 0) {
+  if (g_MemoryApi.alloc((uint32_t)pixelCount,&block) != 0) {
     outImage->pixels = nullptr;
     return false;
   }
-  if (g_MemoryApi.alloc(lineBufferBytes,(void **)&lineBuffer) != 0) {
+  outImage->pixels = static_cast<uint8_t *>(block);
+  if (g_MemoryApi.alloc(lineBufferBytes,&block) != 0) {
     Pcx_FreeIndexed8(outImage);
     return false;
   }
+  lineBuffer = static_cast<uint8_t *>(block);
   memset(lineBuffer,0,lineBufferBytes);
 
   encodedCursor = fileBytes + PCX_HEADER_BYTES;

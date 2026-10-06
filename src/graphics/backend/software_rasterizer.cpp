@@ -14,14 +14,6 @@
 #include <thandor/platform/bootstrap/image.h>
 #include "software_raster.h"
 
-/* Texture of the auxiliary textured modes. The span function of modes 20/22/28/30 needs the long
-   edge's current U (see RasterAux_SpanTexturedPrestepDepth), so the walker's edges travel along
-   with the texture; span->texture points at `texture`, the first member. */
-typedef struct RasterAuxTexture {
-    RasterTexture texture;
-    const RasterEdges *edges;
-} RasterAuxTexture;
-
 /* Module data. */
 
 THANDOR_ALIGN(16) SoftwareRasterScanState g_SoftwareRasterScanState = {};
@@ -151,7 +143,7 @@ static void Raster32_SpanTexturedOpaque(RasterSpan *span)
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_Modulate(span->color, texel), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -197,10 +189,10 @@ static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
             RasterColor source = Raster_Modulate(span->color, texel);
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
             if ((uint16_t)source.lane[RASTER_LANE_ALPHA] >= (128 << 4)) {
                 *span->depth = span->depthValue;
             }
@@ -229,10 +221,10 @@ static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(Raster_Modulate(span->color, texel), destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
         }
         RasterSpan_Next(span);
     }
@@ -257,10 +249,10 @@ static void Raster32_SpanTexturedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(Raster_Modulate(span->color, texel), destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
         }
         RasterSpan_Next(span);
     }
@@ -359,7 +351,7 @@ static void Raster32_SpanShadedOpaque(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(span->color, 6, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -391,10 +383,10 @@ static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -437,10 +429,10 @@ static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
         }
         RasterSpan_Next(span);
     }
@@ -470,10 +462,10 @@ static void Raster32_SpanShadedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
+            RasterColor destination = Raster_Unpack32(Thandor_LoadU32(span->pixel));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
         }
         RasterSpan_Next(span);
     }
@@ -611,7 +603,7 @@ static void RasterAux_SpanTexturedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
+            Thandor_StoreU32(span->pixel, RasterAux_TexturedPixel(span));
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -624,7 +616,7 @@ static void RasterAux_SpanTexturedNoDepthWrite(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
+            Thandor_StoreU32(span->pixel, RasterAux_TexturedPixel(span));
         }
         RasterSpan_Next(span);
     }
@@ -637,13 +629,13 @@ static void RasterAux_SpanTexturedNoDepthWrite(RasterSpan *span)
    the long edge's U. */
 static void RasterAux_SpanTexturedPrestepDepth(RasterSpan *span)
 {
-    const RasterAuxTexture *texture = (const RasterAuxTexture *)span->texture;
+    const RasterTexture *texture = span->texture;
     uint32_t uPrestep = (uint32_t)span->u - (uint32_t)texture->edges->longU;
     int writeDepth = uPrestep >= Q12_ONE / 2;
 
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
+            Thandor_StoreU32(span->pixel, RasterAux_TexturedPixel(span));
             if (writeDepth) {
                 *span->depth = span->depthValue;
             }
@@ -662,12 +654,12 @@ static void RasterAux_DrawTexturedTriangle(GraphicsScreenCoordinate clipMaxY, Gr
     RasterTarget target = Raster_AuxiliaryTarget(clipMaxY, clipMaxX, clipMinY, clipMinX);
     RasterEdges edges;
     RasterGradients gradients;
-    RasterAuxTexture texture;
+    RasterTexture texture;
 
     if (Raster_SetupTriangle(packet, shading, 1, &edges, &gradients)) {
-        Raster_SetupTexture(packet, &texture.texture);
-        texture.edges = &edges;
-        Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture.texture, drawSpan);
+        Raster_SetupTexture(packet, &texture);
+        texture.edges = &edges; /* the span function of modes 20/22/28/30 reads the long edge's U */
+        Raster_WalkTriangle(&target, packet, &edges, &gradients, &texture, drawSpan);
     }
 }
 
@@ -838,7 +830,7 @@ static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(source, 4, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -868,7 +860,7 @@ static void Raster32_SpanShadedWrite(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(span->color, 6, channel);
-            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            Thandor_StoreU32(span->pixel, Raster_Pack32(channel));
         }
         RasterSpan_Next(span);
     }
